@@ -1,0 +1,9 @@
+{
+  "verifiedAt": "2026-10-04T23:53:24.1388807Z",
+  "priorProcessId": 39540,
+  "stoppedOnlyExactOwnedProcess": true,
+  "noOtherProcessStopped": true,
+  "priorPidReused": false,
+  "portEmptyBeforeNewLaunch": true,
+  "previousFilesPreserved": true
+}

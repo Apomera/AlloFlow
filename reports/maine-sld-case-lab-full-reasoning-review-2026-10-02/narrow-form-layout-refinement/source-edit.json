@@ -1,0 +1,74 @@
+{
+  "editedAt": "2026-10-03T14:53:22.568279+00:00",
+  "scope": "Only the <=1000px reasoning grid track changes from 1fr to minmax(0,1fr); the other grid remains 1fr.",
+  "sourceBeforeSha256": "d4a8d23ac79bff3af8f5c399014fe1a51c042d2bcbf63b3cb00072c7e14cb68a",
+  "sourceAfterSha256": "ef37ab74b6188e1346f3e7447dd08e190ec15a1e1b781530b3c0c5d10f715a46",
+  "moduleBeforeSha256": "f34e2d1d87c6141cf84c8c2fbcabb063fbef45b1151cd6357af232fbce22b9e5",
+  "currentSharedHostBeforeSha256": "57b9875855c32a1921a002cd0e7d9e2d489108f7ce3aa8d27b2a8605a1287a1a",
+  "previousPreviewHostSha256": "55ec122ff1687858830fd7949039ce1d3c9799ee0a3f7a70bf63f61816b4633c",
+  "sharedHostUpdatesPreserved": true,
+  "noOverflowHiding": true,
+  "noBehaviorDataCoreBuilderSchemaOrPrintChanges": true,
+  "preservedBeforeFiles": [
+    {
+      "file": "maine_sld_practice_source.jsx",
+      "sha256": "d4a8d23ac79bff3af8f5c399014fe1a51c042d2bcbf63b3cb00072c7e14cb68a",
+      "snapshot": "narrow-form-layout-refinement\\before\\maine_sld_practice_source.jsx"
+    },
+    {
+      "file": "maine_sld_practice_module.js",
+      "sha256": "f34e2d1d87c6141cf84c8c2fbcabb063fbef45b1151cd6357af232fbce22b9e5",
+      "snapshot": "narrow-form-layout-refinement\\before\\maine_sld_practice_module.js"
+    },
+    {
+      "file": "reports\\maine-sld-case-lab-full-reasoning-review-2026-10-02\\frozen-activity.json",
+      "sha256": "ecc170538351cb5ace1e3f058ec8a6417b589771ffe8da06f68b395b4778f703",
+      "snapshot": "narrow-form-layout-refinement\\before\\frozen-activity.json"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "57b9875855c32a1921a002cd0e7d9e2d489108f7ce3aa8d27b2a8605a1287a1a",
+      "snapshot": "narrow-form-layout-refinement\\before\\AlloFlowANTI.txt"
+    },
+    {
+      "file": "desktop\\web-app\\src\\AlloFlowANTI.txt",
+      "sha256": "57b9875855c32a1921a002cd0e7d9e2d489108f7ce3aa8d27b2a8605a1287a1a",
+      "snapshot": "narrow-form-layout-refinement\\before\\desktop\\web-app\\src\\AlloFlowANTI.txt"
+    },
+    {
+      "file": "desktop\\web-app\\src\\App.jsx",
+      "sha256": "57b9875855c32a1921a002cd0e7d9e2d489108f7ce3aa8d27b2a8605a1287a1a",
+      "snapshot": "narrow-form-layout-refinement\\before\\desktop\\web-app\\src\\App.jsx"
+    },
+    {
+      "file": "reports\\maine-sld-case-lab-full-reasoning-review-2026-10-02\\integration\\pin-verification.json",
+      "sha256": "b595d133a71996ff3f4505786265509fc49050b7ca7d89f7879d430c74d604bb",
+      "snapshot": "narrow-form-layout-refinement\\before\\integration\\pin-verification.json"
+    },
+    {
+      "file": "reports\\maine-sld-case-lab-full-reasoning-review-2026-10-02\\integration\\static-verification.json",
+      "sha256": "5f36e9f57a14ca8707f16f665702ff41dabbe41ce4329c762c4da224137480c5",
+      "snapshot": "narrow-form-layout-refinement\\before\\integration\\static-verification.json"
+    },
+    {
+      "file": "reports\\maine-sld-case-lab-full-reasoning-review-2026-10-02\\integration\\served-verification.json",
+      "sha256": "9c92ce71daf22f3e7fafdea41f32270fa979739944ea0e5c4e9bb5a3c4d58120",
+      "snapshot": "narrow-form-layout-refinement\\before\\integration\\served-verification.json"
+    },
+    {
+      "file": "reports\\maine-sld-case-lab-full-reasoning-review-2026-10-02\\integration\\source-preview\\tested-host.jsx",
+      "sha256": "55ec122ff1687858830fd7949039ce1d3c9799ee0a3f7a70bf63f61816b4633c",
+      "snapshot": "narrow-form-layout-refinement\\before\\integration\\source-preview\\tested-host.jsx"
+    },
+    {
+      "file": "reports\\maine-sld-case-lab-full-reasoning-review-2026-10-02\\integration\\source-preview\\host.bundle.js",
+      "sha256": "220e63f18556fe394d5858f9048b1f6554faf0c5acabe2c2c75a5f628d901be4",
+      "snapshot": "narrow-form-layout-refinement\\before\\integration\\source-preview\\host.bundle.js"
+    },
+    {
+      "file": "reports\\maine-sld-case-lab-full-reasoning-review-2026-10-02\\integration\\source-preview\\preview.json",
+      "sha256": "9f1a328b7aba777dddd130a66c8cc9f77c32d2b5112cd793dd41ae8f6598348a",
+      "snapshot": "narrow-form-layout-refinement\\before\\integration\\source-preview\\preview.json"
+    }
+  ]
+}

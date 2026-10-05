@@ -1,0 +1,10 @@
+{
+  "baselineSha256": "5bbfcb7c007710c37e1f0c21320d10ab65b52e89fe8c7a581e8160606e6d4909",
+  "finalSpecSha256": "1444827ef5f968cdcae9de2fd31171e33f671dd6eaa304fb9e718df5e1f4d3ec",
+  "baselineBytes": 115054,
+  "originalScenariosPreserved": 29,
+  "newScenarios": 2,
+  "availableScenarios": 31,
+  "originalPrefixBytePreserved": true,
+  "noRunsPerformed": true
+}

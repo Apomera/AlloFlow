@@ -10,8 +10,8 @@ assert.ok(start >= 0 && end > start); const construct = new Function('THREE', 'M
 const fixtures = [];
 function fixture() { const draws = [], math = Object.assign(Object.create(Math), { random() { const value = ((draws.length * 31 + 19) % 101) / 101; draws.push(value); return value; } }); const item = construct(THREE, math); fixtures.push(item); return { ...item, draws }; }
 function localPoints(mesh) { mesh.updateMatrix(); return Array.from({ length: mesh.geometry.attributes.position.count }, (_, i) => new THREE.Vector3().fromBufferAttribute(mesh.geometry.attributes.position, i).applyMatrix4(mesh.matrix)); }
-function records(root) { return root.children.map(mesh => ({ name: mesh.name, position: mesh.position.toArray(), rotation: mesh.rotation.toArray(), scale: mesh.scale.toArray(), attrs: Object.entries(mesh.geometry.attributes).map(([name, attr]) => [name, Array.from(attr.array)]), index: Array.from(mesh.geometry.index.array), material: [mesh.material.type, mesh.material.color.toArray(), mesh.material.opacity, mesh.material.transparent, mesh.material.depthWrite, mesh.material.blending] })); }
-afterEach(() => { for (const item of fixtures.splice(0)) item.scene.traverse(object => { object.geometry?.dispose(); object.material?.dispose(); }); });
+function records(root) { return root.children.map(mesh => ({ name: mesh.name, position: mesh.position.toArray(), rotation: mesh.rotation.toArray(), scale: mesh.scale.toArray(), attrs: Object.entries(mesh.geometry.attributes).map(([name, attr]) => [name, Array.from(attr.array)]), index: Array.from(mesh.geometry.index.array), material: (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).map(material => [material.type, material.color.toArray(), material.opacity, material.transparent, material.depthWrite, material.blending]) })); }
+afterEach(() => { for (const item of fixtures.splice(0)) item.scene.traverse(object => { object.geometry?.dispose(); (Array.isArray(object.material) ? object.material : [object.material]).forEach(material => material?.dispose()); }); });
 
 describe('Cephalopod Hunter moon-jelly anatomy', () => {
   it('retains five ambient actors and all sixty-five ordered spawn and phase draws', () => {
@@ -31,12 +31,12 @@ describe('Cephalopod Hunter moon-jelly anatomy', () => {
   it('uses eight bounded finite indexed surfaces with an upward crown, trailing anatomy and ordinary alpha ownership', () => {
     const item = fixture();
     for (const jelly of item.jellyfish) {
-      assert.equal(new Set(jelly.children.map(mesh => mesh.geometry)).size, 8); assert.equal(new Set(jelly.children.map(mesh => mesh.material)).size, 8);
+      assert.equal(new Set(jelly.children.map(mesh => mesh.geometry)).size, 8); assert.equal(new Set(jelly.children.flatMap(mesh => Array.isArray(mesh.material) ? mesh.material : [mesh.material])).size, 9);
       assert.ok(jelly.children.reduce((sum, mesh) => sum + mesh.geometry.attributes.position.count, 0) <= 2500); assert.ok(jelly.children.reduce((sum, mesh) => sum + mesh.geometry.index.count / 3, 0) <= 3500);
       for (const mesh of jelly.children) {
         const g = mesh.geometry, p = g.attributes.position, n = g.attributes.normal;
-        assert.ok(g.index && g.boundingBox && g.boundingSphere); assert.equal(n.count, p.count); assert.equal(g.groups.length, 0); assert.ok(Object.values(g.attributes).every(attr => Array.from(attr.array).every(Number.isFinite)));
-        assert.equal(mesh.material.transparent, true); assert.equal(mesh.material.depthWrite, false); assert.equal(mesh.material.blending, THREE.NormalBlending); assert.ok(mesh.material.opacity > 0 && mesh.material.opacity < 1); assert.ok(!Object.values(mesh.material).some(value => value?.isTexture));
+        assert.ok(g.index && g.boundingBox && g.boundingSphere); assert.equal(n.count, p.count); assert.deepEqual(g.groups, mesh.name === 'cl-jelly-bell' ? [{ start: 0, count: g.index.count, materialIndex: 0 }, { start: 0, count: g.index.count, materialIndex: 1 }] : []); assert.ok(Object.values(g.attributes).every(attr => Array.from(attr.array).every(Number.isFinite)));
+        for (const material of Array.isArray(mesh.material) ? mesh.material : [mesh.material]) { assert.equal(material.transparent, true); assert.equal(material.depthWrite, false); assert.equal(material.blending, THREE.NormalBlending); assert.ok(material.opacity > 0 && material.opacity < 1); assert.ok(!Object.values(material).some(value => value?.isTexture)); }
         for (let i = 0; i < p.count; i++) { const point = new THREE.Vector3().fromBufferAttribute(p, i); assert.ok(g.boundingBox.distanceToPoint(point) < 1e-7); assert.ok(point.distanceTo(g.boundingSphere.center) <= g.boundingSphere.radius + 1e-7); assert.ok(Math.abs(new THREE.Vector3().fromBufferAttribute(n, i).length() - 1) < 1e-5); }
         for (let i = 0; i < g.index.count; i += 3) {
           const ids = [0, 1, 2].map(j => g.index.getX(i + j)); assert.ok(ids.every(id => Number.isInteger(id) && id >= 0 && id < p.count));
@@ -65,10 +65,10 @@ describe('Cephalopod Hunter moon-jelly anatomy', () => {
 
   it('keeps deterministic geometry and independently owned resources across all five actors', () => {
     const first = fixture(), second = fixture(); first.jellyfish.forEach((jelly, i) => assert.deepEqual(records(jelly), records(second.jellyfish[i])));
-    const resources = first.jellyfish.map(jelly => new Set(jelly.children.flatMap(mesh => [mesh.geometry, mesh.material]))); resources.forEach(set => assert.equal(set.size, 16));
+    const resources = first.jellyfish.map(jelly => new Set(jelly.children.flatMap(mesh => [mesh.geometry, ...(Array.isArray(mesh.material) ? mesh.material : [mesh.material])]))); resources.forEach(set => assert.equal(set.size, 17));
     for (let i = 0; i < resources.length; i++) for (let j = i + 1; j < resources.length; j++) assert.ok([...resources[i]].every(resource => !resources[j].has(resource)));
     let own = 0, neighbor = 0; resources[0].forEach(resource => resource.addEventListener('dispose', () => own++)); resources[1].forEach(resource => resource.addEventListener('dispose', () => neighbor++));
-    first.jellyfish[0].traverse(object => { object.geometry?.dispose(); object.material?.dispose(); }); first.jellyfish[0].parent.remove(first.jellyfish[0]); assert.equal(own, 16); assert.equal(neighbor, 0);
+    first.jellyfish[0].traverse(object => { object.geometry?.dispose(); (Array.isArray(object.material) ? object.material : [object.material]).forEach(material => material?.dispose()); }); first.jellyfish[0].parent.remove(first.jellyfish[0]); assert.equal(own, 17); assert.equal(neighbor, 0);
   });
 
   it('attaches actual canal tips, four oral roots and all twenty-four margin roots throughout pulse and wave extrema', () => {

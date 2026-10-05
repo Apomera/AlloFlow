@@ -1,0 +1,77 @@
+{
+  "date": "2026-10-02",
+  "version": "20261002-pot-experiment",
+  "runtimeFiles": 52,
+  "parsedScripts": 43,
+  "mirrorsExact": true,
+  "http": [
+    {
+      "file": "recipe_lab.html",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    },
+    {
+      "file": "recipe_lab.js",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    },
+    {
+      "file": "recipe_lab_scene.js",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    },
+    {
+      "file": "recipe_lab_fresh_water.js",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    },
+    {
+      "file": "recipe_lab_ingredients.js",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    },
+    {
+      "file": "recipe_lab_quests.js",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    },
+    {
+      "file": "recipe_lab_workspace.css",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    },
+    {
+      "file": "recipe_lab_workspace.js",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    },
+    {
+      "file": "recipe_lab_gesture_guide.js",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    },
+    {
+      "file": "recipe_lab_pot_lab.js",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    },
+    {
+      "file": "recipe_lab_pot_lab.css",
+      "status": 200,
+      "cache": "no-store",
+      "exact": true
+    }
+  ],
+  "diffCheck": true,
+  "kitchenStagedFiles": []
+}

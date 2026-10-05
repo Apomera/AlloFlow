@@ -140,13 +140,25 @@ test.describe('First Response — body position on real WebGL', () => {
     await page.getByRole('button', { name: 'Start 30:2 practice' }).click();
     await page.evaluate(async () => {
       const intervalMs = 60_000 / 110;
-      const startedAt = performance.now();
+      const nativeNow = performance.now.bind(performance);
+      const ownNow = Object.getOwnPropertyDescriptor(performance, 'now');
+      const firstTapAt = nativeNow();
+      let previousTapAt = firstTapAt - intervalMs;
       for (let i = 0; i < 30; i += 1) {
-        const delay = startedAt + i * intervalMs - performance.now();
+        const delay = previousTapAt + intervalMs - nativeNow();
         if (delay > 0) await new Promise((resolve) => setTimeout(resolve, delay));
         const button = document.querySelector('button[aria-label^="Record compression"]') as HTMLButtonElement | null;
         if (!button) throw new Error('compression control disappeared before count 30');
-        button.click();
+        previousTapAt = nativeNow();
+        // Exact timestamps for real click handlers; timers and WebGL remain native.
+        const tapAt = firstTapAt + i * intervalMs;
+        try {
+          Object.defineProperty(performance, 'now', { configurable: true, value: () => tapAt });
+          button.click();
+        } finally {
+          if (ownNow) Object.defineProperty(performance, 'now', ownNow);
+          else delete (performance as any).now;
+        }
       }
     });
 

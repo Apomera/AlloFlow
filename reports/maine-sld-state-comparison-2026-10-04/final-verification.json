@@ -1,0 +1,206 @@
+{
+  "verifiedAt": "2026-10-05T00:42:35.639Z",
+  "moduleSha256": "36955de0aef08c88a6ac2cae501019f34ad22558d2e5daeccc79e3ee46a90520",
+  "moduleFourCopyParity": true,
+  "currentHostSha256": "278543b8cbf467457a38d52034ffffa08918f4f12bceab5e1876e22e813f804f",
+  "currentHostsMatchTestedSnapshot": true,
+  "onlyMainePinsChanged": true,
+  "preservedFiles": [
+    "maine_sld_practice_source.jsx",
+    "_build_maine_sld_practice_module.js",
+    "maine_sld_practice_core.js",
+    "maine_sld_case_data.json",
+    "maine_sld_state_documents.js",
+    "tests/e2e/maine-sld-practice.spec.ts",
+    "tests/e2e/maine-sld-state-requirements.spec.ts"
+  ],
+  "modelChecks": 21,
+  "distinctBrowserChecks": 18,
+  "totalFocusedChecks": 39,
+  "browserRuns": {
+    "01": [
+      {
+        "title": "source-linked comparison plans persist across state, case and tab navigation without automatic research",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "source edits and removal retain comparison writing and require a fresh explicit source check",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "v1 migration, invalid restore and save failure retain a coherent comparison plan",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "comparison recovery keeps malformed stored reference bytes until explicit retry",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "comparison keyboard, long literal text and forced colors 320",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "comparison keyboard, long literal text and forced colors 800",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "comparison writing, flagging and recording retire pending public research without publishing late links",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "actual source app opens and saves a source-linked comparison without changing the case route",
+        "status": "unexpected",
+        "results": [
+          "failed"
+        ]
+      },
+      {
+        "title": "state reference lifecycle keeps literal sources independent of all case work",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "real local text import retains provenance and draft inspection, extraction failure preserves it",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "explicit fixed-query research rejects stale results and renders cited candidates as text",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "local save failure permits reference download and recovery without affecting worksheet storage",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "state workspace keyboard, long text reflow and contrast 320",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "state workspace keyboard, long text reflow and contrast 800",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "actual source app deep link opens the workspace and loads its real document adapter",
+        "status": "unexpected",
+        "results": [
+          "failed"
+        ]
+      }
+    ],
+    "02": [
+      {
+        "title": "actual source app opens and saves a source-linked comparison without changing the case route",
+        "status": "unexpected",
+        "results": [
+          "failed"
+        ]
+      },
+      {
+        "title": "actual source app deep link opens the workspace and loads its real document adapter",
+        "status": "unexpected",
+        "results": [
+          "failed"
+        ]
+      }
+    ],
+    "03": [
+      {
+        "title": "actual source app opens and saves a source-linked comparison without changing the case route",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "actual source app deep link opens the workspace and loads its real document adapter",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      }
+    ],
+    "04": [
+      {
+        "title": "all52 scores, evidence and Q8/Q9 work survive steps, case switches and reload",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "case-specific share links contain no worksheet data and direct entry selects that case",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      },
+      {
+        "title": "federal and Maine jurisdiction disclosures work by keyboard without grading or changing participant worksheet work",
+        "status": "expected",
+        "results": [
+          "passed"
+        ]
+      }
+    ]
+  },
+  "retainedFailedAttempts": {
+    "01": "Two actual-app checks used a runner URL with a duplicate slash; 13 distinct native workflows passed.",
+    "02": "Same two actual-app checks failed connection-refused after the tool environment ended the managed preview.",
+    "03": "Two unchanged actual-app checks passed after guarded hidden background restart and URL correction."
+  },
+  "axeFiles": [
+    "browser-01/state-captures/comparison-layout-320.axe.json",
+    "browser-01/state-captures/comparison-layout-800.axe.json",
+    "browser-01/state-captures/comparison-lifecycle.axe.json",
+    "browser-01/state-captures/layout-320.axe.json",
+    "browser-01/state-captures/layout-800.axe.json",
+    "browser-01/state-captures/lifecycle.axe.json",
+    "browser-03/state-captures/actual-app.axe.json",
+    "browser-03/state-captures/comparison-actual-app.axe.json",
+    "browser-04/retained-captures/axe-jurisdiction-case-320-dark.json",
+    "browser-04/retained-captures/axe-jurisdiction-reasoning-1366-light.json"
+  ],
+  "directActualLayoutCaptures": 8,
+  "ownedPathsUnstaged": true,
+  "noCommitPushDeploymentOrFullAppBuild": true,
+  "servedModuleAndBundleExact": true,
+  "previewUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice"
+}

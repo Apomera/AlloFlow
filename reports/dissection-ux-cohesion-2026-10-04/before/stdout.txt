@@ -1,0 +1,223 @@
+
+Running 13 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:125:30 › specimen view and stage context stay coherent on phone (13.4s)
+  ok  2 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:125:30 › specimen view and stage context stay coherent on tablet (9.2s)
+  ok  3 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:125:30 › specimen view and stage context stay coherent on desktop (16.2s)
+  ok  4 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:125:30 › specimen view and stage context stay coherent on embedded-medium (8.5s)
+  ok  5 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:125:30 › specimen view and stage context stay coherent on embedded-large (18.7s)
+  ok  6 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:125:30 › specimen view and stage context stay coherent on forced-colors (25.8s)
+  x   7 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:160:5 › default view keeps a named reset control and stable keyboard focus (13.4s)
+  x   8 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:168:5 › assessment keeps camera controls usable and teaching handoff hidden (1.5s)
+  x   9 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:175:5 › embedded resizing and text spacing preserve focus and full camera labels (1.4s)
+  x  10 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:183:5 › fresh Study does not imply completed learning phases (1.1s)
+  x  11 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:194:5 › returning to an earlier phase preserves recorded evidence (711ms)
+  x  12 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:203:41 › Guided view setup promises a chooser and preserves the current view (416ms)
+  x  13 [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:203:41 › Identify view setup promises a chooser and preserves the current view (478ms)
+
+
+  1) [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:160:5 › default view keeps a named reset control and stable keyboard focus 
+
+    Error: page.evaluate: TypeError: window.__unmount is not a function
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at GlHarness.unmount (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\helpers\stem_gl_harness.ts:727:16)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-ux-cohesion.spec.ts:36:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-def-5b893-l-and-stable-keyboard-focus-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-def-5b893-l-and-stable-keyboard-focus-chromium\error-context.md
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-def-5b893-l-and-stable-keyboard-focus-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-def-5b893-l-and-stable-keyboard-focus-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-def-5b893-l-and-stable-keyboard-focus-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:168:5 › assessment keeps camera controls usable and teaching handoff hidden 
+
+    Error: page.evaluate: TypeError: window.__unmount is not a function
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at GlHarness.unmount (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\helpers\stem_gl_harness.ts:727:16)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-ux-cohesion.spec.ts:36:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-ass-00176-and-teaching-handoff-hidden-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-ass-00176-and-teaching-handoff-hidden-chromium\error-context.md
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-ass-00176-and-teaching-handoff-hidden-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-ass-00176-and-teaching-handoff-hidden-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-ass-00176-and-teaching-handoff-hidden-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:175:5 › embedded resizing and text spacing preserve focus and full camera labels 
+
+    Error: page.evaluate: TypeError: window.__unmount is not a function
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at GlHarness.unmount (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\helpers\stem_gl_harness.ts:727:16)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-ux-cohesion.spec.ts:36:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-emb-3b6e2-ocus-and-full-camera-labels-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-emb-3b6e2-ocus-and-full-camera-labels-chromium\error-context.md
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-emb-3b6e2-ocus-and-full-camera-labels-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-emb-3b6e2-ocus-and-full-camera-labels-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-emb-3b6e2-ocus-and-full-camera-labels-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:183:5 › fresh Study does not imply completed learning phases 
+
+    Error: page.evaluate: TypeError: window.__unmount is not a function
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at GlHarness.unmount (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\helpers\stem_gl_harness.ts:727:16)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-ux-cohesion.spec.ts:36:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-fre-6f1f0-y-completed-learning-phases-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-fre-6f1f0-y-completed-learning-phases-chromium\error-context.md
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-fre-6f1f0-y-completed-learning-phases-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-fre-6f1f0-y-completed-learning-phases-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-fre-6f1f0-y-completed-learning-phases-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:194:5 › returning to an earlier phase preserves recorded evidence 
+
+    Error: page.evaluate: TypeError: window.__unmount is not a function
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at GlHarness.unmount (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\helpers\stem_gl_harness.ts:727:16)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-ux-cohesion.spec.ts:36:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-ret-30fcd-preserves-recorded-evidence-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-ret-30fcd-preserves-recorded-evidence-chromium\error-context.md
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-ret-30fcd-preserves-recorded-evidence-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-ret-30fcd-preserves-recorded-evidence-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-ret-30fcd-preserves-recorded-evidence-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:203:41 › Guided view setup promises a chooser and preserves the current view 
+
+    Error: page.evaluate: TypeError: window.__unmount is not a function
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at GlHarness.unmount (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\helpers\stem_gl_harness.ts:727:16)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-ux-cohesion.spec.ts:36:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-Gui-8d641--preserves-the-current-view-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-Gui-8d641--preserves-the-current-view-chromium\error-context.md
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-Gui-8d641--preserves-the-current-view-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-Gui-8d641--preserves-the-current-view-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-Gui-8d641--preserves-the-current-view-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7) [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:203:41 › Identify view setup promises a chooser and preserves the current view 
+
+    Error: page.evaluate: TypeError: window.__unmount is not a function
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at eval (eval at evaluate (:302:30), <anonymous>:1:14)
+        at UtilityScript.evaluate (<anonymous>:304:16)
+        at UtilityScript.<anonymous> (<anonymous>:1:44)
+        at GlHarness.unmount (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\helpers\stem_gl_harness.ts:727:16)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-ux-cohesion.spec.ts:36:52
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-Ide-a6e85--preserves-the-current-view-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-Ide-a6e85--preserves-the-current-view-chromium\error-context.md
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-Ide-a6e85--preserves-the-current-view-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-Ide-a6e85--preserves-the-current-view-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-cohesion-2026-10-04\before\test-results\dissection-ux-cohesion-Ide-a6e85--preserves-the-current-view-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  7 failed
+    [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:160:5 › default view keeps a named reset control and stable keyboard focus 
+    [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:168:5 › assessment keeps camera controls usable and teaching handoff hidden 
+    [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:175:5 › embedded resizing and text spacing preserve focus and full camera labels 
+    [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:183:5 › fresh Study does not imply completed learning phases 
+    [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:194:5 › returning to an earlier phase preserves recorded evidence 
+    [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:203:41 › Guided view setup promises a chooser and preserves the current view 
+    [chromium] › tests\e2e\dissection-ux-cohesion.spec.ts:203:41 › Identify view setup promises a chooser and preserves the current view 
+  6 passed (5.4m)

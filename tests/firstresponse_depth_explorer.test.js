@@ -64,6 +64,153 @@ afterEach(() => {
   for (const scene of scenes.splice(0)) scene.traverse(o => { if (o.geometry) o.geometry.dispose(); if (o.material) o.material.dispose(); });
 });
 
+describe('sculpted mannequin face', () => {
+  it.each(['adult','child','infant'])('keeps the fitted eye seams close to actual skin through the head tilt for %s', age => {
+    for (const phase of [0,8]) {
+      const {scene}=model(age,'recovery',phase)({});
+      const head=scene.getObjectByName('fr-manikin-head'),pivot=scene.getObjectByName('fr-manikin-head-pivot');
+      const scale=head.scale.x/.28*pivot.getWorldScale(new THREE.Vector3()).x;
+      const up=new THREE.Vector3(0,1,0).transformDirection(pivot.matrixWorld);
+      for (const name of ['fr-manikin-eye-left','fr-manikin-eye-right']) {
+        const seam=scene.getObjectByName(name);
+        for (const point of seam.geometry.parameters.path.getPoints(20)) {
+          const world=point.clone().applyMatrix4(seam.matrixWorld);
+          const hit=new THREE.Raycaster(world.clone().addScaledVector(up,.1*scale),up.clone().negate()).intersectObject(head,false)[0];
+          expect(hit,'eye seam lost the skin surface').toBeTruthy();
+          const gap=hit.distance-.1*scale;
+          expect(gap).toBeGreaterThan(-.001*scale);expect(gap).toBeLessThan(.009*scale);
+        }
+      }
+    }
+  });
+  it.each(['adult','child','infant'])('keeps the ear rims joined to the actual ear surface for %s', age => {
+    const {scene}=model(age,'recovery',8)({});
+    for(const side of ['left','right']) {
+      const ear=scene.getObjectByName('fr-manikin-ear-'+side),base=scene.getObjectByName(ear.name+'-base'),rim=scene.getObjectByName(ear.name+'-helix');
+      const scale=ear.getWorldScale(new THREE.Vector3()).x;
+      const outward=new THREE.Vector3(side==='left'?-1:1,0,0).transformDirection(ear.matrixWorld);
+      // Probe between ring samples, away from the sphere's duplicated triangle seams.
+      for(const point of Array.from({length:40},(_,i)=>rim.geometry.parameters.path.getPoint((i+.5)/40))) {
+        const world=point.clone().applyMatrix4(rim.matrixWorld);
+        const hit=new THREE.Raycaster(world.clone().addScaledVector(outward,.1*scale),outward.clone().negate()).intersectObject(base,false)[0];
+        expect(hit,'ear rim lost the ear surface').toBeTruthy();const gap=hit.distance-.1*scale;
+        expect(gap).toBeGreaterThan(-.001*scale);expect(gap).toBeLessThan(.008*scale);
+      }
+    }
+  });
+  it('keeps head proportions rounder for the smaller figures', () => {
+    const ratios=['adult','child','infant'].map(age=>{
+      const head=model(age)({}).scene.getObjectByName('fr-manikin-head');head.geometry.computeBoundingBox();
+      const size=head.geometry.boundingBox.getSize(new THREE.Vector3()).multiply(head.scale);return size.z/size.x;
+    });
+    expect(ratios[0]).toBeGreaterThan(ratios[1]);expect(ratios[1]).toBeGreaterThan(ratios[2]);
+  });
+  it('keeps facial surface normals continuous at shared vertices', () => {
+    const head=model()({}).scene.getObjectByName('fr-manikin-head'),p=head.geometry.attributes.position,n=head.geometry.attributes.normal,shared=new Map();
+    for(let i=0;i<p.count;i++) {
+      const normal=new THREE.Vector3().fromBufferAttribute(n,i);expect(normal.length()).toBeCloseTo(1,5);
+      const key=[p.getX(i),p.getY(i),p.getZ(i)].map(value=>Math.round(value*1e6)).join(',');
+      if(shared.has(key))expect(normal.dot(shared.get(key))).toBeGreaterThan(.99999);else shared.set(key,normal);
+    }
+  });
+  it('distinguishes the closed eyes and ear recesses in app contrast without relying on lighting', () => {
+    const scene=new THREE.Scene();scenes.push(scene);build(THREE,{scene,phase:8,dark:true,contrast:true,wantShadow:false,
+      trim:color=>new THREE.MeshPhongMaterial({color}),sceneProps:{tab:'recovery',age:'child'}});
+    const head=scene.getObjectByName('fr-manikin-head');expect(head.material.type).toBe('MeshBasicMaterial');
+    for(const name of ['fr-manikin-eye-left','fr-manikin-eye-right','fr-manikin-ear-left-concha','fr-manikin-ear-right-concha']) {
+      const detail=scene.getObjectByName(name);expect(detail.material.type).toBe('MeshBasicMaterial');
+      expect(head.material.color.r-detail.material.color.r).toBeGreaterThan(.5);
+    }
+  });
+});
+
+describe('recovery arm positioning guides', () => {
+  function guided(age,phase,recoveryGuides=true,contrast=false,tab='recovery') {
+    const scene=new THREE.Scene();scenes.push(scene);
+    const content=build(THREE,{scene,phase,dark:true,contrast,wantShadow:false,
+      trim:color=>new THREE.MeshPhongMaterial({color}),sceneProps:{tab,age,recoveryGuides}});
+    scene.updateMatrixWorld(true);return {scene,content};
+  }
+  it.each(['adult','child','infant'])('anchors guides to the actual elbow and palm without moving the %s figure',age=>{
+    for(const phase of [2,5,8]) {
+      const normal=guided(age,phase,false),shown=guided(age,phase);expect(shown.content.landmarks).toEqual(normal.content.landmarks);
+      const {scene}=shown,body=scene.getObjectByName('fr-training-manikin'),scale=body.getWorldScale(new THREE.Vector3()).x;
+      const hand=scene.getObjectByName('fr-patient-left-hand'),palm=scene.getObjectByName('fr-patient-left-palm'),stem=scene.getObjectByName('fr-recovery-palm-arrow-stem');
+      const palmDirection=new THREE.Vector3(0,1,0).transformDirection(hand.matrixWorld),arrowDirection=new THREE.Vector3(0,1,0).transformDirection(stem.matrixWorld);
+      expect(arrowDirection.dot(palmDirection)).toBeGreaterThan(.99999);expect(arrowDirection.y).toBeGreaterThan(.98);
+      const base=new THREE.Vector3(0,-stem.geometry.parameters.height/2,0).applyMatrix4(stem.matrixWorld);
+      const gap=base.sub(palm.getWorldPosition(new THREE.Vector3()));expect(gap.dot(palmDirection)).toBeGreaterThan(.044*scale);expect(gap.length()).toBeLessThan(.08*scale);
+      const elbow=scene.getObjectByName('fr-patient-left-elbow').getWorldPosition(new THREE.Vector3()),curve=scene.getObjectByName('fr-recovery-elbow-curve');
+      for(const p of curve.geometry.parameters.path.getPoints(24)) {
+        p.applyMatrix4(curve.matrixWorld);expect(p.distanceTo(elbow)).toBeLessThan(.4*scale);expect(p.distanceTo(elbow)).toBeGreaterThan(.1*scale);expect(p.y).toBeGreaterThan(.027);
+      }
+    }
+  });
+  it('shows guides only when enabled in recovery after the near-arm step',()=>{
+    for(const [phase,on,tab] of [[0,true,'recovery'],[1,true,'recovery'],[2,false,'recovery'],[8,true,'depth']])expect(guided('infant',phase,on,false,tab).scene.getObjectByName('fr-recovery-arm-guides')).toBeUndefined();
+  });
+  it('uses distinct curve and arrow geometry with white materials in contrast mode',()=>{
+    const {scene}=guided('infant',8,true,true),group=scene.getObjectByName('fr-recovery-arm-guides');expect(group.children).toHaveLength(3);
+    expect(scene.getObjectByName('fr-recovery-elbow-curve').geometry.type).toBe('TubeGeometry');
+    expect(scene.getObjectByName('fr-recovery-palm-arrow-tip').geometry.type).toBe('ConeGeometry');
+    for(const mesh of group.children){expect(mesh.material.type).toBe('MeshBasicMaterial');expect(mesh.material.color.getHex()).toBe(0xffffff);}
+  });
+  it('keeps guide preference, pose progress and the text key available across review and activity changes',()=>{
+    const completed=['check','arm','hand','knee'];mount({b3dTab:'recovery',b3dRec:completed,b3dRecView:2});
+    const control=()=>host.querySelector('#fr-recovery-guides');expect(control().checked).toBe(false);expect(host.querySelector('.fr-recovery-guide-key')).toBeNull();
+    act(()=>control().click());expect(state.b3dRecoveryGuides).toBe(true);expect(lastSync.sceneProps.recoveryGuides).toBe(true);expect(lastSync.sceneKey).toContain(':arm-guides');expect(state.b3dRec).toEqual(completed);
+    expect(host.querySelector('.fr-recovery-guide-key').textContent).toContain('Curve: elbow bend');expect(host.querySelector('.fr-recovery-guide-key').textContent).toContain('Arrow: palm faces up');
+    expect(host.textContent).toContain('3D view unavailable');act(()=>patch({b3dRecView:1}));expect(control()).toBeNull();
+    act(()=>patch({b3dRecView:2,b3dTab:'depth'}));expect(lastSync.sceneProps.recoveryGuides).toBe(false);expect(lastSync.sceneKey).not.toContain(':arm-guides');
+    act(()=>patch({b3dTab:'recovery'}));expect(control().checked).toBe(true);act(()=>control().click());expect(lastSync.sceneProps.recoveryGuides).toBe(false);expect(host.querySelector('.fr-recovery-guide-key')).toBeNull();expect(state.b3dRec).toEqual(completed);
+  });
+});
+
+describe('near recovery arm posture', () => {
+  it.each(['depth','recovery'])('makes the whole-body target available only in recovery, on %s', tab => {
+    const scene=new THREE.Scene();scenes.push(scene);
+    const content=build(THREE,{scene,phase:2,dark:true,contrast:false,wantShadow:false,
+      trim:color=>new THREE.MeshPhongMaterial({color}),sceneProps:{tab,age:'infant'}});
+    if(tab==='recovery') {
+      expect(content.meshes.manikin.getObjectByName('fr-training-manikin')).toBe(scene.getObjectByName('fr-training-manikin'));
+      expect(content.meshes.manikin.scale.toArray()).toEqual([1,1,1]);
+      expect(scene.getObjectByName('fr-training-manikin').scale.toArray()).toEqual([.46,.46,.46]);
+    } else expect(content.meshes.manikin).toBeUndefined();
+  });
+  it.each(['adult','child','infant'])('bends the near elbow while preserving resting arm lengths for %s', age => {
+    const rest=model(age,'recovery',0)({});
+    const upper=rest.scene.getObjectByName('fr-patient-left-upper-arm').geometry.parameters.height;
+    const fore=rest.scene.getObjectByName('fr-patient-left-forearm').geometry.parameters.height;
+    function end(mesh,sign){return new THREE.Vector3(0,sign*mesh.geometry.parameters.height/2,0).applyMatrix4(mesh.matrixWorld);}
+    for(let phase=1;phase<=8;phase++) {
+      const {scene}=model(age,'recovery',phase)({});
+      const arm=scene.getObjectByName('fr-patient-left-upper-arm'),forearm=scene.getObjectByName('fr-patient-left-forearm');
+      expect(arm.geometry.parameters.height).toBeCloseTo(upper,9);expect(forearm.geometry.parameters.height).toBeCloseTo(fore,9);
+      const elbow=end(arm,1);expect(elbow.distanceTo(end(forearm,-1))).toBeLessThan(1e-8);
+      if(phase>=2) {
+        const angle=end(arm,-1).sub(elbow).angleTo(end(forearm,1).sub(elbow))*180/Math.PI;
+        expect(angle).toBeGreaterThan(80);expect(angle).toBeLessThan(105);
+        expect(new THREE.Vector3(0,1,0).transformDirection(scene.getObjectByName('fr-patient-left-hand').matrixWorld).y).toBeGreaterThan(.98);
+      }
+    }
+  });
+  it.each(['adult','child','infant'])('keeps the bent near hand clear of the mat for %s', age => {
+    for(const phase of [2,3,5,7,8]) {
+      const {scene}=model(age,'recovery',phase)({});const hand=scene.getObjectByName('fr-patient-left-hand');let lowest=Infinity;
+      hand.traverse(mesh=>{if(!mesh.geometry)return;const p=mesh.geometry.attributes.position;for(let i=0;i<p.count;i++)lowest=Math.min(lowest,new THREE.Vector3().fromBufferAttribute(p,i).applyMatrix4(mesh.matrixWorld).y);});
+      expect(lowest).toBeGreaterThan(.027);expect(lowest).toBeLessThan(.1);
+    }
+  });
+  it('shows the near-arm cue only when the inspected pose includes that step, including the text fallback', () => {
+    mount({b3dTab:'recovery',b3dRec:['check','arm','hand'],b3dRecView:1});
+    expect(host.querySelector('.fr-recovery-arm-cue')).toBeNull();
+    act(()=>patch({b3dRecView:2}));expect(host.querySelector('.fr-recovery-arm-cue').textContent).toContain('elbow bent, palm facing up');
+    expect(host.querySelector('.fr-recovery-arm-cue a').href).toBe('https://www.sja.org.uk/first-aid-advice/recovery-position/');
+    expect(host.textContent).toContain('3D view unavailable');
+    act(()=>patch({b3dRecView:0}));expect(host.querySelector('.fr-recovery-arm-cue')).toBeNull();
+  });
+});
+
 describe('recovery pose review', () => {
   const completed = ['check','arm','hand','knee','roll','airway','stable','watch'];
   function selectPose(value) {
@@ -405,9 +552,10 @@ describe('3D compression explorer — actual Three.js geometry', () => {
     const length = forearm.geometry.parameters.height;
     for (let i = 0; i < 4; i++) {
       const finger = hand.getObjectByName('fr-rescuer-lower-finger-' + i);
-      expect(finger.children).toHaveLength(4);
-      const tip = finger.children[3];
-      expect(tip.getWorldPosition(new THREE.Vector3()).y - tip.scale.y).toBeGreaterThan(heelRestY);
+      const surface = finger.getObjectByName(finger.name+'-surface');
+      const tip = finger.getObjectByName(finger.name+'-tip');
+      expect(new THREE.Box3().setFromObject(surface).min.y).toBeGreaterThan(heelRestY);
+      expect(tip.getWorldPosition(new THREE.Vector3()).y).toBeGreaterThan(heelRestY);
     }
     const press = sample({ motion: 'press' });
     expect(heel.getWorldPosition(new THREE.Vector3()).y - heel.scale.y).toBeCloseTo(press.markerY, 8);
@@ -824,7 +972,9 @@ describe('3D compression explorer — controls and fallback', () => {
       ...JSON.parse(readFileSync('reports/firstresponse-child-hands/ui-strings.delta.json', 'utf8')),
       ...JSON.parse(readFileSync('reports/firstresponse-visual-markers/ui-strings.delta.json', 'utf8')),
       ...JSON.parse(readFileSync('reports/firstresponse-manikin-realism/ui-strings.delta.json', 'utf8')),
-      ...JSON.parse(readFileSync('reports/firstresponse-recovery-review/ui-strings.delta.json', 'utf8')) };
+      ...JSON.parse(readFileSync('reports/firstresponse-recovery-review/ui-strings.delta.json', 'utf8')),
+      ...JSON.parse(readFileSync('reports/firstresponse-arm-posture/ui-strings.delta.json', 'utf8')),
+      ...JSON.parse(readFileSync('reports/firstresponse-arm-guides/ui-strings.delta.json', 'utf8')) };
     for (const file of ['ui_strings.js', 'desktop/web-app/public/ui_strings.js']) {
       const catalog = JSON.parse(readFileSync(file, 'utf8')).stem.firstresponse;
       for (const [key, value] of Object.entries(delta)) expect(catalog[key], key).toBe(value);

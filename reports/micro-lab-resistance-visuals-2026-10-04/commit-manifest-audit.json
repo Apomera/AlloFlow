@@ -1,0 +1,12 @@
+{
+  "mode": "prepared",
+  "passed": true,
+  "parent": "f77191806db701d4490d1634fbc6117b19000373",
+  "tree": "e816aa2a53f7eb08a298095dd053db4911080eec",
+  "changedFiles": 120,
+  "sealedFiles": 120,
+  "sourceSha256": "dc89a375a84b6864ce4abc8441f49eece878517035559733d2105ee1a3a183c1",
+  "unitPassed": 1059,
+  "browserPassed": 84,
+  "registryScope": "Fifteen visual history labels only; other registry changes excluded."
+}

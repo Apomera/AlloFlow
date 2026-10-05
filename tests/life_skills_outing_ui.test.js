@@ -71,6 +71,87 @@ async function openBackup(h, source) {
 }
 
 describe('Life Skills outing interaction', () => {
+  it('makes a freshly loaded completed recap focusable when resuming from another outing', () => {
+    const source=mount();complete(source);const original=source.run();const h=mount({saved:source.save()});
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));h.$('#settingsToggle').click();h.$('#savedRuns').value=h.E.saveKey(original);h.$('#savedRuns').dispatchEvent(new h.w.Event('change'));
+    expect(h.$('#debriefTitle').hasAttribute('tabindex')).toBe(false);h.$('#resumeButton').click();expect(h.$('#debriefTitle').getAttribute('tabindex')).toBe('-1');expect(h.w.document.activeElement.id).toBe('debriefTitle');expect(h.run()).toEqual(original);
+  });
+
+  it.each(['rain','warm','bus-delay'])('previews a saved %s outing using received facts without switching or advancing it', async variation => {
+    const provider=vi.fn(),h=mount({provider});h.$('#scenarioSelect').value=variation;h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
+    h.station('Wardrobe');h.act('wear_ready');h.station('Kitchen');h.act('fill_water');const original=h.run();
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));const active=h.run();h.$('#settingsToggle').click();const saved=h.save(),observations=h.E.view(active).observations;
+    h.$('#savedRuns').value=h.E.saveKey(original);h.$('#savedRuns').dispatchEvent(new h.w.Event('change'));
+    expect(h.$('#savedPreviewClock').textContent).toBe('09:03');expect(h.$('#savedFacts').textContent).toContain('Cloudy · update expected');expect(h.$('#savedFacts').textContent).not.toMatch(/\bRain\b|Warm sunshine|09:45/);
+    expect(h.$('#savedFacts').textContent).toContain('nothing packed');expect(h.$('#savedFacts').textContent).toContain('Step 2');expect(h.$('#savedProgress').value).toBe(1);expect(h.$('#savedChecks').children).toHaveLength(5);
+    expect(h.$('#savedRuns').selectedOptions[0].textContent).toContain('In progress');expect(h.$('#savedRuns').selectedOptions[0].textContent).not.toMatch(/Rain|Warm|Bus delay/);expect(h.$('#resumeButton').textContent).toBe('Continue this practice');
+    expect(h.run()).toEqual(active);expect(h.$('#clock').textContent).toBe('09:00');expect(h.save()).toEqual(saved);expect(h.E.view(h.run()).observations).toEqual(observations);await flush();expect(provider).not.toHaveBeenCalled();
+  });
+  it('continues a guided save at its next activity without confirming a choice', () => {
+    const h=mount();h.station('Wardrobe');h.act('wear_ready');h.station('Kitchen');h.act('fill_water');const original=h.run();h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));const other=h.run();
+    h.$('#settingsToggle').click();h.$('#savedRuns').value=h.E.saveKey(original);h.$('#savedRuns').dispatchEvent(new h.w.Event('change'));h.$('#resumeButton').click();
+    expect(h.run()).toEqual(original);expect(h.$('#settings').hidden).toBe(true);expect(h.$('#settingsToggle').getAttribute('aria-expanded')).toBe('false');expect(h.$('#waterWorkbench').open).toBe(true);
+    expect(h.w.document.activeElement.id).toBe('packAtTap');expect(h.$('#clock').textContent).toBe('09:03');expect(h.E.readRun(h.w.localStorage,h.E.saveKey(other))).toEqual(other);
+    h.$('#packAtTap').click();expect(h.run().commands).toHaveLength(3);expect(h.$('#clock').textContent).toBe('09:04');
+  });
+  it.each(['try','independent'])('returns a %s learner to preparation checks without recording a cue', support => {
+    const h=mount();h.$('#supportSelect').value=support;h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));h.act('fill_water');const original=h.run();
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));h.$('#settingsToggle').click();h.$('#savedRuns').value=h.E.saveKey(original);h.$('#savedRuns').dispatchEvent(new h.w.Event('change'));h.$('#resumeButton').click();
+    expect(h.run()).toEqual(original);expect(h.$('#preparationBoard').open).toBe(true);expect(h.w.document.activeElement.id).toBe('preparationBoardTitle');expect(h.$('#nextGuide').dataset.target).toBe('explore');expect(h.E.materialize(h.run()).hints).toBe(0);
+    expect(h.$('#wardrobeWorkbench').open).toBe(false);expect(h.$('#waterWorkbench').open).toBe(false);
+  });
+  it('restores the learner plan ahead of automatic guidance and focuses an unconfirmed planned card', () => {
+    const h=mount();h.$('#supportSelect').value='independent';h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));addPlan(h,'pack_document');const original=h.run();
+    h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));h.$('#settingsToggle').click();h.$('#savedRuns').value=h.E.saveKey(original);h.$('#savedRuns').dispatchEvent(new h.w.Event('change'));
+    expect(h.$('#savedPlanNote').textContent).toContain('Your next planned step');expect(h.$('#savedPlanNote').textContent).toContain('card');h.$('#resumeButton').click();
+    expect(h.$('#packingWorkbench').open).toBe(true);expect(h.w.document.activeElement.dataset.packItem).toBe('card');expect(h.run()).toEqual(original);expect(h.$('#packingPlace').disabled).toBe(true);
+    expect(h.$('#nextGuide').dataset.target).toBe('plan');expect(h.E.materialize(h.run()).hints).toBe(0);
+  });
+  it('opens a completed save directly at its recap and preserves its reflection and original journal', () => {
+    const h=mount();complete(h);h.$('#reflection').value='A PRIVATE reflection';h.$('#reflection').dispatchEvent(new h.w.Event('input'));const original=h.run();h.$('#sameReplayButton').click();const retry=h.run();
+    h.$('#settingsToggle').click();h.$('#savedRuns').value=h.E.saveKey(original);h.$('#savedRuns').dispatchEvent(new h.w.Event('change'));
+    expect(h.$('#resumeButton').textContent).toBe('Open this recap');expect(h.$('#savedPreviewState').textContent).toContain('Complete');expect(h.$('#savedFacts').textContent).toContain('arrived 09:30');expect(h.$('#savedFacts').textContent).not.toContain('PRIVATE');expect(h.$('#savedProgress').value).toBe(5);
+    h.$('#resumeButton').click();expect(h.w.document.activeElement.id).toBe('debriefTitle');expect(h.$('#outcomeRecap').hidden).toBe(false);expect(h.$('#reflection').value).toBe('A PRIVATE reflection');expect(h.run()).toEqual(original);expect(h.E.readRun(h.w.localStorage,h.E.saveKey(retry))).toEqual(retry);
+  });
+  it('shows actual received travel changes and readiness regression in a saved preview', () => {
+    const h=mount();h.$('#scenarioSelect').value='bus-delay';h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));h.station('Travel');h.act('choose_bus');h.station('Wardrobe');h.act('wear_ready');h.station('Kitchen');h.act('fill_water');h.act('pack_water');h.$('#settingsToggle').click();
+    expect(h.$('#savedFacts').textContent).toContain('Rain · update received');expect(h.$('#savedFacts').textContent).toContain('09:45');expect(h.$('#savedFacts').textContent).toContain('recheck');expect(h.$('#savedChecks').textContent).toContain('Travel plan · To check');
+    const saved=h.save();h.$('#resumeButton').click();expect(h.$('#updateWorkbench').open).toBe(true);expect(h.save()).toEqual(saved);
+  });
+  it('reads only preview facts and stops on selection, settings closure and resume', () => {
+    const voice=speechStub(),h=mount({voice});complete(h);const original=h.run();h.$('#reflection').value='PRIVATE reflection';h.$('#prediction').value='PRIVATE guess';h.$('#introButton').click();h.$('#sameReplayButton').click();h.$('#settingsToggle').click();const saved=h.save();
+    h.$('#readSavedPreview').click();expect(voice.spoken.at(-1).text).toContain('Practice clock 09:00');expect(voice.spoken.at(-1).text).not.toMatch(/PRIVATE|Rain|09:45/);h.$('#stopReadAloud').focus();h.$('#stopReadAloud').click();expect(h.w.document.activeElement.id).toBe('readSavedPreview');
+    h.$('#readSavedPreview').click();h.$('#savedRuns').value=h.E.saveKey(original);h.$('#savedRuns').dispatchEvent(new h.w.Event('change'));expect(voice.cancelled).toBe(2);h.$('#readSavedPreview').click();expect(voice.spoken.at(-1).text).toContain('arrived 09:30');expect(voice.spoken.at(-1).text).not.toMatch(/PRIVATE|Optional story/);
+    h.$('#settingsToggle').click();expect(voice.cancelled).toBe(3);h.$('#readSavedPreview').click();expect(voice.spoken).toHaveLength(3);expect(h.save()).toEqual(saved);
+    h.$('#settingsToggle').click();h.$('#readSavedPreview').click();h.$('#resumeButton').click();expect(voice.cancelled).toBe(4);expect(h.$('#readSavedPreview').textContent).toBe('Read this preview aloud');
+  });
+  it('guards unreadable, missing and unavailable saves without altering current practice', () => {
+    const h=mount();h.act('fill_water');const original=h.run(),key=h.E.saveKey(original);h.$('#settingsToggle').click();h.w.localStorage.setItem(key,'{broken');const saved=h.save();h.$('#resumeButton').click();
+    expect(h.$('#savedPreviewStatus').textContent).toContain('preserved');expect(h.$('#savedPreview').hidden).toBe(true);expect(h.$('#resumeButton').disabled).toBe(true);expect(h.$('#clock').textContent).toBe('09:01');expect(h.save()).toEqual(saved);
+    h.$('#savedRuns').value='';h.$('#resumeButton').dispatchEvent(new h.w.MouseEvent('click'));expect(h.save()).toEqual(saved);
+    const offline=mount({noStorage:true,noScene:true,reducedMotion:true});offline.$('#settingsToggle').click();expect(offline.$('#savedEmpty').textContent).toContain('Download');expect(offline.$('#resumeButton').disabled).toBe(true);expect(offline.$('#readSavedPreview').disabled).toBe(true);offline.act('fill_water');expect(offline.$('#clock').textContent).toBe('09:01');
+  });
+  it('refreshes an externally changed save before resuming so the reviewed facts stay accurate', () => {
+    const h=mount();h.act('fill_water');const original=h.run(),key=h.E.saveKey(original);h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));const active=h.run();h.$('#settingsToggle').click();h.$('#savedRuns').value=key;h.$('#savedRuns').dispatchEvent(new h.w.Event('change'));
+    const updated=h.E.dispatch(original,'pack_water');h.w.localStorage.setItem(key,JSON.stringify(updated));const saved=h.save();h.$('#resumeButton').click();
+    expect(h.run()).toEqual(active);expect(h.save()).toEqual(saved);expect(h.$('#savedPreviewClock').textContent).toBe('09:02');expect(h.$('#savedPreviewStatus').textContent).toContain('changed');expect(h.w.document.activeElement.id).toBe('savedPreviewTitle');
+    h.$('#resumeButton').click();expect(h.run()).toEqual(updated);expect(h.$('#wardrobeWorkbench').open).toBe(true);
+  });
+  it('keeps the selected preview on storage refresh and stops reading if its received facts change', () => {
+    const voice=speechStub(),h=mount({voice});h.act('fill_water');const original=h.run(),key=h.E.saveKey(original);h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));const active=h.run();h.$('#settingsToggle').click();h.$('#savedRuns').value=key;h.$('#savedRuns').dispatchEvent(new h.w.Event('change'));h.$('#readSavedPreview').click();
+    const updated=h.E.dispatch(original,'pack_water');h.w.localStorage.setItem(key,JSON.stringify(updated));const saved=h.save();h.w.dispatchEvent(new h.w.StorageEvent('storage',{key}));
+    expect(h.$('#savedRuns').value).toBe(key);expect(h.$('#savedPreviewClock').textContent).toBe('09:02');expect(voice.cancelled).toBe(1);expect(h.run()).toEqual(active);expect(h.save()).toEqual(saved);
+  });
+  it('returns to unsaved in-page progress instead of replacing it with an older saved version', () => {
+    const h=mount();const original=h.run();h.w.localStorage.setItem(h.E.saveKey(original),JSON.stringify({...original,config:{...original.config,language:'standard'}}));h.act('fill_water');expect(h.$('#saveStatus').textContent).toContain('Another version');
+    h.$('#settingsToggle').click();expect(h.$('#savedPreviewClock').textContent).toBe('09:01');expect(h.$('#savedContinueNote').textContent).toContain('only in this page');const saved=h.save();h.$('#resumeButton').click();expect(h.$('#clock').textContent).toBe('09:01');expect(h.save()).toEqual(saved);expect(h.$('#waterWorkbench').open).toBe(false);expect(h.$('#wardrobeWorkbench').open).toBe(true);
+  });
+  it('leaves an invalid saved plan untouched while continuing the recorded practice', () => {
+    const h=mount();h.act('fill_water');const original=h.run(),key=h.E.saveKey(original);h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));const planKey='alloflow-life-outing-plan:v1:'+original.runId;
+    h.w.localStorage.setItem(planKey,'{invalid');const reloaded=mount({saved:h.save()});reloaded.$('#settingsToggle').click();reloaded.$('#savedRuns').value=key;reloaded.$('#savedRuns').dispatchEvent(new reloaded.w.Event('change'));
+    expect(reloaded.$('#savedPlanNote').textContent).toContain('could not be read');reloaded.$('#resumeButton').click();expect(reloaded.run()).toEqual(original);expect(reloaded.w.localStorage.getItem(planKey)).toBe('{invalid');expect(reloaded.$('#wardrobeWorkbench').open).toBe(true);
+  });
+
   it.each(['rain','warm','bus-delay'])('uses only the information received before the reviewed %s step and keeps previews untimed', async variation => {
     const provider=vi.fn(),h=mount({provider});h.$('#scenarioSelect').value=variation;h.$('#contextSelect').value='work';h.$('#supportSelect').value='independent';h.$('#settingsForm').dispatchEvent(new h.w.Event('submit',{cancelable:true}));
     h.station('Wardrobe');h.act('wear_ready');h.station('Kitchen');h.act('fill_water');h.act('pack_water');h.station('Doorway');h.act('pack_document');h.act(variation==='warm'?'pack_hat':'pack_raincoat');h.station('Travel');h.act(variation==='bus-delay'?'choose_ride':'choose_bus');h.act('depart');
@@ -1148,7 +1229,7 @@ describe('Life Skills outing interaction', () => {
     h.station('Kitchen'); expect(h.$('#wardrobePreviewResult').hidden).toBe(true);
     h.$('#prepareOutfit').dispatchEvent(new h.w.MouseEvent('click')); expect(h.run().commands).toHaveLength(0);
     h.station('Wardrobe'); h.$('#openWardrobe').click(); h.$('[data-outfit="wear_ready"]').click();
-    h.$('#resumeButton').click(); expect(h.$('#wardrobeWorkbench').open).toBe(false);
+    h.$('#resumeButton').click(); expect(h.$('#wardrobeWorkbench').open).toBe(true); expect(h.$('#wardrobePreviewResult').hidden).toBe(true); expect(h.$('#prepareOutfit').disabled).toBe(true);
     h.station('Wardrobe'); h.$('#openWardrobe').click(); expect(h.$('#prepareOutfit').disabled).toBe(true);
     h.$('[data-outfit="prepare_clothes"]').click(); h.$('#sameReplayButton').click();
     h.station('Wardrobe'); h.$('#openWardrobe').click(); expect(h.$('#wardrobePreviewResult').hidden).toBe(true);

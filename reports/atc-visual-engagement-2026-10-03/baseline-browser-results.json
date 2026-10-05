@@ -1,0 +1,240 @@
+{
+  "fixture": "Local React 18 browser mount of canonical ATC source; test-only exposure of gameRef; seeded random generator.",
+  "started": "2026-10-04T03:40:10.736Z",
+  "checks": [
+    {
+      "name": "Desktop menu fits viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 1440,
+        "width": 1440
+      }
+    },
+    {
+      "name": "Menu tab keyboard moves and exposes active panel",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Menu fits 390px viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 390,
+        "width": 390
+      }
+    },
+    {
+      "name": "Ops Lab fits 390px viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 390,
+        "width": 390
+      }
+    },
+    {
+      "name": "Lesson cards fit 390px viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 390,
+        "width": 390
+      }
+    },
+    {
+      "name": "Lesson detail fits 390px viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 390,
+        "width": 390
+      }
+    },
+    {
+      "name": "Menu fits 320px viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 320,
+        "width": 320
+      }
+    },
+    {
+      "name": "Ops Lab fits 320px viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 320,
+        "width": 320
+      }
+    },
+    {
+      "name": "Lesson cards fit 320px viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 320,
+        "width": 320
+      }
+    },
+    {
+      "name": "Lesson detail fits 320px viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 320,
+        "width": 320
+      }
+    },
+    {
+      "name": "Keyboard focus exits the radar with Tab",
+      "pass": true,
+      "detail": {
+        "tag": "BUTTON",
+        "text": "Air Canada 375C172 · Inbound · No runway12,000 ft · 90 ktFuel remaining: 55.0 flight min53.3 nm · ~35.6 flight min · direct estimate",
+        "aria": null
+      }
+    },
+    {
+      "name": "Pause freezes simulation time and aircraft",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Aircraft strips and runway commands work with clicks",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Heading entry receives keys without changing radar state",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Paused radar remains painted after command entry",
+      "pass": true,
+      "detail": {
+        "width": 638,
+        "height": 638
+      }
+    },
+    {
+      "name": "Paused playing UI has no serious/critical axe violations",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "Playing controls fit 390px viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 390,
+        "width": 390
+      }
+    },
+    {
+      "name": "Playing controls fit 320px viewport",
+      "pass": true,
+      "detail": {
+        "scroll": 320,
+        "width": 320
+      }
+    },
+    {
+      "name": "Math challenge accepts exact zero and decimal answers",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Math feedback UI has no serious/critical axe violations",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "Arrival-order ties use the Same time choice and count as solved",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "End shift creates debrief and persists totals once",
+      "pass": true,
+      "detail": {
+        "score": 50,
+        "landed": 3,
+        "bestStreak": 3
+      }
+    },
+    {
+      "name": "Debrief has no serious/critical axe violations",
+      "pass": true,
+      "detail": []
+    },
+    {
+      "name": "Restart and a second end accumulate totals exactly once",
+      "pass": true,
+      "detail": {
+        "score": 75,
+        "landed": 5,
+        "bestStreak": 3
+      }
+    },
+    {
+      "name": "Touch flight strips and commands are usable at 390px",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Same-frame arrivals protect simple runway occupancy",
+      "pass": true,
+      "detail": {
+        "landed": 1,
+        "goArounds": 1,
+        "states": [
+          "landed",
+          "goAround"
+        ],
+        "messages": [
+          "🔄 Final 1 automatic GO AROUND — runway 27 occupied. Fly runway heading and climb to 3,000 ft.",
+          "✅ Final 0 landed RWY 27",
+          "📻 \"SVR Approach, Frontier 135, 13000 descending, inbound\""
+        ]
+      }
+    },
+    {
+      "name": "Same-frame arrivals protect crossing runway occupancy",
+      "pass": true,
+      "detail": {
+        "landed": 1,
+        "goArounds": 1,
+        "states": [
+          "landed",
+          "goAround"
+        ],
+        "messages": [
+          "🔄 Final 1 automatic GO AROUND — runway 18 occupied. Fly runway heading and climb to 3,000 ft.",
+          "✅ Final 0 landed RWY 27",
+          "📻 \"XWC Approach, Frontier 135, 13000 descending, inbound\""
+        ]
+      }
+    },
+    {
+      "name": "No uncaught browser errors",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\menu-desktop.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\menu-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\ops-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\lessons-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\lesson-detail-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\menu-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\ops-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\lessons-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\lesson-detail-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\playing-desktop.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\playing-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\playing-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\playing-high-contrast.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\playing-forced-colors.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\math-desktop.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\debrief-desktop.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\runway-simple-protected.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-deep-dive-2026-10-03\\runway-crossing-protected.png"
+  ],
+  "finished": "2026-10-04T03:40:22.337Z"
+}

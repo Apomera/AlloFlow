@@ -1,0 +1,99 @@
+{
+  "startedAt": "2026-10-01T17:04:09.206Z",
+  "scope": "isolated Chromium fixture; native local decode and actual generated Preview; no cloud/service calls",
+  "hashes": [
+    {
+      "file": "word_sounds_readiness_contract.js",
+      "sha256": "364c4241ff653f705ca529780e1142b8ad3147864953d1f315831791a918fb4e"
+    },
+    {
+      "file": "view_word_sounds_preview_source.jsx",
+      "sha256": "f3a412a28d2e121e40d1ea1b92405ce3adbea23a2e62eee0862ce38818d06fe3"
+    },
+    {
+      "file": "view_word_sounds_preview_module.js",
+      "sha256": "237d915ec26450c049eaf9cf7cf95a31c255afb1816cbf533cfd62b3df0773b5"
+    },
+    {
+      "file": "host_handlers_module.js",
+      "sha256": "eb3abff5ff4a717de1ec49ebb44630a33bd8df5cee4f4a99090081260dc68beb"
+    },
+    {
+      "file": "module_scope_extras_module.js",
+      "sha256": "24f5f2d073639e714c53d4908f84ccc5e8817fdf80c30114f6a32c569ee9d972"
+    },
+    {
+      "file": "ui_strings.js",
+      "sha256": "a57c36664238434c052994f6bb568ead086a405c13d5057157fd498378564281"
+    }
+  ],
+  "freeBefore": 7328120832,
+  "checks": [
+    {
+      "name": "Generated loaders share the same readiness API and receipts",
+      "passed": true
+    },
+    {
+      "name": "Native silent WAV decode checks embedded clip without certifying app banks",
+      "passed": true,
+      "detail": {
+        "ready": 1,
+        "total": 18,
+        "dependencies": 17,
+        "complete": false
+      }
+    },
+    {
+      "name": "Native decoder rejects a damaged WAV with a valid container signature",
+      "passed": true
+    },
+    {
+      "name": "Controlled unsupported codec cannot produce a ready receipt",
+      "passed": true
+    },
+    {
+      "name": "Keyboard pending check: Escape cancels and restores focus",
+      "passed": true
+    },
+    {
+      "name": "Repeated pending click is bounded; resource change cancels old readiness",
+      "passed": true
+    },
+    {
+      "name": "Readiness checking preserves lesson content and existing progress",
+      "passed": true
+    },
+    {
+      "name": "320 CSSpx reflow and doubled root font have no horizontal overflow",
+      "passed": true
+    },
+    {
+      "name": "Scoped automated names, contrast, and focus rules",
+      "passed": true,
+      "detail": {
+        "scopedRules": 5,
+        "violations": 0
+      }
+    },
+    {
+      "name": "Learner preview keeps educator checks and review controls out of the learner route",
+      "passed": true
+    }
+  ],
+  "networkRequests": [],
+  "nativeReceipt": {
+    "checkedAt": 1790874251899,
+    "ready": 1,
+    "total": 18,
+    "wordClips": [
+      {
+        "key": "cat",
+        "status": "embedded-portable",
+        "checked": true
+      }
+    ]
+  },
+  "screenshotCaptured": true,
+  "finishedAt": "2026-10-01T17:04:18.047Z",
+  "freeAfter": 7327088640
+}

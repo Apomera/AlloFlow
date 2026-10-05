@@ -1,0 +1,53 @@
+{
+  "sourceSha256": "d2761bd2af6147f6e5cff47d44569ceb9fc1d214115ce0fb3186dc7bae422a10",
+  "mirrorSha256": "d2761bd2af6147f6e5cff47d44569ceb9fc1d214115ce0fb3186dc7bae422a10",
+  "finalSourceSha256": "d2761bd2af6147f6e5cff47d44569ceb9fc1d214115ce0fb3186dc7bae422a10",
+  "finalMirrorSha256": "d2761bd2af6147f6e5cff47d44569ceb9fc1d214115ce0fb3186dc7bae422a10",
+  "sourceStable": true,
+  "mirrorStable": true,
+  "configurations": [
+    {
+      "width": 1100,
+      "theme": "default",
+      "rows": 5,
+      "minFont": 12,
+      "minTextContrast": 11.642242170794445,
+      "minSVGContrast": 5.752500888271728,
+      "minCanvasContrast": 9.168331513924977,
+      "minUnderpaintContrast": 1,
+      "trajectoryPaints": 78,
+      "sceneFrameVerified": true,
+      "noOverflow": true,
+      "titleTextGroups": 5,
+      "vacuumTextNodes": 4,
+      "vacuumCaptionNodes": 3,
+      "vacuumParameterNodes": 1,
+      "vacuumCaption": "White dashed · vacuum reference · Run 2",
+      "vacuumParameters": "θ 35° · v₀ 15 m/s · g 9.8 m/s² · h₀ 10 m",
+      "textGlyphsWithinKeys": true,
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-trail-identity-2026-10-02\\trails-default-1100.png"
+    },
+    {
+      "width": 1100,
+      "theme": "dark",
+      "rows": 5,
+      "minFont": 12,
+      "minTextContrast": 11.642242170794445,
+      "minSVGContrast": 5.752500888271728,
+      "minCanvasContrast": 9.168331513924977,
+      "minUnderpaintContrast": 1,
+      "trajectoryPaints": 78,
+      "sceneFrameVerified": true,
+      "noOverflow": true,
+      "titleTextGroups": 5,
+      "vacuumTextNodes": 4,
+      "vacuumCaptionNodes": 3,
+      "vacuumParameterNodes": 1,
+      "vacuumCaption": "White dashed · vacuum reference · Run 2",
+      "vacuumParameters": "θ 35° · v₀ 15 m/s · g 9.8 m/s² · h₀ 10 m",
+      "textGlyphsWithinKeys": true,
+      "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-trail-identity-2026-10-02\\trails-dark-1100.png"
+    }
+  ],
+  "errors": []
+}

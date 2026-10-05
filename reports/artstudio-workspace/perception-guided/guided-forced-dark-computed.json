@@ -1,0 +1,36 @@
+{
+  "forcedColors": true,
+  "theme": "dark",
+  "color": "rgb(255, 255, 255)",
+  "background": "rgba(0, 0, 0, 0)",
+  "fields": [
+    {
+      "tag": "SELECT",
+      "text": "Fin angleFin lengthSurroundingsSurrounding order",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "disabled": false
+    },
+    {
+      "tag": "INPUT",
+      "text": "",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "disabled": false
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Start planned study",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "disabled": false
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Cancel study plan",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(0, 0, 0)",
+      "disabled": false
+    }
+  ]
+}

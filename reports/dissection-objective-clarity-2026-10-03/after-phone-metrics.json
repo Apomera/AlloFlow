@@ -1,0 +1,181 @@
+{
+  "client": 318,
+  "scroll": 318,
+  "width": 320,
+  "summary": 69.765625,
+  "text": [
+    {
+      "text": "Learning objectivesProgress from your lab evidence",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Learning objectives",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Progress from your lab evidence",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Identify the 3-chambered heart and trace blood flow",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "✓ Demonstrated",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Evidence progress",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "100%",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "1/1 target observed · 1/1 evidence record · 1/1 target verified for understanding.",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Evidence demonstrated: observation, recorded evidence, and verified understanding all align.",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Compare cutaneous vs pulmonary respiration",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Developing",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Evidence progress",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "17%",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "1/2 targets observed · 0/2 evidence records · 0/2 targets verified for understanding.",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Next: inspect Dorsal Skin.",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Distinguish mesonephric kidneys from mammalian metanephric",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Not started",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Evidence progress",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "0%",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "0/1 target observed · 0/1 evidence record · 0/1 target verified for understanding.",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Next: inspect Kidneys.",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Locate the cloaca and explain shared-opening anatomy",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Not started",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Evidence progress",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "0%",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "0/1 target observed · 0/1 evidence record · 0/1 target verified for understanding.",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Next: inspect Cloaca.",
+      "font": 14,
+      "clipped": false
+    }
+  ],
+  "cards": [
+    {
+      "width": 297.21875,
+      "client": 293,
+      "scroll": 293,
+      "statusTop": 994.421875,
+      "titleBottom": 986.421875,
+      "overlaps": false,
+      "meter": 10
+    },
+    {
+      "width": 297.21875,
+      "client": 293,
+      "scroll": 293,
+      "statusTop": 1305.984375,
+      "titleBottom": 1297.984375,
+      "overlaps": false,
+      "meter": 10
+    },
+    {
+      "width": 297.21875,
+      "client": 293,
+      "scroll": 293,
+      "statusTop": 1574.171875,
+      "titleBottom": 1566.171875,
+      "overlaps": false,
+      "meter": 10
+    },
+    {
+      "width": 297.21875,
+      "client": 293,
+      "scroll": 293,
+      "statusTop": 1842.359375,
+      "titleBottom": 1834.359375,
+      "overlaps": false,
+      "meter": 10
+    }
+  ]
+}

@@ -1,0 +1,9 @@
+*.cjs
+*.log
+*-exit.json
+.inputs.json
+.reviewed.json
+commit-git/
+commit-message.txt
+browser-artifacts/
+regression/

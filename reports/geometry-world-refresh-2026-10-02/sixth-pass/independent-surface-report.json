@@ -1,0 +1,1667 @@
+{
+  "startedAt": "2026-10-04T01:11:39.454Z",
+  "sourceHash": "15191f8efead3037ec8bd2124e0e072402204ead0938d1ba52e80bf3c7f8e0f4",
+  "checks": [
+    {
+      "name": "desktop: high contrast selected preset is black with legible text",
+      "status": "pass",
+      "evidence": {
+        "system": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        },
+        "selected": [
+          {
+            "text": "Learning",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(255, 255, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          }
+        ],
+        "settingsText": [
+          {
+            "text": "Settings",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(185, 238, 228)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(185, 238, 228)",
+            "border": "rgb(185, 238, 228)",
+            "children": []
+          },
+          {
+            "text": "Workspace",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "View",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Learning",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Create",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Interface text\nStandard\nLarger",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": [
+              {
+                "text": "Interface text",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Standard\nLarger",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Panel backgrounds\nSolid\nTranslucent",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": [
+              {
+                "text": "Panel backgrounds",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Solid\nTranslucent",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Show top bar",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": []
+          },
+          {
+            "text": "Show coordinates",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": []
+          },
+          {
+            "text": "Show station compass",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": []
+          },
+          {
+            "text": "Minimal",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Minimal",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Minimal",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Learning",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(255, 255, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Builder",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Builder",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Builder",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Optional panel\nNone\nLesson progress\nMinimap\nMeasurement notebook\nBlock counts\nTr",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": [
+              {
+                "text": "Optional panel",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "None\nLesson progress\nMinimap\nMeasurement notebook\nBlock counts\nTransform lab",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Reset workspace appearance",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          }
+        ],
+        "surfaces": [
+          {
+            "text": "Position\nX 5 Y 3 Z -2\nNE\n41°\n🔇 SR OFF",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(244, 247, 246)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(244, 247, 246)",
+            "border": "rgb(121, 145, 140)",
+            "children": [
+              {
+                "text": "X",
+                "color": "rgb(239, 68, 68)"
+              },
+              {
+                "text": "Y",
+                "color": "rgb(34, 197, 94)"
+              },
+              {
+                "text": "Z",
+                "color": "rgb(59, 130, 246)"
+              },
+              {
+                "text": "NE",
+                "color": "rgb(251, 191, 36)"
+              },
+              {
+                "text": "41°",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Stone\n▴\nMatch\nFly\nRuler\nAngle\nNet\nHome\nClear\nHide",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 0)",
+            "children": [
+              {
+                "text": "Stone\n▴",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Stone",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "▴",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Match",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Match",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Fly",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Fly",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Ruler",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Ruler",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Angle",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Angle",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Net",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Net",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Home",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Home",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Clear",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Clear",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Hide",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Hide",
+                "color": "rgb(0, 255, 0)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop: Solid world surfaces preserve high contrast black",
+      "status": "pass",
+      "evidence": {
+        "system": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        },
+        "selected": [],
+        "settingsText": [],
+        "surfaces": [
+          {
+            "text": "Position\nX 5 Y 3 Z -2\nNE\n41°\n🔇 SR OFF",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(244, 247, 246)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(244, 247, 246)",
+            "border": "rgb(121, 145, 140)",
+            "children": [
+              {
+                "text": "X",
+                "color": "rgb(239, 68, 68)"
+              },
+              {
+                "text": "Y",
+                "color": "rgb(34, 197, 94)"
+              },
+              {
+                "text": "Z",
+                "color": "rgb(59, 130, 246)"
+              },
+              {
+                "text": "NE",
+                "color": "rgb(251, 191, 36)"
+              },
+              {
+                "text": "41°",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Stone\n▴\nMatch\nFly\nRuler\nAngle\nNet\nHome\nClear\nHide",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 0)",
+            "children": [
+              {
+                "text": "Stone\n▴",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Stone",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "▴",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Match",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Match",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Fly",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Fly",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Ruler",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Ruler",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Angle",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Angle",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Net",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Net",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Home",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Home",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Clear",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Clear",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Hide",
+                "color": "rgb(0, 255, 0)"
+              },
+              {
+                "text": "Hide",
+                "color": "rgb(0, 255, 0)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop: forced colors selected preset and Settings text use system colors",
+      "status": "pass",
+      "evidence": {
+        "system": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        },
+        "selected": [
+          {
+            "text": "Learning",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "2px",
+            "outlineColor": "rgb(55, 0, 110)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          }
+        ],
+        "settingsText": [
+          {
+            "text": "Settings",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Workspace",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0) rgb(0, 0, 0) rgb(55, 0, 110)",
+            "children": []
+          },
+          {
+            "text": "View",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Learning",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Create",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Interface text\nStandard\nLarger",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "Interface text",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Standard\nLarger",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Panel backgrounds\nSolid\nTranslucent",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "Panel backgrounds",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Solid\nTranslucent",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Show top bar",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Show coordinates",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Show station compass",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Minimal",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Minimal",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Minimal",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Learning",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "2px",
+            "outlineColor": "rgb(55, 0, 110)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Builder",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Builder",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Builder",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Optional panel\nNone\nLesson progress\nMinimap\nMeasurement notebook\nBlock counts\nTr",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "Optional panel",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "None\nLesson progress\nMinimap\nMeasurement notebook\nBlock counts\nTransform lab",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Reset workspace appearance",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          }
+        ],
+        "surfaces": [
+          {
+            "text": "Position\nX 5 Y 3 Z -2\nNE\n41°\n🔇 SR OFF",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "X",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Y",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Z",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "NE",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "41°",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Stone\n▴\nMatch\nFly\nRuler\nAngle\nNet\nHome\nClear\nHide",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "Stone\n▴",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Stone",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "▴",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Match",
+                "color": "rgb(96, 0, 0)"
+              },
+              {
+                "text": "Match",
+                "color": "rgb(96, 0, 0)"
+              },
+              {
+                "text": "Fly",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Fly",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Ruler",
+                "color": "rgb(96, 0, 0)"
+              },
+              {
+                "text": "Ruler",
+                "color": "rgb(96, 0, 0)"
+              },
+              {
+                "text": "Angle",
+                "color": "rgb(96, 0, 0)"
+              },
+              {
+                "text": "Angle",
+                "color": "rgb(96, 0, 0)"
+              },
+              {
+                "text": "Net",
+                "color": "rgb(96, 0, 0)"
+              },
+              {
+                "text": "Net",
+                "color": "rgb(96, 0, 0)"
+              },
+              {
+                "text": "Home",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Home",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Clear",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Clear",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Hide",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Hide",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop: Solid world surfaces preserve forced Canvas",
+      "status": "pass",
+      "evidence": {
+        "system": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        },
+        "selected": [],
+        "settingsText": [],
+        "surfaces": [
+          {
+            "text": "Position\nX 5 Y 3 Z -2\nNE\n41°\n🔇 SR OFF",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "X",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Y",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Z",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "NE",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "41°",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Stone\n▴\nMatch\nFly\nRuler\nAngle\nNet\nHome\nClear\nHide",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "Stone\n▴",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Stone",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "▴",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Match",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Match",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Fly",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Fly",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Ruler",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Ruler",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Angle",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Angle",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Net",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Net",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Home",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Home",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Clear",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Clear",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Hide",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Hide",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "narrow: high contrast selected preset is black with legible text",
+      "status": "pass",
+      "evidence": {
+        "system": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        },
+        "selected": [
+          {
+            "text": "Learning",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(255, 255, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          }
+        ],
+        "settingsText": [
+          {
+            "text": "Settings",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(185, 238, 228)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(185, 238, 228)",
+            "border": "rgb(185, 238, 228)",
+            "children": []
+          },
+          {
+            "text": "Workspace",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "View",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Learning",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Create",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Interface text\nStandard\nLarger",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": [
+              {
+                "text": "Interface text",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Standard\nLarger",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Panel backgrounds\nSolid\nTranslucent",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": [
+              {
+                "text": "Panel backgrounds",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Solid\nTranslucent",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Show top bar",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": []
+          },
+          {
+            "text": "Show coordinates",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": []
+          },
+          {
+            "text": "Show station compass",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": []
+          },
+          {
+            "text": "Minimal",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Minimal",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Minimal",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Learning",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(255, 255, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Builder",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Builder",
+                "color": "rgb(255, 255, 255)"
+              },
+              {
+                "text": "Builder",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "Optional panel\nNone\nLesson progress\nMinimap\nMeasurement notebook\nBlock counts\nTr",
+            "background": "rgba(0, 0, 0, 0)",
+            "color": "rgb(255, 255, 255)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(255, 255, 255)",
+            "border": "rgb(255, 255, 255)",
+            "children": [
+              {
+                "text": "Optional panel",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          },
+          {
+            "text": "None\nLesson progress\nMinimap\nMeasurement notebook\nBlock counts\nTransform lab",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          },
+          {
+            "text": "Reset workspace appearance",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(0, 255, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 255, 0)",
+            "border": "rgb(0, 255, 0)",
+            "children": []
+          }
+        ],
+        "surfaces": [
+          {
+            "text": "Position",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(244, 247, 246)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(244, 247, 246)",
+            "border": "rgb(121, 145, 140)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(239, 68, 68)"
+              },
+              {
+                "text": "",
+                "color": "rgb(34, 197, 94)"
+              },
+              {
+                "text": "",
+                "color": "rgb(59, 130, 246)"
+              },
+              {
+                "text": "",
+                "color": "rgb(251, 191, 36)"
+              },
+              {
+                "text": "",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "narrow: Solid world surfaces preserve high contrast black",
+      "status": "pass",
+      "evidence": {
+        "system": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        },
+        "selected": [],
+        "settingsText": [],
+        "surfaces": [
+          {
+            "text": "Position",
+            "background": "rgb(0, 0, 0)",
+            "color": "rgb(244, 247, 246)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(244, 247, 246)",
+            "border": "rgb(121, 145, 140)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(239, 68, 68)"
+              },
+              {
+                "text": "",
+                "color": "rgb(34, 197, 94)"
+              },
+              {
+                "text": "",
+                "color": "rgb(59, 130, 246)"
+              },
+              {
+                "text": "",
+                "color": "rgb(251, 191, 36)"
+              },
+              {
+                "text": "",
+                "color": "rgb(255, 255, 255)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "narrow: forced colors selected preset and Settings text use system colors",
+      "status": "pass",
+      "evidence": {
+        "system": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        },
+        "selected": [
+          {
+            "text": "Learning",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "2px",
+            "outlineColor": "rgba(5, 0, 73, 0.8)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          }
+        ],
+        "settingsText": [
+          {
+            "text": "Settings",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Workspace",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0) rgb(0, 0, 0) rgba(5, 0, 73, 0.8)",
+            "children": []
+          },
+          {
+            "text": "View",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Learning",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Create",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Interface text\nStandard\nLarger",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "Interface text",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Standard\nLarger",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Panel backgrounds\nSolid\nTranslucent",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "Panel backgrounds",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Solid\nTranslucent",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Show top bar",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Show coordinates",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Show station compass",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Minimal",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Minimal",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Minimal",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Learning",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "2px",
+            "outlineColor": "rgba(5, 0, 73, 0.8)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Learning",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Builder",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Builder",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "Builder",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "Optional panel\nNone\nLesson progress\nMinimap\nMeasurement notebook\nBlock counts\nTr",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "Optional panel",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          },
+          {
+            "text": "None\nLesson progress\nMinimap\nMeasurement notebook\nBlock counts\nTransform lab",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          },
+          {
+            "text": "Reset workspace appearance",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": []
+          }
+        ],
+        "surfaces": [
+          {
+            "text": "Position",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          }
+        ]
+      }
+    },
+    {
+      "name": "narrow: Solid world surfaces preserve forced Canvas",
+      "status": "pass",
+      "evidence": {
+        "system": {
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        },
+        "selected": [],
+        "settingsText": [],
+        "surfaces": [
+          {
+            "text": "Position",
+            "background": "rgb(255, 255, 255)",
+            "color": "rgb(0, 0, 0)",
+            "outlineWidth": "3px",
+            "outlineColor": "rgb(0, 0, 0)",
+            "border": "rgb(0, 0, 0)",
+            "children": [
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              },
+              {
+                "text": "",
+                "color": "rgb(0, 0, 0)"
+              }
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "runtimeErrors": [],
+  "finishedAt": "2026-10-04T01:16:40.831Z",
+  "finalSourceHash": "15191f8efead3037ec8bd2124e0e072402204ead0938d1ba52e80bf3c7f8e0f4",
+  "passed": 8,
+  "failed": 0
+}

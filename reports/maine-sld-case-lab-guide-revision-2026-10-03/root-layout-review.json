@@ -1,0 +1,130 @@
+{
+  "reviewedAt": "2026-10-04T03:51:57.994325+00:00",
+  "reviewer": "Root Codex agent",
+  "status": "accepted-without-findings",
+  "sourceSha256": "46d1ce09304d70d98b60a4a7a758969b3c5f3eef99a6c5b522113a06e9397437",
+  "moduleSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+  "browserTestSha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+  "method": "Direct inspection of actual saved PNG pixels through view_image at original resolution, with actual final browser geometry and natural capture JSON read separately.",
+  "captures": [
+    {
+      "path": "browser-validation/module-five-02/browser/guide-revision-returned-marisol-q9-320-dark.png",
+      "sha256": "175d756327bb73c31c9985d967b3d556d4762ca6a994c761d13330d03ff419d4",
+      "directlyViewed": true,
+      "viewTool": "view_image",
+      "viewDetail": "original",
+      "status": "accepted",
+      "observation": "320 px dark: exact Marisol Q9 revise control visibly focused; guide content and footer readable.",
+      "captureOnly": false
+    },
+    {
+      "path": "browser-validation/module-five-02/browser/guide-revision-writing-taylor-q9-844x390-dark.png",
+      "sha256": "93849d5856a5b902456ee1fadb4b58b0569ade45097a1d09ee75766b12df4d45",
+      "directlyViewed": true,
+      "viewTool": "view_image",
+      "viewDetail": "original",
+      "status": "accepted",
+      "observation": "844 x 390 dark: full focused writer, evidence label, character counter, consult control and adjacent guide return fit inside the main area above the footer; literal markup remains text.",
+      "captureOnly": false
+    },
+    {
+      "path": "browser-validation/module-five-02/browser/guide-revision-returned-marisol-q8-1366-light.png",
+      "sha256": "de6eea8c0334133e46ffd04ac6b9ca5b04c4d56020dd7590643c62b436d3085b",
+      "directlyViewed": true,
+      "viewTool": "view_image",
+      "viewDetail": "original",
+      "status": "accepted",
+      "observation": "1366 px light: returned Q8 card shows participant multiline literal writing verbatim, readable suggested reasoning and revision action.",
+      "captureOnly": false
+    },
+    {
+      "path": "browser-validation/module-five-02/browser/guide-revision-blank-q5-marisol-320-light.png",
+      "sha256": "24babd8bbef642985e42aef15017e3cb0ed77c7be04947e1c7c502914308a20f",
+      "directlyViewed": true,
+      "viewTool": "view_image",
+      "viewDetail": "original",
+      "status": "accepted",
+      "observation": "320 px light: Q5 explicitly displays Narrative not yet recorded and has no empty participant note block; suggestion and revise control remain readable.",
+      "captureOnly": false
+    },
+    {
+      "path": "browser-validation/module-five-02/browser/guide-revision-blank-q6-marisol-320-light.png",
+      "sha256": "b617713e0d3e921f7aac329d673a9956a8a4a11cd603f685364ea49b32d3c0e9",
+      "directlyViewed": true,
+      "viewTool": "view_image",
+      "viewDetail": "original",
+      "status": "accepted",
+      "observation": "320 px light: Q6 explicitly displays Narrative not yet recorded and has no empty participant note block; suggestion and revise control remain readable.",
+      "captureOnly": false
+    },
+    {
+      "path": "browser-validation/natural-editor-probe-03/taylor-q9-natural-source-focus-844x390-dark.png",
+      "sha256": "f8007b63c56e67f1736d4698dd0cb3578849c18b557e2cb49cd9de9529fd8560",
+      "directlyViewed": true,
+      "viewTool": "view_image",
+      "viewDetail": "original",
+      "status": "accepted",
+      "observation": "Capture-only natural entry: the response select has the initial focus ring; the writer has not received focus yet. This state is not an active-writer visibility assertion.",
+      "captureOnly": true
+    },
+    {
+      "path": "browser-validation/natural-editor-probe-03/taylor-q9-natural-after-fill-844x390-dark.png",
+      "sha256": "64351efe05b0fde8d252a93044c55f30c51ad4d5b74124233da8f3c3033af4b9",
+      "directlyViewed": true,
+      "viewTool": "view_image",
+      "viewDetail": "original",
+      "status": "accepted",
+      "observation": "Capture-only natural fill: whole writer and its focus ring, counter and adjacent guide return are visible with lower clearance; literal multiline text is preserved.",
+      "captureOnly": true
+    },
+    {
+      "path": "browser-validation/natural-editor-probe-03/taylor-q9-natural-after-keyboard-844x390-dark.png",
+      "sha256": "a4cd04e83a0a3f94584f08cf92ee7c723b0eb1ff671884c6a91507d9ce050ebb",
+      "directlyViewed": true,
+      "viewTool": "view_image",
+      "viewDetail": "original",
+      "status": "accepted",
+      "observation": "Capture-only keyboard append: writer focus and layout stay in place; the appended text changes the value without another main scroll.",
+      "captureOnly": true
+    }
+  ],
+  "focusedWriterGeometry": {
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "main": {
+      "top": 131,
+      "bottom": 343,
+      "left": 183,
+      "right": 826,
+      "height": 212
+    },
+    "writer": {
+      "top": 155.3125,
+      "bottom": 250.3125,
+      "left": 226,
+      "right": 783,
+      "height": 95
+    },
+    "returnButton": {
+      "top": 293.3125,
+      "bottom": 335.8125,
+      "left": 519.515625,
+      "right": 678.40625,
+      "height": 42.5
+    },
+    "writerFocused": true
+  },
+  "naturalCaptureChecks": {
+    "naturalAfterFillBothFullyVisible": true,
+    "sevenPixelMargins": true,
+    "literalValuePreserved": true,
+    "selectionPreservedThroughFocusScroll": true,
+    "keyboardAppendPreserved": true,
+    "noAdditionalMainScrollWhileTyping": true,
+    "afterKeyboardBothFullyVisible": true
+  },
+  "naturalCaptureLimit": "Supplemental capture-only probe reused exact initial trace HTML/CSS; its JavaScript response body was not retained. Current source/module hashes were guarded independently. The probe is not a test-suite or axe pass.",
+  "findings": []
+}

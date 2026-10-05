@@ -1,0 +1,25 @@
+{
+  "kind": "final",
+  "startedAt": "2026-10-05T04:07:08.699Z",
+  "sourceSHA256": "4210d14f753c38f87eb658ed56f134090c057c00f69cebc11c1b52319ef622b0",
+  "mirrorSHA256": "4210d14f753c38f87eb658ed56f134090c057c00f69cebc11c1b52319ef622b0",
+  "files": {
+    "tests/e2e/dissection-physiology-cohesion.spec.ts": "8fe22baa94ef274d25abb0b850974cc3f95ad861698609111850b28cadc3b7c5"
+  },
+  "args": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@playwright\\test\\cli.js",
+    "test",
+    "tests/e2e/dissection-physiology-cohesion.spec.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-physiology-2026-10-04\\final-complete\\test-results",
+    "--timeout=240000"
+  ],
+  "canonical": true,
+  "runnerPID": 30380,
+  "testPID": 10408,
+  "finishedAt": "2026-10-05T04:08:31.893Z",
+  "exitCode": 1
+}

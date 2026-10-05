@@ -199,8 +199,8 @@ describe('the NPC dialog, mounted', () => {
     window[ENGINE_KEY] = fakeEngine([live(builderBot)]);
     const awardXP = vi.fn();
     const m = mount(Object.assign({}, base, { showNpcDialog: true, dialogNpcIdx: 0 }), { awardXP });
-    const toggle = m.container.querySelector('.gw-answer-mode');
-    expect(toggle.textContent).toMatch(/Type my answer instead/);
+    const toggle = [...m.container.querySelectorAll('.gw-answer-mode')].find((button) => button.textContent === 'Type answer');
+    expect(toggle).toBeTruthy();
     React.act(() => toggle.click());
     const type = (text) => { const input = m.container.querySelector('.gw-typed-answer input'); input.value = text; React.act(() => m.container.querySelector('.gw-typed-answer').dispatchEvent(new window.Event('submit', { bubbles: true, cancelable: true }))); };
     type('20');

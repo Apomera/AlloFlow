@@ -1,0 +1,14 @@
+{
+  "checkedAt": "2026-10-02T23:10:32.554Z",
+  "url": "http://127.0.0.1:8770/",
+  "previewStatus": 200,
+  "runtimeStatus": 200,
+  "sourceSha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+  "publicHostSha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+  "servedRuntimeSha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+  "sourceBytes": 3119260,
+  "publicHostBytes": 3119260,
+  "runtimeBytes": 3119260,
+  "browserUsed": false,
+  "successful": true
+}

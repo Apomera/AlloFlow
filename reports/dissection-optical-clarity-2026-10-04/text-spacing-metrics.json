@@ -1,0 +1,134 @@
+{
+  "width": 274.40625,
+  "client": 272,
+  "scroll": 272,
+  "parentWidth": 274.40625,
+  "parentClient": 274,
+  "parentScroll": 274,
+  "overflow": [],
+  "buttons": [
+    {
+      "text": "Surface",
+      "width": 105.203125,
+      "height": 76,
+      "font": 18,
+      "clipped": false,
+      "border": 1,
+      "underline": "none",
+      "pressed": "false"
+    },
+    {
+      "text": "Structure",
+      "width": 105.203125,
+      "height": 76,
+      "font": 18,
+      "clipped": false,
+      "border": 3,
+      "underline": "underline",
+      "pressed": "true"
+    },
+    {
+      "text": "Deep",
+      "width": 218.40625,
+      "height": 49,
+      "font": 18,
+      "clipped": false,
+      "border": 1,
+      "underline": "none",
+      "pressed": "false"
+    },
+    {
+      "text": "2x",
+      "width": 105.203125,
+      "height": 49,
+      "font": 18,
+      "clipped": false,
+      "border": 1,
+      "underline": "none",
+      "pressed": "false"
+    },
+    {
+      "text": "4x",
+      "width": 105.203125,
+      "height": 49,
+      "font": 18,
+      "clipped": false,
+      "border": 3,
+      "underline": "underline",
+      "pressed": "true"
+    },
+    {
+      "text": "6x",
+      "width": 218.40625,
+      "height": 49,
+      "font": 18,
+      "clipped": false,
+      "border": 1,
+      "underline": "none",
+      "pressed": "false"
+    }
+  ],
+  "text": [
+    {
+      "text": "Optical inspection · Resolved",
+      "font": 18,
+      "clipped": false
+    },
+    {
+      "text": "The lens and magnified inset show local detail. Use Specimen view to move or zoom the whole specimen.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Nictitating Membrane. Detail: structure boundaries. Ideal focus: surface. Illumination: Balanced illumination at 60%; glare risk 0%. Set focus depth to surface for this structure.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "83%",
+      "font": 18,
+      "clipped": false
+    },
+    {
+      "text": "Focus plane",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Resolved 0",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Soft 3",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Unresolved 0",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Focus depth",
+      "font": 18,
+      "clipped": false
+    },
+    {
+      "text": "Bring surface, structure boundaries, or deeper tissue into focus.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Lens magnification",
+      "font": 18,
+      "clipped": false
+    },
+    {
+      "text": "Enlarge local detail in the inspection lens and inset.",
+      "font": 16,
+      "clipped": false
+    }
+  ],
+  "columns": "244.406px"
+}

@@ -94,8 +94,30 @@ describe('the directions normalizer reads a JSON string of { body, objectives }'
 
 describe('the app wiring and the generated App.jsx carry the same fix', () => {
   it('the app subscribes to the upgrade and re-hydrates its history', () => {
-    expect(ANTI).toMatch(/window\.addEventListener\('allo-firestore-sync-upgraded', onFirestoreSyncUpgraded\)/);
-    expect(ANTI).toMatch(/setHistory\(prev => _alloRehydrateShimHistory\(prev\)\)/);
+    const previous = stored.map(item => ({ ...item }));
+    let history = previous;
+    const hydrationRef = { current: null };
+    let normalizations = 0;
+    const subscription = slice(ANTI, '    const onFirestoreSyncUpgraded', '  }, []);');
+    const subscribe = new Function('_setHistory', 'normalizeArtifactInstanceIds', '_alloRehydrateShimHistory', 'bootHistoryHydrationRef', subscription);
+    const cleanup = subscribe(
+      update => { history = update(history); },
+      items => { normalizations++; return items; },
+      host.rehydrate,
+      hydrationRef,
+    );
+    try {
+      window.dispatchEvent(new Event('allo-firestore-sync-upgraded'));
+      expect(normalizations).toBe(1);
+      expect(history[0].data.body).toBe(directions.data.body);
+      expect(history[1].data).toEqual(glossary.data);
+      expect(history[2].data).toBe('## Norms\n\nA norm is an agreement.');
+      expect(hydrationRef.current).toEqual({ previous, current: history });
+    } finally {
+      cleanup();
+    }
+    window.dispatchEvent(new Event('allo-firestore-sync-upgraded'));
+    expect(normalizations).toBe(1);
   });
   it('App.jsx matches AlloFlowANTI.txt in each of the three places', () => {
     for (const [from, to] of [

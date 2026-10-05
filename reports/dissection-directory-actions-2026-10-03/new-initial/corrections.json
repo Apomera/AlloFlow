@@ -1,0 +1,11 @@
+{
+  "passed": 16,
+  "failed": 3,
+  "corrections": [
+    "Opened the technique panel in relationship fixtures so its real trace button is mounted.",
+    "Aligned the probe fixture to the required ventral view, and asserted its actual motor-neutral boundary tracing label.",
+    "Corrected labelMode from hide to hidden in the two passing ordinary pointer cases and asserted the visible labels toggle."
+  ],
+  "productSourceChanged": false,
+  "testDeadlinesChanged": false
+}

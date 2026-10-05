@@ -1,0 +1,20 @@
+{
+  "before": "d87b46bb3ddaa1ddca1be6797687065776d4c1421b811915e639a0ceda4e3f1e",
+  "after": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+  "patches": [
+    [
+      ".anatomy-tool-shell .anatomy-alveolus-step-focus strong{font-size:16px;line-height:1.6}",
+      ".anatomy-tool-shell .anatomy-alveolus-step-focus strong{font-size:16px;line-height:1.6;white-space:normal;min-width:0}"
+    ],
+    [
+      "alveolusMarker(3, 110, 310, 160, 255, regionalAtlasStep !== 0)",
+      "alveolusMarker(3, 110, 310, 134, 268, regionalAtlasStep !== 0)"
+    ]
+  ],
+  "changes": [
+    "Arabic focus heading wraps naturally",
+    "Capillary marker targets the vessel separately from red blood cells"
+  ],
+  "runtimeMirrorsIdentical": true,
+  "syntaxPassed": true
+}

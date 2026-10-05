@@ -1,0 +1,25 @@
+{
+  "checks": [
+    "Actual 3D raycast gestures lift, position, tilt, level, and return the packet. Wrong destinations and an upright packet add nothing. Returning a handful removes 10 g; only recording changes the saved portion.",
+    "Escape, tool changes, camera presets, window blur, and cooking actions stop unfinished pours. Changing the illustrated scale cancels a 3D pour and keeps both readings synchronized.",
+    "The finite 800 g supply cannot overflow the tray. Reload keeps recorded weight; the keyboard route opens the same weighing workspace and updates the scene reading.",
+    "Cooking locks the portion; replay shows historical weight without mutation. Export retains the 3D interaction. Desktop, 320px, and forced-color accessibility scans pass.",
+    "Real touch pours and returns pasta in 3D. Touch cancellation and graphics loss stop flow; the completed draft remains usable and recordable in the fallback workspace."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop 3D weighing",
+      "issues": []
+    },
+    {
+      "label": "320px scene controls",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

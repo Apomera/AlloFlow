@@ -1,0 +1,21 @@
+{
+  "mode": "unit",
+  "checkedAt": "2026-10-05T01:11:53.3124057Z",
+  "ownedProcessIds": [
+    27616,
+    48000,
+    48108
+  ],
+  "observedPresent": [
+    {
+      "ProcessId": 48000,
+      "ParentProcessId": 27868,
+      "CreationDate": "2026-10-04T21:11:09.165931-04:00",
+      "CommandLine": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright\\chromium-1223\\chrome-win64\\chrome.exe --type=crashpad-handler --user-data-dir=C:\\Users\\cabba\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-VsC01C /prefetch:4 --monitor-self --monitor-self-argument=--type=crashpad-handler --monitor-self-argument=--user-data-dir=C:\\Users\\cabba\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-VsC01C --monitor-self-argument=/prefetch:4 --monitor-self-annotation=ptype=crashpad-handler --database=C:\\Users\\cabba\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-VsC01C\\Crashpad --annotation=plat=Win64 \"--annotation=prod=Google Chrome for Testing\" --annotation=ver=148.0.7778.96 --initial-client-data=0x19c,0x1a0,0x1a4,0x178,0x1a8,0x7ffd08f5a9c0,0x7ffd08f5a9cc,0x7ffd08f5a9d8"
+    }
+  ],
+  "allAbsent": false,
+  "childCloseAt": "2026-10-05T01:10:14.336Z",
+  "childExitCode": 0,
+  "sourcePreserved": true
+}

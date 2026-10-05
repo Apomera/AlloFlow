@@ -1,0 +1,20 @@
+{
+  "startedAt": "2026-10-04T14:42:17.731Z",
+  "checks": [
+    {
+      "name": "desktop: workflow completes",
+      "status": "fail",
+      "message": "page.evaluate: TypeError: Cannot read properties of undefined (reading 'forEach')\n    at eval (eval at evaluate (:302:30), <anonymous>:5:22)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    }
+  ],
+  "failures": [
+    {
+      "name": "desktop: workflow completes",
+      "status": "fail",
+      "message": "page.evaluate: TypeError: Cannot read properties of undefined (reading 'forEach')\n    at eval (eval at evaluate (:302:30), <anonymous>:5:22)\n    at UtilityScript.evaluate (<anonymous>:304:16)\n    at UtilityScript.<anonymous> (<anonymous>:1:44)"
+    }
+  ],
+  "screenshots": [],
+  "sourceHash": "E7FCB6B55D0D8226199E0EB5937498D518CECCDE6F268F31500936318267B7BD",
+  "completedAt": "2026-10-04T14:43:14.978Z"
+}

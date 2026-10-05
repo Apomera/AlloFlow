@@ -1,0 +1,97 @@
+{
+  "date": "2026-10-04",
+  "sourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073",
+  "pluginMirrorSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073",
+  "pluginMirrorIdentical": true,
+  "suites": [
+    {
+      "suite": "finder",
+      "file": "reports/artstudio-workspace/perception-finder/finder-browser-results.json",
+      "passed": true,
+      "groups": 26,
+      "errors": [],
+      "loadedSourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073",
+      "finalSourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073"
+    },
+    {
+      "suite": "import",
+      "file": "reports/artstudio-workspace/perception-finder/import-regression/import-browser-results.json",
+      "passed": true,
+      "groups": 37,
+      "errors": [],
+      "loadedSourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073",
+      "finalSourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073"
+    },
+    {
+      "suite": "guided",
+      "file": "reports/artstudio-workspace/perception-finder/guided-regression/guided-browser-results.json",
+      "passed": true,
+      "groups": 25,
+      "errors": [],
+      "loadedSourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073",
+      "finalSourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073"
+    },
+    {
+      "suite": "comparison",
+      "file": "reports/artstudio-workspace/perception-finder/comparison-regression/comparison-browser-results.json",
+      "passed": true,
+      "groups": 23,
+      "errors": [],
+      "loadedSourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073",
+      "finalSourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073"
+    }
+  ],
+  "passedBrowserGroups": 111,
+  "errors": [],
+  "assertionPreservation": [
+    {
+      "original": "dev-tools/perception_lab_import_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_finder_import_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-import",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-finder/import-regression",
+      "exactTextEqualityAfterReversingOnlyOutputDirectoryReplacement": true,
+      "assertionsRemovedOrAltered": 0,
+      "originalSHA256": "aba4cf2f942d59dc19c319293d3f6cda9b2d4b317688d2439640502eb1b4665b",
+      "adaptedSHA256": "797bc6ed6b75f2371003359c86eba0bfc461a0527c0a6c38424526f497b7e561"
+    },
+    {
+      "original": "dev-tools/perception_lab_guided_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_finder_guided_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-guided",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-finder/guided-regression",
+      "exactTextEqualityAfterReversingOnlyOutputDirectoryReplacement": true,
+      "assertionsRemovedOrAltered": 0,
+      "originalSHA256": "bda693817a1f40a8ef98a91d3480616ba8d32ae05962a08e6ad9a07cd5c6f3f0",
+      "adaptedSHA256": "61430bc56dc5e339ac4a65d7bb3e182ae994c8e6d47d998a3c298f0a75dc7f6d"
+    },
+    {
+      "original": "dev-tools/perception_lab_study_compare_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_finder_comparison_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-compare",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-finder/comparison-regression",
+      "exactTextEqualityAfterReversingOnlyOutputDirectoryReplacement": true,
+      "assertionsRemovedOrAltered": 0,
+      "originalSHA256": "3c130e4942a3fa21be0b7e26ec12008300f7199eb9cecc77f93cf9795e8aca0e",
+      "adaptedSHA256": "e87c3ff6e2b696c2c403a9d8b0d98e8ee2c9ed8a668d40173a20714d1572ca7d"
+    }
+  ],
+  "priorReportEvidencePreserved": true,
+  "earlierEvidence": {
+    "clarifiedWholeGroupContract": "finder-browser-before-whole-group-contract-failure.json",
+    "beforeCloseFocusFix": "finder-browser-before-close-focus-fix-results.json",
+    "interruptedImportAttempt": "import-regression/import-browser-interrupted-attempt-failure.json",
+    "pureImportPlanAfterInterruption": "import-regression/pure-plan-probe-results.json",
+    "stalledComparisonDispatch": "comparison-regression/comparison-browser-stalled-dispatch.json"
+  },
+  "execution": {
+    "permissions": "default sandbox",
+    "installedBrowserCache": "C:/Users/cabba/AppData/Local/ms-playwright",
+    "finalRegressions": "serial",
+    "nativeDownloadsRequired": false
+  },
+  "visualReview": [
+    "finder-controls-panel-390.png",
+    "finder-panel-390.png",
+    "finder-forced-dark-panel.png"
+  ]
+}

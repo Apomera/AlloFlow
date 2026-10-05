@@ -1,0 +1,94 @@
+{
+  "slug": "crew_ask_grade6_8",
+  "sourceShotList": "allopacks/crew_ask_grade6_8.IMAGES.md",
+  "assets": [
+    {
+      "id": "ca-term-advocate",
+      "term": "Advocate",
+      "kind": "term",
+      "scene": "A student standing at a teacher's desk, calm posture, one hand slightly raised",
+      "constraints": "not pleading",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student standing at a teacher's desk, calm posture, one hand slightly raised. not pleading."
+    },
+    {
+      "id": "ca-term-describe",
+      "term": "Describe",
+      "kind": "term",
+      "scene": "A magnifying glass over a worksheet with plain crossed-out marks",
+      "constraints": "no numbers legible",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A magnifying glass over a worksheet with plain crossed-out marks. no numbers legible."
+    },
+    {
+      "id": "ca-term-express",
+      "term": "Express",
+      "kind": "term",
+      "scene": "A simple heart outline with a small wavy line inside",
+      "constraints": "plain symbol",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A simple heart outline with a small wavy line inside. plain symbol."
+    },
+    {
+      "id": "ca-term-ask",
+      "term": "Ask",
+      "kind": "term",
+      "scene": "An open hand, palm up, at desk height",
+      "constraints": "small, specific gesture",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. An open hand, palm up, at desk height. small, specific gesture."
+    },
+    {
+      "id": "ca-term-reinforce",
+      "term": "Reinforce",
+      "kind": "term",
+      "scene": "Two arrows from opposite sides meeting at a small circle",
+      "constraints": "plain symbol",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Two arrows from opposite sides meeting at a small circle. plain symbol."
+    },
+    {
+      "id": "ca-term-vague",
+      "term": "Vague",
+      "kind": "term",
+      "scene": "A fogged-over speech bubble, empty",
+      "constraints": "bubble empty",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A fogged-over speech bubble, empty. bubble empty."
+    },
+    {
+      "id": "ca-img-stuck",
+      "kind": "lesson",
+      "title": "Three days stuck.",
+      "scene": "A student at a desk with an eraser worn down, a page of half-erased work, a calendar with three days shaded.",
+      "caption": "the question stays inside and the assignment gets harder every day.",
+      "plannedLabels": [
+        "Erasing",
+        "Guessing"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A student at a desk with an eraser worn down, a page of half-erased work, a calendar with three days shaded. All labels and captions will be editable native fields outside the artwork."
+    },
+    {
+      "id": "ca-img-fourmoves",
+      "kind": "lesson",
+      "title": "The four-sentence ask.",
+      "scene": "The same student at the teacher's desk, four empty speech bubbles in a vertical row with the four icons (magnifier, heart, open hand, meeting arrows).",
+      "caption": "ninety seconds; the teacher knew exactly what to do.",
+      "plannedLabels": [
+        "Describe",
+        "Express",
+        "Ask",
+        "Reinforce"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The same student at the teacher's desk, four empty speech bubbles in a vertical row with the four icons (magnifier, heart, open hand, meeting arrows). All labels and captions will be editable native fields outside the artwork."
+    },
+    {
+      "id": "ca-img-options",
+      "kind": "lesson",
+      "title": "Options after a no.",
+      "scene": "Four small doors in a row with icons: a speech bubble, a second person, a pencil and envelope, a clock.",
+      "caption": "giving up is the only move not on the list.",
+      "plannedLabels": [
+        "A different way",
+        "A different person",
+        "In writing",
+        "A time to come back"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. Four small doors in a row with icons: a speech bubble, a second person, a pencil and envelope, a clock. All labels and captions will be editable native fields outside the artwork."
+    }
+  ]
+}

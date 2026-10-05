@@ -1,0 +1,51 @@
+{
+  "before": [
+    {
+      "file": "doc_pipeline_source.jsx",
+      "bytes": 3506578,
+      "sha256": "38079063290cd275e91b83b41930d434e85cf1089997ec3a1bf4e65acb81739a"
+    },
+    {
+      "file": "_build_doc_pipeline_module.js",
+      "bytes": 413,
+      "sha256": "d5e67708707933059ab205a0e17360cf360e5802531fb29862226b99d2dd8ecb"
+    },
+    {
+      "file": "_build_simple_iife_module.js",
+      "bytes": 3648,
+      "sha256": "c7db9787c6e43b64a02a20481130ece19ea017f6260e6b59609e14834a3dfbc0"
+    },
+    {
+      "file": "remediation_review_helpers.js",
+      "bytes": 13155,
+      "sha256": "21f0328b120258e776af54c56d182df3ebccb7e2ab127b87455e253040a8f660"
+    },
+    {
+      "file": "doc_pipeline_module.js",
+      "bytes": 3519900,
+      "sha256": "9fe7cef611866f06deec696a7dd1c9c246ccc3af5d11685f3fd40891d6f2ad94"
+    },
+    {
+      "file": "desktop/web-app/public/doc_pipeline_module.js",
+      "bytes": 3519900,
+      "sha256": "9fe7cef611866f06deec696a7dd1c9c246ccc3af5d11685f3fd40891d6f2ad94"
+    },
+    {
+      "file": "desktop/web-app/build/doc_pipeline_module.js",
+      "bytes": 3519900,
+      "sha256": "9fe7cef611866f06deec696a7dd1c9c246ccc3af5d11685f3fd40891d6f2ad94"
+    },
+    {
+      "file": "desktop/app-build/doc_pipeline_module.js",
+      "bytes": 3516891,
+      "sha256": "4293b1a884f5bf239aa8b193d2082400e7aab83bfeabf74fe4bba085f15493ef"
+    }
+  ],
+  "parserSourceSha256": "e940c9ff894ee148386f073700c73e8e18a775e2554f6d828953a19341b28818",
+  "adapterSha256": "6b3e22c0ccc9fa55d61d2719d6bbb62da4984c27b2a48c2fc24ec489f8462129",
+  "guardedPublishers": 3,
+  "defaultBehaviorPreserved": true,
+  "inverseByteExact": true,
+  "adapterFile": "maine_sld_state_documents.js",
+  "parserCapabilityMarker": "supportsSourceTelemetryIsolation"
+}

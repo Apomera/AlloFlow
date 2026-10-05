@@ -1,0 +1,428 @@
+{
+  "loadedSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+  "completionActiveCountAtUnchangedAssertion": 0,
+  "immediate": {
+    "state": {
+      "experiment": "brightness",
+      "models": {
+        "brightness": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Same",
+          "note": "Fresh repeat note 3",
+          "contrast": 25,
+          "target": 128,
+          "matching": true,
+          "swap": false,
+          "matchValue": 152
+        },
+        "ebbinghaus": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "surround": 36,
+          "gap": 12,
+          "matching": false,
+          "swap": false,
+          "matchValue": 48
+        },
+        "mullerLyer": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "angle": 30,
+          "fin": 42,
+          "matching": false,
+          "swap": false,
+          "matchValue": 400
+        },
+        "cafeWall": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "offset": 50,
+          "mortar": 5
+        },
+        "necker": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "depth": 95,
+          "cue": "none"
+        },
+        "moire": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Fine lines",
+          "note": "Unfinished moiré draft",
+          "angle": 8.3,
+          "spacing": 19
+        }
+      },
+      "expanded": false,
+      "studies": [
+        {
+          "id": "baseline-1",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 1",
+            "contrast": 80,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 121
+          },
+          "date": "2026-10-03T14:00:01.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 1,
+            "startValue": 73
+          }
+        },
+        {
+          "id": "baseline-2",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 2",
+            "contrast": 80,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 134
+          },
+          "date": "2026-10-03T14:00:02.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 2,
+            "startValue": 185
+          }
+        },
+        {
+          "id": "baseline-3",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 3",
+            "contrast": 80,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 146
+          },
+          "date": "2026-10-03T14:00:03.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 3,
+            "startValue": 99
+          }
+        },
+        {
+          "id": "muuf7r6p-2",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 1",
+            "contrast": 25,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 130
+          },
+          "date": "2026-10-04T22:57:01.537Z",
+          "repeat": {
+            "id": "matches-muuf7r19-1",
+            "trial": 1,
+            "startValue": 73
+          }
+        },
+        {
+          "id": "muuf7r9x-3",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 2",
+            "contrast": 25,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 142
+          },
+          "date": "2026-10-04T22:57:01.653Z",
+          "repeat": {
+            "id": "matches-muuf7r19-1",
+            "trial": 2,
+            "startValue": 185
+          }
+        },
+        {
+          "id": "muuf7re3-4",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 3",
+            "contrast": 25,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 152
+          },
+          "date": "2026-10-04T22:57:01.803Z",
+          "repeat": {
+            "id": "matches-muuf7r19-1",
+            "trial": 3,
+            "startValue": 99
+          }
+        }
+      ],
+      "comparison": {
+        "experiment": "necker",
+        "model": {
+          "context": true,
+          "reveal": true,
+          "prediction": "",
+          "note": "Pinned cube",
+          "depth": 72,
+          "cue": "front"
+        }
+      }
+    },
+    "savedTrialCount": 3,
+    "activeCount": 0,
+    "controlsText": "Adjust experiment\nObserve\nMatch by eye\n\nKeep the reference fixed. Adjust the right or bottom target until it looks like the reference, then reveal the drawing values.\n\nComparison target\nDecrease comparison\nIncrease comparison\nReset comparison\nRepeated matching study\n\nTry three separate matches with the reference and surroundings held fixed. Starting positions vary; numbers stay hidden until all three are recorded.\n\nStart three matches\nWhich center square looks brighter?\nLeft\nSame\nRight\nUnsure\n\nRecord your impression. You can revise it; this is an observation, not a scored test.\n\nBackground difference\n25%\nRemove surroundings\nReveal measurements\nSwap surroundingsReset this experiment\nObservation note\nSave observation\nPin comparison\nExport SVG\n\nThe viewing area uses a fixed white background to keep comparisons consistent. Different people may notice different effects.\n\nArt Studio uses the reference gray for both center squares. Your unequal visual match is kept in Perception Lab.",
+    "activeCaption": "",
+    "reviewGroup": "baseline",
+    "comparedGroup": "matches-muuf7r19-1",
+    "announcement": "Three new matches recorded. The baseline and new study are selected for comparison. Reveal each study separately when you are ready."
+  },
+  "afterCommitPaint": {
+    "state": {
+      "experiment": "brightness",
+      "models": {
+        "brightness": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Same",
+          "note": "Fresh repeat note 3",
+          "contrast": 25,
+          "target": 128,
+          "matching": true,
+          "swap": false,
+          "matchValue": 152
+        },
+        "ebbinghaus": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "surround": 36,
+          "gap": 12,
+          "matching": false,
+          "swap": false,
+          "matchValue": 48
+        },
+        "mullerLyer": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "angle": 30,
+          "fin": 42,
+          "matching": false,
+          "swap": false,
+          "matchValue": 400
+        },
+        "cafeWall": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "offset": 50,
+          "mortar": 5
+        },
+        "necker": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "depth": 95,
+          "cue": "none"
+        },
+        "moire": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Fine lines",
+          "note": "Unfinished moiré draft",
+          "angle": 8.3,
+          "spacing": 19
+        }
+      },
+      "expanded": false,
+      "studies": [
+        {
+          "id": "baseline-1",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 1",
+            "contrast": 80,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 121
+          },
+          "date": "2026-10-03T14:00:01.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 1,
+            "startValue": 73
+          }
+        },
+        {
+          "id": "baseline-2",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 2",
+            "contrast": 80,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 134
+          },
+          "date": "2026-10-03T14:00:02.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 2,
+            "startValue": 185
+          }
+        },
+        {
+          "id": "baseline-3",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 3",
+            "contrast": 80,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 146
+          },
+          "date": "2026-10-03T14:00:03.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 3,
+            "startValue": 99
+          }
+        },
+        {
+          "id": "muuf7r6p-2",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 1",
+            "contrast": 25,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 130
+          },
+          "date": "2026-10-04T22:57:01.537Z",
+          "repeat": {
+            "id": "matches-muuf7r19-1",
+            "trial": 1,
+            "startValue": 73
+          }
+        },
+        {
+          "id": "muuf7r9x-3",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 2",
+            "contrast": 25,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 142
+          },
+          "date": "2026-10-04T22:57:01.653Z",
+          "repeat": {
+            "id": "matches-muuf7r19-1",
+            "trial": 2,
+            "startValue": 185
+          }
+        },
+        {
+          "id": "muuf7re3-4",
+          "experiment": "brightness",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 3",
+            "contrast": 25,
+            "target": 128,
+            "matching": true,
+            "swap": false,
+            "matchValue": 152
+          },
+          "date": "2026-10-04T22:57:01.803Z",
+          "repeat": {
+            "id": "matches-muuf7r19-1",
+            "trial": 3,
+            "startValue": 99
+          }
+        }
+      ],
+      "comparison": {
+        "experiment": "necker",
+        "model": {
+          "context": true,
+          "reveal": true,
+          "prediction": "",
+          "note": "Pinned cube",
+          "depth": 72,
+          "cue": "front"
+        }
+      }
+    },
+    "savedTrialCount": 3,
+    "activeCount": 0,
+    "controlsText": "Adjust experiment\nObserve\nMatch by eye\n\nKeep the reference fixed. Adjust the right or bottom target until it looks like the reference, then reveal the drawing values.\n\nComparison target\nDecrease comparison\nIncrease comparison\nReset comparison\nRepeated matching study\n\nTry three separate matches with the reference and surroundings held fixed. Starting positions vary; numbers stay hidden until all three are recorded.\n\nStart three matches\nWhich center square looks brighter?\nLeft\nSame\nRight\nUnsure\n\nRecord your impression. You can revise it; this is an observation, not a scored test.\n\nBackground difference\n25%\nRemove surroundings\nReveal measurements\nSwap surroundingsReset this experiment\nObservation note\nSave observation\nPin comparison\nExport SVG\n\nThe viewing area uses a fixed white background to keep comparisons consistent. Different people may notice different effects.\n\nArt Studio uses the reference gray for both center squares. Your unequal visual match is kept in Perception Lab.",
+    "activeCaption": "",
+    "reviewGroup": "baseline",
+    "comparedGroup": "matches-muuf7r19-1",
+    "announcement": "Three new matches recorded. The baseline and new study are selected for comparison. Reveal each study separately when you are ready."
+  },
+  "assertionRelaxed": false,
+  "note": "Exact immediately sampled count is asserted below, regardless of later committed state."
+}

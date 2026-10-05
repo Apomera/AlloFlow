@@ -1,0 +1,1072 @@
+{
+  "title": "Storm moments verification",
+  "status": "final",
+  "enhancementCommitted": false,
+  "baselineWasUncommitted": true,
+  "finalizedAt": "2026-10-02T20:48:31.094Z",
+  "sourcePath": "stem_lab/stem_tool_watercycle.js",
+  "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+  "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+  "sourceBytes": 3088929,
+  "baselinePath": "reports/watercycle-storm-moments/baseline-runtime.js",
+  "baselineSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+  "testedRuntimePath": "reports/watercycle-storm-moments/browser-tested-runtime.js",
+  "browserHarnessPath": "dev-tools/watercycle_storm_moments_qa.cjs",
+  "testPath": "tests/watercycle_storm_moments.test.js",
+  "regressionFiles": [
+    "tests/watercycle_precipitation_lab.test.js",
+    "tests/watercycle_storm_experiment.test.js",
+    "tests/watercycle_storm_immersion.test.js",
+    "tests/watercycle_cloud_evidence.test.js",
+    "tests/watercycle_groundwater_lens.test.js"
+  ],
+  "regressionFixturePaths": [
+    "reports/watercycle-cloud-evidence/baseline-runtime.js",
+    "reports/watercycle-steward-history/browser-tested-runtime.js"
+  ],
+  "reports": {
+    "baseline": "reports/watercycle-storm-moments/baseline-results.json",
+    "browser": "reports/watercycle-storm-moments/browser-results.json",
+    "unit": "reports/watercycle-storm-moments/unit-results.json",
+    "regression": "reports/watercycle-storm-moments/regression-results.json",
+    "unitBefore": "reports/watercycle-storm-moments/unit-verification-before.json",
+    "unitAfter": "reports/watercycle-storm-moments/unit-verification-after.json",
+    "regressionBefore": "reports/watercycle-storm-moments/regression-verification-before.json",
+    "regressionAfter": "reports/watercycle-storm-moments/regression-verification-after.json",
+    "unitLoaded": "reports/watercycle-storm-moments/unit-loaded-runtime.json",
+    "regressionLoaded": "reports/watercycle-storm-moments/regression-loaded-runtime.json",
+    "preview": "reports/watercycle-storm-moments/preview-check.json",
+    "processClosure": "reports/watercycle-storm-moments/test-process-closure.json"
+  },
+  "closureReports": [
+    {
+      "path": "reports/watercycle-storm-moments/baseline-results.json",
+      "historical": false,
+      "successful": true,
+      "sourceSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "runtimePath": "reports/watercycle-storm-moments/baseline-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/baseline-tested-harness.cjs"
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-results.json",
+      "historical": true,
+      "successful": false,
+      "sourceSha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+      "runtimePath": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-tested-harness.cjs"
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-results.json",
+      "historical": true,
+      "successful": false,
+      "sourceSha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+      "runtimePath": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-tested-harness.cjs"
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-preflight-results.json",
+      "historical": true,
+      "successful": true,
+      "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+      "runtimePath": "reports/watercycle-storm-moments/browser-preflight-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/browser-preflight-tested-harness.cjs"
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-results.json",
+      "historical": true,
+      "successful": true,
+      "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+      "runtimePath": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-tested-harness.cjs"
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-results.json",
+      "historical": true,
+      "successful": true,
+      "sourceSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+      "runtimePath": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-tested-harness.cjs"
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-results.json",
+      "historical": false,
+      "successful": true,
+      "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "runtimePath": "reports/watercycle-storm-moments/browser-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/browser-tested-harness.cjs"
+    }
+  ],
+  "browserEvidence": [
+    {
+      "path": "reports/watercycle-storm-moments/baseline-results.json",
+      "historical": false,
+      "successful": true,
+      "sourceSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "runtimePath": "reports/watercycle-storm-moments/baseline-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/baseline-tested-harness.cjs",
+      "label": "baseline",
+      "baseline": true
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-results.json",
+      "historical": false,
+      "successful": true,
+      "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "runtimePath": "reports/watercycle-storm-moments/browser-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/browser-tested-harness.cjs",
+      "label": "browser",
+      "baseline": false
+    }
+  ],
+  "historicalEvidence": [
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-results.json",
+      "historical": true,
+      "successful": false,
+      "sourceSha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+      "runtimePath": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-tested-harness.cjs",
+      "label": "browser-preflight supporting evidence",
+      "baseline": false
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-results.json",
+      "historical": true,
+      "successful": false,
+      "sourceSha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+      "runtimePath": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-tested-harness.cjs",
+      "label": "browser supporting evidence",
+      "baseline": false
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-preflight-results.json",
+      "historical": true,
+      "successful": true,
+      "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+      "runtimePath": "reports/watercycle-storm-moments/browser-preflight-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/browser-preflight-tested-harness.cjs",
+      "label": "browser-preflight supporting evidence",
+      "baseline": false
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-results.json",
+      "historical": true,
+      "successful": true,
+      "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+      "runtimePath": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-tested-harness.cjs",
+      "label": "browser supporting evidence",
+      "baseline": false
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-results.json",
+      "historical": true,
+      "successful": true,
+      "sourceSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+      "runtimePath": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-tested-runtime.js",
+      "harnessPath": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-tested-harness.cjs",
+      "label": "browser supporting evidence",
+      "baseline": false
+    }
+  ],
+  "counts": {
+    "unitTests": 92,
+    "regressionTests": 122,
+    "distinctTests": 214,
+    "browserChecks": 837,
+    "nativeActions": 132,
+    "scopedAudits": 16,
+    "scopedViolations": 0,
+    "incompleteNodes": 0,
+    "finalCaptures": 17,
+    "baselineCaptures": 3,
+    "supportingCaptures": 56,
+    "ownedBrowserClosures": 7
+  },
+  "diagnosticTestReports": [
+    {
+      "mode": "unit",
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-results.json",
+      "beforePath": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-verification-before.json",
+      "afterPath": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-verification-after.json",
+      "loadedPath": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-loaded-runtime.json",
+      "frozenFocusedTestPath": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-tested-test.js",
+      "recipePaths": [
+        "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/tested-test-bundle.cjs",
+        "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/tested-read-audit.cjs"
+      ]
+    },
+    {
+      "mode": "regression",
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/regression-results.json",
+      "beforePath": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/regression-verification-before.json",
+      "afterPath": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/regression-verification-after.json",
+      "loadedPath": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/regression-loaded-runtime.json",
+      "frozenFocusedTestPath": null,
+      "recipePaths": [
+        "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/tested-test-bundle.cjs",
+        "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/tested-read-audit.cjs"
+      ]
+    },
+    {
+      "mode": "unit",
+      "path": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-results.json",
+      "beforePath": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-verification-before.json",
+      "afterPath": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-verification-after.json",
+      "loadedPath": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-loaded-runtime.json",
+      "frozenFocusedTestPath": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-tested-test.js",
+      "recipePaths": [
+        "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/tested-test-bundle.cjs",
+        "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/tested-read-audit.cjs"
+      ]
+    }
+  ],
+  "pins": [
+    {
+      "path": "desktop/web-app/node_modules/axe-core/axe.min.js",
+      "sha256": "7dbfabdfc6062936d79c873ddbb5f811a1219fca3928bd8cc9dd81f1e65f4720",
+      "bytes": 560903
+    },
+    {
+      "path": "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+      "bytes": 131835
+    },
+    {
+      "path": "desktop/web-app/node_modules/react/umd/react.production.min.js",
+      "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+      "bytes": 10751
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "bytes": 3088929
+    },
+    {
+      "path": "dev-tools/.cache/sweep-tailwind.css",
+      "sha256": "c2a8577c477ae95ad81e407be71baa603e9ec6d61032bef5a383088326148945",
+      "bytes": 563103
+    },
+    {
+      "path": "dev-tools/watercycle_storm_moments_qa.cjs",
+      "sha256": "ff0fec73a97a02b33a915eb0103e4ae7024220bdd20d8d998cae4966d1c06f46",
+      "bytes": 38887
+    },
+    {
+      "path": "docs/water-cycle-visual-design.md",
+      "sha256": "452bdf79947d6c4b61e60962bd89278013ec76619c5e47e6dfa5bcd3036c29f6",
+      "bytes": 35469
+    },
+    {
+      "path": "node_modules/acorn/dist/acorn.js",
+      "sha256": "2261c5f0e4abe860e889dfc67081683a4ba4d27deb7f4cbc8ad06a1b7fdd510c",
+      "bytes": 242818
+    },
+    {
+      "path": "node_modules/acorn/package.json",
+      "sha256": "705aa08b7b4fee1112244952b4843c40c381a3c7a9fc77101f369a172865bfac",
+      "bytes": 1061
+    },
+    {
+      "path": "reports/watercycle-cloud-evidence/baseline-runtime.js",
+      "sha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+      "bytes": 2999560
+    },
+    {
+      "path": "reports/watercycle-steward-history/browser-tested-runtime.js",
+      "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "bytes": 3035457
+    },
+    {
+      "path": "reports/watercycle-storm-moments/README.md",
+      "sha256": "7c9d36b6cfdf65a24fdc46b1f1f5be18506f792ee31b14048779a7e0c5e0815e",
+      "bytes": 4075
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-freeze.json",
+      "sha256": "3c7fd04756dc3e62f61098f0721055e18a500343c4cb8724a340789d11acc9f9",
+      "bytes": 274
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-lifecycle-dark.png",
+      "sha256": "5e327d9d6fd69b1bcf6fbcde2f2e120dd840c8168654f1fb291684894bae9e63",
+      "bytes": 14081
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-lifecycle-desktop.png",
+      "sha256": "5e935a2631cecf28fd0041b9c20af46e1d6cc2e2ec4b99ecbefedd69f62bedde",
+      "bytes": 17538
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-lifecycle-phone320.png",
+      "sha256": "9c12c7353f88c006c9715444ce02e10a9679a1eda898b49593e5d406aad2f4b3",
+      "bytes": 14861
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-results.json",
+      "sha256": "aa0a4679146793664d15b87cfab129e6e08e83e3f8c4e02cc197c061009a9fd6",
+      "bytes": 145137
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-run.stdout.txt",
+      "sha256": "dffa390427a3a6a5cba0b07acf53927677770ba4338aaa147e398e065168652b",
+      "bytes": 148
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-runtime.js",
+      "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "bytes": 3058809
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-tested-harness.cjs",
+      "sha256": "284b7ce2fbe3b69cfa49466040f9fbf13c8e6a8b25a574dbde3392f0e86ec031",
+      "bytes": 12380
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-tested-runtime.js",
+      "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "bytes": 3058809
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-actual3d-comparison.png",
+      "sha256": "e32eed54cf74c7acf46a8613a6f0f6649200daf23a5aae1e230726d17022ae6f",
+      "bytes": 129521
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-comparison-app-contrast.png",
+      "sha256": "6e3d5ff13d6d142c6aa05308d3f53fbb06de781d33c4c5369d0deb880fecd11c",
+      "bytes": 105802
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-comparison-dark.png",
+      "sha256": "dbae997758f1f507078743f9fd87608d77b2bf69302cfc9b4f4169c9e3224f3f",
+      "bytes": 123588
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-comparison-desktop.png",
+      "sha256": "75c9dcbfb5df8d95734a5b080b0144136abeb9475085c2e76883ed6ebabf956f",
+      "bytes": 136881
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-comparison-forced-dark.png",
+      "sha256": "8e59a3392f5d2f6ab8cb1ad5b64ebd9086a73435a5d900de872286841429d2cb",
+      "bytes": 94853
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-comparison-forced-phone.png",
+      "sha256": "beaadf9b9bc25ea6e89293ff9a6aaf040a4c3837d8c0a713a598bd63b8b369e9",
+      "bytes": 103145
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-comparison-host390.png",
+      "sha256": "df9c4c609b234684a45f945bd464afa0dcf1c8ca3b991cf5a746a47bb38ce7a8",
+      "bytes": 150094
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-comparison-phone320.png",
+      "sha256": "a6c30e5988184140eb8e5ba7ed8a6c2238fcd68f09b9c80f5044d85eb2d4a3d3",
+      "bytes": 147505
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-comparison-phone390.png",
+      "sha256": "4bed949e78132c11672dbcf7525fc2979708f82d7bdcdf2ab56c1207a003c650",
+      "bytes": 154049
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-phase-clear.png",
+      "sha256": "5622545e4d5404fd7235a5a1bf8530491599f9e5e3e43b085c930f1860d85443",
+      "bytes": 111774
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-phase-freezing-rain.png",
+      "sha256": "50ce4a52d92895151325312c3c2e16d77b8a1e47b7583309740c06570704b73f",
+      "bytes": 109982
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-phase-hail.png",
+      "sha256": "afc568f65dbe27b06310dbcf3aa92af5f02c351d9c4339f485b365fc6e82bc1e",
+      "bytes": 109467
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-phase-mix.png",
+      "sha256": "5fdca6e3d9527b46d04156dbdf62e197d92aa97a229cc78548f596b89e41b16b",
+      "bytes": 110267
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-phase-rain.png",
+      "sha256": "ecd55b49ac925a4725dca9d60f2b0e048916da47b82440973157893cf0c20d4a",
+      "bytes": 113340
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-phase-sleet.png",
+      "sha256": "cf03cf2bce6e5c4d92b34a5cddb2d471fcaac4499f85c7611bc6aaea6c4029fa",
+      "bytes": 108688
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-phase-snow.png",
+      "sha256": "98574ea44c778232c5abd4ae0633b4e543c79bad26de09d3e5c06d2a9c3a9038",
+      "bytes": 109060
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-phase-virga.png",
+      "sha256": "d9deb22813eb2d0bb8144f35205595d91fc16aaec38e2cdc5fbae8c1a0bcc4ff",
+      "bytes": 109780
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-preflight-comparison-forced-dark.png",
+      "sha256": "8e59a3392f5d2f6ab8cb1ad5b64ebd9086a73435a5d900de872286841429d2cb",
+      "bytes": 94853
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-preflight-comparison-host390.png",
+      "sha256": "838be30d370c216809a1c3695e9136877cf7c6039739ebe2097f6c595f5d69eb",
+      "bytes": 150170
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-preflight-results.json",
+      "sha256": "e91c2355d5ce1fb31594c58684da49e1bdf7d35bb27d78b7967fb9d71467fddb",
+      "bytes": 246591
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-preflight-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-preflight-run.stdout.txt",
+      "sha256": "6fb2b782793ee22da4ced209705eec5e72ad3e27cc14ce270c93ecbfbe074d71",
+      "bytes": 158
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-preflight-tested-harness.cjs",
+      "sha256": "b4e2e020b34b5a6b5c06c697f920df53b12cca9ba033a5f63ef26d28dcfc0c1d",
+      "bytes": 38629
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-preflight-tested-runtime.js",
+      "sha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+      "bytes": 3088986
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-results.json",
+      "sha256": "09ffcae756327641c1893979b97884a0f9cbda7cb6937a2b1ca9b10b9105efee",
+      "bytes": 1890707
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-run.stdout.txt",
+      "sha256": "c1f6b9c10ec668d37fad764c97a81bb4bae22bfd6673c1b6b3fe286213f567d0",
+      "bytes": 150
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-tested-harness.cjs",
+      "sha256": "ff0fec73a97a02b33a915eb0103e4ae7024220bdd20d8d998cae4966d1c06f46",
+      "bytes": 38887
+    },
+    {
+      "path": "reports/watercycle-storm-moments/browser-tested-runtime.js",
+      "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "bytes": 3088929
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-actual3d-comparison.png",
+      "sha256": "443b9cd76a3640f0d9e527c31a0c004b1b5aa4a09034876a73837c67c9b05859",
+      "bytes": 129512
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-comparison-app-contrast.png",
+      "sha256": "340308c85079ff781c8d2e144a4e3ec88775ad9193da5e9c68e49ed4ce680459",
+      "bytes": 105785
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-comparison-dark.png",
+      "sha256": "749d01f4c14dd62dda8ebd3fbdf1a00df8eb8bcecaaf3077ff2fd0555d9e19e0",
+      "bytes": 123624
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-comparison-desktop.png",
+      "sha256": "58852701870409dcfd7e94b93002d5c10a84191936e7b08509fa4492e45db2ff",
+      "bytes": 131394
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-comparison-forced-dark.png",
+      "sha256": "dc41ae8ec96b89740cdfde5d99831dea5879d37600b97d675d3a9f4e593249e8",
+      "bytes": 94850
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-comparison-forced-phone.png",
+      "sha256": "43c33757068e9cf62f86776085c4af7ee83680cfc2c5ae465616fcc8bba4df3f",
+      "bytes": 103322
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-comparison-host390.png",
+      "sha256": "f04b3c1e903659efc31abdfcd76b4e468358691cbd151ee6a1b3ca40ee799fcf",
+      "bytes": 59645
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-comparison-phone320.png",
+      "sha256": "e12ca219d9dd46067408bab016bc3b979ccd2f6a32e1366e9487849e6a1ddaeb",
+      "bytes": 147493
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-comparison-phone390.png",
+      "sha256": "10200c0796ad0b39efd6934d0830e0af4c5cb284da2cbdd9b6c58b75e097dd08",
+      "bytes": 154040
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-phase-clear.png",
+      "sha256": "5622545e4d5404fd7235a5a1bf8530491599f9e5e3e43b085c930f1860d85443",
+      "bytes": 111774
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-phase-freezing-rain.png",
+      "sha256": "50ce4a52d92895151325312c3c2e16d77b8a1e47b7583309740c06570704b73f",
+      "bytes": 109982
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-phase-hail.png",
+      "sha256": "afc568f65dbe27b06310dbcf3aa92af5f02c351d9c4339f485b365fc6e82bc1e",
+      "bytes": 109467
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-phase-mix.png",
+      "sha256": "5fdca6e3d9527b46d04156dbdf62e197d92aa97a229cc78548f596b89e41b16b",
+      "bytes": 110267
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-phase-rain.png",
+      "sha256": "b6b1ec47202725e540b664d4ec6c5423a282ccc25996adc450570a82a41465e2",
+      "bytes": 108443
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-phase-sleet.png",
+      "sha256": "0053e58b5ef0e9e1d4423d014b43d5ea7a08086e53c3e659289d3a0bda799c4c",
+      "bytes": 113737
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-phase-snow.png",
+      "sha256": "98574ea44c778232c5abd4ae0633b4e543c79bad26de09d3e5c06d2a9c3a9038",
+      "bytes": 109060
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-phase-virga.png",
+      "sha256": "d9deb22813eb2d0bb8144f35205595d91fc16aaec38e2cdc5fbae8c1a0bcc4ff",
+      "bytes": 109780
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-results.json",
+      "sha256": "2a0b0a15845098f278648d51b4dbde4b505b9286f60ce9712c9a5f4e2fee6741",
+      "bytes": 2149514
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-run.stdout.txt",
+      "sha256": "a2329ed306fc56df10c54a66d09a10729fb103719dfa0669e29919b5a66de216",
+      "bytes": 387
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-tested-harness.cjs",
+      "sha256": "9841ab5e73da107724bd7092d1ee802fd53585be1be352d88a706b8460023975",
+      "bytes": 37372
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-tested-runtime.js",
+      "sha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+      "bytes": 3088179
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-actual3d-comparison.png",
+      "sha256": "e32eed54cf74c7acf46a8613a6f0f6649200daf23a5aae1e230726d17022ae6f",
+      "bytes": 129521
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-comparison-app-contrast.png",
+      "sha256": "6e3d5ff13d6d142c6aa05308d3f53fbb06de781d33c4c5369d0deb880fecd11c",
+      "bytes": 105802
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-comparison-dark.png",
+      "sha256": "dbae997758f1f507078743f9fd87608d77b2bf69302cfc9b4f4169c9e3224f3f",
+      "bytes": 123588
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-comparison-desktop.png",
+      "sha256": "75c9dcbfb5df8d95734a5b080b0144136abeb9475085c2e76883ed6ebabf956f",
+      "bytes": 136881
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-comparison-forced-dark.png",
+      "sha256": "8e59a3392f5d2f6ab8cb1ad5b64ebd9086a73435a5d900de872286841429d2cb",
+      "bytes": 94853
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-comparison-forced-phone.png",
+      "sha256": "beaadf9b9bc25ea6e89293ff9a6aaf040a4c3837d8c0a713a598bd63b8b369e9",
+      "bytes": 103145
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-comparison-host390.png",
+      "sha256": "df9c4c609b234684a45f945bd464afa0dcf1c8ca3b991cf5a746a47bb38ce7a8",
+      "bytes": 150094
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-comparison-phone320.png",
+      "sha256": "a6c30e5988184140eb8e5ba7ed8a6c2238fcd68f09b9c80f5044d85eb2d4a3d3",
+      "bytes": 147505
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-comparison-phone390.png",
+      "sha256": "4bed949e78132c11672dbcf7525fc2979708f82d7bdcdf2ab56c1207a003c650",
+      "bytes": 154049
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-phase-clear.png",
+      "sha256": "5622545e4d5404fd7235a5a1bf8530491599f9e5e3e43b085c930f1860d85443",
+      "bytes": 111774
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-phase-freezing-rain.png",
+      "sha256": "e045a0c9bcd6771e4b9f03c94619571f5b589107dc49eca39b0e0cc1bdbb4e37",
+      "bytes": 114687
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-phase-hail.png",
+      "sha256": "afc568f65dbe27b06310dbcf3aa92af5f02c351d9c4339f485b365fc6e82bc1e",
+      "bytes": 109467
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-phase-mix.png",
+      "sha256": "5fdca6e3d9527b46d04156dbdf62e197d92aa97a229cc78548f596b89e41b16b",
+      "bytes": 110267
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-phase-rain.png",
+      "sha256": "b6b1ec47202725e540b664d4ec6c5423a282ccc25996adc450570a82a41465e2",
+      "bytes": 108443
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-phase-sleet.png",
+      "sha256": "0053e58b5ef0e9e1d4423d014b43d5ea7a08086e53c3e659289d3a0bda799c4c",
+      "bytes": 113737
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-phase-snow.png",
+      "sha256": "98574ea44c778232c5abd4ae0633b4e543c79bad26de09d3e5c06d2a9c3a9038",
+      "bytes": 109060
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-phase-virga.png",
+      "sha256": "d9deb22813eb2d0bb8144f35205595d91fc16aaec38e2cdc5fbae8c1a0bcc4ff",
+      "bytes": 109780
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-results.json",
+      "sha256": "fc5ca8b13894843a8cec0e558f3cbd0f45be4691ee2edeec58621e2068b1253e",
+      "bytes": 1883148
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-run.stdout.txt",
+      "sha256": "0be64f08aa1495438572569d478a34cef46af43798f42d9d97d33e5bd9aae8a0",
+      "bytes": 150
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-tested-harness.cjs",
+      "sha256": "b4e2e020b34b5a6b5c06c697f920df53b12cca9ba033a5f63ef26d28dcfc0c1d",
+      "bytes": 38629
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-tested-runtime.js",
+      "sha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+      "bytes": 3088986
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-actual3d-comparison.png",
+      "sha256": "e32eed54cf74c7acf46a8613a6f0f6649200daf23a5aae1e230726d17022ae6f",
+      "bytes": 129521
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-comparison-app-contrast.png",
+      "sha256": "a7377e0841a2ff2c2893040dce99266f63e1cbb04c08feaad60f7bd391f57e56",
+      "bytes": 105943
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-comparison-dark.png",
+      "sha256": "dbae997758f1f507078743f9fd87608d77b2bf69302cfc9b4f4169c9e3224f3f",
+      "bytes": 123588
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-comparison-desktop.png",
+      "sha256": "75c9dcbfb5df8d95734a5b080b0144136abeb9475085c2e76883ed6ebabf956f",
+      "bytes": 136881
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-comparison-forced-dark.png",
+      "sha256": "8e59a3392f5d2f6ab8cb1ad5b64ebd9086a73435a5d900de872286841429d2cb",
+      "bytes": 94853
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-comparison-forced-phone.png",
+      "sha256": "beaadf9b9bc25ea6e89293ff9a6aaf040a4c3837d8c0a713a598bd63b8b369e9",
+      "bytes": 103145
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-comparison-host390.png",
+      "sha256": "df9c4c609b234684a45f945bd464afa0dcf1c8ca3b991cf5a746a47bb38ce7a8",
+      "bytes": 150094
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-comparison-phone320.png",
+      "sha256": "a6c30e5988184140eb8e5ba7ed8a6c2238fcd68f09b9c80f5044d85eb2d4a3d3",
+      "bytes": 147505
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-comparison-phone390.png",
+      "sha256": "4bed949e78132c11672dbcf7525fc2979708f82d7bdcdf2ab56c1207a003c650",
+      "bytes": 154049
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-phase-clear.png",
+      "sha256": "5622545e4d5404fd7235a5a1bf8530491599f9e5e3e43b085c930f1860d85443",
+      "bytes": 111774
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-phase-freezing-rain.png",
+      "sha256": "50ce4a52d92895151325312c3c2e16d77b8a1e47b7583309740c06570704b73f",
+      "bytes": 109982
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-phase-hail.png",
+      "sha256": "afc568f65dbe27b06310dbcf3aa92af5f02c351d9c4339f485b365fc6e82bc1e",
+      "bytes": 109467
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-phase-mix.png",
+      "sha256": "5fdca6e3d9527b46d04156dbdf62e197d92aa97a229cc78548f596b89e41b16b",
+      "bytes": 110267
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-phase-rain.png",
+      "sha256": "b6b1ec47202725e540b664d4ec6c5423a282ccc25996adc450570a82a41465e2",
+      "bytes": 108443
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-phase-sleet.png",
+      "sha256": "cf03cf2bce6e5c4d92b34a5cddb2d471fcaac4499f85c7611bc6aaea6c4029fa",
+      "bytes": 108688
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-phase-snow.png",
+      "sha256": "98574ea44c778232c5abd4ae0633b4e543c79bad26de09d3e5c06d2a9c3a9038",
+      "bytes": 109060
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-phase-virga.png",
+      "sha256": "b3baf82dcc8d7011dc56e523070e407b730f3cd0febdf04844fb3c2b4840181d",
+      "bytes": 114759
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-results.json",
+      "sha256": "81e93b9f51988d4b46ddedee4a4d25e0e456b898a70f338424a1c295e8495eaf",
+      "bytes": 1890707
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-run.stderr.txt",
+      "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "bytes": 0
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-run.stdout.txt",
+      "sha256": "4b6d45e7205750e3bfc02e274b69809ed061ff105e6284aa5738bfc5dce9b056",
+      "bytes": 150
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-tested-harness.cjs",
+      "sha256": "ff0fec73a97a02b33a915eb0103e4ae7024220bdd20d8d998cae4966d1c06f46",
+      "bytes": 38887
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-tested-runtime.js",
+      "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+      "bytes": 3088917
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-comparison-dark.png",
+      "sha256": "4987016434403a32dbad195899dd672f75796fb44b6c0afa666a771a1e599c1f",
+      "bytes": 132166
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-comparison-desktop.png",
+      "sha256": "f715291543cddea8a67e0f4ab4292230aa7c9ee266502228b2f54c42d9f4def3",
+      "bytes": 141564
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-comparison-phone320.png",
+      "sha256": "67ef3a2ef96734b9f8470a014e3330de6a9f3e151dde95b8f09035b0d7bfb4f8",
+      "bytes": 147448
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-results.json",
+      "sha256": "04187a7c60db26830c2d81363bb08cc525ed4d2420d6e4fb6e02a297e82d1c55",
+      "bytes": 411542
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-tested-harness.cjs",
+      "sha256": "9bd1c96eadc1bab27bf1a5cd2def17ea0dbbe7dae68a280296ac14f4c9052106",
+      "bytes": 25161
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-tested-runtime.js",
+      "sha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+      "bytes": 3088096
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/regression-loaded-runtime.json",
+      "sha256": "668ca84c8976a80c7905aa5f6386eebec44f619df7b1985abf68053e784cbea8",
+      "bytes": 503
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/regression-results.json",
+      "sha256": "ce8e32eafd243e9e70eabcda75c3faf911faebb818537b70cc9e6539e745fce1",
+      "bytes": 103433
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/regression-run.log",
+      "sha256": "abf14ab3f18e7b2e04a9d16adecdcba7a8313fa6f0404b441d748d19e3ecbdbf",
+      "bytes": 8873
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/regression-verification-after.json",
+      "sha256": "e78294dc88f1f3482cbb95f76e11ec61e204619c7eafce6d686762c026e5c7ee",
+      "bytes": 34484
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/regression-verification-before.json",
+      "sha256": "abe5137baaa52708fe11f1b037173b5cf247f000b01a2336615acb0627fa2818",
+      "bytes": 20999
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/tested-read-audit.cjs",
+      "sha256": "f02c905d6b5b6b06530930fcbaeade9c7b8252d30833b93a186f781683fb3671",
+      "bytes": 1969
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/tested-test-bundle.cjs",
+      "sha256": "49390492bf0a0bdfcf720d89a836a6ef9616ced2fbb14624ddda63bb40dde86c",
+      "bytes": 16867
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-loaded-runtime.json",
+      "sha256": "9a7686d1cec92ec660f1c1c60f4c4dd46c27b8a725e0bb104aa484eb3050624b",
+      "bytes": 657
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-results.json",
+      "sha256": "160588352f7eac59c70beb1088b344ba9f1bf17386b73c20d8286b3f19f5a0cf",
+      "bytes": 82366
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-run.log",
+      "sha256": "41c8329d2cca8e4222defbe59cdc24e689a45b8a975ee94a09620433f86b1b9f",
+      "bytes": 3471
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-tested-test.js",
+      "sha256": "43de483c54944fbd0a8ccf7c192a31617c7badf2400410455be0b2f8a8efa2ee",
+      "bytes": 49535
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-verification-after.json",
+      "sha256": "6271b0757c1aff61f50e6320914b59d3aa958ccc7d1bc0cd7cc6e6d542b4795f",
+      "bytes": 29796
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-regression-55700c6d-28464/unit-verification-before.json",
+      "sha256": "6de87abc8545a739a411d3fb8034596b72d0f40e9e22f7dcdcef3733a0a8f3a3",
+      "bytes": 19995
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/tested-read-audit.cjs",
+      "sha256": "f02c905d6b5b6b06530930fcbaeade9c7b8252d30833b93a186f781683fb3671",
+      "bytes": 1969
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/tested-test-bundle.cjs",
+      "sha256": "49390492bf0a0bdfcf720d89a836a6ef9616ced2fbb14624ddda63bb40dde86c",
+      "bytes": 16867
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-loaded-runtime.json",
+      "sha256": "29efc57048c81ba57e99ab2272e60dac77e8fec1f1ca801474c27f086e3afba7",
+      "bytes": 657
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-results.json",
+      "sha256": "38af4a55ebab840767f16710a0c5d9bd8d9a1c866902aecef7a998b6e59d13b2",
+      "bytes": 83625
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-run.log",
+      "sha256": "d0df86d84e0731907a73fae280234bf80abb830558fa7dd75f99c318458a3c0a",
+      "bytes": 10420
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-tested-test.js",
+      "sha256": "d8a042a7f2ad80239867be4777a9cf3ba106075688017735d730e2cbf6450d56",
+      "bytes": 49537
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-verification-after.json",
+      "sha256": "8c0bb04f043fbe24d7d7f03d4f622c4f4563e36b379cabd50d79f1d709de5239",
+      "bytes": 29796
+    },
+    {
+      "path": "reports/watercycle-storm-moments/diagnostic-unit-d8a042a7-47116/unit-verification-before.json",
+      "sha256": "c81361f0a5f9906d39e5dde02a46594d4f98d1814c12ba15356917a57cc446da",
+      "bytes": 19995
+    },
+    {
+      "path": "reports/watercycle-storm-moments/preview-check.json",
+      "sha256": "9aee91a6294d93731faa073654961857691f464ec82c742fb0c3b723a58d2d26",
+      "bytes": 527
+    },
+    {
+      "path": "reports/watercycle-storm-moments/regression-loaded-runtime.json",
+      "sha256": "110d017a41a5ff74d4f04733465d30907c43e67736f78c52e3fcaf590d74bc98",
+      "bytes": 503
+    },
+    {
+      "path": "reports/watercycle-storm-moments/regression-results.json",
+      "sha256": "fb162925426dfac25258ca2953a2b237c099ae4c7caee0dd21fb52998a893162",
+      "bytes": 103113
+    },
+    {
+      "path": "reports/watercycle-storm-moments/regression-run.log",
+      "sha256": "3031c88923558b523690ec2fc8293466bf821e9bc335d98a5fd8bb4cd88712c3",
+      "bytes": 3356
+    },
+    {
+      "path": "reports/watercycle-storm-moments/regression-verification-after.json",
+      "sha256": "26f6e1b0595e509187997a700ecb9f97fe7ad60ba1d47db181ca805bb9694f60",
+      "bytes": 36386
+    },
+    {
+      "path": "reports/watercycle-storm-moments/regression-verification-before.json",
+      "sha256": "70e1da35d8d3e7bc8e8e30e19441fcf40a100249bc0427365883d6374e7aeb52",
+      "bytes": 21952
+    },
+    {
+      "path": "reports/watercycle-storm-moments/test-process-closure.json",
+      "sha256": "9853396b983454c19043291f265d42389c15e70c9200530916ea5f0236779c5b",
+      "bytes": 719
+    },
+    {
+      "path": "reports/watercycle-storm-moments/tested-read-audit.cjs",
+      "sha256": "f02c905d6b5b6b06530930fcbaeade9c7b8252d30833b93a186f781683fb3671",
+      "bytes": 1969
+    },
+    {
+      "path": "reports/watercycle-storm-moments/tested-test-bundle.cjs",
+      "sha256": "6a06559e2a579418b1dbcbc821c7dcae8b5c4e1483df9ba931a9a97d51710539",
+      "bytes": 16956
+    },
+    {
+      "path": "reports/watercycle-storm-moments/unit-loaded-runtime.json",
+      "sha256": "84a1a7cbc9e0c029fff2e778ead1aef68a1724e71077250b1b1a2687d189f99f",
+      "bytes": 657
+    },
+    {
+      "path": "reports/watercycle-storm-moments/unit-results.json",
+      "sha256": "ba716380b2b63e387ec909771a71ebcb44506e9c5b2b83470f2aa4d04a4f924a",
+      "bytes": 84320
+    },
+    {
+      "path": "reports/watercycle-storm-moments/unit-run.log",
+      "sha256": "1ff12bddf08d118488fdd23fcb0c702f7c1d7bfb12af692afb4ae24d8e334ad1",
+      "bytes": 3581
+    },
+    {
+      "path": "reports/watercycle-storm-moments/unit-verification-after.json",
+      "sha256": "0e6c28216e7a969a659f3d5fa45f5fd6ba4d47c2fb9c04f18333b7ba900fbc4a",
+      "bytes": 31700
+    },
+    {
+      "path": "reports/watercycle-storm-moments/unit-verification-before.json",
+      "sha256": "b21aebaadcefccde8c323cddc72efaa4c99c6f2a860186d37e7a5b40cfedd529",
+      "bytes": 20948
+    },
+    {
+      "path": "reports/watercycle-storm-moments/verify.cjs",
+      "sha256": "cc18f1be3b8afc3aa4289456776039940bca74dadebe810835a1e2ae56a506ce",
+      "bytes": 40899
+    },
+    {
+      "path": "stem_lab/stem_lab_module.js",
+      "sha256": "d2c378b5e490c3caf7eda965cd94e9445c157afc63a3a492f7f9334221c3e793",
+      "bytes": 658446
+    },
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "bytes": 3088929
+    },
+    {
+      "path": "tests/watercycle_cloud_evidence.test.js",
+      "sha256": "1ba4b499c6146597fd7ca840877b7288d33d172aa2c0d8fd2bc0e2f038473568",
+      "bytes": 23808
+    },
+    {
+      "path": "tests/watercycle_groundwater_lens.test.js",
+      "sha256": "7ae7f27b198b5efcb98b430e191480c9cf34042cdff949af4d9b9cdfd73445c2",
+      "bytes": 32790
+    },
+    {
+      "path": "tests/watercycle_precipitation_lab.test.js",
+      "sha256": "6ebfd62ac589a6842e3ce5da462cae6cb65720f7d15798bc11dba447c99e4609",
+      "bytes": 40595
+    },
+    {
+      "path": "tests/watercycle_storm_experiment.test.js",
+      "sha256": "ef21b9e3ba40c1d76be1f5cde31b975d64db41865657cdd77a1f9205900330b9",
+      "bytes": 6570
+    },
+    {
+      "path": "tests/watercycle_storm_immersion.test.js",
+      "sha256": "0978dccd46963f1f80c98d8ab8ced447941fe53911a560f3c782db6b5cdb4dbd",
+      "bytes": 3132
+    },
+    {
+      "path": "tests/watercycle_storm_moments.test.js",
+      "sha256": "56fa51cba07d79695940dfcc9b3de026e3e4888bdd5d5b3c2cc03bcd5b6fbc82",
+      "bytes": 49254
+    },
+    {
+      "path": "vendor/three-r128/OrbitControls.js",
+      "sha256": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2",
+      "bytes": 26375
+    },
+    {
+      "path": "vendor/three-r128/three.min.js",
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+      "bytes": 603445
+    }
+  ]
+}

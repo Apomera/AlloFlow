@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { canvasCreationFailures } from './helpers/canvas_accessibility_source.js';
 
 const SOURCE = 'stem_lab/stem_tool_solarsystem.js';
 const MIRROR = 'desktop/web-app/public/stem_lab/stem_tool_solarsystem.js';
@@ -13,6 +14,45 @@ function renderedCanvasFailures(markup) {
   }).map((canvas) => canvas.outerHTML);
 }
 
+describe('Canvas creation scanner boundaries', () => {
+  it('follows a delayed dynamic label on the same canvas through its update callback', () => {
+    const source = [
+      "const specimenCanvas = document.createElement('canvas');",
+      "specimenCanvas.setAttribute('role', 'img');",
+      ...Array.from({ length: 36 }, () => '// Other specimen setup and controls.'),
+      'function selectSpecimen(specimen) {',
+      "  specimenCanvas.setAttribute('aria-label', 'Sealed ' + specimen.title + ' specimen illustration.');",
+      '}'
+    ].join('\n');
+    expect(canvasCreationFailures(source)).toEqual([]);
+  });
+
+  it('checks the complete declarative props object without a line-count limit', () => {
+    const source = [
+      "h('canvas', { role: 'img',",
+      ...Array.from({ length: 20 }, () => '// Other canvas props.'),
+      "'aria-label': 'Orbit visualization' });"
+    ].join('\n');
+    expect(canvasCreationFailures(source)).toEqual([]);
+  });
+
+  it.each([
+    ['nearby canvas', "const unnamed = document.createElement('canvas'); const named = document.createElement('canvas'); named.setAttribute('role', 'img'); named.setAttribute('aria-label', 'Orbit visualization');"],
+    ['shadowed variable', "const canvas = document.createElement('canvas'); canvas.setAttribute('role', 'img'); function otherView() { const canvas = document.createElement('canvas'); canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', 'Other orbit visualization'); }"],
+    ['redeclared variable', "var canvas = document.createElement('canvas'); canvas.setAttribute('role', 'img'); var canvas = document.createElement('canvas'); canvas.setAttribute('role', 'img'); canvas.setAttribute('aria-label', 'Other orbit visualization');"],
+    ['adjacent declarative canvas', "h('canvas', { role: 'img' }); h('canvas', { role: 'img', 'aria-label': 'Orbit visualization' });"],
+    ['blank label', "h('canvas', { role: 'img', 'aria-label': '   ' });"],
+    ['explicitly visible canvas', "const canvas = document.createElement('canvas'); canvas.setAttribute('aria-hidden', 'false');"],
+    ['wrong role', "h('canvas', { role: 'status', 'aria-label': 'Orbit visualization' });"]
+  ])('still reports an unnamed or unclassified canvas despite a %s', (_case, source) => {
+    expect(canvasCreationFailures(source)).toHaveLength(1);
+  });
+
+  it('accepts explicitly decorative canvases without a label or image role', () => {
+    expect(canvasCreationFailures("const texture = document.createElement('canvas'); texture.setAttribute('aria-hidden', 'true'); h('canvas', { 'aria-hidden': true });")).toEqual([]);
+  });
+});
+
 describe('Solar System canvas alternatives', () => {
   beforeEach(() => {
     resetStemLab();
@@ -24,16 +64,7 @@ describe('Solar System canvas alternatives', () => {
   });
 
   it('classifies every canvas creation site as named or explicitly decorative', () => {
-    const lines = readFileSync(SOURCE, 'utf8').split(/\r?\n/);
-    const failures = [];
-    lines.forEach((line, index) => {
-      if (!/h\(\s*['"]canvas['"]|createElement\(\s*['"]canvas['"]/.test(line)) return;
-      const context = lines.slice(index, index + 12).join(' ');
-      const hidden = /aria-hidden['"]?\s*[:=,)]/.test(context);
-      const named = /aria-label/.test(context) && (/role\s*[:=,]/.test(context) || /setAttribute\(['"]role['"]/.test(context));
-      if (!hidden && !named) failures.push(`${index + 1}: ${line.trim()}`);
-    });
-    expect(failures).toEqual([]);
+    expect(canvasCreationFailures(readFileSync(SOURCE, 'utf8'))).toEqual([]);
   });
   it('gives each Orrery teaching canvas a specific accessible description and pauses animated laws for reduced motion', () => {
     const source = readFileSync(SOURCE, 'utf8');
@@ -48,12 +79,50 @@ describe('Solar System canvas alternatives', () => {
     expect(source).toContain('var transferBurnInsight = sameTransferOrbit ?');
     expect(source).toContain('id: "orrery-transfer-evidence"');
     expect(source).toContain('reduceMotion: reduceMotion,');
-    expect(source).toContain('if (!reduceMotion) animRef.current = (animRef.current + 0.01) % TAU;');
-    expect(source).toContain('if (!reduceMotion) animRef.current = (animRef.current + 0.008) % TAU;');
-    expect(source).toContain('var k1PeriRatio = 1 - ecc;');
-    expect(source).toContain('id: "orrery-k1-evidence"');
+    const previousMatchMedia = Object.getOwnPropertyDescriptor(window, 'matchMedia');
+    try {
+      Object.defineProperty(window, 'matchMedia', {
+        configurable: true, writable: true, value: () => ({ matches: true }),
+      });
+      document.body.innerHTML = renderTool('solarSystem', { solarSystem: {
+        tutorialDismissed: true, orreryMode: true, orr_tab: 1,
+        orr_k1playing: true, orr_k1phase: 0.25, orr_k1e: 0.5,
+      } });
+      const k1Play = [...document.querySelectorAll('#orrery-k1-inspection button')]
+        .find((button) => (button.getAttribute('aria-label') || button.textContent).trim() === 'Play orbit');
+      expect(k1Play?.disabled).toBe(true);
+      const k1Phase = document.getElementById('orrery-k1-phase');
+      expect(k1Phase?.disabled).toBe(false);
+      expect(Number(k1Phase?.value)).toBe(25);
+      const k1Evidence = document.getElementById('orrery-k1-evidence');
+      expect(k1Evidence?.getAttribute('role')).toBe('status');
+      expect(k1Evidence?.getAttribute('aria-live')).toBe('polite');
+      expect(k1Evidence?.getAttribute('aria-atomic')).toBe('true');
+      expect(k1Evidence?.textContent).toContain('Perihelion = 0.500a');
+      expect(k1Evidence?.textContent).toContain('aphelion = 1.500a');
+      const k1Canvas = document.querySelector('#orrery-k1-inspection canvas');
+      expect(k1Canvas?.getAttribute('aria-describedby')).toBe('orrery-k1-evidence');
+      document.body.innerHTML = renderTool('solarSystem', { solarSystem: {
+        tutorialDismissed: true, orreryMode: true, orr_tab: 2,
+        orr_k2playing: true, orr_k2phase: 0.25,
+      } });
+      const play = [...document.querySelectorAll('#orrery-k2-inspection button')]
+        .find((button) => (button.getAttribute('aria-label') || button.textContent).trim() === 'Play orbit');
+      expect(play?.disabled).toBe(true);
+      const phase = document.getElementById('orrery-k2-phase');
+      expect(phase?.disabled).toBe(false);
+      expect(Number(phase?.value)).toBe(25);
+    } finally {
+      if (previousMatchMedia) Object.defineProperty(window, 'matchMedia', previousMatchMedia);
+      else delete window.matchMedia;
+    }
     expect(source).toContain('var k2PeriSpeed = Math.sqrt(2 / k2PeriRatio - 1);');
-    expect(source).toContain('id: "orrery-k2-evidence"');
+    const evidence = document.getElementById('orrery-k2-evidence');
+    expect(evidence?.getAttribute('role')).toBe('status');
+    expect(evidence?.getAttribute('aria-live')).toBe('polite');
+    expect(evidence?.textContent).toContain('all 6 sectors represent the same time interval.');
+    const keplerTwoCanvas = document.querySelector('#orrery-k2-inspection canvas');
+    expect(keplerTwoCanvas?.getAttribute('aria-describedby')).toBe('orrery-k2-evidence');
     expect(source).toContain('all " + nSectors + " sectors represent the same time interval.');
   });
 
@@ -91,19 +160,20 @@ describe('Solar System canvas alternatives', () => {
     expect(orbitalPositionMeter?.getAttribute('aria-describedby')).toBe('orrery-live-orbit-position');
     expect(document.getElementById('orrery-live-orbit-position')?.textContent).toContain('Earth');
   });
-it('keeps static canvases out of the tab order and gives Kepler III a keyboard fallback', () => {
-    const source = readFileSync(SOURCE, 'utf8');
-    expect(source).toContain('var keyboardInteractive = !!props.panZoom || !!props.onKeyboardInteract;');
-    expect(source).toContain('tabIndex: keyboardInteractive ? 0 : undefined');
-    expect(source).toContain('ariaDescribedBy: "orrery-k3-canvas-help orrery-k3-axis-note"');
-    expect(source).toContain('ariaDescribedBy: "orrery-k1-evidence"');
-    expect(source).toContain('ariaDescribedBy: "orrery-k2-evidence"');
-    expect(source).toContain('function logTickLabel(power) { return power === 0 ? "1" : "10^" + power; }');
-    expect(source).toContain('id: "orrery-k3-axis-note"');
-    expect(source).toContain('Keyboard: press Enter or Space to cycle through plotted worlds');
-    expect(source).toContain('id: "orrery-k3-selected"');
-    expect(source).toContain('T²/a³ = " + fmt(k3HoverRatio, 4)');
-expect(source).toContain('onEscape: function() { upd("orr_k3hover", null); }');
+  it('keeps static canvases out of the tab order and gives Kepler III a keyboard fallback', () => {
+    document.body.innerHTML = renderTool('solarSystem', { solarSystem: { tutorialDismissed: true, orreryMode: true, orr_tab: 1 } });
+    const staticChart = document.querySelector('canvas');
+    expect(staticChart.getAttribute('role')).toBe('img');
+    expect(staticChart.hasAttribute('tabindex')).toBe(false);
+    document.body.innerHTML = renderTool('solarSystem', { solarSystem: { tutorialDismissed: true, orreryMode: true, orr_tab: 3 } });
+    const chart = document.querySelector('#orrery-k3-inspection canvas');
+    expect(chart.getAttribute('role')).toBe('application');
+    expect(chart.getAttribute('tabindex')).toBe('0');
+    expect(chart.getAttribute('aria-keyshortcuts')).toBe('Enter Space Escape');
+    expect(chart.getAttribute('aria-describedby')).toBe('orrery-k3-canvas-help orrery-k3-axis-note');
+    expect(document.getElementById('orrery-k3-axis-note').textContent).toContain('tick labels are powers of ten');
+    expect(document.getElementById('orrery-k3-canvas-help').textContent).toMatch(/Enter or Space.*Escape/);
+    expect(document.getElementById('orrery-k3-selected').getAttribute('role')).toBe('status');
   });
   it('names the dynamic vehicle radar and excludes detached texture buffers', () => {
     const source = readFileSync(SOURCE, 'utf8');

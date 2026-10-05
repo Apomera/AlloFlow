@@ -1,0 +1,17 @@
+{
+  "mode": "unit",
+  "checkedAt": "2026-10-05T02:09:48.8776322Z",
+  "ownedProcessIds": [
+    3728,
+    9696,
+    17372
+  ],
+  "observedPresent": [],
+  "reusedProcessIds": [],
+  "survivingOwnedProcesses": [],
+  "allOwnedClosed": true,
+  "allPidsAbsent": true,
+  "childCloseAt": "2026-10-05T01:58:28.9Z",
+  "childExitCode": 0,
+  "sourcePreserved": true
+}

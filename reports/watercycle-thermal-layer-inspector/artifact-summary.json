@@ -1,0 +1,596 @@
+{
+  "title": "Thermal layer inspector verification",
+  "status": "final",
+  "enhancementCommitted": false,
+  "baselineWasUncommitted": true,
+  "finalizedAt": "2026-10-02T23:31:53.400Z",
+  "sourcePath": "stem_lab/stem_tool_watercycle.js",
+  "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+  "sourceSha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+  "sourceBytes": 3119260,
+  "baselinePath": "reports/watercycle-thermal-layer-inspector/baseline-runtime.js",
+  "baselineSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+  "testedRuntimePath": "reports/watercycle-thermal-layer-inspector/browser-tested-runtime.js",
+  "browsers": [
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/baseline-results.json",
+      "runtimePath": "reports/watercycle-thermal-layer-inspector/baseline-tested-runtime.js",
+      "harnessPath": "reports/watercycle-thermal-layer-inspector/baseline-tested-harness.cjs",
+      "historical": false,
+      "successful": true,
+      "final": false
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-results.json",
+      "runtimePath": "reports/watercycle-thermal-layer-inspector/browser-preflight-tested-runtime.js",
+      "harnessPath": "reports/watercycle-thermal-layer-inspector/browser-preflight-tested-harness.cjs",
+      "historical": true,
+      "successful": false,
+      "final": false
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-results.json",
+      "runtimePath": "reports/watercycle-thermal-layer-inspector/browser-tested-runtime.js",
+      "harnessPath": "reports/watercycle-thermal-layer-inspector/browser-tested-harness.cjs",
+      "historical": false,
+      "successful": true,
+      "final": true
+    }
+  ],
+  "tests": [
+    {
+      "mode": "unit",
+      "count": 34,
+      "receiptKey": "waterCycleThermalLayerVerification",
+      "raw": "reports/watercycle-thermal-layer-inspector/unit-results.json",
+      "before": "reports/watercycle-thermal-layer-inspector/unit-verification-before.json",
+      "after": "reports/watercycle-thermal-layer-inspector/unit-verification-after.json",
+      "loaded": "reports/watercycle-thermal-layer-inspector/unit-loaded-runtime.json"
+    },
+    {
+      "mode": "regression",
+      "count": 146,
+      "receiptKey": "waterCycleThermalLayerVerification",
+      "raw": "reports/watercycle-thermal-layer-inspector/regression-results.json",
+      "before": "reports/watercycle-thermal-layer-inspector/regression-verification-before.json",
+      "after": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+      "loaded": "reports/watercycle-thermal-layer-inspector/regression-loaded-runtime.json"
+    }
+  ],
+  "diagnosticTests": [
+    {
+      "raw": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-results.json",
+      "before": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-before.json",
+      "after": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+      "loaded": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-loaded-runtime.json",
+      "summary": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/diagnostic-summary.json",
+      "testSnapshot": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/tested-test.js"
+    }
+  ],
+  "reports": {
+    "preview": "reports/watercycle-thermal-layer-inspector/preview-check.json",
+    "processClosure": "reports/watercycle-thermal-layer-inspector/test-process-closure.json"
+  },
+  "counts": {
+    "focusedTests": 34,
+    "regressionTests": 146,
+    "totalPassed": 180,
+    "browserChecks": 1208,
+    "nativeActions": 169,
+    "finalCaptures": 37,
+    "scopedAudits": 37,
+    "browserRunsClosed": 3,
+    "ownedTestProcessesClosed": 12
+  },
+  "preservation": {
+    "passed": true,
+    "boundaries": {
+      "helper": 1,
+      "style": 1,
+      "renderer": 1,
+      "append": 1,
+      "coldLabel": 1,
+      "warmLabel": 1
+    },
+    "baselineTokens": 356218,
+    "candidatePriorTokens": 356218,
+    "mismatch": null
+  },
+  "measurements": {
+    "minimumInspectorFontPx": 13,
+    "minimumInspectorTextContrast": 7.3119442874716105,
+    "minimumControlHeightPx": 44
+  },
+  "inputs": [
+    {
+      "path": "desktop/web-app/node_modules/axe-core/axe.min.js",
+      "sha256": "7dbfabdfc6062936d79c873ddbb5f811a1219fca3928bd8cc9dd81f1e65f4720",
+      "bytes": 560903
+    },
+    {
+      "path": "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+      "bytes": 131835
+    },
+    {
+      "path": "desktop/web-app/node_modules/react/umd/react.production.min.js",
+      "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+      "bytes": 10751
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+      "bytes": 3119260
+    },
+    {
+      "path": "dev-tools/.cache/sweep-tailwind.css",
+      "sha256": "c2a8577c477ae95ad81e407be71baa603e9ec6d61032bef5a383088326148945",
+      "bytes": 563103
+    },
+    {
+      "path": "dev-tools/watercycle_thermal_layer_inspector_qa.cjs",
+      "sha256": "ed2c4a1d214cb32a87aff09bbe5bb9c5ad0f10a9606a088c48333f02ba047300",
+      "bytes": 40367
+    },
+    {
+      "path": "docs/water-cycle-visual-design.md",
+      "sha256": "097363e0dde4676d08b22f491dc66daaf22d14a65cdd85b19549440c5aa96e63",
+      "bytes": 37353
+    },
+    {
+      "path": "package-lock.json",
+      "sha256": "8fde867720a10e402bf57ea0bcac4ba68121859a9b50191bfe88cb3663805e94",
+      "bytes": 141602
+    },
+    {
+      "path": "package.json",
+      "sha256": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77",
+      "bytes": 23576
+    },
+    {
+      "path": "reports/watercycle-storm-moments/baseline-runtime.js",
+      "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "bytes": 3058809
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/README.md",
+      "sha256": "39c9c553d6181e64f847d9519bef7ef3d16bdd23461f61e12aa2a7dd5d324103",
+      "bytes": 4915
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/baseline-profile-dark.png",
+      "sha256": "99516391d118fcf4822917c08d398ed775ab7dc15518b2fc94233450df2712b6",
+      "bytes": 13110
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/baseline-profile-desktop.png",
+      "sha256": "fd1ce41c4c5a795985c6ea5aa459b76e21c2a92b6f842ebfe76871fd826ffffc",
+      "bytes": 13231
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/baseline-profile-phone320.png",
+      "sha256": "28cd7e27af5230a323c69541dad94c21c03b919d9a87f8a63b455aeced3741b4",
+      "bytes": 11245
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/baseline-results.json",
+      "sha256": "f31abda9c86daaab2e971138909a100218541c9380005882f77feff07adc31d7",
+      "bytes": 79512
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/baseline-runtime.js",
+      "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "bytes": 3088929
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/baseline-tested-harness.cjs",
+      "sha256": "7f4ec7c4b7cf86eb9cbe384d96d6d8e965682232d776c6278a33a884e32721de",
+      "bytes": 22680
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/baseline-tested-runtime.js",
+      "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "bytes": 3088929
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-actual3d-inspector.png",
+      "sha256": "b0d77a6e323adae12c607f083305a19ec6c859f51cdbdcd6393607c3c8fb40f7",
+      "bytes": 71835
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-boundary-exact-zero.png",
+      "sha256": "7deadecd59f78a8a783bb0721949c873e70e18f0d373153a31fe950b1dd7060a",
+      "bytes": 73579
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-boundary-near-zero.png",
+      "sha256": "b195397e277fe03bf46e620e8014f12ba908076e18981f152904722200779409",
+      "bytes": 88832
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-boundary-smoothing-above-zero.png",
+      "sha256": "a79bfdc7a8f93e8bc1f8d7bac1fb84e24643bb9d59c75ca2c5423be3e8d8570b",
+      "bytes": 79725
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-boundary-two-crossings.png",
+      "sha256": "5fbd5b8c647d766c9c5fe7f9a23ce77dc7566f52c8490cdfe645b95aeece7930",
+      "bytes": 88564
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-clear-cloud.png",
+      "sha256": "adda5e93eaf0de689193cdb4abf68fcfd18197fd5ec89f4cf3f3d9bd78f08327",
+      "bytes": 75890
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-clear-middle.png",
+      "sha256": "05fce86d487b2ba36240550213b0f86dca1e61072c1d3296df3dc5c21b301428",
+      "bytes": 75995
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-clear-surface.png",
+      "sha256": "ccc2a0e9ba93fbb1dd0bea4bcc304455e20c72387b4494fbb3f96a248fba2f02",
+      "bytes": 76048
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-freezing-rain-cloud.png",
+      "sha256": "c2d0d319057cfddea41b20795d1b758a61bec74121e7f7adeb1dc7847edc9c56",
+      "bytes": 76548
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-freezing-rain-middle.png",
+      "sha256": "d87400ca3afc480201855809e8fe9db3e53249dcd4a882ac5881e2dd4db87ae3",
+      "bytes": 76700
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-freezing-rain-surface.png",
+      "sha256": "306109596e1968419f20f6e47630257860fa511210e80056000d7aa3a6c9e1e2",
+      "bytes": 82776
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-hail-cloud.png",
+      "sha256": "d3d0e193867d011edbb07932ead23a085689c44a30085c15be1ae3cfb6bf7040",
+      "bytes": 76962
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-hail-middle.png",
+      "sha256": "d2e2279385c981cbde2f258966d8bc9404fee41b6370f3855d7c06ac3f1ed48f",
+      "bytes": 76998
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-hail-surface.png",
+      "sha256": "190249736a5bafa89c4b5b70855ec9da868c2bf7f92f26fa18d9fe43363e83f7",
+      "bytes": 77102
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-mix-cloud.png",
+      "sha256": "e5a98cb051417dcc4140584b5a61644c03789a61a3f483b2ef53dfe919e07087",
+      "bytes": 77070
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-mix-middle.png",
+      "sha256": "e1decbaf9ac27c43420c25d7d81a2fafbb3cc83dba7ac36ba60f6b99fa613074",
+      "bytes": 77040
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-mix-surface.png",
+      "sha256": "cad77baecfab54b91ce08a261f0bfba7d66a37f8e053d0bd5d3125b055796d3e",
+      "bytes": 78739
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-rain-cloud.png",
+      "sha256": "e4e168fa32476372b3eea83a2231b164e0766aa46f3d0f68b47eba1696ee2b70",
+      "bytes": 71644
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-rain-middle.png",
+      "sha256": "99ace8cd38ccf85e5ca50bd56e82e7d2e195fe9f65b2d361ff2fe18b058f12d2",
+      "bytes": 71704
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-rain-surface.png",
+      "sha256": "f0e3b419ec92ee3c69c19e125acfcda96515cafac1b98f20612ff0a2af567318",
+      "bytes": 71782
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-sleet-cloud.png",
+      "sha256": "1b46352b6c00cb6a3c3581d2fbde490aac2f9c70c79ab52b18e2159a2153f3b5",
+      "bytes": 79629
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-sleet-middle.png",
+      "sha256": "ff916ef8853bfd64e8d5e1aaea20101b8cfa1d9433cb3f4071750b9af47e661a",
+      "bytes": 81229
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-sleet-surface.png",
+      "sha256": "1df01e4d113dd85c0c24b6d3de25d6fbc4e45754c8fc61cafcfb9d2ef816682d",
+      "bytes": 79809
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-snow-cloud.png",
+      "sha256": "2d1c60c50dfcee5a0ef28eee9556cc821c91a61ac458bd6d91305fadb88d59b3",
+      "bytes": 74508
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-snow-middle.png",
+      "sha256": "4cc14b9d26edb170765bc3e60cc4ef63be8a0ef074d92679663ae789b5cbfe5e",
+      "bytes": 74626
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-snow-surface.png",
+      "sha256": "91f1a4e1b03a19756b5bc1225597f88a4f8aa7b7bea2613944dca6ad48c89a9c",
+      "bytes": 74632
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-virga-cloud.png",
+      "sha256": "726deafc2e896c1be1dd30bb0386bce7a68d8ff2d932cb92030a0b4df289c9ff",
+      "bytes": 78161
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-virga-middle.png",
+      "sha256": "3531dc7ca7a09637d0d90f792eccc9391207ef1b45341d42367233443e34b5ee",
+      "bytes": 78462
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-fixture-virga-surface.png",
+      "sha256": "32ba7522c3d6edc452a9474300674be5fbfe74740e934ed35a38dfb2d9123c86",
+      "bytes": 78439
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-inspector-app-contrast.png",
+      "sha256": "cafa1fdf3b8b0745e93b5835de8564d3c7c9a66f737ab34b8c1e85d229b75311",
+      "bytes": 67786
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-inspector-dark.png",
+      "sha256": "ebf9d42c4f8df9d8c33a5ac5c1ffcd4bf7cb65b25599202d3887f0ac76e6b151",
+      "bytes": 71893
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-inspector-desktop.png",
+      "sha256": "b0d77a6e323adae12c607f083305a19ec6c859f51cdbdcd6393607c3c8fb40f7",
+      "bytes": 71835
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-inspector-forced-dark.png",
+      "sha256": "3f4a2d890e30581eab40f519089d521bb993924f9709281af20da372524a5a48",
+      "bytes": 62806
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-inspector-forced-phone.png",
+      "sha256": "ccd9fa3d79766f41b49107fe4c78b63b31983573f2eefd166fca88fc90770d64",
+      "bytes": 61212
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-inspector-host390.png",
+      "sha256": "e950bf2a92d5ec8ee437ff2d15a7c7463a0d7c3eb00816026515c70a5b1c0e96",
+      "bytes": 72727
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-inspector-phone320.png",
+      "sha256": "aebd4ee5be43b82f74d4a70d666e1c831f4fc7c4e4a1dbfd269d7b92608a655a",
+      "bytes": 70101
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-inspector-phone390.png",
+      "sha256": "da24a630e7633fe3940d690e8bde2e2b5cdf249dabe2f9c585a0b466dc40a600",
+      "bytes": 71837
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-inspector-dark.png",
+      "sha256": "ebf9d42c4f8df9d8c33a5ac5c1ffcd4bf7cb65b25599202d3887f0ac76e6b151",
+      "bytes": 71893
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-inspector-desktop.png",
+      "sha256": "b0d77a6e323adae12c607f083305a19ec6c859f51cdbdcd6393607c3c8fb40f7",
+      "bytes": 71835
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-inspector-phone320.png",
+      "sha256": "aebd4ee5be43b82f74d4a70d666e1c831f4fc7c4e4a1dbfd269d7b92608a655a",
+      "bytes": 70101
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-results.json",
+      "sha256": "53b6cf5382c6b9e4ae4215a4c09c3a69e40c8dd404d2e50a5c2e3d136e1a6fad",
+      "bytes": 329787
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-tested-harness.cjs",
+      "sha256": "42020fcf824b0ab6ce23eab3a94670fa521f758c3049dd0209c528ea2fbf1319",
+      "bytes": 36743
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-tested-runtime.js",
+      "sha256": "129f53f2e028efd743ffcc205ea6d9b44c6c96a4f815f924b9020ab3ef78ae08",
+      "bytes": 3119245
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-results.json",
+      "sha256": "6baad06ce0fe7218cdc3013cd33c32fa0522a62b9b68107bfcbc94151d20c366",
+      "bytes": 2156647
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-tested-harness.cjs",
+      "sha256": "ed2c4a1d214cb32a87aff09bbe5bb9c5ad0f10a9606a088c48333f02ba047300",
+      "bytes": 40367
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/browser-tested-runtime.js",
+      "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+      "bytes": 3119260
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/diagnostic-summary.json",
+      "sha256": "4ef4af50cc2772f9f283174b6e8317e2d29fda596a5e31fd2fd90d7957c21999",
+      "bytes": 2172
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/tested-read-audit.cjs",
+      "sha256": "4683769f3cff2558bd05ab286c4df0017d70897e59891e8d561c3429a4a05940",
+      "bytes": 1933
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/tested-test-bundle.cjs",
+      "sha256": "06ed5d27cedc3a3382350ab51949c192ec87c11855b1dec9c95b36e54ddd6862",
+      "bytes": 12523
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/tested-test.js",
+      "sha256": "eae17e5a1a6576e78c602fea99f06cc1fa8ae782de1089c0364d6c0c18fdf4f7",
+      "bytes": 28386
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-loaded-runtime.json",
+      "sha256": "c83a8f4020312d3fe170a103498a0644d690f445e30ac45a86ce051de3068b32",
+      "bytes": 875
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-results.json",
+      "sha256": "53859fea86bb35881b54dba84960ad72ae5dbdb609a8edc2ec43a30e4ee4565e",
+      "bytes": 41841
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-run.log",
+      "sha256": "c6fe6cda24350f61d7c69ad8773bde556a0f3887d8b87ed15d3b22cd955c5e32",
+      "bytes": 5086
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+      "sha256": "7e06d8f2528ad3620a4b7fc27f04fcfc900c26c8989938d676eb16ddedb0f6c2",
+      "bytes": 19975
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-before.json",
+      "sha256": "95f14366fd61d850e7313cff576d59fd87a9624abd260b1eb8e766a94fee0712",
+      "bytes": 13384
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/preview-check.json",
+      "sha256": "a619e369953caaff76b5e5d0a6a36bbd5ba8126716119046514689af24297900",
+      "bytes": 527
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/regression-loaded-runtime.json",
+      "sha256": "8aab83d2cbca8f30fedd20554d1f7a2f21003975190c9f269186ea3981935552",
+      "bytes": 657
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/regression-results.json",
+      "sha256": "f557ad599c81ea8821ecfec0a4711a2cf0e041bfa2944716d8db89999d42b620",
+      "bytes": 102289
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/regression-run.log",
+      "sha256": "500eefd32f8931d53c667999e988b4bed8c6bd177f5995eab6abf9e466f6b3fe",
+      "bytes": 5064
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+      "sha256": "9694202ec62d5f4a7062590b453214b796202f934c82447e0db41292c2176e26",
+      "bytes": 23540
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/regression-verification-before.json",
+      "sha256": "e38227983ac358549893ffc730740b97a646d7d6941e09384ba317a28e3ff068",
+      "bytes": 14080
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/test-process-closure.json",
+      "sha256": "b1b5b2c3cbfd2e11a1382964d3548c8c296bc0942c87ce488e1bf4bca18a23e2",
+      "bytes": 8028
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/tested-read-audit.cjs",
+      "sha256": "4683769f3cff2558bd05ab286c4df0017d70897e59891e8d561c3429a4a05940",
+      "bytes": 1933
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/tested-test-bundle.cjs",
+      "sha256": "06ed5d27cedc3a3382350ab51949c192ec87c11855b1dec9c95b36e54ddd6862",
+      "bytes": 12523
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/unit-loaded-runtime.json",
+      "sha256": "00c3475de380985b9ee368851ff0835b899b63223e7c09523751ce593bec9205",
+      "bytes": 875
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/unit-results.json",
+      "sha256": "d934558e992c735f27caac219ab2594ccde8e975dde0a03d067664594342d7b1",
+      "bytes": 40698
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/unit-run.log",
+      "sha256": "92f69d34c2d6033d1db98a0a92006d72d4a31d68aa40ec8ccce37b3b66093edd",
+      "bytes": 1382
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/unit-verification-after.json",
+      "sha256": "5d7ab85c3f93d6c6af467dc504dadd4df5cd6a8549866a3771c60c3902e7ccba",
+      "bytes": 19974
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/unit-verification-before.json",
+      "sha256": "986fa11542a9fc7f2ef0a56c656dd4e3cad59a9e0a74feeaed185777c3ae983a",
+      "bytes": 13383
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/verify.cjs",
+      "sha256": "639a15c7c8816a09dd061a64ea2e10f04f74c1af0450412cc788bdc0e65b01a7",
+      "bytes": 23411
+    },
+    {
+      "path": "stem_lab/stem_lab_module.js",
+      "sha256": "d2c378b5e490c3caf7eda965cd94e9445c157afc63a3a492f7f9334221c3e793",
+      "bytes": 658446
+    },
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+      "bytes": 3119260
+    },
+    {
+      "path": "tests/watercycle_precipitation_lab.test.js",
+      "sha256": "6ebfd62ac589a6842e3ce5da462cae6cb65720f7d15798bc11dba447c99e4609",
+      "bytes": 40595
+    },
+    {
+      "path": "tests/watercycle_sleet_vs_freezing_rain.test.js",
+      "sha256": "c0d9b36454d6f8a980206f15f437bb64aa1e1583b289d8a42d1bd3a4b3b16f24",
+      "bytes": 8082
+    },
+    {
+      "path": "tests/watercycle_storm_experiment.test.js",
+      "sha256": "ef21b9e3ba40c1d76be1f5cde31b975d64db41865657cdd77a1f9205900330b9",
+      "bytes": 6570
+    },
+    {
+      "path": "tests/watercycle_storm_immersion.test.js",
+      "sha256": "0978dccd46963f1f80c98d8ab8ced447941fe53911a560f3c782db6b5cdb4dbd",
+      "bytes": 3132
+    },
+    {
+      "path": "tests/watercycle_storm_moments.test.js",
+      "sha256": "56fa51cba07d79695940dfcc9b3de026e3e4888bdd5d5b3c2cc03bcd5b6fbc82",
+      "bytes": 49254
+    },
+    {
+      "path": "tests/watercycle_thermal_layer_inspector.test.js",
+      "sha256": "7177370a72423842d9338ce29a0bed84ce9904a79ade60207a6e92a8be6538df",
+      "bytes": 28386
+    },
+    {
+      "path": "vendor/three-r128/OrbitControls.js",
+      "sha256": "02bb4ade710f3e607329e37a21f098bc3ac70eb6e33daf8a65e79f4db785e7b2",
+      "bytes": 26375
+    },
+    {
+      "path": "vendor/three-r128/three.min.js",
+      "sha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+      "bytes": 603445
+    }
+  ]
+}

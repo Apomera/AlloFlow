@@ -1,0 +1,43 @@
+[
+  {
+    "case": "exact on-disk serialized manifest and cache assets",
+    "accepted": true,
+    "manifestOnDiskSha256": "ae3e774d7bbf3b063308f12398e98a677dba5a4b1e4ac8b0d061ce29457c4ebe",
+    "matchesEmbeddedManifestSha256": true,
+    "onDiskCacheChecks": [
+      {
+        "key": "preparedCss",
+        "actualOnDiskSha256": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163",
+        "matchedManifest": true
+      },
+      {
+        "key": "producerInput",
+        "actualOnDiskSha256": "cc1a7ad0d019ddb1d32d0ecb588ba0ac26ce41d8625dd6c366348b25f83a28ec",
+        "matchedManifest": true
+      },
+      {
+        "key": "producerHtml",
+        "actualOnDiskSha256": "078937f26696db4b8fa0648f503db50f64a93d400418021b95f9c731c2d17b24",
+        "matchedManifest": true
+      }
+    ]
+  },
+  {
+    "case": "wrong module",
+    "accepted": false,
+    "rejection": "module producer binding",
+    "mutationBasedOnActualSerializedManifest": true
+  },
+  {
+    "case": "wrong CSS",
+    "accepted": false,
+    "rejection": "preparedCss producer binding",
+    "mutationBasedOnActualSerializedManifest": true
+  },
+  {
+    "case": "wrong generated harness",
+    "accepted": false,
+    "rejection": "generated harness hash",
+    "mutationBasedOnActualSerializedManifest": true
+  }
+]

@@ -1,0 +1,11 @@
+{
+  "passed": 88,
+  "failed": 3,
+  "corrections": [
+    "Updated the source contract to expect the optional current inspection map in procedureScenarioStatus.",
+    "Updated the existing incomplete-record focus assertion to expect its missing note input.",
+    "Repaired the stale flat shared desktop module after proving it lacks only four existing Perception Lab registrations; canonical and nested copies were preserved."
+  ],
+  "dissectionRendererChanged": false,
+  "testDeadlinesChanged": false
+}

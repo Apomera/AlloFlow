@@ -1,0 +1,134 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass25-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-14/collective-release-2026-10-05/moon-pass25-browser-isolated-5/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-dust.spec.ts",
+      "file": "moon-mission-descent-dust.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "fallback ballistic surface dust",
+          "file": "moon-mission-descent-dust.spec.ts",
+          "line": 85,
+          "column": 6,
+          "specs": [
+            {
+              "title": "a real burn emits world-fixed grains that coast after cutoff and settle after contact",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 30835,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-05T11:03:42.858Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "fallback-burning-dust",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\collective-release-2026-10-05\\moon-pass25-browser-isolated-5\\results\\moon-mission-descent-dust--b90e3-ff-and-settle-after-contact-chromium\\attachments\\fallback-burning-dust-51ab07c90cca076d555a444c6f3157549fc728b8.png"
+                        },
+                        {
+                          "name": "fallback-after-engine-cutoff",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\collective-release-2026-10-05\\moon-pass25-browser-isolated-5\\results\\moon-mission-descent-dust--b90e3-ff-and-settle-after-contact-chromium\\attachments\\fallback-after-engine-cutoff-ba833fbacbd18dec82e554a282678c5c43b2a780.png"
+                        },
+                        {
+                          "name": "fallback-settled-contact",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-14\\collective-release-2026-10-05\\moon-pass25-browser-isolated-5\\results\\moon-mission-descent-dust--b90e3-ff-and-settle-after-contact-chromium\\attachments\\fallback-settled-contact-0d69beb104420166102df512b2aa471fab779118.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "98b8a24adc3328688567-e6e2d2f5e116232f7b23",
+              "file": "moon-mission-descent-dust.spec.ts",
+              "line": 92,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-05T11:03:42.176Z",
+    "duration": 32062.417,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

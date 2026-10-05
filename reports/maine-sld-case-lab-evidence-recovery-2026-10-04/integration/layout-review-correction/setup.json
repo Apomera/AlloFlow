@@ -1,0 +1,103 @@
+{
+  "preparedAt": "2026-10-04T14:50:38.211Z",
+  "port": 65063,
+  "baseUrl": "http://127.0.0.1:65063",
+  "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+  "priorPreviewPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-evidence-recovery-2026-10-04\\integration\\source-preview",
+  "priorPreviewFiles": [
+    {
+      "file": "index.html",
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5"
+    },
+    {
+      "file": "host.css",
+      "sha256": "58a85c127571ce1dbda03af6ac60d44788a0b69689f709d5470c094bba92f84c"
+    },
+    {
+      "file": "tested-host.jsx",
+      "sha256": "86eecff52f711fa3e3398fbfd24e8def69a84ba4ed69466f1c5eb013e1d388e6"
+    },
+    {
+      "file": "host.bundle.js",
+      "sha256": "f6bb88089f30814dc0eddbb875a67128cee05469993d476200f6fbe1d2b3f458"
+    },
+    {
+      "file": "preview.json",
+      "sha256": "932849e3309d7da66bd205cf7b21a6a8ad812adcaaa59af0ffd6c612351f8634"
+    },
+    {
+      "file": "runtime.json",
+      "sha256": "83d48e28142063ad8cc14454e5392f3aaa5cbc7c6ff551bd70c971af2287d73d"
+    },
+    {
+      "file": "maine_sld_practice_module.js",
+      "sha256": "6ab45e2cbf3793f58d0510e5049028855169aa1150fa33209ad2d48179f0b424"
+    },
+    {
+      "file": "frozen-activity.json",
+      "sha256": "d52c7896d71546209e5b9541cdbe5feed98c97550739201d3d7371cd358256c8"
+    }
+  ],
+  "priorIntegrationRecords": [
+    {
+      "file": "reports/maine-sld-case-lab-evidence-recovery-2026-10-04/integration/pin-verification.json",
+      "sha256": "76cc58cfa687c67fae1c40660c77dec08f436cd651277b77107ebf87d4cbe332"
+    },
+    {
+      "file": "reports/maine-sld-case-lab-evidence-recovery-2026-10-04/integration/static-verification.json",
+      "sha256": "f60d29f33f29241e3afbc94f3aee226736d2584fed896f6e45b08aef82b8de4b"
+    },
+    {
+      "file": "reports/maine-sld-case-lab-evidence-recovery-2026-10-04/integration/served-verification.json",
+      "sha256": "08d416f195cf4140bbc9b0b71cb560bde42f6d2046e732295996370eaf574439"
+    },
+    {
+      "file": "reports/maine-sld-case-lab-evidence-recovery-2026-10-04/integration/preview-switch.json",
+      "sha256": "bb472e865cb97a6c9a391dbb4fcc3161beebd1dc9cda4570d2e811103809a261"
+    },
+    {
+      "file": "reports/maine-sld-case-lab-evidence-recovery-2026-10-04/integration/managed-session.json",
+      "sha256": "dbce2438091cea1d3a257c82ea6092fa66625d4074188d675bc26c44ba7d4303"
+    },
+    {
+      "file": "reports/maine-sld-case-lab-evidence-recovery-2026-10-04/integration/preview-switch-clarification.json",
+      "sha256": "bd84512df338aa199db295d11752e29902152d960ae57750f20bb18a378d6619"
+    }
+  ],
+  "currentHostSnapshots": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "86eecff52f711fa3e3398fbfd24e8def69a84ba4ed69466f1c5eb013e1d388e6",
+      "bytes": 2853895
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "86eecff52f711fa3e3398fbfd24e8def69a84ba4ed69466f1c5eb013e1d388e6",
+      "bytes": 2853895
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "86eecff52f711fa3e3398fbfd24e8def69a84ba4ed69466f1c5eb013e1d388e6",
+      "bytes": 2853895
+    }
+  ],
+  "observedHostHashesAfterCapture": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "86eecff52f711fa3e3398fbfd24e8def69a84ba4ed69466f1c5eb013e1d388e6"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "86eecff52f711fa3e3398fbfd24e8def69a84ba4ed69466f1c5eb013e1d388e6"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "86eecff52f711fa3e3398fbfd24e8def69a84ba4ed69466f1c5eb013e1d388e6"
+    }
+  ],
+  "sourceDriftDuringPreparation": false,
+  "preexistingDirtyPathsArchived": true,
+  "previousArtifactsPreserved": true,
+  "previewOnly": true,
+  "noSourceModuleOrHostMutations": true
+}

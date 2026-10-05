@@ -1,0 +1,127 @@
+Micro Lab selected evidence portfolio
+Included activities: Growth investigations
+A readable collection of saved evidence, earlier versions, recoverable records, and recognized working notes. Labels distinguish original evidence from later reflection and unfinished work. This is not an importable backup or an overall mastery score.
+
+=== Growth investigations ===
+Illustrative growth model v1; populations are arbitrary units, not measurements. Every saved trial starts at 5 units, with capacity 100 and maximum modeled rate 0.4 per hour. Prediction comparisons use hour 24 and the trial’s original control. Similar means a difference of at most 2 units. Zero modeled growth does not establish death.
+Current saved evidence — Trial 7
+Original saved control: Organism profile: E. coli (facultative anaerobe); Temperature (°C): 37; pH: 7; Relative oxygen availability (0–100): 50
+Saved trial settings: Organism profile: E. coli (facultative anaerobe); Temperature (°C): 25; pH: 7; Relative oxygen availability (0–100): 50
+Original prediction: Lower population
+Reasoning before the run: Before saved Growth trial.
+Later evidence and explanation: Saved Growth explanation.
+Model comparison at hour 24: Lower population
+Evidence selected for my explanation
+Learner-selected model hours, using the original saved conditions. These citations do not change the original prediction or its hour-24 comparison.
+Cited model hour	Original control population	Trial population	Trial minus control
+0	5	5	0
+6	12.229	5.897	-6.332
+24	98.146	67.086	-31.06
+Model hour	Original control population	Trial population
+0	5	5
+1	5	5
+2	5	5
+3	5	5
+4	6.72	5
+5	9.1	5
+6	12.23	5.9
+7	16.23	7.07
+8	21.23	8.45
+9	27.27	10.07
+10	34.28	11.96
+11	42.04	14.15
+12	50.23	16.67
+13	58.4	19.53
+14	66.13	22.75
+15	73.09	26.33
+16	79.07	30.25
+17	84.01	34.48
+18	87.96	38.97
+19	91.04	43.66
+20	93.4	48.46
+21	95.16	53.29
+22	96.47	58.06
+23	97.44	62.68
+24	98.15	67.09
+
+Removed evidence (available to restore; outside the active notebook) — Trial 9
+Original saved control: Organism profile: E. coli (facultative anaerobe); Temperature (°C): 37; pH: 7; Relative oxygen availability (0–100): 50
+Saved trial settings: Organism profile: E. coli (facultative anaerobe); Temperature (°C): 25; pH: 7; Relative oxygen availability (0–100): 50
+Original prediction: Lower population
+Reasoning before the run: Removed Growth reasoning.
+Later evidence and explanation: Removed Growth explanation.
+Model comparison at hour 24: Lower population
+Evidence selected for my explanation
+Learner-selected model hours, using the original saved conditions. These citations do not change the original prediction or its hour-24 comparison.
+Cited model hour	Original control population	Trial population	Trial minus control
+12	50.227	16.668	-33.558
+Model hour	Original control population	Trial population
+0	5	5
+1	5	5
+2	5	5
+3	5	5
+4	6.72	5
+5	9.1	5
+6	12.23	5.9
+7	16.23	7.07
+8	21.23	8.45
+9	27.27	10.07
+10	34.28	11.96
+11	42.04	14.15
+12	50.23	16.67
+13	58.4	19.53
+14	66.13	22.75
+15	73.09	26.33
+16	79.07	30.25
+17	84.01	34.48
+18	87.96	38.97
+19	91.04	43.66
+20	93.4	48.46
+21	95.16	53.29
+22	96.47	58.06
+23	97.44	62.68
+24	98.15	67.09
+
+Current saved sweep
+Varied setting: pH
+Held constant: Organism profile: E. coli (facultative anaerobe); Temperature (°C): 37; Relative oxygen availability (0–100): 50
+Each sample starts at 5 units, runs for 24 model hours, and shares capacity 100 and maximum modeled rate 0.4 per hour. Sampled responses are not measurements; unsampled settings may differ.
+pH	Population at hour 24	Modeled lag (hours)
+3	5	8
+4	5	8
+5	13.91	7.01
+5.5	36.1	6.02
+6	69.25	5.03
+7	98.15	3.05
+7.5	87.37	4.29
+8	52.6	5.53
+9	5	8
+10	5	8
+
+Previous saved sweep (available to restore)
+Varied setting: Temperature (°C)
+Held constant: Organism profile: E. coli (facultative anaerobe); pH: 7; Relative oxygen availability (0–100): 50
+Each sample starts at 5 units, runs for 24 model hours, and shares capacity 100 and maximum modeled rate 0.4 per hour. Sampled responses are not measurements; unsampled settings may differ.
+Temperature (°C)	Population at hour 24	Modeled lag (hours)
+0	5	8
+10	7.09	7.66
+20	38.23	5.95
+30	88.09	4.24
+37	98.15	3.05
+45	5	8
+60	5	8
+70	5	8
+80	5	8
+90	5	8
+
+Current working notes and observations
+Next-run setup only; no outcome is calculated for this draft.
+Proposed settings: Organism profile: E. coli (facultative anaerobe); Temperature (°C): 18; pH: 7; Relative oxygen availability (0–100): 50
+Control saved for the next comparison: Organism profile: E. coli (facultative anaerobe); Temperature (°C): 37; pH: 7; Relative oxygen availability (0–100): 50
+Working prediction: Higher population
+Working reasoning: Working Growth reasoning.
+Working explanation: Working Growth notes.
+
+Earlier Growth Lab written notes (not linked to a saved trial)
+Earlier hypothesis: Earlier Growth notes.
+Earlier explanation: Earlier Growth explanation.

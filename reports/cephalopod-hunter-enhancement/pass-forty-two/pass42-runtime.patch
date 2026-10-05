@@ -1,0 +1,103 @@
+diff --git "a/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-forty-two\\baseline-runtime.js" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_cephalopodlab.js"
+index ff10b0522..7d2149ee7 100644
+--- "a/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\cephalopod-hunter-enhancement\\pass-forty-two\\baseline-runtime.js"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_cephalopodlab.js"
+@@ -11517,6 +11517,60 @@ function createCLHuntAnimal(T, species) {
+     geometry.userData.clSquidSiphonGeometry={authoredFrame:'cl-siphon-group',columns:columns,profiles:profiles,sectionRingIndices:rings,outerOutletRingIndices:rings[outerLastRow].slice(),innerOutletRingIndices:rings[innerFirstRow].slice(),outletCrestRingIndices:rings[14].slice(),basalPoleVertexIndex:basalPole,basalAttachmentVertexIndices:attachment,recessFloorVertexIndex:floor,openingCenter:center,openingDirection:[0,0,1],minimumRecessDepth:0.17};
+     return geometry;
+   }
++  function createCLHuntCuttleSiphonGeometry(T){
++    // A single closed wall joins the rounded muscle, rolled lip and deep cavity.
++    // The ventral slope exposes the entire outlet below the head while retaining its attachment frame.
++    var columns=24,outerLastRow=11,innerFirstRow=15,profiles=[
++      [0.026,0.020,-0.138,0.038],[0.051,0.037,-0.134,0.036],
++      [0.075,0.052,-0.121,0.027],[0.088,0.067,-0.102,0.016],
++      [0.095,0.075,-0.079,0.009],[0.094,0.075,-0.051,0.005],
++      [0.088,0.073,-0.020,0.001],[0.081,0.068,0.012,0.000],
++      [0.076,0.063,0.044,0.000],[0.071,0.059,0.075,0.000],
++      [0.070,0.057,0.108,0.000],[0.073,0.058,0.135,0.000],
++      [0.074,0.0585,0.142,0.000],[0.071,0.0555,0.147,0.000],
++      [0.066,0.0505,0.1475,0.000],[0.061,0.0455,0.144,0.000],
++      [0.057,0.042,0.138,0.000],[0.056,0.041,0.111,0.000],
++      [0.0575,0.043,0.078,0.000],[0.061,0.047,0.042,0.000],
++      [0.065,0.051,0.002,0.001],[0.063,0.050,-0.038,0.004],
++      [0.051,0.040,-0.073,0.011],[0.028,0.023,-0.095,0.020]
++    ],positions=[],colors=[],indices=[],parts=[],rings=[];
++    var outerTint=new T.Color(0xf3e5d4).convertSRGBToLinear(),foldTint=new T.Color(0xd9c4aa).convertSRGBToLinear();
++    var lipTint=new T.Color(0xffeed5).convertSRGBToLinear(),innerTint=new T.Color(0x9a8069).convertSRGBToLinear(),deepTint=new T.Color(0x30221a).convertSRGBToLinear(),shade=new T.Color();
++    function vertex(point,color,tone){var at=positions.length/3;positions.push(point[0],point[1]-0.5*(point[2]+0.140),point[2]);tone=tone===undefined?1:tone;colors.push(color.r*tone,color.g*tone,color.b*tone);return at;}
++    function bridge(a,b){for(var c=0;c<columns;c++){var next=(c+1)%columns;indices.push(a[c],a[next],b[c],a[next],b[next],b[c]);}}
++    function part(name,vertexStart,vertexCount,indexStart){var count=indices.length-indexStart;parts.push({name:name,vertexStart:vertexStart,vertexCount:vertexCount,indexStart:indexStart,indexCount:count,triangleStart:indexStart/3,triangleCount:count/3});}
++    var basalPole=vertex([0,0.040,-0.140],outerTint,0.97);
++    for(var row=0;row<profiles.length;row++){
++      var entry=profiles[row],rx=entry[0],ry=entry[1],z=entry[2],cy=entry[3],ring=[];
++      for(var c=0;c<columns;c++){
++        var angle=c/columns*Math.PI*2,outerWeight=row<=outerLastRow?Math.sin(Math.PI*row/(outerLastRow+1)):0;
++        var fold=(0.0009*Math.sin(angle*3+z*4)+0.0005*Math.cos(angle*5-z*3))*outerWeight;
++        var tone=0.99+0.008*Math.sin(angle*3+z*8);
++        if(row<=outerLastRow)shade.copy(outerTint).lerp(foldTint,0.04+0.06*(0.5+0.5*Math.cos(angle*3+z*4)));
++        else if(row<=innerFirstRow){shade.copy(outerTint).lerp(lipTint,0.60);tone=1;}
++        else{var depth=Math.max(0,Math.min(1,(0.138-z)/0.246));shade.copy(innerTint).lerp(deepTint,depth*0.94);tone=1;}
++        ring.push(vertex([Math.cos(angle)*(rx+fold),cy+Math.sin(angle)*(ry+fold*0.65),z],shade,tone));
++      }
++      rings.push(ring);
++    }
++    var start=indices.length;
++    for(var c=0;c<columns;c++)indices.push(basalPole,rings[0][(c+1)%columns],rings[0][c]);
++    for(var row=0;row<outerLastRow;row++)bridge(rings[row],rings[row+1]);
++    part('outer-muscle',0,1+(outerLastRow+1)*columns,start);
++    start=indices.length;
++    for(var row=outerLastRow;row<innerFirstRow;row++)bridge(rings[row],rings[row+1]);
++    part('rolled-outlet',1+outerLastRow*columns,(innerFirstRow-outerLastRow+1)*columns,start);
++    start=indices.length;
++    for(var row=innerFirstRow;row<profiles.length-1;row++)bridge(rings[row],rings[row+1]);
++    shade.copy(deepTint);var floor=vertex([0,0.024,-0.108],shade,0.95),last=rings[rings.length-1];
++    for(var c=0;c<columns;c++)indices.push(last[c],last[(c+1)%columns],floor);
++    part('inner-recess',1+innerFirstRow*columns,(profiles.length-innerFirstRow)*columns+1,start);
++    var geometry=new T.BufferGeometry();geometry.setAttribute('position',new T.Float32BufferAttribute(positions,3));geometry.setAttribute('color',new T.Float32BufferAttribute(colors,3));geometry.setIndex(indices);geometry.computeVertexNormals();geometry.computeBoundingBox();geometry.computeBoundingSphere();
++    var attachment=[basalPole];[1,2,3].forEach(function(row){[5,6,7].forEach(function(c){attachment.push(rings[row][c]);});});
++    geometry.userData.clCuttleSiphonParts=parts;
++    geometry.userData.clCuttleSiphonGeometry={authoredFrame:'cl-siphon-group',columns:columns,sectionRingIndices:rings,outerOutletRingIndices:rings[outerLastRow].slice(),innerOutletRingIndices:rings[innerFirstRow].slice(),outletCrestRingIndices:rings[14].slice(),basalPoleVertexIndex:basalPole,basalAttachmentVertexIndices:attachment,recessFloorVertexIndex:floor,openingCenter:[0,-0.142,0.144],openingDirection:[0,-0.5,1],minimumRecessDepth:0.20};
++    return geometry;
++  }
+   // A muscular Humboldt funnel has one continuous thick wall and a recessed opening.
+   var siphonTint=new T.Color(0xa68d78).convertSRGBToLinear();
+   var siphonMat=new T.MeshStandardMaterial({color:species.bodyColor,roughness:0.60});
+@@ -11524,6 +11578,9 @@ function createCLHuntAnimal(T, species) {
+   if(squid){
+     siphonMat.vertexColors=true;siphonMat.name='cl-squid-siphon-material';
+     var siphonTube=new T.Mesh(createCLHuntSquidSiphonGeometry(T),siphonMat);siphonTube.name='cl-siphon-tube';siphon.add(siphonTube);
++  }else if(cuttle){
++    siphonMat.vertexColors=true;siphonMat.name='cl-cuttle-siphon-material';
++    var cuttleSiphonTube=new T.Mesh(createCLHuntCuttleSiphonGeometry(T),siphonMat);cuttleSiphonTube.name='cl-siphon-tube';siphon.add(cuttleSiphonTube);
+   }else{
+     var siphonInnerMat=new T.MeshStandardMaterial({color:0x392d2b,roughness:0.78,side:T.BackSide});
+     var siphonRadius=squid?0.057:0.075,siphonLength=squid?0.25:0.28;
+@@ -15829,7 +15886,7 @@ function createCLHuntFish(T,index){
+         function openSettings(){if(gameState.gameOver)return;updateHuntHelp();settingsWasPaused=gameState.paused;setPaused(true);settingsPanel.hidden=false;settingsPanel.querySelector('input').focus();}
+         function closeSettings(){settingsPanel.hidden=true;clearInput();setPaused(settingsWasPaused);canvasEl.focus();}
+         settingsPanel.onkeydown=function(e){if(e.key==='Escape'){e.preventDefault();closeSettings();}if(e.key==='Tab'){var nodes=settingsPanel.querySelectorAll('button,input,select'),first=nodes[0],last=nodes[nodes.length-1];if(e.shiftKey&&document.activeElement===first){e.preventDefault();last.focus();}else if(!e.shiftKey&&document.activeElement===last){e.preventDefault();first.focus();}}};
+-        function cycleCamera(){gameState.cameraMode=((gameState.cameraMode||0)+1)%3;clAnnounce(['Follow view','Side view','Tactical view'][gameState.cameraMode]);canvasEl.focus();}
++        function cycleCamera(){gameState.cameraMode=((gameState.cameraMode||0)+1)%3;if(gameState.paused&&!inspection.active){updateDiveCamera(0,true);if(targetHalo.visible)targetHalo.quaternion.copy(camera.quaternion);}clAnnounce(['Follow view','Side view','Tactical view'][gameState.cameraMode]);canvasEl.focus();}
+         // Inspection freezes the simulation, including hunger, cooldowns and predator movement.
+         inspectionPanel=document.createElement('div');inspectionPanel.className='cl-inspection';inspectionPanel.hidden=true;inspectionPanel.setAttribute('role','region');inspectionPanel.setAttribute('aria-label','Specimen inspection');stage.appendChild(inspectionPanel);
+         var inspectionTitle=document.createElement('div');inspectionTitle.className='cl-inspection-title';
+@@ -15979,7 +16036,7 @@ function createCLHuntFish(T,index){
+           }
+           inspectionOcclusionPosition.copy(camera.position);inspectionOcclusionCenter.copy(inspection.center);
+         }
+-        function updateDiveCamera(dt){
++        function updateDiveCamera(dt,snap){
+           var view=gameState.cameraMode||0,camAngle=inspection.active?inspection.yaw:gameState.facingAngle+(view===1?Math.PI/2:0);
+           var camOff=inspection.active?new THREE.Vector3(-Math.sin(camAngle)*Math.cos(inspection.pitch)*inspection.distance,Math.sin(inspection.pitch)*inspection.distance,-Math.cos(camAngle)*Math.cos(inspection.pitch)*inspection.distance):new THREE.Vector3(-Math.sin(camAngle)*(view===2?3:4.6),view===2?9:2.2,-Math.cos(camAngle)*(view===2?3:4.6));
+           var cameraLook=inspection.active&&inspection.center?inspection.center.clone():new THREE.Vector3(octopus.position.x,octopus.position.y+0.15,octopus.position.z);
+@@ -15994,7 +16051,8 @@ function createCLHuntFish(T,index){
+             if(cameraHits.length)camTarget.copy(cameraLook).addScaledVector(camDir,Math.max(1.5,cameraHits[0].distance-0.3));
+           }
+           camTarget.y=Math.max(camTarget.y,terrainHeight(camTarget.x,camTarget.z)+0.65);
+-          if(inspection.active&&inspection.snapCamera){camera.position.copy(camTarget);inspection.snapCamera=false;}
++          if(snap&&!inspection.active)camera.position.copy(camTarget);
++          else if(inspection.active&&inspection.snapCamera){camera.position.copy(camTarget);inspection.snapCamera=false;}
+           else camera.position.lerp(camTarget,gameState.a11y.reducedMotion?1:1-Math.exp(-7.7*dt));
+           if(inspection.active){
+             // Interpolating across an orbit chord must not shrink the requested viewing radius.

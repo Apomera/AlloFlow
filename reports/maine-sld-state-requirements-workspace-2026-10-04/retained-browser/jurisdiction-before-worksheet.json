@@ -1,0 +1,280 @@
+{
+  "format": "alloflow-maine-sld-practice",
+  "schemaVersion": 1,
+  "moduleVersion": "1.1.0",
+  "reviewed": "2026-10-02",
+  "exportedAt": "2026-10-04T22:51:12.175Z",
+  "activeCase": "alex",
+  "caseWork": {
+    "alex": {
+      "findings": {
+        "wisc_indexes-full-scale-iq-fsiq": {
+          "purpose": "complicating",
+          "note": "  Participant literal evidence. <mark data-jurisdiction=\"literal\">Keep the original note</mark>\nSecond paragraph.  "
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "  Participant Q8 evidence remains uncertain. <b>literal Q8</b>  "
+        },
+        "Q9": {
+          "answer": "general-ed",
+          "note": "Participant Q9 instructional need requires more discussion.\n<em>literal Q9</em>"
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "  Participant independent summary before reading jurisdiction guidance.  ",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "alex-general-ed-adequate": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "jordan": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "marisol": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "taylor": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    }
+  }
+}

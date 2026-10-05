@@ -1,0 +1,123 @@
+
+Running 14 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on phone (17.4s)
+  ok  2 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on tablet (14.6s)
+  ok  3 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on desktop (29.5s)
+  ok  4 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on embedded-medium (17.4s)
+  x   5 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on embedded-large (5.8s)
+  x   6 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on forced-colors (8.7s)
+  x   7 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:113:5 › resizing and text spacing preserve optical focus and settings (7.8s)
+  ok  8 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:121:5 › inset-only inspection enables the lens without changing specimen work (9.1s)
+  ok  9 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:128:5 › assessment and Essentials retain optical teaching restrictions (8.8s)
+  ok 10 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:134:5 › toolbar feedback follows the pinned optical target (4.1s)
+  ok 11 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:148:5 › magnification guidance recommends the modeled level for the tissue depth (8.6s)
+  ok 12 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:160:60 › Identify uses consistent specimen navigation without recording work (3.4s)
+  ok 13 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:160:60 › Guided uses consistent specimen navigation without recording work (3.5s)
+  ok 14 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:160:60 › Compare uses consistent specimen navigation without recording work (5.9s)
+
+
+  1) [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on embedded-large 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m275[39m
+    Received:    [31m294[39m
+
+      54 | async function readable(p: Locator, available: number, large = false) {
+      55 |   const m = await metrics(p); expect(m.width).toBeLessThanOrEqual(available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);
+    > 56 |   expect(Math.abs(m.width - m.parentWidth)).toBeLessThanOrEqual(1); expect(m.parentScroll).toBeLessThanOrEqual(m.parentClient + 1);
+         |                                                                                            ^
+      57 |   expect(m.buttons).toHaveLength(6);
+      58 |   for (const b of m.buttons) { expect(b.width).toBeGreaterThanOrEqual(47.9); expect(b.height).toBeGreaterThanOrEqual(47.9); expect(b.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(b.clipped).toBe(false); if (b.pressed === 'true') { expect(b.border).toBeGreaterThanOrEqual(2.9); expect(b.underline).toContain('underline'); } }
+      59 |   for (const t of m.text) { expect(t.font).toBeGreaterThanOrEqual(large ? 16 : 14); expect(t.clipped).toBe(false); }
+        at readable (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-optical-clarity.spec.ts:56:92)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-optical-clarity.spec.ts:94:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium\error-context.md
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on forced-colors 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeGreaterThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: >= [32m2.9[39m
+    Received:    [31m1[39m
+
+      56 |   expect(Math.abs(m.width - m.parentWidth)).toBeLessThanOrEqual(1); expect(m.parentScroll).toBeLessThanOrEqual(m.parentClient + 1);
+      57 |   expect(m.buttons).toHaveLength(6);
+    > 58 |   for (const b of m.buttons) { expect(b.width).toBeGreaterThanOrEqual(47.9); expect(b.height).toBeGreaterThanOrEqual(47.9); expect(b.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(b.clipped).toBe(false); if (b.pressed === 'true') { expect(b.border).toBeGreaterThanOrEqual(2.9); expect(b.underline).toContain('underline'); } }
+         |                                                                                                                                                                                                                                                                 ^
+      59 |   for (const t of m.text) { expect(t.font).toBeGreaterThanOrEqual(large ? 16 : 14); expect(t.clipped).toBe(false); }
+      60 |   return m;
+      61 | }
+        at readable (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-optical-clarity.spec.ts:58:257)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-optical-clarity.spec.ts:94:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium\error-context.md
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:113:5 › resizing and text spacing preserve optical focus and settings 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m275[39m
+    Received:    [31m294[39m
+
+      54 | async function readable(p: Locator, available: number, large = false) {
+      55 |   const m = await metrics(p); expect(m.width).toBeLessThanOrEqual(available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);
+    > 56 |   expect(Math.abs(m.width - m.parentWidth)).toBeLessThanOrEqual(1); expect(m.parentScroll).toBeLessThanOrEqual(m.parentClient + 1);
+         |                                                                                            ^
+      57 |   expect(m.buttons).toHaveLength(6);
+      58 |   for (const b of m.buttons) { expect(b.width).toBeGreaterThanOrEqual(47.9); expect(b.height).toBeGreaterThanOrEqual(47.9); expect(b.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(b.clipped).toBe(false); if (b.pressed === 'true') { expect(b.border).toBeGreaterThanOrEqual(2.9); expect(b.underline).toContain('underline'); } }
+      59 |   for (const t of m.text) { expect(t.font).toBeGreaterThanOrEqual(large ? 16 : 14); expect(t.clipped).toBe(false); }
+        at readable (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-optical-clarity.spec.ts:56:92)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-optical-clarity.spec.ts:118:80
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium\error-context.md
+
+    Error Context: ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-optical-2026-10-04\final-reviewed\test-results\dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3 failed
+    [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on embedded-large 
+    [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on forced-colors 
+    [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:113:5 › resizing and text spacing preserve optical focus and settings 
+  11 passed (4.1m)

@@ -213,3 +213,79 @@ test('a distant target produces finite bounded reach without capture and reduced
   expect(await page.evaluate(() => (window as any).__fish[0].userData.alive)).toBe(true);
   await expect(page.locator('[data-hud=score]')).toHaveText('0');
 });
+
+test('the full native strike stays continuous through contact and recovery while turning and jetting', async ({ page }) => {
+  await mount(page);
+  await arrangeFish(page, [0.55, 0.2, 1.25], [-17, 0, 12]);
+  await page.evaluate(() => {
+    const w = window as any;
+    w.__strikeResources = [];
+    w.__player.traverse((m: any) => {
+      if (m.isMesh) w.__strikeResources.push({ m, geometry: m.geometry, material: m.material,
+        attributes: Object.values(m.geometry.attributes).map((a: any) => ({ a, array: a.array })),
+        matrix: m.instanceMatrix, matrixArray: m.instanceMatrix?.array });
+    });
+  });
+  await page.keyboard.press('KeyT');
+  await page.keyboard.press('KeyE');
+  let previous = await pose(page), largestStep = 0;
+  for (let frame = 1; frame <= 70; frame++) {
+    if (frame === 27) {
+      await page.keyboard.down('KeyD');
+      await page.keyboard.down('KeyW');
+      await page.keyboard.down('Space');
+    }
+    await page.evaluate(async () => {
+      const w = window as any; w.__testStep = 0.01;
+      do { await new Promise<void>(resolve => requestAnimationFrame(() => resolve())); }
+      while (w.__testStep !== 0);
+    });
+    const current = await pose(page);
+    for (let limb = 0; limb < current.length; limb++) {
+      const points = current[limb].positions, prior = previous[limb].positions;
+      expect(points.every(Number.isFinite)).toBe(true);
+      for (let i = 0; i < points.length; i += 3) {
+        largestStep = Math.max(largestStep, Math.hypot(points[i] - prior[i], points[i + 1] - prior[i + 1], points[i + 2] - prior[i + 2]));
+      }
+    }
+    if (frame === 19) expect(await page.evaluate(() => (window as any).__fish[0].userData.alive)).toBe(true);
+    if (frame === 20) {
+      expect(await page.evaluate(() => (window as any).__fish[0].userData.alive)).toBe(false);
+      expect(Math.max(...current.map(p => p.distanceToTarget))).toBeLessThan(0.35);
+    }
+    previous = current;
+  }
+  await page.keyboard.up('Space'); await page.keyboard.up('KeyW'); await page.keyboard.up('KeyD');
+  // A discontinuous snap across the bounded reach would exceed this per10ms limit.
+  expect(largestStep).toBeLessThan(0.25);
+  expect(await page.evaluate(() => {
+    const w = window as any;
+    return w.__strikeResources.every((r: any) => r.m.geometry === r.geometry && r.m.material === r.material
+      && r.attributes.every((a: any) => a.a.array === a.array)
+      && r.m.instanceMatrix === r.matrix && r.m.instanceMatrix?.array === r.matrixArray);
+  })).toBe(true);
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.cephalopodLab.huntsSuccessful || 0)).toBe(1);
+  expect(await page.evaluate(() => (window as any).__fish[1].userData.alive)).toBe(true);
+});
+
+test('reduced motion preserves a successful native strike without animating the feeding reach', async ({ page }) => {
+  await mount(page);
+  await arrangeFish(page, [0.45, 0.1, 1.1], [-17, 0, 12]);
+  await clickCephalopodControl(page, 'Help / settings');
+  await page.getByLabel('Reduced motion', { exact: true }).check();
+  await page.getByRole('button', { name: 'Resume dive', exact: true }).click();
+  await advance(page, 2);
+  const still = await buffers(page);
+  await page.locator(canvas).focus();
+  await page.keyboard.press('KeyT');
+  await page.keyboard.press('KeyE');
+  await advance(page, 3);
+  expect(await buffers(page)).toEqual(still);
+  expect(await page.evaluate(() => (window as any).__fish[0].userData.alive)).toBe(true);
+  await advance(page, 1);
+  expect(await buffers(page)).toEqual(still);
+  expect(await page.evaluate(() => (window as any).__fish[0].userData.alive)).toBe(false);
+  await advance(page, 10);
+  expect(await buffers(page)).toEqual(still);
+  await expect.poll(() => page.evaluate(() => (window as any).__toolData.cephalopodLab.huntsSuccessful || 0)).toBe(1);
+});

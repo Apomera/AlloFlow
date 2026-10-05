@@ -1,0 +1,14 @@
+{
+  "baselineSHA": "ee2608fd48477d120397774ff775f28f8565a72a5a1dd06cec6845d722d34b72",
+  "finalSHA": "c3ba3189fce6d0bd1eda77179c2c8345e7fa970817391925ac83080e45c5e17c",
+  "edits": [
+    {
+      "old": "@container dissection (max-width: 640px) { [data-dissection-root] .diss-optics__controls { grid-template-columns: minmax(0, 1fr); } [data-dissection-root] .diss-scenario-console { grid-column: 1 / -1; } }",
+      "new": "@container dissection (max-width: 640px) { [data-dissection-root] .diss-optics__controls { grid-template-columns: minmax(0, 1fr); } [data-dissection-root] .diss-scenario-console { grid-column: 1 / -1; } [data-dissection-root] .diss-tissue-meter span { flex-wrap: wrap; overflow-wrap: anywhere; } }"
+    },
+    {
+      "old": "  [data-dissection-root] .diss-optics__controls button:focus-visible { outline-color: Highlight !important; }",
+      "new": "  [data-dissection-root] .diss-optics__controls button:focus-visible { outline-color: Highlight !important; }\n  [data-dissection-root] .diss-optics__controls button[aria-pressed=\"true\"] { border-width: 3px !important; }"
+    }
+  ]
+}

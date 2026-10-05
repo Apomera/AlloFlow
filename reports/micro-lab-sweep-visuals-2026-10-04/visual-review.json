@@ -1,0 +1,61 @@
+{
+  "sourceSha256": "0cb0eb7b5d68198fb5b9b2935cc6ce3f49a2ac4e7971646446ed885734eb28c4",
+  "browserPhase": "browser-defaults-final",
+  "result": "passed",
+  "reviewedAt": "2026-10-05T02:07:24.492Z",
+  "finalCaptureVerifiedAt": "2026-10-05T02:12:39.366Z",
+  "review": "Primary and independent agents manually inspected all ten images. The final browser run refreshed every capture; their byte hashes match the reviewed images.",
+  "blockingIssues": [],
+  "artifacts": {
+    "sweep-desktop.png": {
+      "sha256": "c1867bb9b86a73052bf3e2d30d9e71af402ded3cedc1fbd69b6b574c08004821",
+      "result": "passed",
+      "observation": "At 37 degrees C the outlined circle and guide align with the temperature peak. Fixed population ticks and inward endpoint labels are readable; the selected population is 99.7."
+    },
+    "sweep-ph.png": {
+      "sha256": "1ab3bb57cad3b797dd5ac902fe153db6c207132efc9f1e3123652a1fc144905c",
+      "result": "passed",
+      "observation": "The pH samples use visibly unequal numeric spacing, with the selected pH 7 guide at the peak. Circles and flat-response squares remain distinct; all readouts are readable."
+    },
+    "sweep-oxygen.png": {
+      "sha256": "09f86ecd22e0f72e811d300bd05ccc46d938bb722b08c97ed93f92128fa12d53",
+      "result": "passed",
+      "observation": "The selected 100/100 sample and guide remain visible at the right boundary. Uneven oxygen sample spacing follows the numeric axis, and the population readout is 98.3."
+    },
+    "sweep-previous.png": {
+      "sha256": "0cd46659351321271d77a0d9095c1af1edbdc9504f9de285227542ffa4a3075f",
+      "result": "passed",
+      "observation": "The previous sweep has its own selector. Its selected pH 5.5 guide and outlined point align with the 14.1 population readout; flat squares remain visible along the baseline."
+    },
+    "sweep-phone-320.png": {
+      "sha256": "9c16a6fcfa3bfc5dd9486c74bc3f9b8cd71a37343050d0bee4b324b048070dd2",
+      "result": "passed",
+      "observation": "At 320 pixels temperature labels fit on single lines. The focused selector has a clear outline, the selected point remains visible near the top, and numeric cards stack without overflow."
+    },
+    "sweep-400-percent.png": {
+      "sha256": "9e30cf7cbdaf100cc77fd5bbb8b4a314e98267eecd5dba67e1c7792903db624c",
+      "result": "passed",
+      "observation": "At 400 percent enlargement the figure, selector, legend and readout cards reflow vertically. Axis text remains aligned, marker shapes retain their proportions and focus is visible."
+    },
+    "sweep-contrast.png": {
+      "sha256": "9f825e3fffd21e569dcef7604d49c049f126c985f45d04d9658b2f8eeaa41149",
+      "result": "passed",
+      "observation": "The light forced-color canvas retains a blue dashed curve, dark guide and open selected ring. Circles and squares remain distinct, and text, cards and selector focus are clear."
+    },
+    "sweep-ph-phone-320.png": {
+      "sha256": "e308f6cb18fc03e4ebc0504ed729efb966aa676bf0f1d1b6ccca8eff1490c0d9",
+      "result": "passed",
+      "observation": "At 320 pixels the pH labels remain uncrowded. The selected 5.5 sample appears between pH 5 and 7 at population 50.0, with readable stacked cards and visible keyboard focus."
+    },
+    "sweep-oxygen-phone-320.png": {
+      "sha256": "4e29003aad69910c40e17b3dc81dbbd56f4dcd8183db9ec028566465794100eb",
+      "result": "passed",
+      "observation": "At 320 pixels all five oxygen ticks fit. The selected 5/100 outline is visible near the left boundary and matches the 6.5 population readout; labels and stacked cards fit."
+    },
+    "sweep-flat-square.png": {
+      "sha256": "ab0d47b4ef34eaf297c5cd8582c99d9c288111e9bf4d3267f86efe25121bfa96",
+      "result": "passed",
+      "observation": "Every flat-response sample stays a square at population 5.0. The selected zero-oxygen square and guide are visible at the left boundary, and the readout states no modeled increase."
+    }
+  }
+}

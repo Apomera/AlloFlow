@@ -1,0 +1,22 @@
+{
+  "word_sounds_readiness_contract.js": {
+    "sha256": "364c4241ff653f705ca529780e1142b8ad3147864953d1f315831791a918fb4e",
+    "bytes": 25170
+  },
+  "view_word_sounds_preview_source.jsx": {
+    "sha256": "f3a412a28d2e121e40d1ea1b92405ce3adbea23a2e62eee0862ce38818d06fe3",
+    "bytes": 17451
+  },
+  "host_handlers_source.jsx": {
+    "sha256": "6898dfc5a7b180c4390fdba5e4b93dcc72e4c35259fa6764f6abb4b1343ba764",
+    "bytes": 661460
+  },
+  "tests/word_sounds_readiness_contract.test.js": {
+    "sha256": "41bea30bd391d92bdf402312d9d168bf7dd1a17efe1cebba3dea5064869ea5e4",
+    "bytes": 17597
+  },
+  "tests/word_sounds_readiness_ui.test.js": {
+    "sha256": "4f4fa61ac2908254e7f4d723cc43e3a3b5480c17b8dbdeaddae14bb767ade208",
+    "bytes": 10528
+  }
+}

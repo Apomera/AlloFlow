@@ -1,0 +1,104 @@
+{
+  "removedFileCount": 16,
+  "runtimeTestsReportsRetained": true,
+  "exactFiles": [
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-baseline.js",
+      "name": "moon-pass23-baseline.js",
+      "bytes": 1384887,
+      "sha256": "711738efbb3fca5af72d26a4ae87862985ad5aa4b20690f58761eaf5fb3e393e"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-baseline.json",
+      "name": "moon-pass23-baseline.json",
+      "bytes": 3968,
+      "sha256": "abf89d6b97c03e3ac3bd6601fda3aff17d5ea8f6bf46256ae20c35588bfa0d73"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-candidate.js",
+      "name": "moon-pass23-candidate.js",
+      "bytes": 1389480,
+      "sha256": "2ada5eb685576b2573a29a99e03c7038dd7cdff7b7fa45dd95c23a8458d6e9bd"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-dust.js",
+      "name": "moon-pass23-dust.js",
+      "bytes": 4903,
+      "sha256": "b708742a8f97000602f143ea85e58a8af1a068a481b5e2968ae439154ab9e431"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-dust.spec.ts",
+      "name": "moon-pass23-dust.spec.ts",
+      "bytes": 16855,
+      "sha256": "26df72656f6fbc8d1640876e1f53e62e59c712421f89a9cdeb83eff32f87a81c"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-dust.test.js",
+      "name": "moon-pass23-dust.test.js",
+      "bytes": 12225,
+      "sha256": "0ccba8134dd8aa0ef21323a1750ab7db329c1a19ad584626081189bb2fa25ecd"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-finalize.py",
+      "name": "moon-pass23-finalize.py",
+      "bytes": 26128,
+      "sha256": "abc53f4c317e54f915c04cea169792ddae50facae5493ce48860a14e269163f1"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-frame.js",
+      "name": "moon-pass23-frame.js",
+      "bytes": 791,
+      "sha256": "baeadae2b60a54e2e3250e8a929958f6f2ccd888fea577bc002aeb6ca53185cc"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-gl-setup.js",
+      "name": "moon-pass23-gl-setup.js",
+      "bytes": 1015,
+      "sha256": "838b8c8feab468b6656fcede3e1f808be9bb37dad17c5ec865b6e9bed4617d0a"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-gl-update.js",
+      "name": "moon-pass23-gl-update.js",
+      "bytes": 836,
+      "sha256": "bd5c7098adb2baec38eb9ece6fa28be18c0e54ba42eb36e7054b6498dc5839b0"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-index-before.txt",
+      "name": "moon-pass23-index-before.txt",
+      "bytes": 941,
+      "sha256": "a1695dfd146b39065a296247b66b74e5bed470a6746a8d1c0a0e6ad2f01dfd3d"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-init.py",
+      "name": "moon-pass23-init.py",
+      "bytes": 1588,
+      "sha256": "098cb833de46ac678d79e1fec95bf217be29bbfdcd466daa0a76f0062e32f9d7"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-integrate.py",
+      "name": "moon-pass23-integrate.py",
+      "bytes": 8241,
+      "sha256": "21c195f5aa859306f9e1a0bcb5150530c6ae3d0599f30a3443ff221f81afd1ce"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-playwright.config.ts",
+      "name": "moon-pass23-playwright.config.ts",
+      "bytes": 342,
+      "sha256": "c23381f13f6aa9ba0425799a38b948006063d9ff00cef2597a39a6bd744fad22"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-preserve.py",
+      "name": "moon-pass23-preserve.py",
+      "bytes": 2801,
+      "sha256": "d362a4f236c9ee77e1528c7b7b94005804c2b30cc7a53a847117399e19c5e9d1"
+    },
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass23-probe.cjs",
+      "name": "moon-pass23-probe.cjs",
+      "bytes": 4118,
+      "sha256": "d4e72ccf53354c56e6cb5e77cbd88fc009a6cefb3cf76e5777605773c6d33f48"
+    }
+  ],
+  "privateParent": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11",
+  "recursiveDelete": false
+}

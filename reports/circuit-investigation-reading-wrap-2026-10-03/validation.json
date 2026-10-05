@@ -1,0 +1,39 @@
+{
+  "passed": true,
+  "sourceSha256": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+  "mirrorSha256": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+  "cssOnly": true,
+  "byteExactPriorSourcePreserved": true,
+  "baseline": {
+    "validationSha256": "badd78b156c74fb7d7e582532404bc5761fed8f65a86bcbb0b8ce59970cad9c0",
+    "tests": 172,
+    "files": 10,
+    "views": 12
+  },
+  "freshRegression": {
+    "tests": 12,
+    "files": 1
+  },
+  "browser": {
+    "views": 6,
+    "focus": 12,
+    "phoneViews": 5,
+    "notebookOpens": 1,
+    "listitems": 2,
+    "desktopCSSUnchanged": true,
+    "desktopReviewed": true
+  },
+  "screenshotsReviewedByRoot": 6,
+  "gitDiffCheck": true,
+  "scopedChangesUnstaged": true,
+  "artifacts": {
+    "source-preservation.json": "660778bc291b10c1a004a023a005cb718f245b2203fe78ac6271d946a5c1097e",
+    "independent-review.json": "02d4d7585f59a70e257080176521d5019ea420f44f93099095aa39452d9676ca",
+    "regression.json": "bc692ed5205964e4db9ea307e1d18d342a9413cacdcebf512daa01ef582b744c",
+    "regression-receipt.json": "641a65a4832c661ca0ceaf9b1f7e6ae40e67be51d1eaf9b9c7dbc5eecc3468cb",
+    "browser-results.json": "ae691479ae6854deb66f867c78c496e856324045e9ef507eafbfd3f997eac305",
+    "visual-review.json": "9c609938219afa6571e4be41c9c1a86b8fa6d2d12de75a64064f96c506a782f1",
+    "root-visual-review.json": "58b91c7827ab339b9183254fa5ee8b5bb6c1c9c71f2c42f59bc89b631a056d9f",
+    "validate.cjs": "013d7123e322933acef7d9f34e7477a018fe039efec0acbda75850520dc13295"
+  }
+}

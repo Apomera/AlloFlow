@@ -1,0 +1,21 @@
+{
+  "editedAt": "2026-10-03T17:56:37.635281+00:00",
+  "beforeSha256": "ef37ab74b6188e1346f3e7447dd08e190ec15a1e1b781530b3c0c5d10f715a46",
+  "afterSha256": "0977f3f47dbc6a9f0de837eca298a1ecfcea201a852d3a39e93d3acf9ef59329",
+  "worksheetSchemaPreserved": true,
+  "printFunctionPrintCssSharedResponseLabelPreserved": true,
+  "caseDataCoreBuilderPreserved": true,
+  "newNavigationPreferencesTransient": true,
+  "planningReflectionKeys": [
+    "caution",
+    "access",
+    "sdi",
+    "summary",
+    "family",
+    "multilingual"
+  ],
+  "noHostSourceWritesYet": true,
+  "correctedAt": "2026-10-03T18:01:16.170461+00:00",
+  "moduleInstallBaselineSha256": "3589de08256314427690da50f972cc756bb500745f1533e43f04181ab001d570",
+  "navigationCorrection": "Ordinary step navigation clears stale evidence returns; explicit finding detours restore their target after navigation."
+}

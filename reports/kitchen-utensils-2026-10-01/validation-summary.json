@@ -1,0 +1,37 @@
+{
+  "pass": true,
+  "feature": "Physical utensil rack with direct pickup and carrying between cookware",
+  "committed": false,
+  "unitTests": {
+    "passed": 78,
+    "files": 7,
+    "command": "npx vitest run kitchen_recipe_tool_rack kitchen_recipe_workspace kitchen_recipe_gesture_guide kitchen_recipe_sampling kitchen_recipe_turning kitchen_recipe_folding kitchen_recipe_tomato_press --pool=forks --maxWorkers=1 --no-isolate --testTimeout=30000"
+  },
+  "browserChecks": 27,
+  "browserSuites": [
+    {
+      "file": "rack-ux/rack-results.json",
+      "checks": 13,
+      "pass": true
+    },
+    {
+      "file": "folding-regression/fold-results.json",
+      "checks": 12,
+      "pass": true
+    },
+    {
+      "file": "hover-ux/hover-results.json",
+      "checks": 2,
+      "pass": true
+    }
+  ],
+  "accessibilityScans": 8,
+  "accessibilityViolations": 0,
+  "pageErrors": 0,
+  "runtimeFiles": 45,
+  "mirrorsIdentical": true,
+  "javaScriptParses": true,
+  "previewExactNoStore": true,
+  "scopedDiffCheck": true,
+  "preview": "http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html?v=20261001-utensils"
+}

@@ -1,0 +1,59 @@
+{
+  "finalSource": true,
+  "before": {
+    "sourceLfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+    "sourceRawSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+    "mirrorsByteEqual": true
+  },
+  "after": {
+    "sourceLfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+    "sourceRawSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+    "mirrorsByteEqual": true
+  },
+  "syntaxChecksPassed": true,
+  "fixtures": [
+    "tests/anatomy_spotter_practice.test.js",
+    "tests/anatomy_spotter_navigation.test.js",
+    "tests/anatomy_spotter_marker_view.test.js",
+    "tests/anatomy_case_journey.test.js",
+    "tests/anatomy_activity_switch_continuity.test.js",
+    "tests/anatomy_heading_structure.test.js",
+    "tests/anatomy_mobile_a11y_polish.test.js",
+    "tests/anatomy_spotter_study_localization.test.js"
+  ],
+  "outputFile": "reports/anatomy-spotter-study-2026-10-02/support-final-tests-3b4598e6.json",
+  "pool": "threads",
+  "maxWorkers": 1,
+  "assertionsUnchanged": true,
+  "outerTimeoutMs": 900000,
+  "exitCode": null,
+  "runnerError": "spawnSync C:\\Program Files\\nodejs\\node.exe ETIMEDOUT",
+  "success": false,
+  "completedAt": "2026-10-03T00:14:49.033Z",
+  "classification": "Runner outer time budget, with no observed assertion failure",
+  "resultJsonWasFresh": false,
+  "note": "The interrupted runner did not write a final JSON result. Zero counts in the old report belonged to the earlier startup attempt and are excluded from this attempt.",
+  "observedCompletedFixtures": [
+    {
+      "file": "tests/anatomy_case_journey.test.js",
+      "passed": 238,
+      "durationMs": 252188
+    },
+    {
+      "file": "tests/anatomy_spotter_practice.test.js",
+      "passed": 28,
+      "durationMs": 20569
+    },
+    {
+      "file": "tests/anatomy_activity_switch_continuity.test.js",
+      "passed": 112,
+      "durationMs": 427310
+    },
+    {
+      "file": "tests/anatomy_spotter_study_localization.test.js",
+      "passed": 7,
+      "durationMs": 70033
+    }
+  ],
+  "observedPassedChecks": 385
+}

@@ -1,0 +1,101 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "case": "complete citation preview and exact append",
+      "width": 1280,
+      "checks": [
+        "actual annual/monthly source, values, units, full capture date and model metadata",
+        "current/earlier-settings/earlier-model citation prefixes",
+        "native preview Space/Enter and read-only behavior",
+        "same live/archive id has unique live status and no archived controls",
+        "independent exact newline/character budget",
+        "Add preserves whitespace and changes only Evidence",
+        "duplicate Add safely writes nothing",
+        "Evidence review keyboard focus opens native structured details",
+        "frozen records/parked writing and reload unchanged",
+        "scoped axe, reflow, reduced motion and 44px controls"
+      ],
+      "errors": []
+    },
+    {
+      "case": "complete citation preview and exact append",
+      "width": 390,
+      "checks": [
+        "actual annual/monthly source, values, units, full capture date and model metadata",
+        "current/earlier-settings/earlier-model citation prefixes",
+        "native preview Space/Enter and read-only behavior",
+        "same live/archive id has unique live status and no archived controls",
+        "independent exact newline/character budget",
+        "Add preserves whitespace and changes only Evidence",
+        "duplicate Add safely writes nothing",
+        "Evidence review keyboard focus opens native structured details",
+        "frozen records/parked writing and reload unchanged",
+        "scoped axe, reflow, reduced motion and 44px controls"
+      ],
+      "errors": []
+    },
+    {
+      "case": "complete citation preview and exact append",
+      "width": 320,
+      "checks": [
+        "actual annual/monthly source, values, units, full capture date and model metadata",
+        "current/earlier-settings/earlier-model citation prefixes",
+        "native preview Space/Enter and read-only behavior",
+        "same live/archive id has unique live status and no archived controls",
+        "independent exact newline/character budget",
+        "Add preserves whitespace and changes only Evidence",
+        "duplicate Add safely writes nothing",
+        "Evidence review keyboard focus opens native structured details",
+        "frozen records/parked writing and reload unchanged",
+        "scoped axe, reflow, reduced motion and 44px controls",
+        "forced colors"
+      ],
+      "errors": []
+    },
+    {
+      "case": "500/501 complete-citation boundary and edit refresh",
+      "width": 320,
+      "checks": [
+        "exact whole citation fits at 500",
+        "501 is full with one-character overflow",
+        "no partial append or truncation",
+        "full Add remains guarded and preserves writing",
+        "direct edit keyboard focus",
+        "explicit Evidence edit refreshes budget",
+        "other writing/captured/archive/parked data unchanged",
+        "scoped axe/reflow/forced colors"
+      ],
+      "errors": []
+    },
+    {
+      "case": "body duplicate survives provenance prefix changes",
+      "width": 320,
+      "checks": [
+        "existing body citation is already-added",
+        "actual B edit changes current provenance to earlier settings",
+        "candidate retains complete frozen body",
+        "body-based duplicate takes precedence",
+        "no duplicate append or automatic citation rewriting",
+        "Evidence review focus and unchanged original/archive/parked work",
+        "scoped axe/reflow/forced colors"
+      ],
+      "errors": []
+    },
+    {
+      "case": "plain-text escaping and unavailable source",
+      "width": 320,
+      "checks": [
+        "actual numeric source with untrusted label metadata",
+        "complete candidate is escaped text",
+        "preview executes no HTML",
+        "exact literal append to Evidence only",
+        "report copy retains safe escaping without mutating saved originals",
+        "unavailable pure helper has no citation and preserves writing",
+        "scoped axe/reflow/forced colors"
+      ],
+      "report": "escaped-citation-report.html",
+      "errors": []
+    }
+  ]
+}

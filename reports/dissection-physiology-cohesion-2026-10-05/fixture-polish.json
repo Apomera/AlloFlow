@@ -1,0 +1,21 @@
+{
+  "files": [
+    "tests/e2e/dissection-physiology-cohesion.spec.ts"
+  ],
+  "before": "8fe22baa94ef274d25abb0b850974cc3f95ad861698609111850b28cadc3b7c5",
+  "after": "36cf2cd7a962d203f8c129be078f23814b76f508733e8508eb3fdc0f38bf236a",
+  "edits": [
+    {
+      "old": "parentScroll: el.parentElement!.scrollWidth, optionsColumns:",
+      "new": "parentScroll: el.parentElement!.scrollWidth, sectionGaps: Array.from(el.children).filter(n => n.matches('.diss-overlay-options,.diss-living-function,.diss-system-playback')).map(n => n.getBoundingClientRect().top - n.previousElementSibling!.getBoundingClientRect().bottom), optionsColumns:"
+    },
+    {
+      "old": "for (const b of m.buttons) {",
+      "new": "for (const gap of m.sectionGaps) expect(gap).toBeGreaterThanOrEqual(13); for (const b of m.buttons) {"
+    },
+    {
+      "old": "await mount(page, { practicalMode: true }, 390, 390, false); await expect(panel(page)).toBeHidden();",
+      "new": "await mount(page, { practicalMode: true, practicalEndsAt: Date.now() + 120000, practicalTimer: 120 }, 390, 390, false); expect((await state(page)).practicalMode).toBe(true); await expect(panel(page)).toBeHidden();"
+    }
+  ]
+}

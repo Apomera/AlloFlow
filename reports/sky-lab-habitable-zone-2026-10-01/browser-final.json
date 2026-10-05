@@ -1,0 +1,591 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "astronomy-habitable-zone.spec.ts",
+      "file": "astronomy-habitable-zone.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "published planet presets link energy and orbit figures while preserving independent investigations",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3093,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:55:46.030Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f1ffc00070104defaaac-863d22c5cfb1da2c2955",
+          "file": "astronomy-habitable-zone.spec.ts",
+          "line": 64,
+          "column": 5
+        },
+        {
+          "title": "native keyboard controls keep focus and the climate boundaries remain independent of reflectivity",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1630,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:55:50.295Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f1ffc00070104defaaac-cabd43c542b69d902260",
+          "file": "astronomy-habitable-zone.spec.ts",
+          "line": 76,
+          "column": 5
+        },
+        {
+          "title": "teaching star scenarios retain orbit assumptions and centering respects the selected climate limits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1422,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:55:51.940Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f1ffc00070104defaaac-62f3aa8bd570623cccdd",
+          "file": "astronomy-habitable-zone.spec.ts",
+          "line": 86,
+          "column": 5
+        },
+        {
+          "title": "touch distance selection and cancellation stay usable at both bounded extremes",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2946,
+                  "error": {
+                    "message": "Error: locator.fill: Error: Malformed value\nCall log:\n\u001b[2m  - waiting for locator('#astronomy-hz-albedo')\u001b[22m\n\u001b[2m    - locator resolved to <input min=\"0\" max=\"0.9\" step=\"any\" type=\"range\" value=\"0.294\" class=\"astr-focus\" aria-valuetext=\"29.4%\" id=\"astronomy-hz-albedo\" aria-label=\"Reflected fraction (Bond albedo)\"/>\u001b[22m\n\u001b[2m    - fill(\".9\")\u001b[22m\n\u001b[2m  - attempting fill action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and editable\u001b[22m\n",
+                    "stack": "Error: locator.fill: Error: Malformed value\nCall log:\n\u001b[2m  - waiting for locator('#astronomy-hz-albedo')\u001b[22m\n\u001b[2m    - locator resolved to <input min=\"0\" max=\"0.9\" step=\"any\" type=\"range\" value=\"0.294\" class=\"astr-focus\" aria-valuetext=\"29.4%\" id=\"astronomy-hz-albedo\" aria-label=\"Reflected fraction (Bond albedo)\"/>\u001b[22m\n\u001b[2m    - fill(\".9\")\u001b[22m\n\u001b[2m  - attempting fill action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and editable\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-habitable-zone.spec.ts:101:103",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-habitable-zone.spec.ts",
+                      "column": 103,
+                      "line": 101
+                    },
+                    "snippet": "   99 |  await chart.dispatchEvent('pointercancel',{pointerId:77,pointerType:'touch'});await chart.press('Home');v=await linked(page);check(v);expect(v.m.distanceAu).toBe(.03);await expect(chart).toBeFocused();\n  100 |  await chart.press('End');v=await linked(page);check(v);expect(v.m.distanceAu).toBe(20);\n> 101 |  await page.locator('#astronomy-hz-luminosity').fill('-2');await page.locator('#astronomy-hz-albedo').fill('.9');v=await linked(page);check(v);expect(v.m.flux).toBe(.000025);await expect(root(page).locator('[data-hz-metric=\"flux\"]')).not.toContainText('0×');\n      |                                                                                                       ^\n  102 |  await root(page).screenshot({path:OUT+'/habitable-zone-extreme.png'});expect(errors).toEqual([]);\n  103 | });\n  104 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-habitable-zone.spec.ts",
+                        "column": 103,
+                        "line": 101
+                      },
+                      "message": "Error: locator.fill: Error: Malformed value\nCall log:\n\u001b[2m  - waiting for locator('#astronomy-hz-albedo')\u001b[22m\n\u001b[2m    - locator resolved to <input min=\"0\" max=\"0.9\" step=\"any\" type=\"range\" value=\"0.294\" class=\"astr-focus\" aria-valuetext=\"29.4%\" id=\"astronomy-hz-albedo\" aria-label=\"Reflected fraction (Bond albedo)\"/>\u001b[22m\n\u001b[2m    - fill(\".9\")\u001b[22m\n\u001b[2m  - attempting fill action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and editable\u001b[22m\n\n\n   99 |  await chart.dispatchEvent('pointercancel',{pointerId:77,pointerType:'touch'});await chart.press('Home');v=await linked(page);check(v);expect(v.m.distanceAu).toBe(.03);await expect(chart).toBeFocused();\n  100 |  await chart.press('End');v=await linked(page);check(v);expect(v.m.distanceAu).toBe(20);\n> 101 |  await page.locator('#astronomy-hz-luminosity').fill('-2');await page.locator('#astronomy-hz-albedo').fill('.9');v=await linked(page);check(v);expect(v.m.flux).toBe(.000025);await expect(root(page).locator('[data-hz-metric=\"flux\"]')).not.toContainText('0×');\n      |                                                                                                       ^\n  102 |  await root(page).screenshot({path:OUT+'/habitable-zone-extreme.png'});expect(errors).toEqual([]);\n  103 | });\n  104 |\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-habitable-zone.spec.ts:101:103"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:55:53.380Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-habitable-zone-t-9f23e-le-at-both-bounded-extremes-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-habitable-zone-t-9f23e-le-at-both-bounded-extremes-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-habitable-zone-t-9f23e-le-at-both-bounded-extremes-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-habitable-zone-t-9f23e-le-at-both-bounded-extremes-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-habitable-zone.spec.ts",
+                    "column": 103,
+                    "line": 101
+                  }
+                },
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 8231,
+                  "error": {
+                    "message": "Error: locator.fill: Error: Malformed value\nCall log:\n\u001b[2m  - waiting for locator('#astronomy-hz-albedo')\u001b[22m\n\u001b[2m    - locator resolved to <input min=\"0\" max=\"0.9\" step=\"any\" type=\"range\" value=\"0.294\" class=\"astr-focus\" aria-valuetext=\"29.4%\" id=\"astronomy-hz-albedo\" aria-label=\"Reflected fraction (Bond albedo)\"/>\u001b[22m\n\u001b[2m    - fill(\".9\")\u001b[22m\n\u001b[2m  - attempting fill action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and editable\u001b[22m\n",
+                    "stack": "Error: locator.fill: Error: Malformed value\nCall log:\n\u001b[2m  - waiting for locator('#astronomy-hz-albedo')\u001b[22m\n\u001b[2m    - locator resolved to <input min=\"0\" max=\"0.9\" step=\"any\" type=\"range\" value=\"0.294\" class=\"astr-focus\" aria-valuetext=\"29.4%\" id=\"astronomy-hz-albedo\" aria-label=\"Reflected fraction (Bond albedo)\"/>\u001b[22m\n\u001b[2m    - fill(\".9\")\u001b[22m\n\u001b[2m  - attempting fill action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and editable\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-habitable-zone.spec.ts:101:103",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-habitable-zone.spec.ts",
+                      "column": 103,
+                      "line": 101
+                    },
+                    "snippet": "   99 |  await chart.dispatchEvent('pointercancel',{pointerId:77,pointerType:'touch'});await chart.press('Home');v=await linked(page);check(v);expect(v.m.distanceAu).toBe(.03);await expect(chart).toBeFocused();\n  100 |  await chart.press('End');v=await linked(page);check(v);expect(v.m.distanceAu).toBe(20);\n> 101 |  await page.locator('#astronomy-hz-luminosity').fill('-2');await page.locator('#astronomy-hz-albedo').fill('.9');v=await linked(page);check(v);expect(v.m.flux).toBe(.000025);await expect(root(page).locator('[data-hz-metric=\"flux\"]')).not.toContainText('0×');\n      |                                                                                                       ^\n  102 |  await root(page).screenshot({path:OUT+'/habitable-zone-extreme.png'});expect(errors).toEqual([]);\n  103 | });\n  104 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-habitable-zone.spec.ts",
+                        "column": 103,
+                        "line": 101
+                      },
+                      "message": "Error: locator.fill: Error: Malformed value\nCall log:\n\u001b[2m  - waiting for locator('#astronomy-hz-albedo')\u001b[22m\n\u001b[2m    - locator resolved to <input min=\"0\" max=\"0.9\" step=\"any\" type=\"range\" value=\"0.294\" class=\"astr-focus\" aria-valuetext=\"29.4%\" id=\"astronomy-hz-albedo\" aria-label=\"Reflected fraction (Bond albedo)\"/>\u001b[22m\n\u001b[2m    - fill(\".9\")\u001b[22m\n\u001b[2m  - attempting fill action\u001b[22m\n\u001b[2m    - waiting for element to be visible, enabled and editable\u001b[22m\n\n\n   99 |  await chart.dispatchEvent('pointercancel',{pointerId:77,pointerType:'touch'});await chart.press('Home');v=await linked(page);check(v);expect(v.m.distanceAu).toBe(.03);await expect(chart).toBeFocused();\n  100 |  await chart.press('End');v=await linked(page);check(v);expect(v.m.distanceAu).toBe(20);\n> 101 |  await page.locator('#astronomy-hz-luminosity').fill('-2');await page.locator('#astronomy-hz-albedo').fill('.9');v=await linked(page);check(v);expect(v.m.flux).toBe(.000025);await expect(root(page).locator('[data-hz-metric=\"flux\"]')).not.toContainText('0×');\n      |                                                                                                       ^\n  102 |  await root(page).screenshot({path:OUT+'/habitable-zone-extreme.png'});expect(errors).toEqual([]);\n  103 | });\n  104 |\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-habitable-zone.spec.ts:101:103"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-10-01T22:56:04.031Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-habitable-zone-t-9f23e-le-at-both-bounded-extremes-chromium-retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-habitable-zone-t-9f23e-le-at-both-bounded-extremes-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-habitable-zone-t-9f23e-le-at-both-bounded-extremes-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\astronomy-habitable-zone-t-9f23e-le-at-both-bounded-extremes-chromium-retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-habitable-zone.spec.ts",
+                    "column": 103,
+                    "line": 101
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f1ffc00070104defaaac-f329147e84327340a621",
+          "file": "astronomy-habitable-zone.spec.ts",
+          "line": 95,
+          "column": 5
+        },
+        {
+          "title": "restored inputs keep exact published distances and reset preserves other simulator state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3392,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:56:27.678Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f1ffc00070104defaaac-ca294dcfa9699a259acb",
+          "file": "astronomy-habitable-zone.spec.ts",
+          "line": 105,
+          "column": 5
+        },
+        {
+          "title": "320px contrast layout has legible diagrams, a usable catalogue and clear model limits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6831,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:56:31.446Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "f1ffc00070104defaaac-45d646284bd32a7d3536",
+          "file": "astronomy-habitable-zone.spec.ts",
+          "line": 113,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "astronomy-magnitude-explorer.spec.ts",
+      "file": "astronomy-magnitude-explorer.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "published examples reproduce the catalogue, link both figures and preserve other notes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5564,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:56:51.762Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-21c2781b0ef1b7343881",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 74,
+          "column": 5
+        },
+        {
+          "title": "keyboard distance and magnitude controls preserve focus and express independent assumptions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3158,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:56:58.077Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-eb2fefbdda42a1777905",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 88,
+          "column": 5
+        },
+        {
+          "title": "touch chooses distance continuously and cancellation leaves the plot usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1725,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:57:01.252Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-51bb02d96420e1ba4f9f",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 100,
+          "column": 5
+        },
+        {
+          "title": "five-magnitude examples give a hundredfold V-light change and bounded extremes stay visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2659,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:57:02.999Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-c0bcab3a9e81c2f09707",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 108,
+          "column": 5
+        },
+        {
+          "title": "restored values recover without snapping catalogue distances or losing independent work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2193,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:57:05.672Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-7c2a17f0f0c3efd314f0",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 122,
+          "column": 5
+        },
+        {
+          "title": "320px contrast diagrams, controls and catalogue stay readable with scientific limits exposed",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3708,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T22:57:07.879Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-bb38378795b2b0efc279",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 131,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-01T22:55:43.665Z",
+    "duration": 132365.83200000002,
+    "expected": 11,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

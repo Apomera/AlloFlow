@@ -1,0 +1,91 @@
+{
+  "slug": "crew_zones_grade6_8",
+  "sourceShotList": "allopacks/crew_zones_grade6_8.IMAGES.md",
+  "assets": [
+    {
+      "id": "cz-term-zone",
+      "term": "Zone",
+      "kind": "term",
+      "scene": "Four colored circles in a row: green, yellow, red, blue, each with a simple line pattern",
+      "constraints": "no words in circles",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Four colored circles in a row: green, yellow, red, blue, each with a simple line pattern. no words in circles."
+    },
+    {
+      "id": "cz-term-window",
+      "term": "Window",
+      "kind": "term",
+      "scene": "A plain window frame with a calm sky in the middle, storm clouds above, fog below",
+      "constraints": "three bands clearly different",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A plain window frame with a calm sky in the middle, storm clouds above, fog below. three bands clearly different."
+    },
+    {
+      "id": "cz-term-activated",
+      "term": "Activated",
+      "kind": "term",
+      "scene": "A student with wide eyes and both hands gripping a desk edge",
+      "constraints": "not angry, just revved",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student with wide eyes and both hands gripping a desk edge. not angry, just revved."
+    },
+    {
+      "id": "cz-term-shutdown",
+      "term": "Shutdown",
+      "kind": "term",
+      "scene": "A student with head resting on folded arms, room slightly dimmed",
+      "constraints": "not asleep",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student with head resting on folded arms, room slightly dimmed. not asleep."
+    },
+    {
+      "id": "cz-term-reset",
+      "term": "Reset",
+      "kind": "term",
+      "scene": "A student seated, eyes closed, both feet flat, one hand on the chest",
+      "constraints": "calm, at a desk",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student seated, eyes closed, both feet flat, one hand on the chest. calm, at a desk."
+    },
+    {
+      "id": "cz-term-sensory",
+      "term": "Sensory",
+      "kind": "term",
+      "scene": "A hand pressing into a textured ball, a water bottle nearby",
+      "constraints": "everyday objects only",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A hand pressing into a textured ball, a water bottle nearby. everyday objects only."
+    },
+    {
+      "id": "cz-img-priya",
+      "kind": "lesson",
+      "title": "The one-word check-in.",
+      "scene": "A student in a Crew circle with a tight jaw and bouncing leg; a small yellow circle floats near her. The Crew leader is looking her way without alarm.",
+      "caption": "one word tells her what is true and tells the leader she may need a minute.",
+      "plannedLabels": [
+        "Yellow",
+        "The leader notices"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A student in a Crew circle with a tight jaw and bouncing leg; a small yellow circle floats near her. The Crew leader is looking her way without alarm. All labels and captions will be editable native fields outside the artwork."
+    },
+    {
+      "id": "cz-img-window",
+      "kind": "lesson",
+      "title": "The window.",
+      "scene": "A large window frame; inside it a student reading calmly; above the frame the same student with jagged lines around them; below the frame the same student slumped in fog.",
+      "caption": "the goal is to notice when you have left it and to know one move back.",
+      "plannedLabels": [
+        "Above",
+        "Inside",
+        "Below"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A large window frame; inside it a student reading calmly; above the frame the same student with jagged lines around them; below the frame the same student slumped in fog. All labels and captions will be editable native fields outside the artwork."
+    },
+    {
+      "id": "cz-img-reset",
+      "kind": "lesson",
+      "title": "The move back.",
+      "scene": "The same student from the first panel, three slow-breath arcs drawn near her mouth, shoulders lowered, the yellow circle now half green.",
+      "caption": "naming a state is not an excuse; it is the first move.",
+      "plannedLabels": [
+        "Three breaths",
+        "Shoulders down"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The same student from the first panel, three slow-breath arcs drawn near her mouth, shoulders lowered, the yellow circle now half green. All labels and captions will be editable native fields outside the artwork."
+    }
+  ]
+}

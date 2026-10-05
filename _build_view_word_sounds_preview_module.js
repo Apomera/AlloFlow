@@ -6,7 +6,7 @@
 const babel = require('@babel/core');
 const fs = require('fs');
 
-const source = fs.readFileSync('view_word_sounds_preview_source.jsx', 'utf-8');
+const source = fs.readFileSync('word_sounds_readiness_contract.js', 'utf-8') + '\n' + fs.readFileSync('view_word_sounds_preview_source.jsx', 'utf-8');
 
 const result = babel.transformSync(source, {
   plugins: [['@babel/plugin-transform-react-jsx', { useBuiltIns: false }]],
@@ -52,6 +52,9 @@ const moduleSrc = `/**
 })();
 `;
 
-fs.writeFileSync('view_word_sounds_preview_module.js', moduleSrc);
-fs.writeFileSync('desktop/web-app/public/view_word_sounds_preview_module.js', moduleSrc);
+for (const target of ['view_word_sounds_preview_module.js', 'desktop/web-app/public/view_word_sounds_preview_module.js']) {
+  const temporary = target + '.build-' + process.pid + '.tmp';
+  fs.writeFileSync(temporary, moduleSrc, 'utf8');
+  fs.renameSync(temporary, target);
+}
 console.log('Wrote view_word_sounds_preview_module.js (' + moduleSrc.length + ' bytes)');

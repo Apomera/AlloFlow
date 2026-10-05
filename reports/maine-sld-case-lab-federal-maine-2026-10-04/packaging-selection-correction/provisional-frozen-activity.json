@@ -1,0 +1,22 @@
+{
+  "frozenAt": "2026-10-04T16:04:51.914293+00:00",
+  "moduleSha256": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+  "moduleBytes": 199134,
+  "sourceHashes": {
+    "maine_sld_practice_source.jsx": "0ace7842ded217dfc67d240f357acdfbca59a493ae0e7aef709e0dd006b846df",
+    "maine_sld_practice_core.js": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926",
+    "maine_sld_case_data.json": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e",
+    "_build_maine_sld_practice_module.js": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9"
+  },
+  "fourCopyHashes": {
+    "_build_maine_sld_practice_module.js": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+    "maine_sld_practice_module.js": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+    "desktop/web-app/public/maine_sld_practice_module.js": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+    "desktop/app-build/maine_sld_practice_module.js": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+    "desktop/web-app/build/maine_sld_practice_module.js": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9"
+  },
+  "worksheetSchemaPreserved": true,
+  "printPreserved": true,
+  "jurisdictionOnlyAddition": true,
+  "inverseRestoresExactBaseline": true
+}

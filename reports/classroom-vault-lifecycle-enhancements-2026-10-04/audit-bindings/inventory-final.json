@@ -1,0 +1,423 @@
+{
+  "label": "final",
+  "methodology": "Babel scope audit of both full source and generated runtime, no regex identifier detection. ECMAScript constructors/built-ins and DOM/browser globals are explicitly allowed. Generated WordSoundsReadiness module/Buffer compatibility references are checked against ancestor typeof guards in the Babel AST.",
+  "inputs": [
+    {
+      "file": "host_handlers_source.jsx",
+      "sha256": "24643cd4ecc40fd7e12377ae315559433b2999b78b3da13dc14ff8d4f5c5bdef",
+      "methodology": "Babel ReferencedIdentifier with lexical scope.hasBinding(name,true); normal browser/ECMAScript globals classified separately; guarded generated Node compatibility branches validated from ancestor AST conditions; no regex reference detection.",
+      "depReadCount": 1048,
+      "nonGlobal": [],
+      "globals": [
+        {
+          "name": "document",
+          "count": 34
+        },
+        {
+          "name": "window",
+          "count": 227
+        },
+        {
+          "name": "setTimeout",
+          "count": 43
+        },
+        {
+          "name": "String",
+          "count": 301
+        },
+        {
+          "name": "Error",
+          "count": 60
+        },
+        {
+          "name": "Date",
+          "count": 113
+        },
+        {
+          "name": "Array",
+          "count": 191
+        },
+        {
+          "name": "JSON",
+          "count": 61
+        },
+        {
+          "name": "Math",
+          "count": 131
+        },
+        {
+          "name": "Number",
+          "count": 98
+        },
+        {
+          "name": "Set",
+          "count": 29
+        },
+        {
+          "name": "Promise",
+          "count": 47
+        },
+        {
+          "name": "parseInt",
+          "count": 5
+        },
+        {
+          "name": "Boolean",
+          "count": 39
+        },
+        {
+          "name": "Blob",
+          "count": 13
+        },
+        {
+          "name": "Object",
+          "count": 64
+        },
+        {
+          "name": "localStorage",
+          "count": 42
+        },
+        {
+          "name": "AbortController",
+          "count": 6
+        },
+        {
+          "name": "undefined",
+          "count": 30
+        },
+        {
+          "name": "URL",
+          "count": 21
+        },
+        {
+          "name": "Audio",
+          "count": 2
+        },
+        {
+          "name": "SpeechSynthesisUtterance",
+          "count": 2
+        },
+        {
+          "name": "clearTimeout",
+          "count": 11
+        },
+        {
+          "name": "clearInterval",
+          "count": 5
+        },
+        {
+          "name": "setInterval",
+          "count": 4
+        },
+        {
+          "name": "Map",
+          "count": 5
+        },
+        {
+          "name": "navigator",
+          "count": 9
+        },
+        {
+          "name": "FileReader",
+          "count": 5
+        },
+        {
+          "name": "URLSearchParams",
+          "count": 2
+        },
+        {
+          "name": "structuredClone",
+          "count": 3
+        },
+        {
+          "name": "CustomEvent",
+          "count": 4
+        },
+        {
+          "name": "isFinite",
+          "count": 2
+        },
+        {
+          "name": "requestAnimationFrame",
+          "count": 3
+        },
+        {
+          "name": "console",
+          "count": 4
+        },
+        {
+          "name": "parseFloat",
+          "count": 1
+        },
+        {
+          "name": "isNaN",
+          "count": 1
+        },
+        {
+          "name": "WeakSet",
+          "count": 1
+        },
+        {
+          "name": "fetch",
+          "count": 1
+        },
+        {
+          "name": "Function",
+          "count": 1
+        },
+        {
+          "name": "TextDecoder",
+          "count": 2
+        },
+        {
+          "name": "Uint8Array",
+          "count": 1
+        },
+        {
+          "name": "File",
+          "count": 1
+        }
+      ],
+      "guardedCompatibility": []
+    },
+    {
+      "file": "host_handlers_module.js",
+      "sha256": "1518acf28ff055e3bd5abbd3849b472d1f42075ee7b20a0766f1064c603b719d",
+      "methodology": "Babel ReferencedIdentifier with lexical scope.hasBinding(name,true); normal browser/ECMAScript globals classified separately; guarded generated Node compatibility branches validated from ancestor AST conditions; no regex reference detection.",
+      "depReadCount": 1048,
+      "nonGlobal": [],
+      "globals": [
+        {
+          "name": "window",
+          "count": 234
+        },
+        {
+          "name": "console",
+          "count": 6
+        },
+        {
+          "name": "globalThis",
+          "count": 2
+        },
+        {
+          "name": "Map",
+          "count": 9
+        },
+        {
+          "name": "Array",
+          "count": 224
+        },
+        {
+          "name": "atob",
+          "count": 2
+        },
+        {
+          "name": "btoa",
+          "count": 2
+        },
+        {
+          "name": "Object",
+          "count": 81
+        },
+        {
+          "name": "Set",
+          "count": 35
+        },
+        {
+          "name": "String",
+          "count": 306
+        },
+        {
+          "name": "Boolean",
+          "count": 40
+        },
+        {
+          "name": "JSON",
+          "count": 62
+        },
+        {
+          "name": "Promise",
+          "count": 51
+        },
+        {
+          "name": "Date",
+          "count": 116
+        },
+        {
+          "name": "Math",
+          "count": 136
+        },
+        {
+          "name": "Number",
+          "count": 101
+        },
+        {
+          "name": "clearTimeout",
+          "count": 12
+        },
+        {
+          "name": "setTimeout",
+          "count": 44
+        },
+        {
+          "name": "document",
+          "count": 34
+        },
+        {
+          "name": "Error",
+          "count": 60
+        },
+        {
+          "name": "parseInt",
+          "count": 5
+        },
+        {
+          "name": "Blob",
+          "count": 13
+        },
+        {
+          "name": "localStorage",
+          "count": 42
+        },
+        {
+          "name": "AbortController",
+          "count": 6
+        },
+        {
+          "name": "undefined",
+          "count": 30
+        },
+        {
+          "name": "URL",
+          "count": 21
+        },
+        {
+          "name": "Audio",
+          "count": 2
+        },
+        {
+          "name": "SpeechSynthesisUtterance",
+          "count": 2
+        },
+        {
+          "name": "clearInterval",
+          "count": 5
+        },
+        {
+          "name": "setInterval",
+          "count": 4
+        },
+        {
+          "name": "navigator",
+          "count": 9
+        },
+        {
+          "name": "FileReader",
+          "count": 5
+        },
+        {
+          "name": "URLSearchParams",
+          "count": 2
+        },
+        {
+          "name": "structuredClone",
+          "count": 3
+        },
+        {
+          "name": "CustomEvent",
+          "count": 4
+        },
+        {
+          "name": "isFinite",
+          "count": 2
+        },
+        {
+          "name": "requestAnimationFrame",
+          "count": 3
+        },
+        {
+          "name": "parseFloat",
+          "count": 1
+        },
+        {
+          "name": "isNaN",
+          "count": 1
+        },
+        {
+          "name": "WeakSet",
+          "count": 1
+        },
+        {
+          "name": "fetch",
+          "count": 1
+        },
+        {
+          "name": "Function",
+          "count": 1
+        },
+        {
+          "name": "TextDecoder",
+          "count": 2
+        },
+        {
+          "name": "Uint8Array",
+          "count": 1
+        },
+        {
+          "name": "File",
+          "count": 1
+        }
+      ],
+      "guardedCompatibility": [
+        {
+          "name": "module",
+          "refs": [
+            {
+              "line": 8,
+              "column": 341,
+              "handler": null,
+              "context": "ot.AlloModules.WordSoundsReadiness=api;}if(typeof module==='object'&&module.exports)module.exports=api;})(typeof globalThis!=='undefined",
+              "safeCompatibilityGuard": true
+            },
+            {
+              "line": 8,
+              "column": 360,
+              "handler": null,
+              "context": "SoundsReadiness=api;}if(typeof module==='object'&&module.exports)module.exports=api;})(typeof globalThis!=='undefined'?globalThis:this,f",
+              "safeCompatibilityGuard": true
+            },
+            {
+              "line": 8,
+              "column": 375,
+              "handler": null,
+              "context": "=api;}if(typeof module==='object'&&module.exports)module.exports=api;})(typeof globalThis!=='undefined'?globalThis:this,function(host){'",
+              "safeCompatibilityGuard": true
+            }
+          ],
+          "reason": "Every free use is typeof itself or reached only through an ancestor typeof guard, verified from the Babel AST."
+        },
+        {
+          "name": "Buffer",
+          "refs": [
+            {
+              "line": 8,
+              "column": 2837,
+              "handler": null,
+              "context": "eturn{status:'invalid',mime:mime};}else if(typeof Buffer!=='undefined'){var buffer=Buffer.from(base64,'base64');if(buffer.toString('base",
+              "safeCompatibilityGuard": true
+            },
+            {
+              "line": 8,
+              "column": 2870,
+              "handler": null,
+              "context": ";}else if(typeof Buffer!=='undefined'){var buffer=Buffer.from(base64,'base64');if(buffer.toString('base64')!==base64)return{status:'inva",
+              "safeCompatibilityGuard": true
+            }
+          ],
+          "reason": "Every free use is typeof itself or reached only through an ancestor typeof guard, verified from the Babel AST."
+        }
+      ]
+    }
+  ],
+  "clean": true
+}

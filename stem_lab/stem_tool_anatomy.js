@@ -499,7 +499,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       ".anatomy-tool-shell .anatomy-body-shell .anatomy-view-control-label{font-size:10px;letter-spacing:.08em;color:var(--atlas-muted);background:none;padding:0;border:0;border-radius:0}.anatomy-tool-shell .anatomy-body-shell .anatomy-view-toggle{background:var(--atlas-soft);border-color:var(--atlas-border);box-shadow:none}.anatomy-tool-shell .anatomy-body-shell .anatomy-view-toggle button{color:var(--atlas-muted);box-shadow:none}.anatomy-tool-shell .anatomy-body-shell .anatomy-view-toggle button[aria-pressed=true]{background:var(--atlas-ink);color:var(--atlas-panel);border-color:var(--atlas-ink)}.anatomy-tool-shell .anatomy-body-shell .anatomy-view-toggle button:hover:not([aria-pressed=true]){background:var(--atlas-panel);color:var(--atlas-ink)}.anatomy-tool-shell .anatomy-body-shell .anatomy-model-focus-toggle{background:var(--atlas-panel);color:var(--atlas-ink);border:1px solid var(--atlas-border);box-shadow:none;min-height:44px}",
       ".anatomy-tool-shell .anatomy-canvas-toolbar[data-anatomy-canvas-mode=\"2d\"]{display:block;background:var(--atlas-soft);border-color:var(--atlas-border);padding:10px;margin-top:12px;margin-bottom:12px}.anatomy-tool-shell .anatomy-canvas-toolbar[data-anatomy-canvas-mode=\"2d\"]>span{display:block;font-size:10px;line-height:1.5;color:var(--atlas-muted);margin-bottom:8px}.anatomy-tool-shell [data-anatomy-canvas-controls=\"2d\"]{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.25fr);gap:9px;width:100%}.anatomy-atlas-control-section{min-width:0;display:grid;gap:5px}.anatomy-atlas-control-label{font-size:10px;font-weight:800;letter-spacing:.07em;text-transform:uppercase;color:var(--atlas-muted)}.anatomy-atlas-control-buttons{display:flex;align-items:center;gap:4px}.anatomy-atlas-control-buttons>span[role=status]{flex:1;min-width:38px;font-size:11px!important;color:var(--atlas-ink);font-variant-numeric:tabular-nums}.anatomy-tool-shell .anatomy-atlas-control-buttons button{width:auto;min-width:0;min-height:44px;flex:1;border:1px solid var(--atlas-border);background:var(--atlas-panel);color:var(--atlas-ink);box-shadow:none;font-size:14px;border-radius:8px}.anatomy-tool-shell .anatomy-atlas-control-buttons button:disabled{opacity:1;color:#94a3b8;background:transparent;border-color:var(--atlas-border)}.anatomy-atlas-frame-actions{grid-column:1/-1;grid-template-columns:42px minmax(0,1fr);align-items:center;padding-top:8px;border-top:1px solid var(--atlas-border)}.anatomy-tool-shell .anatomy-atlas-frame-actions button{font-size:11px;min-height:36px}.anatomy-tool-shell .anatomy-canvas-frame[data-anatomy-view=\"2d\"]{border-radius:12px;background:#f7f8fa;border-color:var(--atlas-border);box-shadow:none}.anatomy-tool-shell .anatomy-canvas-frame[data-anatomy-view=\"2d\"]:after{box-shadow:none}.anatomy-tool-shell .anatomy-canvas-frame[data-anatomy-view=\"2d\"] .anatomy-canvas{border-radius:12px!important}",
       ".anatomy-atlas-caption{display:flex;align-items:center;gap:10px;max-width:400px;margin:12px auto;padding:12px;border:1px solid var(--atlas-border);border-radius:12px;background:var(--atlas-soft);color:var(--atlas-ink)}.anatomy-atlas-caption-marker{display:grid;place-items:center;width:32px;height:32px;flex:none;border-radius:10px;background:var(--atlas-panel);color:var(--atlas-ink);font-size:22px;font-weight:500}.anatomy-atlas-caption-copy{min-width:0;flex:1}.anatomy-atlas-caption-copy span{display:block;font-size:10px;text-transform:uppercase;letter-spacing:.07em;font-weight:800;color:var(--atlas-muted)}.anatomy-atlas-caption-copy strong{display:block;margin-top:3px;font-size:12px;line-height:1.45;overflow-wrap:anywhere}.anatomy-atlas-caption button{flex:none;min-height:44px;padding:8px 10px;border:1px solid var(--atlas-border);border-radius:8px;background:var(--atlas-panel);color:var(--atlas-ink);font-size:12px;font-weight:800}.anatomy-atlas-caption[data-selected=true]{border-left:3px solid var(--anatomy-accent)}.anatomy-tool-shell[data-anatomy-model-focus=true] .anatomy-atlas-caption{max-width:520px}",
-      ".theme-dark .anatomy-tool-shell .anatomy-body-shell{--atlas-panel:#1e293b;--atlas-soft:#132136;--atlas-ink:#f1f5f9;--atlas-muted:#cbd5e1;--atlas-border:#64748b}.theme-dark .anatomy-tool-shell .anatomy-body-shell .anatomy-canvas-guide,.theme-dark .anatomy-tool-shell .anatomy-body-shell .anatomy-learning-tools{background:#f8fafc;color:#17253b}.theme-contrast .anatomy-tool-shell .anatomy-body-shell{--atlas-panel:#fff;--atlas-ink:#000;--atlas-muted:#000;--atlas-border:#000}",
+      ".theme-dark .anatomy-tool-shell .anatomy-body-shell{--atlas-panel:#1e293b;--atlas-soft:#132136;--atlas-ink:#f1f5f9;--atlas-muted:#cbd5e1;--atlas-border:#64748b}.theme-dark .anatomy-tool-shell .anatomy-body-shell .anatomy-canvas-guide{background:#f8fafc;color:#17253b}.theme-contrast .anatomy-tool-shell .anatomy-body-shell{--atlas-panel:#fff;--atlas-ink:#000;--atlas-muted:#000;--atlas-border:#000}",
       "@media(max-width:560px){.anatomy-tool-shell .anatomy-body-shell{padding:14px 10px;border-radius:16px}.anatomy-tool-shell .anatomy-atlas-frame-actions button{min-height:44px}.anatomy-tool-shell .anatomy-body-title-heading{font-size:16px}.anatomy-atlas-caption{padding:10px;gap:8px}.anatomy-atlas-caption-marker{display:none}.anatomy-tool-shell .anatomy-canvas-toolbar[data-anatomy-canvas-mode=\"2d\"]{padding:8px}.anatomy-tool-shell [data-anatomy-canvas-controls=\"2d\"]{gap:7px}}",
       "@media(forced-colors:active){.anatomy-atlas-caption,.anatomy-atlas-caption button,.anatomy-tool-shell .anatomy-atlas-control-buttons button{border:1px solid CanvasText}.anatomy-atlas-caption-marker{color:CanvasText}.anatomy-tool-shell .anatomy-atlas-control-buttons button:disabled{color:GrayText}}",
       ".anatomy-tool-shell .anatomy-model-switcher{padding:5px;gap:6px;align-items:stretch}.anatomy-tool-shell .anatomy-model-switcher button{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:5px;min-height:112px;padding:10px 6px;white-space:normal}.anatomy-model-preview{display:block;flex:none}.anatomy-tool-shell .anatomy-model-switcher strong{font-size:12px;line-height:1.3;color:inherit}.anatomy-tool-shell .anatomy-model-switcher small{display:block;font-size:10px;line-height:1.4;font-weight:500;color:inherit;max-width:100px}.anatomy-model-explanation{grid-column:1/-1;width:100%;box-sizing:border-box;order:3;padding:12px;margin:10px 0;border:1px solid var(--atlas-border,#cbd5e1);border-radius:10px;background:var(--atlas-soft,#f1f5f9);color:var(--atlas-ink,#17253b)}.anatomy-model-explanation strong{display:block;font-size:12px;line-height:1.4;color:inherit}.anatomy-model-explanation p{margin:4px 0 0;font-size:12px;line-height:1.6;color:var(--atlas-muted,#475569)}.anatomy-tool-shell .anatomy-body-shell .anatomy-model-source{background:var(--atlas-soft);border-color:var(--atlas-border);color:var(--atlas-ink)}.anatomy-tool-shell .anatomy-body-shell .anatomy-model-source-note{color:var(--atlas-muted)}.anatomy-tool-shell .anatomy-canvas-frame[data-anatomy-view=\"3d\"]{box-shadow:0 8px 24px rgba(2,6,23,.14);border:1px solid var(--atlas-border);border-radius:14px}.anatomy-tool-shell .anatomy-canvas-frame[data-anatomy-view=\"3d\"]:after{box-shadow:inset 0 0 0 1px rgba(255,255,255,.08)}",
@@ -565,6 +565,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
       ".anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-buster{--myth-heading:#86198f;--myth-claim:#9f1239;--myth-fact:#166534;background:var(--practice-soft)!important;color:var(--practice-ink);border-color:var(--practice-border)!important;padding:12px}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-buster p{color:var(--practice-ink)!important;font-size:14px;line-height:1.75}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-buster .anatomy-myth-heading{display:flex;align-items:center;justify-content:space-between;gap:12px;color:var(--myth-heading)!important;text-transform:none;margin-block-end:8px}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-heading button{min-width:44px;min-height:44px;flex-shrink:0}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-claim{color:var(--myth-claim)!important}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-fact{color:var(--myth-fact)!important}.theme-dark .anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-buster{--myth-heading:#f0abfc;--myth-claim:#fda4af;--myth-fact:#86efac}.theme-contrast .anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-myth-buster{--myth-heading:#000;--myth-claim:#000;--myth-fact:#000}.anatomy-tool-shell[data-reading-mode=true] [data-anatomy-structure-detail] .anatomy-myth-buster :is(p,span){font-size:17px!important;line-height:1.7!important}",
       ".anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-map{background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);padding:12px}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-header strong{font-size:15px;line-height:1.6;color:var(--practice-ink)}.anatomy-tool-shell [data-anatomy-structure-detail] :is(.anatomy-relation-header p,.anatomy-relation-caption){font-size:14px;line-height:1.7;color:var(--detail-muted)}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-node{background:var(--practice-panel);border-color:var(--practice-border);color:var(--practice-ink);text-align:start;padding:10px}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-node[data-kind=structure]{border-inline-start:3px solid var(--practice-nav)}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-node span{color:var(--detail-muted)!important;font-size:12px;line-height:1.6;letter-spacing:0;text-transform:none}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-node strong{color:var(--practice-ink);font-size:14px;line-height:1.6}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-arrow{color:var(--practice-nav);font-size:17px}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-branches{border-color:var(--practice-border)}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-map button{min-height:44px;background:var(--practice-panel);color:var(--practice-nav);border-color:var(--practice-border);font-size:14px;line-height:1.6;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-map button:hover{background:var(--practice-nav-soft);border-color:var(--practice-nav)}.anatomy-tool-shell [data-anatomy-structure-detail] .anatomy-relation-map button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell[data-reading-mode=true] [data-anatomy-structure-detail] .anatomy-relation-map :is(p,span,strong,button){font-size:17px!important;line-height:1.7!important}@media(max-width:600px){.anatomy-tool-shell[data-reading-mode=true] .anatomy-structure-detail-actions button{grid-column:span 3;overflow-wrap:normal}.anatomy-tool-shell[data-reading-mode=true] .anatomy-structure-detail-actions .anatomy-detail-back-list{grid-column:1/-1}}",
       ".anatomy-tool-shell .anatomy-relation-arrow{pointer-events:none}.anatomy-tool-shell .anatomy-connection-origin{display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px;margin-block:12px;padding:14px;border:1px solid var(--practice-border);border-inline-start:4px solid var(--practice-nav);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink);min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-connection-model-context .anatomy-connection-origin strong,.anatomy-tool-shell [data-anatomy-connections-panel] .anatomy-connection-origin strong{color:var(--practice-ink)}.anatomy-tool-shell .anatomy-connection-origin>div{flex:1 1 180px;min-width:0}.anatomy-tool-shell .anatomy-connection-origin p{margin:0;font-size:14px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-connection-origin-topic{margin-block-start:4px!important}.anatomy-tool-shell .anatomy-connection-origin button{min-height:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:8px;background:var(--practice-nav)!important;color:var(--practice-panel)!important;font-size:14px;font-weight:800;line-height:1.6;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-connection-model-context .anatomy-route-return{width:100%;font-size:14px;line-height:1.6;background:var(--practice-panel);color:var(--practice-nav);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-connection-anatomy{margin-block:16px;padding:14px;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink);min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-connection-anatomy h6{font-size:17px;font-weight:800;line-height:1.5;margin:0;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-connection-anatomy p{font-size:14px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-connection-marker-group{margin-block-start:14px;min-width:0}.anatomy-tool-shell .anatomy-connection-marker-list{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,190px),1fr));gap:8px}.anatomy-tool-shell .anatomy-connection-marker-list button{display:flex;align-items:center;gap:8px;min-width:0;min-height:44px;padding:10px 12px;text-align:start;border:1px solid var(--practice-border);border-radius:8px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;font-size:14px;line-height:1.6;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-connection-marker-list button[aria-pressed=true]{background:var(--practice-nav-soft)!important;color:var(--practice-nav)!important;border-color:var(--practice-nav)!important;box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-connection-current{padding-block-start:10px;border-block-start:1px solid var(--practice-border);font-weight:700}.anatomy-tool-shell :is(.anatomy-connection-origin,.anatomy-connection-anatomy) button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell[data-reading-mode=true] :is(.anatomy-connection-origin,.anatomy-connection-anatomy,.anatomy-connection-model-context) :is(p,strong,span,h6,button){font-size:17px!important;line-height:1.7!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-connection-origin button{width:100%}.anatomy-tool-shell .anatomy-connection-origin{padding:12px}.anatomy-tool-shell .anatomy-connection-anatomy{padding:12px}}@media(forced-colors:active){.anatomy-tool-shell :is(.anatomy-connection-origin,.anatomy-connection-anatomy){border-color:CanvasText}.anatomy-tool-shell .anatomy-connection-origin button,.anatomy-tool-shell .anatomy-connection-marker-list button[aria-pressed=true]{background:ButtonFace!important;color:ButtonText!important;border-color:Highlight!important;box-shadow:none}.anatomy-tool-shell .anatomy-connection-marker-list button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:2px}}",
+      ".anatomy-tool-shell .anatomy-connections-panel{padding:18px;border:1px solid var(--practice-border)!important;border-radius:16px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-connections-panel :is(p,button,legend,label,select,a){font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-connections-panel h4{font-size:21px;line-height:1.4;margin:0}.anatomy-tool-shell .anatomy-connections-panel h5{font-size:18px;line-height:1.5}.anatomy-tool-shell .anatomy-connections-panel h5 button{font-size:18px;color:var(--practice-nav)!important;padding:0}.anatomy-tool-shell .anatomy-connections-panel h6{font-size:17px;line-height:1.5;font-weight:800;color:var(--practice-ink)!important;margin:0}.anatomy-tool-shell .anatomy-connections-panel p{color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-connection-progress{padding:10px 12px;background:var(--practice-nav-soft);border-radius:9px;color:var(--practice-nav)!important}.anatomy-tool-shell .anatomy-connection-picker{display:flex;align-items:end;gap:10px;flex-wrap:wrap;margin-block:16px}.anatomy-tool-shell .anatomy-connection-picker label{flex:1 1 220px;min-width:0}.anatomy-tool-shell .anatomy-connection-picker select{background:var(--practice-panel)!important;color:var(--practice-ink)!important;max-width:100%}.anatomy-tool-shell .anatomy-connection-list{display:grid;gap:12px;grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-connection-card{margin:0;padding:16px;border-color:var(--practice-border)!important;background:var(--practice-panel)!important;min-width:0}.anatomy-tool-shell .anatomy-connection-list [hidden]{display:none!important}.anatomy-tool-shell .anatomy-connection-card[data-anatomy-connection-open=true]{border-inline-start:4px solid var(--practice-nav)!important}.anatomy-tool-shell .anatomy-connection-first-status{display:inline-block;margin:4px 0 10px;padding:3px 8px;border:1px solid var(--practice-border);border-radius:6px;font-weight:700}.anatomy-tool-shell .anatomy-connection-reading{padding:14px;background:var(--practice-soft);border-radius:10px;margin-block:12px 20px;min-width:0}.anatomy-tool-shell .anatomy-connection-resources{display:flex;align-items:center;gap:12px;flex-wrap:wrap}.anatomy-tool-shell .anatomy-connections-panel a{color:var(--practice-nav)!important}.anatomy-tool-shell .anatomy-connection-check-heading{margin-block:18px 8px!important}.anatomy-tool-shell .anatomy-connections-panel fieldset{margin-block:14px 10px;padding:14px;border-color:var(--practice-border);background:var(--practice-soft)}.anatomy-tool-shell .anatomy-connections-panel legend{max-width:100%;white-space:normal}.anatomy-tool-shell .anatomy-connections-panel fieldset button{padding:12px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border);white-space:normal;overflow-wrap:anywhere;opacity:1}.anatomy-tool-shell .anatomy-connections-panel fieldset button[data-answer-state=correct]{background:var(--practice-good-bg)!important;color:var(--practice-good)!important;border:2px solid var(--practice-good-border)!important}.anatomy-tool-shell .anatomy-connections-panel fieldset button[data-answer-state=incorrect]{background:var(--practice-bad-bg)!important;color:var(--practice-bad)!important;border:2px solid var(--practice-bad-border)!important}.anatomy-tool-shell .anatomy-connection-feedback{margin-block-start:14px;padding:14px;border:1px solid var(--practice-border);border-inline-start:4px solid var(--practice-bad-border);border-radius:9px;background:var(--practice-panel);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-connection-feedback[data-result=correct]{border-inline-start-color:var(--practice-good-border)}.anatomy-tool-shell .anatomy-connection-feedback strong{color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-connection-practice-actions{display:flex;flex-wrap:wrap;gap:8px;margin-block:12px 20px}.anatomy-tool-shell :is(.anatomy-connection-picker,.anatomy-connection-practice-actions) button{background:var(--practice-nav-soft)!important;color:var(--practice-nav)!important;border:1px solid var(--practice-nav);padding:10px 14px;font-weight:800;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-connections-panel :is(fieldset,.anatomy-connection-feedback):focus{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell .anatomy-connections-panel .anatomy-connection-marker-list button{font-size:16px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-connections-panel :is(p,strong,span,legend,button,label,select,a){font-size:17px!important;line-height:1.7!important}@media(min-width:1100px){.anatomy-tool-shell .anatomy-connection-list[data-anatomy-connection-list=overview]{grid-template-columns:repeat(2,minmax(0,1fr))}}@media(max-width:600px){.anatomy-tool-shell .anatomy-connections-panel{padding:12px}.anatomy-tool-shell .anatomy-connection-card{padding:12px}.anatomy-tool-shell .anatomy-connection-reading,.anatomy-tool-shell .anatomy-connections-panel fieldset,.anatomy-tool-shell .anatomy-connection-feedback{padding:10px}.anatomy-tool-shell .anatomy-connection-practice-actions button{width:100%}.anatomy-tool-shell .anatomy-connection-picker>button{width:100%}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-connections-panel :is(.anatomy-connection-card,.anatomy-connection-reading,fieldset,.anatomy-connection-feedback,.anatomy-connection-progress,.anatomy-connection-first-status){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-connections-panel :is(button,select){background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none}.anatomy-tool-shell .anatomy-connections-panel fieldset button[data-answer-state=correct],.anatomy-tool-shell .anatomy-connections-panel fieldset button[data-answer-state=incorrect]{background:ButtonFace!important;color:ButtonText!important;border-color:Highlight!important;outline:2px solid Highlight;outline-offset:1px}.anatomy-tool-shell .anatomy-connections-panel :is(fieldset,.anatomy-connection-feedback):focus{outline-color:Highlight}}",
+      ".anatomy-tool-shell .anatomy-connections-panel button{min-width:44px}.anatomy-tool-shell .anatomy-connection-resources button{flex-shrink:0}",
+      ".anatomy-tool-shell{--case-nav:#9f1239;--case-soft:#fff1f2}.theme-dark .anatomy-tool-shell{--case-nav:#fda4af;--case-soft:#3b1421}.theme-contrast .anatomy-tool-shell{--case-nav:#000;--case-soft:#fff}.anatomy-tool-shell .anatomy-clinical-study{padding:18px;background:var(--practice-soft)!important;color:var(--practice-ink)!important;border:1px solid var(--practice-border)!important;border-radius:16px;min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-clinical-study>div:first-child{gap:12px;flex-wrap:wrap}.anatomy-tool-shell .anatomy-clinical-study h3{font-size:21px!important;font-weight:800;line-height:1.5;text-transform:none;letter-spacing:normal;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-clinical-study :is(p,label,button,a){font-size:16px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-clinical-study :is(h4,h5,strong){color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-clinical-study h4{font-size:20px;line-height:1.5;margin:0 0 12px}.anatomy-tool-shell .anatomy-clinical-study h5{font-size:18px;line-height:1.5;margin:0 0 8px}.anatomy-tool-shell .anatomy-clinical-study .anatomy-case-card{padding:18px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;border-radius:14px}.anatomy-tool-shell .anatomy-clinical-study .anatomy-case-progress{padding:12px;background:var(--case-soft);border-inline-start:4px solid var(--case-nav);border-radius:9px;font-weight:700}.anatomy-tool-shell .anatomy-case-reading{padding:14px;background:var(--practice-soft);border-radius:10px;margin-block:14px 18px}.anatomy-tool-shell .anatomy-clinical-study textarea{border-color:var(--practice-border);background:var(--practice-panel)!important;color:var(--practice-ink)!important;font-size:16px;line-height:1.7;min-height:110px}.anatomy-tool-shell .anatomy-clinical-study :is(.anatomy-case-hint,.anatomy-case-explanation){padding:16px;background:var(--practice-soft)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;border-radius:10px;margin-block:16px}.anatomy-tool-shell .anatomy-case-limits{padding:12px;border-inline-start:4px solid var(--case-nav);background:var(--practice-panel);border-radius:6px;margin-block:14px}.anatomy-tool-shell .anatomy-clinical-study .anatomy-case-scope{padding:12px;border:1px dashed var(--practice-border);border-radius:8px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-clinical-study button{min-width:44px;min-height:44px;max-width:100%;padding:10px 14px;border-color:var(--case-nav)!important;background:var(--practice-panel)!important;color:var(--case-nav)!important;white-space:normal;overflow-wrap:anywhere;font-weight:700}.anatomy-tool-shell .anatomy-clinical-study button:disabled{background:var(--practice-soft)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;opacity:1}.anatomy-tool-shell .anatomy-clinical-study a{color:var(--case-nav)!important;min-height:44px;display:inline-flex;align-items:center}.anatomy-tool-shell .anatomy-case-resources{display:flex;gap:12px;align-items:center;flex-wrap:wrap}.anatomy-tool-shell :is(.anatomy-case-reading,.anatomy-case-resources) button{flex-shrink:0}.anatomy-tool-shell .anatomy-clinical-study .anatomy-case-reviewed{padding:8px 12px;border:1px solid var(--practice-good-border);border-radius:8px;background:var(--practice-good-bg);color:var(--practice-good)!important;font-weight:800}.anatomy-tool-shell .anatomy-clinical-study :is(h4,[data-anatomy-case-hint],[data-anatomy-case-explanation],[data-anatomy-case-reviewed]):focus,.anatomy-tool-shell .anatomy-clinical-study :focus-visible{outline:3px solid var(--case-nav);outline-offset:3px}.theme-contrast .anatomy-tool-shell .anatomy-clinical-study :is(p,h3,h4,h5,strong,label,span){color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-case-origin{display:flex;gap:12px;align-items:center;flex-wrap:wrap;margin-block:12px;padding:14px;border:1px solid var(--practice-border);border-inline-start:4px solid var(--case-nav);border-radius:12px;background:var(--case-soft);color:var(--practice-ink);min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-case-origin>div{flex:1 1 200px;min-width:0}.anatomy-tool-shell .anatomy-case-origin :is(p,strong){font-size:16px;line-height:1.7;color:var(--practice-ink)!important;margin-block:4px}.anatomy-tool-shell .anatomy-case-origin button{font-size:16px;line-height:1.7;min-width:44px;min-height:44px;padding:10px 14px;border:1px solid var(--case-nav);border-radius:8px;background:var(--practice-panel)!important;color:var(--case-nav)!important;white-space:normal;overflow-wrap:anywhere;font-weight:800}.anatomy-tool-shell .anatomy-case-origin :focus-visible{outline:3px solid var(--case-nav);outline-offset:3px}.anatomy-tool-shell[data-reading-mode=true] :is(.anatomy-clinical-study,.anatomy-case-origin) :is(p,strong,label,span,button,a,textarea){font-size:17px!important;line-height:1.7!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-clinical-study,.anatomy-tool-shell .anatomy-clinical-study .anatomy-case-card{padding:12px}.anatomy-tool-shell .anatomy-case-reading,.anatomy-tool-shell .anatomy-clinical-study :is(.anatomy-case-hint,.anatomy-case-explanation){padding:12px}.anatomy-tool-shell .anatomy-case-actions button,.anatomy-tool-shell .anatomy-case-origin button{width:100%}}@media(forced-colors:active){.anatomy-tool-shell :is(.anatomy-clinical-study,.anatomy-case-origin,.anatomy-case-card,.anatomy-case-reading,.anatomy-case-hint,.anatomy-case-explanation,.anatomy-case-limits,.anatomy-case-progress,.anatomy-case-reviewed,.anatomy-case-scope){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-clinical-study :is(button,textarea),.anatomy-tool-shell .anatomy-case-origin button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none}.anatomy-tool-shell .anatomy-clinical-study button:disabled{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.anatomy-tool-shell .anatomy-clinical-study :is(h4,[data-anatomy-case-hint],[data-anatomy-case-explanation],[data-anatomy-case-reviewed]):focus,.anatomy-tool-shell .anatomy-clinical-study :focus-visible{outline-color:Highlight}}",
+      ".anatomy-tool-shell{--spot-nav:#78350f;--spot-soft:#fffbeb}.theme-dark .anatomy-tool-shell{--spot-nav:#fcd34d;--spot-soft:#3a2608}.theme-contrast .anatomy-tool-shell{--spot-nav:#000;--spot-soft:#fff}.anatomy-tool-shell .anatomy-spotter-panel{background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-spotter-panel :is(p,label,span,bdi,strong,button,summary){font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-spotter-panel :is(p,label,span,bdi,strong,h4,h5,h6,summary){color:inherit!important}.anatomy-tool-shell .anatomy-spotter-panel h4{font-size:22px;line-height:1.5}.anatomy-tool-shell .anatomy-spotter-panel h5{font-size:19px;line-height:1.6}.anatomy-tool-shell .anatomy-spotter-panel h6{font-size:17px;line-height:1.6;font-weight:800;margin-block:0 8px}.anatomy-tool-shell .anatomy-spotter-panel button{min-width:44px;min-height:44px;max-width:100%;padding:10px 14px;background:var(--practice-panel)!important;color:var(--spot-nav)!important;border:1px solid var(--spot-nav)!important;white-space:normal;overflow-wrap:anywhere;font-weight:800}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-option]{color:var(--practice-ink)!important;border-color:var(--practice-border)!important;align-items:center}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-option][data-anatomy-spotter-answer-state=correct]{color:var(--practice-good)!important;background:var(--practice-good-bg)!important;border-color:var(--practice-good-border)!important}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-option][data-anatomy-spotter-answer-state=chosen]{color:var(--practice-bad)!important;background:var(--practice-bad-bg)!important;border-color:var(--practice-bad-border)!important}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-score]{display:block;padding:8px 10px;background:var(--practice-good-bg);color:var(--practice-good)!important;border:1px solid var(--practice-good-border);border-radius:8px}.anatomy-tool-shell .anatomy-spotter-panel .anatomy-spotter-heading>div>span{padding:0;background:transparent!important}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-feedback]{padding:12px;background:var(--practice-soft);border:1px solid var(--practice-border);border-radius:12px}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-feedback]>div:first-child{background:transparent!important;border:0!important;padding:0!important;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-spotter-compare{padding:12px;margin-block:12px;border:1px solid var(--practice-border);border-inline-start:4px solid var(--practice-good-border);border-radius:8px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-spotter-compare.chosen{border-inline-start-color:var(--practice-bad-border)}.anatomy-tool-shell .anatomy-spotter-panel .anatomy-spotter-navigation{background:var(--spot-soft);color:var(--practice-ink);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-spotter-panel .bg-cyan-50{background:var(--practice-soft)!important;border-color:var(--practice-border)!important;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-spotter-panel .bg-amber-50{background:var(--spot-soft)!important;border-color:var(--spot-nav)!important;color:var(--practice-ink)!important}.anatomy-tool-shell .anatomy-spotter-panel :is([data-anatomy-spotter-start],button):not([data-anatomy-spotter-option]):disabled{opacity:1}.anatomy-tool-shell .anatomy-spotter-panel :is(h5,[data-anatomy-spotter-feedback]):focus,.anatomy-tool-shell .anatomy-spotter-panel :focus-visible{outline:3px solid var(--spot-nav);outline-offset:3px}.anatomy-tool-shell .anatomy-spotter-study-origin{display:flex;flex-wrap:wrap;align-items:center;gap:12px;min-width:0;padding:14px;margin-block:12px;border:1px solid var(--practice-border);border-inline-start:4px solid var(--spot-nav);border-radius:12px;background:var(--spot-soft);color:var(--practice-ink);overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-spotter-study-origin>div{flex:1 1 200px;min-width:0}.anatomy-tool-shell .anatomy-spotter-study-origin :is(p,strong){font-size:16px;line-height:1.7;color:var(--practice-ink)!important;margin-block:4px}.anatomy-tool-shell .anatomy-spotter-study-origin button,.anatomy-tool-shell .anatomy-spotter-return{min-height:44px;min-width:44px;font-size:16px;line-height:1.7;padding:10px 14px;background:var(--practice-panel)!important;color:var(--spot-nav)!important;border:1px solid var(--spot-nav);border-radius:8px;font-weight:800;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-spotter-study-origin :focus-visible,.anatomy-tool-shell .anatomy-spotter-return:focus-visible{outline:3px solid var(--spot-nav);outline-offset:3px}.anatomy-tool-shell[data-reading-mode=true] :is(.anatomy-spotter-panel,.anatomy-spotter-study-origin) :is(p,label,span,bdi,strong,button,summary),.anatomy-tool-shell[data-reading-mode=true] .anatomy-spotter-return{font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell .anatomy-spotter-panel summary{min-width:44px;min-height:44px;cursor:pointer}.anatomy-tool-shell .anatomy-spotter-panel :is([data-anatomy-spotter-start],[data-anatomy-spotter-next]),.anatomy-tool-shell .anatomy-spotter-study-origin [data-anatomy-spotter-study-return]{background:var(--spot-nav)!important;color:var(--practice-panel)!important}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-end]{color:var(--practice-ink)!important;border-color:var(--practice-border)!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-spotter-study-origin button{width:100%}.anatomy-tool-shell .anatomy-spotter-heading{align-items:flex-start}.anatomy-tool-shell .anatomy-spotter-heading>div{width:100%}.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-score]{width:100%}}@media(forced-colors:active){.anatomy-tool-shell :is(.anatomy-spotter-panel,.anatomy-spotter-navigation,.anatomy-spotter-compare,.anatomy-spotter-study-origin,[data-anatomy-spotter-feedback],[data-anatomy-spotter-score]){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-spotter-panel button,.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-option][data-anatomy-spotter-answer-state]{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;opacity:1}.anatomy-tool-shell .anatomy-spotter-study-origin button,.anatomy-tool-shell .anatomy-spotter-return{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.anatomy-tool-shell .anatomy-spotter-panel :focus-visible,.anatomy-tool-shell .anatomy-spotter-study-origin :focus-visible{outline-color:Highlight}.anatomy-tool-shell .anatomy-spotter-panel :is([data-anatomy-spotter-start],[data-anatomy-spotter-next]),.anatomy-tool-shell .anatomy-spotter-study-origin [data-anatomy-spotter-study-return],.anatomy-tool-shell .anatomy-spotter-panel [data-anatomy-spotter-end]{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}",
+      ".anatomy-tool-shell .anatomy-learning-tools{width:100%;max-width:440px;background:var(--practice-panel);color:var(--practice-ink);border:1px solid var(--practice-border);border-radius:14px;overflow:hidden}.anatomy-tool-shell .anatomy-learning-tools-summary{min-height:48px;padding:12px;flex-wrap:wrap;justify-content:flex-start;gap:8px;color:var(--practice-ink);font-size:16px;line-height:1.5}.anatomy-tool-shell .anatomy-learning-tools-summary>span:last-of-type{min-width:0;margin-inline-start:auto;padding:4px 8px;background:var(--practice-soft);color:var(--practice-ink);border:1px solid var(--practice-border);font-size:14px;line-height:1.5;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-learning-tools-summary:after{margin-inline-start:0;flex:none;font-size:20px;color:var(--practice-nav)}.anatomy-tool-shell .anatomy-learning-tools-content{padding:12px;border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-learning-tools .anatomy-scale-journey{margin:0;padding:0;background:transparent;border:0;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-scale-journey-head{display:block}.anatomy-tool-shell .anatomy-scale-journey-head h3{font-size:20px;font-weight:800;line-height:1.5;margin:0;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-scale-journey-head p,.anatomy-tool-shell .anatomy-scale-status{font-size:16px;line-height:1.65;color:var(--practice-ink);margin-block:6px 12px;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-scale-track{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px;margin-block:12px}.anatomy-tool-shell .anatomy-scale-step{display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:0;min-height:100px;padding:12px;text-align:start;border:1px solid var(--practice-border);background:var(--practice-soft);color:var(--practice-ink);border-radius:11px;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-scale-step[data-scale-stage]{background:var(--practice-soft);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-scale-step strong{margin:0;font-size:16px;line-height:1.5;color:inherit}.anatomy-tool-shell .anatomy-scale-step strong>span{display:inline;color:inherit;font-size:16px;letter-spacing:normal;text-transform:none}.anatomy-tool-shell .anatomy-scale-step strong bdi{font-size:inherit;line-height:inherit}.anatomy-tool-shell .anatomy-scale-step .anatomy-scale-stage{display:flex;align-items:center;gap:7px;font-size:14px;font-weight:700;line-height:1.5;color:inherit;letter-spacing:normal;text-transform:none}.anatomy-tool-shell .anatomy-scale-step .anatomy-scale-number{display:inline-flex;justify-content:center;align-items:center;flex:none;width:26px;height:26px;font-size:14px;line-height:1;color:inherit;border:1px solid currentColor;border-radius:50%;letter-spacing:normal}.anatomy-tool-shell button.anatomy-scale-step{background:var(--practice-nav-soft);border:2px solid var(--practice-nav);color:var(--practice-nav);min-width:44px;min-height:44px;transition:none;cursor:pointer}.anatomy-tool-shell button.anatomy-scale-step[data-scale-stage=cell]{color:var(--practice-good);background:var(--practice-good-bg);border-color:var(--practice-good)}.anatomy-tool-shell button.anatomy-scale-step:hover{transform:none;box-shadow:inset 0 0 0 1px currentColor}.anatomy-tool-shell button.anatomy-scale-step:active{transform:none}.anatomy-tool-shell .anatomy-scale-step .anatomy-scale-action{align-self:flex-start;margin-block-start:auto;padding-block-start:4px;text-decoration:underline;text-underline-offset:3px;font-size:14px;font-weight:800;line-height:1.5;color:inherit;letter-spacing:normal;text-transform:none}.anatomy-tool-shell .anatomy-scale-clinical-focus{display:block;margin-block-start:6px}.anatomy-tool-shell .anatomy-scale-more-title{border-top:1px solid var(--practice-border);padding-block-start:14px;margin-block:12px 8px;color:var(--practice-ink);font-size:16px;line-height:1.5;font-weight:800}.anatomy-tool-shell .anatomy-scale-journey-buttons{grid-template-columns:minmax(0,1fr);gap:8px;border:0;margin:0;padding:0}.anatomy-tool-shell .anatomy-scale-journey-buttons button{min-width:44px;min-height:44px;padding:10px 12px;font-size:16px;line-height:1.5;white-space:normal;overflow-wrap:anywhere;text-align:start;color:var(--practice-nav);background:var(--practice-panel);border:1px solid var(--practice-nav);border-radius:8px}.anatomy-tool-shell .anatomy-learning-tools :focus-visible,.anatomy-tool-shell #anatomy-lens-title:focus{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell #anatomy-lens-title{scroll-margin-block-start:16px}.anatomy-tool-shell .anatomy-learning-tools .anatomy-marker-legend{margin-block:16px 0;justify-content:flex-start;gap:10px 12px;font-size:14px;line-height:1.5;color:var(--practice-ink);border-top:1px solid var(--practice-border);padding-block-start:12px}.anatomy-tool-shell .anatomy-learning-tools .anatomy-marker-legend-title{flex-basis:100%;font-size:16px;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-learning-tools .anatomy-marker-legend-item{white-space:normal;gap:6px}.anatomy-tool-shell .anatomy-learning-tools .anatomy-marker-legend-symbol{flex:none;width:22px;height:22px;background:var(--practice-panel);color:var(--practice-ink);border:1px solid var(--practice-border);font-size:14px;line-height:1}.anatomy-tool-shell .anatomy-learning-tools .anatomy-marker-legend-symbol[data-status=practice]{background:var(--practice-bad-bg);color:var(--practice-bad);border-color:var(--practice-bad)}.anatomy-tool-shell .anatomy-learning-tools .anatomy-marker-legend-symbol[data-status=learning]{background:var(--practice-nav-soft);color:var(--practice-nav);border-color:var(--practice-nav)}.anatomy-tool-shell .anatomy-learning-tools .anatomy-marker-legend-symbol[data-status=mastered]{background:var(--practice-good-bg);color:var(--practice-good);border-color:var(--practice-good)}.anatomy-tool-shell [data-anatomy-circulatory-flow-legend]{max-width:none!important;font-size:14px;background:var(--practice-soft)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;line-height:1.6;padding:10px}.anatomy-tool-shell [data-anatomy-circulatory-flow-legend]>span:last-child{font-size:14px;color:var(--practice-ink)!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-learning-tools :is(p,span,strong,bdi,button,summary,h4){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-learning-tools .anatomy-scale-number{width:30px;height:30px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-scale-track{grid-template-columns:minmax(0,1fr)}@media(max-width:420px){.anatomy-tool-shell .anatomy-scale-track{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-scale-step{min-height:0}.anatomy-tool-shell .anatomy-learning-tools-summary>span:last-of-type{margin-inline-start:0}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-learning-tools,.anatomy-tool-shell .anatomy-learning-tools-summary>span:last-of-type,.anatomy-tool-shell .anatomy-scale-step[data-scale-stage],.anatomy-tool-shell .anatomy-learning-tools .anatomy-marker-legend-symbol,.anatomy-tool-shell [data-anatomy-circulatory-flow-legend]{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell button.anatomy-scale-step,.anatomy-tool-shell .anatomy-scale-journey-buttons button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.anatomy-tool-shell .anatomy-learning-tools :focus-visible,.anatomy-tool-shell #anatomy-lens-title:focus{outline-color:Highlight}}",
+      ".anatomy-tool-shell .anatomy-learning-tools-summary{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:6px 10px;align-items:center}.anatomy-tool-shell .anatomy-learning-tools-summary>span:first-of-type{grid-column:1;grid-row:1}.anatomy-tool-shell .anatomy-learning-tools-summary>span:last-of-type{grid-column:1;grid-row:2;justify-self:start;margin:0}.anatomy-tool-shell .anatomy-learning-tools-summary:after{grid-column:2;grid-row:1/3;align-self:center;margin:0}.anatomy-tool-shell .anatomy-learning-tools-summary:focus-visible{outline-offset:-4px;border-radius:12px}",
+      ".anatomy-tool-shell .anatomy-lens{padding:18px;background:var(--practice-panel);color:var(--practice-ink);border:1px solid var(--practice-border);border-radius:16px;box-shadow:none;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-lens-header{gap:16px;align-items:flex-start;margin-block-end:16px}.anatomy-tool-shell .anatomy-lens-header>div{min-width:0;flex:1}.anatomy-tool-shell .anatomy-lens-header .anatomy-kicker{font-size:14px;color:var(--practice-nav);letter-spacing:normal;line-height:1.5}.anatomy-tool-shell .anatomy-lens-header h3{font-size:24px;line-height:1.4;margin-block:4px 8px;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-lens-header p{font-size:16px;line-height:1.65;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-lens-close{flex:none;min-width:44px;min-height:44px;padding:10px 14px;font-size:16px;line-height:1.5;color:var(--practice-nav);background:var(--practice-panel);border:1px solid var(--practice-nav);border-radius:9px;font-weight:800;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-lens-progress-block{max-width:600px;padding:12px;margin-block:0 18px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-lens-progress{margin:0;padding:0;border:0;border-radius:0;background:transparent;color:var(--practice-ink);font-size:16px;line-height:1.6;font-weight:800}.anatomy-tool-shell .anatomy-lens-progress-block progress{display:block;width:100%;height:10px;accent-color:var(--practice-nav);margin-block:8px;border:0;border-radius:6px;overflow:hidden;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-lens-progress-block progress::-webkit-progress-bar{background:var(--practice-panel)}.anatomy-tool-shell .anatomy-lens-progress-block progress::-webkit-progress-value{background:var(--practice-nav)}.anatomy-tool-shell .anatomy-lens-progress-block progress::-moz-progress-bar{background:var(--practice-nav)}.anatomy-tool-shell .anatomy-lens-progress-help{margin:0;color:var(--practice-ink);font-size:14px;line-height:1.6}.anatomy-tool-shell .anatomy-lens-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,250px),1fr));gap:12px}.anatomy-tool-shell .anatomy-lens-card{display:flex;flex-direction:column;align-items:stretch;gap:8px;min-width:44px;min-height:200px;padding:16px;background:var(--practice-soft);color:var(--practice-ink);border:1px solid var(--practice-border);border-inline-start:4px solid var(--lens-accent,var(--practice-nav));border-radius:12px;text-align:start;white-space:normal;overflow-wrap:anywhere;transition:none}.anatomy-tool-shell .anatomy-lens-card:before{display:none}.anatomy-tool-shell .anatomy-lens-card:hover{transform:none;border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-lens-card[data-viewed=true]{background:var(--practice-soft)}.anatomy-tool-shell .anatomy-lens-card .anatomy-lens-card-top{display:flex;align-items:flex-start;justify-content:space-between;flex-wrap:wrap;gap:8px}.anatomy-tool-shell .anatomy-lens-card strong{margin:0;font-size:18px;line-height:1.5;font-weight:800;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-lens-card .anatomy-lens-kicker{font-size:14px;line-height:1.5;color:var(--practice-ink);letter-spacing:normal;text-transform:none;font-weight:700}.anatomy-tool-shell .anatomy-lens-card .anatomy-lens-desc{font-size:16px;line-height:1.65;color:var(--practice-ink);font-weight:400}.anatomy-tool-shell .anatomy-lens-card .anatomy-lens-action{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-block-start:auto;padding-block-start:8px;font-size:16px;line-height:1.5;color:var(--practice-nav);font-weight:800;text-decoration:underline;text-underline-offset:3px}.anatomy-tool-shell .anatomy-lens-card .anatomy-lens-arrow{display:inline-block;flex:none;font-size:20px;text-decoration:none;color:inherit}[dir=rtl] .anatomy-tool-shell .anatomy-lens-arrow{transform:scaleX(-1)}.anatomy-tool-shell .anatomy-lens-card .anatomy-lens-opened{display:inline-flex;align-items:center;padding:3px 8px;border:1px solid var(--practice-good);border-radius:7px;font-size:14px;line-height:1.5;color:var(--practice-good);background:var(--practice-good-bg);font-weight:800}.anatomy-tool-shell .anatomy-lens-card .anatomy-lens-opened>span{display:inline;color:inherit}.anatomy-tool-shell .anatomy-lens-specialist{border-top:1px solid var(--practice-border);margin-block-start:20px;padding-block-start:16px}.anatomy-tool-shell .anatomy-lens-specialist h4{margin-block:0 10px;font-size:18px;line-height:1.5;font-weight:800;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-lens-specialist .anatomy-lens-card{width:100%;max-width:600px;min-height:44px}.anatomy-tool-shell .anatomy-lens :focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell[data-reading-mode=true] .anatomy-lens :is(p,span,strong,bdi,button){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-lens-grid{grid-template-columns:repeat(auto-fit,minmax(min(100%,300px),1fr))}@media(max-width:560px){.anatomy-tool-shell .anatomy-lens{padding:12px}.anatomy-tool-shell .anatomy-lens-header{display:flex;flex-direction:column;gap:12px}.anatomy-tool-shell .anatomy-lens-close{width:100%}.anatomy-tool-shell .anatomy-lens-card{min-height:44px;padding:12px}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-lens,.anatomy-tool-shell .anatomy-lens-progress-block{background:Canvas;color:CanvasText;border-color:CanvasText}.anatomy-tool-shell .anatomy-lens-card,.anatomy-tool-shell .anatomy-lens-close{background:ButtonFace;color:ButtonText;border-color:ButtonText}.anatomy-tool-shell .anatomy-lens-card .anatomy-lens-opened{background:Canvas;color:CanvasText;border-color:CanvasText}.anatomy-tool-shell .anatomy-lens :focus-visible{outline-color:Highlight}}",
+      ".anatomy-tool-shell[data-reading-mode=true] .anatomy-lens-card strong,.anatomy-tool-shell[data-reading-mode=true] .anatomy-lens-card strong bdi{font-size:20px!important;line-height:1.6!important}",
+      ".anatomy-tool-shell #anatomy-regional-atlas{scroll-margin-block-start:16px}.anatomy-tool-shell #anatomy-regional-atlas:focus{outline:3px solid #0284c7;outline-offset:3px}.theme-contrast .anatomy-tool-shell #anatomy-regional-atlas:focus{outline-color:var(--practice-nav)}@media(forced-colors:active){.anatomy-tool-shell #anatomy-regional-atlas:focus{outline-color:Highlight}.anatomy-tool-shell .anatomy-lens-progress-block progress{forced-color-adjust:none;height:12px;background:Canvas;border:1px solid CanvasText;color:Highlight;accent-color:Highlight}.anatomy-tool-shell .anatomy-lens-progress-block progress::-webkit-progress-bar{background:Canvas}.anatomy-tool-shell .anatomy-lens-progress-block progress::-webkit-progress-value{background:Highlight}.anatomy-tool-shell .anatomy-lens-progress-block progress::-moz-progress-bar{background:Highlight}}",
+      ".anatomy-tool-shell .anatomy-kidney-guide{padding:18px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-header{align-items:flex-start;gap:12px;margin-bottom:16px}.anatomy-tool-shell .anatomy-kidney-intro{flex:1 1 300px;min-width:0}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-header h5{font-size:24px;line-height:1.4;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-kidney-guide :is(p,button,span,bdi,li){font-size:16px;line-height:1.65}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-header p{max-width:none;margin:8px 0 0;color:var(--practice-ink);font-size:16px}.anatomy-tool-shell .anatomy-kidney-guide button{min-height:44px;min-width:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:9px;background:var(--practice-panel);color:var(--practice-nav);font-weight:800;text-align:start;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-kidney-guide button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell .anatomy-kidney-guide button:disabled{background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);opacity:1;cursor:default}.anatomy-tool-shell .anatomy-kidney-flow-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.anatomy-tool-shell .anatomy-kidney-playback{font-size:16px;font-weight:700;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-steps{gap:10px;margin:0 0 12px;grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-steps button{display:flex;flex-direction:column;gap:6px;color:var(--practice-ink);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-steps strong{font-size:18px;line-height:1.5}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-steps button[aria-pressed=true],.anatomy-tool-shell .anatomy-kidney-guide [data-anatomy-clinical-toggle][aria-pressed=true]{background:var(--practice-nav-soft);color:var(--practice-nav);border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-kidney-step-navigation{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-block:12px}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-step-detail{display:block;padding:16px;background:var(--practice-soft);color:var(--practice-ink);border-left:0;border-inline-start:4px solid var(--practice-nav);border-radius:10px;margin-block:16px}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-step-detail>strong{display:block;margin-block:8px;font-size:20px;line-height:1.5;white-space:normal}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-step-detail :is(span,p){font-size:16px;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-step-detail p{margin:0}.anatomy-tool-shell .anatomy-kidney-step-focus{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--practice-border);margin-top:12px;padding-top:12px}.anatomy-tool-shell .anatomy-kidney-step-focus strong{font-size:16px;line-height:1.6}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-step-position{font-size:16px!important;display:inline-block;padding:3px 8px;border:1px solid var(--practice-border);background:var(--practice-panel);border-radius:6px;font-weight:800}.anatomy-tool-shell .anatomy-kidney-marker-help{margin-block:18px 12px}.anatomy-tool-shell .anatomy-kidney-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.anatomy-tool-shell .anatomy-kidney-figure{margin:0 0 14px;padding:14px;min-width:0;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-kidney-figure h6{font-size:18px;line-height:1.5;font-weight:800;color:var(--practice-ink);margin:0 0 12px}.anatomy-tool-shell .anatomy-kidney-picture{border:1px solid var(--practice-border);border-radius:10px;background:#f8fafc;padding:6px;overflow:hidden}.anatomy-tool-shell .anatomy-kidney-picture svg{display:block;width:100%;height:auto;min-height:0}.anatomy-tool-shell [data-anatomy-kidney-scale=body] svg,.anatomy-tool-shell [data-anatomy-kidney-scale=regions] svg{height:230px}.anatomy-tool-shell .anatomy-kidney-marker line{stroke:#334155;stroke-width:2}.anatomy-tool-shell .anatomy-kidney-marker circle{fill:#fff;stroke:#0f172a;stroke-width:2}.anatomy-tool-shell .anatomy-kidney-marker text{fill:#0f172a;stroke:none;font-size:28px;font-weight:900}.anatomy-tool-shell .anatomy-kidney-marker[data-current=true] circle{fill:#075985;stroke:#075985;stroke-width:4}.anatomy-tool-shell .anatomy-kidney-marker[data-current=true] text{fill:#fff}.anatomy-tool-shell .anatomy-kidney-figure figcaption p{margin:10px 0 0}.anatomy-tool-shell .anatomy-kidney-structure-key{display:grid;gap:8px;list-style:none;padding:0;margin:12px 0 0}.anatomy-tool-shell .anatomy-kidney-structure-key li{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0;padding:8px;border:1px solid var(--practice-border);border-radius:8px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-kidney-key-number{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;border:1px solid var(--practice-border);border-radius:50%;font-weight:800}.anatomy-tool-shell .anatomy-kidney-structure-key li[data-current=true]{border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-kidney-current{font-weight:800;color:var(--practice-nav);margin-inline-start:auto}.anatomy-tool-shell .anatomy-kidney-flow-key{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;padding:12px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-kidney-flow-key>span{display:inline-flex;align-items:center;gap:8px}.anatomy-tool-shell .anatomy-kidney-flow-symbol{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;border-radius:50%;color:#fff;font-weight:800}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-clinical-panel{border-left:0;border-inline-start:4px solid var(--practice-nav);font-size:16px;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-nav);border-radius:10px;padding:14px;gap:10px;margin-block:14px}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-clinical-panel :is(strong,span){font-size:16px!important;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-scale-continuation{font-size:16px;line-height:1.7;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);padding:14px;margin-top:16px}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-scale-continuation :is(p,span,strong){font-size:16px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-kidney-guide :is(p,span,bdi,li,button,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-kidney-guide :is(h6,.anatomy-atlas-steps strong,.anatomy-atlas-step-detail>strong){font-size:20px!important;line-height:1.6!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-kidney-guide{padding:12px}.anatomy-tool-shell .anatomy-kidney-context{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-kidney-figure{padding:10px}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-steps{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-kidney-step-navigation button{flex:1 1 100px}.anatomy-tool-shell .anatomy-kidney-guide .anatomy-atlas-step-detail{padding:12px}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-kidney-guide :is(.anatomy-kidney-figure,.anatomy-kidney-picture,.anatomy-kidney-flow-key,.anatomy-atlas-step-detail,.anatomy-clinical-panel,.anatomy-kidney-structure-key li){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-kidney-guide button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none}.anatomy-tool-shell .anatomy-kidney-guide button[aria-pressed=true],.anatomy-tool-shell .anatomy-kidney-structure-key li[data-current=true]{outline:2px solid Highlight;outline-offset:1px}.anatomy-tool-shell .anatomy-kidney-guide :focus-visible{outline-color:Highlight}.anatomy-tool-shell .anatomy-kidney-marker circle{fill:Canvas;stroke:CanvasText}.anatomy-tool-shell .anatomy-kidney-marker text{fill:CanvasText}.anatomy-tool-shell .anatomy-kidney-marker[data-current=true] circle{fill:Highlight;stroke:Highlight}.anatomy-tool-shell .anatomy-kidney-marker[data-current=true] text{fill:HighlightText}.anatomy-tool-shell .anatomy-kidney-flow-symbol{background:Canvas!important;color:CanvasText;border:1px solid CanvasText}}",
+      ".anatomy-tool-shell .anatomy-alveolus-guide{padding:18px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-header{align-items:flex-start;gap:12px;margin-bottom:16px}.anatomy-tool-shell .anatomy-alveolus-intro{flex:1 1 300px;min-width:0}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-header h5{font-size:24px;line-height:1.4;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-alveolus-guide :is(p,button,span,bdi,li){font-size:16px;line-height:1.65}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-header p{max-width:none;margin:8px 0 0;color:var(--practice-ink);font-size:16px}.anatomy-tool-shell .anatomy-alveolus-guide button{min-height:44px;min-width:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:9px;background:var(--practice-panel);color:var(--practice-nav);font-weight:800;text-align:start;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-alveolus-guide button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell .anatomy-alveolus-guide button:disabled{background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);opacity:1;cursor:default}.anatomy-tool-shell .anatomy-alveolus-flow-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.anatomy-tool-shell .anatomy-alveolus-playback{font-size:16px;font-weight:700;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-steps{gap:10px;margin:0 0 12px;grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-steps button{display:flex;flex-direction:column;gap:6px;color:var(--practice-ink);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-steps strong{font-size:18px;line-height:1.5}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-steps button[aria-pressed=true],.anatomy-tool-shell .anatomy-alveolus-guide [data-anatomy-clinical-toggle][aria-pressed=true]{background:var(--practice-nav-soft);color:var(--practice-nav);border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-alveolus-step-navigation{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-block:12px}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-step-detail{display:block;padding:16px;background:var(--practice-soft);color:var(--practice-ink);border-left:0;border-inline-start:4px solid var(--practice-nav);border-radius:10px;margin-block:16px}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-step-detail>strong{display:block;margin-block:8px;font-size:20px;line-height:1.5;white-space:normal}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-step-detail :is(span,p){font-size:16px;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-step-detail p{margin:0}.anatomy-tool-shell .anatomy-alveolus-step-focus{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--practice-border);margin-top:12px;padding-top:12px}.anatomy-tool-shell .anatomy-alveolus-step-focus strong{font-size:16px;line-height:1.6;white-space:normal;min-width:0}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-step-position{font-size:16px!important;display:inline-block;padding:3px 8px;border:1px solid var(--practice-border);background:var(--practice-panel);border-radius:6px;font-weight:800}.anatomy-tool-shell .anatomy-alveolus-marker-help{margin-block:18px 12px}.anatomy-tool-shell .anatomy-alveolus-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.anatomy-tool-shell .anatomy-alveolus-figure{margin:0 0 14px;padding:14px;min-width:0;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-alveolus-figure h6{font-size:18px;line-height:1.5;font-weight:800;color:var(--practice-ink);margin:0 0 12px}.anatomy-tool-shell .anatomy-alveolus-picture{border:1px solid var(--practice-border);border-radius:10px;background:#f8fafc;padding:6px;overflow:hidden}.anatomy-tool-shell .anatomy-alveolus-picture svg{display:block;width:100%;height:auto;min-height:0}.anatomy-tool-shell [data-anatomy-alveolus-scale=body] svg,.anatomy-tool-shell [data-anatomy-alveolus-scale=regions] svg{height:230px}.anatomy-tool-shell .anatomy-alveolus-marker line{stroke:#334155;stroke-width:2}.anatomy-tool-shell .anatomy-alveolus-marker circle{fill:#fff;stroke:#0f172a;stroke-width:2}.anatomy-tool-shell .anatomy-alveolus-marker text{fill:#0f172a;stroke:none;font-weight:900}.anatomy-tool-shell .anatomy-alveolus-marker[data-current=true] circle{fill:#075985;stroke:#075985;stroke-width:4}.anatomy-tool-shell .anatomy-alveolus-marker[data-current=true] text{fill:#fff}.anatomy-tool-shell .anatomy-alveolus-figure figcaption p{margin:10px 0 0}.anatomy-tool-shell .anatomy-alveolus-structure-key{display:grid;gap:8px;list-style:none;padding:0;margin:12px 0 0}.anatomy-tool-shell .anatomy-alveolus-structure-key li{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0;padding:8px;border:1px solid var(--practice-border);border-radius:8px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-alveolus-key-number{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;border:1px solid var(--practice-border);border-radius:50%;font-weight:800}.anatomy-tool-shell .anatomy-alveolus-structure-key li[data-current=true]{border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-alveolus-current{font-weight:800;color:var(--practice-nav);margin-inline-start:auto}.anatomy-tool-shell .anatomy-alveolus-flow-key{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;padding:12px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-alveolus-flow-key>span{display:inline-flex;align-items:center;gap:8px}.anatomy-tool-shell .anatomy-alveolus-flow-symbol{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;border-radius:50%;color:#fff;font-weight:800}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-clinical-panel{border-left:0;border-inline-start:4px solid var(--practice-nav);font-size:16px;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-nav);border-radius:10px;padding:14px;gap:10px;margin-block:14px}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-clinical-panel :is(strong,span){font-size:16px!important;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-scale-continuation{font-size:16px;line-height:1.7;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);padding:14px;margin-top:16px}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-scale-continuation :is(p,span,strong){font-size:16px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-alveolus-guide :is(p,span,bdi,li,button,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-alveolus-guide :is(h6,.anatomy-atlas-steps strong,.anatomy-atlas-step-detail>strong){font-size:20px!important;line-height:1.6!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-alveolus-guide{padding:12px}.anatomy-tool-shell .anatomy-alveolus-context{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-alveolus-figure{padding:10px}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-steps{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-alveolus-step-navigation button{flex:1 1 100px}.anatomy-tool-shell .anatomy-alveolus-guide .anatomy-atlas-step-detail{padding:12px}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-alveolus-guide :is(.anatomy-alveolus-figure,.anatomy-alveolus-picture,.anatomy-alveolus-flow-key,.anatomy-atlas-step-detail,.anatomy-clinical-panel,.anatomy-alveolus-structure-key li){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-alveolus-guide button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none}.anatomy-tool-shell .anatomy-alveolus-guide button[aria-pressed=true],.anatomy-tool-shell .anatomy-alveolus-structure-key li[data-current=true]{outline:2px solid Highlight;outline-offset:1px}.anatomy-tool-shell .anatomy-alveolus-guide :focus-visible{outline-color:Highlight}.anatomy-tool-shell .anatomy-alveolus-marker circle{fill:Canvas;stroke:CanvasText}.anatomy-tool-shell .anatomy-alveolus-marker text{fill:CanvasText}.anatomy-tool-shell .anatomy-alveolus-marker[data-current=true] circle{fill:Highlight;stroke:Highlight}.anatomy-tool-shell .anatomy-alveolus-marker[data-current=true] text{fill:HighlightText}.anatomy-tool-shell .anatomy-alveolus-flow-symbol{background:Canvas!important;color:CanvasText;border:1px solid CanvasText}}.anatomy-tool-shell .anatomy-alveolus-marker line{stroke:#0f172a;stroke-width:1.5}.anatomy-tool-shell .anatomy-alveolus-picture svg{display:block;width:100%;height:auto;min-height:0;max-height:none}.anatomy-tool-shell .anatomy-alveolus-figure h6{font-size:20px;line-height:1.5;margin:0 0 12px;color:var(--practice-ink)}",
+      ".anatomy-tool-shell .anatomy-heart-guide{padding:18px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-header{align-items:flex-start;gap:12px;margin-bottom:16px}.anatomy-tool-shell .anatomy-heart-intro{flex:1 1 300px;min-width:0}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-header h5{font-size:24px;line-height:1.4;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-heart-guide :is(p,button,span,bdi,li){font-size:16px;line-height:1.65}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-header p{max-width:none;margin:8px 0 0;color:var(--practice-ink);font-size:16px}.anatomy-tool-shell .anatomy-heart-guide button{min-height:44px;min-width:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:9px;background:var(--practice-panel);color:var(--practice-nav);font-weight:800;text-align:start;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-heart-guide button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell .anatomy-heart-guide button:disabled{background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);opacity:1;cursor:default}.anatomy-tool-shell .anatomy-heart-flow-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.anatomy-tool-shell .anatomy-heart-playback{font-size:16px;font-weight:700;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-steps{gap:10px;margin:0 0 12px;grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-steps button{display:flex;flex-direction:column;gap:6px;color:var(--practice-ink);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-steps strong{font-size:18px;line-height:1.5}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-steps button[aria-pressed=true],.anatomy-tool-shell .anatomy-heart-guide [data-anatomy-clinical-toggle][aria-pressed=true]{background:var(--practice-nav-soft);color:var(--practice-nav);border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-heart-step-navigation{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-block:12px}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-step-detail{display:block;padding:16px;background:var(--practice-soft);color:var(--practice-ink);border-left:0;border-inline-start:4px solid var(--practice-nav);border-radius:10px;margin-block:16px}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-step-detail>strong{display:block;margin-block:8px;font-size:20px;line-height:1.5;white-space:normal}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-step-detail :is(span,p){font-size:16px;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-step-detail p{margin:0}.anatomy-tool-shell .anatomy-heart-step-focus{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--practice-border);margin-top:12px;padding-top:12px}.anatomy-tool-shell .anatomy-heart-step-focus strong{font-size:16px;line-height:1.6;white-space:normal;min-width:0}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-step-position{font-size:16px!important;display:inline-block;padding:3px 8px;border:1px solid var(--practice-border);background:var(--practice-panel);border-radius:6px;font-weight:800}.anatomy-tool-shell .anatomy-heart-marker-help{margin-block:18px 12px}.anatomy-tool-shell .anatomy-heart-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.anatomy-tool-shell .anatomy-heart-figure{margin:0 0 14px;padding:14px;min-width:0;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-heart-figure h6{font-size:18px;line-height:1.5;font-weight:800;color:var(--practice-ink);margin:0 0 12px}.anatomy-tool-shell .anatomy-heart-picture{border:1px solid var(--practice-border);border-radius:10px;background:#f8fafc;padding:6px;overflow:hidden}.anatomy-tool-shell .anatomy-heart-picture svg{display:block;width:100%;height:auto;min-height:0}.anatomy-tool-shell [data-anatomy-heart-scale=body] svg,.anatomy-tool-shell [data-anatomy-heart-scale=regions] svg{height:230px}.anatomy-tool-shell .anatomy-heart-marker line{stroke:#334155;stroke-width:2}.anatomy-tool-shell .anatomy-heart-marker circle{fill:#fff;stroke:#0f172a;stroke-width:2}.anatomy-tool-shell .anatomy-heart-marker text{fill:#0f172a;stroke:none;font-weight:900}.anatomy-tool-shell .anatomy-heart-marker[data-current=true] circle{fill:#075985;stroke:#075985;stroke-width:4}.anatomy-tool-shell .anatomy-heart-marker[data-current=true] text{fill:#fff}.anatomy-tool-shell .anatomy-heart-figure figcaption p{margin:10px 0 0}.anatomy-tool-shell .anatomy-heart-structure-key{display:grid;gap:8px;list-style:none;padding:0;margin:12px 0 0}.anatomy-tool-shell .anatomy-heart-structure-key li{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0;padding:8px;border:1px solid var(--practice-border);border-radius:8px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-heart-key-number{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;border:1px solid var(--practice-border);border-radius:50%;font-weight:800}.anatomy-tool-shell .anatomy-heart-structure-key li[data-current=true]{border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-heart-current{font-weight:800;color:var(--practice-nav);margin-inline-start:auto}.anatomy-tool-shell .anatomy-heart-flow-key{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;padding:12px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-heart-flow-key>span{display:inline-flex;align-items:center;gap:8px}.anatomy-tool-shell .anatomy-heart-flow-symbol{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;border-radius:50%;color:#fff;font-weight:800}.anatomy-tool-shell .anatomy-heart-guide .anatomy-clinical-panel{border-left:0;border-inline-start:4px solid var(--practice-nav);font-size:16px;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-nav);border-radius:10px;padding:14px;gap:10px;margin-block:14px}.anatomy-tool-shell .anatomy-heart-guide .anatomy-clinical-panel :is(strong,span){font-size:16px!important;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-heart-guide .anatomy-scale-continuation{font-size:16px;line-height:1.7;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);padding:14px;margin-top:16px}.anatomy-tool-shell .anatomy-heart-guide .anatomy-scale-continuation :is(p,span,strong){font-size:16px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-heart-guide :is(p,span,bdi,li,button,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-heart-guide :is(h6,.anatomy-atlas-steps strong,.anatomy-atlas-step-detail>strong){font-size:20px!important;line-height:1.6!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-heart-guide{padding:12px}.anatomy-tool-shell .anatomy-heart-context{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-heart-figure{padding:10px}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-steps{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-heart-step-navigation button{flex:1 1 100px}.anatomy-tool-shell .anatomy-heart-guide .anatomy-atlas-step-detail{padding:12px}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-heart-guide :is(.anatomy-heart-figure,.anatomy-heart-picture,.anatomy-heart-flow-key,.anatomy-atlas-step-detail,.anatomy-clinical-panel,.anatomy-heart-structure-key li){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-heart-guide button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none}.anatomy-tool-shell .anatomy-heart-guide button[aria-pressed=true],.anatomy-tool-shell .anatomy-heart-structure-key li[data-current=true]{outline:2px solid Highlight;outline-offset:1px}.anatomy-tool-shell .anatomy-heart-guide :focus-visible{outline-color:Highlight}.anatomy-tool-shell .anatomy-heart-marker circle{fill:Canvas;stroke:CanvasText}.anatomy-tool-shell .anatomy-heart-marker text{fill:CanvasText}.anatomy-tool-shell .anatomy-heart-marker[data-current=true] circle{fill:Highlight;stroke:Highlight}.anatomy-tool-shell .anatomy-heart-marker[data-current=true] text{fill:HighlightText}.anatomy-tool-shell .anatomy-heart-flow-symbol{background:Canvas!important;color:CanvasText;border:1px solid CanvasText}}.anatomy-tool-shell .anatomy-heart-marker line{stroke:#0f172a;stroke-width:1.5}.anatomy-tool-shell .anatomy-heart-picture svg{display:block;width:100%;height:auto;min-height:0;max-height:none}.anatomy-tool-shell .anatomy-heart-figure h6{font-size:20px;line-height:1.5;margin:0 0 12px;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-heart-valve-key{padding:14px;margin-block:14px;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-heart-valve-key h6{font-size:20px;line-height:1.5;color:var(--practice-ink);margin:0 0 8px}.anatomy-tool-shell .anatomy-heart-valve-key p{margin:0 0 12px}.anatomy-tool-shell .anatomy-heart-valve-state{margin-inline-start:auto;font-weight:800}.anatomy-tool-shell .anatomy-heart-flow-symbol{width:44px;height:32px;white-space:nowrap;direction:ltr;unicode-bidi:isolate}.anatomy-tool-shell .anatomy-heart-orientation{padding:12px;border-inline-start:4px solid var(--practice-nav);background:var(--practice-soft);border-radius:8px}",
+      ".anatomy-tool-shell .anatomy-knee-guide{padding:18px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-header{align-items:flex-start;gap:12px;margin-bottom:16px}.anatomy-tool-shell .anatomy-knee-intro{flex:1 1 300px;min-width:0}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-header h5{font-size:24px;line-height:1.4;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-knee-guide :is(p,button,span,bdi,li){font-size:16px;line-height:1.65}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-header p{max-width:none;margin:8px 0 0;color:var(--practice-ink);font-size:16px}.anatomy-tool-shell .anatomy-knee-guide button{min-height:44px;min-width:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:9px;background:var(--practice-panel);color:var(--practice-nav);font-weight:800;text-align:start;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-knee-guide button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell .anatomy-knee-guide button:disabled{background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);opacity:1;cursor:default}.anatomy-tool-shell .anatomy-knee-flow-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.anatomy-tool-shell .anatomy-knee-playback{font-size:16px;font-weight:700;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-steps{gap:10px;margin:0 0 12px;grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-steps button{display:flex;flex-direction:column;gap:6px;color:var(--practice-ink);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-steps strong{font-size:18px;line-height:1.5}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-steps button[aria-pressed=true],.anatomy-tool-shell .anatomy-knee-guide [data-anatomy-clinical-toggle][aria-pressed=true]{background:var(--practice-nav-soft);color:var(--practice-nav);border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-knee-step-navigation{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-block:12px}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-step-detail{display:block;padding:16px;background:var(--practice-soft);color:var(--practice-ink);border-left:0;border-inline-start:4px solid var(--practice-nav);border-radius:10px;margin-block:16px}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-step-detail>strong{display:block;margin-block:8px;font-size:20px;line-height:1.5;white-space:normal}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-step-detail :is(span,p){font-size:16px;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-step-detail p{margin:0}.anatomy-tool-shell .anatomy-knee-step-focus{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--practice-border);margin-top:12px;padding-top:12px}.anatomy-tool-shell .anatomy-knee-step-focus strong{font-size:16px;line-height:1.6;white-space:normal;min-width:0}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-step-position{font-size:16px!important;display:inline-block;padding:3px 8px;border:1px solid var(--practice-border);background:var(--practice-panel);border-radius:6px;font-weight:800}.anatomy-tool-shell .anatomy-knee-marker-help{margin-block:18px 12px}.anatomy-tool-shell .anatomy-knee-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.anatomy-tool-shell .anatomy-knee-figure{margin:0 0 14px;padding:14px;min-width:0;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-knee-figure h6{font-size:18px;line-height:1.5;font-weight:800;color:var(--practice-ink);margin:0 0 12px}.anatomy-tool-shell .anatomy-knee-picture{border:1px solid var(--practice-border);border-radius:10px;background:#f8fafc;padding:6px;overflow:hidden}.anatomy-tool-shell .anatomy-knee-picture svg{display:block;width:100%;height:auto;min-height:0}.anatomy-tool-shell [data-anatomy-knee-scale=body] svg,.anatomy-tool-shell [data-anatomy-knee-scale=regions] svg{height:230px}.anatomy-tool-shell .anatomy-knee-marker line{stroke:#334155;stroke-width:2}.anatomy-tool-shell .anatomy-knee-marker circle{fill:#fff;stroke:#0f172a;stroke-width:2}.anatomy-tool-shell .anatomy-knee-marker text{fill:#0f172a;stroke:none;font-weight:900}.anatomy-tool-shell .anatomy-knee-marker[data-current=true] circle{fill:#075985;stroke:#075985;stroke-width:4}.anatomy-tool-shell .anatomy-knee-marker[data-current=true] text{fill:#fff}.anatomy-tool-shell .anatomy-knee-figure figcaption p{margin:10px 0 0}.anatomy-tool-shell .anatomy-knee-structure-key{display:grid;gap:8px;list-style:none;padding:0;margin:12px 0 0}.anatomy-tool-shell .anatomy-knee-structure-key li{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0;padding:8px;border:1px solid var(--practice-border);border-radius:8px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-knee-key-number{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;border:1px solid var(--practice-border);border-radius:50%;font-weight:800}.anatomy-tool-shell .anatomy-knee-structure-key li[data-current=true]{border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-knee-current{font-weight:800;color:var(--practice-nav);margin-inline-start:auto}.anatomy-tool-shell .anatomy-knee-flow-key{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;padding:12px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-knee-flow-key>span{display:inline-flex;align-items:center;gap:8px}.anatomy-tool-shell .anatomy-knee-flow-symbol{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;border-radius:50%;color:#fff;font-weight:800}.anatomy-tool-shell .anatomy-knee-guide .anatomy-clinical-panel{border-left:0;border-inline-start:4px solid var(--practice-nav);font-size:16px;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-nav);border-radius:10px;padding:14px;gap:10px;margin-block:14px}.anatomy-tool-shell .anatomy-knee-guide .anatomy-clinical-panel :is(strong,span){font-size:16px!important;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-knee-guide .anatomy-scale-continuation{font-size:16px;line-height:1.7;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);padding:14px;margin-top:16px}.anatomy-tool-shell .anatomy-knee-guide .anatomy-scale-continuation :is(p,span,strong){font-size:16px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-knee-guide :is(p,span,bdi,li,button,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-knee-guide :is(h6,.anatomy-atlas-steps strong,.anatomy-atlas-step-detail>strong){font-size:20px!important;line-height:1.6!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-knee-guide{padding:12px}.anatomy-tool-shell .anatomy-knee-context{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-knee-figure{padding:10px}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-steps{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-knee-step-navigation button{flex:1 1 100px}.anatomy-tool-shell .anatomy-knee-guide .anatomy-atlas-step-detail{padding:12px}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-knee-guide :is(.anatomy-knee-figure,.anatomy-knee-picture,.anatomy-knee-flow-key,.anatomy-atlas-step-detail,.anatomy-clinical-panel,.anatomy-knee-structure-key li){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-knee-guide button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none}.anatomy-tool-shell .anatomy-knee-guide button[aria-pressed=true],.anatomy-tool-shell .anatomy-knee-structure-key li[data-current=true]{outline:2px solid Highlight;outline-offset:1px}.anatomy-tool-shell .anatomy-knee-guide :focus-visible{outline-color:Highlight}.anatomy-tool-shell .anatomy-knee-marker circle{fill:Canvas;stroke:CanvasText}.anatomy-tool-shell .anatomy-knee-marker text{fill:CanvasText}.anatomy-tool-shell .anatomy-knee-marker[data-current=true] circle{fill:Highlight;stroke:Highlight}.anatomy-tool-shell .anatomy-knee-marker[data-current=true] text{fill:HighlightText}.anatomy-tool-shell .anatomy-knee-flow-symbol{background:Canvas!important;color:CanvasText;border:1px solid CanvasText}}.anatomy-tool-shell .anatomy-knee-marker line{stroke:#0f172a;stroke-width:1.5}.anatomy-tool-shell .anatomy-knee-picture svg{display:block;width:100%;height:auto;min-height:0;max-height:none}.anatomy-tool-shell .anatomy-knee-figure h6{font-size:20px;line-height:1.5;margin:0 0 12px;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-knee-valve-key{padding:14px;margin-block:14px;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-knee-valve-key h6{font-size:20px;line-height:1.5;color:var(--practice-ink);margin:0 0 8px}.anatomy-tool-shell .anatomy-knee-valve-key p{margin:0 0 12px}.anatomy-tool-shell .anatomy-knee-valve-state{margin-inline-start:auto;font-weight:800}.anatomy-tool-shell .anatomy-knee-flow-symbol{width:44px;height:32px;white-space:nowrap;direction:ltr;unicode-bidi:isolate}.anatomy-tool-shell .anatomy-knee-orientation{padding:12px;border-inline-start:4px solid var(--practice-nav);background:var(--practice-soft);border-radius:8px}.anatomy-tool-shell .anatomy-knee-mechanism-note{margin-block:14px}.anatomy-tool-shell .anatomy-knee-mechanism-note strong{font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-knee-mechanism-note p{margin:4px 0 0}",
+      ".anatomy-tool-shell .anatomy-muscle-guide{padding:18px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-header{align-items:flex-start;gap:12px;margin-bottom:16px}.anatomy-tool-shell .anatomy-muscle-intro{flex:1 1 300px;min-width:0}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-header h5{font-size:24px;line-height:1.4;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-guide :is(p,button,span,bdi,li){font-size:16px;line-height:1.65}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-header p{max-width:none;margin:8px 0 0;color:var(--practice-ink);font-size:16px}.anatomy-tool-shell .anatomy-muscle-guide button{min-height:44px;min-width:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:9px;background:var(--practice-panel);color:var(--practice-nav);font-weight:800;text-align:start;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-muscle-guide button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell .anatomy-muscle-guide button:disabled{background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);opacity:1;cursor:default}.anatomy-tool-shell .anatomy-muscle-flow-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.anatomy-tool-shell .anatomy-muscle-playback{font-size:16px;font-weight:700;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-steps{gap:10px;margin:0 0 12px;grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-steps button{display:flex;flex-direction:column;gap:6px;color:var(--practice-ink);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-steps strong{font-size:18px;line-height:1.5}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-steps button[aria-pressed=true],.anatomy-tool-shell .anatomy-muscle-guide [data-anatomy-clinical-toggle][aria-pressed=true]{background:var(--practice-nav-soft);color:var(--practice-nav);border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-muscle-step-navigation{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-block:12px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-detail{display:block;padding:16px;background:var(--practice-soft);color:var(--practice-ink);border-left:0;border-inline-start:4px solid var(--practice-nav);border-radius:10px;margin-block:16px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-detail>strong{display:block;margin-block:8px;font-size:20px;line-height:1.5;white-space:normal}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-detail :is(span,p){font-size:16px;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-detail p{margin:0}.anatomy-tool-shell .anatomy-muscle-step-focus{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--practice-border);margin-top:12px;padding-top:12px}.anatomy-tool-shell .anatomy-muscle-step-focus strong{font-size:16px;line-height:1.6;white-space:normal;min-width:0}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-position{font-size:16px!important;display:inline-block;padding:3px 8px;border:1px solid var(--practice-border);background:var(--practice-panel);border-radius:6px;font-weight:800}.anatomy-tool-shell .anatomy-muscle-marker-help{margin-block:18px 12px}.anatomy-tool-shell .anatomy-muscle-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.anatomy-tool-shell .anatomy-muscle-figure{margin:0 0 14px;padding:14px;min-width:0;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-figure h6{font-size:18px;line-height:1.5;font-weight:800;color:var(--practice-ink);margin:0 0 12px}.anatomy-tool-shell .anatomy-muscle-picture{border:1px solid var(--practice-border);border-radius:10px;background:#f8fafc;padding:6px;overflow:hidden}.anatomy-tool-shell .anatomy-muscle-picture svg{display:block;width:100%;height:auto;min-height:0}.anatomy-tool-shell [data-anatomy-muscle-scale=body] svg,.anatomy-tool-shell [data-anatomy-muscle-scale=regions] svg{height:230px}.anatomy-tool-shell .anatomy-muscle-marker line{stroke:#334155;stroke-width:2}.anatomy-tool-shell .anatomy-muscle-marker circle{fill:#fff;stroke:#0f172a;stroke-width:2}.anatomy-tool-shell .anatomy-muscle-marker text{fill:#0f172a;stroke:none;font-weight:900}.anatomy-tool-shell .anatomy-muscle-marker[data-current=true] circle{fill:#075985;stroke:#075985;stroke-width:4}.anatomy-tool-shell .anatomy-muscle-marker[data-current=true] text{fill:#fff}.anatomy-tool-shell .anatomy-muscle-figure figcaption p{margin:10px 0 0}.anatomy-tool-shell .anatomy-muscle-structure-key{display:grid;gap:8px;list-style:none;padding:0;margin:12px 0 0}.anatomy-tool-shell .anatomy-muscle-structure-key li{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0;padding:8px;border:1px solid var(--practice-border);border-radius:8px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-muscle-key-number{display:inline-flex;align-items:center;justify-content:center;flex:none;width:28px;height:28px;border:1px solid var(--practice-border);border-radius:50%;font-weight:800}.anatomy-tool-shell .anatomy-muscle-structure-key li[data-current=true]{border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-muscle-current{font-weight:800;color:var(--practice-nav);margin-inline-start:auto}.anatomy-tool-shell .anatomy-muscle-flow-key{display:flex;align-items:center;flex-wrap:wrap;gap:10px 16px;padding:12px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-muscle-flow-key>span{display:inline-flex;align-items:center;gap:8px}.anatomy-tool-shell .anatomy-muscle-flow-symbol{display:inline-flex;align-items:center;justify-content:center;width:28px;height:28px;flex:none;border-radius:50%;color:#fff;font-weight:800}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-clinical-panel{border-left:0;border-inline-start:4px solid var(--practice-nav);font-size:16px;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-nav);border-radius:10px;padding:14px;gap:10px;margin-block:14px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-clinical-panel :is(strong,span){font-size:16px!important;line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-scale-continuation{font-size:16px;line-height:1.7;background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);padding:14px;margin-top:16px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-scale-continuation :is(p,span,strong){font-size:16px;line-height:1.7;color:var(--practice-ink)!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-muscle-guide :is(p,span,bdi,li,button,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-muscle-guide :is(h6,.anatomy-atlas-steps strong,.anatomy-atlas-step-detail>strong){font-size:20px!important;line-height:1.6!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-muscle-guide{padding:12px}.anatomy-tool-shell .anatomy-muscle-context{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-muscle-figure{padding:10px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-steps{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-muscle-step-navigation button{flex:1 1 100px}.anatomy-tool-shell .anatomy-muscle-guide .anatomy-atlas-step-detail{padding:12px}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-muscle-guide :is(.anatomy-muscle-figure,.anatomy-muscle-picture,.anatomy-muscle-flow-key,.anatomy-atlas-step-detail,.anatomy-clinical-panel,.anatomy-muscle-structure-key li){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-muscle-guide button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none}.anatomy-tool-shell .anatomy-muscle-guide button[aria-pressed=true],.anatomy-tool-shell .anatomy-muscle-structure-key li[data-current=true]{outline:2px solid Highlight;outline-offset:1px}.anatomy-tool-shell .anatomy-muscle-guide :focus-visible{outline-color:Highlight}.anatomy-tool-shell .anatomy-muscle-marker circle{fill:Canvas;stroke:CanvasText}.anatomy-tool-shell .anatomy-muscle-marker text{fill:CanvasText}.anatomy-tool-shell .anatomy-muscle-marker[data-current=true] circle{fill:Highlight;stroke:Highlight}.anatomy-tool-shell .anatomy-muscle-marker[data-current=true] text{fill:HighlightText}.anatomy-tool-shell .anatomy-muscle-flow-symbol{background:Canvas!important;color:CanvasText;border:1px solid CanvasText}}.anatomy-tool-shell .anatomy-muscle-marker line{stroke:#0f172a;stroke-width:1.5}.anatomy-tool-shell .anatomy-muscle-picture svg{display:block;width:100%;height:auto;min-height:0;max-height:none}.anatomy-tool-shell .anatomy-muscle-figure h6{font-size:20px;line-height:1.5;margin:0 0 12px;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-muscle-valve-key{padding:14px;margin-block:14px;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-muscle-valve-key h6{font-size:20px;line-height:1.5;color:var(--practice-ink);margin:0 0 8px}.anatomy-tool-shell .anatomy-muscle-valve-key p{margin:0 0 12px}.anatomy-tool-shell .anatomy-muscle-valve-state{margin-inline-start:auto;font-weight:800}.anatomy-tool-shell .anatomy-muscle-flow-symbol{width:44px;height:32px;white-space:nowrap;direction:ltr;unicode-bidi:isolate}.anatomy-tool-shell .anatomy-muscle-orientation{padding:12px;border-inline-start:4px solid var(--practice-nav);background:var(--practice-soft);border-radius:8px}.anatomy-tool-shell .anatomy-muscle-mechanism-note{margin-block:14px}.anatomy-tool-shell .anatomy-muscle-mechanism-note strong{font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-muscle-mechanism-note p{margin:4px 0 0}.anatomy-tool-shell .anatomy-muscle-scale-path{display:flex;flex-wrap:wrap;gap:12px;list-style:none;padding:12px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-muscle-scale-path li{display:flex;align-items:center;gap:8px}.anatomy-tool-shell [data-anatomy-muscle-scale=sarcomere] .anatomy-muscle-marker line{stroke-width:.8}.anatomy-tool-shell [data-anatomy-muscle-scale=sarcomere] .anatomy-muscle-marker circle{stroke-width:1}.anatomy-tool-shell [data-anatomy-muscle-scale=sarcomere] .anatomy-muscle-marker[data-current=true] circle{stroke-width:1.5}",
+      ".anatomy-tool-shell .anatomy-liver-guide{padding:18px;background:var(--practice-panel)!important;color:var(--practice-ink)!important;border-color:var(--practice-border)!important;min-width:0;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-header{align-items:flex-start;gap:12px;margin-bottom:16px}.anatomy-tool-shell .anatomy-liver-intro{flex:1 1 300px;min-width:0}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-header h5{font-size:24px;line-height:1.4;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-guide :is(p,button,span,li){font-size:16px;line-height:1.65}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-header p{max-width:none;margin:8px 0 0;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-guide button{min-height:44px;min-width:44px;padding:10px 14px;border:1px solid var(--practice-nav);border-radius:9px;background:var(--practice-panel);color:var(--practice-nav);font-weight:800;text-align:start;white-space:normal;overflow-wrap:anywhere}.anatomy-tool-shell .anatomy-liver-guide button:focus-visible{outline:3px solid var(--practice-nav);outline-offset:3px}.anatomy-tool-shell .anatomy-liver-guide button:disabled{background:var(--practice-soft);color:var(--practice-ink);border-color:var(--practice-border);opacity:1;cursor:default}.anatomy-tool-shell .anatomy-liver-flow-controls{display:flex;flex-direction:column;gap:6px;align-items:flex-start}.anatomy-tool-shell .anatomy-liver-playback{font-weight:700;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-steps{gap:10px;margin:0 0 12px;grid-template-columns:repeat(2,minmax(0,1fr))}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-steps button{display:flex;flex-direction:column;gap:6px;color:var(--practice-ink);border-color:var(--practice-border)}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-steps strong{font-size:18px;line-height:1.5}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-steps button[aria-pressed=true],.anatomy-tool-shell .anatomy-liver-guide [data-anatomy-clinical-toggle][aria-pressed=true]{background:var(--practice-nav-soft);color:var(--practice-nav);border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-liver-step-navigation{display:flex;gap:10px;flex-wrap:wrap;justify-content:space-between;margin-block:12px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-step-detail{display:block;padding:16px;background:var(--practice-soft);color:var(--practice-ink);border-left:0;border-inline-start:4px solid var(--practice-nav);border-radius:10px;margin-block:16px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-step-detail>strong{display:block;margin-block:8px;font-size:20px;line-height:1.5;white-space:normal}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-step-detail :is(span,p){line-height:1.7;color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-guide p{margin:0}.anatomy-tool-shell .anatomy-liver-step-focus{display:flex;flex-direction:column;gap:4px;border-top:1px solid var(--practice-border);margin-top:12px;padding-top:12px}.anatomy-tool-shell .anatomy-liver-step-focus strong{font-size:16px;line-height:1.6;white-space:normal;min-width:0}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-step-position{font-size:16px!important;display:inline-block;padding:3px 8px;border:1px solid var(--practice-border);background:var(--practice-panel);border-radius:6px;font-weight:800}.anatomy-tool-shell .anatomy-liver-marker-help{margin-block:18px 12px!important}.anatomy-tool-shell .anatomy-liver-context{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;align-items:start}.anatomy-tool-shell .anatomy-liver-figure{margin:0 0 14px;padding:14px;min-width:0;border:1px solid var(--practice-border);border-radius:12px;background:var(--practice-soft);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-guide h6{font-size:20px;line-height:1.5;font-weight:800;color:var(--practice-ink);margin:0 0 12px}.anatomy-tool-shell .anatomy-liver-picture{border:1px solid var(--practice-border);border-radius:10px;background:#f8fafc;padding:6px;overflow:hidden}.anatomy-tool-shell .anatomy-liver-picture svg{display:block;width:100%;height:auto;min-height:0;max-height:none}.anatomy-tool-shell [data-anatomy-liver-scale=body] svg,.anatomy-tool-shell [data-anatomy-liver-scale=organ] svg{height:230px}.anatomy-tool-shell .anatomy-liver-marker line{stroke:#0f172a;stroke-width:1}.anatomy-tool-shell .anatomy-liver-marker circle{fill:#fff;stroke:#0f172a;stroke-width:1}.anatomy-tool-shell .anatomy-liver-marker text{fill:#0f172a;stroke:none;font-weight:900}.anatomy-tool-shell .anatomy-liver-marker[data-current=true] circle{fill:#075985;stroke:#075985;stroke-width:1.5}.anatomy-tool-shell .anatomy-liver-marker[data-current=true] text{fill:#fff}.anatomy-tool-shell .anatomy-liver-structure-key{list-style:none;display:flex;flex-direction:column;gap:8px;padding:0;margin:12px 0 0}.anatomy-tool-shell .anatomy-liver-structure-key li{display:flex;align-items:baseline;flex-wrap:wrap;gap:8px;padding:8px;border:1px solid var(--practice-border);border-radius:8px;background:var(--practice-panel);color:var(--practice-ink);min-width:0}.anatomy-tool-shell .anatomy-liver-structure-key li[data-current=true]{border-color:var(--practice-nav);box-shadow:inset 0 0 0 1px var(--practice-nav)}.anatomy-tool-shell .anatomy-liver-key-number{display:inline-flex;align-items:center;justify-content:center;flex:0 0 28px;width:28px;height:28px;border:1px solid var(--practice-border);border-radius:50%;font-weight:800;direction:ltr;unicode-bidi:isolate;background:var(--practice-panel);color:var(--practice-ink)}.anatomy-tool-shell .anatomy-liver-current{margin-inline-start:auto;font-weight:800;color:var(--practice-nav)}.anatomy-tool-shell .anatomy-liver-flow-key,.anatomy-tool-shell .anatomy-liver-triad-key{display:flex;align-items:center;flex-wrap:wrap;gap:12px;padding:12px;margin-block:14px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-panel)}.anatomy-tool-shell .anatomy-liver-triad-key h6{flex-basis:100%;margin:0;font-size:18px}.anatomy-tool-shell .anatomy-liver-triad-items{display:flex;align-items:center;flex-wrap:wrap;gap:12px;min-width:0;width:100%}.anatomy-tool-shell .anatomy-liver-flow-key>span,.anatomy-tool-shell .anatomy-liver-triad-items>span{display:flex;align-items:center;gap:8px;min-width:0}.anatomy-tool-shell .anatomy-liver-flow-symbol{display:inline-flex;align-items:center;justify-content:center;flex:0 0 36px;width:36px;height:32px;border-radius:16px;color:#fff;font-weight:900;direction:ltr;unicode-bidi:isolate;white-space:nowrap}.anatomy-tool-shell .anatomy-liver-mechanism-note{padding:12px;border-inline-start:4px solid var(--practice-nav);background:var(--practice-soft);border-radius:8px;margin-block:14px}.anatomy-tool-shell .anatomy-liver-mechanism-note strong{font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-liver-mechanism-note p{margin:4px 0 0}.anatomy-tool-shell .anatomy-liver-scale-path{display:flex;align-items:center;flex-wrap:wrap;gap:12px;list-style:none;padding:12px;margin:0 0 14px;border:1px solid var(--practice-border);border-radius:10px;background:var(--practice-soft)}.anatomy-tool-shell .anatomy-liver-scale-path li{display:flex;align-items:center;flex-wrap:wrap;gap:8px;min-width:0}.anatomy-tool-shell .anatomy-liver-zoom{width:44px;height:28px;flex:0 0 44px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-clinical-panel{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1.6fr);gap:14px;border-inline-start:4px solid var(--practice-nav);background:var(--practice-soft);color:var(--practice-ink);padding:12px;font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-liver-guide .anatomy-clinical-panel :is(strong,p){color:var(--practice-ink);font-size:16px;line-height:1.7}.anatomy-tool-shell .anatomy-liver-guide .anatomy-clinical-note{margin-top:8px;padding:10px;border:1px solid var(--practice-border);border-radius:10px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-scale-continuation{align-items:center;background:var(--practice-soft);color:var(--practice-ink);padding:12px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-scale-continuation p{font-size:16px;line-height:1.7;flex:1 1 240px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-scale-continuation strong{color:var(--practice-ink);font-size:16px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-scale-continuation :is(p,span,strong){color:var(--practice-ink)!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-liver-guide :is(p,span,li,button,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-liver-guide :is(h6,.anatomy-atlas-steps strong,.anatomy-atlas-step-detail>strong){font-size:20px!important;line-height:1.6!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-liver-guide .anatomy-atlas-header h5{font-size:24px!important;line-height:1.5!important}@media(max-width:600px){.anatomy-tool-shell .anatomy-liver-guide{padding:12px}.anatomy-tool-shell .anatomy-liver-context{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-liver-figure{padding:10px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-steps{grid-template-columns:minmax(0,1fr)}.anatomy-tool-shell .anatomy-liver-step-navigation button{flex:1 1 100px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-atlas-step-detail{padding:12px}.anatomy-tool-shell .anatomy-liver-guide .anatomy-clinical-panel{grid-template-columns:minmax(0,1fr)}}@media(forced-colors:active){.anatomy-tool-shell .anatomy-liver-guide :is(.anatomy-liver-figure,.anatomy-liver-picture,.anatomy-liver-flow-key,.anatomy-liver-triad-key,.anatomy-atlas-step-detail,.anatomy-clinical-panel,.anatomy-liver-structure-key li,.anatomy-liver-mechanism-note){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.anatomy-tool-shell .anatomy-liver-guide button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important;box-shadow:none}.anatomy-tool-shell .anatomy-liver-guide button[aria-pressed=true],.anatomy-tool-shell .anatomy-liver-structure-key li[data-current=true]{outline:2px solid Highlight;outline-offset:1px}.anatomy-tool-shell .anatomy-liver-guide :focus-visible{outline-color:Highlight}.anatomy-tool-shell .anatomy-liver-marker circle{fill:Canvas;stroke:CanvasText}.anatomy-tool-shell .anatomy-liver-marker text{fill:CanvasText}.anatomy-tool-shell .anatomy-liver-marker[data-current=true] circle{fill:Highlight;stroke:Highlight}.anatomy-tool-shell .anatomy-liver-marker[data-current=true] text{fill:HighlightText}.anatomy-tool-shell .anatomy-liver-flow-symbol{background:Canvas!important;color:CanvasText;border:1px solid CanvasText}}",
     ].join('');
     document.head.appendChild(st);
   })();
@@ -4706,15 +4721,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var clinicalScaleJourneyActive = !!(selectedClinicalAtlasPack && selectedClinicalScaleBridge && sel
           && sel.id === selectedClinicalScaleBridge.tissueStructureId
           && (requestedClinicalAtlasPackId === selectedClinicalAtlasPack.id || (bodyView3d && body3dStyle === 'clinical')));
-        var scaleJourneyStructureLabel = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.organLabel : (sel ? sel.name : 'Select a structure');
+        var scaleJourneyStructureLabel = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.organLabel : (sel ? sel.name : t('stem.anatomy.scale_select', 'Select a structure'));
         var scaleJourneyDetailLabel = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.tissueLabel
-          : scaleJourneyBrainContext ? 'Brain Atlas' : regionalAtlas ? regionalAtlas.title : 'Anatomy Lens gallery';
+          : scaleJourneyBrainContext ? t('stem.anatomy.scale_brain_atlas', 'Brain Atlas') : scaleJourneyLensItem && regionalAtlas ? regionalAtlas.title : t('stem.anatomy.scale_gallery', 'Anatomy Lens gallery');
         var scaleJourneyCellLabel = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.cellLabel
-          : scaleJourneyCellAtlasTissue ? ({ brain: 'Brain', lung: 'Lung', pancreas: 'Pancreas' })[scaleJourneyCellAtlasTissue] + ' Cell Atlas'
-          : 'Cell Microdissection';
+          : scaleJourneyCellAtlasTissue ? ({ brain: t('stem.anatomy.scale_brain_cells', 'Brain Cell Atlas'), lung: t('stem.anatomy.scale_lung_cells', 'Lung Cell Atlas'), pancreas: t('stem.anatomy.scale_pancreas_cells', 'Pancreas Cell Atlas') })[scaleJourneyCellAtlasTissue]
+          : t('stem.anatomy.scale_microdissection', 'Cell microdissection');
         var scaleJourneyTissueSpecialist = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.tissueTarget
           : scaleJourneyBrainContext ? 'brainAtlas' : scaleJourneyLensItem ? 'anatomyLens' : 'anatomyLensGallery';
         var scaleJourneyCellContext = clinicalScaleJourneyActive ? selectedClinicalScaleBridge.cellContextId : (scaleJourneyCellAtlasTissue || 'general');
+        function anatomyLensCopy(item) {
+          var copy = {
+            heart: { title: t('stem.anatomy.lens_heart_title', "Heart circulation"), category: t('stem.anatomy.lens_heart_category', "Circulatory"), description: t('stem.anatomy.lens_heart_description', "Trace chambers, valves, lungs, and systemic flow.") },
+            kidneys: { title: t('stem.anatomy.lens_kidneys_title', "Kidney filtration"), category: t('stem.anatomy.lens_kidneys_category', "Urinary physiology"), description: t('stem.anatomy.lens_kidneys_description', "Explore kidney regions and nephron processing from the posterior body view.") },
+            alveoli: { title: t('stem.anatomy.lens_alveoli_title', "Alveolar gas exchange"), category: t('stem.anatomy.lens_alveoli_category', "Respiratory"), description: t('stem.anatomy.lens_alveoli_description', "Follow oxygen and carbon dioxide across the air–blood barrier.") },
+            patella: { title: t('stem.anatomy.lens_patella_title', "Knee mechanics"), category: t('stem.anatomy.lens_patella_category', "Musculoskeletal"), description: t('stem.anatomy.lens_patella_description', "Explore cartilage, menisci, ligaments, flexion, and extension.") },
+            biceps: { title: t('stem.anatomy.lens_biceps_title', "Muscle activation"), category: t('stem.anatomy.lens_biceps_category', "Neuromuscular"), description: t('stem.anatomy.lens_biceps_description', "Follow acetylcholine, calcium, and sarcomere shortening.") },
+            liver: { title: t('stem.anatomy.lens_liver_title', "Liver blood and bile flow"), category: t('stem.anatomy.lens_liver_category', "Digestive and metabolic"), description: t('stem.anatomy.lens_liver_description', "Explore how a liver lobule processes portal blood and carries bile.") },
+            sm_intestine: { title: t('stem.anatomy.lens_sm_intestine_title', "Intestinal absorption"), category: t('stem.anatomy.lens_sm_intestine_category', "Absorption"), description: t('stem.anatomy.lens_sm_intestine_description', "Follow sugars, amino acids, fats, water, blood, and lymph across a villus.") },
+            epidermis: { title: t('stem.anatomy.lens_epidermis_title', "Skin repair"), category: t('stem.anatomy.lens_epidermis_category', "Integumentary"), description: t('stem.anatomy.lens_epidermis_description', "Connect skin layers to hemostasis, inflammation, rebuilding, and remodeling.") }
+          };
+          return copy[item.id] || { title: item.title, category: item.kicker, description: item.desc };
+        }
         var showAnatomyLens = d._showAnatomyLens === true;
         var showMasteryMap = d._showMasteryMap === true;
         var anatomyLensIds = ANATOMY_LENS_ITEMS.map(function(item) { return item.id; });
@@ -5061,6 +5089,68 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         function openAnatomyLensItem(item) {
           if (!item) return;
           openAnatomyScaleBridge(item.structureId, 0, 'Opening ' + item.title + ' in Anatomy Lens.');
+        }
+        function focusAnatomyLensDestination(state, selector, atlasId, origin) {
+          var expectedContext = scaleGalleryContext(state);
+          setTimeout(function() {
+            var shell = document.querySelector('[data-anatomy-tool]');
+            if (!shell || !shell.isConnected || shell.getAttribute('data-anatomy-lens-context') !== expectedContext || shell.querySelector('[data-anatomy-lens]')) return;
+            var target = shell.querySelector(selector);
+            if (!atlasId && (!target || !target.getClientRects().length)) target = shell.querySelector('.anatomy-explorer-settings-toggle');
+            if (!target || !target.isConnected || !target.getClientRects().length || (atlasId && target.getAttribute('data-anatomy-atlas') !== atlasId)) return;
+            var active = document.activeElement;
+            if (origin && active !== origin && !(active === document.body && !origin.isConnected)) return;
+            target.focus({ preventScroll: true });
+            if (target.scrollIntoView) target.scrollIntoView({ block: 'start', behavior: 'auto' });
+          }, 0);
+        }
+        function openAnatomyLensGalleryItem(item) {
+          if (!showAnatomyLens || !item) return;
+          var canonical = ANATOMY_LENS_ITEMS.find(function(row) { return row.id === item.id && row.structureId === item.structureId; });
+          var atlas = canonical && REGIONAL_ATLASES[canonical.structureId];
+          var destinationSystem = canonical && SYSTEMS[canonical.system];
+          var structure = destinationSystem && destinationSystem.structures.find(function(row) { return row.id === canonical.structureId; });
+          if (!canonical || !atlas || !structure) return;
+          var context = scaleGalleryContext(d), entry = d._anatomyLensEntry, accepted = null, origin = document.activeElement;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {};
+            if (state._showAnatomyLens !== true || scaleGalleryContext(state) !== context || state._anatomyLensEntry !== entry) return previous;
+            var viewed = safeFlagMap(state._anatomyLensViewed, anatomyLensIds);
+            viewed[canonical.id] = true;
+            var currentLevel = Number(state.complexity);
+            if ([1, 2, 3].indexOf(currentLevel) === -1) currentLevel = defaultComplexity;
+            accepted = Object.assign({}, state, {
+              system: canonical.system, view: canonical.view, selectedStructure: canonical.structureId,
+              complexity: Math.max(currentLevel, anatomyStructureComplexity(structure)), search: '', _studyFilter: 'all',
+              _bodyView3d: false, _activeTab: 'explore', quizMode: false, _anatomyModelFocus: false, _showStudySheet: false,
+              _regionalAtlasOpen: canonical.structureId, _regionalAtlasStep: 0, _regionalAtlasPlaying: true, _regionalAtlasClinical: false,
+              _showAnatomyLens: false, _anatomyLensEntry: null, _anatomyLensViewed: viewed
+            });
+            anatomyTutorProfiles.set(accepted, tutorProfileOf(state));
+            return Object.assign({}, previous, { anatomy: accepted });
+          });
+          finishStudyUpdate(function() { return accepted; }, function(state) {
+            playSound('structureClick');
+            var name = typeof anatomyLensCopy === 'function' ? anatomyLensCopy(canonical).title : canonical.title;
+            if (typeof announceToSR === 'function') announceToSR(formatAnatomyStudyText(t('stem.anatomy.lens_opened_announce', '{name} opened. The guided diagram is ready.'), { name: name }));
+            focusAnatomyLensDestination(state, '#anatomy-regional-atlas', canonical.structureId, origin);
+          });
+        }
+        function closeAnatomyLensGallery() {
+          if (!showAnatomyLens) return;
+          var context = scaleGalleryContext(d), entry = d._anatomyLensEntry, accepted = null, origin = document.activeElement;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {};
+            if (state._showAnatomyLens !== true || scaleGalleryContext(state) !== context || state._anatomyLensEntry !== entry) return previous;
+            accepted = Object.assign({}, state, { _showAnatomyLens: false, _anatomyLensEntry: null });
+            anatomyTutorProfiles.set(accepted, tutorProfileOf(state));
+            return Object.assign({}, previous, { anatomy: accepted });
+          });
+          finishStudyUpdate(function() { return accepted; }, function(state) {
+            if (typeof announceToSR === 'function') announceToSR(t('stem.anatomy.lens_closed_announce', 'Gallery closed.'));
+            var selector = entry === 'scale' ? '[data-anatomy-scale-journey] button[data-scale-stage="tissue"]' : 'button[aria-controls="anatomy-lens-panel"]';
+            focusAnatomyLensDestination(state, selector, null, origin);
+          });
         }
         function openBrainAtlasFromLens() {
           if (typeof setStemLabTab === 'function') setStemLabTab('explore');
@@ -6379,15 +6469,40 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var connectionIds = CONNECTIONS.map(function(connection) { return connection.id; });
         var connectionsViewed = safeFlagMap(d._connectionsViewed, connectionIds);
         // Concept checks are separate from the legacy partner-system answers and structure confidence.
-        function validConnectionConcepts(raw){var result={};if(!raw||raw.version!==1||!raw.answers||typeof raw.answers!=='object'||Array.isArray(raw.answers))return result;CONNECTIONS.forEach(function(c){if(c.choices.some(function(option){return option.id===raw.answers[c.id];}))result[c.id]=raw.answers[c.id];});return result;}
+
+        function validConnectionConcepts(raw){var result={};if(!raw||raw.version!==1||!raw.answers||typeof raw.answers!=='object'||Array.isArray(raw.answers))return result;CONNECTIONS.forEach(function(c){if(Object.prototype.hasOwnProperty.call(raw.answers,c.id)&&c.choices.some(function(option){return option.id===raw.answers[c.id];}))result[c.id]=raw.answers[c.id];});return result;}
         var connectionChecks=validConnectionConcepts(d._connectionConcepts),connectionChecksAnswered=Object.keys(connectionChecks).length;
         var connectionChecksCorrect=CONNECTIONS.filter(function(c){return connectionChecks[c.id]===c.correct;}).length;
-        function connectionCheckOptions(connection){return stableQuizShuffle(connection.choices,'connection-concept-v1|'+connection.id);}
-        function answerConnectionCheck(connection,optionId){
-          if(!connection||connectionIds.indexOf(connection.id)===-1||!connection.choices.some(function(o){return o.id===optionId;})||connectionChecks[connection.id])return;
-          setLabToolData(function(previous){var state=previous.anatomy||{};if(state._activeTab!=='connections'||state._expandedConn!==connection.id)return previous;var answers=validConnectionConcepts(state._connectionConcepts);if(answers[connection.id])return previous;answers[connection.id]=optionId;return Object.assign({},previous,{anatomy:Object.assign({},state,{_connectionConcepts:{version:1,answers:answers}})});});
-          var correct=optionId===connection.correct;playSound(correct?'quizCorrect':'quizWrong');if(typeof announceToSR==='function')announceToSR((correct?t("stem.anatomy.link_ref_correct","Correct. "):t("stem.anatomy.link_ref_incorrect","Review this idea. "))+connection.explanation);
+        // Practice has its own attempt identity; the first saved answer stays immutable.
+        function validConnectionPractice(raw,concepts){var result={},answers=validConnectionConcepts(concepts);if(!raw||raw.version!==1||!raw.sessions||typeof raw.sessions!=='object'||Array.isArray(raw.sessions))return result;CONNECTIONS.forEach(function(c){if(!answers[c.id]||!Object.prototype.hasOwnProperty.call(raw.sessions,c.id))return;var row=raw.sessions[c.id];if(!row||typeof row!=='object'||Array.isArray(row)||typeof row.token!=='string'||!row.token.length||row.token.length>128||typeof row.active!=='boolean'||row.answer!==null&&!c.choices.some(function(option){return option.id===row.answer;}))return;result[c.id]={token:row.token,answer:row.answer,active:row.active};});return result;}
+        var connectionPractice=validConnectionPractice(d._connectionPractice,d._connectionConcepts);
+        function connectionExerciseSignature(state,id){return JSON.stringify([validConnectionConcepts(state._connectionConcepts)[id]||null,validConnectionPractice(state._connectionPractice,state._connectionConcepts)[id]||null]);}
+        function connectionCheckOptions(connection,practice){return stableQuizShuffle(connection.choices,practice?'connection-review-v1|'+connection.id+'|'+practice.token:'connection-concept-v1|'+connection.id);}
+        function connectionFirstStatus(connection){var answer=connectionChecks[connection.id];return answer===connection.correct?t('stem.anatomy.connection_review_first_correct','Correct first answer'):answer?t('stem.anatomy.connection_review_first_review','Review first answer'):t('stem.anatomy.connection_review_unanswered','Not answered');}
+        function updateConnectionExercise(connection,makePatch,focusPlace,answerId){
+          if(!connection||connectionIds.indexOf(connection.id)===-1||activeTab!=='connections'||expandedConnectionId!==connection.id)return;
+          var expected=connectionExerciseSignature(d,connection.id),accepted=null,focusOrigin=document.activeElement;
+          setLabToolData(function(previous){var state=previous.anatomy||{};if(connectionNavigationSignature(state)!==connectionNavigationSnapshot||state._activeTab!=='connections'||state._expandedConn!==connection.id||connectionExerciseSignature(state,connection.id)!==expected)return previous;var patch=makePatch(state);if(!patch)return previous;var next=Object.assign({},state,patch);accepted={navigation:connectionNavigationSignature(next),exercise:connectionExerciseSignature(next,connection.id)};return Object.assign({},previous,{anatomy:next});});
+          setTimeout(function(){
+            if(!accepted)return;var surface=connectionNavigationSurface(accepted.navigation),check=surface&&surface.querySelector('[data-anatomy-connection-check="'+connection.id+'"]');
+            if(!check||check.getAttribute('data-anatomy-connection-exercise')!==accepted.exercise)return;
+            if(answerId){var correct=answerId===connection.correct,isPractice=check.getAttribute('data-anatomy-connection-attempt')!=='first';playSound(correct?'quizCorrect':'quizWrong');if(typeof announceToSR==='function')announceToSR((isPractice?(correct?t('stem.anatomy.connection_review_correct','Correct on practice.'):t('stem.anatomy.connection_review_incorrect','Keep reviewing.')):(correct?t('stem.anatomy.link_ref_correct','Correct. '):t('stem.anatomy.link_ref_incorrect','Review this idea. ')))+' '+connection.explanation);}
+            var target=focusPlace==='question'?check:check.querySelector('[data-anatomy-connection-feedback-kind]'),focusUnchanged=document.activeElement===focusOrigin||document.activeElement===document.body&&focusOrigin&&(!focusOrigin.isConnected||focusOrigin.disabled===true);
+            if(target&&target.isConnected&&focusUnchanged){target.focus({preventScroll:true});target.scrollIntoView({block:'nearest',behavior:'auto'});}
+          },0);
         }
+        function answerConnectionCheck(connection,optionId){
+          if(!connection||!connection.choices.some(function(option){return option.id===optionId;}))return;
+          updateConnectionExercise(connection,function(state){var answers=validConnectionConcepts(state._connectionConcepts),sessions=validConnectionPractice(state._connectionPractice,state._connectionConcepts),practice=sessions[connection.id];
+            if(practice&&practice.active){if(practice.answer!==null)return null;sessions[connection.id]={token:practice.token,answer:optionId,active:true};return {_connectionPractice:{version:1,sessions:sessions}};}
+            if(answers[connection.id])return null;answers[connection.id]=optionId;return {_connectionConcepts:{version:1,answers:answers}};
+          },'feedback',optionId);
+        }
+        function changeConnectionPractice(connection,start){
+          var token=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+          updateConnectionExercise(connection,function(state){var answers=validConnectionConcepts(state._connectionConcepts),sessions=validConnectionPractice(state._connectionPractice,state._connectionConcepts),practice=sessions[connection.id];if(!answers[connection.id])return null;if(start){if(practice&&practice.active&&practice.answer===null)return null;sessions[connection.id]={token:token,answer:null,active:true};}else{if(!practice||!practice.active)return null;sessions[connection.id]={token:practice.token,answer:practice.answer,active:false};}return {_connectionPractice:{version:1,sessions:sessions}};},start?'question':'feedback');
+        }
+        function showAllConnections(){if(activeTab!=='connections'||!expandedConnectionId)return;updateConnectionNavigation(function(){return {_expandedConn:null,_connectionStudyOrigin:null};},function(accepted){var surface=connectionNavigationSurface(accepted.signature),chooser=surface&&surface.querySelector('#anatomy-connection-select');if(chooser&&(document.activeElement===accepted.focusOrigin||document.activeElement===document.body&&accepted.focusOrigin&&!accepted.focusOrigin.isConnected)){chooser.focus({preventScroll:true});chooser.scrollIntoView({block:'nearest',behavior:'auto'});}});}
         function focusConnection(){queueConnectionFocus(expandedConnectionId,connectionNavigationSnapshot,'connection');}
         function showConnectionDiagram(systemId,connection){navigateConnectionDiagram(connection,systemId,null);}
         var expandedConnectionId = typeof d._expandedConn === 'string' && connectionIds.indexOf(d._expandedConn) !== -1 ? d._expandedConn : null;
@@ -6523,52 +6638,98 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           : Math.min(CLINICAL_CASES.length, restoredClinicalSolved);
         var activeCaseId = typeof d._activeCaseId === 'string' && clinicalCaseIds.indexOf(d._activeCaseId) !== -1 ? d._activeCaseId : null;
         var activeCaseFeedback = activeCaseId && d._activeCaseFeedback === 'reveal' ? 'reveal' : null;
-        function validCaseStudy(raw){var result={};if(!raw||raw.version!==1||!raw.cases||typeof raw.cases!=='object'||Array.isArray(raw.cases))return result;clinicalCaseIds.forEach(function(id){var row=raw.cases[id];if(row&&typeof row==='object'&&!Array.isArray(row))result[id]={draft:typeof row.draft==='string'?row.draft.slice(0,600):'',hint:row.hint===true,revealed:row.revealed===true};});return result;}
+
+        function validCaseStudy(raw){var result={};if(!raw||raw.version!==1||!raw.cases||typeof raw.cases!=='object'||Array.isArray(raw.cases))return result;clinicalCaseIds.forEach(function(id){if(!Object.prototype.hasOwnProperty.call(raw.cases,id))return;var row=raw.cases[id];if(row&&typeof row==='object'&&!Array.isArray(row))result[id]={draft:typeof row.draft==='string'?row.draft.slice(0,600):'',hint:row.hint===true,revealed:row.revealed===true};});return result;}
         var caseStudy=validCaseStudy(d._clinicalStudy);
+        var caseActivityIds=['explore','quiz','flashcards','tour','pathways','connections','aiTutor','spotter','homeoHunt'];
         function caseIsRevealed(cs,entry,state){return entry?entry.revealed:!!(safeFlagMap(state._clinicalSolvedIds,clinicalCaseIds)[cs.id]||(state._activeCaseId===cs.id&&state._activeCaseFeedback==='reveal'));}
-        function updateCaseStudy(cs,action,value){
-          if(!cs||clinicalCaseIds.indexOf(cs.id)===-1||['draft','hint','reveal','hide','review'].indexOf(action)===-1)return;
-          if(action==='draft'&&typeof value!=='string')return;
-          setLabToolData(function(previous){var state=previous.anatomy||{};if((SYSTEMS[state.system]?state.system:'skeletal')!==cs.system||state._showClinical!==true)return previous;var cases=validCaseStudy(state._clinicalStudy),prior=cases[cs.id],entry=Object.assign({draft:'',hint:false,revealed:caseIsRevealed(cs,prior,state)},prior||{}),patch={};
-            if(action==='draft')entry.draft=value.slice(0,600);
-            else if(action==='hint')entry.hint=!entry.hint;
-            else if(action==='reveal')entry.revealed=true;
-            else if(action==='hide'){entry.revealed=false;entry.hint=false;}
-            else {if(!entry.revealed)return previous;var reviewed=safeFlagMap(state._clinicalSolvedIds,clinicalCaseIds);if(reviewed[cs.id])return previous;reviewed[cs.id]=true;patch={_activeCaseId:cs.id, _activeCaseFeedback: 'reveal', _clinicalSolvedIds:reviewed,_clinicalSolved:Object.keys(reviewed).length};}
-            cases[cs.id]=entry;patch._clinicalStudy={version:1,cases:cases};return Object.assign({},previous,{anatomy:Object.assign({},state,patch)});
-          });
-          if(action==='review'){playSound('guidedStep');setTimeout(checkAnatomyChallenges,50);}
+        function caseSystemOf(state){return typeof state.system==='string'&&Object.prototype.hasOwnProperty.call(SYSTEMS,state.system)?state.system:'skeletal';}
+        function validCaseOrigin(raw){
+          if(!raw||typeof raw!=='object'||Array.isArray(raw)||!['version','token','caseId','systemId','view','complexity','selectedStructure','search','studyFilter','activeTab','bodyView3d','quizMode'].every(function(key){return Object.prototype.hasOwnProperty.call(raw,key);})||raw.version!==1||typeof raw.token!=='string'||!raw.token.length||raw.token.length>128)return null;
+          var cs=CLINICAL_CASES.find(function(item){return item.id===raw.caseId;});
+          if(!cs||typeof raw.systemId!=='string'||!Object.prototype.hasOwnProperty.call(SYSTEMS,raw.systemId)||raw.systemId!==cs.system||['anterior','posterior'].indexOf(raw.view)===-1||raw.complexity!==3||caseActivityIds.indexOf(raw.activeTab)===-1||typeof raw.bodyView3d!=='boolean'||typeof raw.quizMode!=='boolean')return null;
+          if(typeof raw.search!=='string'||raw.search.length>200||['all','unseen','review','mastered','notes'].indexOf(raw.studyFilter)===-1)return null;
+          if(raw.selectedStructure!==null){var structure=typeof raw.selectedStructure==='string'&&SYSTEMS[raw.systemId].structures.find(function(item){return item.id===raw.selectedStructure;});if(!structure||!passesAnatomyLevel(structure,3)||structure.v!=='b'&&structure.v!==(raw.view==='anterior'?'a':'p'))return null;}
+          return {version:1,token:raw.token,caseId:cs.id,systemId:raw.systemId,view:raw.view,complexity:3,selectedStructure:raw.selectedStructure,search:raw.search,studyFilter:raw.studyFilter,activeTab:raw.activeTab,bodyView3d:raw.bodyView3d,quizMode:raw.quizMode};
         }
-        function focusClinicalCase(id){setTimeout(function(){var panel=document.querySelector('[data-anatomy-case="'+id+'"]');if(panel){panel.focus({preventScroll:true});panel.scrollIntoView({block:'start',behavior:'auto'});}},0);}
-        function showCaseMarker(cs){updMulti(structureFocusPatch(cs.structureId,{_caseDiagramReturn:cs.id}));announceStructure(cs.structureId);setTimeout(function(){var panel=document.querySelector('[data-anatomy-model-shell]');if(panel){panel.focus({preventScroll:true});panel.scrollIntoView({block:'start',behavior:'auto'});}},0);}
+        function clinicalNavigationSignature(state){return JSON.stringify([connectionNavigationSignature(state),state._showClinical,state._clinicalNavigationToken,validCaseOrigin(state._caseDiagramOrigin),state._guidanceRevision,state._studySheetRevision,state._studyImportRevision]);}
+        var clinicalNavigationSnapshot=clinicalNavigationSignature(d);
+        function caseStateSignature(state,cs){var entry=validCaseStudy(state._clinicalStudy)[cs.id];return JSON.stringify([entry||{draft:'',hint:false,revealed:caseIsRevealed(cs,entry,state)},!!safeFlagMap(state._clinicalSolvedIds,clinicalCaseIds)[cs.id]]);}
+        function caseDestinationMatches(state,origin){var cs=origin&&CLINICAL_CASES.find(function(item){return item.id===origin.caseId;}),marker=cs&&SYSTEMS[cs.system].structures.find(function(item){return item.id===cs.structureId;});return !!(marker&&state._caseDiagramReturn===cs.id&&state._clinicalNavigationToken===origin.token&&caseSystemOf(state)===cs.system&&state._activeTab==='explore'&&Number(state.complexity)===3&&state._showClinical===true&&state._bodyView3d===false&&state.selectedStructure===marker.id&&(state.search||'')===''&&(state._studyFilter||'all')==='all'&&(state.view||'anterior')===(marker.v==='p'?'posterior':marker.v==='a'?'anterior':origin.view));}
+        var caseDiagramOrigin=validCaseOrigin(d._caseDiagramOrigin);if(!caseDestinationMatches(d,caseDiagramOrigin))caseDiagramOrigin=null;
+        function clinicalSurface(signature){var panel=document.querySelector('[data-anatomy-clinical-study]');return panel&&panel.getAttribute('data-anatomy-case-navigation')===signature?panel:null;}
+        function clinicalAcceptedSurface(accepted,cs){var panel=clinicalSurface(accepted.signature),card=panel&&panel.querySelector('[data-anatomy-case="'+cs.id+'"]');return card&&card.getAttribute('data-anatomy-case-state')===accepted.caseState?card:null;}
+        function focusAcceptedCase(accepted,cs,place){
+          var card=clinicalAcceptedSurface(accepted,cs);if(!card)return;var shell=card.closest('.anatomy-tool-shell'),target=place==='model'?shell&&shell.querySelector('[data-anatomy-model-shell]'):place==='hint'?card.querySelector('[data-anatomy-case-hint]'):place==='hint-toggle'?card.querySelector('[data-anatomy-case-hint-toggle]'):place==='draft'?card.querySelector('[data-anatomy-case-draft]'):place==='review'?card.querySelector('[data-anatomy-case-reviewed]'):place==='explanation'?card.querySelector('[data-anatomy-case-explanation]:not([hidden])'):null;
+          if(!target)target=card.querySelector('h4');var origin=accepted.focusOrigin,unchanged=document.activeElement===origin||document.activeElement===document.body&&origin&&(!origin.isConnected||origin.disabled===true);
+          if(target&&target.isConnected&&unchanged){target.focus({preventScroll:true});target.scrollIntoView({block:place==='model'?'start':'nearest',behavior:'auto'});}
+        }
+        function updateClinicalCase(cs,makePatch,onAccepted,ownEntry,navigation){
+          if(!cs||clinicalCaseIds.indexOf(cs.id)===-1||cs.system!==sysKey||complexity<3||!showClinical||focusedAnatomyWorkspace)return;
+          var expected=caseStateSignature(d,cs),accepted=null,focusOrigin=document.activeElement,token=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+          setLabToolData(function(previous){var state=previous.anatomy||{};if(clinicalNavigationSignature(state)!==clinicalNavigationSnapshot||caseSystemOf(state)!==cs.system||state._showClinical!==true||Number(state.complexity)!==3||ownEntry&&caseStateSignature(state,cs)!==expected)return previous;
+            var patch=makePatch(state);if(!patch)return previous;if(navigation){patch._clinicalNavigationToken=token;if(patch._caseDiagramOrigin)patch._caseDiagramOrigin=Object.assign({},patch._caseDiagramOrigin,{token:token});}
+            var next=Object.assign({},state,patch);accepted={signature:clinicalNavigationSignature(next),caseState:caseStateSignature(next,cs),focusOrigin:focusOrigin};return Object.assign({},previous,{anatomy:next});
+          });
+          if(onAccepted)setTimeout(function(){if(accepted&&clinicalAcceptedSurface(accepted,cs))onAccepted(accepted);},0);
+        }
+        function updateCaseStudy(cs,action,value){
+          if(!cs||clinicalCaseIds.indexOf(cs.id)===-1||['draft','hint','reveal','hide','review'].indexOf(action)===-1||action==='draft'&&typeof value!=='string')return;
+          var hintOpened=false;
+          updateClinicalCase(cs,function(state){var cases=validCaseStudy(state._clinicalStudy),prior=cases[cs.id],entry=Object.assign({draft:'',hint:false,revealed:caseIsRevealed(cs,prior,state)},prior||{}),patch={};
+            if(action==='draft'){var draft=value.slice(0,600);if(draft===entry.draft)return null;entry.draft=draft;}
+            else if(action==='hint'){entry.hint=!entry.hint;hintOpened=entry.hint;}
+            else if(action==='reveal'){if(entry.revealed)return null;entry.revealed=true;}
+            else if(action==='hide'){if(!entry.revealed)return null;entry.revealed=false;entry.hint=false;}
+            else {if(!entry.revealed)return null;var reviewed=safeFlagMap(state._clinicalSolvedIds,clinicalCaseIds);if(reviewed[cs.id])return null;reviewed[cs.id]=true;patch={_activeCaseId:cs.id,_activeCaseFeedback:'reveal',_clinicalSolvedIds:reviewed,_clinicalSolved:Object.keys(reviewed).length};}
+            cases[cs.id]=entry;patch._clinicalStudy={version:1,cases:cases};return patch;
+          },action==='draft'?null:function(accepted){
+            if(action==='review'){playSound('guidedStep');if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.case_journey_review_saved','Review saved for {case}.').replace('{case}',cs.title));setTimeout(function(){if(clinicalAcceptedSurface(accepted,cs))checkAnatomyChallenges();},50);}
+            else if(typeof announceToSR==='function'){if(action==='hide')announceToSR(t('stem.anatomy.case_journey_hidden','Explanation hidden. Your reasoning stays saved.'));else if(action==='reveal')announceToSR(t('stem.anatomy.case_ref_anatomical_explanation','Anatomical explanation')+' · '+cs.title);else if(hintOpened)announceToSR(t('stem.anatomy.case_journey_hint','Reasoning hint')+' · '+cs.title);}
+            focusAcceptedCase(accepted,cs,action==='review'?'review':action==='hide'?'draft':action==='reveal'?'explanation':hintOpened?'hint':'hint-toggle');
+          },action!=='draft',false);
+        }
+        function showCaseMarker(cs){
+          updateClinicalCase(cs,function(state){var entry=validCaseStudy(state._clinicalStudy)[cs.id];if(!caseIsRevealed(cs,entry,state))return null;var marker=SYSTEMS[cs.system].structures.find(function(item){return item.id===cs.structureId;});if(!marker||!passesAnatomyLevel(marker,3))return null;
+            var saved=validCaseOrigin(state._caseDiagramOrigin),origin=saved&&saved.caseId===cs.id&&caseDestinationMatches(state,saved)?saved:validCaseOrigin({version:1,token:'pending',caseId:cs.id,systemId:cs.system,view:view,complexity:3,selectedStructure:sel?sel.id:null,search:searchValue.slice(0,200),studyFilter:['all','unseen','review','mastered','notes'].indexOf(state._studyFilter)!==-1?state._studyFilter:'all',activeTab:caseActivityIds.indexOf(activeTab)!==-1?activeTab:'explore',bodyView3d:state._bodyView3d===true,quizMode:state.quizMode===true});if(!origin)return null;
+            return {_activeTab:'explore',quizMode:false,system:cs.system,view:marker.v==='p'?'posterior':marker.v==='a'?'anterior':origin.view,complexity:3,selectedStructure:marker.id,search:'',_studyFilter:'all',_bodyView3d:false,_anatomyModelFocus:false,_caseDiagramReturn:cs.id,_caseDiagramOrigin:origin};
+          },function(accepted){var marker=SYSTEMS[cs.system].structures.find(function(item){return item.id===cs.structureId;});if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.case_journey_showing','Showing {structure} for {case}.').replace('{structure}',marker.name).replace('{case}',cs.title));focusAcceptedCase(accepted,cs,'model');},true,true);
+        }
+        function focusClinicalCase(id){
+          var cs=CLINICAL_CASES.find(function(item){return item.id===id;});if(!cs)return;
+          updateClinicalCase(cs,function(state){var origin=validCaseOrigin(state._caseDiagramOrigin);
+            if(caseDiagramOrigin){if(!origin||origin.token!==caseDiagramOrigin.token||origin.caseId!==cs.id||!caseDestinationMatches(state,origin))return null;return {_activeTab:origin.activeTab,quizMode:origin.quizMode,system:origin.systemId,view:origin.view,complexity:origin.complexity,selectedStructure:origin.selectedStructure,search:origin.search,_studyFilter:origin.studyFilter,_bodyView3d:origin.bodyView3d,_anatomyModelFocus:false,_caseDiagramOrigin:null,_caseDiagramReturn:null};}
+            if(state._caseDiagramOrigin!=null||state._caseDiagramReturn!==cs.id)return null;return {_caseDiagramReturn:null};
+          },function(accepted){if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.case_journey_return','Return to {case}').replace('{case}',cs.title));focusAcceptedCase(accepted,cs,'explanation');},false,true);
+        }
+        function renderCaseOrigin(){
+          if(!caseDiagramOrigin)return null;var cs=CLINICAL_CASES.find(function(item){return item.id===caseDiagramOrigin.caseId;});
+          return h('div',{className:'anatomy-case-origin','data-anatomy-case-origin':cs.id},h('div',null,h('p',null,h('strong',null,t('stem.anatomy.case_journey_origin','Anatomy for {case}').replace('{case}',cs.title))),h('p',{className:'anatomy-case-scope'},cs.scope)),h('button',{type:'button','data-anatomy-case-return':cs.id,onClick:function(){focusClinicalCase(cs.id);}},t('stem.anatomy.case_journey_return','Return to {case}').replace('{case}',cs.title)));
+        }
         function renderClinicalCase(cs){
           var entry=caseStudy[cs.id],revealed=caseIsRevealed(cs,entry,d),hint=entry&&entry.hint,reviewed=!!clinicalSolvedIds[cs.id],id='anatomy-case-'+cs.id;
-          return h('article',{key:cs.id,'data-anatomy-case':cs.id,className:'anatomy-case-card',tabIndex:-1,'aria-labelledby':id+'-title'},
-            h('h4',{id:id+'-title'},cs.title),
-            reviewed?h('p',{className:'anatomy-case-reviewed','data-anatomy-case-reviewed':cs.id},t("stem.anatomy.case_ref_reviewed","Explanation reviewed")):null,
-            h('p',null,cs.presentation),
-            h('p',{className:'anatomy-case-question',id:id+'-question'},cs.question),
-            ttsBtn(cs.presentation+' '+cs.question,t("stem.anatomy.case_ref_read_case","Read this case aloud")),
-            h('label',{htmlFor:id+'-draft'},t("stem.anatomy.case_ref_reasoning","Your reasoning (optional)")),
-            h('p',{id:id+'-help',className:'anatomy-case-help'},t("stem.anatomy.case_ref_reasoning_help","Name a relevant structure or mechanism, cite a clue, and note what remains uncertain. Your draft stays with this case in this activity.")),
-            h('textarea',{id:id+'-draft','data-anatomy-case-draft':cs.id,'aria-describedby':id+'-help',maxLength:600,rows:3,value:entry?entry.draft:'',onChange:function(event){updateCaseStudy(cs,'draft',event.target.value);}}),
-            h('div',{className:'anatomy-case-actions'},h('button',{type:'button','data-anatomy-case-hint-toggle':cs.id,'aria-expanded':!!hint,'aria-controls':id+'-hint',onClick:function(){updateCaseStudy(cs,'hint');}},hint?t("stem.anatomy.case_ref_hide_hint","Hide hint"):t("stem.anatomy.case_ref_show_hint","Use a hint")),
-              h('button',{type:'button','data-anatomy-case-reveal':cs.id,'aria-expanded':revealed,'aria-controls':id+'-explanation',onClick:function(){updateCaseStudy(cs,revealed?'hide':'reveal');}},revealed?t("stem.anatomy.case_ref_try_again","Hide explanation and try again"):t("stem.anatomy.case_ref_compare","Compare with the explanation"))),
-            h('div',{id:id+'-hint',hidden:!hint,'data-anatomy-case-hint':cs.id,className:'anatomy-case-hint'},hint?cs.hint:null),
-            h('div',{id:id+'-explanation',hidden:!revealed,'data-anatomy-case-explanation':cs.id,className:'anatomy-case-explanation'},revealed?h('div',null,
-              h('h5',null,t("stem.anatomy.case_ref_anatomical_explanation","Anatomical explanation")),h('p',{className:'anatomy-case-answer'},cs.answer),h('p',null,cs.explanation),
-              h('h5',null,t("stem.anatomy.case_ref_uncertainty","What the clues cannot establish")),h('p',null,cs.limit),
-              h('p',{className:'anatomy-case-help'},t("stem.anatomy.case_ref_compare_prompt","Compare this with your reasoning. Which clue mattered, and what would you change?")),
-              h('a',{href:cs.reference,target:'_blank',rel:'noopener noreferrer'},t("stem.anatomy.case_ref_source","Read the source")),
-              ttsBtn(cs.answer+' '+cs.explanation+' '+cs.limit,t("stem.anatomy.case_ref_read_explanation","Read the explanation aloud")),
+          return h('article',{key:cs.id,'data-anatomy-case':cs.id,'data-anatomy-case-state':caseStateSignature(d,cs),className:'anatomy-case-card',tabIndex:-1,'aria-labelledby':id+'-title'},
+            h('h4',{id:id+'-title',tabIndex:-1},cs.title),
+            reviewed?h('p',{className:'anatomy-case-reviewed','data-anatomy-case-reviewed':cs.id,tabIndex:-1,role:'group','aria-label':t('stem.anatomy.case_ref_reviewed','Explanation reviewed')+' · '+cs.title},t('stem.anatomy.case_ref_reviewed','Explanation reviewed')):null,
+            h('section',{className:'anatomy-case-reading','aria-labelledby':id+'-read'},h('h5',{id:id+'-read'},t('stem.anatomy.case_journey_read','Read the case')),h('p',null,cs.presentation),h('p',{className:'anatomy-case-question',id:id+'-question'},cs.question),ttsBtn(cs.presentation+' '+cs.question,t('stem.anatomy.case_ref_read_case','Read this case aloud'))),
+            h('label',{htmlFor:id+'-draft'},t('stem.anatomy.case_ref_reasoning','Your reasoning (optional)')),
+            h('p',{id:id+'-help',className:'anatomy-case-help'},t('stem.anatomy.case_ref_reasoning_help','Name a relevant structure or mechanism, cite a clue, and note what remains uncertain. Your draft stays with this case in this activity.')),
+            h('textarea',{id:id+'-draft','data-anatomy-case-draft':cs.id,'aria-describedby':id+'-help '+id+'-count',maxLength:600,rows:3,value:entry?entry.draft:'',onChange:function(event){updateCaseStudy(cs,'draft',event.target.value);}}),
+            h('p',{id:id+'-count',className:'anatomy-case-draft-count','data-anatomy-case-draft-count':cs.id},t('stem.anatomy.case_journey_draft_count','{count}/600 characters').replace('{count}',String(entry?entry.draft.length:0))),
+            h('div',{className:'anatomy-case-actions'},h('button',{type:'button','data-anatomy-case-hint-toggle':cs.id,'aria-expanded':!!hint,'aria-controls':id+'-hint',onClick:function(){updateCaseStudy(cs,'hint');}},hint?t('stem.anatomy.case_ref_hide_hint','Hide hint'):t('stem.anatomy.case_ref_show_hint','Use a hint')),
+              h('button',{type:'button','data-anatomy-case-reveal':cs.id,'aria-expanded':revealed,'aria-controls':id+'-explanation',onClick:function(){updateCaseStudy(cs,revealed?'hide':'reveal');}},revealed?t('stem.anatomy.case_ref_try_again','Hide explanation and try again'):t('stem.anatomy.case_ref_compare','Compare with the explanation'))),
+            h('div',{id:id+'-hint',hidden:!hint,'data-anatomy-case-hint':cs.id,className:'anatomy-case-hint',role:'group',tabIndex:-1,'aria-labelledby':id+'-hint-title'},hint?h('div',null,h('h5',{id:id+'-hint-title'},t('stem.anatomy.case_journey_hint','Reasoning hint')),h('p',null,cs.hint)):null),
+            h('div',{id:id+'-explanation',hidden:!revealed,'data-anatomy-case-explanation':cs.id,className:'anatomy-case-explanation',role:'group',tabIndex:-1,'aria-labelledby':id+'-explanation-title'},revealed?h('div',null,
+              h('h5',{id:id+'-explanation-title'},t('stem.anatomy.case_ref_anatomical_explanation','Anatomical explanation')),h('p',{className:'anatomy-case-answer'},cs.answer),h('p',null,cs.explanation),
+              h('div',{className:'anatomy-case-limits'},h('h5',null,t('stem.anatomy.case_ref_uncertainty','What the clues cannot establish')),h('p',null,cs.limit)),
+              h('p',{className:'anatomy-case-help'},t('stem.anatomy.case_ref_compare_prompt','Compare this with your reasoning. Which clue mattered, and what would you change?')),
+              h('div',{className:'anatomy-case-resources'},h('a',{href:cs.reference,target:'_blank',rel:'noopener noreferrer'},t('stem.anatomy.case_ref_source','Read the source')),ttsBtn(cs.answer+' '+cs.explanation+' '+cs.limit,t('stem.anatomy.case_ref_read_explanation','Read the explanation aloud'))),
               h('p',{className:'anatomy-case-scope'},cs.scope),
-              h('div',{className:'anatomy-case-actions'},h('button',{type:'button','data-anatomy-case-marker':cs.id,onClick:function(){showCaseMarker(cs);}},t("stem.anatomy.case_ref_marker","Show the related anatomy")),
-                h('button',{type:'button','data-anatomy-case-review':cs.id,disabled:reviewed,onClick:function(){updateCaseStudy(cs,'review');}},reviewed?t("stem.anatomy.case_ref_reviewed","Explanation reviewed"):t("stem.anatomy.case_ref_mark_reviewed","Mark explanation reviewed")))
+              h('div',{className:'anatomy-case-actions'},h('button',{type:'button','data-anatomy-case-marker':cs.id,onClick:function(){showCaseMarker(cs);}},t('stem.anatomy.case_ref_marker','Show the related anatomy')),
+                h('button',{type:'button','data-anatomy-case-review':cs.id,disabled:reviewed,onClick:function(){updateCaseStudy(cs,'review');}},reviewed?t('stem.anatomy.case_ref_reviewed','Explanation reviewed'):t('stem.anatomy.case_ref_mark_reviewed','Mark explanation reviewed')))
             ):null)
           );
         }
-
-
         // Untimed identification is the default. Timing is an explicit preference,
         // captured when a question starts; legacy response times remain separate.
         var spotterTimed = d._spotterTimed === true;
@@ -6610,109 +6771,72 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
         var spotterRoundReady = !!spotterTargetStruct && spotterOptions.length === 4 &&
           spotterOptions.some(function(option) { return option.id === spotterTarget; }) && (spotterStartTime > 0 || spotterFeedback !== null);
         var spotterTargetVisible = !!spotterTargetStruct && filtered.some(function(s) { return s.id === spotterTarget; });
-        function spotterQuestionKey(state) {
-          return JSON.stringify([state._spotterTarget,state._spotterStartTime,state._spotterSerial,state._spotterRoundTimed === true,
-            Array.isArray(state._spotterOpts) ? state._spotterOpts.map(function(option){return option && option.id;}) : []]);
+
+        function spotterQuestionKey(state) {return JSON.stringify([state._spotterTarget,state._spotterStartTime,state._spotterSerial,state._spotterRoundTimed===true,Array.isArray(state._spotterOpts)?state._spotterOpts.map(function(option){return option&&option.id;}):[]]);}
+        function spotterContextKey(state) {return JSON.stringify([state.system,state.view,state.complexity]);}
+        function validSpotterStudyOrigin(raw) {
+          if(!raw||typeof raw!=='object'||Array.isArray(raw)||!['version','token','systemId','view','complexity','selectedStructure','search','studyFilter','bodyView3d','quizMode','questionKey','targetId','answerId'].every(function(key){return Object.prototype.hasOwnProperty.call(raw,key);})||raw.version!==1||typeof raw.token!=='string'||!raw.token.length||raw.token.length>128||typeof raw.systemId!=='string'||!Object.prototype.hasOwnProperty.call(SYSTEMS,raw.systemId))return null;
+          var structures=SYSTEMS[raw.systemId].structures,target=structures.find(function(item){return item.id===raw.targetId;}),answer=structures.find(function(item){return item.id===raw.answerId;});
+          if(!target||!answer||target.id===answer.id||['anterior','posterior'].indexOf(raw.view)===-1||[1,2,3].indexOf(raw.complexity)===-1||typeof raw.search!=='string'||raw.search.length>200||['all','unseen','review','mastered','notes'].indexOf(raw.studyFilter)===-1||typeof raw.bodyView3d!=='boolean'||typeof raw.quizMode!=='boolean'||typeof raw.questionKey!=='string'||!raw.questionKey.length||raw.questionKey.length>2000||raw.selectedStructure!==null&&!structures.some(function(item){return item.id===raw.selectedStructure;}))return null;
+          return {version:1,token:raw.token,systemId:raw.systemId,view:raw.view,complexity:raw.complexity,selectedStructure:raw.selectedStructure,search:raw.search,studyFilter:raw.studyFilter,bodyView3d:raw.bodyView3d,quizMode:raw.quizMode,questionKey:raw.questionKey,targetId:target.id,answerId:answer.id};
         }
-        function spotterContextKey(state) {
-          return JSON.stringify([state.system,state.view,state.complexity]);
+        function spotterOptionIds(state) {var structures=SYSTEMS[caseSystemOf(state)].structures;return Array.isArray(state._spotterOpts)?state._spotterOpts.reduce(function(ids,option){var id=option&&option.id;if(typeof id==='string'&&ids.indexOf(id)===-1&&structures.some(function(item){return item.id===id;}))ids.push(id);return ids;},[]):[];}
+        function spotterNavigationSignature(state) {return JSON.stringify([connectionNavigationSignature(state),spotterQuestionKey(state),state._spotterActive,state._spotterFeedback,state._spotterTimed,state._spotterStudyNavigationToken,validSpotterStudyOrigin(state._spotterStudyOrigin),state._guidanceRevision,state._studySheetRevision,state._studyImportRevision]);}
+        var spotterNavigationSnapshot=spotterNavigationSignature(d);
+        function spotterStudyDestination(state,origin) {
+          if(!origin||state._spotterStudyNavigationToken!==origin.token||state._spotterActive!==true||state._spotterTarget!==origin.targetId||state._spotterFeedback!==origin.answerId||spotterQuestionKey(state)!==origin.questionKey||state._activeTab!=='explore'||state.system!==origin.systemId||state.selectedStructure!==origin.targetId||(state.search||'')!==''||(state._studyFilter||'all')!=='all'||state._bodyView3d!==false)return false;
+          var options=spotterOptionIds(state);if(options.length!==4||options.indexOf(origin.targetId)===-1||options.indexOf(origin.answerId)===-1)return false;var target=SYSTEMS[origin.systemId].structures.find(function(item){return item.id===origin.targetId;});return (state.view||'anterior')===(target.v==='p'?'posterior':target.v==='a'?'anterior':origin.view)&&Number(state.complexity)===Math.max(origin.complexity,anatomyStructureComplexity(target));
         }
-        function focusSpotterStage(stage, questionKey, contextKey, answerId) {
-          setTimeout(function() {
-            var panel = document.querySelector('[data-anatomy-spotter-panel]');
-            if (!panel || panel.getAttribute('data-anatomy-spotter-question') !== questionKey || panel.getAttribute('data-anatomy-spotter-context') !== contextKey) return;
-            if (typeof answerId === 'string' && panel.getAttribute('data-anatomy-spotter-answer') !== answerId) return;
-            var active = panel.getAttribute('data-anatomy-spotter-active') === 'true';
-            if ((stage === 'start' && active) || (stage !== 'start' && stage !== 'panel' && !active)) return;
-            var target = stage === 'diagram' ? document.querySelector('[data-anatomy-model-shell] [data-anatomy-canvas]')
-              : stage === 'feedback' ? panel.querySelector('[data-anatomy-spotter-feedback]')
-              : stage === 'question' ? panel.querySelector('#anatomy-spotter-question-title')
-              : stage === 'start' ? panel.querySelector('[data-anatomy-spotter-start]') : panel;
-            if (!target || typeof target.focus !== 'function') return;
-            target.focus({preventScroll:true});
-            var anchor = stage === 'diagram' ? document.querySelector('[data-anatomy-spotter-return]') || target : target;
-            if (typeof anchor.scrollIntoView === 'function') anchor.scrollIntoView({block:'start',behavior:'auto'});
+        var spotterStudyOrigin=validSpotterStudyOrigin(d._spotterStudyOrigin);if(!spotterStudyDestination(d,spotterStudyOrigin))spotterStudyOrigin=null;
+        function spotterAcceptedSurface(accepted) {
+          var shell=document.querySelector('.anatomy-tool-shell');if(!shell||shell.getAttribute('data-anatomy-spotter-navigation')!==accepted.signature)return null;
+          if(accepted.tab==='explore'){var banner=shell.querySelector('[data-anatomy-spotter-study-origin]');return banner&&banner.getAttribute('data-anatomy-spotter-navigation')===accepted.signature?shell:null;}
+          var panel=shell.querySelector('[data-anatomy-spotter-panel]');return panel&&panel.getAttribute('data-anatomy-spotter-navigation')===accepted.signature&&panel.getAttribute('data-anatomy-spotter-question')===accepted.question&&panel.getAttribute('data-anatomy-spotter-context')===accepted.context&&panel.getAttribute('data-anatomy-spotter-answer')===accepted.answer&&panel.getAttribute('data-anatomy-spotter-active')===(accepted.active?'true':'false')?shell:null;
+        }
+        function focusSpotterStage(stage,accepted) {
+          setTimeout(function(){var shell=spotterAcceptedSurface(accepted);if(!shell)return;var panel=shell.querySelector('[data-anatomy-spotter-panel]'),target=stage==='study'?shell.querySelector('[data-anatomy-structure-detail-heading]')||shell.querySelector('[data-anatomy-model-shell]'):stage==='diagram'?shell.querySelector('[data-anatomy-model-shell] [data-anatomy-canvas]'):stage==='feedback'?panel&&panel.querySelector('[data-anatomy-spotter-feedback]'):stage==='question'?panel&&panel.querySelector('#anatomy-spotter-question-title'):stage==='start'?panel&&panel.querySelector('[data-anatomy-spotter-start]'):panel;
+            var origin=accepted.focusOrigin,unchanged=document.activeElement===origin||document.activeElement===document.body&&origin&&(!origin.isConnected||origin.disabled===true);if(!target||!target.isConnected||!unchanged)return;target.focus({preventScroll:true});var anchor=stage==='diagram'?shell.querySelector('[data-anatomy-spotter-return]')||target:target;if(typeof anchor.scrollIntoView==='function')anchor.scrollIntoView({block:'start',behavior:'auto'});
           },0);
         }
-        function focusCurrentSpotter() {
-          var stage = !spotterActive ? 'start' : !spotterRoundReady ? 'panel' : spotterFeedback !== null ? 'feedback' : 'question';
-          var key = spotterQuestionKey(d), context = spotterContextKey(d), answer = spotterFeedback || '', accepted = false;
-          setLabToolData(function(previous) {
-            var current = previous.anatomy || {};
-            var currentAnswer = spotterOptions.some(function(option) { return option.id === current._spotterFeedback; }) ? current._spotterFeedback : '';
-            if (!sameSpotterContext(current) || spotterQuestionKey(current) !== key || currentAnswer !== answer) return previous;
-            accepted = true;
-            if (current._anatomyModelFocus !== true) return previous;
-            return Object.assign({}, previous, { anatomy: Object.assign({}, current, { _anatomyModelFocus: false }) });
-          });
-          setTimeout(function() { if (accepted) focusSpotterStage(stage, key, context, answer); }, 0);
+        function updateSpotter(makePatch,onAccepted) {
+          var accepted=null,focusOrigin=document.activeElement;
+          setLabToolData(function(previous){var current=previous.anatomy||{};if(spotterNavigationSignature(current)!==spotterNavigationSnapshot)return previous;var patch=makePatch(current);if(!patch)return previous;var next=Object.assign({},current,patch);accepted={signature:spotterNavigationSignature(next),question:spotterQuestionKey(next),context:spotterContextKey(next),answer:spotterOptionIds(next).indexOf(next._spotterFeedback)!==-1?next._spotterFeedback:'',active:next._spotterActive===true,tab:next._activeTab,focusOrigin:focusOrigin};return Object.assign({},previous,{anatomy:next});});
+          if(onAccepted)setTimeout(function(){if(accepted&&spotterAcceptedSurface(accepted))onAccepted(accepted);},0);
         }
-        function showSpotterDiagram() {
-          if (!spotterActive || !spotterRoundReady) return;
-          focusSpotterStage('diagram',spotterQuestionKey(d),spotterContextKey(d),spotterFeedback || '');
-        }
-
-        function sameSpotterContext(state) {
-          return state._activeTab === 'spotter' && state.system === d.system && state.view === d.view && state.complexity === d.complexity;
-        }
-        function shuffleSpotter(items) {
-          var result=items.slice();
-          for(var i=result.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),swap=result[i];result[i]=result[j];result[j]=swap;}
-          return result;
-        }
-        var pickSpotterRound = function(isStart) {
-          var concepts={};
-          var pool=filtered.filter(function(structure){var concept=anatomyEvidenceId(structure.id,knownStructureIds);if(!structure.fn||concepts[concept])return false;concepts[concept]=true;return true;});
-          if(pool.length<4){if(typeof addToast==='function')addToast(t('stem.anatomy.spot_ref_need_four','Spotter needs at least four different structures in view. Choose another view or enable more layers.'));return false;}
-          var previousConcept=anatomyEvidenceId(spotterTarget,knownStructureIds);
-          var candidates=pool.filter(function(structure){return anatomyEvidenceId(structure.id,knownStructureIds)!==previousConcept;});
-          var target=candidates[Math.floor(Math.random()*candidates.length)];
-          var opts=shuffleSpotter(shuffleSpotter(pool.filter(function(structure){return structure.id!==target.id;})).slice(0,3).concat([target]));
-          var expected=spotterQuestionKey(d),accepted=false,nextQuestionKey=null;
-          setLabToolData(function(previous){
-            var current=previous.anatomy||{};
-            if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected||(isStart&&current._spotterActive===true))return previous;
-            var patch={_spotterActive:true,_spotterTarget:target.id,_spotterFeedback:null,_spotterOpts:opts.map(function(option){return {id:option.id};}),_spotterStartTime:Date.now(),_spotterElapsed:null,_spotterRoundTimed:current._spotterTimed===true,_spotterSerial:safeNonNegativeNumber(current._spotterSerial,0,true)+1};
-            nextQuestionKey=spotterQuestionKey(Object.assign({},current,patch));
-            accepted=true;return Object.assign({},previous,{anatomy:Object.assign({},current,patch)});
-          });
-          setTimeout(function(){if(!accepted)return;if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.spot_ref_next_prompt','Identify the marked structure. ')+spotterRegionCue(target));focusSpotterStage('question',nextQuestionKey,spotterContextKey(d),'');},0);
-          return true;
+        function focusCurrentSpotter() {var stage=!spotterActive?'start':!spotterRoundReady?'panel':spotterFeedback!==null?'feedback':'question';updateSpotter(function(current){if(!sameSpotterContext(current))return null;return current._anatomyModelFocus===true?{_anatomyModelFocus:false}:{};},function(accepted){focusSpotterStage(stage,accepted);});}
+        function showSpotterDiagram() {if(!spotterActive||!spotterRoundReady)return;updateSpotter(function(current){return sameSpotterContext(current)?{}:null;},function(accepted){focusSpotterStage('diagram',accepted);});}
+        function sameSpotterContext(state) {return state._activeTab==='spotter'&&state.system===d.system&&state.view===d.view&&state.complexity===d.complexity;}
+        function shuffleSpotter(items) {var result=items.slice();for(var i=result.length-1;i>0;i--){var j=Math.floor(Math.random()*(i+1)),swap=result[i];result[i]=result[j];result[j]=swap;}return result;}
+        var pickSpotterRound=function(isStart) {
+          if(activeTab!=='spotter')return false;var concepts={},pool=filtered.filter(function(structure){var concept=anatomyEvidenceId(structure.id,knownStructureIds);if(!structure.fn||concepts[concept])return false;concepts[concept]=true;return true;});
+          if(pool.length<4){updateSpotter(function(current){return sameSpotterContext(current)?{}:null;},function(){if(typeof addToast==='function')addToast(t('stem.anatomy.spot_ref_need_four','Spotter needs at least four different structures in view. Choose another view or enable more layers.'));});return false;}
+          var previousConcept=anatomyEvidenceId(spotterTarget,knownStructureIds),candidates=pool.filter(function(structure){return anatomyEvidenceId(structure.id,knownStructureIds)!==previousConcept;}),target=candidates[Math.floor(Math.random()*candidates.length)],opts=shuffleSpotter(shuffleSpotter(pool.filter(function(structure){return structure.id!==target.id;})).slice(0,3).concat([target]));
+          updateSpotter(function(current){if(!sameSpotterContext(current)||isStart&&current._spotterActive===true)return null;return {_spotterActive:true,_spotterTarget:target.id,_spotterFeedback:null,_spotterOpts:opts.map(function(option){return {id:option.id};}),_spotterStartTime:Date.now(),_spotterElapsed:null,_spotterRoundTimed:current._spotterTimed===true,_spotterSerial:safeNonNegativeNumber(current._spotterSerial,0,true)+1,_spotterStudyOrigin:null};},function(accepted){if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.spot_ref_next_prompt','Identify the marked structure. ')+spotterRegionCue(target));focusSpotterStage('question',accepted);});return true;
         };
         function spotterAnswerPatch(current,optionId,expected,now) {
           if(!sameSpotterContext(current)||current._spotterActive!==true||spotterQuestionKey(current)!==expected||spotterOptions.some(function(option){return option.id===current._spotterFeedback;}))return null;
-          var correct=optionId===spotterTarget,score=safeNonNegativeNumber(current._spotterScore,0,true),total=Math.max(score,safeNonNegativeNumber(current._spotterTotal,0,true));
-          var elapsed=current._spotterRoundTimed===true&&now>=spotterStartTime ? (now-spotterStartTime)/1000 : null;
-          var patch={_spotterFeedback:optionId,_spotterElapsed:elapsed,_spotterTotal:total+1};
-          if(correct){patch._spotterScore=score+1;var best=validSpotterBest(current);if(elapsed!==null&&elapsed>0&&(!best||elapsed<best))patch._spotterTimedBestTime=elapsed;}
-          return Object.assign(patch,confidenceEvidencePatch(spotterTarget,correct,current));
+          var correct=optionId===spotterTarget,score=safeNonNegativeNumber(current._spotterScore,0,true),total=Math.max(score,safeNonNegativeNumber(current._spotterTotal,0,true)),elapsed=current._spotterRoundTimed===true&&now>=spotterStartTime?(now-spotterStartTime)/1000:null,patch={_spotterFeedback:optionId,_spotterElapsed:elapsed,_spotterTotal:total+1};if(correct){patch._spotterScore=score+1;var best=validSpotterBest(current);if(elapsed!==null&&elapsed>0&&(!best||elapsed<best))patch._spotterTimedBestTime=elapsed;}return Object.assign(patch,confidenceEvidencePatch(spotterTarget,correct,current));
         }
         var spotterAnswerSubmitted=false;
         function answerSpotterOption(opt) {
-          if(!spotterActive||!spotterRoundReady||spotterFeedback!==null||spotterAnswerSubmitted||!opt||!spotterOptions.some(function(option){return option.id===opt.id;}))return;
-          spotterAnswerSubmitted=true;
-          var expected=spotterQuestionKey(d),accepted=false;
-          setLabToolData(function(previous){var current=previous.anatomy||{},patch=spotterAnswerPatch(current,opt.id,expected,Date.now());if(!patch)return previous;accepted=true;return Object.assign({},previous,{anatomy:Object.assign({},current,patch)});});
-          setTimeout(function(){
-            if(!accepted)return;
-            var correct=opt.id===spotterTarget;
-            playSound(correct?'spotterCorrect':'spotterWrong');
-            if(typeof announceToSR==='function')announceToSR((correct?t('stem.anatomy.spot_ref_correct','Correct. '):t('stem.anatomy.spot_ref_answer','The marked structure is '))+spotterTargetStruct.name+'. '+learnerText(spotterTargetStruct));
-            checkAnatomyChallenges();
-            focusSpotterStage('feedback',expected,spotterContextKey(d),opt.id);
-          },0);
+          if(!spotterActive||!spotterRoundReady||spotterFeedback!==null||spotterAnswerSubmitted||!opt||!spotterOptions.some(function(option){return option.id===opt.id;}))return;spotterAnswerSubmitted=true;var expected=spotterQuestionKey(d);
+          updateSpotter(function(current){return spotterAnswerPatch(current,opt.id,expected,Date.now());},function(accepted){var correct=opt.id===spotterTarget;playSound(correct?'spotterCorrect':'spotterWrong');if(typeof announceToSR==='function')announceToSR((correct?t('stem.anatomy.spot_ref_correct','Correct. '):t('stem.anatomy.spot_ref_answer','The marked structure is '))+spotterTargetStruct.name+'. '+learnerText(spotterTargetStruct));checkAnatomyChallenges();focusSpotterStage('feedback',accepted);});
         }
-        function setSpotterTiming(enabled) {
-          setLabToolData(function(previous){var current=previous.anatomy||{};if(!sameSpotterContext(current)||current._spotterActive===true)return previous;return Object.assign({},previous,{anatomy:Object.assign({},current,{_spotterTimed:enabled===true})});});
+        function setSpotterTiming(enabled) {updateSpotter(function(current){return sameSpotterContext(current)&&current._spotterActive!==true?{_spotterTimed:enabled===true}:null;});}
+        function studySpotterTarget() {
+          if(activeTab!=='spotter'||!spotterActive||!spotterRoundReady||spotterFeedback===null||spotterFeedback===spotterTarget)return;
+          var token=Date.now().toString(36)+'-'+Math.random().toString(36).slice(2);
+          updateSpotter(function(current){if(!sameSpotterContext(current))return null;var origin=validSpotterStudyOrigin({version:1,token:token,systemId:sysKey,view:view,complexity:complexity,selectedStructure:sel?sel.id:null,search:searchValue.slice(0,200),studyFilter:['all','unseen','review','mastered','notes'].indexOf(current._studyFilter)!==-1?current._studyFilter:'all',bodyView3d:current._bodyView3d===true,quizMode:current.quizMode===true,questionKey:spotterQuestionKey(current),targetId:spotterTarget,answerId:spotterFeedback});if(!origin)return null;
+            return {_activeTab:'explore',quizMode:false,system:sysKey,view:spotterTargetStruct.v==='p'?'posterior':spotterTargetStruct.v==='a'?'anterior':view,complexity:Math.max(complexity,anatomyStructureComplexity(spotterTargetStruct)),selectedStructure:spotterTarget,search:'',_studyFilter:'all',_bodyView3d:false,_anatomyModelFocus:false,_spotterStudyOrigin:origin,_spotterStudyNavigationToken:token,_caseDiagramOrigin:null,_caseDiagramReturn:null,_connectionStudyOrigin:null};
+          },function(accepted){if(typeof announceToSR==='function')announceToSR(formatAnatomyStudyText(t('stem.anatomy.spot_journey_study_announcement','Studying {name}. Your Spotter answer stays saved.'),{name:spotterTargetStruct.name}));focusSpotterStage('study',accepted);});
         }
-        function renderSpotterEndButton() {
-          return h('button',{type:'button','data-anatomy-spotter-end':true,'aria-label':t('stem.anatomy.end_test','End Test'),className:'anatomy-spotter-end',onClick:function(){
-            var expected=spotterQuestionKey(d),ended=false,endQuestionKey=null;
-            setLabToolData(function(previous){var current=previous.anatomy||{};if(!sameSpotterContext(current)||spotterQuestionKey(current)!==expected)return previous;var next=Object.assign({},current,{_spotterActive:false,_spotterTarget:null,_spotterFeedback:null,_spotterOpts: [], _spotterStartTime: 0, _spotterElapsed: 0,_spotterRoundTimed:false});endQuestionKey=spotterQuestionKey(next);ended=true;return Object.assign({},previous,{anatomy:next});});
-            setTimeout(function(){if(ended)focusSpotterStage('start',endQuestionKey,spotterContextKey(d),'');},0);
-          }},t('stem.anatomy.end_test_2','End Test'));
+        function returnSpotterStudy() {
+          if(!spotterStudyOrigin)return;updateSpotter(function(current){var origin=validSpotterStudyOrigin(current._spotterStudyOrigin);if(!origin||origin.token!==spotterStudyOrigin.token||!spotterStudyDestination(current,origin))return null;return {_activeTab:'spotter',quizMode:origin.quizMode,system:origin.systemId,view:origin.view,complexity:origin.complexity,selectedStructure:origin.selectedStructure,search:origin.search,_studyFilter:origin.studyFilter,_bodyView3d:origin.bodyView3d,_anatomyModelFocus:false,_spotterStudyOrigin:null,_spotterStudyNavigationToken:Date.now().toString(36)+'-'+Math.random().toString(36).slice(2)};},function(accepted){if(typeof announceToSR==='function')announceToSR(t('stem.anatomy.spot_journey_return','Return to this Spotter feedback'));focusSpotterStage('feedback',accepted);});
         }
-
+        function renderSpotterStudyOrigin() {
+          if(!spotterStudyOrigin)return null;var target=SYSTEMS[spotterStudyOrigin.systemId].structures.find(function(item){return item.id===spotterStudyOrigin.targetId;});return h('div',{className:'anatomy-spotter-study-origin','data-anatomy-spotter-study-origin':target.id,'data-anatomy-spotter-navigation':spotterNavigationSnapshot},h('div',null,h('p',null,h('strong',null,formatAnatomyStudyText(t('stem.anatomy.spot_journey_study_origin','Studying {name} from Spotter'),{name:target.name}))),h('p',null,t('stem.anatomy.spot_journey_study_help','Your answer is saved. Study this structure, then return to compare it with your choice.'))),h('button',{type:'button','data-anatomy-spotter-study-return':true,onClick:returnSpotterStudy},t('stem.anatomy.spot_journey_return','Return to this Spotter feedback')));
+        }
+        function renderSpotterEndButton() {return h('button',{type:'button','data-anatomy-spotter-end':true,'aria-label':t('stem.anatomy.end_test','End Test'),className:'anatomy-spotter-end',onClick:function(){updateSpotter(function(current){if(!sameSpotterContext(current))return null;return {_spotterActive:false,_spotterTarget:null,_spotterFeedback:null,_spotterOpts:[],_spotterStartTime:0,_spotterElapsed:0,_spotterRoundTimed:false,_spotterStudyOrigin:null};},function(accepted){focusSpotterStage('start',accepted);});}},t('stem.anatomy.end_test_2','End Test'));}
         // Centralized SR announcement for organ selection (the #allo-live-anatomy region was dead).
         // Grade-aware: mirrors the panel (simplified desc for k2/g35, full fn otherwise).
         function announceStructure(id, preferredSystemId) {
@@ -10856,7 +10980,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 cCtx.fillStyle = mG; cCtx.fill();
                 cCtx.strokeStyle = '#fff'; cCtx.lineWidth = 1.6; cCtx.stroke();
               }
-              var markerStatusVisible = !spotterActive || spotterFeedback !== null;
+              var markerStatusVisible = !spotterUsesAtlas || spotterFeedback !== null;
               if (markerConfidence && markerStatusVisible) {
                 var markerStatusSymbol = markerConfidence === 'practice' ? '!' : markerConfidence === 'learning' ? '~' : '✓';
                 cCtx.save();
@@ -10871,7 +10995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 cCtx.fillText(markerStatusSymbol, px, py + 0.5);
                 cCtx.restore();
               }
-              var showSelectedLabel = !spotterActive || spotterFeedback !== null;
+              var showSelectedLabel = !spotterUsesAtlas || spotterFeedback !== null;
               if (isSel && showSelectedLabel) {
                 cCtx.save();
                 var labelOnLeft = px > W * 0.55;
@@ -10919,9 +11043,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 var offsetX = labelOnRight ? 20 : -20;
 
                 // Spotter mode protection: if spotter is active and feedback is pending, hide name
-                var showName = !spotterActive || spotterFeedback !== null;
+                var showName = !spotterUsesAtlas || spotterFeedback !== null;
                 var displayName = showName ? hSt.name : 'Structure Pin';
-                var displayFn = showName ? (hSt.fn || '') : 'Click to select this structure';
+                var displayFn = showName ? (hSt.fn || '') : t('stem.anatomy.spot_journey_choose_help','Choose an answer in the Spotter question. Diagram clicks do not submit an answer.');
 
                 // Structure name
                 cCtx.font = 'bold 9px Inter, system-ui, sans-serif';
@@ -10972,7 +11096,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             }
 
             // ── Spotter test pin overlay (medical targeting reticle) ──
-            if (spotterActive && spotterTarget) {
+            if (spotterUsesAtlas && spotterTarget) {
               var spSt = null;
               for (var spi2 = 0; spi2 < filtered.length; spi2++) {
                 if (filtered[spi2].id === spotterTarget) { spSt = filtered[spi2]; break; }
@@ -11324,11 +11448,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             if (dist < minD) { minD = dist; closest = st; }
           });
           if (closest) {
-            if (spotterActive && spotterFeedback === null) {
+            if (spotterUsesAtlas && spotterFeedback === null) {
               // Spotter answers are given via the multiple-choice buttons ONLY. Canvas clicks never
               // submit — this blocks cheating (clicking the visible pin) and, just as importantly,
               // stops an exploratory/accidental click from instantly losing the round.
-              if (addToast) addToast('🎯 Identify the marked structure using the buttons in the side panel.');
+              if (addToast) addToast(t('stem.anatomy.spot_journey_choose_help','Choose an answer in the Spotter question. Diagram clicks do not submit an answer.'));
               return;
             } else {
               // Standard explore mode click
@@ -11936,207 +12060,406 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
 
         function renderHeartAtlas() {
           if (!regionalAtlas) return null;
-          var activeStep = regionalAtlas.steps[regionalAtlasStep];
-          function flowRoute(stepIndex, pathData, color, markerId) {
-            return h('path', {
-              d: pathData,
-              className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''),
-              stroke: color,
-              markerEnd: 'url(#' + markerId + ')',
-              'aria-hidden': 'true'
+          var heartCopy = {
+            title: t("stem.anatomy.heart_guide_title", "Heart circulation"),
+            help: t("stem.anatomy.heart_guide_help", "Follow the circuit between the body, heart, and lungs, then explore the chambers and valves."),
+            circuit_title: t("stem.anatomy.heart_guide_circuit_title", "1. Double circulation"),
+            chambers_title: t("stem.anatomy.heart_guide_chambers_title", "2. Chambers and valves"),
+            marker_help: t("stem.anatomy.heart_guide_marker_help", "Match the numbered markers to the structure key."),
+            orientation: t("stem.anatomy.heart_guide_orientation", "In this schematic, the right heart appears on the left side of the illustration."),
+            circuit_svg_title: t("stem.anatomy.heart_guide_circuit_svg_title", "Heart, lungs, and body circulation"),
+            circuit_svg_description: t("stem.anatomy.heart_guide_circuit_svg_description", "The circuit traces oxygen-poor blood from the body through the right heart to the lungs, then oxygen-rich blood through the left heart and aorta back to the body."),
+            chambers_svg_title: t("stem.anatomy.heart_guide_chambers_svg_title", "Four heart chambers and valves"),
+            chambers_svg_description: t("stem.anatomy.heart_guide_chambers_svg_description", "A magnified schematic shows the right atrium, right ventricle, left atrium, and left ventricle. Chamber shape and valve highlights follow the selected circulation step."),
+            structure_key: t("stem.anatomy.heart_guide_structure_key", "Structure key"),
+            key_lungs: t("stem.anatomy.heart_guide_key_lungs", "Lungs"),
+            key_heart: t("stem.anatomy.heart_guide_key_heart", "Heart"),
+            key_body: t("stem.anatomy.heart_guide_key_body", "Body"),
+            key_right_atrium: t("stem.anatomy.heart_guide_key_right_atrium", "Right atrium"),
+            key_right_ventricle: t("stem.anatomy.heart_guide_key_right_ventricle", "Right ventricle"),
+            key_left_atrium: t("stem.anatomy.heart_guide_key_left_atrium", "Left atrium"),
+            key_left_ventricle: t("stem.anatomy.heart_guide_key_left_ventricle", "Left ventricle"),
+            current_step: t("stem.anatomy.heart_guide_current_step", "Current step"),
+            valve_key: t("stem.anatomy.heart_guide_valve_key", "Valves in this schematic"),
+            valve_help: t("stem.anatomy.heart_guide_valve_help", "Valve highlights follow the selected circulation step."),
+            tricuspid: t("stem.anatomy.heart_guide_tricuspid", "Tricuspid valve"),
+            mitral: t("stem.anatomy.heart_guide_mitral", "Mitral valve"),
+            pulmonary: t("stem.anatomy.heart_guide_pulmonary", "Pulmonary valve"),
+            aortic: t("stem.anatomy.heart_guide_aortic", "Aortic valve"),
+            open: t("stem.anatomy.heart_guide_open", "Open"),
+            closed: t("stem.anatomy.heart_guide_closed", "Closed"),
+            not_highlighted: t("stem.anatomy.heart_guide_not_highlighted", "Not highlighted in this step"),
+            flow_key: t("stem.anatomy.heart_guide_flow_key", "Blood oxygenation key"),
+            oxygen_poor: t("stem.anatomy.heart_guide_oxygen_poor", "Oxygen-poor blood"),
+            oxygen_rich: t("stem.anatomy.heart_guide_oxygen_rich", "Oxygen-rich blood"),
+            pause_flow: t("stem.anatomy.heart_guide_pause_flow", "Pause flow"),
+            play_flow: t("stem.anatomy.heart_guide_play_flow", "Play flow"),
+            flow_paused: t("stem.anatomy.heart_guide_flow_paused", "Flow paused"),
+            flow_playing: t("stem.anatomy.heart_guide_flow_playing", "Flow playing"),
+            previous: t("stem.anatomy.heart_guide_previous", "Previous step"),
+            next: t("stem.anatomy.heart_guide_next", "Next step"),
+            step_position: t("stem.anatomy.heart_guide_step_position", "Step {current} of {total}"),
+            focus_heading: t("stem.anatomy.heart_guide_focus_heading", "Focus in this step"),
+            focus_return: t("stem.anatomy.heart_guide_focus_return", "Right atrium · Tricuspid valve · Venae cavae"),
+            focus_outflow: t("stem.anatomy.heart_guide_focus_outflow", "Right ventricle · Pulmonary valve · Pulmonary arteries"),
+            focus_inflow: t("stem.anatomy.heart_guide_focus_inflow", "Pulmonary veins · Left atrium · Mitral valve"),
+            focus_systemic: t("stem.anatomy.heart_guide_focus_systemic", "Left ventricle · Aortic valve · Aorta"),
+            return_label: t("stem.anatomy.heart_guide_return_label", "1. Venous return"),
+            return_short: t("stem.anatomy.heart_guide_return_short", "Body to right atrium"),
+            return_detail: t("stem.anatomy.heart_guide_return_detail", "Oxygen-poor blood returns from the body through the superior and inferior venae cavae and enters the right atrium."),
+            outflow_label: t("stem.anatomy.heart_guide_outflow_label", "2. To the lungs"),
+            outflow_short: t("stem.anatomy.heart_guide_outflow_short", "Right ventricle to lungs"),
+            outflow_detail: t("stem.anatomy.heart_guide_outflow_detail", "Blood crosses the tricuspid valve into the right ventricle, then passes through the pulmonary valve and pulmonary arteries to the lungs."),
+            inflow_label: t("stem.anatomy.heart_guide_inflow_label", "3. Oxygenated return"),
+            inflow_short: t("stem.anatomy.heart_guide_inflow_short", "Lungs to left atrium"),
+            inflow_detail: t("stem.anatomy.heart_guide_inflow_detail", "After gas exchange, oxygen-rich blood returns through the pulmonary veins and enters the left atrium."),
+            systemic_label: t("stem.anatomy.heart_guide_systemic_label", "4. To the body"),
+            systemic_short: t("stem.anatomy.heart_guide_systemic_short", "Left ventricle to aorta"),
+            systemic_detail: t("stem.anatomy.heart_guide_systemic_detail", "Blood crosses the mitral valve into the left ventricle, then passes through the aortic valve and aorta to supply the body."),
+            show_clinical: t("stem.anatomy.heart_guide_show_clinical", "Clinical lens"),
+            hide_clinical: t("stem.anatomy.heart_guide_hide_clinical", "Hide clinical lens"),
+            clinical_shown: t("stem.anatomy.heart_guide_clinical_shown", "Clinical lens shown."),
+            clinical_hidden: t("stem.anatomy.heart_guide_clinical_hidden", "Clinical lens hidden."),
+            clinical_title: t("stem.anatomy.heart_guide_clinical_title", "Aortic stenosis"),
+            clinical_change: t("stem.anatomy.heart_guide_clinical_change", "The aortic valve opening narrows, increasing resistance to left-ventricular outflow."),
+            clinical_effect_heading: t("stem.anatomy.heart_guide_clinical_effect_heading", "Functional consequence"),
+            clinical_effect: t("stem.anatomy.heart_guide_clinical_effect", "The left ventricle must generate higher pressure and may thicken over time."),
+            clinical_note: t("stem.anatomy.heart_guide_clinical_note", "Educational comparison only — not a diagnostic view."),
+            handoff_label: t("stem.anatomy.heart_guide_handoff_label", "Heart to alveoli"),
+            handoff_lead: t("stem.anatomy.heart_guide_handoff_lead", "Follow the circuit: "),
+            handoff_context: t("stem.anatomy.heart_guide_handoff_context", "move into the air-blood barrier where pulmonary capillary blood gains oxygen."),
+            handoff_button: t("stem.anatomy.heart_guide_handoff_button", "Follow gas exchange"),
+            handoff_announcement: t("stem.anatomy.heart_guide_handoff_announcement", "Opening alveolar oxygen diffusion, step 2 of 4.")
+          };
+          var heartSteps = ['return', 'outflow', 'inflow', 'systemic'].map(function(key, index) { return Object.assign({}, regionalAtlas.steps[index], { label: heartCopy[key + '_label'], short: heartCopy[key + '_short'], detail: heartCopy[key + '_detail'] }); });
+          var activeStep = heartSteps[regionalAtlasStep];
+          var heartFocus = [heartCopy.focus_return, heartCopy.focus_outflow, heartCopy.focus_inflow, heartCopy.focus_systemic];
+          function heartControlContext(state) {
+            return JSON.stringify([scaleGalleryContext(state), state._regionalAtlasOpen || null, state._regionalAtlasStep == null ? null : state._regionalAtlasStep,
+              state._regionalAtlasPlaying !== false, state._regionalAtlasClinical === true, state._anatomyModelFocus === true, state._showStudySheet === true, state._showAnatomyLens === true]);
+          }
+          function updateHeartGuide(patch, announcement, afterUpdate) {
+            if (!regionalAtlasOpen || !sel || sel.id !== 'heart') return;
+            var context = heartControlContext(d), accepted = null;
+            setLabToolData(function(previous) {
+              var state = previous.anatomy || {};
+              if (state.selectedStructure !== 'heart' || state._regionalAtlasOpen !== 'heart' || heartControlContext(state) !== context) return previous;
+              accepted = Object.assign({}, state, typeof patch === 'function' ? patch(state) : patch);
+              anatomyTutorProfiles.set(accepted, tutorProfileOf(state));
+              return Object.assign({}, previous, { anatomy: accepted });
+            });
+            finishStudyUpdate(function() { return accepted; }, function(state) {
+              if (announcement && typeof announceToSR === 'function') announceToSR(announcement);
+              if (afterUpdate) afterUpdate(state);
             });
           }
-          function svgLabel(x, y, value, options) {
-            var labelOptions = options || {};
-            return h('text', {
-              x: x, y: y,
-              textAnchor: labelOptions.anchor || 'middle',
-              fill: labelOptions.color || '#334155',
-              fontSize: labelOptions.size || 12,
-              fontWeight: labelOptions.weight || 800,
-              className: atlasLabelClass(labelOptions, 12)
-            }, value);
+
+          function openHeartExchange() {
+            var destination = ANATOMY_LENS_ITEMS.find(function(item) { return item.structureId === 'alveoli'; });
+            var system = destination && SYSTEMS[destination.system];
+            var structure = system && system.structures.find(function(item) { return item.id === 'alveoli'; });
+            if (!destination || !structure) return;
+            var origin = document.activeElement;
+            updateHeartGuide(function(state) {
+              var viewed = safeFlagMap(state._anatomyLensViewed, anatomyLensIds); viewed[destination.id] = true;
+              var level = Number(state.complexity); if ([1, 2, 3].indexOf(level) === -1) level = defaultComplexity;
+              return { system: destination.system, view: destination.view, selectedStructure: 'alveoli', complexity: Math.max(level, anatomyStructureComplexity(structure)), search: '', _studyFilter: 'all',
+                _bodyView3d: false, _activeTab: 'explore', quizMode: false, _anatomyModelFocus: false, _showStudySheet: false,
+                _regionalAtlasOpen: 'alveoli', _regionalAtlasStep: 1, _regionalAtlasPlaying: state._regionalAtlasPlaying !== false, _regionalAtlasClinical: false,
+                _showAnatomyLens: false, _anatomyLensEntry: null, _anatomyLensViewed: viewed };
+            }, heartCopy.handoff_announcement, function(state) { playSound('structureClick'); focusAnatomyLensDestination(state, '#anatomy-regional-atlas', 'alveoli', origin); });
           }
-          return h('section', {
-            id: 'anatomy-regional-atlas',
-            className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
-            'aria-label': regionalAtlas.title,
-            tabIndex: -1,
-            'data-anatomy-atlas': 'heart',
-            'data-anatomy-atlas-step': activeStep.id,
-            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES['heart'].id : undefined
-          },
-            h('div', { className: 'anatomy-atlas-header' },
-              h('div', null,
-                h('h5', null, 'Heart regional atlas'),
-                h('p', null, regionalAtlas.subtitle)
-              ),
-              h('button', {
-                type: 'button',
-                'aria-label': regionalAtlasPlaying ? 'Pause blood-flow animation' : 'Play blood-flow animation',
-                'aria-pressed': regionalAtlasPlaying,
-                onClick: function() { upd('_regionalAtlasPlaying', !regionalAtlasPlaying); },
-                className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border border-rose-300 bg-white text-rose-700 hover:bg-rose-50 active:scale-[0.97]'
-              }, regionalAtlasPlaying ? 'Pause flow' : 'Play flow'),
-              renderAtlasClinicalToggle('heart')
-            ),
-            renderAtlasScalePath(['Body return', 'Heart + lungs', 'Body supply'], 'Orientation progression: body return to heart and lungs to body supply'),
-            h('div', { className: 'anatomy-atlas-stage' },
-              h('svg', {
-                viewBox: '0 0 640 360',
-                role: 'img',
-                'aria-labelledby': 'anatomy-heart-atlas-title anatomy-heart-atlas-desc',
-                preserveAspectRatio: 'xMidYMid meet'
-              },
-                h('title', { id: 'anatomy-heart-atlas-title' }, 'Four-chamber heart and double-circulation diagram'),
-                h('desc', { id: 'anatomy-heart-atlas-desc' }, 'A selectable four-step diagram traces oxygen-poor blood from the body through the right heart to the lungs, then oxygen-rich blood through the left heart and aorta back to the body.'),
-                h('defs', null,
-                  h('marker', { id: 'anatomy-arrow-blue', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
-                    h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#2563eb' })
-                  ),
-                  h('marker', { id: 'anatomy-arrow-red', viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
-                    h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: '#dc2626' })
-                  )
-                ),
+          function selectHeartStep(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= heartSteps.length || index === regionalAtlasStep) return;
+            updateHeartGuide({ _regionalAtlasStep: index });
+          }
+
+          function flowRoute(stepIndex, pathData, color, markerId, chambers) {
+            return h('path', { d: pathData, 'data-anatomy-heart-route': stepIndex, className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''), stroke: color, markerEnd: 'url(#' + markerId + (chambers ? '-chambers' : '') + ')', 'aria-hidden': 'true' });
+          }
+          function heartDefs(chambers) {
+            return h('defs', null, [{ id: 'anatomy-arrow-blue', color: '#2563eb' }, { id: 'anatomy-arrow-red', color: '#dc2626' }].map(function(marker) {
+              return h('marker', { key: marker.id, id: marker.id + (chambers ? '-chambers' : ''), viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color }));
+            }));
+          }
+          function heartMarker(number, x, y, targetX, targetY, current, circuit) {
+            return h('g', { key: 'marker-' + number, className: 'anatomy-heart-marker', 'data-anatomy-heart-marker': number, 'data-current': current ? 'true' : 'false', 'aria-hidden': 'true' },
+              h('line', { x1: x, y1: y, x2: targetX, y2: targetY }), h('circle', { cx: x, cy: y, r: circuit ? 31 : 16 }),
+              h('text', { x: x, y: y, textAnchor: 'middle', dominantBaseline: 'central', fontSize: circuit ? 48 : 24, fontWeight: 900 }, String(number)));
+          }
+          function heartDrawing(chambers) {
+            return h(React.Fragment, null,
                 h('rect', { x: 12, y: 12, width: 616, height: 336, rx: 22, fill: '#f8fafc' }),
                 h('ellipse', { cx: 112, cy: 145, rx: 62, ry: 92, fill: '#dbeafe', stroke: '#60a5fa', strokeWidth: 3 }),
                 h('path', { d: 'M112 58 L112 230 M112 100 C82 112 70 142 72 178 M112 100 C142 112 154 142 152 178', fill: 'none', stroke: '#93c5fd', strokeWidth: 5, strokeLinecap: 'round' }),
-                svgLabel(112, 274, 'LUNGS', { color: '#1d4ed8', size: 13 }),
                 h('rect', { x: 538, y: 82, width: 80, height: 150, rx: 38, fill: '#f1f5f9', stroke: '#94a3b8', strokeWidth: 3 }),
-                svgLabel(578, 252, 'BODY', { color: '#475569', size: 13 }),
                 h('path', { d: 'M250 70 C250 42 295 34 322 62 C350 32 404 42 420 82 C448 150 410 276 324 318 C232 270 206 154 228 96 C233 83 240 75 250 70 Z', fill: '#ffe4e6', stroke: '#be123c', strokeWidth: 4 }),
                 h('rect', { x: 250, y: 77, width: 68, height: 83, rx: 24, fill: '#bfdbfe', stroke: '#2563eb', strokeWidth: regionalAtlasStep < 2 ? 4 : 2 }),
                 h('rect', { x: 250, y: regionalAtlasStep === 1 ? 193 : 185, width: 68, height: regionalAtlasStep === 1 ? 84 : 96, rx: 25, fill: '#93c5fd', stroke: '#1d4ed8', strokeWidth: regionalAtlasStep === 1 ? 5 : 2, 'data-anatomy-mechanism': 'right-ventricle-contraction' }),
                 h('rect', { x: 345, y: 77, width: 68, height: 83, rx: 24, fill: '#fecaca', stroke: '#dc2626', strokeWidth: regionalAtlasStep === 2 ? 4 : 2 }),
                 h('rect', { x: 345, y: regionalAtlasStep === 3 ? 194 : 185, width: 68, height: regionalAtlasStep === 3 ? 90 : 105, rx: 25, fill: '#fca5a5', stroke: '#b91c1c', strokeWidth: regionalAtlasStep === 3 ? 5 : 3, 'data-anatomy-mechanism': 'left-ventricle-contraction' }),
-                svgLabel(284, 121, 'RIGHT', { color: '#1e3a8a', size: 10 }),
-                svgLabel(284, 137, 'ATRIUM', { color: '#1e3a8a', size: 10 }),
-                svgLabel(284, 226, 'RIGHT', { color: '#1e3a8a', size: 10 }),
-                svgLabel(284, 242, 'VENTRICLE', { color: '#1e3a8a', size: 9 }),
-                svgLabel(379, 121, 'LEFT', { color: '#7f1d1d', size: 10 }),
-                svgLabel(379, 137, 'ATRIUM', { color: '#7f1d1d', size: 10 }),
-                svgLabel(379, 226, 'LEFT', { color: '#7f1d1d', size: 10 }),
-                svgLabel(379, 242, 'VENTRICLE', { color: '#7f1d1d', size: 9 }),
                 h('g', { 'data-anatomy-mechanism': 'heart-valve-gating', 'aria-hidden': 'true' },
                   h('path', { d: regionalAtlasStep === 0 ? 'M253 168 L280 181 M315 168 L288 181' : 'M253 172 L315 172', fill: 'none', stroke: regionalAtlasStep === 0 ? '#059669' : '#475569', strokeWidth: 4, strokeLinecap: 'round' }),
                   h('path', { d: regionalAtlasStep === 2 ? 'M348 168 L375 181 M410 168 L383 181' : 'M348 172 L410 172', fill: 'none', stroke: regionalAtlasStep === 2 ? '#059669' : '#475569', strokeWidth: 4, strokeLinecap: 'round' }),
-                  svgLabel(284, 178, regionalAtlasStep === 0 ? 'tricuspid · OPEN' : 'tricuspid · CLOSED', { color: '#334155', size: 7 }),
-                  svgLabel(379, 178, regionalAtlasStep === 2 ? 'mitral · OPEN' : 'mitral · CLOSED', { color: '#334155', size: 7 })
                 ),
                 h('g', atlasMechanismProps(1, 'pulmonary-valve-open'),
                   h('path', { d: 'M272 152 L284 142 L296 152', fill: 'none', stroke: '#2563eb', strokeWidth: 3, strokeLinecap: 'round' }),
-                  svgLabel(225, 301, 'RV contracts · pulmonary valve opens', { anchor: 'start', color: '#1d4ed8', size: 8 })
                 ),
                 h('g', atlasMechanismProps(3, 'aortic-valve-open'),
                   h('path', { d: 'M367 152 L379 142 L391 152', fill: 'none', stroke: '#dc2626', strokeWidth: 3, strokeLinecap: 'round' }),
-                  svgLabel(335, 301, 'LV contracts · aortic valve opens', { anchor: 'start', color: '#991b1b', size: 8 })
                 ),
-                renderAtlasClinicalSvg('heart'),
-                flowRoute(0, 'M574 170 C505 170 504 48 360 48 C320 48 300 57 286 78', '#2563eb', 'anatomy-arrow-blue'),
-                flowRoute(1, 'M284 145 L284 205 C238 270 170 242 136 186 C123 165 121 149 120 136', '#2563eb', 'anatomy-arrow-blue'),
-                flowRoute(2, 'M120 120 C160 72 235 48 335 65 L371 82', '#dc2626', 'anatomy-arrow-red'),
-                flowRoute(3, 'M379 145 L379 207 C428 279 492 232 523 188 C541 162 554 157 577 157', '#dc2626', 'anatomy-arrow-red'),
-                h('circle', { cx: 28, cy: 322, r: 6, fill: '#2563eb' }),
-                svgLabel(40, 326, 'oxygen-poor', { anchor: 'start', color: '#334155', size: 10, weight: 700 }),
-                h('circle', { cx: 127, cy: 322, r: 6, fill: '#dc2626' }),
-                svgLabel(139, 326, 'oxygen-rich', { anchor: 'start', color: '#334155', size: 10, weight: 700 })
+                regionalAtlasClinical && h('g', { className: 'anatomy-clinical-overlay', 'data-anatomy-clinical-overlay': 'aortic_stenosis', 'aria-hidden': 'true' },
+                  h('path', { d: 'M366 151 L376 143 L379 153 L382 143 L392 151', fill: '#ede9fe', stroke: '#7c3aed', strokeWidth: 4, strokeLinecap: 'round', strokeLinejoin: 'round' }),
+                  h('path', { d: 'M349 188 C342 216 345 258 364 286', fill: 'none', stroke: '#7c3aed', strokeWidth: 7, opacity: .65 })
+                ),
+                flowRoute(0, 'M574 170 C505 170 504 48 360 48 C320 48 300 57 286 78', '#2563eb', 'anatomy-arrow-blue', chambers),
+                flowRoute(1, 'M284 145 L284 205 C238 270 170 242 136 186 C123 165 121 149 120 136', '#2563eb', 'anatomy-arrow-blue', chambers),
+                flowRoute(2, 'M120 120 C160 72 235 48 335 65 L371 82', '#dc2626', 'anatomy-arrow-red', chambers),
+                flowRoute(3, 'M379 145 L379 207 C428 279 492 232 523 188 C541 162 554 157 577 157', '#dc2626', 'anatomy-arrow-red', chambers),
+
+            );
+          }
+          function heartFigure(scale, title, description, viewBox, drawing, items) {
+            var id = 'anatomy-heart-' + scale;
+            return h('figure', { className: 'anatomy-heart-figure', 'data-anatomy-heart-scale': scale, 'aria-labelledby': id + '-heading' },
+              h('h6', { id: id + '-heading' }, title),
+              h('div', { className: 'anatomy-heart-picture' }, h('svg', { viewBox: viewBox, role: 'img', 'aria-labelledby': id + '-title ' + id + '-desc', preserveAspectRatio: 'xMidYMid meet', direction: 'ltr' },
+                h('title', { id: id + '-title' }, scale === 'circuit' ? heartCopy.circuit_svg_title : heartCopy.chambers_svg_title), h('desc', { id: id + '-desc' }, description), heartDefs(scale === 'chambers'), drawing)),
+              h('figcaption', null, h('ol', { className: 'anatomy-heart-structure-key', 'aria-label': heartCopy.structure_key }, items.map(function(item, index) {
+                return h('li', { key: item.label, 'data-current': item.current ? 'true' : 'false' }, h('span', { className: 'anatomy-heart-key-number', 'aria-hidden': 'true' }, String(index + 1)), h('bdi', null, item.label), item.current && h('span', { className: 'anatomy-heart-current' }, heartCopy.current_step));
+              })))
+            );
+          }
+
+          return h('section', {
+            id: 'anatomy-regional-atlas', tabIndex: -1, className: 'anatomy-atlas anatomy-heart-guide' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
+            'aria-label': heartCopy.title, 'data-anatomy-atlas': 'heart', 'data-anatomy-scale-bridge': 'heart', 'data-anatomy-atlas-step': activeStep.id,
+            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES.heart.id : undefined
+          },
+            h('div', { className: 'anatomy-atlas-header' },
+              h('div', { className: 'anatomy-heart-intro' }, h('h5', null, heartCopy.title), h('p', null, heartCopy.help)),
+              h('div', { className: 'anatomy-heart-flow-controls' },
+                h('button', { type: 'button', 'data-anatomy-heart-flow': true, onClick: function() { updateHeartGuide({ _regionalAtlasPlaying: !regionalAtlasPlaying }, regionalAtlasPlaying ? heartCopy.flow_paused : heartCopy.flow_playing); } }, regionalAtlasPlaying ? heartCopy.pause_flow : heartCopy.play_flow),
+                h('span', { className: 'anatomy-heart-playback' }, regionalAtlasPlaying ? heartCopy.flow_playing : heartCopy.flow_paused),
+                h('button', { type: 'button', 'data-anatomy-clinical-toggle': 'heart', 'aria-pressed': regionalAtlasClinical, onClick: function() { updateHeartGuide({ _regionalAtlasClinical: !regionalAtlasClinical }, regionalAtlasClinical ? heartCopy.clinical_hidden : heartCopy.clinical_shown); } }, regionalAtlasClinical ? heartCopy.hide_clinical : heartCopy.show_clinical)
               )
             ),
-            renderAtlasVisualKey('heart'),
-            renderAtlasStepFocus('heart'),
-            renderAtlasClinicalPanel('heart'),
-            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_blood_flow_steps', 'Blood-flow steps') },
-              regionalAtlas.steps.map(function(stepItem, stepIndex) {
-                return h('button', {
-                  key: stepItem.id,
-                  type: 'button',
-                  'aria-pressed': regionalAtlasStep === stepIndex,
-                  onClick: function() {
-                    updMulti({ _regionalAtlasStep: stepIndex, _regionalAtlasPlaying: true });
-                    if (typeof announceToSR === 'function') announceToSR(stepItem.label + '. ' + stepItem.detail);
-                  }
-                },
-                  h('span', { className: 'block' }, stepItem.label),
-                  h('span', { className: 'block mt-1 font-normal' }, stepItem.short)
-                );
-              })
+            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_blood_flow_steps', 'Blood-flow steps') }, heartSteps.map(function(step, index) {
+              return h('button', { key: step.id, type: 'button', 'data-anatomy-heart-step': step.id, 'aria-pressed': regionalAtlasStep === index, 'aria-controls': 'anatomy-heart-step-detail', onClick: function() { selectHeartStep(index); } }, h('strong', null, step.label), h('span', null, step.short));
+            })),
+            h('div', { className: 'anatomy-heart-step-navigation' },
+              h('button', { type: 'button', 'data-anatomy-heart-previous': true, disabled: regionalAtlasStep === 0, 'aria-controls': 'anatomy-heart-step-detail', onClick: function() { selectHeartStep(regionalAtlasStep - 1); } }, heartCopy.previous),
+              h('button', { type: 'button', 'data-anatomy-heart-next': true, disabled: regionalAtlasStep === heartSteps.length - 1, 'aria-controls': 'anatomy-heart-step-detail', onClick: function() { selectHeartStep(regionalAtlasStep + 1); } }, heartCopy.next)
             ),
-            h('div', { className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-              h('span', { className: 'anatomy-atlas-step-position' }, 'Step ' + (regionalAtlasStep + 1) + ' of ' + regionalAtlas.steps.length),
-              h('strong', null, activeStep.label),
-              h('span', null, activeStep.detail)
+            h('div', { id: 'anatomy-heart-step-detail', className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              h('span', { className: 'anatomy-atlas-step-position' }, formatAnatomyStudyText(heartCopy.step_position, { current: regionalAtlasStep + 1, total: heartSteps.length })), h('strong', null, activeStep.label), h('p', null, activeStep.detail),
+              h('div', { className: 'anatomy-heart-step-focus', 'data-anatomy-step-focus': 'heart' }, h('strong', null, heartCopy.focus_heading), h('span', null, heartFocus[regionalAtlasStep]))
             ),
-            renderAtlasPathwayHandoff('heart')
+            h('p', { className: 'anatomy-heart-marker-help' }, heartCopy.marker_help),
+
+            heartFigure('circuit', heartCopy.circuit_title, heartCopy.circuit_svg_description, '0 -5 640 380', [heartDrawing(false),
+              heartMarker(1, 43, 300, 80, 199, regionalAtlasStep === 1 || regionalAtlasStep === 2, true),
+              heartMarker(2, 458, 309, 420, 175, true, true),
+              heartMarker(3, 585, 300, 585, 220, regionalAtlasStep === 0 || regionalAtlasStep === 3, true)
+            ], [{ label: heartCopy.key_lungs, current: regionalAtlasStep === 1 || regionalAtlasStep === 2 }, { label: heartCopy.key_heart, current: true }, { label: heartCopy.key_body, current: regionalAtlasStep === 0 || regionalAtlasStep === 3 }]),
+            h('p', { className: 'anatomy-heart-orientation', 'data-anatomy-heart-orientation': true }, heartCopy.orientation),
+            heartFigure('chambers', heartCopy.chambers_title, heartCopy.chambers_svg_description, '200 25 250 315', [heartDrawing(true),
+              heartMarker(1, 220, 110, 264, 111, regionalAtlasStep === 0, false), heartMarker(2, 220, 238, 264, 238, regionalAtlasStep === 1, false),
+              heartMarker(3, 433, 110, 399, 111, regionalAtlasStep === 2, false), heartMarker(4, 433, 238, 399, 238, regionalAtlasStep === 3, false)
+            ], [{ label: heartCopy.key_right_atrium, current: regionalAtlasStep === 0 }, { label: heartCopy.key_right_ventricle, current: regionalAtlasStep === 1 }, { label: heartCopy.key_left_atrium, current: regionalAtlasStep === 2 }, { label: heartCopy.key_left_ventricle, current: regionalAtlasStep === 3 }]),
+            h('div', { className: 'anatomy-heart-valve-key', role: 'group', 'aria-label': heartCopy.valve_key, 'data-anatomy-heart-valves': true }, h('h6', null, heartCopy.valve_key), h('p', null, heartCopy.valve_help),
+              h('ul', { className: 'anatomy-heart-structure-key' }, [
+                { id: 'tricuspid', label: heartCopy.tricuspid, state: regionalAtlasStep === 0 ? heartCopy.open : heartCopy.closed, current: regionalAtlasStep === 0 },
+                { id: 'mitral', label: heartCopy.mitral, state: regionalAtlasStep === 2 ? heartCopy.open : heartCopy.closed, current: regionalAtlasStep === 2 },
+                { id: 'pulmonary', label: heartCopy.pulmonary, state: regionalAtlasStep === 1 ? heartCopy.open : heartCopy.not_highlighted, current: regionalAtlasStep === 1 },
+                { id: 'aortic', label: heartCopy.aortic, state: regionalAtlasStep === 3 ? heartCopy.open : heartCopy.not_highlighted, current: regionalAtlasStep === 3 }
+              ].map(function(item) { return h('li', { key: item.id, 'data-anatomy-heart-valve': item.id, 'data-current': item.current ? 'true' : 'false' }, h('bdi', null, item.label), h('span', { className: 'anatomy-heart-valve-state' }, item.state)); }))
+            ),
+            h('div', { className: 'anatomy-heart-flow-key', role: 'list', 'aria-label': heartCopy.flow_key, 'data-anatomy-visual-key': 'heart' },
+              [{ symbol: 'O₂−', label: heartCopy.oxygen_poor, color: '#1d4ed8' }, { symbol: 'O₂+', label: heartCopy.oxygen_rich, color: '#b91c1c' }].map(function(item) { return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-heart-flow-symbol', style: { backgroundColor: item.color }, 'aria-hidden': 'true' }, item.symbol), h('span', null, item.label)); })
+            ),
+            regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', 'data-anatomy-clinical-panel': 'aortic_stenosis', role: 'note' }, h('div', null, h('strong', null, heartCopy.clinical_title), h('p', null, heartCopy.clinical_change)), h('div', null, h('strong', null, heartCopy.clinical_effect_heading), h('p', null, heartCopy.clinical_effect), h('p', { className: 'anatomy-clinical-note' }, heartCopy.clinical_note))),
+            h('div', { className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'heart', 'data-scale-continuation': 'alveoli', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: heartCopy.handoff_label }) }, h('p', null, h('strong', null, heartCopy.handoff_lead), heartCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-heart-handoff': true, onClick: openHeartExchange }, heartCopy.handoff_button))
           );
         }
 
         function renderKidneyAtlas() {
           if (!regionalAtlas) return null;
-          var activeStep = regionalAtlas.steps[regionalAtlasStep];
-          function kidneyRoute(stepIndex, pathData, color, markerId) {
-            return h('path', {
-              d: pathData,
-              className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''),
-              stroke: color,
-              markerEnd: 'url(#' + markerId + ')',
-              'aria-hidden': 'true'
+          var kidneyCopy = {
+            help: t("stem.anatomy.kidney_guide_help", "Explore body location and kidney regions, then follow one nephron."),
+            body_title: t("stem.anatomy.kidney_guide_body_title", "1. Body location"),
+            body_caption: t("stem.anatomy.kidney_guide_body_caption", "Posterior view"),
+            regions_title: t("stem.anatomy.kidney_guide_regions_title", "2. Kidney regions"),
+            nephron_title: t("stem.anatomy.kidney_guide_nephron_title", "3. Nephron flow"),
+            marker_help: t("stem.anatomy.kidney_guide_marker_help", "Match the numbered markers to the structure key."),
+            body_svg_title: t("stem.anatomy.kidney_guide_body_svg_title", "Kidneys in the posterior body"),
+            regions_svg_title: t("stem.anatomy.kidney_guide_regions_svg_title", "Kidney cross-section"),
+            regions_svg_description: t("stem.anatomy.kidney_guide_regions_svg_description", "Kidney cross-section with markers for the cortex, medulla, and renal pelvis."),
+            nephron_svg_title: t("stem.anatomy.kidney_guide_nephron_svg_title", "Nephron processing diagram"),
+            nephron_svg_description: t("stem.anatomy.kidney_guide_nephron_svg_description", "One nephron with markers for the glomerulus, proximal tubule, loop of Henle, distal tubule, and collecting duct. The selected process is highlighted."),
+            structure_key: t("stem.anatomy.kidney_guide_structure_key", "Structure key"),
+            key_kidneys: t("stem.anatomy.kidney_guide_key_kidneys", "Kidneys"),
+            key_cortex: t("stem.anatomy.kidney_guide_key_cortex", "Cortex"),
+            key_medulla: t("stem.anatomy.kidney_guide_key_medulla", "Medulla"),
+            key_renal_pelvis: t("stem.anatomy.kidney_guide_key_renal_pelvis", "Renal pelvis"),
+            key_glomerulus: t("stem.anatomy.kidney_guide_key_glomerulus", "Glomerulus"),
+            key_proximal_tubule: t("stem.anatomy.kidney_guide_key_proximal_tubule", "Proximal tubule"),
+            key_loop: t("stem.anatomy.kidney_guide_key_loop", "Loop of Henle"),
+            key_distal_tubule: t("stem.anatomy.kidney_guide_key_distal_tubule", "Distal tubule"),
+            key_collecting_duct: t("stem.anatomy.kidney_guide_key_collecting_duct", "Collecting duct"),
+            current_step: t("stem.anatomy.kidney_guide_current_step", "Current step"),
+            flow_key: t("stem.anatomy.kidney_guide_flow_key", "Flow key"),
+            filtrate: t("stem.anatomy.kidney_guide_filtrate", "Filtrate"),
+            blood: t("stem.anatomy.kidney_guide_blood", "Capillary blood"),
+            urine: t("stem.anatomy.kidney_guide_urine", "Urine pathway"),
+            pause_flow: t("stem.anatomy.kidney_guide_pause_flow", "Pause flow"),
+            play_flow: t("stem.anatomy.kidney_guide_play_flow", "Play flow"),
+            flow_paused: t("stem.anatomy.kidney_guide_flow_paused", "Flow paused"),
+            flow_playing: t("stem.anatomy.kidney_guide_flow_playing", "Flow playing"),
+            previous: t("stem.anatomy.kidney_guide_previous", "Previous step"),
+            next: t("stem.anatomy.kidney_guide_next", "Next step"),
+            step_position: t("stem.anatomy.kidney_guide_step_position", "Step {current} of {total}"),
+            focus_heading: t("stem.anatomy.kidney_guide_focus_heading", "Focus in this step"),
+            focus_filtration: t("stem.anatomy.kidney_guide_focus_filtration", "Glomerulus · Filtration barrier · Bowman capsule"),
+            focus_reabsorption: t("stem.anatomy.kidney_guide_focus_reabsorption", "Proximal tubule · Peritubular capillaries · Reabsorbed solutes"),
+            focus_secretion: t("stem.anatomy.kidney_guide_focus_secretion", "Distal tubule · Capillary blood · Secreted wastes"),
+            focus_urine: t("stem.anatomy.kidney_guide_focus_urine", "Loop of Henle · Medullary gradient · Collecting duct"),
+            filtration_label: t("stem.anatomy.kidney_guide_filtration_label", "1. Filtration"),
+            filtration_short: t("stem.anatomy.kidney_guide_filtration_short", "Blood to Bowman capsule"),
+            filtration_detail: t("stem.anatomy.kidney_guide_filtration_detail", "Blood pressure pushes water and small solutes across the glomerular filtration barrier into Bowman capsule. Blood cells and most proteins remain in the circulation."),
+            reabsorption_label: t("stem.anatomy.kidney_guide_reabsorption_label", "2. Reabsorption"),
+            reabsorption_short: t("stem.anatomy.kidney_guide_reabsorption_short", "Tubule to blood"),
+            reabsorption_detail: t("stem.anatomy.kidney_guide_reabsorption_detail", "The proximal tubule returns most filtered water and sodium, plus nearly all glucose and amino acids, to nearby peritubular capillaries."),
+            secretion_label: t("stem.anatomy.kidney_guide_secretion_label", "3. Secretion"),
+            secretion_short: t("stem.anatomy.kidney_guide_secretion_short", "Blood to tubule"),
+            secretion_detail: t("stem.anatomy.kidney_guide_secretion_detail", "Tubule cells move selected ions, medications, and metabolic wastes from the capillary blood into the tubular fluid, helping regulate pH and composition."),
+            urine_label: t("stem.anatomy.kidney_guide_urine_label", "4. Urine formation"),
+            urine_short: t("stem.anatomy.kidney_guide_urine_short", "Collecting duct to ureter"),
+            urine_detail: t("stem.anatomy.kidney_guide_urine_detail", "The loop of Henle builds a medullary concentration gradient. The distal tubule and collecting duct make final hormone-guided adjustments before urine enters the renal pelvis and ureter."),
+            show_clinical: t("stem.anatomy.kidney_guide_show_clinical", "Clinical lens"),
+            hide_clinical: t("stem.anatomy.kidney_guide_hide_clinical", "Hide clinical lens"),
+            clinical_shown: t("stem.anatomy.kidney_guide_clinical_shown", "Clinical lens shown."),
+            clinical_hidden: t("stem.anatomy.kidney_guide_clinical_hidden", "Clinical lens hidden."),
+            clinical_title: t("stem.anatomy.kidney_guide_clinical_title", "Glomerular barrier injury"),
+            clinical_change: t("stem.anatomy.kidney_guide_clinical_change", "The filtration barrier becomes abnormally permeable and allows protein to enter the filtrate."),
+            clinical_effect_heading: t("stem.anatomy.kidney_guide_clinical_effect_heading", "Functional consequence"),
+            clinical_effect: t("stem.anatomy.kidney_guide_clinical_effect", "Urinary protein loss can reduce plasma oncotic pressure and contribute to edema."),
+            clinical_note: t("stem.anatomy.kidney_guide_clinical_note", "Educational comparison only — not a diagnostic view.")
+          };
+          var kidneySteps = ['filtration', 'reabsorption', 'secretion', 'urine'].map(function(key, index) {
+            return Object.assign({}, regionalAtlas.steps[index], { label: kidneyCopy[key + '_label'], short: kidneyCopy[key + '_short'], detail: kidneyCopy[key + '_detail'] });
+          });
+          var activeStep = kidneySteps[regionalAtlasStep];
+          var kidneyFocus = [kidneyCopy.focus_filtration, kidneyCopy.focus_reabsorption, kidneyCopy.focus_secretion, kidneyCopy.focus_urine];
+          function kidneyControlContext(state) {
+            return JSON.stringify([scaleGalleryContext(state), state._regionalAtlasOpen || null, state._regionalAtlasStep == null ? null : state._regionalAtlasStep,
+              state._regionalAtlasPlaying !== false, state._regionalAtlasClinical === true, state._anatomyModelFocus === true, state._showStudySheet === true, state._showAnatomyLens === true]);
+          }
+          function updateKidneyGuide(patch, announcement) {
+            if (!regionalAtlasOpen || !sel || sel.id !== 'kidneys') return;
+            var context = kidneyControlContext(d), accepted = null;
+            setLabToolData(function(previous) {
+              var state = previous.anatomy || {};
+              if (state.selectedStructure !== 'kidneys' || state._regionalAtlasOpen !== 'kidneys' || kidneyControlContext(state) !== context) return previous;
+              accepted = Object.assign({}, state, patch);
+              anatomyTutorProfiles.set(accepted, tutorProfileOf(state));
+              return Object.assign({}, previous, { anatomy: accepted });
+            });
+            finishStudyUpdate(function() { return accepted; }, function() {
+              if (announcement && typeof announceToSR === 'function') announceToSR(announcement);
             });
           }
-          function kidneyLabel(x, y, value, options) {
-            var labelOptions = options || {};
-            return h('text', {
-              x: x, y: y,
-              textAnchor: labelOptions.anchor || 'middle',
-              fill: labelOptions.color || '#334155',
-              fontSize: labelOptions.size || 11,
-              fontWeight: labelOptions.weight || 800,
-              className: atlasLabelClass(labelOptions, 11)
-            }, value);
+          function selectKidneyStep(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= kidneySteps.length || index === regionalAtlasStep) return;
+            updateKidneyGuide({ _regionalAtlasStep: index });
+          }
+          function kidneyRoute(stepIndex, pathData, color, markerId) {
+            return h('path', { d: pathData, className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''), stroke: color, markerEnd: 'url(#' + markerId + ')', 'aria-hidden': 'true' });
+          }
+          function kidneyMarker(number, x, y, targetX, targetY, current) {
+            return h('g', { key: 'marker-' + number, className: 'anatomy-kidney-marker', 'data-anatomy-kidney-marker': number, 'data-current': current ? 'true' : 'false', 'aria-hidden': 'true' },
+              h('line', { x1: x, y1: y, x2: targetX, y2: targetY }),
+              h('circle', { cx: x, cy: y, r: 18 }),
+              h('text', { x: x, y: y, textAnchor: 'middle', dominantBaseline: 'central', fontSize: 28, fontWeight: 900 }, String(number))
+            );
+          }
+          function kidneyStructureKey(items) {
+            return h('ol', { className: 'anatomy-kidney-structure-key', 'aria-label': kidneyCopy.structure_key }, items.map(function(item, index) {
+              return h('li', { key: item.label, 'data-current': item.current ? 'true' : 'false' },
+                h('span', { className: 'anatomy-kidney-key-number', 'aria-hidden': 'true' }, String(index + 1)),
+                h('bdi', null, item.label),
+                item.current && h('span', { className: 'anatomy-kidney-current' }, kidneyCopy.current_step)
+              );
+            }));
+          }
+          function kidneyFigure(scale, title, description, viewBox, drawing, items, caption) {
+            var id = 'anatomy-kidney-' + scale;
+            return h('figure', { className: 'anatomy-kidney-figure', 'data-anatomy-kidney-scale': scale, 'aria-labelledby': id + '-heading' },
+              h('h6', { id: id + '-heading' }, title),
+              h('div', { className: 'anatomy-kidney-picture' },
+                h('svg', { viewBox: viewBox, role: 'img', 'aria-labelledby': id + '-title ' + id + '-desc', preserveAspectRatio: 'xMidYMid meet', direction: 'ltr' },
+                  h('title', { id: id + '-title' }, scale === 'body' ? kidneyCopy.body_svg_title : scale === 'regions' ? kidneyCopy.regions_svg_title : kidneyCopy.nephron_svg_title),
+                  h('desc', { id: id + '-desc' }, description), drawing
+                )
+              ),
+              h('figcaption', null, caption && h('p', null, caption), kidneyStructureKey(items))
+            );
           }
           return h('section', {
-            id: 'anatomy-regional-atlas',
-            className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
-            'aria-label': regionalAtlas.title,
-            tabIndex: -1,
-            'data-anatomy-atlas': 'kidneys',
-            'data-anatomy-scale-bridge': 'kidneys',
-            'data-anatomy-atlas-step': activeStep.id,
-            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES['kidneys'].id : undefined
+            id: 'anatomy-regional-atlas', className: 'anatomy-atlas anatomy-kidney-guide' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
+            'aria-label': t('stem.anatomy.lens_kidneys_title', 'Kidney filtration'), tabIndex: -1,
+            'data-anatomy-atlas': 'kidneys', 'data-anatomy-scale-bridge': 'kidneys', 'data-anatomy-atlas-step': activeStep.id,
+            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES.kidneys.id : undefined
           },
             h('div', { className: 'anatomy-atlas-header' },
-              h('div', null,
-                h('h5', null, 'Kidney Filtration Scale Bridge'),
-                h('p', null, regionalAtlas.subtitle)
+              h('div', { className: 'anatomy-kidney-intro' }, h('h5', null, t('stem.anatomy.lens_kidneys_title', 'Kidney filtration')), h('p', null, kidneyCopy.help)),
+              h('div', { className: 'anatomy-kidney-flow-controls' },
+                h('button', { type: 'button', 'data-anatomy-kidney-flow': true, onClick: function() { updateKidneyGuide({ _regionalAtlasPlaying: !regionalAtlasPlaying }, regionalAtlasPlaying ? kidneyCopy.flow_paused : kidneyCopy.flow_playing); } }, regionalAtlasPlaying ? kidneyCopy.pause_flow : kidneyCopy.play_flow),
+                h('span', { className: 'anatomy-kidney-playback' }, regionalAtlasPlaying ? kidneyCopy.flow_playing : kidneyCopy.flow_paused)
               ),
-              h('button', {
-                type: 'button',
-                'aria-label': regionalAtlasPlaying ? 'Pause filtrate-flow animation' : 'Play filtrate-flow animation',
-                'aria-pressed': regionalAtlasPlaying,
-                onClick: function() { upd('_regionalAtlasPlaying', !regionalAtlasPlaying); },
-                className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border border-emerald-300 bg-white text-emerald-700 hover:bg-emerald-50 active:scale-[0.97]'
-              }, regionalAtlasPlaying ? 'Pause flow' : 'Play flow'),
-              renderAtlasClinicalToggle('kidneys')
+              h('button', { type: 'button', 'data-anatomy-clinical-toggle': 'kidneys', 'aria-pressed': regionalAtlasClinical,
+                onClick: function() { updateKidneyGuide({ _regionalAtlasClinical: !regionalAtlasClinical }, regionalAtlasClinical ? kidneyCopy.clinical_hidden : kidneyCopy.clinical_shown); }
+              }, regionalAtlasClinical ? kidneyCopy.hide_clinical : kidneyCopy.show_clinical)
             ),
-            h('div', {
-              className: 'anatomy-scale-path',
-              role: 'img',
-              'aria-label': __alloT('stem.anatomy.a11y_scale_progression_posterior_body_location_to_ki', 'Scale progression: posterior body location to kidney cross-section to nephron microanatomy')
-            },
-              h('span', null, 'Posterior body'),
-              h('span', { className: 'anatomy-scale-arrow', 'aria-hidden': 'true' }, '\u2192'),
-              h('span', null, 'Kidney regions'),
-              h('span', { className: 'anatomy-scale-arrow', 'aria-hidden': 'true' }, '\u2192'),
-              h('span', null, 'Nephron flow')
+            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_nephron_processing_steps', 'Nephron processing steps') },
+              kidneySteps.map(function(step, index) {
+                return h('button', { key: step.id, type: 'button', 'data-anatomy-kidney-step': step.id, 'aria-pressed': regionalAtlasStep === index, 'aria-controls': 'anatomy-kidney-step-detail', onClick: function() { selectKidneyStep(index); } },
+                  h('strong', null, step.label), h('span', null, step.short));
+              })
             ),
-            h('div', { className: 'anatomy-atlas-stage' },
-              h('svg', {
-                viewBox: '-110 0 750 360',
-                role: 'img',
-                'aria-labelledby': 'anatomy-kidney-atlas-title anatomy-kidney-atlas-desc',
-                preserveAspectRatio: 'xMidYMid meet'
-              },
-                h('title', { id: 'anatomy-kidney-atlas-title' }, 'Body-to-kidney-to-nephron Scale Bridge diagram'),
-                h('desc', { id: 'anatomy-kidney-atlas-desc' }, 'A three-scale diagram locates the kidneys in the posterior body, reveals cortex, medulla, and renal pelvis in cross-section, then traces filtration, reabsorption, secretion, and urine concentration through one nephron.'),
+            h('div', { className: 'anatomy-kidney-step-navigation' },
+              h('button', { type: 'button', 'data-anatomy-kidney-previous': true, disabled: regionalAtlasStep === 0, 'aria-controls': 'anatomy-kidney-step-detail', onClick: function() { selectKidneyStep(regionalAtlasStep - 1); } }, kidneyCopy.previous),
+              h('button', { type: 'button', 'data-anatomy-kidney-next': true, disabled: regionalAtlasStep === kidneySteps.length - 1, 'aria-controls': 'anatomy-kidney-step-detail', onClick: function() { selectKidneyStep(regionalAtlasStep + 1); } }, kidneyCopy.next)
+            ),
+            h('div', { id: 'anatomy-kidney-step-detail', className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              h('span', { className: 'anatomy-atlas-step-position' }, formatAnatomyStudyText(kidneyCopy.step_position, { current: regionalAtlasStep + 1, total: kidneySteps.length })),
+              h('strong', null, activeStep.label), h('p', null, activeStep.detail),
+              h('div', { className: 'anatomy-kidney-step-focus', 'data-anatomy-step-focus': 'kidneys' }, h('strong', null, kidneyCopy.focus_heading), h('span', null, kidneyFocus[regionalAtlasStep]))
+            ),
+            h('p', { className: 'anatomy-kidney-marker-help' }, kidneyCopy.marker_help),
+            h('div', { className: 'anatomy-kidney-context' },
+              kidneyFigure('body', kidneyCopy.body_title, kidneyCopy.body_svg_title, '-112 28 130 282', [
+                h('g', { className: 'anatomy-kidney-body', 'aria-hidden': 'true' },
+                  h('circle', { cx: -62, cy: 56, r: 15, fill: '#dbeafe', stroke: '#475569', strokeWidth: 2 }),
+                  h('path', { d: 'M-84 86 C-78 73 -46 73 -40 86 L-36 169 C-35 190 -44 215 -48 241 L-53 303 M-80 303 L-76 241 C-80 216 -89 190 -88 169 Z', fill: '#e0f2fe', stroke: '#475569', strokeWidth: 2.5, strokeLinejoin: 'round' }),
+                  h('path', { d: 'M-86 94 L-105 176 M-38 94 L-19 176', fill: 'none', stroke: '#475569', strokeWidth: 4, strokeLinecap: 'round' }),
+                  h('ellipse', { cx: -72, cy: 143, rx: 7, ry: 12, fill: '#f9a8d4', stroke: '#be185d', strokeWidth: 2 }),
+                  h('ellipse', { cx: -52, cy: 143, rx: 7, ry: 12, fill: '#f9a8d4', stroke: '#be185d', strokeWidth: 2 }),
+                  h('circle', { cx: -62, cy: 143, r: 25, fill: 'none', stroke: '#059669', strokeWidth: 2, strokeDasharray: '4 4' }),
+                ),
+
+                kidneyMarker(1, -13, 143, -63, 143, false)
+              ], [{ label: kidneyCopy.key_kidneys }], kidneyCopy.body_caption),
+              kidneyFigure('regions', kidneyCopy.regions_title, kidneyCopy.regions_svg_description, '35 27 216 280', [
+                h('path', { d: 'M149 42 C86 39 48 92 51 166 C54 254 105 310 166 289 C206 275 226 233 214 196 C205 168 180 158 177 132 C175 109 202 91 194 68 C188 50 171 42 149 42 Z', fill: '#fbcfe8', stroke: '#be185d', strokeWidth: 4 }),
+                h('path', { d: 'M145 72 C100 72 78 111 82 165 C86 220 115 264 157 257 C181 253 193 229 184 205 C176 183 150 174 148 139 C147 115 170 102 166 85 C163 76 155 72 145 72 Z', fill: '#fde68a', stroke: '#d97706', strokeWidth: 3 }),
+                h('path', { d: 'M149 120 C122 132 119 181 147 211 L181 181 C163 164 158 145 171 126 Z', fill: '#fff7ed', stroke: '#c2410c', strokeWidth: 3 }),
+                h('path', { d: 'M177 168 C209 165 224 174 245 191', fill: 'none', stroke: '#0284c7', strokeWidth: 8, strokeLinecap: 'round' }),
+
+                kidneyMarker(1, 96, 51, 72, 121, false), kidneyMarker(2, 120, 220, 134, 194, false), kidneyMarker(3, 219, 110, 157, 158, false)
+              ], [{ label: kidneyCopy.key_cortex }, { label: kidneyCopy.key_medulla }, { label: kidneyCopy.key_renal_pelvis }])
+            ),
+            kidneyFigure('nephron', kidneyCopy.nephron_title, kidneyCopy.nephron_svg_description, '232 12 384 324', [
                 h('defs', null,
                   [
                     { id: 'anatomy-arrow-purple', color: '#7c3aed' },
@@ -12149,73 +12472,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                     );
                   })
                 ),
-                h('rect', { x: -98, y: 12, width: 726, height: 336, rx: 22, fill: '#f8fafc' }),
-                h('g', { className: 'anatomy-diagram-emphasis' + (regionalAtlasStep === 0 ? ' is-active' : ' is-muted'), 'aria-hidden': 'true' },
-                  h('circle', { cx: -62, cy: 56, r: 15, fill: '#dbeafe', stroke: '#475569', strokeWidth: 2 }),
-                  h('path', { d: 'M-84 86 C-78 73 -46 73 -40 86 L-36 169 C-35 190 -44 215 -48 241 L-53 303 M-80 303 L-76 241 C-80 216 -89 190 -88 169 Z', fill: '#e0f2fe', stroke: '#475569', strokeWidth: 2.5, strokeLinejoin: 'round' }),
-                  h('path', { d: 'M-86 94 L-105 176 M-38 94 L-19 176', fill: 'none', stroke: '#475569', strokeWidth: 4, strokeLinecap: 'round' }),
-                  h('ellipse', { cx: -72, cy: 143, rx: 7, ry: 12, fill: '#f9a8d4', stroke: '#be185d', strokeWidth: 2 }),
-                  h('ellipse', { cx: -52, cy: 143, rx: 7, ry: 12, fill: '#f9a8d4', stroke: '#be185d', strokeWidth: 2 }),
-                  h('circle', { cx: -62, cy: 143, r: 25, fill: 'none', stroke: '#059669', strokeWidth: 2, strokeDasharray: '4 4' }),
-                  kidneyLabel(-62, 326, 'BODY LOCATION', { color: '#065f46', size: 11 }),
-                  kidneyLabel(-62, 117, 'posterior', { color: '#475569', size: 8 })
-                ),
-                h('path', { d: 'M-30 143 C-4 140 22 128 51 116', fill: 'none', stroke: '#64748b', strokeWidth: 2, strokeDasharray: '6 5', 'aria-hidden': 'true' }),
-                h('path', { d: 'M149 42 C86 39 48 92 51 166 C54 254 105 310 166 289 C206 275 226 233 214 196 C205 168 180 158 177 132 C175 109 202 91 194 68 C188 50 171 42 149 42 Z', fill: '#fbcfe8', stroke: '#be185d', strokeWidth: 4 }),
-                h('path', { d: 'M145 72 C100 72 78 111 82 165 C86 220 115 264 157 257 C181 253 193 229 184 205 C176 183 150 174 148 139 C147 115 170 102 166 85 C163 76 155 72 145 72 Z', fill: '#fde68a', stroke: '#d97706', strokeWidth: 3 }),
-                h('path', { d: 'M149 120 C122 132 119 181 147 211 L181 181 C163 164 158 145 171 126 Z', fill: '#fff7ed', stroke: '#c2410c', strokeWidth: 3 }),
-                h('path', { d: 'M177 168 C209 165 224 174 245 191', fill: 'none', stroke: '#0284c7', strokeWidth: 8, strokeLinecap: 'round' }),
-                kidneyLabel(132, 326, 'KIDNEY CROSS-SECTION', { color: '#831843', size: 12 }),
-                kidneyLabel(450, 23, 'NEPHRON MICROANATOMY', { color: '#065f46', size: 11 }),
-                kidneyLabel(102, 63, 'cortex', { color: '#831843', size: 9 }),
-                kidneyLabel(117, 178, 'medulla', { color: '#92400e', size: 9 }),
-                kidneyLabel(202, 154, 'renal pelvis', { anchor: 'start', color: '#334155', size: 8 }),
-                h('path', { d: 'M221 125 C245 110 255 89 270 82', fill: 'none', stroke: '#64748b', strokeWidth: 2, strokeDasharray: '5 5' }),
-                kidneyLabel(238, 111, 'one nephron', { color: '#475569', size: 9 }),
+
                 h('circle', { cx: 305, cy: 90, r: 38, fill: '#ede9fe', stroke: '#7c3aed', strokeWidth: 3 }),
                 h('path', { d: 'M284 82 C289 57 324 59 326 85 C327 109 292 115 283 96 C274 78 299 65 318 75 C336 84 323 104 306 102 C289 100 285 87 294 78', fill: 'none', stroke: '#dc2626', strokeWidth: 5, strokeLinecap: 'round' }),
                 h('path', { d: 'M246 77 L276 83', fill: 'none', stroke: '#dc2626', strokeWidth: 7, strokeLinecap: 'round' }),
                 h('path', { d: 'M322 66 C389 35 489 51 530 116 C548 145 541 184 519 206', fill: 'none', stroke: '#f87171', strokeWidth: 4, strokeLinecap: 'round' }),
                 h('path', { d: 'M335 104 C374 83 390 93 377 116 C365 136 397 143 420 123 C451 96 468 129 441 151 L420 166 C394 211 397 281 438 303 C482 282 489 211 470 164 C493 147 520 151 526 128 C531 110 546 108 559 122 L559 316', fill: 'none', stroke: '#94a3b8', strokeWidth: 8, strokeLinecap: 'round', strokeLinejoin: 'round' }),
                 h('path', { d: 'M356 118 C382 160 376 243 424 275 C467 248 462 184 481 153 C505 116 535 146 535 183 C535 223 512 260 482 282', fill: 'none', stroke: '#fca5a5', strokeWidth: 3, strokeLinecap: 'round' }),
-                kidneyLabel(305, 40, 'glomerulus', { color: '#5b21b6', size: 10 }),
-                kidneyLabel(387, 89, 'proximal tubule', { color: '#334155', size: 9 }),
-                kidneyLabel(439, 333, 'loop of Henle', { color: '#334155', size: 9 }),
-                kidneyLabel(507, 102, 'distal tubule', { color: '#334155', size: 9 }),
-                kidneyLabel(572, 225, 'collecting duct', { anchor: 'start', color: '#334155', size: 9 }),
-                kidneyLabel(559, 337, 'to renal pelvis', { color: '#0369a1', size: 9 }),
                 h('g', atlasMechanismProps(0, 'glomerular-barrier'),
                   [{ x: 315, y: 108, r: 3 }, { x: 324, y: 114, r: 2.5 }, { x: 332, y: 119, r: 2 }].map(function(particle, index) { return h('circle', { key: 'filtrate-particle-' + index, cx: particle.x, cy: particle.y, r: particle.r, fill: '#7c3aed' }); }),
                   h('circle', { cx: 301, cy: 76, r: 7, fill: '#ef4444', stroke: '#991b1b', strokeWidth: 1.5 }),
                   h('circle', { cx: 315, cy: 73, r: 5, fill: '#f59e0b', stroke: '#92400e', strokeWidth: 1.5 }),
-                  kidneyLabel(365, 143, 'water + small solutes pass', { color: '#5b21b6', size: 8 }),
-                  kidneyLabel(374, 60, 'cells + proteins stay in blood', { color: '#991b1b', size: 8 })
                 ),
                 h('g', atlasMechanismProps(1, 'proximal-reabsorption'),
                   h('path', { d: 'M363 119 C367 96 375 78 389 66 M382 126 C390 103 401 87 415 75', fill: 'none', stroke: '#059669', strokeWidth: 3, markerEnd: 'url(#anatomy-arrow-green)' }),
                   [{ x: 369, y: 107 }, { x: 386, y: 112 }, { x: 397, y: 92 }].map(function(particle, index) { return h('circle', { key: 'reabsorbed-particle-' + index, cx: particle.x, cy: particle.y, r: 3, fill: '#10b981' }); }),
-                  kidneyLabel(426, 57, 'glucose · Na+ · water return', { color: '#047857', size: 8 })
                 ),
                 h('g', atlasMechanismProps(2, 'distal-secretion'),
                   h('path', { d: 'M511 64 C508 84 504 101 497 121', fill: 'none', stroke: '#d97706', strokeWidth: 4, markerEnd: 'url(#anatomy-arrow-orange)' }),
                   [{ x: 509, y: 79 }, { x: 504, y: 94 }, { x: 500, y: 108 }].map(function(particle, index) { return h('rect', { key: 'secreted-particle-' + index, x: particle.x - 3, y: particle.y - 3, width: 6, height: 6, rx: 2, fill: '#f59e0b' }); }),
-                  kidneyLabel(547, 53, 'H+ · drugs · wastes enter tubule', { color: '#92400e', size: 8 })
                 ),
                 h('g', atlasMechanismProps(3, 'medullary-concentration'),
                   [205, 224, 243, 262, 281].map(function(y, index) { return h('line', { key: 'gradient-' + index, x1: 404 + index * 5, y1: y, x2: 516 - index * 5, y2: y, stroke: '#38bdf8', strokeWidth: 2 + index * 0.4, opacity: 0.45 + index * 0.1 }); }),
                   [{ x: 548, y: 181 }, { x: 542, y: 210 }, { x: 548, y: 239 }].map(function(drop, index) { return h('path', { key: 'water-drop-' + index, d: 'M' + drop.x + ' ' + drop.y + ' c-5 7 -5 11 0 14 c5 -3 5 -7 0 -14', fill: '#7dd3fc', stroke: '#0284c7', strokeWidth: 1 }); }),
-                  kidneyLabel(589, 301, 'concentrated urine', { color: '#0369a1', size: 8 })
                 ),
-                renderAtlasClinicalSvg('kidneys'),
+
+                regionalAtlasClinical && h('g', { className: 'anatomy-clinical-overlay', 'data-anatomy-clinical-overlay': ATLAS_CLINICAL_LENSES.kidneys.id, 'aria-hidden': 'true' },
+                  [{ x: 318, y: 110 }, { x: 326, y: 118 }, { x: 337, y: 125 }, { x: 347, y: 131 }].map(function(particle, index) { return h('polygon', { key: 'protein-leak-' + index, points: (particle.x - 4) + ',' + particle.y + ' ' + particle.x + ',' + (particle.y - 4) + ' ' + (particle.x + 4) + ',' + particle.y + ' ' + particle.x + ',' + (particle.y + 4), fill: '#a855f7', stroke: '#6b21a8', strokeWidth: 1 }); }),
+                  h('circle', { cx: 305, cy: 90, r: 42, fill: 'none', stroke: '#7c3aed', strokeWidth: 4, strokeDasharray: '5 4' })
+                ),
                 kidneyRoute(0, 'M246 77 L281 84 C289 86 296 91 312 103', '#7c3aed', 'anatomy-arrow-purple'),
                 kidneyRoute(1, 'M335 104 C374 83 390 93 377 116 C365 136 397 143 420 123', '#059669', 'anatomy-arrow-green'),
                 kidneyRoute(2, 'M510 72 C502 92 492 119 478 150', '#d97706', 'anatomy-arrow-orange'),
                 kidneyRoute(3, 'M420 166 C394 211 397 281 438 303 C482 282 489 211 470 164 C500 142 526 149 559 122 L559 316', '#0284c7', 'anatomy-arrow-cyan'),
-                h('circle', { cx: 28, cy: 323, r: 6, fill: '#7c3aed' }),
-                kidneyLabel(40, 327, 'filtrate', { anchor: 'start', color: '#334155', size: 10, weight: 700 }),
-                h('line', { x1: 100, y1: 323, x2: 122, y2: 323, stroke: '#f87171', strokeWidth: 4 }),
-                kidneyLabel(130, 327, 'capillary blood', { anchor: 'start', color: '#334155', size: 10, weight: 700 })
-              )
+
+                kidneyMarker(1, 268, 40, 295, 78, regionalAtlasStep === 0),
+                kidneyMarker(2, 389, 35, 379, 104, regionalAtlasStep === 1),
+                kidneyMarker(3, 373, 285, 422, 279, regionalAtlasStep === 3),
+                kidneyMarker(4, 500, 31, 515, 121, regionalAtlasStep === 2),
+                kidneyMarker(5, 592, 220, 559, 220, regionalAtlasStep === 3)
+            ], [
+              { label: kidneyCopy.key_glomerulus, current: regionalAtlasStep === 0 }, { label: kidneyCopy.key_proximal_tubule, current: regionalAtlasStep === 1 },
+              { label: kidneyCopy.key_loop, current: regionalAtlasStep === 3 }, { label: kidneyCopy.key_distal_tubule, current: regionalAtlasStep === 2 }, { label: kidneyCopy.key_collecting_duct, current: regionalAtlasStep === 3 }
+            ]),
+            h('div', { className: 'anatomy-kidney-flow-key', role: 'list', 'aria-label': kidneyCopy.flow_key, 'data-anatomy-visual-key': 'kidneys' },
+              h('strong', { 'aria-hidden': 'true' }, kidneyCopy.flow_key),
+              [{ symbol: 'F', label: kidneyCopy.filtrate, color: '#6d28d9' }, { symbol: 'B', label: kidneyCopy.blood, color: '#b91c1c' }, { symbol: 'U', label: kidneyCopy.urine, color: '#0369a1' }].map(function(item) {
+                return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-kidney-flow-symbol', style: { background: item.color }, 'aria-hidden': 'true' }, item.symbol), h('bdi', null, item.label));
+              })
+            ),
+            regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', role: 'note', 'data-anatomy-clinical-panel': ATLAS_CLINICAL_LENSES.kidneys.id },
+              h('strong', null, kidneyCopy.clinical_title), h('span', null, kidneyCopy.clinical_change),
+              h('strong', null, kidneyCopy.clinical_effect_heading), h('span', null, kidneyCopy.clinical_effect), h('span', { className: 'anatomy-clinical-panel-note' }, kidneyCopy.clinical_note)
             ),
             selectedClinicalTissueAtlas && clinicalScaleJourneyActive && h('section', {
               className: 'anatomy-clinical-ftu', 'data-anatomy-clinical-ftu': selectedClinicalTissueAtlas.id,
@@ -12252,110 +12560,186 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 )
               )
             ),
-            renderAtlasVisualKey('kidneys'),
-            renderAtlasStepFocus('kidneys'),
-            renderAtlasClinicalPanel('kidneys'),
-            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_nephron_processing_steps', 'Nephron processing steps') },
-              regionalAtlas.steps.map(function(stepItem, stepIndex) {
-                return h('button', {
-                  key: stepItem.id,
-                  type: 'button',
-                  'aria-pressed': regionalAtlasStep === stepIndex,
-                  onClick: function() {
-                    updMulti({ _regionalAtlasStep: stepIndex, _regionalAtlasPlaying: true });
-                    if (typeof announceToSR === 'function') announceToSR(stepItem.label + '. ' + stepItem.detail);
-                  }
-                },
-                  h('span', { className: 'block' }, stepItem.label),
-                  h('span', { className: 'block mt-1 font-normal' }, stepItem.short)
-                );
-              })
-            ),
-            h('div', { className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-              h('span', { className: 'anatomy-atlas-step-position' }, 'Step ' + (regionalAtlasStep + 1) + ' of ' + regionalAtlas.steps.length),
-              h('strong', null, activeStep.label),
-              h('span', null, activeStep.detail)
-            ),
+
             renderAtlasPathwayHandoff('kidneys')
           );
         }
 
         function renderAlveolusAtlas() {
           if (!regionalAtlas) return null;
-          var activeStep = regionalAtlas.steps[regionalAtlasStep];
-          function gasRoute(stepIndex, pathData, color, markerId) {
-            return h('path', {
-              d: pathData,
-              className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''),
-              stroke: color,
-              markerEnd: 'url(#' + markerId + ')',
-              'aria-hidden': 'true'
+          var alveolusCopy = {
+            title: t("stem.anatomy.alveolus_guide_title", "Alveolar gas exchange"),
+            help: t("stem.anatomy.alveolus_guide_help", "Explore the alveolus and capillary, then look closely at the air–blood barrier."),
+            overview_title: t("stem.anatomy.alveolus_guide_overview_title", "1. Alveolus and capillary"),
+            barrier_title: t("stem.anatomy.alveolus_guide_barrier_title", "2. Air–blood barrier"),
+            marker_help: t("stem.anatomy.alveolus_guide_marker_help", "Match the numbered markers to the structure key."),
+            overview_svg_title: t("stem.anatomy.alveolus_guide_overview_svg_title", "Alveolus, terminal airway, and pulmonary capillary"),
+            overview_svg_description: t("stem.anatomy.alveolus_guide_overview_svg_description", "An airway opens into the alveolar air space. A pulmonary capillary passes around the alveolus. Arrows show airflow and the opposite directions of oxygen and carbon dioxide exchange."),
+            barrier_svg_title: t("stem.anatomy.alveolus_guide_barrier_svg_title", "Magnified air–blood barrier"),
+            barrier_svg_description: t("stem.anatomy.alveolus_guide_barrier_svg_description", "From alveolar air to capillary blood: surfactant, a type I alveolar cell, thin interstitium, and capillary endothelium. Oxygen and carbon dioxide cross in opposite directions. A red blood cell is shown in the capillary."),
+            structure_key: t("stem.anatomy.alveolus_guide_structure_key", "Structure key"),
+            key_airway: t("stem.anatomy.alveolus_guide_key_airway", "Terminal airway"),
+            key_alveolus: t("stem.anatomy.alveolus_guide_key_alveolus", "Alveolar air space"),
+            key_capillary: t("stem.anatomy.alveolus_guide_key_capillary", "Pulmonary capillary"),
+            key_air: t("stem.anatomy.alveolus_guide_key_air", "Alveolar air"),
+            key_surfactant: t("stem.anatomy.alveolus_guide_key_surfactant", "Surfactant"),
+            key_type_i: t("stem.anatomy.alveolus_guide_key_type_i", "Type I alveolar cell"),
+            key_interstitium: t("stem.anatomy.alveolus_guide_key_interstitium", "Thin interstitium"),
+            key_endothelium: t("stem.anatomy.alveolus_guide_key_endothelium", "Capillary endothelium"),
+            key_rbc: t("stem.anatomy.alveolus_guide_key_rbc", "Red blood cell · Hemoglobin"),
+            current_step: t("stem.anatomy.alveolus_guide_current_step", "Current step"),
+            flow_key: t("stem.anatomy.alveolus_guide_flow_key", "Gas-exchange key"),
+            airflow: t("stem.anatomy.alveolus_guide_airflow", "Airflow"),
+            oxygen: t("stem.anatomy.alveolus_guide_oxygen", "Oxygen"),
+            carbon_dioxide: t("stem.anatomy.alveolus_guide_carbon_dioxide", "Carbon dioxide"),
+            pause_flow: t("stem.anatomy.alveolus_guide_pause_flow", "Pause exchange"),
+            play_flow: t("stem.anatomy.alveolus_guide_play_flow", "Play exchange"),
+            flow_paused: t("stem.anatomy.alveolus_guide_flow_paused", "Exchange paused"),
+            flow_playing: t("stem.anatomy.alveolus_guide_flow_playing", "Exchange playing"),
+            previous: t("stem.anatomy.alveolus_guide_previous", "Previous step"),
+            next: t("stem.anatomy.alveolus_guide_next", "Next step"),
+            step_position: t("stem.anatomy.alveolus_guide_step_position", "Step {current} of {total}"),
+            focus_heading: t("stem.anatomy.alveolus_guide_focus_heading", "Focus in this step"),
+            focus_ventilation: t("stem.anatomy.alveolus_guide_focus_ventilation", "Terminal airway · Alveolar air space · Ventilation"),
+            focus_oxygen: t("stem.anatomy.alveolus_guide_focus_oxygen", "Type I cell · Air-blood barrier · Hemoglobin"),
+            focus_carbon: t("stem.anatomy.alveolus_guide_focus_carbon", "Capillary blood · Carbon dioxide · Alveolar air"),
+            focus_transport: t("stem.anatomy.alveolus_guide_focus_transport", "Pulmonary capillary · Pulmonary veins · Exhalation"),
+            ventilation_label: t("stem.anatomy.alveolus_guide_ventilation_label", "1. Ventilation"),
+            ventilation_short: t("stem.anatomy.alveolus_guide_ventilation_short", "Fresh air enters alveolus"),
+            ventilation_detail: t("stem.anatomy.alveolus_guide_ventilation_detail", "Inhalation refreshes alveolar air. Oxygen partial pressure becomes higher in the alveolus than in the arriving pulmonary capillary blood."),
+            oxygen_label: t("stem.anatomy.alveolus_guide_oxygen_label", "2. Oxygen diffusion"),
+            oxygen_short: t("stem.anatomy.alveolus_guide_oxygen_short", "Alveolus to blood"),
+            oxygen_detail: t("stem.anatomy.alveolus_guide_oxygen_detail", "Oxygen diffuses down its partial-pressure gradient across the type I alveolar epithelium, thin interstitial layer, and capillary endothelium, then binds to hemoglobin."),
+            carbon_label: t("stem.anatomy.alveolus_guide_carbon_label", "3. Carbon dioxide"),
+            carbon_short: t("stem.anatomy.alveolus_guide_carbon_short", "Blood to alveolus"),
+            carbon_detail: t("stem.anatomy.alveolus_guide_carbon_detail", "Carbon dioxide diffuses in the opposite direction, from arriving venous blood across the air-blood barrier into the alveolar air."),
+            transport_label: t("stem.anatomy.alveolus_guide_transport_label", "4. Transport onward"),
+            transport_short: t("stem.anatomy.alveolus_guide_transport_short", "Blood leaves; gas exhales"),
+            transport_detail: t("stem.anatomy.alveolus_guide_transport_detail", "Oxygenated blood continues toward the pulmonary veins and left heart. Carbon dioxide is removed from the alveolus during exhalation; efficient exchange requires matched ventilation and perfusion."),
+            show_clinical: t("stem.anatomy.alveolus_guide_show_clinical", "Clinical lens"),
+            hide_clinical: t("stem.anatomy.alveolus_guide_hide_clinical", "Hide clinical lens"),
+            clinical_shown: t("stem.anatomy.alveolus_guide_clinical_shown", "Clinical lens shown."),
+            clinical_hidden: t("stem.anatomy.alveolus_guide_clinical_hidden", "Clinical lens hidden."),
+            clinical_title: t("stem.anatomy.alveolus_guide_clinical_title", "Pulmonary edema"),
+            clinical_change: t("stem.anatomy.alveolus_guide_clinical_change", "Fluid accumulates around the air-blood barrier and increases diffusion distance."),
+            clinical_effect_heading: t("stem.anatomy.alveolus_guide_clinical_effect_heading", "Functional consequence"),
+            clinical_effect: t("stem.anatomy.alveolus_guide_clinical_effect", "Oxygen transfer is impaired before carbon-dioxide removal becomes severely limited."),
+            clinical_note: t("stem.anatomy.alveolus_guide_clinical_note", "Educational comparison only — not a diagnostic view."),
+            handoff_label: t("stem.anatomy.alveolus_guide_handoff_label", "Alveoli to heart"),
+            handoff_lead: t("stem.anatomy.alveolus_guide_handoff_lead", "Return to circulation: "),
+            handoff_context: t("stem.anatomy.alveolus_guide_handoff_context", "follow oxygenated pulmonary blood back through the left heart before systemic delivery."),
+            handoff_button: t("stem.anatomy.alveolus_guide_handoff_button", "Return to cardiac flow"),
+            handoff_announcement: t("stem.anatomy.alveolus_guide_handoff_announcement", "Opening oxygenated return to the left heart, step 3 of 4.")
+          };
+          var alveolusSteps = ['ventilation', 'oxygen', 'carbon', 'transport'].map(function(key, index) {
+            return Object.assign({}, regionalAtlas.steps[index], { label: alveolusCopy[key + '_label'], short: alveolusCopy[key + '_short'], detail: alveolusCopy[key + '_detail'] });
+          });
+          var activeStep = alveolusSteps[regionalAtlasStep];
+          var alveolusFocus = [alveolusCopy.focus_ventilation, alveolusCopy.focus_oxygen, alveolusCopy.focus_carbon, alveolusCopy.focus_transport];
+          function alveolusControlContext(state) {
+            return JSON.stringify([scaleGalleryContext(state), state._regionalAtlasOpen || null, state._regionalAtlasStep == null ? null : state._regionalAtlasStep,
+              state._regionalAtlasPlaying !== false, state._regionalAtlasClinical === true, state._anatomyModelFocus === true, state._showStudySheet === true, state._showAnatomyLens === true]);
+          }
+          function updateAlveolusGuide(patch, announcement, afterUpdate) {
+            if (!regionalAtlasOpen || !sel || sel.id !== 'alveoli') return;
+            var context = alveolusControlContext(d), accepted = null;
+            setLabToolData(function(previous) {
+              var state = previous.anatomy || {};
+              if (state.selectedStructure !== 'alveoli' || state._regionalAtlasOpen !== 'alveoli' || alveolusControlContext(state) !== context) return previous;
+              accepted = Object.assign({}, state, typeof patch === 'function' ? patch(state) : patch);
+              anatomyTutorProfiles.set(accepted, tutorProfileOf(state));
+              return Object.assign({}, previous, { anatomy: accepted });
+            });
+            finishStudyUpdate(function() { return accepted; }, function(state) {
+              if (announcement && typeof announceToSR === 'function') announceToSR(announcement);
+              if (afterUpdate) afterUpdate(state);
             });
           }
-          function gasLabel(x, y, value, options) {
-            var labelOptions = options || {};
-            return h('text', {
-              x: x, y: y,
-              textAnchor: labelOptions.anchor || 'middle',
-              fill: labelOptions.color || '#334155',
-              fontSize: labelOptions.size || 11,
-              fontWeight: labelOptions.weight || 800,
-              className: atlasLabelClass(labelOptions, 11)
-            }, value);
+          function openAlveolusHeart() {
+            var destination = ANATOMY_LENS_ITEMS.find(function(item) { return item.structureId === 'heart'; });
+            var system = destination && SYSTEMS[destination.system];
+            var structure = system && system.structures.find(function(item) { return item.id === 'heart'; });
+            if (!destination || !structure) return;
+            var origin = document.activeElement;
+            updateAlveolusGuide(function(state) {
+              var viewed = safeFlagMap(state._anatomyLensViewed, anatomyLensIds);
+              viewed[destination.id] = true;
+              var level = Number(state.complexity);
+              if ([1, 2, 3].indexOf(level) === -1) level = defaultComplexity;
+              return { system: destination.system, view: destination.view, selectedStructure: 'heart',
+                complexity: Math.max(level, anatomyStructureComplexity(structure)), search: '', _studyFilter: 'all',
+                _bodyView3d: false, _activeTab: 'explore', quizMode: false, _anatomyModelFocus: false, _showStudySheet: false,
+                _regionalAtlasOpen: 'heart', _regionalAtlasStep: 2, _regionalAtlasPlaying: state._regionalAtlasPlaying !== false, _regionalAtlasClinical: false,
+                _showAnatomyLens: false, _anatomyLensEntry: null, _anatomyLensViewed: viewed };
+            }, alveolusCopy.handoff_announcement, function(state) {
+              playSound('structureClick');
+              focusAnatomyLensDestination(state, '#anatomy-regional-atlas', 'heart', origin);
+            });
+          }
+          function selectAlveolusStep(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= alveolusSteps.length || index === regionalAtlasStep) return;
+            updateAlveolusGuide({ _regionalAtlasStep: index });
+          }
+          function gasRoute(stepIndex, pathData, color, markerId, barrier) {
+            return h('path', { d: pathData, 'data-anatomy-gas-route': stepIndex, className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''), stroke: color, markerEnd: 'url(#' + markerId + (barrier ? '-barrier' : '') + ')', 'aria-hidden': 'true' });
+          }
+          function gasDefs(barrier) {
+            return h('defs', null, [
+              { id: 'anatomy-arrow-air', color: '#0ea5e9' }, { id: 'anatomy-arrow-oxygen', color: '#dc2626' },
+              { id: 'anatomy-arrow-carbon', color: '#2563eb' }, { id: 'anatomy-arrow-transport', color: '#7c3aed' }
+            ].map(function(marker) {
+              return h('marker', { key: marker.id, id: marker.id + (barrier ? '-barrier' : ''), viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color }));
+            }));
+          }
+          function alveolusMarker(number, x, y, targetX, targetY, current, small) {
+            return h('g', { key: 'marker-' + number, className: 'anatomy-alveolus-marker', 'data-anatomy-alveolus-marker': number, 'data-current': current ? 'true' : 'false', 'aria-hidden': 'true' },
+              h('line', { x1: x, y1: y, x2: targetX, y2: targetY }),
+              h('circle', { cx: x, cy: y, r: small ? 13 : 21 }),
+              h('text', { x: x, y: y, textAnchor: 'middle', dominantBaseline: 'central', fontSize: small ? 20 : 32, fontWeight: 900 }, String(number))
+            );
+          }
+          function alveolusFigure(scale, title, description, viewBox, drawing, items) {
+            var id = 'anatomy-alveolus-' + scale;
+            return h('figure', { className: 'anatomy-alveolus-figure', 'data-anatomy-alveolus-scale': scale, 'aria-labelledby': id + '-heading' },
+              h('h6', { id: id + '-heading' }, title),
+              h('div', { className: 'anatomy-alveolus-picture' }, h('svg', { viewBox: viewBox, role: 'img', 'aria-labelledby': id + '-title ' + id + '-desc', preserveAspectRatio: 'xMidYMid meet', direction: 'ltr' },
+                h('title', { id: id + '-title' }, scale === 'overview' ? alveolusCopy.overview_svg_title : alveolusCopy.barrier_svg_title), h('desc', { id: id + '-desc' }, description), gasDefs(scale === 'barrier'), drawing)),
+              h('figcaption', null, h('ol', { className: 'anatomy-alveolus-structure-key', 'aria-label': alveolusCopy.structure_key }, items.map(function(item, index) {
+                return h('li', { key: item.label, 'data-current': item.current ? 'true' : 'false' }, h('span', { className: 'anatomy-alveolus-key-number', 'aria-hidden': 'true' }, String(index + 1)), h('bdi', null, item.label), item.current && h('span', { className: 'anatomy-alveolus-current' }, alveolusCopy.current_step));
+              })))
+            );
           }
           return h('section', {
-            id: 'anatomy-regional-atlas',
-            className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
-            'aria-label': regionalAtlas.title,
-            'data-anatomy-atlas': 'alveoli',
-            'data-anatomy-atlas-step': activeStep.id,
-            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES['alveoli'].id : undefined
+            id: 'anatomy-regional-atlas', tabIndex: -1, className: 'anatomy-atlas anatomy-alveolus-guide' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
+            'aria-label': alveolusCopy.title, 'data-anatomy-atlas': 'alveoli', 'data-anatomy-scale-bridge': 'alveoli', 'data-anatomy-atlas-step': activeStep.id,
+            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES.alveoli.id : undefined
           },
             h('div', { className: 'anatomy-atlas-header' },
-              h('div', null,
-                h('h5', null, 'Alveolus and capillary regional atlas'),
-                h('p', null, regionalAtlas.subtitle)
-              ),
-              h('button', {
-                type: 'button',
-                'aria-label': regionalAtlasPlaying ? 'Pause gas-exchange animation' : 'Play gas-exchange animation',
-                'aria-pressed': regionalAtlasPlaying,
-                onClick: function() { upd('_regionalAtlasPlaying', !regionalAtlasPlaying); },
-                className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border border-sky-300 bg-white text-sky-700 hover:bg-sky-50 active:scale-[0.97]'
-              }, regionalAtlasPlaying ? 'Pause exchange' : 'Play exchange'),
-              renderAtlasClinicalToggle('alveoli')
+              h('div', { className: 'anatomy-alveolus-intro' }, h('h5', null, alveolusCopy.title), h('p', null, alveolusCopy.help)),
+              h('div', { className: 'anatomy-alveolus-flow-controls' },
+                h('button', { type: 'button', 'data-anatomy-alveolus-flow': true, onClick: function() { updateAlveolusGuide({ _regionalAtlasPlaying: !regionalAtlasPlaying }, regionalAtlasPlaying ? alveolusCopy.flow_paused : alveolusCopy.flow_playing); } }, regionalAtlasPlaying ? alveolusCopy.pause_flow : alveolusCopy.play_flow),
+                h('span', { className: 'anatomy-alveolus-playback' }, regionalAtlasPlaying ? alveolusCopy.flow_playing : alveolusCopy.flow_paused),
+                h('button', { type: 'button', 'data-anatomy-clinical-toggle': 'alveoli', 'aria-pressed': regionalAtlasClinical, onClick: function() { updateAlveolusGuide({ _regionalAtlasClinical: !regionalAtlasClinical }, regionalAtlasClinical ? alveolusCopy.clinical_hidden : alveolusCopy.clinical_shown); } }, regionalAtlasClinical ? alveolusCopy.hide_clinical : alveolusCopy.show_clinical)
+              )
             ),
-            renderAtlasScalePath(['Conducting airway', 'Air-blood barrier', 'Capillary blood'], 'Scale progression: conducting airway to air-blood barrier to capillary blood'),
-            h('div', { className: 'anatomy-atlas-stage' },
-              h('svg', {
-                viewBox: '0 0 640 360',
-                role: 'img',
-                'aria-labelledby': 'anatomy-alveolus-atlas-title anatomy-alveolus-atlas-desc',
-                preserveAspectRatio: 'xMidYMid meet'
-              },
-                h('title', { id: 'anatomy-alveolus-atlas-title' }, 'Alveolus, air-blood barrier, and pulmonary capillary gas-exchange diagram'),
-                h('desc', { id: 'anatomy-alveolus-atlas-desc' }, 'A selectable four-step diagram traces fresh air into an alveolus, oxygen into capillary blood, carbon dioxide into alveolar air, and the onward movement of oxygenated blood and exhaled gas.'),
-                h('defs', null,
-                  [
-                    { id: 'anatomy-arrow-air', color: '#0ea5e9' },
-                    { id: 'anatomy-arrow-oxygen', color: '#dc2626' },
-                    { id: 'anatomy-arrow-carbon', color: '#2563eb' },
-                    { id: 'anatomy-arrow-transport', color: '#7c3aed' }
-                  ].map(function(marker) {
-                    return h('marker', { key: marker.id, id: marker.id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
-                      h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color })
-                    );
-                  })
-                ),
-                h('rect', { x: 12, y: 12, width: 616, height: 336, rx: 22, fill: '#f8fafc' }),
+            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_alveolar_gas_exchange_steps', 'Alveolar gas-exchange steps') }, alveolusSteps.map(function(step, index) {
+              return h('button', { key: step.id, type: 'button', 'data-anatomy-alveolus-step': step.id, 'aria-pressed': regionalAtlasStep === index, 'aria-controls': 'anatomy-alveolus-step-detail', onClick: function() { selectAlveolusStep(index); } }, h('strong', null, step.label), h('span', null, step.short));
+            })),
+            h('div', { className: 'anatomy-alveolus-step-navigation' },
+              h('button', { type: 'button', 'data-anatomy-alveolus-previous': true, disabled: regionalAtlasStep === 0, 'aria-controls': 'anatomy-alveolus-step-detail', onClick: function() { selectAlveolusStep(regionalAtlasStep - 1); } }, alveolusCopy.previous),
+              h('button', { type: 'button', 'data-anatomy-alveolus-next': true, disabled: regionalAtlasStep === alveolusSteps.length - 1, 'aria-controls': 'anatomy-alveolus-step-detail', onClick: function() { selectAlveolusStep(regionalAtlasStep + 1); } }, alveolusCopy.next)
+            ),
+            h('div', { id: 'anatomy-alveolus-step-detail', className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              h('span', { className: 'anatomy-atlas-step-position' }, formatAnatomyStudyText(alveolusCopy.step_position, { current: regionalAtlasStep + 1, total: alveolusSteps.length })), h('strong', null, activeStep.label), h('p', null, activeStep.detail),
+              h('div', { className: 'anatomy-alveolus-step-focus', 'data-anatomy-step-focus': 'alveoli' }, h('strong', null, alveolusCopy.focus_heading), h('span', null, alveolusFocus[regionalAtlasStep]))
+            ),
+            h('p', { className: 'anatomy-alveolus-marker-help' }, alveolusCopy.marker_help),
+            alveolusFigure('overview', alveolusCopy.overview_title, alveolusCopy.overview_svg_description, '5 25 445 315', [
                 h('path', { d: 'M28 130 C78 130 111 127 143 137 C163 143 173 155 188 166', fill: 'none', stroke: '#94a3b8', strokeWidth: 22, strokeLinecap: 'round' }),
                 h('path', { d: 'M28 130 C78 130 111 127 143 137 C163 143 173 155 188 166', fill: 'none', stroke: '#e0f2fe', strokeWidth: 15, strokeLinecap: 'round' }),
                 h('circle', { cx: 272, cy: 153, r: 101, fill: '#e0f2fe', stroke: '#0284c7', strokeWidth: 4 }),
                 h('circle', { cx: 272, cy: 153, r: regionalAtlasStep === 0 ? 96 : 91, fill: '#f0f9ff', stroke: '#7dd3fc', strokeWidth: regionalAtlasStep === 0 ? 5 : 3, strokeDasharray: '7 5', 'data-anatomy-mechanism': 'alveolar-expansion' }),
                 h('path', { d: 'M186 104 C152 86 139 59 159 43 C181 25 210 52 216 79 M335 76 C354 42 386 37 400 59 C414 83 383 101 358 108 M350 197 C390 201 408 228 393 248 C376 271 342 246 329 219', fill: '#e0f2fe', stroke: '#38bdf8', strokeWidth: 3 }),
-                gasLabel(272, 142, 'ALVEOLAR', { color: '#075985', size: 13 }),
-                gasLabel(272, 160, 'AIR SPACE', { color: '#075985', size: 13 }),
-                gasLabel(90, 107, 'terminal airway', { color: '#475569', size: 9 }),
                 h('path', { d: 'M133 268 C168 225 213 236 245 263 C283 296 332 298 372 265 C397 244 420 236 445 252', fill: 'none', stroke: '#93c5fd', strokeWidth: 30, strokeLinecap: 'round' }),
                 h('path', { d: 'M133 268 C168 225 213 236 245 263 C283 296 332 298 372 265 C397 244 420 236 445 252', fill: 'none', stroke: '#ef4444', strokeWidth: 7, strokeLinecap: 'round', opacity: 0.72 }),
                 [
@@ -12366,149 +12750,197 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 ].map(function(cell, cellIndex) {
                   return h('ellipse', { key: cellIndex, cx: cell.x, cy: cell.y, rx: 16, ry: 9, fill: cell.fill, stroke: '#991b1b', strokeWidth: 2, transform: 'rotate(' + cell.rotate + ' ' + cell.x + ' ' + cell.y + ')' });
                 }),
-                gasLabel(287, 329, 'PULMONARY CAPILLARY', { color: '#7f1d1d', size: 11 }),
-                h('path', { d: 'M376 123 C414 110 434 94 458 84', fill: 'none', stroke: '#64748b', strokeWidth: 2, strokeDasharray: '5 5' }),
-                h('rect', { x: 456, y: 39, width: 166, height: 224, rx: 14, fill: '#fff', stroke: '#cbd5e1', strokeWidth: 2 }),
-                gasLabel(539, 60, 'AIR-BLOOD BARRIER', { color: '#334155', size: 10 }),
-                h('rect', { x: 474, y: 74, width: 130, height: 34, rx: 8, fill: '#e0f2fe' }),
-                gasLabel(539, 95, 'alveolar air', { color: '#075985', size: 9 }),
-                h('rect', { x: 474, y: 111, width: 130, height: 8, fill: '#67e8f9' }),
-                gasLabel(608, 118, 'surfactant', { anchor: 'end', color: '#155e75', size: 7 }),
-                h('rect', { x: 474, y: 122, width: 130, height: 18, fill: '#bae6fd' }),
-                gasLabel(539, 135, 'type I alveolar cell', { color: '#075985', size: 8 }),
-                h('rect', { x: 474, y: 143, width: 130, height: 8, fill: '#e2e8f0' }),
-                gasLabel(608, 150, 'thin interstitium', { anchor: 'end', color: '#475569', size: 7 }),
-                h('rect', { x: 474, y: 154, width: 130, height: 18, fill: '#fecaca' }),
-                gasLabel(539, 167, 'capillary endothelium', { color: '#7f1d1d', size: 8 }),
-                h('rect', { x: 474, y: 175, width: 130, height: 70, rx: 8, fill: '#fee2e2' }),
-                h('ellipse', { cx: 539, cy: 211, rx: 28, ry: 14, fill: '#fca5a5', stroke: '#b91c1c', strokeWidth: 2 }),
-                gasLabel(539, 215, 'RBC', { color: '#7f1d1d', size: 9 }),
                 h('g', atlasMechanismProps(0, 'ventilation-pressure-change'),
                   [{ x: 72, y: 122 }, { x: 108, y: 128 }, { x: 151, y: 143 }, { x: 208, y: 156 }].map(function(particle, index) { return h('circle', { key: 'air-particle-' + index, cx: particle.x, cy: particle.y, r: 4, fill: '#38bdf8', stroke: '#0369a1', strokeWidth: 1 }); }),
-                  gasLabel(194, 55, 'alveolus expands · fresh air enters', { color: '#0369a1', size: 8 })
-                ),
-                h('g', atlasMechanismProps(1, 'oxygen-binding'),
-                  [{ x: 520, y: 104 }, { x: 520, y: 128 }, { x: 520, y: 157 }, { x: 520, y: 184 }].map(function(particle, index) { return h('circle', { key: 'oxygen-particle-' + index, cx: particle.x, cy: particle.y, r: 4, fill: '#ef4444' }); }),
-                  gasLabel(576, 231, 'O2 binds hemoglobin', { color: '#991b1b', size: 8 })
-                ),
-                h('g', atlasMechanismProps(2, 'carbon-dioxide-unloading'),
-                  [{ x: 562, y: 201 }, { x: 562, y: 174 }, { x: 562, y: 146 }, { x: 562, y: 119 }].map(function(particle, index) { return h('rect', { key: 'carbon-particle-' + index, x: particle.x - 3.5, y: particle.y - 3.5, width: 7, height: 7, rx: 2, fill: '#3b82f6' }); }),
-                  gasLabel(579, 72, 'CO2 enters alveolar air', { color: '#1d4ed8', size: 8 })
                 ),
                 h('g', atlasMechanismProps(3, 'matched-ventilation-perfusion'),
                   h('path', { d: 'M172 249 C229 274 315 292 405 258', fill: 'none', stroke: '#dc2626', strokeWidth: 4, strokeDasharray: '5 4' }),
                   h('path', { d: 'M213 126 C156 104 92 109 40 122', fill: 'none', stroke: '#0ea5e9', strokeWidth: 4, strokeDasharray: '5 4' }),
-                  gasLabel(355, 310, 'oxygenated blood leaves', { color: '#991b1b', size: 8 })
                 ),
-                renderAtlasClinicalSvg('alveoli'),
-                gasRoute(0, 'M28 130 C78 130 132 124 182 160 L218 160', '#0ea5e9', 'anatomy-arrow-air'),
-                gasRoute(1, 'M245 174 L245 243 M520 92 L520 201', '#dc2626', 'anatomy-arrow-oxygen'),
-                gasRoute(2, 'M310 267 L310 181 M562 211 L562 92', '#2563eb', 'anatomy-arrow-carbon'),
-                gasRoute(3, 'M150 270 C234 300 342 300 435 255 M218 126 C160 102 96 106 35 121', '#7c3aed', 'anatomy-arrow-transport'),
-                h('circle', { cx: 28, cy: 323, r: 6, fill: '#dc2626' }),
-                gasLabel(40, 327, 'oxygen', { anchor: 'start', color: '#334155', size: 10, weight: 700 }),
-                h('circle', { cx: 98, cy: 323, r: 6, fill: '#2563eb' }),
-                gasLabel(110, 327, 'carbon dioxide', { anchor: 'start', color: '#334155', size: 10, weight: 700 })
-              )
+
+              gasRoute(0, 'M28 130 C78 130 132 124 182 160 L218 160', '#0ea5e9', 'anatomy-arrow-air'),
+              gasRoute(1, 'M245 174 L245 243 M520 92 L520 201', '#dc2626', 'anatomy-arrow-oxygen'),
+              gasRoute(2, 'M310 267 L310 181 M562 211 L562 92', '#2563eb', 'anatomy-arrow-carbon'),
+              gasRoute(3, 'M150 270 C234 300 342 300 435 255 M218 126 C160 102 96 106 35 121', '#7c3aed', 'anatomy-arrow-transport'),
+              alveolusMarker(1, 80, 70, 90, 130, regionalAtlasStep === 0 || regionalAtlasStep === 3),
+              alveolusMarker(2, 280, 145, 280, 145, regionalAtlasStep === 0 || regionalAtlasStep === 2),
+              alveolusMarker(3, 110, 310, 134, 268, regionalAtlasStep !== 0)
+            ], [{ label: alveolusCopy.key_airway, current: regionalAtlasStep === 0 || regionalAtlasStep === 3 }, { label: alveolusCopy.key_alveolus, current: regionalAtlasStep === 0 || regionalAtlasStep === 2 }, { label: alveolusCopy.key_capillary, current: regionalAtlasStep !== 0 }]),
+            alveolusFigure('barrier', alveolusCopy.barrier_title, alveolusCopy.barrier_svg_description, '430 36 242 230', [
+                h('rect', { x: 456, y: 39, width: 166, height: 224, rx: 14, fill: '#fff', stroke: '#cbd5e1', strokeWidth: 2 }),
+                h('rect', { x: 474, y: 74, width: 130, height: 34, rx: 8, fill: '#e0f2fe' }),
+                h('rect', { x: 474, y: 111, width: 130, height: 8, fill: '#67e8f9' }),
+                h('rect', { x: 474, y: 122, width: 130, height: 18, fill: '#bae6fd' }),
+                h('rect', { x: 474, y: 143, width: 130, height: 8, fill: '#e2e8f0' }),
+                h('rect', { x: 474, y: 154, width: 130, height: 18, fill: '#fecaca' }),
+                h('rect', { x: 474, y: 175, width: 130, height: 70, rx: 8, fill: '#fee2e2' }),
+                h('ellipse', { cx: 539, cy: 211, rx: 28, ry: 14, fill: '#fca5a5', stroke: '#b91c1c', strokeWidth: 2 }),
+                h('g', atlasMechanismProps(1, 'oxygen-binding'),
+                  [{ x: 520, y: 104 }, { x: 520, y: 128 }, { x: 520, y: 157 }, { x: 520, y: 184 }].map(function(particle, index) { return h('circle', { key: 'oxygen-particle-' + index, cx: particle.x, cy: particle.y, r: 4, fill: '#ef4444' }); }),
+                ),
+                h('g', atlasMechanismProps(2, 'carbon-dioxide-unloading'),
+                  [{ x: 562, y: 201 }, { x: 562, y: 174 }, { x: 562, y: 146 }, { x: 562, y: 119 }].map(function(particle, index) { return h('rect', { key: 'carbon-particle-' + index, x: particle.x - 3.5, y: particle.y - 3.5, width: 7, height: 7, rx: 2, fill: '#3b82f6' }); }),
+                ),
+
+              regionalAtlasClinical && h('g', { className: 'anatomy-clinical-overlay', 'data-anatomy-clinical-overlay': 'pulmonary_edema', 'aria-hidden': 'true' },
+                h('rect', { x: 470, y: 138, width: 138, height: 25, rx: 7, fill: '#c4b5fd', stroke: '#7c3aed', strokeWidth: 3, opacity: .78 }),
+                [{ x: 486, y: 149 }, { x: 511, y: 154 }, { x: 541, y: 148 }, { x: 574, y: 154 }].map(function(drop, index) { return h('circle', { key: 'edema-drop-' + index, cx: drop.x, cy: drop.y, r: 4, fill: '#60a5fa' }); })
+              ),
+              gasRoute(1, 'M245 174 L245 243 M520 92 L520 201', '#dc2626', 'anatomy-arrow-oxygen', true),
+              gasRoute(2, 'M310 267 L310 181 M562 211 L562 92', '#2563eb', 'anatomy-arrow-carbon', true),
+              alveolusMarker(1, 647, 89, 590, 89, regionalAtlasStep === 0 || regionalAtlasStep === 2, true),
+              alveolusMarker(2, 448, 111, 486, 115, false, true),
+              alveolusMarker(3, 647, 132, 590, 131, regionalAtlasStep === 1 || regionalAtlasStep === 2, true),
+              alveolusMarker(4, 448, 151, 486, 147, regionalAtlasStep === 1 || regionalAtlasStep === 2, true),
+              alveolusMarker(5, 647, 173, 590, 163, regionalAtlasStep === 1 || regionalAtlasStep === 2, true),
+              alveolusMarker(6, 647, 215, 561, 211, regionalAtlasStep !== 0, true)
+            ], [{ label: alveolusCopy.key_air, current: regionalAtlasStep === 0 || regionalAtlasStep === 2 }, { label: alveolusCopy.key_surfactant }, { label: alveolusCopy.key_type_i, current: regionalAtlasStep === 1 || regionalAtlasStep === 2 }, { label: alveolusCopy.key_interstitium, current: regionalAtlasStep === 1 || regionalAtlasStep === 2 }, { label: alveolusCopy.key_endothelium, current: regionalAtlasStep === 1 || regionalAtlasStep === 2 }, { label: alveolusCopy.key_rbc, current: regionalAtlasStep !== 0 }]),
+            h('div', { className: 'anatomy-alveolus-flow-key', role: 'list', 'aria-label': alveolusCopy.flow_key, 'data-anatomy-visual-key': 'alveoli' },
+              [{ symbol: 'A', label: alveolusCopy.airflow, color: '#0369a1' }, { symbol: 'O', label: alveolusCopy.oxygen, color: '#b91c1c' }, { symbol: 'C', label: alveolusCopy.carbon_dioxide, color: '#1d4ed8' }].map(function(item) { return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-alveolus-flow-symbol', style: { backgroundColor: item.color }, 'aria-hidden': 'true' }, item.symbol), h('span', null, item.label)); })
             ),
-            renderAtlasVisualKey('alveoli'),
-            renderAtlasStepFocus('alveoli'),
-            renderAtlasClinicalPanel('alveoli'),
-            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_alveolar_gas_exchange_steps', 'Alveolar gas-exchange steps') },
-              regionalAtlas.steps.map(function(stepItem, stepIndex) {
-                return h('button', {
-                  key: stepItem.id,
-                  type: 'button',
-                  'aria-pressed': regionalAtlasStep === stepIndex,
-                  onClick: function() {
-                    updMulti({ _regionalAtlasStep: stepIndex, _regionalAtlasPlaying: true });
-                    if (typeof announceToSR === 'function') announceToSR(stepItem.label + '. ' + stepItem.detail);
-                  }
-                },
-                  h('span', { className: 'block' }, stepItem.label),
-                  h('span', { className: 'block mt-1 font-normal' }, stepItem.short)
-                );
-              })
+            regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', 'data-anatomy-clinical-panel': 'pulmonary_edema', role: 'note' },
+              h('div', null, h('strong', null, alveolusCopy.clinical_title), h('p', null, alveolusCopy.clinical_change)), h('div', null, h('strong', null, alveolusCopy.clinical_effect_heading), h('p', null, alveolusCopy.clinical_effect), h('p', { className: 'anatomy-clinical-note' }, alveolusCopy.clinical_note))
             ),
-            h('div', { className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-              h('span', { className: 'anatomy-atlas-step-position' }, 'Step ' + (regionalAtlasStep + 1) + ' of ' + regionalAtlas.steps.length),
-              h('strong', null, activeStep.label),
-              h('span', null, activeStep.detail)
-            ),
-            renderAtlasPathwayHandoff('alveoli')
+            h('div', { className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'alveoli', 'data-scale-continuation': 'heart', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: alveolusCopy.handoff_label }) },
+              h('p', null, h('strong', null, alveolusCopy.handoff_lead), alveolusCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-alveolus-handoff': true, onClick: openAlveolusHeart }, alveolusCopy.handoff_button))
           );
         }
 
         function renderKneeAtlas() {
           if (!regionalAtlas) return null;
-          var activeStep = regionalAtlas.steps[regionalAtlasStep];
-          function kneeRoute(stepIndex, pathData, color, markerId) {
-            return h('path', {
-              d: pathData,
-              className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''),
-              stroke: color,
-              markerEnd: 'url(#' + markerId + ')',
-              'aria-hidden': 'true'
+          var kneeCopy = {
+            title: t("stem.anatomy.knee_guide_title", "Knee mechanics"),
+            help: t("stem.anatomy.knee_guide_help", "Explore the bones, tendons, and ligaments in a lateral knee cutaway, then follow the movement forces."),
+            overview_title: t("stem.anatomy.knee_guide_overview_title", "1. Bones of the knee"),
+            support_title: t("stem.anatomy.knee_guide_support_title", "2. Supporting tissues"),
+            marker_help: t("stem.anatomy.knee_guide_marker_help", "Match each illustration’s numbered markers to its structure key."),
+            orientation: t("stem.anatomy.knee_guide_orientation", "This lateral cutaway shows the patella to the left of the femur and tibia."),
+            overview_svg_title: t("stem.anatomy.knee_guide_overview_svg_title", "Knee bones and movement forces"),
+            overview_svg_description: t("stem.anatomy.knee_guide_overview_svg_description", "A lateral knee schematic identifies the femur, patella, tibia, and fibula. Movement and load highlights follow the selected step."),
+            support_svg_title: t("stem.anatomy.knee_guide_support_svg_title", "Knee tendons, cartilage, and ligaments"),
+            support_svg_description: t("stem.anatomy.knee_guide_support_svg_description", "The same lateral schematic identifies the quadriceps tendon, patellar tendon, articular cartilage, meniscus, ACL, PCL, and collateral ligament."),
+            structure_key: t("stem.anatomy.knee_guide_structure_key", "Structure key"),
+            current_step: t("stem.anatomy.knee_guide_current_step", "Current step"),
+            key_femur: t("stem.anatomy.knee_guide_key_femur", "Femur"),
+            key_patella: t("stem.anatomy.knee_guide_key_patella", "Patella"),
+            key_tibia: t("stem.anatomy.knee_guide_key_tibia", "Tibia"),
+            key_fibula: t("stem.anatomy.knee_guide_key_fibula", "Fibula"),
+            key_quadriceps: t("stem.anatomy.knee_guide_key_quadriceps", "Quadriceps tendon"),
+            key_patellar: t("stem.anatomy.knee_guide_key_patellar", "Patellar tendon"),
+            key_cartilage: t("stem.anatomy.knee_guide_key_cartilage", "Articular cartilage"),
+            key_meniscus: t("stem.anatomy.knee_guide_key_meniscus", "Meniscus"),
+            key_acl: t("stem.anatomy.knee_guide_key_acl", "ACL"),
+            key_pcl: t("stem.anatomy.knee_guide_key_pcl", "PCL"),
+            key_collateral: t("stem.anatomy.knee_guide_key_collateral", "Collateral ligament"),
+            flow_key: t("stem.anatomy.knee_guide_flow_key", "Knee mechanics key"),
+            bone: t("stem.anatomy.knee_guide_bone", "bone"),
+            cartilage: t("stem.anatomy.knee_guide_cartilage", "cartilage / meniscus"),
+            force: t("stem.anatomy.knee_guide_force", "force / motion"),
+            pause_flow: t("stem.anatomy.knee_guide_pause_flow", "Pause motion"),
+            play_flow: t("stem.anatomy.knee_guide_play_flow", "Play motion"),
+            flow_paused: t("stem.anatomy.knee_guide_flow_paused", "Motion paused"),
+            flow_playing: t("stem.anatomy.knee_guide_flow_playing", "Motion playing"),
+            previous: t("stem.anatomy.knee_guide_previous", "Previous step"),
+            next: t("stem.anatomy.knee_guide_next", "Next step"),
+            step_position: t("stem.anatomy.knee_guide_step_position", "Step {current} of {total}"),
+            focus_heading: t("stem.anatomy.knee_guide_focus_heading", "Focus in this step"),
+            focus_architecture: t("stem.anatomy.knee_guide_focus_architecture", "Femur · Articular cartilage · Menisci"),
+            focus_extension: t("stem.anatomy.knee_guide_focus_extension", "Quadriceps tendon · Patella · Patellar tendon"),
+            focus_flexion: t("stem.anatomy.knee_guide_focus_flexion", "Hamstrings · Tibia · Flexion arc"),
+            focus_stability: t("stem.anatomy.knee_guide_focus_stability", "ACL · PCL · Collateral ligament"),
+            architecture_label: t("stem.anatomy.knee_guide_architecture_label", "1. Joint architecture"),
+            architecture_short: t("stem.anatomy.knee_guide_architecture_short", "Bones, cartilage, menisci"),
+            architecture_detail: t("stem.anatomy.knee_guide_architecture_detail", "The femur meets the tibia across articular cartilage and two menisci that improve fit, distribute load, and absorb shock. The patella glides in the femoral trochlea."),
+            extension_label: t("stem.anatomy.knee_guide_extension_label", "2. Extension"),
+            extension_short: t("stem.anatomy.knee_guide_extension_short", "Quadriceps straightens knee"),
+            extension_detail: t("stem.anatomy.knee_guide_extension_detail", "Quadriceps force travels through the quadriceps tendon, patella, and patellar tendon to the tibial tuberosity. The patella increases the extensor lever arm."),
+            flexion_label: t("stem.anatomy.knee_guide_flexion_label", "3. Flexion"),
+            flexion_short: t("stem.anatomy.knee_guide_flexion_short", "Hamstrings bend knee"),
+            flexion_detail: t("stem.anatomy.knee_guide_flexion_detail", "Hamstrings pull the tibia posteriorly to flex the knee. Joint surfaces roll and glide while the cruciate ligaments guide motion."),
+            stability_label: t("stem.anatomy.knee_guide_stability_label", "4. Stability"),
+            stability_short: t("stem.anatomy.knee_guide_stability_short", "Ligaments limit translation"),
+            stability_detail: t("stem.anatomy.knee_guide_stability_detail", "The ACL limits anterior tibial translation and rotation; the PCL limits posterior translation. Collateral ligaments resist side-to-side stress, while menisci share compressive load."),
+            show_clinical: t("stem.anatomy.knee_guide_show_clinical", "Clinical lens"),
+            hide_clinical: t("stem.anatomy.knee_guide_hide_clinical", "Hide clinical lens"),
+            clinical_shown: t("stem.anatomy.knee_guide_clinical_shown", "Clinical lens shown."),
+            clinical_hidden: t("stem.anatomy.knee_guide_clinical_hidden", "Clinical lens hidden."),
+            clinical_title: t("stem.anatomy.knee_guide_clinical_title", "ACL tear"),
+            clinical_change: t("stem.anatomy.knee_guide_clinical_change", "A discontinuity interrupts the ligament that restrains anterior tibial translation and rotation."),
+            clinical_effect_heading: t("stem.anatomy.knee_guide_clinical_effect_heading", "Functional consequence"),
+            clinical_effect: t("stem.anatomy.knee_guide_clinical_effect", "The knee may become unstable during pivoting or rapid direction changes."),
+            clinical_note: t("stem.anatomy.knee_guide_clinical_note", "Educational comparison only — not a diagnostic view."),
+            handoff_label: t("stem.anatomy.knee_guide_handoff_label", "Knee to muscle"),
+            handoff_lead: t("stem.anatomy.knee_guide_handoff_lead", "Trace the force source: "),
+            handoff_context: t("stem.anatomy.knee_guide_handoff_context", "use the neuromuscular model to see how skeletal muscle generates force that crosses a joint."),
+            handoff_button: t("stem.anatomy.knee_guide_handoff_button", "Trace muscle force"),
+            handoff_announcement: t("stem.anatomy.knee_guide_handoff_announcement", "Opening skeletal muscle contraction, step 4 of 4."),
+            mechanism_heading: t("stem.anatomy.knee_guide_mechanism_heading", "Movement highlight"),
+            mechanism_architecture: t("stem.anatomy.knee_guide_mechanism_architecture", "load spreads across cartilage + menisci"),
+            mechanism_extension: t("stem.anatomy.knee_guide_mechanism_extension", "patella increases lever arm"),
+            mechanism_flexion: t("stem.anatomy.knee_guide_mechanism_flexion", "flexed tibia position"),
+            mechanism_stability: t("stem.anatomy.knee_guide_mechanism_stability", "ligaments limit translation")
+          };
+          var kneeSteps = ['architecture', 'extension', 'flexion', 'stability'].map(function(key, index) { return Object.assign({}, regionalAtlas.steps[index], { label: kneeCopy[key + '_label'], short: kneeCopy[key + '_short'], detail: kneeCopy[key + '_detail'] }); });
+          var activeStep = kneeSteps[regionalAtlasStep];
+          var kneeFocus = [kneeCopy.focus_architecture, kneeCopy.focus_extension, kneeCopy.focus_flexion, kneeCopy.focus_stability];
+          function kneeControlContext(state) {
+            return JSON.stringify([scaleGalleryContext(state), state._regionalAtlasOpen || null, state._regionalAtlasStep == null ? null : state._regionalAtlasStep,
+              state._regionalAtlasPlaying !== false, state._regionalAtlasClinical === true, state._anatomyModelFocus === true, state._showStudySheet === true, state._showAnatomyLens === true]);
+          }
+          function updateKneeGuide(patch, announcement, afterUpdate) {
+            if (!regionalAtlasOpen || !sel || sel.id !== 'patella') return;
+            var context = kneeControlContext(d), accepted = null;
+            setLabToolData(function(previous) {
+              var state = previous.anatomy || {};
+              if (state.selectedStructure !== 'patella' || state._regionalAtlasOpen !== 'patella' || kneeControlContext(state) !== context) return previous;
+              accepted = Object.assign({}, state, typeof patch === 'function' ? patch(state) : patch);
+              anatomyTutorProfiles.set(accepted, tutorProfileOf(state));
+              return Object.assign({}, previous, { anatomy: accepted });
+            });
+            finishStudyUpdate(function() { return accepted; }, function(state) {
+              if (announcement && typeof announceToSR === 'function') announceToSR(announcement);
+              if (afterUpdate) afterUpdate(state);
             });
           }
-          function kneeLabel(x, y, value, options) {
-            var labelOptions = options || {};
-            return h('text', {
-              x: x, y: y,
-              textAnchor: labelOptions.anchor || 'middle',
-              fill: labelOptions.color || '#334155',
-              fontSize: labelOptions.size || 10,
-              fontWeight: labelOptions.weight || 800,
-              className: atlasLabelClass(labelOptions, 10)
-            }, value);
+
+
+          function openKneeMuscle() {
+            var destination = ANATOMY_LENS_ITEMS.find(function(item) { return item.structureId === 'biceps'; });
+            var system = destination && SYSTEMS[destination.system];
+            var structure = system && system.structures.find(function(item) { return item.id === 'biceps'; });
+            if (!destination || !structure) return;
+            var origin = document.activeElement;
+            updateKneeGuide(function(state) {
+              var viewed = safeFlagMap(state._anatomyLensViewed, anatomyLensIds); viewed[destination.id] = true;
+              var level = Number(state.complexity); if ([1, 2, 3].indexOf(level) === -1) level = defaultComplexity;
+              return { system: destination.system, view: destination.view, selectedStructure: 'biceps', complexity: Math.max(level, anatomyStructureComplexity(structure)), search: '', _studyFilter: 'all',
+                _bodyView3d: false, _activeTab: 'explore', quizMode: false, _anatomyModelFocus: false, _showStudySheet: false,
+                _regionalAtlasOpen: 'biceps', _regionalAtlasStep: 3, _regionalAtlasPlaying: state._regionalAtlasPlaying !== false, _regionalAtlasClinical: false,
+                _showAnatomyLens: false, _anatomyLensEntry: null, _anatomyLensViewed: viewed };
+            }, kneeCopy.handoff_announcement, function(state) { playSound('structureClick'); focusAnatomyLensDestination(state, '#anatomy-regional-atlas', 'biceps', origin); });
           }
-          function leader(x1, y1, x2, y2) {
-            return h('path', { d: 'M' + x1 + ' ' + y1 + ' L' + x2 + ' ' + y2, fill: 'none', stroke: '#94a3b8', strokeWidth: 1.5, 'aria-hidden': 'true' });
+
+          function selectKneeStep(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= kneeSteps.length || index === regionalAtlasStep) return;
+            updateKneeGuide({ _regionalAtlasStep: index });
           }
-          return h('section', {
-            id: 'anatomy-regional-atlas',
-            className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
-            'aria-label': regionalAtlas.title,
-            'data-anatomy-atlas': 'patella',
-            'data-anatomy-atlas-step': activeStep.id,
-            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES['patella'].id : undefined
-          },
-            h('div', { className: 'anatomy-atlas-header' },
-              h('div', null,
-                h('h5', null, 'Knee joint lateral cutaway'),
-                h('p', null, regionalAtlas.subtitle)
-              ),
-              h('button', {
-                type: 'button',
-                'aria-label': regionalAtlasPlaying ? 'Pause knee-mechanics animation' : 'Play knee-mechanics animation',
-                'aria-pressed': regionalAtlasPlaying,
-                onClick: function() { upd('_regionalAtlasPlaying', !regionalAtlasPlaying); },
-                className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border border-amber-300 bg-white text-amber-800 hover:bg-amber-50 active:scale-[0.97]'
-              }, regionalAtlasPlaying ? 'Pause motion' : 'Play motion'),
-              renderAtlasClinicalToggle('patella')
-            ),
-            renderAtlasScalePath(['Lower limb', 'Knee cutaway', 'Movement forces'], 'Scale progression: lower limb to knee cutaway to movement forces'),
-            h('div', { className: 'anatomy-atlas-stage' },
-              h('svg', {
-                viewBox: '0 0 640 360',
-                role: 'img',
-                'aria-labelledby': 'anatomy-knee-atlas-title anatomy-knee-atlas-desc',
-                preserveAspectRatio: 'xMidYMid meet'
-              },
-                h('title', { id: 'anatomy-knee-atlas-title' }, 'Lateral knee joint cutaway and movement mechanics diagram'),
-                h('desc', { id: 'anatomy-knee-atlas-desc' }, 'A selectable four-step lateral knee diagram identifies the femur, tibia, fibula, patella, cartilage, menisci, cruciate and collateral ligaments, tendons, and the forces involved in flexion and extension.'),
-                h('defs', null,
-                  [
-                    { id: 'anatomy-arrow-joint', color: '#64748b' },
-                    { id: 'anatomy-arrow-extension', color: '#dc2626' },
-                    { id: 'anatomy-arrow-flexion', color: '#7c3aed' },
-                    { id: 'anatomy-arrow-stability', color: '#059669' }
-                  ].map(function(marker) {
-                    return h('marker', { key: marker.id, id: marker.id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
-                      h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color })
-                    );
-                  })
-                ),
+
+
+          function kneeArrow(id, support) { return 'url(#' + id + (support ? '-support' : '') + ')'; }
+          function kneeRoute(stepIndex, pathData, color, markerId, support) {
+            return h('path', { d: pathData, 'data-anatomy-knee-route': stepIndex, className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''), stroke: color, markerEnd: kneeArrow(markerId, support), 'aria-hidden': 'true' });
+          }
+          function kneeDefs(support) {
+            return h('defs', null, [{ id: 'anatomy-arrow-joint', color: '#64748b' }, { id: 'anatomy-arrow-extension', color: '#dc2626' }, { id: 'anatomy-arrow-flexion', color: '#7c3aed' }, { id: 'anatomy-arrow-stability', color: '#059669' }].map(function(marker) {
+              return h('marker', { key: marker.id, id: marker.id + (support ? '-support' : ''), viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color }));
+            }));
+          }
+          function kneeMarker(number, x, y, targetX, targetY, current) {
+            return h('g', { key: 'marker-' + number, className: 'anatomy-knee-marker', 'data-anatomy-knee-marker': number, 'data-current': current ? 'true' : 'false', 'aria-hidden': 'true' },
+              h('line', { x1: x, y1: y, x2: targetX, y2: targetY }), h('circle', { cx: x, cy: y, r: 19 }),
+              h('text', { x: x, y: y, textAnchor: 'middle', dominantBaseline: 'central', fontSize: 30, fontWeight: 900 }, String(number)));
+          }
+          function kneeDrawing(support) { return h(React.Fragment, { key: 'knee-drawing' },
                 h('rect', { x: 12, y: 12, width: 616, height: 336, rx: 22, fill: '#f8fafc' }),
                 h('path', { d: 'M277 20 L277 112 C265 124 256 139 258 154 C260 173 277 180 299 174 C313 170 326 169 342 175 C365 184 386 173 389 154 C392 134 374 119 356 109 L356 20 Z', fill: '#fef3c7', stroke: '#b45309', strokeWidth: 4 }),
                 h('path', { d: 'M270 158 C284 168 300 165 315 160 C333 154 354 168 376 159', fill: 'none', stroke: '#22d3ee', strokeWidth: 9, strokeLinecap: 'round' }),
@@ -12525,151 +12957,265 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 h('path', { d: 'M234 181 C244 201 256 222 275 244', fill: 'none', stroke: '#be123c', strokeWidth: regionalAtlasStep === 1 ? 11 : 7, strokeLinecap: 'round' }),
                 h('circle', { cx: 278, cy: 246, r: 6, fill: '#b45309' }),
                 h('g', atlasMechanismProps(0, 'joint-load-distribution'),
-                  h('path', { d: 'M305 70 L305 128 M344 70 L344 128', fill: 'none', stroke: '#64748b', strokeWidth: 4, markerEnd: 'url(#anatomy-arrow-joint)' }),
+                  h('path', { d: 'M305 70 L305 128 M344 70 L344 128', fill: 'none', stroke: '#64748b', strokeWidth: 4, markerEnd: kneeArrow('anatomy-arrow-joint', support) }),
                   h('path', { d: 'M277 185 C295 179 307 180 319 187 M326 187 C344 179 361 181 378 190', fill: 'none', stroke: '#0891b2', strokeWidth: 5, strokeLinecap: 'round' }),
-                  kneeLabel(325, 62, 'load spreads across cartilage + menisci', { color: '#334155', size: 8 })
                 ),
                 h('g', atlasMechanismProps(1, 'patellar-lever-arm'),
                   h('line', { x1: 230, y1: 150, x2: 319, y2: 163, stroke: '#dc2626', strokeWidth: 2, strokeDasharray: '5 4' }),
-                  h('path', { d: 'M176 116 C190 85 214 65 242 57', fill: 'none', stroke: '#dc2626', strokeWidth: 4, markerEnd: 'url(#anatomy-arrow-extension)' }),
-                  kneeLabel(174, 103, 'patella increases lever arm', { anchor: 'start', color: '#991b1b', size: 8 })
+                  h('path', { d: 'M176 116 C190 85 214 65 242 57', fill: 'none', stroke: '#dc2626', strokeWidth: 4, markerEnd: kneeArrow('anatomy-arrow-extension', support) }),
                 ),
                 h('g', atlasMechanismProps(2, 'tibial-flexion-geometry'),
                   h('path', { d: 'M333 205 C365 222 398 246 430 285', fill: 'none', stroke: '#a78bfa', strokeWidth: 18, strokeLinecap: 'round', opacity: 0.65 }),
-                  h('path', { d: 'M349 209 C385 224 416 247 442 278', fill: 'none', stroke: '#7c3aed', strokeWidth: 4, markerEnd: 'url(#anatomy-arrow-flexion)' }),
-                  kneeLabel(444, 294, 'flexed tibia position', { color: '#5b21b6', size: 8 })
+                  h('path', { d: 'M349 209 C385 224 416 247 442 278', fill: 'none', stroke: '#7c3aed', strokeWidth: 4, markerEnd: kneeArrow('anatomy-arrow-flexion', support) }),
                 ),
                 h('g', atlasMechanismProps(3, 'ligament-translation-restraint'),
-                  h('path', { d: 'M286 225 L318 225 M366 225 L334 225', fill: 'none', stroke: '#059669', strokeWidth: 4, markerEnd: 'url(#anatomy-arrow-stability)' }),
+                  h('path', { d: 'M286 225 L318 225 M366 225 L334 225', fill: 'none', stroke: '#059669', strokeWidth: 4, markerEnd: kneeArrow('anatomy-arrow-stability', support) }),
                   h('line', { x1: 279, y1: 214, x2: 279, y2: 236, stroke: '#047857', strokeWidth: 5 }),
                   h('line', { x1: 373, y1: 214, x2: 373, y2: 236, stroke: '#047857', strokeWidth: 5 }),
-                  kneeLabel(325, 252, 'ligaments limit translation', { color: '#047857', size: 8 })
                 ),
-                renderAtlasClinicalSvg('patella'),
-                kneeRoute(0, 'M249 151 C269 129 324 122 374 149 C390 165 385 194 366 207 C329 226 282 218 258 196', '#64748b', 'anatomy-arrow-joint'),
-                kneeRoute(1, 'M220 28 L226 116 L230 180 C242 205 257 229 275 244', '#dc2626', 'anatomy-arrow-extension'),
-                kneeRoute(2, 'M382 294 C414 263 421 214 405 175 C396 153 383 136 364 124', '#7c3aed', 'anatomy-arrow-flexion'),
-                kneeRoute(3, 'M289 193 L351 139 M333 191 L292 139 M369 136 C385 160 393 193 408 231', '#059669', 'anatomy-arrow-stability'),
-                leader(222, 34, 121, 34),
-                kneeLabel(112, 38, 'quadriceps tendon', { anchor: 'end', color: '#7f1d1d', size: 9 }),
-                leader(207, 150, 121, 150),
-                kneeLabel(112, 154, 'patella', { anchor: 'end', color: '#92400e', size: 10 }),
-                leader(275, 244, 121, 238),
-                kneeLabel(112, 242, 'patellar tendon', { anchor: 'end', color: '#7f1d1d', size: 9 }),
-                leader(316, 54, 474, 44),
-                kneeLabel(482, 48, 'femur', { anchor: 'start', color: '#92400e', size: 10 }),
-                leader(351, 164, 474, 76),
-                kneeLabel(482, 80, 'articular cartilage', { anchor: 'start', color: '#0e7490', size: 9 }),
-                leader(368, 188, 474, 108),
-                kneeLabel(482, 112, 'meniscus', { anchor: 'start', color: '#334155', size: 10 }),
-                leader(321, 164, 474, 140),
-                kneeLabel(482, 144, 'ACL', { anchor: 'start', color: '#047857', size: 10 }),
-                leader(310, 159, 474, 172),
-                kneeLabel(482, 176, 'PCL', { anchor: 'start', color: '#0f766e', size: 10 }),
-                leader(391, 177, 474, 204),
-                kneeLabel(482, 208, 'collateral ligament', { anchor: 'start', color: '#166534', size: 9 }),
-                leader(330, 274, 474, 268),
-                kneeLabel(482, 272, 'tibia', { anchor: 'start', color: '#92400e', size: 10 }),
-                leader(412, 275, 474, 302),
-                kneeLabel(482, 306, 'fibula', { anchor: 'start', color: '#92400e', size: 10 })
+                kneeRoute(0, 'M249 151 C269 129 324 122 374 149 C390 165 385 194 366 207 C329 226 282 218 258 196', '#64748b', 'anatomy-arrow-joint', support),
+                kneeRoute(1, 'M220 28 L226 116 L230 180 C242 205 257 229 275 244', '#dc2626', 'anatomy-arrow-extension', support),
+                kneeRoute(2, 'M382 294 C414 263 421 214 405 175 C396 153 383 136 364 124', '#7c3aed', 'anatomy-arrow-flexion', support),
+                kneeRoute(3, 'M289 193 L351 139 M333 191 L292 139 M369 136 C385 160 393 193 408 231', '#059669', 'anatomy-arrow-stability', support),
+                regionalAtlasClinical && h('g', { className: 'anatomy-clinical-overlay', 'data-anatomy-clinical-overlay': 'acl_tear', 'aria-hidden': 'true' },
+                  h('path', { d: 'M289 193 L312 173 M327 160 L351 139', fill: 'none', stroke: '#7c3aed', strokeWidth: 9, strokeLinecap: 'round' }),
+                  h('path', { d: 'M313 164 L326 176 M326 164 L313 176', fill: 'none', stroke: '#be123c', strokeWidth: 3 })
+                ),
+
+          ); }
+          function kneeFigure(scale, title, description, viewBox, drawing, items) {
+            var id = 'anatomy-knee-' + scale;
+            return h('figure', { className: 'anatomy-knee-figure', 'data-anatomy-knee-scale': scale, 'aria-labelledby': id + '-heading' },
+              h('h6', { id: id + '-heading' }, title),
+              h('div', { className: 'anatomy-knee-picture' }, h('svg', { viewBox: viewBox, role: 'img', 'aria-labelledby': id + '-title ' + id + '-desc', preserveAspectRatio: 'xMidYMid meet', direction: 'ltr' },
+                h('title', { id: id + '-title' }, scale === 'overview' ? kneeCopy.overview_svg_title : kneeCopy.support_svg_title), h('desc', { id: id + '-desc' }, description), kneeDefs(scale === 'support'), drawing)),
+              h('figcaption', null, h('ol', { className: 'anatomy-knee-structure-key', 'aria-label': kneeCopy.structure_key }, items.map(function(item, index) {
+                return h('li', { key: item.label, 'data-current': item.current ? 'true' : 'false' }, h('span', { className: 'anatomy-knee-key-number', 'aria-hidden': 'true' }, String(index + 1)), h('bdi', null, item.label), item.current && h('span', { className: 'anatomy-knee-current' }, kneeCopy.current_step));
+              })))
+            );
+          }
+
+
+          return h('section', {
+            id: 'anatomy-regional-atlas', tabIndex: -1, className: 'anatomy-atlas anatomy-knee-guide' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
+            'aria-label': kneeCopy.title, 'data-anatomy-atlas': 'patella', 'data-anatomy-scale-bridge': 'patella', 'data-anatomy-atlas-step': activeStep.id,
+            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES.patella.id : undefined
+          },
+            h('div', { className: 'anatomy-atlas-header' },
+              h('div', { className: 'anatomy-knee-intro' }, h('h5', null, kneeCopy.title), h('p', null, kneeCopy.help)),
+              h('div', { className: 'anatomy-knee-flow-controls' },
+                h('button', { type: 'button', 'data-anatomy-knee-flow': true, onClick: function() { updateKneeGuide({ _regionalAtlasPlaying: !regionalAtlasPlaying }, regionalAtlasPlaying ? kneeCopy.flow_paused : kneeCopy.flow_playing); } }, regionalAtlasPlaying ? kneeCopy.pause_flow : kneeCopy.play_flow),
+                h('span', { className: 'anatomy-knee-playback' }, regionalAtlasPlaying ? kneeCopy.flow_playing : kneeCopy.flow_paused),
+                h('button', { type: 'button', 'data-anatomy-clinical-toggle': 'patella', 'aria-pressed': regionalAtlasClinical, onClick: function() { updateKneeGuide({ _regionalAtlasClinical: !regionalAtlasClinical }, regionalAtlasClinical ? kneeCopy.clinical_hidden : kneeCopy.clinical_shown); } }, regionalAtlasClinical ? kneeCopy.hide_clinical : kneeCopy.show_clinical)
               )
             ),
-            renderAtlasVisualKey('patella'),
-            renderAtlasStepFocus('patella'),
-            renderAtlasClinicalPanel('patella'),
-            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_knee_structure_and_movement_steps', 'Knee structure and movement steps') },
-              regionalAtlas.steps.map(function(stepItem, stepIndex) {
-                return h('button', {
-                  key: stepItem.id,
-                  type: 'button',
-                  'aria-pressed': regionalAtlasStep === stepIndex,
-                  onClick: function() {
-                    updMulti({ _regionalAtlasStep: stepIndex, _regionalAtlasPlaying: true });
-                    if (typeof announceToSR === 'function') announceToSR(stepItem.label + '. ' + stepItem.detail);
-                  }
-                },
-                  h('span', { className: 'block' }, stepItem.label),
-                  h('span', { className: 'block mt-1 font-normal' }, stepItem.short)
-                );
-              })
+            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_knee_structure_and_movement_steps', 'Knee structure and movement steps') }, kneeSteps.map(function(step, index) {
+              return h('button', { key: step.id, type: 'button', 'data-anatomy-knee-step': step.id, 'aria-pressed': regionalAtlasStep === index, 'aria-controls': 'anatomy-knee-step-detail', onClick: function() { selectKneeStep(index); } }, h('strong', null, step.label), h('span', null, step.short));
+            })),
+            h('div', { className: 'anatomy-knee-step-navigation' },
+              h('button', { type: 'button', 'data-anatomy-knee-previous': true, disabled: regionalAtlasStep === 0, 'aria-controls': 'anatomy-knee-step-detail', onClick: function() { selectKneeStep(regionalAtlasStep - 1); } }, kneeCopy.previous),
+              h('button', { type: 'button', 'data-anatomy-knee-next': true, disabled: regionalAtlasStep === kneeSteps.length - 1, 'aria-controls': 'anatomy-knee-step-detail', onClick: function() { selectKneeStep(regionalAtlasStep + 1); } }, kneeCopy.next)
             ),
-            h('div', { className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-              h('span', { className: 'anatomy-atlas-step-position' }, 'Step ' + (regionalAtlasStep + 1) + ' of ' + regionalAtlas.steps.length),
-              h('strong', null, activeStep.label),
-              h('span', null, activeStep.detail)
+            h('div', { id: 'anatomy-knee-step-detail', className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              h('span', { className: 'anatomy-atlas-step-position' }, formatAnatomyStudyText(kneeCopy.step_position, { current: regionalAtlasStep + 1, total: kneeSteps.length })), h('strong', null, activeStep.label), h('p', null, activeStep.detail),
+              h('div', { className: 'anatomy-knee-step-focus', 'data-anatomy-step-focus': 'patella' }, h('strong', null, kneeCopy.focus_heading), h('span', null, kneeFocus[regionalAtlasStep]))
             ),
-            renderAtlasPathwayHandoff('patella')
+            h('p', { className: 'anatomy-knee-marker-help' }, kneeCopy.marker_help),
+
+
+            kneeFigure('overview', kneeCopy.overview_title, kneeCopy.overview_svg_description, '140 -5 380 365', [kneeDrawing(false),
+              kneeMarker(1, 478, 52, 316, 54, regionalAtlasStep === 0), kneeMarker(2, 170, 150, 211, 150, regionalAtlasStep === 1),
+              kneeMarker(3, 478, 252, 330, 274, regionalAtlasStep === 2), kneeMarker(4, 478, 315, 412, 300, false)
+            ], [{ label: kneeCopy.key_femur, current: regionalAtlasStep === 0 }, { label: kneeCopy.key_patella, current: regionalAtlasStep === 1 }, { label: kneeCopy.key_tibia, current: regionalAtlasStep === 2 }, { label: kneeCopy.key_fibula, current: false }]),
+            h('p', { className: 'anatomy-knee-orientation', 'data-anatomy-knee-orientation': true }, kneeCopy.orientation),
+            kneeFigure('support', kneeCopy.support_title, kneeCopy.support_svg_description, '140 -5 380 365', [kneeDrawing(true),
+              kneeMarker(1, 170, 36, 220, 50, regionalAtlasStep === 1), kneeMarker(2, 170, 255, 255, 220, regionalAtlasStep === 1),
+              kneeMarker(3, 478, 72, 351, 164, regionalAtlasStep === 0), kneeMarker(4, 478, 126, 376, 187, regionalAtlasStep === 0 || regionalAtlasStep === 3),
+              kneeMarker(5, 478, 185, 322, 164, regionalAtlasStep >= 2), kneeMarker(6, 170, 192, 310, 159, regionalAtlasStep >= 2),
+              kneeMarker(7, 478, 244, 391, 177, regionalAtlasStep === 3)
+            ], [{ label: kneeCopy.key_quadriceps, current: regionalAtlasStep === 1 }, { label: kneeCopy.key_patellar, current: regionalAtlasStep === 1 }, { label: kneeCopy.key_cartilage, current: regionalAtlasStep === 0 }, { label: kneeCopy.key_meniscus, current: regionalAtlasStep === 0 || regionalAtlasStep === 3 }, { label: kneeCopy.key_acl, current: regionalAtlasStep >= 2 }, { label: kneeCopy.key_pcl, current: regionalAtlasStep >= 2 }, { label: kneeCopy.key_collateral, current: regionalAtlasStep === 3 }]),
+            h('div', { className: 'anatomy-knee-orientation anatomy-knee-mechanism-note', role: 'note', 'data-anatomy-knee-mechanism-caption': true }, h('strong', null, kneeCopy.mechanism_heading), h('p', null, [kneeCopy.mechanism_architecture, kneeCopy.mechanism_extension, kneeCopy.mechanism_flexion, kneeCopy.mechanism_stability][regionalAtlasStep])),
+            h('div', { className: 'anatomy-knee-flow-key', role: 'list', 'aria-label': kneeCopy.flow_key, 'data-anatomy-visual-key': 'patella' },
+              [{ symbol: 'B', label: kneeCopy.bone, color: '#b45309' }, { symbol: 'C', label: kneeCopy.cartilage, color: '#0e7490' }, { symbol: 'F', label: kneeCopy.force, color: '#dc2626' }].map(function(item) { return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-knee-flow-symbol', style: { backgroundColor: item.color }, 'aria-hidden': 'true' }, item.symbol), h('span', null, item.label)); })
+            ),
+            regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', 'data-anatomy-clinical-panel': 'acl_tear', role: 'note' }, h('div', null, h('strong', null, kneeCopy.clinical_title), h('p', null, kneeCopy.clinical_change)), h('div', null, h('strong', null, kneeCopy.clinical_effect_heading), h('p', null, kneeCopy.clinical_effect), h('p', { className: 'anatomy-clinical-note' }, kneeCopy.clinical_note))),
+            h('div', { className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'patella', 'data-scale-continuation': 'biceps', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: kneeCopy.handoff_label }) }, h('p', null, h('strong', null, kneeCopy.handoff_lead), kneeCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-knee-handoff': true, onClick: openKneeMuscle }, kneeCopy.handoff_button))
           );
         }
 
         function renderNeuromuscularAtlas() {
           if (!regionalAtlas) return null;
-          var activeStep = regionalAtlas.steps[regionalAtlasStep];
-          function muscleRoute(stepIndex, pathData, color, markerId) {
-            return h('path', {
-              d: pathData,
-              className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''),
-              stroke: color,
-              markerEnd: 'url(#' + markerId + ')',
-              style: stepIndex === 3 ? {strokeWidth:3} : undefined,
-              'aria-hidden': 'true'
+          var muscleId = sel.id === 'quads' ? 'quads' : 'biceps';
+          var muscleCopy = {
+            title: t("stem.anatomy.muscle_guide_title", "Muscle activation"),
+            activation_title: t("stem.anatomy.muscle_guide_activation_title", "1. Nerve signal and calcium release"),
+            sarcomere_title: t("stem.anatomy.muscle_guide_sarcomere_title", "2. Sarcomere close-up"),
+            marker_help: t("stem.anatomy.muscle_guide_marker_help", "Match each illustration’s numbered markers to its structure key."),
+            orientation: t("stem.anatomy.muscle_guide_orientation", "The first illustration follows the signal into a muscle fiber. The close-up shows the sarcomere where filaments slide."),
+            activation_svg_title: t("stem.anatomy.muscle_guide_activation_svg_title", "Motor neuron, neuromuscular junction, and muscle-fiber calcium release"),
+            activation_svg_description: t("stem.anatomy.muscle_guide_activation_svg_description", "A cellular schematic identifies the motor axon, axon terminal, synaptic vesicles, synaptic cleft, nicotinic acetylcholine receptors, sarcolemma, T-tubule, and sarcoplasmic reticulum. Signal and ion highlights follow the selected step."),
+            sarcomere_svg_title: t("stem.anatomy.muscle_guide_sarcomere_svg_title", "Actin, myosin, and Z discs during sarcomere shortening"),
+            sarcomere_svg_description: t("stem.anatomy.muscle_guide_sarcomere_svg_description", "A larger view identifies actin, myosin, and both Z discs. In the contraction step, Z discs move closer while actin filaments keep their length."),
+            structure_key: t("stem.anatomy.muscle_guide_structure_key", "Structure key"),
+            current_step: t("stem.anatomy.muscle_guide_current_step", "Current step"),
+            key_axon: t("stem.anatomy.muscle_guide_key_axon", "Motor axon"),
+            key_terminal: t("stem.anatomy.muscle_guide_key_terminal", "Axon terminal"),
+            key_vesicles: t("stem.anatomy.muscle_guide_key_vesicles", "Synaptic vesicles"),
+            key_cleft: t("stem.anatomy.muscle_guide_key_cleft", "Synaptic cleft"),
+            key_receptors: t("stem.anatomy.muscle_guide_key_receptors", "Nicotinic ACh receptors"),
+            key_sarcolemma: t("stem.anatomy.muscle_guide_key_sarcolemma", "Muscle sarcolemma"),
+            key_t_tubule: t("stem.anatomy.muscle_guide_key_t_tubule", "T-tubule"),
+            key_sr: t("stem.anatomy.muscle_guide_key_sr", "Sarcoplasmic reticulum + Ca2+"),
+            key_actin: t("stem.anatomy.muscle_guide_key_actin", "Actin"),
+            key_myosin: t("stem.anatomy.muscle_guide_key_myosin", "Myosin"),
+            key_z_discs: t("stem.anatomy.muscle_guide_key_z_discs", "Z discs"),
+            flow_key: t("stem.anatomy.muscle_guide_flow_key", "Muscle activation key"),
+            neural: t("stem.anatomy.muscle_guide_neural", "neural signal"),
+            calcium: t("stem.anatomy.muscle_guide_calcium", "calcium"),
+            contraction: t("stem.anatomy.muscle_guide_contraction", "contraction"),
+            pause_flow: t("stem.anatomy.muscle_guide_pause_flow", "Pause activation"),
+            play_flow: t("stem.anatomy.muscle_guide_play_flow", "Play activation"),
+            flow_paused: t("stem.anatomy.muscle_guide_flow_paused", "Activation paused"),
+            flow_playing: t("stem.anatomy.muscle_guide_flow_playing", "Activation playing"),
+            previous: t("stem.anatomy.muscle_guide_previous", "Previous step"),
+            next: t("stem.anatomy.muscle_guide_next", "Next step"),
+            step_position: t("stem.anatomy.muscle_guide_step_position", "Step {current} of {total}"),
+            focus_heading: t("stem.anatomy.muscle_guide_focus_heading", "Focus in this step"),
+            focus_terminal: t("stem.anatomy.muscle_guide_focus_terminal", "Motor axon · Axon terminal · Calcium channels"),
+            focus_end_plate: t("stem.anatomy.muscle_guide_focus_end_plate", "Acetylcholine · Nicotinic receptors · Motor end plate"),
+            focus_calcium: t("stem.anatomy.muscle_guide_focus_calcium", "T-tubule · Sarcoplasmic reticulum · Troponin"),
+            focus_sarcomere: t("stem.anatomy.muscle_guide_focus_sarcomere", "Actin · Myosin · Z discs"),
+            terminal_label: t("stem.anatomy.muscle_guide_terminal_label", "1. Nerve signal"),
+            terminal_short: t("stem.anatomy.muscle_guide_terminal_short", "Action potential reaches terminal"),
+            terminal_detail: t("stem.anatomy.muscle_guide_terminal_detail", "A motor-neuron action potential reaches the axon terminal and opens voltage-gated calcium channels. Calcium entry triggers synaptic vesicles to fuse with the membrane."),
+            end_plate_label: t("stem.anatomy.muscle_guide_end_plate_label", "2. Motor end plate"),
+            end_plate_short: t("stem.anatomy.muscle_guide_end_plate_short", "Acetylcholine activates fiber"),
+            end_plate_detail: t("stem.anatomy.muscle_guide_end_plate_detail", "Acetylcholine crosses the synaptic cleft and binds nicotinic receptors on the motor end plate. Sodium entry produces an end-plate potential that initiates a muscle action potential."),
+            calcium_label: t("stem.anatomy.muscle_guide_calcium_label", "3. Calcium release"),
+            calcium_short: t("stem.anatomy.muscle_guide_calcium_short", "T-tubule signal reaches SR"),
+            calcium_detail: t("stem.anatomy.muscle_guide_calcium_detail", "The action potential travels along the sarcolemma and down T-tubules. Voltage sensors activate ryanodine receptors in the sarcoplasmic reticulum, releasing calcium that binds troponin."),
+            sarcomere_label: t("stem.anatomy.muscle_guide_sarcomere_label", "4. Sarcomere shortens"),
+            sarcomere_short: t("stem.anatomy.muscle_guide_sarcomere_short", "Actin slides past myosin"),
+            sarcomere_detail: t("stem.anatomy.muscle_guide_sarcomere_detail", "Calcium moves tropomyosin away from actin binding sites. ATP-powered myosin cross-bridge cycles pull thin filaments toward the sarcomere center; calcium reuptake and acetylcholine breakdown allow relaxation."),
+            show_clinical: t("stem.anatomy.muscle_guide_show_clinical", "Clinical lens"),
+            hide_clinical: t("stem.anatomy.muscle_guide_hide_clinical", "Hide clinical lens"),
+            clinical_shown: t("stem.anatomy.muscle_guide_clinical_shown", "Clinical lens shown."),
+            clinical_hidden: t("stem.anatomy.muscle_guide_clinical_hidden", "Clinical lens hidden."),
+            clinical_title: t("stem.anatomy.muscle_guide_clinical_title", "Myasthenia gravis"),
+            clinical_change: t("stem.anatomy.muscle_guide_clinical_change", "Fewer functional nicotinic acetylcholine receptors reduce the motor end plate safety factor."),
+            clinical_effect_heading: t("stem.anatomy.muscle_guide_clinical_effect_heading", "Functional consequence"),
+            clinical_effect: t("stem.anatomy.muscle_guide_clinical_effect", "Repeated nerve signals are less likely to trigger reliable muscle-fiber action potentials."),
+            clinical_note: t("stem.anatomy.muscle_guide_clinical_note", "Educational comparison only — not a diagnostic view."),
+            handoff_label: t("stem.anatomy.muscle_guide_handoff_label", "Muscle to knee"),
+            handoff_lead: t("stem.anatomy.muscle_guide_handoff_lead", "Apply the force: "),
+            handoff_context: t("stem.anatomy.muscle_guide_handoff_context", "connect muscle tension and tendon pull to the changing geometry of a synovial joint."),
+            handoff_button: t("stem.anatomy.muscle_guide_handoff_button", "Apply force at a joint"),
+            handoff_announcement: t("stem.anatomy.muscle_guide_handoff_announcement", "Opening knee extension mechanics, step 2 of 4."),
+            mechanism_heading: t("stem.anatomy.muscle_guide_mechanism_heading", "Activation highlight"),
+            mechanism_terminal: t("stem.anatomy.muscle_guide_mechanism_terminal", "terminal Ca2+ entry triggers vesicle fusion"),
+            mechanism_end_plate: t("stem.anatomy.muscle_guide_mechanism_end_plate", "Na+ entry depolarizes the end plate"),
+            mechanism_calcium: t("stem.anatomy.muscle_guide_mechanism_calcium", "Ca2+ exposes actin binding sites"),
+            mechanism_sarcomere: t("stem.anatomy.muscle_guide_mechanism_sarcomere", "Z discs move closer"),
+            scale_label: t("stem.anatomy.muscle_guide_scale_label", "Scale progression"),
+            scale_neuron: t("stem.anatomy.muscle_guide_scale_neuron", "Motor neuron"),
+            scale_fiber: t("stem.anatomy.muscle_guide_scale_fiber", "Muscle fiber"),
+            scale_sarcomere: t("stem.anatomy.muscle_guide_scale_sarcomere", "Sarcomere"),
+            steps_label: t("stem.anatomy.muscle_guide_steps_label", "Muscle activation steps")
+          };
+          var muscleSteps = ['terminal', 'end_plate', 'calcium', 'sarcomere'].map(function(key, index) { return Object.assign({}, regionalAtlas.steps[index], { label: muscleCopy[key + '_label'], short: muscleCopy[key + '_short'], detail: muscleCopy[key + '_detail'] }); });
+          var activeStep = muscleSteps[regionalAtlasStep];
+          var muscleFocus = [muscleCopy.focus_terminal, muscleCopy.focus_end_plate, muscleCopy.focus_calcium, muscleCopy.focus_sarcomere];
+          function muscleControlContext(state) {
+            return JSON.stringify([scaleGalleryContext(state), state._regionalAtlasOpen || null, state._regionalAtlasStep == null ? null : state._regionalAtlasStep,
+              state._regionalAtlasPlaying !== false, state._regionalAtlasClinical === true, state._anatomyModelFocus === true, state._showStudySheet === true, state._showAnatomyLens === true]);
+          }
+          function updateMuscleGuide(patch, announcement, afterUpdate) {
+            if (!regionalAtlasOpen || !sel || (sel.id !== 'biceps' && sel.id !== 'quads')) return;
+            var context = muscleControlContext(d), accepted = null;
+            setLabToolData(function(previous) {
+              var state = previous.anatomy || {};
+              if (state.selectedStructure !== muscleId || state._regionalAtlasOpen !== muscleId || muscleControlContext(state) !== context) return previous;
+              accepted = Object.assign({}, state, typeof patch === 'function' ? patch(state) : patch);
+              anatomyTutorProfiles.set(accepted, tutorProfileOf(state));
+              return Object.assign({}, previous, { anatomy: accepted });
+            });
+            finishStudyUpdate(function() { return accepted; }, function(state) {
+              if (announcement && typeof announceToSR === 'function') announceToSR(announcement);
+              if (afterUpdate) afterUpdate(state);
             });
           }
-          function muscleLabel(x, y, value, options) {
-            var labelOptions = options || {};
-            return h('text', {
-              x: x, y: y,
-              textAnchor: labelOptions.anchor || 'middle',
-              fill: labelOptions.color || '#334155',
-              fontSize: labelOptions.size || 10,
-              fontWeight: labelOptions.weight || 800,
-              className: atlasLabelClass(labelOptions, 10)
-            }, value);
+
+
+
+          function openMuscleKnee() {
+            var destination = ANATOMY_LENS_ITEMS.find(function(item) { return item.structureId === 'patella'; });
+            var system = destination && SYSTEMS[destination.system];
+            var structure = system && system.structures.find(function(item) { return item.id === 'patella'; });
+            if (!destination || !structure) return;
+            var origin = document.activeElement;
+            updateMuscleGuide(function(state) {
+              var viewed = safeFlagMap(state._anatomyLensViewed, anatomyLensIds); viewed[destination.id] = true;
+              var level = Number(state.complexity); if ([1, 2, 3].indexOf(level) === -1) level = defaultComplexity;
+              return { system: destination.system, view: destination.view, selectedStructure: 'patella', complexity: Math.max(level, anatomyStructureComplexity(structure)), search: '', _studyFilter: 'all',
+                _bodyView3d: false, _activeTab: 'explore', quizMode: false, _anatomyModelFocus: false, _showStudySheet: false,
+                _regionalAtlasOpen: 'patella', _regionalAtlasStep: 1, _regionalAtlasPlaying: state._regionalAtlasPlaying !== false, _regionalAtlasClinical: false,
+                _showAnatomyLens: false, _anatomyLensEntry: null, _anatomyLensViewed: viewed };
+            }, muscleCopy.handoff_announcement, function(state) { playSound('structureClick'); focusAnatomyLensDestination(state, '#anatomy-regional-atlas', 'patella', origin); });
+          }
+
+
+          function selectMuscleStep(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= muscleSteps.length || index === regionalAtlasStep) return;
+            updateMuscleGuide({ _regionalAtlasStep: index });
+          }
+
+
+
+          function muscleRoute(stepIndex, pathData, color, markerId) { return h('path', { d: pathData, 'data-anatomy-muscle-route': stepIndex, className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''), stroke: color, markerEnd: 'url(#' + markerId + ')', style: stepIndex === 3 ? { strokeWidth: 3 } : undefined, 'aria-hidden': 'true' }); }
+          function muscleDefs(sarcomere) { return h('defs', null, [{ id: 'anatomy-arrow-neuron', color: '#7c3aed' }, { id: 'anatomy-arrow-ach', color: '#d97706' }, { id: 'anatomy-arrow-calcium', color: '#0284c7' }, { id: 'anatomy-arrow-contraction', color: '#dc2626' }].filter(function(marker, index) { return sarcomere ? index === 3 : index < 3; }).map(function(marker) {
+            return h('marker', { key: marker.id, id: marker.id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerUnits: 'userSpaceOnUse', markerWidth: 9, markerHeight: 9, orient: 'auto-start-reverse' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color }));
+          })); }
+          function muscleMarker(number, x, y, targetX, targetY, current, closeup) { return h('g', { key: 'marker-' + number, className: 'anatomy-muscle-marker', 'data-anatomy-muscle-marker': number, 'data-current': current ? 'true' : 'false', 'aria-hidden': 'true' },
+            h('line', { x1: x, y1: y, x2: targetX, y2: targetY }), h('circle', { cx: x, cy: y, r: closeup ? 11 : 20 }), h('text', { x: x, y: y, textAnchor: 'middle', dominantBaseline: 'central', fontSize: closeup ? 16 : 34, fontWeight: 900 }, String(number)));
+          }
+          function muscleIonText(value) { return String(value).split(/(Ca2\+|Na\+)/g).map(function(part, index) { return index % 2 ? h('bdi', { key: 'ion-' + index, dir: 'ltr', style: { unicodeBidi: 'isolate' }, 'data-anatomy-muscle-ion': part }, part) : part; }); }
+          function muscleFigure(scale, title, description, viewBox, drawing, keys) {
+            var name = 'anatomy-muscle-' + scale;
+            return h('figure', { key: scale, className: 'anatomy-muscle-figure', 'data-anatomy-muscle-scale': scale, 'aria-labelledby': name + '-heading' },
+              h('h6', { id: name + '-heading' }, title), h('div', { className: 'anatomy-muscle-picture' }, h('svg', { viewBox: viewBox, role: 'img', 'aria-labelledby': name + '-title ' + name + '-description', preserveAspectRatio: 'xMidYMid meet' }, h('title', { id: name + '-title' }, scale === 'activation' ? muscleCopy.activation_svg_title : muscleCopy.sarcomere_svg_title), h('desc', { id: name + '-description' }, description), muscleDefs(scale === 'sarcomere'), drawing)),
+              h('figcaption', null, h('ol', { className: 'anatomy-muscle-structure-key', 'aria-label': muscleCopy.structure_key }, keys.map(function(item, index) { return h('li', { key: index, 'data-current': item.current ? 'true' : 'false' }, h('span', { className: 'anatomy-muscle-key-number', 'aria-hidden': 'true' }, String(index + 1)), h('span', null, muscleIonText(item.label)), item.current && h('span', { className: 'anatomy-muscle-current' }, muscleCopy.current_step)); })))
+            );
           }
           return h('section', {
-            id: 'anatomy-regional-atlas',
-            className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
-            'aria-label': regionalAtlas.title,
-            'data-anatomy-atlas': sel.id === 'quads' ? 'quads' : 'biceps',
-            'data-anatomy-atlas-step': activeStep.id,
-            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES['biceps'].id : undefined
+            id: 'anatomy-regional-atlas', tabIndex: -1, className: 'anatomy-atlas anatomy-muscle-guide' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
+            'aria-label': muscleCopy.title, 'data-anatomy-atlas': muscleId, 'data-anatomy-scale-bridge': muscleId, 'data-anatomy-atlas-step': activeStep.id,
+            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES.biceps.id : undefined
           },
             h('div', { className: 'anatomy-atlas-header' },
-              h('div', null,
-                h('h5', null, 'Neuromuscular junction and sarcomere'),
-                h('p', null, regionalAtlas.subtitle)
-              ),
-              h('button', {
-                type: 'button',
-                'aria-label': regionalAtlasPlaying ? 'Pause muscle-activation animation' : 'Play muscle-activation animation',
-                'aria-pressed': regionalAtlasPlaying,
-                onClick: function() { upd('_regionalAtlasPlaying', !regionalAtlasPlaying); },
-                className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border border-pink-300 bg-white text-pink-800 hover:bg-pink-50 active:scale-[0.97]'
-              }, regionalAtlasPlaying ? 'Pause activation' : 'Play activation'),
-              renderAtlasClinicalToggle('biceps')
+              h('div', { className: 'anatomy-muscle-intro' }, h('h5', null, muscleCopy.title), h('p', null, regionalAtlas.subtitle)),
+              h('div', { className: 'anatomy-muscle-flow-controls' },
+                h('button', { type: 'button', 'data-anatomy-muscle-flow': true, onClick: function() { updateMuscleGuide({ _regionalAtlasPlaying: !regionalAtlasPlaying }, regionalAtlasPlaying ? muscleCopy.flow_paused : muscleCopy.flow_playing); } }, regionalAtlasPlaying ? muscleCopy.pause_flow : muscleCopy.play_flow),
+                h('span', { className: 'anatomy-muscle-playback' }, regionalAtlasPlaying ? muscleCopy.flow_playing : muscleCopy.flow_paused),
+                h('button', { type: 'button', 'data-anatomy-clinical-toggle': 'biceps', 'aria-pressed': regionalAtlasClinical, onClick: function() { updateMuscleGuide({ _regionalAtlasClinical: !regionalAtlasClinical }, regionalAtlasClinical ? muscleCopy.clinical_hidden : muscleCopy.clinical_shown); } }, regionalAtlasClinical ? muscleCopy.hide_clinical : muscleCopy.show_clinical)
+              )
             ),
-            renderAtlasScalePath(['Motor neuron', 'Muscle fiber', 'Sarcomere'], 'Scale progression: motor neuron to muscle fiber to sarcomere'),
-            h('div', { className: 'anatomy-atlas-stage' },
-              h('svg', {
-                viewBox: '0 0 640 360',
-                role: 'img',
-                'aria-labelledby': 'anatomy-neuromuscular-atlas-title anatomy-neuromuscular-atlas-desc',
-                preserveAspectRatio: 'xMidYMid meet'
-              },
-                h('title', { id: 'anatomy-neuromuscular-atlas-title' }, 'Neuromuscular junction, calcium release, and sarcomere contraction diagram'),
-                h('desc', { id: 'anatomy-neuromuscular-atlas-desc' }, 'A selectable four-step diagram traces a motor-neuron action potential, acetylcholine release at the motor end plate, T-tubule signaling and calcium release, and ATP-powered sliding of actin past myosin.'),
-                h('defs', null,
-                  [
-                    { id: 'anatomy-arrow-neuron', color: '#7c3aed' },
-                    { id: 'anatomy-arrow-ach', color: '#d97706' },
-                    { id: 'anatomy-arrow-calcium', color: '#0284c7' },
-                    { id: 'anatomy-arrow-contraction', color: '#dc2626' }
-                  ].map(function(marker) {
-                    return h('marker', { key: marker.id, id: marker.id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerUnits: 'userSpaceOnUse', markerWidth: 9, markerHeight: 9, orient: 'auto-start-reverse' },
-                      h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color })
-                    );
-                  })
-                ),
+            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': muscleCopy.steps_label }, muscleSteps.map(function(step, index) {
+              return h('button', { key: step.id, type: 'button', 'data-anatomy-muscle-step': step.id, 'aria-pressed': regionalAtlasStep === index, 'aria-controls': 'anatomy-muscle-step-detail', onClick: function() { selectMuscleStep(index); } }, h('strong', null, step.label), h('span', null, step.short));
+            })),
+            h('div', { className: 'anatomy-muscle-step-navigation' },
+              h('button', { type: 'button', 'data-anatomy-muscle-previous': true, disabled: regionalAtlasStep === 0, 'aria-controls': 'anatomy-muscle-step-detail', onClick: function() { selectMuscleStep(regionalAtlasStep - 1); } }, muscleCopy.previous),
+              h('button', { type: 'button', 'data-anatomy-muscle-next': true, disabled: regionalAtlasStep === muscleSteps.length - 1, 'aria-controls': 'anatomy-muscle-step-detail', onClick: function() { selectMuscleStep(regionalAtlasStep + 1); } }, muscleCopy.next)
+            ),
+            h('div', { id: 'anatomy-muscle-step-detail', className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              h('span', { className: 'anatomy-atlas-step-position' }, formatAnatomyStudyText(muscleCopy.step_position, { current: regionalAtlasStep + 1, total: muscleSteps.length })), h('strong', null, activeStep.label), h('p', null, activeStep.detail),
+              h('div', { className: 'anatomy-muscle-step-focus', 'data-anatomy-step-focus': muscleId }, h('strong', null, muscleCopy.focus_heading), h('span', null, muscleFocus[regionalAtlasStep]))
+            ),
+            h('p', { className: 'anatomy-muscle-marker-help' }, muscleCopy.marker_help),
+
+
+
+            h('ol', { className: 'anatomy-muscle-scale-path', 'aria-label': muscleCopy.scale_label }, [muscleCopy.scale_neuron, muscleCopy.scale_fiber, muscleCopy.scale_sarcomere].map(function(label, index) { return h('li', { key: index }, h('span', { className: 'anatomy-muscle-key-number', 'aria-hidden': 'true' }, String(index + 1)), label); })),
+            muscleFigure('activation', muscleCopy.activation_title, muscleCopy.activation_svg_description, '-8 -20 460 390', [h(React.Fragment, { key: 'activation-drawing' },
                 h('rect', { x: 12, y: 12, width: 616, height: 336, rx: 22, fill: '#f8fafc' }),
                 h('rect', { x: 24, y: 173, width: 592, height: 162, rx: 20, fill: '#fce7f3', stroke: '#f9a8d4', strokeWidth: 2 }),
                 h('path', { d: 'M20 72 C80 72 127 70 177 82 C197 87 207 91 221 101', fill: 'none', stroke: '#8b5cf6', strokeWidth: 18, strokeLinecap: 'round' }),
@@ -12700,6 +13246,33 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 ].map(function(calcium, calciumIndex) {
                   return h('circle', { key: calciumIndex, cx: calcium.x, cy: calcium.y, r: 4, fill: '#0ea5e9' });
                 }),
+
+                h('g', atlasMechanismProps(0, 'terminal-calcium-entry'),
+                  [{ x: 218, y: 82 }, { x: 224, y: 97 }, { x: 220, y: 113 }].map(function(ion, index) { return h('circle', { key: 'terminal-calcium-' + index, cx: ion.x, cy: ion.y, r: 3.5, fill: '#38bdf8', stroke: '#0369a1', strokeWidth: 1 }); }),
+                ),
+                h('g', atlasMechanismProps(1, 'end-plate-depolarization'),
+                  [{ x: 242, y: 198 }, { x: 264, y: 202 }, { x: 286, y: 198 }, { x: 308, y: 202 }].map(function(ion, index) { return h('circle', { key: 'sodium-ion-' + index, cx: ion.x, cy: ion.y, r: 4, fill: '#fbbf24', stroke: '#92400e', strokeWidth: 1 }); }),
+                  h('path', { d: 'M230 185 L230 211 M318 185 L318 211', stroke: '#d97706', strokeWidth: 3, markerEnd: 'url(#anatomy-arrow-ach)' }),
+                ),
+                h('g', atlasMechanismProps(2, 'calcium-release-to-troponin'),
+                  [{ x: 348, y: 300 }, { x: 365, y: 309 }, { x: 387, y: 314 }, { x: 411, y: 305 }, { x: 428, y: 292 }].map(function(ion, index) { return h('circle', { key: 'released-calcium-' + index, cx: ion.x, cy: ion.y, r: 4, fill: '#0ea5e9', stroke: '#0369a1', strokeWidth: 1 }); }),
+                ),
+
+muscleRoute(0, 'M22 72 C94 72 160 69 218 101 C239 111 264 111 292 102', '#7c3aed', 'anatomy-arrow-neuron'),
+                muscleRoute(1, 'M242 108 C242 132 242 149 242 174 M280 112 C280 139 280 153 280 178', '#d97706', 'anatomy-arrow-ach'),
+                muscleRoute(2, 'M304 181 C334 181 362 195 375 225 L375 272 C375 289 390 297 407 300', '#0284c7', 'anatomy-arrow-calcium'),
+                regionalAtlasClinical && h('g', { className: 'anatomy-clinical-overlay', 'data-anatomy-clinical-overlay': 'myasthenia_gravis', 'aria-hidden': 'true' },
+                  [236, 281].map(function(x, index) { return h('path', { key: 'blocked-receptor-' + index, d: 'M' + (x - 8) + ' 173 L' + (x + 8) + ' 190 M' + (x + 8) + ' 173 L' + (x - 8) + ' 190', stroke: '#7c3aed', strokeWidth: 3, strokeLinecap: 'round' }); }),
+                  h('path', { d: 'M224 205 C250 214 283 214 315 205', fill: 'none', stroke: '#7c3aed', strokeWidth: 3, strokeDasharray: '5 4' })
+                )
+              ),
+              muscleMarker(1, 90, 25, 96, 72, regionalAtlasStep === 0), muscleMarker(2, 374, 48, 307, 92, regionalAtlasStep === 0),
+              muscleMarker(3, 374, 109, 275, 116, regionalAtlasStep === 0), muscleMarker(4, 151, 133, 230, 154, regionalAtlasStep === 1),
+              muscleMarker(5, 90, 250, 258, 182, regionalAtlasStep === 1), muscleMarker(6, 70, 133, 98, 182, regionalAtlasStep === 2),
+              muscleMarker(7, 290, 271, 376, 225, regionalAtlasStep === 2), muscleMarker(8, 302, 348, 334, 282, regionalAtlasStep === 2)
+            ], [{ label: muscleCopy.key_axon, current: regionalAtlasStep === 0 }, { label: muscleCopy.key_terminal, current: regionalAtlasStep === 0 }, { label: muscleCopy.key_vesicles, current: regionalAtlasStep === 0 }, { label: muscleCopy.key_cleft, current: regionalAtlasStep === 1 }, { label: muscleCopy.key_receptors, current: regionalAtlasStep === 1 }, { label: muscleCopy.key_sarcolemma, current: regionalAtlasStep === 2 }, { label: muscleCopy.key_t_tubule, current: regionalAtlasStep === 2 }, { label: muscleCopy.key_sr, current: regionalAtlasStep === 2 }]),
+            h('p', { className: 'anatomy-muscle-orientation', 'data-anatomy-muscle-orientation': true }, muscleCopy.orientation),
+            muscleFigure('sarcomere', muscleCopy.sarcomere_title, muscleCopy.sarcomere_svg_description, '426 192 211 178', [h(React.Fragment, { key: 'sarcomere-drawing' },
                 h('rect', { x: 449, y: 226, width: 165, height: 94, rx: 10, fill: '#fff', stroke: '#cbd5e1', strokeWidth: 2 }),
                 h('line', { x1: regionalAtlasStep === 3 ? 482 : 462, y1: 238, x2: regionalAtlasStep === 3 ? 482 : 462, y2: 309, stroke: '#475569', strokeWidth: 5, 'data-anatomy-mechanism': 'sarcomere-shortening' }),
                 h('line', { x1: regionalAtlasStep === 3 ? 581 : 601, y1: 238, x2: regionalAtlasStep === 3 ? 581 : 601, y2: 309, stroke: '#475569', strokeWidth: 5 }),
@@ -12711,169 +13284,216 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 ].map(function(head, headIndex) {
                   return h('path', { key: headIndex, d: 'M' + head.x + ' 274 l' + (9 * head.flip) + ' -12', stroke: '#5b21b6', strokeWidth: 4, strokeLinecap: 'round' });
                 }),
-                muscleLabel(92, 51, 'motor axon', { color: '#5b21b6', size: 10 }),
-                muscleLabel(264, 48, 'axon terminal', { color: '#5b21b6', size: 10 }),
-                muscleLabel(279, 72, 'synaptic vesicles', { color: '#92400e', size: 8 }),
-                muscleLabel(171, 164, 'synaptic cleft', { color: '#475569', size: 9 }),
-                muscleLabel(265, 211, 'nicotinic ACh receptors', { color: '#92400e', size: 8 }),
-                muscleLabel(82, 207, 'muscle sarcolemma', { color: '#9d174d', size: 9 }),
-                muscleLabel(375, 224, 'T-tubule', { color: '#9d174d', size: 9 }),
-                muscleLabel(374, 319, 'sarcoplasmic reticulum + Ca2+', { color: '#0369a1', size: 8 }),
-                muscleLabel(531, 218, 'SARCOMERE', { color: '#334155', size: 10 }),
-                muscleLabel(476, 251, 'actin', { color: '#991b1b', size: 8 }),
-                muscleLabel(554, 269, 'myosin', { color: '#5b21b6', size: 8 }),
-                muscleLabel(regionalAtlasStep === 3 ? 482 : 462, 331, 'Z disc', { color: '#334155', size: 8 }),
-                muscleLabel(regionalAtlasStep === 3 ? 581 : 601, 331, 'Z disc', { color: '#334155', size: 8 }),
-                h('g', atlasMechanismProps(0, 'terminal-calcium-entry'),
-                  [{ x: 218, y: 82 }, { x: 224, y: 97 }, { x: 220, y: 113 }].map(function(ion, index) { return h('circle', { key: 'terminal-calcium-' + index, cx: ion.x, cy: ion.y, r: 3.5, fill: '#38bdf8', stroke: '#0369a1', strokeWidth: 1 }); }),
-                  muscleLabel(147, 110, 'terminal Ca2+ entry triggers vesicle fusion', { color: '#5b21b6', size: 8 })
-                ),
-                h('g', atlasMechanismProps(1, 'end-plate-depolarization'),
-                  [{ x: 242, y: 198 }, { x: 264, y: 202 }, { x: 286, y: 198 }, { x: 308, y: 202 }].map(function(ion, index) { return h('circle', { key: 'sodium-ion-' + index, cx: ion.x, cy: ion.y, r: 4, fill: '#fbbf24', stroke: '#92400e', strokeWidth: 1 }); }),
-                  h('path', { d: 'M230 185 L230 211 M318 185 L318 211', stroke: '#d97706', strokeWidth: 3, markerEnd: 'url(#anatomy-arrow-ach)' }),
-                  muscleLabel(274, 229, 'Na+ entry depolarizes the end plate', { color: '#92400e', size: 8 })
-                ),
-                h('g', atlasMechanismProps(2, 'calcium-release-to-troponin'),
-                  [{ x: 348, y: 300 }, { x: 365, y: 309 }, { x: 387, y: 314 }, { x: 411, y: 305 }, { x: 428, y: 292 }].map(function(ion, index) { return h('circle', { key: 'released-calcium-' + index, cx: ion.x, cy: ion.y, r: 4, fill: '#0ea5e9', stroke: '#0369a1', strokeWidth: 1 }); }),
-                  muscleLabel(430, 340, 'Ca2+ exposes actin binding sites', { color: '#0369a1', size: 8 })
-                ),
+
                 h('g', atlasMechanismProps(3, 'cross-bridge-power-stroke'),
                   h('path', { d: 'M506 275 L520 258 M532 275 L544 291 M555 275 L566 258', fill: 'none', stroke: '#5b21b6', strokeWidth: 3, strokeLinecap: 'round' }),
-                  muscleLabel(531, 238, 'Z discs move closer', { color: '#991b1b', size: 8 })
                 ),
-                renderAtlasClinicalSvg('biceps'),
-                muscleRoute(0, 'M22 72 C94 72 160 69 218 101 C239 111 264 111 292 102', '#7c3aed', 'anatomy-arrow-neuron'),
-                muscleRoute(1, 'M242 108 C242 132 242 149 242 174 M280 112 C280 139 280 153 280 178', '#d97706', 'anatomy-arrow-ach'),
-                muscleRoute(2, 'M304 181 C334 181 362 195 375 225 L375 272 C375 289 390 297 407 300', '#0284c7', 'anatomy-arrow-calcium'),
+
                 muscleRoute(3, 'M468 258 L523 258 M595 291 L540 291', '#dc2626', 'anatomy-arrow-contraction')
-              )
-            ),
-            renderAtlasVisualKey('biceps'),
-            renderAtlasStepFocus('biceps'),
-            renderAtlasClinicalPanel('biceps'),
-            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_neuromuscular_activation_steps', 'Neuromuscular activation steps') },
-              regionalAtlas.steps.map(function(stepItem, stepIndex) {
-                return h('button', {
-                  key: stepItem.id,
-                  type: 'button',
-                  'aria-pressed': regionalAtlasStep === stepIndex,
-                  onClick: function() {
-                    updMulti({ _regionalAtlasStep: stepIndex, _regionalAtlasPlaying: true });
-                    if (typeof announceToSR === 'function') announceToSR(stepItem.label + '. ' + stepItem.detail);
-                  }
-                },
-                  h('span', { className: 'block' }, stepItem.label),
-                  h('span', { className: 'block mt-1 font-normal' }, stepItem.short)
-                );
-              })
-            ),
-            h('div', { className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-              h('span', { className: 'anatomy-atlas-step-position' }, 'Step ' + (regionalAtlasStep + 1) + ' of ' + regionalAtlas.steps.length),
-              h('strong', null, activeStep.label),
-              h('span', null, activeStep.detail)
-            ),
-            renderAtlasPathwayHandoff('biceps')
+              ), muscleMarker(1, 449, 206, 500, 258, regionalAtlasStep === 3, true), muscleMarker(2, 620, 268, 550, 275, regionalAtlasStep === 3, true),
+              h('line', { key: 'right-z-disc-leader', x1: 526, y1: 348, x2: regionalAtlasStep === 3 ? 581 : 601, y2: 306, stroke: '#0f172a', strokeWidth: 1.5, 'aria-hidden': 'true' }), muscleMarker(3, 526, 348, regionalAtlasStep === 3 ? 482 : 462, 306, regionalAtlasStep === 3, true)
+            ], [{ label: muscleCopy.key_actin, current: regionalAtlasStep === 3 }, { label: muscleCopy.key_myosin, current: regionalAtlasStep === 3 }, { label: muscleCopy.key_z_discs, current: regionalAtlasStep === 3 }]),
+            h('div', { className: 'anatomy-muscle-orientation anatomy-muscle-mechanism-note', role: 'note', 'data-anatomy-muscle-mechanism-caption': true }, h('strong', null, muscleCopy.mechanism_heading), h('p', null, muscleIonText([muscleCopy.mechanism_terminal, muscleCopy.mechanism_end_plate, muscleCopy.mechanism_calcium, muscleCopy.mechanism_sarcomere][regionalAtlasStep]))),
+            h('div', { className: 'anatomy-muscle-flow-key', role: 'list', 'aria-label': muscleCopy.flow_key, 'data-anatomy-visual-key': 'biceps' }, [{ symbol: 'N', label: muscleCopy.neural, color: '#7c3aed' }, { symbol: 'Ca', label: muscleCopy.calcium, color: '#0369a1' }, { symbol: 'M', label: muscleCopy.contraction, color: '#be185d' }].map(function(item) { return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-muscle-flow-symbol', style: { backgroundColor: item.color }, 'aria-hidden': 'true' }, item.symbol), h('span', null, item.label)); })),
+            regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', 'data-anatomy-clinical-panel': 'myasthenia_gravis', role: 'note' }, h('div', null, h('strong', null, muscleCopy.clinical_title), h('p', null, muscleCopy.clinical_change)), h('div', null, h('strong', null, muscleCopy.clinical_effect_heading), h('p', null, muscleCopy.clinical_effect), h('p', { className: 'anatomy-clinical-note' }, muscleCopy.clinical_note))),
+            h('div', { className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'biceps', 'data-scale-continuation': 'patella', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: muscleCopy.handoff_label }) }, h('p', null, h('strong', null, muscleCopy.handoff_lead), muscleCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-muscle-handoff': true, onClick: openMuscleKnee }, muscleCopy.handoff_button))
           );
         }
 
         function renderLiverAtlas() {
           if (!regionalAtlas) return null;
-          var activeStep = regionalAtlas.steps[regionalAtlasStep];
-          function liverRoute(stepIndex, pathData, color, markerId) {
-            return h('path', {
-              d: pathData,
-              className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''),
-              stroke: color,
-              markerEnd: 'url(#' + markerId + ')',
-              'aria-hidden': 'true'
+          var liverCopy = {
+            title: t("stem.anatomy.liver_guide_title", "Liver blood and bile flow"),
+            help: t("stem.anatomy.liver_guide_help", "Connect the liver's body location to lobule microanatomy, portal blood processing, venous return, and bile flow."),
+            body_title: t("stem.anatomy.liver_guide_body_title", "1. Liver location"),
+            organ_title: t("stem.anatomy.liver_guide_organ_title", "2. Liver organ"),
+            lobule_title: t("stem.anatomy.liver_guide_lobule_title", "3. Hepatic lobule"),
+            marker_help: t("stem.anatomy.liver_guide_marker_help", "Match each illustration’s numbered markers to its structure key."),
+            body_svg_title: t("stem.anatomy.liver_guide_body_svg_title", "Liver in the right upper abdomen"),
+            body_svg_description: t("stem.anatomy.liver_guide_body_svg_description", "The body schematic highlights the liver in the right upper abdomen."),
+            organ_svg_title: t("stem.anatomy.liver_guide_organ_svg_title", "Liver organ and blood vessels"),
+            organ_svg_description: t("stem.anatomy.liver_guide_organ_svg_description", "The organ schematic identifies the portal vein, hepatic artery, and hepatic vein."),
+            lobule_svg_title: t("stem.anatomy.liver_guide_lobule_svg_title", "Hepatic lobule with blood and bile routes"),
+            lobule_svg_description: t("stem.anatomy.liver_guide_lobule_svg_description", "Four selectable steps trace portal vein and hepatic artery entry, sinusoidal exchange with hepatocytes, central venous return, and bile flow in the opposite direction."),
+            structure_key: t("stem.anatomy.liver_guide_structure_key", "Structure key"),
+            current_step: t("stem.anatomy.liver_guide_current_step", "Current step"),
+            key_location: t("stem.anatomy.liver_guide_key_location", "Right upper abdomen"),
+            key_portal: t("stem.anatomy.liver_guide_key_portal", "Portal vein"),
+            key_artery: t("stem.anatomy.liver_guide_key_artery", "Hepatic artery"),
+            key_hepatic_vein: t("stem.anatomy.liver_guide_key_hepatic_vein", "Hepatic vein"),
+            key_triad: t("stem.anatomy.liver_guide_key_triad", "Portal triad"),
+            key_hepatocytes: t("stem.anatomy.liver_guide_key_hepatocytes", "Hepatocytes"),
+            key_central: t("stem.anatomy.liver_guide_key_central", "Central vein"),
+            key_sinusoids: t("stem.anatomy.liver_guide_key_sinusoids", "Sinusoids"),
+            key_canaliculi: t("stem.anatomy.liver_guide_key_canaliculi", "Bile canaliculi"),
+            key_bile_duct: t("stem.anatomy.liver_guide_key_bile_duct", "Bile duct branch"),
+            triad_heading: t("stem.anatomy.liver_guide_triad_heading", "Portal triad key"),
+            triad_portal: t("stem.anatomy.liver_guide_triad_portal", "portal vein"),
+            triad_artery: t("stem.anatomy.liver_guide_triad_artery", "artery"),
+            triad_bile: t("stem.anatomy.liver_guide_triad_bile", "bile duct"),
+            flow_key: t("stem.anatomy.liver_guide_flow_key", "Liver transport key"),
+            portal: t("stem.anatomy.liver_guide_portal", "portal blood"),
+            exchange: t("stem.anatomy.liver_guide_exchange", "sinusoidal exchange"),
+            venous: t("stem.anatomy.liver_guide_venous", "venous return"),
+            bile: t("stem.anatomy.liver_guide_bile", "bile"),
+            pause_flow: t("stem.anatomy.liver_guide_pause_flow", "Pause flow"),
+            play_flow: t("stem.anatomy.liver_guide_play_flow", "Play flow"),
+            flow_paused: t("stem.anatomy.liver_guide_flow_paused", "Flow paused"),
+            flow_playing: t("stem.anatomy.liver_guide_flow_playing", "Flow playing"),
+            previous: t("stem.anatomy.liver_guide_previous", "Previous step"),
+            next: t("stem.anatomy.liver_guide_next", "Next step"),
+            step_position: t("stem.anatomy.liver_guide_step_position", "Step {current} of {total}"),
+            focus_heading: t("stem.anatomy.liver_guide_focus_heading", "Focus in this step"),
+            focus_portal: t("stem.anatomy.liver_guide_focus_portal", "Portal vein branch · Hepatic artery branch · Portal triad"),
+            focus_exchange: t("stem.anatomy.liver_guide_focus_exchange", "Sinusoids · Hepatocytes · Exchange products"),
+            focus_return: t("stem.anatomy.liver_guide_focus_return", "Central vein · Hepatic veins · Venous return"),
+            focus_bile: t("stem.anatomy.liver_guide_focus_bile", "Bile canaliculi · Bile duct branch · Counterflow"),
+            show_clinical: t("stem.anatomy.liver_guide_show_clinical", "Clinical lens"),
+            hide_clinical: t("stem.anatomy.liver_guide_hide_clinical", "Hide clinical lens"),
+            clinical_shown: t("stem.anatomy.liver_guide_clinical_shown", "Clinical lens shown."),
+            clinical_hidden: t("stem.anatomy.liver_guide_clinical_hidden", "Clinical lens hidden."),
+            clinical_title: t("stem.anatomy.liver_guide_clinical_title", "Hepatic fibrosis"),
+            clinical_change: t("stem.anatomy.liver_guide_clinical_change", "Collagen bands distort lobule architecture and narrow sinusoidal pathways."),
+            clinical_effect_heading: t("stem.anatomy.liver_guide_clinical_effect_heading", "Functional consequence"),
+            clinical_effect: t("stem.anatomy.liver_guide_clinical_effect", "Resistance to portal blood flow rises while hepatocyte exchange becomes less efficient."),
+            clinical_note: t("stem.anatomy.liver_guide_clinical_note", "Educational comparison only — not a diagnostic view."),
+            handoff_label: t("stem.anatomy.liver_guide_handoff_label", "Liver to intestinal villus"),
+            handoff_lead: t("stem.anatomy.liver_guide_handoff_lead", "Connect the pathway: "),
+            handoff_context: t("stem.anatomy.liver_guide_handoff_context", "review how nutrients entered portal blood before reaching the liver."),
+            handoff_button: t("stem.anatomy.liver_guide_handoff_button", "Trace nutrient absorption"),
+            handoff_announcement: t("stem.anatomy.liver_guide_handoff_announcement", "Opening intestinal villus absorption, step 2 of 4."),
+            mechanism_heading: t("stem.anatomy.liver_guide_mechanism_heading", "Transport highlight"),
+            mechanism_portal: t("stem.anatomy.liver_guide_mechanism_portal", "portal blood + arterial blood mix"),
+            mechanism_exchange: t("stem.anatomy.liver_guide_mechanism_exchange", "nutrients · proteins · detox products exchange"),
+            mechanism_return: t("stem.anatomy.liver_guide_mechanism_return", "processed blood drains to hepatic veins"),
+            mechanism_bile: t("stem.anatomy.liver_guide_mechanism_bile", "bile moves outward · opposite blood flow"),
+            scale_label: t("stem.anatomy.liver_guide_scale_label", "Scale progression: body location to liver organ to hepatic lobule"),
+            scale_body: t("stem.anatomy.liver_guide_scale_body", "Body location"),
+            scale_organ: t("stem.anatomy.liver_guide_scale_organ", "Liver organ"),
+            scale_lobule: t("stem.anatomy.liver_guide_scale_lobule", "Hepatic lobule"),
+            steps_label: t("stem.anatomy.liver_guide_steps_label", "Liver lobule processing steps"),
+            portal_label: t("stem.anatomy.liver_guide_portal_label", "1. Portal triad entry"),
+            portal_short: t("stem.anatomy.liver_guide_portal_short", "Two blood supplies enter"),
+            portal_detail: t("stem.anatomy.liver_guide_portal_detail", "Branches of the hepatic portal vein bring nutrient-rich blood from digestive organs, while hepatic artery branches supply oxygen-rich blood. Both enter at portal triads around the lobule edge."),
+            exchange_label: t("stem.anatomy.liver_guide_exchange_label", "2. Sinusoidal exchange"),
+            exchange_short: t("stem.anatomy.liver_guide_exchange_short", "Blood passes hepatocytes"),
+            exchange_detail: t("stem.anatomy.liver_guide_exchange_detail", "The two blood supplies mix in fenestrated sinusoids. Hepatocytes take up nutrients, store glycogen, synthesize plasma proteins, modify drugs and toxins, and release products back toward the blood."),
+            return_label: t("stem.anatomy.liver_guide_return_label", "3. Central venous return"),
+            return_short: t("stem.anatomy.liver_guide_return_short", "Processed blood exits"),
+            return_detail: t("stem.anatomy.liver_guide_return_detail", "Sinusoidal blood moves inward to the central vein, then through hepatic veins into the inferior vena cava and back toward the heart."),
+            bile_label: t("stem.anatomy.liver_guide_bile_label", "4. Bile flows outward"),
+            bile_short: t("stem.anatomy.liver_guide_bile_short", "Canaliculi lead to bile duct"),
+            bile_detail: t("stem.anatomy.liver_guide_bile_detail", "Hepatocytes secrete bile into tiny canaliculi. Bile travels outward, opposite the blood-flow direction, toward bile duct branches in portal triads and then toward the gallbladder or small intestine.")
+          };
+          var liverSteps = ['portal', 'exchange', 'return', 'bile'].map(function(key, index) { return Object.assign({}, regionalAtlas.steps[index], { label: liverCopy[key + '_label'], short: liverCopy[key + '_short'], detail: liverCopy[key + '_detail'] }); });
+          var activeStep = liverSteps[regionalAtlasStep];
+          var liverFocus = [liverCopy.focus_portal, liverCopy.focus_exchange, liverCopy.focus_return, liverCopy.focus_bile];
+          function liverControlContext(state) {
+            return JSON.stringify([scaleGalleryContext(state), state._regionalAtlasOpen || null, state._regionalAtlasStep == null ? null : state._regionalAtlasStep,
+              state._regionalAtlasPlaying !== false, state._regionalAtlasClinical === true, state._anatomyModelFocus === true, state._showStudySheet === true, state._showAnatomyLens === true]);
+          }
+          function updateLiverGuide(patch, announcement, afterUpdate) {
+            if (!regionalAtlasOpen || !sel || sel.id !== 'liver') return;
+            var context = liverControlContext(d), accepted = null;
+            setLabToolData(function(previous) {
+              var state = previous.anatomy || {};
+              if (state.selectedStructure !== 'liver' || state._regionalAtlasOpen !== 'liver' || liverControlContext(state) !== context) return previous;
+              accepted = Object.assign({}, state, typeof patch === 'function' ? patch(state) : patch);
+              anatomyTutorProfiles.set(accepted, tutorProfileOf(state));
+              return Object.assign({}, previous, { anatomy: accepted });
+            });
+            finishStudyUpdate(function() { return accepted; }, function(state) {
+              if (announcement && typeof announceToSR === 'function') announceToSR(announcement);
+              if (afterUpdate) afterUpdate(state);
             });
           }
-          function liverLabel(x, y, value, options) {
-            var labelOptions = options || {};
-            return h('text', {
-              x: x, y: y,
-              textAnchor: labelOptions.anchor || 'middle',
-              fill: labelOptions.color || '#334155',
-              fontSize: labelOptions.size || 10,
-              fontWeight: labelOptions.weight || 800,
-              className: atlasLabelClass(labelOptions, 10)
-            }, value);
+
+
+
+
+          function openLiverVillus() {
+            var destination = ANATOMY_LENS_ITEMS.find(function(item) { return item.structureId === 'sm_intestine'; });
+            var system = destination && SYSTEMS[destination.system];
+            var structure = system && system.structures.find(function(item) { return item.id === 'sm_intestine'; });
+            if (!destination || !structure) return;
+            var origin = document.activeElement;
+            updateLiverGuide(function(state) {
+              var viewed = safeFlagMap(state._anatomyLensViewed, anatomyLensIds); viewed[destination.id] = true;
+              var level = Number(state.complexity); if ([1, 2, 3].indexOf(level) === -1) level = defaultComplexity;
+              return { system: destination.system, view: destination.view, selectedStructure: 'sm_intestine', complexity: Math.max(level, anatomyStructureComplexity(structure)), search: '', _studyFilter: 'all',
+                _bodyView3d: false, _activeTab: 'explore', quizMode: false, _anatomyModelFocus: false, _showStudySheet: false,
+                _regionalAtlasOpen: 'sm_intestine', _regionalAtlasStep: 1, _regionalAtlasPlaying: state._regionalAtlasPlaying !== false, _regionalAtlasClinical: false,
+                _showAnatomyLens: false, _anatomyLensEntry: null, _anatomyLensViewed: viewed };
+            }, liverCopy.handoff_announcement, function(state) { playSound('structureClick'); focusAnatomyLensDestination(state, '#anatomy-regional-atlas', 'sm_intestine', origin); });
           }
+
+
+
+          function selectLiverStep(index) {
+            if (!Number.isInteger(index) || index < 0 || index >= liverSteps.length || index === regionalAtlasStep) return;
+            updateLiverGuide({ _regionalAtlasStep: index });
+          }
+
+
+
+
           var lobuleTriads = [
             { x: 430, y: 98 }, { x: 552, y: 112 }, { x: 585, y: 218 },
             { x: 523, y: 292 }, { x: 409, y: 266 }, { x: 388, y: 157 }
           ];
+
+          function liverRoute(stepIndex, pathData, color, markerId) { return h('path', { d: pathData, 'data-anatomy-liver-route': stepIndex, className: 'anatomy-atlas-route' + (regionalAtlasStep === stepIndex ? ' is-active' : ''), stroke: color, markerEnd: 'url(#' + markerId + ')', style: { strokeWidth: 3 }, 'aria-hidden': 'true' }); }
+          function liverDefs(zoom) { return h('defs', null, [{ id: 'anatomy-arrow-portal', color: '#7c3aed' }, { id: 'anatomy-arrow-sinusoid', color: '#dc2626' }, { id: 'anatomy-arrow-central', color: '#2563eb' }, { id: 'anatomy-arrow-bile', color: '#059669' }, { id: 'anatomy-arrow-zoom', color: '#64748b' }].filter(function(marker, index) { return zoom ? index === 4 : index < 4; }).map(function(marker) { return h('marker', { key: marker.id, id: marker.id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerUnits: 'userSpaceOnUse', markerWidth: 9, markerHeight: 9, orient: 'auto-start-reverse' }, h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color })); })); }
+          function liverMarker(number, x, y, targetX, targetY, current) { return h('g', { key: 'marker-' + number, className: 'anatomy-liver-marker', 'data-anatomy-liver-marker': number, 'data-current': current ? 'true' : 'false', 'aria-hidden': 'true' }, h('line', { x1: x, y1: y, x2: targetX, y2: targetY }), h('circle', { cx: x, cy: y, r: 12 }), h('text', { x: x, y: y, textAnchor: 'middle', dominantBaseline: 'central', fontSize: 22, fontWeight: 900 }, String(number))); }
+          function liverFigure(scale, title, description, viewBox, drawing, keys) { var name = 'anatomy-liver-' + scale; return h('figure', { key: scale, className: 'anatomy-liver-figure', 'data-anatomy-liver-scale': scale, 'aria-labelledby': name + '-heading' }, h('h6', { id: name + '-heading' }, title), h('div', { className: 'anatomy-liver-picture' }, h('svg', { viewBox: viewBox, role: 'img', 'aria-labelledby': name + '-title ' + name + '-description', preserveAspectRatio: 'xMidYMid meet' }, h('title', { id: name + '-title' }, liverCopy[scale + '_svg_title']), h('desc', { id: name + '-description' }, description), scale === 'lobule' && liverDefs(false), drawing)), h('figcaption', null, h('ol', { className: 'anatomy-liver-structure-key', 'aria-label': liverCopy.structure_key }, keys.map(function(item, index) { return h('li', { key: index, 'data-current': item.current ? 'true' : 'false' }, h('span', { className: 'anatomy-liver-key-number', 'aria-hidden': 'true' }, String(index + 1)), h('span', null, item.label), item.current && h('span', { className: 'anatomy-liver-current' }, liverCopy.current_step)); })))); }
+          function liverZoom(index) { return h('svg', { key: 'zoom-' + index, className: 'anatomy-liver-zoom', 'aria-hidden': 'true', focusable: 'false', viewBox: index === 0 ? '118 106 70 40' : '323 105 63 40' }, index === 0 && liverDefs(true), h('path', { d: index === 0 ? 'M122 138 C148 138 160 132 176 117' : 'M327 137 C347 137 357 128 371 116', fill: 'none', stroke: '#64748b', strokeWidth: 2, strokeDasharray: '5 4', markerEnd: 'url(#anatomy-arrow-zoom)' })); }
           return h('section', {
-            id: 'anatomy-regional-atlas',
-            className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
-            'aria-label': regionalAtlas.title,
-            'data-anatomy-atlas': 'liver',
-            'data-anatomy-scale-bridge': 'liver',
-            'data-anatomy-atlas-step': activeStep.id,
-            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES['liver'].id : undefined
+            id: 'anatomy-regional-atlas', tabIndex: -1, className: 'anatomy-atlas anatomy-liver-guide' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
+            'aria-label': liverCopy.title, 'data-anatomy-atlas': 'liver', 'data-anatomy-scale-bridge': 'liver', 'data-anatomy-atlas-step': activeStep.id,
+            'data-anatomy-clinical': regionalAtlasClinical ? ATLAS_CLINICAL_LENSES.liver.id : undefined
           },
             h('div', { className: 'anatomy-atlas-header' },
-              h('div', null,
-                h('h5', null, 'Liver lobule Scale Bridge'),
-                h('p', null, regionalAtlas.subtitle)
-              ),
-              h('button', {
-                type: 'button',
-                'aria-label': regionalAtlasPlaying ? 'Pause liver-flow animation' : 'Play liver-flow animation',
-                'aria-pressed': regionalAtlasPlaying,
-                onClick: function() { upd('_regionalAtlasPlaying', !regionalAtlasPlaying); },
-                className: 'px-2.5 py-1.5 rounded-lg text-[0.6875rem] font-bold border border-orange-300 bg-white text-orange-800 hover:bg-orange-50 active:scale-[0.97]'
-              }, regionalAtlasPlaying ? 'Pause flow' : 'Play flow'),
-              renderAtlasClinicalToggle('liver')
+              h('div', { className: 'anatomy-liver-intro' }, h('h5', null, liverCopy.title), h('p', null, liverCopy.help)),
+              h('div', { className: 'anatomy-liver-flow-controls' },
+                h('button', { type: 'button', 'data-anatomy-liver-flow': true, onClick: function() { updateLiverGuide({ _regionalAtlasPlaying: !regionalAtlasPlaying }, regionalAtlasPlaying ? liverCopy.flow_paused : liverCopy.flow_playing); } }, regionalAtlasPlaying ? liverCopy.pause_flow : liverCopy.play_flow),
+                h('span', { className: 'anatomy-liver-playback' }, regionalAtlasPlaying ? liverCopy.flow_playing : liverCopy.flow_paused),
+                h('button', { type: 'button', 'data-anatomy-clinical-toggle': 'liver', 'aria-pressed': regionalAtlasClinical, onClick: function() { updateLiverGuide({ _regionalAtlasClinical: !regionalAtlasClinical }, regionalAtlasClinical ? liverCopy.clinical_hidden : liverCopy.clinical_shown); } }, regionalAtlasClinical ? liverCopy.hide_clinical : liverCopy.show_clinical)
+              )
             ),
-            h('div', { className: 'anatomy-scale-path', 'aria-label': __alloT('stem.anatomy.a11y_scale_progression_body_location_to_liver_organ', 'Scale progression: body location to liver organ to hepatic lobule') },
-              h('span', null, 'Body location'),
-              h('span', { className: 'anatomy-scale-arrow', 'aria-hidden': 'true' }, '→'),
-              h('span', null, 'Liver organ'),
-              h('span', { className: 'anatomy-scale-arrow', 'aria-hidden': 'true' }, '→'),
-              h('span', null, 'Hepatic lobule')
+            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': liverCopy.steps_label }, liverSteps.map(function(step, index) {
+              return h('button', { key: step.id, type: 'button', 'data-anatomy-liver-step': step.id, 'aria-pressed': regionalAtlasStep === index, 'aria-controls': 'anatomy-liver-step-detail', onClick: function() { selectLiverStep(index); } }, h('strong', null, step.label), h('span', null, step.short));
+            })),
+            h('div', { className: 'anatomy-liver-step-navigation' },
+              h('button', { type: 'button', 'data-anatomy-liver-previous': true, disabled: regionalAtlasStep === 0, 'aria-controls': 'anatomy-liver-step-detail', onClick: function() { selectLiverStep(regionalAtlasStep - 1); } }, liverCopy.previous),
+              h('button', { type: 'button', 'data-anatomy-liver-next': true, disabled: regionalAtlasStep === liverSteps.length - 1, 'aria-controls': 'anatomy-liver-step-detail', onClick: function() { selectLiverStep(regionalAtlasStep + 1); } }, liverCopy.next)
             ),
-            h('div', { className: 'anatomy-atlas-stage' },
-              h('svg', {
-                viewBox: '0 0 640 360',
-                role: 'img',
-                'aria-labelledby': 'anatomy-liver-atlas-title anatomy-liver-atlas-desc',
-                preserveAspectRatio: 'xMidYMid meet'
-              },
-                h('title', { id: 'anatomy-liver-atlas-title' }, 'Body-to-liver-to-lobule Scale Bridge diagram'),
-                h('desc', { id: 'anatomy-liver-atlas-desc' }, 'A three-scale diagram locates the liver in the right upper abdomen, enlarges the organ, and reveals a hepatic lobule. Four selectable steps trace portal vein and hepatic artery entry, sinusoidal exchange with hepatocytes, central venous return, and bile flow in the opposite direction.'),
-                h('defs', null,
-                  [
-                    { id: 'anatomy-arrow-portal', color: '#7c3aed' },
-                    { id: 'anatomy-arrow-sinusoid', color: '#dc2626' },
-                    { id: 'anatomy-arrow-central', color: '#2563eb' },
-                    { id: 'anatomy-arrow-bile', color: '#059669' },
-                    { id: 'anatomy-arrow-zoom', color: '#64748b' }
-                  ].map(function(marker) {
-                    return h('marker', { key: marker.id, id: marker.id, viewBox: '0 0 10 10', refX: 8, refY: 5, markerWidth: 6, markerHeight: 6, orient: 'auto-start-reverse' },
-                      h('path', { d: 'M 0 0 L 10 5 L 0 10 z', fill: marker.color })
-                    );
-                  })
-                ),
-                h('rect', { x: 12, y: 12, width: 616, height: 336, rx: 22, fill: '#f8fafc' }),
-                liverLabel(78, 38, 'BODY LOCATION', { color: '#475569', size: 10 }),
-                liverLabel(238, 38, 'ORGAN', { color: '#475569', size: 10 }),
-                liverLabel(494, 38, 'MICROANATOMY', { color: '#475569', size: 10 }),
+            h('div', { id: 'anatomy-liver-step-detail', className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
+              h('span', { className: 'anatomy-atlas-step-position' }, formatAnatomyStudyText(liverCopy.step_position, { current: regionalAtlasStep + 1, total: liverSteps.length })), h('strong', null, activeStep.label), h('p', null, activeStep.detail),
+              h('div', { className: 'anatomy-liver-step-focus', 'data-anatomy-step-focus': 'liver' }, h('strong', null, liverCopy.focus_heading), h('span', null, liverFocus[regionalAtlasStep]))
+            ),
+            h('p', { className: 'anatomy-liver-marker-help' }, liverCopy.marker_help),
+
+
+
+
+            h('ol', { className: 'anatomy-liver-scale-path', 'aria-label': liverCopy.scale_label }, [liverCopy.scale_body, liverCopy.scale_organ, liverCopy.scale_lobule].map(function(label, index) { return h('li', { key: index }, h('span', { className: 'anatomy-liver-key-number', 'aria-hidden': 'true' }, String(index + 1)), h('span', null, label), index < 2 && liverZoom(index)); })),
+            h('div', { className: 'anatomy-liver-context' },
+              liverFigure('body', liverCopy.body_title, liverCopy.body_svg_description, '22 18 133 288', [h(React.Fragment, { key: 'body-drawing' },
                 h('path', { d: 'M55 58 C35 76 33 116 39 153 L49 292 L106 292 L116 153 C122 116 119 76 99 58 C87 48 67 48 55 58 Z', fill: '#e2e8f0', stroke: '#94a3b8', strokeWidth: 2 }),
                 h('circle', { cx: 77, cy: 48, r: 20, fill: '#e2e8f0', stroke: '#94a3b8', strokeWidth: 2 }),
                 h('path', { d: 'M51 119 C67 105 98 106 109 124 C105 145 86 156 61 149 C48 145 44 132 51 119 Z', fill: '#fb923c', stroke: '#c2410c', strokeWidth: 3 }),
-                liverLabel(77, 316, 'right upper abdomen', { color: '#9a3412', size: 9 }),
-                h('path', { d: 'M122 138 C148 138 160 132 176 117', fill: 'none', stroke: '#64748b', strokeWidth: 2, strokeDasharray: '5 4', markerEnd: 'url(#anatomy-arrow-zoom)' }),
+
+              ), liverMarker(1, 133, 132, 96, 132, false)], [{ label: liverCopy.key_location, current: false }]),
+              liverFigure('organ', liverCopy.organ_title, liverCopy.organ_svg_description, '150 55 194 243', [h(React.Fragment, { key: 'organ-drawing' },
                 h('path', { d: 'M178 106 C205 66 280 66 317 98 C332 111 330 142 308 156 C287 170 258 167 238 180 C213 196 176 180 169 151 C165 134 168 119 178 106 Z', fill: '#fdba74', stroke: '#c2410c', strokeWidth: 4 }),
                 h('path', { d: 'M239 90 C239 111 241 138 244 166', fill: 'none', stroke: '#9a3412', strokeWidth: 2 }),
                 h('path', { d: 'M207 173 C207 201 192 223 176 240', fill: 'none', stroke: '#7c3aed', strokeWidth: 7, strokeLinecap: 'round' }),
                 h('path', { d: 'M227 175 C227 208 218 229 207 248', fill: 'none', stroke: '#dc2626', strokeWidth: 5, strokeLinecap: 'round' }),
                 h('path', { d: 'M287 164 C287 202 299 222 315 238', fill: 'none', stroke: '#2563eb', strokeWidth: 7, strokeLinecap: 'round' }),
-                liverLabel(238, 211, 'LIVER', { color: '#9a3412', size: 13 }),
-                liverLabel(181, 260, 'portal vein', { color: '#5b21b6', size: 9 }),
-                liverLabel(220, 275, 'hepatic artery', { color: '#991b1b', size: 9 }),
-                liverLabel(313, 258, 'hepatic vein', { color: '#1d4ed8', size: 9 }),
-                h('path', { d: 'M327 137 C347 137 357 128 371 116', fill: 'none', stroke: '#64748b', strokeWidth: 2, strokeDasharray: '5 4', markerEnd: 'url(#anatomy-arrow-zoom)' }),
+
+              ), liverMarker(1, 167, 274, 179, 232, regionalAtlasStep === 0), liverMarker(2, 225, 274, 212, 236, regionalAtlasStep === 0), liverMarker(3, 323, 274, 308, 228, regionalAtlasStep === 2)], [{ label: liverCopy.key_portal, current: regionalAtlasStep === 0 }, { label: liverCopy.key_artery, current: regionalAtlasStep === 0 }, { label: liverCopy.key_hepatic_vein, current: regionalAtlasStep === 2 }])
+            ),
+            liverFigure('lobule', liverCopy.lobule_title, liverCopy.lobule_svg_description, '338 32 310 326', [h(React.Fragment, { key: 'lobule-drawing' },
                 h('path', { d: 'M430 79 L552 92 L609 180 L558 294 L426 303 L371 210 Z', fill: '#ffedd5', stroke: '#ea580c', strokeWidth: 4 }),
                 lobuleTriads.map(function(triad, triadIndex) {
                   return h('g', { key: 'triad-' + triadIndex, className: 'anatomy-diagram-emphasis ' + ((regionalAtlasStep === 0 || regionalAtlasStep === 3) ? 'is-active' : 'is-muted') },
@@ -12889,68 +13509,37 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   return h('circle', { key: 'hepatocyte-' + cellIndex, className: 'anatomy-diagram-emphasis ' + ((regionalAtlasStep === 1 || regionalAtlasStep === 3) ? 'is-active' : 'is-muted'), cx: cell.x, cy: cell.y, r: 11, fill: '#fde68a', stroke: '#d97706', strokeWidth: 2 });
                 }),
                 h('circle', { className: 'anatomy-diagram-emphasis ' + (regionalAtlasStep === 2 ? 'is-active' : 'is-muted'), cx: 493, cy: 191, r: 24, fill: '#bfdbfe', stroke: '#2563eb', strokeWidth: 4 }),
-                liverLabel(493, 195, 'central vein', { color: '#1e3a8a', size: 9, className: 'anatomy-diagram-emphasis ' + (regionalAtlasStep === 2 ? 'is-active' : 'is-muted') }),
                 h('g', atlasMechanismProps(0, 'dual-blood-supply'),
                   [{ x: 407, y: 151, fill: '#7c3aed' }, { x: 420, y: 145, fill: '#dc2626' }, { x: 438, y: 160, fill: '#7c3aed' }, { x: 450, y: 169, fill: '#dc2626' }].map(function(particle, index) { return h('circle', { key: 'dual-supply-' + index, cx: particle.x, cy: particle.y, r: 4, fill: particle.fill }); }),
-                  liverLabel(454, 70, 'portal blood + arterial blood mix', { color: '#5b21b6', size: 8 })
                 ),
                 h('g', atlasMechanismProps(1, 'sinusoidal-hepatocyte-exchange'),
                   h('path', { d: 'M445 178 L459 167 M526 177 L541 164 M462 222 L476 211 M516 226 L529 214', fill: 'none', stroke: '#d97706', strokeWidth: 3, strokeDasharray: '3 3' }),
                   [{ x: 456, y: 164 }, { x: 539, y: 161 }, { x: 474, y: 208 }, { x: 527, y: 211 }].map(function(particle, index) { return h('rect', { key: 'metabolite-' + index, x: particle.x - 3, y: particle.y - 3, width: 6, height: 6, rx: 2, fill: '#f59e0b' }); }),
-                  liverLabel(493, 281, 'nutrients · proteins · detox products exchange', { color: '#92400e', size: 8 })
                 ),
                 h('g', atlasMechanismProps(2, 'central-venous-drainage'),
                   h('circle', { cx: 493, cy: 191, r: 33, fill: 'none', stroke: '#2563eb', strokeWidth: 3, strokeDasharray: '6 4' }),
                   h('path', { d: 'M493 166 L493 95', fill: 'none', stroke: '#2563eb', strokeWidth: 5, markerEnd: 'url(#anatomy-arrow-central)' }),
-                  liverLabel(544, 78, 'processed blood drains to hepatic veins', { color: '#1d4ed8', size: 8 })
                 ),
                 h('g', atlasMechanismProps(3, 'bile-counterflow'),
                   h('path', { d: 'M493 208 L462 235 L430 264 M493 208 L526 236 L558 267', fill: 'none', stroke: '#059669', strokeWidth: 3, strokeDasharray: '4 3' }),
                   h('path', { d: 'M483 201 L453 187 M503 201 L533 187', fill: 'none', stroke: '#10b981', strokeWidth: 2 }),
-                  liverLabel(493, 304, 'bile moves outward · opposite blood flow', { color: '#047857', size: 8 })
                 ),
-                renderAtlasClinicalSvg('liver'),
-                liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 174', '#7c3aed', 'anatomy-arrow-portal'),
+
+liverRoute(0, 'M389 154 C420 155 449 170 469 183 M430 99 C447 124 467 155 480 174', '#7c3aed', 'anatomy-arrow-portal'),
                 liverRoute(1, 'M407 213 C433 212 458 202 472 195 M559 112 C548 145 526 174 511 184 M556 286 C540 250 519 217 509 203', '#dc2626', 'anatomy-arrow-sinusoid'),
                 liverRoute(2, 'M493 190 C493 149 493 100 493 57', '#2563eb', 'anatomy-arrow-central'),
                 liverRoute(3, 'M482 213 C463 231 443 250 418 268 M511 213 C532 232 552 250 570 267', '#059669', 'anatomy-arrow-bile'),
-                liverLabel(493, 326, 'HEPATIC LOBULE', { color: '#9a3412', size: 11 }),
-                h('circle', { cx: 364, cy: 326, r: 5, fill: '#7c3aed' }),
-                liverLabel(374, 330, 'portal vein', { anchor: 'start', color: '#334155', size: 9, weight: 700 }),
-                h('circle', { cx: 438, cy: 326, r: 5, fill: '#dc2626' }),
-                liverLabel(448, 330, 'artery', { anchor: 'start', color: '#334155', size: 9, weight: 700 }),
-                h('rect', { x: 493, y: 321, width: 10, height: 8, rx: 3, fill: '#bbf7d0', stroke: '#059669', strokeWidth: 1 }),
-                liverLabel(509, 330, 'bile duct', { anchor: 'start', color: '#334155', size: 9, weight: 700 })
-              )
-            ),
-            renderAtlasVisualKey('liver'),
-            renderAtlasStepFocus('liver'),
-            renderAtlasClinicalPanel('liver'),
-            h('div', { className: 'anatomy-atlas-steps', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_liver_lobule_processing_steps', 'Liver lobule processing steps') },
-              regionalAtlas.steps.map(function(stepItem, stepIndex) {
-                return h('button', {
-                  key: stepItem.id,
-                  type: 'button',
-                  'aria-pressed': regionalAtlasStep === stepIndex,
-                  onClick: function() {
-                    updMulti({ _regionalAtlasStep: stepIndex, _regionalAtlasPlaying: true });
-                    if (typeof announceToSR === 'function') announceToSR(stepItem.label + '. ' + stepItem.detail);
-                  }
-                },
-                  h('span', { className: 'block' }, stepItem.label),
-                  h('span', { className: 'block mt-1 font-normal' }, stepItem.short)
-                );
-              })
-            ),
-            h('div', { className: 'anatomy-atlas-step-detail', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true' },
-              h('span', { className: 'anatomy-atlas-step-position' }, 'Step ' + (regionalAtlasStep + 1) + ' of ' + regionalAtlas.steps.length),
-              h('strong', null, activeStep.label),
-              h('span', null, activeStep.detail)
-            ),
-            renderAtlasPathwayHandoff('liver')
-
+                regionalAtlasClinical && h('g', { className: 'anatomy-clinical-overlay', 'data-anatomy-clinical-overlay': 'hepatic_fibrosis', 'aria-hidden': 'true' }, ['M402 126 C450 158 521 163 576 139', 'M391 204 C447 182 518 205 590 238', 'M431 285 C458 240 531 226 561 279'].map(function(pathData, index) { return h('path', { key: 'fibrotic-band-' + index, d: pathData, fill: 'none', stroke: '#7c3aed', strokeWidth: 8, strokeLinecap: 'round', opacity: .62 }); }))
+              ), liverMarker(1, 380, 63, 428, 101, regionalAtlasStep === 0 || regionalAtlasStep === 3), liverMarker(2, 625, 131, 548, 155, regionalAtlasStep === 1 || regionalAtlasStep === 3), liverMarker(3, 625, 216, 510, 192, regionalAtlasStep === 2), liverMarker(4, 361, 232, 449, 202, regionalAtlasStep === 1), liverMarker(5, 541, 327, 526, 236, regionalAtlasStep === 3), liverMarker(6, 388, 327, 417, 273, regionalAtlasStep === 3)
+            ], [{ label: liverCopy.key_triad, current: regionalAtlasStep === 0 || regionalAtlasStep === 3 }, { label: liverCopy.key_hepatocytes, current: regionalAtlasStep === 1 || regionalAtlasStep === 3 }, { label: liverCopy.key_central, current: regionalAtlasStep === 2 }, { label: liverCopy.key_sinusoids, current: regionalAtlasStep === 1 }, { label: liverCopy.key_canaliculi, current: regionalAtlasStep === 3 }, { label: liverCopy.key_bile_duct, current: regionalAtlasStep === 3 }]),
+            h('div', { className: 'anatomy-liver-triad-key' }, h('h6', null, liverCopy.triad_heading), h('div', { className: 'anatomy-liver-triad-items', role: 'list', 'aria-label': liverCopy.triad_heading, 'data-anatomy-liver-triad-key': true }, [{ symbol: 'P', label: liverCopy.triad_portal, color: '#7c3aed' }, { symbol: 'A', label: liverCopy.triad_artery, color: '#dc2626' }, { symbol: 'D', label: liverCopy.triad_bile, color: '#047857' }].map(function(item) { return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-liver-flow-symbol', style: { backgroundColor: item.color }, 'aria-hidden': 'true' }, item.symbol), h('span', null, item.label)); }))),
+            h('div', { className: 'anatomy-liver-mechanism-note', role: 'note', 'data-anatomy-liver-mechanism-caption': true }, h('strong', null, liverCopy.mechanism_heading), h('p', null, [liverCopy.mechanism_portal, liverCopy.mechanism_exchange, liverCopy.mechanism_return, liverCopy.mechanism_bile][regionalAtlasStep])),
+            h('div', { className: 'anatomy-liver-flow-key', role: 'list', 'aria-label': liverCopy.flow_key, 'data-anatomy-visual-key': 'liver' }, [{ symbol: 'P', label: liverCopy.portal, color: '#7c3aed' }, { symbol: 'S', label: liverCopy.exchange, color: '#dc2626' }, { symbol: 'V', label: liverCopy.venous, color: '#2563eb' }, { symbol: 'B', label: liverCopy.bile, color: '#047857' }].map(function(item) { return h('span', { key: item.symbol, role: 'listitem' }, h('span', { className: 'anatomy-liver-flow-symbol', style: { backgroundColor: item.color }, 'aria-hidden': 'true' }, item.symbol), h('span', null, item.label)); })),
+            regionalAtlasClinical && h('div', { className: 'anatomy-clinical-panel', 'data-anatomy-clinical-panel': 'hepatic_fibrosis', role: 'note' }, h('div', null, h('strong', null, liverCopy.clinical_title), h('p', null, liverCopy.clinical_change)), h('div', null, h('strong', null, liverCopy.clinical_effect_heading), h('p', null, liverCopy.clinical_effect), h('p', { className: 'anatomy-clinical-note' }, liverCopy.clinical_note))),
+            h('div', { className: 'anatomy-scale-continuation', 'data-anatomy-pathway-from': 'liver', 'data-scale-continuation': 'sm_intestine', 'aria-label': __alloFill(__alloT('stem.anatomy.a11y_connected_pathway', 'Connected pathway: {value1}'), { value1: liverCopy.handoff_label }) }, h('p', null, h('strong', null, liverCopy.handoff_lead), liverCopy.handoff_context), h('button', { type: 'button', 'data-anatomy-liver-handoff': true, onClick: openLiverVillus }, liverCopy.handoff_button))
           );
         }
+
         function renderIntestinalVillusAtlas() {
           if (!regionalAtlas) return null;
           var activeStep = regionalAtlas.steps[regionalAtlasStep];
@@ -12977,6 +13566,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           var epithelialCells = [414, 432, 450, 468, 486, 504, 522, 540, 558];
           return h('section', {
             id: 'anatomy-regional-atlas',
+            tabIndex: -1,
             className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
             'aria-label': regionalAtlas.title,
             'data-anatomy-atlas': 'sm_intestine',
@@ -13157,6 +13747,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           }
           return h('section', {
             id: 'anatomy-regional-atlas',
+            tabIndex: -1,
             className: 'anatomy-atlas' + (regionalAtlasPlaying ? '' : ' is-paused') + (regionalAtlasClinical ? ' is-clinical' : ''),
             'aria-label': regionalAtlas.title,
             'data-anatomy-atlas': 'epidermis',
@@ -13783,6 +14374,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           if (typeof setStemLabTool === 'function') setStemLabTool(toolId);
           if (typeof announceToSR === 'function') announceToSR(__alloFill(__alloT('stem.anatomy.sr_scale_journey_opening', 'Scale Journey: opening {value1}'), { value1: label }));
         }
+        function scaleGalleryContext(state) {
+          return JSON.stringify(['system','view','complexity','selectedStructure','_activeTab','quizMode','_bodyView3d'].map(function(key) { return state[key] == null ? null : state[key]; }));
+        }
+        function openScaleJourneyGallery(entry) {
+          var context = scaleGalleryContext(d), accepted = false, origin = document.activeElement;
+          setLabToolData(function(previous) {
+            var state = previous.anatomy || {};
+            if (scaleGalleryContext(state) !== context) return previous;
+            accepted = true;
+            return Object.assign({}, previous, { anatomy: Object.assign({}, state, { _showAnatomyLens: true, _anatomyLensEntry: entry === 'toolbar' ? 'toolbar' : 'scale' }) });
+          });
+          finishStudyUpdate(function() { return accepted; }, function() {
+            if (typeof announceToSR === 'function') announceToSR(__alloT('stem.anatomy.sr_opening_the_anatomy_lens_gallery_for_tissue_and_p', 'Opening the Anatomy Lens gallery for tissue and process diagrams.'));
+            setTimeout(function() {
+              var target = document.getElementById('anatomy-lens-title');
+              if (!target || !target.isConnected || target.getAttribute('data-anatomy-scale-context') !== context || !target.getClientRects().length) return;
+              var active = document.activeElement;
+              if (origin && active !== origin && !(active === document.body && !origin.isConnected)) return;
+              target.focus({ preventScroll: true });
+              if (target.scrollIntoView) target.scrollIntoView({ block: 'start', behavior: 'auto' });
+            }, 0);
+          });
+        }
         function openScaleJourneyDetail() {
           if (clinicalScaleJourneyActive && selectedClinicalScaleBridge.tissueTarget === 'regionalAtlas') {
             openAnatomyScaleBridge(selectedClinicalScaleBridge.tissueStructureId, selectedClinicalScaleBridge.tissueStep,
@@ -13797,8 +14411,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           }
           if (scaleJourneyBrainContext) { openBrainAtlasFromLens(); return; }
           if (scaleJourneyLensItem) { openAnatomyLensItem(scaleJourneyLensItem); return; }
-          upd('_showAnatomyLens', true);
-          if (typeof announceToSR === 'function') announceToSR(__alloT('stem.anatomy.sr_opening_the_anatomy_lens_gallery_for_tissue_and_p', 'Opening the Anatomy Lens gallery for tissue and process diagrams.'));
+          openScaleJourneyGallery();
         }
         function openScaleJourneyCell() {
           if (clinicalScaleJourneyActive && selectedClinicalScaleBridge.cellTarget === 'microdissection') {
@@ -15159,6 +15772,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           },
           'data-anatomy-active-mode': bodyView3d ? body3dStyle : '2d',
           'data-anatomy-tab': activeTab,
+          'data-anatomy-lens-context': scaleGalleryContext(d),
+          'data-anatomy-spotter-navigation':spotterNavigationSnapshot,
           'data-anatomy-explorer-controls': d._explorerControlsExpanded === true ? 'true' : 'false',
           'data-anatomy-study-compact': anatomyCompactMode ? 'true' : 'false',
           'data-anatomy-study-controls-expanded': studyControlsExpanded ? 'true' : 'false',
@@ -15331,41 +15946,46 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           },
             h('div', { className: 'anatomy-lens-header' },
               h('div', null,
-                h('span', { className: 'anatomy-kicker' }, 'Focused structure and process diagrams'),
-                h('h3', { id: 'anatomy-lens-title' }, 'Anatomy Lens'),
-                h('p', null, 'Open a guided cutaway without leaving the body-systems workflow. Neuroanatomy stays in its dedicated specialist atlas.')
+                h('span', { className: 'anatomy-kicker' }, t('stem.anatomy.lens_kicker', 'Guided anatomy')),
+                h('h3', { id: 'anatomy-lens-title', tabIndex: -1, 'data-anatomy-scale-context': scaleGalleryContext(d) }, t('stem.anatomy.lens_title', 'Anatomy Lens')),
+                h('p', null, t('stem.anatomy.lens_help', 'Choose a diagram to explore its structures and processes.'))
               ),
-              h('span', { className: 'anatomy-lens-progress', role: 'status' }, anatomyLensViewedCount + '/' + ANATOMY_LENS_ITEMS.length + ' explored')
+              h('button', { type: 'button', className: 'anatomy-lens-close', 'data-anatomy-lens-close': true, onClick: closeAnatomyLensGallery }, t('stem.anatomy.lens_close', 'Close gallery'))
+            ),
+            h('div', { className: 'anatomy-lens-progress-block' },
+              h('p', { className: 'anatomy-lens-progress', role: 'status', 'aria-live': 'polite' }, formatAnatomyStudyText(t('stem.anatomy.lens_progress', '{opened} of {total} diagrams opened'), { opened: anatomyLensViewedCount, total: ANATOMY_LENS_ITEMS.length })),
+              h('progress', { value: anatomyLensViewedCount, max: ANATOMY_LENS_ITEMS.length, 'aria-label': formatAnatomyStudyText(t('stem.anatomy.lens_progress', '{opened} of {total} diagrams opened'), { opened: anatomyLensViewedCount, total: ANATOMY_LENS_ITEMS.length }) }, anatomyLensViewedCount + ' / ' + ANATOMY_LENS_ITEMS.length),
+              h('p', { className: 'anatomy-lens-progress-help' }, t('stem.anatomy.lens_progress_help', 'Opening a diagram adds it to this count.'))
             ),
             h('div', { className: 'anatomy-lens-grid' },
               ANATOMY_LENS_ITEMS.map(function(item) {
-                var viewedLensItem = !!anatomyLensViewed[item.id];
+                var viewedLensItem = !!anatomyLensViewed[item.id], copy = anatomyLensCopy(item);
                 return h('button', {
-                  key: item.id,
-                  type: 'button', 'data-anatomy-lens-id': item.id, 'data-viewed': viewedLensItem ? 'true' : 'false',
-                  'aria-label': 'Open ' + item.title + ' deep dive' + (viewedLensItem ? ', explored' : ''),
-                  style: { '--lens-accent': item.accent },
-                  onClick: function() { openAnatomyLensItem(item); },
-                  className: 'anatomy-lens-card'
+                  key: item.id, type: 'button', 'data-anatomy-lens-id': item.id, 'data-viewed': viewedLensItem ? 'true' : 'false',
+                  style: { '--lens-accent': item.accent }, onClick: function() { openAnatomyLensGalleryItem(item); }, className: 'anatomy-lens-card'
                 },
-                  h('span', { className: 'anatomy-lens-kicker' }, item.kicker + (viewedLensItem ? ' - explored' : '')),
-                  h('strong', null, item.title),
-                  h('span', { className: 'anatomy-lens-desc' }, item.desc),
-                  h('span', { className: 'anatomy-lens-action' }, 'Open deep dive →')
+                  h('span', { className: 'anatomy-lens-card-top' },
+                    h('span', { className: 'anatomy-lens-kicker' }, h('bdi', null, copy.category)),
+                    viewedLensItem && h('span', { className: 'anatomy-lens-opened' }, h('span', { 'aria-hidden': 'true' }, '✓ '), t('stem.anatomy.lens_viewed', 'Opened'))
+                  ),
+                  h('strong', null, h('bdi', null, copy.title)),
+                  h('span', { className: 'anatomy-lens-desc', dir: 'auto' }, copy.description),
+                  h('span', { className: 'anatomy-lens-action' }, t('stem.anatomy.lens_open', 'Open guided view'), h('span', { className: 'anatomy-lens-arrow', 'aria-hidden': 'true' }, '→'))
                 );
-              }),
+              })
+            ),
+            h('aside', { className: 'anatomy-lens-specialist', 'aria-labelledby': 'anatomy-lens-specialist-title' },
+              h('h4', { id: 'anatomy-lens-specialist-title' }, t('stem.anatomy.lens_specialist_heading', 'Explore the brain')),
               h('button', {
-                type: 'button', 'data-anatomy-lens-specialist': 'brainAtlas', 'aria-label': __alloT('stem.anatomy.a11y_open_the_dedicated_brain_atlas_explorer', 'Open the dedicated Brain Atlas Explorer'),
-                style: { '--lens-accent': '#6d28d9' }, onClick: openBrainAtlasFromLens, className: 'anatomy-lens-card'
+                type: 'button', 'data-anatomy-lens-specialist': 'brainAtlas', style: { '--lens-accent': '#6d28d9' }, onClick: openBrainAtlasFromLens, className: 'anatomy-lens-card'
               },
-                h('span', { className: 'anatomy-lens-kicker' }, 'Specialist tool'),
-                h('strong', null, 'Brain Atlas Explorer'),
-                h('span', { className: 'anatomy-lens-desc' }, 'Continue into the dedicated neuroanatomy experience instead of duplicating it here.'),
-                h('span', { className: 'anatomy-lens-action' }, 'Open specialist atlas →')
+                h('span', { className: 'anatomy-lens-kicker' }, t('stem.anatomy.lens_specialist_tag', 'Another STEM tool')),
+                h('strong', null, t('stem.anatomy.lens_specialist_title', 'Brain Atlas Explorer')),
+                h('span', { className: 'anatomy-lens-desc' }, t('stem.anatomy.lens_specialist_help', 'Open the Brain Atlas for dedicated neuroanatomy diagrams.')),
+                h('span', { className: 'anatomy-lens-action' }, t('stem.anatomy.lens_specialist_open', 'Open Brain Atlas'), h('span', { className: 'anatomy-lens-arrow', 'aria-hidden': 'true' }, '→'))
               )
             )
           ) : null,
-
 
           // Challenges Progress Card
           showLegacyChallengeCard && h('div', {
@@ -15436,8 +16056,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               if (focusedAnatomyWorkspace) return null;
               return h('div', { className: 'anatomy-mode-actions', role: 'group', 'aria-label': t('stem.anatomy.go_deeper', 'Go deeper'), 'data-anatomy-deeper-row': 'true' },
                 h('button', {
-                  key: 'lens', type: 'button', 'aria-expanded': showAnatomyLens, 'aria-controls': 'anatomy-lens-panel',
-                  onClick: function() { upd('_showAnatomyLens', !showAnatomyLens); },
+                  key: 'lens', type: 'button', 'data-anatomy-lens-toggle': true, 'aria-expanded': showAnatomyLens, 'aria-controls': 'anatomy-lens-panel',
+                  onClick: function() { if (showAnatomyLens) closeAnatomyLensGallery(); else openScaleJourneyGallery('toolbar'); },
                   className: 'px-3 py-1.5 text-xs font-bold border transition-all ' + (showAnatomyLens ? 'bg-indigo-700 text-white border-indigo-700' : 'bg-white text-indigo-700 border-indigo-300 hover:bg-indigo-50 active:scale-[0.97]')
                 }, t('stem.anatomy.anatomy_lens', '\uD83D\uDD2C Anatomy Lens')),
                 h('button', {
@@ -15462,7 +16082,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               tour:        { accent: '#047857', soft: 'rgba(4,120,87,0.10)',  icon: '\uD83E\uDDED', title: t('stem.anatomy.guided_tour', 'Guided tour'),                 hint: t('stem.anatomy.step_through_each_major_part_in_pedago', 'Step through each major part in pedagogical order. Best path for first-time learners \u2014 covers structure \u2192 function \u2192 integration in one pass.') },
               connections: { accent: '#0369a1', soft: 'rgba(2,132,199,0.10)', icon: '\uD83D\uDD17', title: t('stem.anatomy.cross_system_connections', 'Cross-system connections'),    hint: t('stem.anatomy.no_system_works_alone_the_kidney_filte', 'No system works alone. The kidney filters blood (cardiovascular), responds to ADH (endocrine), and excretes urea (digestive byproduct). Find the links.') },
               aiTutor:     { accent: '#7c3aed', soft: 'rgba(124,58,237,0.10)', icon: '\uD83E\uDD16', title: t('stem.anatomy.ai_tutor_3', 'AI tutor'),                    hint: t('stem.anatomy.ask_a_question_about_the_active_organ_', 'Ask a question about the active organ or system. The tutor knows what is on screen and tailors answers to your grade band.') },
-              spotter:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)',  icon: '\uD83C\uDFAF', title: t('stem.anatomy.structure_spotter', 'Structure spotter'),           hint: t('stem.anatomy.click_the_named_structure_on_the_diagr', 'Click the named structure on the diagram. Builds the click-the-thing reflex that AP and medical exams rely on.') },
+              spotter:     { accent: '#b45309', soft: 'rgba(180,83,9,0.10)',  icon: '\uD83C\uDFAF', title: t('stem.anatomy.structure_spotter', 'Structure spotter'),           hint: t('stem.anatomy.spot_journey_activity_help', 'Identify the structure at the crosshair, then choose one of four answers. Review the feedback to compare their functions.') },
               pathways:    { accent: '#be123c', soft: 'rgba(190,18,60,0.10)', icon: '\uD83D\uDEE4\uFE0F', title: t('stem.anatomy.trace_the_pathway', 'Trace the pathway'),          hint: t('stem.anatomy.follow_blood_air_food_or_signals_throu', 'Follow blood, air, food, or signals through the body in sequence. Pathways are how isolated facts become a system you can reason about.') },
               quiz:        { accent: '#15803d', soft: 'rgba(21,128,61,0.10)',  icon: '\uD83E\uDDEA', title: t('stem.anatomy.quiz_the_diagram', 'Quiz the diagram'),            hint: t('stem.anatomy.quiz_hint', 'Four question types rotate: function, true or false, system, and clinical clue. Structure names are hidden in the clue, so read for meaning. A miss sends that structure to your review queue.') },
               flashcards:  { accent: '#0f766e', soft: 'rgba(15,118,110,0.10)', icon: '\uD83C\uDCCF', title: t('stem.anatomy.recall_cards', 'Recall cards'),     hint: t('stem.anatomy.recall_cards_hint', 'Say the function before you reveal it, then rate your confidence. Cards you mark Need practice come back first; a quick self-test now beats a re-read tomorrow.') },
@@ -15657,7 +16277,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
             // The scan workspace uses the full width; every other mode keeps the body model visible.
             !focusedAnatomyWorkspace && h('div', { className: 'anatomy-body-shell', 'data-anatomy-model-shell': 'true', tabIndex: -1, role: 'group', 'aria-label': t('stem.anatomy.explorer_atlas_region', 'Interactive anatomy atlas'), style: { borderColor: sys.accent + '24' } },
               h('div', { className: 'anatomy-body-header' },
-                showClinical && clinicalCaseIds.indexOf(d._caseDiagramReturn)!==-1 && CLINICAL_CASES.some(function(cs){return cs.id===d._caseDiagramReturn&&cs.system===sysKey;}) && h('button',{type:'button',className:'anatomy-route-return','data-anatomy-case-return':d._caseDiagramReturn,onClick:function(){focusClinicalCase(d._caseDiagramReturn);}},t("stem.anatomy.case_ref_return","Return to case")),
+                renderSpotterStudyOrigin(),
+                caseDiagramOrigin?renderCaseOrigin():showClinical&&complexity>=3&&d._caseDiagramOrigin==null&&clinicalCaseIds.indexOf(d._caseDiagramReturn)!==-1&&CLINICAL_CASES.some(function(cs){return cs.id===d._caseDiagramReturn&&cs.system===sysKey;})?h('button',{type:'button',className:'anatomy-route-return','data-anatomy-case-return':d._caseDiagramReturn,onClick:function(){focusClinicalCase(d._caseDiagramReturn);}},t('stem.anatomy.case_ref_return','Return to case')):null,
                 activeTab === 'connections' && expandedConnectionId ? h('div',{className:'anatomy-connection-model-context'},renderConnectionOrigin('model'),h('button',{type:'button',className:'anatomy-route-return','data-anatomy-connection-return':true,onClick:focusConnection},t('stem.anatomy.connection_journey_resume','Return to {connection}').replace('{connection}',CONNECTIONS.find(function(item){return item.id===expandedConnectionId;}).title))) : activeTab==='tour'&&currentTourStep&&h('button',{type:'button',className:'anatomy-route-return','data-anatomy-tour-return':true,onClick:focusTourStep},t('stem.anatomy.tour_ref_return', "Return to tour step")),
                 activeTab === 'pathways' && activePathway && h('button', {type:'button',className:'anatomy-route-return','data-anatomy-pathway-return':true,onClick:focusCurrentPathway},t('stem.anatomy.route_return_step','Return to pathway step')),
                 h('div', { className: 'anatomy-body-title-row' },
@@ -16105,68 +16726,70 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   )
                 )
               ),
-              h('details', { className: 'anatomy-learning-tools', 'data-anatomy-learning-tools': 'true', open: readingMode ? true : undefined },
+              (!spotterUsesAtlas || spotterFeedback !== null) && h('details', { className: 'anatomy-learning-tools', 'data-anatomy-learning-tools': 'true', open: readingMode ? true : undefined },
                 h('summary', { className: 'anatomy-learning-tools-summary' },
-                  h('span', null, 'Learning tools'),
-                  h('span', null, clinicalScaleJourneyActive ? selectedClinicalAtlasPack.focusLabel + ' scale route' : (sel ? sel.name + ' scale route' : 'Scale journey & pin key'))
+                  h('span', null, t('stem.anatomy.scale_tools', 'Learning tools')),
+                  h('span', null, t('stem.anatomy.scale_summary', 'Route & pin key'))
                 ),
                 h('div', { className: 'anatomy-learning-tools-content' },
-              h('nav', {
-                className: 'anatomy-scale-journey', 'aria-label': __alloT('stem.anatomy.a11y_scale_journey_from_body_system_to_cellular_cont', 'Scale Journey from body system to cellular context'),
-                'data-anatomy-scale-journey': sel ? sel.id : 'system-only',
-                'data-scale-source': clinicalScaleJourneyActive ? 'clinical-atlas' : 'anatomy',
-                'data-anatomy-atlas-pack': clinicalScaleJourneyActive ? selectedClinicalAtlasPack.id : undefined
-              },
-                h('div', { className: 'anatomy-scale-journey-head' },
-                  h('strong', null, 'Scale Journey'),
-                  h('span', null, 'Body → structure → tissue → cell')
-                ),
-                h('div', { className: 'anatomy-scale-track', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_current_scale_route', 'Current scale route') },
-                  h('div', { className: 'anatomy-scale-step', 'data-scale-stage': 'body' },
-                    h('span', null, '1 · Body system'), h('strong', null, sys.icon + ' ' + sys.name)
+                  h('nav', {
+                    className: 'anatomy-scale-journey', 'aria-label': __alloT('stem.anatomy.a11y_scale_journey_from_body_system_to_cellular_cont', 'Scale Journey from body system to cellular context'),
+                    'data-anatomy-scale-journey': sel ? sel.id : 'system-only',
+                    'data-scale-source': clinicalScaleJourneyActive ? 'clinical-atlas' : 'anatomy',
+                    'data-anatomy-atlas-pack': clinicalScaleJourneyActive ? selectedClinicalAtlasPack.id : undefined
+                  },
+                    h('div', { className: 'anatomy-scale-journey-head' },
+                      h('h3', null, t('stem.anatomy.scale_title', 'Explore by scale')),
+                      h('p', null, t('stem.anatomy.scale_help', 'Start with the body system, then open a detail or cell view.'))
+                    ),
+                    h('div', { className: 'anatomy-scale-track', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_current_scale_route', 'Current scale route') },
+                      h('div', { className: 'anatomy-scale-step', 'data-scale-stage': 'body' },
+                        h('span', { className: 'anatomy-scale-stage' }, h('span', { className: 'anatomy-scale-number', 'aria-hidden': 'true' }, '1'), t('stem.anatomy.scale_body', 'Body system')),
+                        h('strong', null, h('span', { 'aria-hidden': 'true' }, sys.icon + ' '), h('bdi', null, sys.name))
+                      ),
+                      h('div', { className: 'anatomy-scale-step', 'data-scale-stage': 'structure' },
+                        h('span', { className: 'anatomy-scale-stage' }, h('span', { className: 'anatomy-scale-number', 'aria-hidden': 'true' }, '2'), t('stem.anatomy.scale_structure', 'Structure')),
+                        h('strong', null, h('bdi', null, scaleJourneyStructureLabel))
+                      ),
+                      h('button', {
+                        type: 'button', className: 'anatomy-scale-step', 'data-scale-stage': 'tissue',
+                        'data-scale-specialist': scaleJourneyTissueSpecialist,
+                        onClick: openScaleJourneyDetail
+                      }, h('span', { className: 'anatomy-scale-stage' }, h('span', { className: 'anatomy-scale-number', 'aria-hidden': 'true' }, '3'), t('stem.anatomy.scale_detail', 'Tissue / region')),
+                        h('strong', null, h('bdi', null, scaleJourneyDetailLabel)),
+                        h('span', { className: 'anatomy-scale-action' }, t('stem.anatomy.scale_open_detail', 'Open detail view'))),
+                      h('button', {
+                        type: 'button', className: 'anatomy-scale-step', 'data-scale-stage': 'cell',
+                        'data-scale-cell-context': scaleJourneyCellContext,
+                        onClick: openScaleJourneyCell
+                      }, h('span', { className: 'anatomy-scale-stage' }, h('span', { className: 'anatomy-scale-number', 'aria-hidden': 'true' }, '4'), t('stem.anatomy.scale_cell', 'Cell scale')),
+                        h('strong', null, h('bdi', null, scaleJourneyCellLabel)),
+                        h('span', { className: 'anatomy-scale-action' }, t('stem.anatomy.scale_open_cell', 'Open cell view')))
+                    ),
+                    h('p', { className: 'anatomy-scale-status', role: 'status', 'aria-live': 'polite' },
+                      sel ? formatAnatomyStudyText(t('stem.anatomy.scale_selection', 'Destinations for {name}. Choose a detail or cell view to continue.'), { name: '\u2068' + scaleJourneyStructureLabel + '\u2069' })
+                        : t('stem.anatomy.scale_select_help', 'Select a structure in the diagram to personalize the detail and cell destinations.'),
+                      clinicalScaleJourneyActive && h('span', { className: 'anatomy-scale-clinical-focus' }, formatAnatomyStudyText(t('stem.anatomy.scale_clinical_focus', 'Clinical focus: {name}.'), { name: '\u2068' + (selectedClinicalConcept ? selectedClinicalConcept.label : selectedClinicalAtlasPack.focusLabel) + '\u2069' }))
+                    ),
+                    h('h4', { className: 'anatomy-scale-more-title' }, t('stem.anatomy.scale_more', 'More ways to explore')),
+                    h('div', { className: 'anatomy-scale-journey-buttons', 'aria-label': __alloT('stem.anatomy.a11y_additional_scale_destinations', 'Additional scale destinations') },
+                      h('button', { type: 'button', 'data-anatomy-scale-lab': 'dissection', onClick: function() { openAnatomyScaleDestination('dissection', 'dissection', {}, 'Dissection Lab'); } }, t('stem.anatomy.scale_dissection', 'Organ dissection')),
+                      h('button', { type: 'button', 'data-anatomy-scale-lab': 'cell', onClick: function() { openAnatomyScaleDestination('cell', 'cell', { mode: 'microdissection', _cellPicked: true, _cellCategory: 'interactive' }, 'Cell Microdissection'); } }, t('stem.anatomy.scale_microdissection', 'Cell microdissection')),
+                      h('button', { type: 'button', 'data-anatomy-scale-lab': 'microbiology', onClick: function() { openAnatomyScaleDestination('microbiology', 'microbiology', { tab: 'microscope' }, 'Microscope Lab'); } }, t('stem.anatomy.scale_microscope', 'Microscope'))
+                    )
                   ),
-                  h('div', { className: 'anatomy-scale-step', 'data-scale-stage': 'structure' },
-                    h('span', null, '2 · Structure'), h('strong', null, scaleJourneyStructureLabel)
+                  !(bodyView3d && body3dStyle === 'clinical') && h('div', { className: 'anatomy-marker-legend', role: 'group', 'aria-label': __alloT('stem.anatomy.a11y_marker_learning_status_legend', 'Marker learning status legend') },
+                    h('span', { className: 'anatomy-marker-legend-title' }, t('stem.anatomy.scale_pins', 'Pin status')),
+                    [
+                      { id: 'unrated', symbol: '•', label: t('stem.anatomy.scale_unrated', 'Unrated') },
+                      { id: 'practice', symbol: '!', label: t('stem.anatomy.need_practice', 'Need practice') },
+                      { id: 'learning', symbol: '~', label: t('stem.anatomy.learning', 'Learning') },
+                      { id: 'mastered', symbol: '✓', label: t('stem.anatomy.got_it', 'Got it') }
+                    ].map(function(statusItem) {
+                      return h('span', { key: statusItem.id, className: 'anatomy-marker-legend-item' },
+                        h('span', { className: 'anatomy-marker-legend-symbol', 'data-status': statusItem.id, 'aria-hidden': 'true' }, statusItem.symbol), statusItem.label);
+                    })
                   ),
-                  h('button', {
-                    type: 'button', className: 'anatomy-scale-step', 'data-scale-stage': 'tissue',
-                    'data-scale-specialist': scaleJourneyTissueSpecialist,
-                    'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_tissue_or_specialist_level', 'Open tissue or specialist level: {value1}'), { value1: scaleJourneyDetailLabel }),
-                    onClick: openScaleJourneyDetail
-                  }, h('span', null, '3 · Tissue / region'), h('strong', null, scaleJourneyDetailLabel)),
-                  h('button', {
-                    type: 'button', className: 'anatomy-scale-step', 'data-scale-stage': 'cell',
-                    'data-scale-cell-context': scaleJourneyCellContext,
-                    'aria-label': __alloFill(__alloT('stem.anatomy.a11y_open_cell_level', 'Open cell level: {value1}'), { value1: scaleJourneyCellLabel }),
-                    onClick: openScaleJourneyCell
-                  }, h('span', null, '4 · Cell scale'), h('strong', null, scaleJourneyCellLabel))
-                ),
-                h('p', { className: 'anatomy-scale-status', role: 'status', 'aria-live': 'polite' },
-                  clinicalScaleJourneyActive
-                    ? 'Current route: ' + sys.name + ' → ' + scaleJourneyStructureLabel + ' → ' + scaleJourneyDetailLabel + ' → ' + scaleJourneyCellLabel + '. Clinical focus: ' + (selectedClinicalConcept ? selectedClinicalConcept.label : selectedClinicalAtlasPack.focusLabel) + '.'
-                    : sel ? 'Current route: ' + sys.name + ' → ' + sel.name + ' → ' + scaleJourneyDetailLabel + ' → ' + scaleJourneyCellLabel + '.'
-                    : 'Select a structure in the diagram to personalize tissue and cell destinations.'
-                ),
-                h('div', { className: 'anatomy-scale-journey-buttons', 'aria-label': __alloT('stem.anatomy.a11y_additional_scale_destinations', 'Additional scale destinations') },
-                  h('button', { type: 'button', onClick: function() { openAnatomyScaleDestination('dissection', 'dissection', {}, 'Dissection Lab'); } }, 'Organ dissection'),
-                  h('button', { type: 'button', onClick: function() { openAnatomyScaleDestination('cell', 'cell', { mode: 'microdissection', _cellPicked: true, _cellCategory: 'interactive' }, 'Cell Microdissection'); } }, 'Cell scale'),
-                  h('button', { type: 'button', onClick: function() { openAnatomyScaleDestination('microbiology', 'microbiology', { tab: 'microscope' }, 'Microscope Lab'); } }, 'Microscope')
-                )
-              ),
-              !(bodyView3d && body3dStyle === 'clinical') && h('div', { className: 'anatomy-marker-legend', role: 'list', 'aria-label': __alloT('stem.anatomy.a11y_marker_learning_status_legend', 'Marker learning status legend') },
-                h('span', { className: 'anatomy-marker-legend-title' }, 'Pin status'),
-                [
-                  { id: 'unrated', symbol: '•', label: 'Unrated' },
-                  { id: 'practice', symbol: '!', label: 'Review' },
-                  { id: 'learning', symbol: '~', label: 'Learning' },
-                  { id: 'mastered', symbol: '✓', label: 'Got it' }
-                ].map(function(statusItem) {
-                  return h('span', { key: statusItem.id, className: 'anatomy-marker-legend-item', role: 'listitem' },
-                    h('span', { className: 'anatomy-marker-legend-symbol', 'data-status': statusItem.id, 'aria-hidden': 'true' }, statusItem.symbol),
-                    statusItem.label
-                  );
-                })
-              ),
               // Blood-flow color legend — the circulatory canvas color-codes vessels but never said what the colors mean
               sysKey === 'circulatory' && !(bodyView3d && body3dStyle === 'clinical') && h('div', { className: 'mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[0.6875rem] text-slate-700 bg-white/70 rounded-lg border border-slate-200 px-2 py-1.5', 'data-anatomy-circulatory-flow-legend': 'true', style: { maxWidth: 360 } },
                 h('span', { className: 'flex items-center gap-1' }, h('span', { className: 'inline-block w-2.5 h-2.5 rounded-full', style: { background: '#ef4444' } }), t('stem.anatomy.oxygenated_arteries', 'Oxygenated (arteries)')),
@@ -16603,7 +17226,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                 )
               ) : activeTab === 'spotter' ? (
                 // Spotter Panel
-                h('div', { className: 'anatomy-spotter-panel bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3', 'data-anatomy-spotter-panel': 'true', 'data-anatomy-spotter-question':spotterQuestionKey(d), 'data-anatomy-spotter-context':spotterContextKey(d), 'data-anatomy-spotter-answer':spotterFeedback || '', 'data-anatomy-spotter-active':spotterActive ? 'true' : 'false', tabIndex: -1,
+                h('div', { className: 'anatomy-spotter-panel bg-white rounded-xl border-2 border-amber-200 p-4 space-y-3', 'data-anatomy-spotter-panel': 'true','data-anatomy-spotter-navigation':spotterNavigationSnapshot, 'data-anatomy-spotter-question':spotterQuestionKey(d), 'data-anatomy-spotter-context':spotterContextKey(d), 'data-anatomy-spotter-answer':spotterFeedback || '', 'data-anatomy-spotter-active':spotterActive ? 'true' : 'false', tabIndex: -1,
                   onKeyDown: function(e) {
                     var keyNumber = parseInt(e.key, 10);
                     if (!spotterActive || !spotterRoundReady || spotterFeedback !== null) return;
@@ -16616,7 +17239,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   h('div', { className: 'anatomy-spotter-heading flex items-center justify-between mb-2' },
                     h('h4', { id:'anatomy-spotter-title', tabIndex:-1, className: 'font-bold text-amber-800 text-sm' }, t('stem.anatomy.anatomy_spotter_test', '\uD83C\uDFAF Anatomy Spotter Test')),
                     h('div', { className: 'flex gap-2' },
-                      h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, h('bdi',{dir:'ltr','data-anatomy-spotter-score':true},spotterScore + '/' + spotterTotal)),
+                      h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-green-100 text-green-700' }, h('bdi',{'data-anatomy-spotter-score':true},formatAnatomyStudyText(t('stem.anatomy.spot_journey_score','{correct} correct · {total} answered'),{correct:spotterScore,total:spotterTotal}))),
                       spotterTimed && spotterBestTime > 0 ? h('span', { className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded-full bg-amber-100 text-amber-700' }, formatAnatomyStudyText(t('stem.anatomy.spot_ref_best','Best timed response: {seconds} s'),{seconds:spotterBestTime.toFixed(1)})) : null
                     )
                   ),
@@ -16685,11 +17308,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                           h('h5', { id:'anatomy-spotter-feedback-title', className: 'font-bold ' + (isRight ? 'text-green-800' : 'text-red-800') },
                             isRight ? t('stem.anatomy.spot_ref_correct','Correct. ') + targetStruct.name : t('stem.anatomy.spot_ref_answer','The marked structure is ') + targetStruct.name
                           ),
-                          h('p', { className: 'text-slate-600 mt-1' },
-                            isRight
-                              ? targetStruct.name + ': ' + learnerText(targetStruct)
-                              : formatAnatomyStudyText(t('stem.anatomy.spot_ref_comparison','You chose {chosen}: {chosenfunction} Marked structure — {target}: {targetfunction}'),{chosen:selectedStruct.name,chosenfunction:learnerText(selectedStruct),target:targetStruct.name,targetfunction:learnerText(targetStruct)})
-                          )
+
+                          !isRight?h('section',{className:'anatomy-spotter-compare chosen','data-anatomy-spotter-your-answer':selectedStruct.id,'aria-labelledby':'anatomy-spotter-chosen-title'},h('h6',{id:'anatomy-spotter-chosen-title'},t('stem.anatomy.practice_flow_spotter_your_answer','Your answer')+': '+selectedStruct.name),h('p',{dir:'auto'},learnerText(selectedStruct))):null,
+                          h('section',{className:'anatomy-spotter-compare marked','data-anatomy-spotter-marked':targetStruct.id,'aria-labelledby':'anatomy-spotter-marked-title'},h('h6',{id:'anatomy-spotter-marked-title'},t('stem.anatomy.spot_journey_marked','Marked structure')+': '+targetStruct.name),h('p',{dir:'auto'},learnerText(targetStruct)))
                         ),
 
                         spotterHasElapsed?h('p',{'data-anatomy-spotter-time':true},formatAnatomyStudyText(t('stem.anatomy.spot_ref_elapsed','Response time: {seconds} s'),{seconds:spotterElapsed.toFixed(1)})):null,
@@ -16699,7 +17320,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                         !isRight && targetStruct.id ? h('button', {
                           type: 'button', 'data-anatomy-spotter-study': targetStruct.id,
                           'aria-label': formatAnatomyStudyText(t('stem.anatomy.spot_ref_study','Study {name} on the diagram'),{name:targetStruct.name}),
-                          onClick: function() { updMulti(structureFocusPatch(targetStruct.id, { _activeTab: 'explore', quizMode: false })); announceStructure(targetStruct.id); focusAnatomyStructureDetail(); },
+                          onClick: studySpotterTarget,
                           className: 'w-full py-2 rounded-lg text-xs font-bold bg-white text-amber-800 border border-amber-600 hover:bg-amber-50 transition-all active:scale-[0.97]'
                         }, formatAnatomyStudyText(t('stem.anatomy.spot_ref_study','Study {name} on the diagram'),{name:targetStruct.name})) : null,
                         h('button', { type:'button', 'data-anatomy-spotter-next':true, 'aria-label': t('stem.anatomy.next_structure', 'Next Structure'),
@@ -16807,26 +17428,35 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   })()
                 )
               ) : activeTab === 'connections' ? (
+
                 // Connections Panel
                 h('section',{className:'anatomy-connections-panel','data-anatomy-connections-panel':true,'data-anatomy-connection-navigation':connectionNavigationSnapshot,'aria-labelledby':'anatomy-connections-title'},
-                  h('h4',{id:'anatomy-connections-title'},t("stem.anatomy.link_ref_title","How body systems work together")),
+                  h('h4',{id:'anatomy-connections-title'},t('stem.anatomy.link_ref_title','How body systems work together')),
                   renderConnectionOrigin('connection'),
-                  h('p',null,t("stem.anatomy.link_ref_intro","Read a connection, predict what happens, then check the explanation. You can use the text while answering.")),
-                  h('p',{className:'anatomy-connection-progress',role:'status'},t("stem.anatomy.link_ref_progress","{explored} explored · {answered} answered · {correct} correct of {total}").replace('{explored}',String(Object.keys(connectionsViewed).length)).replace('{answered}',String(connectionChecksAnswered)).replace('{correct}',String(connectionChecksCorrect)).replace('{total}',String(CONNECTIONS.length))),
-                  h('label',{className:'anatomy-route-jump',htmlFor:'anatomy-connection-select'},t("stem.anatomy.link_ref_choose","Choose a connection"),h('select',{id:'anatomy-connection-select',value:expandedConnectionId||'',onChange:function(event){var conn=CONNECTIONS.find(function(c){return c.id===event.target.value;});if(conn)openRelationshipConnection(conn);}},h('option',{value:''},t("stem.anatomy.link_ref_choose_prompt","Select a topic")),CONNECTIONS.map(function(c){return h('option',{key:c.id,value:c.id},c.title);}))),
-                  CONNECTIONS.map(function(conn){var isExpanded=expandedConnectionId===conn.id,chosen=connectionChecks[conn.id],detailsId='anatomy-connection-'+conn.id;return h('article',{key:conn.id,className:'anatomy-connection-card','data-anatomy-connection':conn.id,'data-anatomy-connection-open':isExpanded?'true':'false',tabIndex:-1},
-                    h('h5',null,h('button',{type:'button','data-anatomy-connection-toggle':conn.id,'aria-label':(isExpanded?t("stem.anatomy.link_ref_collapse","Collapse {title}"):t("stem.anatomy.link_ref_expand","Expand {title}")).replace('{title}',conn.title),'aria-expanded':isExpanded,'aria-controls':detailsId,onClick:function(){toggleRelationshipConnection(conn);}},h('span',{'aria-hidden':true},conn.icon+' '),conn.title,h('span',{'aria-hidden':true,className:'anatomy-learning-chevron','data-open':isExpanded?'true':'false'}))),
+                  h('p',null,t('stem.anatomy.link_ref_intro','Read a connection, predict what happens, then check the explanation. You can use the text while answering.')),
+                  h('p',{className:'anatomy-connection-progress',role:'status'},t('stem.anatomy.connection_review_progress','{explored} explored · First answers: {answered}/{total} · {correct} correct').replace('{explored}',String(Object.keys(connectionsViewed).length)).replace('{answered}',String(connectionChecksAnswered)).replace('{correct}',String(connectionChecksCorrect)).replace('{total}',String(CONNECTIONS.length))),
+                  h('div',{className:'anatomy-connection-picker'},
+                    h('label',{className:'anatomy-route-jump',htmlFor:'anatomy-connection-select'},t('stem.anatomy.link_ref_choose','Choose a connection'),h('select',{id:'anatomy-connection-select',value:expandedConnectionId||'',onChange:function(event){if(!event.target.value){showAllConnections();return;}var conn=CONNECTIONS.find(function(c){return c.id===event.target.value;});if(conn)openRelationshipConnection(conn);}},h('option',{value:''},t('stem.anatomy.connection_review_all','All connections')),CONNECTIONS.map(function(c){return h('option',{key:c.id,value:c.id},c.title+' · '+connectionFirstStatus(c));}))),
+                    expandedConnectionId?h('button',{type:'button','data-anatomy-connection-all':true,onClick:showAllConnections},t('stem.anatomy.connection_review_all','All connections')):null),
+                  h('div',{className:'anatomy-connection-list','data-anatomy-connection-list':expandedConnectionId?'lesson':'overview'},CONNECTIONS.map(function(conn){var isExpanded=expandedConnectionId===conn.id,first=connectionChecks[conn.id],practice=connectionPractice[conn.id],isPractice=!!(practice&&practice.active),chosen=isPractice?practice.answer:first,attempt=isPractice?practice.token:'first',detailsId='anatomy-connection-'+conn.id,feedbackId=detailsId+'-feedback-title';return h('article',{key:conn.id,className:'anatomy-connection-card',hidden:!!expandedConnectionId&&!isExpanded,'data-anatomy-connection':conn.id,'data-anatomy-connection-open':isExpanded?'true':'false',tabIndex:-1},
+                    h('h5',null,h('button',{type:'button','data-anatomy-connection-toggle':conn.id,'aria-label':(isExpanded?t('stem.anatomy.link_ref_collapse','Collapse {title}'):t('stem.anatomy.link_ref_expand','Expand {title}')).replace('{title}',conn.title),'aria-expanded':isExpanded,'aria-controls':detailsId,onClick:function(){toggleRelationshipConnection(conn);}},h('span',{'aria-hidden':true},conn.icon+' '),conn.title,h('span',{'aria-hidden':true,className:'anatomy-learning-chevron','data-open':isExpanded?'true':'false'}))),
                     h('p',{className:'anatomy-connection-systems'},conn.systems.map(function(id){return SYSTEMS[id].name;}).join(' + ')),
-                    isExpanded?h('div',{id:detailsId,role:'region','aria-label':t("stem.anatomy.link_ref_details","{title} details").replace('{title}',conn.title)},h('p',null,conn.desc),h('p',{className:'anatomy-connection-example'},h('strong',null,t("stem.anatomy.link_ref_example","Example: ")),conn.example),
-                      ttsBtn(conn.desc+' '+conn.example,t("stem.anatomy.link_ref_read","Read this connection aloud")),
-                      h('fieldset',{'data-anatomy-connection-check':conn.id,'data-answered':chosen?'true':'false'},h('legend',null,conn.question),
-                        connectionCheckOptions(conn).map(function(option){var correct=chosen&&option.id===conn.correct,wrong=chosen===option.id&&!correct;return h('button',{key:option.id,type:'button','data-anatomy-connection-option':option.id,'data-answer-state':correct?'correct':wrong?'incorrect':'open',disabled:!!chosen,'aria-pressed':chosen===option.id,onClick:function(){answerConnectionCheck(conn,option.id);}},(correct?'✓ ':wrong?'✕ ':'')+option.label);}),
-                        chosen?h('div',{'data-anatomy-connection-feedback':chosen===conn.correct?'correct':'incorrect',role:'status'},h('strong',null,chosen===conn.correct?t("stem.anatomy.link_ref_correct","Correct. "):t("stem.anatomy.link_ref_incorrect","Review this idea. ")),h('p',null,conn.explanation),h('p',null,t("stem.anatomy.link_ref_answer","Best answer: ")+conn.choices.find(function(o){return o.id===conn.correct;}).label)):null),
+                    h('p',{className:'anatomy-connection-first-status','data-anatomy-connection-first-status':first===conn.correct?'correct':first?'review':'unanswered'},connectionFirstStatus(conn)),
+                    isExpanded?h('div',{id:detailsId,role:'region','aria-label':t('stem.anatomy.link_ref_details','{title} details').replace('{title}',conn.title)},
+                      h('section',{className:'anatomy-connection-reading','aria-labelledby':detailsId+'-reading'},h('h6',{id:detailsId+'-reading'},t('stem.anatomy.connection_review_read','Read the connection')),h('p',null,conn.desc),h('p',{className:'anatomy-connection-example'},h('strong',null,t('stem.anatomy.link_ref_example','Example: ')),conn.example),
+                        h('div',{className:'anatomy-connection-resources'},ttsBtn(conn.desc+' '+conn.example,t('stem.anatomy.link_ref_read','Read this connection aloud')),h('a',{className:'anatomy-route-reference',href:conn.reference,target:'_blank',rel:'noopener noreferrer'},t('stem.anatomy.link_ref_source','Read the source')))),
+                      h('h6',{className:'anatomy-connection-check-heading'},isPractice?t('stem.anatomy.connection_review_practice','Practice check'):t('stem.anatomy.connection_review_check','Check your understanding')),
+                      first?h('p',{className:'anatomy-connection-practice-scope'},t('stem.anatomy.connection_review_scope','Practice again. Your first answer and progress stay saved.')):null,
+                      h('fieldset',{'data-anatomy-connection-check':conn.id,'data-anatomy-connection-exercise':connectionExerciseSignature(d,conn.id),'data-anatomy-connection-attempt':attempt,'data-anatomy-connection-practice':isPractice?conn.id:undefined,'data-anatomy-connection-response':chosen||'','data-answered':chosen?'true':'false',tabIndex:-1},h('legend',null,conn.question),
+                        connectionCheckOptions(conn,isPractice?practice:null).map(function(option){var correct=chosen&&option.id===conn.correct,wrong=chosen===option.id&&!correct;return h('button',{key:option.id,type:'button','data-anatomy-connection-option':option.id,'data-answer-state':correct?'correct':wrong?'incorrect':'open',disabled:!!chosen,'aria-pressed':chosen===option.id,onClick:function(){answerConnectionCheck(conn,option.id);}},(correct?'✓ ':wrong?'✕ ':'')+option.label);}),
+                        chosen?h('div',{className:'anatomy-connection-feedback','data-anatomy-connection-feedback':!isPractice?(chosen===conn.correct?'correct':'incorrect'):undefined,'data-anatomy-connection-practice-feedback':isPractice?(chosen===conn.correct?'correct':'incorrect'):undefined,'data-anatomy-connection-feedback-kind':isPractice?'practice':'first','data-anatomy-connection-feedback-token':attempt,'data-anatomy-connection-response':chosen,'data-result':chosen===conn.correct?'correct':'incorrect',role:'group',tabIndex:-1,'aria-labelledby':feedbackId},
+                          h('h6',{id:feedbackId},isPractice?(chosen===conn.correct?t('stem.anatomy.connection_review_correct','Correct on practice.'):t('stem.anatomy.connection_review_incorrect','Keep reviewing.')):(chosen===conn.correct?t('stem.anatomy.link_ref_correct','Correct. '):t('stem.anatomy.link_ref_incorrect','Review this idea. '))),
+                          h('p',{className:'anatomy-connection-your-answer'},h('strong',null,t('stem.anatomy.practice_flow_spotter_your_answer','Your answer')+': '),conn.choices.find(function(o){return o.id===chosen;}).label),h('p',null,conn.explanation),h('p',null,h('strong',null,t('stem.anatomy.link_ref_answer','Best answer: ')),conn.choices.find(function(o){return o.id===conn.correct;}).label)):null),
+                      first?h('div',{className:'anatomy-connection-practice-actions'},!isPractice||chosen?h('button',{type:'button','data-anatomy-connection-practice-start':conn.id,onClick:function(){changeConnectionPractice(conn,true);}},t('stem.anatomy.link_ref_hide','Hide explanation and try again')):null,isPractice?h('button',{type:'button','data-anatomy-connection-practice-saved':conn.id,onClick:function(){changeConnectionPractice(conn,false);}},t('stem.anatomy.connection_review_saved','Return to saved feedback')):null):null,
                       renderConnectionAnatomy(conn),
-                      h('a',{className:'anatomy-route-reference',href:conn.reference,target:'_blank',rel:'noopener noreferrer'},t("stem.anatomy.link_ref_source","Read the source")),
-                      h('div',{className:'anatomy-connection-diagrams',role:'group','aria-label':t("stem.anatomy.link_ref_diagrams","Connected system diagrams")},conn.systems.map(function(id){return h('button',{key:id,type:'button','data-anatomy-connection-diagram':id,'aria-label':t("stem.anatomy.link_ref_diagram_label","Show {system} diagram for {connection}").replace('{system}',SYSTEMS[id].name).replace('{connection}',conn.title),'aria-pressed':sysKey===id,onClick:function(){showConnectionDiagram(id,conn);}},t("stem.anatomy.link_ref_view","Show {system} diagram").replace('{system}',SYSTEMS[id].name));}))
+                      h('div',{className:'anatomy-connection-diagrams',role:'group','aria-label':t('stem.anatomy.link_ref_diagrams','Connected system diagrams')},conn.systems.map(function(id){return h('button',{key:id,type:'button','data-anatomy-connection-diagram':id,'aria-label':t('stem.anatomy.link_ref_diagram_label','Show {system} diagram for {connection}').replace('{system}',SYSTEMS[id].name).replace('{connection}',conn.title),'aria-pressed':sysKey===id,onClick:function(){showConnectionDiagram(id,conn);}},t('stem.anatomy.link_ref_view','Show {system} diagram').replace('{system}',SYSTEMS[id].name));}))
                     ):null
-                  );})
+                  );}))
                 )
               ) : activeTab === 'flashcards' ? (
                 // Flashcards Panel
@@ -17918,9 +18548,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
           ),
 
           // ── Clinical Cases section (advanced only) ──
-          !focusedAnatomyWorkspace && complexity >= 3 ? h('div', { className: 'anatomy-clinical-study mt-4 rounded-xl border border-rose-200 p-3', 'data-anatomy-clinical-study':true, style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
+          !focusedAnatomyWorkspace && complexity >= 3 ? h('div', { className: 'anatomy-clinical-study mt-4 rounded-xl border border-rose-200 p-3', 'data-anatomy-clinical-study':true,'data-anatomy-case-navigation':clinicalNavigationSnapshot, style: { background: 'var(--allo-stem-panel, #f8fafc)' } },
             h('div', { className: 'flex items-center justify-between mb-2' },
-              h('h3', { className: 'text-[0.6875rem] font-bold text-rose-700 uppercase tracking-wider', style: { margin: 0 } }, t("stem.anatomy.case_ref_title","Clinical Cases") + ' (' + t("stem.anatomy.case_ref_progress","{count} reviewed").replace('{count}',String(clinicalSolved)) + ')'),
+              h('h3', { className: 'text-[0.6875rem] font-bold text-rose-700 uppercase tracking-wider', style: { margin: 0 } }, t('stem.anatomy.case_ref_title','Clinical Cases')),
               h('button', { onClick: function() { upd('_showClinical', !showClinical); },
                 'aria-expanded': showClinical, 'aria-controls': 'anatomy-clinical-cases',
                 className: 'text-[0.6875rem] font-bold px-2 py-0.5 rounded transition-all active:scale-[0.97]', style: { background: 'var(--allo-stem-button-bg, #f1f5f9)', color: 'var(--allo-stem-button-text, #0f172a)', border: '1px solid var(--allo-stem-button-border, #cbd5e1)' }
@@ -17939,6 +18569,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
                   }, caseSystem.icon + ' ' + caseSystem.name);
                 }))
               ) : null,
+              h('p',{className:'anatomy-case-progress','data-anatomy-case-atlas-progress':sysKey,role:'status'},t('stem.anatomy.case_journey_atlas_progress','In this atlas: {reviewed}/{total} explanations reviewed').replace('{reviewed}',String(systemClinicalCases.filter(function(cs){return !!clinicalSolvedIds[cs.id];}).length)).replace('{total}',String(systemClinicalCases.length))),
+              h('p',{className:'anatomy-case-total-progress','data-anatomy-case-total-progress':true},t('stem.anatomy.case_journey_total_progress','Across all atlases: {reviewed}/{total} reviewed').replace('{reviewed}',String(clinicalSolved)).replace('{total}',String(CLINICAL_CASES.length))),
               h('p',{className:'anatomy-case-intro'},t("stem.anatomy.case_ref_intro","Use these fictional cases to connect clues with anatomy. Write or think through an explanation, compare it with the model, then mark it reviewed. Reviewed records participation, not diagnostic accuracy.")),
               systemClinicalCases.map(renderClinicalCase)
             ) : null
@@ -18012,8 +18644,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('anatomy'))) {
               h('span', { className: 'text-[0.6875rem] px-2 py-0.5 rounded-full bg-white border border-indigo-100 text-slate-600 font-semibold' },
                 '\uD83E\uDE7A Clinical Cases: ' + clinicalSolved
               ),
-              spotterBestTime < 999 ? h('span', { className: 'text-[0.6875rem] px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold' },
-                '\u26A1 Best Spotter: ' + spotterBestTime.toFixed(1) + 's'
+              spotterBestTime > 0 ? h('span', { 'data-anatomy-spotter-best':true,className: 'text-[0.6875rem] px-2 py-0.5 rounded-full bg-amber-50 border border-amber-200 text-amber-700 font-bold' },
+                formatAnatomyStudyText(t('stem.anatomy.spot_ref_best','Best timed response: {seconds} s'),{seconds:spotterBestTime.toFixed(1)})
               ) : null
             ),
             // XP total

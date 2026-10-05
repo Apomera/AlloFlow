@@ -1,0 +1,45 @@
+{
+  "sourceSha256": "5aafc5ea19ba186c6b08ed86022810cb3e45e61d4d021d50c237e26866f227b1",
+  "candidateMatchesLive": true,
+  "desktopMirrorMatches": true,
+  "units": {
+    "passed": 56,
+    "failed": 0,
+    "success": true
+  },
+  "webgl": {
+    "passed": 16,
+    "failed": 0,
+    "skipped": 0,
+    "reports": [
+      {
+        "file": "browser-nebula-existing.json",
+        "startTime": "2026-10-02T12:33:34.748Z",
+        "duration": 166648.70299999998,
+        "expected": 6,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "browser-passage-continuous.json",
+        "startTime": "2026-10-02T12:44:44.740Z",
+        "duration": 50980.565,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      {
+        "file": "browser-passage-remaining-and-flight.json",
+        "startTime": "2026-10-02T12:46:11.232Z",
+        "duration": 175065.36099999998,
+        "expected": 9,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    ]
+  },
+  "commit": "No commit performed"
+}

@@ -1,0 +1,35 @@
+function CircuitActiveLessonPredictionGuide(props) {
+    var React = props.React, h = React.createElement, t = circuitToolT(props);
+    var lesson = circuitActiveLesson(props.lessonId);
+    var connections = {
+        gain: t('stem.circuit.prediction_guide_gain', 'How might changing the input voltage affect the base branch and the lamp path?'),
+        limit: t('stem.circuit.prediction_guide_limit', 'Could anything in the lamp path limit its current as you raise the input voltage?'),
+        sensor: t('stem.circuit.prediction_guide_sensor', 'How might less light affect the photoresistor, the connected divider junction, and the lamp path?')
+    };
+    var steps = [
+        {
+            id: 'plan',
+            heading: t('stem.circuit.prediction_guide_plan_heading', 'Review the plan'),
+            prompt: t('stem.circuit.prediction_guide_plan', 'Which setting changes, and which settings stay the same?')
+        },
+        {
+            id: 'connect',
+            heading: t('stem.circuit.prediction_guide_connect_heading', 'Think through the circuit'),
+            prompt: connections[lesson.id]
+        },
+        {
+            id: 'reason',
+            heading: t('stem.circuit.prediction_guide_reason_heading', 'Give a reason'),
+            prompt: t('stem.circuit.prediction_guide_reason', 'What change in lamp current do you expect, and why? You may write your reasoning in the field above.')
+        }
+    ];
+    return h('details', { className: 'circuit-active-prediction-guide', 'data-guide-lesson': lesson.id },
+        h('summary', { className: 'circuit-explanation-guide-summary' }, t('stem.circuit.prediction_guide_title', 'Help me make a prediction')),
+        h('p', { className: 'circuit-explanation-guide-intro' }, t('stem.circuit.prediction_guide_intro', 'Use the experiment plan to develop your own prediction. These prompts are optional.')),
+        h('ol', { className: 'circuit-explanation-guide-steps' }, steps.map(function (step) {
+            return h('li', { key: step.id, 'data-guide-step': step.id },
+                h('strong', { className: 'circuit-explanation-guide-heading' }, step.heading),
+                h('p', { className: 'circuit-explanation-guide-prompt' }, step.prompt));
+        })));
+}
+

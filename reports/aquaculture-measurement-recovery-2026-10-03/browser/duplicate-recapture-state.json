@@ -1,0 +1,331 @@
+{
+  "removed": {
+    "key": "removed-1",
+    "heading": "Annual model · Whole system · Annual lowest oxygen",
+    "reading": "A 6.97 mg/L → B 8.17 mg/L; +1.2 mg/L (B minus A)",
+    "note": {
+      "id": "live-archive-reading",
+      "capturedAt": 1791043200000,
+      "modelVersion": "2026.10-stock-feedback",
+      "scope": "annual",
+      "month": null,
+      "speciesId": "system",
+      "metricId": "minOxygen",
+      "metricLabel": "Annual lowest oxygen",
+      "unit": " mg/L",
+      "deltaUnit": " mg/L",
+      "aState": "recorded",
+      "bState": "recorded",
+      "a": 6.97,
+      "b": 8.17,
+      "baselineScenario": {
+        "environmentId": "longline",
+        "organisms": {
+          "oyster": 2,
+          "kelp": 1,
+          "nitrifiers": 1
+        },
+        "water": {
+          "temperature": 14,
+          "salinity": 30,
+          "oxygen": 8,
+          "pH": 8,
+          "ammonia": 0.04,
+          "exchange": 82
+        },
+        "disturbanceId": "heatwave"
+      },
+      "currentScenario": {
+        "environmentId": "longline",
+        "organisms": {
+          "oyster": 2,
+          "kelp": 1,
+          "nitrifiers": 1
+        },
+        "water": {
+          "temperature": 14,
+          "salinity": 30,
+          "oxygen": 9.2,
+          "pH": 8,
+          "ammonia": 0.04,
+          "exchange": 82
+        },
+        "disturbanceId": "heatwave"
+      },
+      "aEvent": "",
+      "bEvent": ""
+    },
+    "index": 0
+  },
+  "result": {
+    "ok": false,
+    "state": "already-present",
+    "measurements": [
+      {
+        "id": "july-reading",
+        "capturedAt": 1791045000000,
+        "modelVersion": "2026.10-stock-feedback",
+        "scope": "month",
+        "month": 6,
+        "speciesId": "system",
+        "metricId": "oxygen",
+        "metricLabel": "Dissolved oxygen",
+        "unit": " mg/L",
+        "deltaUnit": " mg/L",
+        "aState": "recorded",
+        "bState": "recorded",
+        "a": 6.97,
+        "b": 8.17,
+        "baselineScenario": {
+          "environmentId": "longline",
+          "organisms": {
+            "oyster": 2,
+            "kelp": 1,
+            "nitrifiers": 1
+          },
+          "water": {
+            "temperature": 14,
+            "salinity": 30,
+            "oxygen": 8,
+            "pH": 8,
+            "ammonia": 0.04,
+            "exchange": 82
+          },
+          "disturbanceId": "heatwave"
+        },
+        "currentScenario": {
+          "environmentId": "longline",
+          "organisms": {
+            "oyster": 2,
+            "kelp": 1,
+            "nitrifiers": 1
+          },
+          "water": {
+            "temperature": 14,
+            "salinity": 30,
+            "oxygen": 9.2,
+            "pH": 8,
+            "ammonia": 0.04,
+            "exchange": 82
+          },
+          "disturbanceId": "heatwave"
+        },
+        "aEvent": "Marine heatwave",
+        "bEvent": "Marine heatwave"
+      },
+      {
+        "id": "earlier-settings-reading",
+        "capturedAt": 1791039600000,
+        "modelVersion": "2026.10-stock-feedback",
+        "scope": "annual",
+        "month": null,
+        "speciesId": "system",
+        "metricId": "minOxygen",
+        "metricLabel": "Annual lowest oxygen",
+        "unit": " mg/L",
+        "deltaUnit": " mg/L",
+        "aState": "recorded",
+        "bState": "recorded",
+        "a": 6.97,
+        "b": 7.57,
+        "baselineScenario": {
+          "environmentId": "longline",
+          "organisms": {
+            "oyster": 2,
+            "kelp": 1,
+            "nitrifiers": 1
+          },
+          "water": {
+            "temperature": 14,
+            "salinity": 30,
+            "oxygen": 8,
+            "pH": 8,
+            "ammonia": 0.04,
+            "exchange": 82
+          },
+          "disturbanceId": "heatwave"
+        },
+        "currentScenario": {
+          "environmentId": "longline",
+          "organisms": {
+            "oyster": 2,
+            "kelp": 1,
+            "nitrifiers": 1
+          },
+          "water": {
+            "temperature": 14,
+            "salinity": 30,
+            "oxygen": 8.6,
+            "pH": 8,
+            "ammonia": 0.04,
+            "exchange": 82
+          },
+          "disturbanceId": "heatwave"
+        },
+        "aEvent": "",
+        "bEvent": ""
+      },
+      {
+        "id": "relabeled-model-reading",
+        "capturedAt": 1791036000000,
+        "modelVersion": "qa-earlier-model",
+        "scope": "month",
+        "month": 2,
+        "speciesId": "system",
+        "metricId": "temperature",
+        "metricLabel": "Temperature",
+        "unit": " C",
+        "deltaUnit": " C",
+        "aState": "recorded",
+        "bState": "recorded",
+        "a": 12,
+        "b": 12,
+        "baselineScenario": {
+          "environmentId": "longline",
+          "organisms": {
+            "oyster": 2,
+            "kelp": 1,
+            "nitrifiers": 1
+          },
+          "water": {
+            "temperature": 14,
+            "salinity": 30,
+            "oxygen": 8,
+            "pH": 8,
+            "ammonia": 0.04,
+            "exchange": 82
+          },
+          "disturbanceId": "heatwave"
+        },
+        "currentScenario": {
+          "environmentId": "longline",
+          "organisms": {
+            "oyster": 2,
+            "kelp": 1,
+            "nitrifiers": 1
+          },
+          "water": {
+            "temperature": 14,
+            "salinity": 30,
+            "oxygen": 9.2,
+            "pH": 8,
+            "ammonia": 0.04,
+            "exchange": 82
+          },
+          "disturbanceId": "heatwave"
+        },
+        "aEvent": "",
+        "bEvent": ""
+      },
+      {
+        "id": "m-mut9wv1e-8zird",
+        "capturedAt": 1791085249058,
+        "modelVersion": "2026.10-stock-feedback",
+        "scope": "annual",
+        "month": null,
+        "speciesId": "system",
+        "metricId": "minOxygen",
+        "metricLabel": "Annual lowest oxygen",
+        "unit": " mg/L",
+        "deltaUnit": " mg/L",
+        "aState": "recorded",
+        "bState": "recorded",
+        "a": 6.97,
+        "b": 8.17,
+        "baselineScenario": {
+          "environmentId": "longline",
+          "organisms": {
+            "oyster": 2,
+            "kelp": 1,
+            "nitrifiers": 1
+          },
+          "water": {
+            "temperature": 14,
+            "salinity": 30,
+            "oxygen": 8,
+            "pH": 8,
+            "ammonia": 0.04,
+            "exchange": 82
+          },
+          "disturbanceId": "heatwave"
+        },
+        "currentScenario": {
+          "environmentId": "longline",
+          "organisms": {
+            "oyster": 2,
+            "kelp": 1,
+            "nitrifiers": 1
+          },
+          "water": {
+            "temperature": 14,
+            "salinity": 30,
+            "oxygen": 9.2,
+            "pH": 8,
+            "ammonia": 0.04,
+            "exchange": 82
+          },
+          "disturbanceId": "heatwave"
+        },
+        "aEvent": "",
+        "bEvent": ""
+      }
+    ],
+    "note": {
+      "id": "live-archive-reading",
+      "capturedAt": 1791043200000,
+      "modelVersion": "2026.10-stock-feedback",
+      "scope": "annual",
+      "month": null,
+      "speciesId": "system",
+      "metricId": "minOxygen",
+      "metricLabel": "Annual lowest oxygen",
+      "unit": " mg/L",
+      "deltaUnit": " mg/L",
+      "aState": "recorded",
+      "bState": "recorded",
+      "a": 6.97,
+      "b": 8.17,
+      "baselineScenario": {
+        "environmentId": "longline",
+        "organisms": {
+          "oyster": 2,
+          "kelp": 1,
+          "nitrifiers": 1
+        },
+        "water": {
+          "temperature": 14,
+          "salinity": 30,
+          "oxygen": 8,
+          "pH": 8,
+          "ammonia": 0.04,
+          "exchange": 82
+        },
+        "disturbanceId": "heatwave"
+      },
+      "currentScenario": {
+        "environmentId": "longline",
+        "organisms": {
+          "oyster": 2,
+          "kelp": 1,
+          "nitrifiers": 1
+        },
+        "water": {
+          "temperature": 14,
+          "salinity": 30,
+          "oxygen": 9.2,
+          "pH": 8,
+          "ammonia": 0.04,
+          "exchange": 82
+        },
+        "disturbanceId": "heatwave"
+      },
+      "aEvent": "",
+      "bEvent": ""
+    },
+    "matchId": "m-mut9wv1e-8zird",
+    "count": 4,
+    "remaining": 4,
+    "limit": 8,
+    "position": null
+  }
+}

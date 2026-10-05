@@ -39,12 +39,17 @@ window.AlloModules.AlloDataModule = true;
 })();
 `;
 
-fs.writeFileSync(OUTPUT, outputCode, 'utf-8');
+const atomicWrite = (target, contents) => {
+    const temporary = target + '.build-' + process.pid + '.tmp';
+    fs.writeFileSync(temporary, contents, 'utf-8');
+    fs.renameSync(temporary, target);
+};
+atomicWrite(OUTPUT, outputCode);
 try {
     if (!fs.existsSync(path.dirname(DEPLOY_OUT))) {
         fs.mkdirSync(path.dirname(DEPLOY_OUT), { recursive: true });
     }
-    fs.writeFileSync(DEPLOY_OUT, outputCode, 'utf-8');
+    atomicWrite(DEPLOY_OUT, outputCode);
 } catch (e) {
     console.warn('[AlloData] Could not sync to desktop/web-app/public/:', e.message);
 }

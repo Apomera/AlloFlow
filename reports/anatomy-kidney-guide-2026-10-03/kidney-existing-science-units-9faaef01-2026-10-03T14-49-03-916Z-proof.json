@@ -1,0 +1,62 @@
+{
+  "runId": "9faaef01-2026-10-03T14-49-03-916Z",
+  "startedAt": "2026-10-03T14:49:51.041Z",
+  "finishedAt": "2026-10-03T14:49:57.054Z",
+  "report": "reports/anatomy-kidney-guide-2026-10-03/kidney-existing-science-units-9faaef01-2026-10-03T14-49-03-916Z.json",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/anatomy_lab_science.test.js",
+    "--testNamePattern",
+    "(?:connects posterior body location, kidney regions, and nephron processing|clamps nephron steps and exposes paused flow with final urine narration|keeps kidney structure keys in HTML and numbers in the SVG|links glomerular barrier disruption to the kidney Clinical Lens|gives every focused diagram a labeled visual key and explicit step state|activates a structure-changing mechanism layer in every non-cardiac diagram|changes every diagram and pairs the visible pathology with a functional consequence|keeps the three most relevant structures readable for every selected step|keeps normal anatomy as the default and exposes an accessible optional control)$",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--no-isolate",
+    "--testTimeout=300000",
+    "--hookTimeout=300000",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=reports/anatomy-kidney-guide-2026-10-03/kidney-existing-science-units-9faaef01-2026-10-03T14-49-03-916Z.json"
+  ],
+  "before": {
+    "stem_lab/stem_tool_anatomy.js": "9faaef017b8cff11cf5d0968334e861a84a34994415c4be2d67dc32e7af358fc",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "9faaef017b8cff11cf5d0968334e861a84a34994415c4be2d67dc32e7af358fc",
+    "tests/anatomy_kidney_guide.test.js": "9b3a3d7e59dfad53c6c52b12d668acdd1b5d08a2ff13dfa919b000227fbe5d44",
+    "tests/anatomy_lab_science.test.js": "4a189274f16c1faff8ed7d2382d255c1fa65a67ca293ecd36829b1ec7c1a0985",
+    "tests/e2e/anatomy-kidney-guide.spec.ts": "b080960b9d6ab437a1cbd35134e1046a30854e8919739e6a0d37366e989f7ff4",
+    "tests/anatomy_lens_gallery_navigation.test.js": "e0db13cb01d85c1e6e56cd57394fb198f8aaea38cec6e27fae335229e0803cad",
+    "tests/anatomy_scale_navigation.test.js": "f10c5e7f93aaa6b3f05e6f61202c194cdd08bb19450bad7fe1b26bb107d0fc7f"
+  },
+  "after": {
+    "stem_lab/stem_tool_anatomy.js": "9faaef017b8cff11cf5d0968334e861a84a34994415c4be2d67dc32e7af358fc",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "9faaef017b8cff11cf5d0968334e861a84a34994415c4be2d67dc32e7af358fc",
+    "tests/anatomy_kidney_guide.test.js": "9b3a3d7e59dfad53c6c52b12d668acdd1b5d08a2ff13dfa919b000227fbe5d44",
+    "tests/anatomy_lab_science.test.js": "4a189274f16c1faff8ed7d2382d255c1fa65a67ca293ecd36829b1ec7c1a0985",
+    "tests/e2e/anatomy-kidney-guide.spec.ts": "b080960b9d6ab437a1cbd35134e1046a30854e8919739e6a0d37366e989f7ff4",
+    "tests/anatomy_lens_gallery_navigation.test.js": "e0db13cb01d85c1e6e56cd57394fb198f8aaea38cec6e27fae335229e0803cad",
+    "tests/anatomy_scale_navigation.test.js": "f10c5e7f93aaa6b3f05e6f61202c194cdd08bb19450bad7fe1b26bb107d0fc7f"
+  },
+  "sourceUnchanged": true,
+  "mirrorsIdentical": true,
+  "exitCode": 0,
+  "error": null,
+  "total": 155,
+  "passed": 9,
+  "skipped": 146,
+  "failed": 0,
+  "success": true,
+  "executedCases": [
+    "connects posterior body location, kidney regions, and nephron processing",
+    "clamps nephron steps and exposes paused flow with final urine narration",
+    "gives every focused diagram a labeled visual key and explicit step state",
+    "activates a structure-changing mechanism layer in every non-cardiac diagram",
+    "keeps the three most relevant structures readable for every selected step",
+    "keeps kidney structure keys in HTML and numbers in the SVG",
+    "keeps normal anatomy as the default and exposes an accessible optional control",
+    "changes every diagram and pairs the visible pathology with a functional consequence",
+    "links glomerular barrier disruption to the kidney Clinical Lens"
+  ],
+  "missingRequiredCases": [],
+  "fixturesMatchPins": true
+}

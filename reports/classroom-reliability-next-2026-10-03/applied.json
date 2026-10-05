@@ -1,0 +1,286 @@
+{
+  "preparedAt": "2026-10-04T00:58:03.461Z",
+  "pin": "1576a204",
+  "files": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "beforeSha256": "e3154edcba1aa5c418c8d658e051c304cad1a615eb1a769f27c06616bc42dbfb",
+      "afterSha256": "2d73c4265d0617f815e3bdd2fad9243e94af27034629700a5aa0c00fdc31d442",
+      "candidate": "candidate/AlloFlowANTI.txt"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "beforeSha256": "e3154edcba1aa5c418c8d658e051c304cad1a615eb1a769f27c06616bc42dbfb",
+      "afterSha256": "2d73c4265d0617f815e3bdd2fad9243e94af27034629700a5aa0c00fdc31d442",
+      "candidate": "candidate/desktop/web-app/src/AlloFlowANTI.txt"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "beforeSha256": "e3154edcba1aa5c418c8d658e051c304cad1a615eb1a769f27c06616bc42dbfb",
+      "afterSha256": "2d73c4265d0617f815e3bdd2fad9243e94af27034629700a5aa0c00fdc31d442",
+      "candidate": "candidate/desktop/web-app/src/App.jsx"
+    },
+    {
+      "file": "host_handlers_source.jsx",
+      "beforeSha256": "6898dfc5a7b180c4390fdba5e4b93dcc72e4c35259fa6764f6abb4b1343ba764",
+      "afterSha256": "40bf89a1fe897d781d14b848f4b1c8f2f47403070103807f896f8dd1904747c2",
+      "candidate": "candidate/host_handlers_source.jsx"
+    },
+    {
+      "file": "host_handlers_module.js",
+      "beforeSha256": "eb3abff5ff4a717de1ec49ebb44630a33bd8df5cee4f4a99090081260dc68beb",
+      "afterSha256": "1576a2042a8ae908e91a0db397976eadf680772d43ec6df72c39607337b042a2",
+      "candidate": "candidate/host_handlers_module.js"
+    },
+    {
+      "file": "desktop/web-app/public/host_handlers_module.js",
+      "beforeSha256": "eb3abff5ff4a717de1ec49ebb44630a33bd8df5cee4f4a99090081260dc68beb",
+      "afterSha256": "1576a2042a8ae908e91a0db397976eadf680772d43ec6df72c39607337b042a2",
+      "candidate": "candidate/desktop/web-app/public/host_handlers_module.js"
+    },
+    {
+      "file": "dev-tools/host_handlers_wave3_manifest.json",
+      "beforeSha256": "24f1011ea8e884abab91742897e0dc49c9d47489ac356629e890b3d7e595adf8",
+      "afterSha256": "b674f325d93227fc69762b7eb19ad41b04c0126ea98dda18e08eda703857467f",
+      "candidate": "candidate/dev-tools/host_handlers_wave3_manifest.json"
+    }
+  ],
+  "operations": [
+    {
+      "target": "host_handlers_source.jsx",
+      "before": "              || Boolean(__d.guidedPlanBrief);",
+      "after": "              || Boolean(__d.guidedPlanBrief)\n              || __d.hasMeaningfulWordSoundsWorkspace();"
+    },
+    {
+      "target": "host_handlers_source.jsx",
+      "before": "await buildCanvasWorkspaceSnapshot(__d.canvasRecoveryCurrentIdRef.current)",
+      "after": "await __d.buildCanvasWorkspaceSnapshot(__d.canvasRecoveryCurrentIdRef.current)"
+    },
+    {
+      "target": "host_handlers_source.jsx",
+      "before": "const lockCanvasRecoveryVault = async () => {\n      const controller = __d.canvasRecoveryVaultControllerRef.current;\n      if (!controller || __d.canvasRecoveryMutationInProgressRef.current) return;\n      __d.canvasRecoveryMutationInProgressRef.current = true;\n      __d.canvasRecoverySaveTokenRef.current += 1;\n      __d.setCanvasRecoveryBusyId('vault-lock');\n      try {\n          await __d.canvasRecoveryWriteQueueRef.current.catch(() => undefined);\n          const hasMeaningfulWorkspace = __d.history.length > 0\n              || __d.units.length > 0\n              || __d.profiles.length > 0\n              || Object.keys(__d.studentResponses || {}).length > 0\n              || (typeof __d.inputText === 'string' && Boolean(__d.inputText.trim()))\n              || (typeof __d.sourceTopic === 'string' && Boolean(__d.sourceTopic.trim()))\n              || Boolean(__d.guidedPlanBrief)\n              || __d.hasMeaningfulWordSoundsWorkspace();\n          if (__d.canvasRecoveryDecisionMade && hasMeaningfulWorkspace) {\n              let snapshot = await __d.buildCanvasWorkspaceSnapshot(__d.canvasRecoveryCurrentIdRef.current);\n              let quotaSave = await __d.queueCanvasRecoveryStorage(() => __d.ALLO_WORKSPACE_RECOVERY.saveWithQuotaFallback(\n                  snapshot,\n                  candidate => controller.upsertSnapshot(candidate)\n              ));\n              if (quotaSave.result?.saved === false && quotaSave.result?.reason === 'removed') {\n                  const replacementId = __d.ALLO_WORKSPACE_RECOVERY.newId();\n                  __d.canvasRecoveryCurrentIdRef.current = replacementId;\n                  snapshot = { ...snapshot, id: replacementId, createdAt: new Date().toISOString(), savedAt: new Date().toISOString(), pinned: false };\n                  quotaSave = await __d.queueCanvasRecoveryStorage(() => __d.ALLO_WORKSPACE_RECOVERY.saveWithQuotaFallback(\n                      snapshot,\n                      candidate => controller.upsertSnapshot(candidate)\n                  ));\n              }\n              if (quotaSave.result?.saved === false) throw new Error('The latest workspace could not be saved before locking.');\n          }\n          controller.lock();\n          const status = await controller.getStatus();\n          __d.publishCanvasRecoveryVaultLockedState(status);\n          __d.canvasRecoveryPendingSaveCountRef.current = 0;\n          clearCanvasWorkspaceState({ archivePlan: false });\n          __d.setLastSaved(null);\n          __d.setPendingSync(false);\n          __d.clearCanvasRecoveryVaultSecrets('unlock');\n          __d.setCanvasRecoveryDialogMode('vault-locked');\n      } catch (error) {\n          __d.setCanvasRecoveryError(String(error?.message || 'Protected work could not be saved, so this tab was not locked.'));\n      } finally {\n          __d.canvasRecoveryMutationInProgressRef.current = false;\n          __d.setCanvasRecoveryBusyId(null);\n      }\n  };",
+      "after": "const lockCanvasRecoveryVault = async () => {\n      const controller = __d.canvasRecoveryVaultControllerRef.current;\n      if (!controller || __d.canvasRecoveryMutationInProgressRef.current) return;\n      __d.canvasRecoveryMutationInProgressRef.current = true;\n      __d.canvasRecoverySaveTokenRef.current += 1;\n      __d.setCanvasRecoveryBusyId('vault-lock');\n      try {\n          await __d.canvasRecoveryWriteQueueRef.current.catch(() => undefined);\n          const hasMeaningfulWorkspace = __d.history.length > 0\n              || __d.units.length > 0\n              || __d.profiles.length > 0\n              || Object.keys(__d.studentResponses || {}).length > 0\n              || (typeof __d.inputText === 'string' && Boolean(__d.inputText.trim()))\n              || (typeof __d.sourceTopic === 'string' && Boolean(__d.sourceTopic.trim()))\n              || Boolean(__d.guidedPlanBrief)\n              || __d.hasMeaningfulWordSoundsWorkspace();\n          if (__d.canvasRecoveryDecisionMade && hasMeaningfulWorkspace) {\n              let snapshot = await __d.buildCanvasWorkspaceSnapshot(__d.canvasRecoveryCurrentIdRef.current);\n              let quotaSave = await __d.queueCanvasRecoveryStorage(() => __d.ALLO_WORKSPACE_RECOVERY.saveWithQuotaFallback(\n                  snapshot,\n                  candidate => controller.upsertSnapshot(candidate)\n              ));\n              if (quotaSave.result?.saved === false && quotaSave.result?.reason === 'removed') {\n                  const replacementId = __d.ALLO_WORKSPACE_RECOVERY.newId();\n                  __d.canvasRecoveryCurrentIdRef.current = replacementId;\n                  snapshot = { ...snapshot, id: replacementId, createdAt: new Date().toISOString(), savedAt: new Date().toISOString(), pinned: false };\n                  quotaSave = await __d.queueCanvasRecoveryStorage(() => __d.ALLO_WORKSPACE_RECOVERY.saveWithQuotaFallback(\n                      snapshot,\n                      candidate => controller.upsertSnapshot(candidate)\n                  ));\n              }\n              if (quotaSave.result?.saved === false) throw new Error('The latest workspace could not be saved before locking.');\n          }\n          controller.lock();\n          const status = await controller.getStatus();\n          __d.publishCanvasRecoveryVaultLockedState(status);\n          __d.canvasRecoveryPendingSaveCountRef.current = 0;\n          __d.clearCanvasWorkspaceState({ archivePlan: false });\n          __d.setLastSaved(null);\n          __d.setPendingSync(false);\n          __d.clearCanvasRecoveryVaultSecrets('unlock');\n          __d.setCanvasRecoveryDialogMode('vault-locked');\n      } catch (error) {\n          __d.setCanvasRecoveryError(String(error?.message || 'Protected work could not be saved, so this tab was not locked.'));\n      } finally {\n          __d.canvasRecoveryMutationInProgressRef.current = false;\n          __d.setCanvasRecoveryBusyId(null);\n      }\n  };"
+    },
+    {
+      "target": "host_handlers_source.jsx",
+      "before": "const eraseAllCanvasRecoveryVault = async () => {\n      if (__d.canvasRecoveryVaultForm.eraseConfirmation !== 'ERASE') {\n          __d.setCanvasRecoveryError('Type ERASE exactly to confirm permanent removal of protected recovery workspaces.');\n          return;\n      }\n      __d.setCanvasRecoveryBusyId('vault-erase-all');\n      __d.canvasRecoveryMutationInProgressRef.current = true;\n      __d.canvasRecoverySaveTokenRef.current += 1;\n      try {\n          const controller = await __d.getCanvasRecoveryVaultController();\n          await __d.queueCanvasRecoveryStorage(() => controller.eraseAll());\n          const status = await controller.getStatus();\n          if (status.enabled || status.snapshotCount !== 0) throw new Error('Erase verification failed.');\n          __d.canvasRecoveryVaultControllerRef.current = null;\n          __d.canvasRecoveryVaultImportRef.current = null;\n          __d.canvasRecoveryVaultPendingActionRef.current = null;\n          const empty = __d.ALLO_WORKSPACE_RECOVERY.emptyStore();\n          __d.canvasRecoveryStoreRef.current = empty;\n          __d.setCanvasRecoveryStore(empty);\n          __d.setCanvasRecoveryVaultState({ available: true, enabled: false, locked: false, recoveryEnabled: false, snapshotCount: 0 });\n          __d.canvasRecoveryCurrentIdRef.current = __d.ALLO_WORKSPACE_RECOVERY.newId();\n          clearCanvasWorkspaceState({ archivePlan: false });\n          __d.clearCanvasRecoveryVaultSecrets('idle');\n          __d.setCanvasRecoveryDecisionMade(true);\n          __d.setCanvasRecoveryDialogMode(null);\n          __d.setCanvasRecoveryError('');\n          __d.setCanvasRecoverySaveStatus('idle');\n          __d.addToast((__d.t('storage.protected_recovery_workspaces_were_permanently_e') || 'Protected recovery workspaces were permanently erased from this device.'), 'info');\n      } catch (error) {\n          __d.setCanvasRecoveryError(String(error?.message || 'Protected saved work could not be erased or verified.'));\n      } finally {\n          __d.canvasRecoveryMutationInProgressRef.current = false;\n          __d.setCanvasRecoveryBusyId(null);\n      }\n  };",
+      "after": "const eraseAllCanvasRecoveryVault = async () => {\n      if (__d.canvasRecoveryVaultForm.eraseConfirmation !== 'ERASE') {\n          __d.setCanvasRecoveryError('Type ERASE exactly to confirm permanent removal of protected recovery workspaces.');\n          return;\n      }\n      __d.setCanvasRecoveryBusyId('vault-erase-all');\n      __d.canvasRecoveryMutationInProgressRef.current = true;\n      __d.canvasRecoverySaveTokenRef.current += 1;\n      try {\n          const controller = await __d.getCanvasRecoveryVaultController();\n          await __d.queueCanvasRecoveryStorage(() => controller.eraseAll());\n          const status = await controller.getStatus();\n          if (status.enabled || status.snapshotCount !== 0) throw new Error('Erase verification failed.');\n          __d.canvasRecoveryVaultControllerRef.current = null;\n          __d.canvasRecoveryVaultImportRef.current = null;\n          __d.canvasRecoveryVaultPendingActionRef.current = null;\n          const empty = __d.ALLO_WORKSPACE_RECOVERY.emptyStore();\n          __d.canvasRecoveryStoreRef.current = empty;\n          __d.setCanvasRecoveryStore(empty);\n          __d.setCanvasRecoveryVaultState({ available: true, enabled: false, locked: false, recoveryEnabled: false, snapshotCount: 0 });\n          __d.canvasRecoveryCurrentIdRef.current = __d.ALLO_WORKSPACE_RECOVERY.newId();\n          __d.clearCanvasWorkspaceState({ archivePlan: false });\n          __d.clearCanvasRecoveryVaultSecrets('idle');\n          __d.setCanvasRecoveryDecisionMade(true);\n          __d.setCanvasRecoveryDialogMode(null);\n          __d.setCanvasRecoveryError('');\n          __d.setCanvasRecoverySaveStatus('idle');\n          __d.addToast((__d.t('storage.protected_recovery_workspaces_were_permanently_e') || 'Protected recovery workspaces were permanently erased from this device.'), 'info');\n      } catch (error) {\n          __d.setCanvasRecoveryError(String(error?.message || 'Protected saved work could not be erased or verified.'));\n      } finally {\n          __d.canvasRecoveryMutationInProgressRef.current = false;\n          __d.setCanvasRecoveryBusyId(null);\n      }\n  };"
+    },
+    {
+      "target": "host_handlers_source.jsx",
+      "before": "const eraseCanvasRecoverySnapshot = async (snapshotId) => {\n      if (__d.canvasRecoveryMutationInProgressRef.current) return;\n      __d.canvasRecoveryMutationInProgressRef.current = true;\n      __d.canvasRecoverySaveTokenRef.current += 1;\n      __d.canvasRecoveryPendingSaveCountRef.current = 0;\n      __d.setPendingSync(false);\n      __d.setCanvasRecoveryBusyId(snapshotId);\n      try {\n          const nextStore = await __d.queueCanvasRecoveryStorage(async () => {\n              const deviceStorage = await __d._alloGetCanvasDeviceStorage();\n              const target = __d.canvasRecoveryStoreRef.current.snapshots.find(item => item.id === snapshotId);\n              const isLegacyMigration = Boolean(target?.omittedAssetManifest?.some(item => item?.kind === 'legacy-cache'));\n              let next;\n              if (__d.canvasRecoveryVaultState.enabled) {\n                  if (__d.canvasRecoveryVaultState.locked) throw new Error('Unlock protected recovery workspaces before erasing one item.');\n                  const controller = await __d.getCanvasRecoveryVaultController();\n                  await controller.deleteSnapshot(snapshotId);\n                  next = (await __d.syncCanvasRecoveryVaultState(controller)).store;\n              } else {\n                  const mutationResult = await deviceStorage.mutateRecovery(\n                      __d.ALLO_WORKSPACE_RECOVERY_NAMESPACE,\n                      __d.ALLO_WORKSPACE_RECOVERY_KEY,\n                      { version: __d.ALLO_WORKSPACE_RECOVERY.VERSION, action: 'remove', snapshotId },\n                      { queue: false }\n                  );\n                  next = __d.ALLO_WORKSPACE_RECOVERY.normalizeStore(mutationResult.store);\n              }\n              if (isLegacyMigration) {\n                  try { await deviceStorage.remove('app_kv', 'allo_offline_history', { queue: false }); } catch (_) {}\n                  try { await __d.storageDB.del('allo_offline_history'); } catch (_) {}\n              }\n              return next;\n          });\n          __d.canvasRecoveryStoreRef.current = nextStore;\n          __d.setCanvasRecoveryStore(nextStore);\n          __d.setCanvasRecoveryStoreAuthoritative(true);\n          __d.setCanvasRecoveryEraseId(null);\n          if (__d.canvasRecoveryCurrentIdRef.current === snapshotId) {\n              __d.canvasRecoveryCurrentIdRef.current = __d.ALLO_WORKSPACE_RECOVERY.newId();\n              clearCanvasWorkspaceState({ archivePlan: !__d.canvasRecoveryVaultState.enabled });\n              __d.setLastSaved(null);\n              __d.setCanvasRecoverySaveStatus('idle');\n          }\n          __d.setCanvasRecoveryError('');\n          __d.addToast((__d.t('storage.saved_workspace_erased_from_this_device') || 'Saved workspace erased from this device.'), 'info');\n          void refreshStorageManagerInventory();\n      } catch (error) {\n          __d.setCanvasRecoveryError(String(error?.message || 'The saved workspace could not be erased.'));\n          __d.setCanvasRecoverySaveStatus('error');\n      } finally {\n          __d.canvasRecoveryMutationInProgressRef.current = false;\n          __d.setCanvasRecoveryBusyId(null);\n      }\n  };",
+      "after": "const eraseCanvasRecoverySnapshot = async (snapshotId) => {\n      if (__d.canvasRecoveryMutationInProgressRef.current) return;\n      __d.canvasRecoveryMutationInProgressRef.current = true;\n      __d.canvasRecoverySaveTokenRef.current += 1;\n      __d.canvasRecoveryPendingSaveCountRef.current = 0;\n      __d.setPendingSync(false);\n      __d.setCanvasRecoveryBusyId(snapshotId);\n      try {\n          const nextStore = await __d.queueCanvasRecoveryStorage(async () => {\n              const deviceStorage = await __d._alloGetCanvasDeviceStorage();\n              const target = __d.canvasRecoveryStoreRef.current.snapshots.find(item => item.id === snapshotId);\n              const isLegacyMigration = Boolean(target?.omittedAssetManifest?.some(item => item?.kind === 'legacy-cache'));\n              let next;\n              if (__d.canvasRecoveryVaultState.enabled) {\n                  if (__d.canvasRecoveryVaultState.locked) throw new Error('Unlock protected recovery workspaces before erasing one item.');\n                  const controller = await __d.getCanvasRecoveryVaultController();\n                  await controller.deleteSnapshot(snapshotId);\n                  next = (await __d.syncCanvasRecoveryVaultState(controller)).store;\n              } else {\n                  const mutationResult = await deviceStorage.mutateRecovery(\n                      __d.ALLO_WORKSPACE_RECOVERY_NAMESPACE,\n                      __d.ALLO_WORKSPACE_RECOVERY_KEY,\n                      { version: __d.ALLO_WORKSPACE_RECOVERY.VERSION, action: 'remove', snapshotId },\n                      { queue: false }\n                  );\n                  next = __d.ALLO_WORKSPACE_RECOVERY.normalizeStore(mutationResult.store);\n              }\n              if (isLegacyMigration) {\n                  try { await deviceStorage.remove('app_kv', 'allo_offline_history', { queue: false }); } catch (_) {}\n                  try { await __d.storageDB.del('allo_offline_history'); } catch (_) {}\n              }\n              return next;\n          });\n          __d.canvasRecoveryStoreRef.current = nextStore;\n          __d.setCanvasRecoveryStore(nextStore);\n          __d.setCanvasRecoveryStoreAuthoritative(true);\n          __d.setCanvasRecoveryEraseId(null);\n          if (__d.canvasRecoveryCurrentIdRef.current === snapshotId) {\n              __d.canvasRecoveryCurrentIdRef.current = __d.ALLO_WORKSPACE_RECOVERY.newId();\n              __d.clearCanvasWorkspaceState({ archivePlan: !__d.canvasRecoveryVaultState.enabled });\n              __d.setLastSaved(null);\n              __d.setCanvasRecoverySaveStatus('idle');\n          }\n          __d.setCanvasRecoveryError('');\n          __d.addToast((__d.t('storage.saved_workspace_erased_from_this_device') || 'Saved workspace erased from this device.'), 'info');\n          void refreshStorageManagerInventory();\n      } catch (error) {\n          __d.setCanvasRecoveryError(String(error?.message || 'The saved workspace could not be erased.'));\n          __d.setCanvasRecoverySaveStatus('error');\n      } finally {\n          __d.canvasRecoveryMutationInProgressRef.current = false;\n          __d.setCanvasRecoveryBusyId(null);\n      }\n  };"
+    },
+    {
+      "target": "host_handlers_source.jsx",
+      "before": "      const studioApi = window.AlloModules && window.AlloModules.StudioResponse;\n      const cleanContent =",
+      "after": "      const studioApi = window.AlloModules && window.AlloModules.StudioResponse;\n      const needsStudioResponse = filteredContent.some(item => ['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type));\n      if (needsStudioResponse && (!studioApi || ['supports', 'toSubmission', 'toResponseEntries'].some(name => typeof studioApi[name] !== 'function'))) {\n          __d.addToast(__d.t('toasts.export_tools_still_loading_try') || 'Submission tools are still loading. Try Submit again.', 'error');\n          return { ok: false, retryable: true, reason: 'studio-tools-not-ready' };\n      }\n      const cleanContent ="
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "  const [pendingQrAssignmentResource, setPendingQrAssignmentResource] = useState(null);",
+      "after": "  const [pendingQrAssignmentOpenRequest, setPendingQrAssignmentOpenRequest] = useState(null);\n  const pendingQrAssignmentResource = pendingQrAssignmentOpenRequest?.resource || null;\n  const pendingQrAssignmentOpenRequestRef = useRef(null);\n  const setPendingQrAssignmentResource = useCallback(value => {\n      const current = pendingQrAssignmentOpenRequestRef.current;\n      const resource = typeof value === 'function' ? value(current?.resource || null) : value;\n      if (typeof value === 'function' && resource === (current?.resource || null)) return;\n      if (!resource && !current) return;\n      // Retire ownership immediately, including before React commits cleanup.\n      // A fresh token also distinguishes an exact-object A -> null -> A batch.\n      const next = resource ? { resource } : null;\n      pendingQrAssignmentOpenRequestRef.current = next;\n      setPendingQrAssignmentOpenRequest(next);\n  }, []);"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {\n          _alloMarkRemovedResChunks",
+      "after": "      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {\n          setPendingQrAssignmentResource(current => current && v.ids.includes(current.id) ? null : current);\n          _alloMarkRemovedResChunks"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "  const clearCanvasWorkspaceState = (options = {}) => {",
+      "after": "  const clearCanvasWorkspaceState = (options = {}) => {\n      setPendingQrAssignmentResource(null);"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "  const handleClearHistory = () => {",
+      "after": "  const handleClearHistory = () => {\n    setPendingQrAssignmentResource(null);"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "      const resource = pendingQrAssignmentResource;\n      const openContext = historyOpenContextRef.current;",
+      "after": "      const resource = pendingQrAssignmentResource;\n      const openRequest = pendingQrAssignmentOpenRequest;\n      const openContext = historyOpenContextRef.current;"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "      const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current;",
+      "after": "      const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current\n          && pendingQrAssignmentOpenRequestRef.current === openRequest;"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "          if (openContext === current) return true;\n          const hydration = bootHistoryHydrationRef.current;",
+      "after": "          if (openContext === current) return true;\n          // Removing an unrelated history item leaves this exact pending artifact valid.\n          if (openContext?.values && current?.values\n              && openContext.values.every((value, index) => index === 1 || value === current.values[index])\n              && Array.isArray(current.values[1]) && current.values[1].includes(resource)) return true;\n          const hydration = bootHistoryHydrationRef.current;"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "              setPendingQrAssignmentResource(current => current === resource ? null : current);",
+      "after": "              setPendingQrAssignmentResource(current => pendingQrAssignmentOpenRequestRef.current === openRequest && current === resource ? null : current);"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "  }, [pendingQrAssignmentResource, isTeacherMode]);",
+      "after": "  }, [pendingQrAssignmentOpenRequest, isTeacherMode]);"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "  const buildCanvasWorkspaceSnapshot = async (workspaceId = canvasRecoveryCurrentIdRef.current) => {",
+      "after": "  const hasMeaningfulWordSoundsWorkspace = () =>\n      [wordSoundsHistory, wordSoundsFamilies, wordSoundsAudioLibrary, wordSoundsBadges, phonemeMastery, wordSoundsConfusionPatterns]\n          .some(value => value && typeof value === 'object' && Object.keys(value).length > 0)\n      || Number(wordSoundsDailyProgress?.completed) > 0\n      || wordSoundsDailyProgress?.goalMet === true\n      || Object.values(wordSoundsScore || {}).some(value => typeof value === 'number' && Number.isFinite(value) && value > 0);\n\n  const buildCanvasWorkspaceSnapshot = async (workspaceId = canvasRecoveryCurrentIdRef.current) => {"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "          || Boolean(guidedPlanBrief);\n      if (liveStudentEntry || !hasMeaningfulWorkspace)",
+      "after": "          || Boolean(guidedPlanBrief)\n          || hasMeaningfulWordSoundsWorkspace();\n      if (liveStudentEntry || !hasMeaningfulWorkspace)"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "  const __alloHostDeps = {",
+      "after": "  const __alloHostDeps = {\n    get buildCanvasWorkspaceSnapshot() { return buildCanvasWorkspaceSnapshot; }, get clearCanvasWorkspaceState() { return clearCanvasWorkspaceState; }, get hasMeaningfulWordSoundsWorkspace() { return hasMeaningfulWordSoundsWorkspace; },"
+    },
+    {
+      "target": "AlloFlowANTI.txt",
+      "before": "host_handlers_module.js?v=d2ca5eb2",
+      "after": "host_handlers_module.js?v=1576a204"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "  const [pendingQrAssignmentResource, setPendingQrAssignmentResource] = useState(null);",
+      "after": "  const [pendingQrAssignmentOpenRequest, setPendingQrAssignmentOpenRequest] = useState(null);\n  const pendingQrAssignmentResource = pendingQrAssignmentOpenRequest?.resource || null;\n  const pendingQrAssignmentOpenRequestRef = useRef(null);\n  const setPendingQrAssignmentResource = useCallback(value => {\n      const current = pendingQrAssignmentOpenRequestRef.current;\n      const resource = typeof value === 'function' ? value(current?.resource || null) : value;\n      if (typeof value === 'function' && resource === (current?.resource || null)) return;\n      if (!resource && !current) return;\n      // Retire ownership immediately, including before React commits cleanup.\n      // A fresh token also distinguishes an exact-object A -> null -> A batch.\n      const next = resource ? { resource } : null;\n      pendingQrAssignmentOpenRequestRef.current = next;\n      setPendingQrAssignmentOpenRequest(next);\n  }, []);"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {\n          _alloMarkRemovedResChunks",
+      "after": "      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {\n          setPendingQrAssignmentResource(current => current && v.ids.includes(current.id) ? null : current);\n          _alloMarkRemovedResChunks"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "  const clearCanvasWorkspaceState = (options = {}) => {",
+      "after": "  const clearCanvasWorkspaceState = (options = {}) => {\n      setPendingQrAssignmentResource(null);"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "  const handleClearHistory = () => {",
+      "after": "  const handleClearHistory = () => {\n    setPendingQrAssignmentResource(null);"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "      const resource = pendingQrAssignmentResource;\n      const openContext = historyOpenContextRef.current;",
+      "after": "      const resource = pendingQrAssignmentResource;\n      const openRequest = pendingQrAssignmentOpenRequest;\n      const openContext = historyOpenContextRef.current;"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "      const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current;",
+      "after": "      const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current\n          && pendingQrAssignmentOpenRequestRef.current === openRequest;"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "          if (openContext === current) return true;\n          const hydration = bootHistoryHydrationRef.current;",
+      "after": "          if (openContext === current) return true;\n          // Removing an unrelated history item leaves this exact pending artifact valid.\n          if (openContext?.values && current?.values\n              && openContext.values.every((value, index) => index === 1 || value === current.values[index])\n              && Array.isArray(current.values[1]) && current.values[1].includes(resource)) return true;\n          const hydration = bootHistoryHydrationRef.current;"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "              setPendingQrAssignmentResource(current => current === resource ? null : current);",
+      "after": "              setPendingQrAssignmentResource(current => pendingQrAssignmentOpenRequestRef.current === openRequest && current === resource ? null : current);"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "  }, [pendingQrAssignmentResource, isTeacherMode]);",
+      "after": "  }, [pendingQrAssignmentOpenRequest, isTeacherMode]);"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "  const buildCanvasWorkspaceSnapshot = async (workspaceId = canvasRecoveryCurrentIdRef.current) => {",
+      "after": "  const hasMeaningfulWordSoundsWorkspace = () =>\n      [wordSoundsHistory, wordSoundsFamilies, wordSoundsAudioLibrary, wordSoundsBadges, phonemeMastery, wordSoundsConfusionPatterns]\n          .some(value => value && typeof value === 'object' && Object.keys(value).length > 0)\n      || Number(wordSoundsDailyProgress?.completed) > 0\n      || wordSoundsDailyProgress?.goalMet === true\n      || Object.values(wordSoundsScore || {}).some(value => typeof value === 'number' && Number.isFinite(value) && value > 0);\n\n  const buildCanvasWorkspaceSnapshot = async (workspaceId = canvasRecoveryCurrentIdRef.current) => {"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "          || Boolean(guidedPlanBrief);\n      if (liveStudentEntry || !hasMeaningfulWorkspace)",
+      "after": "          || Boolean(guidedPlanBrief)\n          || hasMeaningfulWordSoundsWorkspace();\n      if (liveStudentEntry || !hasMeaningfulWorkspace)"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "  const __alloHostDeps = {",
+      "after": "  const __alloHostDeps = {\n    get buildCanvasWorkspaceSnapshot() { return buildCanvasWorkspaceSnapshot; }, get clearCanvasWorkspaceState() { return clearCanvasWorkspaceState; }, get hasMeaningfulWordSoundsWorkspace() { return hasMeaningfulWordSoundsWorkspace; },"
+    },
+    {
+      "target": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "host_handlers_module.js?v=d2ca5eb2",
+      "after": "host_handlers_module.js?v=1576a204"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "  const [pendingQrAssignmentResource, setPendingQrAssignmentResource] = useState(null);",
+      "after": "  const [pendingQrAssignmentOpenRequest, setPendingQrAssignmentOpenRequest] = useState(null);\n  const pendingQrAssignmentResource = pendingQrAssignmentOpenRequest?.resource || null;\n  const pendingQrAssignmentOpenRequestRef = useRef(null);\n  const setPendingQrAssignmentResource = useCallback(value => {\n      const current = pendingQrAssignmentOpenRequestRef.current;\n      const resource = typeof value === 'function' ? value(current?.resource || null) : value;\n      if (typeof value === 'function' && resource === (current?.resource || null)) return;\n      if (!resource && !current) return;\n      // Retire ownership immediately, including before React commits cleanup.\n      // A fresh token also distinguishes an exact-object A -> null -> A batch.\n      const next = resource ? { resource } : null;\n      pendingQrAssignmentOpenRequestRef.current = next;\n      setPendingQrAssignmentOpenRequest(next);\n  }, []);"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {\n          _alloMarkRemovedResChunks",
+      "after": "      if (v.kind === 'res-remove' && Array.isArray(v.ids)) {\n          setPendingQrAssignmentResource(current => current && v.ids.includes(current.id) ? null : current);\n          _alloMarkRemovedResChunks"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "  const clearCanvasWorkspaceState = (options = {}) => {",
+      "after": "  const clearCanvasWorkspaceState = (options = {}) => {\n      setPendingQrAssignmentResource(null);"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "  const handleClearHistory = () => {",
+      "after": "  const handleClearHistory = () => {\n    setPendingQrAssignmentResource(null);"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "      const resource = pendingQrAssignmentResource;\n      const openContext = historyOpenContextRef.current;",
+      "after": "      const resource = pendingQrAssignmentResource;\n      const openRequest = pendingQrAssignmentOpenRequest;\n      const openContext = historyOpenContextRef.current;"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "      const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current;",
+      "after": "      const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current\n          && pendingQrAssignmentOpenRequestRef.current === openRequest;"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "          if (openContext === current) return true;\n          const hydration = bootHistoryHydrationRef.current;",
+      "after": "          if (openContext === current) return true;\n          // Removing an unrelated history item leaves this exact pending artifact valid.\n          if (openContext?.values && current?.values\n              && openContext.values.every((value, index) => index === 1 || value === current.values[index])\n              && Array.isArray(current.values[1]) && current.values[1].includes(resource)) return true;\n          const hydration = bootHistoryHydrationRef.current;"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "              setPendingQrAssignmentResource(current => current === resource ? null : current);",
+      "after": "              setPendingQrAssignmentResource(current => pendingQrAssignmentOpenRequestRef.current === openRequest && current === resource ? null : current);"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "  }, [pendingQrAssignmentResource, isTeacherMode]);",
+      "after": "  }, [pendingQrAssignmentOpenRequest, isTeacherMode]);"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "  const buildCanvasWorkspaceSnapshot = async (workspaceId = canvasRecoveryCurrentIdRef.current) => {",
+      "after": "  const hasMeaningfulWordSoundsWorkspace = () =>\n      [wordSoundsHistory, wordSoundsFamilies, wordSoundsAudioLibrary, wordSoundsBadges, phonemeMastery, wordSoundsConfusionPatterns]\n          .some(value => value && typeof value === 'object' && Object.keys(value).length > 0)\n      || Number(wordSoundsDailyProgress?.completed) > 0\n      || wordSoundsDailyProgress?.goalMet === true\n      || Object.values(wordSoundsScore || {}).some(value => typeof value === 'number' && Number.isFinite(value) && value > 0);\n\n  const buildCanvasWorkspaceSnapshot = async (workspaceId = canvasRecoveryCurrentIdRef.current) => {"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "          || Boolean(guidedPlanBrief);\n      if (liveStudentEntry || !hasMeaningfulWorkspace)",
+      "after": "          || Boolean(guidedPlanBrief)\n          || hasMeaningfulWordSoundsWorkspace();\n      if (liveStudentEntry || !hasMeaningfulWorkspace)"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "  const __alloHostDeps = {",
+      "after": "  const __alloHostDeps = {\n    get buildCanvasWorkspaceSnapshot() { return buildCanvasWorkspaceSnapshot; }, get clearCanvasWorkspaceState() { return clearCanvasWorkspaceState; }, get hasMeaningfulWordSoundsWorkspace() { return hasMeaningfulWordSoundsWorkspace; },"
+    },
+    {
+      "target": "desktop/web-app/src/App.jsx",
+      "before": "host_handlers_module.js?v=d2ca5eb2",
+      "after": "host_handlers_module.js?v=1576a204"
+    }
+  ],
+  "context": [
+    {
+      "file": "_build_first_wave_view_modules.js",
+      "sha256": "f5b4f09a2d35d684f700a7ce43880c5128e789047b2108339751de091ecceada"
+    },
+    {
+      "file": "word_sounds_readiness_contract.js",
+      "sha256": "364c4241ff653f705ca529780e1142b8ad3147864953d1f315831791a918fb4e"
+    }
+  ],
+  "appliedAt": "2026-10-04T00:58:50.327Z"
+}

@@ -1,0 +1,137 @@
+{
+  "startedAt": "2026-10-04T14:54:56.732Z",
+  "checks": [
+    {
+      "name": "forced: solid native measurement has explicit units and truthful compact results",
+      "status": "fail",
+      "message": "Expected values to be strictly equal:\n\n1.5 !== 12\n"
+    },
+    {
+      "name": "forced: stepped native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 28,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "forced: ring native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 32,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "forced: partial native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 1.5,
+        "surface": null,
+        "exact": false,
+        "solid": false
+      }
+    },
+    {
+      "name": "forced: larger partial-block panel fits and scrolls without horizontal overflow",
+      "status": "pass",
+      "evidence": {
+        "rect": {
+          "x": 482,
+          "y": 75,
+          "right": 912,
+          "bottom": 479
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "width": 428,
+        "content": 428,
+        "scrollable": "auto",
+        "close": {
+          "width": 44,
+          "height": 44
+        },
+        "text": [
+          {
+            "text": "Bounding-box dimensions\n(units)",
+            "width": 396,
+            "content": 396
+          },
+          {
+            "text": "Grid-cell spans, including gaps and partial cells.",
+            "width": 396,
+            "content": 396
+          },
+          {
+            "text": "Exposed surface area\nExact exposed surface area is unavailable for partial blocks.",
+            "width": 396,
+            "content": 396
+          }
+        ]
+      }
+    },
+    {
+      "name": "forced: surface message is reachable and floating Studio never covers portrait measurements",
+      "status": "pass",
+      "evidence": {
+        "messageFits": true,
+        "studioHidden": false,
+        "portrait": false,
+        "actionOverlap": false,
+        "headingVisible": true
+      }
+    },
+    {
+      "name": "forced: compact inspector accessibility",
+      "status": "fail",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     id: 'color-contrast',\n+     nodes: [\n+       {\n+         failureSummary: 'Fix any of the following:\\n' +\n+           '  Element has insufficient color contrast of 1.07 (foreground color: #f4f7f6, background color: #ffffff, font size: 11.3pt (15px), font weight: normal). Expected contrast ratio of 4.5:1',\n+         target: [\n+           '.gw-notebook-trigger'\n+         ]\n+       }\n+     ]\n+   }\n+ ]\n- []\n"
+    },
+    {
+      "name": "forced: disclosure and close preserve geometry and student drafts",
+      "status": "pass",
+      "evidence": {
+        "preserved": true
+      }
+    },
+    {
+      "name": "forced: closing measurement restores the collapsed Studio launcher",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "forced: actual 3D scene is nonblank with no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    }
+  ],
+  "failures": [
+    {
+      "name": "forced: solid native measurement has explicit units and truthful compact results",
+      "status": "fail",
+      "message": "Expected values to be strictly equal:\n\n1.5 !== 12\n"
+    },
+    {
+      "name": "forced: compact inspector accessibility",
+      "status": "fail",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     id: 'color-contrast',\n+     nodes: [\n+       {\n+         failureSummary: 'Fix any of the following:\\n' +\n+           '  Element has insufficient color contrast of 1.07 (foreground color: #f4f7f6, background color: #ffffff, font size: 11.3pt (15px), font weight: normal). Expected contrast ratio of 4.5:1',\n+         target: [\n+           '.gw-notebook-trigger'\n+         ]\n+       }\n+     ]\n+   }\n+ ]\n- []\n"
+    }
+  ],
+  "screenshots": [
+    "forced-solid-inspector.png",
+    "forced-partial-inspector.png"
+  ],
+  "resourcesClosed": true,
+  "completedAt": "2026-10-04T14:56:14.501Z"
+}

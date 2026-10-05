@@ -2145,7 +2145,7 @@ const WS_CORE = createWordSoundsCore();
         }
         if (data && !WS_CORE.manipulationReady(data)) {
           return React.createElement('p', {role: 'status', className: 'text-center text-slate-700 text-sm py-6'},
-            'Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity.');
+            (ts("word_sounds.manipulation_review_required") || "Sound Swap is unavailable for this word until a teacher verifies a one-sound change. Choose another activity."));
         }
         if (!data || !data.instruction) {
           return /*#__PURE__*/ React.createElement(
@@ -4585,7 +4585,7 @@ const WS_CORE = createWordSoundsCore();
 
       const preloadedWords = wsPreloadedWords || [];
       const portableTtsLibrary = React.useMemo(() => {
-        const library = {};
+        const library = Object.create(null);
         for (const item of preloadedWords) {
           const assets = item && item._ttsAssets;
           if (!assets || typeof assets !== "object") continue;
@@ -4604,7 +4604,7 @@ const WS_CORE = createWordSoundsCore();
           .flatMap((item) => Array.isArray(item?._ttsRequiredKeys) ? item._ttsRequiredKeys : [])
           .map(normalizeKey)
           .filter(Boolean);
-        return [...new Set(declaredTargets.length > 0 ? declaredTargets : wordTargets)];
+        return [...new Set([...wordTargets, ...declaredTargets])];
       }, [preloadedWords]);
       const preparedAudioStartupTargets = React.useMemo(() => {
         const normalizeKey = (value) => String(value || "").trim().toLowerCase().replace(/\s+/g, " ");
@@ -4751,17 +4751,18 @@ const WS_CORE = createWordSoundsCore();
         if (!playbackPreflightEnabled || preparedAudioCoverage.total <= 0) return;
         if (status === "ready") {
           setPreparedAudioStartupReady(true);
-          publishPreparedAudioStatus({ status: "ready", ready: preparedAudioCoverage.total, total: preparedAudioCoverage.total, failed: 0 });
           return;
         }
         setPreparedAudioStartupReady(false);
+        const previousStatus = preparedAudioPlayback.status;
+        const retainFailure = ["missing", "damaged", "unsupported"].includes(previousStatus);
         publishPreparedAudioStatus({
-          status: status === "blocked" ? "blocked" : "damaged",
-          ready: Math.max(0, preparedAudioCoverage.total - 1),
+          status: retainFailure ? previousStatus : (status === "blocked" ? "blocked" : "damaged"),
+          ready: Math.max(0, Math.min(preparedAudioPlayback.ready || 0, preparedAudioCoverage.total - 1)),
           total: preparedAudioCoverage.total,
-          failed: 1,
+          failed: Math.max(1, preparedAudioPlayback.failed || 0),
         });
-      }, [playbackPreflightEnabled, preparedAudioCoverage.total, publishPreparedAudioStatus]);
+      }, [playbackPreflightEnabled, preparedAudioCoverage.total, preparedAudioPlayback, publishPreparedAudioStatus]);
       const structuralPreparedAudioBlocked = !runtimeAiAllowed
         && preparedAudioCoverage.total > 0
         && preparedAudioCoverage.missing > 0;
@@ -15615,8 +15616,8 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
           return React.createElement('div', {className: 'flex flex-col items-center gap-4 p-6'},
             React.createElement('p', {role: 'status', className: 'text-slate-700 text-sm text-center'},
               wordSoundsActivity === 'manipulation'
-                ? 'Sound Swap needs a teacher to verify a one-sound change for this word. This item will not be scored.'
-                : 'A teacher needs to provide and review this reading example. This item will not be scored.'),
+                ? (ts("word_sounds.manipulation_unscored_review") || "Sound Swap needs a teacher to verify a one-sound change for this word. This item will not be scored.")
+                : (ts("word_sounds.reading_unscored_review") || "A teacher needs to provide and review this reading example. This item will not be scored.")),
             React.createElement('button', {
               type: 'button', className: 'px-4 py-2 rounded-lg bg-violet-700 text-white font-semibold focus:ring-2 focus:ring-violet-400',
               onClick: () => {
@@ -15627,7 +15628,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   setWordSoundsActivity(null);
                 }
               }
-            }, nextActivity ? 'Skip unscored item and continue' : 'Choose another activity'));
+            }, nextActivity ? (ts("word_sounds.skip_unscored_continue") || "Skip unscored item and continue") : (ts("word_sounds.choose_another_activity") || "Choose another activity")));
         }
         switch (wordSoundsActivity) {
           case "isolation": {
@@ -17576,7 +17577,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   )),
               !rsReady
                 ? /*#__PURE__*/ React.createElement("p", { role: 'status', className: "text-slate-700 text-sm font-semibold italic" }, readSentenceBoard?.contentStatus === 'teacher_review_required'
-                    ? 'A teacher needs to provide and review a sentence for this word. Choose another activity.'
+                    ? (ts("word_sounds.sentence_review_required") || "A teacher needs to provide and review a sentence for this word. Choose another activity.")
                     : ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
                     /*#__PURE__*/ React.createElement(
@@ -17683,7 +17684,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                   )),
               !rpReady
                 ? /*#__PURE__*/ React.createElement("p", { role: 'status', className: "text-slate-700 text-sm font-semibold italic" }, readPassageBoard?.contentStatus === 'teacher_review_required'
-                    ? 'A teacher needs to provide and review a story for this word. Choose another activity.'
+                    ? (ts("word_sounds.story_review_required") || "A teacher needs to provide and review a story for this word. Choose another activity.")
                     : ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
                     /*#__PURE__*/ React.createElement(
@@ -17779,7 +17780,7 @@ Use digraphs (sh,ch,th) as single sounds. Use ā,ē,ī,ō,ū for long vowels.`;
                     (sentenceMatchBoard === null && (preloadedWords || []).length < 2)
                       ? (ts("word_sounds.sentence_match_needs_words") || "Picture the Sentence needs at least two words in this pack.")
                       : (sentenceMatchBoard?.contentStatus === 'teacher_review_required'
-                        ? 'A teacher needs to provide and review a sentence for this word. Choose another activity.'
+                        ? (ts("word_sounds.sentence_review_required") || "A teacher needs to provide and review a sentence for this word. Choose another activity.")
                         : (ts("word_sounds.read_sentence_preparing") || "Preparing your sentence...")))
                 : /*#__PURE__*/ React.createElement(React.Fragment, null,
                     /*#__PURE__*/ React.createElement("p", { className: "max-w-xl text-center text-3xl font-black text-slate-800 bg-gradient-to-br from-slate-50 to-violet-50 rounded-2xl border border-violet-100 px-6 py-4" }, smBoard.sentence),

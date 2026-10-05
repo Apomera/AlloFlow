@@ -1,0 +1,103 @@
+{
+  "date": "2026-10-04",
+  "enhancement": "Enlarged A/B drawing comparison with independent recorded-trial choices, equal display scale, and responsive or manual stacking.",
+  "sourceSHA256": "eccd434c3a403fed80dbd179b70e1ec0f5b05b3dd05bdc6c6cc1d8d00019c8ae",
+  "pluginMirrorSHA256": "eccd434c3a403fed80dbd179b70e1ec0f5b05b3dd05bdc6c6cc1d8d00019c8ae",
+  "tests": {
+    "result": "reports/artstudio-workspace/perception-paired-viewer/perception-tests-results.json",
+    "sourceProvenance": "reports/artstudio-workspace/perception-paired-viewer/perception-tests-source.json",
+    "newTests": 23,
+    "previousTests": 647,
+    "passed": 670,
+    "files": 14,
+    "failed": 0,
+    "uniqueNamesPerFile": true,
+    "execution": "Six verified sequential batches with one fork worker and private writable TEMP/TMP. Earlier completed batches were reused only on the same source hash; an initial allocation failure is preserved under allocation-failure."
+  },
+  "browser": {
+    "runs": [
+      {
+        "file": "reports/artstudio-workspace/perception-paired-viewer/paired-viewer-browser-results.json",
+        "passedGroups": 32,
+        "errors": [],
+        "sourceSHA256": "eccd434c3a403fed80dbd179b70e1ec0f5b05b3dd05bdc6c6cc1d8d00019c8ae"
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-paired-viewer/drawing-viewer-regression/drawing-viewer-browser-results.json",
+        "passedGroups": 28,
+        "errors": [],
+        "sourceSHA256": "eccd434c3a403fed80dbd179b70e1ec0f5b05b3dd05bdc6c6cc1d8d00019c8ae"
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-paired-viewer/recorded-preview-regression/recorded-preview-browser-results.json",
+        "passedGroups": 42,
+        "errors": [],
+        "sourceSHA256": "eccd434c3a403fed80dbd179b70e1ec0f5b05b3dd05bdc6c6cc1d8d00019c8ae"
+      }
+    ],
+    "passedGroups": 102,
+    "adapterProof": "reports/artstudio-workspace/perception-paired-viewer/regression-adapters.json",
+    "errors": [],
+    "responsiveWidths": [
+      320,
+      390,
+      768,
+      1280,
+      1600
+    ],
+    "textScalePercent": 200,
+    "minimumControlPixels": 44,
+    "themes": [
+      "dark",
+      "contrast",
+      "forced-light",
+      "forced-dark"
+    ],
+    "reviewedScreenshots": [
+      "reports/artstudio-workspace/perception-paired-viewer/pair-1600.png",
+      "reports/artstudio-workspace/perception-paired-viewer/pair-390.png",
+      "reports/artstudio-workspace/perception-paired-viewer/pair-stacked-1600.png",
+      "reports/artstudio-workspace/perception-paired-viewer/pair-forced-dark.png",
+      "reports/artstudio-workspace/perception-paired-viewer/pair-large-text-b.png"
+    ],
+    "nativeModalFocusContainment": true,
+    "sameScaleAcrossBothDrawings": true,
+    "svgGeometryMatchesRecordedModels": true
+  },
+  "discovery": {
+    "perceptionEnglishKeys": 372,
+    "metadataParity": true,
+    "englishMirror": true,
+    "indexMirror": true,
+    "indexedTools": 151,
+    "changedExistingIndexRecordCount": 0,
+    "changedIndexFields": {},
+    "perceptionDeepLink": true,
+    "redirectMirror": true
+  },
+  "integration": {
+    "mainJSXParses": 3,
+    "mainMirrors": true,
+    "hubMirror": true,
+    "englishMirror": true,
+    "newArtEnglishKeys": 26,
+    "perceptionCatalogCategory": "Learning & Behavioral Science",
+    "startupLoader": true,
+    "deepLinkFileLoader": true,
+    "pluginFallback": true
+  },
+  "checks": {
+    "engineAndScientificMetadataUnchanged": true,
+    "reportBuilderUnchanged": true,
+    "syntax": true,
+    "scopedWhitespace": true,
+    "stagedFiles": [],
+    "committedByThisTask": false
+  },
+  "behaviorLimits": [
+    "Both studies must be complete, consistent, revealed, and compatible. Either source changing closes the paired viewer.",
+    "Trial and guide choices remain independent and do not write saved observations or live settings.",
+    "Manual stacking resets when the viewer closes; narrow layouts stack automatically.",
+    "Native dialog behavior was tested in Chromium; no dependencies or persisted schema fields were added."
+  ]
+}

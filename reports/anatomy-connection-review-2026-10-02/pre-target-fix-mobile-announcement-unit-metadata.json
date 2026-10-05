@@ -1,0 +1,19 @@
+{
+  "sourceFiles": [
+    "stem_lab/stem_tool_anatomy.js",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js"
+  ],
+  "sourceLfSha256": "70a2f0bcfb39fe9b7f717161aa290346ebad0a3ae9e06ef8529be690bde36822",
+  "byteIdentical": true,
+  "capturedBeforeRun": true,
+  "testFile": "tests/anatomy_mobile_a11y_polish.test.js",
+  "preservedDiagnostic": "reports/anatomy-connection-review-2026-10-02/support-unit-results-complete.json",
+  "preservedDiagnosticSha256": "e6280e6f287843639f5bb887fa3313a705e069234ce80a597181a0b36672c5b9",
+  "capturedAfterRun": true,
+  "sourceUnchanged": true,
+  "preservedDiagnosticUnchanged": true,
+  "tests": 14,
+  "passed": 14,
+  "failed": 0,
+  "success": true
+}

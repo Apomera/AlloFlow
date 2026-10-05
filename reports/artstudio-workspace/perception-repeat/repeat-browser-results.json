@@ -1,0 +1,137 @@
+{
+  "checks": [
+    {
+      "experiment": "brightness",
+      "hiddenUntilThreeAndExplicitReveal": true,
+      "values": [
+        130,
+        142,
+        136
+      ],
+      "starts": [
+        72,
+        184,
+        100
+      ],
+      "fixedReference": 128,
+      "independentNotes": true,
+      "keyboardAndTransitionFocus": true,
+      "frozenSettings": true,
+      "revealedSVG": false,
+      "axe": []
+    },
+    {
+      "experiment": "ebbinghaus",
+      "hiddenUntilThreeAndExplicitReveal": true,
+      "values": [
+        50,
+        58,
+        54
+      ],
+      "starts": [
+        40,
+        60,
+        44
+      ],
+      "fixedReference": 48,
+      "independentNotes": true,
+      "keyboardAndTransitionFocus": true,
+      "frozenSettings": true,
+      "revealedSVG": false,
+      "axe": []
+    },
+    {
+      "experiment": "mullerLyer",
+      "hiddenUntilThreeAndExplicitReveal": true,
+      "values": [
+        412,
+        434,
+        420
+      ],
+      "starts": [
+        325,
+        475,
+        363
+      ],
+      "fixedReference": 400,
+      "independentNotes": true,
+      "keyboardAndTransitionFocus": true,
+      "frozenSettings": true,
+      "revealedSVG": true,
+      "axe": []
+    },
+    {
+      "previouslyRevealedNotebookAndPinMaskedWhileCollecting": true,
+      "restoredAfterEnd": true
+    },
+    {
+      "savedReviewSeparateReveal": true,
+      "draftAndPinPreserved": true,
+      "JSONMetadataRoundtrip": true,
+      "repeatSavedSettingsFreshGroupAndFocus": true
+    },
+    {
+      "partialGroupNeverAggregated": true,
+      "deleteUndoRetainsGroupAndTrialOrder": true
+    },
+    {
+      "deletingLiveMatchExpiresCachedSummary": true,
+      "noResurrection": true
+    },
+    {
+      "batchedStaleSavedRevealExpiresFeedback": true,
+      "changedContextExpiresStudy": true,
+      "profileClearsLocalStudy": true
+    },
+    {
+      "doubleClickOneRecord": true,
+      "nextMatchRequiresFreshImpression": true
+    },
+    {
+      "viewport": 320,
+      "collectingAndSavedSummary": true,
+      "noOverflow": true,
+      "buttons44": true,
+      "axe": []
+    },
+    {
+      "viewport": 390,
+      "collectingAndSavedSummary": true,
+      "noOverflow": true,
+      "buttons44": true,
+      "axe": []
+    },
+    {
+      "viewport": 768,
+      "collectingAndSavedSummary": true,
+      "noOverflow": true,
+      "buttons44": true,
+      "axe": []
+    },
+    {
+      "viewport": 1280,
+      "collectingAndSavedSummary": true,
+      "noOverflow": true,
+      "buttons44": true,
+      "axe": []
+    },
+    {
+      "viewport": 1600,
+      "collectingAndSavedSummary": true,
+      "noOverflow": true,
+      "buttons44": true,
+      "axe": []
+    },
+    {
+      "darkAxe": []
+    },
+    {
+      "largeText200PercentNoOverflow": true
+    },
+    {
+      "forcedColorsStimulusPreserved": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "c3c77364224123de15ebc82a733a7467f314eb31f46759dd7e4ef6ba53c7597a"
+}

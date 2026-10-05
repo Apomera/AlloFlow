@@ -1,0 +1,31 @@
+{
+  "checks": [
+    "Predictions and the empty-pot route change no evidence and open the actual fresh-water jug.",
+    "A real burner change leaves temperature fixed; the shared clock creates a separate recorded temperature rise and corrects the prediction.",
+    "The filled-water ingredient keyboard route focuses the burner without refilling or cooling the pot.",
+    "The recorded tray handoff tests a prediction against the actual pasta temperature drop at unchanged simulated time.",
+    "Slider, arrow-key inspection, sample routes and reload preserve recorded readings while scratchpad predictions stay separate from saved cooking.",
+    "The notebook travels into the expanded kitchen and restores without changing cooking evidence.",
+    "A real phone carry and tip records the four-serving pasta drop, with a readable notebook and no page overflow.",
+    "The notebook remains usable in compact text view, including forced colors and the equivalent burner controls.",
+    "Supplied rescue work is clearly identified, and a fresh cook resets the prediction scratchpad and observations.",
+    "Replay uses only historical observations, locks prediction and cooking launches, and permits read-only notebook exploration.",
+    "Graphics loss preserves the notebook and routes hot weighed pasta to its usable keyboard equivalent."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop pot experiment",
+      "violations": []
+    },
+    {
+      "name": "Phone four-serving pot experiment",
+      "violations": []
+    },
+    {
+      "name": "320px text view forced colors",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

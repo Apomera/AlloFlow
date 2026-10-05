@@ -1,0 +1,251 @@
+{
+  "sourceSha256": "b8bf391446f2dde07e13744a69f50fde7ebb64d7a38e972777a55169de8faf9f",
+  "total": 55,
+  "passed": 55,
+  "failed": 0,
+  "original": {
+    "passed": 53,
+    "failed": 2,
+    "report": "previous-results.json",
+    "run": "previous-run.json"
+  },
+  "recovery": {
+    "passed": 2,
+    "failed": 0,
+    "report": "previous-recovery-results.json",
+    "run": "previous-recovery-run.json",
+    "video": "off"
+  },
+  "cases": [
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-0.spec.ts:16:review filters across layers preserve evidence and keep locked notes read-only",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-0.spec.ts:39:cross-layer note review returns to the list and reflects a deliberate confidence revision",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-0.spec.ts:59:phone review wraps saved notes and passes scoped accessibility checks",
+      "source": "previous-recovery"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-0.spec.ts:73:summary preview, clipboard and downloaded text match the current filter without changing evidence",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-0.spec.ts:109:clipboard and download failures retain a selectable complete summary",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-0.spec.ts:133:phone summary preview and export actions are accessible and fit the viewport",
+      "source": "previous-recovery"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-0.spec.ts:147:searching saved notes filters counts and exported contents while preserving locks and evidence",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-0.spec.ts:194:search survives note navigation and refreshes when the original note is revised",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-1.spec.ts:33:reads only inspected observations with honest empty states, keyboard navigation, and unchanged evidence",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-1.spec.ts:71:keeps search and filter scope through editing and reads the revised original note",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-1.spec.ts:97:reader stays current after a parent render and releases modality for empty results or another activity",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-1.spec.ts:119:phone reading view wraps long notes and supports larger text and accessible controls",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-1.spec.ts:142:failed native opening keeps notes available and permits retry",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-2.spec.ts:9:draft review and reference starter preserve evidence, confidence, and keyboard focus",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-2.spec.ts:27:phone draft guidance is accessible, ungraded, and usable before writing",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:42:record completion phone is readable and supports explicit keyboard rating",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:42:record completion tablet is readable and supports explicit keyboard rating",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:42:record completion desktop is readable and supports explicit keyboard rating",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:42:record completion embedded-large is readable and supports explicit keyboard rating",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:42:record completion forced-colors is readable and supports explicit keyboard rating",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:78:directory classifies restored rating 0 consistently",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:78:directory classifies restored rating 4 consistently",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:78:directory classifies restored rating -1 consistently",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:78:directory classifies restored rating \"invalid\" consistently",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:78:directory classifies restored rating \"0\" consistently",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:78:directory classifies restored rating 1.5 consistently",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:78:directory classifies restored rating 1 consistently",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:78:directory classifies restored rating 3 consistently",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:78:directory classifies restored rating \"2\" consistently",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:96:a whitespace-only note opens the note without changing evidence",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:96:both missing fields opens the note without changing evidence",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:108:a hidden inspected record finishes without changing the view or completion timestamp",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:116:an uninspected restored draft stays in To inspect and offers no record completion shortcut",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:125:objective next evidence names an invalid rating before allowing demonstrated status",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:138:direct completion preserves a fixed guided target and step",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-3.spec.ts:147:observation review and its export use Finish records for confidence-only work",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:43:directory actions phone state the actual action and preserve saved evidence",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:43:directory actions tablet state the actual action and preserve saved evidence",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:43:directory actions desktop state the actual action and preserve saved evidence",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:43:directory actions embedded-large state the actual action and preserve saved evidence",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:43:directory actions forced-colors state the actual action and preserve saved evidence",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:68:row activation focuses the missing note and keeps its query",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:68:row activation focuses the record with both fields missing and keeps its query",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:75:saved record review preserves completion 0 without awarding an inspection",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:75:saved record review preserves completion 200 without awarding an inspection",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:80:next-structure navigation to an inspected neighbor preserves navigation focus and completion",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:85:an inspected guided target still opens its visible evidence checkpoint",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:85:an inspected guided target stays in hidden record review",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:94:only current-layer structures reach the threshold and first completion survives further inspection and review",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:103:relationship tracing retains the first structure-trace completion after its follow-up update",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:103:relationship tracing retains the first relationship-pathway completion after its follow-up update",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:110:a real equivalent probe action keeps its first completion and reports the current-layer checkpoint",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:119:ordinary canvas pointer inspection records first completion once",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:119:ordinary canvas pointer review preserves an absent completion",
+      "source": "previous"
+    },
+    {
+      "key": "tests/e2e/dissection-observation-actions-previous-4.spec.ts:130:keyboard navigation distinguishes recovery from opening an existing record",
+      "source": "previous"
+    }
+  ],
+  "sourceSha256After": "b8bf391446f2dde07e13744a69f50fde7ebb64d7a38e972777a55169de8faf9f",
+  "assertionsChanged": false,
+  "testDeadlinesChanged": false,
+  "originalEvidenceHashes": {
+    "previous-results.json": "a08c8cb9590da74a6fe7ddd0b06f6e6e4814cf43b50004b4fe382060e6429df1",
+    "previous-run.json": "bb901c8df118f5fb557a9e3c9eb152c21876d3421ce4552de9787eae7d112269",
+    "previous-stdout.log": "39421331d6a5c408b857d9a4c7b5596641ad5ad36034f7233f8fb3983a3c4b2d",
+    "previous-stderr.log": "3ac5f51bc5164a2eb02f9d6d9624e23370802182d2183edbcf4795e020a3851a"
+  },
+  "identity": "temporary file:original line:case title"
+}

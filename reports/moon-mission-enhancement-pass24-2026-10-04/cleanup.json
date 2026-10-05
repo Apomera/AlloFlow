@@ -1,0 +1,118 @@
+{
+  "completed": true,
+  "deletedPrivateFileCount": 12,
+  "deletedPrivateFiles": [
+    {
+      "name": "moon-pass24-baseline.js",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-baseline.js",
+      "bytes": 1389480,
+      "sha256": "2ada5eb685576b2573a29a99e03c7038dd7cdff7b7fa45dd95c23a8458d6e9bd"
+    },
+    {
+      "name": "moon-pass24-shadow.js",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-shadow.js",
+      "bytes": 3136,
+      "sha256": "4234ee2ad2c221b149cd9f943a78abfeb6e4a0da585e920aef1c92b0d03a9189"
+    },
+    {
+      "name": "moon-pass24-integrate.py",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-integrate.py",
+      "bytes": 8413,
+      "sha256": "2c4bfd5a5a6c717bbdc9803ed1de7451244e1dd93971f9ebc4d3f02d294afe76"
+    },
+    {
+      "name": "moon-pass24-candidate.js",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-candidate.js",
+      "bytes": 1393910,
+      "sha256": "c261c4bbb7fd7ee719164628a0bdf92c1e797d7ff58453943b9dcc5169e75a54"
+    },
+    {
+      "name": "moon-pass24-shadow.test.js",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-shadow.test.js",
+      "bytes": 7569,
+      "sha256": "e66334a4b74299d607b2a98f1297228c61a0ba3c31f43082138330ba77492829"
+    },
+    {
+      "name": "moon-pass24-shadow.spec.ts",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-shadow.spec.ts",
+      "bytes": 15136,
+      "sha256": "b6c58f8254f26f91093c70002eebb54ecbfd4d6654b029d34248df2a4a3952ee"
+    },
+    {
+      "name": "moon-pass24-playwright.config.ts",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-playwright.config.ts",
+      "bytes": 342,
+      "sha256": "c23381f13f6aa9ba0425799a38b948006063d9ff00cef2597a39a6bd744fad22"
+    },
+    {
+      "name": "moon-pass24-run.py",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-run.py",
+      "bytes": 1674,
+      "sha256": "80bf47362809d912834b71cadb21989808555f1519db1bca0c456df1b24c254e"
+    },
+    {
+      "name": "moon-pass24-probe.cjs",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-probe.cjs",
+      "bytes": 3089,
+      "sha256": "7a580c015ae6462b3a2f8bc52f20b59c666b93015cb5cded814aa5c2a0efe513"
+    },
+    {
+      "name": "moon-pass24-preserve.py",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-preserve.py",
+      "bytes": 2736,
+      "sha256": "ff3617caf92b3e6b7dee2ddd86f7e9cab6a5602cab303b522be53f143492a6cf"
+    },
+    {
+      "name": "moon-pass24-verify.py",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-verify.py",
+      "bytes": 1210,
+      "sha256": "41c79dff64b04c7833662d65d1b320e57a71e56f38b33222adfba252548588df"
+    },
+    {
+      "name": "moon-pass24-finalize.py",
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass24-finalize.py",
+      "bytes": 14605,
+      "sha256": "1e6870a9831b646e9807332f6d514764cceffa50577ca262c80ed9083d283575"
+    }
+  ],
+  "retainedArtifacts": [
+    {
+      "path": "stem_lab\\stem_tool_moonmission.js",
+      "sha256": "c261c4bbb7fd7ee719164628a0bdf92c1e797d7ff58453943b9dcc5169e75a54"
+    },
+    {
+      "path": "desktop\\web-app\\public\\stem_lab\\stem_tool_moonmission.js",
+      "sha256": "c261c4bbb7fd7ee719164628a0bdf92c1e797d7ff58453943b9dcc5169e75a54"
+    },
+    {
+      "path": "tests\\moonmission_descent_shadow.test.js",
+      "sha256": "e66334a4b74299d607b2a98f1297228c61a0ba3c31f43082138330ba77492829"
+    },
+    {
+      "path": "tests\\e2e\\moon-mission-descent-shadow.spec.ts",
+      "sha256": "b6c58f8254f26f91093c70002eebb54ecbfd4d6654b029d34248df2a4a3952ee"
+    },
+    {
+      "path": "reports\\moon-mission-enhancement-pass24-2026-10-04\\README.md",
+      "sha256": "2997700c93ec88ceaef0b5b713f1ffde46de5b0db6507066072fecf34f0e2279"
+    },
+    {
+      "path": "reports\\moon-mission-enhancement-pass24-2026-10-04\\verification.json",
+      "sha256": "256439935797b3902b05738f547db3caef40ee203b6cc7b0ee499a73869f824c"
+    },
+    {
+      "path": "reports\\moon-mission-enhancement-pass24-2026-10-04\\preservation.json",
+      "sha256": "ff1254bcf92e9b441edc5d6a7875c3696489ed2692e296e5efce6470052342f2"
+    },
+    {
+      "path": "reports\\moon-mission-enhancement-pass24-2026-10-04\\visual-review.json",
+      "sha256": "35b709f846ec8e059243e241fb21573e047bbb5bf6dd6841e1d59ccecec1096d"
+    },
+    {
+      "path": "reports\\moon-mission-enhancement-pass24-2026-10-04\\geometry-probe.cjs",
+      "sha256": "5617b637cef0a5151faf6d07e011e6125650aea5493f33d50ddf7cb1283150f8"
+    }
+  ],
+  "runtimeSha256": "c261c4bbb7fd7ee719164628a0bdf92c1e797d7ff58453943b9dcc5169e75a54",
+  "commitCreated": false
+}

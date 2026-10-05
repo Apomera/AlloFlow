@@ -1,0 +1,126 @@
+{
+  "moduleSha256": "0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+  "sourceSha256": "d96b8d5a34e9b689b691792ff6e47f63e3be16c856f38f383303988bee78c5e7",
+  "browserTestSha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+  "producerDir": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-validation\\natural-editor-assets",
+  "traceAssetIdentity": {
+    "method": "Exact HTML and CSS response bytes extracted from original module01 failure trace",
+    "producerTrace": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-validation\\module-five-01\\artifacts\\maine-sld-practice-reviewe-25731--an-explicit-finding-detour-chromium\\trace.zip",
+    "producerTraceSha256": "e5b6dcc67cf24955159914db82019a94c93c21411dedd299be2577648e5f21d0",
+    "responses": {
+      "/__host": {
+        "file": "host.html",
+        "sha256": "078937f26696db4b8fa0648f503db50f64a93d400418021b95f9c731c2d17b24",
+        "bytes": 7637
+      },
+      "/__tw.css": {
+        "file": "tailwind.css",
+        "sha256": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163",
+        "bytes": 70761
+      }
+    },
+    "moduleSha256": "0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+    "moduleBinding": "Producer browser-candidate SHA and current frozen source/module guards; JS response body not retained in trace.",
+    "noCssCompilationNoBrowserNoAxe": true
+  },
+  "producerHtmlSha256": "078937f26696db4b8fa0648f503db50f64a93d400418021b95f9c731c2d17b24",
+  "producerCssSha256": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163",
+  "producerCandidate": {
+    "startedAt": "2026-10-04T03:11:34.067Z",
+    "moduleSha256": "0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+    "reviewDate": "2026-10-02",
+    "sourceHost": "http://127.0.0.1:65063/app",
+    "scope": "Working-tree module and host reader; optional actual source-app boot"
+  },
+  "probeHelperSha256": "8ce4144188e1a27b9234d7f1f588e29928fad348ec4c83704eeecacef7f3ad59",
+  "noSuiteNoAxeNoCssCompilation": true,
+  "naturalSourceFocus": {
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "main": {
+      "top": 131,
+      "bottom": 343,
+      "left": 183,
+      "right": 826,
+      "height": 212,
+      "width": 643
+    },
+    "writer": {
+      "top": 297.3125,
+      "bottom": 392.3125,
+      "left": 226,
+      "right": 783,
+      "height": 95,
+      "width": 557
+    },
+    "returnButton": {
+      "top": 435.3125,
+      "bottom": 477.8125,
+      "left": 519.515625,
+      "right": 678.40625,
+      "height": 42.5,
+      "width": 158.890625
+    },
+    "mainClientHeight": 212,
+    "mainScrollTop": 4773,
+    "writerReturnSpanPx": 180.5,
+    "spanFitsMain": true,
+    "spanFitsMainWith7pxAllowance": true,
+    "writerFullyVisible": false,
+    "returnFullyVisible": false,
+    "activeControl": "q9-response",
+    "writerFocused": false,
+    "manualReturnScroll": false,
+    "manualWriterFocus": false
+  },
+  "naturalAfterFill": {
+    "viewport": {
+      "width": 844,
+      "height": 390
+    },
+    "main": {
+      "top": 131,
+      "bottom": 343,
+      "left": 183,
+      "right": 826,
+      "height": 212,
+      "width": 643
+    },
+    "writer": {
+      "top": 275.3125,
+      "bottom": 370.3125,
+      "left": 226,
+      "right": 783,
+      "height": 95,
+      "width": 557
+    },
+    "returnButton": {
+      "top": 413.3125,
+      "bottom": 455.8125,
+      "left": 519.515625,
+      "right": 678.40625,
+      "height": 42.5,
+      "width": 158.890625
+    },
+    "mainClientHeight": 212,
+    "mainScrollTop": 4795,
+    "writerReturnSpanPx": 180.5,
+    "spanFitsMain": true,
+    "spanFitsMainWith7pxAllowance": true,
+    "writerFullyVisible": false,
+    "returnFullyVisible": false,
+    "activeControl": "q9-note",
+    "writerFocused": true,
+    "manualReturnScroll": false,
+    "manualWriterFocus": false
+  },
+  "failedFixture": {
+    "writerTop": 77.3125,
+    "mainTop": 131,
+    "explicitPlaywrightReturnScroll": true,
+    "explicitNoteRefocus": true
+  },
+  "naturalAfterFillBothFullyVisible": false
+}

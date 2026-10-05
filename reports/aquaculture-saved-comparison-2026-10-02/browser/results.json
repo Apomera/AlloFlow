@@ -1,0 +1,109 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "width": 1280,
+      "checks": [
+        "native disclosure/selects and focus",
+        "frozen original B values from future recorded version",
+        "internal A/B distinction",
+        "additional/species disclosures",
+        "selection and swap read-only",
+        "review-original focus",
+        "rename stable ID",
+        "remove replacement and undo focus",
+        "normal and forced-color axe/reflow",
+        "inert full-original HTML and print report",
+        "fresh branch prediction typing and freeze",
+        "parked read-only review",
+        "full draft/notebook restoration"
+      ],
+      "errors": []
+    },
+    {
+      "width": 390,
+      "checks": [
+        "native disclosure/selects and focus",
+        "frozen original B values from future recorded version",
+        "internal A/B distinction",
+        "additional/species disclosures",
+        "selection and swap read-only",
+        "review-original focus",
+        "rename stable ID",
+        "remove replacement and undo focus",
+        "normal and forced-color axe/reflow",
+        "inert full-original HTML and print report",
+        "fresh branch prediction typing and freeze",
+        "parked read-only review",
+        "full draft/notebook restoration"
+      ],
+      "errors": []
+    },
+    {
+      "width": 320,
+      "checks": [
+        "native disclosure/selects and focus",
+        "frozen original B values from future recorded version",
+        "internal A/B distinction",
+        "additional/species disclosures",
+        "selection and swap read-only",
+        "review-original focus",
+        "rename stable ID",
+        "remove replacement and undo focus",
+        "normal and forced-color axe/reflow",
+        "inert full-original HTML and print report",
+        "fresh branch prediction typing and freeze",
+        "parked read-only review",
+        "full draft/notebook restoration"
+      ],
+      "errors": []
+    },
+    {
+      "case": "mixed scopes at 320",
+      "checks": [
+        "union of original metric definitions",
+        "no cross-scope delta",
+        "scope provenance",
+        "read-only",
+        "axe/forced colors/reflow",
+        "full-original report"
+      ],
+      "errors": []
+    },
+    {
+      "case": "different recorded model versions at 320",
+      "checks": [
+        "original scalars retained",
+        "model mismatch context and delta guard",
+        "axe/forced colors/reflow"
+      ],
+      "errors": []
+    },
+    {
+      "case": "legacy partial provenance and fixed support at 320",
+      "checks": [
+        "missing date/version/settings",
+        "unrecorded differs from valid zero",
+        "support survival N/A",
+        "partial species not recorded",
+        "support warning months retained",
+        "axe/forced colors/reflow",
+        "export does not invent default settings"
+      ],
+      "errors": []
+    },
+    {
+      "case": "representative current-model previews at 1280/390/320",
+      "checks": [
+        "simulateEcosystemYear original A/B outputs",
+        "ecosystemMeasurement capture provenance",
+        "actual current model and learner wording",
+        "phone/desktop screenshots",
+        "forced colors at 390",
+        "inert complete report and print",
+        "scoped axe/reflow"
+      ],
+      "errors": []
+    }
+  ]
+}

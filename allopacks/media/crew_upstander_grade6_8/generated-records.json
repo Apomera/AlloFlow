@@ -1,0 +1,128 @@
+[
+  {
+    "id": "cu-term-bystander",
+    "kind": "term",
+    "term": "Bystander",
+    "title": "Bystander",
+    "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A ring of students standing with arms at their sides looking toward an empty center. Constraints: no one moving. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+    "provider": "Built-in image generation",
+    "sourceOriginal": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-a8896ae1-5d36-4645-aced-7b1db4cbd543.png",
+    "sourceFile": "cu-term-bystander.png",
+    "file": "cu-term-bystander.webp"
+  },
+  {
+    "id": "cu-term-upstander",
+    "kind": "term",
+    "term": "Upstander",
+    "title": "Upstander",
+    "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: The same ring with one student taking a half step forward, hand slightly raised. Constraints: not pointing. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+    "provider": "Built-in image generation",
+    "sourceOriginal": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-acaa0de3-8ac5-4a6c-9a63-6ec512eebfd0.png",
+    "sourceFile": "cu-term-upstander.png",
+    "file": "cu-term-upstander.webp"
+  },
+  {
+    "id": "cu-term-smallmove",
+    "kind": "term",
+    "term": "Small move",
+    "title": "Small move",
+    "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A student at a lunch table leaning slightly toward a quieter classmate, mouth just open, others still eating. Constraints: ordinary, no drama. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+    "provider": "Built-in image generation",
+    "sourceOriginal": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-72eb5d70-14a1-4033-ab30-bdb73c68cc5a.png",
+    "sourceFile": "cu-term-smallmove.png",
+    "file": "cu-term-smallmove.webp"
+  },
+  {
+    "id": "cu-term-redirect",
+    "kind": "term",
+    "term": "Redirect",
+    "title": "Redirect",
+    "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A curved arrow on a table surface turning back toward a seated figure. Constraints: plain arrow. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+    "provider": "Built-in image generation",
+    "sourceOriginal": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-ad5dde9c-c6a3-4b4e-87f6-2319e9d990f0.png",
+    "sourceFile": "cu-term-redirect.png",
+    "file": "cu-term-redirect.webp"
+  },
+  {
+    "id": "cu-term-checkin",
+    "kind": "term",
+    "term": "Check in",
+    "title": "Check in",
+    "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Two students in a hallway, one with a hand near the other's shoulder, both calm. Constraints: private, not a crowd. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+    "provider": "Built-in image generation",
+    "sourceOriginal": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-deb71f59-1700-45c1-a7db-eb3f02d965ec.png",
+    "sourceFile": "cu-term-checkin.png",
+    "file": "cu-term-checkin.webp"
+  },
+  {
+    "id": "cu-term-community",
+    "kind": "term",
+    "term": "Community",
+    "title": "Community",
+    "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A wide lunchroom with many small tables, warm light, students of many backgrounds. Constraints: no faces of real people. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. Only include people if they are explicitly requested in the subject.",
+    "provider": "Built-in image generation",
+    "sourceOriginal": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-0709b49a-ba5e-4d71-a7bf-9157505266f1.png",
+    "sourceFile": "cu-term-community.png",
+    "file": "cu-term-community.webp"
+  },
+  {
+    "id": "cu-img-table",
+    "kind": "lesson",
+    "title": "The table before the move.",
+    "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A lunch table: one student mid-story with his mouth closing, another mid-joke with hands up, others laughing.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals. Only include people if they are explicitly requested in the subject.",
+    "caption": "nobody at the table thinks of themselves as unkind.",
+    "plannedLabels": [
+      {
+        "text": "Tomas"
+      },
+      {
+        "text": "The jokes"
+      }
+    ],
+    "afterType": "simplified",
+    "provider": "Built-in image generation",
+    "sourceOriginal": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-a5f2ceae-cc73-4267-815b-c6d9e4db429a.png",
+    "sourceFile": "cu-img-table.png",
+    "file": "cu-img-table.webp"
+  },
+  {
+    "id": "cu-img-move",
+    "kind": "lesson",
+    "title": "One sentence.",
+    "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: The same table a second later: a student on the far side leaning in with an open palm toward Tomas; the joker paused; Tomas looking up.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals. Only include people if they are explicitly requested in the subject.",
+    "caption": "the table changed shape by one sentence.",
+    "plannedLabels": [
+      {
+        "text": "Jae's move"
+      },
+      {
+        "text": "Tomas"
+      }
+    ],
+    "afterType": "anchor-chart",
+    "provider": "Built-in image generation",
+    "sourceOriginal": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-6b7ec273-1fda-4ebe-b569-a080505b8108.png",
+    "sourceFile": "cu-img-move.png",
+    "file": "cu-img-move.webp"
+  },
+  {
+    "id": "cu-img-domino",
+    "kind": "lesson",
+    "title": "The first domino.",
+    "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A row of dominoes on a cafeteria table; the first one tipping, the second just beginning to lean.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals. Only include people if they are explicitly requested in the subject.",
+    "caption": "the second move is usually easier than the first.",
+    "plannedLabels": [
+      {
+        "text": "First move"
+      },
+      {
+        "text": "Second move"
+      }
+    ],
+    "afterType": "faq",
+    "provider": "Built-in image generation",
+    "sourceOriginal": "C:\\Users\\cabba\\.codex\\generated_images\\01a107eb-187b-7e70-8e2e-f0078d20b49d\\exec-5ab03423-1547-449d-b6d4-297aa611da30.png",
+    "sourceFile": "cu-img-domino.png",
+    "file": "cu-img-domino.webp"
+  }
+]

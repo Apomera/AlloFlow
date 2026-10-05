@@ -211,3 +211,308 @@ describe('Accessible feature selection preserves the boundary investigation', ()
     expect(host.querySelector('[data-pt-model-reading="time"]').textContent).toBe(time); expect(host.querySelector('[data-pt-model-reading="movement"]').textContent).toBe(movement);
   });
 });
+
+
+describe('Nearby feature reveal actions keep the investigation in place', () => {
+  const saved = { version: 1, angle: 42, points: Array.from({ length: 8 }, (_, index) => ({ x: 100 + index * 45, z: 100 + index * 40, m: 4 })) };
+  function effects() { return Object.fromEntries(['onRecordSlab', 'onRecordDepths', 'onRecordBoundaryInquiry', 'onRecordBoundaryDraft', 'awardXP', 'beep', 'announceToSR'].map(key => [key, vi.fn()])); }
+  async function ready(host) {
+    const log = host.querySelector('[data-pt-quake-log]'); log.open = true; log.dispatchEvent(new Event('toggle', { bubbles: true }));
+    host.querySelector('[data-tect-view="3d"]').click(); const block = host.querySelector('[data-tect-gl]');
+    Object.defineProperty(block, 'clientWidth', { value: 366 }); Object.defineProperty(block, 'clientHeight', { value: 300 });
+    await Promise.resolve(); await Promise.resolve(); frame(); expect(gl.debug().state).toBe('ready');
+  }
+  function state(host) { return {
+    time: host.querySelector('[data-pt-model-reading="time"]').textContent,
+    movement: host.querySelector('[data-pt-model-reading="movement"]').textContent,
+    rate: host.querySelector('input[aria-label="Plate movement rate in centimeters per year"]').value,
+    paused: !host.querySelector('[data-pt-model-step]').disabled,
+    checked: host.querySelector('[data-pt-quake-fit]')?.textContent,
+    selected: host.querySelector('[data-pt-boundary-feature-select][aria-pressed="true"]').dataset.ptBoundaryFeatureSelect
+  }; }
+  function quiet(callbacks) { for (const callback of Object.values(callbacks)) expect(callback).not.toHaveBeenCalled(); }
+  function clear(callbacks) { for (const callback of Object.values(callbacks)) callback.mockClear(); }
+
+  it('offers only a relevant explicit reveal action and leaves a hidden slab view unchanged until activation', async () => {
+    const callbacks = effects(), host = mountUI({ ...callbacks, savedSlab: saved });
+    host.querySelector('[data-pt-boundary-feature-select="slab"]').click(); expect(host.querySelector('[data-pt-boundary-reveal]')).toBeNull();
+    await ready(host); host.querySelector('[data-tect-preset="surface"]').click(); frame(); clear(callbacks);
+    const before = state(host), cameraBefore = gl.debug().camera;
+    const action = host.querySelector('[data-pt-boundary-reveal="section"]'); expect(action).not.toBeNull();
+    expect(action.type).toBe('button'); expect(action.style.minHeight).toBe('44px');
+    expect(action.getAttribute('aria-describedby')).toBe('pt-boundary-inspector-status');
+    frame(1200); expect(gl.debug().camera).toEqual(cameraBefore); expect(gl.debug().inspection.visible).toBe(false);
+    expect(state(host)).toEqual(before); quiet(callbacks);
+    host.querySelector('[data-pt-boundary-feature-select="trench"]').click(); frame(); expect(host.querySelector('[data-pt-boundary-reveal]')).toBeNull();
+    host.querySelector('[data-pt-boundary-feature-select="all"]').click(); frame(); expect(host.querySelector('[data-pt-boundary-reveal]')).toBeNull();
+  });
+
+  it('reveals the slab using the exact cut-face preset, retains checked evidence and keeps focus in its panel', async () => {
+    const callbacks = effects(), host = mountUI({ ...callbacks, savedSlab: saved }); await ready(host);
+    host.querySelector('[data-tect-scale-toggle]').click(); frame();
+    host.querySelector('[data-pt-boundary-feature-select="slab"]').click(); host.querySelector('[data-tect-preset="surface"]').click(); frame(); clear(callbacks);
+    const before = state(host), builds = gl.debug().geometryBuilds, action = host.querySelector('[data-pt-boundary-reveal="section"]'); expect(before.checked).toBeTruthy(); action.focus(); action.click(); await new Promise(resolve => setTimeout(resolve, 0)); frame();
+    expect(host.querySelector('[data-tect-gl]').dataset.tectView).toBe('0,0,1.00'); expect(gl.debug().clipConstant).toBe(0);
+    expect(gl.debug().inspection.id).toBe('slab'); expect(gl.debug().inspection.visible).toBe(true); expect(gl.debug().inspection.segments).toBeGreaterThan(0);
+    expect(host.querySelector('[data-tect-scale-toggle]').getAttribute('aria-pressed')).toBe('false');
+    expect(host.querySelector('[data-pt-boundary-reveal]')).toBeNull(); expect(host.querySelector('[data-pt-boundary-inspector]').contains(document.activeElement)).toBe(true);
+    expect(state(host)).toEqual(before); expect(gl.debug().geometryBuilds).toBe(builds); quiet(callbacks);
+    const rendersBefore = renders; frame(1200); expect(renders).toBe(rendersBefore); expect(state(host)).toEqual(before); quiet(callbacks);
+  });
+
+  it('reveals matching markers from above while preserving the full offset and boundary choice', async () => {
+    const callbacks = effects(), host = mountUI(callbacks); host.querySelector('[data-tect-mode="transform"]').click();
+    for (let index = 0; index < 3; index++) host.querySelector('[data-pt-model-step]').click();
+    await ready(host); host.querySelector('[data-pt-boundary-feature-select="markers"]').click(); host.querySelector('[data-tect-preset="section"]').click(); frame(); clear(callbacks);
+    const before = state(host), builds = gl.debug().geometryBuilds, action = host.querySelector('[data-pt-boundary-reveal="surface"]'); expect(action).not.toBeNull();
+    action.focus(); action.click(); await new Promise(resolve => setTimeout(resolve, 0)); frame();
+    expect(host.querySelector('[data-tect-gl]').dataset.tectView).toBe('-88,0,1.00'); expect(gl.debug().inspection.id).toBe('markers'); expect(gl.debug().inspection.visible).toBe(true);
+    expect(host.querySelector('[data-tect-preset="surface"]').getAttribute('aria-pressed')).toBe('true');
+    expect(host.querySelector('[data-pt-boundary-reveal]')).toBeNull(); expect(host.querySelector('[data-pt-boundary-inspector]').contains(document.activeElement)).toBe(true);
+    expect(state(host)).toEqual(before); expect(gl.debug().geometryBuilds).toBe(builds); quiet(callbacks);
+  });
+
+  it('keeps a running model running when explicitly revealing its slab', async () => {
+    const callbacks = effects(), host = mountUI(callbacks); await ready(host);
+    host.querySelector('[data-pt-boundary-feature-select="slab"]').click(); host.querySelector('[data-tect-preset="surface"]').click(); frame();
+    host.querySelector('[data-pt-model-play]').click(); clear(callbacks); const before = state(host);
+    host.querySelector('[data-pt-boundary-reveal="section"]').click();
+    expect(state(host)).toEqual(before); expect(host.querySelector('[data-pt-model-step]').disabled).toBe(true); quiet(callbacks);
+  });
+});
+
+
+describe('Discoverable boundary zoom preserves the investigation', () => {
+  const saved = { version: 1, angle: 42, points: Array.from({ length: 8 }, (_, index) => ({ x: 100 + index * 45, z: 100 + index * 40, m: 4 })) };
+  function callbacks() { return Object.fromEntries(['onRecordSlab', 'onRecordDepths', 'onRecordBoundaryInquiry', 'onRecordBoundaryDraft', 'awardXP', 'beep', 'announceToSR'].map(key => [key, vi.fn()])); }
+  function clear(effects) { for (const callback of Object.values(effects)) callback.mockClear(); }
+  function quiet(effects) { for (const callback of Object.values(effects)) expect(callback).not.toHaveBeenCalled(); }
+  function view(host) { return host.querySelector('[data-tect-gl]').dataset.tectView.split(',').map(Number); }
+  function invariant(host) { return {
+    angles: view(host).slice(0, 2), cut: host.querySelector('#tect-cut').value,
+    scalePreference: host.querySelector('[data-tect-scale-toggle]').getAttribute('aria-pressed'),
+    time: host.querySelector('[data-pt-model-reading="time"]').textContent,
+    movement: host.querySelector('[data-pt-model-reading="movement"]').textContent,
+    rate: host.querySelector('input[aria-label="Plate movement rate in centimeters per year"]').value,
+    playing: host.querySelector('[data-pt-model-play]').textContent,
+    paused: !host.querySelector('[data-pt-model-step]').disabled,
+    fit: host.querySelector('[data-pt-quake-fit]')?.textContent,
+    points: [...host.querySelectorAll('[data-pt-quake-point]')].map(point => [point.dataset.distanceKm, point.dataset.depthKm]),
+    selection: host.querySelector('[data-pt-boundary-feature-select][aria-pressed="true"]').dataset.ptBoundaryFeatureSelect
+  }; }
+  async function ready(host) {
+    const log = host.querySelector('[data-pt-quake-log]'); log.open = true; log.dispatchEvent(new Event('toggle', { bubbles: true }));
+    host.querySelector('[data-tect-view="3d"]').click(); const block = host.querySelector('[data-tect-gl]');
+    Object.defineProperty(block, 'clientWidth', { value: 366 }); Object.defineProperty(block, 'clientHeight', { value: 300 });
+    await Promise.resolve(); await Promise.resolve(); frame(); expect(gl.debug().state).toBe('ready');
+  }
+  function zoom(host, direction) { host.querySelector('[data-tect-zoom="' + direction + '"]').click(); }
+
+  it('offers named native buttons linked to the 3D block and a quiet visible zoom value', async () => {
+    const effects = callbacks(), host = mountUI({ ...effects, savedSlab: saved });
+    expect(host.querySelector('[data-tect-zoom]')).toBeNull(); await ready(host); clear(effects);
+    for (const direction of ['in', 'out']) {
+      const button = host.querySelector('[data-tect-zoom="' + direction + '"]');
+      expect(button.type).toBe('button'); expect(button.textContent).toBe(direction === 'in' ? 'Zoom in' : 'Zoom out');
+      expect(button.getAttribute('aria-controls')).toBe('pt-boundary-3d'); expect(button.disabled).toBe(false);
+      expect(button.style.minHeight).toBe('44px');
+    }
+    const level = host.querySelector('[data-tect-zoom-level]'); expect(level.textContent).toBe('View zoom: 100%');
+    expect(level.getAttribute('aria-live')).toBe('off');
+    frame(1200); expect(level.textContent).toBe('View zoom: 100%'); quiet(effects);
+  });
+
+  it('changes only zoom by the keyboard-sized increment while retaining the cut, scale preference and checked sample', async () => {
+    const effects = callbacks(), host = mountUI({ ...effects, savedSlab: saved }); await ready(host);
+    host.querySelector('[data-tect-preset="section"]').click(); host.querySelector('[data-tect-scale-toggle]').click();
+    host.querySelector('[data-pt-boundary-feature-select="slab"]').click(); frame(); clear(effects);
+    const before = invariant(host), builds = gl.debug().geometryBuilds; expect(before.fit).toBeTruthy();
+    zoom(host, 'in'); frame(); expect(view(host)[2]).toBeCloseTo(1.15); expect(host.querySelector('[data-tect-zoom-level]').textContent).toBe('View zoom: 115%');
+    expect(invariant(host)).toEqual(before); expect(gl.debug().inspection.id).toBe('slab'); expect(gl.debug().geometryBuilds).toBe(builds); quiet(effects);
+    zoom(host, 'out'); frame(); expect(view(host)[2]).toBe(1); expect(invariant(host)).toEqual(before); quiet(effects);
+  });
+
+  it('clamps repeated requests, disables the exhausted direction and never repeats idle effects at either bound', async () => {
+    const effects = callbacks(), host = mountUI({ ...effects, savedSlab: saved }); await ready(host); clear(effects);
+    const before = invariant(host);
+    for (let index = 0; index < 20; index++) zoom(host, 'out'); frame();
+    expect(view(host)[2]).toBe(0.4); expect(host.querySelector('[data-tect-zoom-level]').textContent).toBe('View zoom: 40%');
+    expect(host.querySelector('[data-tect-zoom="out"]').disabled).toBe(true); expect(host.querySelector('[data-tect-zoom="in"]').disabled).toBe(false);
+    const atMinimum = host.querySelector('[data-tect-gl]').dataset.tectView, minRenders = renders;
+    for (let index = 0; index < 20; index++) zoom(host, 'out'); frame(1200);
+    expect(host.querySelector('[data-tect-gl]').dataset.tectView).toBe(atMinimum); expect(renders).toBe(minRenders); expect(invariant(host)).toEqual(before); quiet(effects);
+    for (let index = 0; index < 30; index++) zoom(host, 'in'); frame();
+    expect(view(host)[2]).toBe(2.6); expect(host.querySelector('[data-tect-zoom-level]').textContent).toBe('View zoom: 260%');
+    expect(host.querySelector('[data-tect-zoom="in"]').disabled).toBe(true); expect(host.querySelector('[data-tect-zoom="out"]').disabled).toBe(false);
+    const atMaximum = host.querySelector('[data-tect-gl]').dataset.tectView, maxRenders = renders;
+    for (let index = 0; index < 20; index++) zoom(host, 'in'); frame(1200);
+    expect(host.querySelector('[data-tect-gl]').dataset.tectView).toBe(atMaximum); expect(renders).toBe(maxRenders); expect(invariant(host)).toEqual(before); quiet(effects);
+  });
+
+  it('shares its visible zoom value with keyboard and wheel changes and resets it with existing presets and Home', async () => {
+    const effects = callbacks(), host = mountUI({ ...effects, savedSlab: saved }); await ready(host); clear(effects);
+    const block = host.querySelector('[data-tect-gl]');
+    block.dispatchEvent(new KeyboardEvent('keydown', { key: '+', bubbles: true, cancelable: true })); expect(view(host)[2]).toBe(1.15); expect(host.querySelector('[data-tect-zoom-level]').textContent).toBe('View zoom: 115%');
+    block.dispatchEvent(new WheelEvent('wheel', { deltaY: -1, bubbles: true })); expect(view(host)[2]).toBe(1.25); expect(host.querySelector('[data-tect-zoom-level]').textContent).toBe('View zoom: 125%'); quiet(effects);
+    for (const id of ['section', 'surface', 'oblique']) {
+      zoom(host, 'in'); host.querySelector('[data-tect-preset="' + id + '"]').click(); expect(view(host)[2]).toBe(1); expect(host.querySelector('[data-tect-zoom-level]').textContent).toBe('View zoom: 100%');
+    }
+    zoom(host, 'in'); [...host.querySelectorAll('button')].find(button => button.textContent === 'Reset view').click(); expect(view(host)[2]).toBe(1); quiet(effects);
+    zoom(host, 'in'); block.dispatchEvent(new KeyboardEvent('keydown', { key: 'Home', bubbles: true, cancelable: true })); expect(view(host)).toEqual([-22, -38, 1]); expect(host.querySelector('[data-tect-zoom-level]').textContent).toBe('View zoom: 100%');
+    expect(effects.announceToSR).toHaveBeenCalledTimes(1); effects.announceToSR.mockClear(); frame(1200); quiet(effects);
+  });
+
+  it('keeps playback running when zoom changes without creating sample writes or learner rewards', async () => {
+    const effects = callbacks(), host = mountUI({ ...effects, savedSlab: saved }); await ready(host);
+    host.querySelector('[data-pt-boundary-feature-select="trench"]').click(); host.querySelector('[data-pt-model-play]').click(); clear(effects);
+    const before = invariant(host); expect(before.paused).toBe(false); zoom(host, 'in'); zoom(host, 'out');
+    expect(invariant(host)).toEqual(before); expect(view(host)[2]).toBe(1); quiet(effects);
+  });
+
+  it('moves keyboard focus to the enabled opposite action at each bound without scrolling or changing the investigation', async () => {
+    const effects = callbacks(), host = mountUI({ ...effects, savedSlab: saved }); await ready(host); clear(effects);
+    const zoomIn = host.querySelector('[data-tect-zoom="in"]'), zoomOut = host.querySelector('[data-tect-zoom="out"]');
+    const inFocus = vi.spyOn(zoomIn, 'focus'), outFocus = vi.spyOn(zoomOut, 'focus');
+    const before = invariant(host), scroll = { x: window.scrollX, y: window.scrollY };
+    zoomOut.focus(); inFocus.mockClear();
+    for (let index = 0; index < 20; index++) zoom(host, 'out');
+    await new Promise(resolve => setTimeout(resolve, 0)); frame();
+    expect(zoomOut.disabled).toBe(true); expect(zoomIn.disabled).toBe(false); expect(document.activeElement).toBe(zoomIn);
+    expect(inFocus).toHaveBeenLastCalledWith({ preventScroll: true }); expect({ x: window.scrollX, y: window.scrollY }).toEqual(scroll);
+    expect(invariant(host)).toEqual(before); quiet(effects);
+    zoomIn.focus(); outFocus.mockClear();
+    for (let index = 0; index < 30; index++) zoom(host, 'in');
+    await new Promise(resolve => setTimeout(resolve, 0)); frame();
+    expect(zoomIn.disabled).toBe(true); expect(zoomOut.disabled).toBe(false); expect(document.activeElement).toBe(zoomOut);
+    expect(outFocus).toHaveBeenLastCalledWith({ preventScroll: true }); expect({ x: window.scrollX, y: window.scrollY }).toEqual(scroll);
+    expect(invariant(host)).toEqual(before); quiet(effects); inFocus.mockRestore(); outFocus.mockRestore();
+  });
+});
+
+
+describe('Nearby 3D inspection starts only on the learner’s explicit choice', () => {
+  const saved = { version: 1, angle: 42, points: Array.from({ length: 8 }, (_, index) => ({ x: 100 + index * 45, z: 100 + index * 40, m: 4 })) };
+  function callbacks() { return Object.fromEntries(['onRecordSlab', 'onRecordDepths', 'onRecordBoundaryInquiry', 'onRecordBoundaryDraft', 'awardXP', 'beep', 'announceToSR'].map(key => [key, vi.fn()])); }
+  function clear(effects) { for (const callback of Object.values(effects)) callback.mockClear(); }
+  function quiet(effects) { for (const callback of Object.values(effects)) expect(callback).not.toHaveBeenCalled(); }
+  function noWritesOrRewards(effects) { for (const [key, callback] of Object.entries(effects)) if (key !== 'announceToSR') expect(callback).not.toHaveBeenCalled(); }
+  function evidence(host) { return {
+    time: host.querySelector('[data-pt-model-reading="time"]').textContent,
+    movement: host.querySelector('[data-pt-model-reading="movement"]').textContent,
+    rate: host.querySelector('input[aria-label="Plate movement rate in centimeters per year"]').value,
+    playing: host.querySelector('[data-pt-model-play]').textContent,
+    paused: !host.querySelector('[data-pt-model-step]').disabled,
+    fit: host.querySelector('[data-pt-quake-fit]')?.textContent,
+    points: [...host.querySelectorAll('[data-pt-quake-point]')].map(point => [point.dataset.distanceKm, point.dataset.depthKm]),
+    selection: host.querySelector('[data-pt-boundary-feature-select][aria-pressed="true"]').dataset.ptBoundaryFeatureSelect
+  }; }
+  function sizeBlock(host) {
+    const block = host.querySelector('[data-tect-gl]');
+    Object.defineProperty(block, 'clientWidth', { value: 366 }); Object.defineProperty(block, 'clientHeight', { value: 300 });
+    return block;
+  }
+  async function settleReady(host) { sizeBlock(host); await Promise.resolve(); await Promise.resolve(); frame(); expect(gl.debug().state).toBe('ready'); }
+  async function flushEffects() { await new Promise(resolve => setTimeout(resolve, 0)); }
+
+  it('keeps a selected 2D feature and checked evidence quiet until the nearby 3D action is chosen', () => {
+    const effects = callbacks(), loader = vi.spyOn(window.StemLab, 'ensureThree'), host = mountUI({ ...effects, savedSlab: saved });
+    try {
+      expect(host.querySelector('[data-pt-inspect-in-3d]')).toBeNull();
+      host.querySelector('[data-pt-boundary-feature-select="slab"]').click();
+      const action = host.querySelector('[data-pt-inspect-in-3d]'), before = evidence(host);
+      expect(before.points).toHaveLength(8); expect(before.fit).toBeTruthy();
+      expect(action.type).toBe('button'); expect(action.textContent).toBe('Inspect this feature in 3D'); expect(action.style.minHeight).toBe('44px');
+      for (const id of action.getAttribute('aria-describedby').split(' ')) expect(host.querySelector('#' + id)).not.toBeNull();
+      expect(host.querySelector('#' + action.getAttribute('aria-controls'))).not.toBeNull();
+      expect(host.querySelectorAll('[data-tect-view="3d"]')).toHaveLength(1);
+      frame(1200);
+      expect(host.querySelector('[data-tect-gl]')).toBeNull(); expect(loader).not.toHaveBeenCalled();
+      expect(host.querySelector('[data-tect-section]').getAttribute('aria-hidden')).toBe('false');
+      expect(host.querySelector('[data-tect-section]').dataset.ptBoundaryFeature).toBe('slab'); expect(evidence(host)).toEqual(before); quiet(effects);
+      host.querySelector('[data-pt-boundary-feature-select="all"]').click(); expect(host.querySelector('[data-pt-inspect-in-3d]')).toBeNull();
+      expect(loader).not.toHaveBeenCalled(); quiet(effects);
+    } finally { loader.mockRestore(); }
+  });
+
+  it('opens 3D explicitly, recenters a scrolled section and focuses its explanation while preserving the checked sample', async () => {
+    const effects = callbacks(), host = mountUI({ ...effects, savedSlab: saved });
+    host.querySelector('[data-pt-boundary-feature-select="slab"]').click();
+    const action = host.querySelector('[data-pt-inspect-in-3d]'), status = host.querySelector('#pt-boundary-inspector-status'), focus = vi.spyOn(status, 'focus');
+    const frameElement = host.querySelector('[data-tect-section]').parentElement; frameElement.scrollLeft = 135;
+    const before = evidence(host);
+    try {
+      action.focus(); action.click(); await flushEffects(); await settleReady(host);
+      expect(host.querySelector('[data-pt-inspect-in-3d]')).toBeNull(); expect(frameElement.scrollLeft).toBe(0);
+      expect(document.activeElement).toBe(status); expect(focus).toHaveBeenCalledTimes(1); expect(focus).toHaveBeenLastCalledWith({ preventScroll: true });
+      expect(host.querySelector('[data-tect-section]').getAttribute('aria-hidden')).toBe('true');
+      expect(host.querySelector('[data-tect-gl]').getAttribute('aria-hidden')).toBe('false'); expect(gl.debug().inspection.id).toBe('slab');
+      expect(evidence(host)).toEqual(before); noWritesOrRewards(effects);
+      expect(effects.announceToSR.mock.calls.map(call => call[0])).toEqual(['Switched to the 3D block view.', '3D block view ready.']);
+      clear(effects); const rendered = renders; frame(1200);
+      expect(renders).toBe(rendered); expect(evidence(host)).toEqual(before); expect(document.activeElement).toBe(status); expect(focus).toHaveBeenCalledTimes(1); quiet(effects);
+    } finally { focus.mockRestore(); }
+  });
+
+  it('retains the learner’s camera, slice, zoom, depth preference and running choice through a 2D inspection round trip', async () => {
+    const effects = callbacks(), host = mountUI({ ...effects, savedSlab: saved });
+    host.querySelector('[data-pt-boundary-feature-select="slab"]').click(); host.querySelector('[data-pt-inspect-in-3d]').click(); await settleReady(host);
+    host.querySelector('[data-tect-preset="section"]').click(); host.querySelector('[data-tect-scale-toggle]').click();
+    const cut = host.querySelector('#tect-cut'); Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(cut, '25'); cut.dispatchEvent(new Event('input', { bubbles: true }));
+    host.querySelector('[data-tect-gl]').dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true, cancelable: true }));
+    host.querySelector('[data-tect-zoom="in"]').click(); frame();
+    const beforeView = host.querySelector('[data-tect-gl]').dataset.tectView, beforeCut = cut.value, beforeScale = host.querySelector('[data-tect-scale-toggle]').getAttribute('aria-pressed');
+    expect(beforeView).toBe('0,8,1.15'); expect(beforeCut).toBe('25'); expect(beforeScale).toBe('false');
+    host.querySelector('[data-pt-model-play]').click(); const before = evidence(host); expect(before.paused).toBe(false);
+    host.querySelector('[data-tect-view="2d"]').click();
+    expect(host.querySelector('[data-pt-inspect-in-3d]')).not.toBeNull(); expect(host.querySelector('[data-tect-gl]')).toBeNull();
+    clear(effects); host.querySelector('[data-pt-inspect-in-3d]').click();
+    expect(evidence(host)).toEqual(before); expect(host.querySelector('[data-pt-model-step]').disabled).toBe(true);
+    expect(host.querySelector('[data-tect-gl]').dataset.tectView).toBe(beforeView); expect(host.querySelector('#tect-cut').value).toBe(beforeCut);
+    expect(host.querySelector('[data-tect-scale-toggle]').getAttribute('aria-pressed')).toBe(beforeScale);
+    expect(host.querySelector('[data-pt-inspect-in-3d]')).toBeNull(); expect(host.querySelectorAll('[data-tect-view="3d"]')).toHaveLength(1);
+    noWritesOrRewards(effects); expect(effects.announceToSR.mock.calls.map(call => call[0])).toEqual(['Switched to the 3D block view.']);
+  });
+
+  it('keeps the 2D fallback accessible and local focus stable while the explicitly requested block loads', async () => {
+    let resolveEngine;
+    const deferred = new Promise(resolve => { resolveEngine = resolve; });
+    const loader = vi.spyOn(window.StemLab, 'ensureThree').mockReturnValue(deferred), effects = callbacks(), host = mountUI({ ...effects, savedSlab: saved });
+    host.querySelector('[data-pt-boundary-feature-select="slab"]').click();
+    const before = evidence(host), status = host.querySelector('#pt-boundary-inspector-status'), focus = vi.spyOn(status, 'focus');
+    try {
+      host.querySelector('[data-pt-inspect-in-3d]').focus(); host.querySelector('[data-pt-inspect-in-3d]').click(); sizeBlock(host); await flushEffects();
+      expect(gl.debug().state).toBe('loading'); expect(status.textContent).toContain('3D block is loading'); expect(document.activeElement).toBe(status);
+      expect(focus).toHaveBeenCalledTimes(1); expect(focus).toHaveBeenLastCalledWith({ preventScroll: true });
+      expect(host.querySelector('[data-tect-section]').getAttribute('aria-hidden')).toBe('false'); expect(host.querySelector('[data-tect-section]').tabIndex).toBe(0);
+      expect(host.querySelector('[data-tect-gl]').getAttribute('aria-hidden')).toBe('true'); expect(host.querySelector('[data-tect-gl]').tabIndex).toBe(-1);
+      expect(host.querySelector('[data-pt-boundary-feature-select="slab"]').getAttribute('aria-controls')).toBe('pt-boundary-section'); expect(host.querySelector('[data-pt-inspect-in-3d]')).toBeNull();
+      expect(effects.announceToSR.mock.calls.map(call => call[0])).toEqual(['Switched to the 3D block view.']); clear(effects);
+      frame(1200); expect(loader).toHaveBeenCalledTimes(1); expect(evidence(host)).toEqual(before); quiet(effects);
+      resolveEngine(THREE); await Promise.resolve(); await Promise.resolve(); frame();
+      expect(gl.debug().state).toBe('ready'); expect(host.querySelector('[data-tect-section]').getAttribute('aria-hidden')).toBe('true');
+      expect(host.querySelector('[data-pt-boundary-feature-select="slab"]').getAttribute('aria-controls')).toBe('pt-boundary-3d');
+      expect(status.textContent).not.toContain('loading'); expect(document.activeElement).toBe(status); expect(focus).toHaveBeenCalledTimes(1);
+      expect(evidence(host)).toEqual(before); noWritesOrRewards(effects); expect(effects.announceToSR.mock.calls.map(call => call[0])).toEqual(['3D block view ready.']);
+      clear(effects); const rendered = renders; frame(1200); expect(renders).toBe(rendered); quiet(effects);
+    } finally { loader.mockRestore(); focus.mockRestore(); }
+  });
+
+  it('restores an actionable 2D inspection after loading fails without losing focus, checked evidence or quiet idle', async () => {
+    let rejectEngine;
+    const deferred = new Promise((resolve, reject) => { rejectEngine = reject; });
+    const loader = vi.spyOn(window.StemLab, 'ensureThree').mockReturnValue(deferred), effects = callbacks(), host = mountUI({ ...effects, savedSlab: saved });
+    host.querySelector('[data-pt-boundary-feature-select="slab"]').click();
+    const before = evidence(host), status = host.querySelector('#pt-boundary-inspector-status'), focus = vi.spyOn(status, 'focus');
+    try {
+      host.querySelector('[data-pt-inspect-in-3d]').focus(); host.querySelector('[data-pt-inspect-in-3d]').click(); sizeBlock(host); await flushEffects();
+      expect(document.activeElement).toBe(status); rejectEngine(new Error('simulated unavailable engine')); await Promise.resolve(); await Promise.resolve(); await flushEffects();
+      expect(host.querySelector('[data-tect-gl]')).toBeNull(); expect(host.querySelector('[data-tect-view="2d"]').getAttribute('aria-pressed')).toBe('true');
+      expect(host.querySelector('[data-tect-section]').getAttribute('aria-hidden')).toBe('false'); expect(host.querySelector('[data-tect-section]').tabIndex).toBe(0);
+      expect(host.querySelector('[data-pt-inspect-in-3d]')).not.toBeNull(); expect(host.querySelectorAll('[data-tect-view="3d"]')).toHaveLength(1);
+      expect(host.querySelector('[data-pt-boundary-feature-select="slab"]').getAttribute('aria-controls')).toBe('pt-boundary-section'); expect(status.textContent).not.toContain('loading');
+      expect(document.activeElement).toBe(status); expect(focus).toHaveBeenCalledTimes(1); expect(evidence(host)).toEqual(before); noWritesOrRewards(effects);
+      expect(effects.announceToSR.mock.calls.map(call => call[0])).toEqual(['Switched to the 3D block view.', 'The 3D block could not load. Showing the 2D cross-section.']);
+      clear(effects); frame(1200); expect(loader).toHaveBeenCalledTimes(1); expect(evidence(host)).toEqual(before); expect(document.activeElement).toBe(status); quiet(effects);
+    } finally { loader.mockRestore(); focus.mockRestore(); }
+  });
+});

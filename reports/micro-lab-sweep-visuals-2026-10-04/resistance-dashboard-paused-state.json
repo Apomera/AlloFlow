@@ -1,0 +1,752 @@
+{
+  "_threeLoaded": true,
+  "unrelatedTool": {
+    "note": "<img src=x onerror=\"window.__liveVisualInjected=true\"> Keep imported evidence literal.",
+    "keep": [
+      1,
+      2,
+      3
+    ]
+  },
+  "microbiology": {
+    "tab": "resistance",
+    "showMicroLibrary": false,
+    "selectedBacterium": "ecoli",
+    "selectedVirus": "covid",
+    "selectedScope": "lightbright",
+    "selectedMicrobiome": "gut",
+    "selectedFerment": "sourdough",
+    "selectedCase": "snow",
+    "scopeOrganism": "ecoli",
+    "magnification": 400,
+    "microscopeFocus": 10,
+    "microscopeTargetFocus": 50,
+    "gramStep": 0,
+    "quizIdx": 0,
+    "quizAnswers": [],
+    "quizSubmitted": false,
+    "quizCorrect": 0,
+    "growthLab": {
+      "profile": "ecoli",
+      "tempC": 18,
+      "pH": 7,
+      "oxygen": 100,
+      "hypothesis": "Keep the Growth hypothesis."
+    },
+    "earnedXP": 53,
+    "resistanceInvestigation": {
+      "version": 1,
+      "dose": 0,
+      "duration": 30,
+      "initRes": 10,
+      "day": 2,
+      "prediction": "increase",
+      "explanation": null,
+      "explanationSubmitted": false,
+      "notes": "Current culture notes.",
+      "history": [
+        {
+          "day": 0,
+          "sensitive": 72,
+          "resistant": 8
+        },
+        {
+          "day": 1,
+          "sensitive": 72,
+          "resistant": 8
+        },
+        {
+          "day": 2,
+          "sensitive": 72,
+          "resistant": 8
+        }
+      ],
+      "bact": [
+        {
+          "x": 128.0892616331176,
+          "y": 22.170846973212406,
+          "jitter": 1.270891660824418,
+          "resistant": true,
+          "alive": true
+        },
+        {
+          "x": 81.49291223366157,
+          "y": 77.92476932727895,
+          "jitter": 0.9104960308875888,
+          "resistant": true,
+          "alive": true
+        },
+        {
+          "x": 148.30603374198506,
+          "y": 126.19788046455558,
+          "jitter": 0.8158823591656983,
+          "resistant": true,
+          "alive": true
+        },
+        {
+          "x": 174.50404335674375,
+          "y": 120.40805534620328,
+          "jitter": 0.9609094096813351,
+          "resistant": true,
+          "alive": true
+        },
+        {
+          "x": 88.47115912861061,
+          "y": 140.009784285546,
+          "jitter": 1.0724747790023683,
+          "resistant": true,
+          "alive": true
+        },
+        {
+          "x": 130.4675192246632,
+          "y": 68.33494045579094,
+          "jitter": 1.0735406163614243,
+          "resistant": true,
+          "alive": true
+        },
+        {
+          "x": 94.98054783446655,
+          "y": 65.78577177853782,
+          "jitter": 0.7921531773172319,
+          "resistant": true,
+          "alive": true
+        },
+        {
+          "x": 82.23547967818448,
+          "y": 124.93360181590947,
+          "jitter": 1.1946324423421173,
+          "resistant": true,
+          "alive": true
+        },
+        {
+          "x": 94.1560762022145,
+          "y": 87.67153061710432,
+          "jitter": 1.2798426203429698,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 35.758410132164045,
+          "y": 114.17110188072465,
+          "jitter": 0.8134549369569868,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 123.25329473402392,
+          "y": 74.48745550674337,
+          "jitter": 1.0106848777271806,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 125.7469115141527,
+          "y": 38.279961424726665,
+          "jitter": 0.8332027005497366,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 92.80702042683313,
+          "y": 140.52863361605316,
+          "jitter": 1.0158054055646062,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 109.49207523834787,
+          "y": 157.35515544327504,
+          "jitter": 1.2387519187759608,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 93.64934919213542,
+          "y": 120.0869072747792,
+          "jitter": 1.1611192698590456,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 119.82109519847756,
+          "y": 130.03944094198613,
+          "jitter": 1.2069070209283381,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 141.97033858531512,
+          "y": 76.14872637608046,
+          "jitter": 1.130528549477458,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 134.7993943255762,
+          "y": 135.13610034111636,
+          "jitter": 1.2131652825977652,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 73.70227320716974,
+          "y": 68.44309908209408,
+          "jitter": 0.9762309451587498,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 55.38272424622725,
+          "y": 122.3634259941504,
+          "jitter": 1.2427386304829269,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 92.57232447231291,
+          "y": 166.98718366777527,
+          "jitter": 0.9017890086397529,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 142.5384638274026,
+          "y": 96.08985745908883,
+          "jitter": 0.7500953446608036,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 105.82204116684866,
+          "y": 109.00894396034168,
+          "jitter": 0.7856015934608876,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 125.19837446446164,
+          "y": 79.15243280333303,
+          "jitter": 0.9681202911306173,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 116.22904759766283,
+          "y": 20.52272531526316,
+          "jitter": 1.2209738165140152,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 131.52333815653142,
+          "y": 137.76073359544594,
+          "jitter": 0.8826407549437135,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 95.63512642128065,
+          "y": 27.427713029602288,
+          "jitter": 1.0315990068949759,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 176.95758428396192,
+          "y": 82.45292038355338,
+          "jitter": 1.2980258817318826,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 73.89647964907482,
+          "y": 75.26474219888993,
+          "jitter": 0.9054458061233163,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 92.356358780926,
+          "y": 74.60791014199452,
+          "jitter": 0.8623411729466169,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 46.25169780774927,
+          "y": 109.93851811554813,
+          "jitter": 1.263285771291703,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 73.20585642654923,
+          "y": 160.01124515024114,
+          "jitter": 0.7336254176218062,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 152.5530527925972,
+          "y": 172.18627512791056,
+          "jitter": 1.1279015202075242,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 114.71896108100563,
+          "y": 144.60662144222633,
+          "jitter": 0.8897558809723705,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 25.828023311871846,
+          "y": 57.77915253318353,
+          "jitter": 1.0738826450891792,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 43.662174366754975,
+          "y": 66.31627240811736,
+          "jitter": 1.1505785076413302,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 123.0036811243539,
+          "y": 80.17419958014277,
+          "jitter": 0.7033463088795542,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 65.18603833656255,
+          "y": 76.6437942352356,
+          "jitter": 0.7300033349078148,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 93.73079356428804,
+          "y": 18.395385461043347,
+          "jitter": 0.797411625739187,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 56.0065506802601,
+          "y": 141.33488182989373,
+          "jitter": 0.8051012486685067,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 174.01566555085122,
+          "y": 98.124446072265,
+          "jitter": 1.1243116147816181,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 144.62565522141313,
+          "y": 115.66362305396444,
+          "jitter": 0.9163866525050253,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 166.5916992405215,
+          "y": 45.38076975506563,
+          "jitter": 1.13014370361343,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 37.626442251362015,
+          "y": 106.62313953657515,
+          "jitter": 0.8359315576497465,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 83.56917337072508,
+          "y": 53.38723034157781,
+          "jitter": 0.7849394457414746,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 185.4077029411603,
+          "y": 74.76295915194517,
+          "jitter": 0.7952300391625613,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 121.60073270097553,
+          "y": 173.14175212393693,
+          "jitter": 0.992476303409785,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 32.1886352352426,
+          "y": 129.70449177119667,
+          "jitter": 1.2903179411310703,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 126.22900104723459,
+          "y": 163.5141712149246,
+          "jitter": 1.1845590349286794,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 156.1352145368805,
+          "y": 81.27543190789987,
+          "jitter": 1.0150511512067169,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 100.5694472158712,
+          "y": 94.04454287452631,
+          "jitter": 0.8968654130585492,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 123.00649413433521,
+          "y": 84.47446745116284,
+          "jitter": 1.2521567022893576,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 186.69267812990714,
+          "y": 78.24261854422494,
+          "jitter": 1.2513806885108352,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 143.71303884866973,
+          "y": 150.84006269995922,
+          "jitter": 0.8131943966727704,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 172.30766453160476,
+          "y": 136.61638272350083,
+          "jitter": 1.2374374001286923,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 30.9024523280397,
+          "y": 77.47682928994857,
+          "jitter": 1.0004025854635983,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 41.017119590164164,
+          "y": 61.511762816342305,
+          "jitter": 1.076931820809841,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 94.46842807868158,
+          "y": 93.76863942155856,
+          "jitter": 1.0030501735862343,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 66.81941346294849,
+          "y": 88.51171817688655,
+          "jitter": 1.2669055157341063,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 103.15640969582375,
+          "y": 162.97972547087352,
+          "jitter": 1.2758778581861407,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 51.427162265465014,
+          "y": 140.5803052875547,
+          "jitter": 1.1018601769581435,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 173.77729253840948,
+          "y": 145.41511800989286,
+          "jitter": 0.9149850457441061,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 27.500692065978484,
+          "y": 80.64871839599681,
+          "jitter": 1.0764160859398544,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 129.55519160920397,
+          "y": 71.71090621722061,
+          "jitter": 0.8846048307139426,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 46.78062762693403,
+          "y": 101.40201445687056,
+          "jitter": 0.943729243054986,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 173.81877598330647,
+          "y": 67.07528433308639,
+          "jitter": 1.0941078559961168,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 14.641995984969583,
+          "y": 81.25526396205537,
+          "jitter": 1.2439493906684218,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 126.96945817268815,
+          "y": 148.03127629843794,
+          "jitter": 1.2157868130598217,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 67.04624393944786,
+          "y": 181.60642147842685,
+          "jitter": 1.007430843822658,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 64.91529989194107,
+          "y": 112.65007589639296,
+          "jitter": 0.9079967770259827,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 46.96793825259231,
+          "y": 44.79138506068721,
+          "jitter": 0.9669002301059663,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 127.82185354694138,
+          "y": 114.97723666702534,
+          "jitter": 1.2025625095237045,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 64.08547824045839,
+          "y": 158.18818414655595,
+          "jitter": 1.1688399277627468,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 157.49372077759813,
+          "y": 39.2871436222945,
+          "jitter": 0.7675122996326535,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 85.98565048337984,
+          "y": 107.66878727576261,
+          "jitter": 1.0444631786085665,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 147.93835967032322,
+          "y": 39.53532572129255,
+          "jitter": 1.2036588507238775,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 112.02169510601814,
+          "y": 73.10648804150391,
+          "jitter": 1.172336539812386,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 107.27148422835732,
+          "y": 122.84402004413464,
+          "jitter": 0.8138211585115641,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 135.59554335740495,
+          "y": 45.826103850932995,
+          "jitter": 0.8254475261084735,
+          "resistant": false,
+          "alive": true
+        },
+        {
+          "x": 123.06371651424263,
+          "y": 39.98552084154395,
+          "jitter": 0.8340672631282359,
+          "resistant": false,
+          "alive": true
+        }
+      ],
+      "runAwarded": false,
+      "explanationAwarded": false
+    },
+    "resistanceNotebook": {
+      "records": [
+        {
+          "id": 7,
+          "evidence": {
+            "dose": 60,
+            "duration": 8,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "Current culture notes.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8
+              },
+              {
+                "day": 1,
+                "sensitive": 60,
+                "resistant": 6
+              },
+              {
+                "day": 2,
+                "sensitive": 20,
+                "resistant": 3
+              }
+            ],
+            "runAwarded": true,
+            "explanationAwarded": false
+          },
+          "reviewNote": "Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. ",
+          "importedRecord": {
+            "literal": "<img src=x onerror=\"window.__liveVisualInjected=true\"> Keep imported evidence literal.",
+            "keep": [
+              1,
+              2
+            ]
+          }
+        },
+        {
+          "id": 4,
+          "evidence": {
+            "dose": 90,
+            "duration": 8,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "<img src=x onerror=\"window.__liveVisualInjected=true\"> Keep imported evidence literal.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8
+              },
+              {
+                "day": 1,
+                "sensitive": 2,
+                "resistant": 6
+              },
+              {
+                "day": 2,
+                "sensitive": 0,
+                "resistant": 4
+              }
+            ],
+            "runAwarded": true,
+            "explanationAwarded": false
+          },
+          "reviewNote": "<img src=x onerror=\"window.__liveVisualInjected=true\"> Keep imported evidence literal."
+        }
+      ],
+      "selectedId": 7,
+      "nextId": 40,
+      "importedNotebook": {
+        "literal": "<img src=x onerror=\"window.__liveVisualInjected=true\"> Keep imported evidence literal."
+      },
+      "removed": {
+        "record": {
+          "id": 30,
+          "evidence": {
+            "dose": 90,
+            "duration": 8,
+            "initRes": 10,
+            "prediction": "increase",
+            "notes": "<img src=x onerror=\"window.__liveVisualInjected=true\"> Keep imported evidence literal.",
+            "history": [
+              {
+                "day": 0,
+                "sensitive": 72,
+                "resistant": 8
+              },
+              {
+                "day": 1,
+                "sensitive": 2,
+                "resistant": 6
+              },
+              {
+                "day": 2,
+                "sensitive": 0,
+                "resistant": 4
+              }
+            ],
+            "runAwarded": true,
+            "explanationAwarded": false
+          },
+          "reviewNote": "Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. Keep the original uncertainty and observations. "
+        },
+        "index": 1,
+        "importedRecovery": true
+      }
+    },
+    "resistanceComparison": {
+      "aId": 7,
+      "bId": 4,
+      "round": null,
+      "rawPreference": {
+        "literal": "<img src=x onerror=\"window.__liveVisualInjected=true\"> Keep imported evidence literal."
+      }
+    },
+    "metadata": {
+      "literal": "<img src=x onerror=\"window.__liveVisualInjected=true\"> Keep imported evidence literal.",
+      "keep": true
+    }
+  }
+}

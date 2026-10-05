@@ -7,10 +7,12 @@ function session(file,extra={}){
   resetStemLab();const tool=loadTool(file,'anatomy');let data={anatomy:{system:'skeletal',view:'anterior',complexity:3,_activeTab:'spotter',...extra}};const spoken=[],announced=[];
   const render=()=>tool.render(makeCtx({toolData:data,gradeLevel:'9',callTTS:text=>spoken.push(text),announceToSR:text=>announced.push(text),setToolData:u=>{data=typeof u==='function'?u(data):u;}}));
   const node=p=>{const found=find(render(),p);expect(found).not.toBeNull();return found;};
-  return {data:()=>data.anatomy,spoken,announced,node,patch:p=>{data={anatomy:{...data.anatomy,...p}};},answer:id=>node(n=>n.props?.['data-anatomy-spotter-option']===id).props.onClick(),click:label=>node(n=>n.type==='button'&&n.props?.['aria-label']===label).props.onClick(),html(){const root=document.createElement('div');root.innerHTML=renderTool('anatomy',data,{gradeLevel:'9'});return root;}};
+  // Settle initial system/view participation before testing answer continuity.
+  render();vi.advanceTimersByTime(0);
+  return {data:()=>data.anatomy,spoken,announced,node,patch:p=>{data={anatomy:{...data.anatomy,...p}};},answer:id=>node(n=>n.props?.['data-anatomy-spotter-option']===id).props.onClick(),click:label=>node(n=>n.type==='button'&&n.props?.['aria-label']===label).props.onClick(),mount(){document.body.innerHTML=renderTool('anatomy',data,{gradeLevel:'9'});},html(){const root=document.createElement('div');root.innerHTML=renderTool('anatomy',data,{gradeLevel:'9'});return root;}};
 }
-beforeEach(()=>{resetStemLab();vi.useFakeTimers();vi.setSystemTime(now);});
-afterEach(()=>{vi.clearAllTimers();vi.useRealTimers();vi.restoreAllMocks();});
+beforeEach(()=>{resetStemLab();vi.useFakeTimers();vi.setSystemTime(now);document.body.innerHTML='';});
+afterEach(()=>{vi.clearAllTimers();vi.useRealTimers();vi.restoreAllMocks();document.body.innerHTML='';});
 for(const file of ['stem_lab/stem_tool_anatomy.js','desktop/web-app/public/stem_lab/stem_tool_anatomy.js'])describe('Spotter practice: '+file,()=>{
   it('defaults to untimed practice and does not import a legacy best time',()=>{
     const s=session(file,{_spotterBestTime:1.2});const root=s.html();expect(root.querySelector('[data-anatomy-spotter-timing]').checked).toBe(false);expect(root.textContent).toContain('Untimed practice');expect(root.textContent).not.toContain('Best timed response');
@@ -26,7 +28,8 @@ for(const file of ['stem_lab/stem_tool_anatomy.js','desktop/web-app/public/stem_
   it('accepts the first answer once across separate stale render callbacks',()=>{
     const s=session(file,round),correct=s.node(n=>n.props?.['data-anatomy-spotter-option']==='skull').props.onClick,wrong=s.node(n=>n.props?.['data-anatomy-spotter-option']==='ribs').props.onClick;
     correct();wrong();correct();expect(s.data()._spotterFeedback).toBe('skull');expect(s.data()._spotterTotal).toBe(1);expect(s.data()._spotterScore).toBe(1);expect(s.data()._retrievalEvidence.skull).toEqual({attempts:1,correct:1});
-    vi.advanceTimersByTime(1);expect(s.announced.filter(x=>x.startsWith('Correct.'))).toHaveLength(1);
+    // Announcements belong to the current mounted round.
+    s.mount();vi.advanceTimersByTime(1);expect(s.announced.filter(x=>x.startsWith('Correct.'))).toHaveLength(1);
   });
   it('preserves fresh evidence, ratings, notes, and counters during an answer',()=>{
     const s=session(file,round),answer=s.node(n=>n.props?.['data-anatomy-spotter-option']==='skull').props.onClick;

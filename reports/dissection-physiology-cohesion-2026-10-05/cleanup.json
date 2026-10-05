@@ -1,0 +1,59 @@
+{
+  "at": "2026-10-05T04:28:48.520Z",
+  "removedScratch": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-physiology-2026-10-04",
+  "archiveFilesVerified": 249,
+  "excludedOwnedFiles": [
+    {
+      "path": "cleanup.cjs",
+      "sha256": "db73d78c0b60de0019b7c4e387e4bdb9b50e08fbf08e980d70db6b96b58ec87a"
+    },
+    {
+      "path": "finish-label-fixture.cjs",
+      "sha256": "87054ff4964cae809f0c9c610244069bbbbd807dc8a75cfad58aa72f91930929"
+    },
+    {
+      "path": "fix-fixtures.cjs",
+      "sha256": "7066dc6720539f705fa1c90b6968b18937c0346748d07efa553abd5ee27c8d1d"
+    },
+    {
+      "path": "label-polish.cjs",
+      "sha256": "67600e345163ab2a889d0dfc4c3be85f1af57b08d12fa1a6c49a123e279242e4"
+    },
+    {
+      "path": "polish.cjs",
+      "sha256": "ce62003655d3783e66cb6623ba35387b6d6d35e571aaf9be1ff747abd8602025"
+    },
+    {
+      "path": "prepare.cjs",
+      "sha256": "7a8f966f280d5c672fe2d513511c12414c36fb9dc97000469981697815eee5ef"
+    },
+    {
+      "path": "refine-tests.cjs",
+      "sha256": "788b35084000077c5e264c8342b2223d93b4540a640b76751818cd781c89ad68"
+    },
+    {
+      "path": "renderer-after.js",
+      "sha256": "4210d14f753c38f87eb658ed56f134090c057c00f69cebc11c1b52319ef622b0"
+    },
+    {
+      "path": "renderer-before.js",
+      "sha256": "c3ba3189fce6d0bd1eda77179c2c8345e7fa970817391925ac83080e45c5e17c"
+    },
+    {
+      "path": "report.cjs",
+      "sha256": "7307ebc8c3f3aea97a1cecddddaf017f5416c2df72b36baef1c29cb1f1aced44"
+    },
+    {
+      "path": "run.cjs",
+      "sha256": "4e639abc95ab90695f8173ad85a2a913becd69e8bbcac228e2ff70c4d1ca2c76"
+    },
+    {
+      "path": "source.patch",
+      "sha256": "6f5dc81e7f82ffc477a67d2dad1cd8329bd02f05700bf872b6ee2ce03f062137"
+    },
+    {
+      "path": "update-report.cjs",
+      "sha256": "b80c54a73fdeed453ad3858c99f57f35ca6cc8a87ed90bb125deff80881f94cc"
+    }
+  ]
+}

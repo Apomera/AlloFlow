@@ -17,7 +17,7 @@ beforeEach(()=>{
   // Expose the unchanged private entry point only in this evaluated fixture,
   // so the test executes the real presentation/exit closure on actual r128.
   const builder=readFileSync('stem_lab/stem_tool_geometryworld_builder.js','utf8');
-  new Function(builder.replace('window.StemLab.geometryWorldBuilderPure = {','window.StemLab.geometryWorldBuilderPure = {showcaseBuildForTest:showcaseBuild,'))();
+  new Function(builder.replace('window.StemLab.geometryWorldBuilderPure = {','window.StemLab.geometryWorldBuilderPure = {showcaseBuildForTest:showcaseBuild,installWorkshopPointerForTest:installWorkshopPointer,'))();
   api=window.StemLab.geometryWorldBuilderPure;
 });
 afterEach(()=>{
@@ -119,6 +119,100 @@ describe('portable selected Geometry World editable files',()=>{
     expect(api.normalizeEditableWorld(parsed).ok).toBe(true);expect(parsed.blocks).toEqual([{x:0,y:1,z:0,type:'wood',shape:'quarter',rotation:3}]);
     expect(downloads.filenames).toEqual(['geometry-world-selected-creation-editable.json']);expect(engine._showcase).toBe(presentation);expect(cameraSnapshot(engine.camera)).toEqual(pose);expect(worldSnapshot(engine)).toEqual(before);
     expect(window.__alloPrintLabPendingHandoff).toBe(pending);expect(window.__alloGeometryWorldReturnProject).toBe(returnProject);
+  });
+});
+
+describe('complete live recovery JSON downloads',()=>{
+  it('exports every live student block exactly without reading browser storage',async()=>{
+    const live=[{x:-4,y:1,z:6,type:'glass',shape:'halfA',rotation:2},{x:12,y:8,z:-9,type:'wood',shape:'quarter',rotation:3}];
+    const {engine}=fixture([...live,{x:0,y:0,z:0,layer:'ground',lesson:true},{x:1,y:1,z:1,layer:'lesson',lesson:true}],live.slice(0,1));
+    // Invalid authored metadata must not prevent exporting student construction.
+    engine.blocks['0,0,0'].userData.gridPos={x:Infinity,y:NaN,z:null};
+    engine.blocks['1,1,1'].userData.blockType={nonserializable:1n};
+    const ctx=context(),downloads=captureDownloads(),before=engine.blocks,selection=engine._builderSelection,pose=cameraSnapshot(engine.camera);
+    const getItem=vi.spyOn(Storage.prototype,'getItem').mockImplementation(()=>{throw new Error('Storage is unavailable');});
+    expect(api.saveEditableWorld(ctx)).toBe(true);
+    const parsed=JSON.parse(new TextDecoder().decode(await blobBytes(downloads.blobs[0])));
+    expect(parsed.blocks).toEqual(live);
+    expect(parsed.schema).toBe('alloflow-geometry-world/2');
+    expect(getItem).not.toHaveBeenCalled();expect(downloads.blobs).toHaveLength(1);
+    expect(engine.blocks).toBe(before);expect(engine._builderSelection).toBe(selection);expect(cameraSnapshot(engine.camera)).toEqual(pose);
+  });
+
+  it.each([
+    ['missing position',data=>{delete data.gridPos;}],
+    ['fractional position',data=>{data.gridPos.x=0.25;}],
+    ['string position',data=>{data.gridPos.x='0';}],
+    ['non-finite position',data=>{data.gridPos.x=NaN;}],
+    ['out-of-range position',data=>{data.gridPos.x=129;}],
+    ['missing material',data=>{delete data.blockType;}],
+    ['unknown material',data=>{data.blockType='not-a-material';}],
+    ['missing shape',data=>{delete data.shape;}],
+    ['unknown shape',data=>{data.shape='sphere';}],
+    ['missing rotation',data=>{delete data.rotation;}],
+    ['out-of-range rotation',data=>{data.rotation=4;}],
+    ['fractional rotation',data=>{data.rotation=0.5;}],
+    ['nonserializable rotation',data=>{data.rotation=1n;}],
+    ['circular material',data=>{const value={};value.self=value;data.blockType=value;}],
+    ['duplicate cell',data=>{data.gridPos={x:0,y:1,z:0};}],
+  ])('rejects %s rather than downloading only the valid cells',(_label,corrupt)=>{
+    const {engine}=fixture([{x:0,y:1,z:0},{x:1,y:1,z:0,shape:'quarter',rotation:2}]);
+    const invalid=engine.blocks['1,1,0'].userData;corrupt(invalid);
+    const ctx=context(),downloads=captureDownloads(),before=engine.blocks,undo=JSON.stringify(engine._undoStack),selection=engine._builderSelection,pose=cameraSnapshot(engine.camera);
+    expect(api.saveEditableWorld(ctx)).toBe(false);
+    expect(downloads.blobs).toEqual([]);expect(downloads.filenames).toEqual([]);
+    expect(ctx.addToast.mock.calls.at(-1)).toEqual([expect.stringContaining('No file was downloaded.'),'error']);
+    expect(engine.blocks).toBe(before);expect(engine.blocks['1,1,0'].userData).toBe(invalid);expect(engine._builderSelection).toBe(selection);
+    expect(JSON.stringify(engine._undoStack)).toBe(undo);expect(cameraSnapshot(engine.camera)).toEqual(pose);
+  });
+
+  it('contains metadata access and download errors without claiming success',()=>{
+    const {engine}=fixture([{x:0,y:1,z:0}]),ctx=context(),downloads=captureDownloads();
+    Object.defineProperty(engine.blocks['0,1,0'].userData,'gridPos',{configurable:true,get(){throw new Error('Unreadable student cell');}});
+    expect(api.saveEditableWorld(ctx)).toBe(false);expect(downloads.blobs).toEqual([]);
+    expect(ctx.addToast.mock.calls.at(-1)).toEqual(['Unreadable student cell','error']);
+    fixture([{x:0,y:1,z:0}]);vi.spyOn(HTMLAnchorElement.prototype,'click').mockImplementation(()=>{throw new Error('Download refused');});
+    expect(api.saveEditableWorld(ctx)).toBe(false);expect(document.querySelector('a[download]')).toBeNull();
+    expect(ctx.addToast.mock.calls.at(-1)).toEqual(['Download refused','error']);
+  });
+});
+
+describe('builder input waits for save recovery',()=>{
+  function surface(engine){
+    const canvas=document.createElement('canvas');document.body.appendChild(canvas);
+    canvas.getBoundingClientRect=()=>({left:0,top:0,right:1200,bottom:800,width:1200,height:800});
+    canvas.setPointerCapture=vi.fn();canvas.hasPointerCapture=()=>false;canvas.releasePointerCapture=vi.fn();
+    engine.renderer.domElement=canvas;return canvas;
+  }
+  it('lets recovery receive Escape and blocks direct workshop camera commands without exiting orbit',()=>{
+    const {engine}=fixture([{x:0,y:1,z:0}]),canvas=surface(engine),exit=vi.fn(),selected=vi.fn();
+    const dispose=api.installWorkshopPointerForTest(engine,canvas,'orbit','replace',selected,exit,'visible');
+    const pose=cameraSnapshot(engine.camera),recoveryKey=vi.fn();document.addEventListener('keydown',recoveryKey);
+    try {
+      engine._pendingWorldTransition={};
+      const escape=new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true,cancelable:true});canvas.dispatchEvent(escape);
+      expect(recoveryKey).toHaveBeenCalledTimes(1);expect(escape.defaultPrevented).toBe(false);expect(exit).not.toHaveBeenCalled();
+      expect(engine._workshopCameraActions.zoom(2)).toBe(false);expect(engine._workshopCameraActions.pan(4,4)).toBe(false);
+      canvas.dispatchEvent(new WheelEvent('wheel',{bubbles:true,cancelable:true,deltaY:120}));expect(cameraSnapshot(engine.camera)).toEqual(pose);
+      delete engine._pendingWorldTransition;canvas.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true}));expect(exit).toHaveBeenCalledTimes(1);
+    } finally {document.removeEventListener('keydown',recoveryKey);dispose();canvas.remove();}
+  });
+  it('does not clear a retained transform preview or consume recovery Escape during a blocked drag',()=>{
+    const {engine}=fixture([{x:0,y:1,z:0}]),canvas=surface(engine),preview=vi.fn(),exit=vi.fn();
+    const dispose=api.installWorkshopTransform(engine,canvas,preview,exit),root=document.querySelector('.gwe-transform-handles'),button=root.querySelector('[data-axis="x"]');
+    button.setPointerCapture=vi.fn();button.hasPointerCapture=()=>true;button.releasePointerCapture=vi.fn();
+    const recoveryKey=vi.fn();document.addEventListener('keydown',recoveryKey);
+    try {
+      const down=new Event('pointerdown',{bubbles:true,cancelable:true});Object.assign(down,{button:0,pointerId:1,clientX:500,clientY:400});button.dispatchEvent(down);
+      engine._pendingWorldTransition={};
+      const move=new Event('pointermove',{bubbles:true,cancelable:true});Object.assign(move,{pointerId:1,clientX:620,clientY:400});button.dispatchEvent(move);
+      button.dispatchEvent(new Event('pointercancel',{bubbles:true}));
+      button.dispatchEvent(new KeyboardEvent('keydown',{key:'ArrowRight',bubbles:true,cancelable:true}));
+      const escape=new KeyboardEvent('keydown',{key:'Escape',code:'Escape',bubbles:true,cancelable:true});button.dispatchEvent(escape);
+      expect(escape.defaultPrevented).toBe(false);expect(recoveryKey).toHaveBeenCalled();expect(preview).not.toHaveBeenCalled();expect(exit).not.toHaveBeenCalled();
+      expect(engine._workshopTransformActions).toBeTruthy();expect(document.querySelector('.gwe-transform-handles')).toBe(root);
+      delete engine._pendingWorldTransition;button.dispatchEvent(new KeyboardEvent('keydown',{key:'Escape',bubbles:true,cancelable:true}));expect(exit).toHaveBeenCalledTimes(1);
+    } finally {document.removeEventListener('keydown',recoveryKey);dispose();canvas.remove();}
   });
 });
 

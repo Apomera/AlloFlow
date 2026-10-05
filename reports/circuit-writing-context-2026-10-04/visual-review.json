@@ -1,0 +1,55 @@
+{
+  "reviewer": "/root",
+  "reviewedAtOriginalResolution": true,
+  "sourceSha256": "e9c7d6a86b45def1263ffb3ba4ea98de19078563a471a6b14d95c285299fe030",
+  "screenshots": [
+    {
+      "file": "original-plan-editor.png",
+      "sha256": "b94805b76f8c56d5fa9832309f62447298b83c673b91b9290ec532af48c7eb0a",
+      "passed": true,
+      "notes": "The original prediction field has a visible keyboard focus outline and readable authored text. This crop shows the two original fields; the return action is verified in the native workflow."
+    },
+    {
+      "file": "writer-return-focus.png",
+      "sha256": "0a8ce83f9c411b9f633b04831781b2b8f91f2de31082efeaefec138dd3b2e79d",
+      "passed": true,
+      "notes": "Returning focuses the existing explanation field. Its selected text and native writing area remain visible below the open review."
+    },
+    {
+      "file": "writing-context-desktop.png",
+      "sha256": "1282d0ff7e987251f284a678a870af82f1a9e12c83de675a9edc488a49afcfe7",
+      "passed": true,
+      "notes": "Two aligned review cards sit above the writing field, with readable authored line breaks and matching edit actions. The saved-readings shortcut is clearly separate below the draft."
+    },
+    {
+      "file": "writing-context-phone-empty.png",
+      "sha256": "b32322f99e39468556715be120f3a3493a74fa27fcf17f9f44300fb92167ec39",
+      "passed": true,
+      "notes": "The single-column empty cards explain what to write and offer clear Add actions. Buttons, writing and character count fit the phone."
+    },
+    {
+      "file": "writing-context-narrow-long.png",
+      "sha256": "501b735eb3d9e97ca1b199bb3ec5ce1bd61d3b3337568b980086fd3fe56902bd",
+      "passed": true,
+      "notes": "The long unbroken authored label wraps within its card at 320 px. The disclosure can close the review when the student wants more writing space."
+    },
+    {
+      "file": "writing-context-doubled-text.png",
+      "sha256": "2980a9879581e23cf49bb8e4221a4ff5db4e9a09990a0b530086a6da19e8a1d7",
+      "passed": true,
+      "notes": "Expanded labels and actual doubled text wrap within all controls and cards. The explanation remains editable and legible without horizontal clipping."
+    },
+    {
+      "file": "writing-context-forced-colors.png",
+      "sha256": "ec78549d00c461504036bcf91245b6e276b74fa8de4d7c8b1e04be5ca9bbe8b0",
+      "passed": true,
+      "notes": "The disclosure, cards, actions and focused writing field remain readable under system forced colors."
+    },
+    {
+      "file": "writing-context-rtl.png",
+      "sha256": "ddd0cfbc82133a62ee89d73d0bbe4624b80a09b5a54b88cf3a53dd9954343eab",
+      "passed": true,
+      "notes": "Authored Arabic questions and predictions read right to left with their original line breaks; the cards and actions fit the RTL layout."
+    }
+  ]
+}

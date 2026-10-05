@@ -1,0 +1,79 @@
+{
+  "verifiedAt": "2026-10-04T23:04:54.657Z",
+  "moduleSha256": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21",
+  "moduleFourCopyParity": true,
+  "sourceHashes": {
+    "_build_maine_sld_practice_module.js": "368b16765e9f54da9f2d5dfccc91e6402bdb3c3abc9fc9ac92355c1afcb976f8",
+    "maine_sld_practice_source.jsx": "243623bbe94aca528c0693e63327640c86d71f8cd892d4578def0019b848e766",
+    "maine_sld_practice_core.js": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926",
+    "maine_sld_case_data.json": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e",
+    "maine_sld_state_reference_core.js": "447983ea23c58415f57dd2bf7cd6578c3ab079a4c9f2b76b4f20b5a76cafa96c",
+    "maine_sld_state_documents.js": "6b3e22c0ccc9fa55d61d2719d6bbb62da4984c27b2a48c2fc24ec489f8462129",
+    "maine_sld_state_workspace_source.jsx": "8fe6a868b7fb3c6e119e6fc9cd1ddd1daaecf8bde66af715703d6829a567ee9d"
+  },
+  "retained38SpecExact": true,
+  "checks": {
+    "core": 7,
+    "document": 21,
+    "searchDistinct": 32,
+    "newBrowser": 7,
+    "retainedBrowser": 3,
+    "totalDistinct": 70
+  },
+  "finalBrowserAutomaticRetries": 0,
+  "finalBrowserUnexpected": 0,
+  "finalNewScopedAxeScans": 4,
+  "finalNewScopedAxeViolations": 0,
+  "initialActualAppFailure": "Duplicate activity banner landmark; preserved actual-app-01 output; corrected with modal header role=presentation, final same workflow passed.",
+  "served": [
+    {
+      "route": "/app/maine_sld_practice_module.js?v=664c72da",
+      "sha256": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21",
+      "bytes": 248870
+    },
+    {
+      "route": "/__sld_preview/host.bundle.js",
+      "sha256": "47cf74b04321b3c28ac1d281f3225179ae9fdf6a99aef3737c0633ccedc3b996",
+      "bytes": 1979300
+    },
+    {
+      "route": "/app/doc_pipeline_module.js?v=b774ddf6",
+      "sha256": "b774ddf6403b01d280d7164b175088817717ae6acb8794d344e4084f651ab27a",
+      "bytes": 3520189
+    },
+    {
+      "route": "/app/ai_backend_module.js?v=cd1a5a87",
+      "sha256": "cd1a5a87fe805b91f8345499262e66b89cbc13ecbdbe4d74cfce0655295538d4",
+      "bytes": 176054
+    }
+  ],
+  "preview": {
+    "url": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+    "pid": 39540,
+    "managedSession": 21341,
+    "sourceSha256": "4225c850336e4c62482828ab6732f510aab8efad1eba641407cf31ad51821120",
+    "bundleSha256": "47cf74b04321b3c28ac1d281f3225179ae9fdf6a99aef3737c0633ccedc3b996"
+  },
+  "limitations": [
+    "No live search credentials or hosted proxy acceptance exercised.",
+    "Remote proxies require separate release of updated public-query policy.",
+    "Reference sources are participant-reviewed; this workspace does not certify current state rules or automate eligibility.",
+    "Unsaved reference drafts survive in-panel navigation but are not included in downloads or retained after closing/reloading.",
+    "No manual assistive-technology or full production application build acceptance."
+  ],
+  "noStagingCommitPushDeployOrFullAppBuild": true,
+  "documentPipelineSourceSha256": "0ea0b1143ddefffbdd8f2cbaafc160f55482c7ab5ed0a796335d52d9ed28e27b",
+  "sourceEolCorrection": {
+    "beforeSha256": "e940c9ff894ee148386f073700c73e8e18a775e2554f6d828953a19341b28818",
+    "afterSha256": "0ea0b1143ddefffbdd8f2cbaafc160f55482c7ab5ed0a796335d52d9ed28e27b",
+    "scope": "Two introduced CR characters removed; parser source semantics unchanged; generated parity rechecked."
+  },
+  "documentPipelineModuleSha256": "b774ddf6403b01d280d7164b175088817717ae6acb8794d344e4084f651ab27a",
+  "documentPipelinePin": "b774ddf6",
+  "documentFinalChecks": 21,
+  "finalSourceAppRecheck": {
+    "passed": 1,
+    "unexpected": 0,
+    "automaticRetries": 0
+  }
+}

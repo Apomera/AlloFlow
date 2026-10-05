@@ -1,0 +1,61 @@
+{
+  "namespace": "stem.anatomy",
+  "date": "2026-10-02",
+  "english": {
+    "case_journey_atlas_progress": "In this atlas: {reviewed}/{total} explanations reviewed",
+    "case_journey_total_progress": "Across all atlases: {reviewed}/{total} reviewed",
+    "case_journey_read": "Read the case",
+    "case_journey_hint": "Reasoning hint",
+    "case_journey_origin": "Anatomy for {case}",
+    "case_journey_return": "Return to {case}",
+    "case_journey_showing": "Showing {structure} for {case}.",
+    "case_journey_hidden": "Explanation hidden. Your reasoning stays saved.",
+    "case_journey_review_saved": "Review saved for {case}.",
+    "case_journey_draft_count": "{count}/600 characters"
+  },
+  "translations": {
+    "french": {
+      "case_journey_atlas_progress": "Dans cet atlas : {reviewed}/{total} explications consultées",
+      "case_journey_total_progress": "Tous les atlas : {reviewed}/{total} explications consultées",
+      "case_journey_read": "Lire le cas",
+      "case_journey_hint": "Piste de raisonnement",
+      "case_journey_origin": "Anatomie pour {case}",
+      "case_journey_return": "Revenir à {case}",
+      "case_journey_showing": "Vue de {structure} pour {case}.",
+      "case_journey_hidden": "Explication masquée. Ton raisonnement reste enregistré.",
+      "case_journey_review_saved": "Lecture enregistrée pour {case}.",
+      "case_journey_draft_count": "{count}/600 caractères"
+    },
+    "spanish_latin_america": {
+      "case_journey_atlas_progress": "En este atlas: {reviewed}/{total} explicaciones revisadas",
+      "case_journey_total_progress": "En todos los atlas: {reviewed}/{total} revisadas",
+      "case_journey_read": "Leer el caso",
+      "case_journey_hint": "Pista para razonar",
+      "case_journey_origin": "Anatomía para {case}",
+      "case_journey_return": "Volver a {case}",
+      "case_journey_showing": "Se muestra {structure} para {case}.",
+      "case_journey_hidden": "Explicación oculta. Tu razonamiento sigue guardado.",
+      "case_journey_review_saved": "Revisión guardada para {case}.",
+      "case_journey_draft_count": "{count}/600 caracteres"
+    },
+    "arabic": {
+      "case_journey_atlas_progress": "في هذا الأطلس: تمت مراجعة {reviewed}/{total} من الشروح",
+      "case_journey_total_progress": "في جميع الأطالس: تمت مراجعة {reviewed}/{total}",
+      "case_journey_read": "اقرأ الحالة",
+      "case_journey_hint": "تلميح للتفكير",
+      "case_journey_origin": "التشريح المرتبط بالحالة: {case}",
+      "case_journey_return": "العودة إلى {case}",
+      "case_journey_showing": "البنية المعروضة لحالة {case}: {structure}.",
+      "case_journey_hidden": "تم إخفاء الشرح. يبقى تفكيرك محفوظًا.",
+      "case_journey_review_saved": "تم حفظ مراجعة {case}.",
+      "case_journey_draft_count": "{count}/600 حرف"
+    }
+  },
+  "coverage": {
+    "languageCount": 3,
+    "keysPerLanguage": 10,
+    "translatedValues": 30,
+    "desktopMirrors": true
+  },
+  "scope": "Clinical case reading, explanation review progress, saved reasoning, and return from related anatomy. Existing case_ref controls and all earlier Connection labels are retained."
+}

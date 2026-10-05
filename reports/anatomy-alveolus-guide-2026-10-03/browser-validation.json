@@ -1,0 +1,4646 @@
+{
+  "metadata": {
+    "sourceLfSha256": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+    "sourceRawSha256": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+    "mirrorsEqual": true,
+    "startedAt": "2026-10-03T16:27:25.064Z",
+    "finishedSourceLfSha256": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+    "finishedMirrorsEqual": true,
+    "finishedAt": "2026-10-03T16:28:05.881Z"
+  },
+  "journey": {
+    "errors": [],
+    "steps": [
+      {
+        "action": "pause gas exchange",
+        "focus": "flow",
+        "workPreserved": true
+      },
+      {
+        "action": "choose step",
+        "step": "oxygen_diffusion",
+        "playing": false,
+        "focus": "step",
+        "workPreserved": true
+      },
+      {
+        "action": "choose step",
+        "step": "carbon_dioxide_diffusion",
+        "playing": false,
+        "focus": "step",
+        "workPreserved": true
+      },
+      {
+        "action": "choose step",
+        "step": "gas_transport",
+        "playing": false,
+        "focus": "step",
+        "workPreserved": true
+      },
+      {
+        "action": "previous stops at first step",
+        "boundary": "start",
+        "playing": false
+      },
+      {
+        "action": "next stops at final step",
+        "boundary": "end",
+        "playing": false
+      },
+      {
+        "action": "step while playing retains flow preference",
+        "playing": true
+      },
+      {
+        "action": "clinical overlay retains fluid drops and readable explanation",
+        "workPreserved": true
+      },
+      {
+        "action": "return to cardiac flow with keyboard",
+        "workPreserved": true
+      }
+    ],
+    "scans": [],
+    "styles": [],
+    "captures": [
+      "desktop-alveolus-clinical-step-2.png"
+    ]
+  },
+  "display": {
+    "errors": [],
+    "steps": [
+      {
+        "view": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "desktop-light"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(7, 89, 133)",
+          "offset": "3px"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "phone-light"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(7, 89, 133)",
+          "offset": "3px"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark",
+          "name": "phone-dark"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(125, 211, 252)",
+          "offset": "3px"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark",
+          "name": "phone-arabic-dark-larger"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(125, 211, 252)",
+          "offset": "3px"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors",
+          "name": "phone-forced-colors"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(55, 0, 110)",
+          "offset": "3px"
+        }
+      }
+    ],
+    "scans": [
+      {
+        "view": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "desktop-light"
+        },
+        "boxes": [
+          {
+            "tag": "SECTION",
+            "scale": null,
+            "client": 630,
+            "scroll": 630,
+            "left": 550,
+            "right": 1182
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "overview",
+            "client": 592,
+            "scroll": 592,
+            "left": 569,
+            "right": 1163
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "barrier",
+            "client": 592,
+            "scroll": 592,
+            "left": 569,
+            "right": 1163
+          }
+        ],
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "violations": []
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "phone-light"
+        },
+        "boxes": [
+          {
+            "tag": "SECTION",
+            "scale": null,
+            "client": 264,
+            "scroll": 264,
+            "left": 28,
+            "right": 294
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "overview",
+            "client": 238,
+            "scroll": 238,
+            "left": 41,
+            "right": 281
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "barrier",
+            "client": 238,
+            "scroll": 238,
+            "left": 41,
+            "right": 281
+          }
+        ],
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark",
+          "name": "phone-dark"
+        },
+        "boxes": [
+          {
+            "tag": "SECTION",
+            "scale": null,
+            "client": 264,
+            "scroll": 264,
+            "left": 28,
+            "right": 294
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "overview",
+            "client": 238,
+            "scroll": 238,
+            "left": 41,
+            "right": 281
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "barrier",
+            "client": 238,
+            "scroll": 238,
+            "left": 41,
+            "right": 281
+          }
+        ],
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark",
+          "name": "phone-arabic-dark-larger"
+        },
+        "boxes": [
+          {
+            "tag": "SECTION",
+            "scale": null,
+            "client": 264,
+            "scroll": 264,
+            "left": 26,
+            "right": 292
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "overview",
+            "client": 238,
+            "scroll": 238,
+            "left": 39,
+            "right": 279
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "barrier",
+            "client": 238,
+            "scroll": 238,
+            "left": 39,
+            "right": 279
+          }
+        ],
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors",
+          "name": "phone-forced-colors"
+        },
+        "boxes": [
+          {
+            "tag": "SECTION",
+            "scale": null,
+            "client": 264,
+            "scroll": 264,
+            "left": 28,
+            "right": 294
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "overview",
+            "client": 238,
+            "scroll": 238,
+            "left": 41,
+            "right": 281
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "barrier",
+            "client": 238,
+            "scroll": 238,
+            "left": 41,
+            "right": 281
+          }
+        ],
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      }
+    ],
+    "styles": [
+      {
+        "view": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "desktop-light"
+        },
+        "metrics": [
+          {
+            "tag": "H5",
+            "className": "",
+            "text": "Alveolar gas exchange",
+            "font": 24,
+            "width": 439.046875,
+            "height": 33.59375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Explore the alveolus and capillary, then look closely at the air–blood barrier.",
+            "font": 16,
+            "width": 439.046875,
+            "height": 52.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Play exchange",
+            "font": 16,
+            "width": 142.953125,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-playback",
+            "text": "Exchange paused",
+            "font": 16,
+            "width": 129.3125,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Clinical lens",
+            "font": 16,
+            "width": 122.796875,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "1. VentilationFresh air enters alveolus",
+            "font": 16,
+            "width": 292,
+            "height": 81.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Ventilation",
+            "font": 18,
+            "width": 262,
+            "height": 27,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Fresh air enters alveolus",
+            "font": 16,
+            "width": 262,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "2. Oxygen diffusionAlveolus to blood",
+            "font": 16,
+            "width": 292,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. Oxygen diffusion",
+            "font": 18,
+            "width": 262,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Alveolus to blood",
+            "font": 16,
+            "width": 262,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "3. Carbon dioxideBlood to alveolus",
+            "font": 16,
+            "width": 292,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "3. Carbon dioxide",
+            "font": 18,
+            "width": 262,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood to alveolus",
+            "font": 16,
+            "width": 262,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "4. Transport onwardBlood leaves; gas exhales",
+            "font": 16,
+            "width": 292,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "4. Transport onward",
+            "font": 18,
+            "width": 262,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood leaves; gas exhales",
+            "font": 16,
+            "width": 262,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Previous step",
+            "font": 16,
+            "width": 136.734375,
+            "height": 48.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Next step",
+            "font": 16,
+            "width": 106.640625,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-atlas-step-position",
+            "text": "Step 1 of 4",
+            "font": 16,
+            "width": 101.09375,
+            "height": 35.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Ventilation",
+            "font": 20,
+            "width": 558,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Inhalation refreshes alveolar air. Oxygen partial pressure becomes higher in the alveolus than in the arriving pulmonary capillary blood.",
+            "font": 16,
+            "width": 558,
+            "height": 54.375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Focus in this step",
+            "font": 16,
+            "width": 558,
+            "height": 25.59375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Terminal airway · Alveolar air space · Ventilation",
+            "font": 16,
+            "width": 558,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-alveolus-marker-help",
+            "text": "Match the numbered markers to the structure key.",
+            "font": 16,
+            "width": 594,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "1. Alveolus and capillary",
+            "font": 20,
+            "width": 564,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Terminal airway",
+            "font": 16,
+            "width": 108.890625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Alveolar air space",
+            "font": 16,
+            "width": 123.625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Pulmonary capillary",
+            "font": 16,
+            "width": 137.9375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "2. Air–blood barrier",
+            "font": 20,
+            "width": 564,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Alveolar air",
+            "font": 16,
+            "width": 79.140625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Surfactant",
+            "font": 16,
+            "width": 71.703125,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Type I alveolar cell",
+            "font": 16,
+            "width": 128.9375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "4",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Thin interstitium",
+            "font": 16,
+            "width": 115.25,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "5",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Capillary endothelium",
+            "font": 16,
+            "width": 154.5625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "6",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Red blood cell · Hemoglobin",
+            "font": 16,
+            "width": 200.75,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "A",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(3, 105, 161)",
+            "ratio": 5.933638668604332,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Airflow",
+            "font": 16,
+            "width": 49.578125,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "O",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(185, 28, 28)",
+            "ratio": 6.4700447145121895,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Oxygen",
+            "font": 16,
+            "width": 54,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "C",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(29, 78, 216)",
+            "ratio": 6.701618401398807,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Carbon dioxide",
+            "font": 16,
+            "width": 107.515625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Return to circulation: follow oxygenated pulmonary blood back through the left heart before systemic delivery.",
+            "font": 16,
+            "width": 352.828125,
+            "height": 81.5625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Return to circulation:",
+            "font": 16,
+            "width": 163.515625,
+            "height": 21,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Return to cardiac flow",
+            "font": 16,
+            "width": 205.171875,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          }
+        ],
+        "diagrams": [
+          {
+            "scale": "overview",
+            "width": 550,
+            "height": 389.3125,
+            "texts": [
+              {
+                "text": "1",
+                "font": 32,
+                "effectiveFont": 39.54920634920635,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 674.140380859375,
+                  "right": 693.265380859375,
+                  "top": 1915.0067138671875,
+                  "bottom": 1968.0067138671875
+                }
+              },
+              {
+                "text": "2",
+                "font": 32,
+                "effectiveFont": 39.54920634920635,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 919.0338134765625,
+                  "right": 942.7369995117188,
+                  "top": 2007.7001953125,
+                  "bottom": 2060.7001953125
+                }
+              },
+              {
+                "text": "3",
+                "font": 32,
+                "effectiveFont": 39.54920634920635,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 708.9287109375,
+                  "right": 732.6318359375,
+                  "top": 2211.625732421875,
+                  "bottom": 2264.625732421875
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "barrier",
+            "width": 550,
+            "height": 522.71875,
+            "texts": [
+              {
+                "text": "1",
+                "font": 20,
+                "effectiveFont": 45.453804347826086,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 1073.1861572265625,
+                  "right": 1095.1705322265625,
+                  "top": 2631.65576171875,
+                  "bottom": 2691.65576171875
+                }
+              },
+              {
+                "text": "2",
+                "font": 20,
+                "effectiveFont": 45.453804347826086,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 618.2957153320312,
+                  "right": 645.530029296875,
+                  "top": 2681.65478515625,
+                  "bottom": 2741.65478515625
+                }
+              },
+              {
+                "text": "3",
+                "font": 20,
+                "effectiveFont": 45.453804347826086,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 1070.5611572265625,
+                  "right": 1097.7955322265625,
+                  "top": 2729.38134765625,
+                  "bottom": 2789.38134765625
+                }
+              },
+              {
+                "text": "4",
+                "font": 20,
+                "effectiveFont": 45.453804347826086,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 617.8035278320312,
+                  "right": 646.0222778320312,
+                  "top": 2772.5625,
+                  "bottom": 2832.5625
+                }
+              },
+              {
+                "text": "5",
+                "font": 20,
+                "effectiveFont": 45.453804347826086,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 1070.5611572265625,
+                  "right": 1097.7955322265625,
+                  "top": 2822.5615234375,
+                  "bottom": 2882.5615234375
+                }
+              },
+              {
+                "text": "6",
+                "font": 20,
+                "effectiveFont": 45.453804347826086,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 1070.5611572265625,
+                  "right": 1097.7955322265625,
+                  "top": 2918.0146484375,
+                  "bottom": 2978.0146484375
+                }
+              }
+            ],
+            "intersections": []
+          }
+        ]
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "phone-light"
+        },
+        "metrics": [
+          {
+            "tag": "H5",
+            "className": "",
+            "text": "Alveolar gas exchange",
+            "font": 24,
+            "width": 240,
+            "height": 67.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Explore the alveolus and capillary, then look closely at the air–blood barrier.",
+            "font": 16,
+            "width": 240,
+            "height": 79.171875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Play exchange",
+            "font": 16,
+            "width": 142.953125,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-playback",
+            "text": "Exchange paused",
+            "font": 16,
+            "width": 129.3125,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Clinical lens",
+            "font": 16,
+            "width": 122.796875,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "1. VentilationFresh air enters alveolus",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Ventilation",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Fresh air enters alveolus",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "2. Oxygen diffusionAlveolus to blood",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. Oxygen diffusion",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Alveolus to blood",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "3. Carbon dioxideBlood to alveolus",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "3. Carbon dioxide",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood to alveolus",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "4. Transport onwardBlood leaves; gas exhales",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "4. Transport onward",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood leaves; gas exhales",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Previous step",
+            "font": 16,
+            "width": 115,
+            "height": 74.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Next step",
+            "font": 16,
+            "width": 115,
+            "height": 74.78125,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-atlas-step-position",
+            "text": "Step 1 of 4",
+            "font": 16,
+            "width": 101.09375,
+            "height": 35.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Ventilation",
+            "font": 20,
+            "width": 212,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Inhalation refreshes alveolar air. Oxygen partial pressure becomes higher in the alveolus than in the arriving pulmonary capillary blood.",
+            "font": 16,
+            "width": 212,
+            "height": 135.9375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Focus in this step",
+            "font": 16,
+            "width": 212,
+            "height": 25.59375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Terminal airway · Alveolar air space · Ventilation",
+            "font": 16,
+            "width": 212,
+            "height": 54.375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-alveolus-marker-help",
+            "text": "Match the numbered markers to the structure key.",
+            "font": 16,
+            "width": 240,
+            "height": 52.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "1. Alveolus and capillary",
+            "font": 20,
+            "width": 218,
+            "height": 60,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Terminal airway",
+            "font": 16,
+            "width": 108.890625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Alveolar air space",
+            "font": 16,
+            "width": 123.625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Pulmonary capillary",
+            "font": 16,
+            "width": 137.9375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "2. Air–blood barrier",
+            "font": 20,
+            "width": 218,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Alveolar air",
+            "font": 16,
+            "width": 79.140625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Surfactant",
+            "font": 16,
+            "width": 71.703125,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Type I alveolar cell",
+            "font": 16,
+            "width": 128.9375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "4",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Thin interstitium",
+            "font": 16,
+            "width": 115.25,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "5",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Capillary endothelium",
+            "font": 16,
+            "width": 154.5625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "6",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Red blood cell · Hemoglobin",
+            "font": 16,
+            "width": 200,
+            "height": 52.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "A",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(3, 105, 161)",
+            "ratio": 5.933638668604332,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Airflow",
+            "font": 16,
+            "width": 49.578125,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "O",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(185, 28, 28)",
+            "ratio": 6.4700447145121895,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Oxygen",
+            "font": 16,
+            "width": 54,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "C",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(29, 78, 216)",
+            "ratio": 6.701618401398807,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Carbon dioxide",
+            "font": 16,
+            "width": 107.515625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Return to circulation: follow oxygenated pulmonary blood back through the left heart before systemic delivery.",
+            "font": 16,
+            "width": 212,
+            "height": 108.75,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Return to circulation:",
+            "font": 16,
+            "width": 163.515625,
+            "height": 21,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Return to cardiac flow",
+            "font": 16,
+            "width": 205.171875,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          }
+        ],
+        "diagrams": [
+          {
+            "scale": "overview",
+            "width": 204,
+            "height": 144.390625,
+            "texts": [
+              {
+                "text": "1",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 89.84164428710938,
+                  "right": 96.93539428710938,
+                  "top": 3185.908447265625,
+                  "bottom": 3205.908447265625
+                }
+              },
+              {
+                "text": "2",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 180.66665649414062,
+                  "right": 189.6666717529297,
+                  "top": 3220.287109375,
+                  "bottom": 3240.287109375
+                }
+              },
+              {
+                "text": "3",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 102.74156188964844,
+                  "right": 111.74156188964844,
+                  "top": 3295.92041015625,
+                  "bottom": 3315.92041015625
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "barrier",
+            "width": 204,
+            "height": 193.875,
+            "texts": [
+              {
+                "text": "1",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 237.84361267089844,
+                  "right": 245.99986267089844,
+                  "top": 3680.128662109375,
+                  "bottom": 3702.128662109375
+                }
+              },
+              {
+                "text": "2",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 69.12303924560547,
+                  "right": 79.232421875,
+                  "top": 3698.67333984375,
+                  "bottom": 3720.67333984375
+                }
+              },
+              {
+                "text": "3",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 236.86700439453125,
+                  "right": 246.9763641357422,
+                  "top": 3716.374755859375,
+                  "bottom": 3738.374755859375
+                }
+              },
+              {
+                "text": "4",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 68.943359375,
+                  "right": 79.943359375,
+                  "top": 3732.390625,
+                  "bottom": 3754.390625
+                }
+              },
+              {
+                "text": "5",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 236.86700439453125,
+                  "right": 246.9763641357422,
+                  "top": 3750.935302734375,
+                  "bottom": 3772.93505859375
+                }
+              },
+              {
+                "text": "6",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 236.86700439453125,
+                  "right": 246.9763641357422,
+                  "top": 3786.33837890625,
+                  "bottom": 3808.33837890625
+                }
+              }
+            ],
+            "intersections": []
+          }
+        ]
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark",
+          "name": "phone-dark"
+        },
+        "metrics": [
+          {
+            "tag": "H5",
+            "className": "",
+            "text": "Alveolar gas exchange",
+            "font": 24,
+            "width": 240,
+            "height": 67.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Explore the alveolus and capillary, then look closely at the air–blood barrier.",
+            "font": 16,
+            "width": 240,
+            "height": 79.171875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Play exchange",
+            "font": 16,
+            "width": 142.953125,
+            "height": 48.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-playback",
+            "text": "Exchange paused",
+            "font": 16,
+            "width": 129.3125,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Clinical lens",
+            "font": 16,
+            "width": 122.796875,
+            "height": 48.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "1. VentilationFresh air enters alveolus",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Ventilation",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Fresh air enters alveolus",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "2. Oxygen diffusionAlveolus to blood",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. Oxygen diffusion",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Alveolus to blood",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "3. Carbon dioxideBlood to alveolus",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "3. Carbon dioxide",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood to alveolus",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "4. Transport onwardBlood leaves; gas exhales",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "4. Transport onward",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood leaves; gas exhales",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Previous step",
+            "font": 16,
+            "width": 115,
+            "height": 74.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Next step",
+            "font": 16,
+            "width": 115,
+            "height": 74.78125,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-atlas-step-position",
+            "text": "Step 1 of 4",
+            "font": 16,
+            "width": 101.09375,
+            "height": 35.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Ventilation",
+            "font": 20,
+            "width": 212,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Inhalation refreshes alveolar air. Oxygen partial pressure becomes higher in the alveolus than in the arriving pulmonary capillary blood.",
+            "font": 16,
+            "width": 212,
+            "height": 135.9375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Focus in this step",
+            "font": 16,
+            "width": 212,
+            "height": 25.59375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Terminal airway · Alveolar air space · Ventilation",
+            "font": 16,
+            "width": 212,
+            "height": 54.375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-alveolus-marker-help",
+            "text": "Match the numbered markers to the structure key.",
+            "font": 16,
+            "width": 240,
+            "height": 52.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "1. Alveolus and capillary",
+            "font": 20,
+            "width": 218,
+            "height": 60,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Terminal airway",
+            "font": 16,
+            "width": 108.890625,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Alveolar air space",
+            "font": 16,
+            "width": 123.625,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Pulmonary capillary",
+            "font": 16,
+            "width": 137.9375,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "2. Air–blood barrier",
+            "font": 20,
+            "width": 218,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Alveolar air",
+            "font": 16,
+            "width": 79.140625,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Surfactant",
+            "font": 16,
+            "width": 71.703125,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Type I alveolar cell",
+            "font": 16,
+            "width": 128.9375,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "4",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Thin interstitium",
+            "font": 16,
+            "width": 115.25,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "5",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Capillary endothelium",
+            "font": 16,
+            "width": 154.5625,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "6",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Red blood cell · Hemoglobin",
+            "font": 16,
+            "width": 200,
+            "height": 52.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "A",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(3, 105, 161)",
+            "ratio": 5.933638668604332,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Airflow",
+            "font": 16,
+            "width": 49.578125,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "O",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(185, 28, 28)",
+            "ratio": 6.4700447145121895,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Oxygen",
+            "font": 16,
+            "width": 54,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "C",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(29, 78, 216)",
+            "ratio": 6.701618401398807,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Carbon dioxide",
+            "font": 16,
+            "width": 107.515625,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Return to circulation: follow oxygenated pulmonary blood back through the left heart before systemic delivery.",
+            "font": 16,
+            "width": 212,
+            "height": 108.75,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Return to circulation:",
+            "font": 16,
+            "width": 163.515625,
+            "height": 21,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Return to cardiac flow",
+            "font": 16,
+            "width": 205.171875,
+            "height": 48.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          }
+        ],
+        "diagrams": [
+          {
+            "scale": "overview",
+            "width": 204,
+            "height": 144.390625,
+            "texts": [
+              {
+                "text": "1",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 89.84164428710938,
+                  "right": 96.93539428710938,
+                  "top": 1398.908447265625,
+                  "bottom": 1418.908447265625
+                }
+              },
+              {
+                "text": "2",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 180.66665649414062,
+                  "right": 189.6666717529297,
+                  "top": 1433.2872314453125,
+                  "bottom": 1453.2872314453125
+                }
+              },
+              {
+                "text": "3",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 102.74156188964844,
+                  "right": 111.74156188964844,
+                  "top": 1508.92041015625,
+                  "bottom": 1528.92041015625
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "barrier",
+            "width": 204,
+            "height": 193.875,
+            "texts": [
+              {
+                "text": "1",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 237.84361267089844,
+                  "right": 245.99986267089844,
+                  "top": 1893.128662109375,
+                  "bottom": 1915.128662109375
+                }
+              },
+              {
+                "text": "2",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 69.12303924560547,
+                  "right": 79.232421875,
+                  "top": 1911.6732177734375,
+                  "bottom": 1933.6732177734375
+                }
+              },
+              {
+                "text": "3",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 236.86700439453125,
+                  "right": 246.9763641357422,
+                  "top": 1929.3748779296875,
+                  "bottom": 1951.3748779296875
+                }
+              },
+              {
+                "text": "4",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 68.943359375,
+                  "right": 79.943359375,
+                  "top": 1945.390625,
+                  "bottom": 1967.390625
+                }
+              },
+              {
+                "text": "5",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 236.86700439453125,
+                  "right": 246.9763641357422,
+                  "top": 1963.9351806640625,
+                  "bottom": 1985.9351806640625
+                }
+              },
+              {
+                "text": "6",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 236.86700439453125,
+                  "right": 246.9763641357422,
+                  "top": 1999.33837890625,
+                  "bottom": 2021.33837890625
+                }
+              }
+            ],
+            "intersections": []
+          }
+        ]
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark",
+          "name": "phone-arabic-dark-larger"
+        },
+        "metrics": [
+          {
+            "tag": "H5",
+            "className": "",
+            "text": "تبادل الغازات في الحويصلات الهوائية",
+            "font": 24,
+            "width": 240,
+            "height": 67.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "استكشف الحويصلة الهوائية والشعيرة الدموية، ثم ألقِ نظرة أقرب على الحاجز بين الهواء والدم.",
+            "font": 17,
+            "width": 240,
+            "height": 86.671875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "تشغيل حركة التبادل",
+            "font": 17,
+            "width": 136.640625,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-playback",
+            "text": "التبادل متوقف مؤقتًا",
+            "font": 17,
+            "width": 141.40625,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "إخفاء المنظور السريري",
+            "font": 17,
+            "width": 161.0625,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "1. التهويةيدخل الهواء المتجدد إلى الحويصلة",
+            "font": 17,
+            "width": 240,
+            "height": 88.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. التهوية",
+            "font": 20,
+            "width": 210,
+            "height": 32,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "يدخل الهواء المتجدد إلى الحويصلة",
+            "font": 17,
+            "width": 210,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "2. انتشار الأكسجينمن الحويصلة إلى الدم",
+            "font": 17,
+            "width": 240,
+            "height": 88.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. انتشار الأكسجين",
+            "font": 20,
+            "width": 210,
+            "height": 32,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "من الحويصلة إلى الدم",
+            "font": 17,
+            "width": 210,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "3. ثاني أكسيد الكربونمن الدم إلى الحويصلة",
+            "font": 17,
+            "width": 240,
+            "height": 88.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "3. ثاني أكسيد الكربون",
+            "font": 20,
+            "width": 210,
+            "height": 32,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "من الدم إلى الحويصلة",
+            "font": 17,
+            "width": 210,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "4. استمرار النقليغادر الدم ويخرج الغاز مع الزفير",
+            "font": 17,
+            "width": 240,
+            "height": 88.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "4. استمرار النقل",
+            "font": 20,
+            "width": 210,
+            "height": 32,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "يغادر الدم ويخرج الغاز مع الزفير",
+            "font": 17,
+            "width": 210,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "الخطوة السابقة",
+            "font": 17,
+            "width": 115,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "الخطوة التالية",
+            "font": 17,
+            "width": 115,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-atlas-step-position",
+            "text": "الخطوة 2 من 4",
+            "font": 17,
+            "width": 108.140625,
+            "height": 36.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. انتشار الأكسجين",
+            "font": 20,
+            "width": 212,
+            "height": 32,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "ينتشر الأكسجين مع تدرج ضغطه الجزئي عبر الظهارة السنخية من النوع الأول والطبقة الخلالية الرقيقة وبطانة الشعيرة الدموية، ثم يرتبط بالهيموغلوبين.",
+            "font": 17,
+            "width": 212,
+            "height": 173.34375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "ما يجب التركيز عليه في هذه الخطوة",
+            "font": 17,
+            "width": 212,
+            "height": 57.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "خلية من النوع الأول · الحاجز بين الهواء والدم · الهيموغلوبين",
+            "font": 17,
+            "width": 212,
+            "height": 57.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-alveolus-marker-help",
+            "text": "طابق العلامات المرقّمة مع دليل البنى.",
+            "font": 17,
+            "width": 240,
+            "height": 57.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "1. الحويصلة الهوائية والشعيرة الدموية",
+            "font": 20,
+            "width": 218,
+            "height": 64,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "المجرى الهوائي النهائي",
+            "font": 17,
+            "width": 156.9375,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "الحيز الهوائي للحويصلة",
+            "font": 17,
+            "width": 161.203125,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "الشعيرة الدموية الرئوية",
+            "font": 17,
+            "width": 161.203125,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "الخطوة الحالية",
+            "font": 17,
+            "width": 79.90625,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "2. الحاجز بين الهواء والدم",
+            "font": 20,
+            "width": 218,
+            "height": 32,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "الهواء السنخي",
+            "font": 17,
+            "width": 96.921875,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "المادة الخافضة للتوتر السطحي",
+            "font": 17,
+            "width": 200,
+            "height": 57.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "خلية سنخية من النوع الأول",
+            "font": 17,
+            "width": 181.875,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "الخطوة الحالية",
+            "font": 17,
+            "width": 79.90625,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "4",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "حيز خلالي رقيق",
+            "font": 17,
+            "width": 104.421875,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "الخطوة الحالية",
+            "font": 17,
+            "width": 79.90625,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "5",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "بطانة الشعيرة الدموية",
+            "font": 17,
+            "width": 154.109375,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "الخطوة الحالية",
+            "font": 17,
+            "width": 79.90625,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "6",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "كرية دم حمراء · الهيموغلوبين",
+            "font": 17,
+            "width": 198.34375,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "الخطوة الحالية",
+            "font": 17,
+            "width": 79.90625,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "A",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(3, 105, 161)",
+            "ratio": 5.933638668604332,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "تدفق الهواء",
+            "font": 17,
+            "width": 78.46875,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "O",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(185, 28, 28)",
+            "ratio": 6.4700447145121895,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "الأكسجين",
+            "font": 17,
+            "width": 65.296875,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "C",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(29, 78, 216)",
+            "ratio": 6.701618401398807,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "ثاني أكسيد الكربون",
+            "font": 17,
+            "width": 131.390625,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "الوذمة الرئوية",
+            "font": 17,
+            "width": 95.546875,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "يتراكم السائل حول الحاجز بين الهواء والدم ويزيد مسافة الانتشار.",
+            "font": 17,
+            "width": 208,
+            "height": 86.671875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "الأثر الوظيفي",
+            "font": 17,
+            "width": 92.703125,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "يتأثر انتقال الأكسجين قبل أن يصبح طرح ثاني أكسيد الكربون محدودًا بشدة.",
+            "font": 17,
+            "width": 208,
+            "height": 86.671875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-clinical-note",
+            "text": "مقارنة تعليمية فقط — وليست عرضًا تشخيصيًا.",
+            "font": 17,
+            "width": 208,
+            "height": 83.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "العودة إلى الدورة الدموية: تتبّع الدم الرئوي المؤكسج العائد عبر الجانب الأيسر من القلب قبل توزيعه في أنحاء الجسم.",
+            "font": 17,
+            "width": 212,
+            "height": 144.453125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "العودة إلى الدورة الدموية:",
+            "font": 17,
+            "width": 181.921875,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "العودة إلى التدفق القلبي",
+            "font": 17,
+            "width": 159.6875,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          }
+        ],
+        "diagrams": [
+          {
+            "scale": "overview",
+            "width": 204,
+            "height": 144.390625,
+            "texts": [
+              {
+                "text": "1",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 87.84164428710938,
+                  "right": 94.93539428710938,
+                  "top": 1510.549072265625,
+                  "bottom": 1530.549072265625
+                }
+              },
+              {
+                "text": "2",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 178.66665649414062,
+                  "right": 187.6666717529297,
+                  "top": 1544.9278564453125,
+                  "bottom": 1564.9278564453125
+                }
+              },
+              {
+                "text": "3",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 100.74156188964844,
+                  "right": 109.74156188964844,
+                  "top": 1620.56103515625,
+                  "bottom": 1640.56103515625
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "barrier",
+            "width": 204,
+            "height": 193.875,
+            "texts": [
+              {
+                "text": "1",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 235.84361267089844,
+                  "right": 243.99986267089844,
+                  "top": 1977.550537109375,
+                  "bottom": 1999.550537109375
+                }
+              },
+              {
+                "text": "2",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 67.12303924560547,
+                  "right": 77.232421875,
+                  "top": 1996.0950927734375,
+                  "bottom": 2018.0950927734375
+                }
+              },
+              {
+                "text": "3",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 234.86700439453125,
+                  "right": 244.9763641357422,
+                  "top": 2013.7967529296875,
+                  "bottom": 2035.7967529296875
+                }
+              },
+              {
+                "text": "4",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 66.943359375,
+                  "right": 77.943359375,
+                  "top": 2029.8125,
+                  "bottom": 2051.8125
+                }
+              },
+              {
+                "text": "5",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 234.86700439453125,
+                  "right": 244.9763641357422,
+                  "top": 2048.357177734375,
+                  "bottom": 2070.35693359375
+                }
+              },
+              {
+                "text": "6",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 234.86700439453125,
+                  "right": 244.9763641357422,
+                  "top": 2083.76025390625,
+                  "bottom": 2105.76025390625
+                }
+              }
+            ],
+            "intersections": []
+          }
+        ]
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors",
+          "name": "phone-forced-colors"
+        },
+        "metrics": [
+          {
+            "tag": "H5",
+            "className": "",
+            "text": "Alveolar gas exchange",
+            "font": 24,
+            "width": 240,
+            "height": 67.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Explore the alveolus and capillary, then look closely at the air–blood barrier.",
+            "font": 16,
+            "width": 240,
+            "height": 79.171875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Play exchange",
+            "font": 16,
+            "width": 142.953125,
+            "height": 48.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-playback",
+            "text": "Exchange paused",
+            "font": 16,
+            "width": 129.3125,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Clinical lens",
+            "font": 16,
+            "width": 122.796875,
+            "height": 48.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "1. VentilationFresh air enters alveolus",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Ventilation",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Fresh air enters alveolus",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "2. Oxygen diffusionAlveolus to blood",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. Oxygen diffusion",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Alveolus to blood",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "3. Carbon dioxideBlood to alveolus",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "3. Carbon dioxide",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood to alveolus",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "4. Transport onwardBlood leaves; gas exhales",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "4. Transport onward",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood leaves; gas exhales",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Previous step",
+            "font": 16,
+            "width": 115,
+            "height": 74.78125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Next step",
+            "font": 16,
+            "width": 115,
+            "height": 74.78125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-atlas-step-position",
+            "text": "Step 1 of 4",
+            "font": 16,
+            "width": 101.09375,
+            "height": 35.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Ventilation",
+            "font": 20,
+            "width": 212,
+            "height": 30,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Inhalation refreshes alveolar air. Oxygen partial pressure becomes higher in the alveolus than in the arriving pulmonary capillary blood.",
+            "font": 16,
+            "width": 212,
+            "height": 135.9375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Focus in this step",
+            "font": 16,
+            "width": 212,
+            "height": 25.59375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Terminal airway · Alveolar air space · Ventilation",
+            "font": 16,
+            "width": 212,
+            "height": 54.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-alveolus-marker-help",
+            "text": "Match the numbered markers to the structure key.",
+            "font": 16,
+            "width": 240,
+            "height": 52.78125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "1. Alveolus and capillary",
+            "font": 20,
+            "width": 218,
+            "height": 60,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Terminal airway",
+            "font": 16,
+            "width": 108.890625,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Alveolar air space",
+            "font": 16,
+            "width": 123.625,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Pulmonary capillary",
+            "font": 16,
+            "width": 137.9375,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "2. Air–blood barrier",
+            "font": 20,
+            "width": 218,
+            "height": 30,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Alveolar air",
+            "font": 16,
+            "width": 79.140625,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Surfactant",
+            "font": 16,
+            "width": 71.703125,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Type I alveolar cell",
+            "font": 16,
+            "width": 128.9375,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "4",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Thin interstitium",
+            "font": 16,
+            "width": 115.25,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "5",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Capillary endothelium",
+            "font": 16,
+            "width": 154.5625,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "6",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Red blood cell · Hemoglobin",
+            "font": 16,
+            "width": 200,
+            "height": 52.78125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "A",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Airflow",
+            "font": 16,
+            "width": 49.578125,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "O",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Oxygen",
+            "font": 16,
+            "width": 54,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "C",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Carbon dioxide",
+            "font": 16,
+            "width": 107.515625,
+            "height": 26.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Return to circulation: follow oxygenated pulmonary blood back through the left heart before systemic delivery.",
+            "font": 16,
+            "width": 212,
+            "height": 108.75,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Return to circulation:",
+            "font": 16,
+            "width": 163.515625,
+            "height": 21,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Return to cardiac flow",
+            "font": 16,
+            "width": 205.171875,
+            "height": 48.390625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "key": false
+          }
+        ],
+        "diagrams": [
+          {
+            "scale": "overview",
+            "width": 204,
+            "height": 144.390625,
+            "texts": [
+              {
+                "text": "1",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(55, 0, 110)",
+                "ratio": 15.134013837043632,
+                "box": {
+                  "left": 89.84164428710938,
+                  "right": 96.93539428710938,
+                  "top": 1394.908447265625,
+                  "bottom": 1414.908447265625
+                }
+              },
+              {
+                "text": "2",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(55, 0, 110)",
+                "ratio": 15.134013837043632,
+                "box": {
+                  "left": 180.66665649414062,
+                  "right": 189.6666717529297,
+                  "top": 1429.2872314453125,
+                  "bottom": 1449.2872314453125
+                }
+              },
+              {
+                "text": "3",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 21,
+                "box": {
+                  "left": 102.74156188964844,
+                  "right": 111.74156188964844,
+                  "top": 1504.92041015625,
+                  "bottom": 1524.92041015625
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "barrier",
+            "width": 204,
+            "height": 193.875,
+            "texts": [
+              {
+                "text": "1",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(55, 0, 110)",
+                "ratio": 15.134013837043632,
+                "box": {
+                  "left": 237.84361267089844,
+                  "right": 245.99986267089844,
+                  "top": 1889.128662109375,
+                  "bottom": 1911.128662109375
+                }
+              },
+              {
+                "text": "2",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 21,
+                "box": {
+                  "left": 69.12303924560547,
+                  "right": 79.232421875,
+                  "top": 1907.6732177734375,
+                  "bottom": 1929.6732177734375
+                }
+              },
+              {
+                "text": "3",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 21,
+                "box": {
+                  "left": 236.86700439453125,
+                  "right": 246.9763641357422,
+                  "top": 1925.3748779296875,
+                  "bottom": 1947.3748779296875
+                }
+              },
+              {
+                "text": "4",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 21,
+                "box": {
+                  "left": 68.943359375,
+                  "right": 79.943359375,
+                  "top": 1941.390625,
+                  "bottom": 1963.390625
+                }
+              },
+              {
+                "text": "5",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 21,
+                "box": {
+                  "left": 236.86700439453125,
+                  "right": 246.9763641357422,
+                  "top": 1959.9351806640625,
+                  "bottom": 1981.9351806640625
+                }
+              },
+              {
+                "text": "6",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(0, 0, 0)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 21,
+                "box": {
+                  "left": 236.86700439453125,
+                  "right": 246.9763641357422,
+                  "top": 1995.33837890625,
+                  "bottom": 2017.33837890625
+                }
+              }
+            ],
+            "intersections": []
+          }
+        ]
+      }
+    ],
+    "captures": [
+      "desktop-light-alveolus-guide.png",
+      "phone-light-alveolus-guide.png",
+      "phone-dark-alveolus-guide.png",
+      "phone-arabic-dark-larger-alveolus-guide.png",
+      "phone-forced-colors-alveolus-guide.png"
+    ],
+    "currentDisplay": {
+      "width": 320,
+      "locale": "en",
+      "reading": false,
+      "theme": "forced-colors",
+      "name": "phone-forced-colors"
+    }
+  }
+}

@@ -1,0 +1,1923 @@
+{
+  "numTotalTestSuites": 8,
+  "numPassedTestSuites": 6,
+  "numFailedTestSuites": 2,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 92,
+  "numPassedTests": 91,
+  "numFailedTests": 1,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790973042646,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence extracts the actual bounded helper from both shipped runtimes",
+          "status": "passed",
+          "title": "extracts the actual bounded helper from both shipped runtimes",
+          "duration": 1.6440000000000055,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence returns detached catalogs with stable stage positions, response tracks and exhaustive choices",
+          "status": "passed",
+          "title": "returns detached catalogs with stable stage positions, response tracks and exhaustive choices",
+          "duration": 1.0045000000000073,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence derives every rain row from the unchanged actual kernel and defaults to puddling",
+          "status": "passed",
+          "title": "derives every rain row from the unchanged actual kernel and defaults to puddling",
+          "duration": 6.656799999999976,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence derives every snow row from the unchanged actual kernel and defaults to snow",
+          "status": "passed",
+          "title": "derives every snow row from the unchanged actual kernel and defaults to snow",
+          "duration": 3.3496999999999844,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence derives every sleet row from the unchanged actual kernel and defaults to snow",
+          "status": "passed",
+          "title": "derives every sleet row from the unchanged actual kernel and defaults to snow",
+          "duration": 2.794599999999946,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence derives every freezing-rain row from the unchanged actual kernel and defaults to glaze",
+          "status": "passed",
+          "title": "derives every freezing-rain row from the unchanged actual kernel and defaults to glaze",
+          "duration": 2.694500000000062,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence derives every hail row from the unchanged actual kernel and defaults to hail",
+          "status": "passed",
+          "title": "derives every hail row from the unchanged actual kernel and defaults to hail",
+          "duration": 2.7146999999999935,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence derives every mix row from the unchanged actual kernel and defaults to snow",
+          "status": "passed",
+          "title": "derives every mix row from the unchanged actual kernel and defaults to snow",
+          "duration": 2.638099999999895,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence derives every virga row from the unchanged actual kernel and defaults to runoff",
+          "status": "passed",
+          "title": "derives every virga row from the unchanged actual kernel and defaults to runoff",
+          "duration": 2.578800000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence derives every clear row from the unchanged actual kernel and defaults to runoff",
+          "status": "passed",
+          "title": "derives every clear row from the unchanged actual kernel and defaults to runoff",
+          "duration": 2.504599999999982,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence exposes the actual summer-storm fall and ground indices without treating them as water-budget shares",
+          "status": "passed",
+          "title": "exposes the actual summer-storm fall and ground indices without treating them as water-budget shares",
+          "duration": 1.19829999999979,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence does not invent surface water for the virga setup",
+          "status": "passed",
+          "title": "does not invent surface water for the virga setup",
+          "duration": 1.397399999999834,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence does not invent surface water for the clear setup",
+          "status": "passed",
+          "title": "does not invent surface water for the clear setup",
+          "duration": 1.2412999999999101,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence freezes the canonical setup, every snapshot and the detached evidence context",
+          "status": "passed",
+          "title": "freezes the canonical setup, every snapshot and the detached evidence context",
+          "duration": 1.7007000000000971,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence ignores live time, playback, display, sound and writing when binding a fixed comparison",
+          "status": "passed",
+          "title": "ignores live time, playback, display, sound and writing when binding a fixed comparison",
+          "duration": 7.134999999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual fixed scientific evidence"
+          ],
+          "fullName": "Storm moments: actual fixed scientific evidence retains the normalized resolved middle temperature and binds changed thermal evidence",
+          "status": "passed",
+          "title": "retains the normalized resolved middle temperature and binds changed thermal evidence",
+          "duration": 3.041900000000169,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices partitions the displayed evidence for activity lower / ground higher",
+          "status": "passed",
+          "title": "partitions the displayed evidence for activity lower / ground higher",
+          "duration": 4.189300000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices partitions the displayed evidence for activity lower / ground equal",
+          "status": "passed",
+          "title": "partitions the displayed evidence for activity lower / ground equal",
+          "duration": 3.8163999999999305,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices partitions the displayed evidence for both lower",
+          "status": "passed",
+          "title": "partitions the displayed evidence for both lower",
+          "duration": 3.641399999999976,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices partitions the displayed evidence for activity equal / ground higher",
+          "status": "passed",
+          "title": "partitions the displayed evidence for activity equal / ground higher",
+          "duration": 3.0401999999999134,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices partitions the displayed evidence for activity equal / ground lower",
+          "status": "passed",
+          "title": "partitions the displayed evidence for activity equal / ground lower",
+          "duration": 3.031900000000178,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices partitions the displayed evidence for activity higher / ground lower",
+          "status": "passed",
+          "title": "partitions the displayed evidence for activity higher / ground lower",
+          "duration": 3.026200000000017,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices partitions the displayed evidence for all zero",
+          "status": "passed",
+          "title": "partitions the displayed evidence for all zero",
+          "duration": 3.975900000000138,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices rounds activity before comparing so hidden fractional changes cannot turn a displayed tie into a wrong answer",
+          "status": "passed",
+          "title": "rounds activity before comparing so hidden fractional changes cannot turn a displayed tie into a wrong answer",
+          "duration": 123.04859999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices uses separately rounded response readings when a raw rise is displayed as no change",
+          "status": "passed",
+          "title": "uses separately rounded response readings when a raw rise is displayed as no change",
+          "duration": 133.96309999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices marks missing mature intensity unavailable instead of inventing zero",
+          "status": "passed",
+          "title": "marks missing mature intensity unavailable instead of inventing zero",
+          "duration": 2.7333000000000993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices marks missing weakening intensity unavailable instead of inventing zero",
+          "status": "passed",
+          "title": "marks missing weakening intensity unavailable instead of inventing zero",
+          "duration": 1.9389000000001033,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices marks missing mature ground unavailable instead of inventing zero",
+          "status": "passed",
+          "title": "marks missing mature ground unavailable instead of inventing zero",
+          "duration": 2.3993000000000393,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices marks missing weakening ground unavailable instead of inventing zero",
+          "status": "passed",
+          "title": "marks missing weakening ground unavailable instead of inventing zero",
+          "duration": 2.7247999999999593,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: displayed comparison choices"
+          ],
+          "fullName": "Storm moments: displayed comparison choices normalizes invalid model readings to explicit null before displaying any comparison",
+          "status": "passed",
+          "title": "normalizes invalid model readings to explicit null before displaying any comparison",
+          "duration": 680.4576999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation rejects malformed context (missing) safely for reading and every mutation",
+          "status": "passed",
+          "title": "rejects malformed context (missing) safely for reading and every mutation",
+          "duration": 0.3890000000001237,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation rejects malformed context (null) safely for reading and every mutation",
+          "status": "passed",
+          "title": "rejects malformed context (null) safely for reading and every mutation",
+          "duration": 0.14210000000002765,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation rejects malformed context (number) safely for reading and every mutation",
+          "status": "passed",
+          "title": "rejects malformed context (number) safely for reading and every mutation",
+          "duration": 0.41609999999991487,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation rejects malformed context (string) safely for reading and every mutation",
+          "status": "passed",
+          "title": "rejects malformed context (string) safely for reading and every mutation",
+          "duration": 0.30290000000013606,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation rejects malformed context (array) safely for reading and every mutation",
+          "status": "passed",
+          "title": "rejects malformed context (array) safely for reading and every mutation",
+          "duration": 0.31989999999996144,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation rejects malformed context (empty object) safely for reading and every mutation",
+          "status": "passed",
+          "title": "rejects malformed context (empty object) safely for reading and every mutation",
+          "duration": 0.16980000000012296,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation rejects malformed context (BigInt) safely for reading and every mutation",
+          "status": "passed",
+          "title": "rejects malformed context (BigInt) safely for reading and every mutation",
+          "duration": 0.1453999999998814,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation rejects missing, duplicate, shuffled and mistimed fixed snapshots even with a rewritten signature",
+          "status": "passed",
+          "title": "rejects missing, duplicate, shuffled and mistimed fixed snapshots even with a rewritten signature",
+          "duration": 2.723399999999856,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation requires complete own integer-or-null readings and known row interpretation fields",
+          "status": "passed",
+          "title": "requires complete own integer-or-null readings and known row interpretation fields",
+          "duration": 2.6920000000000073,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation rejects inherited contexts, inherited row fields and arrays carrying named records",
+          "status": "passed",
+          "title": "rejects inherited contexts, inherited row fields and arrays carrying named records",
+          "duration": 2.542500000000018,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation requires the complete serialized evidence, canonical normalized setup at52 and phase-derived default",
+          "status": "passed",
+          "title": "requires the complete serialized evidence, canonical normalized setup at52 and phase-derived default",
+          "duration": 1.6743000000001302,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: canonical context validation"
+          ],
+          "fullName": "Storm moments: canonical context validation rejects cyclic canonical rows or setup without throwing or traversing unrelated metadata",
+          "status": "passed",
+          "title": "rejects cyclic canonical rows or setup without throwing or traversing unrelated metadata",
+          "duration": 2.9958999999998923,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity defaults to mature and the phase-relevant response with an unanswered fixed question",
+          "status": "passed",
+          "title": "defaults to mature and the phase-relevant response with an unanswered fixed question",
+          "duration": 1.0227999999997337,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity preserves accepted Mature-to-Weakening feedback while inspecting developing",
+          "status": "passed",
+          "title": "preserves accepted Mature-to-Weakening feedback while inspecting developing",
+          "duration": 2.1944000000003143,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity preserves accepted Mature-to-Weakening feedback while inspecting mature",
+          "status": "passed",
+          "title": "preserves accepted Mature-to-Weakening feedback while inspecting mature",
+          "duration": 3.7269999999998618,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity preserves accepted Mature-to-Weakening feedback while inspecting weakening",
+          "status": "passed",
+          "title": "preserves accepted Mature-to-Weakening feedback while inspecting weakening",
+          "duration": 2.5515000000000327,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity preserves valid feedback when the selected response is explicitly selected again",
+          "status": "passed",
+          "title": "preserves valid feedback when the selected response is explicitly selected again",
+          "duration": 2.004099999999653,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity clears feedback when the ground-response question changes to snow",
+          "status": "passed",
+          "title": "clears feedback when the ground-response question changes to snow",
+          "duration": 1.9710999999997512,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity clears feedback when the ground-response question changes to glaze",
+          "status": "passed",
+          "title": "clears feedback when the ground-response question changes to glaze",
+          "duration": 1.8240999999998166,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity clears feedback when the ground-response question changes to hail",
+          "status": "passed",
+          "title": "clears feedback when the ground-response question changes to hail",
+          "duration": 1.8011000000001332,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity clears feedback when the ground-response question changes to runoff",
+          "status": "passed",
+          "title": "clears feedback when the ground-response question changes to runoff",
+          "duration": 2.1635999999998603,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity binds accepted feedback to every normalized setup and displayed row rather than a truncated prefix",
+          "status": "passed",
+          "title": "binds accepted feedback to every normalized setup and displayed row rather than a truncated prefix",
+          "duration": 4.528899999999794,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity retains canonical inspection choices across changed setup while suppressing stale feedback",
+          "status": "passed",
+          "title": "retains canonical inspection choices across changed setup while suppressing stale feedback",
+          "duration": 3.3173000000001593,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity rejects feedback from a foreign saved version (missing)",
+          "status": "passed",
+          "title": "rejects feedback from a foreign saved version (missing)",
+          "duration": 1.800000000000182,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity rejects feedback from a foreign saved version (null)",
+          "status": "passed",
+          "title": "rejects feedback from a foreign saved version (null)",
+          "duration": 1.7346999999999753,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity rejects feedback from a foreign saved version (number)",
+          "status": "failed",
+          "title": "rejects feedback from a foreign saved version (number)",
+          "duration": 10.231600000000071,
+          "failureMessages": [
+            "AssertionError: expected Object{ version: 1, …(5) } to match object { stage: 'mature', …(3) }\n(2 matching properties omitted from actual)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1283:10)\n    at Proxy.<anonymous> (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/expect/dist/index.js:1156:15)\n    at Proxy.methodWrapper (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/chai/index.js:1700:25)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_storm_moments.test.js:543:43\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_storm_moments.test.js:168:75\n    at Array.forEach (<anonymous>)\n    at each (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_storm_moments.test.js:168:35)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_storm_moments.test.js:541:5\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2025:60\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity rejects feedback from a foreign saved version (string)",
+          "status": "passed",
+          "title": "rejects feedback from a foreign saved version (string)",
+          "duration": 1.6035999999999149,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity rejects feedback from a foreign saved version (old version)",
+          "status": "passed",
+          "title": "rejects feedback from a foreign saved version (old version)",
+          "duration": 1.3386999999997897,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity requires a known saved metric and an own full string question identity before accepting any answer",
+          "status": "passed",
+          "title": "requires a known saved metric and an own full string question identity before accepting any answer",
+          "duration": 4.372100000000046,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity ignores inherited metadata fields and named properties on arrays",
+          "status": "passed",
+          "title": "ignores inherited metadata fields and named properties on arrays",
+          "duration": 5.162599999999657,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity normalizes malformed, cyclic, BigInt and frozen bags without copying unknown live state",
+          "status": "passed",
+          "title": "normalizes malformed, cyclic, BigInt and frozen bags without copying unknown live state",
+          "duration": 8.230399999999918,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: immutable learner choices and full feedback identity"
+          ],
+          "fullName": "Storm moments: immutable learner choices and full feedback identity does not coerce unsupported choices or overwrite a supported answer with a foreign answer",
+          "status": "passed",
+          "title": "does not coerce unsupported choices or overwrite a supported answer with a foreign answer",
+          "duration": 24.57549999999992,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: qualified current-stage language"
+          ],
+          "fullName": "Storm moments: qualified current-stage language qualifies mature lightning using actual setup eligibility rather than the stage name",
+          "status": "passed",
+          "title": "qualifies mature lightning using actual setup eligibility rather than the stage name",
+          "duration": 2.0450000000000728,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: qualified current-stage language"
+          ],
+          "fullName": "Storm moments: qualified current-stage language describes developing and weakening positions as model illustrations without inventing measured timing",
+          "status": "passed",
+          "title": "describes developing and weakening positions as model illustrations without inventing measured timing",
+          "duration": 1.3629000000000815,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks renders optional native disclosures without writing any learner or live chamber state",
+          "status": "passed",
+          "title": "renders optional native disclosures without writing any learner or live chamber state",
+          "duration": 374.7438000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks inspects developing through the actual callback while retaining every other state field",
+          "status": "passed",
+          "title": "inspects developing through the actual callback while retaining every other state field",
+          "duration": 592.8852000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks inspects mature through the actual callback while retaining every other state field",
+          "status": "passed",
+          "title": "inspects mature through the actual callback while retaining every other state field",
+          "duration": 550.4468000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks inspects weakening through the actual callback while retaining every other state field",
+          "status": "passed",
+          "title": "inspects weakening through the actual callback while retaining every other state field",
+          "duration": 456.22589999999946,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks selects snow using the actual native select callback without changing live time or notes",
+          "status": "passed",
+          "title": "selects snow using the actual native select callback without changing live time or notes",
+          "duration": 457.3912,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks selects glaze using the actual native select callback without changing live time or notes",
+          "status": "passed",
+          "title": "selects glaze using the actual native select callback without changing live time or notes",
+          "duration": 493.9940000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks selects hail using the actual native select callback without changing live time or notes",
+          "status": "passed",
+          "title": "selects hail using the actual native select callback without changing live time or notes",
+          "duration": 575.9731000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks selects puddling using the actual native select callback without changing live time or notes",
+          "status": "passed",
+          "title": "selects puddling using the actual native select callback without changing live time or notes",
+          "duration": 596.2860000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks selects runoff using the actual native select callback without changing live time or notes",
+          "status": "passed",
+          "title": "selects runoff using the actual native select callback without changing live time or notes",
+          "duration": 505.65059999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks interprets split through the shipped answer callback without changing rewards or scientific state",
+          "status": "passed",
+          "title": "interprets split through the shipped answer callback without changing rewards or scientific state",
+          "duration": 446.70589999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks interprets both_lower through the shipped answer callback without changing rewards or scientific state",
+          "status": "passed",
+          "title": "interprets both_lower through the shipped answer callback without changing rewards or scientific state",
+          "duration": 500.02310000000034,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks interprets no_activity_drop through the shipped answer callback without changing rewards or scientific state",
+          "status": "passed",
+          "title": "interprets no_activity_drop through the shipped answer callback without changing rewards or scientific state",
+          "duration": 484.8233999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks retains feedback after actual stage inspection and same-track selection, then clears it for a different track",
+          "status": "passed",
+          "title": "retains feedback after actual stage inspection and same-track selection, then clears it for a different track",
+          "duration": 1195.1283000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks recomputes current setup evidence and suppresses stale renderer feedback without rewriting saved weather or metadata",
+          "status": "passed",
+          "title": "recomputes current setup evidence and suppresses stale renderer feedback without rewriting saved weather or metadata",
+          "duration": 608.7850999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks keeps virga zero ground readings explicit in actual feedback rather than claiming accumulated surface water",
+          "status": "passed",
+          "title": "keeps virga zero ground readings explicit in actual feedback rather than claiming accumulated surface water",
+          "duration": 616.8554000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks disables native answer buttons and labels missing model values as unavailable",
+          "status": "passed",
+          "title": "disables native answer buttons and labels missing model values as unavailable",
+          "duration": 608.0428999999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks shows actual rain phase, arrival and lightning evidence alongside hidden schematic icons",
+          "status": "passed",
+          "title": "shows actual rain phase, arrival and lightning evidence alongside hidden schematic icons",
+          "duration": 394.7561999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks shows actual snow phase, arrival and lightning evidence alongside hidden schematic icons",
+          "status": "passed",
+          "title": "shows actual snow phase, arrival and lightning evidence alongside hidden schematic icons",
+          "duration": 403.97760000000017,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks shows actual sleet phase, arrival and lightning evidence alongside hidden schematic icons",
+          "status": "passed",
+          "title": "shows actual sleet phase, arrival and lightning evidence alongside hidden schematic icons",
+          "duration": 402.8130000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks shows actual freezing-rain phase, arrival and lightning evidence alongside hidden schematic icons",
+          "status": "passed",
+          "title": "shows actual freezing-rain phase, arrival and lightning evidence alongside hidden schematic icons",
+          "duration": 392.5030999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks shows actual hail phase, arrival and lightning evidence alongside hidden schematic icons",
+          "status": "passed",
+          "title": "shows actual hail phase, arrival and lightning evidence alongside hidden schematic icons",
+          "duration": 401.4447999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks shows actual mix phase, arrival and lightning evidence alongside hidden schematic icons",
+          "status": "passed",
+          "title": "shows actual mix phase, arrival and lightning evidence alongside hidden schematic icons",
+          "duration": 411.0824999999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks shows actual virga phase, arrival and lightning evidence alongside hidden schematic icons",
+          "status": "passed",
+          "title": "shows actual virga phase, arrival and lightning evidence alongside hidden schematic icons",
+          "duration": 412.66320000000087,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: actual renderer and isolated learner callbacks"
+          ],
+          "fullName": "Storm moments: actual renderer and isolated learner callbacks shows actual clear phase, arrival and lightning evidence alongside hidden schematic icons",
+          "status": "passed",
+          "title": "shows actual clear phase, arrival and lightning evidence alongside hidden schematic icons",
+          "duration": 346.83990000000085,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: independent exact preservation"
+          ],
+          "fullName": "Storm moments: independent exact preservation pins the frozen prior groundwater runtime and exact source/public parity",
+          "status": "passed",
+          "title": "pins the frozen prior groundwater runtime and exact source/public parity",
+          "duration": 34.76429999999891,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: independent exact preservation"
+          ],
+          "fullName": "Storm moments: independent exact preservation preserves every equation, storm experiment, saved-note handler, scene engine, reward bank and groundwater implementation byte",
+          "status": "passed",
+          "title": "preserves every equation, storm experiment, saved-note handler, scene engine, reward bank and groundwater implementation byte",
+          "duration": 632.0998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: independent exact preservation"
+          ],
+          "fullName": "Storm moments: independent exact preservation preserves the exact scientific kernel export and all five existing live timeline callbacks",
+          "status": "passed",
+          "title": "preserves the exact scientific kernel export and all five existing live timeline callbacks",
+          "duration": 1761.1790999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm moments: independent exact preservation"
+          ],
+          "fullName": "Storm moments: independent exact preservation preserves original quiz and myth first-answer counters and rewards exactly",
+          "status": "passed",
+          "title": "preserves original quiz and myth first-answer counters and rewards exactly",
+          "duration": 703.2867000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790973044272,
+      "endTime": 1790973060764.2866,
+      "status": "failed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_storm_moments.test.js"
+    }
+  ],
+  "waterCycleStormMomentsVerification": {
+    "mode": "unit",
+    "expectedRuntimeSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+    "startedAt": "2026-10-02T20:30:42.227Z",
+    "runtimeFiles": [
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "bytes": 3088917
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "bytes": 3088917
+      }
+    ],
+    "testFiles": [
+      {
+        "path": "tests/watercycle_storm_moments.test.js",
+        "sha256": "d8a042a7f2ad80239867be4777a9cf3ba106075688017735d730e2cbf6450d56",
+        "bytes": 49537
+      }
+    ],
+    "fixtureFiles": [
+      {
+        "path": "reports/watercycle-storm-moments/baseline-runtime.js",
+        "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "bytes": 3058809,
+        "expectedSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d"
+      }
+    ],
+    "closureEvidence": [
+      {
+        "path": "reports/watercycle-storm-moments/baseline-results.json",
+        "sha256": "aa0a4679146793664d15b87cfab129e6e08e83e3f8c4e02cc197c061009a9fd6",
+        "bytes": 145137,
+        "mode": "baseline",
+        "sourceSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "publicSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "successful": true,
+        "historical": false,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/baseline-tested-runtime.js",
+          "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+          "bytes": 3058809
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T15:05:28.247Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-results.json",
+        "sha256": "04187a7c60db26830c2d81363bb08cc525ed4d2420d6e4fb6e02a297e82d1c55",
+        "bytes": 411542,
+        "mode": "browser-preflight",
+        "sourceSha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+        "publicSha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+        "successful": false,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-tested-runtime.js",
+          "sha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+          "bytes": 3088096
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:00:41.182Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-results.json",
+        "sha256": "2a0b0a15845098f278648d51b4dbde4b505b9286f60ce9712c9a5f4e2fee6741",
+        "bytes": 2149514,
+        "mode": "browser",
+        "sourceSha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+        "publicSha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+        "successful": false,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-tested-runtime.js",
+          "sha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+          "bytes": 3088179
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:13:34.444Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/browser-preflight-results.json",
+        "sha256": "e91c2355d5ce1fb31594c58684da49e1bdf7d35bb27d78b7967fb9d71467fddb",
+        "bytes": 246591,
+        "mode": "browser-preflight",
+        "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "publicSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "successful": true,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/browser-preflight-tested-runtime.js",
+          "sha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+          "bytes": 3088986
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:17:12.314Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-results.json",
+        "sha256": "fc5ca8b13894843a8cec0e558f3cbd0f45be4691ee2edeec58621e2068b1253e",
+        "bytes": 1883148,
+        "mode": "browser",
+        "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "publicSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "successful": true,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-tested-runtime.js",
+          "sha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+          "bytes": 3088986
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:21:12.135Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/browser-results.json",
+        "sha256": "81e93b9f51988d4b46ddedee4a4d25e0e456b898a70f338424a1c295e8495eaf",
+        "bytes": 1890707,
+        "mode": "browser",
+        "sourceSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "publicSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "successful": true,
+        "historical": false,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/browser-tested-runtime.js",
+          "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+          "bytes": 3088917
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:27:17.565Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      }
+    ],
+    "preservation": {
+      "baselinePath": "reports/watercycle-storm-moments/baseline-runtime.js",
+      "baselineSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "kernelExportSha256": "da24a0e41cc4cdf235271266034829f83497eba9523cbbe9093b6d6a67bbfe6a",
+      "timelineAnchors": [
+        {
+          "index": 0,
+          "sha256": "ed7bd64c322af4632d2f5ce1a05cf95df7e756b1e66112298005613785a08f3b"
+        },
+        {
+          "index": 1,
+          "sha256": "339194213f7a3fe546f67585cd8d1f4d9dc37041b2b8802bfe9157126b02f6d4"
+        },
+        {
+          "index": 2,
+          "sha256": "8aab0671239c6275549f3e17f4d2f95025002bbd8efc9ffc3661fa07dc8a36d8"
+        },
+        {
+          "index": 3,
+          "sha256": "9fd104ba176b74305023b779ddae1257ea0e38114191b5316ae7c022d51d5dff"
+        },
+        {
+          "index": 4,
+          "sha256": "b41c2fd8ec7307cb68509f39987546fb8cb0ce950625e1723d503b5ee450191f"
+        }
+      ],
+      "anchors": [
+        {
+          "name": "wcPrecipClamp",
+          "sha256": "3fa034a6f72f30bfd06904397bf0e5b3d592966b43e8026ae40db4824a93db32"
+        },
+        {
+          "name": "advanceWcStormWeather",
+          "sha256": "d5737b72f907e26231dda1382635f6f401a084083dfacc0efc1c1324afed526e"
+        },
+        {
+          "name": "WC_PRECIP_DEFAULTS",
+          "sha256": "e2f88e8943e3fe2b30bbf0ceeb0e86be4b6762511c171757107cdb30ba2a520e"
+        },
+        {
+          "name": "WC_PRECIP_PRESETS",
+          "sha256": "dd8b800709339a35e35ec9d0dd8b00a8bc8b2d39fe0498e50aa994c24adf560a"
+        },
+        {
+          "name": "normalizeWcPrecipConfig",
+          "sha256": "9b968009281e991f870072d14a1b74f7036f08e77966c3c7760b5d990a2637b6"
+        },
+        {
+          "name": "wcPrecipTemperatureAt",
+          "sha256": "087d9089835a39401cb0f2c56d7e5a3302604851c2b26424a52f63eae91afdeb"
+        },
+        {
+          "name": "buildWcPrecipThermalStructure",
+          "sha256": "c876d75d0ec5ca5a63bbabdac15c6dc5b66767b4c603025f6fa47c37fd3cd360"
+        },
+        {
+          "name": "buildWcStormLifecycle",
+          "sha256": "aa96e105fc6311baa58cffd0be4c8fc95080479b8a659a8ae78294a6121b2a62"
+        },
+        {
+          "name": "buildWcThunderModel",
+          "sha256": "bb6f68de2aab6a593f4ff08c3949123f76e22f0e883d5830a6c03b5046465fd5"
+        },
+        {
+          "name": "evaluateWcThunderEstimate",
+          "sha256": "8a787efb80773b2a2be99f70ca6ee5562bebdcca9934f1e9d646465855fae24b"
+        },
+        {
+          "name": "buildWcStormAnatomy",
+          "sha256": "1966b150f8db2d8c9855ea883da8933cd510f93f61ef96e63fea96c59602ffa3"
+        },
+        {
+          "name": "computeWcPrecipitationModel",
+          "sha256": "01d0a78646cafbc11459296425e0674dd308d4201bf4b58ab4324b8f4b4aa88e"
+        },
+        {
+          "name": "wcPrecipPhaseAtTransitions",
+          "sha256": "17ef2e8888a6f211b0172ca9102359551c8f8a0dcca39a86870b0c3efab72da6"
+        },
+        {
+          "name": "wcPrecipPhaseFromModel",
+          "sha256": "b6257da2ad5b0a760cd1e02d57397638091f7c55e144794a850fa39f5032028a"
+        },
+        {
+          "name": "wcPrecipPhaseAt",
+          "sha256": "1accf9572082154abfd983859d5c4cede1e57a257ba9ab2f1cdec6a7f927c67f"
+        },
+        {
+          "name": "WC_PRECIP_EXPERIMENT_INPUTS",
+          "sha256": "d09da164201a05bcdd98f3db44b73798a757ae2148a7c1057132ac79952938be"
+        },
+        {
+          "name": "wcPrecipSetupSnapshot",
+          "sha256": "6db71b7a9a9d4dc40ef9dd2be64b506b2bfc3b4c5204eb3586c72516f70d4e5b"
+        },
+        {
+          "name": "wcPrecipExperimentValue",
+          "sha256": "49c0744b002cf5ab9a52fa056eba0d1729b861d2bf8568cbc6edb6964076920c"
+        },
+        {
+          "name": "wcPrecipExperiment",
+          "sha256": "2ba07171749c8b473dd3c66c2230a0717c6163356aaad9f0f51952f1338004d1"
+        },
+        {
+          "name": "stormStageStops",
+          "sha256": "554c9fcfc2557ff2b133ef2ac032eee75e75afc53f0cff7b28c6ebea1b981b7e"
+        },
+        {
+          "name": "stormAccumulationKeys",
+          "sha256": "f24e9c095f39506ece14307d85a34b0b4da1915dacf3bc06774b3c889415968a"
+        },
+        {
+          "name": "setStormLifecycleTime",
+          "sha256": "7f9de8974b4b48d38d91e471d44110765e1442ec7a3e45bf549f76371841a33d"
+        },
+        {
+          "name": "setIQ",
+          "sha256": "2d81907ea3a5bb59d268c287500fc095954af5bb9dddbca82a37aaf5eee9e28b"
+        },
+        {
+          "name": "stormExperiment",
+          "sha256": "118f92e524bc4973bb27f131c140e183221facd467ae40ad26b0d8574072c32d"
+        },
+        {
+          "name": "stormSavedPairs",
+          "sha256": "5a11acd1b4f8d61c6bd9dcef243ed042224bf2a63e485aca5eb041c9e3c77d53"
+        },
+        {
+          "name": "stormVariables",
+          "sha256": "4173e05eb75d4c7f022b69601097ab7996454d6193b681c05e364b4649180204"
+        },
+        {
+          "name": "setStormExperiment",
+          "sha256": "d0cdd16fd393d780091b07943566be113da047dfd75b52a963dbc2ec42bad8e6"
+        },
+        {
+          "name": "stormExperimentFocus",
+          "sha256": "40507b4b8512a03a3addf076de10aea9f484e61734a7229926517ea839b11d5a"
+        },
+        {
+          "name": "pinStormSetup",
+          "sha256": "44efeb82c91e78608a56d2a84df4b166670a11cfc04951601060f8c5b49b6268"
+        },
+        {
+          "name": "startStormExperiment",
+          "sha256": "d3876fb38ddf4678668de6301eda84f0797d1a6d7245c379394e6496208aed56"
+        },
+        {
+          "name": "restoreStormControls",
+          "sha256": "e03e72dc0a2e47d0f79a638bc0257e3498bf3a00229c24f89a9a2267b44c10b4"
+        },
+        {
+          "name": "saveStormComparison",
+          "sha256": "9199c6dbe9b071c7513f0f36fca6c45319e239e4c5780a9975d774db0ddf560f"
+        },
+        {
+          "name": "downloadStormComparison",
+          "sha256": "23d7685bf653ffd9edbe8acc5d4045bd8adac9bc8adf81aef58d960d5f0312dc"
+        },
+        {
+          "name": "stormComparisonLabel",
+          "sha256": "28d792b4da79e81e5ee8421843128c6ffe7cb6281e96294a41c84dbeafac8aa1"
+        },
+        {
+          "name": "stormComparisonValue",
+          "sha256": "7d26c9e3e1fd2d04d6556326bd63cbf14d4e137a4211065f313973f0da751ff6"
+        },
+        {
+          "name": "renderStormSetup",
+          "sha256": "333341a966ebecc7903807ac4292542a119c1061bcbbb031c66d046e8026f4ea"
+        },
+        {
+          "name": "renderStormExperiment",
+          "sha256": "2c53cf500c66f1c472cc40eae68c531f38e84c38a634a2a7579f6e2aa38a9340"
+        },
+        {
+          "name": "setPrecipControl",
+          "sha256": "791c3d4b2640b621e6ec94c166cbbf2076c6737365887b864ec17bf079b7602e"
+        },
+        {
+          "name": "setPrecipViewMode",
+          "sha256": "f5369dc58cef32e629d290b8408f96bca2014551f28150f21bfdcfedb8b7bb28"
+        },
+        {
+          "name": "setPrecipCameraFocus",
+          "sha256": "20917460429982f7288e386921640f16d5214e315061b709c5291b55e5db3c38"
+        },
+        {
+          "name": "applyPrecipPreset",
+          "sha256": "df1794bd36119b29537ddf6be185dccd6deef19799a88555f972bbd2eae84fd4"
+        },
+        {
+          "name": "resetPrecipLab",
+          "sha256": "da110ff15ea45bac2ba2d23e5ba4993e0bc84135ea80fce1a860b31102cd5a13"
+        },
+        {
+          "name": "logPrecipObservation",
+          "sha256": "f2032a3244bd8e8c91267600ab99614eab120591562e3c40fb4f3e7770d33d80"
+        },
+        {
+          "name": "openPrecipitationIn3d",
+          "sha256": "ded3dd6ef0428621427246c3b25e67485b0c93acec325fb06ab5ef4c7ae6cff3"
+        },
+        {
+          "name": "precipCanvasRef",
+          "sha256": "b970e65b975f83503658a4928e9574b92d9b4ecf4132df8129bf65922e0c5d5c"
+        },
+        {
+          "name": "precip3dRef",
+          "sha256": "20c9c11cade3c694fd8ec0c733444e9cb2b4af22be7a3e5f3169e56d97944790"
+        },
+        {
+          "name": "scheduleStormLifecycleTick",
+          "sha256": "f2830efa589db52d63e59925210592f4a9bd824f9d953cc4a5804f748d2d5c8d"
+        },
+        {
+          "name": "canvasRef",
+          "sha256": "aa6dcd61dcff9fdbdedbec6610022cde252ec7a16db6e691aac4b7c1d80bd8e3"
+        },
+        {
+          "name": "journey3dRef",
+          "sha256": "3e0b1948cea51fef6137c1e760cdb286c163b2a17dd70e92ede98af46c7fb4aa"
+        },
+        {
+          "name": "onWcKey",
+          "sha256": "4b9662e6b29032ca30d6b052ad72a3ee715d3904d3c9c2658a3ae73b85510b09"
+        },
+        {
+          "name": "setJourneyReplayProgress",
+          "sha256": "c8a6f135c2911133ef74755baa88b9cf227cf0ddd480e41fce75bd8abb4992e9"
+        },
+        {
+          "name": "resumeLiveJourney",
+          "sha256": "d705797b062824ed70e919159125f00b57ebd43243fee5249b5b3796df94c34e"
+        },
+        {
+          "name": "chooseJourneyPath",
+          "sha256": "4a0f1b0a5eeb129fffc77a35d682a8269f3a17d79a91dd450f6a6939a651bf43"
+        },
+        {
+          "name": "journeyReplaySegmentAt",
+          "sha256": "c42250f745da6263738e2efa21c3d8196c03ee78545bdf6973b6da1d5cc982da"
+        },
+        {
+          "name": "handleJourney3dKey",
+          "sha256": "ab13ca3b15e7bbf30c6bba5179cbb6bc6ad980cf4f3e03964d18792743e5cffd"
+        },
+        {
+          "name": "handleJourney3dSceneClick",
+          "sha256": "9e3cf03fe2a542e412afb5027f7d653806b20338e9e706824ddd6732960ea561"
+        },
+        {
+          "name": "controlJourneyCamera",
+          "sha256": "015cdbe498220ed636de0a8350adf780c569c7f4ecfd5aa8fa6944cbdc225800"
+        },
+        {
+          "name": "beginWcQuickJourney",
+          "sha256": "6e6fb43f7d79de104e995f55ca1cb76ac688c92251a7b6700774c0aba20f3214"
+        },
+        {
+          "name": "wcLandResponse",
+          "sha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc"
+        },
+        {
+          "name": "estimateWcLandIndices",
+          "sha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb"
+        },
+        {
+          "name": "estimateWcRouteShares",
+          "sha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f"
+        },
+        {
+          "name": "WCGroundwaterLens",
+          "sha256": "b06cb09eebe636eaac139009f38977bb036f26dfdbd0ebbd41d5a2b06a578fa9"
+        },
+        {
+          "name": "WC_GROUNDWATER_LENS_STYLE",
+          "sha256": "28fa17d468047b74e9313b44b21165453e49434dbac06d16acc2df3507d606fe"
+        },
+        {
+          "name": "renderWcGroundwaterLens",
+          "sha256": "b94c799fc9ee8c6c29c12be2cd9c7888e60279a21f6569e8d99b864a8439b781"
+        },
+        {
+          "name": "renderWcCheckPores",
+          "sha256": "3a415f015059b42d1471f363e28a4031d820d3c8c86caa99156df3f87a737712"
+        },
+        {
+          "name": "WCJourneyChapters",
+          "sha256": "6b87b9ca6210dfb5ebc710395142956738f30845189020728d96230a5a41866f"
+        },
+        {
+          "name": "renderWcJourneyChapters",
+          "sha256": "90d9fb3ec01e2a0551480f7a0187b61cd36783fda8e0780b6c7bc0b49d9ee0fa"
+        },
+        {
+          "name": "WCCloudEvidence",
+          "sha256": "20e86fe092509382580e29055d0dbf8aa8445a675d6d37601cf0866626d65d42"
+        },
+        {
+          "name": "renderCloudFieldGuide",
+          "sha256": "c2cd7657b4c7c4f064019cdc39d031087877394fa4e6f18336361e38143fb55b"
+        },
+        {
+          "name": "WCExploreNotebook",
+          "sha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91"
+        },
+        {
+          "name": "WCCheckInvestigation",
+          "sha256": "69e47c9d4d859f88cef5b92b56454caf90738399c91c18f4863dfb0c7a242316"
+        },
+        {
+          "name": "WCProcessCompare",
+          "sha256": "6b2869a0e86c41c8b86fc3c2722200b716210ebeba4e407ffc56a1c1f2051c46"
+        },
+        {
+          "name": "MATTER_ENERGY_TRACE",
+          "sha256": "5b29d16aba2e615e7a40801745c9af2dbc4051fd27d2510360f05568314c96c2"
+        },
+        {
+          "name": "JOURNEY_MATTER_ENERGY_TRACE",
+          "sha256": "b1c153ec3df774de5d9a14c8a57f86c71f5342529d610eb9a49dda51377139cd"
+        },
+        {
+          "name": "STAGE_HYDROLOGIC_TIME_TRACE",
+          "sha256": "7d2bcf2dc30e8fe609417e486bb59b6f94f4adecafd59261baf2933f6274c17a"
+        },
+        {
+          "name": "JOURNEY_HYDROLOGIC_TIME_TRACE",
+          "sha256": "ada899581c4abcb415df59fbbe9caa1894603d3abaadef938fc8cdfc78234a7c"
+        },
+        {
+          "name": "checkWaterCycleChallenges",
+          "sha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f"
+        },
+        {
+          "name": "studyVocab",
+          "sha256": "b0f14f19adf959922940084fa469d5548e2b11146f4953eb234b4574067318fe"
+        },
+        {
+          "name": "selectStage",
+          "sha256": "e9706956b6549e605f0fcacc0f1788256d6a683a06868d831217857b2ec23fc7"
+        },
+        {
+          "name": "wcQuizBank",
+          "sha256": "5f6378b528d90eac9974fb003bedce3f4f9d76981dcca17ddfa7616d281dcf41"
+        },
+        {
+          "name": "wcQuizQuestion",
+          "sha256": "a4b6613b91b16ef64b10104906049fe8fb2cc156ead7e539cf7be0e3c5bee1c5"
+        }
+      ],
+      "scoredAnchors": [
+        {
+          "name": "myth",
+          "sha256": "d62ec9d1e25b1f51a3e3df672121855b3a471f5fce9b421d22666c3340a33aa0"
+        },
+        {
+          "name": "quiz",
+          "sha256": "bead9c9e4285cdf1f96692a5bcb695d2554a27b14c8d82948a0e08c46af746fb"
+        }
+      ]
+    },
+    "recipeFiles": [
+      {
+        "path": "reports/watercycle-storm-moments/tested-test-bundle.cjs",
+        "sha256": "49390492bf0a0bdfcf720d89a836a6ef9616ced2fbb14624ddda63bb40dde86c",
+        "bytes": 16867,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\storm-moments-test-bundle.cjs"
+      },
+      {
+        "path": "reports/watercycle-storm-moments/tested-read-audit.cjs",
+        "sha256": "f02c905d6b5b6b06530930fcbaeade9c7b8252d30833b93a186f781683fb3671",
+        "bytes": 1969,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\storm-moments-read-audit.cjs"
+      }
+    ],
+    "singleWorker": true,
+    "fileParallelism": false,
+    "completedAt": "2026-10-02T20:31:00.950Z",
+    "processExitCode": 1,
+    "processSignal": null,
+    "processPid": 47116,
+    "processClosed": true,
+    "processClosedAt": "2026-10-02T20:31:00.949Z",
+    "runtimeFilesAfter": [
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "bytes": 3088917
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "bytes": 3088917
+      }
+    ],
+    "testFilesAfter": [
+      {
+        "path": "tests/watercycle_storm_moments.test.js",
+        "sha256": "d8a042a7f2ad80239867be4777a9cf3ba106075688017735d730e2cbf6450d56",
+        "bytes": 49537
+      }
+    ],
+    "fixtureFilesAfter": [
+      {
+        "path": "reports/watercycle-storm-moments/baseline-runtime.js",
+        "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "bytes": 3058809
+      }
+    ],
+    "closureEvidenceAfter": [
+      {
+        "path": "reports/watercycle-storm-moments/baseline-results.json",
+        "sha256": "aa0a4679146793664d15b87cfab129e6e08e83e3f8c4e02cc197c061009a9fd6",
+        "bytes": 145137,
+        "mode": "baseline",
+        "sourceSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "publicSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "successful": true,
+        "historical": false,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/baseline-tested-runtime.js",
+          "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+          "bytes": 3058809
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T15:05:28.247Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-results.json",
+        "sha256": "04187a7c60db26830c2d81363bb08cc525ed4d2420d6e4fb6e02a297e82d1c55",
+        "bytes": 411542,
+        "mode": "browser-preflight",
+        "sourceSha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+        "publicSha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+        "successful": false,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-tested-runtime.js",
+          "sha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+          "bytes": 3088096
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:00:41.182Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-results.json",
+        "sha256": "2a0b0a15845098f278648d51b4dbde4b505b9286f60ce9712c9a5f4e2fee6741",
+        "bytes": 2149514,
+        "mode": "browser",
+        "sourceSha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+        "publicSha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+        "successful": false,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-tested-runtime.js",
+          "sha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+          "bytes": 3088179
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:13:34.444Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/browser-preflight-results.json",
+        "sha256": "e91c2355d5ce1fb31594c58684da49e1bdf7d35bb27d78b7967fb9d71467fddb",
+        "bytes": 246591,
+        "mode": "browser-preflight",
+        "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "publicSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "successful": true,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/browser-preflight-tested-runtime.js",
+          "sha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+          "bytes": 3088986
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:17:12.314Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-results.json",
+        "sha256": "fc5ca8b13894843a8cec0e558f3cbd0f45be4691ee2edeec58621e2068b1253e",
+        "bytes": 1883148,
+        "mode": "browser",
+        "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "publicSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "successful": true,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-tested-runtime.js",
+          "sha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+          "bytes": 3088986
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:21:12.135Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/browser-results.json",
+        "sha256": "81e93b9f51988d4b46ddedee4a4d25e0e456b898a70f338424a1c295e8495eaf",
+        "bytes": 1890707,
+        "mode": "browser",
+        "sourceSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "publicSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "successful": true,
+        "historical": false,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/browser-tested-runtime.js",
+          "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+          "bytes": 3088917
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:27:17.565Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      }
+    ],
+    "recipeFilesAfter": [
+      {
+        "path": "reports/watercycle-storm-moments/tested-test-bundle.cjs",
+        "sha256": "49390492bf0a0bdfcf720d89a836a6ef9616ced2fbb14624ddda63bb40dde86c",
+        "bytes": 16867,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\storm-moments-test-bundle.cjs",
+        "executionSha256After": "49390492bf0a0bdfcf720d89a836a6ef9616ced2fbb14624ddda63bb40dde86c"
+      },
+      {
+        "path": "reports/watercycle-storm-moments/tested-read-audit.cjs",
+        "sha256": "f02c905d6b5b6b06530930fcbaeade9c7b8252d30833b93a186f781683fb3671",
+        "bytes": 1969,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\storm-moments-read-audit.cjs",
+        "executionSha256After": "f02c905d6b5b6b06530930fcbaeade9c7b8252d30833b93a186f781683fb3671"
+      }
+    ],
+    "loadedFiles": [
+      {
+        "path": "tests/watercycle_storm_moments.test.js",
+        "sha256": "d8a042a7f2ad80239867be4777a9cf3ba106075688017735d730e2cbf6450d56",
+        "bytes": 49537,
+        "loadedAt": "2026-10-02T20:31:00.832Z",
+        "pid": 47116
+      },
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "bytes": 3088917,
+        "loadedAt": "2026-10-02T20:30:43.815Z",
+        "pid": 53088
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "bytes": 3088917,
+        "loadedAt": "2026-10-02T20:30:43.848Z",
+        "pid": 53088
+      },
+      {
+        "path": "reports/watercycle-storm-moments/baseline-runtime.js",
+        "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "bytes": 3058809,
+        "loadedAt": "2026-10-02T20:30:43.859Z",
+        "pid": 53088
+      },
+      {
+        "path": "tests/watercycle_storm_moments.test.js",
+        "sha256": "d8a042a7f2ad80239867be4777a9cf3ba106075688017735d730e2cbf6450d56",
+        "bytes": 49537,
+        "loadedAt": "2026-10-02T20:30:43.860Z",
+        "pid": 53088
+      }
+    ],
+    "loadedReport": {
+      "loadedAt": "2026-10-02T20:30:43.777Z",
+      "completedAt": "2026-10-02T20:31:00.766Z",
+      "loadedRuntimes": [
+        {
+          "path": "stem_lab/stem_tool_watercycle.js",
+          "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+          "bytes": 3088917
+        },
+        {
+          "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+          "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+          "bytes": 3088917
+        }
+      ],
+      "loadedTest": {
+        "path": "tests/watercycle_storm_moments.test.js",
+        "sha256": "d8a042a7f2ad80239867be4777a9cf3ba106075688017735d730e2cbf6450d56",
+        "bytes": 49537
+      }
+    },
+    "sourceSha256Before": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+    "sourceSha256After": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+    "publicSha256Before": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+    "publicSha256After": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6"
+  }
+}

@@ -1,0 +1,126 @@
+{
+  "status": "passed",
+  "original25BrowserScenariosBytePreserved": true,
+  "moduleFourCopyParity": true,
+  "frozenHashes": {
+    "maine_sld_practice_module.js": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25",
+    "desktop/web-app/public/maine_sld_practice_module.js": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25",
+    "desktop/app-build/maine_sld_practice_module.js": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25",
+    "desktop/web-app/build/maine_sld_practice_module.js": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25",
+    "tests/e2e/maine-sld-practice.spec.ts": "1114b15f54da14f6c18cc028d04a2b95a5ea972c83f5ed124e47e009e0e42331",
+    "maine_sld_practice_core.js": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926",
+    "maine_sld_case_data.json": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e"
+  },
+  "retainedPrintSha256": "8fd65a71f399b21d5089ef3906bf3387a40cf71abd3c5ac62576c7f9705060a6",
+  "copiedArtifactCount": 27,
+  "copiedArtifacts": [
+    {
+      "path": "final-browser/actual-app-host.png",
+      "sha256": "a12a92bff9324583f1c949fc9180f219272a3bc33c0f15a24c6effff7802c133"
+    },
+    {
+      "path": "final-browser/actual-app-marisol-host.png",
+      "sha256": "2aa9b942952318834e885be33ca7fb51ab9b082bfadeee38755263f9f9426544"
+    },
+    {
+      "path": "final-browser/actual-hub-card.png",
+      "sha256": "cbce35ce0620eabb89ff3b713c4fc6f6bf34e8790b37194c86a7439b3692ed62"
+    },
+    {
+      "path": "final-browser/axe-comparison-returned-390-dark.json",
+      "sha256": "bc598fff979b93183262a45ce47ae81249ab55b46c299b763e57e98da6dfbf71"
+    },
+    {
+      "path": "final-browser/axe-selected-evidence-expanded-320.json",
+      "sha256": "0dc493bfd8ddb553e3fce05bb0811b508a54ddc44535dd48ac05f92849c14993"
+    },
+    {
+      "path": "final-browser/axe-work-library-1366-light.json",
+      "sha256": "ce2989f2d419c88a42e59611059284eb9ec9a309c201ef24aad1bd73d940d4be"
+    },
+    {
+      "path": "final-browser/axe-work-library-320-dark.json",
+      "sha256": "2f188072dbe63f49a5af9503042c8f97eb3fc5d48a6f4c878370410c40157b25"
+    },
+    {
+      "path": "final-browser/browser-candidate.json",
+      "sha256": "c407f77d2cde429e884fa40c4e5b7db3fc73875ea546f2bcd783125fa19e9015"
+    },
+    {
+      "path": "final-browser/comparison-exact-gap-return-390-dark.png",
+      "sha256": "5dd3027d33cb88bf8dbf42b58afabd86a797130d07a503075b3fa90b2261abab"
+    },
+    {
+      "path": "final-browser/comparison-participant-worksheet.json",
+      "sha256": "4e1bc5b752819d7209c0c400d5dfc5682a4524bba15f36c3d0c378684b00853e"
+    },
+    {
+      "path": "final-browser/comparison-returned-selected-pair-390-dark.png",
+      "sha256": "fa25f3ced421967e42e4511c1bc74431dcdd1a3ea6f69d2398d05f69a4a1a4b5"
+    },
+    {
+      "path": "final-browser/deep-navigation-worksheet.json",
+      "sha256": "03ab09bd326a61939de7c7755b36f30059ead94a994156d967d9154ddd21b9eb"
+    },
+    {
+      "path": "final-browser/evidence-edit-return-banner-1366.png",
+      "sha256": "92ab99b93d350ad1fb76b2ceee345b6c128d9d498f1b46907b4506f189164342"
+    },
+    {
+      "path": "final-browser/evidence-tail-timings.json",
+      "sha256": "4d52315bf4299680de128ca56f4176e08f833dce1c81cffea9ccda7cfc965c7c"
+    },
+    {
+      "path": "final-browser/selected-evidence-reference-1366.png",
+      "sha256": "2dc22094123064c5df08f663602459c51b573acd67e7b68374133f7fdaca86e9"
+    },
+    {
+      "path": "final-browser/selected-evidence-reference-320.png",
+      "sha256": "df269d724fdaa8b2cef240114a965f35eb6e3449f86305dd72a08ef5086535dd"
+    },
+    {
+      "path": "final-browser/top-question-map-320.png",
+      "sha256": "cdbb2896b13e3e8c4a193a3ec20e4203cb91037d1a39b7ee3bb5362b2e2baa12"
+    },
+    {
+      "path": "final-browser/work-library-cross-case-reasoning-390-light.png",
+      "sha256": "2c3c25103923cefb3909767fc1c20edb6cc0d9135aa3873ff21c3332a57dd19f"
+    },
+    {
+      "path": "final-browser/work-library-early-collapsed-390-light.png",
+      "sha256": "fabd0259b2b78052d3007f7262e26e6fbbde2779c749719098ca86b0541a43f3"
+    },
+    {
+      "path": "final-browser/work-library-participant-worksheet.json",
+      "sha256": "c86c295f0759b4cddbcb93f87a09974e2ae810c1631aab36fd1207f9a596cb94"
+    },
+    {
+      "path": "final-browser/work-library-same-case-review-heading-390.png",
+      "sha256": "7cd555c22d9964a17d69d80eeac65f07220c937b28af8ae89e5049a4167327e5"
+    },
+    {
+      "path": "final-browser/work-library-summary-1366-light.png",
+      "sha256": "48695fd998f79f7a70d5d220fb246d28e5bf8aaf359916f05de384b31d4e9323"
+    },
+    {
+      "path": "final-browser/work-library-summary-320-dark.png",
+      "sha256": "1e521d53bb1e566fb80dd00590a68c8c49a2eb2710abe5ca9a53f08d53566a71"
+    },
+    {
+      "path": "host-after-preview-restart/final-browser/actual-app-host.png",
+      "sha256": "08c6f9339d5a0c1c934a6f08afd182f1ff52db02ee9897aaf48ec71c5463c94d"
+    },
+    {
+      "path": "host-after-preview-restart/final-browser/actual-app-marisol-host.png",
+      "sha256": "b96139377d02cbaa839305ac4e9e4356e5b65657129ba5578b9ee77d67e71604"
+    },
+    {
+      "path": "host-after-preview-restart/final-browser/actual-hub-card.png",
+      "sha256": "ac36bb38930c08041e159cef8590419ae86df5501176e9c70d4aab645653e9bf"
+    },
+    {
+      "path": "host-after-preview-restart/final-browser/browser-candidate.json",
+      "sha256": "134a85fd7620446323aac5dd265af5f59e06251c59aadbc8ac3564d6506688f7"
+    }
+  ]
+}

@@ -1,0 +1,90 @@
+{
+  "generatedAt": "2026-10-05T02:37:40.694Z",
+  "method": "Read-only comparison of the original failed exact-string expectations with frozen baseline and current source/public bytes; no baseline test runner executed.",
+  "inheritedFailures": 2,
+  "originalsAbsentInBaselineAndCurrent": true,
+  "renderTransferBytesIdenticalAcrossBaselineAndCurrent": true,
+  "canvasAlternativeLinesIdenticalAcrossBaselineAndCurrent": true,
+  "runtimes": [
+    {
+      "path": "reports/watercycle-illustrated-landscape/baseline-runtime.js",
+      "sha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+      "bytes": 3139939,
+      "observations": [
+        {
+          "case": "renders the transfer cue beside the selected process",
+          "exactExpected": "className: \"wc-stage-focus-flow\"",
+          "literalPresent": false
+        },
+        {
+          "case": "includes the relationship in both canvas text alternatives",
+          "exactExpected": "Water cycle animation showing the \" + currentStageLabel + \" process. Water moves from \" + currentStageFlow.from",
+          "literalPresent": false
+        }
+      ]
+    },
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "141a0381080552bfaa7f18271f5a9abd17993ad4b5123111c5957dc4ea389bf8",
+      "bytes": 3144075,
+      "observations": [
+        {
+          "case": "renders the transfer cue beside the selected process",
+          "exactExpected": "className: \"wc-stage-focus-flow\"",
+          "literalPresent": false
+        },
+        {
+          "case": "includes the relationship in both canvas text alternatives",
+          "exactExpected": "Water cycle animation showing the \" + currentStageLabel + \" process. Water moves from \" + currentStageFlow.from",
+          "literalPresent": false
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "141a0381080552bfaa7f18271f5a9abd17993ad4b5123111c5957dc4ea389bf8",
+      "bytes": 3144075,
+      "observations": [
+        {
+          "case": "renders the transfer cue beside the selected process",
+          "exactExpected": "className: \"wc-stage-focus-flow\"",
+          "literalPresent": false
+        },
+        {
+          "case": "includes the relationship in both canvas text alternatives",
+          "exactExpected": "Water cycle animation showing the \" + currentStageLabel + \" process. Water moves from \" + currentStageFlow.from",
+          "literalPresent": false
+        }
+      ]
+    }
+  ],
+  "originalRegression": {
+    "path": "reports/watercycle-illustrated-landscape/regression-results.json",
+    "sha256": "bbccb930fe99d1dc58b1d17689b8fda992fcd58bad6ea95645b0177af8f3bb19",
+    "bytes": 50379,
+    "total": 127,
+    "passed": 125,
+    "failed": 2,
+    "failures": [
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_stage_flow.test.js",
+        "title": "renders the transfer cue beside the selected process",
+        "fullName": "Water Cycle stage transfer cue renders the transfer cue beside the selected process",
+        "status": "failed"
+      },
+      {
+        "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_stage_flow.test.js",
+        "title": "includes the relationship in both canvas text alternatives",
+        "fullName": "Water Cycle stage transfer cue includes the relationship in both canvas text alternatives",
+        "status": "failed"
+      }
+    ]
+  },
+  "updatedTest": {
+    "path": "tests/watercycle_stage_flow.test.js",
+    "sha256": "fab6a6b88b96a2a5f1858a78e740b49b34728363bf025d39c75192761bdd152d",
+    "bytes": 9064,
+    "executed": false
+  },
+  "note": "The two stale cases were updated to execute existing live-transfer rendering and canvas label semantics. Mapping, achievement and navigation cases were retained. No production bytes changed for this test correction."
+}

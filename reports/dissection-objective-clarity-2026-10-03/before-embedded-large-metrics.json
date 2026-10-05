@@ -1,0 +1,131 @@
+{
+  "client": 318,
+  "scroll": 318,
+  "width": 320,
+  "summary": 46.375,
+  "text": [
+    {
+      "text": "Learning objectives",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Identify the 3-chambered heart and trace blood flow",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "✓ Demonstrated",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "1/1 target observed · 1/1 evidence record · 1/1 target verified for understanding.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Evidence demonstrated: observation, recorded evidence, and verified understanding all align.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Compare cutaneous vs pulmonary respiration",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Developing",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "1/2 targets observed · 0/2 evidence records · 0/2 targets verified for understanding.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Next: inspect Dorsal Skin.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Distinguish mesonephric kidneys from mammalian metanephric",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Not started",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "0/1 target observed · 0/1 evidence record · 0/1 target verified for understanding.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Next: inspect Kidneys.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Locate the cloaca and explain shared-opening anatomy",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Not started",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "0/1 target observed · 0/1 evidence record · 0/1 target verified for understanding.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Next: inspect Cloaca.",
+      "font": 16,
+      "clipped": false
+    }
+  ],
+  "cards": [
+    {
+      "width": 292.40625,
+      "client": 290,
+      "scroll": 290,
+      "statusTop": 936.09375,
+      "titleBottom": 1032.09375,
+      "overlaps": false,
+      "meter": 6.390625
+    },
+    {
+      "width": 292.40625,
+      "client": 290,
+      "scroll": 290,
+      "statusTop": 1227.015625,
+      "titleBottom": 1299.015625,
+      "overlaps": false,
+      "meter": 6.390625
+    },
+    {
+      "width": 292.40625,
+      "client": 290,
+      "scroll": 290,
+      "statusTop": 1445.9375,
+      "titleBottom": 1541.9375,
+      "overlaps": false,
+      "meter": 6.390625
+    },
+    {
+      "width": 292.40625,
+      "client": 290,
+      "scroll": 290,
+      "statusTop": 1688.859375,
+      "titleBottom": 1760.859375,
+      "overlaps": false,
+      "meter": 6.390625
+    }
+  ]
+}

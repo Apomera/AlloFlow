@@ -1,0 +1,212 @@
+{
+  "sourceSha256": "c37fd985765a1129f60fefbc55fd1b2b66989ca2786ed181f3cef82ac1f71250",
+  "sourceUnchanged": true,
+  "mirrorMatches": true,
+  "historicalFilesPreserved": 51,
+  "historical": [
+    {
+      "path": "reports/physics-recorded-flights-2026-10-02/recordings-contrast-1100.png",
+      "sha256": "71dd62deef21339f74d56e6e993f1bcc38f4da655df50cc4da9e0774eaabb730"
+    },
+    {
+      "path": "reports/physics-recorded-flights-2026-10-02/recordings-contrast-320.png",
+      "sha256": "a5b630daec5b2301c35e75b684009503a89008a3bd135b1bf5b880ce6f95a0f6"
+    },
+    {
+      "path": "reports/physics-recorded-flights-2026-10-02/recordings-contrast-375.png",
+      "sha256": "bf30422cf2dfcc6c435c7a73abcc7e0d762c259855c951dd81352282a3f67e0c"
+    },
+    {
+      "path": "reports/physics-recorded-flights-2026-10-02/recordings-dark-1100.png",
+      "sha256": "87304608836816e5243b44183646f034b1a559331d74954a68ed8e53165405a6"
+    },
+    {
+      "path": "reports/physics-recorded-flights-2026-10-02/recordings-dark-320.png",
+      "sha256": "edaefb50af8cff2d1cf26cfef81d70ece24c876c0eb87f59c9baec2da611202c"
+    },
+    {
+      "path": "reports/physics-recorded-flights-2026-10-02/recordings-dark-375.png",
+      "sha256": "d94a5ee10269c5bef54174cab952ed05fa745fa6124f38d0e3693e55a7eadf5e"
+    },
+    {
+      "path": "reports/physics-recorded-flights-2026-10-02/recordings-default-1100.png",
+      "sha256": "b1f023c508746a771c383c0efdb0a7b3498104e6bd29e65543663e97a8f04edd"
+    },
+    {
+      "path": "reports/physics-recorded-flights-2026-10-02/recordings-default-320.png",
+      "sha256": "dd9fc1e223d70c7b00d1f34c5f1f5cc163ac7fcac38b060420de22c6c9c6fcc8"
+    },
+    {
+      "path": "reports/physics-recorded-flights-2026-10-02/recordings-default-375.png",
+      "sha256": "85877e157195ac25b0f3e3b9fbe932f796ef0fe4da062ef8aa23a86029a78160"
+    },
+    {
+      "path": "reports/physics-recorded-flights-2026-10-02/visual-results.json",
+      "sha256": "d4106818f574b334789979253318cc395b1431b99b115e6652e2083314c45551"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/context-contrast-1100.png",
+      "sha256": "f68fc7ad1575a1f6e121498f8fb5d2fb1e38be08e9410d0f74a6462037d26668"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/context-contrast-320.png",
+      "sha256": "1a7f0f7d7408e4f84470900ceae2fd395e5d03a6b3f6566906a6644440b8e284"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/context-contrast-375.png",
+      "sha256": "662c21dff5eded5ac85b16edf85334d33b015ee3d2fff17f1d91865570c97dac"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/context-dark-1100.png",
+      "sha256": "828af890c76dc6a953c0984aba5c6d68046786055f3449be81bf8216c4f8710a"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/context-dark-320.png",
+      "sha256": "c8c6bf06284b3bb9775b7a333d5dac59b9f9de5559e231d98b18e3345dd54758"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/context-dark-375.png",
+      "sha256": "1eb9a7103193ac03497806abf508eedb37f5fa916d32557de1f3a6c27aba7a02"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/context-data-320.png",
+      "sha256": "81989177ed86c969ea4ef1ce69e8957a1d6cab3b738e6a0920088eaef51d0671"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/context-default-1100.png",
+      "sha256": "be5083a922bf0bd1db6992e8a7b3ae8b99eb4b1100af986fce3b065b3f938424"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/context-default-320.png",
+      "sha256": "b8d9c132da90f95b65d3fd0724956b0c1e32d250fa58f12d6b7c367f9ac888ea"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/context-default-375.png",
+      "sha256": "d6337f3322e6bf045854d150f3ceccf0c2f9cc21f45e85d446aeee8d6aae8a79"
+    },
+    {
+      "path": "reports/physics-recorded-context-2026-10-02/visual-results.json",
+      "sha256": "cae2e12e40ad1c6431ad05a8ccb4754faceca0cd539d84871452e5dfa6f85c2b"
+    },
+    {
+      "path": "reports/physics-velocity-clarity-2026-10-02/velocity-contrast-1100.png",
+      "sha256": "b41da80ac9f12af2a8b2bbba0841019548d5dbea607797add4f9b7d937d7a0f3"
+    },
+    {
+      "path": "reports/physics-velocity-clarity-2026-10-02/velocity-contrast-320.png",
+      "sha256": "46f3039d3abaff3b50c46641e3021e6fce83afe2f77e8c080337ab427444d166"
+    },
+    {
+      "path": "reports/physics-velocity-clarity-2026-10-02/velocity-contrast-375.png",
+      "sha256": "470c5e2e6e67d18e1ec905c3f696b4137bf385d8a7018c935abc4e40112b120d"
+    },
+    {
+      "path": "reports/physics-velocity-clarity-2026-10-02/velocity-dark-1100.png",
+      "sha256": "b3eecedf5962c10680301bc6a80aad5ecc6f07f2d5b0f95cea579687777a36f7"
+    },
+    {
+      "path": "reports/physics-velocity-clarity-2026-10-02/velocity-dark-320.png",
+      "sha256": "dcd7dc22e079fa1b2a44c011ba3b8777065245c985c5dd206cd56a13c20b6d23"
+    },
+    {
+      "path": "reports/physics-velocity-clarity-2026-10-02/velocity-dark-375.png",
+      "sha256": "fdc9fa25c720f7797218b6fb1991d2c52984d82968f82d52475e2327531cb884"
+    },
+    {
+      "path": "reports/physics-velocity-clarity-2026-10-02/velocity-default-1100.png",
+      "sha256": "55e97ceebdc2ee898c985c0ce0abfc10bb2d7050ce97c7d3f00d62bb6aa9214d"
+    },
+    {
+      "path": "reports/physics-velocity-clarity-2026-10-02/velocity-default-320.png",
+      "sha256": "d3a091c6b705d4121e40b3c56730d26768210b81b7a22c652152e85056fa9b86"
+    },
+    {
+      "path": "reports/physics-velocity-clarity-2026-10-02/velocity-default-375.png",
+      "sha256": "3e6d858613c928b1c7f5e092a1bc40fef25cbf4b958b617cff5049fc393ecc87"
+    },
+    {
+      "path": "reports/physics-velocity-clarity-2026-10-02/visual-results.json",
+      "sha256": "b8e364feedbd1ac548dd9b8ef331f98ad13380e00665ed73100ae74180cc2f60"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/horizontal-release-canonical-apex.png",
+      "sha256": "b541465067cda01c0a67ca1f68bf1feec7f5e34ac142cdac7f8c146eafb1e0c8"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/horizontal-release-unresolved.png",
+      "sha256": "64e7ad7f023b113d997598d42a558864058d48ab25a94e525a8f457969c44ab6"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/selected-after-six-control-changes.png",
+      "sha256": "da4806ce46e405baf2a876de9e318b355ee190f1600e66ee5d3eb50266710a6e"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/selected-apex.png",
+      "sha256": "aef29c25815782b067ec5682b3fb4ea4fe519c7ba834be820c703df78ee261d5"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/selected-falling.png",
+      "sha256": "eb16e17ec04ed8d6ade6ecd91531241fef920af95ddb505385b7162ce81cca79"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/selected-impact.png",
+      "sha256": "a1b07c1415115f11ca10ad4c829bdfc0c2cce0c0c7c94fc75c9181be3bf36b37"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/selected-launch.png",
+      "sha256": "a687ca64ad40d9186b241825b223778523b9dd2473263ab708d8382bb6178dca"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/selected-near-apex.png",
+      "sha256": "6578438b4242c2b1e12125193c21fe316477cdd02a37d0689cd39c1e41589cbf"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/selected-rising.png",
+      "sha256": "43d6d103958d96be581bd555b4029521e779a88eef14642b7b089747395fc9d4"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/unfinished-highest-rising.png",
+      "sha256": "136857c2df5025252cc31f0486533d1d06e27593b904f93e67daff02a61c7109"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/velocity-contrast-1100.png",
+      "sha256": "20d95ef3a21c1fe91eb426f34196d273957624afea7512025b5aa4a75042d302"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/velocity-contrast-320.png",
+      "sha256": "153aad921685019d5ec5d1632de157ee54270a258df9925becec9f0cf6ff7f70"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/velocity-contrast-375.png",
+      "sha256": "6c1c0faa7c921f3c13bc1b725895df6de6790998f234814008c26a9cb78de34c"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/velocity-dark-1100.png",
+      "sha256": "81df39f73ef7a0c195f532497e0bd1b0a5f9a9972726b056e72c843f24c83c9f"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/velocity-dark-320.png",
+      "sha256": "c0c54ee224e2ea0ab71e50c328ba14740d2a30fcf2af127d35bf789cd024fa4b"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/velocity-dark-375.png",
+      "sha256": "51c8f741d3b47fb64ad273fcf6c49f1ba3d6d350fe3903eb82e4a2d2c33bbb80"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/velocity-default-1100.png",
+      "sha256": "63ef5b8c330b415fc6ee69cb048137475ab52fc997e755120cb0dd707e4eb99c"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/velocity-default-320.png",
+      "sha256": "396a1c7bdb0e93e13ae71678cf3ed8c279788255745c39c0a909545a8c18f6b7"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/velocity-default-375.png",
+      "sha256": "2f415435eaa1c58c4cd11edf9dbeb6c945e6459e7e99dc74b74ffe5ea685e1e1"
+    },
+    {
+      "path": "reports/physics-point-clarity-2026-10-02/visual-results.json",
+      "sha256": "a68c96933decd0c241c48ea46df2b378bd0eff42e147b20534be0d299faa3212"
+    }
+  ]
+}

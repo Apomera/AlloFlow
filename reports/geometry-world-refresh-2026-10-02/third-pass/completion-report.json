@@ -1,0 +1,180 @@
+{
+  "startedAt": "2026-10-03T14:47:49.663Z",
+  "checks": [
+    {
+      "name": "desktop: completion summary offers unobscured review and remains accessible",
+      "status": "pass",
+      "evidence": {
+        "layout": {
+          "hit": true,
+          "height": 44,
+          "fits": true
+        },
+        "selector": ".gw-completion-dialog",
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: completed questions can review remaining activities without inert obstruction",
+      "status": "pass",
+      "evidence": {
+        "inert": false,
+        "hidden": false,
+        "active": true,
+        "dialogs": 1
+      }
+    },
+    {
+      "name": "desktop: closing remaining goals resumes the completed world",
+      "status": "pass",
+      "evidence": {
+        "score": 3
+      }
+    },
+    {
+      "name": "desktop: Summary reopen and Keep exploring preserve the completion and build",
+      "status": "pass",
+      "evidence": {
+        "score": 3,
+        "blocks": 869
+      }
+    },
+    {
+      "name": "desktop: Escape dismisses the summary without replaying questions",
+      "status": "pass",
+      "evidence": {
+        "focus": ""
+      }
+    },
+    {
+      "name": "desktop: targeted workflows have no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "errors": []
+      }
+    },
+    {
+      "name": "390x844: completion summary offers unobscured review and remains accessible",
+      "status": "pass",
+      "evidence": {
+        "layout": {
+          "hit": true,
+          "height": 44,
+          "fits": true
+        },
+        "selector": ".gw-completion-dialog",
+        "violations": []
+      }
+    },
+    {
+      "name": "390x844: completed questions can review remaining activities without inert obstruction",
+      "status": "pass",
+      "evidence": {
+        "inert": false,
+        "hidden": false,
+        "active": true,
+        "dialogs": 1
+      }
+    },
+    {
+      "name": "390x844: closing remaining goals resumes the completed world",
+      "status": "pass",
+      "evidence": {
+        "score": 3
+      }
+    },
+    {
+      "name": "390x844: Summary reopen and Keep exploring preserve the completion and build",
+      "status": "pass",
+      "evidence": {
+        "score": 3,
+        "blocks": 869
+      }
+    },
+    {
+      "name": "390x844: Escape dismisses the summary without replaying questions",
+      "status": "pass",
+      "evidence": {
+        "focus": ""
+      }
+    },
+    {
+      "name": "390x844: targeted workflows have no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "errors": []
+      }
+    },
+    {
+      "name": "320x568: completion summary offers unobscured review and remains accessible",
+      "status": "pass",
+      "evidence": {
+        "layout": {
+          "hit": true,
+          "height": 44,
+          "fits": true
+        },
+        "selector": ".gw-completion-dialog",
+        "violations": []
+      }
+    },
+    {
+      "name": "320x568: completed questions can review remaining activities without inert obstruction",
+      "status": "pass",
+      "evidence": {
+        "inert": false,
+        "hidden": false,
+        "active": true,
+        "dialogs": 1
+      }
+    },
+    {
+      "name": "320x568: closing remaining goals resumes the completed world",
+      "status": "pass",
+      "evidence": {
+        "score": 3
+      }
+    },
+    {
+      "name": "320x568: Summary reopen and Keep exploring preserve the completion and build",
+      "status": "pass",
+      "evidence": {
+        "score": 3,
+        "blocks": 869
+      }
+    },
+    {
+      "name": "320x568: Escape dismisses the summary without replaying questions",
+      "status": "pass",
+      "evidence": {
+        "focus": ""
+      }
+    },
+    {
+      "name": "320x568: targeted workflows have no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "errors": []
+      }
+    },
+    {
+      "name": "Free Build: live modal metadata blocks drawing in reading surfaces",
+      "status": "pass",
+      "evidence": {
+        "initial": true,
+        "blockedCreatorAndReflection": true
+      }
+    }
+  ],
+  "failures": [],
+  "screenshots": [
+    "desktop-completion-summary.png",
+    "desktop-completed-goals-review.png",
+    "390x844-completion-summary.png",
+    "390x844-completed-goals-review.png",
+    "320x568-completion-summary.png",
+    "320x568-completed-goals-review.png"
+  ],
+  "fixture": "Seeded completed question state; live geometry retained",
+  "completedAt": "2026-10-03T14:49:33.840Z"
+}

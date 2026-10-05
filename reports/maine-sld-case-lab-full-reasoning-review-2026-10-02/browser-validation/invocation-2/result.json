@@ -1,0 +1,347 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/full-reasoning-review-validation/invocation-2/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "maine-sld-practice.spec.ts",
+      "file": "maine-sld-practice.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "selected score view retains the full record and neutral response review supports revision before revealing the guide",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6743,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:26:48.816Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-245b44705cd4290af79e",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 186,
+          "column": 5
+        },
+        {
+          "title": "selected evidence remains available while navigating form questions and returning from board edits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18293,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "steps": [
+                    {
+                      "title": "Download and read evidence-return worksheet",
+                      "duration": 2686
+                    },
+                    {
+                      "title": "Cancel then confirm current-case reset",
+                      "duration": 554
+                    },
+                    {
+                      "title": "Restore twice while clearing evidence-return context",
+                      "duration": 471
+                    }
+                  ],
+                  "startTime": "2026-10-03T01:28:07.989Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-ade510577e365af7391e",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 214,
+          "column": 5
+        },
+        {
+          "title": "participant comparison edits return to the selected pair and keep navigation choices out of worksheet transfer",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18933,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:28:26.298Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-7cf7813e61466fc4fb0d",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 376,
+          "column": 5
+        },
+        {
+          "title": "earlier participant reasoning review keeps all five case records neutral and preserves blank whitespace and literal notes through restoration",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19770,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:33:41.968Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-ebfd69bb49d69d8bcf5e",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 459,
+          "column": 5
+        },
+        {
+          "title": "participant review edits return to each exact control and retain their origin through evidence detours without persisting navigation context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 24313,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:34:10.438Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-3ab02895d8934a1bc516",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 477,
+          "column": 5
+        }
+      ],
+      "suites": [
+        {
+          "title": "full source application host",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 429,
+          "column": 6,
+          "specs": [
+            {
+              "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 167215,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 120000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 120000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 120000ms exceeded.\u001b[39m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-03T01:28:45.244Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\test-failed-2.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\video-1.webm"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6cd521108d1d04c8dc57-f1b08b29a499007159d2",
+              "file": "maine-sld-practice.spec.ts",
+              "line": 431,
+              "column": 6
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T01:26:39.478Z",
+    "duration": 573151.647,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

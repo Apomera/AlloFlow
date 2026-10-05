@@ -1,0 +1,38 @@
+{
+  "width": 1180,
+  "client": 1178,
+  "scroll": 1178,
+  "columns": 3,
+  "buttons": [
+    {
+      "text": "🃏 Flashcard",
+      "font": 14,
+      "height": 48,
+      "clipped": false,
+      "border": 1,
+      "decoration": "none",
+      "opacity": 1,
+      "borderStyle": "solid"
+    },
+    {
+      "text": "🔍 Compare",
+      "font": 14,
+      "height": 48,
+      "clipped": false,
+      "border": 1,
+      "decoration": "none",
+      "opacity": 1,
+      "borderStyle": "solid"
+    },
+    {
+      "text": "⏱ Practical",
+      "font": 14,
+      "height": 48,
+      "clipped": false,
+      "border": 1,
+      "decoration": "none",
+      "opacity": 1,
+      "borderStyle": "solid"
+    }
+  ]
+}

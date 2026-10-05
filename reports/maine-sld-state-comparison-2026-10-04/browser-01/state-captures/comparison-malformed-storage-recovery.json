@@ -1,0 +1,60 @@
+{
+  "format": "alloflow-sld-state-references",
+  "version": 2,
+  "activeState": "Maine",
+  "byState": {
+    "Maine": {
+      "sources": [],
+      "comparison": {
+        "criteria": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "language": {
+          "sourceId": "",
+          "note": "New comparison writing remains available for download.",
+          "followUp": "Recover and inspect the earlier reference backup.",
+          "status": "follow-up",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "intervention": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "exclusions": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "special-education": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "documentation": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        }
+      }
+    }
+  }
+}

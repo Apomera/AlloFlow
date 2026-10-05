@@ -1,0 +1,24 @@
+[
+  {
+    "file": "tests/e2e/dissection-physiology-cohesion.spec.ts",
+    "before": "36cf2cd7a962d203f8c129be078f23814b76f508733e8508eb3fdc0f38bf236a",
+    "after": "17e813c1c5900468cf834940dae6b771562b49cbc8c2e5f925f48048d722c717",
+    "edits": [
+      {
+        "old": "expect(Math.abs(resumed.markers[0][0] - paused[0].markers[0][0])).toBeLessThanOrEqual(14.4);",
+        "new": "const markerDelta = Math.abs(resumed.markers[0][0] - paused[0].markers[0][0]); expect(Math.min(markerDelta, Math.abs(200 - markerDelta))).toBeLessThanOrEqual(14.4);"
+      }
+    ]
+  },
+  {
+    "file": "tests/dissection_lab_improvements.test.js",
+    "before": "364a38a442796df10ca21b5290e116349b0db0cb4ac276e954af25ddaf5f3a06",
+    "after": "7aeb1cd3b9bf8842ce3348c86af4fd854d91ebc388be32da71868a779bae3e4f",
+    "edits": [
+      {
+        "old": ".diss-system-playback button[aria-pressed=\"true\"]",
+        "new": ".diss-overlay-actions button[aria-pressed=\"true\"]"
+      }
+    ]
+  }
+]

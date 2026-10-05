@@ -1,0 +1,8 @@
+{
+  "recordedAt": "2026-10-01T05:02:52.060Z",
+  "url": "http://127.0.0.1:8770/",
+  "sourceSha256": "0ed8bc6d855fa5fcda26d0bbb30bd4defe5777c84dd7984a3480c60b453bde68",
+  "publicSha256": "0ed8bc6d855fa5fcda26d0bbb30bd4defe5777c84dd7984a3480c60b453bde68",
+  "successful": false,
+  "error": "fetch failed"
+}

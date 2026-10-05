@@ -1,0 +1,54 @@
+{
+  "sourceSha256": "b23960aa0fd7c94dd65289110292b9d7703c5278f36658ec27aa2729db437765",
+  "reviewer": "root",
+  "images": {
+    "desktop-coast.png": {
+      "sha256": "1b4233d90c5d0aecb4bed05646724087f2be2a3258ea96135162d31bdeb5364b",
+      "width": 986,
+      "height": 880,
+      "review": "Native disclosure and source label are clear. Coasting retains rightward velocity; gravity and net acceleration share concentric endpoints."
+    },
+    "coast-vector-diagrams.png": {
+      "sha256": "e356a0877cf16db6118ea88289ed7ed76ee5968fdd77843c850f34c89304ecc4",
+      "width": 960,
+      "height": 722,
+      "review": "Equal physical axes, adaptive velocity rings, fixed acceleration rings, and zero engine force remain readable."
+    },
+    "contact-velocity.png": {
+      "sha256": "fcd1fc23fe59712e8708a6c4858ef349948822c4ba656f1e2ef6a2505c844e83",
+      "width": 986,
+      "height": 832,
+      "review": "The terminal velocity arrow retains its measured downward/rightward direction. Contact forces are omitted with a clear explanation."
+    },
+    "recorded-tilted-burn.png": {
+      "sha256": "d358af138eef0adda6a62c464459e9dc6036b038a3a4e88acfb1fa14f1a5078e",
+      "width": 986,
+      "height": 881,
+      "review": "Source time, altitude, actual throttle and tilt agree with the recorded state. Motion points right/down while thrust and net acceleration point left/up."
+    },
+    "tilted-vector-diagrams.png": {
+      "sha256": "2069ace3129db7787f821e5c2408f8bf5951de8b0a1e69c25803b337a3981ec4",
+      "width": 960,
+      "height": 723,
+      "review": "Both full vector cards and their numerical readings fit without overlap. The lander glyph tilts left with the recorded attitude."
+    },
+    "legacy-no-vectors.png": {
+      "sha256": "ade8fb153bf7d1eb11a8ca1945292dfc95f8f980a931b8b29c4d3cfc560f20c8",
+      "width": 986,
+      "height": 151,
+      "review": "Missing recording is explained. No inferred velocity or acceleration diagram is displayed."
+    },
+    "phone-320.png": {
+      "sha256": "7988cb940b66ef62e733ae57bd4879a904d3b9d3fc975b56afe8ca0fdf5a6756",
+      "width": 282,
+      "height": 1528,
+      "review": "Cards stack vertically at 320 px. HTML labels and numbers remain readable, the focus outline is visible, and nothing clips horizontally."
+    },
+    "phone-forced-colors.png": {
+      "sha256": "1ca31db335e4992451bda42f66e4a447ff1a33ca70849e3ae4f3606bdec4a762",
+      "width": 282,
+      "height": 1528,
+      "review": "System colors preserve text, rings, reference axes, native focus and the velocity arrow. Dashed and dotted force patterns retain their distinction."
+    }
+  }
+}

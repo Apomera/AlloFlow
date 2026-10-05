@@ -1,0 +1,341 @@
+{
+  "overflow": false,
+  "background": "rgb(0, 0, 0)",
+  "svgs": [
+    {
+      "id": "astronomy-cosmic-calendar-diagram",
+      "text": [
+        {
+          "label": "13.8 billion years → 365 days",
+          "font": 14.266666666666666,
+          "left": 30.000001907348633,
+          "top": 4.766355991363298,
+          "right": 334.32827949523926,
+          "bottom": 36.72897195816017,
+          "width": 360,
+          "height": 270
+        },
+        {
+          "label": "Beginning",
+          "font": 13.077777777777778,
+          "left": 30.000001907348633,
+          "top": 48.448596954345476,
+          "right": 127.99065589904785,
+          "bottom": 77.04672813415505,
+          "width": 360,
+          "height": 270
+        },
+        {
+          "label": "Present",
+          "font": 13.077777777777778,
+          "left": 257.8212585449219,
+          "top": 48.448596954345476,
+          "right": 330.95855712890625,
+          "bottom": 77.04672813415505,
+          "width": 360,
+          "height": 270
+        },
+        {
+          "label": "Jan 1",
+          "font": 13.077777777777778,
+          "left": 3.6360960006713867,
+          "top": 142.44860839843727,
+          "right": 54.681654930114746,
+          "bottom": 171.04673957824684,
+          "width": 360,
+          "height": 270
+        },
+        {
+          "label": "Apr 1",
+          "font": 13.077777777777778,
+          "left": 75.96588897705078,
+          "top": 142.44860839843727,
+          "right": 130.29708099365234,
+          "bottom": 171.04673957824684,
+          "width": 360,
+          "height": 270
+        },
+        {
+          "label": "Jul 1",
+          "font": 13.077777777777778,
+          "left": 155.33399963378906,
+          "top": 142.44860839843727,
+          "right": 200.51799392700195,
+          "bottom": 171.04673957824684,
+          "width": 360,
+          "height": 270
+        },
+        {
+          "label": "Oct 1",
+          "font": 13.077777777777778,
+          "left": 228.34823608398438,
+          "top": 142.44860839843727,
+          "right": 280.4189147949219,
+          "bottom": 171.04673957824684,
+          "width": 360,
+          "height": 270
+        },
+        {
+          "label": "End",
+          "font": 13.077777777777778,
+          "left": 311.7319030761719,
+          "top": 142.44860839843727,
+          "right": 348.2681198120117,
+          "bottom": 171.04673957824684,
+          "width": 360,
+          "height": 270
+        },
+        {
+          "label": "Milky Way thick disk",
+          "font": 14.266666666666666,
+          "left": 30.000001907348633,
+          "top": 190.76637268066384,
+          "right": 264.61157417297363,
+          "bottom": 222.7289886474607,
+          "width": 360,
+          "height": 270
+        },
+        {
+          "label": "Orange = selected milestone",
+          "font": 13.077777777777778,
+          "left": 30.000001907348633,
+          "top": 226.44860839843727,
+          "right": 310.07385444641113,
+          "bottom": 255.04673957824684,
+          "width": 360,
+          "height": 270
+        }
+      ],
+      "rows": []
+    },
+    {
+      "id": "astronomy-calendar-zoom",
+      "text": [
+        {
+          "label": "60",
+          "font": 13.077777777777778,
+          "left": 30.000001907348633,
+          "top": 3.4474270343780518,
+          "right": 53.71029281616211,
+          "bottom": 32.0469810962677,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "30",
+          "font": 13.077777777777778,
+          "left": 168.14486694335938,
+          "top": 3.4474270343780518,
+          "right": 191.85515785217285,
+          "bottom": 32.0469810962677,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "0",
+          "font": 13.077777777777778,
+          "left": 318.14483642578125,
+          "top": 3.4474270343780518,
+          "right": 329.999981880188,
+          "bottom": 32.0469810962677,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "Cosmic minutes before end",
+          "font": 13.077777777777778,
+          "left": 47.00418472290039,
+          "top": 32.44742965698242,
+          "right": 312.995792388916,
+          "bottom": 61.04698371887207,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "Human fossils",
+          "font": 14.266666666666666,
+          "left": 18,
+          "top": 68.765099644661,
+          "right": 177.28875732421875,
+          "bottom": 100.72930634021765,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "719.84 cosmic s before end",
+          "font": 13.077777777777778,
+          "left": 18,
+          "top": 125.44742584228521,
+          "right": 282.4932861328125,
+          "bottom": 154.04697990417486,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "Agriculture",
+          "font": 14.266666666666666,
+          "left": 16.317672729492188,
+          "top": 168.765099644661,
+          "right": 145.7857208251953,
+          "bottom": 200.72930634021765,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "27.42 cosmic s before end",
+          "font": 13.077777777777778,
+          "left": 18,
+          "top": 225.4474258422852,
+          "right": 270.6381530761719,
+          "bottom": 254.04697990417486,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "Present boundary",
+          "font": 14.266666666666666,
+          "left": 18,
+          "top": 268.765099644661,
+          "right": 219.4657745361328,
+          "bottom": 300.72930634021765,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "0 cosmic s before end",
+          "font": 13.077777777777778,
+          "left": 18,
+          "top": 325.4474258422852,
+          "right": 230.3148651123047,
+          "bottom": 354.04697990417486,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "Lifetime example",
+          "font": 14.266666666666666,
+          "left": 18,
+          "top": 368.76509964466095,
+          "right": 213.2458038330078,
+          "bottom": 400.7293063402176,
+          "width": 360,
+          "height": 470
+        },
+        {
+          "label": "0.0274 cosmic s before end",
+          "font": 13.077777777777778,
+          "left": 18,
+          "top": 425.44742584228516,
+          "right": 282.4932861328125,
+          "bottom": 454.0469799041748,
+          "width": 360,
+          "height": 470
+        }
+      ],
+      "rows": [
+        {
+          "id": "dec31",
+          "height": 55.87498474121094
+        },
+        {
+          "id": "agriculture",
+          "height": 55.87501525878906
+        },
+        {
+          "id": "now",
+          "height": 55.875
+        },
+        {
+          "id": "lifetime",
+          "height": 55.87501525878906
+        }
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "label": "Big Bang",
+      "height": 44
+    },
+    {
+      "label": "Neutral hydrogen",
+      "height": 44
+    },
+    {
+      "label": "First stars",
+      "height": 44
+    },
+    {
+      "label": "Milky Way thick disk",
+      "height": 44
+    },
+    {
+      "label": "Solar System",
+      "height": 44
+    },
+    {
+      "label": "Early life evidence",
+      "height": 44
+    },
+    {
+      "label": "Eukaryote fossils",
+      "height": 44
+    },
+    {
+      "label": "Cambrian boundary",
+      "height": 44
+    },
+    {
+      "label": "Early dinosaur fossils",
+      "height": 44
+    },
+    {
+      "label": "Human fossils",
+      "height": 44
+    },
+    {
+      "label": "Agriculture",
+      "height": 44
+    },
+    {
+      "label": "Present boundary",
+      "height": 44
+    },
+    {
+      "label": "Xiang & Rix 2022 · Milky Way assembly",
+      "height": 44
+    },
+    {
+      "label": "Hour",
+      "height": 44
+    },
+    {
+      "label": "Minute",
+      "height": 44
+    },
+    {
+      "label": "Second",
+      "height": 44
+    },
+    {
+      "label": "",
+      "height": 44
+    },
+    {
+      "label": "1 year",
+      "height": 44
+    },
+    {
+      "label": "12 years",
+      "height": 44
+    },
+    {
+      "label": "80 years",
+      "height": 44
+    },
+    {
+      "label": "Scale, sources and limits",
+      "height": 44
+    }
+  ]
+}

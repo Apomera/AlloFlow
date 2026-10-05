@@ -1,0 +1,153 @@
+{
+  "generatedAt": "2026-10-04T17:15:56.035Z",
+  "runner": "native-node-actual-factories-and-hydration",
+  "inputs": {
+    "host": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\AlloFlowANTI.txt",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0"
+    },
+    "source": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\host_handlers_source.jsx",
+      "sha256": "ef290e2068207169ca205c0329a0b2c5260deb6a9943f2d4173cd65ec0907bba"
+    },
+    "runtime": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\host_handlers_module.js",
+      "sha256": "b6aa6e66b3e151019db7c4830e36de5305deea23bf80e9113d334a0cea4271eb"
+    }
+  },
+  "total": 26,
+  "passed": 26,
+  "failed": 0,
+  "results": [
+    {
+      "factory": "source",
+      "name": "normal stored workspace restore applies writing, builder and deferred view",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "invalid candidate preserves generation and outstanding work owners",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "busy restore preserves existing owner and reports no successful restore",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "accepted restore retires project, intake, pending assignment and hydration owners",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "late learner-work hydration cannot merge previous workspace responses after restore",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "late draft hydration cannot overwrite restored source and lesson settings",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "clear or new workspace while builder decodes preserves fresh builder/view/status",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "older builder rejection cannot reset or announce a replacement workspace",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "queued restore view cannot reopen an old resource after authoritative replacement",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "hydrate read remains valid without a workspace replacement",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "clear during builder decode releases the old restore lock for a new restore",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "retired restore finally cannot release a newer in-progress restore",
+      "status": "passed"
+    },
+    {
+      "factory": "source",
+      "name": "silent unmount invalidation retires restore ownership without lifecycle state writes",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "normal stored workspace restore applies writing, builder and deferred view",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "invalid candidate preserves generation and outstanding work owners",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "busy restore preserves existing owner and reports no successful restore",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "accepted restore retires project, intake, pending assignment and hydration owners",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "late learner-work hydration cannot merge previous workspace responses after restore",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "late draft hydration cannot overwrite restored source and lesson settings",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "clear or new workspace while builder decodes preserves fresh builder/view/status",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "older builder rejection cannot reset or announce a replacement workspace",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "queued restore view cannot reopen an old resource after authoritative replacement",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "hydrate read remains valid without a workspace replacement",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "clear during builder decode releases the old restore lock for a new restore",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "retired restore finally cannot release a newer in-progress restore",
+      "status": "passed"
+    },
+    {
+      "factory": "runtime",
+      "name": "silent unmount invalidation retires restore ownership without lifecycle state writes",
+      "status": "passed"
+    }
+  ]
+}

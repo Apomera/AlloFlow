@@ -1,0 +1,15 @@
+.produce-rinsing{margin:12px 0;border:1px solid #a8bfae;border-radius:14px;background:#f7fbf4;color:#284b3a;overflow:hidden}
+.produce-rinsing>summary{display:flex;justify-content:space-between;align-items:center;gap:14px;padding:14px 16px;cursor:pointer}
+.produce-rinsing>summary strong,.produce-rinsing>summary small{display:block}.produce-rinsing>summary small{font-size:.8rem;margin-top:3px;color:#526e5c}
+.produce-rinsing>summary>span:last-child{font-size:.85rem;text-align:right}.produce-rinsing-body{padding:0 16px 16px}
+.produce-rinsing-body p{line-height:1.5;margin:10px 0}.produce-rinsing-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.produce-rinsing button{min-height:44px;padding:9px 13px;border:1px solid #8cae98;border-radius:9px;background:#eaf3e6;color:#284b3a;font:inherit;cursor:pointer}
+.produce-rinsing button:disabled{opacity:.55;cursor:default}.produce-rinsing :focus-visible{outline:3px solid #8c6226;outline-offset:3px}
+.produce-rinsing-status{padding:10px 12px;border-left:4px solid #69a084;background:#eaf3e8;min-height:1.5em}
+.produce-rinsing-lesson{border:1px solid #b2c8b4;border-radius:10px;padding:12px 14px;background:#f1f5e7}.produce-rinsing-lesson>strong{font-size:.95rem}.produce-rinsing-lesson p{font-size:.88rem}
+.produce-rinsing-lesson a{color:#255e4a;text-decoration:underline;text-underline-offset:2px}
+#rinseControl{display:block;width:100%;max-width:520px;max-height:290px;margin:8px auto;background:#f0f6ed;border:1px solid #aac3af;border-radius:12px;touch-action:none}
+#rinseControl[aria-disabled=true]{opacity:.65}#rinseKeyboardPanel h3{font-size:1rem;margin:14px 0 6px}#rinseCoverageReading{font-weight:600;text-align:center;font-variant-numeric:tabular-nums}
+@media(max-width:480px){.produce-rinsing>summary,.produce-rinsing-body{padding-left:12px;padding-right:12px}.produce-rinsing-actions button{flex:1 1 120px}.produce-rinsing-lesson{padding:10px}.produce-rinsing>summary{gap:8px}}
+@media(max-width:500px){.kitchen-gesture-coach[data-tool="rinse"]{top:auto;bottom:9px}}
+@media(forced-colors:active){.produce-rinsing,.produce-rinsing-lesson,#rinseControl{border-color:CanvasText}.produce-rinsing :focus-visible{outline-color:Highlight}.produce-rinsing-status{border-color:Highlight}.produce-rinsing button{border-color:ButtonText}.produce-rinsing-lesson a{color:LinkText}}

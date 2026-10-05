@@ -1,0 +1,51 @@
+{
+  "passed": true,
+  "completedAt": "2026-10-03T16:05:41.766Z",
+  "scope": "Three host syntax checks, exact audio generation/public parity, five module loader pins, exact applied cache candidate, four runtime/public pairs and native bridge script syntax; no full application build or CI claim.",
+  "hosts": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "584569440f0a5b5aba8c446f23c2bdb001d675750eb4cbb1b8c73325d1b48817",
+      "syntax": "pass",
+      "audioPins": {
+        "read_aloud_audio_service_module": "7f606aad",
+        "view_simplified_module": "6ba838c8",
+        "utils_pure_module": "4c42773d",
+        "view_persona_chat_module": "3e93b1d3",
+        "export_handlers_module": "1104203b"
+      },
+      "savePolicyDependencies": "pass"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "584569440f0a5b5aba8c446f23c2bdb001d675750eb4cbb1b8c73325d1b48817",
+      "syntax": "pass",
+      "audioPins": {
+        "read_aloud_audio_service_module": "7f606aad",
+        "view_simplified_module": "6ba838c8",
+        "utils_pure_module": "4c42773d",
+        "view_persona_chat_module": "3e93b1d3",
+        "export_handlers_module": "1104203b"
+      },
+      "savePolicyDependencies": "pass"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "584569440f0a5b5aba8c446f23c2bdb001d675750eb4cbb1b8c73325d1b48817",
+      "syntax": "pass",
+      "audioPins": {
+        "read_aloud_audio_service_module": "7f606aad",
+        "view_simplified_module": "6ba838c8",
+        "utils_pure_module": "4c42773d",
+        "view_persona_chat_module": "3e93b1d3",
+        "export_handlers_module": "1104203b"
+      },
+      "savePolicyDependencies": "pass"
+    }
+  ],
+  "cacheGeneration": {
+    "UtilsPure": "existing builder string-template equality",
+    "PersonaChat": "existing builder wrapper plus matching Babel options in memory",
+    "ExportHandlers": "canonical module maintained directly; root/public byte parity"
+  }
+}

@@ -1,0 +1,118 @@
+Index: AlloFlowANTI.txt
+===================================================================
+--- AlloFlowANTI.txt
++++ AlloFlowANTI.txt
+@@ -1815,18 +1815,36 @@
+         Object.keys(slots).forEach(rid => { if (now - (slots[rid].at || 0) > 5 * 60 * 1000) delete slots[rid]; });
+     }
+     if (store.applied) while (store.applied.size > 256) store.applied.delete(store.applied.values().next().value);
+ }
+-function _alloFinishResChunk(store, rid, success) {
++function _alloMarkRemovedResChunks(store, ids) {
++    if (!store) return;
++    for (const group of ['parts', 'pending', 'failures']) {
++        for (const record of Object.values(store[group] || {})) {
++            if (record.removalOverflow) continue;
++            const removedIds = record.removedIds || (record.removedIds = new Set());
++            for (const id of ids) {
++                if (removedIds.has(id)) continue;
++                // Keep only transfer-local markers. On overflow, retire this old
++                // transfer conservatively; future RIDs have no removal markers.
++                if (removedIds.size >= 256) { record.removalOverflow = true; removedIds.clear(); break; }
++                removedIds.add(id);
++            }
++        }
++    }
++}
++function _alloFinishResChunk(store, rid, success, expectedPending) {
+     if (!store || !store.pending || !Object.prototype.hasOwnProperty.call(store.pending, rid)) return;
++    const pending = store.pending[rid];
++    if (expectedPending && pending !== expectedPending) return;
+     delete store.pending[rid];
+     if (success) {
+         (store.applied || (store.applied = new Set())).add(rid);
+         if (store.failures) delete store.failures[rid];
+     } else {
+         const failures = store.failures || (store.failures = Object.create(null));
+         const previous = Object.prototype.hasOwnProperty.call(failures, rid) ? failures[rid].count : 0;
+-        Object.defineProperty(failures, rid, { value: { count: previous + 1, at: Date.now() }, enumerable: true, configurable: true });
++        Object.defineProperty(failures, rid, { value: { count: previous + 1, at: Date.now(), removedIds: pending.removedIds, removalOverflow: pending.removalOverflow }, enumerable: true, configurable: true });
+     }
+     _alloPruneResChunks(store);
+ }
+ function _alloModuleWatchdogShouldWait(armedAt, now, hidden, rearmed) {
+@@ -1852,9 +1870,10 @@
+         || (store.failures && own(store.failures, v.rid) && store.failures[v.rid].count >= 3)) return null;
+     const slots = store.parts || (store.parts = Object.create(null));
+     if (!own(slots, v.rid)) {
+         if (Object.keys(slots).length >= 16) delete slots[Object.keys(slots)[0]];
+-        Object.defineProperty(slots, v.rid, { value: { of: v.of, got: Object.create(null), chars: 0, at: Date.now() }, enumerable: true, configurable: true });
++        const failure = store.failures && own(store.failures, v.rid) ? store.failures[v.rid] : null;
++        Object.defineProperty(slots, v.rid, { value: { of: v.of, got: Object.create(null), chars: 0, at: Date.now(), removedIds: failure?.removedIds, removalOverflow: failure?.removalOverflow }, enumerable: true, configurable: true });
+     }
+     const slot = slots[v.rid];
+     if (slot.of !== v.of || (own(slot.got, v.part) && slot.got[v.part] !== v.data)) return null;
+     if (!own(slot.got, v.part)) {
+@@ -1870,9 +1889,9 @@
+         parts.push(slot.got[part]);
+     }
+     delete slots[v.rid];
+     const pending = store.pending || (store.pending = Object.create(null));
+-    Object.defineProperty(pending, v.rid, { value: { at: Date.now() }, enumerable: true, configurable: true });
++    Object.defineProperty(pending, v.rid, { value: { at: Date.now(), removedIds: slot.removedIds, removalOverflow: slot.removalOverflow }, enumerable: true, configurable: true });
+     return parts.join('');
+ }
+ // Non-trickle ICE: over slow mailbox signaling, one complete SDP each way
+ // beats dribbling candidates through 2.5s polls.
+@@ -25608,8 +25627,9 @@
+           addToast('Your teacher shared ' + (v.count || 'new') + ' resources — explore them in your pack.', 'success');
+           return;
+       }
+       if (v.kind === 'res-remove' && Array.isArray(v.ids)) {
++          _alloMarkRemovedResChunks(mbChunkStoreRef.current, v.ids);
+           setReceivedDeliveryResources(prev => prev.filter(item => !v.ids.includes(item.id)));
+           setHistory(prev => {
+               const next = (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id));
+               hydratedHistoryRef.current = next;
+@@ -25620,16 +25640,22 @@
+       if (v.kind === 'res') {
+           const store = mbChunkStoreRef.current || (mbChunkStoreRef.current = { parts: {}, applied: new Set() });
+           const assembled = _alloCollectResChunk(store, v);
+           if (!assembled) return;
++          const pending = store.pending[v.rid];
+           try {
+               let resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
+               const receivedResourceId = resource && resource.id;
+               // Pair expansion can prepend an original. Preserve the identity
+               // that this message actually delivered and requested to open.
+               resource = _alloStudentSafeResources([resource]).find(item => item.id === receivedResourceId);
+               if (!resource) throw new Error('The transferred resource is not a valid student resource');
+-              if (mbChunkStoreRef.current !== store) return;
++              if (mbChunkStoreRef.current !== store || store.pending?.[v.rid] !== pending) return;
++              if (pending.removalOverflow || pending.removedIds?.has(resource.id)) {
++                  _alloFinishResChunk(store, v.rid, true, pending);
++                  setMbResourceReceiveError(Object.keys(store.failures || {}).length > 0);
++                  return;
++              }
+               setReceivedDeliveryResources(prev => [...prev.filter(item => item.id !== resource.id), resource]);
+               setHistory(prev => {
+                   const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
+                   const next = [...rest, resource];
+@@ -25641,14 +25667,14 @@
+               });
+               // open=false delivers quietly into the pack (async-mode share);
+               // open=true (default) follows the teacher like sync mode.
+               if (v.open !== false) setPendingQrAssignmentResource(resource);
+-              _alloFinishResChunk(store, v.rid, true);
++              _alloFinishResChunk(store, v.rid, true, pending);
+               setMbResourceReceiveError(Object.keys(store.failures || {}).length > 0);
+               if (!v.quiet) addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
+           } catch (decodeErr) {
+-              if (mbChunkStoreRef.current !== store) return;
+-              _alloFinishResChunk(store, v.rid, false);
++              if (mbChunkStoreRef.current !== store || store.pending?.[v.rid] !== pending) return;
++              _alloFinishResChunk(store, v.rid, false, pending);
+               setMbResourceReceiveError(true);
+               if ((store.failures?.[v.rid]?.count || 0) < 3) mbStudentCursorRef.current = 0;
+               warnLog('Mailbox resource decode failed', decodeErr);
+           }

@@ -1,0 +1,498 @@
+{
+  "sourceSha256": "de3dbe261ec7fed28903ddb85ad7059e045d8b52b4cd09d05033ed6016a2efe6",
+  "scriptSha256": "fc1dc13e57add4697df5ec81da24b412cd18f7e2b33b55294e21ecd23aea4f1b",
+  "errors": [],
+  "workflows": [
+    {
+      "name": "Keyboard measurement focuses the updated visible reading; returning restores the exact control; repeat requests work; reversing probes keeps focus on the probe control",
+      "settingsAndSavedWorkPreserved": true
+    },
+    {
+      "name": "Sensor measurements keep exact return destinations through high contrast and right-to-left layouts",
+      "authoredWorkPreserved": true
+    }
+  ],
+  "views": [
+    {
+      "name": "desktop-explorer",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 844,
+        "scrollWidth": 844,
+        "values": [
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          },
+          {
+            "text": "3.00 mA",
+            "direction": "ltr"
+          },
+          {
+            "text": "660.00 mV",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": null,
+        "column": {
+          "height": 252,
+          "segments": [
+            {
+              "percent": 13.2,
+              "height": 33.25
+            },
+            {
+              "percent": 86.8,
+              "height": 218.734375
+            }
+          ]
+        }
+      },
+      "axeViolations": [],
+      "file": "desktop-explorer.png",
+      "sha256": "0e02562504b2d2ecbc1909bda2fb2b8b0b992d4792416bed408433f51895bd3f"
+    },
+    {
+      "name": "desktop-lamp-meter",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 776,
+        "scrollWidth": 776,
+        "values": [
+          {
+            "text": "660.00 mV",
+            "direction": "ltr"
+          },
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r8:-heading",
+        "column": null
+      },
+      "axeViolations": [],
+      "file": "desktop-lamp-meter.png",
+      "sha256": "1ecb73563cce5dad088b25a6a6121e590d03b9eb904979a6295fe19fc165274d"
+    },
+    {
+      "name": "small-phone-meter",
+      "width": 320,
+      "geometry": {
+        "viewport": 320,
+        "pageWidth": 320,
+        "width": 212,
+        "scrollWidth": 212,
+        "values": [
+          {
+            "text": "660.00 mV",
+            "direction": "ltr"
+          },
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r8:-heading",
+        "column": null
+      },
+      "axeViolations": [],
+      "file": "small-phone-meter.png",
+      "sha256": "1fde8249788c4880d842b56b47df0b594770aadedff3943e2a8b97d5f9903a6b"
+    },
+    {
+      "name": "phone-return-explorer",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 338,
+        "scrollWidth": 338,
+        "values": [
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          },
+          {
+            "text": "3.00 mA",
+            "direction": "ltr"
+          },
+          {
+            "text": "660.00 mV",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r0:-voltage-drops-measure-lamp",
+        "column": {
+          "height": 232,
+          "segments": [
+            {
+              "percent": 13.2,
+              "height": 30.609375
+            },
+            {
+              "percent": 86.8,
+              "height": 201.375
+            }
+          ]
+        }
+      },
+      "axeViolations": [],
+      "file": "phone-return-explorer.png",
+      "sha256": "74e935c9fe72d444acb0c3f91dc2193d978fe2b4b9af129a57beb6e7022dc3ef"
+    },
+    {
+      "name": "phone-sensor-meter",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 282,
+        "scrollWidth": 282,
+        "values": [
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          },
+          {
+            "text": "0.00V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r8:-heading",
+        "column": null
+      },
+      "axeViolations": [],
+      "file": "phone-sensor-meter.png",
+      "sha256": "9e919022350039a9b8cd3b9cfd107bc79e1a7dec8c8f92ce3a5ba77bc33d5fd2"
+    },
+    {
+      "name": "forced-colors-meter",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 282,
+        "scrollWidth": 282,
+        "values": [
+          {
+            "text": "2.64V",
+            "direction": "ltr"
+          },
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r8:-heading",
+        "column": null
+      },
+      "axeViolations": [],
+      "file": "forced-colors-meter.png",
+      "sha256": "a023b4b140dc2f9ae990b0ec03f4115ef8dd2080147b0b50e971c3defdb4f94f"
+    },
+    {
+      "name": "forced-colors-explorer",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 338,
+        "scrollWidth": 338,
+        "values": [
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          },
+          {
+            "text": "12.00 mA",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.64V",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r0:-voltage-drops-measure-lamp",
+        "column": {
+          "height": 232,
+          "segments": [
+            {
+              "percent": 52.8,
+              "height": 122.484375
+            },
+            {
+              "percent": 47.2,
+              "height": 109.5
+            }
+          ]
+        }
+      },
+      "axeViolations": [],
+      "file": "forced-colors-explorer.png",
+      "sha256": "74cd7a7ea90a0ce5ebd321c9e32d60d3dfac05373a402cfa38ceb7b37e15230a"
+    },
+    {
+      "name": "rtl-meter",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 282,
+        "scrollWidth": 282,
+        "values": [
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          },
+          {
+            "text": "0.00V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r8:-heading",
+        "column": null
+      },
+      "axeViolations": [],
+      "file": "rtl-meter.png",
+      "sha256": "55d212d233228e3f2c6a4650b76f752d631cbfea5dff12e969a14162cefe71a1"
+    },
+    {
+      "name": "rtl-explorer",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 338,
+        "scrollWidth": 338,
+        "values": [
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          },
+          {
+            "text": "12.00 mA",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.64V",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r0:-voltage-drops-measure-transistor",
+        "column": {
+          "height": 232,
+          "segments": [
+            {
+              "percent": 52.8,
+              "height": 122.484375
+            },
+            {
+              "percent": 47.2,
+              "height": 109.5
+            }
+          ]
+        }
+      },
+      "axeViolations": [],
+      "file": "rtl-explorer.png",
+      "sha256": "e02ba43fa47b85e4d6b507e4e2fb4379e357a926e814a13ec3c0e320cfc9aaf3"
+    }
+  ],
+  "focusChecks": [
+    {
+      "direction": "meter",
+      "part": "lamp",
+      "reading": "660.00 mV",
+      "headingTop": 17.90625,
+      "headingBottom": 40.40625,
+      "readingTop": 73.40625,
+      "readingBottom": 118.40625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "lamp",
+      "top": 17.765625,
+      "bottom": 61.765625,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "transistor",
+      "reading": "4.34V",
+      "headingTop": 17.90625,
+      "headingBottom": 40.40625,
+      "readingTop": 73.40625,
+      "readingBottom": 118.40625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "transistor",
+      "top": 17.765625,
+      "bottom": 61.765625,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "transistor",
+      "reading": "4.34V",
+      "headingTop": 17.90625,
+      "headingBottom": 40.40625,
+      "readingTop": 73.40625,
+      "readingBottom": 118.40625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "transistor",
+      "top": 17.765625,
+      "bottom": 61.765625,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "lamp",
+      "reading": "660.00 mV",
+      "headingTop": 18.296875,
+      "headingBottom": 40.796875,
+      "readingTop": 108.296875,
+      "readingBottom": 141.296875,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "lamp",
+      "top": 17.546875,
+      "bottom": 61.546875,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "lamp",
+      "reading": "660.00 mV",
+      "headingTop": 18.453125,
+      "headingBottom": 40.953125,
+      "readingTop": 73.953125,
+      "readingBottom": 106.953125,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "lamp",
+      "top": 18.421875,
+      "bottom": 62.421875,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "transistor",
+      "reading": "2.36V",
+      "headingTop": 18.265625,
+      "headingBottom": 40.765625,
+      "readingTop": 73.765625,
+      "readingBottom": 106.765625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "transistor",
+      "top": 18.328125,
+      "bottom": 62.328125,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "lamp",
+      "reading": "2.64V",
+      "headingTop": 18.265625,
+      "headingBottom": 40.765625,
+      "readingTop": 73.765625,
+      "readingBottom": 106.765625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "lamp",
+      "top": 18.234375,
+      "bottom": 62.234375,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "transistor",
+      "reading": "2.36V",
+      "headingTop": 18.265625,
+      "headingBottom": 40.765625,
+      "readingTop": 73.765625,
+      "readingBottom": 106.765625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "transistor",
+      "top": 18.328125,
+      "bottom": 62.328125,
+      "height": 1000
+    }
+  ],
+  "passed": true,
+  "browserClosed": true
+}

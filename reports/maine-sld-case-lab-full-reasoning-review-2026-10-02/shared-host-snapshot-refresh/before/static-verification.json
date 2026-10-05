@@ -1,0 +1,25 @@
+{
+  "verifiedAt": "2026-10-03T14:55:26.454Z",
+  "jsxSourcesParsed": 3,
+  "modulePin": "d69ff090",
+  "moduleHash": "d69ff0908089f9d47dc0a572d676eadbbd846a8cfd5ea170637bd651720eb0f7",
+  "moduleFourCopyParity": true,
+  "hostHashes": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "12059b5a408d7f86ad320e20c367e65f165e7dddf86b05c6fb92ad4cf399b4a9"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "12059b5a408d7f86ad320e20c367e65f165e7dddf86b05c6fb92ad4cf399b4a9"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "12059b5a408d7f86ad320e20c367e65f165e7dddf86b05c6fb92ad4cf399b4a9"
+    }
+  ],
+  "testedSourceSha256": "12059b5a408d7f86ad320e20c367e65f165e7dddf86b05c6fb92ad4cf399b4a9",
+  "currentSourceMatchesTestedSnapshot": true,
+  "previousReportPreserved": true,
+  "scope": "Only three existing Maine module loader pin strings changed. No host routing, Hub card, redirects, build mapping or access-gate behavior edits."
+}

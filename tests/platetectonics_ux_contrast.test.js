@@ -1020,7 +1020,8 @@ describe('Phone legibility — figures drawn in a fixed space', () => {
 
   it('keeps the boundary widget at 540 px inside a sideways-scrolling frame with a swipe hint', () => {
     const text = src();
-    expect(text).toMatch(/className: 'pt-tect-frame md:col-span-2 rounded-xl overflow-hidden border relative /);
+    // The frame now wraps according to its host width; its phone scrolling class remains.
+    expect(text).toMatch(/className: 'pt-tect-frame rounded-xl overflow-hidden border relative /);
     expect(text).toMatch(/className: 'pt-tect-swipe text-sm[^']*' \+ \(isDark[\s\S]{0,200}style: \{ position: 'sticky', left: 0 \}/);
   });
 

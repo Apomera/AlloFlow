@@ -1,0 +1,25 @@
+{
+  "sourceSHA256": "ce0c01a8fc85d002bc970c5103fec84be77ff9d2fd42a295fbe629219c9e2182",
+  "originReport": "baseline-dark-verified.json",
+  "originReportSHA256": "e9dad555f3ea0128e2ab736877cbe18956f4b51e38347c62b745665f19958131",
+  "selectedCasePassed": true,
+  "selectedCaseRuns": 1,
+  "images": [
+    {
+      "name": "diagnostic-shallow-day-gl-pixels",
+      "file": "diagnostic-shallow-day-gl-pixels.png",
+      "sha256": "200fa6ddbaac000a7ce78921c9e2cda03792e77d87ec1a43863ba0edd7de8c54"
+    },
+    {
+      "name": "diagnostic-shallow-night-gl-pixels",
+      "file": "diagnostic-shallow-night-gl-pixels.png",
+      "sha256": "665e4e1d429a86f1e44f799056a45a66b75ab29feb891862d771c12bc8ebcdb1"
+    },
+    {
+      "name": "diagnostic-deep-day-gl-pixels",
+      "file": "diagnostic-deep-day-gl-pixels.png",
+      "sha256": "24c0f88da38f46db46e367b5e7d61cfeb316f768008a50ba4f1b7d9b73862e25"
+    }
+  ],
+  "scope": "Existing explicit day/night/depth native diagnostic. Only the initialized gameState reference is exposed in an exact-reverse-proven copy; dayTime is set and existing Dive/Ascend input controls depth. These are condition diagnostics, not natural chase-camera scene evidence."
+}

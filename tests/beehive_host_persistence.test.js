@@ -155,7 +155,7 @@ describe('Beehive host persistence', () => {
       paused: true,
       day: 19,
       score: 430,
-      resources: { nectar: 27 },
+      resources: { nectar: 27, pollen: 0, wax: 0, royalJelly: 0 },
     });
     expect(state).toEqual(before);
 
@@ -208,6 +208,6 @@ describe('Beehive host persistence', () => {
     expect(persisted.drone).toEqual({ highScore: 100 });
     expect(serialize(null)).toBeNull();
     expect(serialize([])).toBeNull();
-    expect(serialize({ drone: ['not', 'state'], honey: 12 })).toEqual({ honey: 12, _persistenceVersion: 1 });
+    expect(serialize({ drone: ['not', 'state'], honey: 12 })).toEqual({ drone: {}, honey: 12, _persistenceVersion: 1, saveRecovery: { fields: ['drone'] } });
   });
 });

@@ -1,0 +1,34 @@
+{
+  "verifiedAt": "2026-10-04T16:59:01.867Z",
+  "moduleHash": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+  "modulePin": "fec6407e",
+  "hosts": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "beforePin": "c5af6b18",
+      "finalPin": "fec6407e",
+      "beforeSha256": "bf04ef84511debcce64d084cc539e2e09619b3e0fa11de2cb70beb8e29d5bd7a",
+      "afterSha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8",
+      "unrelatedCurrentBytesPreserved": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "beforePin": "c5af6b18",
+      "finalPin": "fec6407e",
+      "beforeSha256": "bf04ef84511debcce64d084cc539e2e09619b3e0fa11de2cb70beb8e29d5bd7a",
+      "afterSha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8",
+      "unrelatedCurrentBytesPreserved": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "beforePin": "c5af6b18",
+      "finalPin": "fec6407e",
+      "beforeSha256": "bf04ef84511debcce64d084cc539e2e09619b3e0fa11de2cb70beb8e29d5bd7a",
+      "afterSha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8",
+      "unrelatedCurrentBytesPreserved": true
+    }
+  ],
+  "allImmediateBeforeCopiesVerifiedBeforeFirstWrite": true,
+  "atomicDestinationGuard": true,
+  "scope": "Only the exact Maine loader version pin in each of three latest shared hosts."
+}

@@ -1,0 +1,14 @@
+{
+  "mode": "prepared",
+  "passed": true,
+  "parent": "7536623e5687c15d801b42787c8cbeb8c8c356bc",
+  "tree": "81c702b7e04bf52f4bd07644d40ba7aae88d4321",
+  "changedFiles": 98,
+  "sealedFiles": 98,
+  "sourceSha256": "0cb0eb7b5d68198fb5b9b2935cc6ce3f49a2ac4e7971646446ed885734eb28c4",
+  "unitPassed": 1060,
+  "browserPassed": 43,
+  "registryScope": "Four Sweep visual labels only; other registry changes excluded.",
+  "workingSourceLabelsValid": true,
+  "workingRegistrySha256Drift": []
+}

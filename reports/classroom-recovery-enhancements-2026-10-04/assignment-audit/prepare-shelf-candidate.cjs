@@ -1,0 +1,15 @@
+'use strict';
+const fs = require('node:fs'), path = require('node:path'), assert = require('node:assert/strict'), crypto = require('node:crypto');
+const root = path.resolve(__dirname, '../../..'), file = path.join(root, 'host_handlers_source.jsx');
+const raw = fs.readFileSync(file), eol = raw.includes(Buffer.from('\r\n')) ? '\r\n' : '\n';
+const source = raw.toString().replace(/\r\n/g, '\n');
+const before = "const openHomeworkShelf = () => {\n      const shelf = __d.homeworkShelf;\n      if (!shelf || !Array.isArray(shelf.resources) || !shelf.resources.length) return;";
+const after = before + "\n      __d.setPendingQrAssignmentResource(null);\n      __d.cancelActiveProjectLoad({ notifyLifecycle: false });\n      __d.cancelActiveFileIntakeOperations('homework-shelf-open');\n      __d.invalidateLocalDataHydration();";
+assert.equal(source.split(before).length - 1, 1, 'Unique synchronous shelf handler anchor');
+const candidate = source.replace(before, after).replace(/\n/g, eol);
+fs.mkdirSync(path.join(__dirname, 'candidate'), { recursive: true });
+fs.writeFileSync(path.join(__dirname, 'source-before-shelf.jsx'), raw);
+fs.writeFileSync(path.join(__dirname, 'candidate', 'host_handlers_source.jsx'), candidate);
+fs.writeFileSync(path.join(__dirname, 'shelf-operations.json'), JSON.stringify([{ scope: 'homework-shelf-open', before, after }], null, 2) + '\n');
+fs.writeFileSync(path.join(__dirname, 'shelf-prepare-receipt.json'), JSON.stringify({ sourceFile: file, sourceSha256: crypto.createHash('sha256').update(raw).digest('hex'), candidateSha256: crypto.createHash('sha256').update(candidate).digest('hex'), operations: 1 }, null, 2) + '\n');
+console.log(JSON.stringify({ prepared: true, operations: 1 }));

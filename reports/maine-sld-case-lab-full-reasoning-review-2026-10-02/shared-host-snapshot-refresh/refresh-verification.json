@@ -1,0 +1,38 @@
+{
+  "refreshedAt": "2026-10-03T15:28:57.632Z",
+  "moduleSha256": "d69ff0908089f9d47dc0a572d676eadbbd846a8cfd5ea170637bd651720eb0f7",
+  "previousSourceSha256": "12059b5a408d7f86ad320e20c367e65f165e7dddf86b05c6fb92ad4cf399b4a9",
+  "currentSourceSha256": "b5fb9c913c1fa3884d2fe0190a10401179cb5e362a48856d01a47db7a53f7fe7",
+  "bundleSha256": "5b1af4462c989d37f252fb61645f5c92556ce75c517356b7ca81ac81641d88bd",
+  "preservesRunningPreviewPid": 12900,
+  "sameOriginAndUrl": true,
+  "appSourceWritesPerformed": false,
+  "atomicPreviewArtifactReplacements": true,
+  "previewOnlyTransforms": [],
+  "preservedPriorPreviewFiles": [
+    {
+      "file": "integration/source-preview/tested-host.jsx",
+      "sha256": "12059b5a408d7f86ad320e20c367e65f165e7dddf86b05c6fb92ad4cf399b4a9"
+    },
+    {
+      "file": "integration/source-preview/host.bundle.js",
+      "sha256": "b3a0a7f567763cb1f50a7839b39a65a9d20ad3469438df3c9a6c2d880f55a44e"
+    },
+    {
+      "file": "integration/source-preview/preview.json",
+      "sha256": "881a971e16e03f4adaa1ce44f23cb41acda369343ca20982ffbde71624fe15ea"
+    },
+    {
+      "file": "integration/static-verification.json",
+      "sha256": "43f275e5e0b249bcf96786afc58375be24f7640d7295147354cd14148abce119"
+    },
+    {
+      "file": "integration/served-verification.json",
+      "sha256": "c7c40d93708d90a058d842dd8faa1e642c47d7d68cb72667195fae9078ce8baa"
+    },
+    {
+      "file": "integration/pin-verification.json",
+      "sha256": "1da3d7d5a55e1c24c983c9c32511cd4b9ccf791576d08141887d325e94742382"
+    }
+  ]
+}

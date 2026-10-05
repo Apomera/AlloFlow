@@ -1,0 +1,192 @@
+[
+  {
+    "id": "rf-term-rule",
+    "kind": "term",
+    "file": "rf-term-rule.png",
+    "webpFile": "rf-term-rule.webp",
+    "title": "Rule",
+    "alt": "Four children form a circle, each raising one hand; a wheelchair user is part of the circle.",
+    "scene": "Four diverse children sit in a circle on a bright rug, each with one hand raised together. One child uses a wheelchair positioned as part of the circle. No adult.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Square single concept composition. Four diverse children sit in a circle on a bright rug, each with one hand raised together. One child uses a wheelchair positioned as part of the circle. No adult. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-term-fair",
+    "kind": "term",
+    "file": "rf-term-fair.png",
+    "webpFile": "rf-term-fair.webp",
+    "title": "Fair",
+    "alt": "Three children sit on a bench holding identical cups filled to the same level.",
+    "scene": "Exactly three diverse children sitting on one bench, each holding an IDENTICAL transparent straight-sided cup, all cups same size filled with blue water to the same height. Cups clearly visible, no other cups.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Square single concept composition. Exactly three diverse children sitting on one bench, each holding an IDENTICAL transparent straight-sided cup, all cups same size filled with blue water to the same height. Cups clearly visible, no other cups. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-term-safe",
+    "kind": "term",
+    "file": "rf-term-safe.png",
+    "webpFile": "rf-term-safe.webp",
+    "title": "Safe",
+    "alt": "A child rests a hand on a stair rail beside steps rising gently.",
+    "scene": "Close view of one child’s hand resting gently on a stair rail. Three broad stairs recede upward. Hand is visibly touching the rail, no alarm or falling.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Square single concept composition. Close view of one child’s hand resting gently on a stair rail. Three broad stairs recede upward. Hand is visibly touching the rail, no alarm or falling. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-term-share",
+    "kind": "term",
+    "file": "rf-term-share.png",
+    "webpFile": "rf-term-share.webp",
+    "title": "Share",
+    "alt": "One child’s hand passes a marker to another over an open box of markers.",
+    "scene": "Close view of two children’s hands over an open box of colored markers. One hand calmly passes a single marker to the other hand; no pulling.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Square single concept composition. Close view of two children’s hands over an open box of colored markers. One hand calmly passes a single marker to the other hand; no pulling. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-term-turn",
+    "kind": "term",
+    "file": "rf-term-turn.png",
+    "webpFile": "rf-term-turn.webp",
+    "title": "Turn",
+    "alt": "One child swings gently while another waits calmly on the grass nearby.",
+    "scene": "A small playground swing: one child swings gently while another child sits waiting on grass nearby. Both relaxed and smiling, waiting child included.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Square single concept composition. A small playground swing: one child swings gently while another child sits waiting on grass nearby. Both relaxed and smiling, waiting child included. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-term-agree",
+    "kind": "term",
+    "file": "rf-term-agree.png",
+    "webpFile": "rf-term-agree.webp",
+    "title": "Agree",
+    "alt": "Two children face each other, smiling and giving thumbs up.",
+    "scene": "Two diverse children face each other, both nodding gently with calm smiles and both giving thumbs up at their sides. Equal height, nobody instructing.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Square single concept composition. Two diverse children face each other, both nodding gently with calm smiles and both giving thumbs up at their sides. Equal height, nobody instructing. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-term-vote",
+    "kind": "term",
+    "file": "rf-term-vote.png",
+    "webpFile": "rf-term-vote.webp",
+    "title": "Vote",
+    "alt": "Six hands rise above six small chair backs.",
+    "scene": "Exactly six small chair backs viewed from behind, and exactly six raised children’s hands above them. Only hands, chair backs and subtle tops of heads. No tally, ballot or boxes.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Square single concept composition. Exactly six small chair backs viewed from behind, and exactly six raised children’s hands above them. Only hands, chair backs and subtle tops of heads. No tally, ballot or boxes. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-term-change",
+    "kind": "term",
+    "file": "rf-term-change.png",
+    "webpFile": "rf-term-change.webp",
+    "title": "Change",
+    "alt": "The same rug and six chairs appear twice: a circle on the left, two rows on the right.",
+    "scene": "Two side by side overhead views of the same bright rug and six small chairs. Left chairs in a circle; right the same six chairs rearranged into two rows of three. Same room and rug. No people.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Square single concept composition. Two side by side overhead views of the same bright rug and six small chairs. Left chairs in a circle; right the same six chairs rearranged into two rows of three. Same room and rug. No people. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-term-group",
+    "kind": "term",
+    "file": "rf-term-group.png",
+    "webpFile": "rf-term-group.webp",
+    "title": "Group",
+    "alt": "Five children, including a wheelchair user, hold one continuous ribbon together.",
+    "scene": "Exactly five diverse children stand shoulder to shoulder facing forward; all five hold one continuous long teal ribbon. Include a wheelchair user aligned with the group. No extra people.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Square single concept composition. Exactly five diverse children stand shoulder to shoulder facing forward; all five hold one continuous long teal ribbon. Include a wheelchair user aligned with the group. No extra people. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-term-ask",
+    "kind": "term",
+    "file": "rf-term-ask.png",
+    "webpFile": "rf-term-ask.webp",
+    "title": "Ask",
+    "alt": "A curious child raises one hand while two children nearby listen.",
+    "scene": "A curious child seated on a classroom rug raises one hand high, open questioning expression. Two other children sit around listening calmly. No adult.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Square single concept composition. A curious child seated on a classroom rug raises one hand high, open questioning expression. Two other children sit around listening calmly. No adult. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-img-rules",
+    "kind": "lesson",
+    "file": "rf-img-rules.png",
+    "webpFile": "rf-img-rules.webp",
+    "title": "One plan we all share",
+    "alt": "Six children and a seated adult raise their hands in a circle; a wheelchair user joins the ring.",
+    "scene": "Six diverse children in a loose classroom circle; one uses a wheelchair pulled into the ring. Every child raises one hand. An adult sits cross-legged at child height as part of the circle, also raising one hand. Plain walls, warm daylight.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Wide lesson composition with generous clean margins. Six diverse children in a loose classroom circle; one uses a wheelchair pulled into the ring. Every child raises one hand. An adult sits cross-legged at child height as part of the circle, also raising one hand. Plain walls, warm daylight. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-img-safe",
+    "kind": "lesson",
+    "file": "rf-img-safe.png",
+    "webpFile": "rf-img-safe.webp",
+    "title": "Habits that protect bodies",
+    "alt": "Left: a hand rests on a stair rail. Right: a child stops behind a curb.",
+    "scene": "Two small scenes side by side, soft gap: left a child’s hand resting on a stair rail; right a calm child stopped at a curb, toes safely behind the edge. No traffic, hazards or alarm.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Wide lesson composition with generous clean margins. Two small scenes side by side, soft gap: left a child’s hand resting on a stair rail; right a calm child stopped at a curb, toes safely behind the edge. No traffic, hazards or alarm. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-img-fair",
+    "kind": "lesson",
+    "file": "rf-img-fair.png",
+    "webpFile": "rf-img-fair.webp",
+    "title": "A calm wait for a turn",
+    "alt": "One child swings gently while two nearby children wait, one watching and one drawing with a stick.",
+    "scene": "A playground swing set with one child swinging gently and two children sitting nearby on the grass: one watches the swing, one draws with a stick. Everyone relaxed and included, no punishment.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Wide lesson composition with generous clean margins. A playground swing set with one child swinging gently and two children sitting nearby on the grass: one watches the swing, one draws with a stick. Everyone relaxed and included, no punishment. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-img-two-doors",
+    "kind": "lesson",
+    "file": "rf-img-two-doors.png",
+    "webpFile": "rf-img-two-doors.webp",
+    "title": "Two jobs for a rule",
+    "alt": "Two archways show a stair rail on the left and a swing on the right, with empty space in front.",
+    "scene": "Two simple archways side by side on a plain background. Through the left arch a stair rail is visible; through the right a playground swing. Empty floor in front of both, no people.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Wide lesson composition with generous clean margins. Two simple archways side by side on a plain background. Through the left arch a stair rail is visible; through the right a playground swing. Empty floor in front of both, no people. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-img-who-helps",
+    "kind": "lesson",
+    "file": "rf-img-who-helps.png",
+    "webpFile": "rf-img-who-helps.webp",
+    "title": "Who can reach?",
+    "alt": "Four children sit around a fruit bowl; three reach easily while a fourth stretches from farther back.",
+    "scene": "Exactly four diverse children at a table with ONE fruit bowl. Three children sit close and can reach fruit easily. Fourth child seated slightly farther back reaches with a subtle gentle stretch toward the bowl. Everyone calm, nobody shamed or upset. Include one wheelchair user.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Wide lesson composition with generous clean margins. Exactly four diverse children at a table with ONE fruit bowl. Three children sit close and can reach fruit easily. Fourth child seated slightly farther back reaches with a subtle gentle stretch toward the bowl. Everyone calm, nobody shamed or upset. Include one wheelchair user. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-img-asking",
+    "kind": "lesson",
+    "file": "rf-img-asking.png",
+    "webpFile": "rf-img-asking.webp",
+    "title": "Asking about a plan",
+    "alt": "A child gestures while a seated adult listens beside a chart of blank ruled lines.",
+    "scene": "One child stands beside an adult seated at child height. Child gestures with an open hand mid-question; adult leans in to listen. Both look at a paper chart on wall with blank ruled lines only. Calm welcoming faces.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Wide lesson composition with generous clean margins. One child stands beside an adult seated at child height. Child gestures with an open hand mid-question; adult leans in to listen. Both look at a paper chart on wall with blank ruled lines only. Calm welcoming faces. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-sort-walk",
+    "kind": "sort",
+    "file": "rf-sort-walk.png",
+    "webpFile": "rf-sort-walk.webp",
+    "title": "Moving calmly",
+    "alt": "Two children move calmly together through a school hallway; one uses a mobility aid.",
+    "scene": "Two diverse children walking calmly side by side in a plain school hallway. One uses a mobility aid. No running, warnings, signs, words or isolated child.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Wide lesson composition with generous clean margins. Two diverse children walking calmly side by side in a plain school hallway. One uses a mobility aid. No running, warnings, signs, words or isolated child. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-sort-wash",
+    "kind": "sort",
+    "file": "rf-sort-wash.png",
+    "webpFile": "rf-sort-wash.webp",
+    "title": "Before snack",
+    "alt": "A child washes both hands with soap and water at a sink.",
+    "scene": "Close simple side view of a child washing both hands under running water at a child-height sink, visible soap bubbles, calm scene, no text.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Wide lesson composition with generous clean margins. Close simple side view of a child washing both hands under running water at a child-height sink, visible soap bubbles, calm scene, no text. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  },
+  {
+    "id": "rf-sort-listen",
+    "kind": "sort",
+    "file": "rf-sort-listen.png",
+    "webpFile": "rf-sort-listen.webp",
+    "title": "One voice at a time",
+    "alt": "One child speaks with an open-hand gesture while two children listen.",
+    "scene": "Three diverse children sit in a small circle. One speaks with a gentle open-hand gesture while the other two listen; all equally included. No adult.",
+    "prompt": "Use case: educational child-friendly illustration. Bright, simple flat artwork with large clear shapes, light ivory background, friendly to six-year-olds. Wide lesson composition with generous clean margins. Three diverse children sit in a small circle. One speaks with a gentle open-hand gesture while the other two listen; all equally included. No adult. Children visibly differ in skin tone, hair and build. No adult towering over a child, pointing, shaming or dominating. No prohibition signs, red slashes or crossed-out symbols. Absolutely no words, letters, numerals, writing, captions, labels, logos or watermark; paper and walls must be blank. The native application will add editable captions."
+  }
+]

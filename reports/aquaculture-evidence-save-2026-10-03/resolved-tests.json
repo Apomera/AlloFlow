@@ -1,0 +1,24 @@
+{
+  "status": "passed",
+  "uniqueCases": 183,
+  "passed": 183,
+  "unresolved": [],
+  "files": 15,
+  "sourceSha256": "c06d26f95247f48bf6787314b65ea5a0c06101b12a402112e3f4f470eb2c2014",
+  "reports": [
+    "focused-tests.json",
+    "recovery-tests.json"
+  ],
+  "rawFull": {
+    "passed": 182,
+    "failed": 1,
+    "pending": 0
+  },
+  "recoveredCases": [
+    {
+      "file": "aquaculture_investigation_runtime.test.js",
+      "name": "Aquaculture investigation loop identifies confounding inputs and restores A without deleting a reflection draft"
+    }
+  ],
+  "note": "Unique-case accounting from the two retained native results, not a replacement Vitest report. Four cases excluded in the targeted invocation already passed in the full run."
+}

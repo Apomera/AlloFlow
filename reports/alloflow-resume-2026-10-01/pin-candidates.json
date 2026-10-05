@@ -1,0 +1,92 @@
+[
+  {
+    "module": "misc_components_module.js",
+    "before": "https://alloflow-cdn.pages.dev/misc_components_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/misc_components_module.js?v=b5fef04a",
+    "sha256": "b5fef04aaebe311da5ae3cec266b0c77f88b076c1ad37a14687f8af679c7c52a"
+  },
+  {
+    "module": "view_math_module.js",
+    "before": "https://alloflow-cdn.pages.dev/view_math_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/view_math_module.js?v=fbb655d6",
+    "sha256": "fbb655d660945dd6145d290d39f7e9c3eec1ddad5c3ab57ec5cc02bc71162468"
+  },
+  {
+    "module": "prompts_library_module.js",
+    "before": "https://alloflow-cdn.pages.dev/prompts_library_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/prompts_library_module.js?v=23aa1e5f",
+    "sha256": "23aa1e5f0c854fcae147860d8892716adab68a3e83f6c813307670d4840734f6"
+  },
+  {
+    "module": "view_export_preview_module.js",
+    "before": "https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/view_export_preview_module.js?v=a3c92b18",
+    "sha256": "a3c92b18aa4163f0bc3d3f9334e278573972b0807cd552cf334e5d8329b908d0"
+  },
+  {
+    "module": "generation_helpers_module.js",
+    "before": "https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/generation_helpers_module.js?v=4ecf0b63",
+    "sha256": "4ecf0b63662987234c36280e7b064a81edd373976a20da693804e636366f065b"
+  },
+  {
+    "module": "doc_pipeline_module.js",
+    "before": "https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=9fe7cef6",
+    "sha256": "9fe7cef611866f06deec696a7dd1c9c246ccc3af5d11685f3fd40891d6f2ad94"
+  },
+  {
+    "module": "session_transport_module.js",
+    "before": "https://alloflow-cdn.pages.dev/session_transport_module.js?v=049947de",
+    "after": "https://alloflow-cdn.pages.dev/session_transport_module.js?v=ea9ec09e",
+    "sha256": "ea9ec09e09ee4c00cb16494590b11b8e12ddbbb1e0143335fba1284c691ee795"
+  },
+  {
+    "module": "view_dbq_module.js",
+    "before": "https://alloflow-cdn.pages.dev/view_dbq_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/view_dbq_module.js?v=d3306e39",
+    "sha256": "d3306e399737532da6398a0a921057e6e8d356190f92883b3cee0d3f02ca794e"
+  },
+  {
+    "module": "view_lesson_plan_module.js",
+    "before": "https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=0c7f845b",
+    "sha256": "0c7f845b2e26f965a0aa7fb3c6762f669c9f033e56c4bddc535ea3ba4996dfb8"
+  },
+  {
+    "module": "generate_dispatcher_module.js",
+    "before": "https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/generate_dispatcher_module.js?v=3aeec7ca",
+    "sha256": "3aeec7cae2fd7a58d345f97b7a8766b62bf6745c0e4303160ea890a312967854"
+  },
+  {
+    "module": "host_handlers_module.js",
+    "before": "https://alloflow-cdn.pages.dev/host_handlers_module.js?v=d2ca5eb2",
+    "after": "https://alloflow-cdn.pages.dev/host_handlers_module.js?v=9fd0873d",
+    "sha256": "9fd0873d60692bf2852fbc488fc8850483b36be3d6148cb32b9e732f8fd54b9c"
+  },
+  {
+    "module": "word_sounds_module.js",
+    "before": "https://alloflow-cdn.pages.dev/word_sounds_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/word_sounds_module.js?v=f0df1f00",
+    "sha256": "f0df1f000c6262d600f281189fb96482d7d01950f4d6f30d6f7997e8aa1c208d"
+  },
+  {
+    "module": "read_aloud_audio_service_module.js",
+    "before": "https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=961229e6",
+    "after": "https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=7f606aad",
+    "sha256": "7f606aada8da7e7709dbc73952a13506dba03577b5e885c91abb7932a491f71b"
+  },
+  {
+    "module": "view_simplified_module.js",
+    "before": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=d42810ca",
+    "after": "https://alloflow-cdn.pages.dev/view_simplified_module.js?v=6ba838c8",
+    "sha256": "6ba838c86605890d3b771418b934486b72283adf4998ac4e9055746b0d6e250c"
+  },
+  {
+    "module": "allo_data_module.js",
+    "before": "https://alloflow-cdn.pages.dev/allo_data_module.js?v=6770c29ca",
+    "after": "https://alloflow-cdn.pages.dev/allo_data_module.js?v=77f53fef",
+    "sha256": "77f53fef86179e32a2f4f2ce66deda8974d944231dad68c03e2600775cd606ac"
+  }
+]

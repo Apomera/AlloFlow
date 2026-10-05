@@ -1,0 +1,29 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+
+⎯⎯⎯⎯⎯⎯ Unhandled Errors ⎯⎯⎯⎯⎯⎯
+
+Vitest caught 1 unhandled error during the test run.
+This might cause false positive tests. Resolve unhandled errors to make sure your tests are not affected.
+
+⎯⎯⎯⎯⎯⎯ Unhandled Error ⎯⎯⎯⎯⎯⎯⎯
+Error: [vitest-pool]: Failed to start forks worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_resistance_sim.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_growth_workflow.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_microscope.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_home_integrity.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_annotation_integrity_workflow.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_resistance_rounds.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_workspace_navigation.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_measurement_conversion_workflow.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_workflow.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_resistance_visuals.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_gram_workflow.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_quiz_workflow.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_growth_citations_workflow.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_resistance_outcomes.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_workspace.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_growth_model.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_portfolio_selection_workflow.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_portfolio_workflow.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_snow_map.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_print_reference.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_annotation_integrity.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_growth_citations.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_portfolio.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_portfolio_selection.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_workspace_resume.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/stem_microbiology_quiz.test.js, C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_measurement_conversion.test.js.
+ ❯ node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:94
+ ❯ Pool.schedule node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3448:5
+
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+ ❯ Timeout.<anonymous> node_modules/vitest/dist/chunks/cli-api.Cjt90eJu.js:3028:58
+ ❯ listOnTimeout node:internal/timers:605:17
+ ❯ processTimers node:internal/timers:541:7
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯
+
+
+ Test Files  no tests
+      Tests  no tests
+     Errors  1 error
+   Start at  19:46:23
+   Duration  61.49s (transform 0ms, setup 0ms, import 0ms, tests 0ms, environment 0ms)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/micro-lab-growth-chart-2026-10-04/unit-contrast-final-results.json

@@ -1,0 +1,1836 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-directory-actions-2026-10-03/previous-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-directory-actions-previous-0.spec.ts",
+      "file": "dissection-directory-actions-previous-0.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "directory guidance phone explains a view change and keeps inspection explicit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4755,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:55:27.844Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-d5cc11633a8b63f0f3fa",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 38,
+          "column": 8
+        },
+        {
+          "title": "directory guidance tablet explains a view change and keeps inspection explicit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3807,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:55:32.854Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-2ee97f4af555d616af7b",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 38,
+          "column": 8
+        },
+        {
+          "title": "directory guidance desktop explains a view change and keeps inspection explicit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3906,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:55:36.672Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-2cf4e4f3b6d2cfc7b9c8",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 38,
+          "column": 8
+        },
+        {
+          "title": "directory guidance embedded-large explains a view change and keeps inspection explicit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3871,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:55:40.587Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-77c579095ca37429a888",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 38,
+          "column": 8
+        },
+        {
+          "title": "directory guidance forced-colors explains a view change and keeps inspection explicit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3836,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:55:44.469Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-1229eccb2347d23e4226",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 38,
+          "column": 8
+        },
+        {
+          "title": "the inspection shortcut adds guidance and focusing the result does not inspect it",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2464,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[33m@@ -307,11 +307,11 @@\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    \"revealed\": Object {},\u001b[22m\n\u001b[2m    \"scenario\": Array [\u001b[22m\n\u001b[2m      undefined,\u001b[22m\n\u001b[2m      undefined,\u001b[22m\n\u001b[32m-     0,\u001b[39m\n\u001b[31m+     undefined,\u001b[39m\n\u001b[2m    ],\u001b[22m\n\u001b[2m    \"scores\": Array [\u001b[22m\n\u001b[2m      1,\u001b[22m\n\u001b[2m      2,\u001b[22m\n\u001b[2m    ],\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[33m@@ -307,11 +307,11 @@\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    \"revealed\": Object {},\u001b[22m\n\u001b[2m    \"scenario\": Array [\u001b[22m\n\u001b[2m      undefined,\u001b[22m\n\u001b[2m      undefined,\u001b[22m\n\u001b[32m-     0,\u001b[39m\n\u001b[31m+     undefined,\u001b[39m\n\u001b[2m    ],\u001b[22m\n\u001b[2m    \"scores\": Array [\u001b[22m\n\u001b[2m      1,\u001b[22m\n\u001b[2m      2,\u001b[22m\n\u001b[2m    ],\u001b[22m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-directory-actions-previous-0.spec.ts:77:17",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-directory-actions-previous-0.spec.ts",
+                      "column": 17,
+                      "line": 77
+                    },
+                    "snippet": "  75 |   await expect(result(page, 'ventral_skin')).toBeFocused(); expect(await evidence(page)).toEqual(before);\n  76 |   await page.keyboard.press('Enter'); const after = await evidence(page);\n> 77 |   expect(after).toEqual({ ...before, selected: 'ventral_skin', explored: { 'frog|ventral_skin': true }, scenario: [before.scenario[0], before.scenario[1], 0] });\n     |                 ^\n  78 |   await expect(context(page)).toHaveCount(0); await expect(page.locator('#diss-selection-title')).toBeFocused();\n  79 | });\n  80 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-directory-actions-previous-0.spec.ts",
+                        "column": 17,
+                        "line": 77
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 1\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[33m@@ -307,11 +307,11 @@\u001b[39m\n\u001b[2m    },\u001b[22m\n\u001b[2m    \"revealed\": Object {},\u001b[22m\n\u001b[2m    \"scenario\": Array [\u001b[22m\n\u001b[2m      undefined,\u001b[22m\n\u001b[2m      undefined,\u001b[22m\n\u001b[32m-     0,\u001b[39m\n\u001b[31m+     undefined,\u001b[39m\n\u001b[2m    ],\u001b[22m\n\u001b[2m    \"scores\": Array [\u001b[22m\n\u001b[2m      1,\u001b[22m\n\u001b[2m      2,\u001b[22m\n\u001b[2m    ],\u001b[22m\n\n  75 |   await expect(result(page, 'ventral_skin')).toBeFocused(); expect(await evidence(page)).toEqual(before);\n  76 |   await page.keyboard.press('Enter'); const after = await evidence(page);\n> 77 |   expect(after).toEqual({ ...before, selected: 'ventral_skin', explored: { 'frog|ventral_skin': true }, scenario: [before.scenario[0], before.scenario[1], 0] });\n     |                 ^\n  78 |   await expect(context(page)).toHaveCount(0); await expect(page.locator('#diss-selection-title')).toBeFocused();\n  79 | });\n  80 |\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-directory-actions-previous-0.spec.ts:77:17"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:55:48.316Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-directory-actions-2026-10-03\\previous-artifacts\\dissection-directory-actio-2c794--result-does-not-inspect-it-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-directory-actions-2026-10-03\\previous-artifacts\\dissection-directory-actio-2c794--result-does-not-inspect-it-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-directory-actions-2026-10-03\\previous-artifacts\\dissection-directory-actio-2c794--result-does-not-inspect-it-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-directory-actions-2026-10-03\\previous-artifacts\\dissection-directory-actio-2c794--result-does-not-inspect-it-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-directory-actions-previous-0.spec.ts",
+                    "column": 17,
+                    "line": 77
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-b2e1c67b8d0044102f3c",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 69,
+          "column": 5
+        },
+        {
+          "title": "activating an occluded result retains its local guidance and cannot award credit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2188,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:55:51.620Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-9f28c03b5a09b6011448",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 81,
+          "column": 5
+        },
+        {
+          "title": "a hidden prior inspection offers record review and preserves existing evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2327,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:55:53.966Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-a550e1781a74881fdee7",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 90,
+          "column": 5
+        },
+        {
+          "title": "a restored hidden draft still requires view recovery and explicit inspection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2347,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:55:56.305Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-607caa5433b818b189e6",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 101,
+          "column": 5
+        },
+        {
+          "title": "obscured anatomy opens field setup without performing preparation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2324,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:55:58.663Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-85186e66efa293721335",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 112,
+          "column": 42
+        },
+        {
+          "title": "partly exposed anatomy opens field setup without performing preparation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2272,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:00.997Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-edea1c71d9d799a53ea4",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 112,
+          "column": 42
+        },
+        {
+          "title": "guidance follows the current single search result and disappears for broad, empty, or filtered results",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2590,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:03.281Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-e1bac151d387e1e0bd78",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 126,
+          "column": 5
+        },
+        {
+          "title": "guided view recovery keeps the fixed target and pauses guidance at the evidence question",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2336,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:05.883Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-a5fca9011035cd09651d",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 137,
+          "column": 5
+        },
+        {
+          "title": "guided guidance does not suggest a structure outside the fixed target",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1989,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:08.231Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-5cda86547b4f7614ed6d",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 147,
+          "column": 5
+        },
+        {
+          "title": "quiz keeps directory recovery guidance unavailable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1808,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:10.229Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-67a31f6bd32c99fbd534",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 155,
+          "column": 17
+        },
+        {
+          "title": "timed practical keeps directory recovery guidance unavailable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1908,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:12.046Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-1991fa3f324c8460fbd7",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 155,
+          "column": 17
+        },
+        {
+          "title": "flashcards keeps directory recovery guidance unavailable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1953,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:13.965Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-2034b5457b2c696de34e",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 155,
+          "column": 17
+        },
+        {
+          "title": "comparison keeps directory recovery guidance unavailable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1926,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:15.928Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-0a2482c6450102e19442",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 155,
+          "column": 17
+        },
+        {
+          "title": "eye study keeps directory recovery guidance unavailable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1891,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:17.864Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "75421ef0e55d7d336d4d-ff5ab7513dfd03105031",
+          "file": "dissection-directory-actions-previous-0.spec.ts",
+          "line": 155,
+          "column": 17
+        }
+      ]
+    },
+    {
+      "title": "dissection-directory-actions-previous-1.spec.ts",
+      "file": "dissection-directory-actions-previous-1.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "directory layout phone is readable and supports navigation without recording progress",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3539,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:17.229Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "408d1e832d5d37520ba4-4c92bccddf9250510a16",
+          "file": "dissection-directory-actions-previous-1.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "directory layout tablet is readable and supports navigation without recording progress",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3226,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:20.927Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "408d1e832d5d37520ba4-cb8b83d48aa890e44167",
+          "file": "dissection-directory-actions-previous-1.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "directory layout embedded-large is readable and supports navigation without recording progress",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3508,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:24.163Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "408d1e832d5d37520ba4-2655f0fac31addd3d215",
+          "file": "dissection-directory-actions-previous-1.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "directory layout desktop is readable and supports navigation without recording progress",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3333,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:27.682Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "408d1e832d5d37520ba4-300304f86c9c1f489513",
+          "file": "dissection-directory-actions-previous-1.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "directory layout forced-colors is readable and supports navigation without recording progress",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3354,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:31.026Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "408d1e832d5d37520ba4-cc24ac3b785e62bcfbfc",
+          "file": "dissection-directory-actions-previous-1.spec.ts",
+          "line": 42,
+          "column": 7
+        },
+        {
+          "title": "keyboard activation inspects a chosen visible result and restores directory focus",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2684,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:34.391Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "408d1e832d5d37520ba4-5534e88cf554aaba66af",
+          "file": "dissection-directory-actions-previous-1.spec.ts",
+          "line": 81,
+          "column": 5
+        },
+        {
+          "title": "empty-state actions preserve a query when removing a filter and reset an unsuccessful search",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2951,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:37.085Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "408d1e832d5d37520ba4-bf26d26264e4ac79ca93",
+          "file": "dissection-directory-actions-previous-1.spec.ts",
+          "line": 100,
+          "column": 5
+        },
+        {
+          "title": "activating hidden anatomy offers recovery without selecting it or awarding credit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2462,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:40.044Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "408d1e832d5d37520ba4-6f92c5448cf849211004",
+          "file": "dissection-directory-actions-previous-1.spec.ts",
+          "line": 126,
+          "column": 5
+        },
+        {
+          "title": "directory controls stay unavailable during assessment",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1932,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:42.515Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "408d1e832d5d37520ba4-a56da5f01939d336da63",
+          "file": "dissection-directory-actions-previous-1.spec.ts",
+          "line": 142,
+          "column": 5
+        },
+        {
+          "title": "keyboard navigation brings the last result of a long layer into view without inspecting it",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2290,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:44.457Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "408d1e832d5d37520ba4-36870a8ec76cccfe8426",
+          "file": "dissection-directory-actions-previous-1.spec.ts",
+          "line": 148,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "dissection-directory-actions-previous-2.spec.ts",
+      "file": "dissection-directory-actions-previous-2.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "record completion phone is readable and supports explicit keyboard rating",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3335,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:19.786Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-5d8be7082e592d71111f",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 42,
+          "column": 8
+        },
+        {
+          "title": "record completion tablet is readable and supports explicit keyboard rating",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3339,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:23.144Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-c7c6540af256896d93e6",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 42,
+          "column": 8
+        },
+        {
+          "title": "record completion desktop is readable and supports explicit keyboard rating",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3632,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:26.493Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-227be6492026d5992ae7",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 42,
+          "column": 8
+        },
+        {
+          "title": "record completion embedded-large is readable and supports explicit keyboard rating",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3452,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:30.134Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-aefeed5e0cbc1d8b3bf1",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 42,
+          "column": 8
+        },
+        {
+          "title": "record completion forced-colors is readable and supports explicit keyboard rating",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3555,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:33.596Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-f94c477f94a31de21949",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 42,
+          "column": 8
+        },
+        {
+          "title": "directory classifies restored rating 0 consistently",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2509,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:37.162Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-520adf9d1cc688ba38c1",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 78,
+          "column": 70
+        },
+        {
+          "title": "directory classifies restored rating 4 consistently",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2487,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:39.682Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-1c300ff7f0616689f481",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 78,
+          "column": 70
+        },
+        {
+          "title": "directory classifies restored rating -1 consistently",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2590,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:42.178Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-20134a39494f1f41fff2",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 78,
+          "column": 70
+        },
+        {
+          "title": "directory classifies restored rating \"invalid\" consistently",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2673,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:44.779Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-f07fd851e1f5ed2dc03f",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 78,
+          "column": 70
+        },
+        {
+          "title": "directory classifies restored rating \"0\" consistently",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2606,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:47.462Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-15536783901de7e5f96e",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 78,
+          "column": 70
+        },
+        {
+          "title": "directory classifies restored rating 1.5 consistently",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2626,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:50.078Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-0d60b80fdd7d5c6c0464",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 78,
+          "column": 70
+        },
+        {
+          "title": "directory classifies restored rating 1 consistently",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2403,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:52.714Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-c098e5b56d4f66a044b6",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 78,
+          "column": 70
+        },
+        {
+          "title": "directory classifies restored rating 3 consistently",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2429,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:55.127Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-2306504311fc8b1028d2",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 78,
+          "column": 70
+        },
+        {
+          "title": "directory classifies restored rating \"2\" consistently",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2436,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:56:57.565Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-6d4a314390af5adf451c",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 78,
+          "column": 70
+        },
+        {
+          "title": "a whitespace-only note opens the note without changing evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2277,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:00.009Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-99c2b2b6bbb88f5c7cd0",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 96,
+          "column": 39
+        },
+        {
+          "title": "both missing fields opens the note without changing evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2274,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:02.297Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-3975aa43268c8ddb1333",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 96,
+          "column": 39
+        },
+        {
+          "title": "a hidden inspected record finishes without changing the view or completion timestamp",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2186,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:04.580Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-20bfcbaf79fdb905465a",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 108,
+          "column": 5
+        },
+        {
+          "title": "an uninspected restored draft stays in To inspect and offers no record completion shortcut",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2393,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:06.778Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-a89bfb67eb2fd77376b9",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 116,
+          "column": 5
+        },
+        {
+          "title": "objective next evidence names an invalid rating before allowing demonstrated status",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2505,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:09.180Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-c39c827e812801723909",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 125,
+          "column": 5
+        },
+        {
+          "title": "direct completion preserves a fixed guided target and step",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2354,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:11.696Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-d2160f71bc0ce830d201",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 138,
+          "column": 5
+        },
+        {
+          "title": "observation review and its export use Finish records for confidence-only work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2408,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:57:14.061Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10d5c58fa2f56e2f7cb0-f24e072f8bd6f6e6a409",
+          "file": "dissection-directory-actions-previous-2.spec.ts",
+          "line": 147,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T14:55:26.388Z",
+    "duration": 140534.345,
+    "expected": 49,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

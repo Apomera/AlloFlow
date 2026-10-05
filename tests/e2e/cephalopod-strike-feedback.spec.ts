@@ -52,12 +52,12 @@ test('an explicit far-prey button strike reports its miss beside an untouched cl
   await step(page, 40); await place(page, 6, true); const ready = await snapshot(page); expect(ready.clamDistance).toBeLessThan(1.2); expect(ready.clamHeight).toBeLessThan(1); expect(ready.progress).toBe(0); await expect(strike(page)).toBeEnabled();
   await strike(page).click(); await step(page, 7); const nearby = await snapshot(page);
   await testInfo.attach('button-miss-with-and-without-untouched-clam', { body: JSON.stringify({ noClam, ready, nearby }, null, 2), contentType: 'application/json' });
-  expect(nearby.crabAlive && nearby.clamAlive && nearby.clamInScene).toBe(true); expect(nearby.progress).toBe(0); expect(nearby.clamAngle).toBe(0); expect(nearby.score).toBe(0); expect.soft(nearby.visible).toBe(true); expect.soft(nearby.text).toMatch(/Missed\. Move closer and match the target depth\./);
+  expect(nearby.crabAlive && nearby.clamAlive && nearby.clamInScene).toBe(true); expect(nearby.progress).toBe(0); expect(nearby.clamAngle).toBe(0); expect(nearby.score).toBe(0); expect.soft(nearby.visible).toBe(true); expect.soft(nearby.text).toMatch(/Missed\. Move closer to the target\./);
   await testInfo.attach('button-feedback-view', { body: await page.locator('.cl-hunt-stage').screenshot(), contentType: 'image/png' });
 });
 
 test('directly clicking rock-blocked actual prey reports the obstruction while a nearby clam remains untouched', async ({ page }, testInfo) => {
-  await mount(page); await place(page, 2.3, true);
+  await mount(page); await place(page, 1.8, true);
   const cover = await page.evaluate(() => { const w = window as any, T = w.THREE, rock = w.__feedbackRock, p = w.__feedbackPlayer.position; rock.geometry.computeBoundingBox(); const size = rock.geometry.boundingBox.getSize(new T.Vector3()); rock.scale.set(.9 / size.x, 1.2 / size.y, .6 / size.z); rock.userData.substrateRadius = .45; rock.userData.groundOffset = .35; rock.position.set(p.x, .35, p.z + 1.15); w.__feedbackScene.updateMatrixWorld(true); const delta = w.__feedbackCrab.position.clone().sub(p), ray = new T.Raycaster(p, delta.clone().normalize(), 0, delta.length()); const foodDelta = w.__feedbackClam.position.clone().sub(p), foodRay = new T.Raycaster(p, foodDelta.clone().normalize(), 0, foodDelta.length()); return { preyBlocked: ray.intersectObject(rock).length > 0, clamBlocked: foodRay.intersectObject(rock).length > 0 }; });
   expect(cover).toEqual({ preyBlocked: true, clamBlocked: false }); await step(page, 4); await expect(page.locator('[data-target=action]')).toContainText('COVER BLOCKS STRIKE'); const before = await snapshot(page); expect(before.crabDistance).toBeLessThan(2.6); expect(before.clamDistance).toBeLessThan(1.2); expect(before.clamHeight).toBeLessThan(1);
   const click = await actualCrabClick(page); await step(page, 7); const blocked = await snapshot(page);

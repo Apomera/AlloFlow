@@ -1,0 +1,47 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+·························································································································································································································································································································································································································································································································································································x······················x··················································································································································································································································································································································································································································································
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 2 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/microbiology_growth_workflow.test.js > Microbiology growth investigation workflow > recognizes a flat sweep and restores the saved snapshot after JSON persistence
+AssertionError: expected  to have a length of 10 but got +0
+
+- Expected
++ Received
+
+- 10
++ 0
+
+ ❯ tests/microbiology_growth_workflow.test.js:348:87
+
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/2]⎯
+
+ FAIL  tests/microbiology_growth_workflow.test.js > Microbiology previous sweep review and guarded navigation > reviews the previous complete curve, fixed conditions and every table row without preparing a trial
+AssertionError: expected <select …(3)>…(10)</select> to have a length of +0 but got 1
+
+- Expected
++ Received
+
+- 0
++ 1
+
+ ❯ tests/microbiology_growth_workflow.test.js:894:71
+    892|     expect(previous.querySelectorAll('tbody tr')).toHaveLength(10);
+    893|     expect(previous.querySelectorAll('thead th')).toHaveLength(3);
+    894|     expect(previous.querySelectorAll('button,input,select,textarea')).…
+       |                                                                       ^
+    895|     expect(previous.querySelector('figcaption').textContent).toMatch(/…
+    896|     expect(previous.querySelector('svg').getAttribute('aria-label')).t…
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/2]⎯
+
+
+ Test Files  1 failed | 27 passed (28)
+      Tests  2 failed | 1057 passed (1059)
+   Start at  21:25:09
+   Duration  80.37s (transform 1.16s, setup 201ms, import 1.37s, tests 73.98s, environment 2.69s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/micro-lab-sweep-visuals-2026-10-04/unit-final-results.json

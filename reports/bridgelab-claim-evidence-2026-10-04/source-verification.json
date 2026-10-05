@@ -1,0 +1,11 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sourceSha256": "9988c5ecd1b5aa1d4e5de6cc2b284248db9b8a4a53c09afc96422b254af5efb7",
+  "matchingEnglishKeys": 1231,
+  "completeInteractionChecksPassed": 159,
+  "browserChecksPassed": 12,
+  "finalGuideInteractionChecksPassed": 4,
+  "finalGuideBrowserWorkflowsPassed": 3,
+  "commit": "not created; changes left uncommitted"
+}

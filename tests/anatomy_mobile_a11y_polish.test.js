@@ -206,12 +206,12 @@ describe('Anatomy active-system contrast', () => {
 });
 
 describe('Anatomy retrieval announcements', () => {
-  // Every mode that grades an answer must speak the result through the host announcer.
+  // Every mode that grades an answer must speak the accepted result through the host announcer.
   // A role=status block alone is not enough: it is inserted into the DOM together with its
   // text, which screen readers routinely miss. The quiz was silent until 2026-09-02.
-  const HANDLERS = ['answerQuizOption', 'answerSpotterOption', 'answerConnectionCheck', 'answerSpot'];
+  const HANDLERS = ['answerQuizOption', 'answerSpotterOption', 'updateConnectionExercise', 'answerSpot'];
 
-  it.each(ANATOMY_PATHS)('announces the result from every answer handler in %s', (filePath) => {
+  it.each(ANATOMY_PATHS)('announces the result from each grading handler or accepted update helper in %s', (filePath) => {
     const source = fs.readFileSync(filePath, 'utf8');
     for (const handler of HANDLERS) {
       const start = source.indexOf('function ' + handler + '(');

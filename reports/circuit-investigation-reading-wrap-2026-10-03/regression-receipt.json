@@ -1,0 +1,115 @@
+{
+  "startedAt": "2026-10-03T15:00:54.019Z",
+  "finishedAt": "2026-10-03T15:01:23.039Z",
+  "durationMs": 29018,
+  "elapsedMs": 29020,
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/circuit_investigation_handoff.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--isolate",
+    "--testTimeout=30000",
+    "--hookTimeout=60000",
+    "--silent",
+    "--reporter=dot",
+    "--reporter=json",
+    "--outputFile=reports/circuit-investigation-reading-wrap-2026-10-03/regression-file-01-circuit_investigation_handoff.json"
+  ],
+  "runner": "run-regression.cjs",
+  "runnerSha256": "f9408ebe520b126d8ad0d2e6eb5f44290abef41aa2847f3513269cbe9b1f7677",
+  "runnerSha256AtEnd": "f9408ebe520b126d8ad0d2e6eb5f44290abef41aa2847f3513269cbe9b1f7677",
+  "exitCode": 0,
+  "files": {
+    "stem_lab/stem_tool_circuit.js": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+    "desktop/web-app/public/stem_lab/stem_tool_circuit.js": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+    "reports/circuit-investigation-reading-wrap-2026-10-03/run-regression.cjs": "f9408ebe520b126d8ad0d2e6eb5f44290abef41aa2847f3513269cbe9b1f7677",
+    "tests/circuit_investigation_handoff.test.js": "adce18c843924d0a249a291dd1bb9457a25ac3babdc55179a8ff2c89cc208f8d"
+  },
+  "filesAtEnd": {
+    "stem_lab/stem_tool_circuit.js": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+    "desktop/web-app/public/stem_lab/stem_tool_circuit.js": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+    "reports/circuit-investigation-reading-wrap-2026-10-03/run-regression.cjs": "f9408ebe520b126d8ad0d2e6eb5f44290abef41aa2847f3513269cbe9b1f7677",
+    "tests/circuit_investigation_handoff.test.js": "adce18c843924d0a249a291dd1bb9457a25ac3babdc55179a8ff2c89cc208f8d"
+  },
+  "changedDuringRun": [],
+  "aggregate": true,
+  "mode": "isolated-per-file-processes",
+  "attempts": [
+    {
+      "startedAt": "2026-10-03T15:00:54.019Z",
+      "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/circuit_investigation_handoff.test.js",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--isolate",
+        "--testTimeout=30000",
+        "--hookTimeout=60000",
+        "--silent",
+        "--reporter=dot",
+        "--reporter=json",
+        "--outputFile=reports/circuit-investigation-reading-wrap-2026-10-03/regression-file-01-circuit_investigation_handoff.json"
+      ],
+      "runnerSha256": "f9408ebe520b126d8ad0d2e6eb5f44290abef41aa2847f3513269cbe9b1f7677",
+      "files": {
+        "stem_lab/stem_tool_circuit.js": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+        "desktop/web-app/public/stem_lab/stem_tool_circuit.js": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+        "reports/circuit-investigation-reading-wrap-2026-10-03/run-regression.cjs": "f9408ebe520b126d8ad0d2e6eb5f44290abef41aa2847f3513269cbe9b1f7677",
+        "tests/circuit_investigation_handoff.test.js": "adce18c843924d0a249a291dd1bb9457a25ac3babdc55179a8ff2c89cc208f8d"
+      },
+      "selected": "tests/circuit_investigation_handoff.test.js",
+      "expectedAssertions": 12,
+      "finishedAt": "2026-10-03T15:01:23.039Z",
+      "durationMs": 29018,
+      "exitCode": 0,
+      "signal": null,
+      "processError": null,
+      "report": "regression-file-01-circuit_investigation_handoff.json",
+      "reportSha256": "2f97bd0b9e78323512506932b99aa023e8b271e01003ad58c5ed5effef4fc7b7",
+      "stdout": "regression-file-01-circuit_investigation_handoff-stdout.log",
+      "stdoutSha256": "4ec1bde79d01826b4c7a1eeef50285fee3b1746a4247551e9030364b0505f268",
+      "stderr": "regression-file-01-circuit_investigation_handoff-stderr.log",
+      "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+      "runnerSha256AtEnd": "f9408ebe520b126d8ad0d2e6eb5f44290abef41aa2847f3513269cbe9b1f7677",
+      "filesAtEnd": {
+        "stem_lab/stem_tool_circuit.js": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+        "desktop/web-app/public/stem_lab/stem_tool_circuit.js": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+        "reports/circuit-investigation-reading-wrap-2026-10-03/run-regression.cjs": "f9408ebe520b126d8ad0d2e6eb5f44290abef41aa2847f3513269cbe9b1f7677",
+        "tests/circuit_investigation_handoff.test.js": "adce18c843924d0a249a291dd1bb9457a25ac3babdc55179a8ff2c89cc208f8d"
+      },
+      "changedDuringRun": []
+    }
+  ],
+  "report": "regression.json",
+  "reportSha256": "bc692ed5205964e4db9ea307e1d18d342a9413cacdcebf512daa01ef582b744c",
+  "expectedCounts": {
+    "tests/circuit_investigation_handoff.test.js": 12
+  },
+  "assertionCoverage": [
+    {
+      "file": "tests/circuit_investigation_handoff.test.js",
+      "count": 12,
+      "fullNames": [
+        "From guided experiments to an independent investigation offers an optional own-investigation handoff after all valid tests including wrong choices and blank explanations, retaining map review",
+        "From guided experiments to an independent investigation keeps the first unfinished experiment instead of the handoff for missing result",
+        "From guided experiments to an independent investigation keeps the first unfinished experiment instead of the handoff for invalid explicit choice overriding legacy completion",
+        "From guided experiments to an independent investigation keeps the first unfinished experiment instead of the handoff for nonboolean tested flag",
+        "From guided experiments to an independent investigation counts valid legacy completion but opening the notebook does not normalize or replace the saved lesson records",
+        "From guided experiments to an independent investigation opens only the notebook and immediately focuses its own summary while retaining both writing spaces, selections and every saved value",
+        "From guided experiments to an independent investigation the existing Open investigation notebook action uses the same immediate route, including repeated opens without resetting work",
+        "From guided experiments to an independent investigation writing, locale changes and independent live edits never replay a previous handoff or reset its translated cue",
+        "From guided experiments to an independent investigation real JSON load and restore recompute completion without replaying notebook navigation or persisting a handoff request",
+        "From guided experiments to an independent investigation a continuation rendered without an opener keeps the handoff disabled while map review still works",
+        "From guided experiments to an independent investigation two mounted tools focus their own direct notebook summaries despite the unchanged legacy notebook ID",
+        "From guided experiments to an independent investigation lesson replay, Undo and selection retain the handoff, while deliberate retry removes it without changing independent notebook work"
+      ]
+    }
+  ]
+}

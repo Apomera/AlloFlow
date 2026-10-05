@@ -1,0 +1,96 @@
+{
+  "originalRunId": "e9ee5d4e-2026-10-04T23-37-47-730Z",
+  "failedStage": "scale-navigation-regression-units",
+  "failedAttemptDiagnostic": "reports/anatomy-liver-guide-2026-10-04/diagnostics/scale-worker-startup-e9ee5d4e-2026-10-04T23-37-47-730Z-attempt-01/provenance.json",
+  "preservedPassedChecks": 898,
+  "preservedCompletedStages": [
+    {
+      "name": "liver-guide-units",
+      "report": "reports/anatomy-liver-guide-2026-10-04/liver-guide-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "reportSha256": "d2f4240fb5f5388a7d206c2ccd06c9c86a311a558a285c6783ab3dfea17b0e72",
+      "proof": "reports/anatomy-liver-guide-2026-10-04/liver-guide-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "proofSha256": "585cfe47265a3f4d0fce94d1d1a216c743f4276e609f20240b0db3cb4d07b5c4"
+    },
+    {
+      "name": "muscle-guide-units",
+      "report": "reports/anatomy-liver-guide-2026-10-04/muscle-guide-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "reportSha256": "dea72cf8e13a14a62430441d328a937937b4f2d108474e64c94558e6327b2724",
+      "proof": "reports/anatomy-liver-guide-2026-10-04/muscle-guide-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "proofSha256": "05e1ca44d0a3c2e32c0a054f3f7897482178fb7d38415f5d53e1363202dcd6d9"
+    },
+    {
+      "name": "learning-continuity-regression-units",
+      "report": "reports/anatomy-liver-guide-2026-10-04/learning-continuity-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "reportSha256": "0b0c5e21393ce32515843f3823d2095bf6fbb1d42de79296e3ff230ea04d8449",
+      "proof": "reports/anatomy-liver-guide-2026-10-04/learning-continuity-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "proofSha256": "26d8e807a39c8117b608b392fea208260bf06054f13117b4f64e4fbf13eff3e2"
+    },
+    {
+      "name": "knee-guide-units",
+      "report": "reports/anatomy-liver-guide-2026-10-04/knee-guide-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "reportSha256": "e371509dec0d149e28d6ab6fe1fa52735ab82882f2258d0b67d7f69f69ebbb7f",
+      "proof": "reports/anatomy-liver-guide-2026-10-04/knee-guide-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "proofSha256": "6b0f649a74657462f039b03e98b6c2c578718f715ff49a7d65ce9365f5863467"
+    },
+    {
+      "name": "knee-muted-layer-regression-units",
+      "report": "reports/anatomy-liver-guide-2026-10-04/knee-muted-layer-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "reportSha256": "d67245743e4df374a10a9850c8f49cbbdc7cb10c796b6da9556a0ea8e8df7f36",
+      "proof": "reports/anatomy-liver-guide-2026-10-04/knee-muted-layer-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "proofSha256": "42551b1ce5b2c1060c94c4cd717af7e126ee598adc1edcad4648dc9a9a410106"
+    },
+    {
+      "name": "heart-guide-units",
+      "report": "reports/anatomy-liver-guide-2026-10-04/heart-guide-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "reportSha256": "ceb6435417d0a5c0ac00ce9387bec638978b0b769363f572473f0e10b2dd6756",
+      "proof": "reports/anatomy-liver-guide-2026-10-04/heart-guide-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "proofSha256": "defd0f0d227934d26c8adca7f82b02ce3971ec87dd4601548e47014d8eb372a0"
+    },
+    {
+      "name": "alveolus-guide-units",
+      "report": "reports/anatomy-liver-guide-2026-10-04/alveolus-guide-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "reportSha256": "8bcdcedc520ff9a7fb30a1474000ebae2f280fccb8dd3569a412c9466042c40b",
+      "proof": "reports/anatomy-liver-guide-2026-10-04/alveolus-guide-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "proofSha256": "329e8c19eb6d1d88dbc50fd189aa78096f5d7af9a01eb9c19e2cd7689fa8a945"
+    },
+    {
+      "name": "kidney-guide-regression-units",
+      "report": "reports/anatomy-liver-guide-2026-10-04/kidney-guide-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "reportSha256": "947dc9d2d116469b6042f58bab0cba1a529efa8bc564d0f3781bfee68e7ec730",
+      "proof": "reports/anatomy-liver-guide-2026-10-04/kidney-guide-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "proofSha256": "7487575a5ddd161c3484212f876c42405565e30d57ee01b2c9b21892e8644dec"
+    },
+    {
+      "name": "lens-gallery-regression-units",
+      "report": "reports/anatomy-liver-guide-2026-10-04/lens-gallery-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "reportSha256": "0f7822ef72a54cce08b8a5ac8e8c6b163f5a4aa1d9060249f925043c5876c9d7",
+      "proof": "reports/anatomy-liver-guide-2026-10-04/lens-gallery-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "proofSha256": "ded728f06c22f0b9a6cdc2481c09658be01f56f4714695a1ebe2b1bb6ef686d1"
+    }
+  ],
+  "resumedStages": [
+    "scale-navigation-regression-units",
+    "liver-existing-science-units"
+  ],
+  "resumedAt": "2026-10-04T23:56:46.325Z",
+  "failedScaleWorkerStartup": true,
+  "pool": "forks",
+  "maxWorkers": 1,
+  "before": {
+    "stem_lab/stem_tool_anatomy.js": "e9ee5d4e7ae3a4e45f60226e4ae8df129e4b2f254b4f213c76034153383870dc",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "e9ee5d4e7ae3a4e45f60226e4ae8df129e4b2f254b4f213c76034153383870dc",
+    "tests/anatomy_liver_guide.test.js": "58b2399ec9a91679b76ff118cfb80eba29841bdd068b746ef47d0f5c9b557113",
+    "tests/anatomy_muscle_guide.test.js": "c45ba8a74bff3ec378dde03e97a1892acc854e6a501fca0342e06c3e79ae3a43",
+    "tests/anatomy_learning_continuity.test.js": "0a3b88ba73dd8cf55fbcb08ccf3b7b31aee724aa0bc30f94e6a3d59ea0e01ce9",
+    "tests/anatomy_knee_guide.test.js": "45af941d2ee92c00e8ea02d33be570f62fd8eaa98a695695c4b46f372efb487c",
+    "tests/anatomy_heart_guide.test.js": "2011a5cb781f99a39657a983fae57b8e2791fb40dfd03825acdde09ad2c7ff7f",
+    "tests/anatomy_alveolus_guide.test.js": "f5c9faa7a801568bd959b83abda67b477d8c05b28f77a992fc0750dba167db58",
+    "tests/anatomy_kidney_guide.test.js": "9b3a3d7e59dfad53c6c52b12d668acdd1b5d08a2ff13dfa919b000227fbe5d44",
+    "tests/anatomy_lens_gallery_navigation.test.js": "e0db13cb01d85c1e6e56cd57394fb198f8aaea38cec6e27fae335229e0803cad",
+    "tests/anatomy_scale_navigation.test.js": "f10c5e7f93aaa6b3f05e6f61202c194cdd08bb19450bad7fe1b26bb107d0fc7f",
+    "tests/anatomy_lab_science.test.js": "6cbdd4db7db9f9021cde24726ee2aa584707931c4ca8506f8074b97e72fc3f39",
+    "tests/anatomy_atlas_muted_layers.test.js": "f20a4a9b991c81d6850285ad4ca09d3bec94d8a50c37077923982dfc766ba563"
+  },
+  "sourceSha256": "e9ee5d4e7ae3a4e45f60226e4ae8df129e4b2f254b4f213c76034153383870dc",
+  "freeMemoryMiB": 471
+}

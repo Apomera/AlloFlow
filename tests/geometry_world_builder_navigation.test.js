@@ -66,7 +66,7 @@ describe('Free Build dock guides the current stage',()=>{
   it.each(['Start building','Back to building'])('%s restores the world focus and preserves project data',label=>{
     const app=mount({empty:true}),before=immutableState(app);app.click(app.button(label));app.tick(40);
     expect(app.state().sandboxDockCollapsed).toBe(true);expect(app.host.querySelector('.gwe-builder-body')).toBeNull();
-    expect(document.activeElement.id).toBe('geoworld-fs-wrap');expect(app.button('Build tools')).toBeTruthy();
+    expect(document.activeElement.id).toBe('geoworld-fs-wrap');expect(app.button('Studio')).toBeTruthy();
     expect(app.engine.releaseInput).toHaveBeenCalledOnce();expect(immutableState(app)).toBe(before);
   });
 });
@@ -75,6 +75,11 @@ describe('Free Build dock guides the current stage',()=>{
 // panel still hands focus to the world after a short delay, and that hand-off keeps
 // its safety rules.
 describe('collapsing the Studio panel returns to building without changing the recipe',()=>{
+  it('gives the compact Studio launcher an explicit name and expands without changing the project',()=>{
+    const app=mount({initial:{sandboxDockCollapsed:true}}),before=immutableState(app),launcher=app.button('Studio');
+    expect(launcher).toBeTruthy();expect(launcher.getAttribute('aria-label')).toBe('Expand Free Build Studio');expect(launcher.title).toBe('Free Build Studio');expect(launcher.getAttribute('aria-expanded')).toBe('false');
+    app.click(launcher);expect(app.state().sandboxDockCollapsed).toBe(false);expect(app.host.querySelector('.gwe-builder-body')).toBeTruthy();expect(immutableState(app)).toBe(before);
+  });
   it('no longer repeats the material and shape choices the bottom bar already shows',()=>{
     const app=mount();
     expect(app.host.querySelector('[aria-label^="Change material."]')).toBeNull();

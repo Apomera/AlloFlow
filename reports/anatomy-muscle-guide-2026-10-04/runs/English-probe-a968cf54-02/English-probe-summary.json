@@ -1,0 +1,14 @@
+{
+  "source": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+  "fixture": "465b0de70f87a627cc752d4b422991be089b6ec6fc4356fb83cdd8e816d23f49",
+  "stable": true,
+  "scans": 5,
+  "captures": 6,
+  "htmlMin": 16,
+  "contrastMin": 5.698586217871195,
+  "markerMin": 15.077964743589744,
+  "controlHeightMin": 48.390625,
+  "violations": 0,
+  "pageErrors": [],
+  "journeyActions": 12
+}

@@ -1,0 +1,171 @@
+{
+  "capturedUtc": "2026-10-01T14:04:14.5465724Z",
+  "status": "READ ONLY source/test review; report-only write authorized",
+  "runtimeModel": "Coordinator confirms explicit gpt-6.1-sol spawn accepted; no independent introspection endpoint",
+  "ownership": {
+    "authorIdentity": "Unknown",
+    "activeSessionProved": false,
+    "ledgerEvidence": "AGENT_HANDOFF.md Nuclear matches describe older integration/load issues, not a current named Nuclear editor",
+    "recentWorkEvidence": "Source/fragments/unit/browser suite modified 2026-10-01T12:18Z; add-first-movement-checks.cjs modified 12:35Z. Timestamps establish recent writes, not an active session."
+  },
+  "documents": [
+    {
+      "line": 3,
+      "path": "reports/nuclear-experiment-studio/FIRST-DISCOVERY.md",
+      "status": "Verified October 1, 2026. Changes remain uncommitted."
+    },
+    {
+      "line": 30,
+      "path": "reports/nuclear-experiment-studio/FIRST-DISCOVERY.md",
+      "status": "Authoring first-discovery.js, studio.js, install.cjs; installer synchronizes source/mirrors/registries"
+    },
+    {
+      "line": 15,
+      "path": "reports/nuclear-experiment-studio/README.md",
+      "status": "Canonical stem_lab/stem_tool_nuclearlab.js and three mirrors"
+    },
+    {
+      "line": 41,
+      "path": "reports/nuclear-experiment-studio/README.md",
+      "status": "No commit, publish or deploy"
+    }
+  ],
+  "installerFragments": [
+    "scratch/nuclear-engagement/nucleus.js",
+    "scratch/nuclear-engagement/investigation.js",
+    "scratch/nuclear-engagement/first-discovery.js",
+    "scratch/nuclear-engagement/studio.js"
+  ],
+  "installerWarning": "install.cjs writes four modules AND four translation registries; not authorized for no-registry repair",
+  "releaseEvidence": {
+    "test": "tests/e2e/36-stem-local-app.spec.ts",
+    "currentGuideEarlyReturnLine": 2481,
+    "testDiffFromRelease": "empty",
+    "releaseParagraphLabelLine": 2313,
+    "confidence": "Static source/test evidence only; no browser rerun or independent CI retrieval",
+    "sourceReadLine": 25,
+    "headingAssertionLine": 75,
+    "currentParagraphLabelLine": 2494,
+    "actualSourceRouteFulfillLine": 32,
+    "ref": "77f060e96e2e55bc7a4f20cff4491be0a0f0e751"
+  },
+  "proposedWriteScope": [
+    "stem_lab/stem_tool_nuclearlab.js",
+    "desktop/web-app/public/stem_lab/stem_tool_nuclearlab.js",
+    "desktop/app-build/stem_lab/stem_tool_nuclearlab.js",
+    "desktop/web-app/build/stem_lab/stem_tool_nuclearlab.js",
+    "scratch/nuclear-engagement/studio.js",
+    "tests/nuclearlab_experiment_studio.test.js"
+  ],
+  "clearanceRequest": "Confirm the current Nuclear author is done with and releases the six proposed files; authorize an additive common semantic tool heading using the existing eyebrow translation key, synchronized directly without installer or registry writes. Keep test 36 heading assertion unchanged. Recheck hashes before editing and stop on drift.",
+  "files": [
+    {
+      "path": "stem_lab/stem_tool_nuclearlab.js",
+      "sha256": "54CED2C6E251796F0590F3C15A58488722C1954103EAD5244C3D5562072408E8",
+      "lastWriteTimeUtc": "2026-10-01T12:18:10.1673312Z",
+      "bytes": 626658
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_nuclearlab.js",
+      "sha256": "54CED2C6E251796F0590F3C15A58488722C1954103EAD5244C3D5562072408E8",
+      "lastWriteTimeUtc": "2026-10-01T12:18:10.2385325Z",
+      "bytes": 626658
+    },
+    {
+      "path": "desktop/app-build/stem_lab/stem_tool_nuclearlab.js",
+      "sha256": "54CED2C6E251796F0590F3C15A58488722C1954103EAD5244C3D5562072408E8",
+      "lastWriteTimeUtc": "2026-10-01T12:18:10.3100311Z",
+      "bytes": 626658
+    },
+    {
+      "path": "desktop/web-app/build/stem_lab/stem_tool_nuclearlab.js",
+      "sha256": "54CED2C6E251796F0590F3C15A58488722C1954103EAD5244C3D5562072408E8",
+      "lastWriteTimeUtc": "2026-10-01T12:18:10.3813048Z",
+      "bytes": 626658
+    },
+    {
+      "path": "scratch/nuclear-engagement/nucleus.js",
+      "sha256": "FF52FB48D4F7080277E38008E0A3AD38182531CFB23569A2CEABCD265077F9C1",
+      "lastWriteTimeUtc": "2026-09-30T02:38:38.4431263Z",
+      "bytes": 22359
+    },
+    {
+      "path": "scratch/nuclear-engagement/investigation.js",
+      "sha256": "10FD0F606131F90F0BE26011CF21F775E7E9E7427498F0720274263D4B7ABA08",
+      "lastWriteTimeUtc": "2026-09-30T22:26:48.3466775Z",
+      "bytes": 27015
+    },
+    {
+      "path": "scratch/nuclear-engagement/first-discovery.js",
+      "sha256": "0F2D1B628336C2A048D64C0953490D94EE7602410F5FED2476FF95F01C463732",
+      "lastWriteTimeUtc": "2026-10-01T12:18:02.0624420Z",
+      "bytes": 14098
+    },
+    {
+      "path": "scratch/nuclear-engagement/studio.js",
+      "sha256": "E7B998A4A55DAAD64C8E6685D71E7E1D1F467224CF159C7587C8B890B475560C",
+      "lastWriteTimeUtc": "2026-10-01T12:18:02.4938446Z",
+      "bytes": 95156
+    },
+    {
+      "path": "scratch/nuclear-engagement/install.cjs",
+      "sha256": "86DA77B351AAE4909FC8F87A9859F682609EE5AC1C06A96CD1B0BAB7BC5D845D",
+      "lastWriteTimeUtc": "2026-10-01T04:20:58.3383250Z",
+      "bytes": 4855
+    },
+    {
+      "path": "scratch/nuclear-engagement/refine-first-movement.cjs",
+      "sha256": "E809E2A1633D2904A748EE18D011E6DA5C659D042F25E263921ADA3BB7B21B73",
+      "lastWriteTimeUtc": "2026-10-01T12:17:25.0294378Z",
+      "bytes": 9447
+    },
+    {
+      "path": "scratch/nuclear-engagement/add-first-movement-checks.cjs",
+      "sha256": "D112696B18B6E26BFD5394B21D4341A296B7D8F3B031D05888073D393B95D29F",
+      "lastWriteTimeUtc": "2026-10-01T12:35:19.0919122Z",
+      "bytes": 3876
+    },
+    {
+      "path": "scratch/nuclear-engagement/first-movement-unit.txt",
+      "sha256": "A15A81E0258239E15C1403051C124763ACAEAEF9DA3CC9471C0C10F7903F73A2",
+      "lastWriteTimeUtc": "2026-10-01T12:24:06.0304334Z",
+      "bytes": 6606
+    },
+    {
+      "path": "scratch/nuclear-engagement/first-movement-browser.txt",
+      "sha256": "E6E1D7002E2FC407928CAEABC3860ED32F8E3268F80ADFF6F897333DE3BCDD42",
+      "lastWriteTimeUtc": "2026-10-01T12:24:06.0884807Z",
+      "bytes": 6992
+    },
+    {
+      "path": "tests/nuclearlab_experiment_studio.test.js",
+      "sha256": "7B8D48C32DEBCA3076DC0944F38D78D155D76ED2812920537942BF03B72CE1BE",
+      "lastWriteTimeUtc": "2026-10-01T12:18:02.5693442Z",
+      "bytes": 110854
+    },
+    {
+      "path": "tests/e2e/43-nuclearlab-experiment-studio.spec.ts",
+      "sha256": "8B734E26F9CA99FB3A44F23DD8E7FCC01095E7BFD2C207D1B2E57A9F0131C520",
+      "lastWriteTimeUtc": "2026-10-01T12:18:02.6814917Z",
+      "bytes": 111949
+    },
+    {
+      "path": "tests/e2e/36-stem-local-app.spec.ts",
+      "sha256": "3E249E3C08A19F3308D4202634CD874BC3B3D6155CE6E7DE24233922C568850D",
+      "lastWriteTimeUtc": "2026-09-26T20:13:10.3457727Z",
+      "bytes": 12351
+    },
+    {
+      "path": "reports/nuclear-experiment-studio/FIRST-DISCOVERY.md",
+      "sha256": "20FC98CE688806EF7BB6100BF5F1B63E0CCCDBBAEFB6D9440BE12FA228EABD8B",
+      "lastWriteTimeUtc": "2026-10-01T04:45:42.6660873Z",
+      "bytes": 4807
+    },
+    {
+      "path": "reports/nuclear-experiment-studio/README.md",
+      "sha256": "44D0C8523FDAC0ED209E0C2E09032FF824CB61EEF2596D528287CC3B02E9E36F",
+      "lastWriteTimeUtc": "2026-09-29T03:53:36.5144984Z",
+      "bytes": 4261
+    }
+  ]
+}

@@ -1,0 +1,115 @@
+{
+  "date": "2026-10-01",
+  "result": "passed",
+  "parent": "0b272547b4974bfd420693fa921c24cb1eb6b930",
+  "commitBranch": "codex/firstresponse-face-detail",
+  "unitTests": {
+    "passed": 248,
+    "fullRunPassed": 248,
+    "files": 3,
+    "pool": "threads",
+    "timeoutMs": 120000,
+    "summary": "Tests  248 passed (248)\r",
+    "seconds": 189.43,
+    "suites": {
+      "firstresponse_depth_explorer": 115,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    },
+    "earlierAttempt": "Fork worker failed to start; all 248 tests subsequently passed using the thread pool"
+  },
+  "browserTests": {
+    "distinctScenariosPassed": 29,
+    "retries": 0,
+    "summary": "20 unaffected regression scenarios plus all 9 mannequin scenarios passed; 6 mannequin scenarios overlap the initial run",
+    "initialFullRun": {
+      "passed": 26,
+      "failed": 1,
+      "didNotRun": 2,
+      "summary": "26 passed (17.3m)",
+      "failure": "Phone guide arrow too close to the viewport edge"
+    },
+    "correctedManikinRun": {
+      "passed": 9,
+      "overlapWithInitialRun": 6,
+      "summary": "9 passed (8.1m)",
+      "exitCode": 0
+    },
+    "fix": "Enabled recovery arm guides use padding 1.28; viewport bounds assertions remain unchanged",
+    "renderer": "Chromium WebGL with ANGLE SwiftShader",
+    "bodyRegressionScenarios": 8,
+    "chestInspectionScenarios": 5,
+    "legAndPoseReviewScenarios": 4,
+    "manikinAndFaceScenarios": 9,
+    "markerVisualScenarios": 3
+  },
+  "refinements": [
+    "Sculpted eye sockets, brow and cheek contours with age-specific head shape",
+    "Closed-eye seams and eyelid edges follow the skin surface through head movement",
+    "Ear rims, folds and shaded recess follow the base ear surface",
+    "Head camera fits the complete head bounds on desktop and phone",
+    "Enabled recovery arm guides have extra camera padding for phone edge clearance",
+    "Contrast checks confirm old-context release and exactly one remaining live canvas"
+  ],
+  "coverage": [
+    "Actual eyelid clearance by ray intersection for all ages before and after head tilt",
+    "Actual ear-rim contact sampled between duplicated triangle seams",
+    "Continuous normals at coincident facial vertices",
+    "Face and ear feature vertices within the head viewport across all ages and recovery review",
+    "Existing cheek contact, arm and leg lengths, head tilt, arm guides, whole-body framing, CPR and AED flows",
+    "Phone keyboard input, enlarged text spacing, forced colors, app contrast, accessibility and renderer cleanup"
+  ],
+  "screenshots": {
+    "captured": 10,
+    "reviewed": 10,
+    "reviewedFiles": [
+      "adult-face-detail.png",
+      "adult-recovery-face-detail.png",
+      "child-face-detail.png",
+      "child-recovery-face-detail.png",
+      "infant-face-detail.png",
+      "infant-recovery-face-detail.png",
+      "phone-face-detail.png",
+      "forced-colors-phone-face.png",
+      "contrast-phone-face.png",
+      "phone-guides-2.png"
+    ],
+    "reviewedHashes": {
+      "adult-face-detail.png": "2eacfab11d0a200db02a59b903d60752dc2b05f285cc9e2f1bab6a5b5955e595",
+      "adult-recovery-face-detail.png": "db9139fe45b4d85e73d09aa344330e72dbe8ef7b6b5c27016f0723052ce3ddf6",
+      "child-face-detail.png": "89d16c8317fc02365bcd211f3ea66bf0651f3df29bd4e12d39b7e69a39121c58",
+      "child-recovery-face-detail.png": "879f489bacdf3f9a43c81b17c669cf969513abf8f588df459fdbe3d67e6549d0",
+      "infant-face-detail.png": "d6d8dca3fac86b46737f7745dc5cda93753b753f5ebaf896a7140061bd118ef9",
+      "infant-recovery-face-detail.png": "5445fb419d1541bff995b5dc23bfa7eaccbfcc3f690f4478372b181fac7a0282",
+      "phone-face-detail.png": "c900ea9dc86d56641a2bce5dbebd3fd614e58e654a7ca46e3bf3ca4a7a6ab783",
+      "forced-colors-phone-face.png": "07b847e1c275cdbef8a020599e7357db2a014d957beca82b3329b9a728cfbcbd",
+      "contrast-phone-face.png": "db300b2ebd137f1a28df54cbd1e7645cf04f8594728f27b02d36fdd92066c04a",
+      "phone-guides-2.png": "ea8e914919606881b39afe70e4af82992bc19fc5b9d744c1652337341b214544"
+    }
+  },
+  "synchronization": {
+    "moduleCopies": "identical",
+    "firstResponseCatalogs": "unchanged from arm-guides commit",
+    "newEnglishLabels": 0,
+    "sharedRenderer": {
+      "unchangedFromParent": true,
+      "excludedUnrelatedBlock": "Bee persistence helper",
+      "canonicalSha256": "1a6c405cac46819169ffacd0e10b6289a837f9b85649c991493ccdd1c51f5234"
+    }
+  },
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "e5d6a78935237471c809fa966f985a0c8c59c33d954a1543d45fb6613702dcc1",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "e5d6a78935237471c809fa966f985a0c8c59c33d954a1543d45fb6613702dcc1",
+    "stem_lab/stem_lab_module.js": "d2c378b5e490c3caf7eda965cd94e9445c157afc63a3a492f7f9334221c3e793",
+    "tests/firstresponse_depth_explorer.test.js": "b9935118c2645e077706b68706228068deb83108a3c59a05e8536926d8b75d59",
+    "tests/firstresponse_body_3d.test.js": "fb90737f362657b15e303ce946bda19f84ef9c1a02ac4f57fb6a1338cc403111",
+    "tests/stem_firstresponse_hook_order.test.js": "50bac19e05d1cb634cdbe7e1ef3927ff730bb9838be311cf01feb2bd58373dc0",
+    "tests/e2e/firstresponse-manikin-realism.spec.ts": "04e26022e791da7a274af2f7e0ed4f7f99fcbfe95a962ae9c243b45dbc508bf9",
+    "tests/e2e/24-firstresponse-body-gl.spec.ts": "feaac0f722726b152d113363fd916ca4ee5a5058286c262c8ec4cedb0886ec9e",
+    "tests/e2e/firstresponse-chest-inspection.spec.ts": "f0aad415cfb363cc266ddd2472c44c28605053cf9233c4794cf5ab092b53f9e3",
+    "tests/e2e/firstresponse-visual-markers.spec.ts": "0e6c5cd0af3073565927ed5521c59559f38c8f960cf21865a5afaa13a407d603",
+    "tests/e2e/firstresponse-leg-inspection.spec.ts": "f4a257ed97d571e7bb40b5e31e2dafa2d0a848c06dd54601d5bddcc7fb2b4355",
+    "reports/firstresponse-face-detail/playwright.config.ts": "39dc8ffc4bc4c690aa913ae25cbabd63e1acaa1dff4bd183ec3ca36ea32f158a",
+    "reports/firstresponse-depth-comparison/playwright-software.config.ts": "a3ab365e61b809e8d1cde1c47de6d88940be0d902aafc70d56dce7a3bffe01ec"
+  }
+}

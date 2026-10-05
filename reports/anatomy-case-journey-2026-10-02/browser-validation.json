@@ -1,0 +1,4460 @@
+{
+  "metadata": {
+    "sourceLfSha256": "2fb12e25f3ca63870d5a7c827fe380ca53d31401fcf472735284e744085c4731",
+    "startedAt": "2026-10-02T21:03:22.905Z",
+    "finishedSourceLfSha256": "2fb12e25f3ca63870d5a7c827fe380ca53d31401fcf472735284e744085c4731",
+    "finishedAt": "2026-10-02T21:04:14.107Z"
+  },
+  "quizReturn": {
+    "errors": [],
+    "steps": [
+      {
+        "label": "posterior marker",
+        "system": "muscular",
+        "view": "posterior",
+        "tab": "explore",
+        "quizScore": 1,
+        "quizAttempts": 2,
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "Shoulder pain suggests a relevant muscle group; it does not establish a tear.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": {
+          "version": 1,
+          "token": "murgacgf-5p2seqa3onu",
+          "caseId": "case_2",
+          "systemId": "muscular",
+          "view": "anterior",
+          "complexity": 3,
+          "selectedStructure": "biceps",
+          "search": "Biceps",
+          "studyFilter": "notes",
+          "activeTab": "quiz",
+          "bodyView3d": false,
+          "quizMode": true
+        }
+      },
+      {
+        "label": "back to answered quiz",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "quiz",
+        "quizScore": 1,
+        "quizAttempts": 2,
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "Shoulder pain suggests a relevant muscle group; it does not establish a tear.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      }
+    ],
+    "scans": [],
+    "styles": [],
+    "captures": [
+      "desktop-case-marker-context.png",
+      "desktop-case-explanation-return.png"
+    ],
+    "labelPixels": []
+  },
+  "reloadReturn": {
+    "errors": [],
+    "steps": [
+      {
+        "label": "before route reload",
+        "system": "muscular",
+        "view": "posterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My initial anatomical explanation.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": {
+          "version": 1,
+          "token": "murgafvm-t7d1n61i8nc",
+          "caseId": "case_2",
+          "systemId": "muscular",
+          "view": "anterior",
+          "complexity": 3,
+          "selectedStructure": "biceps",
+          "search": "Biceps",
+          "studyFilter": "notes",
+          "activeTab": "explore",
+          "bodyView3d": false,
+          "quizMode": false
+        }
+      },
+      {
+        "label": "hidden explanation return",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "A newer explanation written while inspecting the posterior marker.",
+              "hint": false,
+              "revealed": false
+            }
+          }
+        },
+        "origin": null
+      }
+    ],
+    "scans": [],
+    "styles": [],
+    "captures": [
+      "phone-reloaded-marker-context.png",
+      "phone-title-fallback-return.png"
+    ],
+    "labelPixels": []
+  },
+  "cardsSpotter": {
+    "errors": [],
+    "steps": [
+      {
+        "label": "Cards and Spotter at marker",
+        "system": "muscular",
+        "view": "posterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My shoulder-case reasoning is separate from card and Spotter scores.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": {
+          "version": 1,
+          "token": "murgak0n-ak43fz7h49v",
+          "caseId": "case_2",
+          "systemId": "muscular",
+          "view": "anterior",
+          "complexity": 3,
+          "selectedStructure": "pectoralis",
+          "search": "",
+          "studyFilter": "all",
+          "activeTab": "spotter",
+          "bodyView3d": true,
+          "quizMode": false
+        }
+      },
+      {
+        "label": "Cards and Spotter after return",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "spotter",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My shoulder-case reasoning is separate from card and Spotter scores.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      }
+    ],
+    "scans": [],
+    "styles": [],
+    "captures": [],
+    "labelPixels": []
+  },
+  "caseFeedback": {
+    "errors": [],
+    "steps": [
+      {
+        "label": "legacy case return",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "Pain with movement is a clue, and an examination would add evidence.",
+              "hint": false,
+              "revealed": false
+            }
+          }
+        },
+        "origin": null
+      }
+    ],
+    "scans": [],
+    "styles": [],
+    "captures": [
+      "phone-reviewed-case.png"
+    ],
+    "labelPixels": []
+  },
+  "displayMatrix": {
+    "errors": [],
+    "steps": [
+      {
+        "label": "en 1280 light",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My saved reasoning for the shoulder case.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      },
+      {
+        "label": "en 1280 dark",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My saved reasoning for the shoulder case.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      },
+      {
+        "label": "en 1280 contrast",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My saved reasoning for the shoulder case.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      },
+      {
+        "label": "en 320 light",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My saved reasoning for the shoulder case.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      },
+      {
+        "label": "en 320 dark",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My saved reasoning for the shoulder case.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      },
+      {
+        "label": "en 320 contrast",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My saved reasoning for the shoulder case.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      },
+      {
+        "label": "ar 320 light",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My saved reasoning for the shoulder case.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      },
+      {
+        "label": "ar 320 dark",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My saved reasoning for the shoulder case.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      },
+      {
+        "label": "ar 320 contrast",
+        "system": "muscular",
+        "view": "anterior",
+        "tab": "explore",
+        "caseStudy": {
+          "version": 1,
+          "cases": {
+            "case_2": {
+              "draft": "My saved reasoning for the shoulder case.",
+              "hint": false,
+              "revealed": true
+            }
+          }
+        },
+        "origin": null
+      }
+    ],
+    "scans": [
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light"
+        },
+        "selector": "[data-anatomy-clinical-study]",
+        "box": {
+          "client": 1126,
+          "scroll": 1126,
+          "left": 76,
+          "right": 1204
+        },
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "marker": true
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"]",
+        "box": {
+          "client": 387,
+          "scroll": 387,
+          "left": 95,
+          "right": 487
+        },
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark"
+        },
+        "selector": "[data-anatomy-clinical-study]",
+        "box": {
+          "client": 1126,
+          "scroll": 1126,
+          "left": 76,
+          "right": 1204
+        },
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark",
+          "marker": true
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"]",
+        "box": {
+          "client": 387,
+          "scroll": 387,
+          "left": 95,
+          "right": 487
+        },
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "contrast"
+        },
+        "selector": "[data-anatomy-clinical-study]",
+        "box": {
+          "client": 1122,
+          "scroll": 1122,
+          "left": 78,
+          "right": 1202
+        },
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "contrast",
+          "marker": true
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"]",
+        "box": {
+          "client": 387,
+          "scroll": 387,
+          "left": 97,
+          "right": 489
+        },
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light"
+        },
+        "selector": "[data-anatomy-clinical-study]",
+        "box": {
+          "client": 302,
+          "scroll": 302,
+          "left": 8,
+          "right": 312
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "marker": true
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"]",
+        "box": {
+          "client": 277,
+          "scroll": 277,
+          "left": 19,
+          "right": 301
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark"
+        },
+        "selector": "[data-anatomy-clinical-study]",
+        "box": {
+          "client": 302,
+          "scroll": 302,
+          "left": 8,
+          "right": 312
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark",
+          "marker": true
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"]",
+        "box": {
+          "client": 277,
+          "scroll": 277,
+          "left": 19,
+          "right": 301
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "contrast"
+        },
+        "selector": "[data-anatomy-clinical-study]",
+        "box": {
+          "client": 298,
+          "scroll": 298,
+          "left": 10,
+          "right": 310
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "contrast",
+          "marker": true
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"]",
+        "box": {
+          "client": 273,
+          "scroll": 273,
+          "left": 21,
+          "right": 299
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "light"
+        },
+        "selector": "[data-anatomy-clinical-study]",
+        "box": {
+          "client": 302,
+          "scroll": 302,
+          "left": 8,
+          "right": 312
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "light",
+          "marker": true
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"]",
+        "box": {
+          "client": 277,
+          "scroll": 277,
+          "left": 19,
+          "right": 301
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark"
+        },
+        "selector": "[data-anatomy-clinical-study]",
+        "box": {
+          "client": 302,
+          "scroll": 302,
+          "left": 8,
+          "right": 312
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark",
+          "marker": true
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"]",
+        "box": {
+          "client": 277,
+          "scroll": 277,
+          "left": 19,
+          "right": 301
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "contrast"
+        },
+        "selector": "[data-anatomy-clinical-study]",
+        "box": {
+          "client": 298,
+          "scroll": 298,
+          "left": 10,
+          "right": 310
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "contrast",
+          "marker": true
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"]",
+        "box": {
+          "client": 273,
+          "scroll": 273,
+          "left": 21,
+          "right": 299
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors"
+        },
+        "selector": "[data-anatomy-clinical-study]",
+        "box": {
+          "client": 302,
+          "scroll": 302,
+          "left": 8,
+          "right": 312
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors",
+          "marker": true
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"]",
+        "box": {
+          "client": 277,
+          "scroll": 277,
+          "left": 19,
+          "right": 301
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      }
+    ],
+    "styles": [
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light"
+        },
+        "selector": "[data-anatomy-clinical-study] :is(h3,h4,h5,p,label,button,a,textarea)",
+        "metrics": [
+          {
+            "tag": "H3",
+            "text": "Clinical Cases",
+            "font": 21,
+            "width": 137.328125,
+            "height": 31.5,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide",
+            "font": 16,
+            "width": 65.375,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "In this atlas: 0/1 explanations reviewed",
+            "font": 16,
+            "width": 1090,
+            "height": 51.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Across all atlases: 0/8 reviewed",
+            "font": 16,
+            "width": 1090,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Use these fictional cases to connect clues with anatomy. Write or think through an explanation, comp",
+            "font": 16,
+            "width": 1090,
+            "height": 54.375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "H4",
+            "text": "The Shoulder That Won't Lift",
+            "font": 20,
+            "width": 1052,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Read the case",
+            "font": 18,
+            "width": 1024,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "An adult who often works overhead has gradually developed shoulder pain. Raising the arm is painful,",
+            "font": 16,
+            "width": 1024,
+            "height": 54.375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Which muscle–tendon group is relevant, and can these clues establish a tear?",
+            "font": 16,
+            "width": 1024,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read this case aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "LABEL",
+            "text": "Your reasoning (optional)",
+            "font": 16,
+            "width": 1052,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Name a relevant structure or mechanism, cite a clue, and note what remains uncertain. Your draft sta",
+            "font": 16,
+            "width": 1052,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "TEXTAREA",
+            "text": "My saved reasoning for the shoulder case.",
+            "font": 16,
+            "width": 1052,
+            "height": 110,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "41/600 characters",
+            "font": 16,
+            "width": 1052,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Use a hint",
+            "font": 16,
+            "width": 104.796875,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide explanation and try again",
+            "font": 16,
+            "width": 263.515625,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Anatomical explanation",
+            "font": 18,
+            "width": 1018,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff is relevant; pain alone does not establish a tendon tear.",
+            "font": 16,
+            "width": 1018,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff helps center the humeral head in the glenoid during movement. Supraspinatus is one ",
+            "font": 16,
+            "width": 1018,
+            "height": 54.375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "What the clues cannot establish",
+            "font": 18,
+            "width": 990,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The vignette cannot distinguish tendinopathy, bursitis, a tear, or other causes. Physical examinatio",
+            "font": 16,
+            "width": 990,
+            "height": 54.375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Compare this with your reasoning. Which clue mattered, and what would you change?",
+            "font": 16,
+            "width": 1018,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "A",
+            "text": "Read the source",
+            "font": 16,
+            "width": 113.1875,
+            "height": 44,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.661374332962391,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read the explanation aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 1018,
+            "height": 53.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Show the related anatomy",
+            "font": 16,
+            "width": 227.859375,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Mark explanation reviewed",
+            "font": 16,
+            "width": 235.234375,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light"
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"] :is(h4,h5,p,button,strong)",
+        "metrics": [
+          {
+            "tag": "P",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 359,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "STRONG",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 327.875,
+            "height": 21,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 359,
+            "height": 81.5625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Return to The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 338.421875,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark"
+        },
+        "selector": "[data-anatomy-clinical-study] :is(h3,h4,h5,p,label,button,a,textarea)",
+        "metrics": [
+          {
+            "tag": "H3",
+            "text": "Clinical Cases",
+            "font": 21,
+            "width": 137.328125,
+            "height": 31.5,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide",
+            "font": 16,
+            "width": 65.375,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "In this atlas: 0/1 explanations reviewed",
+            "font": 16,
+            "width": 1090,
+            "height": 51.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Across all atlases: 0/8 reviewed",
+            "font": 16,
+            "width": 1090,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Use these fictional cases to connect clues with anatomy. Write or think through an explanation, comp",
+            "font": 16,
+            "width": 1090,
+            "height": 54.375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "H4",
+            "text": "The Shoulder That Won't Lift",
+            "font": 20,
+            "width": 1052,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Read the case",
+            "font": 18,
+            "width": 1024,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "An adult who often works overhead has gradually developed shoulder pain. Raising the arm is painful,",
+            "font": 16,
+            "width": 1024,
+            "height": 54.375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Which muscle–tendon group is relevant, and can these clues establish a tear?",
+            "font": 16,
+            "width": 1024,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read this case aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "LABEL",
+            "text": "Your reasoning (optional)",
+            "font": 16,
+            "width": 1052,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Name a relevant structure or mechanism, cite a clue, and note what remains uncertain. Your draft sta",
+            "font": 16,
+            "width": 1052,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "TEXTAREA",
+            "text": "My saved reasoning for the shoulder case.",
+            "font": 16,
+            "width": 1052,
+            "height": 110,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "41/600 characters",
+            "font": 16,
+            "width": 1052,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Use a hint",
+            "font": 16,
+            "width": 104.796875,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide explanation and try again",
+            "font": 16,
+            "width": 263.515625,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Anatomical explanation",
+            "font": 18,
+            "width": 1018,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff is relevant; pain alone does not establish a tendon tear.",
+            "font": 16,
+            "width": 1018,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff helps center the humeral head in the glenoid during movement. Supraspinatus is one ",
+            "font": 16,
+            "width": 1018,
+            "height": 54.375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "What the clues cannot establish",
+            "font": 18,
+            "width": 990,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The vignette cannot distinguish tendinopathy, bursitis, a tear, or other causes. Physical examinatio",
+            "font": 16,
+            "width": 990,
+            "height": 54.375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Compare this with your reasoning. Which clue mattered, and what would you change?",
+            "font": 16,
+            "width": 1018,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "A",
+            "text": "Read the source",
+            "font": 16,
+            "width": 113.1875,
+            "height": 44,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 7.736322461223324,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read the explanation aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 1018,
+            "height": 53.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Show the related anatomy",
+            "font": 16,
+            "width": 227.859375,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Mark explanation reviewed",
+            "font": 16,
+            "width": 235.234375,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark"
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"] :is(h4,h5,p,button,strong)",
+        "metrics": [
+          {
+            "tag": "P",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 359,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "STRONG",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 327.875,
+            "height": 21,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 359,
+            "height": 81.5625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Return to The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 338.421875,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "contrast"
+        },
+        "selector": "[data-anatomy-clinical-study] :is(h3,h4,h5,p,label,button,a,textarea)",
+        "metrics": [
+          {
+            "tag": "H3",
+            "text": "Clinical Cases",
+            "font": 21,
+            "width": 137.328125,
+            "height": 31.5,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide",
+            "font": 16,
+            "width": 65.375,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "In this atlas: 0/1 explanations reviewed",
+            "font": 16,
+            "width": 1086,
+            "height": 51.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Across all atlases: 0/8 reviewed",
+            "font": 16,
+            "width": 1086,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Use these fictional cases to connect clues with anatomy. Write or think through an explanation, comp",
+            "font": 16,
+            "width": 1086,
+            "height": 54.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H4",
+            "text": "The Shoulder That Won't Lift",
+            "font": 20,
+            "width": 1048,
+            "height": 30,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Read the case",
+            "font": 18,
+            "width": 1020,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "An adult who often works overhead has gradually developed shoulder pain. Raising the arm is painful,",
+            "font": 16,
+            "width": 1020,
+            "height": 54.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Which muscle–tendon group is relevant, and can these clues establish a tear?",
+            "font": 16,
+            "width": 1020,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read this case aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "LABEL",
+            "text": "Your reasoning (optional)",
+            "font": 16,
+            "width": 1048,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Name a relevant structure or mechanism, cite a clue, and note what remains uncertain. Your draft sta",
+            "font": 16,
+            "width": 1048,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "TEXTAREA",
+            "text": "My saved reasoning for the shoulder case.",
+            "font": 16,
+            "width": 1048,
+            "height": 110,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "41/600 characters",
+            "font": 16,
+            "width": 1048,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Use a hint",
+            "font": 16,
+            "width": 104.796875,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide explanation and try again",
+            "font": 16,
+            "width": 263.515625,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Anatomical explanation",
+            "font": 18,
+            "width": 1014,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff is relevant; pain alone does not establish a tendon tear.",
+            "font": 16,
+            "width": 1014,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff helps center the humeral head in the glenoid during movement. Supraspinatus is one ",
+            "font": 16,
+            "width": 1014,
+            "height": 54.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "What the clues cannot establish",
+            "font": 18,
+            "width": 986,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The vignette cannot distinguish tendinopathy, bursitis, a tear, or other causes. Physical examinatio",
+            "font": 16,
+            "width": 986,
+            "height": 54.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Compare this with your reasoning. Which clue mattered, and what would you change?",
+            "font": 16,
+            "width": 1014,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "A",
+            "text": "Read the source",
+            "font": 16,
+            "width": 113.1875,
+            "height": 44,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read the explanation aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 1014,
+            "height": 53.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Show the related anatomy",
+            "font": 16,
+            "width": 227.859375,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Mark explanation reviewed",
+            "font": 16,
+            "width": 235.234375,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "contrast"
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"] :is(h4,h5,p,button,strong)",
+        "metrics": [
+          {
+            "tag": "P",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 359,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "STRONG",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 327.875,
+            "height": 21,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 359,
+            "height": 81.5625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Return to The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 338.421875,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light"
+        },
+        "selector": "[data-anatomy-clinical-study] :is(h3,h4,h5,p,label,button,a,textarea)",
+        "metrics": [
+          {
+            "tag": "H3",
+            "text": "Clinical Cases",
+            "font": 21,
+            "width": 137.328125,
+            "height": 31.5,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide",
+            "font": 16,
+            "width": 65.375,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "In this atlas: 0/1 explanations reviewed",
+            "font": 16,
+            "width": 278,
+            "height": 78.375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Across all atlases: 0/8 reviewed",
+            "font": 16,
+            "width": 278,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Use these fictional cases to connect clues with anatomy. Write or think through an explanation, comp",
+            "font": 16,
+            "width": 278,
+            "height": 163.125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "H4",
+            "text": "The Shoulder That Won't Lift",
+            "font": 20,
+            "width": 252,
+            "height": 60,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Read the case",
+            "font": 18,
+            "width": 228,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "An adult who often works overhead has gradually developed shoulder pain. Raising the arm is painful,",
+            "font": 16,
+            "width": 228,
+            "height": 190.3125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Which muscle–tendon group is relevant, and can these clues establish a tear?",
+            "font": 16,
+            "width": 228,
+            "height": 81.5625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read this case aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "LABEL",
+            "text": "Your reasoning (optional)",
+            "font": 16,
+            "width": 252,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Name a relevant structure or mechanism, cite a clue, and note what remains uncertain. Your draft sta",
+            "font": 16,
+            "width": 252,
+            "height": 108.75,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "TEXTAREA",
+            "text": "My saved reasoning for the shoulder case.",
+            "font": 16,
+            "width": 252,
+            "height": 110,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "41/600 characters",
+            "font": 16,
+            "width": 252,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Use a hint",
+            "font": 16,
+            "width": 252,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide explanation and try again",
+            "font": 16,
+            "width": 252,
+            "height": 76.375,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Anatomical explanation",
+            "font": 18,
+            "width": 226,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff is relevant; pain alone does not establish a tendon tear.",
+            "font": 16,
+            "width": 226,
+            "height": 81.5625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff helps center the humeral head in the glenoid during movement. Supraspinatus is one ",
+            "font": 16,
+            "width": 226,
+            "height": 271.875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "What the clues cannot establish",
+            "font": 18,
+            "width": 198,
+            "height": 54,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The vignette cannot distinguish tendinopathy, bursitis, a tear, or other causes. Physical examinatio",
+            "font": 16,
+            "width": 198,
+            "height": 217.5,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Compare this with your reasoning. Which clue mattered, and what would you change?",
+            "font": 16,
+            "width": 226,
+            "height": 108.75,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "A",
+            "text": "Read the source",
+            "font": 16,
+            "width": 113.1875,
+            "height": 44,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.661374332962391,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read the explanation aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 226,
+            "height": 161.9375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Show the related anatomy",
+            "font": 16,
+            "width": 226,
+            "height": 76.375,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Mark explanation reviewed",
+            "font": 16,
+            "width": 226,
+            "height": 76.375,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light"
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"] :is(h4,h5,p,button,strong)",
+        "metrics": [
+          {
+            "tag": "P",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 249,
+            "height": 54.375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "STRONG",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 244.40625,
+            "height": 48.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 249,
+            "height": 108.75,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Return to The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 249,
+            "height": 76.375,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark"
+        },
+        "selector": "[data-anatomy-clinical-study] :is(h3,h4,h5,p,label,button,a,textarea)",
+        "metrics": [
+          {
+            "tag": "H3",
+            "text": "Clinical Cases",
+            "font": 21,
+            "width": 137.328125,
+            "height": 31.5,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide",
+            "font": 16,
+            "width": 65.375,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "In this atlas: 0/1 explanations reviewed",
+            "font": 16,
+            "width": 278,
+            "height": 78.375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Across all atlases: 0/8 reviewed",
+            "font": 16,
+            "width": 278,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Use these fictional cases to connect clues with anatomy. Write or think through an explanation, comp",
+            "font": 16,
+            "width": 278,
+            "height": 163.125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "H4",
+            "text": "The Shoulder That Won't Lift",
+            "font": 20,
+            "width": 252,
+            "height": 60,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Read the case",
+            "font": 18,
+            "width": 228,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "An adult who often works overhead has gradually developed shoulder pain. Raising the arm is painful,",
+            "font": 16,
+            "width": 228,
+            "height": 190.3125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Which muscle–tendon group is relevant, and can these clues establish a tear?",
+            "font": 16,
+            "width": 228,
+            "height": 81.5625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read this case aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "LABEL",
+            "text": "Your reasoning (optional)",
+            "font": 16,
+            "width": 252,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Name a relevant structure or mechanism, cite a clue, and note what remains uncertain. Your draft sta",
+            "font": 16,
+            "width": 252,
+            "height": 108.75,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "TEXTAREA",
+            "text": "My saved reasoning for the shoulder case.",
+            "font": 16,
+            "width": 252,
+            "height": 110,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "41/600 characters",
+            "font": 16,
+            "width": 252,
+            "height": 27.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Use a hint",
+            "font": 16,
+            "width": 252,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide explanation and try again",
+            "font": 16,
+            "width": 252,
+            "height": 76.375,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Anatomical explanation",
+            "font": 18,
+            "width": 226,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff is relevant; pain alone does not establish a tendon tear.",
+            "font": 16,
+            "width": 226,
+            "height": 81.5625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff helps center the humeral head in the glenoid during movement. Supraspinatus is one ",
+            "font": 16,
+            "width": 226,
+            "height": 271.875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "What the clues cannot establish",
+            "font": 18,
+            "width": 198,
+            "height": 54,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The vignette cannot distinguish tendinopathy, bursitis, a tear, or other causes. Physical examinatio",
+            "font": 16,
+            "width": 198,
+            "height": 217.5,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Compare this with your reasoning. Which clue mattered, and what would you change?",
+            "font": 16,
+            "width": 226,
+            "height": 108.75,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "A",
+            "text": "Read the source",
+            "font": 16,
+            "width": 113.1875,
+            "height": 44,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 7.736322461223324,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read the explanation aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 226,
+            "height": 161.9375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Show the related anatomy",
+            "font": 16,
+            "width": 226,
+            "height": 76.375,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Mark explanation reviewed",
+            "font": 16,
+            "width": 226,
+            "height": 76.375,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark"
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"] :is(h4,h5,p,button,strong)",
+        "metrics": [
+          {
+            "tag": "P",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 249,
+            "height": 54.375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "STRONG",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 244.40625,
+            "height": 48.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 249,
+            "height": 108.75,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Return to The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 249,
+            "height": 76.375,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "contrast"
+        },
+        "selector": "[data-anatomy-clinical-study] :is(h3,h4,h5,p,label,button,a,textarea)",
+        "metrics": [
+          {
+            "tag": "H3",
+            "text": "Clinical Cases",
+            "font": 21,
+            "width": 137.328125,
+            "height": 31.5,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide",
+            "font": 16,
+            "width": 65.375,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "In this atlas: 0/1 explanations reviewed",
+            "font": 16,
+            "width": 274,
+            "height": 78.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Across all atlases: 0/8 reviewed",
+            "font": 16,
+            "width": 274,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Use these fictional cases to connect clues with anatomy. Write or think through an explanation, comp",
+            "font": 16,
+            "width": 274,
+            "height": 163.125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H4",
+            "text": "The Shoulder That Won't Lift",
+            "font": 20,
+            "width": 248,
+            "height": 60,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Read the case",
+            "font": 18,
+            "width": 224,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "An adult who often works overhead has gradually developed shoulder pain. Raising the arm is painful,",
+            "font": 16,
+            "width": 224,
+            "height": 190.3125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Which muscle–tendon group is relevant, and can these clues establish a tear?",
+            "font": 16,
+            "width": 224,
+            "height": 81.5625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read this case aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "LABEL",
+            "text": "Your reasoning (optional)",
+            "font": 16,
+            "width": 248,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Name a relevant structure or mechanism, cite a clue, and note what remains uncertain. Your draft sta",
+            "font": 16,
+            "width": 248,
+            "height": 108.75,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "TEXTAREA",
+            "text": "My saved reasoning for the shoulder case.",
+            "font": 16,
+            "width": 248,
+            "height": 110,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "41/600 characters",
+            "font": 16,
+            "width": 248,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Use a hint",
+            "font": 16,
+            "width": 248,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide explanation and try again",
+            "font": 16,
+            "width": 248,
+            "height": 76.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Anatomical explanation",
+            "font": 18,
+            "width": 222,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff is relevant; pain alone does not establish a tendon tear.",
+            "font": 16,
+            "width": 222,
+            "height": 81.5625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff helps center the humeral head in the glenoid during movement. Supraspinatus is one ",
+            "font": 16,
+            "width": 222,
+            "height": 299.0625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "What the clues cannot establish",
+            "font": 18,
+            "width": 194,
+            "height": 54,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The vignette cannot distinguish tendinopathy, bursitis, a tear, or other causes. Physical examinatio",
+            "font": 16,
+            "width": 194,
+            "height": 217.5,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Compare this with your reasoning. Which clue mattered, and what would you change?",
+            "font": 16,
+            "width": 222,
+            "height": 108.75,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "A",
+            "text": "Read the source",
+            "font": 16,
+            "width": 113.1875,
+            "height": 44,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read the explanation aloud",
+            "font": 16,
+            "width": 51.96875,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 222,
+            "height": 161.9375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Show the related anatomy",
+            "font": 16,
+            "width": 222,
+            "height": 76.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Mark explanation reviewed",
+            "font": 16,
+            "width": 222,
+            "height": 76.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "contrast"
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"] :is(h4,h5,p,button,strong)",
+        "metrics": [
+          {
+            "tag": "P",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 245,
+            "height": 54.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "STRONG",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 244.40625,
+            "height": 48.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 245,
+            "height": 108.75,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Return to The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 245,
+            "height": 76.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "light"
+        },
+        "selector": "[data-anatomy-clinical-study] :is(h3,h4,h5,p,label,button,a,textarea)",
+        "metrics": [
+          {
+            "tag": "H3",
+            "text": "حالات سريرية",
+            "font": 21,
+            "width": 96.671875,
+            "height": 31.5,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "إخفاء",
+            "font": 17,
+            "width": 64.078125,
+            "height": 50.890625,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "في هذا الأطلس: تمت مراجعة 0/1 من الشروح",
+            "font": 17,
+            "width": 278,
+            "height": 81.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "في جميع الأطالس: تمت مراجعة 0/8",
+            "font": 17,
+            "width": 278,
+            "height": 28.890625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "استخدم هذه الحالات الخيالية لربط القرائن بالتشريح. اكتب تفسيراً أو فكر فيه، وقارنه بالشرح النموذجي، ",
+            "font": 17,
+            "width": 278,
+            "height": 144.453125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "H4",
+            "text": "الكتف التي لا ترتفع",
+            "font": 20,
+            "width": 252,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "اقرأ الحالة",
+            "font": 18,
+            "width": 228,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "ظهر ألم تدريجي في كتف شخص بالغ يعمل كثيراً وذراعاه مرفوعتان. رفع الذراع مؤلم، وقد يزعج النومَ الاستل",
+            "font": 17,
+            "width": 228,
+            "height": 173.34375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "ما مجموعة العضلات والأوتار ذات الصلة، وهل تثبت هذه القرائن وجود تمزق؟",
+            "font": 17,
+            "width": 228,
+            "height": 86.671875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "قراءة هذه الحالة بصوت عالٍ",
+            "font": 17,
+            "width": 53.34375,
+            "height": 50.890625,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "LABEL",
+            "text": "تفسيرك (اختياري)",
+            "font": 17,
+            "width": 252,
+            "height": 28.890625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "اذكر بنية أو آلية ذات صلة، واستشهد بقرينة، وحدد ما يبقى غير مؤكد. تبقى مسودتك مرتبطة بهذه الحالة في ",
+            "font": 17,
+            "width": 252,
+            "height": 115.5625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "TEXTAREA",
+            "text": "My saved reasoning for the shoulder case.",
+            "font": 17,
+            "width": 252,
+            "height": 110,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "41/600 حرف",
+            "font": 17,
+            "width": 252,
+            "height": 28.890625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "استخدام تلميح",
+            "font": 17,
+            "width": 252,
+            "height": 50.890625,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "إخفاء الشرح والمحاولة مجدداً",
+            "font": 17,
+            "width": 252,
+            "height": 50.890625,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "الشرح التشريحي",
+            "font": 18,
+            "width": 226,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "الكفة المدورة ذات صلة؛ الألم وحده لا يثبت تمزق الوتر.",
+            "font": 17,
+            "width": 226,
+            "height": 57.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "تساعد الكفة المدورة على إبقاء رأس العضد متمركزاً في الجوف الحقاني أثناء الحركة. العضلة فوق الشوكة إح",
+            "font": 17,
+            "width": 226,
+            "height": 260.015625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "ما لا تثبته القرائن",
+            "font": 18,
+            "width": 198,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "لا تميّز القصة بين اعتلال الأوتار أو التهاب الجراب أو التمزق أو أسباب أخرى. يقدم الفحص السريري والتص",
+            "font": 17,
+            "width": 198,
+            "height": 144.453125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "قارن هذا بتفسيرك. أي قرينة كانت مهمة، وماذا ستغير؟",
+            "font": 17,
+            "width": 226,
+            "height": 57.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "disabled": false
+          },
+          {
+            "tag": "A",
+            "text": "اقرأ المصدر",
+            "font": 17,
+            "width": 79.890625,
+            "height": 44,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.661374332962391,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "قراءة الشرح بصوت عالٍ",
+            "font": 17,
+            "width": 53.34375,
+            "height": 50.890625,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "تمثل العلامة مجموعة الكفة المدورة؛ ولا تعزل وتر العضلة فوق الشوكة أو تُظهر تمزقاً.",
+            "font": 17,
+            "width": 226,
+            "height": 112.671875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "عرض التشريح المرتبط",
+            "font": 17,
+            "width": 226,
+            "height": 50.890625,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "تحديد الشرح كمُراجَع",
+            "font": 17,
+            "width": 226,
+            "height": 50.890625,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "light"
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"] :is(h4,h5,p,button,strong)",
+        "metrics": [
+          {
+            "tag": "P",
+            "text": "التشريح المرتبط بالحالة: الكتف التي لا ترتفع",
+            "font": 17,
+            "width": 249,
+            "height": 28.890625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "STRONG",
+            "text": "التشريح المرتبط بالحالة: الكتف التي لا ترتفع",
+            "font": 17,
+            "width": 246.3125,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "تمثل العلامة مجموعة الكفة المدورة؛ ولا تعزل وتر العضلة فوق الشوكة أو تُظهر تمزقاً.",
+            "font": 17,
+            "width": 249,
+            "height": 86.671875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 16.25114535957954,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "العودة إلى الكتف التي لا ترتفع",
+            "font": 17,
+            "width": 249,
+            "height": 50.890625,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 8.015910591562179,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark"
+        },
+        "selector": "[data-anatomy-clinical-study] :is(h3,h4,h5,p,label,button,a,textarea)",
+        "metrics": [
+          {
+            "tag": "H3",
+            "text": "حالات سريرية",
+            "font": 21,
+            "width": 96.671875,
+            "height": 31.5,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "إخفاء",
+            "font": 17,
+            "width": 64.078125,
+            "height": 50.890625,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "في هذا الأطلس: تمت مراجعة 0/1 من الشروح",
+            "font": 17,
+            "width": 278,
+            "height": 81.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "في جميع الأطالس: تمت مراجعة 0/8",
+            "font": 17,
+            "width": 278,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "استخدم هذه الحالات الخيالية لربط القرائن بالتشريح. اكتب تفسيراً أو فكر فيه، وقارنه بالشرح النموذجي، ",
+            "font": 17,
+            "width": 278,
+            "height": 144.453125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "H4",
+            "text": "الكتف التي لا ترتفع",
+            "font": 20,
+            "width": 252,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "اقرأ الحالة",
+            "font": 18,
+            "width": 228,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "ظهر ألم تدريجي في كتف شخص بالغ يعمل كثيراً وذراعاه مرفوعتان. رفع الذراع مؤلم، وقد يزعج النومَ الاستل",
+            "font": 17,
+            "width": 228,
+            "height": 173.34375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "ما مجموعة العضلات والأوتار ذات الصلة، وهل تثبت هذه القرائن وجود تمزق؟",
+            "font": 17,
+            "width": 228,
+            "height": 86.671875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "قراءة هذه الحالة بصوت عالٍ",
+            "font": 17,
+            "width": 53.34375,
+            "height": 50.890625,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "LABEL",
+            "text": "تفسيرك (اختياري)",
+            "font": 17,
+            "width": 252,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "اذكر بنية أو آلية ذات صلة، واستشهد بقرينة، وحدد ما يبقى غير مؤكد. تبقى مسودتك مرتبطة بهذه الحالة في ",
+            "font": 17,
+            "width": 252,
+            "height": 115.5625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "TEXTAREA",
+            "text": "My saved reasoning for the shoulder case.",
+            "font": 17,
+            "width": 252,
+            "height": 110,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "41/600 حرف",
+            "font": 17,
+            "width": 252,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "استخدام تلميح",
+            "font": 17,
+            "width": 252,
+            "height": 50.890625,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "إخفاء الشرح والمحاولة مجدداً",
+            "font": 17,
+            "width": 252,
+            "height": 50.890625,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "الشرح التشريحي",
+            "font": 18,
+            "width": 226,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "الكفة المدورة ذات صلة؛ الألم وحده لا يثبت تمزق الوتر.",
+            "font": 17,
+            "width": 226,
+            "height": 57.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "تساعد الكفة المدورة على إبقاء رأس العضد متمركزاً في الجوف الحقاني أثناء الحركة. العضلة فوق الشوكة إح",
+            "font": 17,
+            "width": 226,
+            "height": 260.015625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "ما لا تثبته القرائن",
+            "font": 18,
+            "width": 198,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "لا تميّز القصة بين اعتلال الأوتار أو التهاب الجراب أو التمزق أو أسباب أخرى. يقدم الفحص السريري والتص",
+            "font": 17,
+            "width": 198,
+            "height": 144.453125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "قارن هذا بتفسيرك. أي قرينة كانت مهمة، وماذا ستغير؟",
+            "font": 17,
+            "width": 226,
+            "height": 57.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "disabled": false
+          },
+          {
+            "tag": "A",
+            "text": "اقرأ المصدر",
+            "font": 17,
+            "width": 79.890625,
+            "height": 44,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 7.736322461223324,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "قراءة الشرح بصوت عالٍ",
+            "font": 17,
+            "width": 53.34375,
+            "height": 50.890625,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "تمثل العلامة مجموعة الكفة المدورة؛ ولا تعزل وتر العضلة فوق الشوكة أو تُظهر تمزقاً.",
+            "font": 17,
+            "width": 226,
+            "height": 112.671875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "عرض التشريح المرتبط",
+            "font": 17,
+            "width": 226,
+            "height": 50.890625,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "تحديد الشرح كمُراجَع",
+            "font": 17,
+            "width": 226,
+            "height": 50.890625,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark"
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"] :is(h4,h5,p,button,strong)",
+        "metrics": [
+          {
+            "tag": "P",
+            "text": "التشريح المرتبط بالحالة: الكتف التي لا ترتفع",
+            "font": 17,
+            "width": 249,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "STRONG",
+            "text": "التشريح المرتبط بالحالة: الكتف التي لا ترتفع",
+            "font": 17,
+            "width": 246.3125,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "تمثل العلامة مجموعة الكفة المدورة؛ ولا تعزل وتر العضلة فوق الشوكة أو تُظهر تمزقاً.",
+            "font": 17,
+            "width": 249,
+            "height": 86.671875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(59, 20, 33)",
+            "ratio": 13.023583747244556,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "العودة إلى الكتف التي لا ترتفع",
+            "font": 17,
+            "width": 249,
+            "height": 50.890625,
+            "foreground": "rgb(253, 164, 175)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 9.44122147100204,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "contrast"
+        },
+        "selector": "[data-anatomy-clinical-study] :is(h3,h4,h5,p,label,button,a,textarea)",
+        "metrics": [
+          {
+            "tag": "H3",
+            "text": "حالات سريرية",
+            "font": 21,
+            "width": 96.671875,
+            "height": 31.5,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "إخفاء",
+            "font": 17,
+            "width": 64.078125,
+            "height": 50.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "في هذا الأطلس: تمت مراجعة 0/1 من الشروح",
+            "font": 17,
+            "width": 274,
+            "height": 81.78125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "في جميع الأطالس: تمت مراجعة 0/8",
+            "font": 17,
+            "width": 274,
+            "height": 28.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "استخدم هذه الحالات الخيالية لربط القرائن بالتشريح. اكتب تفسيراً أو فكر فيه، وقارنه بالشرح النموذجي، ",
+            "font": 17,
+            "width": 274,
+            "height": 144.453125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H4",
+            "text": "الكتف التي لا ترتفع",
+            "font": 20,
+            "width": 248,
+            "height": 30,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "اقرأ الحالة",
+            "font": 18,
+            "width": 224,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "ظهر ألم تدريجي في كتف شخص بالغ يعمل كثيراً وذراعاه مرفوعتان. رفع الذراع مؤلم، وقد يزعج النومَ الاستل",
+            "font": 17,
+            "width": 224,
+            "height": 173.34375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "ما مجموعة العضلات والأوتار ذات الصلة، وهل تثبت هذه القرائن وجود تمزق؟",
+            "font": 17,
+            "width": 224,
+            "height": 86.671875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "قراءة هذه الحالة بصوت عالٍ",
+            "font": 17,
+            "width": 53.34375,
+            "height": 50.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "LABEL",
+            "text": "تفسيرك (اختياري)",
+            "font": 17,
+            "width": 248,
+            "height": 28.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "اذكر بنية أو آلية ذات صلة، واستشهد بقرينة، وحدد ما يبقى غير مؤكد. تبقى مسودتك مرتبطة بهذه الحالة في ",
+            "font": 17,
+            "width": 248,
+            "height": 115.5625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "TEXTAREA",
+            "text": "My saved reasoning for the shoulder case.",
+            "font": 17,
+            "width": 248,
+            "height": 110,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "41/600 حرف",
+            "font": 17,
+            "width": 248,
+            "height": 28.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "استخدام تلميح",
+            "font": 17,
+            "width": 248,
+            "height": 50.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "إخفاء الشرح والمحاولة مجدداً",
+            "font": 17,
+            "width": 248,
+            "height": 50.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "الشرح التشريحي",
+            "font": 18,
+            "width": 222,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "الكفة المدورة ذات صلة؛ الألم وحده لا يثبت تمزق الوتر.",
+            "font": 17,
+            "width": 222,
+            "height": 57.78125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "تساعد الكفة المدورة على إبقاء رأس العضد متمركزاً في الجوف الحقاني أثناء الحركة. العضلة فوق الشوكة إح",
+            "font": 17,
+            "width": 222,
+            "height": 260.015625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "ما لا تثبته القرائن",
+            "font": 18,
+            "width": 194,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "لا تميّز القصة بين اعتلال الأوتار أو التهاب الجراب أو التمزق أو أسباب أخرى. يقدم الفحص السريري والتص",
+            "font": 17,
+            "width": 194,
+            "height": 144.453125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "قارن هذا بتفسيرك. أي قرينة كانت مهمة، وماذا ستغير؟",
+            "font": 17,
+            "width": 222,
+            "height": 57.78125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "A",
+            "text": "اقرأ المصدر",
+            "font": 17,
+            "width": 79.890625,
+            "height": 44,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "قراءة الشرح بصوت عالٍ",
+            "font": 17,
+            "width": 53.34375,
+            "height": 50.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "تمثل العلامة مجموعة الكفة المدورة؛ ولا تعزل وتر العضلة فوق الشوكة أو تُظهر تمزقاً.",
+            "font": 17,
+            "width": 222,
+            "height": 141.5625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "عرض التشريح المرتبط",
+            "font": 17,
+            "width": 222,
+            "height": 50.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "تحديد الشرح كمُراجَع",
+            "font": 17,
+            "width": 222,
+            "height": 50.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "contrast"
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"] :is(h4,h5,p,button,strong)",
+        "metrics": [
+          {
+            "tag": "P",
+            "text": "التشريح المرتبط بالحالة: الكتف التي لا ترتفع",
+            "font": 17,
+            "width": 245,
+            "height": 57.78125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "STRONG",
+            "text": "التشريح المرتبط بالحالة: الكتف التي لا ترتفع",
+            "font": 17,
+            "width": 211.53125,
+            "height": 50.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "تمثل العلامة مجموعة الكفة المدورة؛ ولا تعزل وتر العضلة فوق الشوكة أو تُظهر تمزقاً.",
+            "font": 17,
+            "width": 245,
+            "height": 86.671875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "العودة إلى الكتف التي لا ترتفع",
+            "font": 17,
+            "width": 245,
+            "height": 50.890625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors"
+        },
+        "selector": "[data-anatomy-clinical-study] :is(h3,h4,h5,p,label,button,a,textarea)",
+        "metrics": [
+          {
+            "tag": "H3",
+            "text": "Clinical Cases",
+            "font": 21,
+            "width": 137.328125,
+            "height": 31.5,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide",
+            "font": 16,
+            "width": 65.375,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "In this atlas: 0/1 explanations reviewed",
+            "font": 16,
+            "width": 278,
+            "height": 78.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Across all atlases: 0/8 reviewed",
+            "font": 16,
+            "width": 278,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Use these fictional cases to connect clues with anatomy. Write or think through an explanation, comp",
+            "font": 16,
+            "width": 278,
+            "height": 163.125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H4",
+            "text": "The Shoulder That Won't Lift",
+            "font": 20,
+            "width": 252,
+            "height": 60,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Read the case",
+            "font": 18,
+            "width": 228,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "An adult who often works overhead has gradually developed shoulder pain. Raising the arm is painful,",
+            "font": 16,
+            "width": 228,
+            "height": 190.3125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Which muscle–tendon group is relevant, and can these clues establish a tear?",
+            "font": 16,
+            "width": 228,
+            "height": 81.5625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read this case aloud",
+            "font": 16,
+            "width": 46,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "LABEL",
+            "text": "Your reasoning (optional)",
+            "font": 16,
+            "width": 252,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Name a relevant structure or mechanism, cite a clue, and note what remains uncertain. Your draft sta",
+            "font": 16,
+            "width": 252,
+            "height": 108.75,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "TEXTAREA",
+            "text": "My saved reasoning for the shoulder case.",
+            "font": 16,
+            "width": 252,
+            "height": 110,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "41/600 characters",
+            "font": 16,
+            "width": 252,
+            "height": 27.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Use a hint",
+            "font": 16,
+            "width": 252,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Hide explanation and try again",
+            "font": 16,
+            "width": 252,
+            "height": 76.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "Anatomical explanation",
+            "font": 18,
+            "width": 226,
+            "height": 27,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff is relevant; pain alone does not establish a tendon tear.",
+            "font": 16,
+            "width": 226,
+            "height": 81.5625,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The rotator cuff helps center the humeral head in the glenoid during movement. Supraspinatus is one ",
+            "font": 16,
+            "width": 226,
+            "height": 271.875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "H5",
+            "text": "What the clues cannot establish",
+            "font": 18,
+            "width": 198,
+            "height": 54,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The vignette cannot distinguish tendinopathy, bursitis, a tear, or other causes. Physical examinatio",
+            "font": 16,
+            "width": 198,
+            "height": 217.5,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "Compare this with your reasoning. Which clue mattered, and what would you change?",
+            "font": 16,
+            "width": 226,
+            "height": 108.75,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "A",
+            "text": "Read the source",
+            "font": 16,
+            "width": 113.1875,
+            "height": 44,
+            "foreground": "rgb(0, 0, 159)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 13.994023083921398,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Read the explanation aloud",
+            "font": 16,
+            "width": 46,
+            "height": 49.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 226,
+            "height": 161.9375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Show the related anatomy",
+            "font": 16,
+            "width": 226,
+            "height": 76.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Mark explanation reviewed",
+            "font": 16,
+            "width": 226,
+            "height": 76.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          }
+        ]
+      },
+      {
+        "context": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors"
+        },
+        "selector": "[data-anatomy-case-origin=\"case_2\"] :is(h4,h5,p,button,strong)",
+        "metrics": [
+          {
+            "tag": "P",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 249,
+            "height": 54.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "STRONG",
+            "text": "Anatomy for The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 244.40625,
+            "height": 48.1875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "P",
+            "text": "The marker represents the rotator cuff group; it does not isolate the supraspinatus tendon or show a",
+            "font": 16,
+            "width": 249,
+            "height": 108.75,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          },
+          {
+            "tag": "BUTTON",
+            "text": "Return to The Shoulder That Won't Lift",
+            "font": 16,
+            "width": 249,
+            "height": 76.375,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "disabled": false
+          }
+        ]
+      }
+    ],
+    "captures": [
+      "desktop-case-reading-feedback.png",
+      "phone-contrast-case.png",
+      "phone-arabic-dark-case.png",
+      "phone-arabic-dark-marker-context.png",
+      "phone-forced-case-feedback.png",
+      "phone-forced-case-marker-label.png",
+      "phone-forced-case-marker-context.png",
+      "phone-forced-case-return-label.png"
+    ],
+    "labelPixels": [
+      {
+        "name": "phone-forced-case-marker-label",
+        "width": 123,
+        "height": 43,
+        "dominant": [
+          252,
+          252,
+          252
+        ],
+        "dominantShare": 0.7566647759500851,
+        "distinctColors": 36,
+        "significantColors": 20
+      },
+      {
+        "name": "phone-forced-case-return-label",
+        "width": 179,
+        "height": 44,
+        "dominant": [
+          252,
+          252,
+          252
+        ],
+        "dominantShare": 0.7196546470289487,
+        "distinctColors": 45,
+        "significantColors": 20
+      }
+    ],
+    "currentDisplay": {
+      "width": 320,
+      "locale": "en",
+      "reading": false,
+      "theme": "forced-colors"
+    }
+  }
+}

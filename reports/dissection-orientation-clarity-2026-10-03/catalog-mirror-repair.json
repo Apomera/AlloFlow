@@ -1,0 +1,212 @@
+{
+  "source": "ui_strings.js",
+  "mirror": "desktop/web-app/public/ui_strings.js",
+  "sourceSha256": "baca3a35fe9421bd7d4666280be1062118e616a32b7b0ef6bae70262066e6038",
+  "mirrorBeforeSha256": "63e5663b394fd458b2af8630e3e2e104a65f389055c7646fba50ecb7f22228b2",
+  "mirrorAfterSha256": "baca3a35fe9421bd7d4666280be1062118e616a32b7b0ef6bae70262066e6038",
+  "sourceUnchanged": true,
+  "commonValuesUnchanged": true,
+  "mirrorOnlyKeys": [],
+  "addedKeys": [
+    "stem.perception.close_study_review",
+    "stem.perception.difference_from_reference",
+    "stem.perception.end_repeated_study",
+    "stem.perception.match_range",
+    "stem.perception.median_difference",
+    "stem.perception.median_match",
+    "stem.perception.record_match",
+    "stem.perception.recorded_match",
+    "stem.perception.repeat_saved_settings",
+    "stem.perception.repeated_study",
+    "stem.perception.reveal_saved_study",
+    "stem.perception.reveal_study_results",
+    "stem.perception.review_study",
+    "stem.perception.rgb_steps",
+    "stem.perception.saved_study_hidden",
+    "stem.perception.saved_study_revealed",
+    "stem.perception.saved_study_review",
+    "stem.perception.saved_trial_number",
+    "stem.perception.start_three_matches",
+    "stem.perception.starting_value",
+    "stem.perception.study_all_recorded",
+    "stem.perception.study_complete",
+    "stem.perception.study_ended",
+    "stem.perception.study_expired",
+    "stem.perception.study_frozen_hint",
+    "stem.perception.study_group_conflict",
+    "stem.perception.study_incomplete_group",
+    "stem.perception.study_next_match",
+    "stem.perception.study_notebook_paused",
+    "stem.perception.study_reference_value",
+    "stem.perception.study_results_hidden",
+    "stem.perception.study_results_revealed",
+    "stem.perception.study_review_opened",
+    "stem.perception.study_scene_progress",
+    "stem.perception.study_start_hint",
+    "stem.perception.study_summary_hint",
+    "stem.perception.study_trial_progress",
+    "stem.perception.three_recorded_matches",
+    "stem.perception.trial_label"
+  ],
+  "addedBytes": 3441,
+  "insertedLines": [
+    {
+      "index": 14921,
+      "text": "      \"close_study_review\": \"Close study review\","
+    },
+    {
+      "index": 14931,
+      "text": "      \"difference_from_reference\": \"Difference from reference\","
+    },
+    {
+      "index": 14946,
+      "text": "      \"end_repeated_study\": \"End repeated study\","
+    },
+    {
+      "index": 14967,
+      "text": "      \"match_range\": \"Match range\","
+    },
+    {
+      "index": 14971,
+      "text": "      \"median_difference\": \"Median difference\","
+    },
+    {
+      "index": 14972,
+      "text": "      \"median_match\": \"Median match\","
+    },
+    {
+      "index": 15039,
+      "text": "      \"record_match\": \"Record match\","
+    },
+    {
+      "index": 15041,
+      "text": "      \"recorded_match\": \"Recorded match\","
+    },
+    {
+      "index": 15046,
+      "text": "      \"repeat_saved_settings\": \"Repeat these settings\","
+    },
+    {
+      "index": 15047,
+      "text": "      \"repeated_study\": \"Repeated matching study\","
+    },
+    {
+      "index": 15052,
+      "text": "      \"reveal_saved_study\": \"Reveal saved study\","
+    },
+    {
+      "index": 15053,
+      "text": "      \"reveal_study_results\": \"Reveal study results\","
+    },
+    {
+      "index": 15055,
+      "text": "      \"review_study\": \"Review study\","
+    },
+    {
+      "index": 15057,
+      "text": "      \"rgb_steps\": \"RGB-code steps\","
+    },
+    {
+      "index": 15060,
+      "text": "      \"saved_study_hidden\": \"Three matches are saved. Reveal this study to review its drawing values together.\","
+    },
+    {
+      "index": 15061,
+      "text": "      \"saved_study_revealed\": \"Saved study drawing values revealed.\","
+    },
+    {
+      "index": 15062,
+      "text": "      \"saved_study_review\": \"Saved study review\","
+    },
+    {
+      "index": 15063,
+      "text": "      \"saved_trial_number\": \"Repeated study · trial {trial} of 3\","
+    },
+    {
+      "index": 15065,
+      "text": "      \"start_three_matches\": \"Start three matches\","
+    },
+    {
+      "index": 15066,
+      "text": "      \"starting_value\": \"Starting value\","
+    },
+    {
+      "index": 15067,
+      "text": "      \"study_all_recorded\": \"All three matches are recorded. Reveal the results, or end the study to return to free matching.\","
+    },
+    {
+      "index": 15068,
+      "text": "      \"study_complete\": \"Three matches recorded. Reveal the study results when you are ready.\","
+    },
+    {
+      "index": 15069,
+      "text": "      \"study_ended\": \"Repeated study ended. Recorded matches remain in your notebook.\","
+    },
+    {
+      "index": 15070,
+      "text": "      \"study_expired\": \"The experiment or notebook changed. The repeated study ended; recorded matches remain in the notebook.\","
+    },
+    {
+      "index": 15071,
+      "text": "      \"study_frozen_hint\": \"Surrounding settings stay fixed during this study. The notebook and pinned view return after recording or ending the study.\","
+    },
+    {
+      "index": 15072,
+      "text": "      \"study_group_conflict\": \"These matches have different settings or duplicate trial numbers. Review them individually or repeat the settings; they cannot form one study summary.\","
+    },
+    {
+      "index": 15073,
+      "text": "      \"study_incomplete_group\": \"{count} of 3 matches remain in this notebook. Review individual observations or repeat their settings to make a new study.\","
+    },
+    {
+      "index": 15074,
+      "text": "      \"study_next_match\": \"Match {trial} of 3. Adjust the comparison, choose your impression, then record it.\","
+    },
+    {
+      "index": 15075,
+      "text": "      \"study_notebook_paused\": \"Notebook observations are hidden while you make these matches. They return after recording all three matches or ending the study.\","
+    },
+    {
+      "index": 15076,
+      "text": "      \"study_reference_value\": \"Fixed reference: {value} {unit}.\","
+    },
+    {
+      "index": 15077,
+      "text": "      \"study_results_hidden\": \"Three matches recorded. Use Reveal study results in the controls to see their drawing values, median, and range.\","
+    },
+    {
+      "index": 15078,
+      "text": "      \"study_results_revealed\": \"All three study matches are revealed.\","
+    },
+    {
+      "index": 15079,
+      "text": "      \"study_review_opened\": \"Saved study opened for review.\","
+    },
+    {
+      "index": 15080,
+      "text": "      \"study_scene_progress\": \"{count} of 3 matches recorded. Make each match by eye with the same surroundings.\","
+    },
+    {
+      "index": 15081,
+      "text": "      \"study_start_hint\": \"Try three separate matches with the reference and surroundings held fixed. Starting positions vary; numbers stay hidden until all three are recorded.\","
+    },
+    {
+      "index": 15082,
+      "text": "      \"study_summary_hint\": \"The median is the middle of your three matches; the range spans their lowest and highest values. These describe this small set of drawing matches, not a score. Try another study with different surroundings to compare your impressions.\","
+    },
+    {
+      "index": 15083,
+      "text": "      \"study_trial_progress\": \"Match {trial} of 3. Adjust the comparison and choose an impression below. Your note is saved with this match; the next match starts with a blank note.\","
+    },
+    {
+      "index": 15092,
+      "text": "      \"three_recorded_matches\": \"Three recorded matches\","
+    },
+    {
+      "index": 15094,
+      "text": "      \"trial_label\": \"Trial\","
+    }
+  ],
+  "reconstruction": "Removing the39 recorded inserted lines from current source exactly reproduces the original public catalog hash.",
+  "reason": "The focused lab contract requires byte-identical runtime catalogs. The desktop copy lacked39 existing Perception study strings; no Dissection values differed."
+}

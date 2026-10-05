@@ -1,0 +1,251 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\prepared-module-four-06\\temporary\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/save-and-reflection-validation/prepared-module-four-06/temporary",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/save-and-reflection-validation/prepared-module-four-06/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/save-and-reflection-validation/prepared-module-four-06/temporary",
+        "testIgnore": [],
+        "testMatch": [
+          "prepared.spec.ts"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "prepared.spec.ts",
+      "file": "prepared.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "participant planning review keeps all five case reflections and discussion tasks separate from the guide through reset restoration and reload",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2,
+                  "error": {
+                    "message": "Error: Prepared manifest changed",
+                    "stack": "Error: Prepared manifest changed\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\prepared-module-four-06\\temporary\\prepared.spec.ts:40:136",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\prepared-module-four-06\\temporary\\prepared.spec.ts",
+                      "column": 136,
+                      "line": 40
+                    },
+                    "snippet": "  38 |  await writeFile(input,'@tailwind base;\\n@tailwind components;\\n@tailwind utilities;\\n');await writeFile(html,harness());\n  39 |  const preparedBody=await readFile(process.env.SLD_PREPARED_MANIFEST!);\n> 40 |  if(createHash('sha256').update(preparedBody).digest('hex')!==\"ae3e774d7bbf3b063308f12398e98a677dba5a4b1e4ac8b0d061ce29457c4ebe\")throw new Error('Prepared manifest changed');\n     |                                                                                                                                        ^\n  41 |  const prepared=JSON.parse(preparedBody.toString('utf8'));\n  42 |  const preparedSha=(body:Buffer|string)=>createHash('sha256').update(body).digest('hex');\n  43 |  await Promise.all((Object.entries(prepared.files) as [string,{path:string,sha256:string}][]).map(async([key,value])=>{if(preparedSha(await readFile(value.path))!==value.sha256)throw new Error('Prepared asset changed: '+key);}));"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\prepared-module-four-06\\temporary\\prepared.spec.ts",
+                        "column": 136,
+                        "line": 40
+                      },
+                      "message": "Error: Prepared manifest changed\n\n  38 |  await writeFile(input,'@tailwind base;\\n@tailwind components;\\n@tailwind utilities;\\n');await writeFile(html,harness());\n  39 |  const preparedBody=await readFile(process.env.SLD_PREPARED_MANIFEST!);\n> 40 |  if(createHash('sha256').update(preparedBody).digest('hex')!==\"ae3e774d7bbf3b063308f12398e98a677dba5a4b1e4ac8b0d061ce29457c4ebe\")throw new Error('Prepared manifest changed');\n     |                                                                                                                                        ^\n  41 |  const prepared=JSON.parse(preparedBody.toString('utf8'));\n  42 |  const preparedSha=(body:Buffer|string)=>createHash('sha256').update(body).digest('hex');\n  43 |  await Promise.all((Object.entries(prepared.files) as [string,{path:string,sha256:string}][]).map(async([key,value])=>{if(preparedSha(await readFile(value.path))!==value.sha256)throw new Error('Prepared asset changed: '+key);}));\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\prepared-module-four-06\\temporary\\prepared.spec.ts:40:136"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T02:14:13.909Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\prepared-module-four-06\\artifacts\\prepared-participant-plann-343b5-eset-restoration-and-reload-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\prepared-module-four-06\\artifacts\\prepared-participant-plann-343b5-eset-restoration-and-reload-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\prepared-module-four-06\\artifacts\\prepared-participant-plann-343b5-eset-restoration-and-reload-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\prepared-module-four-06\\temporary\\prepared.spec.ts",
+                    "column": 136,
+                    "line": 40
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c91270cc5cce8c603760-7ded31b568ebb931f27d",
+          "file": "prepared.spec.ts",
+          "line": 506,
+          "column": 5
+        },
+        {
+          "title": "planning reflection edits return by keyboard and contextual writing feedback remains bounded without persisting navigation state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T02:14:55.185Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "c91270cc5cce8c603760-36da1c17f071aca33454",
+          "file": "prepared.spec.ts",
+          "line": 521,
+          "column": 5
+        },
+        {
+          "title": "session save warning preserves open work and focus across blocked access quota failure recovery and explicit retries",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T02:14:55.185Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "c91270cc5cce8c603760-b17c1289e91dc8bae7d3",
+          "file": "prepared.spec.ts",
+          "line": 563,
+          "column": 5
+        },
+        {
+          "title": "expired tab work can be recovered while optional guide reflection stays in existing notes for all five cases and native feedback announces transitions once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T02:14:55.187Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "c91270cc5cce8c603760-dc8d1e19cc6d6d96d059",
+          "file": "prepared.spec.ts",
+          "line": 574,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T02:09:22.065Z",
+    "duration": 336522.196,
+    "expected": 0,
+    "skipped": 3,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

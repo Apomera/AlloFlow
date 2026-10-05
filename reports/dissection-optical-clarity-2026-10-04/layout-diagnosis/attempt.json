@@ -1,0 +1,25 @@
+{
+  "mode": "layout-diagnosis",
+  "started": "2026-10-05T01:55:10.454Z",
+  "sourceSHA": "ee2608fd48477d120397774ff775f28f8565a72a5a1dd06cec6845d722d34b72",
+  "mirrorSHA": "ee2608fd48477d120397774ff775f28f8565a72a5a1dd06cec6845d722d34b72",
+  "specSHA": "b14a6a17094ebd0f2154e3b73e0ce13e0d255dd52c525acb21d25102745cf835",
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/dissection-optical-clarity.spec.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results",
+    "--timeout=240000",
+    "--grep=embedded-large|forced-colors|resizing"
+  ],
+  "canonical": true,
+  "runnerPID": 44220,
+  "testPID": 44556,
+  "finished": "2026-10-05T01:56:12.086Z",
+  "exitCode": 1,
+  "signal": null
+}

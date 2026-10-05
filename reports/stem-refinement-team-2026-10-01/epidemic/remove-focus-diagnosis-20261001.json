@@ -1,0 +1,41 @@
+{
+  "CapturedUtc": "2026-10-01T16:09:40.2494064Z",
+  "Mode": "Read-only; main team holds Chromium; no implementation/spec edits or runners",
+  "OriginalBaseline": {
+    "SHA256": "d5ab6ae0b6177adb8b69961bb43ab50fcc1f1c448ed423b0b72d6acb1106fd74",
+    "Finding": "No Remove controls/actions column; no comparable focus target"
+  },
+  "PreRelativeBaseline": {
+    "SHA256": "90b6ea7d146bac5595fd7da4c307d48ed9cc4c2d7c0fa0e0948110f1c29de1a5",
+    "Finding": "Same Remove/undo handlers and no focus-scroll handler; saved narrow tests stopped before Remove focus, diagnostic measured Log only",
+    "FocusGeometryMeasured": false
+  },
+  "FixedSource": {
+    "SHA256": "545559511b0a7c301df6b1b4905d83a3abaabb3f75319a20d571b8d804f35079",
+    "Finding": "Only label-containment positioning added; full focus-reveal behavior still relies on browser",
+    "Observed": "Focus and accessible name passed; table scrollLeft zero; original document-overflow assertion passed",
+    "Screenshot": "relative-browser-artifacts-20261001/epidemic-inquiry-recovery--f860e--keyboard-recovery-at-320px-chromium/test-failed-1.png",
+    "VisualReview": "Focused third Remove button is partly clipped at table scrollport right edge. Exact post-focus button/scroller geometry was not captured."
+  },
+  "InstalledFocusImplementation": {
+    "Package": "playwright-core",
+    "Version": "1.60.0",
+    "Path": "node_modules/playwright-core/lib/coreBundle.js",
+    "Line": 15901,
+    "SHA256": "F74353FCB8E406756A70A6AF0DFC4A5069ACD577E35EC9D923CCF36AC009C2F5",
+    "Excerpt": "focusNode(node, resetSelectionIfNotFocused) {\\n    if (!node.isConnected)\\n      return \"error:notconnected\";\\n    if (node.nodeType !== Node.ELEMENT_NODE)\\n      throw this.createStacklessError(\"Node is not an element\");\\n    const { activeElement, isFocused: wasFocused } = this._activelyFocused(node);\\n    if (node.isContentEditable && !wasFocused && activeElement && activeElement.blur) {\\n      activeElement.blur();\\n    }\\n    node.focus();\\n    node.focus();\\n    if (resetSelectionIfNotFocused && !wasFocused && node.nodeName.toLowerCase() === \"input\") {\\n      try {\\n        const input = node;\\n        input.setSelectionRange(0, 0);\\n      } catch (e) {\\n      }\\n    }\\n    return \"done\";\\n  }\\n  blurNode(node) {\\n    if (!node.isConnected)\\n      return \"error:notconnected\";\\n    if (node.nodeType !== Node.ELEMENT_NODE)\\n      throw this.createStacklessError(\"Node is not an element\");\\n    node.blur();\\n    re",
+    "Finding": "Calls node.focus() twice without preventScroll or explicit scrollIntoView; not evidence of genuine Tab behavior"
+  },
+  "RootCause": "New off-right Remove controls have no explicit local focus-reveal handler; programmatic native focus in this configuration leaves the control partly clipped. Browser internal policy and genuine Tab geometry remain unmeasured.",
+  "ProposedExactChange": "Only Inquiry Remove button onFocus: find its own table parent scrollport; compare button rect to scrollport inner left/right with two pixels focus-ring clearance; adjust only scrollport.scrollLeft by needed delta. Keep relative positioning, accessible name, visible content, state/equations and original viewport assertions.",
+  "ProposedHandler": "var button=e.currentTarget, table=button.closest('table'), scroller=table&&table.parentElement; if(!scroller)return; var b=button.getBoundingClientRect(),s=scroller.getBoundingClientRect(),left=s.left+scroller.clientLeft+2,right=s.left+scroller.clientLeft+scroller.clientWidth-2; if(b.right>right)scroller.scrollLeft+=b.right-right; else if(b.left<left)scroller.scrollLeft-=left-b.left;",
+  "NextValidation": [
+    "One serial320px measurement-only case of fixed5455 source first: verify served bytes/CSS/fonts and same eight-row initial inquiry seed; compare Locator.focus and genuine Tab from Log through Reset and Remove buttons, resetting table scroll to zero between paths.",
+    "Record pre/post focused button bounds, scrollport inner bounds, local scrollLeft/clientWidth/scrollWidth, activeElement/name, document width and overflow ancestors after layout settles; establish off-right premise, distinguish fully visible target from clipped target.",
+    "If confirmed, apply only proposed owned-button handler, guard/sync three mirrors and run small mounted focus/scroll behavior checks.",
+    "Coordinate one320px recovery rerun after repair: require real Tab reaches Remove3, full button and focus ring inside scrollport, local scroll when initially off-right, document within320, correct name/focus and unchanged Enter/remove/undo/reset/restore/discard evidence. Keep original overflow and local scrolling assertions; if test premise invalid, repair starting fixture geometry rather than forcing a false scroll claim."
+  ],
+  "ImplementationApplied": false,
+  "BrowserRun": false,
+  "HeldFilesEdited": false
+}

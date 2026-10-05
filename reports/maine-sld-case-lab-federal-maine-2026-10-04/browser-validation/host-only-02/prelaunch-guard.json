@@ -1,0 +1,55 @@
+{
+  "verifiedAt": "2026-10-04T17:18:25.445832+00:00",
+  "status": "READY",
+  "testedHostSourceSha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8",
+  "testedHostBundleSha256": "69c86008789f489da23eb74cf3206e1101e48dfd86ef849c43632d466a86024f",
+  "moduleSha256": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+  "sourceSha256": "0ace7842ded217dfc67d240f357acdfbca59a493ae0e7aef709e0dd006b846df",
+  "browserTestSha256": "2807144531c423401b691b10ad1c7e1cd6bfb7a6151ea68927a90d7ee4187e28",
+  "observedCurrentHosts": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "matchesTestedWholeHost": false,
+      "borrowedRouteReaderMatchesTestedSnapshot": true,
+      "borrowedRouteReaderSha256": "6f0fde160db8476601dbe5a46aa4272c3b7c9d962bc12d905876e2c2c78f9ff9"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "matchesTestedWholeHost": false,
+      "borrowedRouteReaderMatchesTestedSnapshot": true,
+      "borrowedRouteReaderSha256": "6f0fde160db8476601dbe5a46aa4272c3b7c9d962bc12d905876e2c2c78f9ff9"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "matchesTestedWholeHost": false,
+      "borrowedRouteReaderMatchesTestedSnapshot": true,
+      "borrowedRouteReaderSha256": "6f0fde160db8476601dbe5a46aa4272c3b7c9d962bc12d905876e2c2c78f9ff9"
+    }
+  ],
+  "currentHostThreeCopyParity": true,
+  "borrowedRouteReaderBytePreserved": true,
+  "borrowedRouteReaderSha256": "6f0fde160db8476601dbe5a46aa4272c3b7c9d962bc12d905876e2c2c78f9ff9",
+  "immutableSnapshotRetained": true,
+  "rebuildPerformed": false,
+  "httpChecks": [
+    {
+      "path": "/__sld_preview/host.bundle.js",
+      "status": 200,
+      "bytes": 1977975,
+      "sha256": "69c86008789f489da23eb74cf3206e1101e48dfd86ef849c43632d466a86024f",
+      "matchesImmutableSnapshot": true
+    },
+    {
+      "path": "/app/maine_sld_practice_module.js?v=fec6407e",
+      "status": 200,
+      "bytes": 199134,
+      "sha256": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+      "matchesImmutableSnapshot": true
+    }
+  ],
+  "explicitRecoveryOf": "host-only-01",
+  "previousFailedInvocationPreserved": true
+}

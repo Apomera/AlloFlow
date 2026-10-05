@@ -970,6 +970,408 @@
     { id: 'siriusB', name: 'Sirius B', t: 25369, l: 0.02448, m: 1.018, tError: 46, lError: 0.00033, mError: 0.011, source: 'https://arxiv.org/abs/1703.10625' }
   ];
 
+
+
+  // Constant-H expansion teaching model, with no inflaton dynamics or time calibration.
+  // The physical wavelength is 2*pi*a/k; Hubble-scale crossing uses ck/(aH) = 1.
+
+  // SPARC 2016 Table 2: radius, observed speed, quoted error, gas, unit-M/L disk and bulge.
+  var ROTATION_GALAXIES = [{"id":"NGC3198","name":"NGC 3198","distanceMpc":13.8,"distanceErrorMpc":1.4,"inclinationDeg":73,"inclinationErrorDeg":3,"quality":1,"originalRefs":"Da06,Be91,Be87","points":[[0.32,24.4,35.9,0,63.28,0],[0.64,43.3,16.3,0,73.66,0],[0.96,45.5,16.1,0,78.98,0],[1.28,58.5,15.4,0.35,82.7,0],[1.61,68.8,7.61,0.15,84.22,0],[1.93,76.9,10.3,-0.05,83.17,0],[2.24,82,8.09,-0.47,87.04,0],[2.57,86.9,7.6,-0.95,88.91,0],[2.89,97.6,3.03,-1.43,88.98,0],[3.21,100,5.31,-1.14,93.81,0],[3.54,107,7.51,-0.39,101.22,0],[3.85,113,7.32,0.36,108.53,0],[4.17,117,5.21,1.52,115.51,0],[4.5,119,5.67,3.07,120.51,0],[4.82,127,5.39,4.63,125.42,0],[5.15,132,4.34,6.02,129.4,0],[5.46,134,2.36,7.16,133.15,0],[5.78,137,0.89,8.31,136.45,0],[6.1,140,2.84,9.46,139.41,0],[6.43,142,0.88,10.61,141.85,0],[6.74,144,1.23,11.77,142.32,0],[7.06,146,1.57,12.87,140.94,0],[8.04,147,3,16.39,135.68,0],[9.04,148,3,20.03,130.79,0],[10.04,152,2,23.68,128.1,0],[11.04,155,2,27.08,126.67,0],[12.05,156,2,30.11,124.98,0],[14.05,157,2,34.48,118.12,0],[16.07,153,2,36.43,108.22,0],[18.13,153,2,37.76,101.1,0],[20.05,154,2,39.83,96.4,0],[22.12,153,2,40.92,91.56,0],[24.03,150,2,41.77,87.03,0],[26.1,149,2,43.71,82.67,0],[28.16,148,2,45.41,79.06,0],[30.08,146,2,45.29,76.07,0],[32.14,147,2,44.56,73.27,0],[34.06,148,2,44.81,70.91,0],[36.12,148,2,45.9,68.62,0],[38.19,149,2,46.75,66.59,0],[40.1,150,2,47.48,64.84,0],[42.17,150,3,48.93,63.1,0],[44.08,149,3,47.84,61.63,0]]},{"id":"NGC6503","name":"NGC 6503","distanceMpc":6.26,"distanceErrorMpc":0.31,"inclinationDeg":74,"inclinationErrorDeg":2,"quality":1,"originalRefs":"Be91,Be87","points":[[0.76,77,10,4.04,70.72,0],[1.52,100,5,7.62,123.17,0],[2.28,110,2,9.72,142.64,0],[3.04,118,2,12.42,134.42,0],[3.79,121,2,13.35,121.97,0],[4.55,121,2,14.78,111.53,0],[5.31,117,2,17.55,103.23,0],[6.07,116,2,19.2,96.65,0],[6.83,116,2,20.33,91.96,0],[7.59,116,2,21.66,87.62,0],[8.35,115,1,22.79,83.25,0],[9.11,115,1,23.92,79.58,0],[9.86,116,1,24.84,76.81,0],[10.64,117,1,25.46,74.18,0],[11.38,117,1,26.38,71.5,0],[12.12,118,1,27.2,69.18,0],[12.86,117,1,28.13,67.04,0],[13.7,116,1,28.74,64.84,0],[14.44,115,1,28.64,63.05,0],[15.18,117,1,28.33,61.39,0],[15.91,116,1,28.13,59.88,0],[16.65,115,2,28.33,58.45,0],[17.49,115,2,28.23,56.93,0],[18.23,115,2,27.82,55.71,0],[18.97,114,2,27.2,54.55,0],[19.71,115,2,26.9,53.46,0],[20.45,114,2,26.69,52.44,0],[21.29,116,2,26.49,51.35,0],[22.03,115,3,26.18,50.44,0],[22.76,118,4,25.87,49.61,0],[23.5,115,10,25.46,48.79,0]]}];
+  function galaxyRotationModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    function bounded(raw, low, high, fallback) {
+      var value = typeof raw === 'number' || typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN;
+      return Number.isFinite(value) ? Math.max(low, Math.min(high, value)) : fallback;
+    }
+    var galaxy = ROTATION_GALAXIES.find(function(g) { return g.id === state.rotationGalaxy; }) || ROTATION_GALAXIES[0];
+    var ml = Math.round(bounded(state.rotationML, 0.1, 1, 0.5) * 20) / 20;
+    var index = Math.round(bounded(state.rotationPoint, 0, galaxy.points.length - 1, galaxy.points.length - 1));
+    var points = galaxy.points.map(function(row, i) {
+      // Signed squares retain the outward gas force in central depressions (SPARC equation 2).
+      var gasSq = row[3] * Math.abs(row[3]), starSq = ml * (row[4] * Math.abs(row[4]) + row[5] * Math.abs(row[5]));
+      var baryonSq = gasSq + starSq;
+      var baryon = baryonSq >= 0 ? Math.sqrt(baryonSq) : null;
+      return { index: i, radiusKpc: row[0], observedKms: row[1], errorKms: row[2], gasKms: row[3],
+        unitDiskKms: row[4], unitBulgeKms: row[5], gasSq: gasSq, starSq: starSq, baryonSq: baryonSq,
+        stellarKms: starSq >= 0 ? Math.sqrt(starSq) : null, baryonKms: baryon,
+        differenceKms: baryon === null ? null : row[1] - baryon };
+    });
+    var selected = points[index], difference = selected.differenceKms;
+    return { galaxy: galaxy.id, name: galaxy.name, distanceMpc: galaxy.distanceMpc, distanceErrorMpc: galaxy.distanceErrorMpc,
+      inclinationDeg: galaxy.inclinationDeg, inclinationErrorDeg: galaxy.inclinationErrorDeg, originalRefs: galaxy.originalRefs,
+      ml: ml, index: index, points: points, selected: selected, radiusMaxKpc: Math.ceil(points[points.length - 1].radiusKpc / 5) * 5,
+      regime: difference === null ? 'undefined' : difference > selected.errorKms ? 'above' : difference < -selected.errorKms ? 'below' : 'overlap',
+      examples: ROTATION_GALAXIES.map(function(g) { return { id: g.id, name: g.name, count: g.points.length }; }) };
+  }
+
+
+
+  // Johnson V examples: Willmer (2018) and ESA's original Hipparcos catalogue (1997).
+  // Idealized, coplanar equilibrium-tide forcing; no local water-level predictions.
+  var TIDAL_REFERENCE = { moonGMKm3s2: 4902.800118, sunGMKm3s2: 132712440041.279419,
+    meanMoonDistanceKm: 384400, meanPerigeeKm: 363300, meanApogeeKm: 405500, sunDistanceKm: 149597870.7,
+    synodicDays: 29.53059, solarDayHours: 24 };
+  // Newtonian binary orbit, viewed in its orbital plane. The Sirius example
+  // uses Bond et al. (2017), Tables 4 and 6; its linear scale is derived.
+  var BINARY_REFERENCE = {
+    massA: 2.063, massB: 1.018, periodYears: 50.1284, eccentricity: 0.59142,
+    massAUncertainty: 0.023, massBUncertainty: 0.011,
+    periodUncertaintyYears: 0.0043, eccentricityUncertainty: 0.00037,
+    solarGM: 1.3271244e20, auMeters: 149597870700, yearSeconds: 365.25 * 86400
+  };
+  function binaryOrbitModel(saved) {
+    saved = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    function number(raw, low, high, fallback) {
+      if (typeof raw !== 'number' && (typeof raw !== 'string' || !raw.trim())) return fallback;
+      var value = Number(raw);
+      return Number.isFinite(value) ? Math.max(low, Math.min(high, value)) : fallback;
+    }
+    var ref = Object.assign({}, BINARY_REFERENCE), tau = 2 * Math.PI;
+    var siriusAu = Math.cbrt(ref.solarGM * (ref.massA + ref.massB) * Math.pow(ref.periodYears * ref.yearSeconds / tau, 2)) / ref.auMeters;
+    var massA = number(saved.binaryMassA, 0.1, 5, ref.massA), massB = number(saved.binaryMassB, 0.1, 5, ref.massB);
+    var a = number(saved.binarySeparationAu, 0.5, 40, siriusAu), e = number(saved.binaryEccentricity, 0, 0.8, ref.eccentricity);
+    var phase = number(saved.binaryPhase, 0, 1, 0), total = massA + massB;
+    var fractionA = massB / total, fractionB = massA / total, bRatio = Math.sqrt(1 - e * e);
+    var periodSeconds = tau * Math.sqrt(Math.pow(a * ref.auMeters, 3) / (ref.solarGM * total));
+    var circularSpeed = tau * a * ref.auMeters / periodSeconds / 1000;
+    function point(f) {
+      var mean = tau * f, E = mean;
+      // e <= 0.8 keeps Newton's method well conditioned; solve mean anomaly,
+      // not true anomaly, so equal slider steps represent equal elapsed time.
+      for (var iteration = 0; iteration < 20; iteration++) {
+        var correction = (E - e * Math.sin(E) - mean) / (1 - e * Math.cos(E));
+        E -= correction; if (Math.abs(correction) < 1e-13) break;
+      }
+      var x = a * (Math.cos(E) - e), y = a * bRatio * Math.sin(E);
+      var separation = a * (1 - e * Math.cos(E)), speedRatio = Math.sqrt(2 * a / separation - 1);
+      var velocityFactor = circularSpeed / (1 - e * Math.cos(E));
+      var vx = -velocityFactor * Math.sin(E), vy = velocityFactor * bRatio * Math.cos(E);
+      return { phase: f, meanAnomaly: mean, eccentricAnomaly: E, separationAu: separation,
+        relativeX: x, relativeY: y, speedRatio: speedRatio, relativeSpeedKmS: circularSpeed * speedRatio,
+        a: { x: -fractionA * x, y: -fractionA * y, vx: -fractionA * vx, vy: -fractionA * vy, speedKmS: fractionA * circularSpeed * speedRatio },
+        b: { x: fractionB * x, y: fractionB * y, vx: fractionB * vx, vy: fractionB * vy, speedKmS: fractionB * circularSpeed * speedRatio } };
+    }
+    var points = [], orbit = [];
+    for (var i = 0; i <= 240; i++) points.push(point(i / 240));
+    // Uniform eccentric-anomaly sampling keeps the drawn ellipse smooth.
+    for (var j = 0; j <= 180; j++) {
+      var E = tau * j / 180, x = a * (Math.cos(E) - e), y = a * bRatio * Math.sin(E);
+      orbit.push({ a: { x: -fractionA * x, y: -fractionA * y }, b: { x: fractionB * x, y: fractionB * y } });
+    }
+    var areaB = Math.PI * Math.pow(a * fractionB, 2) * bRatio / 12;
+    var sectors = [0, 0.5].map(function(start) {
+      var samples = []; for (var k = 0; k <= 128; k++) samples.push(point(start + k / 128 / 12).b);
+      return { startPhase: start, endPhase: start + 1 / 12, areaAu2: areaB, points: samples };
+    });
+    var isSirius = Math.abs(massA - ref.massA) < 1e-10 && Math.abs(massB - ref.massB) < 1e-10 && Math.abs(a - siriusAu) < 1e-10 && Math.abs(e - ref.eccentricity) < 1e-10;
+    return { massA: massA, massB: massB, totalMass: total, separationAu: a, eccentricity: e, phase: phase,
+      periodYears: periodSeconds / ref.yearSeconds, elapsedYears: phase * periodSeconds / ref.yearSeconds,
+      semimajorA: a * fractionA, semimajorB: a * fractionB,
+      periastronAu: a * (1 - e), apastronAu: a * (1 + e), circularSpeedKmS: circularSpeed,
+      fastestToSlowest: (1 + e) / (1 - e), plotRadiusAu: a * Math.max(fractionA, fractionB) * 1.8,
+      current: point(phase), points: points, orbit: orbit, sectors: sectors,
+      reference: ref, siriusSeparationAu: siriusAu, isSirius: isSirius };
+  }
+
+  function tidalForcingModel(saved) {
+    var state = saved && typeof saved === 'object' ? saved : {};
+    function input(value, lo, hi, fallback) {
+      if ((typeof value !== 'number' && typeof value !== 'string') || (typeof value === 'string' && !value.trim())) return fallback;
+      var n = Number(value); return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : fallback;
+    }
+    var reference = Object.assign({}, TIDAL_REFERENCE);
+    var phaseStart = input(state.tidePhaseStart, 0, 1, 0), hours = input(state.tideHours, 0, 48, 0);
+    var distanceKm = input(state.tideDistanceKm, reference.meanPerigeeKm, reference.meanApogeeKm, reference.meanMoonDistanceKm);
+    var includeSun = typeof state.tideIncludeSun === 'boolean' ? state.tideIncludeSun : true;
+    var moonStrength = Math.pow(reference.meanMoonDistanceKm / distanceKm, 3);
+    var solarRatio = reference.sunGMKm3s2 / reference.moonGMKm3s2 * Math.pow(reference.meanMoonDistanceKm / reference.sunDistanceKm, 3);
+    var sunStrength = includeSun ? solarRatio : 0, monthHours = reference.synodicDays * 24;
+    function at(h) {
+      var angle = Math.PI * 2 * (phaseStart + h / monthHours), observerAngle = Math.PI * 2 * h / 24;
+      var moon = moonStrength * Math.cos(2 * (observerAngle - angle)), sun = sunStrength * Math.cos(2 * observerAngle);
+      var a = moonStrength * Math.cos(2 * angle) + sunStrength, b = moonStrength * Math.sin(2 * angle);
+      return { hours: h, phase: (phaseStart + h / monthHours) % 1, angle: angle, observerAngle: observerAngle,
+        moon: moon, sun: sun, total: moon + sun, amplitude: Math.hypot(a, b), bulgeAngle: Math.atan2(b, a) / 2 };
+    }
+    var current = at(hours), points = Array.from({ length: 193 }, function(_, i) { return at(i / 4); });
+    var surface = Array.from({ length: 181 }, function(_, i) {
+      var angle = i * Math.PI / 90, moon = moonStrength * Math.cos(2 * (angle - current.angle)), sun = sunStrength * Math.cos(2 * angle);
+      return { angle: angle, moon: moon, sun: sun, total: moon + sun };
+    });
+    var alignment = Math.cos(2 * current.angle), regime = !includeSun ? 'moonOnly' : alignment > 0.9 ? 'spring' : alignment < -0.9 ? 'neap' : 'transition';
+    return { reference: reference, phaseStart: phaseStart, hours: hours, distanceKm: distanceKm, includeSun: includeSun,
+      moonStrength: moonStrength, solarRatio: solarRatio, sunStrength: sunStrength, monthHours: monthHours,
+      lunarDayHours: 1 / (1 / 24 - 1 / monthHours), moonHalfPeriodHours: 0.5 / (1 / 24 - 1 / monthHours),
+      current: current, illumination: (1 - Math.cos(current.angle)) / 2, regime: regime, points: points, surface: surface, plotLimit: 1.8 };
+  }
+
+  // Kopparapu et al. (2014): one-Earth-mass conservative limits, 2600-7200 K.
+  var HABITABLE_ZONE_COEFFICIENTS = [
+    { id: 'inner', name: 'Runaway greenhouse', coefficients: [1.107, 1.332e-4, 1.580e-8, -8.308e-12, -1.931e-15] },
+    { id: 'outer', name: 'Maximum greenhouse', coefficients: [0.356, 6.171e-5, 1.698e-9, -3.198e-12, -5.575e-16] }
+  ];
+  var HABITABLE_ZONE_PLANETS = [
+    { id: 'venus', name: 'Venus reference', distanceAu: 0.72333199, albedo: 0.77, surfaceK: 737, href: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html' },
+    { id: 'earth', name: 'Earth reference', distanceAu: 1.00000011, albedo: 0.294, surfaceK: 288, href: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html' },
+    { id: 'mars', name: 'Mars reference', distanceAu: 1.52366231, albedo: 0.25, surfaceK: 214, href: 'https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html' }
+  ];
+  function habitableZoneModel(saved) {
+    var state = saved && typeof saved === 'object' ? saved : {};
+    function input(value, lo, hi, fallback) {
+      if ((typeof value !== 'number' && typeof value !== 'string') || (typeof value === 'string' && !value.trim())) return fallback;
+      var n = Number(value); return Number.isFinite(n) ? Math.max(lo, Math.min(hi, n)) : fallback;
+    }
+    var temperatureK = input(state.hzTemperatureK, 2600, 7200, 5772);
+    var luminosity = input(state.hzLuminosity, 0.01, 10, 1);
+    var distanceAu = input(state.hzDistanceAu, 0.03, 20, 1.00000011);
+    var albedo = input(state.hzAlbedo, 0, 0.9, 0.294);
+    var t = temperatureK - 5780;
+    var boundaries = HABITABLE_ZONE_COEFFICIENTS.map(function(r) {
+      var c = r.coefficients.slice();
+      var flux = c[0] + c[1] * t + c[2] * t * t + c[3] * t * t * t + c[4] * Math.pow(t, 4);
+      return { id: r.id, name: r.name, coefficients: c, flux: flux, distanceAu: Math.sqrt(luminosity / flux) };
+    });
+    var inner = boundaries[0], outer = boundaries[1];
+    var flux = luminosity / (distanceAu * distanceAu), irradiance = 1361 * flux;
+    var reflected = irradiance * albedo, absorbed = irradiance * (1 - albedo), meanAbsorbed = absorbed / 4;
+    var equilibriumK = Math.pow(meanAbsorbed / 5.670374419e-8, 0.25);
+    var referencePlanets = HABITABLE_ZONE_PLANETS.map(function(p) { return Object.assign({}, p); });
+    var reference = referencePlanets.find(function(p) {
+      return temperatureK === 5772 && luminosity === 1 && Math.abs(distanceAu - p.distanceAu) < 1e-10 && Math.abs(albedo - p.albedo) < 1e-10;
+    }) || null;
+    var regime = distanceAu < inner.distanceAu - 1e-12 ? 'inner' : distanceAu > outer.distanceAu + 1e-12 ? 'outer' : 'within';
+    return { temperatureK: temperatureK, luminosity: luminosity, luminosityLog: Math.log10(luminosity),
+      distanceAu: distanceAu, distanceLog: Math.log10(distanceAu), albedo: albedo, reflectedFraction: albedo, absorbedFraction: 1 - albedo,
+      flux: flux, irradiance: irradiance, reflected: reflected, absorbed: absorbed, meanAbsorbed: meanAbsorbed,
+      equilibriumK: equilibriumK, equilibriumC: equilibriumK - 273.15, boundaries: boundaries, inner: inner, outer: outer,
+      zoneCenterAu: Math.sqrt(inner.distanceAu * outer.distanceAu), regime: regime, reference: reference, references: referencePlanets };
+  }
+
+  var MAGNITUDE_REFERENCES = [
+    { id: 'sun', name: 'Sun reference', absoluteV: 4.81, distancePc: 10,
+      source: 'Willmer 2018 · Solar V magnitude', href: 'https://arxiv.org/abs/1804.07788',
+      basis: 'Adopted solar M_V = +4.81 from Willmer (2018), in the Vega magnitude system. The Sun example starts at the standard distance of 10 pc.' },
+    { id: 'sirius', name: 'Sirius', hip: 32349, apparentV: -1.44, parallaxMas: 379.21, parallaxErrorMas: 1.58,
+      source: 'ESA 1997 · Hipparcos catalogue', href: 'https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=I/239/hip_main&HIP=32349,91262',
+      basis: 'HIP 32349: Johnson V = −1.44; parallax = 379.21 ± 1.58 mas in the ESA 1997 catalogue. M_V is inferred from these inputs assuming negligible extinction.' },
+    { id: 'vega', name: 'Vega', hip: 91262, apparentV: 0.03, parallaxMas: 128.93, parallaxErrorMas: 0.55,
+      source: 'ESA 1997 · Hipparcos catalogue', href: 'https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=I/239/hip_main&HIP=32349,91262',
+      basis: 'HIP 91262: Johnson V = +0.03; parallax = 128.93 ± 0.55 mas in the ESA 1997 catalogue. M_V is inferred from these inputs assuming negligible extinction.' }
+  ];
+  function magnitudeModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    function bounded(raw, low, high, fallback) {
+      var value = typeof raw === 'number' || typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN;
+      return Number.isFinite(value) ? Math.max(low, Math.min(high, value)) : fallback;
+    }
+    var references = MAGNITUDE_REFERENCES.map(function(raw) {
+      var r = Object.assign({}, raw);
+      if (r.parallaxMas) { r.distancePc = 1000 / r.parallaxMas; r.absoluteV = r.apparentV - 5 * Math.log10(r.distancePc / 10); }
+      return r;
+    });
+    var id = ['sun', 'sirius', 'vega', 'custom'].indexOf(state.magnitudeReference) >= 0 ? state.magnitudeReference : 'sun';
+    var reference = references.find(function(r) { return r.id === id; }) || null;
+    var absoluteV = reference ? reference.absoluteV : bounded(state.magnitudeMv, -10, 15, 4.81);
+    var distancePc = bounded(state.magnitudeDistancePc, 0.1, 10000, reference ? reference.distancePc : 10);
+    var extinctionV = Math.round(bounded(state.magnitudeAv, 0, 5, 0) * 10) / 10;
+    var distanceLog = Math.log10(distancePc), distanceModulus = 5 * Math.log10(distancePc / 10);
+    var unextinguishedV = absoluteV + distanceModulus, apparentV = unextinguishedV + extinctionV;
+    var distanceFluxLog = -2 * Math.log10(distancePc / 10), fluxLog = distanceFluxLog - 0.4 * extinctionV;
+    var distanceFlux = Math.pow(10, distanceFluxLog), transmission = Math.pow(10, -0.4 * extinctionV);
+    var fluxRatio = Math.pow(10, fluxLog), vLightVsSun = Math.pow(10, 0.4 * (4.81 - absoluteV));
+    var points = Array.from({ length: 101 }, function(_, i) {
+      var logPc = -1 + i / 20, modulus = 5 * (logPc - 1);
+      return { distanceLog: logPc, distancePc: Math.pow(10, logPc), unextinguishedV: absoluteV + modulus, apparentV: absoluteV + modulus + extinctionV };
+    });
+    var regime = Math.abs(fluxLog) < 1e-10 ? 'equal' : fluxLog > 0 ? 'brighter' : 'fainter';
+    return { referenceId: id, reference: reference, references: references, absoluteV: absoluteV, distancePc: distancePc,
+      distanceLy: distancePc * 3.261563777167433, distanceLog: distanceLog, extinctionV: extinctionV, distanceModulus: distanceModulus,
+      unextinguishedV: unextinguishedV, apparentV: apparentV, distanceFlux: distanceFlux, distanceFluxLog: distanceFluxLog,
+      transmission: transmission, fluxRatio: fluxRatio, fluxLog: fluxLog, vLightVsSun: vLightVsSun, regime: regime, points: points };
+  }
+
+  // A teaching scale: rounded universe age, fixed non-leap year, no runtime data requests.
+  var COSMIC_CALENDAR_YEARS = 13.8e9, COSMIC_CALENDAR_SECONDS = 365 * 86400;
+  var COSMIC_CALENDAR_EVENTS = [
+    { id: 'jan1', name: 'Big Bang', lookbackYears: 13.8e9, kind: 'boundary',
+      story: 'The calendar begins with the hot, dense early universe. Expansion and cooling led to the formation of light elements, and much later, neutral atoms. This scale does not describe the unknown earliest physics.',
+      basis: 'Start boundary of the 13.8-billion-year teaching scale.',
+      source: 'NASA · Big Bang and the early universe', href: 'https://science.nasa.gov/mission/hubble/science/science-behind-the-discoveries/hubble-big-bang/' },
+    { id: 'cmb', name: 'Neutral hydrogen', lookbackYears: 13.8e9 - 380000, kind: 'approximate',
+      story: 'Around 380,000 years after the Big Bang, electrons and hydrogen nuclei could combine into neutral atoms. Light from this era reaches us as the cosmic microwave background. On this scale, that is about 14.47 minutes after January 1 begins.',
+      basis: 'Approximately 380,000 years after the Big Bang; the transition took time.',
+      source: 'NASA · Big Bang and the early universe', href: 'https://science.nasa.gov/mission/hubble/science/science-behind-the-discoveries/hubble-big-bang/' },
+    { id: 'jan10', name: 'First stars', lookbackYears: 13.6e9, kind: 'approximate',
+      story: 'Gravity drew primordial gas into the earliest stars. Their exact birth dates remain uncertain. The marker uses NASA’s approximate 200-million-year cosmic dawn example; it does not identify a measured first star.',
+      basis: 'Illustrative epoch: approximately 200 million years after the Big Bang.',
+      source: 'NASA · Universe overview', href: 'https://science.nasa.gov/universe/overview/' },
+    { id: 'mar15', name: 'Milky Way thick disk', lookbackYears: 11e9, lowYears: 8e9, highYears: 13e9, kind: 'phase',
+      story: 'The Milky Way grew through several stages. Xiang and Rix’s 2022 stellar-age study found thick-disk formation beginning about 13 billion years ago, peaking near 11 billion years ago, and continuing until about 8 billion years ago.',
+      basis: 'Formation phase: about 13–8 billion years ago. The marker is the approximate 11-billion-year peak. The band is a period of growth.',
+      source: 'Xiang & Rix 2022 · Milky Way assembly', href: 'https://www.nature.com/articles/s41586-022-04496-5' },
+    { id: 'aug28', name: 'Solar System', lookbackYears: 4.6e9, kind: 'approximate',
+      story: 'The Sun and its surrounding disk formed from a collapsing cloud of gas and dust about 4.6 billion years ago. Planets developed within the disk over time. This maps to September 1 on the 365-day scale.',
+      basis: 'Approximate formation age: 4.6 billion years ago.',
+      source: 'NASA · How our Solar System formed', href: 'https://science.nasa.gov/astrobiology/learning-resources/alp/how-did-our-solar-system-form/' },
+    { id: 'sep1', name: 'Early life evidence', lookbackYears: 3.48e9, kind: 'approximate',
+      story: 'Djokic and colleagues described biosignatures in ancient hot-spring deposits of Australia’s Dresser Formation. This is one early record of life. A fossil or biosignature dates preserved evidence; it does not establish when life first began.',
+      basis: 'Approximate age of the Dresser Formation evidence: 3.48 billion years.',
+      source: 'Djokic et al. 2017 · Early life evidence', href: 'https://www.nature.com/articles/ncomms15263' },
+    { id: 'nov15', name: 'Eukaryote fossils', lookbackYears: 1.5e9, kind: 'approximate',
+      story: 'Javaux, Knoll and Walter described complex eukaryotic microfossils in the Roper Group of northern Australia. These fossils show that features associated with eukaryotic diversification were present by about 1.5 billion years ago. Earlier origins remain a separate question.',
+      basis: 'Approximate age of the Roper Group fossil record: 1.5 billion years.',
+      source: 'Javaux et al. 2001 · Eukaryotic ecosystems', href: 'https://www.nature.com/articles/35083562' },
+    { id: 'dec5', name: 'Cambrian boundary', lookbackYears: 538.8e6, lowYears: 538.2e6, highYears: 539.4e6, kind: 'uncertainty',
+      story: 'The International Commission on Stratigraphy’s June 2026 chart places the start of the Cambrian at 538.8 ± 0.6 million years ago. Animal diversification extended over time; this geological boundary does not mark the first animal.',
+      basis: 'Published boundary age: 538.8 ± 0.6 million years. The band shows the quoted numerical age uncertainty.',
+      source: 'ICS · June 2026 geological time scale', href: 'https://stratigraphy.org/ICSchart/ChronostratChart2026-06.pdf' },
+    { id: 'dec25', name: 'Early dinosaur fossils', lookbackYears: 230e6, kind: 'approximate',
+      story: 'Early dinosaur fossils from Argentina and Brazil are about 230 million years old. They are evidence of dinosaurs at that time, rather than an exact date for the group’s origin.',
+      basis: 'Approximate fossil age example: 230 million years.',
+      source: 'USGS · Early dinosaur fossils', href: 'https://pubs.usgs.gov/gip/dinosaurs/when.html' },
+    { id: 'dec31', name: 'Human fossils', lookbackYears: 315000, lowYears: 281000, highYears: 349000, kind: 'uncertainty',
+      story: 'Richter and colleagues dated heated flints associated with the Jebel Irhoud Homo sapiens fossils to 315 ± 34 thousand years. The marker represents this dated archaeological context, rather than a precise birthday for our species.',
+      basis: 'Published weighted age: 315 ± 34 thousand years. The band shows the quoted dating uncertainty.',
+      source: 'Richter et al. 2017 · Jebel Irhoud dating', href: 'https://www.nature.com/articles/nature22335' },
+    { id: 'agriculture', name: 'Agriculture', lookbackYears: 12000, kind: 'approximate',
+      story: 'Over roughly the last 12,000 years, people developed farming and herding in multiple places. Different crops and communities changed at different times. The marker is an approximate teaching example of this long transition.',
+      basis: 'Approximate transition example: 12,000 years ago.',
+      source: 'Smithsonian · Humans change the world', href: 'https://humanorigins.si.edu/human-characteristics/humans-change-world' },
+    { id: 'now', name: 'Present boundary', lookbackYears: 0, kind: 'boundary',
+      story: 'The present is exactly at the end of this cosmic year: the boundary between December 31 and the next January 1. A lifetime fits into a tiny fraction of the final second. Use the age control to compare that interval.',
+      basis: 'End boundary of the teaching scale: zero seconds remaining.',
+      source: 'NASA · Rounded universe age reference', href: 'https://science.nasa.gov/exoplanets/what-is-the-universe/' }
+  ];
+  function cosmicCalendarPosition(rawYears) {
+    var value = typeof rawYears === 'number' || typeof rawYears === 'string' && rawYears.trim() !== '' ? Number(rawYears) : NaN;
+    var lookbackYears = Number.isFinite(value) ? Math.max(0, Math.min(COSMIC_CALENDAR_YEARS, value)) : 0;
+    // Compute the small remaining interval directly, without subtracting two near-equal large values.
+    var beforeEndSeconds = lookbackYears / COSMIC_CALENDAR_YEARS * COSMIC_CALENDAR_SECONDS;
+    var elapsedSeconds = COSMIC_CALENDAR_SECONDS - beforeEndSeconds;
+    var elapsedYears = COSMIC_CALENDAR_YEARS - lookbackYears;
+    var ticks = Math.min(COSMIC_CALENDAR_SECONDS * 100 - 1, Math.max(0, Math.floor(elapsedSeconds * 100 + 1e-6)));
+    var months = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'];
+    var monthDays = [31, 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31], dayIndex = Math.floor(ticks / 8640000), month = 0, day = dayIndex;
+    if (lookbackYears === 0) { month = 0; day = 0; }
+    else { while (day >= monthDays[month] && month < 11) { day -= monthDays[month]; month++; } }
+    var timeTicks = ticks % 8640000, hour = Math.floor(timeTicks / 360000), minute = Math.floor(timeTicks / 6000) % 60;
+    var second = (timeTicks % 6000) / 100;
+    function pad(n) { return n < 10 ? '0' + n : String(n); }
+    var clock = (hour % 12 || 12) + ':' + pad(minute) + ':' + (second < 10 ? '0' : '') + second.toFixed(2) + (hour < 12 ? ' AM' : ' PM');
+    var date = lookbackYears === 0 ? 'Year end · next January 1, 12:00 AM' : lookbackYears === COSMIC_CALENDAR_YEARS ? 'January 1, 12:00 AM' : months[month] + ' ' + (day + 1) + ', ' + clock;
+    return { lookbackYears: lookbackYears, elapsedYears: elapsedYears, elapsedSeconds: elapsedSeconds, beforeEndSeconds: beforeEndSeconds,
+      yearFraction: elapsedSeconds / COSMIC_CALENDAR_SECONDS, month: month, day: day + 1, date: date, atEnd: lookbackYears === 0 };
+  }
+  function cosmicCalendarModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    var zoom = ['hour', 'minute', 'second'].indexOf(state.ccZoom) >= 0 ? state.ccZoom : 'minute';
+    var windowSeconds = zoom === 'hour' ? 3600 : zoom === 'second' ? 1 : 60;
+    var raw = state.ccLifetimeYears, value = typeof raw === 'number' || typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN;
+    var lifetimeYears = Number.isFinite(value) ? Math.round(Math.max(0, Math.min(100, value))) : 12;
+    var events = COSMIC_CALENDAR_EVENTS.map(function(e, index) {
+      var copy = Object.assign({}, e), position = cosmicCalendarPosition(e.lookbackYears);
+      copy.index = index; copy.position = position;
+      copy.visible = position.beforeEndSeconds <= windowSeconds;
+      copy.zoomFraction = copy.visible ? 1 - position.beforeEndSeconds / windowSeconds : null;
+      copy.range = Number.isFinite(e.lowYears) && Number.isFinite(e.highYears) ? {
+        early: cosmicCalendarPosition(e.highYears), late: cosmicCalendarPosition(e.lowYears)
+      } : null;
+      return copy;
+    });
+    var index = events.findIndex(function(e) { return e.id === state.selectedCC; }); if (index < 0) index = 0;
+    var lifetime = cosmicCalendarPosition(lifetimeYears);
+    return { selectedId: events[index].id, index: index, selected: events[index], events: events, zoom: zoom, windowSeconds: windowSeconds,
+      lifetimeYears: lifetimeYears, lifetime: lifetime, lifetimeZoomFraction: 1 - lifetime.beforeEndSeconds / windowSeconds,
+      totalYears: COSMIC_CALENDAR_YEARS, yearSeconds: COSMIC_CALENDAR_SECONDS, realYearsPerSecond: COSMIC_CALENDAR_YEARS / COSMIC_CALENDAR_SECONDS };
+  }
+
+  var INFLATION_REFERENCE = { ns: 0.9649, nsError: 0.0042, pivotMpcInv: 0.05, tensorLimit: 0.036 };
+  function inflationExpansionModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    function bounded(raw, low, high, fallback) {
+      var value = typeof raw === 'number' || typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN;
+      return Number.isFinite(value) ? Math.max(low, Math.min(high, value)) : fallback;
+    }
+    var folds = bounded(state.inflationFolds, 0, 60, 3), initialWaveH = bounded(state.inflationWaveH, 0.25, 2, 0.5);
+    var stretch = Math.exp(folds), waveH = initialWaveH * stretch, modeScale = waveH / (2 * Math.PI);
+    var crossingFolds = Math.log(2 * Math.PI / initialWaveH), ratioLog = Math.log(modeScale);
+    var regime = Math.abs(ratioLog) < 1e-10 ? 'crossing' : ratioLog < 0 ? 'below' : 'above';
+    function pattern(wavelength) {
+      return Array.from({ length: 321 }, function(_, i) {
+        var xH = i / 320;
+        // Cosine displacement is illustrative, with unchanged amplitude.
+        return { xH: xH, value: Math.cos(2 * Math.PI * (xH - 0.5) / wavelength) };
+      });
+    }
+    var spectrum = { ns: INFLATION_REFERENCE.ns, nsError: INFLATION_REFERENCE.nsError,
+      pivotMpcInv: INFLATION_REFERENCE.pivotMpcInv, tensorLimit: INFLATION_REFERENCE.tensorLimit,
+      points: Array.from({ length: 81 }, function(_, i) {
+        var q = Math.pow(10, -1 + i / 40);
+        var a = Math.pow(q, INFLATION_REFERENCE.ns - INFLATION_REFERENCE.nsError - 1);
+        var b = Math.pow(q, INFLATION_REFERENCE.ns + INFLATION_REFERENCE.nsError - 1);
+        return { q: q, power: Math.pow(q, INFLATION_REFERENCE.ns - 1), low: Math.min(a, b), high: Math.max(a, b) };
+      }) };
+    return { folds: folds, initialWaveH: initialWaveH, stretch: stretch, volumeStretch: Math.exp(3 * folds),
+      waveH: waveH, modeScale: modeScale, crossingFolds: crossingFolds, regime: regime,
+      logStretch: folds / Math.LN10, logModeScale: Math.log10(initialWaveH / (2 * Math.PI)) + folds / Math.LN10,
+      comovingHubbleRatio: Math.exp(-folds), beforePattern: pattern(initialWaveH), afterPattern: pattern(waveH),
+      growth: Array.from({ length: 121 }, function(_, i) {
+        var n = i / 2; return { folds: n, logStretch: n / Math.LN10, logModeScale: Math.log10(initialWaveH / (2 * Math.PI)) + n / Math.LN10 };
+      }), spectrum: spectrum };
+  }
+
+  // Rounded Planck 2018 central inputs; flat matter + cosmological constant.
+  // Radiation and detailed neutrino evolution are omitted: restrict to z <= 15.
+  var COSMIC_DISTANCE = { h0: 67.4, omegaM: 0.315, cKms: 299792.458,
+    mpcKm: 3.0856775814913673e19, gyrSeconds: 31557600e9, comparisonH0: 73.04 };
+  function cosmicDistanceIntegral(z) {
+    if (z === 0) return 0;
+    function f(x) { return 1 / Math.sqrt(COSMIC_DISTANCE.omegaM * Math.pow(1 + x, 3) + 1 - COSMIC_DISTANCE.omegaM); }
+    function integrate(a, b, fa, fm, fb, whole, tolerance, depth) {
+      var m = (a + b) / 2, fl = f((a + m) / 2), fr = f((m + b) / 2);
+      var left = (m - a) * (fa + 4 * fl + fm) / 6, right = (b - m) * (fm + 4 * fr + fb) / 6;
+      var error = left + right - whole;
+      if (depth === 0 || Math.abs(error) <= 15 * tolerance) return left + right + error / 15;
+      return integrate(a, m, fa, fl, fm, left, tolerance / 2, depth - 1)
+        + integrate(m, b, fm, fr, fb, right, tolerance / 2, depth - 1);
+    }
+    var fa = f(0), fm = f(z / 2), fb = f(z);
+    return integrate(0, z, fa, fm, fb, z * (fa + 4 * fm + fb) / 6, 1e-10, 18);
+  }
+  function cosmicAgeFactor(z) {
+    var lambda = 1 - COSMIC_DISTANCE.omegaM;
+    return 2 / (3 * Math.sqrt(lambda)) * Math.asinh(Math.sqrt(lambda / COSMIC_DISTANCE.omegaM) / Math.pow(1 + z, 1.5));
+  }
+  // Cache only dimensionless reference curves; returned samples remain private copies.
+  var cosmicDistanceSamples = null;
+  function cosmicDistanceModel(saved) {
+    var state = saved && typeof saved === 'object' && !Array.isArray(saved) ? saved : {};
+    function bounded(raw, low, high, fallback) {
+      var number = typeof raw === 'number' || typeof raw === 'string' && raw.trim() !== '' ? Number(raw) : NaN;
+      return Number.isFinite(number) ? Math.max(low, Math.min(high, number)) : fallback;
+    }
+    var z = Math.round(bounded(state.cosmoZ, 0, 15, 1) * 10000) / 10000;
+    var h0 = bounded(state.cosmoH0, 50, 90, COSMIC_DISTANCE.h0);
+    var hubbleGyr = COSMIC_DISTANCE.mpcKm / h0 / COSMIC_DISTANCE.gyrSeconds, ageNow = cosmicAgeFactor(0) * hubbleGyr;
+    function quantities(redshift, integral) {
+      var ageThen = cosmicAgeFactor(redshift) * hubbleGyr, lookback = ageNow - ageThen;
+      // One Gyr times c equals one billion light-years, using the same Julian year.
+      var nowGly = integral * hubbleGyr;
+      return { z: redshift, scaleFactor: 1 / (1 + redshift), ageGyr: ageThen,
+        lookbackGyr: lookback, lightTravelGly: lookback, nowGly: nowGly,
+        thenGly: nowGly / (1 + redshift) };
+    }
+    if (!cosmicDistanceSamples) cosmicDistanceSamples = Array.from({ length: 151 }, function(_, i) {
+      var redshift = i / 10; return { z: redshift, integral: cosmicDistanceIntegral(redshift) };
+    });
+    var selected = quantities(z, cosmicDistanceIntegral(z));
+    return Object.assign(selected, { h0: h0, omegaM: COSMIC_DISTANCE.omegaM, omegaLambda: 1 - COSMIC_DISTANCE.omegaM,
+      ageNowGyr: ageNow, hubbleGyr: hubbleGyr, nowMpc: COSMIC_DISTANCE.cKms / h0 * cosmicDistanceIntegral(z),
+      redshiftReference: REDSHIFT_REFERENCES.find(function(reference) { return reference.id === state.cosmoRedshiftReference && Math.abs(reference.z - z) < 0.00005; }) || null,
+      source: h0 === COSMIC_DISTANCE.h0 ? 'planck' : h0 === COSMIC_DISTANCE.comparisonH0 ? 'shoes' : 'custom',
+      samples: cosmicDistanceSamples.map(function(p) { return quantities(p.z, p.integral); }) });
+  }
+
   // Schwarzschild equivalents; observed masses do not imply measured Hawking radiation.
   // IAU nominal solar GM and CODATA 2022 constants; Fixsen (2009) CMB reference.
   var BH_THERMAL = { c: 299792458, G: 6.67430e-11, h: 6.62607015e-34, k: 1.380649e-23,
@@ -1055,7 +1457,7 @@
   try {
     window.__alloAstroPure = {
       gravitationalWaveModel: gravitationalWaveModel, pulsarLighthouseModel: pulsarLighthouseModel, transitModel: transitModel, planetComparisonModel: planetComparisonModel, cosmicRedshiftModel: cosmicRedshiftModel, stellarSpectrumModel: stellarSpectrumModel, gravitationalLensModel: gravitationalLensModel, eyepieceFieldModel: eyepieceFieldModel, telescopeOpticsModel: telescopeOpticsModel,
-      blackHoleThermalModel: blackHoleThermalModel, hrComparisonModel: hrComparisonModel, hrStellarModel: hrStellarModel, hrMainSequenceLogLum: hrMainSequenceLogLum,
+      binaryOrbitModel: binaryOrbitModel, tidalForcingModel: tidalForcingModel, habitableZoneModel: habitableZoneModel, magnitudeModel: magnitudeModel, cosmicCalendarModel: cosmicCalendarModel, cosmicCalendarPosition: cosmicCalendarPosition, galaxyRotationModel: galaxyRotationModel, inflationExpansionModel: inflationExpansionModel, cosmicDistanceModel: cosmicDistanceModel, blackHoleThermalModel: blackHoleThermalModel, hrComparisonModel: hrComparisonModel, hrStellarModel: hrStellarModel, hrMainSequenceLogLum: hrMainSequenceLogLum,
       astroDayNumber: astroDayNumber, obliquity: obliquity, sunRaDec: sunRaDec, sunEcliptic: sunEcliptic,
       moonRaDec: moonRaDec, topocentricRaDec: topocentricRaDec, moonTopocentricRaDec: moonTopocentricRaDec, moonPhaseAt: moonPhaseAt, moonPhaseFromAge: moonPhaseFromAge, moonGlyphGeometry: moonGlyphGeometry,
       moonAgeAtDate: moonAgeAtDate, amEclipseState: amEclipseState, AM_SYNODIC: AM_SYNODIC, planetRaDec: planetRaDec, siderealTime: siderealTime,
@@ -4085,6 +4487,7 @@
       return {
         state: status,
         contextLost: !!(S && S.contextLost),
+        renderCount: S ? (S.renderCount || 0) : 0,
         mode: S ? S.mode : null,
         scaleMode: S ? S.scaleMode : null,
         ageDays: S ? S.ageDays : null,
@@ -4467,6 +4870,11 @@
       }
 
       var el = S.renderer.domElement;
+      // Keep model updates current, but avoid GPU work for a hidden or offscreen Moon.
+      if (document.hidden || !el.isConnected) return;
+      var bounds = el.getBoundingClientRect();
+      if (bounds.width <= 0 || bounds.height <= 0 || bounds.bottom <= 0 || bounds.top >= window.innerHeight
+        || bounds.right <= 0 || bounds.left >= window.innerWidth) return;
       var w = el.clientWidth || 1, hgt = el.clientHeight || 1;
       if (w !== S.lastW || hgt !== S.lastH) {
         S.lastW = w;
@@ -4525,7 +4933,7 @@
       S.camera.aspect = w / Math.max(1, hgt);
       S.camera.updateProjectionMatrix();
       S.camera.lookAt(S.target);
-      try { S.renderer.render(S.scene, S.camera); } catch (e) {}
+      try { S.renderer.render(S.scene, S.camera); S.renderCount = (S.renderCount || 0) + 1; } catch (e) {}
       if (S.labelLayer) {
         var showLabels = S.mode === 'orbit' && S.overlays.labels && S.moonPosVector;
         S.labelLayer.style.display = showLabels ? 'block' : 'none';
@@ -6707,6 +7115,175 @@
       // ──────────────────────────────────────────────────────────────
       // MOON PHASES
       // ──────────────────────────────────────────────────────────────
+      function renderTidalForcing() {
+        var m = tidalForcingModel(d), bg = astronomyContrast ? '#000' : '#091323', border = astronomyContrast ? '#fbbf24' : '#475569';
+        var cyan = '#67e8f9', gold = '#fde68a', green = '#86efac', muted = '#cbd5e1';
+        var panel = { padding: 12, border: '1px solid ' + border, borderRadius: 12, background: bg, minWidth: 0 };
+        var prose = { margin: '8px 0', fontSize: 13, lineHeight: 1.75, color: muted };
+        function text(key, fallback) { return __alloT('stem.astronomy.tf_' + key, fallback); }
+        function n(value, digits) { return value.toLocaleString('en-US', { maximumFractionDigits: digits == null ? 2 : digits }); }
+        function signed(value) { return (value > 0 ? '+' : '') + n(value, 3); }
+        function button(label, action, on, key) {
+          return h('button', { key: key, type: 'button', className: 'astr-focus', onClick: action, 'aria-pressed': typeof on === 'boolean' ? on : undefined,
+            style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              border: '2px solid ' + (on ? gold : border), background: on ? gold : bg, color: on ? '#020617' : '#f1f5f9' } }, label);
+        }
+        function phase(value) { upd({ tidePhaseStart: Math.max(0, Math.min(1, value)), tideHours: 0 }); }
+        function hours(value) { upd({ tideHours: Math.max(0, Math.min(48, value)) }); }
+        var timeControl = { value: m.hours, min: 0, max: 48, step: 0.5, change: hours };
+        function keys(e, c) {
+          if (e.altKey || e.ctrlKey || e.metaKey) return;
+          var value, step = c.step * (e.shiftKey ? 5 : 1);
+          if (e.key === 'Home') value = c.min;
+          else if (e.key === 'End') value = c.max;
+          else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') value = c.value + step;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') value = c.value - step;
+          else return;
+          e.preventDefault(); c.change(Math.max(c.min, Math.min(c.max, value)));
+        }
+        function scrub(e) {
+          var rect = e.currentTarget.getBoundingClientRect(); if (!rect.width) return;
+          hours(Math.max(0, Math.min(1, ((e.clientX - rect.left) / rect.width * 360 - 64) / 270)) * 48);
+        }
+        var controls = [
+          { id: 'phase', label: text('phase', 'Starting lunar phase'), value: m.phaseStart, min: 0, max: 1, step: 0.01,
+            readout: n(m.phaseStart * 360, 0) + '°', change: phase, help: text('phase_help', 'Choose the Moon–Sun angle at hour zero. Changing it restarts model time. The Moon keeps moving as you explore the next 48 hours.') },
+          { id: 'distance', label: text('distance', 'Earth–Moon distance'), value: m.distanceKm, min: 363300, max: 405500, step: 500,
+            readout: n(m.distanceKm, 0) + ' km', change: function(v) { upd({ tideDistanceKm: v }); },
+            help: text('distance_help', 'These presets use NASA mean perigee, semimajor-axis and apogee distances. The chosen distance stays fixed during the 48-hour model.') },
+          Object.assign({}, timeControl, { id: 'time', label: text('time', 'Elapsed model time'), readout: n(m.hours, 2) + ' h',
+            help: text('time_help', 'The sample point rotates once per solar day. The Moon moves too, producing a lunar day of about 24 h 50 min. Arrow keys move half an hour; Shift moves 2.5 hours.') })
+        ];
+        var status = !m.includeSun ? text('moon_status', 'Moon-only experiment: solar forcing is omitted.')
+          : m.regime === 'spring' ? text('spring_status', 'Near spring alignment: lunar and solar contributions reinforce the largest spatial variation.')
+          : m.regime === 'neap' ? text('neap_status', 'Near neap alignment: lunar and solar contributions partly cancel, reducing the spatial variation.')
+          : text('transition_status', 'Between spring and neap alignments: the combined pattern changes as the Moon moves.');
+        function shape(field) {
+          return m.surface.map(function(p, i) { var r = 55 + 10 * p[field];
+            return (i ? 'L' : 'M') + (156 + r * Math.cos(p.angle)) + ',' + (178 - r * Math.sin(p.angle)); }).join(' ') + ' Z';
+        }
+        var moonX = 156 + 100 * Math.cos(m.current.angle), moonY = 178 - 100 * Math.sin(m.current.angle);
+        var pointX = 156 + 37 * Math.cos(m.current.observerAngle), pointY = 178 - 37 * Math.sin(m.current.observerAngle);
+        function chartX(hh) { return 64 + hh / 48 * 270; }
+        function chartY(value) { return 45 + (1.8 - value) / 3.6 * 210; }
+        var legend = text('legend', 'Cyan: Moon. Yellow dashed: Sun. Green: combined. Gold dot: the sample location.');
+        return h('div', { id: 'astronomy-tidal-forcing-lab', style: { padding: 12, borderRadius: 14, background: bg, minWidth: 0, marginBottom: 16 } },
+          h('p', { style: Object.assign({}, prose, { marginTop: 0 }) }, text('intro', 'Explore why the Sun and Moon produce spring and neap tides. The diagrams show an idealized tidal-forcing pattern and a sample point rotating through it. Values are relative to the Moon at its mean distance; they do not show local sea level.')),
+          h('div', { role: 'group', 'aria-label': text('phase_examples', 'Starting lunar phase examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+            [[0, text('new', 'New moon')], [0.25, text('first', 'First quarter')], [0.5, text('full', 'Full moon')], [0.75, text('last', 'Last quarter')]].map(function(p) {
+              return button(p[1], function() { phase(p[0]); }, Math.abs(m.phaseStart % 1 - p[0]) < 1e-10, String(p[0]));
+            })),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(220px,100%),1fr))', gap: 12 } },
+            controls.map(function(c) { return h('div', { key: c.id, style: panel },
+              h('label', { htmlFor: 'astronomy-tf-' + c.id, style: { display: 'block', fontSize: 13, fontWeight: 700, color: gold } }, c.label + ': ' + c.readout),
+              h('input', { id: 'astronomy-tf-' + c.id, type: 'range', step: 'any', min: c.min, max: c.max, value: c.value, className: 'astr-focus',
+                'aria-label': c.label, 'aria-valuetext': c.readout, onChange: function(e) { c.change(Number(e.target.value)); }, onKeyDown: function(e) { keys(e, c); },
+                style: { display: 'block', width: '100%', minHeight: 44, accentColor: gold } }),
+              h('p', { style: prose }, c.help),
+              c.id === 'distance' ? h('div', { role: 'group', 'aria-label': text('distance_examples', 'Published lunar distance examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 6 } },
+                [[363300, text('perigee', 'Mean perigee')], [384400, text('mean', 'Mean distance')], [405500, text('apogee', 'Mean apogee')]].map(function(p) {
+                  return button(p[1], function() { upd({ tideDistanceKm: p[0] }); }, m.distanceKm === p[0], String(p[0]));
+                })) : null);
+            })),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, margin: '12px 0' } },
+            button(text('sun_on', 'Moon + Sun'), function() { upd({ tideIncludeSun: true }); }, m.includeSun, 'sun-on'),
+            button(text('sun_off', 'Moon only'), function() { upd({ tideIncludeSun: false }); }, !m.includeSun, 'sun-off'),
+            button(text('reset', 'Reset tide explorer'), function() { upd({ tidePhaseStart: 0, tideHours: 0, tideDistanceKm: 384400, tideIncludeSun: true }); }, undefined, 'reset')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(160px,100%),1fr))', gap: 8 } },
+            [
+              ['moonStrength', text('moon_strength', 'Lunar contribution'), m.moonStrength, n(m.moonStrength, 3) + '×'],
+              ['sunStrength', text('sun_strength', 'Solar contribution'), m.sunStrength, n(m.sunStrength, 3) + '×'],
+              ['amplitude', text('amplitude', 'Combined spatial amplitude'), m.current.amplitude, n(m.current.amplitude, 3) + '×'],
+              ['illumination', text('illumination', 'Moon illuminated from Earth'), m.illumination, n(m.illumination * 100, 1) + '%']
+            ].map(function(row) { return h('div', { key: row[0], 'data-tf-metric': row[0], 'data-value': row[2], style: panel },
+              h('div', { style: { fontSize: 12, color: muted } }, row[1]), h('strong', { style: { display: 'block', fontSize: 16, marginTop: 4, color: gold } }, row[3])); })),
+          h('p', { id: 'astronomy-tf-status', role: 'status', 'aria-live': 'polite', 'data-regime': m.regime, style: Object.assign({}, prose, { borderLeft: '3px solid ' + green, paddingLeft: 12 }) }, status),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(320px,100%),1fr))', gap: 12 } },
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) },
+              h('figcaption', { style: { fontSize: 14, fontWeight: 700, color: gold } }, text('geometry_title', 'Earth, Moon and tidal contributions')),
+              h('svg', { id: 'astronomy-tf-geometry', viewBox: '0 0 360 350', role: 'img', 'aria-labelledby': 'astronomy-tf-geometry-title astronomy-tf-geometry-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                h('title', { id: 'astronomy-tf-geometry-title' }, text('geometry_title', 'Earth, Moon and tidal contributions')),
+                h('desc', { id: 'astronomy-tf-geometry-desc' }, text('geometry_desc', 'View above the orbital plane. The Sun is to the right. Cyan and yellow outlines show the separate contributions; the green outline combines them. Sizes, orbit spacing and bulges are exaggerated.')),
+                h('circle', { cx: 156, cy: 178, r: 100, fill: 'none', stroke: '#94a3b8', strokeDasharray: '4 6' }),
+                h('line', { x1: 156, y1: 178, x2: moonX, y2: moonY, stroke: cyan, strokeDasharray: '4 4', opacity: 0.7 }),
+                h('path', { d: shape('total'), fill: '#14532d', stroke: green, strokeWidth: 3, fillOpacity: 0.6, 'data-tf-shape': 'total' }),
+                h('path', { d: shape('moon'), fill: 'none', stroke: cyan, strokeWidth: 2, 'data-tf-shape': 'moon' }),
+                h('path', { d: shape('sun'), fill: 'none', stroke: gold, strokeWidth: 2, strokeDasharray: '5 4', 'data-tf-shape': 'sun' }),
+                h('circle', { cx: 156, cy: 178, r: 37, fill: '#0c4a6e', stroke: '#7dd3fc', strokeWidth: 2 }),
+                h('ellipse', { cx: 156, cy: 178, rx: 15, ry: 37, fill: 'none', stroke: '#7dd3fc', opacity: 0.35 }),
+                h('line', { x1: 119, x2: 193, y1: 178, y2: 178, stroke: '#7dd3fc', opacity: 0.35 }),
+                h('text', { x: 156, y: 185, textAnchor: 'middle', fill: '#f1f5f9', fontSize: 21 }, text('earth', 'Earth')),
+                h('circle', { cx: moonX, cy: moonY, r: 11, fill: '#334155', stroke: cyan, strokeWidth: 2, 'data-tf-moon': true }),
+                h('path', { d: 'M' + moonX + ',' + (moonY - 11) + ' A11,11 0 0,1 ' + moonX + ',' + (moonY + 11) + ' Z', fill: '#e2e8f0' }),
+                h('circle', { cx: pointX, cy: pointY, r: 5, fill: gold, stroke: bg, strokeWidth: 2, 'data-tf-observer': true }),
+                h('circle', { cx: 327, cy: 178, r: 18, fill: gold, stroke: '#fbbf24', strokeWidth: 2 }),
+                h('text', { x: 327, y: 136, textAnchor: 'middle', fill: gold, fontSize: 22 }, text('sun', 'Sun')),
+                h('line', { x1: 303, x2: 280, y1: 178, y2: 178, stroke: gold, strokeWidth: 3 }),
+                h('path', { d: 'M286,173 L279,178 L286,183', fill: 'none', stroke: gold, strokeWidth: 2 }),
+                h('text', { x: 156, y: 39, textAnchor: 'middle', fill: cyan, fontSize: 22 }, text('moon_orbit', 'Moon orbit')),
+                h('text', { x: 180, y: 326, textAnchor: 'middle', fill: muted, fontSize: 22 }, text('geometry_time', 'Model time') + ': ' + n(m.hours, 1) + ' h')),
+              h('p', { style: prose }, legend),
+              h('p', { style: prose }, text('geometry_help', 'Diagram sizes and tidal bulges are exaggerated. The orbit spacing stays fixed on screen; the distance control changes the strength. The Moon icon is lit on the side facing the Sun.'))),
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) },
+              h('figcaption', { style: { fontSize: 14, fontWeight: 700, color: gold } }, text('chart_title', 'Forcing at the rotating sample point')),
+              h('svg', { id: 'astronomy-tf-chart', viewBox: '0 0 360 360', role: 'slider', tabIndex: 0, className: 'astr-focus', 'aria-label': text('chart_a11y', 'Select elapsed time on the tidal-forcing graph'),
+                'aria-valuemin': 0, 'aria-valuemax': 48, 'aria-valuenow': m.hours, 'aria-valuetext': n(m.hours, 2) + ' h; ' + signed(m.current.total) + ' ' + text('relative_units', 'relative forcing units'),
+                'aria-orientation': 'horizontal', 'aria-describedby': 'astronomy-tf-chart-help', style: { width: '100%', height: 'auto', display: 'block', touchAction: 'pan-y' },
+                onKeyDown: function(e) { keys(e, timeControl); },
+                onPointerDown: function(e) { if (e.button != null && e.button !== 0) return; e.currentTarget.focus({ preventScroll: true }); scrub(e); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} },
+                onPointerMove: function(e) { if (e.buttons === 1) scrub(e); },
+                onPointerUp: function(e) { try { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {} },
+                onPointerCancel: function(e) { try { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {} }
+              },
+                h('title', null, text('chart_title', 'Forcing at the rotating sample point')),
+                h('desc', null, text('chart_desc', 'The two daily contributions add at every time. The vertical line and green point mark the selected time. Values are relative forcing, not water height.')),
+                h('text', { x: 199, y: 28, textAnchor: 'middle', fill: muted, fontSize: 21 }, text('relative_forcing', 'Relative forcing')),
+                [-1.8, 0, 1.8].map(function(v) { return h('g', { key: v },
+                  h('line', { x1: 64, x2: 334, y1: chartY(v), y2: chartY(v), stroke: v === 0 ? '#94a3b8' : '#334155', strokeDasharray: v === 0 ? '4 4' : undefined }),
+                  h('text', { x: 56, y: chartY(v) + 5, textAnchor: 'end', fill: muted, fontSize: 22 }, String(v))); }),
+                [0, 12, 24, 36, 48].map(function(hh) { return h('g', { key: hh },
+                  h('line', { x1: chartX(hh), x2: chartX(hh), y1: 45, y2: 265, stroke: '#334155' }),
+                  h('text', { x: chartX(hh), y: 297, textAnchor: 'middle', fill: muted, fontSize: 22 }, String(hh))); }),
+                ['moon', 'sun', 'total'].map(function(field) { return h('polyline', { key: field, 'data-tf-path': field,
+                  points: m.points.map(function(p) { return chartX(p.hours) + ',' + chartY(p[field]); }).join(' '), fill: 'none', stroke: field === 'moon' ? cyan : field === 'sun' ? gold : green,
+                  strokeWidth: field === 'total' ? 3 : 2, strokeDasharray: field === 'sun' ? '5 4' : undefined }); }),
+                h('line', { x1: chartX(m.hours), x2: chartX(m.hours), y1: 40, y2: 270, stroke: gold, strokeWidth: 2 }),
+                h('circle', { cx: chartX(m.hours), cy: chartY(m.current.total), r: 6, fill: bg, stroke: green, strokeWidth: 3, 'data-tf-selected': true, 'data-value': m.current.total, 'data-hours': m.hours }),
+                h('text', { x: 199, y: 346, textAnchor: 'middle', fill: muted, fontSize: 22 }, text('hours_axis', 'Elapsed hours'))),
+              h('p', { id: 'astronomy-tf-chart-help', style: prose }, text('chart_help', 'Tap or drag on the graph to select model time. The lunar and solar curves have different periods. Green is their sum; the fixed vertical scale makes spring and neap cases comparable.')),
+              h('p', { style: prose }, text('current_forcing', 'Combined forcing at the sample point') + ': ' + signed(m.current.total) + '×')),
+          ),
+          h('div', { style: Object.assign({}, panel, { marginTop: 12 }) },
+            h('strong', { style: { fontSize: 14, color: cyan } }, text('explanation', 'Why the two contributions behave this way')),
+            h('p', { style: prose }, text('explanation_body', 'Tides depend on the change in gravity across Earth. The leading tidal term scales as GM / distance³, so moving the Moon closer increases its contribution. The two opposite lobes produce the twice-per-lunar-day pattern in this coplanar model.')),
+            h('p', { style: prose }, text('periods', 'Model periods') + ': ' + text('lunar_period', 'lunar contribution') + ' ' + n(m.moonHalfPeriodHours, 3) + ' h; ' + text('solar_period', 'solar contribution') + ' 12 h.'),
+            h('p', { style: prose }, text('local_limits', 'Real coasts can have one, two unequal, or two similar highs per day. Ocean depth, coast shape, latitude, friction and weather affect timing and water level. This model omits those effects.')),
+            h('a', { href: 'https://tidesandcurrents.noaa.gov/map/', target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, fontSize: 13, color: cyan } }, text('local_link', 'NOAA · Local tide observations and predictions'))),
+          h('details', { style: Object.assign({}, panel, { marginTop: 12 }) },
+            h('summary', { className: 'astr-focus', style: { display: 'list-item', listStylePosition: 'inside', minHeight: 44, padding: '10px 0', cursor: 'pointer', fontSize: 14, fontWeight: 700, color: cyan } }, text('sources', 'Published inputs and model limits')),
+            h('p', { style: prose }, text('source_basis', 'The gravitational parameters use JPL DE440 values. Both are converted to km³/s² before forming their ratio. NASA provides the reference lunar distances. A 29.53059-day mean synodic month and a 24-hour solar day set the model rates; the Moon distance is held constant. The reference values are embedded, so the explorer works offline.')),
+            h('table', { id: 'astronomy-tf-inputs', style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 12, color: muted } },
+              h('caption', { style: { textAlign: 'left', fontSize: 13, lineHeight: 1.7, margin: '8px 0' } }, text('table_caption', 'Reference inputs used in the forcing ratio. GM is the gravitational parameter; distance is center to center. Solar GM is converted to km³/s² and rounded for display.')),
+              h('thead', null, h('tr', null, [text('input', 'Input'), text('value', 'Value')].map(function(label, i) { return h('th', { key: i, scope: 'col', style: { width: i ? '56%' : '44%', padding: '6px 2px', textAlign: 'left', borderBottom: '1px solid ' + border } }, label); }))),
+              h('tbody', null, [
+                [text('moon_gm', 'Moon GM'), '4,902.800118 km³/s²'],
+                [text('sun_gm', 'Sun GM'), '1.3271244 × 10¹¹ km³/s²'],
+                [text('lunar_mean', 'Lunar semimajor axis'), '384,400 km'],
+                [text('lunar_near', 'Mean lunar perigee'), '363,300 km'],
+                [text('lunar_far', 'Mean lunar apogee'), '405,500 km'],
+                [text('solar_distance', 'Solar distance (1 AU)'), '149,597,870.7 km']
+              ].map(function(row) { var style = { padding: '8px 2px', textAlign: 'left', overflowWrap: 'anywhere' }; return h('tr', { key: row[0] }, h('th', { scope: 'row', style: style }, row[0]), h('td', { style: style }, row[1])); }))),
+            h('p', { style: Object.assign({}, prose, { fontFamily: 'ui-monospace, monospace', overflowWrap: 'anywhere' }) }, 'q = M cos[2(θ − φ)] + S cos(2θ); M = (384400 / d)³; S = (GM_Sun / GM_Moon) × (384400 / AU_km)³'),
+            h('p', { style: prose }, text('math_limits', 'q is the varying part of an idealized equatorial tidal term, normalized to the mean-distance lunar contribution. The diagram and graph use the same q. The Moon–Sun angle advances with model time; the sample point starts on the sunward side of Earth. Inclination, eccentricity, ocean response, delays and measurement uncertainty are omitted.')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, [
+              ['https://ssd.jpl.nasa.gov/astro_par.html', text('jpl_link', 'JPL · Gravitational parameters')],
+              ['https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html', text('nasa_link', 'NASA · Lunar reference distances')],
+              ['https://oceanservice.noaa.gov/facts/springtide.html', text('noaa_link', 'NOAA · Spring and neap tides')],
+              ['https://oceanservice.noaa.gov/education/tutorial_tides/tides07_cycles.html', text('cycles_link', 'NOAA · Coastal tide patterns')]
+            ].map(function(link) { return h('a', { key: link[0], href: link[0], target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, fontSize: 13, color: cyan } }, link[1]); })))
+        );
+      }
+
       function renderMoon() {
         var restoredMoonPhaseIdx = Number(d.moonPhaseIdx);
         var legacyMoonPhaseIdx = Number.isInteger(restoredMoonPhaseIdx)
@@ -7347,6 +7924,10 @@
           softNote('Moon phases are changing views of one sunlit hemisphere - not Earth\'s shadow. Use Telescope view for the appearance and Orbit view for the geometry.'),
 
           moonGeometryPanel,
+          h('a', { href: '#astronomy-tidal-forcing-lab', className: 'astr-focus', onClick: function(e) {
+            e.preventDefault(); var lab = document.getElementById('astronomy-tidal-forcing-lab'), control = document.getElementById('astronomy-tf-time');
+            if (lab) lab.scrollIntoView({ behavior: 'auto', block: 'start' }); if (control) control.focus({ preventScroll: true });
+          }, style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 12, fontSize: 14, color: '#86efac' } }, __alloT('stem.astronomy.tf_jump', 'Explore tides and lunar alignment')),
           sectionCard('Why the same face always points to us',
             h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
               __alloT('stem.astronomy.the_moon_rotates_on_its_own_axis_exact', 'The Moon rotates on its own axis exactly once per orbit around Earth. This "tidal locking" means the same hemisphere always faces us. We never see the "far side" from Earth without a spacecraft. '),
@@ -7409,7 +7990,7 @@
                       __alloT('stem.astronomy.water_left_behind_as_earth_itself_gets', 'water left behind as Earth itself gets pulled toward Moon faster → bulges out the other way.')
                     ),
                     h('p', { style: { margin: 0, fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
-                      __alloT('stem.astronomy.earth_rotates_through_both_bulges_in_2', 'Earth rotates THROUGH both bulges in 24 hours, so every point on the equator passes through two tidal highs (and two lows) per day. Tide cycle is actually 24h 50min because the Moon is also moving in its orbit — so the gap between high tides is ~12h 25min.')
+                      __alloT('stem.astronomy.earth_rotates_through_both_bulges_in_2', 'In an idealized ocean, rotation produces two tidal highs and lows per lunar day (about 24 h 50 min). Real coasts can have one, two unequal, or two similar highs; local timing and height depend on the basin and weather.')
                     )
                   )
                 },
@@ -7480,6 +8061,7 @@
               ];
               var sel = TOPICS.find(function(t) { return t.id === d.selectedTideTopic; }) || TOPICS[0];
               return h('div', null,
+                renderTidalForcing(),
                 h('p', { style: { margin: '0 0 12px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
                   __alloT('stem.astronomy.the_moon_makes_the_tides_but_the_physi', 'The Moon makes the tides — but the physics is subtler than "Moon pulls water." Tidal forces from the Moon shape Earth\'s rotation, its day length, the Moon\'s own orbit, and on a grander scale they sculpt every binary system in the universe.')
                 ),
@@ -7489,7 +8071,7 @@
                     return h('button', { key: t.id,
                       'aria-pressed': active,
                       onClick: function() { upd({ selectedTideTopic: t.id }); },
-                      style: { padding: '8px 14px', borderRadius: 8, background: active ? t.color + '33' : '#1e293b', border: '1px solid ' + (active ? t.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
+                      style: { minHeight: 44, padding: '8px 14px', borderRadius: 8, background: active ? t.color + '33' : '#1e293b', border: '1px solid ' + (active ? t.color : '#94a3b8'), color: active ? '#fff' : '#cbd5e1', fontSize: 12, fontWeight: 700, cursor: 'pointer' }
                     }, t.name);
                   })
                 ),
@@ -7863,6 +8445,171 @@
       // ──────────────────────────────────────────────────────────────
       // EXOPLANETS
       // ──────────────────────────────────────────────────────────────
+      function renderHabitableZone() {
+        var m = habitableZoneModel(d), bg = astronomyContrast ? '#000' : '#091323', border = astronomyContrast ? '#fbbf24' : '#475569';
+        var gold = '#fde68a', cyan = '#67e8f9', green = '#86efac', muted = '#cbd5e1';
+        var panel = { padding: 12, border: '1px solid ' + border, borderRadius: 12, background: bg, minWidth: 0 };
+        var prose = { margin: '8px 0', fontSize: 13, lineHeight: 1.75, color: muted };
+        var minLog = Math.log10(0.03), maxLog = Math.log10(20), widthLog = maxLog - minLog;
+        function text(key, fallback) { return __alloT('stem.astronomy.hz_' + key, fallback); }
+        function n(value, digits) { return value.toLocaleString('en-US', { maximumFractionDigits: digits == null ? 3 : digits }); }
+        function energy(value) { return value >= 100000 || value < 0.1 ? value.toExponential(2) : n(value, 1); }
+        function x(au) { return 44 + (Math.log10(au) - minLog) / widthLog * 276; }
+        function button(label, action, on, key) {
+          return h('button', { key: key, type: 'button', className: 'astr-focus', onClick: action, 'aria-pressed': typeof on === 'boolean' ? on : undefined,
+            style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              border: '2px solid ' + (on ? gold : border), background: on ? gold : bg, color: on ? '#020617' : '#f1f5f9' } }, label);
+        }
+        function set(field, value) {
+          var next = {}; next[field] = value; upd(next);
+        }
+        function distance(value) { set('hzDistanceAu', Math.max(0.03, Math.min(20, value))); }
+        function keys(e, control) {
+          if (e.altKey || e.ctrlKey || e.metaKey) return;
+          var value, step = control.step * (e.shiftKey ? 5 : 1);
+          if (e.key === 'Home') value = control.min;
+          else if (e.key === 'End') value = control.max;
+          else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') value = control.value + step;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') value = control.value - step;
+          else return;
+          e.preventDefault(); control.change(Math.max(control.min, Math.min(control.max, value)));
+        }
+        var distanceControl = { value: m.distanceLog, min: minLog, max: maxLog, step: 0.05, change: function(v) { distance(Math.pow(10, v)); } };
+        function scrub(e) {
+          if (e.button != null && e.button !== 0) return;
+          var rect = e.currentTarget.getBoundingClientRect(); if (!rect.width) return;
+          var fraction = Math.max(0, Math.min(1, ((e.clientX - rect.left) / rect.width * 360 - 44) / 276));
+          distance(Math.pow(10, minLog + fraction * widthLog));
+        }
+        function choosePlanet(p) { upd({ hzTemperatureK: 5772, hzLuminosity: 1, hzDistanceAu: p.distanceAu, hzAlbedo: p.albedo }); }
+        var controls = [
+          { id: 'temperature', label: text('temperature', 'Stellar temperature'), value: m.temperatureK, readout: n(m.temperatureK, 0) + ' K',
+            min: 2600, max: 7200, step: 100, change: function(v) { set('hzTemperatureK', v); },
+            help: text('temperature_help', 'The published fit covers 2,600–7,200 K. Temperature changes the spectrum and the climate-model flux limits.') },
+          { id: 'luminosity', label: text('luminosity', 'Total stellar luminosity'), value: m.luminosityLog, readout: n(m.luminosity) + ' × ' + text('sun_light', 'Sun'),
+            min: -2, max: 1, step: 0.05, change: function(v) { set('hzLuminosity', Math.pow(10, v)); },
+            help: text('luminosity_help', 'This is total light across all wavelengths. Equal slider movements multiply the luminosity. Temperature and luminosity are independent scenario inputs.') },
+          Object.assign({}, distanceControl, { id: 'distance', label: text('distance', 'Orbital distance'), readout: n(m.distanceAu) + ' AU',
+            help: text('distance_help', '1 AU is the standard Earth–Sun distance. This logarithmic control spans 0.03–20 AU; equal movements multiply the distance.') }),
+          { id: 'albedo', label: text('albedo', 'Reflected fraction (Bond albedo)'), value: m.albedo, readout: n(m.albedo * 100, 1) + '%',
+            min: 0, max: 0.9, step: 0.01, change: function(v) { set('hzAlbedo', v); },
+            help: text('albedo_help', 'This is the fraction of incoming starlight reflected to space. It changes the simple energy balance; the published climate boundaries retain their own atmospheric assumptions.') }
+        ];
+        var status = m.regime === 'inner' ? text('inner_status', 'Inside the inner boundary: more irradiation than the runaway-greenhouse limit.')
+          : m.regime === 'outer' ? text('outer_status', 'Beyond the outer boundary: less irradiation than the maximum-greenhouse limit.')
+          : text('within_status', 'Between the conservative boundaries under the selected climate assumptions.');
+        var referenceName = m.reference ? text(m.reference.id + '_name', m.reference.name) : text('custom', 'Custom scenario');
+        var svgText = { fill: muted, fontSize: 22 };
+        return h('div', { id: 'astronomy-habitable-zone-lab', style: { padding: 12, borderRadius: 14, background: bg, minWidth: 0 } },
+          h('p', { style: Object.assign({}, prose, { marginTop: 0 }) }, text('intro', 'How far from a star could surface water persist? Move the planet and change the star. The green band shows one published climate model for a planet of one Earth mass. Its location is a starting point for investigation, not evidence of water or life.')),
+          h('div', { role: 'group', 'aria-label': text('planet_examples', 'Published planet input examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+            m.references.map(function(p) { return button(text(p.id + '_name', p.name), function() { choosePlanet(p); }, !!m.reference && m.reference.id === p.id, p.id); })),
+          h('p', { style: prose }, referenceName + ' · ' + text('reference_help', 'Planet buttons restore NASA orbital distance and reflectivity around the Sun. The zone model still assumes one Earth mass; planetary atmospheres are not simulated.')),
+          h('div', { role: 'group', 'aria-label': text('star_scenarios', 'Stellar scenarios'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+            button(text('sun', 'Sun'), function() { upd({ hzTemperatureK: 5772, hzLuminosity: 1 }); }, m.temperatureK === 5772 && m.luminosity === 1, 'sun'),
+            button(text('cool', 'Cool star scenario'), function() { upd({ hzTemperatureK: 3000, hzLuminosity: 0.01 }); }, m.temperatureK === 3000 && m.luminosity === 0.01, 'cool'),
+            button(text('hot', 'Hot star scenario'), function() { upd({ hzTemperatureK: 7000, hzLuminosity: 5 }); }, m.temperatureK === 7000 && m.luminosity === 5, 'hot')),
+          h('p', { style: prose }, text('scenario_help', 'The cool and hot star scenarios are illustrative inputs. They keep your selected distance and reflectivity.')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(220px,100%),1fr))', gap: 12 } },
+            controls.map(function(c) { return h('div', { key: c.id, style: panel },
+              h('label', { htmlFor: 'astronomy-hz-' + c.id, style: { display: 'block', fontSize: 13, fontWeight: 700, color: gold } }, c.label + ': ' + c.readout),
+              h('input', { id: 'astronomy-hz-' + c.id, type: 'range', className: 'astr-focus', min: c.min, max: c.max, step: 'any', value: c.value,
+                'aria-label': c.label, 'aria-valuetext': c.readout, onChange: function(e) { c.change(Number(e.target.value)); }, onKeyDown: function(e) { keys(e, c); },
+                style: { display: 'block', width: '100%', minHeight: 44, accentColor: gold } }),
+              h('p', { style: prose }, c.help)); })),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(160px,100%),1fr))', gap: 8, marginTop: 12 } },
+            [
+              ['flux', text('flux', 'Starlight relative to Earth'), m.flux, energy(m.flux) + '×'],
+              ['innerAu', text('inner_boundary', 'Inner boundary'), m.inner.distanceAu, n(m.inner.distanceAu) + ' AU'],
+              ['outerAu', text('outer_boundary', 'Outer boundary'), m.outer.distanceAu, n(m.outer.distanceAu) + ' AU'],
+              ['equilibriumK', text('equilibrium', 'Simple equilibrium temperature'), m.equilibriumK, n(m.equilibriumK, 1) + ' K']
+            ].map(function(row) { return h('div', { key: row[0], 'data-hz-metric': row[0], 'data-value': row[2], style: panel },
+              h('div', { style: { fontSize: 12, color: muted } }, row[1]), h('strong', { style: { display: 'block', marginTop: 4, fontSize: 16, color: gold } }, row[3])); })),
+          h('p', { id: 'astronomy-hz-status', role: 'status', 'aria-live': 'polite', 'data-regime': m.regime, style: Object.assign({}, prose, { borderLeft: '3px solid ' + green, paddingLeft: 12 }) }, status),
+          h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
+            button(text('zone_center', 'Move between the boundaries'), function() { distance(m.zoneCenterAu); }, undefined, 'center'),
+            button(text('reset', 'Reset habitable-zone explorer'), function() { choosePlanet(m.references[1]); }, undefined, 'reset')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(320px,100%),1fr))', gap: 12 } },
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) },
+              h('figcaption', { style: { fontSize: 14, fontWeight: 700, color: gold } }, text('orbit_title', 'Orbit and climate-model boundaries')),
+              h('svg', { id: 'astronomy-hz-orbit', viewBox: '0 0 360 330', role: 'slider', tabIndex: 0, className: 'astr-focus',
+                'aria-label': text('orbit_a11y', 'Select orbital distance on the diagram'), 'aria-valuemin': 0.03, 'aria-valuemax': 20, 'aria-valuenow': m.distanceAu,
+                'aria-valuetext': n(m.distanceAu) + ' AU. ' + status, 'aria-orientation': 'horizontal', 'aria-describedby': 'astronomy-hz-orbit-help',
+                'data-distance-au': m.distanceAu, style: { width: '100%', height: 'auto', display: 'block', touchAction: 'pan-y' },
+                onKeyDown: function(e) { keys(e, distanceControl); },
+                onPointerDown: function(e) { if (e.button != null && e.button !== 0) return; e.currentTarget.focus({ preventScroll: true }); scrub(e); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (err) {} },
+                onPointerMove: function(e) { if (e.buttons === 1) scrub(e); },
+                onPointerUp: function(e) { try { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {} },
+                onPointerCancel: function(e) { try { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); } catch (err) {} }
+              },
+                h('title', null, text('orbit_title', 'Orbit and climate-model boundaries')),
+                h('desc', null, status + ' ' + text('orbit_desc', 'Dashed lines mark the climate boundaries. The ring marks the selected distance.')),
+                h('text', Object.assign({ x: 44, y: 45 }, svgText), text('closer', 'Closer')),
+                h('text', Object.assign({ x: 320, y: 45, textAnchor: 'end' }, svgText), text('farther', 'Farther')),
+                h('rect', { x: 44, y: 78, width: x(m.inner.distanceAu) - 44, height: 122, fill: '#7c2d12', stroke: '#fdba74', 'data-hz-band': 'inner' }),
+                h('rect', { x: x(m.inner.distanceAu), y: 78, width: x(m.outer.distanceAu) - x(m.inner.distanceAu), height: 122, fill: '#14532d', stroke: green, 'data-hz-band': 'within' }),
+                h('rect', { x: x(m.outer.distanceAu), y: 78, width: 320 - x(m.outer.distanceAu), height: 122, fill: '#0c4a6e', stroke: '#7dd3fc', 'data-hz-band': 'outer' }),
+                m.boundaries.map(function(b) { return h('line', { key: b.id, 'data-hz-boundary': b.id, 'data-value': b.distanceAu, x1: x(b.distanceAu), x2: x(b.distanceAu), y1: 68, y2: 210, stroke: '#f1f5f9', strokeWidth: 2, strokeDasharray: '5 5' }); }),
+                h('line', { x1: 44, x2: 320, y1: 140, y2: 140, stroke: '#cbd5e1', strokeWidth: 2 }),
+                h('line', { x1: x(m.distanceAu), x2: x(m.distanceAu), y1: 60, y2: 216, stroke: gold, strokeWidth: 2 }),
+                h('circle', { cx: x(m.distanceAu), cy: 140, r: 9, fill: bg, stroke: gold, strokeWidth: 4, 'data-hz-selected': true, 'data-value': m.distanceAu }),
+                [0.03, 0.1, 1, 10, 20].map(function(au) { return h('g', { key: au },
+                  h('line', { x1: x(au), x2: x(au), y1: 220, y2: 230, stroke: muted }),
+                  h('text', Object.assign({ x: x(au), y: 264, textAnchor: au === 10 ? 'end' : au === 20 ? 'start' : 'middle' }, svgText), String(au))); }),
+                h('text', Object.assign({ x: 180, y: 309, textAnchor: 'middle' }, svgText), text('axis', 'Distance in AU'))),
+              h('p', { id: 'astronomy-hz-orbit-help', style: prose }, text('orbit_help', 'Tap the diagram to choose a distance. The scale is logarithmic; the planet marker shows distance only. The green band is between the conservative boundaries.')),
+              h('p', { style: prose }, text('legend', 'Orange: inside the inner boundary. Green: between the limits. Blue: beyond the outer boundary.'))),
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) },
+              h('figcaption', { style: { fontSize: 14, fontWeight: 700, color: gold } }, text('energy_title', 'Where the incoming starlight goes')),
+              h('svg', { id: 'astronomy-hz-energy', viewBox: '0 0 360 330', role: 'img', 'aria-labelledby': 'astronomy-hz-energy-title astronomy-hz-energy-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                h('title', { id: 'astronomy-hz-energy-title' }, text('energy_title', 'Where the incoming starlight goes')),
+                h('desc', { id: 'astronomy-hz-energy-desc' }, text('energy_desc', 'Each track represents all incident light. Reflected and absorbed fractions add to 100 percent.')),
+                [
+                  { id: 'incident', y: 42, name: text('incident', 'Incoming'), fraction: 1, color: gold },
+                  { id: 'reflected', y: 143, name: text('reflected', 'Reflected'), fraction: m.reflectedFraction, color: cyan },
+                  { id: 'absorbed', y: 244, name: text('absorbed', 'Absorbed'), fraction: m.absorbedFraction, color: green }
+                ].map(function(row) { return h('g', { key: row.id, 'data-hz-energy-row': row.id, 'data-fraction': row.fraction },
+                  h('text', Object.assign({ x: 32, y: row.y }, svgText), row.name),
+                  h('text', Object.assign({ x: 328, y: row.y, textAnchor: 'end' }, svgText), n(row.fraction * 100, 1) + '%'),
+                  h('rect', { x: 32, y: row.y + 20, width: 296, height: 28, fill: bg, stroke: muted }),
+                  h('rect', { x: 32, y: row.y + 20, width: row.fraction * 296, height: 28, fill: row.color })); })),
+              h('p', { style: prose }, text('energy_help', 'Tracks show fractions of the selected incoming light. Higher reflectivity reduces absorbed energy. Changing distance changes the total energy, while these fractions stay fixed.')),
+              h('dl', { style: { margin: 0, fontSize: 13, color: muted, lineHeight: 1.75 } },
+                h('dt', null, text('incoming_energy', 'Incoming irradiance')), h('dd', { 'data-hz-energy': 'irradiance', 'data-value': m.irradiance, style: { margin: '0 0 8px', color: gold } }, energy(m.irradiance) + ' W/m²'),
+                h('dt', null, text('mean_absorbed', 'Absorbed, averaged over the globe')), h('dd', { 'data-hz-energy': 'meanAbsorbed', 'data-value': m.meanAbsorbed, style: { margin: 0, color: green } }, energy(m.meanAbsorbed) + ' W/m²')))),
+          h('div', { style: Object.assign({}, panel, { marginTop: 12 }) },
+            h('strong', { style: { fontSize: 14, color: cyan } }, text('temperature_limit', 'Equilibrium temperature and surface climate')),
+            h('p', { style: prose }, text('temperature_help2', 'The simple temperature assumes a blackbody, uniform heat redistribution and no greenhouse warming or internal heat. Absorbed irradiance is divided by four to average intercepted sunlight over the globe. Real surface temperatures also depend on the atmosphere, clouds, circulation and pressure.')),
+            h('p', { style: Object.assign({}, prose, { fontFamily: 'ui-monospace, monospace', overflowWrap: 'anywhere' }) }, 'S / S_Earth = L / r²; T_eq = [1361 × (L / r²) × (1 − A) / (4σ)]^(1/4)'),
+            m.reference ? h('p', { style: prose }, text('measured_surface', 'NASA reference mean surface temperature') + ': ' + n(m.reference.surfaceK, 0) + ' K. ' + text('comparison_help', 'Compare it with the simple equilibrium estimate above. The two describe different quantities.')) : null),
+          h('details', { style: Object.assign({}, panel, { marginTop: 12 }) },
+            h('summary', { className: 'astr-focus', style: { minHeight: 44, display: 'flex', alignItems: 'center', fontSize: 14, fontWeight: 700, color: cyan, cursor: 'pointer' } }, text('sources', 'Published inputs and model limits')),
+            h('p', { style: prose }, text('climate_limits', 'The green band uses the one-Earth-mass conservative limits from Kopparapu et al. (2014): runaway greenhouse at the inner edge and maximum CO₂ greenhouse at the outer edge. The fit covers 2,600–7,200 K and uses the original 5,780 K polynomial offset. Clouds, rotation and different atmospheres can change the boundaries.')),
+            h('p', { style: prose }, text('sun_basis', 'The Sun input uses the IAU 2015 nominal effective temperature of 5,772 K and a solar irradiance of 1,361 W/m² at 1 AU. The cool and hot inputs are teaching scenarios.')),
+            h('table', { id: 'astronomy-hz-catalog', style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 12, color: muted, marginTop: 10 } },
+              h('caption', { style: { textAlign: 'left', fontSize: 13, lineHeight: 1.7, marginBottom: 8 } }, text('catalog_caption', 'NASA fact-sheet inputs: J2000 semimajor axes in AU, Bond albedo and reference mean surface temperatures in kelvin. Orbit values are rounded here; presets retain the published digits.')),
+              h('thead', null, h('tr', null, [text('planet', 'Planet'), text('orbit', 'Orbit'), text('bond', 'Albedo'), text('surface', 'Surface')].map(function(label, i) { return h('th', { key: i, scope: 'col', style: { width: ['22%', '26%', '24%', '28%'][i], padding: '6px 2px', textAlign: 'left', borderBottom: '1px solid ' + border, overflowWrap: 'anywhere' } }, label); }))),
+              h('tbody', null, m.references.map(function(p) {
+                var style = { padding: '8px 2px', textAlign: 'left', overflowWrap: 'anywhere' };
+                return h('tr', { key: p.id, 'data-hz-catalog-row': p.id },
+                  h('th', { scope: 'row', style: style }, text(p.id + '_planet', p.id.charAt(0).toUpperCase() + p.id.slice(1))),
+                  h('td', { style: style, 'data-value': p.distanceAu }, n(p.distanceAu, 3)),
+                  h('td', { style: style, 'data-value': p.albedo }, n(p.albedo)),
+                  h('td', { style: style, 'data-value': p.surfaceK }, n(p.surfaceK, 0)));
+              }))),
+            h('p', { style: prose }, text('data_limits', 'The inputs are published reference values, not a live forecast. The diagram treats semimajor axis as a constant distance and omits eccentricity, seasons, tides and stellar activity. Measurement uncertainty is not propagated. Neither position in the band nor equilibrium temperature establishes habitability.')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              [
+                ['https://arxiv.org/abs/1404.5292', text('paper_link', 'Kopparapu 2014 · Climate boundaries')],
+                ['https://personal.ems.psu.edu/~jfk4/ruk15/planets/', text('calculator_link', 'Author calculator and coefficients')],
+                ['https://arxiv.org/abs/1510.07674', text('iau_link', 'IAU 2015 · Solar references')],
+                ['https://science.nasa.gov/earth/earth-observatory/climate-and-earths-energy-budget/', text('energy_link', 'NASA · Planetary energy balance')]
+              ].concat(m.references.map(function(p) { return [p.href, text(p.id + '_source', 'NASA · ' + p.id.charAt(0).toUpperCase() + p.id.slice(1) + ' fact sheet')]; })).map(function(link) {
+                return h('a', { key: link[0], href: link[0], target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, fontSize: 13, color: cyan } }, link[1]);
+              })))
+        );
+      }
+
       function renderExoplanets() {
         var selected = (d.selectedExoplanet && EXOPLANETS.find(function(p) { return p.id === d.selectedExoplanet; })) || EXOPLANETS[0];
         var habitableColor = function(label) {
@@ -7871,6 +8618,10 @@
           return '#94a3b8';
         };
         return h('div', { style: { padding: 16 } },
+          h('a', { href: '#astronomy-habitable-zone-lab', className: 'astr-focus', onClick: function(e) {
+            e.preventDefault(); var lab = document.getElementById('astronomy-habitable-zone-lab'), control = document.getElementById('astronomy-hz-distance');
+            if (lab) lab.scrollIntoView({ behavior: 'auto', block: 'start' }); if (control) control.focus({ preventScroll: true });
+          }, style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, marginBottom: 12, fontSize: 14, color: '#86efac' } }, __alloT('stem.astronomy.hz_jump', 'Explore the habitable zone')),
           sectionCard('🌎 The exoplanet revolution',
             h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.75 } },
               __alloT('stem.astronomy.exoplanet_discovery_history', 'The first confirmed exoplanets were found around a pulsar in 1992. In 1995, astronomers confirmed 51 Pegasi b around a Sun-like star. Thousands of worlds are now known, from small rocky planets to gas giants. Explore how their light reveals them.')
@@ -8316,21 +9067,7 @@
             '#22c55e'
           ),
 
-          sectionCard('🪐 The habitable zone — and its honest limits',
-            h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
-              h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.astronomy.the_habitable_zone_is_the_orbit_range_', 'The habitable zone is the orbit range where a rocky planet could have liquid water on its surface — given an Earth-like atmosphere. Sometimes called the "Goldilocks zone": not too hot, not too cold.')),
-              h('p', { style: { margin: '0 0 8px' } }, __alloT('stem.astronomy.but_the_habitable_zone_is_a_starting_p', 'But the habitable zone is a starting point, not an answer. A planet in the habitable zone might:')),
-              h('ul', { style: { margin: 0, padding: '0 0 0 22px', lineHeight: 1.7 } },
-                h('li', null, __alloT('stem.astronomy.have_no_atmosphere_like_mercury_mostly', 'Have no atmosphere (like Mercury, mostly).')),
-                h('li', null, __alloT('stem.astronomy.have_a_runaway_greenhouse_atmosphere_l', 'Have a runaway greenhouse atmosphere (like Venus).')),
-                h('li', null, __alloT('stem.astronomy.be_tidally_locked_to_a_red_dwarf_with_', 'Be tidally locked to a red dwarf, with one side always hot and the other always frozen.')),
-                h('li', null, __alloT('stem.astronomy.get_blasted_by_stellar_flares_red_dwar', 'Get blasted by stellar flares (red dwarf hosts are flaring stars).')),
-                h('li', null, __alloT('stem.astronomy.have_life_and_we_have_no_good_way_to_k', 'Have life, and we have no good way to know yet.'))
-              ),
-              h('p', { style: { margin: '8px 0 0' } }, __alloT('stem.astronomy.jwst_and_future_missions_habitable_wor', 'JWST and future missions (Habitable Worlds Observatory, ARIEL) are now probing exoplanet atmospheres for biosignatures: gas combinations like oxygen + methane that, on Earth, only persist because life keeps producing them.'))
-            ),
-            '#22c55e'
-          ),
+          sectionCard('🪐 The habitable zone — and its honest limits', renderHabitableZone(), '#22c55e'),
 
           // ─── JWST exoplanet atmosphere spectroscopy ─────────────
           sectionCard('🔬 JWST exoplanet atmosphere spectroscopy',
@@ -8754,6 +9491,189 @@
       // ──────────────────────────────────────────────────────────────
       // STARS
       // ──────────────────────────────────────────────────────────────
+
+      function renderMagnitudeExplorer() {
+        var m = magnitudeModel(d), bg = astronomyContrast ? '#000' : '#091323', border = astronomyContrast ? '#fbbf24' : '#475569';
+        var gold = '#fde68a', cyan = '#67e8f9', muted = '#cbd5e1', ghost = '#94a3b8';
+        var panel = { padding: 12, border: '1px solid ' + border, borderRadius: 12, minWidth: 0, background: bg };
+        var prose = { margin: '8px 0', fontSize: 13, lineHeight: 1.75, color: muted };
+        var plot = { x: 66, y: 46, w: 264, h: 214 };
+        function text(key, fallback) { return __alloT('stem.astronomy.mag_' + key, fallback); }
+        function number(value) { return Number(value.toFixed(2)).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+        function signed(value) { return (value > 0 ? '+' : '') + number(value); }
+        function ratio(value) { return value !== 0 && (value < 0.01 || value >= 10000) ? value.toExponential(2) + '×' : number(value) + '×'; }
+        function refText(r, field) { return text(r.id + '_' + field, r[field]); }
+        var name = m.reference ? refText(m.reference, 'name') : text('custom', 'Custom star');
+        function button(label, action, on, key, disabled) {
+          return h('button', { key: key, type: 'button', onClick: action, 'aria-pressed': key === 'brighten' || key === 'dim' || key === 'reset' ? undefined : on, disabled: !!disabled, className: 'astr-focus',
+            style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: disabled ? 'default' : 'pointer',
+              opacity: disabled ? 0.55 : 1, border: '2px solid ' + (on ? gold : border), background: on ? gold : bg, color: on ? '#020617' : '#f1f5f9' } }, label);
+        }
+        function chooseReference(r) {
+          upd({ magnitudeReference: r.id, magnitudeDistancePc: r.distancePc, magnitudeAv: 0 });
+        }
+        function setDistance(value) {
+          upd({ magnitudeDistancePc: Math.max(0.1, Math.min(10000, value)) });
+        }
+        function distanceKeys(e) {
+          if (e.altKey || e.ctrlKey || e.metaKey) return;
+          var next, step = e.shiftKey ? 0.25 : 0.05;
+          if (e.key === 'Home') next = -1;
+          else if (e.key === 'End') next = 4;
+          else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = m.distanceLog + step;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = m.distanceLog - step;
+          else return;
+          e.preventDefault(); setDistance(Math.pow(10, Math.max(-1, Math.min(4, next))));
+        }
+        function magnitudeKeys(e) {
+          if (e.altKey || e.ctrlKey || e.metaKey) return;
+          var next, step = e.shiftKey ? 1 : 0.1;
+          if (e.key === 'Home') next = -10;
+          else if (e.key === 'End') next = 15;
+          else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') next = m.absoluteV + step;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') next = m.absoluteV - step;
+          else return;
+          e.preventDefault(); upd({ magnitudeReference: 'custom', magnitudeMv: Math.max(-10, Math.min(15, next)) });
+        }
+        function scrub(e) {
+          if (e.button != null && e.button !== 0) return;
+          var rect = e.currentTarget.getBoundingClientRect(); if (!rect.width) return;
+          var logPc = -1 + ((e.clientX - rect.left) * 360 / rect.width - plot.x) / plot.w * 5;
+          setDistance(Math.pow(10, Math.max(-1, Math.min(4, logPc))));
+          e.currentTarget.focus();
+        }
+        function px(logPc) { return plot.x + (logPc + 1) / 5 * plot.w; }
+        function py(mag) { return plot.y + (mag + 20) / 55 * plot.h; }
+        function fx(logFlux) { return 30 + (logFlux + 8) / 12 * 300; }
+        function metric(key, label, value, display) {
+          return h('div', { key: key, 'data-magnitude-metric': key, 'data-value': value, style: Object.assign({}, panel, { padding: 10 }) },
+            h('div', { style: { fontSize: 12, color: muted, marginBottom: 5 } }, label),
+            h('strong', { style: { fontSize: 17, color: gold, overflowWrap: 'anywhere' } }, display));
+        }
+        function fluxRow(key, title, value, logValue, color, y) {
+          var x = fx(logValue);
+          return h('g', { key: key, transform: 'translate(0 ' + y + ')', 'data-magnitude-flux-row': key, 'data-value': value, 'data-log-value': logValue },
+            h('text', { x: 30, y: 22, fill: color, fontSize: 24, fontWeight: 700 }, title),
+            h('line', { x1: 30, x2: 330, y1: 43, y2: 43, stroke: '#64748b', strokeWidth: 3 }),
+            h('line', { x1: fx(0), x2: fx(0), y1: 34, y2: 52, stroke: cyan, strokeWidth: 2, strokeDasharray: '3 3' }),
+            h('circle', { cx: x, cy: 43, r: 6, fill: color, stroke: bg, strokeWidth: 2, 'data-magnitude-flux-marker': key }),
+            h('text', { x: 30, y: 79, fill: muted, fontSize: 22 }, ratio(value) + ' ' + text('reference_flux', 'reference flux')));
+        }
+        return h('div', { id: 'astronomy-magnitude-lab', style: { minWidth: 0, background: bg, padding: 12, borderRadius: 12, color: '#f1f5f9' } },
+          h('p', { style: Object.assign({}, prose, { marginTop: 0 }) }, text('intro', 'How can a luminous star look faint? Change its distance and the dust in front of it. This explorer uses Johnson V magnitudes, a visual-light band. A smaller magnitude means more received light; a difference of 5 magnitudes means a factor of 100 in flux.')),
+          h('div', { role: 'group', 'aria-label': text('reference_choices', 'Published brightness examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+            m.references.map(function(r) { return button(refText(r, 'name'), function() { chooseReference(r); }, m.referenceId === r.id, r.id); }),
+            button(text('custom', 'Custom star'), function() { upd({ magnitudeReference: 'custom', magnitudeMv: m.absoluteV }); }, m.referenceId === 'custom', 'custom')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,220px),1fr))', gap: 12 } },
+            h('div', { style: panel },
+              h('label', { htmlFor: 'astronomy-magnitude-mv', style: { color: gold, fontSize: 14, fontWeight: 700 } }, text('absolute_label', 'Absolute V magnitude M_V') + ': ' + signed(m.absoluteV)),
+              h('input', { id: 'astronomy-magnitude-mv', type: 'range', min: -10, max: 15, step: 'any', value: m.absoluteV, className: 'astr-focus',
+                'aria-valuetext': signed(m.absoluteV) + ' mag', 'aria-describedby': 'astronomy-magnitude-mv-help', onKeyDown: magnitudeKeys,
+                onChange: function(e) { upd({ magnitudeReference: 'custom', magnitudeMv: Number(e.target.value) }); }, style: { width: '100%', minHeight: 44, accentColor: gold } }),
+              h('p', { id: 'astronomy-magnitude-mv-help', style: prose }, text('absolute_help', 'M_V is the star’s magnitude at 10 pc with extinction removed. Editing it creates a custom star. Arrow keys change 0.1 mag; Shift changes 1 mag.')),
+              h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+                button(text('brighter_five', 'Brighten by 5 mag'), function() { upd({ magnitudeReference: 'custom', magnitudeMv: m.absoluteV - 5 }); }, false, 'brighten', m.absoluteV < -5),
+                button(text('fainter_five', 'Dim by 5 mag'), function() { upd({ magnitudeReference: 'custom', magnitudeMv: m.absoluteV + 5 }); }, false, 'dim', m.absoluteV > 10))),
+            h('div', { style: panel },
+              h('label', { htmlFor: 'astronomy-magnitude-distance', style: { color: gold, fontSize: 14, fontWeight: 700 } }, text('distance_label', 'Simulated distance') + ': ' + number(m.distancePc) + ' pc'),
+              h('input', { id: 'astronomy-magnitude-distance', type: 'range', min: -1, max: 4, step: 'any', value: m.distanceLog, className: 'astr-focus',
+                'aria-valuetext': number(m.distancePc) + ' pc', 'aria-describedby': 'astronomy-magnitude-distance-help', onKeyDown: distanceKeys,
+                onChange: function(e) { setDistance(Math.pow(10, Number(e.target.value))); }, style: { width: '100%', minHeight: 44, accentColor: gold } }),
+              h('p', { id: 'astronomy-magnitude-distance-help', style: prose }, number(m.distanceLy) + ' ' + text('light_years', 'light-years') + '. ' + text('distance_help', 'This control uses a logarithmic distance scale: equal movements multiply the distance. A distance of 10 pc is the standard for absolute magnitude.')),
+              h('div', { role: 'group', 'aria-label': text('distance_examples', 'Distance examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+                [1, 10, 100, 1000].map(function(pc) { return button(pc + ' pc', function() { setDistance(pc); }, Math.abs(m.distancePc - pc) < 1e-9, pc); }))),
+            h('div', { style: panel },
+              h('label', { htmlFor: 'astronomy-magnitude-av', style: { color: gold, fontSize: 14, fontWeight: 700 } }, text('dust_label', 'Dust dimming A_V') + ': ' + number(m.extinctionV) + ' mag'),
+              h('input', { id: 'astronomy-magnitude-av', type: 'range', min: 0, max: 5, step: 0.1, value: m.extinctionV, className: 'astr-focus',
+                'aria-valuetext': number(m.extinctionV) + ' mag', 'aria-describedby': 'astronomy-magnitude-av-help',
+                onChange: function(e) { upd({ magnitudeAv: Number(e.target.value) }); }, style: { width: '100%', minHeight: 44, accentColor: gold } }),
+              h('p', { id: 'astronomy-magnitude-av-help', style: prose }, text('dust_help', 'A_V is foreground extinction in the V band. Adding 1 mag transmits about 40% of the original V-band light. This assumption can be changed independently of distance.')),
+              h('div', { role: 'group', 'aria-label': text('dust_examples', 'Dust examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+                [0, 1, 3].map(function(av) { return button('A_V = ' + av, function() { upd({ magnitudeAv: av }); }, m.extinctionV === av, av); })))),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,180px),1fr))', gap: 8, margin: '12px 0' } },
+            metric('apparentV', text('apparent_label', 'Apparent V magnitude m_V'), m.apparentV, signed(m.apparentV) + ' mag'),
+            metric('distanceModulus', text('distance_change', 'Change caused by distance'), m.distanceModulus, signed(m.distanceModulus) + ' mag'),
+            metric('transmission', text('transmission_label', 'V light transmitted through dust'), m.transmission, number(m.transmission * 100) + '%'),
+            metric('vLightVsSun', text('intrinsic_ratio', 'Intrinsic V-band light vs Sun'), m.vLightVsSun, ratio(m.vLightVsSun))),
+          h('p', { id: 'astronomy-magnitude-status', role: 'status', 'aria-live': 'polite', 'data-regime': m.regime, style: Object.assign({}, prose, { padding: 10, borderLeft: '3px solid ' + gold }) },
+            name + ': ' + (m.regime === 'equal' ? text('equal', 'the received V-band flux equals the same star’s flux at 10 pc without dust.') :
+              m.regime === 'brighter' ? ratio(m.fluxRatio) + ' ' + text('brighter_status', 'the flux of the same star at 10 pc without dust.') :
+              ratio(m.fluxRatio) + ' ' + text('fainter_status', 'the flux of the same star at 10 pc without dust.'))),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 12, alignItems: 'start' } },
+            h('figure', { style: Object.assign({}, panel, { margin: 0, padding: 8 }) },
+              h('h3', { style: { margin: '4px 2px 8px', fontSize: 15, color: gold } }, text('curve_title', 'Apparent magnitude and distance')),
+              h('svg', { id: 'astronomy-magnitude-curve', viewBox: '0 0 360 380', role: 'slider', tabIndex: 0, className: 'astr-focus',
+                'aria-label': text('curve_control', 'Choose a simulated stellar distance'), 'aria-valuemin': 0.1, 'aria-valuemax': 10000, 'aria-valuenow': m.distancePc,
+                'aria-valuetext': number(m.distancePc) + ' pc; m_V ' + signed(m.apparentV), 'aria-describedby': 'astronomy-magnitude-curve-desc',
+                onPointerDown: scrub, onKeyDown: distanceKeys, 'data-distance-pc': m.distancePc, style: { width: '100%', height: 'auto', display: 'block', touchAction: 'pan-y', cursor: 'crosshair' } },
+                h('title', null, text('curve_title', 'Apparent magnitude and distance')),
+                h('desc', { id: 'astronomy-magnitude-curve-desc' }, text('curve_desc', 'Magnitude becomes larger and fainter downward. Distance increases to the right on a logarithmic scale. The dashed line excludes dust, and the yellow line includes the selected extinction. Tap or use arrows to change distance; Shift makes a larger step. Home and End select the distance limits.')),
+                [-20, 0, 20, 35].map(function(value) {
+                  var y = py(value);
+                  return h('g', { key: value }, h('line', { x1: plot.x, x2: plot.x + plot.w, y1: y, y2: y, stroke: '#334155' }),
+                    h('text', { x: plot.x - 10, y: y + 7, textAnchor: 'end', fill: muted, fontSize: 22 }, String(value)));
+                }),
+                [-1, 0, 1, 2, 3, 4].map(function(logPc, i) {
+                  var x = px(logPc);
+                  return h('g', { key: logPc }, h('line', { x1: x, x2: x, y1: plot.y, y2: plot.y + plot.h, stroke: '#334155' }),
+                    h('text', { x: x, y: 312, textAnchor: 'middle', fill: muted, fontSize: 22 }, ['0.1', '1', '10', '100', '1k', '10k'][i]));
+                }),
+                h('text', { x: 198, y: 32, textAnchor: 'middle', fill: muted, fontSize: 22 }, 'm_V'),
+                h('text', { x: 198, y: 361, textAnchor: 'middle', fill: muted, fontSize: 22 }, text('distance_axis', 'Distance in parsecs')),
+                h('polyline', { points: m.points.map(function(p) { return px(p.distanceLog) + ',' + py(p.unextinguishedV); }).join(' '),
+                  fill: 'none', stroke: ghost, strokeWidth: 3, strokeDasharray: '7 5', 'data-magnitude-path': 'unextinguished' }),
+                h('polyline', { points: m.points.map(function(p) { return px(p.distanceLog) + ',' + py(p.apparentV); }).join(' '),
+                  fill: 'none', stroke: gold, strokeWidth: 3, 'data-magnitude-path': 'apparent' }),
+                h('line', { x1: px(m.distanceLog), x2: px(m.distanceLog), y1: plot.y, y2: plot.y + plot.h, stroke: gold, strokeWidth: 1.5 }),
+                h('circle', { cx: px(1), cy: py(m.absoluteV), r: 5, fill: bg, stroke: cyan, strokeWidth: 2, 'data-magnitude-standard': '10pc' }),
+                h('circle', { cx: px(m.distanceLog), cy: py(m.unextinguishedV), r: 5, fill: bg, stroke: ghost, strokeWidth: 2 }),
+                h('circle', { cx: px(m.distanceLog), cy: py(m.apparentV), r: 6, fill: gold, stroke: bg, strokeWidth: 2, 'data-magnitude-selected': 'apparent', 'data-value': m.apparentV })),
+              h('figcaption', { style: Object.assign({}, prose, { padding: '0 2px' }) }, text('curve_caption', 'Yellow: with selected dust. Gray dashed: without dust. Cyan ring: the same star at 10 pc without dust. Smaller magnitudes appear at the top. Tap the plot to choose a distance.'), m.extinctionV === 0 ? ' ' + text('curves_overlap', 'At zero extinction, the two curves overlap.') : null)),
+            h('figure', { style: Object.assign({}, panel, { margin: 0, padding: 8 }) },
+              h('h3', { style: { margin: '4px 2px 8px', fontSize: 15, color: gold } }, text('flux_title', 'Received light on a logarithmic scale')),
+              h('svg', { id: 'astronomy-magnitude-flux', viewBox: '0 0 360 380', role: 'img', 'aria-labelledby': 'astronomy-mag-flux-title astronomy-mag-flux-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                h('title', { id: 'astronomy-mag-flux-title' }, text('flux_title', 'Received light on a logarithmic scale')),
+                h('desc', { id: 'astronomy-mag-flux-desc' }, text('flux_desc', 'Both tracks use the same logarithmic flux scale, from ten to the minus eighth through ten to the fourth. The reference is this star at 10 pc without dust. The cyan line is a flux ratio of one. Dust moves the received-light marker toward the fainter side.')),
+                h('text', { x: 30, y: 25, fill: muted, fontSize: 24 }, text('fainter', 'Fainter')),
+                h('text', { x: 330, y: 25, textAnchor: 'end', fill: muted, fontSize: 24 }, text('brighter', 'Brighter')),
+                [-8, -4, 0, 4].map(function(logFlux) {
+                  return h('text', { key: logFlux, x: fx(logFlux), y: 80, textAnchor: 'middle', fill: muted, fontSize: 22 },
+                    h('tspan', null, '10'), h('tspan', { baselineShift: 'super', fontSize: 20 }, String(logFlux)));
+                }),
+                fluxRow('distance', text('distance_only', 'Distance only'), m.distanceFlux, m.distanceFluxLog, ghost, 125),
+                fluxRow('received', text('distance_dust', 'Distance and dust'), m.fluxRatio, m.fluxLog, gold, 229),
+                h('text', { x: 180, y: 361, textAnchor: 'middle', fill: cyan, fontSize: 22 }, text('unity', 'Cyan = reference flux (1×)'))),
+              h('figcaption', { style: Object.assign({}, prose, { padding: '0 2px' }) }, text('flux_caption', 'The reference is this same star at 10 pc without dust. Multiplying distance by 10 reduces flux by 100. Dust further reduces the light reaching the observer.')))),
+          h('div', { style: Object.assign({}, panel, { marginTop: 12 }) },
+            h('h3', { style: { margin: '0 0 6px', fontSize: 15, color: cyan } }, text('calculation_title', 'How the numbers connect')),
+            h('p', { style: Object.assign({}, prose, { fontFamily: 'ui-monospace, monospace', color: '#f1f5f9' }) }, 'm_V = M_V + 5 log₁₀(d / 10 pc) + A_V'),
+            h('p', { 'data-magnitude-equation': 'sum', style: prose }, signed(m.absoluteV) + ' + (' + signed(m.distanceModulus) + ') + ' + number(m.extinctionV) + ' = ' + signed(m.apparentV) + ' mag'),
+            h('p', { style: prose }, text('flux_equation', 'F / F₁₀ = (10 pc / d)² × 10^(−0.4 A_V). F₁₀ is this star’s received V-band flux at 10 pc with no dust.')),
+            button(text('reset', 'Reset brightness explorer'), function() { upd({ magnitudeReference: 'sun', magnitudeMv: 4.81, magnitudeDistancePc: 10, magnitudeAv: 0 }); }, false, 'reset')),
+          h('details', { style: Object.assign({}, panel, { marginTop: 12 }) },
+            h('summary', { className: 'astr-focus', style: { minHeight: 44, display: 'flex', alignItems: 'center', cursor: 'pointer', color: cyan, fontSize: 14, fontWeight: 700 } }, text('sources', 'Published inputs and model limits')),
+            h('p', { style: prose }, m.reference ? refText(m.reference, 'basis') : text('custom_basis', 'Custom M_V is a teaching input. The selected distance and dust define the simulated apparent magnitude.')),
+            m.reference ? h('a', { href: m.reference.href, target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, color: cyan, fontSize: 13 } }, refText(m.reference, 'source')) : null,
+            h('table', { id: 'astronomy-magnitude-catalog', style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: 12, marginTop: 10 } },
+              h('caption', { style: { textAlign: 'left', marginBottom: 8, fontSize: 13, lineHeight: 1.7, color: muted } }, text('catalog_caption', 'ESA 1997 Hipparcos examples: measured Johnson V and parallax. Distances use d(pc) = 1000 / parallax(mas).')),
+              h('thead', null, h('tr', null, [text('star', 'Star'), text('v_mag', 'V mag'), text('parallax', 'Parallax'), text('distance', 'Distance')].map(function(label, i) {
+                return h('th', { key: i, scope: 'col', style: { width: ['19%', '21%', '28%', '32%'][i], padding: '6px 2px', textAlign: 'left', color: muted, borderBottom: '1px solid ' + border, overflowWrap: 'anywhere' } }, label);
+              }))),
+              h('tbody', null, m.references.filter(function(r) { return r.hip; }).map(function(r) {
+                return h('tr', { key: r.id, 'data-magnitude-hip': r.hip },
+                  h('th', { scope: 'row', style: { padding: '8px 2px', textAlign: 'left', color: '#f1f5f9', overflowWrap: 'anywhere' } }, refText(r, 'name')),
+                  h('td', { style: { padding: '8px 2px', color: gold } }, signed(r.apparentV)),
+                  h('td', { style: { padding: '8px 2px', color: '#f1f5f9', overflowWrap: 'anywhere' } }, number(r.parallaxMas), h('br'), '± ' + number(r.parallaxErrorMas) + ' mas'),
+                  h('td', { style: { padding: '8px 2px', color: '#f1f5f9' } }, number(r.distancePc) + ' pc'));
+              }))),
+            h('p', { style: prose }, text('band_limit', 'V-band light compares light through the same visual filter. Total energy across all wavelengths requires a bolometric correction. V-band ratios here use the adopted solar M_V = +4.81.')),
+            h('p', { style: prose }, text('model_limit', 'The model treats each example as a steady point source in nearby space, with an independently chosen foreground extinction. Catalog parallax errors are displayed; measurement and calibration uncertainty are not propagated into the curves. Visibility also depends on sky brightness, atmosphere, color and instrument settings.')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+              h('a', { href: 'https://arxiv.org/abs/1804.07788', target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, color: cyan, fontSize: 13 } }, text('solar_source', 'Willmer 2018 · Solar magnitude reference')),
+              h('a', { href: 'https://astro.unl.edu/naap/distance/distance_modulus.html', target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, color: cyan, fontSize: 13 } }, text('modulus_source', 'UNL · Distance modulus')),
+              h('a', { href: 'https://astro.wku.edu/labs/m100/mags.html', target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, color: cyan, fontSize: 13 } }, text('extinction_source', 'WKU · Magnitudes and extinction')))));
+      }
+
       function renderStellarSpectrum() {
         var model = stellarSpectrumModel(d), selected = model.selected;
         function number(value, digits) { return value.toLocaleString(undefined, { maximumFractionDigits: digits === undefined ? 4 : digits }); }
@@ -8847,6 +9767,152 @@
             a11yButton({type:'button',onClick:function(){activateAstronomyTab('galaxies', 'astronomy-redshift-lab');},style:buttonStyle},__alloT('stem.astronomy.open_cosmic_redshift', 'Open cosmic redshift lab'))
           )
         );
+      }
+
+      function renderBinaryOrbit() {
+        var m = binaryOrbitModel(d), bg = astronomyContrast ? '#000' : '#091323', border = astronomyContrast ? '#fbbf24' : '#475569';
+        var cyan = '#67e8f9', gold = '#fde68a', green = '#86efac', muted = '#cbd5e1';
+        var panel = { padding: 12, border: '1px solid ' + border, borderRadius: 12, background: bg, minWidth: 0 };
+        var prose = { margin: '8px 0', fontSize: 13, lineHeight: 1.75, color: muted };
+        function text(key, fallback) { return __alloT('stem.astronomy.binary_' + key, fallback); }
+        function n(v, digits) { return v.toLocaleString('en-US', { maximumFractionDigits: digits == null ? 2 : digits }); }
+        function phase(value) { upd({ binaryPhase: Math.max(0, Math.min(1, value)) }); }
+        function button(label, action, on, key) {
+          return h('button', { key: key, type: 'button', className: 'astr-focus', onClick: action, 'aria-pressed': typeof on === 'boolean' ? on : undefined,
+            style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, fontSize: 13, fontWeight: 700, cursor: 'pointer',
+              border: '2px solid ' + (on ? gold : border), background: on ? gold : bg, color: on ? '#020617' : '#f1f5f9' } }, label);
+        }
+        function sirius() { upd({ binaryMassA: m.reference.massA, binaryMassB: m.reference.massB, binarySeparationAu: m.siriusSeparationAu, binaryEccentricity: m.reference.eccentricity, binaryPhase: 0 }); }
+        function keys(e, c) {
+          if (e.altKey || e.ctrlKey || e.metaKey) return;
+          var value, step = c.step * (e.shiftKey ? 5 : 1);
+          if (e.key === 'Home') value = c.min;
+          else if (e.key === 'End') value = c.max;
+          else if (e.key === 'ArrowRight' || e.key === 'ArrowUp') value = c.value + step;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowDown') value = c.value - step;
+          else return;
+          e.preventDefault(); c.change(Math.max(c.min, Math.min(c.max, value)));
+        }
+        var timeControl = { value: m.phase, min: 0, max: 1, step: 0.01, change: phase };
+        function scrub(e) {
+          var rect = e.currentTarget.getBoundingClientRect(); if (!rect.width) return;
+          phase(((e.clientX - rect.left) / rect.width * 360 - 56) / 276);
+        }
+        var controls = [
+          { id: 'mass-a', label: text('mass_a', 'Star A mass'), value: m.massA, min: 0.1, max: 5, step: 0.1, unit: text('solar_masses', 'solar masses'), key: 'binaryMassA' },
+          { id: 'mass-b', label: text('mass_b', 'Star B mass'), value: m.massB, min: 0.1, max: 5, step: 0.1, unit: text('solar_masses', 'solar masses'), key: 'binaryMassB' },
+          { id: 'separation', label: text('separation', 'Relative orbit semimajor axis'), value: m.separationAu, min: 0.5, max: 40, step: 0.5, unit: 'AU', key: 'binarySeparationAu' },
+          { id: 'eccentricity', label: text('eccentricity', 'Orbital eccentricity'), value: m.eccentricity, min: 0, max: 0.8, step: 0.01, unit: '', key: 'binaryEccentricity' },
+          Object.assign({}, timeControl, { id: 'time', label: text('time', 'Elapsed fraction of one orbit'), unit: '', readout: n(m.phase * 100, 1) + '% · ' + n(m.elapsedYears) + ' ' + text('years', 'years') })
+        ];
+        controls.forEach(function(c) { if (!c.change) c.change = function(v) { var patch = {}; patch[c.key] = v; upd(patch); }; });
+        var scale = 118 / m.plotRadiusAu;
+        function xy(p) { return { x: 180 + p.x * scale, y: 170 - p.y * scale }; }
+        function chartX(f) { return 56 + 276 * f; }
+        function chartY(v) { return 262 - v / 3.2 * 210; }
+        var A = xy(m.current.a), B = xy(m.current.b), barAu = Math.pow(10, Math.floor(Math.log10(65 / scale)));
+        var balance = Math.abs(m.massA - m.massB) < 1e-10 ? text('equal_status', 'Equal masses: both stars trace equally sized paths around the shared center of mass.')
+          : (m.massA > m.massB ? text('a_status', 'Star A is heavier: it traces the smaller path and moves more slowly than B at every time.') : text('b_status', 'Star B is heavier: it traces the smaller path and moves more slowly than A at every time.'));
+        var metrics = [
+          ['periodYears', text('period', 'One orbit'), m.periodYears, text('years', 'years')],
+          ['separationAu', text('current_separation', 'Current star separation'), m.current.separationAu, 'AU'],
+          ['relativeSpeedKmS', text('speed', 'Relative orbital speed'), m.current.relativeSpeedKmS, 'km/s'],
+          ['fastestToSlowest', text('speed_ratio', 'Fastest / slowest speed'), m.fastestToSlowest, '×']
+        ];
+        return h('section', { id: 'astronomy-binary-orbit-lab', 'aria-labelledby': 'astronomy-binary-title', style: Object.assign({}, panel, { margin: '16px 0', color: '#f1f5f9' }) },
+          h('h3', { id: 'astronomy-binary-title', style: { margin: 0, fontSize: 18, color: gold } }, text('title', 'Binary stars: weigh a system with its orbit')),
+          h('p', { style: prose }, text('intro', 'Explore two stars orbiting a shared center of mass. Change their masses, orbit size or shape, then select a time to connect the orbital positions with the speed curve.')),
+          h('div', { role: 'group', 'aria-label': text('examples', 'Binary orbit examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+            button(text('sirius', 'Sirius A + B reference'), sirius, m.isSirius, 'sirius'),
+            button(text('equal_example', 'Equal masses, circular orbit'), function() { upd({ binaryMassA: 1, binaryMassB: 1, binarySeparationAu: 10, binaryEccentricity: 0, binaryPhase: 0 }); }, m.massA === 1 && m.massB === 1 && m.separationAu === 10 && m.eccentricity === 0, 'equal'),
+            button(text('eccentric_example', 'Equal masses, eccentric orbit'), function() { upd({ binaryMassA: 1, binaryMassB: 1, binarySeparationAu: 10, binaryEccentricity: 0.6, binaryPhase: 0 }); }, m.massA === 1 && m.massB === 1 && m.separationAu === 10 && m.eccentricity === 0.6, 'eccentric')),
+          h('p', { 'data-binary-reference': m.isSirius, style: prose }, m.isSirius ? text('reference_status', 'Sirius reference inputs from Bond et al. (2017). Orbit size is derived from the measured period and masses.') : text('custom_status', 'Custom teaching experiment. Use the Sirius button to restore published reference inputs.')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 260px), 1fr))', gap: 12 } }, controls.map(function(c) {
+            return h('div', { key: c.id, style: panel },
+              h('label', { htmlFor: 'astronomy-binary-' + c.id, style: { display: 'block', fontSize: 14, fontWeight: 700, color: '#f1f5f9' } }, c.label),
+              h('output', { htmlFor: 'astronomy-binary-' + c.id, style: { display: 'block', fontSize: 14, color: gold, marginTop: 6 } }, c.readout || n(c.value, 5) + (c.unit ? ' ' + c.unit : '')),
+              h('input', { id: 'astronomy-binary-' + c.id, type: 'range', min: c.min, max: c.max, step: 'any', value: c.value, className: 'astr-focus',
+                'aria-valuetext': c.readout || n(c.value, 5) + ' ' + c.unit, 'aria-describedby': 'astronomy-binary-controls-help',
+                onChange: function(e) { c.change(Number(e.target.value)); }, onKeyDown: function(e) { keys(e, c); },
+                style: { width: '100%', minHeight: 44, margin: '4px 0 0', accentColor: cyan } }));
+          })),
+          h('p', { id: 'astronomy-binary-controls-help', style: prose }, text('controls_help', 'Arrow keys adjust mass by 0.1, orbit size by 0.5 AU, and eccentricity or time fraction by 0.01. Shift uses five steps; Home and End reach the limits. Time starts at closest approach. Changing inputs keeps the selected time fraction.')),
+          h('p', { style: prose }, text('size_help', 'The semimajor axis is half the long diameter of the relative orbit, not the stars’ current separation. Eccentricity 0 is circular; larger values make a more elongated ellipse. Both stars complete an orbit in the same period.')),
+          h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: Object.assign({}, panel, { borderColor: cyan, fontSize: 14, lineHeight: 1.75, margin: '12px 0' }) }, balance),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 180px), 1fr))', gap: 10, marginBottom: 12 } }, metrics.map(function(row) {
+            return h('div', { key: row[0], style: panel, 'data-binary-metric': row[0], 'data-value': row[2] }, h('div', { style: { fontSize: 13, color: muted } }, row[1]), h('strong', { style: { display: 'block', fontSize: 18, color: gold, marginTop: 4 } }, n(row[2]) + ' ' + row[3]));
+          })),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 300px), 1fr))', gap: 12 } },
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) },
+              h('figcaption', { style: { fontSize: 14, fontWeight: 700, color: gold } }, text('geometry_title', 'Two paths, one shared center')),
+              h('svg', { id: 'astronomy-binary-geometry', viewBox: '0 0 360 360', role: 'img', 'aria-labelledby': 'astronomy-binary-geometry-title astronomy-binary-geometry-desc', style: { width: '100%', height: 'auto', display: 'block' } },
+                h('title', { id: 'astronomy-binary-geometry-title' }, text('geometry_title', 'Two paths, one shared center')),
+                h('desc', { id: 'astronomy-binary-geometry-desc' }, balance + ' ' + text('geometry_desc', 'A cyan solid path marks A; a white dashed path marks B. The cross is their fixed center of mass. Colored sectors on B’s path span equal amounts of time.')),
+                h('text', { x: 180, y: 28, textAnchor: 'middle', fill: muted, fontSize: 21 }, text('plane_view', 'View above orbital plane')),
+                m.sectors.map(function(s, i) { return h('polygon', { key: i, 'data-binary-sector': i, 'data-area-au2': s.areaAu2,
+                  points: '180,170 ' + s.points.map(function(p) { var v = xy(p); return v.x + ',' + v.y; }).join(' '),
+                  fill: i ? green : gold, fillOpacity: 0.2, stroke: i ? green : gold, strokeWidth: 1.5 }); }),
+                ['a', 'b'].map(function(which) { return h('polyline', { key: which, 'data-binary-orbit': which,
+                  points: m.orbit.map(function(p) { var v = xy(p[which]); return v.x + ',' + v.y; }).join(' '), fill: 'none', stroke: which === 'a' ? cyan : '#f8fafc', strokeWidth: 2, strokeDasharray: which === 'b' ? '5 4' : undefined }); }),
+                h('line', { x1: A.x, y1: A.y, x2: B.x, y2: B.y, stroke: '#94a3b8', strokeDasharray: '3 3' }),
+                h('circle', { cx: A.x, cy: A.y, r: 9, fill: cyan, stroke: bg, strokeWidth: 2, 'data-binary-star': 'a' }),
+                h('circle', { cx: B.x, cy: B.y, r: 7, fill: bg, stroke: '#f8fafc', strokeWidth: 3, 'data-binary-star': 'b' }),
+                h('path', { d: 'M 174 170 H 186 M 180 164 V 176', stroke: gold, strokeWidth: 2, 'data-binary-center': true }),
+                h('line', { x1: 26, x2: 26 + barAu * scale, y1: 311, y2: 311, stroke: muted, strokeWidth: 3 }),
+                h('text', { x: 26 + barAu * scale + 10, y: 318, fill: muted, fontSize: 21 }, n(barAu) + ' AU'),
+                h('text', { x: 180, y: 350, textAnchor: 'middle', fill: gold, fontSize: 21 }, text('center_label', '× Shared center of mass'))),
+              h('p', { style: prose }, text('geometry_legend', 'A: cyan solid path and filled marker. B: white dashed path and ring marker. The cross stays fixed. Markers are enlarged for clarity; their size and brightness do not represent stellar radii or luminosity. The drawing fits each experiment; use the AU scale bar to compare sizes.')),
+              h('p', { style: prose }, text('areas', 'Gold and green sectors each cover 1/12 of B’s orbit period. They have equal area despite their different shapes.') + ' ' + n(m.sectors[0].areaAu2, 3) + ' AU² ' + text('each', 'each') + ' · ' + n(m.periodYears / 12) + ' ' + text('years', 'years')),
+              h('p', { style: prose }, 'A: ' + n(m.semimajorA) + ' AU · B: ' + n(m.semimajorB) + ' AU · ' + text('individual_sizes', 'individual semimajor axes'))),
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) },
+              h('figcaption', { style: { fontSize: 14, fontWeight: 700, color: gold } }, text('chart_title', 'How orbital speed changes')),
+              h('svg', { id: 'astronomy-binary-chart', viewBox: '0 0 360 350', role: 'slider', tabIndex: 0, className: 'astr-focus',
+                'aria-label': text('chart_a11y', 'Select elapsed fraction of the binary orbit'), 'aria-valuemin': 0, 'aria-valuemax': 1, 'aria-valuenow': m.phase,
+                'aria-valuetext': n(m.phase * 100, 1) + '%; ' + n(m.elapsedYears) + ' ' + text('years', 'years') + '; ' + n(m.current.relativeSpeedKmS) + ' km/s',
+                'aria-orientation': 'horizontal', 'aria-describedby': 'astronomy-binary-chart-help', style: { width: '100%', height: 'auto', display: 'block', touchAction: 'pan-y' },
+                onKeyDown: function(e) { keys(e, timeControl); },
+                onPointerDown: function(e) { if (e.button != null && e.button !== 0) return; e.currentTarget.focus({ preventScroll: true }); scrub(e); try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {} },
+                onPointerMove: function(e) { if (e.buttons === 1) scrub(e); },
+                onPointerUp: function(e) { try { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {} },
+                onPointerCancel: function(e) { try { if (e.currentTarget.hasPointerCapture(e.pointerId)) e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {} }
+              },
+                h('title', null, text('chart_title', 'How orbital speed changes')),
+                h('desc', null, text('chart_desc', 'Green is relative speed divided by the circular speed for the same total mass and semimajor axis. A circular orbit stays at one. Eccentric orbits speed up at closest approach and slow down at widest separation.')),
+                h('text', { x: 194, y: 28, textAnchor: 'middle', fill: muted, fontSize: 21 }, text('speed_axis', 'Relative orbital speed')),
+                [0, 1, 2, 3].map(function(v) { return h('g', { key: v }, h('line', { x1: 56, x2: 332, y1: chartY(v), y2: chartY(v), stroke: v === 1 ? '#94a3b8' : '#334155', strokeDasharray: v === 1 ? '4 4' : undefined }), h('text', { x: 46, y: chartY(v) + 6, textAnchor: 'end', fill: muted, fontSize: 21 }, v + '×')); }),
+                [0, 0.25, 0.5, 0.75, 1].map(function(f) { return h('g', { key: f }, h('line', { x1: chartX(f), x2: chartX(f), y1: 52, y2: 262, stroke: '#334155' }), h('text', { x: chartX(f), y: 293, textAnchor: 'middle', fill: muted, fontSize: 21 }, f * 100)); }),
+                h('polyline', { 'data-binary-speed-path': true, points: m.points.map(function(p) { return chartX(p.phase) + ',' + chartY(p.speedRatio); }).join(' '), fill: 'none', stroke: green, strokeWidth: 3 }),
+                h('line', { x1: chartX(m.phase), x2: chartX(m.phase), y1: 45, y2: 268, stroke: gold, strokeWidth: 2 }),
+                h('circle', { cx: chartX(m.phase), cy: chartY(m.current.speedRatio), r: 6, fill: bg, stroke: green, strokeWidth: 3, 'data-binary-selected': true, 'data-value': m.current.speedRatio }),
+                h('text', { x: 194, y: 340, textAnchor: 'middle', fill: muted, fontSize: 21 }, text('time_axis', 'Elapsed orbit (%)'))),
+              h('p', { id: 'astronomy-binary-chart-help', style: prose }, text('chart_help', 'Tap or drag the graph to select time. Arrow keys move 1% of the period; Shift moves 5%. The curve uses a fixed 0–3.2× scale relative to circular speed at the same mass and orbit size. 0% and 100% are closest approach; 50% is widest separation.')),
+              h('div', { role: 'group', 'aria-label': text('time_examples', 'Binary orbit time examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
+                button(text('closest', 'Closest approach'), function() { phase(0); }, m.phase === 0, 'near'),
+                button(text('quarter', 'Quarter period'), function() { phase(0.25); }, m.phase === 0.25, 'quarter'),
+                button(text('widest', 'Widest separation'), function() { phase(0.5); }, m.phase === 0.5, 'far')),
+              h('p', { style: prose }, text('individual_speeds', 'Speeds around the shared center') + ' · A: ' + n(m.current.a.speedKmS) + ' km/s · B: ' + n(m.current.b.speedKmS) + ' km/s'))),
+          h('details', { style: { marginTop: 12 } },
+            h('summary', { className: 'astr-focus', style: { display: 'list-item', listStylePosition: 'inside', minHeight: 44, padding: '10px 0', fontSize: 14, color: gold, cursor: 'pointer' } }, text('sources_title', 'Published inputs and model limits')),
+            h('table', { id: 'astronomy-binary-inputs', style: { width: '100%', tableLayout: 'fixed', fontSize: 13, lineHeight: 1.7, color: muted, borderCollapse: 'collapse' } },
+              h('caption', { style: { textAlign: 'left', marginBottom: 8 } }, text('table_caption', 'Sirius A/B reference values, with published one-sigma uncertainties. The simulator uses the central values; it does not propagate uncertainty.')),
+              h('thead', null, h('tr', null, h('th', { scope: 'col', style: { textAlign: 'left' } }, text('input', 'Input')), h('th', { scope: 'col', style: { textAlign: 'left' } }, text('reference_value', 'Reference value')))),
+              h('tbody', null, [
+                [text('mass_a', 'Star A mass'), '2.063 ± 0.023 ' + text('solar_masses', 'solar masses')],
+                [text('mass_b', 'Star B mass'), '1.018 ± 0.011 ' + text('solar_masses', 'solar masses')],
+                [text('period', 'One orbit'), '50.1284 ± 0.0043 ' + text('years', 'years')],
+                [text('eccentricity', 'Orbital eccentricity'), '0.59142 ± 0.00037'],
+                [text('derived_size', 'Derived semimajor axis'), n(m.siriusSeparationAu, 4) + ' AU'],
+                [text('gm', 'Nominal solar GM'), '1.3271244 × 10²⁰ m³/s²']
+              ].map(function(row) { var style = { textAlign: 'left', padding: '8px 2px', overflowWrap: 'anywhere' }; return h('tr', { key: row[0] }, h('th', { scope: 'row', style: style }, row[0]), h('td', { style: style }, row[1])); }))),
+            h('p', { style: Object.assign({}, prose, { fontFamily: 'ui-monospace, monospace', overflowWrap: 'anywhere' }) }, 'P² = 4π²a³ / [GM☉ × (mA + mB)]; aA = a × mB / (mA + mB); aB = a × mA / (mA + mB)'),
+            h('p', { style: prose }, text('math_note', 'a is the relative semimajor axis, converted from AU to meters. P uses seconds internally and Julian years (365.25 days) on screen. The solar GM is an IAU nominal conversion constant; 1 AU is exactly 149,597,870,700 meters. Orbital positions solve Kepler’s equation and speeds follow the vis-viva equation.')),
+            h('p', { style: prose }, text('limits', 'This is an isolated Newtonian two-body model viewed above its orbital plane. The Sirius preset uses published masses, period and eccentricity, with a consistent orbit size derived from those central values. The diagram omits the system’s actual sky inclination and orientation. Model time starts at closest approach and does not predict today’s positions. Stellar radii, collisions, eclipses, mass transfer, relativity and external bodies are omitted.')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } }, [
+              ['https://arxiv.org/abs/1703.10625', text('bond_link', 'Bond et al. · Sirius orbital measurements')],
+              ['https://arxiv.org/abs/1510.07674', text('iau_link', 'IAU · Nominal conversion constants')],
+              ['https://openstax.org/books/astronomy-2e/pages/18-2-measuring-stellar-masses', text('openstax_link', 'OpenStax · Measuring stellar masses')]
+            ].map(function(link) { return h('a', { key: link[0], href: link[0], target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, fontSize: 13, color: cyan } }, link[1]); }))),
+          h('div', { style: { marginTop: 12 } }, button(text('reset', 'Reset binary explorer'), sirius, undefined, 'reset')));
       }
 
       function renderStars() {
@@ -8958,6 +10024,22 @@
         return h('div', { style: { padding: 16 } },
           softNote('Stars are classified by surface temperature. The classes are O, B, A, F, G, K, M (memorized as "Oh, Be A Fine Girl/Guy, Kiss Me"). Each type has different mass, brightness, color, and lifespan.'),
 
+          h('a', { href: '#astronomy-binary-orbit-lab', className: 'astr-focus',
+            onClick: function(e) { e.preventDefault(); var target = document.getElementById('astronomy-binary-orbit-lab'), control = document.getElementById('astronomy-binary-time'); if (target) target.scrollIntoView({ block: 'start' }); if (control) control.focus({ preventScroll: true }); },
+            style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '8px 12px', margin: '0 8px 12px 0', borderRadius: 8, border: '1px solid #475569', background: '#091323', color: '#67e8f9', fontSize: 14, fontWeight: 700, textDecoration: 'underline' }
+          }, __alloT('stem.astronomy.binary_jump', 'Explore binary orbits and stellar masses')),
+
+          h('a', { href: '#astronomy-magnitude-lab', className: 'astr-focus',
+            onClick: function(e) {
+              e.preventDefault();
+              var target = document.getElementById('astronomy-magnitude-lab'), control = document.getElementById('astronomy-magnitude-mv');
+              if (target) target.scrollIntoView({ block: 'start' });
+              if (control) control.focus({ preventScroll: true });
+            },
+            style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, padding: '8px 12px', marginBottom: 12, borderRadius: 8,
+              border: '1px solid #475569', background: '#091323', color: '#67e8f9', fontSize: 14, fontWeight: 700, textDecoration: 'underline' }
+          }, __alloT('stem.astronomy.mag_jump', 'Explore brightness and distance')),
+
           // HR diagram — the single most important plot in stellar astrophysics
           sectionCard('🌟 The Hertzsprung-Russell Diagram',
             h('div', null,
@@ -9034,6 +10116,8 @@
           ),
 
           renderStellarSpectrum(),
+
+          renderBinaryOrbit(),
 
           sectionCard('☁️ Nebulae + star formation — where stars are born',
             (function() {
@@ -9361,69 +10445,7 @@
           ),
 
           // Magnitude scale: apparent vs absolute
-          sectionCard('🔆 The magnitude scale: how bright is bright?',
-            h('div', null,
-              h('p', { style: { margin: '0 0 10px', fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
-                __alloT('stem.astronomy.astronomers_measure_brightness_on_the_', 'Astronomers measure brightness on the magnitude scale, invented by the Greek astronomer Hipparchus around 130 BCE. It is '),
-                h('strong', { style: { color: '#fbbf24' } }, 'inverted'),
-                __alloT('stem.astronomy.smaller_number_brighter_the_historical', ' (smaller number = brighter, the historical convention) and '),
-                h('strong', { style: { color: '#fbbf24' } }, 'logarithmic'),
-                __alloT('stem.astronomy.each_step_of_5_magnitudes_is_exactly_1', ' (each step of 5 magnitudes is exactly 100× brighter). The Sun at magnitude -27 and the faintest galaxy ever imaged at magnitude +32 differ in brightness by a factor of about 10²³.')
-              ),
-
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: 10, marginBottom: 12 } },
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #fbbf24' } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#fbbf24', marginBottom: 4 } }, __alloT('stem.astronomy.apparent_magnitude_m', 'Apparent magnitude (m)')),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, __alloT('stem.astronomy.how_bright_the_object_looks_from_earth', 'How bright the object LOOKS from Earth. Depends on both how much light the object emits AND how far away it is. A bright nearby star and a dim distant star can have the same apparent magnitude.'))
-                ),
-                h('div', { style: { padding: 10, borderRadius: 8, background: '#0f172a', borderTop: '1px solid #334155', borderRight: '1px solid #334155', borderBottom: '1px solid #334155', borderLeft: '3px solid #c7d2fe' } },
-                  h('div', { style: { fontSize: 13, fontWeight: 800, color: '#c7d2fe', marginBottom: 4 } }, __alloT('stem.astronomy.absolute_magnitude_m', 'Absolute magnitude (M)')),
-                  h('div', { style: { fontSize: 12, color: '#e2e8f0', lineHeight: 1.6 } }, __alloT('stem.astronomy.how_bright_the_object_would_appear_if_', 'How bright the object would APPEAR if placed at a standard distance of 10 parsecs (32.6 light-years). Lets us compare the actual luminosity of stars regardless of distance.'))
-                )
-              ),
-
-              // Magnitude reference table
-              h('div', { style: { padding: 12, borderRadius: 10, background: '#0a0e1a', border: '1px solid #334155', overflowX: 'auto' } },
-                h('div', { style: { fontSize: 12, fontWeight: 700, color: '#cbd5e1', marginBottom: 8 } }, __alloT('stem.astronomy.apparent_magnitude_reference', 'Apparent magnitude reference:')),
-                h('table', { style: { width: '100%', borderCollapse: 'collapse', fontSize: 11.5, minWidth: 480 } },
-                  h('thead', null, h('tr', null,
-                    ['Object', 'App. mag (m)', 'Visibility'].map(function(c, i) {
-                      return h('th', { key: i, scope: 'col', style: { padding: 5, textAlign: 'left', color: '#94a3b8', borderBottom: '1px solid #334155', fontWeight: 700 } }, c);
-                    })
-                  )),
-                  h('tbody', null,
-                    [
-                      { obj: 'Sun', m: '-26.7', vis: 'Too bright to look at safely' },
-                      { obj: 'Full Moon', m: '-12.7', vis: 'Brightest natural night object' },
-                      { obj: 'Venus (brightest)', m: '-4.9', vis: 'Visible in twilight' },
-                      { obj: 'Jupiter (brightest)', m: '-3.0', vis: 'Easily naked-eye' },
-                      { obj: 'Sirius (brightest star)', m: '-1.46', vis: 'Brightest star at night' },
-                      { obj: 'Vega', m: '0.03', vis: 'Reference standard (~mag 0)' },
-                      { obj: 'Polaris', m: '+1.97', vis: 'North Star, mid-bright' },
-                      { obj: 'Naked-eye limit (dark sky)', m: '+6.5', vis: 'Threshold of naked-eye visibility' },
-                      { obj: 'Naked-eye limit (city)', m: '+2 to +4', vis: 'Most stars erased by light pollution' },
-                      { obj: 'Binocular limit (7×50)', m: '+9 to +10', vis: 'Adds thousands of stars' },
-                      { obj: 'Small telescope limit', m: '+12 to +14', vis: 'Galaxies, deep-sky' },
-                      { obj: 'Hubble deep field limit', m: '+30', vis: 'Beyond reach of most ground telescopes' },
-                      { obj: 'JWST faintest', m: '+34 (estimated)', vis: 'The faintest galaxies ever imaged' }
-                    ].map(function(r, i) {
-                      return h('tr', { key: i, style: { background: i % 2 === 0 ? '#0a0e1a' : '#0f172a' } },
-                        h('td', { style: { padding: 5, color: '#e2e8f0' } }, r.obj),
-                        h('td', { style: { padding: 5, color: '#fbbf24', fontFamily: 'ui-monospace, monospace' } }, r.m),
-                        h('td', { style: { padding: 5, color: '#94a3b8' } }, r.vis)
-                      );
-                    })
-                  )
-                )
-              ),
-
-              h('div', { style: { marginTop: 10, padding: 10, borderRadius: 8, background: 'rgba(99,102,241,0.08)', border: '1px solid rgba(99,102,241,0.3)', fontSize: 12, color: '#c7d2fe', lineHeight: 1.65 } },
-                h('strong', null, __alloT('stem.astronomy.why_this_matters_2', 'Why this matters: ')),
-                __alloT('stem.astronomy.sirius_looks_brightest_in_our_sky_beca', 'Sirius LOOKS brightest in our sky because it is close (8.6 light-years), but its absolute magnitude is +1.4 — Vega (also close, 25 ly) is intrinsically brighter at +0.6. Betelgeuse looks medium-bright (+0.5) but is 550 light-years away — its absolute magnitude is -5.8, intrinsically about 100,000× more luminous than the Sun. Without correcting for distance, you cannot compare what stars actually are.')
-              )
-            ),
-            '#fbbf24'
-          ),
+          sectionCard('🔆 The magnitude scale: how bright is bright?', renderMagnitudeExplorer(), '#fbbf24'),
 
           // ─── Solar physics + space weather ───────────────────────
           sectionCard('☀️ Solar physics + space weather',
@@ -9966,6 +10988,11 @@
             h('a', { href:'https://science.nasa.gov/asset/webb/what-is-cosmological-redshift/', target:'_blank', rel:'noopener noreferrer', style:{ color:'#7dd3fc', textDecoration:'underline' } }, __alloT('stem.astronomy.redshift_nasa_source', 'NASA: cosmological redshift')),
             h('a', { href:'https://sdss.org/dr20/tutorials/conversions/', target:'_blank', rel:'noopener noreferrer', style:{ color:'#7dd3fc', textDecoration:'underline' } }, __alloT('stem.astronomy.redshift_sdss_source', 'SDSS: vacuum wavelength references')),
             h('a', { href:'https://classic.sdss.org/dr2/algorithms/speclinefits.php', target:'_blank', rel:'noopener noreferrer', style:{ color:'#7dd3fc', textDecoration:'underline' } }, __alloT('stem.astronomy.redshift_sdss_lines', 'SDSS: spectral line list')),
+
+            a11yButton({ type:'button', onClick:function() {
+              upd({ cosmoZ:model.z, cosmoRedshiftReference:model.reference ? model.reference.id : '' });
+              setTimeout(function() { var target = document.getElementById('astronomy-cosmo-lab'); if (target) { target.scrollIntoView({ block:'start', behavior:'auto' }); target.focus({ preventScroll:true }); } }, 0);
+            }, style:buttonStyle }, __alloT('stem.astronomy.cosmo_spectrum_link', 'Explore distance and time')),
             a11yButton({ type:'button', onClick:function() { activateAstronomyTab('stars', 'astronomy-spectrum-lab'); }, style:buttonStyle }, __alloT('stem.astronomy.redshift_doppler_link', 'Compare with stellar Doppler shift'))
           )
         );
@@ -10553,9 +11580,620 @@
             h('a', { href: 'https://science.nasa.gov/mission/hubble/science/science-behind-the-discoveries/hubble-pulsars/', target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus', style: { color: cyan, display: 'inline-block', minHeight: 44, padding: '10px 0' } }, __alloT('stem.astronomy.pulsar_nasa_explainer', 'NASA: why pulsars act like lighthouses'))));
       }
 
+
+
+
+
+      function renderCosmicCalendar() {
+        var m = cosmicCalendarModel(d), CC_DATES = m.events, topic = m.selected, sel = m.selectedId;
+        var bg = astronomyContrast ? '#000' : '#091323', border = astronomyContrast ? '#fbbf24' : '#475569';
+        var gold = '#fdba74', cyan = '#67e8f9', muted = '#cbd5e1';
+        var box = { padding: 12, minWidth: 0, borderRadius: 12, background: bg, border: '1px solid ' + border };
+        var prose = { fontSize: 13, lineHeight: 1.75, color: muted, margin: '8px 0' };
+        function text(key, fallback) { return __alloT('stem.astronomy.cc_' + key, fallback); }
+        function eventText(event, field) { return text(event.id + '_' + field, event[field]); }
+        function number(value) { return value.toLocaleString('en-US', { maximumFractionDigits: value < 1 && value > 0 ? 4 : 2 }); }
+        function years(value) { return (value >= 1e9 ? (value / 1e9).toLocaleString('en-US', { maximumFractionDigits: 6 }) : number(value >= 1e6 ? value / 1e6 : value)) + ' ' +
+          (value >= 1e9 ? text('billion_years', 'billion years') : value >= 1e6 ? text('million_years', 'million years') : value === 1 ? text('year', 'year') : text('years', 'years')); }
+        function button(label, action, on, key) {
+          return h('button', { key: key, type: 'button', onClick: action, 'aria-pressed': on, className: 'astr-focus',
+            style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 700,
+              border: '2px solid ' + (on ? gold : border), color: on ? '#020617' : '#f1f5f9', background: on ? gold : bg } }, label);
+        }
+        function selectCCTopic(index, moveFocus) {
+          var normalizedIndex = (index + CC_DATES.length) % CC_DATES.length;
+          var nextTopic = CC_DATES[normalizedIndex];
+          upd({ selectedCC: nextTopic.id });
+          if (moveFocus && typeof document !== 'undefined') {
+            setTimeout(function() {
+              var target = document.getElementById('astronomy-cc-tab-' + nextTopic.id);
+              if (target) target.focus();
+            }, 0);
+          }
+        }
+        function onCCTopicKeyDown(e, index) {
+          if (e.altKey || e.ctrlKey || e.metaKey) return;
+          var nextIndex = null;
+          if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
+          else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
+          else if (e.key === 'Home') nextIndex = 0;
+          else if (e.key === 'End') nextIndex = CC_DATES.length - 1;
+          if (nextIndex == null) return;
+          e.preventDefault(); selectCCTopic(nextIndex, true);
+        }
+        function metric(key, label, value, display) {
+          return h('div', { key: key, 'data-calendar-metric': key, 'data-value': value, style: Object.assign({}, box, { padding: 10 }) },
+            h('div', { style: { color: muted, fontSize: 12, marginBottom: 5 } }, label),
+            h('strong', { style: { color: '#ffedd5', fontSize: 16, overflowWrap: 'anywhere' } }, display));
+        }
+        var rows = m.events.filter(function(e) { return e.visible; });
+        var zoomName = m.zoom === 'hour' ? text('final_hour', 'Final cosmic hour') : m.zoom === 'second' ? text('final_second', 'Final cosmic second') : text('final_minute', 'Final cosmic minute');
+        var zoomHeight = 70 + (rows.length + 1) * 100;
+        function trackRow(row, i, lifetime) {
+          var y = 70 + i * 100, fraction = lifetime ? m.lifetimeZoomFraction : row.zoomFraction;
+          var active = !lifetime && row.id === sel, color = lifetime ? cyan : active ? gold : '#e2e8f0';
+          var x = 30 + 300 * fraction, label = lifetime ? text('lifetime_example', 'Lifetime example') : eventText(row, 'name');
+          var remaining = lifetime ? m.lifetime.beforeEndSeconds : row.position.beforeEndSeconds;
+          var props = { key: lifetime ? 'lifetime' : row.id, transform: 'translate(0 ' + y + ')',
+            'data-calendar-row': lifetime ? 'lifetime' : row.id, 'data-before-end': remaining, 'data-marker-x': x };
+          if (!lifetime) {
+            props.id = 'astronomy-cc-zoom-' + row.id; props.role = 'button'; props.tabIndex = 0; props.className = 'astr-focus';
+            props['aria-pressed'] = active; props['aria-label'] = label + ': ' + number(remaining) + ' ' + text('seconds_before_end', 'cosmic seconds before year end');
+            props.onClick = function() { selectCCTopic(row.index, false); };
+            props.onKeyDown = function(e) { if (e.key === 'Enter' || e.key === ' ') { e.preventDefault(); selectCCTopic(row.index, false); } };
+            props.style = { cursor: 'pointer' };
+          }
+          var range = !lifetime && row.range;
+          var earlyX = range ? 30 + 300 * Math.max(0, 1 - range.early.beforeEndSeconds / m.windowSeconds) : x;
+          var lateX = range ? 30 + 300 * Math.min(1, 1 - range.late.beforeEndSeconds / m.windowSeconds) : x;
+          return h('g', props,
+            h('rect', { x: 5, y: -2, width: 350, height: 94, rx: 8, fill: active ? '#29180a' : bg, stroke: active ? gold : border, strokeWidth: active ? 2 : 1 }),
+            h('text', { x: 18, y: 24, fill: color, fontSize: 24, fontWeight: 700 }, label),
+            h('line', { x1: 30, x2: 330, y1: 46, y2: 46, stroke: '#64748b', strokeWidth: 3 }),
+            lifetime ? h('line', { x1: x, x2: 330, y1: 46, y2: 46, stroke: cyan, strokeWidth: 8 }) : null,
+            range ? h('rect', { x: earlyX, y: 38, width: Math.max(0, lateX - earlyX), height: 16, fill: '#f59e0b', fillOpacity: 0.4, 'data-calendar-range': row.kind }) : null,
+            h('circle', { cx: x, cy: 46, r: 6, fill: color, stroke: bg, strokeWidth: 2, 'data-calendar-marker': lifetime ? 'lifetime' : row.id }),
+            h('text', { x: 18, y: 79, fill: muted, fontSize: 22 }, number(remaining) + ' ' + text('seconds_remaining', 'cosmic s before end'))
+          );
+        }
+        var yearX = 30 + 300 * topic.position.yearFraction;
+        return h('div', { id: 'astronomy-calendar-lab', style: { background: bg, color: '#f1f5f9', minWidth: 0, padding: 12, borderRadius: 12 } },
+          h('p', { style: Object.assign({}, prose, { marginTop: 0 }) }, text('intro', 'Compress 13.8 billion years into a 365-day year. January 1 begins with the Big Bang; the present sits exactly at year end. Choose a milestone, then zoom in to see recent history.')),
+          h('div', { role: 'tablist', 'aria-label': __alloT('stem.astronomy.a11y_cosmic_calendar_events', 'Cosmic Calendar events'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, margin: '12px 0' } },
+            CC_DATES.map(function(e, index) {
+              var on = e.id === sel;
+              return h('button', { id: 'astronomy-cc-tab-' + e.id, key: e.id, type: 'button', role: 'tab',
+                'aria-selected': on ? 'true' : 'false', 'aria-controls': 'astronomy-cc-panel', tabIndex: on ? 0 : -1,
+                onClick: function() { selectCCTopic(index, false); }, onKeyDown: function(ev) { onCCTopicKeyDown(ev, index); }, className: 'astr-focus',
+                style: { minHeight: 44, padding: '8px 12px', borderRadius: 8, cursor: 'pointer', fontSize: 13, fontWeight: 700,
+                  background: on ? gold : '#1e293b', color: on ? '#020617' : '#f1f5f9', border: '2px solid ' + (on ? gold : border) } }, eventText(e, 'name'));
+            })),
+          h('div', { id: 'astronomy-cc-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-cc-tab-' + sel, tabIndex: 0, className: 'astr-focus', style: box },
+            h('h3', { style: { color: gold, fontSize: 18, margin: '0 0 8px' } }, eventText(topic, 'name')),
+            h('div', { 'data-calendar-date': sel, style: { color: '#ffedd5', fontSize: 17, fontWeight: 700, lineHeight: 1.6 } }, topic.position.date),
+            h('p', { style: prose }, eventText(topic, 'story')),
+            h('p', { 'data-calendar-basis': topic.kind, style: Object.assign({}, prose, { borderLeft: '3px solid ' + gold, paddingLeft: 10 }) }, eventText(topic, 'basis')),
+            h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,180px),1fr))', gap: 8 } },
+              metric('lookbackYears', text('years_before_present', 'Time before the present'), topic.position.lookbackYears, years(topic.position.lookbackYears)),
+              metric('elapsedYears', text('since_big_bang', 'Time since the Big Bang'), topic.position.elapsedYears, years(topic.position.elapsedYears)),
+              metric('beforeEndSeconds', text('before_end', 'Time before cosmic year end'), topic.position.beforeEndSeconds, number(topic.position.beforeEndSeconds) + ' ' + text('cosmic_seconds', 'cosmic seconds'))),
+            h('a', { href: topic.href, target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus',
+              style: { display: 'inline-flex', alignItems: 'center', minHeight: 44, color: cyan, fontSize: 13, lineHeight: 1.6, overflowWrap: 'anywhere' } }, eventText(topic, 'source'))),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 12, marginTop: 12, alignItems: 'start' } },
+            h('figure', { style: Object.assign({}, box, { margin: 0, padding: 8 }) },
+              h('h4', { style: { margin: '4px 2px 8px', fontSize: 15, color: gold } }, text('full_year', 'Full cosmic year')),
+              h('svg', { id: 'astronomy-cosmic-calendar-diagram', viewBox: '0 0 360 270', role: 'img', 'aria-labelledby': 'astronomy-cc-title astronomy-cc-desc',
+                'data-selected': sel, 'data-marker-x': yearX, style: { display: 'block', width: '100%', height: 'auto' } },
+                h('title', { id: 'astronomy-cc-title' }, text('year_title', 'Cosmic Calendar timeline')),
+                h('desc', { id: 'astronomy-cc-desc' }, text('year_desc', 'All markers use the same linear conversion from real years to a 365-day calendar. The orange marker identifies the selected milestone. Orange bands show the selected formation phase or quoted age uncertainty.')),
+                h('text', { x: 30, y: 30, fill: muted, fontSize: 24 }, text('year_scale', '13.8 billion years → 365 days')),
+                h('text', { x: 30, y: 72, fill: muted, fontSize: 22 }, text('beginning', 'Beginning')),
+                h('text', { x: 330, y: 72, textAnchor: 'end', fill: muted, fontSize: 22 }, text('present', 'Present')),
+                h('line', { x1: 30, x2: 330, y1: 104, y2: 104, stroke: '#64748b', strokeWidth: 6 }),
+                topic.range ? h('rect', { x: 30 + 300 * topic.range.early.yearFraction, y: 91, width: 300 * (topic.range.late.yearFraction - topic.range.early.yearFraction), height: 26,
+                  fill: '#f59e0b', fillOpacity: 0.4, 'data-calendar-range': topic.kind }) : null,
+                m.events.map(function(e) { return h('line', { key: e.id, x1: 30 + 300 * e.position.yearFraction, x2: 30 + 300 * e.position.yearFraction,
+                  y1: 97, y2: 111, stroke: '#e2e8f0', strokeWidth: 2 }); }),
+                h('line', { x1: yearX, x2: yearX, y1: 85, y2: 123, stroke: gold, strokeWidth: 3 }),
+                h('circle', { cx: yearX, cy: 104, r: 7, fill: gold, stroke: bg, strokeWidth: 2, 'data-calendar-marker': sel }),
+                [{ day: 0, label: 'Jan 1' }, { day: 90, label: 'Apr 1' }, { day: 181, label: 'Jul 1' }, { day: 273, label: 'Oct 1' }, { day: 365, label: text('end', 'End') }].map(function(t, i) {
+                  var x = 30 + 300 * t.day / 365;
+                  return h('g', { key: t.day }, h('line', { x1: x, x2: x, y1: 129, y2: 138, stroke: muted }),
+                    h('text', { x: x, y: 166, textAnchor: 'middle', fill: muted, fontSize: 22 }, t.label));
+                }),
+                h('text', { x: 30, y: 216, fill: gold, fontSize: 24, fontWeight: 700 }, eventText(topic, 'name')),
+                h('text', { x: 30, y: 250, fill: muted, fontSize: 22 }, text('orange_selected', 'Orange = selected milestone'))),
+              h('figcaption', { style: Object.assign({}, prose, { padding: '0 2px' }) }, text('year_caption', 'Recent events cluster at the year’s end. Marker width helps visibility and does not represent an event’s duration.'))),
+            h('figure', { style: Object.assign({}, box, { margin: 0, padding: 8 }) },
+              h('h4', { style: { margin: '4px 2px 8px', fontSize: 15, color: gold } }, zoomName),
+              h('div', { role: 'group', 'aria-label': text('zoom_choices', 'Calendar zoom'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 10 } },
+                ['hour', 'minute', 'second'].map(function(z) { return button(z === 'hour' ? text('hour', 'Hour') : z === 'minute' ? text('minute', 'Minute') : text('second', 'Second'), function() { upd({ ccZoom: z }); }, m.zoom === z, z); })),
+              h('svg', { id: 'astronomy-calendar-zoom', viewBox: '0 0 360 ' + zoomHeight, role: 'group',
+                'aria-labelledby': 'astronomy-cc-zoom-title astronomy-cc-zoom-desc', 'data-window-seconds': m.windowSeconds,
+                style: { display: 'block', width: '100%', height: 'auto' } },
+                h('title', { id: 'astronomy-cc-zoom-title' }, zoomName),
+                h('desc', { id: 'astronomy-cc-zoom-desc' }, text('zoom_desc', 'Each row has the same time scale. Select an event row with a click, touch, Enter or Space. The cyan interval shows the example lifetime ending at the present.')),
+                [1, 0.5, 0].map(function(f, i) {
+                  return h('text', { key: f, x: 30 + 300 * (1 - f), y: 27, fill: muted, fontSize: 22, textAnchor: i === 0 ? 'start' : i === 2 ? 'end' : 'middle' },
+                    number(f * (m.zoom === 'hour' ? 60 : m.windowSeconds)));
+                }),
+                h('text', { x: 180, y: 56, textAnchor: 'middle', fill: muted, fontSize: 22 }, m.zoom === 'hour' ? text('minutes_before_end', 'Cosmic minutes before end') : text('seconds_axis', 'Cosmic seconds before end')),
+                rows.map(function(e, i) { return trackRow(e, i, false); }), trackRow(null, rows.length, true)),
+              h('figcaption', { id: 'astronomy-cc-zoom-status', 'data-selected-visible': topic.visible, style: Object.assign({}, prose, { padding: '0 2px' }) },
+                topic.visible ? text('zoom_visible', 'The selected milestone is visible in this zoom.') : text('zoom_outside', 'The selected milestone is earlier than this zoom window. Its position remains on the full-year timeline.')))),
+          h('div', { style: Object.assign({}, box, { marginTop: 12 }) },
+            h('label', { htmlFor: 'astronomy-cc-lifetime', style: { color: cyan, fontSize: 15, fontWeight: 700 } },
+              text('lifetime_label', 'Example lifetime') + ': ' + m.lifetimeYears + ' ' + (m.lifetimeYears === 1 ? text('year', 'year') : text('years', 'years'))),
+            h('input', { id: 'astronomy-cc-lifetime', type: 'range', min: 0, max: 100, step: 1, value: m.lifetimeYears,
+              className: 'astr-focus', 'aria-describedby': 'astronomy-cc-lifetime-help', 'aria-valuetext': m.lifetimeYears + ' ' + (m.lifetimeYears === 1 ? text('year', 'year') : text('years', 'years')),
+              onChange: function(e) { upd({ ccLifetimeYears: Number(e.target.value) }); }, style: { width: '100%', minHeight: 44, accentColor: cyan } }),
+            h('div', { role: 'group', 'aria-label': text('lifetime_presets', 'Lifetime examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7 } },
+              [1, 12, 80].map(function(age) { return button(age + ' ' + (age === 1 ? text('year', 'year') : text('years', 'years')), function() { upd({ ccLifetimeYears: age }); }, m.lifetimeYears === age, age); })),
+            h('p', { id: 'astronomy-cc-lifetime-help', 'data-calendar-lifetime-seconds': m.lifetime.beforeEndSeconds, style: prose },
+              m.lifetimeYears + ' ' + (m.lifetimeYears === 1 ? text('year_equal', 'real year =') : text('years_equal', 'real years =')) + ' ' + number(m.lifetime.beforeEndSeconds) + ' ' + text('cosmic_seconds', 'cosmic seconds') + '. ' +
+              text('lifetime_help', 'The cyan interval ends at the present. Choose Second to make it easier to see. Zero years collapses the interval to the end boundary.'))),
+          h('details', { style: Object.assign({}, box, { marginTop: 12 }) },
+            h('summary', { className: 'astr-focus', style: { minHeight: 44, display: 'flex', alignItems: 'center', cursor: 'pointer', fontSize: 14, fontWeight: 700, color: gold } },
+              text('methods', 'Scale, sources and limits')),
+            h('p', { style: prose }, text('formula', 'Cosmic seconds before year end = years before the present ÷ 13,800,000,000 × 31,536,000. The year has 365 days and February has 28 days. Months have their ordinary, unequal lengths.')),
+            h('p', { style: prose }, '1 ' + text('cosmic_second_equals', 'cosmic second =') + ' ' + number(m.realYearsPerSecond) + ' ' + text('real_years', 'real years') + '.'),
+            h('p', { style: prose }, text('precision', 'The clock shows the arithmetic to hundredths of a cosmic second. Scientific ages remain approximate or carry the quoted uncertainty. The rounded universe age is held fixed; its uncertainty is not propagated. Bands distinguish a formation phase from a dating uncertainty.')),
+            h('p', { style: prose }, text('data_help', 'Milestone ages are saved with the simulator and work offline. Each event links to its source. This educational calendar uses a rounded modern age reference; its dates are recalculated rather than copied from an older calendar.'))));
+      }
+
+      function renderGalaxyRotation() {
+        var m = galaxyRotationModel(d), p = m.selected, bg = astronomyContrast ? '#000' : '#091323';
+        var border = astronomyContrast ? '#fbbf24' : '#475569', muted = '#cbd5e1', gold = '#fde68a', cyan = '#67e8f9';
+        var panel = { padding: 10, border: '1px solid ' + border, borderRadius: 12, background: bg, minWidth: 0 };
+        var plot = { x: 70, y: 44, w: 264, h: 214 };
+        function number(value) { return value === null ? '—' : Number(value.toFixed(2)).toLocaleString('en-US', { maximumFractionDigits: 2 }); }
+        function selectPoint(index) { upd({ rotationPoint: Math.max(0, Math.min(m.points.length - 1, Math.round(index))) }); }
+        function keys(event) {
+          if (event.altKey || event.ctrlKey || event.metaKey) return;
+          var next, step = event.shiftKey ? 5 : 1;
+          if (event.key === 'Home') next = 0;
+          else if (event.key === 'End') next = m.points.length - 1;
+          else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') next = m.index + step;
+          else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') next = m.index - step;
+          else return;
+          event.preventDefault(); selectPoint(next);
+        }
+        function scrub(event) {
+          var box = event.currentTarget.getBoundingClientRect(); if (!box.width) return;
+          var radius = ((event.clientX - box.left) * 360 / box.width - plot.x) / plot.w * m.radiusMaxKpc;
+          var nearest = m.points.reduce(function(best, q) { return Math.abs(q.radiusKpc - radius) < Math.abs(best.radiusKpc - radius) ? q : best; }, m.points[0]);
+          selectPoint(nearest.index);
+        }
+        function button(text, action, active, key) {
+          return h('button', { key: key, type: 'button', className: 'astr-focus', 'aria-pressed': active, onClick: action,
+            style: { minHeight: 44, padding: '9px 11px', fontSize: 13, color: active ? gold : '#e2e8f0', background: active ? '#422006' : bg,
+              border: '1px solid ' + (active ? gold : border), borderRadius: 8, cursor: 'pointer' } }, text);
+        }
+        function point(q, value, difference) {
+          return { x: plot.x + q.radiusKpc / m.radiusMaxKpc * plot.w,
+            y: plot.y + ((difference ? 150 : 200) - value) / (difference ? 300 : 250) * plot.h };
+        }
+        function graph(difference) {
+          var id = difference ? 'astronomy-rotation-difference' : 'astronomy-rotation-chart';
+          var attrs = { id: id, viewBox: '0 0 360 330', role: difference ? 'img' : 'slider',
+            'data-galaxy': m.galaxy, 'data-index': m.index, 'data-ml': m.ml,
+            'aria-describedby': difference ? 'astronomy-rotation-difference-caption' : 'astronomy-rotation-help astronomy-rotation-chart-caption',
+            style: { width: '100%', display: 'block', touchAction: 'pan-y', cursor: difference ? 'default' : 'crosshair' } };
+          if (difference) attrs['aria-labelledby'] = id + '-title';
+          else Object.assign(attrs, { tabIndex: 0, className: 'astr-focus',
+            'aria-label': __alloT('stem.astronomy.rot_chart_control', 'Select a measured galaxy radius'), 'aria-valuemin': 0,
+            'aria-valuemax': m.points.length - 1, 'aria-valuenow': m.index, 'aria-valuetext': number(p.radiusKpc) + ' kpc · ' + number(p.observedKms) + ' km/s',
+            onKeyDown: keys, onPointerDown: function(event) { if (event.button !== 0) return; event.currentTarget.focus({ preventScroll: true }); event.currentTarget.setPointerCapture(event.pointerId); scrub(event); },
+            onPointerMove: function(event) { if (event.currentTarget.hasPointerCapture(event.pointerId)) scrub(event); },
+            onPointerUp: function(event) { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); },
+            onPointerCancel: function(event) { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); } });
+          var cursor = point(p, 0, difference);
+          var line = m.points.filter(function(q) { return q.baryonKms !== null; }).map(function(q) { var r = point(q, q.baryonKms, false); return r.x.toFixed(3) + ',' + r.y.toFixed(3); }).join(' ');
+          return h('svg', attrs,
+            h('title', { id: id + '-title' }, difference ? __alloT('stem.astronomy.rot_difference_title', 'Observed speed minus the stars and gas model, with quoted measurement errors') : __alloT('stem.astronomy.rot_chart_title', 'SPARC measured rotation speeds with error bars and an adjustable stars and gas model')),
+            h('text', { x: plot.x, y: 30, fill: muted }, difference ? __alloT('stem.astronomy.rot_delta_axis', 'Difference (km/s)') : __alloT('stem.astronomy.rot_speed_axis', 'Speed (km/s)')),
+            (difference ? [-100, 0, 100] : [-50, 0, 100, 200]).map(function(value) {
+              var y = point(p, value, difference).y; return h('g', { key: value },
+                h('line', { x1: plot.x, x2: plot.x + plot.w, y1: y, y2: y, stroke: value === 0 ? cyan : border, strokeDasharray: value === 0 ? '3 5' : '2 5' }),
+                h('text', { x: plot.x - 10, y: y + 7, textAnchor: 'end', fill: value === 0 ? cyan : muted }, value));
+            }),
+            h('line', { x1: cursor.x, x2: cursor.x, y1: plot.y, y2: plot.y + plot.h, stroke: cyan, strokeDasharray: '5 5', strokeWidth: 1.5 }),
+            difference ? null : h('polyline', { 'data-rotation-model': true, points: line, fill: 'none', stroke: gold, strokeWidth: 2.5, strokeDasharray: '8 5' }),
+            m.points.map(function(q) {
+              var value = difference ? q.differenceKms : q.observedKms; if (value === null) return null;
+              var r = point(q, value, difference), low = point(q, value - q.errorKms, difference), high = point(q, value + q.errorKms, difference), selected = q.index === m.index;
+              return h('g', { key: q.index, 'data-rotation-sample': q.index, 'data-radius': q.radiusKpc, 'data-value': value, 'data-error': q.errorKms },
+                h('line', { x1: r.x, x2: r.x, y1: low.y, y2: high.y, stroke: selected ? cyan : '#cbd5e1', strokeWidth: selected ? 2 : 1, strokeOpacity: selected ? 1 : 0.7 }),
+                h('line', { x1: r.x - 2.5, x2: r.x + 2.5, y1: low.y, y2: low.y, stroke: selected ? cyan : muted }),
+                h('line', { x1: r.x - 2.5, x2: r.x + 2.5, y1: high.y, y2: high.y, stroke: selected ? cyan : muted }),
+                h('circle', { cx: r.x, cy: r.y, r: selected ? 5 : 2.5, fill: selected ? cyan : '#f8fafc', stroke: bg, strokeWidth: 1 }));
+            }),
+            difference || p.baryonKms === null ? null : h('circle', { 'data-rotation-model-dot': true, 'data-value': p.baryonKms, cx: cursor.x, cy: point(p, p.baryonKms, false).y, r: 5, fill: gold, stroke: bg, strokeWidth: 1.5 }),
+            [0, m.radiusMaxKpc / 2, m.radiusMaxKpc].map(function(radius) { return h('text', { key: radius, x: plot.x + radius / m.radiusMaxKpc * plot.w, y: 294,
+              textAnchor: radius === 0 ? 'start' : radius === m.radiusMaxKpc ? 'end' : 'middle', fill: muted }, radius); }),
+            h('text', { x: 180, y: 324, textAnchor: 'middle', fill: muted }, __alloT('stem.astronomy.rot_radius_axis', 'Radius (kpc)')));
+        }
+        function metric(key, label, value, text) {
+          return h('div', { style: panel }, h('dt', { style: { color: muted, fontSize: 12, lineHeight: 1.6, marginBottom: 5 } }, label),
+            h('dd', { 'data-rotation-metric': key, 'data-value': value, style: { margin: 0, color: '#f8fafc', fontSize: 17, fontWeight: 750, overflowWrap: 'anywhere' } }, text));
+        }
+        function link(url, text) { return h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus',
+          style: { minHeight: 44, display: 'inline-flex', alignItems: 'center', color: '#7dd3fc', marginRight: 14 } }, text); }
+        var status = { above: __alloT('stem.astronomy.rot_above', 'Observed speed is above the stars and gas model'),
+          below: __alloT('stem.astronomy.rot_below', 'The stars and gas model is above the observed speed'),
+          overlap: __alloT('stem.astronomy.rot_overlap', 'The model lies within the quoted speed error bar'),
+          undefined: __alloT('stem.astronomy.rot_undefined', 'This mass choice gives no circular-speed solution') }[m.regime];
+        return h('section', { id: 'astronomy-rotation-lab', 'aria-labelledby': 'astronomy-rotation-heading',
+          style: { marginBottom: 14, padding: 12, border: '1px solid ' + border, borderRadius: 14, background: bg, minWidth: 0 } },
+          h('style', null, '#astronomy-rotation-lab svg text{font-size:20px}#astronomy-rotation-lab summary{min-height:44px;align-content:center}@media(max-width:600px){#astronomy-rotation-lab svg text{font-size:24px}}'),
+          h('h3', { id: 'astronomy-rotation-heading', style: { margin: '0 0 7px', fontSize: 18, color: '#a5f3fc' } }, __alloT('stem.astronomy.rot_heading', 'Galaxy rotation: measurements and mass')),
+          h('p', { style: { margin: '0 0 12px', color: muted, fontSize: 13, lineHeight: 1.7 } }, __alloT('stem.astronomy.rot_intro', 'Compare published SPARC speeds with the Newtonian contribution from stars and gas. Choose a galaxy, change the assumed stellar mass per unit light, and inspect a measured radius. The observations stay fixed.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.rot_examples', 'Published galaxy examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+            m.examples.map(function(g) { return button(g.name, function() { upd({ rotationGalaxy: g.id, rotationPoint: g.count - 1 }); }, m.galaxy === g.id, g.id); })),
+          h('p', { id: 'astronomy-rotation-provenance', style: { margin: '0 0 12px', color: muted, fontSize: 12, lineHeight: 1.7 } }, m.name + ' · ' + m.points.length + ' ' + __alloT('stem.astronomy.rot_published_points', 'published radial samples') + ' · ' + __alloT('stem.astronomy.rot_distance', 'adopted distance') + ' ' + number(m.distanceMpc) + ' ± ' + number(m.distanceErrorMpc) + ' Mpc · ' + __alloT('stem.astronomy.rot_inclination', 'inclination') + ' ' + m.inclinationDeg + '° ± ' + m.inclinationErrorDeg + '°'),
+          h('label', { htmlFor: 'astronomy-rotation-ml', style: { display: 'block', color: '#e2e8f0', fontSize: 14, fontWeight: 750 } }, __alloT('stem.astronomy.rot_ml_control', 'Stellar mass-to-light ratio at 3.6 μm'), ': ' + number(m.ml) + ' M☉/L☉'),
+          h('input', { id: 'astronomy-rotation-ml', type: 'range', min: 0.1, max: 1, step: 0.05, value: m.ml, className: 'astr-focus',
+            'aria-valuetext': number(m.ml) + ' M☉/L☉', 'aria-describedby': 'astronomy-rotation-ml-help', onChange: function(event) { upd({ rotationML: Number(event.target.value) }); }, style: { width: '100%', minHeight: 44 } }),
+          h('p', { id: 'astronomy-rotation-ml-help', style: { margin: '0 0 10px', color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.rot_ml_help', 'Higher M/L assigns more stellar mass to the same light. Stellar speed contributions scale with √(M/L). The 0.5 example follows a reference choice in SPARC; this control explores an assumption.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.rot_ml_examples', 'Stellar mass assumptions'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+            [0.2, 0.5, 1].map(function(ml) { return button('M/L = ' + ml, function() { upd({ rotationML: ml }); }, m.ml === ml, ml); }),
+            button(__alloT('stem.astronomy.rot_reset', 'Reset rotation explorer'), function() { upd({ rotationGalaxy: 'NGC3198', rotationML: 0.5, rotationPoint: 42 }); })),
+          h('label', { htmlFor: 'astronomy-rotation-point', style: { display: 'block', color: '#e2e8f0', fontSize: 14, fontWeight: 750 } }, __alloT('stem.astronomy.rot_radius_control', 'Inspect a measured radius'), ': ' + number(p.radiusKpc) + ' kpc'),
+          h('input', { id: 'astronomy-rotation-point', type: 'range', min: 0, max: m.points.length - 1, step: 1, value: m.index, className: 'astr-focus',
+            'aria-valuetext': number(p.radiusKpc) + ' kpc', 'aria-describedby': 'astronomy-rotation-help', onChange: function(event) { selectPoint(Number(event.target.value)); }, onKeyDown: keys, style: { width: '100%', minHeight: 44 } }),
+          h('p', { id: 'astronomy-rotation-help', style: { margin: '0 0 12px', color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.rot_radius_help', 'Drag the radius slider or speed chart. Selection snaps to a published sample. Arrow keys move one sample; Shift moves five. Home selects the innermost sample and End selects the outermost. One kiloparsec (kpc) is about 3,260 light-years.')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 14, alignItems: 'start' } },
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) }, h('h4', { style: { margin: '0 0 8px', color: '#a5f3fc', fontSize: 14 } }, __alloT('stem.astronomy.rot_chart_heading', '1. Compare speeds')), graph(false),
+              h('figcaption', { id: 'astronomy-rotation-chart-caption', style: { fontSize: 12, color: muted, lineHeight: 1.7 } },
+                h('ul', { style: { margin: 0, paddingLeft: 18 } },
+                  h('li', null, __alloT('stem.astronomy.rot_observed_key', 'White points and bars: published speeds and quoted errors.')),
+                  h('li', { style: { color: gold } }, __alloT('stem.astronomy.rot_model_key', 'Gold dashed: stars and gas model at this M/L.')),
+                  h('li', { style: { color: cyan } }, __alloT('stem.astronomy.rot_selection_key', 'Cyan: selected radial sample.'))),
+                __alloT('stem.astronomy.rot_chart_caption', 'Both examples use the same speed scale. Straight model segments join the tabulated radii. The curve contains no fitted dark halo.'))),
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) }, h('h4', { style: { margin: '0 0 8px', color: '#a5f3fc', fontSize: 14 } }, __alloT('stem.astronomy.rot_difference_heading', '2. Inspect the difference')), graph(true),
+              h('figcaption', { id: 'astronomy-rotation-difference-caption', style: { fontSize: 12, color: muted, lineHeight: 1.7 } }, __alloT('stem.astronomy.rot_difference_caption', 'Difference = observed speed − stars and gas speed. Zero means equal speeds. Positive values put the observed speed above the model; negative values retain an overprediction. Bars carry the quoted speed errors only. Model uncertainty is not included.')))),
+          h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,185px),1fr))', gap: 8, margin: '12px 0' } },
+            metric('radiusKpc', __alloT('stem.astronomy.rot_radius_metric', 'Selected radius'), p.radiusKpc, number(p.radiusKpc) + ' kpc'),
+            metric('observedKms', __alloT('stem.astronomy.rot_observed_metric', 'Published speed and error'), p.observedKms, number(p.observedKms) + ' ± ' + number(p.errorKms) + ' km/s'),
+            metric('baryonKms', __alloT('stem.astronomy.rot_model_metric', 'Stars and gas speed'), p.baryonKms, number(p.baryonKms) + ' km/s'),
+            metric('differenceKms', __alloT('stem.astronomy.rot_difference_metric', 'Observed − model'), p.differenceKms, number(p.differenceKms) + ' km/s')),
+          h('div', { id: 'astronomy-rotation-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-regime': m.regime,
+            style: Object.assign({}, panel, { color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 }) },
+            h('strong', { style: { display: 'block', color: cyan, marginBottom: 5 } }, status),
+            __alloT('stem.astronomy.rot_status_scope', 'This comparison uses the listed random error at one radius. It is not a statistical fit or a dark-matter detection. Interpreting a gap needs assumptions about gravity, distance, inclination and the stellar population.')),
+          h('details', { style: { fontSize: 13, color: muted, lineHeight: 1.7 } },
+            h('summary', { className: 'astr-focus', style: { cursor: 'pointer', color: '#e2e8f0', fontWeight: 750 } }, __alloT('stem.astronomy.rot_data_heading', 'Measurements, sources and model limits')),
+            h('p', null, __alloT('stem.astronomy.rot_data_source', 'SPARC (Lelli, McGaugh & Schombert, 2016), Tables 1 and 2. NGC 3198 and NGC 6503 are shown at the published distances and inclinations. The quoted speed errors describe random non-circular motions and kinematic asymmetries; they exclude inclination systematics.')),
+            h('p', null, __alloT('stem.astronomy.rot_equation', 'The Newtonian model adds squared speed contributions: v² = Vgas|Vgas| + (M/L)Vdisk|Vdisk| + (M/L)Vbulge|Vbulge|. SPARC tabulates stellar terms at M/L = 1. These two examples have zero bulge terms. The signed gas term preserves an outward force from central gas depressions.')),
+            h('p', null, __alloT('stem.astronomy.rot_model_limits', 'Gas terms include the catalog’s factor 1.33 for helium. The model keeps gas, light profiles, adopted distance and inclination fixed. It does not fit a halo, compute a joint likelihood, infer a particle type or model modified gravity. The numerical data are bundled for offline use.')),
+            h('p', null, __alloT('stem.astronomy.rot_original_sources', 'Original rotation-curve references listed by SPARC: NGC 3198 — Daigle et al. (2006), Begeman et al. (1991), Begeman (1987); NGC 6503 — Begeman et al. (1991), Begeman (1987).')),
+            link('https://astroweb.cwru.edu/SPARC/', __alloT('stem.astronomy.rot_catalog_link', 'SPARC catalog and source references')),
+            link('https://arxiv.org/abs/1606.09251', __alloT('stem.astronomy.rot_paper_link', 'SPARC 2016 · mass model equations')),
+            link('https://astroweb.cwru.edu/SPARC/MassModels_Lelli2016c.mrt', __alloT('stem.astronomy.rot_table_link', 'Published rotation and mass-model table')))
+        );
+      }
+
+      function renderInflationExpansion() {
+        var m = inflationExpansionModel(d), bg = astronomyContrast ? '#000' : '#091323';
+        var border = astronomyContrast ? '#fbbf24' : '#475569', gold = '#fde68a', violet = '#d8b4fe', cyan = '#67e8f9', muted = '#cbd5e1';
+        var panel = { padding: 10, border: '1px solid ' + border, borderRadius: 12, background: bg, minWidth: 0 };
+        var chart = { x: 82, y: 38, w: 250, h: 246 };
+        function power(value) { return String(value).split('').map(function(c) { return { '-':'⁻','0':'⁰','1':'¹','2':'²','3':'³','4':'⁴','5':'⁵','6':'⁶','7':'⁷','8':'⁸','9':'⁹' }[c] || c; }).join(''); }
+        function number(value) {
+          if (value === 0) return '0';
+          if (value >= 0.001 && value < 1e5) return Number(value.toPrecision(3)).toLocaleString('en-US', { maximumSignificantDigits: 3 });
+          var parts = value.toExponential(2).split('e'); return parts[0] + ' × 10' + power(Number(parts[1]));
+        }
+        function setFolds(value) { upd({ inflationFolds: Math.max(0, Math.min(60, value)) }); }
+        function keys(event) {
+          if (event.altKey || event.ctrlKey || event.metaKey) return;
+          var next, step = event.shiftKey ? 5 : 0.5;
+          if (event.key === 'Home') next = 0;
+          else if (event.key === 'End') next = 60;
+          else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') next = m.folds + step;
+          else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') next = m.folds - step;
+          else return;
+          event.preventDefault(); setFolds(next);
+        }
+        function scrub(event) {
+          var box = event.currentTarget.getBoundingClientRect(); if (!box.width) return;
+          setFolds(((event.clientX - box.left) * 360 / box.width - chart.x) / chart.w * 60);
+        }
+        function button(text, action, active, extra) {
+          return h('button', Object.assign({ type: 'button', className: 'astr-focus', 'aria-pressed': active, onClick: action,
+            style: { minHeight: 44, padding: '9px 11px', fontSize: 13, color: active ? gold : '#e2e8f0', background: active ? '#422006' : bg,
+              border: '1px solid ' + (active ? gold : border), borderRadius: 8, cursor: 'pointer' } }, extra || {}), text);
+        }
+        function metric(key, label, value) {
+          return h('div', { style: panel }, h('dt', { style: { color: muted, fontSize: 12, lineHeight: 1.6, marginBottom: 5 } }, label),
+            h('dd', { 'data-inflation-metric': key, 'data-value': m[key], style: { margin: 0, color: '#f8fafc', fontSize: 17, fontWeight: 750, overflowWrap: 'anywhere' } }, value));
+        }
+        function pattern() {
+          function points(samples, center) { return samples.map(function(p) { return (30 + p.xH * 300).toFixed(3) + ',' + (center - p.value * 30).toFixed(3); }).join(' '); }
+          function row(samples, key, center, label, color) {
+            return h('g', { key: key },
+              h('text', { x: 18, y: center - 54, fill: color }, label),
+              h('rect', { x: 30, y: center - 40, width: 300, height: 80, fill: color, fillOpacity: 0.05, stroke: border }),
+              h('line', { x1: 30, x2: 330, y1: center, y2: center, stroke: border, strokeDasharray: '3 4' }),
+              h('polyline', { 'data-inflation-pattern': key, 'data-wave-h': key === 'before' ? m.initialWaveH : m.waveH,
+                points: points(samples, center), fill: 'none', stroke: color, strokeWidth: 2.5 }),
+              [0, 0.5, 1].map(function(value) { var x = 30 + 300 * value; return h('g', { key: value },
+                h('line', { x1: x, x2: x, y1: center + 40, y2: center + 45, stroke: border }),
+                h('text', { x: x, y: center + 67, textAnchor: value === 0 ? 'start' : value === 1 ? 'end' : 'middle', fill: muted }, value)); }));
+          }
+          return h('svg', { id: 'astronomy-inflation-diagram', viewBox: '0 0 360 350', role: 'img',
+            'aria-labelledby': 'astronomy-inflation-title astronomy-inflation-desc', 'aria-describedby': 'astronomy-inflation-pattern-caption',
+            'data-folds': m.folds, 'data-stretch': m.stretch, style: { width: '100%', display: 'block' } },
+            h('title', { id: 'astronomy-inflation-title' }, __alloT('stem.astronomy.inf_pattern_title', 'A pattern stretches during exponential expansion')),
+            h('desc', { id: 'astronomy-inflation-desc' }, __alloT('stem.astronomy.inf_pattern_desc', 'Exponential expansion stretches an illustrative pattern. The two rows view the same fixed physical width: one Hubble length. The initial wavelength grows by e to the power N. Pattern amplitude stays illustrative.')),
+            row(m.beforePattern, 'before', 92, __alloT('stem.astronomy.inf_start', 'At the start'), cyan),
+            row(m.afterPattern, 'after', 240, __alloT('stem.astronomy.inf_selected', 'Selected stage'), gold),
+            h('text', { x: 180, y: 343, textAnchor: 'middle', fill: muted }, __alloT('stem.astronomy.inf_window_axis', 'Position / Hubble length')));
+        }
+        function plotPoint(n, log) { return { x: chart.x + n / 60 * chart.w, y: chart.y + (28 - log) / 30 * chart.h }; }
+        function growth() {
+          var cursor = plotPoint(m.folds, 0);
+          return h('svg', { id: 'astronomy-inflation-growth', viewBox: '0 0 360 350', role: 'slider', tabIndex: 0, className: 'astr-focus',
+            'aria-label': __alloT('stem.astronomy.inf_chart_control', 'Explore inflation expansion stage'), 'aria-describedby': 'astronomy-inflation-help astronomy-inflation-growth-caption',
+            'aria-valuemin': 0, 'aria-valuemax': 60, 'aria-valuenow': m.folds,
+            'aria-valuetext': number(m.folds) + ' ' + __alloT('stem.astronomy.inf_folds_unit', 'e-folds') + ' · ' + number(m.stretch) + '×',
+            'data-folds': m.folds, 'data-mode-scale': m.modeScale, style: { width: '100%', display: 'block', touchAction: 'pan-y', cursor: 'crosshair' },
+            onKeyDown: keys, onPointerDown: function(event) { if (event.button !== 0) return; event.currentTarget.focus({ preventScroll: true }); event.currentTarget.setPointerCapture(event.pointerId); scrub(event); },
+            onPointerMove: function(event) { if (event.currentTarget.hasPointerCapture(event.pointerId)) scrub(event); },
+            onPointerUp: function(event) { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); },
+            onPointerCancel: function(event) { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); } },
+            h('title', null, __alloT('stem.astronomy.inf_growth_title', 'Length growth and mode scale on a log scale')),
+            [0, 14, 28].map(function(log) { var p = plotPoint(0, log); return h('g', { key: log },
+              h('line', { x1: chart.x, x2: chart.x + chart.w, y1: p.y, y2: p.y, stroke: log === 0 ? cyan : border, strokeDasharray: log === 0 ? '2 5' : '4 5' }),
+              h('text', { x: chart.x - 10, y: p.y + 7, textAnchor: 'end', fill: log === 0 ? cyan : muted }, log === 0 ? '1' : '10' + power(log))); }),
+            h('line', { x1: cursor.x, x2: cursor.x, y1: chart.y, y2: chart.y + chart.h, stroke: '#f8fafc', strokeDasharray: '4 4', strokeWidth: 1.5 }),
+            [{ key:'logStretch', color:gold },{ key:'logModeScale', color:violet, dash:'8 5' }].map(function(line) {
+              return h('g', { key: line.key },
+                h('polyline', { 'data-inflation-trace': line.key, points: m.growth.map(function(p) { var q = plotPoint(p.folds, p[line.key]); return q.x.toFixed(3) + ',' + q.y.toFixed(3); }).join(' '), fill: 'none', stroke: line.color, strokeWidth: 2.5, strokeDasharray: line.dash }),
+                h('circle', { 'data-inflation-dot': line.key, 'data-log-value': m[line.key], cx: cursor.x, cy: plotPoint(m.folds, m[line.key]).y, r: 5, fill: line.color, stroke: bg, strokeWidth: 1.5 }));
+            }),
+            [0, 30, 60].map(function(n) { return h('text', { key: n, 'data-inflation-fold-tick': true, x: plotPoint(n, 0).x, y: 315, textAnchor: n === 0 ? 'start' : n === 60 ? 'end' : 'middle', fill: muted }, n); }),
+            h('text', { x: 180, y: 343, textAnchor: 'middle', fill: muted }, __alloT('stem.astronomy.inf_folds_axis', 'Expansion (e-folds N)')));
+        }
+        function spectrum() {
+          var p = { x: 72, y: 38, w: 260, h: 190 };
+          function point(sample, key) { return { x: p.x + (Math.log10(sample.q) + 1) / 2 * p.w, y: p.y + (1.1 - sample[key]) / 0.2 * p.h }; }
+          function points(samples, key) { return samples.map(function(sample) { var q = point(sample, key); return q.x.toFixed(3) + ',' + q.y.toFixed(3); }).join(' '); }
+          var band = points(m.spectrum.points, 'high') + ' ' + points(m.spectrum.points.slice().reverse(), 'low');
+          return h('svg', { id: 'astronomy-inflation-spectrum', viewBox: '0 0 360 320', role: 'img',
+            'aria-labelledby': 'astronomy-inflation-spectrum-title', 'aria-describedby': 'astronomy-inflation-spectrum-caption',
+            'data-ns': m.spectrum.ns, 'data-ns-error': m.spectrum.nsError, style: { width: '100%', display: 'block' } },
+            h('title', { id: 'astronomy-inflation-spectrum-title' }, __alloT('stem.astronomy.inf_spectrum_title', 'Normalized dimensionless primordial power inferred from Planck’s spectral index')),
+            [0.9, 1, 1.1].map(function(value) { var y = p.y + (1.1 - value) / 0.2 * p.h; return h('g', { key: value },
+              h('line', { x1: p.x, x2: p.x + p.w, y1: y, y2: y, stroke: value === 1 ? '#e2e8f0' : border, strokeDasharray: value === 1 ? '3 5' : '2 5' }),
+              h('text', { x: p.x - 10, y: y + 7, textAnchor: 'end', fill: muted }, value)); }),
+            h('polygon', { 'data-inflation-spectrum-band': true, points: band, fill: violet, fillOpacity: 0.22, stroke: violet, strokeOpacity: 0.45, strokeWidth: 0.5 }),
+            h('polyline', { 'data-inflation-spectrum-mean': true, points: points(m.spectrum.points, 'power'), fill: 'none', stroke: violet, strokeWidth: 2.5 }),
+            [0.1, 1, 10].map(function(value) { var x = p.x + (Math.log10(value) + 1) / 2 * p.w; return h('text', { key: value, x: x, y: 263, textAnchor: value === 0.1 ? 'start' : value === 10 ? 'end' : 'middle', fill: muted }, value); }),
+            h('text', { x: 180, y: 308, textAnchor: 'middle', fill: muted }, __alloT('stem.astronomy.inf_spectrum_axis', 'Wavenumber / pivot')));
+        }
+        function link(url, text) { return h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus',
+          style: { minHeight: 44, display: 'inline-flex', alignItems: 'center', color: '#7dd3fc', marginRight: 14 } }, text); }
+        var status = {
+          below: __alloT('stem.astronomy.inf_below', 'Mode is below the Hubble scale'),
+          crossing: __alloT('stem.astronomy.inf_crossing', 'Mode reaches the Hubble scale'),
+          above: __alloT('stem.astronomy.inf_above', 'Mode exceeds the Hubble scale')
+        }[m.regime];
+        return h('section', { id: 'astronomy-inflation-lab', 'aria-labelledby': 'astronomy-inflation-heading',
+          style: { marginBottom: 14, padding: 12, border: '1px solid ' + border, borderRadius: 14, background: bg, minWidth: 0 } },
+          h('style', null, '#astronomy-inflation-lab svg text{font-size:20px}#astronomy-inflation-lab summary{min-height:44px;align-content:center}@media(max-width:600px){#astronomy-inflation-lab svg text{font-size:24px}}'),
+          h('h3', { id: 'astronomy-inflation-heading', style: { margin: '0 0 7px', fontSize: 18, color: '#a5f3fc' } }, __alloT('stem.astronomy.inf_lab_heading', 'Inflation expansion explorer')),
+          h('p', { style: { margin: '0 0 12px', color: muted, fontSize: 13, lineHeight: 1.7 } }, __alloT('stem.astronomy.inf_lab_intro', 'Explore an ideal period of exponential expansion. Distances and wavelengths grow while the expansion rate H stays constant. The pattern is a teaching choice; the curve inferred from published data below is a separate observational constraint.')),
+          h('label', { htmlFor: 'astronomy-inflation-folds', style: { display: 'block', fontWeight: 750, color: '#e2e8f0', fontSize: 14 } }, __alloT('stem.astronomy.inf_folds_control', 'Expansion stage'), ': N = ' + number(m.folds)),
+          h('input', { id: 'astronomy-inflation-folds', type: 'range', min: 0, max: 60, step: 'any', value: m.folds, className: 'astr-focus',
+            'aria-valuetext': number(m.folds) + ' ' + __alloT('stem.astronomy.inf_folds_unit', 'e-folds'), 'aria-describedby': 'astronomy-inflation-help',
+            onChange: function(event) { setFolds(Number(event.target.value)); }, onKeyDown: keys, style: { width: '100%', minHeight: 44 } }),
+          h('p', { id: 'astronomy-inflation-help', style: { margin: '0 0 10px', color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.inf_folds_help', 'Each e-fold multiplies lengths by e ≈ 2.718. Drag the slider or chart; arrow keys move by 0.5 e-fold and Shift moves by 5. Home returns to 0; End selects 60. N counts expansion, not elapsed seconds.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.inf_examples', 'Expansion examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 12 } },
+            [0, 3, 10, 60].map(function(n) { return button('N = ' + n, function() { setFolds(n); }, m.folds === n, { key: n }); }),
+            button(__alloT('stem.astronomy.inf_crossing_example', 'At Hubble scale'), function() { setFolds(m.crossingFolds); }, m.regime === 'crossing'),
+            button(__alloT('stem.astronomy.inf_reset', 'Reset expansion'), function() { upd({ inflationFolds: 3, inflationWaveH: 0.5 }); }, undefined)),
+          h('label', { htmlFor: 'astronomy-inflation-wavelength', style: { display: 'block', fontWeight: 750, color: '#e2e8f0', fontSize: 13 } }, __alloT('stem.astronomy.inf_wave_control', 'Starting wavelength / Hubble length'), ': ' + number(m.initialWaveH)),
+          h('input', { id: 'astronomy-inflation-wavelength', type: 'range', min: 0.25, max: 2, step: 0.05, value: m.initialWaveH,
+            className: 'astr-focus', 'aria-valuetext': number(m.initialWaveH) + ' ' + __alloT('stem.astronomy.inf_hubble_lengths', 'Hubble lengths'),
+            'aria-describedby': 'astronomy-inflation-wavelength-help', onChange: function(event) { upd({ inflationWaveH: Number(event.target.value) }); }, style: { width: '100%', minHeight: 44 } }),
+          h('p', { id: 'astronomy-inflation-wavelength-help', style: { margin: '0 0 12px', fontSize: 12, color: muted, lineHeight: 1.7 } }, __alloT('stem.astronomy.inf_wave_help', 'The Hubble length is c/H. Both pattern rows show a window exactly one Hubble length wide. Changing the starting wavelength moves when the selected mode reaches the Hubble scale.')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 14, alignItems: 'start' } },
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) }, h('h4', { style: { margin: '0 0 8px', color: '#a5f3fc', fontSize: 14 } }, __alloT('stem.astronomy.inf_pattern_heading', '1. Watch a pattern stretch')), pattern(),
+              h('figcaption', { id: 'astronomy-inflation-pattern-caption', style: { fontSize: 12, color: muted, lineHeight: 1.7 } }, __alloT('stem.astronomy.inf_pattern_caption', 'Conceptual diagram: the wavelength stretches by eᴺ. A small fixed window can look smooth once it holds only part of a long wave. The sinusoidal shape, amplitude and color are illustrative; this is not a quantum fluctuation calculation or a CMB map.'))),
+            h('figure', { style: Object.assign({}, panel, { margin: 0 }) }, h('h4', { style: { margin: '0 0 8px', color: '#a5f3fc', fontSize: 14 } }, __alloT('stem.astronomy.inf_growth_heading', '2. Read exponential growth')), growth(),
+              h('figcaption', { id: 'astronomy-inflation-growth-caption', style: { fontSize: 12, color: muted, lineHeight: 1.7 } }, __alloT('stem.astronomy.inf_growth_caption', 'Vertical axis: dimensionless ratios on a log scale. Straight rising lines represent exponential growth; equal vertical steps multiply values.'),
+                h('ul', { style: { margin: '8px 0 0', paddingLeft: 18 } },
+                  h('li', { style: { color: gold } }, __alloT('stem.astronomy.inf_length_key', 'Gold solid: length growth eᴺ.')),
+                  h('li', { style: { color: violet } }, __alloT('stem.astronomy.inf_mode_key', 'Violet dashed: mode scale / Hubble length.')),
+                  h('li', { style: { color: cyan } }, __alloT('stem.astronomy.inf_hubble_key', 'Cyan dotted: Hubble scale = 1.')))))),
+          h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,185px),1fr))', gap: 8, margin: '12px 0' } },
+            metric('stretch', __alloT('stem.astronomy.inf_length_metric', 'Length and wavelength growth'), number(m.stretch) + '×'),
+            metric('volumeStretch', __alloT('stem.astronomy.inf_volume_metric', 'Volume growth in 3D'), number(m.volumeStretch) + '×'),
+            metric('waveH', __alloT('stem.astronomy.inf_wave_metric', 'Wavelength / Hubble length'), number(m.waveH)),
+            metric('modeScale', __alloT('stem.astronomy.inf_mode_metric', 'Mode scale / Hubble length'), number(m.modeScale))),
+          h('div', { id: 'astronomy-inflation-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-regime': m.regime,
+            style: Object.assign({}, panel, { color: '#e2e8f0', fontSize: 13, lineHeight: 1.7 }) },
+            h('strong', { style: { display: 'block', color: cyan, marginBottom: 5 } }, status),
+            __alloT('stem.astronomy.inf_crossing_explanation', 'The convention compares λ/(2π) with c/H, where λ is the full wavelength. Equality corresponds to physical wavenumber k/a = H/c. The model tracks this size comparison without computing quantum evolution.')),
+          h('p', { style: { margin: '10px 0', color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.inf_sixty_scope', '60 e-folds gives about 1.14 × 10²⁶ in length growth. This is an illustrative amount of expansion. The required amount depends on the inflation model and the later thermal history; the controls do not set a measured duration or an absolute size.')),
+          h('details', { id: 'astronomy-inflation-observations', style: { fontSize: 13, color: muted, lineHeight: 1.7 } },
+            h('summary', { className: 'astr-focus', style: { cursor: 'pointer', color: '#e2e8f0', fontWeight: 750 } }, __alloT('stem.astronomy.inf_observations_heading', 'What published observations constrain')),
+            h('p', null, __alloT('stem.astronomy.inf_planck_measurement', 'Planck 2018 temperature, polarization and lensing results give the scalar spectral index nₛ = 0.9649 ± 0.0042 (68% confidence), at pivot wavenumber k* = 0.05 Mpc⁻¹. These are inferred parameters of the primordial spectrum under the analysis assumptions.')),
+            h('figure', { style: Object.assign({}, panel, { margin: '8px 0 12px', maxWidth: 480 }) },
+              h('h4', { style: { margin: '0 0 8px', fontSize: 14, color: '#e9d5ff' } }, __alloT('stem.astronomy.inf_spectrum_heading', 'Relative dimensionless power')), spectrum(),
+              h('figcaption', { id: 'astronomy-inflation-spectrum-caption', style: { fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.inf_spectrum_caption', 'Violet curve: (k/k*)^(nₛ−1), normalized to 1 at the pivot. The shaded band propagates only the quoted nₛ interval; normalization is held fixed. White dotted: scale invariance (nₛ = 1). Larger wavenumbers on the right mean shorter comoving wavelengths. This is an inferred power-law curve, not raw CMB data.'))),
+            h('p', null, __alloT('stem.astronomy.inf_bk_measurement', 'BICEP/Keck XIII (2021), using observations through 2018 with Planck and WMAP, reports r < 0.036 at 95% confidence for k* = 0.05 Mpc⁻¹. Here r compares primordial tensor power with scalar power. This upper limit is not a tensor detection.')),
+            h('p', null, __alloT('stem.astronomy.inf_observation_scope', 'These named results constrain families of early-universe models. They do not establish a unique inflaton, measure N in this explorer, or test a multiverse. Changing the teaching controls leaves the measured spectral-index curve unchanged.')),
+            link('https://arxiv.org/abs/1807.06211', 'Planck 2018 · ' + __alloT('stem.astronomy.inf_spectral_index_link', 'spectral index')),
+            link('https://arxiv.org/abs/2110.00483', 'BICEP/Keck 2021 · ' + __alloT('stem.astronomy.inf_tensor_limit_link', 'tensor upper limit'))),
+          h('details', { style: { fontSize: 13, color: muted, lineHeight: 1.7 } },
+            h('summary', { className: 'astr-focus', style: { cursor: 'pointer', color: '#e2e8f0', fontWeight: 750 } }, __alloT('stem.astronomy.inf_equations_heading', 'Model equations and limits')),
+            h('p', null, __alloT('stem.astronomy.inf_equations', 'N = ln(a/a₀). With constant H, a/a₀ = exp[H(t−t₀)] = eᴺ. Physical wavelengths grow by eᴺ, volumes by e³ᴺ, and the comoving Hubble length shrinks by e⁻ᴺ. For a mode with fixed comoving wavenumber k, λ = 2πa/k. Its scale λ/(2π) equals c/H at the crossing marked here.')),
+            h('p', null, __alloT('stem.astronomy.inf_model_limits', 'This kinematic model assumes constant H. It does not solve an inflaton potential, perturbation amplitudes, reheating, quantum freeze-out or later structure formation. The Hubble length is an expansion scale, not a general causal horizon. Both pattern rows retain the same physical window; no zoom or amplitude decay is used to create the smooth appearance.')),
+            link('https://arxiv.org/abs/0907.5424', 'Baumann · ' + __alloT('stem.astronomy.inf_theory_link', 'inflation and Hubble scales')),
+            link('https://arxiv.org/abs/astro-ph/0305263', 'Liddle & Leach · ' + __alloT('stem.astronomy.inf_folds_link', 'expansion and thermal history')))
+        );
+      }
+
+      function renderCosmicDistance() {
+        var m = cosmicDistanceModel(d), spectrum = cosmicRedshiftModel(d);
+        var bg = astronomyContrast ? '#000' : '#091323', border = astronomyContrast ? '#fbbf24' : '#475569';
+        var gold = '#fde68a', violet = '#d8b4fe', cyan = '#67e8f9', muted = '#cbd5e1';
+        var plot = { x: 64, y: 40, w: 274, h: 204 };
+        var card = { padding: 12, border: '1px solid ' + border, borderRadius: 12, background: bg, minWidth: 0 };
+        function number(value) { return Number(value.toPrecision(3)).toLocaleString('en-US', { maximumSignificantDigits: 3 }); }
+        function zText(value) { return value.toLocaleString('en-US', { maximumFractionDigits: 4 }); }
+        function distance(value) { return number(value) + ' ' + __alloT('stem.astronomy.cosmo_billion_ly', 'billion light-years'); }
+        function time(value) { return value < 1 && value > 0 ? number(value * 1000) + ' ' + __alloT('stem.astronomy.cosmo_million_years', 'million years') : number(value) + ' ' + __alloT('stem.astronomy.cosmo_billion_years', 'billion years'); }
+        function setZ(z) { upd({ cosmoZ: Math.round(Math.max(0, Math.min(15, z)) * 10000) / 10000, cosmoRedshiftReference: '' }); }
+        function keys(event) {
+          if (event.altKey || event.ctrlKey || event.metaKey) return;
+          var next, step = event.shiftKey ? 1 : 0.1;
+          if (event.key === 'Home') next = 0;
+          else if (event.key === 'End') next = 15;
+          else if (event.key === 'ArrowRight' || event.key === 'ArrowUp') next = m.z + step;
+          else if (event.key === 'ArrowLeft' || event.key === 'ArrowDown') next = m.z - step;
+          else return;
+          event.preventDefault(); setZ(next);
+        }
+        function scrub(event) {
+          var box = event.currentTarget.getBoundingClientRect(); if (!box.width) return;
+          setZ(((event.clientX - box.left) * 360 / box.width - plot.x) / plot.w * 15);
+        }
+        function button(text, action, active, extra) {
+          return h('button', Object.assign({ type: 'button', className: 'astr-focus', 'aria-pressed': active,
+            onClick: action, style: { minHeight: 44, padding: '9px 12px', border: '1px solid ' + (active ? gold : border), borderRadius: 8,
+              background: active ? '#422006' : bg, color: active ? gold : '#e2e8f0', fontSize: 13, cursor: 'pointer' } }, extra || {}), text);
+        }
+        var definitions = [
+          { key: 'nowGly', color: gold, dash: undefined, label: __alloT('stem.astronomy.cosmo_now_key', 'Gold solid: separation today') },
+          { key: 'thenGly', color: violet, dash: '8 5', label: __alloT('stem.astronomy.cosmo_then_key', 'Violet dashed: when light left') },
+          { key: 'lightTravelGly', color: cyan, dash: '2 5', label: __alloT('stem.astronomy.cosmo_travel_key', 'Cyan dotted: light-travel equivalent') }
+        ];
+        function point(z, value) { return { x: plot.x + z / 15 * plot.w, y: plot.y + (1 - value / 50) * plot.h }; }
+        function chart() {
+          return h('svg', { id: 'astronomy-cosmo-chart', viewBox: '0 0 360 320', role: 'slider', tabIndex: 0, className: 'astr-focus',
+            'aria-label': __alloT('stem.astronomy.cosmo_chart_control', 'Explore distance by redshift'), 'aria-describedby': 'astronomy-cosmo-help astronomy-cosmo-chart-caption',
+            'aria-valuemin': 0, 'aria-valuemax': 15, 'aria-valuenow': m.z, 'aria-valuetext': 'z = ' + zText(m.z) + ' · ' + distance(m.nowGly),
+            'data-redshift': m.z, 'data-h0': m.h0, style: { display: 'block', width: '100%', touchAction: 'pan-y', cursor: 'crosshair' }, onKeyDown: keys,
+            onPointerDown: function(event) { if (event.button !== 0) return; event.currentTarget.focus({ preventScroll: true }); event.currentTarget.setPointerCapture(event.pointerId); scrub(event); },
+            onPointerMove: function(event) { if (event.currentTarget.hasPointerCapture(event.pointerId)) scrub(event); },
+            onPointerUp: function(event) { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); },
+            onPointerCancel: function(event) { if (event.currentTarget.hasPointerCapture(event.pointerId)) event.currentTarget.releasePointerCapture(event.pointerId); } },
+            h('title', null, __alloT('stem.astronomy.cosmo_chart_title', 'Three distance measures in an expanding universe')),
+            [0, 25, 50].map(function(value) { var p = point(0, value); return h('g', { key: value },
+              h('line', { x1: plot.x, x2: plot.x + plot.w, y1: p.y, y2: p.y, stroke: border, strokeDasharray: value === 0 ? undefined : '3 5' }),
+              h('text', { x: plot.x - 10, y: p.y + 7, textAnchor: 'end', fill: muted }, value)); }),
+            definitions.map(function(definition) { return h('polyline', { key: definition.key, 'data-cosmo-trace': definition.key,
+              points: m.samples.map(function(sample) { var p = point(sample.z, sample[definition.key]); return p.x.toFixed(3) + ',' + p.y.toFixed(3); }).join(' '),
+              stroke: definition.color, strokeDasharray: definition.dash, strokeWidth: 2.5, fill: 'none' }); }),
+            h('line', { 'data-cosmo-cursor': true, x1: point(m.z, 0).x, x2: point(m.z, 0).x, y1: plot.y, y2: plot.y + plot.h, stroke: '#f8fafc', strokeWidth: 1.5, strokeDasharray: '4 4' }),
+            definitions.map(function(definition) { var p = point(m.z, m[definition.key]); return h('circle', { key: definition.key,
+              'data-cosmo-dot': definition.key, 'data-value': m[definition.key], cx: p.x, cy: p.y, r: 5, fill: definition.color, stroke: bg, strokeWidth: 1.5 }); }),
+            [0, 5, 10, 15].map(function(z) { return h('text', { key: z, 'data-cosmo-z-tick': true, x: point(z, 0).x, y: 275, textAnchor: z === 0 ? 'start' : z === 15 ? 'end' : 'middle', fill: muted }, z); }),
+            h('text', { x: 180, y: 310, textAnchor: 'middle', fill: muted }, __alloT('stem.astronomy.cosmo_z_axis', 'Redshift z')));
+        }
+        function snapshots() {
+          function row(key, y, title) {
+            var value = m[key], x = 32 + value / 50 * 296, color = key === 'nowGly' ? gold : violet;
+            return h('g', { key: key },
+              h('text', { x: 18, y: y - 48, fill: color }, title),
+              h('line', { x1: 32, x2: x, y1: y, y2: y, stroke: color, strokeWidth: 3, strokeDasharray: key === 'thenGly' ? '8 5' : undefined }),
+              h('g', { 'aria-hidden': true }, h('circle', { cx: 32, cy: y, r: 8, fill: bg, stroke: '#f8fafc', strokeWidth: 2 }),
+                h('path', { d: 'M28,' + y + 'h8 M32,' + (y - 4) + 'v8', stroke: '#f8fafc', strokeWidth: 1.5 })),
+              h('g', { 'data-cosmo-galaxy': key, 'data-distance': value, 'data-position': x, 'aria-hidden': true },
+                h('ellipse', { cx: x, cy: y, rx: 12, ry: 7, fill: color, fillOpacity: 0.3, stroke: color, strokeWidth: 1.5 }),
+                h('ellipse', { cx: x, cy: y, rx: 6, ry: 3, fill: color }), h('circle', { cx: x, cy: y, r: 2, fill: '#fff' })),
+              h('line', { x1: 32, x2: 328, y1: y + 22, y2: y + 22, stroke: border }),
+              [0, 25, 50].map(function(value) { var tick = 32 + value / 50 * 296; return h('g', { key: value },
+                h('line', { x1: tick, x2: tick, y1: y + 22, y2: y + 27, stroke: border }),
+                h('text', { x: tick, y: y + 49, textAnchor: value === 0 ? 'start' : value === 50 ? 'end' : 'middle', fill: muted }, value)); }));
+          }
+          return h('svg', { id: 'astronomy-cosmo-epochs', viewBox: '0 0 360 320', role: 'img', 'aria-labelledby': 'astronomy-cosmo-epochs-title',
+            'aria-describedby': 'astronomy-cosmo-epochs-caption', 'data-redshift': m.z, style: { display: 'block', width: '100%' } },
+            h('title', { id: 'astronomy-cosmo-epochs-title' }, __alloT('stem.astronomy.cosmo_epochs_title', 'The same comoving galaxy at two cosmic times')),
+            row('thenGly', 82, __alloT('stem.astronomy.cosmo_then_short', 'When light left')),
+            row('nowGly', 220, __alloT('stem.astronomy.cosmo_now_short', 'Today')),
+            h('text', { x: 180, y: 310, textAnchor: 'middle', fill: muted }, __alloT('stem.astronomy.cosmo_distance_axis', 'Distance (Gly)')));
+        }
+        function metric(key, label, value) {
+          return h('div', { style: card }, h('dt', { style: { fontSize: 12, lineHeight: 1.6, color: muted, marginBottom: 5 } }, label),
+            h('dd', { 'data-cosmo-metric': key, 'data-value': m[key], style: { margin: 0, color: '#f8fafc', fontSize: 18, fontWeight: 750, overflowWrap: 'anywhere' } }, value));
+        }
+        function link(url, text) {
+          return h('a', { href: url, target: '_blank', rel: 'noopener noreferrer', className: 'astr-focus',
+            style: { color: '#7dd3fc', display: 'inline-flex', alignItems: 'center', minHeight: 44, marginRight: 14 } }, text);
+        }
+        return h('section', { id: 'astronomy-cosmo-lab', tabIndex: -1, className: 'astr-focus', 'aria-labelledby': 'astronomy-cosmo-heading',
+          style: { padding: 14, border: '1px solid ' + border, borderRadius: 14, background: astronomyContrast ? '#000' : '#111c30', marginBottom: 16, minWidth: 0 } },
+          h('style', null, '#astronomy-cosmo-lab svg text{font-size:20px}#astronomy-cosmo-lab summary{min-height:44px;align-content:center}@media(max-width:600px){#astronomy-cosmo-lab svg text{font-size:24px}}'),
+          h('h2', { id: 'astronomy-cosmo-heading', style: { margin: '0 0 7px', fontSize: 20, color: '#f8fafc' } }, __alloT('stem.astronomy.cosmo_heading', 'Cosmic distance and time')),
+          h('p', { style: { margin: '0 0 12px', fontSize: 13, color: muted, lineHeight: 1.7 } }, __alloT('stem.astronomy.cosmo_intro', 'Redshift tells us how much space grew while light traveled. Compare how long the journey took with the galaxy’s separation then and today. Distances and ages are inferred from the chosen expansion model.')),
+          h('label', { htmlFor: 'astronomy-cosmo-z', style: { display: 'block', fontSize: 14, fontWeight: 750, color: '#e2e8f0' } }, __alloT('stem.astronomy.cosmo_redshift_control', 'Cosmological redshift'), ': z = ' + zText(m.z)),
+          h('input', { id: 'astronomy-cosmo-z', type: 'range', min: 0, max: 15, step: 'any', value: m.z, className: 'astr-focus',
+            'aria-valuetext': 'z = ' + zText(m.z), 'aria-describedby': 'astronomy-cosmo-help',
+            onChange: function(event) { setZ(Number(event.target.value)); }, onKeyDown: keys, style: { width: '100%', minHeight: 44 } }),
+          h('p', { id: 'astronomy-cosmo-help', style: { margin: '0 0 10px', fontSize: 12, color: muted, lineHeight: 1.7 } }, __alloT('stem.astronomy.cosmo_control_help', 'Drag the slider or chart. Arrow keys change z by 0.1; Shift changes it by 1. Home selects 0 and End selects 15. Both views and the readouts use the same redshift.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.cosmo_redshift_examples', 'Distance redshift examples'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, marginBottom: 10 } },
+            [0, 1, 3, 10, 15].map(function(z) { return button('z = ' + z, function() { setZ(z); }, m.z === z, { key: z }); }),
+            button(__alloT('stem.astronomy.cosmo_import_z', 'Use spectrum redshift') + ' (z = ' + zText(spectrum.z) + ')', function() {
+              upd({ cosmoZ: spectrum.z, cosmoRedshiftReference: spectrum.reference ? spectrum.reference.id : '' });
+            }, undefined)),
+          h('p', { id: 'astronomy-cosmo-redshift-source', 'data-cosmo-redshift-source': m.redshiftReference ? m.redshiftReference.id : 'chosen',
+            style: { margin: '0 0 12px', color: muted, fontSize: 12, lineHeight: 1.7 } }, m.redshiftReference
+              ? __alloT('stem.astronomy.cosmo_published_z', 'Published redshift input:') + ' ' + m.redshiftReference.name + ' · z = ' + zText(m.redshiftReference.z)
+                + (m.redshiftReference.uncertainty ? ' ± ' + zText(m.redshiftReference.uncertainty) : '') + '. ' + __alloT('stem.astronomy.cosmo_inferred_note', 'The distance and age remain model calculations.')
+              : __alloT('stem.astronomy.cosmo_chosen_z', 'Chosen redshift. Import a published galaxy example from the spectrum lab above to use its measured redshift.')),
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,300px),1fr))', gap: 14, alignItems: 'start' } },
+            h('figure', { style: Object.assign({}, card, { margin: 0 }) },
+              h('h3', { style: { margin: '0 0 8px', color: '#a5f3fc', fontSize: 15 } }, __alloT('stem.astronomy.cosmo_compare_heading', '1. Compare the distances')), chart(),
+              h('figcaption', { id: 'astronomy-cosmo-chart-caption', style: { color: muted, fontSize: 12, lineHeight: 1.7 } },
+                __alloT('stem.astronomy.cosmo_chart_caption', 'Vertical scale: billions of light-years (Gly). The light-travel equivalent is c × travel time. It differs from the galaxy’s separation because space expanded during the journey.'),
+                h('ul', { style: { paddingLeft: 18, margin: '8px 0 0' } }, definitions.map(function(definition) { return h('li', { key: definition.key, style: { color: definition.color } }, definition.label); })))),
+            h('figure', { style: Object.assign({}, card, { margin: 0 }) },
+              h('h3', { style: { margin: '0 0 8px', color: '#a5f3fc', fontSize: 15 } }, __alloT('stem.astronomy.cosmo_epochs_heading', '2. Compare the same galaxy')), snapshots(),
+              h('figcaption', { id: 'astronomy-cosmo-epochs-caption', style: { color: muted, fontSize: 12, lineHeight: 1.7 } }, __alloT('stem.astronomy.cosmo_epochs_caption', 'White cross: observer. Oval: a galaxy following cosmic expansion. Both rows use the same 0–50 Gly scale. Galaxy symbols have fixed illustrative sizes. These are separations at two times, not a photon’s path.')))),
+          h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,190px),1fr))', gap: 8, margin: '14px 0' } },
+            metric('lookbackGyr', __alloT('stem.astronomy.cosmo_travel_metric', 'Light-travel time'), time(m.lookbackGyr)),
+            metric('thenGly', __alloT('stem.astronomy.cosmo_then_metric', 'Separation when light left'), distance(m.thenGly)),
+            metric('nowGly', __alloT('stem.astronomy.cosmo_now_metric', 'Separation today'), distance(m.nowGly)),
+            metric('ageGyr', __alloT('stem.astronomy.cosmo_age_metric', 'Universe age when light left'), time(m.ageGyr)),
+            metric('ageNowGyr', __alloT('stem.astronomy.cosmo_today_age_metric', 'Universe age today in this model'), time(m.ageNowGyr))),
+          h('div', { id: 'astronomy-cosmo-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', style: Object.assign({}, card, { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 }) },
+            m.z === 0 ? __alloT('stem.astronomy.cosmo_zero_status', 'At z = 0 these expansion distances are zero. This is the limit at the observer, not a statement that every zero-redshift object is nearby. Local motions can cancel cosmological redshift.')
+              : __alloT('stem.astronomy.cosmo_growth_status', 'Space grew by a factor of') + ' ' + number(1 + m.z) + '. '
+                + __alloT('stem.astronomy.cosmo_scale_status', 'At emission, the scale factor was') + ' ' + number(m.scaleFactor) + ' ' + __alloT('stem.astronomy.cosmo_scale_end', 'of today’s value. The same factor stretches the light’s wavelength.'),
+            h('p', { style: { margin: '7px 0 0' } }, __alloT('stem.astronomy.cosmo_peak_note', 'The dashed curve turns down at high z: the universe was much smaller when that light left. This does not make the galaxy closer today.'))),
+          h('p', { id: 'astronomy-cosmo-model-status', 'data-cosmo-source': m.source, style: { margin: '10px 0', color: muted, fontSize: 12, lineHeight: 1.7 } },
+            m.source === 'planck' ? __alloT('stem.astronomy.cosmo_planck_status', 'Rounded Planck 2018 inputs: H₀ = 67.4 km/s/Mpc; matter fraction Ωₘ = 0.315. This explorer uses a flat matter + Λ approximation.')
+              : (m.source === 'shoes' ? __alloT('stem.astronomy.cosmo_shoes_status', 'SH0ES 2022 expansion-rate input: H₀ = 73.04 km/s/Mpc.') : __alloT('stem.astronomy.cosmo_custom_status', 'Chosen expansion rate:') + ' H₀ = ' + zText(m.h0) + ' km/s/Mpc.') + ' '
+                + __alloT('stem.astronomy.cosmo_h0_scope', 'Only H₀ changes here. The matter fraction remains 0.315; this is a controlled comparison, not a new cosmological fit.')),
+          h('details', { id: 'astronomy-cosmo-details', style: { fontSize: 13, lineHeight: 1.7, color: muted } },
+            h('summary', { className: 'astr-focus', style: { cursor: 'pointer', fontWeight: 750, color: '#e2e8f0' } }, __alloT('stem.astronomy.cosmo_details_heading', 'Expansion rates, sources and equations')),
+            h('div', { role: 'group', 'aria-label': __alloT('stem.astronomy.cosmo_rate_examples', 'Published expansion-rate inputs'), style: { display: 'flex', flexWrap: 'wrap', gap: 7, margin: '8px 0' } },
+              button('Planck 2018 · 67.4', function() { upd({ cosmoH0: 67.4 }); }, m.source === 'planck'),
+              button('SH0ES 2022 · 73.04', function() { upd({ cosmoH0: 73.04 }); }, m.source === 'shoes'),
+              button(__alloT('stem.astronomy.cosmo_reset', 'Reset distance lab'), function() { upd({ cosmoZ: 1, cosmoH0: 67.4, cosmoRedshiftReference: '' }); }, undefined)),
+            h('label', { htmlFor: 'astronomy-cosmo-h0', style: { display: 'block', color: '#e2e8f0', fontWeight: 750 } }, __alloT('stem.astronomy.cosmo_h0_control', 'Expansion rate today (H₀)'), ': ' + zText(m.h0) + ' km/s/Mpc'),
+            h('input', { id: 'astronomy-cosmo-h0', type: 'range', min: 50, max: 90, step: 0.01, value: m.h0, className: 'astr-focus',
+              'aria-valuetext': zText(m.h0) + ' km/s/Mpc', 'aria-describedby': 'astronomy-cosmo-h0-help',
+              onChange: function(event) { upd({ cosmoH0: Number(event.target.value) }); }, style: { width: '100%', minHeight: 44 } }),
+            h('p', { id: 'astronomy-cosmo-h0-help' }, __alloT('stem.astronomy.cosmo_h0_help', 'A larger H₀ gives shorter inferred distances and ages at the same redshift when the matter fraction stays fixed. Each Mpc is about 3.26 million light-years; H₀ is an expansion rate, not a speed for every galaxy.')),
+            h('p', null, __alloT('stem.astronomy.cosmo_measurement_scope', 'Planck Collaboration (2018 results, published 2020) infers H₀ = 67.4 ± 0.5 km/s/Mpc and Ωₘ = 0.315 ± 0.007 under base ΛCDM. Riess et al. (2022) measure H₀ = 73.04 ± 1.04 km/s/Mpc with the Cepheid–supernova distance ladder. These are named studies, not a live consensus estimate. Quoted uncertainties are not propagated into these curves.')),
+            h('p', null, __alloT('stem.astronomy.cosmo_limits', 'The model assumes a homogeneous, spatially flat universe with matter and a constant Λ. It omits radiation, detailed neutrino evolution, peculiar velocities and gravitational redshifts. The range ends at z = 15; it does not model recombination, the CMB or inflation. Redshift alone does not give a model-independent distance.')),
+            h('p', null, __alloT('stem.astronomy.cosmo_equations', 'a = 1/(1+z). E(z) = √[Ωₘ(1+z)³ + 1−Ωₘ]. Separation today: D = (c/H₀) ∫₀ᶻ dz′/E(z′). Separation then: D/(1+z), equal to angular-diameter distance in this flat model. Travel time: ∫₀ᶻ dz′/[(1+z′)H₀E(z′)]. The age uses the exact matter + Λ solution. Distances on the chart share one linear scale.')),
+            link('https://arxiv.org/abs/1807.06209', 'Planck · 2018 parameters'),
+            link('https://arxiv.org/abs/2112.04510', 'SH0ES · 2022 distance ladder'),
+            link('https://arxiv.org/abs/astro-ph/9905116', __alloT('stem.astronomy.cosmo_hogg_link', 'Hogg · distance definitions')),
+            m.redshiftReference ? link(m.redshiftReference.url, m.redshiftReference.name + ' · ' + __alloT('stem.astronomy.cosmo_redshift_paper', 'redshift measurement')) : null)
+        );
+      }
+
       function renderGalaxies() {
         return h('div', { style: { padding: 16 } },
           renderCosmicRedshift(),
+          renderCosmicDistance(),
           sectionCard('🌌 Our Milky Way',
             h('div', { style: { fontSize: 13, color: '#e2e8f0', lineHeight: 1.7 } },
               __alloT('stem.astronomy.a_barred_spiral_galaxy_about_100_000_l', 'A barred spiral galaxy, about 100,000 light-years across, containing 100-400 billion stars and an unknown number of planets (probably trillions). Our Sun is about 26,000 light-years from the center, in a quiet spiral arm called the Orion Arm. The supermassive black hole at the center (Sagittarius A*) is 4 million times the mass of the Sun. The Milky Way is one of hundreds of billions to trillions of galaxies in the observable universe.')
@@ -10596,7 +12234,7 @@
             (function() {
               var ERAS = [
                 { time: '10⁻⁴³ s', name: __alloT('stem.astronomy.planck_epoch', 'Planck epoch'), desc: __alloT('stem.astronomy.earlier_than_this_our_physics_breaks_d', 'Earlier than this, our physics breaks down: gravity and quantum mechanics are not yet unified. We do not know what happened here.'), color: '#1e293b' },
-                { time: '10⁻³⁶ to 10⁻³² s', name: __alloT('stem.astronomy.inflation', 'Inflation'), desc: __alloT('stem.astronomy.the_universe_expanded_faster_than_the_', 'The universe expanded faster than the speed of light by a factor of ~10²⁶. Smoothed out the early universe. Solves the "horizon problem" (why opposite sides of the sky have the same temperature). Quantum fluctuations during inflation became the seeds of all later structure.'), color: '#7c3aed' },
+                { time: __alloT('stem.astronomy.inf_epoch_time', 'Early epoch · model dependent'), name: __alloT('stem.astronomy.inflation', 'Inflation'), desc: __alloT('stem.astronomy.the_universe_expanded_faster_than_the_', 'A proposed early phase of accelerated expansion. In nearly exponential models, physical separations grow rapidly while the comoving Hubble length shrinks. This can stretch initially small perturbations to large scales. The timing, amount of expansion and transition to the hot phase depend on the model.'), color: '#7c3aed' },
                 { time: '10⁻⁶ s', name: __alloT('stem.astronomy.quark_gluon_plasma', 'Quark-gluon plasma'), desc: __alloT('stem.astronomy.free_quarks_and_gluons_in_a_hot_dense_', 'Free quarks and gluons in a hot dense soup. Recreated for tiny fractions of a second in particle accelerators (RHIC, LHC).'), color: '#a855f7' },
                 { time: '1 second', name: __alloT('stem.astronomy.hadron_neutrino_freeze_out', 'Hadron + neutrino freeze-out'), desc: __alloT('stem.astronomy.quarks_combine_into_protons_neutrons_n', 'Quarks combine into protons + neutrons. Neutrinos decouple from matter and stream freely. These neutrinos still exist today as the "cosmic neutrino background" — at about 1.95 K. Not yet detected directly.'), color: '#0ea5e9' },
                 { time: '3 minutes', name: __alloT('stem.astronomy.big_bang_nucleosynthesis', 'Big Bang nucleosynthesis'), desc: __alloT('stem.astronomy.the_universe_is_finally_cool_enough_1_', 'The universe is finally cool enough (~1 billion K) for protons + neutrons to fuse without immediately being broken up again. Hydrogen, helium-4 (~25% by mass), and trace amounts of deuterium, helium-3, lithium-7 form. ALL the heavier elements come later from stars + supernovae.'), color: '#fbbf24' },
@@ -10697,7 +12335,7 @@
             (function() {
               var DM_TOPICS = [
                 { id: 'rotation', name: __alloT('stem.astronomy.galaxy_rotation_curves_rubin', 'Galaxy rotation curves (Rubin)'), emoji: '🌀',
-                  body: __alloT('stem.astronomy.vera_rubin_kent_ford_1970s_measured_ho', 'Vera Rubin + Kent Ford (1970s) measured how fast stars orbit at different distances from the centers of spiral galaxies. Newtonian gravity predicts: the further out, the slower the orbit (like outer planets in the Solar System). Instead they found: orbital speeds stay flat or rise even at huge radii. The only explanations are (a) there is far more mass than we can see, distributed in a roughly spherical "halo" extending well beyond the visible disk, or (b) gravity itself behaves differently on galactic scales. The first option, dark matter, fits more data with fewer ad-hoc fixes.'),
+                  body: __alloT('stem.astronomy.vera_rubin_kent_ford_1970s_measured_ho', 'Rubin, Ford and other observers established extended rotation curves for spiral galaxies. A compact central mass gives circular speed proportional to r⁻¹ᐟ² far outside it. A galaxy has distributed stars and gas, so its expected curve must use their spatial mass profiles. Many measured outer speeds exceed the Newtonian stars-and-gas contribution for plausible stellar masses. Rotation curves constrain the gravitational field; interpreting the difference as a dark halo depends on the mass model and gravity assumptions.'),
                   caveat: 'Rubin was never awarded a Nobel; she died in 2016. The discovery is now considered one of the foundational observations of modern cosmology. Earlier (1933) Fritz Zwicky had already inferred missing mass in galaxy clusters from the Coma Cluster\'s velocity dispersion, calling it dunkle Materie ("dark matter") — but his work was largely ignored for 40 years.'
                 },
                 { id: 'lensing', name: __alloT('stem.astronomy.gravitational_lensing_maps', 'Gravitational lensing maps'), emoji: '🔭',
@@ -10705,8 +12343,8 @@
                   caveat: 'The Bullet Cluster is widely cited as a "smoking gun" for dark matter, ruling out simple modified-gravity theories. More sophisticated modified-gravity models can still fit it, but require their own dark-matter-like ingredients, which weakens the parsimony argument.'
                 },
                 { id: 'cmb', name: __alloT('stem.astronomy.cmb_acoustic_peaks', 'CMB acoustic peaks'), emoji: '📡',
-                  body: __alloT('stem.astronomy.the_cosmic_microwave_background_has_ti', 'The cosmic microwave background has tiny temperature fluctuations (~1 part in 100,000) — and their statistical pattern (the angular power spectrum, mapped by WMAP + Planck) shows a series of peaks. The relative heights of those peaks encode the recipe of the early universe. The fit gives: ~5% ordinary (baryonic) matter, ~27% dark matter, ~68% dark energy. This is independent of the galaxy + cluster evidence and agrees almost exactly. Three completely different observations (rotation, lensing, CMB) converge on the same answer.'),
-                  caveat: 'The CMB recipe is for the early universe (380,000 years after the Big Bang). It does not directly tell us what dark matter IS — only that something gravitating but not radiating must be there. The particle nature is still unknown.'
+                  body: __alloT('stem.astronomy.the_cosmic_microwave_background_has_ti', 'The CMB temperature and polarization patterns contain acoustic peaks. Cosmological models connect those patterns to baryon density, dark-matter density, geometry and other parameters. Planck’s base ΛCDM analysis infers a present-day budget of roughly 5% ordinary matter, 27% dark matter and 68% dark energy. The inference uses a model of cosmic evolution; the CMB does not directly observe that present-day mixture.'),
+                  caveat: 'The quoted density fractions refer to the present epoch under base ΛCDM. Earlier fractions differ because matter, radiation and dark energy evolve differently with expansion. CMB constraints do not identify the microscopic nature of dark matter.'
                 },
                 { id: 'candidates', name: __alloT('stem.astronomy.candidate_particles', 'Candidate particles'), emoji: '🧪',
                   body: __alloT('stem.astronomy.wimps_weakly_interacting_massive_parti', 'WIMPs (weakly interacting massive particles) were the favored candidate for ~30 years: predicted by supersymmetric extensions of the Standard Model, with the right mass to give the observed dark-matter density via the "WIMP miracle." Direct detection experiments (XENONnT, LZ, PandaX) have ruled out most of the favored WIMP parameter space, weakening the case. Axions (ultralight bosons proposed for an unrelated problem, the strong-CP problem) are now a leading candidate, hunted by ADMX + HAYSTAC. Other possibilities: sterile neutrinos, primordial black holes (largely constrained by microlensing surveys), self-interacting dark matter. None confirmed yet.'),
@@ -10717,7 +12355,7 @@
                   caveat: 'Calling it dark "energy" is partly a placeholder. We don\'t know if it is genuinely a cosmological constant (Λ, with equation-of-state w = -1) or "quintessence" (a dynamical field with w slowly evolving). Current data slightly favors Λ but with large uncertainty. The DESI survey (2024 first results) hinted at evolving dark energy at ~2.6σ; not yet conclusive.'
                 },
                 { id: 'tension', name: __alloT('stem.astronomy.hubble_tension_a_real_problem', 'Hubble tension — a real problem'), emoji: '⚠️',
-                  body: __alloT('stem.astronomy.two_independent_ways_to_measure_the_cu', 'Two independent ways to measure the current expansion rate (Hubble constant, H₀) disagree. CMB + ΛCDM model gives ~67.4 km/s/Mpc (Planck 2018). The local distance ladder (Cepheids → Type Ia supernovae, SH0ES collaboration) gives ~73.0 km/s/Mpc. The discrepancy is ~9% and the statistical significance has grown to ~5σ. JWST measurements (2023-2024) confirm the local-ladder value with high precision, so it is not a Cepheid systematic. Either there is unrecognized systematic error somewhere, or our standard cosmological model (ΛCDM) is incomplete. Proposals: early dark energy, evolving Λ, sterile neutrinos, modified gravity — none yet decisive.'),
+                  body: __alloT('stem.astronomy.two_independent_ways_to_measure_the_cu', 'Two published routes to the current expansion rate give different results. Planck 2018 CMB data interpreted with base ΛCDM imply H₀ = 67.4 ± 0.5 km/s/Mpc. The SH0ES Cepheid–supernova distance ladder gives 73.04 ± 1.04 km/s/Mpc (Riess et al., 2022). JWST observations test specific crowding and photometry errors in Cepheids; they do not rule out every distance-ladder systematic. The cause of the disagreement remains unresolved. Different distance indicators and cosmological assumptions need careful comparison.'),
                   caveat: 'The Hubble tension is currently the biggest unresolved problem in physical cosmology. It may turn out to be a measurement error. It may turn out to be the first crack in the standard model.'
                 },
                 { id: 'limits', name: __alloT('stem.astronomy.what_we_honestly_do_not_know', 'What we honestly do not know'), emoji: '❓',
@@ -10753,11 +12391,11 @@
               }
               return h('div', null,
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
-                  __alloT('stem.astronomy.about_5_of_the_universe_is_ordinary_ma', 'About 5% of the universe is ordinary matter (atoms, including everything we have ever directly studied — stars, planets, you). About 27% is "dark matter," some unknown particle that gravitates but does not emit, absorb, or scatter light at any wavelength we can detect. About 68% is "dark energy," whatever is causing space itself to expand faster + faster. The names are placeholders for our ignorance.')
+                  __alloT('stem.astronomy.about_5_of_the_universe_is_ordinary_ma', 'In the Planck 2018 base ΛCDM interpretation, the present-day cosmic energy budget is approximately 5% ordinary matter, 27% dark matter and 68% dark energy. These are inferred cosmological density fractions. They describe today’s universe; they are not the mixture at recombination or the mass fractions of an individual galaxy.')
                 ),
                 h('div', { id: 'astronomy-energy-budget', role: 'img', 'aria-label': __alloT('stem.astronomy.a11y_cosmic_energy_budget_5_percent_ordinary_matter', 'Cosmic energy budget: 5 percent ordinary matter, 27 percent dark matter, and 68 percent dark energy.'), style: { marginBottom: 14 } },
                   h('div', { style: { display: 'flex', height: 24, borderRadius: 999, overflow: 'hidden', border: '1px solid #475569', background: '#0f172a' } },
-                    h('div', { title: __alloT('stem.astronomy.ordinary_matter_5','Ordinary matter: 5%'), style: { width: '5%', minWidth: 10, background: '#38bdf8' } }),
+                    h('div', { title: __alloT('stem.astronomy.ordinary_matter_5','Ordinary matter: 5%'), style: { width: '5%', background: '#38bdf8' } }),
                     h('div', { title: __alloT('stem.astronomy.dark_matter_27','Dark matter: 27%'), style: { width: '27%', background: '#a855f7' } }),
                     h('div', { title: __alloT('stem.astronomy.dark_energy_68','Dark energy: 68%'), style: { width: '68%', background: '#f59e0b' } })
                   ),
@@ -10788,6 +12426,7 @@
                 h('div', { id: 'astronomy-dm-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-dm-tab-' + sel, tabIndex: 0, style: { padding: 14, borderRadius: 10, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.35)' } },
                   h('h3', { style: { margin: '0 0 6px', fontSize: 13.5, fontWeight: 700, color: '#e9d5ff' } }, topic.emoji + ' ' + topic.name),
                   h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10 } }, topic.body),
+                  sel === 'rotation' ? renderGalaxyRotation() : null,
                   h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
                     h('strong', null, __alloT('stem.astronomy.what_we_should_not_overstate', 'What we should not overstate: ')), topic.caveat
                   )
@@ -10810,12 +12449,12 @@
                   caveat: 'Inflation was proposed to SOLVE these three problems with one mechanism. It does. But "explains the data" is not the same as "is established." The case for inflation is now strong, but the specific model is not.'
                 },
                 { id: 'guth', name: __alloT('stem.astronomy.guth_s_proposal_1980', 'Guth\'s proposal (1980)'), emoji: '💡',
-                  body: __alloT('stem.astronomy.alan_guth_then_a_young_postdoc_at_corn', 'Alan Guth (then a young postdoc working on the monopole problem, at Cornell and then SLAC) realized that if the very early universe went through a brief period of exponential expansion — doubling in size many dozens of times in a tiny fraction of a second — all three problems could be solved at once. The horizon problem: regions that look causally separated NOW were once in tiny causal contact BEFORE inflation, then stretched far apart. The flatness problem: exponential expansion smooths out any curvature, the way blowing up a balloon makes its surface look locally flat. The monopole problem: if monopoles formed before inflation, they got diluted to undetectable density. The brief moment of inflation needs to last from about 10⁻³⁶ to 10⁻³² seconds after t=0, expanding space by a factor of at least e^60 (~10²⁶).'),
-                  caveat: 'Guth\'s original model had a problem: it couldn\'t end gracefully. Andrei Linde + Andreas Albrecht + Paul Steinhardt (independently, 1982) proposed "new inflation" and then "slow-roll inflation" that fixed this. The family of working models is now large, which is part of inflation\'s critique: it can fit almost anything.'
+                  body: __alloT('stem.astronomy.alan_guth_then_a_young_postdoc_at_corn', 'Guth proposed a period of accelerated expansion to address the horizon, flatness and monopole puzzles. For nearly constant expansion rate H, the scale factor grows approximately as exp(Ht). A region that was causally connected beforehand can become much larger; sufficient expansion reduces the relative effect of spatial curvature and dilutes relics such as hypothetical monopoles. Sixty e-folds is a common illustration, not a universally measured duration. The required expansion and its timing depend on the inflation model and the later thermal history.'),
+                  caveat: 'Guth’s original false-vacuum model could not complete the transition to a hot universe successfully. Later proposals changed the dynamics. A viable model must specify how inflation ends, account for reheating, and satisfy observational constraints.'
                 },
                 { id: 'evidence', name: __alloT('stem.astronomy.evidence_for_inflation', 'Evidence for inflation'), emoji: '📊',
-                  body: __alloT('stem.astronomy.inflation_predicts_specific_signatures', 'Inflation predicts specific signatures in the CMB. (1) Nearly scale-invariant primordial fluctuations: the same statistical pattern across all length scales. Planck measured the spectral index n_s = 0.965 ± 0.004, slightly less than 1, exactly as slow-roll inflation predicts (a perfectly scale-invariant spectrum would be 1.000). (2) Gaussian statistics: fluctuations follow a normal distribution. Observed. (3) A small amount of spatial curvature consistent with zero (flatness). Observed. (4) Adiabatic perturbations: matter + photons fluctuate together, not independently. Observed. (5) Tensor modes (primordial gravitational waves) — NOT yet observed, but their non-detection constrains many inflation models.'),
-                  caveat: 'BICEP2 announced detection of primordial gravitational waves in 2014 → would have been Nobel-level evidence for inflation. Within a year, the signal turned out to be Milky Way dust, not cosmological. CMB-S4 (proposed) and LiteBIRD (Japan, 2032 launch) aim to make the definitive measurement. If primordial B-modes are detected, inflation goes from "favored theory" to "confirmed."'
+                  body: __alloT('stem.astronomy.inflation_predicts_specific_signatures', 'CMB measurements support nearly Gaussian, largely adiabatic primordial perturbations with a spectrum close to scale invariance. Planck 2018 temperature, polarization and lensing results infer nₛ = 0.9649 ± 0.0042 at 68% confidence. This agrees with many slow-roll models and constrains others; it does not identify a unique inflation mechanism. BICEP/Keck XIII (2021) reports the tensor-to-scalar ratio r < 0.036 at 95% confidence using observations through 2018 with Planck and WMAP. That result is an upper limit, not a detection of primordial tensors.'),
+                  caveat: 'Galactic dust and gravitational lensing also produce B-mode polarization. A primordial tensor claim requires careful foreground removal and consistency checks. Such a result would test early-universe mechanisms; it would not automatically establish a unique inflaton model or a multiverse.'
                 },
                 { id: 'eternal', name: __alloT('stem.astronomy.eternal_inflation_the_multiverse', 'Eternal inflation + the multiverse'), emoji: '∞',
                   body: __alloT('stem.astronomy.a_very_natural_consequence_of_most_wor', 'A very natural consequence of MOST working inflation models (Linde 1986): inflation never globally ends. In any region where inflation has stopped (like our observable universe, "bubble"), inflation is still going on in adjacent regions. The space between bubbles is expanding far faster than the bubbles themselves grow, so the bubbles never meet. Each bubble is its own universe with potentially different physical "constants" (electron mass, dark-energy density, fine-structure constant) — set randomly during the moment inflation ended in that bubble. This is one version of the "multiverse." String theory adds a separate version: the landscape of ~10⁵⁰⁰ possible vacuum states, each with different laws.'),
@@ -10830,8 +12469,8 @@
                   caveat: 'The disagreement among serious cosmologists matters. Inflation is the most-tested, best-supported model of the very early universe. It is NOT the only model. Students should know that "Big Bang + inflation" is the standard story but that the inflation chapter remains under active scientific dispute, by some of its original architects.'
                 },
                 { id: 'limits', name: __alloT('stem.astronomy.what_we_honestly_cannot_test', 'What we honestly cannot test'), emoji: '🚧',
-                  body: __alloT('stem.astronomy.we_cannot_directly_observe_inflation_i', 'We cannot directly observe inflation itself; we observe its predicted CMB signatures. We cannot communicate with or measure other "bubble" universes, by construction (faster-than-light expansion separates them). We cannot test what happened BEFORE the Planck time (~10⁻⁴³ s), when known physics breaks down. We cannot derive the values of the constants from first principles in any known theory — we can only measure them. These are not gaps inflation needs to fix; they are limits on what physics can know at present. Quantum gravity, when it arrives, may move these limits. Or it may simply reveal new limits underneath.'),
-                  caveat: 'In every era of physics, some questions seemed permanently unanswerable until they weren\'t. Some never moved at all. We do not know in advance which category a question is in. The honest answer to "did inflation really happen?" is: probably, mostly, in some form. The honest answer to "are there other universes?" is: we genuinely don\'t know, and may never know.'
+                  body: __alloT('stem.astronomy.we_cannot_directly_observe_inflation_i', 'The observations shown here constrain primordial statistics through a cosmological analysis. They do not directly measure the chosen pattern, amount of expansion or duration in this explorer. Different inflation models can give similar spectra while differing in their potentials and reheating histories. Claims about eternal inflation or other universes add assumptions that these measurements do not establish. Where classical gravity breaks down, a quantum description of gravity would be needed.'),
+                  caveat: 'Distinguish mathematical predictions, observational inference and additional assumptions. CMB statistics can test early-universe models. Eternal inflation and other-universe proposals require further assumptions and face open problems of observation.'
                 }
               ];
               var requestedInf = typeof d.selectedInf === 'string' ? d.selectedInf : 'whyneed';
@@ -10862,33 +12501,9 @@
               }
               return h('div', null,
                 h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
-                  __alloT('stem.astronomy.the_big_bang_theory_describes_the_univ', 'The Big Bang theory describes the universe from about 1 second after t=0 onward. What about the first second — or rather, the first 10⁻³⁰ of a second? That is where cosmic inflation lives, and where modern cosmology meets quantum field theory, string theory, and the genuinely open question of whether other universes exist.')
+                  __alloT('stem.astronomy.the_big_bang_theory_describes_the_univ', 'The hot Big Bang describes an early hot, dense phase of the universe and its later expansion and cooling. Inflation is a proposed earlier stage of accelerated expansion. Its dynamics, how it ended, and how its energy became a hot plasma are active questions. Other universes require additional assumptions beyond the measured CMB statistics.')
                 ),
-                h('figure', { style: { margin: '0 0 14px', padding: 10, borderRadius: 10, background: '#020617', border: '1px solid #164e63' } },
-                  h('svg', { id: 'astronomy-inflation-diagram', viewBox: '0 0 600 180', role: 'img', 'aria-labelledby': 'astronomy-inflation-title astronomy-inflation-desc', style: { width: '100%', height: 'auto', display: 'block' } },
-                    h('title', { id: 'astronomy-inflation-title' }, 'Schematic of cosmic inflation'),
-                    h('desc', { id: 'astronomy-inflation-desc' }, 'A tiny causally connected patch expands exponentially by at least 10 to the 26th power, stretching small quantum fluctuations across a vastly larger region.'),
-                    h('defs', null,
-                      h('marker', { id: 'astronomy-inflation-arrow', markerWidth: 10, markerHeight: 10, refX: 8, refY: 3, orient: 'auto', markerUnits: 'strokeWidth' },
-                        h('path', { d: 'M0,0 L0,6 L9,3 z', fill: '#22d3ee' })
-                      )
-                    ),
-                    h('circle', { cx: 92, cy: 82, r: 24, fill: 'rgba(34,211,238,0.18)', stroke: '#67e8f9', strokeWidth: 2 }),
-                    [[84, 75], [98, 88], [91, 94], [101, 70]].map(function(point, i) {
-                      return h('circle', { key: 'before-' + i, cx: point[0], cy: point[1], r: 2.5, fill: '#fef08a' });
-                    }),
-                    h('text', { x: 92, y: 126, textAnchor: 'middle', fill: '#a5f3fc', fontSize: 12, fontWeight: 700 }, 'Connected patch'),
-                    h('line', { x1: 145, y1: 82, x2: 315, y2: 82, stroke: '#22d3ee', strokeWidth: 3, markerEnd: 'url(#astronomy-inflation-arrow)' }),
-                    h('text', { x: 230, y: 61, textAnchor: 'middle', fill: '#67e8f9', fontSize: 12, fontWeight: 700 }, 'exponential expansion'),
-                    h('text', { x: 230, y: 108, textAnchor: 'middle', fill: '#94a3b8', fontSize: 11 }, 'at least 10²⁶×'),
-                    h('ellipse', { cx: 450, cy: 82, rx: 105, ry: 64, fill: 'rgba(99,102,241,0.16)', stroke: '#818cf8', strokeWidth: 2 }),
-                    [[386, 57], [420, 95], [451, 44], [482, 106], [515, 66], [457, 82], [398, 111], [502, 92]].map(function(point, i) {
-                      return h('circle', { key: 'after-' + i, cx: point[0], cy: point[1], r: 3, fill: '#fef08a' });
-                    }),
-                    h('text', { x: 450, y: 166, textAnchor: 'middle', fill: '#c7d2fe', fontSize: 12, fontWeight: 700 }, 'Fluctuations stretched to cosmic scales')
-                  ),
-                  h('figcaption', { style: { marginTop: 5, color: '#94a3b8', fontSize: 11, textAlign: 'center' } }, 'Conceptual diagram — size and time are not to scale.')
-                ),
+                renderInflationExpansion(),
                 h('div', { role: 'tablist', 'aria-label': __alloT('stem.astronomy.a11y_cosmic_inflation_topics', 'Cosmic inflation topics'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
                   INF_TOPICS.map(function(t, index) {
                     var on = t.id === sel;
@@ -11214,152 +12829,7 @@
           ),
 
           // ─── Cosmic calendar (Sagan's compressed year) ──────────
-          sectionCard('📅 The Cosmic Calendar — 13.8 billion years in one year',
-            (function() {
-              var CC_DATES = [
-                { id: 'jan1', when: 'January 1, 12:00 AM', emoji: '💥',
-                  what: 'The Big Bang. The observable universe begins as something incredibly hot, dense, and small. In the first second, the four fundamental forces separate. In the first three minutes, hydrogen + helium + traces of lithium form (Big Bang nucleosynthesis). 380,000 years later (~ 5 minutes on the cosmic calendar), the first atoms form + the cosmic microwave background is released. The next ~100 million years are the "cosmic dark ages" — no stars yet, just neutral hydrogen.',
-                  context: 'On Sagan\'s calendar, 1 cosmic year = 13.8 billion real years. So: 1 cosmic month ~ 1.15 billion real years. 1 cosmic day ~ 38 million real years. 1 cosmic hour ~ 1.6 million real years. 1 cosmic minute ~ 26,000 real years. 1 cosmic second ~ 437 real years. We humans, all of recorded history, all our wars + cathedrals + science + everything, fit inside the last few cosmic seconds.'
-                },
-                { id: 'jan10', when: 'January 10-22', emoji: '⭐',
-                  what: 'First stars + galaxies form (~ 100-400 million real years after Big Bang). The first stars (Population III) were massive, short-lived, made entirely of H + He. They produced the first heavier elements + their supernovae enriched the interstellar medium. Galaxies began merging into the first protogalaxies — JWST has now imaged some of these directly. Cosmic dawn ends; the universe lights up.',
-                  context: 'The 4 weeks between the Big Bang + the first galaxies represents the time before any luminous objects existed in our universe. JWST has pushed direct observation back to ~ January 12-15 on the cosmic calendar. We are looking deeper into the cosmic year every decade.'
-                },
-                { id: 'mar15', when: 'March 15', emoji: '🌌',
-                  what: 'The Milky Way galaxy forms (~ 11.5 billion real years ago). A massive halo of dark matter pulls in primordial gas; star formation begins; the central supermassive black hole grows. The Milky Way has been continuously forming stars + capturing satellite galaxies ever since. We are still expanding + still cannibalizing smaller galaxies today — the Sagittarius Dwarf Galaxy is currently being torn apart + absorbed by our halo.',
-                  context: 'Our galaxy has been around for about 80% of the universe\'s history. Most of the stars in our galaxy are older than the Sun.'
-                },
-                { id: 'aug28', when: 'August 28', emoji: '🪐',
-                  what: 'Solar System formation begins (~ 4.6 billion real years ago). A giant molecular cloud (with material enriched by ~ 9 billion years of previous stellar nucleosynthesis) collapses, possibly triggered by a nearby supernova. The Sun forms; the protoplanetary disk forms; the planets accrete; the Late Heavy Bombardment delivers water + organics; the Moon forms after a Mars-sized body (Theia) collides with proto-Earth.',
-                  context: 'In real years: 4.6 billion years ago — which is to say, about 9.2 billion years AFTER the Big Bang. The Earth + Sun are roughly halfway through the universe\'s history.'
-                },
-                { id: 'sep1', when: 'September 1-15', emoji: '🦠',
-                  what: 'First life on Earth (~ 4.0-3.8 billion real years ago). The oldest convincing evidence is fossilized microbial mats (stromatolites) ~ 3.5 billion years old. By ~ 3 billion years ago, oxygenic photosynthesis evolved in cyanobacteria; this slowly transformed Earth\'s atmosphere over the next 500 million years (the Great Oxidation Event, ~ 2.4 billion years ago).',
-                  context: 'Life appears extraordinarily quickly after Earth becomes habitable (within ~ 500-700 million years), suggesting that under the right conditions, simple life may form readily. The transition from simple to complex life took FAR longer + may be the bigger filter.'
-                },
-                { id: 'nov15', when: 'November 9', emoji: '🧬',
-                  what: 'First eukaryotes (cells with nuclei + organelles) appear (~ 2.1-1.7 billion real years ago). Endosymbiosis — when one prokaryote engulfed another + the captured cell became a mitochondrion or chloroplast — was the singular event that made all complex life possible. This may be the hardest single step in the evolution of intelligence + may be the bulk of the Great Filter behind us (if there is one).',
-                  context: 'Eukaryotes appear MORE than 1 billion real years after life first arose. The "easy" step (prokaryotes) was fast; the "hard" step (eukaryotes) took much longer.'
-                },
-                { id: 'dec5', when: 'December 17', emoji: '🐚',
-                  what: 'Cambrian explosion (~ 540 million real years ago). The fossil record suddenly shows nearly all the major animal body plans (phyla) appearing within a few tens of millions of years. Trilobites, mollusks, arthropods, vertebrate ancestors. The ozone layer is now established, allowing UV-sensitive organisms to thrive in shallow water. Multicellular life with hard parts had begun ~ 100 million years earlier (the Ediacaran).',
-                  context: 'Most of complex life history has happened in the LAST month of the cosmic year. December 17 marks the start of recognizable animals.'
-                },
-                { id: 'dec25', when: 'December 25', emoji: '🦖',
-                  what: 'Age of dinosaurs begins (~ 230 million real years ago). The Triassic-Jurassic-Cretaceous reign of dinosaurs lasts ~ 165 million real years — about 4-5 days on the cosmic calendar. Mammals exist throughout this time but stay small + nocturnal. Christmas morning to mid-afternoon: dinosaurs dominate. Then a 10-km asteroid hits the Yucatan (December 30 on cosmic calendar, ~ 66 million real years ago) + ends them.',
-                  context: 'Even the dinosaurs, who ruled Earth for an unimaginable span, occupy only ~ 4 days of the cosmic year. Their entire existence is shorter than the time between the start of complex animals + now.'
-                },
-                { id: 'dec31', when: 'December 31, 11:49 PM', emoji: '🚶',
-                  what: 'Homo sapiens emerges (~ 300,000 real years ago). Our species evolves in Africa, spreads gradually across the globe, develops language, art, agriculture. The 300,000-year tenure of anatomically modern humans occupies about 11 minutes on the cosmic calendar. We share Earth with Neanderthals + Denisovans for much of this time; they go extinct ~ 40,000 years ago (December 31, 11:58 PM).',
-                  context: 'Everything humans have ever done — every story, every cave painting, every migration, every culture — fits inside the last 11 minutes of the cosmic year.'
-                },
-                { id: 'agriculture', when: 'December 31, 11:59:30 PM', emoji: '🌾',
-                  what: 'Agriculture begins (~ 12,000 real years ago, Mesopotamia + independently elsewhere). Wheat, barley, lentils, einkorn are domesticated. Within a few thousand real years, the same revolution happens independently with rice in China, maize in Mesoamerica, sorghum in Africa, potatoes in the Andes. Settled life, cities, writing, organized states all follow.',
-                  context: 'All of human civilization — every empire, every religion, every cathedral, every nation — occupies the last 30 seconds of the cosmic year.'
-                },
-                { id: 'now', when: 'December 31, 11:59:59 PM', emoji: '🌍',
-                  what: 'The present moment. Roman empire (~ 4 seconds ago). Renaissance (~ 1.3 seconds ago). Industrial Revolution (~ 0.6 seconds ago). Modern era (~ 0.3 seconds ago). Computers, atomic energy, spaceflight, internet, social media, AI: all in the final < 0.1 cosmic seconds. Everything that defines modern life happened in less than the time it takes to blink.',
-                  context: 'This is the perspective the cosmic calendar is meant to give. NOT to make our lives feel meaningless (we are still here, doing this) but to make our species feel young + our recent achievements + threats feel as RECENT as they actually are. Climate change, nuclear weapons, AI — every one of our existential challenges is the work of the LAST FEW SECONDS of cosmic time. We are all newborns trying to figure out how to live.'
-                }
-              ];
-              var requestedCC = typeof d.selectedCC === 'string' ? d.selectedCC : 'jan1';
-              var topicIndex = CC_DATES.findIndex(function(t) { return t.id === requestedCC; });
-              if (topicIndex < 0) topicIndex = 0;
-              var topic = CC_DATES[topicIndex];
-              var sel = topic.id;
-              function selectCCTopic(index, moveFocus) {
-                var normalizedIndex = (index + CC_DATES.length) % CC_DATES.length;
-                var nextTopic = CC_DATES[normalizedIndex];
-                upd({ selectedCC: nextTopic.id });
-                if (moveFocus && typeof document !== 'undefined') {
-                  setTimeout(function() {
-                    var target = document.getElementById('astronomy-cc-tab-' + nextTopic.id);
-                    if (target) target.focus();
-                  }, 0);
-                }
-              }
-              function onCCTopicKeyDown(e, index) {
-                var nextIndex = null;
-                if (e.key === 'ArrowRight' || e.key === 'ArrowDown') nextIndex = index + 1;
-                else if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') nextIndex = index - 1;
-                else if (e.key === 'Home') nextIndex = 0;
-                else if (e.key === 'End') nextIndex = CC_DATES.length - 1;
-                if (nextIndex == null) return;
-                e.preventDefault();
-                selectCCTopic(nextIndex, true);
-              }
-              return h('div', null,
-                h('div', { style: { fontSize: 12.5, color: '#cbd5e1', lineHeight: 1.65, marginBottom: 12 } },
-                  __alloT('stem.astronomy.in_the_1970s_carl_sagan_compressed_the', 'In the 1970s, Carl Sagan compressed the entire 13.8-billion-year history of the universe into a single year. The Big Bang is January 1 at midnight; "now" is December 31 at 11:59:59 PM. This framing remains one of the most powerful ways to grasp cosmic time. A cosmic SECOND is ~437 years of real time. Recorded human history occupies the last ~14 cosmic seconds.')
-                ),
-                h('figure', { style: { margin: '0 0 14px', padding: 10, borderRadius: 10, background: '#020617', border: '1px solid #7c2d12' } },
-                  h('svg', { id: 'astronomy-cosmic-calendar-diagram', viewBox: '0 0 600 250', role: 'img', 'aria-labelledby': 'astronomy-cc-title astronomy-cc-desc', style: { width: '100%', height: 'auto', display: 'block' } },
-                    h('title', { id: 'astronomy-cc-title' }, 'Cosmic Calendar timeline'),
-                    h('desc', { id: 'astronomy-cc-desc' }, 'The full 13.8-billion-year history of the universe is compressed into one calendar year. The lower timeline zooms into the final cosmic minute, where agriculture and recorded civilization appear.'),
-                    h('text', { x: 50, y: 28, fill: '#fdba74', fontSize: 12, fontWeight: 700 }, '13.8 billion years → one cosmic year'),
-                    h('line', { x1: 50, y1: 72, x2: 550, y2: 72, stroke: '#fb923c', strokeWidth: 8, strokeLinecap: 'round' }),
-                    [
-                      { x: 50, label: 'Jan 1', detail: 'Big Bang', anchor: 'start' },
-                      { x: 151, label: 'Mar 15', detail: 'Milky Way', anchor: 'middle' },
-                      { x: 377, label: 'Aug 28', detail: 'Solar System', anchor: 'middle' },
-                      { x: 384, label: 'Sep', detail: 'first life', anchor: 'middle' },
-                      { x: 531, label: 'Dec 17', detail: 'animals', anchor: 'middle' },
-                      { x: 550, label: 'Dec 31', detail: 'humans / now', anchor: 'end' }
-                    ].map(function(mark, i) {
-                      var labelY = i % 2 === 0 ? 105 : 125;
-                      return h('g', { key: 'year-' + i },
-                        h('line', { x1: mark.x, y1: 59, x2: mark.x, y2: 86, stroke: '#fed7aa', strokeWidth: 2 }),
-                        h('text', { x: mark.x, y: labelY, textAnchor: mark.anchor, fill: '#ffedd5', fontSize: 10.5, fontWeight: 700 }, mark.label),
-                        h('text', { x: mark.x, y: labelY + 14, textAnchor: mark.anchor, fill: '#94a3b8', fontSize: 9.5 }, mark.detail)
-                      );
-                    }),
-                    h('text', { x: 50, y: 165, fill: '#c4b5fd', fontSize: 12, fontWeight: 700 }, 'Zoom: final cosmic minute'),
-                    h('line', { x1: 50, y1: 198, x2: 550, y2: 198, stroke: '#8b5cf6', strokeWidth: 6, strokeLinecap: 'round' }),
-                    h('line', { x1: 300, y1: 184, x2: 300, y2: 212, stroke: '#fbbf24', strokeWidth: 2 }),
-                    h('text', { x: 300, y: 228, textAnchor: 'middle', fill: '#fde68a', fontSize: 10.5 }, 'agriculture (~30 s before midnight)'),
-                    h('line', { x1: 550, y1: 182, x2: 550, y2: 214, stroke: '#34d399', strokeWidth: 3 }),
-                    h('text', { x: 550, y: 174, textAnchor: 'end', fill: '#a7f3d0', fontSize: 10.5, fontWeight: 700 }, 'present'),
-                    h('text', { x: 50, y: 228, textAnchor: 'start', fill: '#94a3b8', fontSize: 10 }, '11:59:00 PM')
-                  ),
-                  h('figcaption', { style: { marginTop: 5, color: '#94a3b8', fontSize: 11, textAlign: 'center' } }, 'Two scales are shown because events in the final seconds overlap on a full-year timeline.')
-                ),
-                h('div', { role: 'tablist', 'aria-label': __alloT('stem.astronomy.a11y_cosmic_calendar_events', 'Cosmic Calendar events'), style: { display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 12 } },
-                  CC_DATES.map(function(t, index) {
-                    var on = t.id === sel;
-                    return h('button', {
-                      id: 'astronomy-cc-tab-' + t.id,
-                      key: t.id,
-                      type: 'button',
-                      role: 'tab',
-                      'aria-selected': on ? 'true' : 'false',
-                      'aria-controls': 'astronomy-cc-panel',
-                      tabIndex: on ? 0 : -1,
-                      onClick: function() { selectCCTopic(index, false); },
-                      onKeyDown: function(e) { onCCTopicKeyDown(e, index); },
-                      className: 'astr-focus',
-                      style: { padding: '7px 10px', borderRadius: 8, fontSize: 11.5, fontWeight: 600, cursor: 'pointer', background: on ? '#fb923c' : '#1e293b', color: on ? '#0f172a' : '#e2e8f0', border: on ? '2px solid #fdba74' : '1px solid #475569' }
-                    }, t.emoji + ' ' + t.when.split(',')[0]);
-                  })
-                ),
-                h('div', { id: 'astronomy-cc-panel', role: 'tabpanel', 'aria-labelledby': 'astronomy-cc-tab-' + sel, tabIndex: 0, style: { padding: 14, borderRadius: 10, background: 'rgba(251,146,60,0.08)', border: '1px solid rgba(251,146,60,0.35)' } },
-                  h('h3', { style: { margin: '0 0 2px', fontSize: 13.5, fontWeight: 700, color: '#fdba74' } }, topic.emoji + ' ' + topic.when),
-                  h('div', { style: { fontSize: 12.5, color: '#e2e8f0', lineHeight: 1.7, marginBottom: 10, marginTop: 8 } }, topic.what),
-                  h('div', { style: { fontSize: 11.5, color: '#cbd5e1', lineHeight: 1.65, padding: 10, borderRadius: 8, background: 'rgba(0,0,0,0.25)', fontStyle: 'italic' } },
-                    h('strong', null, __alloT('stem.astronomy.on_the_calendar', 'On the calendar: ')), topic.context
-                  )
-                ),
-                h('div', { style: { marginTop: 12, padding: 10, borderRadius: 8, background: 'rgba(168,85,247,0.08)', border: '1px solid rgba(168,85,247,0.3)', fontSize: 11.5, color: '#e9d5ff', lineHeight: 1.65 } },
-                  h('strong', null, __alloT('stem.astronomy.a_classroom_exercise', 'A classroom exercise: ')),
-                  __alloT('stem.astronomy.print_a_paper_calendar_of_any_single_y', 'Print a paper calendar of any single year + write events on it at proportional dates: January 1 = Big Bang, mid-March = Milky Way forms, late August = Earth forms, etc. Have students mark their own birthday on the calendar — for a 12-year-old, their entire life is ~ 0.027 cosmic seconds, faster than the eye can blink. Then ask: "What deserves attention given how short our individual lifetimes are at cosmic scale?" The answer is not "nothing." It is the opposite: what we choose to do MATTERS more, not less, in such a brief window.')
-                ),
-                h('div', { style: { marginTop: 8, padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.08)', border: '1px solid rgba(34,197,94,0.3)', fontSize: 11.5, color: '#dcfce7', lineHeight: 1.65 } },
-                  h('strong', null, __alloT('stem.astronomy.sagan_s_original_framing', 'Sagan\'s original framing: ')),
-                  __alloT('stem.astronomy.the_cosmos_is_also_within_us_we_are_ma', '"The cosmos is also within us. We are made of star-stuff. We are a way for the universe to know itself." From "Cosmos" (1980), Episode 1. The cosmic calendar was first laid out in "The Dragons of Eden" (1977, Pulitzer Prize for nonfiction) + has been adapted in many forms since. The version above closely follows Sagan\'s scaling. Astrophysicists use slightly different dates as new dating evidence refines, but the orders-of-magnitude pattern is robust.')
-                )
-              );
-            })(),
-            '#fb923c'
-          ),
+          sectionCard('📅 The Cosmic Calendar — 13.8 billion years in one year', renderCosmicCalendar(), '#fb923c'),
           messierCatalogSection()
         );
 

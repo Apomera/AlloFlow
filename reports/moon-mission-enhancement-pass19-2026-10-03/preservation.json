@@ -1,0 +1,29 @@
+{
+  "sourceSha256": "5352d27bca5e279731e59521f8da3fa8504d8a545992952562d95bd40eec9728",
+  "sourceBytes": 1330626,
+  "canonicalPublicByteIdentical": true,
+  "exactPass18BaselineReversal": true,
+  "integrationOperations": 4,
+  "priorTestHashesUnchanged": {
+    "tests/moonmission_descent_prediction_physics.test.js": "be8c9292e2181d28363c0cfc4c19698c9bd02aaaf08028018d95e983274b622b",
+    "tests/moonmission_descent_prediction_visuals.test.js": "35e07b0e715f553fa51f74491c0f8ca751799bf6d8f0b4cf33c9ebedb578527a",
+    "tests/moonmission_descent_prediction_charts.test.js": "ac6afccfecea82457ed14e04088d4bd63c41091f4083638999365c8b5ec20969",
+    "tests/e2e/moon-mission-descent-predictions.spec.ts": "199ebdf29c1a42b1e3e01c9dc57c705f0632c53f4505b8ab69c029611e799972",
+    "tests/e2e/moon-mission-descent-visuals.spec.ts": "005fedda8c49bea194e3bfd875738de5b9d00409f74e4b259129122fdbd64897"
+  },
+  "scopedIndexUnchanged": true,
+  "newTestsUnstaged": true,
+  "syntax": [
+    {
+      "path": "stem_lab/stem_tool_moonmission.js",
+      "exitCode": 0
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_moonmission.js",
+      "exitCode": 0
+    }
+  ],
+  "scopedDiffCheckExitCode": 0,
+  "commitPerformed": false,
+  "stagingPerformed": false
+}

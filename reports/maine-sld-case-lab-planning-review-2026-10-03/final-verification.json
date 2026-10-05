@@ -1,0 +1,64 @@
+{
+  "verifiedAt": "2026-10-03T18:18:26.375130+00:00",
+  "status": "PASS",
+  "moduleSha256": "606ce30776177cc8faeb8d520f09ac15151b584eb8b09be9c25829f3883e5779",
+  "sourceSha256": "0977f3f47dbc6a9f0de837eca298a1ecfcea201a852d3a39e93d3acf9ef59329",
+  "moduleBytes": 183567,
+  "fourModuleCopiesMatch": true,
+  "targetedBrowserScenariosPassed": 6,
+  "newBrowserScenarios": 2,
+  "originalScenariosPreserved": 29,
+  "availableScenarios": 31,
+  "scopedAxeScans": 5,
+  "axeViolations": 0,
+  "rootAcceptedCaptureCount": 7,
+  "worksheetSchemaPreserved": true,
+  "caseDataCoreBuilderBytePreserved": true,
+  "printFunctionPrintCssSharedResponseLabelPreserved": true,
+  "retainedPrintPageCount": 9,
+  "retainedPrintPdfSha256": "8fd65a71f399b21d5089ef3906bf3387a40cf71abd3c5ac62576c7f9705060a6",
+  "printRerun": false,
+  "testedHostSourceSha256": "7aa905b2c32795470cd16176df97926450807c86c95f1e237d7945a89b2889c9",
+  "testedHostBundleSha256": "13a146aa57b210dfa3229b45a5243134152ac7085c50235dd3fff096a2341a57",
+  "sharedHostSourcesObserved": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "7aa905b2c32795470cd16176df97926450807c86c95f1e237d7945a89b2889c9",
+      "finalMaineModulePinRetained": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "7aa905b2c32795470cd16176df97926450807c86c95f1e237d7945a89b2889c9",
+      "finalMaineModulePinRetained": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "7aa905b2c32795470cd16176df97926450807c86c95f1e237d7945a89b2889c9",
+      "finalMaineModulePinRetained": true
+    }
+  ],
+  "currentSourceMatchesTestedSnapshot": true,
+  "finalServedBytes": [
+    {
+      "name": "app",
+      "status": 200,
+      "bytes": 588,
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5"
+    },
+    {
+      "name": "hostBundle",
+      "status": 200,
+      "bytes": 1975064,
+      "sha256": "13a146aa57b210dfa3229b45a5243134152ac7085c50235dd3fff096a2341a57"
+    },
+    {
+      "name": "activityModule",
+      "status": 200,
+      "bytes": 183567,
+      "sha256": "606ce30776177cc8faeb8d520f09ac15151b584eb8b09be9c25829f3883e5779"
+    }
+  ],
+  "previewPid": 64444,
+  "commitPerformed": false,
+  "deploymentPerformed": false
+}

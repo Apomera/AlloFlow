@@ -6457,6 +6457,38 @@
   SimplifiedView.paragraphBlocks = simplifiedParagraphBlocks;
   SimplifiedView.alignImmersiveWords = alignImmersiveWords;
   SimplifiedView.mapSupportsToImmersiveWords = mapSupportsToImmersiveWords;
+  // Host hydration must enumerate the same validated, localized support
+  // lines as narration before reconciling persisted audio identities.
+  SimplifiedView.enumerateNarrationSupportSegments = function (resource, options = {}) {
+    var api = getInstructionalContextApi();
+    if (getSimplifiedInstructionalText(resource).form !== 'same-text-supported' || !api?.isSupportedOriginal?.(resource)) return [];
+    var snapshot = api?.getSourceSnapshot?.(resource);
+    var owner = findSimplifiedReadingSupportOwner(options.history, resource, snapshot) || resource;
+    var checked = snapshot && api?.validateReadingSupports?.(owner, owner.readingSupports);
+    var language = options.language || resource.language || resource.baseLanguage || 'English';
+    var template = spokenSupportTemplate(language);
+    if (!template || !checked?.annotations?.length) return [];
+    var split = options.split || window.AlloModules?.KaraokeAudioStore?.splitSentences;
+    if (typeof split !== 'function') return [];
+    var clean = value => String(value || '').replace(/\s+/g, ' ').trim();
+    var fingerprint = text => {
+      var hash = 2166136261;
+      for (var index = 0; index < text.length; index++) hash = Math.imul(hash ^ text.charCodeAt(index), 16777619);
+      return 'txt-' + text.length.toString(36) + '-' + (hash >>> 0).toString(36);
+    };
+    var lines = [];
+    checked.annotations.forEach(entry => {
+      var word = clean(entry.quote), help = clean(entry.definition || entry.explanation || entry.text);
+      if (!word || !help) return;
+      var line = template.split('{word}').join(word).split('{support}').join(help);
+      if (!/[.!?…。！？؟]["'”’)\]]*$/u.test(line)) line += '.';
+      split(line).forEach(text => {
+        var spoken = clean(text);
+        if (spoken) lines.push({ text: spoken, segmentId: 'text/' + fingerprint(spoken), scopeId: 'main', language });
+      });
+    });
+    return lines;
+  };
   SimplifiedView.exactListenPlan = exactListenPlan;
   SimplifiedView.spokenSupportLabels = SPOKEN_SUPPORT_LABELS;
   SimplifiedView.spokenSupportTemplate = spokenSupportTemplate;

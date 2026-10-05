@@ -1,0 +1,121 @@
+{
+  "results": [
+    {
+      "width": 1440,
+      "before": {
+        "selected": 101,
+        "watch": 1648.1875,
+        "controls": 920,
+        "document": 1440,
+        "width": 1440
+      },
+      "after": {
+        "selected": 101,
+        "active": "Inspect SOUTH101",
+        "controlsTop": -351,
+        "scroll": 1271
+      },
+      "commandLock": {
+        "current": {
+          "selected": 101,
+          "targetHeading": null
+        },
+        "stable": {
+          "selected": 101,
+          "targetHeading": null
+        },
+        "blocked": "Action needed\n\nFinish or cancel the current instruction before selecting another aircraft."
+      },
+      "stripLabels": [
+        "EAST102B738 · Inbound · No runway5,000 ft · 140 ktFuel remaining: 93.6 flight min32.0 nm · ~13.7 flight min · direct estimate",
+        "SOUTH101B738 · Inbound · No runway5,000 ft · 140 ktFuel remaining: 93.6 flight min33.5 nm · ~14.4 flight min · direct estimate"
+      ],
+      "runwayText": "Runway board\nRWY 27R · Available\n\nNo assigned arrivals with an ETA.\n\nRWY 27L · Available\n\nNo assigned arrivals with an ETA.\n\nPlan uses assigned arrivals at current speed. Approach clearance is still required. The target allows for runway occupancy and simplified wake spacing; vectors change the order."
+    },
+    {
+      "width": 390,
+      "before": {
+        "selected": 101,
+        "watch": 2308.171875,
+        "controls": 1559.390625,
+        "document": 390,
+        "width": 390
+      },
+      "after": {
+        "selected": 101,
+        "active": "Inspect SOUTH101",
+        "controlsTop": -438.609375,
+        "scroll": 1998
+      },
+      "commandLock": {
+        "current": {
+          "selected": 101,
+          "targetHeading": null
+        },
+        "stable": {
+          "selected": 101,
+          "targetHeading": null
+        },
+        "blocked": "Action needed\n\nFinish or cancel the current instruction before selecting another aircraft."
+      },
+      "stripLabels": [
+        "EAST102B738 · Inbound · No runway5,000 ft · 140 ktFuel remaining: 93.9 flight min31.5 nm · ~13.5 flight min · direct estimate",
+        "SOUTH101B738 · Inbound · No runway5,000 ft · 140 ktFuel remaining: 93.9 flight min33.2 nm · ~14.2 flight min · direct estimate"
+      ],
+      "runwayText": "Runway board\nRWY 27R · Available\n\nNo assigned arrivals with an ETA.\n\nRWY 27L · Available\n\nNo assigned arrivals with an ETA.\n\nPlan uses assigned arrivals at current speed. Approach clearance is still required. The target allows for runway occupancy and simplified wake spacing; vectors change the order."
+    },
+    {
+      "width": 320,
+      "before": {
+        "selected": 101,
+        "watch": 2424.265625,
+        "controls": 1608.390625,
+        "document": 320,
+        "width": 320
+      },
+      "after": {
+        "selected": 101,
+        "active": "Inspect SOUTH101",
+        "controlsTop": -550.609375,
+        "scroll": 2159
+      },
+      "commandLock": {
+        "current": {
+          "selected": 101,
+          "targetHeading": null
+        },
+        "stable": {
+          "selected": 101,
+          "targetHeading": null
+        },
+        "blocked": "Action needed\n\nFinish or cancel the current instruction before selecting another aircraft."
+      },
+      "stripLabels": [
+        "EAST102B738 · Inbound · No runway5,000 ft · 140 ktFuel remaining: 93.8 flight min31.7 nm · ~13.6 flight min · direct estimate",
+        "SOUTH101B738 · Inbound · No runway5,000 ft · 140 ktFuel remaining: 93.8 flight min33.3 nm · ~14.3 flight min · direct estimate"
+      ],
+      "runwayText": "Runway board\nRWY 27R · Available\n\nNo assigned arrivals with an ETA.\n\nRWY 27L · Available\n\nNo assigned arrivals with an ETA.\n\nPlan uses assigned arrivals at current speed. Approach clearance is still required. The target allows for runway occupancy and simplified wake spacing; vectors change the order."
+    },
+    {
+      "menu": {
+        "tabs": [
+          "AirportsChoose runway load",
+          "PracticeRepeatable exercises",
+          "Ops LabTune variables",
+          "LessonsLearn the math",
+          "Badges0/9"
+        ],
+        "buttons": [
+          "Start guided training",
+          "Start Tower Shift",
+          "Open Ops Lab",
+          "Smallville RegionalSVR airspaceBeginner1 runway, low traffic. Learn the basics.1 runway(s)Max 4 aircraftSpawn 8s",
+          "Metro InternationalMIA airspaceIntermediate2 parallel runways. Manage simultaneous approaches.2 runway(s)Max 6 aircraftSpawn 6s",
+          "Crosswind CityXWC airspaceAdvancedCrossing runways! Sequences must be conflict-free.2 runway(s)Max 8 aircraftSpawn 5s",
+          "O'Hare ChallengeORD airspaceExpert4 runways, heavy traffic. Can you handle the pressure?4 runway(s)Max 12 aircraftSpawn 3s"
+        ]
+      }
+    }
+  ],
+  "errors": []
+}

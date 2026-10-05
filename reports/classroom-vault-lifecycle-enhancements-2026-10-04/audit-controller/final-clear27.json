@@ -1,0 +1,117 @@
+{
+  "scope": "Actual controller/native Web Crypto; completed CAS and crypto gates; same-controller key ownership; no full App/browser or other-tab revocation.",
+  "passed": 27,
+  "failed": 0,
+  "modulePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allo_device_vault_module.js",
+  "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+  "checks": [
+    {
+      "name": "disableProtection: accepted storage transaction completes before local key cleanup",
+      "passed": true
+    },
+    {
+      "name": "disableProtection: later explicit protection authenticates fresh session",
+      "passed": true
+    },
+    {
+      "name": "disableProtection: earlier accepted mutation reports durable success",
+      "passed": true
+    },
+    {
+      "name": "disableProtection: obsolete null publication preserves fresh key",
+      "passed": true
+    },
+    {
+      "name": "disableProtection: fresh session remains readable",
+      "passed": true
+    },
+    {
+      "name": "disableProtection: both accepted durable transactions remain committed",
+      "passed": true
+    },
+    {
+      "name": "disableProtection: current persisted store stays protected",
+      "passed": true
+    },
+    {
+      "name": "eraseAll: accepted storage transaction completes before local key cleanup",
+      "passed": true
+    },
+    {
+      "name": "eraseAll: later explicit protection authenticates fresh session",
+      "passed": true
+    },
+    {
+      "name": "eraseAll: earlier accepted mutation reports durable success",
+      "passed": true
+    },
+    {
+      "name": "eraseAll: obsolete null publication preserves fresh key",
+      "passed": true
+    },
+    {
+      "name": "eraseAll: fresh session remains readable",
+      "passed": true
+    },
+    {
+      "name": "eraseAll: both accepted durable transactions remain committed",
+      "passed": true
+    },
+    {
+      "name": "eraseAll: current persisted store stays protected",
+      "passed": true
+    },
+    {
+      "name": "changePassword: current incorrect password still reports original error",
+      "passed": true
+    },
+    {
+      "name": "changePassword: existing accepted session remains unlocked on failed mutation",
+      "passed": true
+    },
+    {
+      "name": "changePassword: current failure preserves readable accepted session",
+      "passed": true
+    },
+    {
+      "name": "changePassword: failure preserves stored data exactly",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey: current incorrect password still reports original error",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey: existing accepted session remains unlocked on failed mutation",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey: current failure preserves readable accepted session",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey: failure preserves stored data exactly",
+      "passed": true
+    },
+    {
+      "name": "overlapping credential attempts: obsolete bad password preserves later accepted session",
+      "passed": true
+    },
+    {
+      "name": "overlapping credential attempts: later accepted session remains readable",
+      "passed": true
+    },
+    {
+      "name": "overlapping credentials: current bad password reports original error",
+      "passed": true
+    },
+    {
+      "name": "overlapping credentials: old correct password is retired",
+      "passed": true
+    },
+    {
+      "name": "overlapping credentials: rejected current session stays locked",
+      "passed": true
+    }
+  ]
+}

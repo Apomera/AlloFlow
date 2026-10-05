@@ -243,10 +243,10 @@ describe('device storage bridge — file contracts', () => {
   it('the bridge cache-buster was bumped so caches refetch the manager protocol', () => {
     // The bridge is loaded from the CDN, so a stale ?v= would keep enforcing
     // the prior fixed-only policy for anyone whose browser cached the page.
-    expect(moduleSrc).toContain('storage_bridge.html?v=ds5-partition-consent');
+    expect(moduleSrc).toContain('storage_bridge.html?v=ds6-media-removal-intent');
     expect(moduleSrc).not.toContain('ds2-slots8');
     const anti = readFileSync(resolve(process.cwd(), 'AlloFlowANTI.txt'), 'utf8');
-    expect(anti).toContain('allo_device_storage_module.js?v=ds5-partition-consent');
+    expect(anti).toContain('allo_device_storage_module.js?v=ds6-media-removal-intent');
     expect(anti).not.toContain('ds2-slots8');
     const sharedLoaders = [
       'utils_pure_source.jsx',
@@ -260,7 +260,7 @@ describe('device storage bridge — file contracts', () => {
     ];
     for (const file of sharedLoaders) {
       const loaderSource = readFileSync(resolve(process.cwd(), file), 'utf8');
-      expect(loaderSource).toContain('allo_device_storage_module.js?v=ds5-partition-consent');
+      expect(loaderSource).toContain('allo_device_storage_module.js?v=ds6-media-removal-intent');
       expect(loaderSource).not.toContain('allo_device_storage_module.js?v=ds1');
     }
   });

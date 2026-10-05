@@ -1,0 +1,19 @@
+node:internal/process/promises:394
+    triggerUncaughtException(err, true /* fromPromise */);
+    ^
+
+browserType.launch: Executable doesn't exist at C:\Users\cabba\AppData\Local\Packages\sandbox.{f00a6c8f-380a-46ea-8cb2-52375462139c}\AC\ms-playwright\chromium_headless_shell-1223\chrome-headless-shell-win64\chrome-headless-shell.exe
+╔════════════════════════════════════════════════════════════╗
+║ Looks like Playwright was just installed or updated.       ║
+║ Please run the following command to download new browsers: ║
+║                                                            ║
+║     npx playwright install                                 ║
+║                                                            ║
+║ <3 Playwright Team                                         ║
+╚════════════════════════════════════════════════════════════╝
+    at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\dev-tools\perception_lab_drawing_viewer_qa.cjs:42:34
+    at Object.<anonymous> (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\dev-tools\perception_lab_drawing_viewer_qa.cjs:171:3) {
+  name: 'Error'
+}
+
+Node.js v24.11.1

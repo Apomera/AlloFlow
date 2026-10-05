@@ -1,0 +1,52 @@
+{
+  "files": [
+    {
+      "path": "ui_strings.js",
+      "snapshot": "catalogs-before/ui_strings.js.gz",
+      "sha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+      "gzipSha256": "9ea73d211a7ba2986a0d9e06b5f2ce6ae08eed0b9a88d5845eb5336bcdbe920f"
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "snapshot": "catalogs-before/desktop/web-app/public/ui_strings.js.gz",
+      "sha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+      "gzipSha256": "9ea73d211a7ba2986a0d9e06b5f2ce6ae08eed0b9a88d5845eb5336bcdbe920f"
+    },
+    {
+      "path": "lang/french.js",
+      "snapshot": "catalogs-before/lang/french.js.gz",
+      "sha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "gzipSha256": "02ff9ff952f97918a8ad7fc8629f3e99743fcdaf75aca78ce0faf6a71522e361"
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "snapshot": "catalogs-before/desktop/web-app/public/lang/french.js.gz",
+      "sha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "gzipSha256": "02ff9ff952f97918a8ad7fc8629f3e99743fcdaf75aca78ce0faf6a71522e361"
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "snapshot": "catalogs-before/lang/spanish_latin_america.js.gz",
+      "sha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "gzipSha256": "513c9b4d49f4965a70d462ca4bc0bcbe18884f3825ab4185124e9a7da9bbe2f5"
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "snapshot": "catalogs-before/desktop/web-app/public/lang/spanish_latin_america.js.gz",
+      "sha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "gzipSha256": "513c9b4d49f4965a70d462ca4bc0bcbe18884f3825ab4185124e9a7da9bbe2f5"
+    },
+    {
+      "path": "lang/arabic.js",
+      "snapshot": "catalogs-before/lang/arabic.js.gz",
+      "sha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "gzipSha256": "168a0713fb354172293468cb3d28e51bf9a3672042e28fbc871c15e58e0fd04b"
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "snapshot": "catalogs-before/desktop/web-app/public/lang/arabic.js.gz",
+      "sha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "gzipSha256": "168a0713fb354172293468cb3d28e51bf9a3672042e28fbc871c15e58e0fd04b"
+    }
+  ]
+}

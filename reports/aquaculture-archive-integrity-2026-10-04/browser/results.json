@@ -1,0 +1,93 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "case": "Duplicate cards act on their own original",
+      "checks": [
+        "real second-card download equals canonical report",
+        "literal title remains inert and escaped",
+        "only selected title renamed",
+        "input identity/focus/caret stable with Unicode and trailing whitespace",
+        "one selected original removed and exact Undo",
+        "1280/390 reflow/44px/scoped axe and forced colors"
+      ],
+      "errors": []
+    },
+    {
+      "case": "Identical sibling multiplicity and reading recovery",
+      "checks": [
+        "two canonical identical occurrences retained",
+        "selected one-row removal",
+        "one occurrence restored beside exact sibling",
+        "archive actions preserve live-reading recovery",
+        "320px/scoped axe/forced-color Undo"
+      ],
+      "errors": []
+    },
+    {
+      "case": "Duplicate second-card replay and branch",
+      "checks": [
+        "exact second scenario and originals used",
+        "replay preserves second prediction/captured sources",
+        "branch uses second B as A with fresh notebook",
+        "current draft parked exact",
+        "nested replay disabled",
+        "Return exact and successful transitions expire live recovery"
+      ],
+      "errors": []
+    },
+    {
+      "case": "Controlled stale canonical target rejection",
+      "checks": [
+        "external canonical reorder/rename probe is explicitly controlled",
+        "stale native remove writes nothing",
+        "fresh current cards become visible",
+        "no fallback by shared identifier and no ghost Undo"
+      ],
+      "errors": []
+    },
+    {
+      "case": "Actual draft-only backup preservation and adoption",
+      "checks": [
+        "CER-only, Next-test-only and whitespace writing protected",
+        "captured reading, edited design and explicit zero-stock protected",
+        "untouched actual default adopts draft without archives",
+        "missing incoming workspace never manufactures a replacement"
+      ],
+      "errors": [],
+      "protectedCases": [
+        "structured-writing",
+        "next-test-only",
+        "whitespace-writing",
+        "captured-reading",
+        "edited-design",
+        "explicit-zero-stock"
+      ]
+    },
+    {
+      "case": "Duplicate backup merge and guarded import recovery lifetime",
+      "checks": [
+        "all current duplicate occurrences kept",
+        "all unrelated incoming duplicate occurrences kept",
+        "prototype-looking identifiers retained",
+        "invalid JSON and capacity rejection preserve exact source and both session recovery controls",
+        "successful import clears old archive Undo and live tray without source resurrection",
+        "390px/scoped axe/forced-color recovery"
+      ],
+      "errors": []
+    },
+    {
+      "case": "Device save failure retains current archive Undo",
+      "checks": [
+        "real post-mount quota fault preserves durable state",
+        "current backup reflects pending exact card removal",
+        "remaining card export uses pending canonical record",
+        "failed valid import retains archive Undo",
+        "session Undo restores exact originals",
+        "explicit Retry and reload save exact current session",
+        "390px/scoped axe/forced colors"
+      ],
+      "errors": []
+    }
+  ]
+}

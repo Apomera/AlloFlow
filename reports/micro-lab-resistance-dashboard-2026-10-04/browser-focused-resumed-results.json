@@ -1,0 +1,470 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/micro-lab-resistance-dashboard-2026-10-04/browser-focused-resumed-test-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "microbiology-resistance-live-visuals.spec.ts",
+      "file": "microbiology-resistance-live-visuals.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "restored live dish, numeric population and fixed-capacity segments agree without modifying saved or imported evidence",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 18340,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n\n    at assertPopulation (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:75:62)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:167:63",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                      "column": 62,
+                      "line": 75
+                    },
+                    "snippet": "  73 |   expect(totalWidth).toBeGreaterThan(100);\n  74 |   for (const [kind, count] of Object.entries(counts)) expect(widths[kind] / totalWidth).toBeCloseTo(count / 80, 2);\n> 75 |   await expect(page.locator('#micro-resistance-population')).toHaveJSProperty('tagName', 'DL');\n     |                                                              ^\n  76 |   await expect(page.locator('#micro-resistance-capacity')).toHaveAttribute('aria-hidden', 'true');\n  77 |   await expect(dish(page).locator('[data-resistance-cell=\"sensitive\"]:not(circle)')).toHaveCount(0);\n  78 |   await expect(dish(page).locator('[data-resistance-cell=\"resistant\"]:not(polygon)')).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                        "column": 62,
+                        "line": 75
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n\n\n  73 |   expect(totalWidth).toBeGreaterThan(100);\n  74 |   for (const [kind, count] of Object.entries(counts)) expect(widths[kind] / totalWidth).toBeCloseTo(count / 80, 2);\n> 75 |   await expect(page.locator('#micro-resistance-population')).toHaveJSProperty('tagName', 'DL');\n     |                                                              ^\n  76 |   await expect(page.locator('#micro-resistance-capacity')).toHaveAttribute('aria-hidden', 'true');\n  77 |   await expect(dish(page).locator('[data-resistance-cell=\"sensitive\"]:not(circle)')).toHaveCount(0);\n  78 |   await expect(dish(page).locator('[data-resistance-cell=\"resistant\"]:not(polygon)')).toHaveCount(0);\n    at assertPopulation (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:75:62)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:167:63"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T22:29:05.758Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-5c963--saved-or-imported-evidence-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-5c963--saved-or-imported-evidence-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-5c963--saved-or-imported-evidence-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-5c963--saved-or-imported-evidence-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                    "column": 62,
+                    "line": 75
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "7b65b99d6a0f58bea615-ea1970cb8eb63ba363be",
+          "file": "microbiology-resistance-live-visuals.spec.ts",
+          "line": 166,
+          "column": 5
+        },
+        {
+          "title": "live observations use raw share geometry on fixed percent and planned-round axes while extinction omits an undefined endpoint",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 19139,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n\n    at assertPopulation (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:75:62)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:189:3",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                      "column": 62,
+                      "line": 75
+                    },
+                    "snippet": "  73 |   expect(totalWidth).toBeGreaterThan(100);\n  74 |   for (const [kind, count] of Object.entries(counts)) expect(widths[kind] / totalWidth).toBeCloseTo(count / 80, 2);\n> 75 |   await expect(page.locator('#micro-resistance-population')).toHaveJSProperty('tagName', 'DL');\n     |                                                              ^\n  76 |   await expect(page.locator('#micro-resistance-capacity')).toHaveAttribute('aria-hidden', 'true');\n  77 |   await expect(dish(page).locator('[data-resistance-cell=\"sensitive\"]:not(circle)')).toHaveCount(0);\n  78 |   await expect(dish(page).locator('[data-resistance-cell=\"resistant\"]:not(polygon)')).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                        "column": 62,
+                        "line": 75
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n\n\n  73 |   expect(totalWidth).toBeGreaterThan(100);\n  74 |   for (const [kind, count] of Object.entries(counts)) expect(widths[kind] / totalWidth).toBeCloseTo(count / 80, 2);\n> 75 |   await expect(page.locator('#micro-resistance-population')).toHaveJSProperty('tagName', 'DL');\n     |                                                              ^\n  76 |   await expect(page.locator('#micro-resistance-capacity')).toHaveAttribute('aria-hidden', 'true');\n  77 |   await expect(dish(page).locator('[data-resistance-cell=\"sensitive\"]:not(circle)')).toHaveCount(0);\n  78 |   await expect(dish(page).locator('[data-resistance-cell=\"resistant\"]:not(polygon)')).toHaveCount(0);\n    at assertPopulation (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:75:62)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:189:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T22:29:25.714Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-ace02-omits-an-undefined-endpoint-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-ace02-omits-an-undefined-endpoint-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-ace02-omits-an-undefined-endpoint-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-ace02-omits-an-undefined-endpoint-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                    "column": 62,
+                    "line": 75
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "7b65b99d6a0f58bea615-cc7e8a38bd6e14a2c4db",
+          "file": "microbiology-resistance-live-visuals.spec.ts",
+          "line": 181,
+          "column": 5
+        },
+        {
+          "title": "keyboard step and play-pause update real live counts and visuals while the saved notebook and comparison histories remain fixed",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17759,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n\n    at assertPopulation (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:75:62)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:205:3",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                      "column": 62,
+                      "line": 75
+                    },
+                    "snippet": "  73 |   expect(totalWidth).toBeGreaterThan(100);\n  74 |   for (const [kind, count] of Object.entries(counts)) expect(widths[kind] / totalWidth).toBeCloseTo(count / 80, 2);\n> 75 |   await expect(page.locator('#micro-resistance-population')).toHaveJSProperty('tagName', 'DL');\n     |                                                              ^\n  76 |   await expect(page.locator('#micro-resistance-capacity')).toHaveAttribute('aria-hidden', 'true');\n  77 |   await expect(dish(page).locator('[data-resistance-cell=\"sensitive\"]:not(circle)')).toHaveCount(0);\n  78 |   await expect(dish(page).locator('[data-resistance-cell=\"resistant\"]:not(polygon)')).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                        "column": 62,
+                        "line": 75
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n\n\n  73 |   expect(totalWidth).toBeGreaterThan(100);\n  74 |   for (const [kind, count] of Object.entries(counts)) expect(widths[kind] / totalWidth).toBeCloseTo(count / 80, 2);\n> 75 |   await expect(page.locator('#micro-resistance-population')).toHaveJSProperty('tagName', 'DL');\n     |                                                              ^\n  76 |   await expect(page.locator('#micro-resistance-capacity')).toHaveAttribute('aria-hidden', 'true');\n  77 |   await expect(dish(page).locator('[data-resistance-cell=\"sensitive\"]:not(circle)')).toHaveCount(0);\n  78 |   await expect(dish(page).locator('[data-resistance-cell=\"resistant\"]:not(polygon)')).toHaveCount(0);\n    at assertPopulation (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:75:62)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:205:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T22:29:46.008Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-52322-ison-histories-remain-fixed-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-52322-ison-histories-remain-fixed-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-52322-ison-histories-remain-fixed-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-52322-ison-histories-remain-fixed-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                    "column": 62,
+                    "line": 75
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "7b65b99d6a0f58bea615-9e5ca3f6ec2fbb7b4323",
+          "file": "microbiology-resistance-live-visuals.spec.ts",
+          "line": 198,
+          "column": 5
+        },
+        {
+          "title": "phone and 400 percent layouts retain distinct cell shapes, readable counts and nearby keyboard controls with reduced motion",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17504,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n\n    at assertPopulation (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:75:62)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:226:86",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                      "column": 62,
+                      "line": 75
+                    },
+                    "snippet": "  73 |   expect(totalWidth).toBeGreaterThan(100);\n  74 |   for (const [kind, count] of Object.entries(counts)) expect(widths[kind] / totalWidth).toBeCloseTo(count / 80, 2);\n> 75 |   await expect(page.locator('#micro-resistance-population')).toHaveJSProperty('tagName', 'DL');\n     |                                                              ^\n  76 |   await expect(page.locator('#micro-resistance-capacity')).toHaveAttribute('aria-hidden', 'true');\n  77 |   await expect(dish(page).locator('[data-resistance-cell=\"sensitive\"]:not(circle)')).toHaveCount(0);\n  78 |   await expect(dish(page).locator('[data-resistance-cell=\"resistant\"]:not(polygon)')).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                        "column": 62,
+                        "line": 75
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n\n\n  73 |   expect(totalWidth).toBeGreaterThan(100);\n  74 |   for (const [kind, count] of Object.entries(counts)) expect(widths[kind] / totalWidth).toBeCloseTo(count / 80, 2);\n> 75 |   await expect(page.locator('#micro-resistance-population')).toHaveJSProperty('tagName', 'DL');\n     |                                                              ^\n  76 |   await expect(page.locator('#micro-resistance-capacity')).toHaveAttribute('aria-hidden', 'true');\n  77 |   await expect(dish(page).locator('[data-resistance-cell=\"sensitive\"]:not(circle)')).toHaveCount(0);\n  78 |   await expect(dish(page).locator('[data-resistance-cell=\"resistant\"]:not(polygon)')).toHaveCount(0);\n    at assertPopulation (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:75:62)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:226:86"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T22:30:04.691Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-4da68-ontrols-with-reduced-motion-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-4da68-ontrols-with-reduced-motion-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-4da68-ontrols-with-reduced-motion-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-4da68-ontrols-with-reduced-motion-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                    "column": 62,
+                    "line": 75
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "7b65b99d6a0f58bea615-4057f1af5ed600737b9e",
+          "file": "microbiology-resistance-live-visuals.spec.ts",
+          "line": 223,
+          "column": 5
+        },
+        {
+          "title": "selected saved-history row has a visible border and weight that follow both chart guides without altering live population",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17649,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n\n    at assertPopulation (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:75:62)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:258:5",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                      "column": 62,
+                      "line": 75
+                    },
+                    "snippet": "  73 |   expect(totalWidth).toBeGreaterThan(100);\n  74 |   for (const [kind, count] of Object.entries(counts)) expect(widths[kind] / totalWidth).toBeCloseTo(count / 80, 2);\n> 75 |   await expect(page.locator('#micro-resistance-population')).toHaveJSProperty('tagName', 'DL');\n     |                                                              ^\n  76 |   await expect(page.locator('#micro-resistance-capacity')).toHaveAttribute('aria-hidden', 'true');\n  77 |   await expect(dish(page).locator('[data-resistance-cell=\"sensitive\"]:not(circle)')).toHaveCount(0);\n  78 |   await expect(dish(page).locator('[data-resistance-cell=\"resistant\"]:not(polygon)')).toHaveCount(0);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                        "column": 62,
+                        "line": 75
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveJSProperty\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#micro-resistance-population')\nExpected: \u001b[32m\"DL\"\u001b[39m\nReceived: \u001b[31m\"SECTION\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveJSProperty\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#micro-resistance-population')\u001b[22m\n\u001b[2m    33 × locator resolved to <section id=\"micro-resistance-population\" aria-labelledby=\"micro-resistance-population-title\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"SECTION\"\u001b[22m\n\n\n  73 |   expect(totalWidth).toBeGreaterThan(100);\n  74 |   for (const [kind, count] of Object.entries(counts)) expect(widths[kind] / totalWidth).toBeCloseTo(count / 80, 2);\n> 75 |   await expect(page.locator('#micro-resistance-population')).toHaveJSProperty('tagName', 'DL');\n     |                                                              ^\n  76 |   await expect(page.locator('#micro-resistance-capacity')).toHaveAttribute('aria-hidden', 'true');\n  77 |   await expect(dish(page).locator('[data-resistance-cell=\"sensitive\"]:not(circle)')).toHaveCount(0);\n  78 |   await expect(dish(page).locator('[data-resistance-cell=\"resistant\"]:not(polygon)')).toHaveCount(0);\n    at assertPopulation (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:75:62)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts:258:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T22:30:22.990Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-362c6-ut-altering-live-population-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-362c6-ut-altering-live-population-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-362c6-ut-altering-live-population-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-resistance-dashboard-2026-10-04\\browser-focused-resumed-test-output\\microbiology-resistance-li-362c6-ut-altering-live-population-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-resistance-live-visuals.spec.ts",
+                    "column": 62,
+                    "line": 75
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "7b65b99d6a0f58bea615-9af3d962f255844b51fb",
+          "file": "microbiology-resistance-live-visuals.spec.ts",
+          "line": 236,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T22:29:04.465Z",
+    "duration": 96462.668,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 5,
+    "flaky": 0
+  }
+}

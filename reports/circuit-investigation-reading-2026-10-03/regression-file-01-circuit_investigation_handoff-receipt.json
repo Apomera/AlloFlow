@@ -1,0 +1,47 @@
+{
+  "startedAt": "2026-10-03T14:09:11.943Z",
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/circuit_investigation_handoff.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--isolate",
+    "--testTimeout=30000",
+    "--hookTimeout=60000",
+    "--silent",
+    "--reporter=dot",
+    "--reporter=json",
+    "--outputFile=reports/circuit-investigation-reading-2026-10-03/regression-file-01-circuit_investigation_handoff.json"
+  ],
+  "runnerSha256": "bb8196df43337ef45344a0d7f913ec39e9770250b0dc5ec0cf1c253f0aad112d",
+  "files": {
+    "stem_lab/stem_tool_circuit.js": "e81cf1cb831d3754b208ed31d6467b14cb6fa140c5b6c299855ce671c5c12257",
+    "desktop/web-app/public/stem_lab/stem_tool_circuit.js": "e81cf1cb831d3754b208ed31d6467b14cb6fa140c5b6c299855ce671c5c12257",
+    "reports/circuit-investigation-reading-2026-10-03/run-regression.cjs": "bb8196df43337ef45344a0d7f913ec39e9770250b0dc5ec0cf1c253f0aad112d",
+    "tests/circuit_investigation_handoff.test.js": "adce18c843924d0a249a291dd1bb9457a25ac3babdc55179a8ff2c89cc208f8d"
+  },
+  "selected": "tests/circuit_investigation_handoff.test.js",
+  "expectedAssertions": 12,
+  "finishedAt": "2026-10-03T14:10:57.584Z",
+  "durationMs": 105640,
+  "exitCode": 0,
+  "signal": null,
+  "processError": null,
+  "report": "regression-file-01-circuit_investigation_handoff.json",
+  "reportSha256": "adeb76e090b59041ef25c853a8d2b5fc51b4e73ad4491cd33280c80116f1385e",
+  "stdout": "regression-file-01-circuit_investigation_handoff-stdout.log",
+  "stdoutSha256": "e0529786b3c5472a92010d400711fdc96e0db2b1e9854553073f380113e10d18",
+  "stderr": "regression-file-01-circuit_investigation_handoff-stderr.log",
+  "stderrSha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+  "runnerSha256AtEnd": "bb8196df43337ef45344a0d7f913ec39e9770250b0dc5ec0cf1c253f0aad112d",
+  "filesAtEnd": {
+    "stem_lab/stem_tool_circuit.js": "e81cf1cb831d3754b208ed31d6467b14cb6fa140c5b6c299855ce671c5c12257",
+    "desktop/web-app/public/stem_lab/stem_tool_circuit.js": "e81cf1cb831d3754b208ed31d6467b14cb6fa140c5b6c299855ce671c5c12257",
+    "reports/circuit-investigation-reading-2026-10-03/run-regression.cjs": "bb8196df43337ef45344a0d7f913ec39e9770250b0dc5ec0cf1c253f0aad112d",
+    "tests/circuit_investigation_handoff.test.js": "adce18c843924d0a249a291dd1bb9457a25ac3babdc55179a8ff2c89cc208f8d"
+  },
+  "changedDuringRun": []
+}

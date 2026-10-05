@@ -20,7 +20,9 @@ describe('Plate Tectonics responsive canvases', () => {
     // backing store now scales independently for sharper desktop rendering.
     expect(epicenter).toMatch(/style: \{ width: '100%', height: 'auto', aspectRatio: W_CANVAS \+ ' \/ ' \+ H_CANVAS/);
     expect(text).toContain("aspectRatio: W_CANVAS + ' / ' + H_CANVAS");
-    expect(text).toContain("aspectRatio: '540 / 300'");
+    // The live overhead frame is compact; the cross-section retains its
+    // logical ratio, including loading and the guaranteed 2D fallback.
+    expect(boundary).toContain("aspectRatio: tectGlLive && tectSurfaceView ? '3 / 1' : '540 / 300'");
     expect(text).not.toContain("canvas.style.width = W_CANVAS + 'px'");
     expect(text).not.toContain("canvas.style.width = W + 'px'");
     expect(text).not.toContain("style: { width: 540, height: 300");

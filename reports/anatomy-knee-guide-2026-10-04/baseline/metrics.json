@@ -1,0 +1,2222 @@
+{
+  "sourceLfSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "startedAt": "2026-10-04T06:05:16.194Z",
+  "errors": [],
+  "views": [
+    {
+      "width": 1280,
+      "theme": "light",
+      "clinical": false,
+      "name": "desktop-light",
+      "texts": [
+        {
+          "text": "load spreads across cartilage + menisci",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 798.359375,
+            "y": 1358.762451171875,
+            "width": 145.38433837890625,
+            "height": 10
+          }
+        },
+        {
+          "text": "patella increases lever arm",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 728.2125244140625,
+            "y": 1397.456298828125,
+            "width": 99.75,
+            "height": 10
+          }
+        },
+        {
+          "text": "flexed tibia position",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 944.4000244140625,
+            "y": 1577.7125244140625,
+            "width": 76.5194091796875,
+            "height": 10
+          }
+        },
+        {
+          "text": "ligaments limit translation",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 821.3359375,
+            "y": 1538.074951171875,
+            "width": 99.02459716796875,
+            "height": 10
+          }
+        },
+        {
+          "text": "quadriceps tendon",
+          "font": 9,
+          "effectiveFont": 8.49375,
+          "box": {
+            "x": 590.7625122070312,
+            "y": 1335.112548828125,
+            "width": 78.9375,
+            "height": 11
+          }
+        },
+        {
+          "text": "patella",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 638.0281372070312,
+            "y": 1443.5875244140625,
+            "width": 31.671875,
+            "height": 12
+          }
+        },
+        {
+          "text": "patellar tendon",
+          "font": 9,
+          "effectiveFont": 8.49375,
+          "box": {
+            "x": 605.3718872070312,
+            "y": 1527.637451171875,
+            "width": 64.328125,
+            "height": 11
+          }
+        },
+        {
+          "text": "femur",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 1017.8875122070312,
+            "y": 1343.550048828125,
+            "width": 30.21038818359375,
+            "height": 12
+          }
+        },
+        {
+          "text": "articular cartilage",
+          "font": 9,
+          "effectiveFont": 8.49375,
+          "box": {
+            "x": 1017.8875122070312,
+            "y": 1374.75,
+            "width": 75.23406982421875,
+            "height": 11
+          }
+        },
+        {
+          "text": "meniscus",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 1018.8875122070312,
+            "y": 1403.949951171875,
+            "width": 43.17572021484375,
+            "height": 12
+          }
+        },
+        {
+          "text": "ACL",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 1017.8875122070312,
+            "y": 1434.1500244140625,
+            "width": 19.12493896484375,
+            "height": 12
+          }
+        },
+        {
+          "text": "PCL",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 1018.8875122070312,
+            "y": 1464.3499755859375,
+            "width": 17.23431396484375,
+            "height": 12
+          }
+        },
+        {
+          "text": "collateral ligament",
+          "font": 9,
+          "effectiveFont": 8.49375,
+          "box": {
+            "x": 1017.8875122070312,
+            "y": 1495.550048828125,
+            "width": 79.89678955078125,
+            "height": 11
+          }
+        },
+        {
+          "text": "tibia",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 1017.8875122070312,
+            "y": 1554.949951171875,
+            "width": 22.09368896484375,
+            "height": 12
+          }
+        },
+        {
+          "text": "fibula",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 1017.8875122070312,
+            "y": 1587.0374755859375,
+            "width": 28.14056396484375,
+            "height": 12
+          }
+        }
+      ],
+      "intersections": [
+        [
+          "flexed tibia position",
+          "fibula"
+        ]
+      ],
+      "html": [
+        {
+          "tag": "H5",
+          "text": "Knee joint lateral cutaway",
+          "font": 13,
+          "width": 430.546875,
+          "height": 19.5,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "P",
+          "text": "Explore the lateral knee cutaway, movement forces, and structures that stabilize the joint.",
+          "font": 11,
+          "width": 430.546875,
+          "height": 15.9375,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.5889982819526045
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Play motion",
+          "font": 11,
+          "width": 84.34375,
+          "height": 30.5,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.090048300172369
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Clinical lens",
+          "font": 11,
+          "width": 82.828125,
+          "height": 30.5,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.98260576557149
+        },
+        {
+          "tag": "SPAN",
+          "text": "Lower limb",
+          "font": 11,
+          "width": 173.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.5889982819526045
+        },
+        {
+          "tag": "SPAN",
+          "text": "Knee cutaway",
+          "font": 11,
+          "width": 173.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.5889982819526045
+        },
+        {
+          "tag": "SPAN",
+          "text": "Movement forces",
+          "font": 11,
+          "width": 173.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "Visual key",
+          "font": 11,
+          "width": 54.9375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "B",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(180, 83, 9)",
+          "backgroundCandidates": [
+            "rgb(180, 83, 9)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 5.02163257594014
+        },
+        {
+          "tag": "SPAN",
+          "text": "bone",
+          "font": 11,
+          "width": 27.09375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "C",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(8, 145, 178)",
+          "backgroundCandidates": [
+            "rgb(8, 145, 178)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 3.6820433648230324
+        },
+        {
+          "tag": "SPAN",
+          "text": "cartilage / meniscus",
+          "font": 11,
+          "width": 108.4375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "F",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(220, 38, 38)",
+          "backgroundCandidates": [
+            "rgb(220, 38, 38)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 4.829404522659002
+        },
+        {
+          "tag": "SPAN",
+          "text": "force / motion",
+          "font": 11,
+          "width": 78.796875,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "Current structures",
+          "font": 11,
+          "width": 98.875,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "Femur",
+          "font": 11,
+          "width": 44.25,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "Articular cartilage",
+          "font": 11,
+          "width": 107.953125,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "Menisci",
+          "font": 11,
+          "width": 51.453125,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1. Joint architectureBones, cartilage, menisci",
+          "font": 11,
+          "width": 147,
+          "height": 59.25,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "SPAN",
+          "text": "1. Joint architecture",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "SPAN",
+          "text": "Bones, cartilage, menisci",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2. ExtensionQuadriceps straightens knee",
+          "font": 11,
+          "width": 147,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "2. Extension",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Quadriceps straightens knee",
+          "font": 11,
+          "width": 133,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3. FlexionHamstrings bend knee",
+          "font": 11,
+          "width": 147,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "3. Flexion",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Hamstrings bend knee",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4. StabilityLigaments limit translation",
+          "font": 11,
+          "width": 147,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "4. Stability",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Ligaments limit translation",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Step 1 of 4",
+          "font": 11,
+          "width": 71.140625,
+          "height": 21.9375,
+          "foreground": "rgb(120, 53, 15)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.74845105788553
+        },
+        {
+          "tag": "STRONG",
+          "text": "1. Joint architecture",
+          "font": 11,
+          "width": 103.046875,
+          "height": 16.5,
+          "foreground": "rgb(120, 53, 15)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.74845105788553
+        },
+        {
+          "tag": "SPAN",
+          "text": "The femur meets the tibia across articular cartilage and two menisci that improve fit, distribute load, and absorb shock. The patella glides in the femoral trochlea.",
+          "font": 11,
+          "width": 391.8125,
+          "height": 31.875,
+          "foreground": "rgb(120, 53, 15)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.74845105788553
+        },
+        {
+          "tag": "P",
+          "text": "Trace the force source: use the neuromuscular model to see how skeletal muscle generates force that crosses a joint.",
+          "font": 11,
+          "width": 476.34375,
+          "height": 30.78125,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "STRONG",
+          "text": "Trace the force source:",
+          "font": 11,
+          "width": 119.421875,
+          "height": 15,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Trace muscle force",
+          "font": 11,
+          "width": 121.65625,
+          "height": 36,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.98260576557149
+        }
+      ],
+      "pageWidth": 1280,
+      "pageScroll": 1280,
+      "atlasWidth": 630,
+      "atlasScroll": 630
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "clinical": false,
+      "name": "phone-dark",
+      "texts": [
+        {
+          "text": "load spreads across cartilage + menisci",
+          "font": 8,
+          "effectiveFont": 2.975,
+          "box": {
+            "x": 133.39060974121094,
+            "y": 2021.9312744140625,
+            "width": 59.01051330566406,
+            "height": 4
+          }
+        },
+        {
+          "text": "quadriceps tendon",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 51.993751525878906,
+            "y": 2012.0062255859375,
+            "width": 32.564422607421875,
+            "height": 5
+          }
+        },
+        {
+          "text": "patella",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 70.1812515258789,
+            "y": 2055.143798828125,
+            "width": 14.374542236328125,
+            "height": 5
+          }
+        },
+        {
+          "text": "patellar tendon",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 57.337501525878906,
+            "y": 2087.86865234375,
+            "width": 27.213577270507812,
+            "height": 5
+          }
+        },
+        {
+          "text": "femur",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 2015.7249755859375,
+            "width": 12.524978637695312,
+            "height": 5
+          }
+        },
+        {
+          "text": "articular cartilage",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 2027.625,
+            "width": 30.23687744140625,
+            "height": 5
+          }
+        },
+        {
+          "text": "meniscus",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 2039.5250244140625,
+            "width": 19.019332885742188,
+            "height": 5
+          }
+        },
+        {
+          "text": "ACL",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 2051.425048828125,
+            "width": 9.119338989257812,
+            "height": 5
+          }
+        },
+        {
+          "text": "PCL",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 221.24374389648438,
+            "y": 2063.324951171875,
+            "width": 7.76971435546875,
+            "height": 5
+          }
+        },
+        {
+          "text": "collateral ligament",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 2075.22509765625,
+            "width": 32.46464538574219,
+            "height": 5
+          }
+        },
+        {
+          "text": "tibia",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 2099.02490234375,
+            "width": 10.215301513671875,
+            "height": 5
+          }
+        },
+        {
+          "text": "fibula",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 2111.668701171875,
+            "width": 12.5902099609375,
+            "height": 5
+          }
+        }
+      ],
+      "intersections": [],
+      "html": [
+        {
+          "tag": "H5",
+          "text": "Knee joint lateral cutaway",
+          "font": 13,
+          "width": 240,
+          "height": 19.5,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "P",
+          "text": "Explore the lateral knee cutaway, movement forces, and structures that stabilize the joint.",
+          "font": 11,
+          "width": 240,
+          "height": 31.875,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.5889982819526045
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Play motion",
+          "font": 11,
+          "width": 84.34375,
+          "height": 30.5,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.090048300172369
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Clinical lens",
+          "font": 11,
+          "width": 82.828125,
+          "height": 30.5,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.98260576557149
+        },
+        {
+          "tag": "SPAN",
+          "text": "Lower limb",
+          "font": 11,
+          "width": 65.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.5889982819526045
+        },
+        {
+          "tag": "SPAN",
+          "text": "Knee cutaway",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.5889982819526045
+        },
+        {
+          "tag": "SPAN",
+          "text": "Movement forces",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "Visual key",
+          "font": 11,
+          "width": 54.9375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "B",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(180, 83, 9)",
+          "backgroundCandidates": [
+            "rgb(180, 83, 9)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 5.02163257594014
+        },
+        {
+          "tag": "SPAN",
+          "text": "bone",
+          "font": 11,
+          "width": 27.09375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "C",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(8, 145, 178)",
+          "backgroundCandidates": [
+            "rgb(8, 145, 178)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 3.6820433648230324
+        },
+        {
+          "tag": "SPAN",
+          "text": "cartilage / meniscus",
+          "font": 11,
+          "width": 108.4375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "F",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(220, 38, 38)",
+          "backgroundCandidates": [
+            "rgb(220, 38, 38)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 4.829404522659002
+        },
+        {
+          "tag": "SPAN",
+          "text": "force / motion",
+          "font": 11,
+          "width": 78.796875,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "Current structures",
+          "font": 11,
+          "width": 98.875,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "Femur",
+          "font": 11,
+          "width": 44.25,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "Articular cartilage",
+          "font": 11,
+          "width": 107.953125,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "Menisci",
+          "font": 11,
+          "width": 51.453125,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1. Joint architectureBones, cartilage, menisci",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "SPAN",
+          "text": "1. Joint architecture",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "SPAN",
+          "text": "Bones, cartilage, menisci",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2. ExtensionQuadriceps straightens knee",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "2. Extension",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Quadriceps straightens knee",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3. FlexionHamstrings bend knee",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "3. Flexion",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Hamstrings bend knee",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4. StabilityLigaments limit translation",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "4. Stability",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Ligaments limit translation",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Step 1 of 4",
+          "font": 11,
+          "width": 71.140625,
+          "height": 21,
+          "foreground": "rgb(120, 53, 15)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.74845105788553
+        },
+        {
+          "tag": "STRONG",
+          "text": "1. Joint architecture",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(120, 53, 15)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.74845105788553
+        },
+        {
+          "tag": "SPAN",
+          "text": "The femur meets the tibia across articular cartilage and two menisci that improve fit, distribute load, and absorb shock. The patella glides in the femoral trochlea.",
+          "font": 11,
+          "width": 203.8125,
+          "height": 87,
+          "foreground": "rgb(120, 53, 15)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.74845105788553
+        },
+        {
+          "tag": "P",
+          "text": "Trace the force source: use the neuromuscular model to see how skeletal muscle generates force that crosses a joint.",
+          "font": 11,
+          "width": 240,
+          "height": 46.171875,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "STRONG",
+          "text": "Trace the force source:",
+          "font": 11,
+          "width": 119.421875,
+          "height": 15,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Trace muscle force",
+          "font": 11,
+          "width": 121.65625,
+          "height": 36,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.98260576557149
+        }
+      ],
+      "pageWidth": 320,
+      "pageScroll": 320,
+      "atlasWidth": 264,
+      "atlasScroll": 264
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "clinical": true,
+      "name": "phone-dark-clinical-step-4",
+      "texts": [
+        {
+          "text": "ligaments limit translation",
+          "font": 8,
+          "effectiveFont": 2.975,
+          "box": {
+            "x": 142.42967224121094,
+            "y": 369.5874938964844,
+            "width": 40.987030029296875,
+            "height": 4
+          }
+        },
+        {
+          "text": "ACL discontinuity · less restraint",
+          "font": 8,
+          "effectiveFont": 2.975,
+          "box": {
+            "x": 159.44686889648438,
+            "y": 323.4750061035156,
+            "width": 48.96806335449219,
+            "height": 4
+          }
+        },
+        {
+          "text": "quadriceps tendon",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 51.993751525878906,
+            "y": 289.0062561035156,
+            "width": 32.564422607421875,
+            "height": 5
+          }
+        },
+        {
+          "text": "patella",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 70.1812515258789,
+            "y": 332.14373779296875,
+            "width": 14.374542236328125,
+            "height": 5
+          }
+        },
+        {
+          "text": "patellar tendon",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 57.337501525878906,
+            "y": 364.8687438964844,
+            "width": 27.213577270507812,
+            "height": 5
+          }
+        },
+        {
+          "text": "femur",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 292.7250061035156,
+            "width": 12.524978637695312,
+            "height": 5
+          }
+        },
+        {
+          "text": "articular cartilage",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 304.625,
+            "width": 30.23687744140625,
+            "height": 5
+          }
+        },
+        {
+          "text": "meniscus",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 316.5249938964844,
+            "width": 19.019332885742188,
+            "height": 5
+          }
+        },
+        {
+          "text": "ACL",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 328.42498779296875,
+            "width": 9.119338989257812,
+            "height": 5
+          }
+        },
+        {
+          "text": "PCL",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 221.24374389648438,
+            "y": 340.32501220703125,
+            "width": 7.76971435546875,
+            "height": 5
+          }
+        },
+        {
+          "text": "collateral ligament",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 352.2250061035156,
+            "width": 32.46464538574219,
+            "height": 5
+          }
+        },
+        {
+          "text": "tibia",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 376.0249938964844,
+            "width": 10.215301513671875,
+            "height": 5
+          }
+        },
+        {
+          "text": "fibula",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 220.24374389648438,
+            "y": 388.66876220703125,
+            "width": 12.5902099609375,
+            "height": 5
+          }
+        }
+      ],
+      "intersections": [],
+      "html": [
+        {
+          "tag": "H5",
+          "text": "Knee joint lateral cutaway",
+          "font": 13,
+          "width": 240,
+          "height": 19.5,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "P",
+          "text": "Explore the lateral knee cutaway, movement forces, and structures that stabilize the joint.",
+          "font": 11,
+          "width": 240,
+          "height": 31.875,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.5889982819526045
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Play motion",
+          "font": 11,
+          "width": 84.34375,
+          "height": 30.5,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.090048300172369
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Hide clinical",
+          "font": 11,
+          "width": 85,
+          "height": 30.5,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.98260576557149
+        },
+        {
+          "tag": "SPAN",
+          "text": "Lower limb",
+          "font": 11,
+          "width": 65.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.5889982819526045
+        },
+        {
+          "tag": "SPAN",
+          "text": "Knee cutaway",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.5889982819526045
+        },
+        {
+          "tag": "SPAN",
+          "text": "Movement forces",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "Visual key",
+          "font": 11,
+          "width": 54.9375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "B",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(180, 83, 9)",
+          "backgroundCandidates": [
+            "rgb(180, 83, 9)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 5.02163257594014
+        },
+        {
+          "tag": "SPAN",
+          "text": "bone",
+          "font": 11,
+          "width": 27.09375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "C",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(8, 145, 178)",
+          "backgroundCandidates": [
+            "rgb(8, 145, 178)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 3.6820433648230324
+        },
+        {
+          "tag": "SPAN",
+          "text": "cartilage / meniscus",
+          "font": 11,
+          "width": 108.4375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "F",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(220, 38, 38)",
+          "backgroundCandidates": [
+            "rgb(220, 38, 38)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 4.829404522659002
+        },
+        {
+          "tag": "SPAN",
+          "text": "force / motion",
+          "font": 11,
+          "width": 78.796875,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "Current structures",
+          "font": 11,
+          "width": 98.875,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "SPAN",
+          "text": "ACL",
+          "font": 11,
+          "width": 31.140625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "PCL",
+          "font": 11,
+          "width": 30.09375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "SPAN",
+          "text": "Collateral ligament",
+          "font": 11,
+          "width": 113.109375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "STRONG",
+          "text": "ACL tear",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "backgroundCandidates": [
+            "rgb(245, 243, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "SPAN",
+          "text": "A discontinuity interrupts the ligament that restrains anterior tibial translation and rotation.",
+          "font": 11,
+          "width": 216,
+          "height": 46.171875,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "backgroundCandidates": [
+            "rgb(245, 243, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "STRONG",
+          "text": "Functional consequence",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "backgroundCandidates": [
+            "rgb(245, 243, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "SPAN",
+          "text": "The knee may become unstable during pivoting or rapid direction changes.",
+          "font": 11,
+          "width": 216,
+          "height": 30.78125,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "backgroundCandidates": [
+            "rgb(245, 243, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "SPAN",
+          "text": "Educational comparison only — not a diagnostic view.",
+          "font": 11,
+          "width": 216,
+          "height": 30.78125,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(245, 243, 255)",
+          "backgroundCandidates": [
+            "rgb(245, 243, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 4.338870900382048
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1. Joint architectureBones, cartilage, menisci",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "1. Joint architecture",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Bones, cartilage, menisci",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2. ExtensionQuadriceps straightens knee",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "2. Extension",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Quadriceps straightens knee",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3. FlexionHamstrings bend knee",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "3. Flexion",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Hamstrings bend knee",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4. StabilityLigaments limit translation",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "SPAN",
+          "text": "4. Stability",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "SPAN",
+          "text": "Ligaments limit translation",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 6.837002380367332
+        },
+        {
+          "tag": "SPAN",
+          "text": "Step 4 of 4",
+          "font": 11,
+          "width": 72.640625,
+          "height": 21,
+          "foreground": "rgb(120, 53, 15)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.74845105788553
+        },
+        {
+          "tag": "STRONG",
+          "text": "4. Stability",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(120, 53, 15)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.74845105788553
+        },
+        {
+          "tag": "SPAN",
+          "text": "The ACL limits anterior tibial translation and rotation; the PCL limits posterior translation. Collateral ligaments resist side-to-side stress, while menisci share compressive load.",
+          "font": 11,
+          "width": 213.390625,
+          "height": 111,
+          "foreground": "rgb(120, 53, 15)",
+          "background": "rgb(255, 251, 235)",
+          "backgroundCandidates": [
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.74845105788553
+        },
+        {
+          "tag": "P",
+          "text": "Trace the force source: use the neuromuscular model to see how skeletal muscle generates force that crosses a joint.",
+          "font": 11,
+          "width": 240,
+          "height": 46.171875,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.307214886910076
+        },
+        {
+          "tag": "STRONG",
+          "text": "Trace the force source:",
+          "font": 11,
+          "width": 119.421875,
+          "height": 15,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(255, 251, 235)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.985181795592538
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Trace muscle force",
+          "font": 11,
+          "width": 121.65625,
+          "height": 36,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.98260576557149
+        }
+      ],
+      "pageWidth": 320,
+      "pageScroll": 320,
+      "atlasWidth": 264,
+      "atlasScroll": 264
+    }
+  ],
+  "fixtureSourceHash": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "startedMirrorsEqual": true,
+  "stepWhilePaused": {
+    "playingAfter": true
+  },
+  "finishedSourceLfSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "finishedMirrorsEqual": true,
+  "finishedAt": "2026-10-04T06:05:18.381Z"
+}

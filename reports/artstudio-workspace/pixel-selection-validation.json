@@ -1,0 +1,51 @@
+{
+  "date": "2026-10-02",
+  "scope": "Pixel selection scaling and copy/move to independent layers",
+  "passed": true,
+  "committed": false,
+  "stagedByThisPass": false,
+  "sourceSha256": "47202d5e3024e65a915f3f898f8f46ea462f992a7ab520a2c2b950acdfce95c8",
+  "baselineSha256": "32da28fad528cdba08d18419ef3739d4d5087d116c74bc3a6e410ca023fe78a3",
+  "tests": {
+    "passed": 207,
+    "files": 17,
+    "unresolvedFailures": 0,
+    "log": "pixel-selection-regression.txt",
+    "focusedPassed": 68,
+    "focusedFiles": 3
+  },
+  "browser": {
+    "passed": true,
+    "harness": "Standalone Chromium with actual mouse and keyboard controls and real IndexedDB at an intercepted local origin",
+    "packagedDesktopTested": false,
+    "results": "pixel-selection-browser-results.json",
+    "expandedGrid": {
+      "x": 174,
+      "y": 79,
+      "width": 854,
+      "height": 854
+    },
+    "phoneWidths": [
+      390,
+      320
+    ],
+    "minTouchTargetHeight": 44,
+    "exactDownloadedPng": true,
+    "moveCompositeUnchanged": true,
+    "saveForkRecovery": true,
+    "visualPreviewsInspected": true
+  },
+  "englishAdditions": [
+    "pixel_grow_selection",
+    "pixel_shrink_selection",
+    "pixel_copy_selection_layer",
+    "pixel_move_selection_layer",
+    "pixel_selection_layer_name",
+    "pixel_selection_resize_help",
+    "pixel_selection_layer_help",
+    "pixel_selection_layer_moved",
+    "pixel_selection_layer_copied"
+  ],
+  "mirrorsMatch": true,
+  "spectralBuildCheckPassed": true
+}

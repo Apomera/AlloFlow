@@ -1,0 +1,11 @@
+{
+  "file": "tests/anatomy_spotter_practice.test.js",
+  "beforeSha256": "00657fcb87db7fd8c96b085b0d7fe42781298f74563fcfb02f2fde0386667065",
+  "afterSha256": "9122b7163a933dd47edd891161b981e4aec7ad2b7e047b78b87157cd3b35e11f",
+  "baselineDiagnostic": "baseline-practice-diagnostic.json",
+  "baselinePassed": 12,
+  "baselineFailed": 2,
+  "reason": "Settle pre-existing initial system/view tracking and mount accepted round before asserting current-surface announcements",
+  "assertionsRetained": true,
+  "temporaryDiagnosticFixtureRemoved": true
+}

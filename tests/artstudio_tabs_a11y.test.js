@@ -25,7 +25,12 @@ describe('Art Studio section tabs accessibility', () => {
     expect(source).toContain("role: 'tabpanel', id: 'artstudio-panel-' + tab");
     expect(source).toContain("'aria-labelledby': 'artstudio-tab-' + tab");
     expect(source).toContain('id: "watercolorCanvas"');
-    expect(source).toContain("'aria-describedby': \"artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status\"");
+    const watercolorCanvas = source.split('\n').find(line => line.includes('id: "watercolorCanvas"'));
+    const describedBy = watercolorCanvas.match(/'aria-describedby': "([^"]+)"/)[1].split(/\s+/);
+    expect(describedBy).toEqual(expect.arrayContaining([
+      'artstudio-watercolor-touch-help', 'artstudio-watercolor-keyboard-help',
+      'artstudio-watercolor-status', 'artstudio-watercolor-navigation-help',
+    ]));
     expect(source).toContain('var _artStudioWatercolorCache = {');
     expect(source).toContain('captureState: captureState');
     expect(source).toContain('restoreState: restoreState');

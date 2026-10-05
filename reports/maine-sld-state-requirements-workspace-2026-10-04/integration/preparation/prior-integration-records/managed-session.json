@@ -1,0 +1,21 @@
+{
+  "recordedAt": "2026-10-04T17:04:21.452803+00:00",
+  "pid": 41164,
+  "managedSessionId": 78815,
+  "plainPipes": true,
+  "visibleWindow": false,
+  "pidEvidence": "process.pid from owned server launch output and exact runtime.json",
+  "processSignatureRecordedFromOwnedLaunch": {
+    "executable": "C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe",
+    "arguments": [
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\jurisdiction_integration.cjs",
+      "serve",
+      "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9"
+    ],
+    "helperSha256": "ee4d83fe2cd0b608772faefcc611352b0e5811b2c9d08ad1ed8f0bd272b338a4"
+  },
+  "runtimeMetadataPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-federal-maine-2026-10-04\\integration\\source-preview\\runtime.json",
+  "httpEvidencePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-federal-maine-2026-10-04\\integration\\served-verification.json",
+  "reachableAfterLaunchToolReturned": true,
+  "rebuildPerformed": false
+}

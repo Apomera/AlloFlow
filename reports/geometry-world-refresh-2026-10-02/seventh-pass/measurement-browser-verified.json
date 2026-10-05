@@ -1,0 +1,878 @@
+{
+  "startedAt": "2026-10-04T17:00:54.276Z",
+  "checks": [
+    {
+      "name": "desktop: solid native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 12,
+        "surface": 32,
+        "exact": true,
+        "solid": true
+      }
+    },
+    {
+      "name": "desktop: stepped native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 28,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "desktop: ring native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 32,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "desktop: partial native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 1.5,
+        "surface": null,
+        "exact": false,
+        "solid": false
+      }
+    },
+    {
+      "name": "desktop: larger partial-block panel fits and scrolls without horizontal overflow",
+      "status": "pass",
+      "evidence": {
+        "rect": {
+          "x": 482,
+          "y": 75,
+          "right": 912,
+          "bottom": 479
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "width": 428,
+        "content": 428,
+        "scrollable": "auto",
+        "close": {
+          "width": 44,
+          "height": 44
+        },
+        "text": [
+          {
+            "text": "Bounding-box dimensions\n(units)",
+            "width": 396,
+            "content": 396
+          },
+          {
+            "text": "Grid-cell spans, including gaps and partial cells.",
+            "width": 396,
+            "content": 396
+          },
+          {
+            "text": "Exposed surface area\nExact exposed surface area is unavailable for partial blocks.",
+            "width": 396,
+            "content": 396
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop: surface message is reachable and floating Studio never covers touch measurements",
+      "status": "pass",
+      "evidence": {
+        "messageFits": true,
+        "studioHidden": false,
+        "touch": false,
+        "portrait": false,
+        "actionOverlap": false,
+        "headingVisible": true
+      }
+    },
+    {
+      "name": "desktop: compact inspector accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: disclosure and close preserve geometry and student drafts",
+      "status": "pass",
+      "evidence": {
+        "preserved": true
+      }
+    },
+    {
+      "name": "desktop: closing measurement restores the collapsed Studio launcher",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "desktop: actual 3D scene is nonblank with no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "phone: solid native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 12,
+        "surface": 32,
+        "exact": true,
+        "solid": true
+      }
+    },
+    {
+      "name": "phone: stepped native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 28,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "phone: ring native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 32,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "phone: partial native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 1.5,
+        "surface": null,
+        "exact": false,
+        "solid": false
+      }
+    },
+    {
+      "name": "phone: larger partial-block panel fits and scrolls without horizontal overflow",
+      "status": "pass",
+      "evidence": {
+        "rect": {
+          "x": 6,
+          "y": 73,
+          "right": 384,
+          "bottom": 372
+        },
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "width": 376,
+        "content": 376,
+        "scrollable": "auto",
+        "close": {
+          "width": 44,
+          "height": 44
+        },
+        "text": [
+          {
+            "text": "Bounding-box dimensions\n(units)",
+            "width": 344,
+            "content": 344
+          },
+          {
+            "text": "Grid-cell spans, including gaps and partial cells.",
+            "width": 344,
+            "content": 344
+          },
+          {
+            "text": "Exposed surface area\nExact exposed surface area is unavailable for partial blocks.",
+            "width": 344,
+            "content": 344
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone: surface message is reachable and floating Studio never covers touch measurements",
+      "status": "pass",
+      "evidence": {
+        "messageFits": true,
+        "studioHidden": true,
+        "touch": true,
+        "portrait": true,
+        "actionOverlap": false,
+        "headingVisible": true
+      }
+    },
+    {
+      "name": "phone: compact inspector accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: disclosure and close preserve geometry and student drafts",
+      "status": "pass",
+      "evidence": {
+        "preserved": true
+      }
+    },
+    {
+      "name": "phone: closing measurement restores the collapsed Studio launcher",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "phone: actual 3D scene is nonblank with no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "narrow: solid native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 12,
+        "surface": 32,
+        "exact": true,
+        "solid": true
+      }
+    },
+    {
+      "name": "narrow: stepped native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 28,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "narrow: ring native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 32,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "narrow: partial native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 1.5,
+        "surface": null,
+        "exact": false,
+        "solid": false
+      }
+    },
+    {
+      "name": "narrow: larger partial-block panel fits and scrolls without horizontal overflow",
+      "status": "pass",
+      "evidence": {
+        "rect": {
+          "x": 6,
+          "y": 73,
+          "right": 314,
+          "bottom": 522
+        },
+        "viewport": {
+          "width": 320,
+          "height": 568
+        },
+        "width": 306,
+        "content": 306,
+        "scrollable": "auto",
+        "close": {
+          "width": 44,
+          "height": 44
+        },
+        "text": [
+          {
+            "text": "Bounding-box dimensions\n(units)",
+            "width": 274,
+            "content": 274
+          },
+          {
+            "text": "Grid-cell spans, including gaps and partial cells.",
+            "width": 274,
+            "content": 274
+          },
+          {
+            "text": "Exposed surface area\nExact exposed surface area is unavailable for partial blocks.",
+            "width": 274,
+            "content": 274
+          }
+        ]
+      }
+    },
+    {
+      "name": "narrow: surface message is reachable and floating Studio never covers touch measurements",
+      "status": "pass",
+      "evidence": {
+        "messageFits": true,
+        "studioHidden": true,
+        "touch": true,
+        "portrait": true,
+        "actionOverlap": false,
+        "headingVisible": true
+      }
+    },
+    {
+      "name": "narrow: compact inspector accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: disclosure and close preserve geometry and student drafts",
+      "status": "pass",
+      "evidence": {
+        "preserved": true
+      }
+    },
+    {
+      "name": "narrow: closing measurement restores the collapsed Studio launcher",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "narrow: actual 3D scene is nonblank with no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "short: solid native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 12,
+        "surface": 32,
+        "exact": true,
+        "solid": true
+      }
+    },
+    {
+      "name": "short: stepped native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 28,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "short: ring native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 32,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "short: partial native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 1.5,
+        "surface": null,
+        "exact": false,
+        "solid": false
+      }
+    },
+    {
+      "name": "short: larger partial-block panel fits and scrolls without horizontal overflow",
+      "status": "pass",
+      "evidence": {
+        "rect": {
+          "x": 6,
+          "y": 73,
+          "right": 314,
+          "bottom": 466
+        },
+        "viewport": {
+          "width": 320,
+          "height": 480
+        },
+        "width": 306,
+        "content": 306,
+        "scrollable": "auto",
+        "close": {
+          "width": 44,
+          "height": 44
+        },
+        "text": [
+          {
+            "text": "Bounding-box dimensions\n(units)",
+            "width": 274,
+            "content": 274
+          },
+          {
+            "text": "Grid-cell spans, including gaps and partial cells.",
+            "width": 274,
+            "content": 274
+          },
+          {
+            "text": "Exposed surface area\nExact exposed surface area is unavailable for partial blocks.",
+            "width": 274,
+            "content": 274
+          }
+        ]
+      }
+    },
+    {
+      "name": "short: surface message is reachable and floating Studio never covers touch measurements",
+      "status": "pass",
+      "evidence": {
+        "messageFits": true,
+        "studioHidden": true,
+        "touch": true,
+        "portrait": true,
+        "actionOverlap": false,
+        "headingVisible": true
+      }
+    },
+    {
+      "name": "short: compact inspector accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "short: disclosure and close preserve geometry and student drafts",
+      "status": "pass",
+      "evidence": {
+        "preserved": true
+      }
+    },
+    {
+      "name": "short: closing measurement restores the collapsed Studio launcher",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "short: actual 3D scene is nonblank with no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "landscape: solid native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 12,
+        "surface": 32,
+        "exact": true,
+        "solid": true
+      }
+    },
+    {
+      "name": "landscape: stepped native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 28,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "landscape: ring native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 32,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "landscape: partial native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 1.5,
+        "surface": null,
+        "exact": false,
+        "solid": false
+      }
+    },
+    {
+      "name": "landscape: larger partial-block panel fits and scrolls without horizontal overflow",
+      "status": "pass",
+      "evidence": {
+        "rect": {
+          "x": 496,
+          "y": 8,
+          "right": 836,
+          "bottom": 258
+        },
+        "viewport": {
+          "width": 844,
+          "height": 390
+        },
+        "width": 338,
+        "content": 338,
+        "scrollable": "auto",
+        "close": {
+          "width": 44,
+          "height": 44
+        },
+        "text": [
+          {
+            "text": "Bounding-box dimensions\n(units)",
+            "width": 306,
+            "content": 306
+          },
+          {
+            "text": "Grid-cell spans, including gaps and partial cells.",
+            "width": 306,
+            "content": 306
+          },
+          {
+            "text": "Exposed surface area\nExact exposed surface area is unavailable for partial blocks.",
+            "width": 306,
+            "content": 306
+          }
+        ]
+      }
+    },
+    {
+      "name": "landscape: surface message is reachable and floating Studio never covers touch measurements",
+      "status": "pass",
+      "evidence": {
+        "messageFits": true,
+        "studioHidden": true,
+        "touch": true,
+        "portrait": false,
+        "actionOverlap": true,
+        "headingVisible": true
+      }
+    },
+    {
+      "name": "landscape: compact inspector accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: disclosure and close preserve geometry and student drafts",
+      "status": "pass",
+      "evidence": {
+        "preserved": true
+      }
+    },
+    {
+      "name": "landscape: closing measurement restores the collapsed Studio launcher",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "landscape: actual 3D scene is nonblank with no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "contrast: solid native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 12,
+        "surface": 32,
+        "exact": true,
+        "solid": true
+      }
+    },
+    {
+      "name": "contrast: stepped native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 28,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "contrast: ring native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 32,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "contrast: partial native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 1.5,
+        "surface": null,
+        "exact": false,
+        "solid": false
+      }
+    },
+    {
+      "name": "contrast: larger partial-block panel fits and scrolls without horizontal overflow",
+      "status": "pass",
+      "evidence": {
+        "rect": {
+          "x": 6,
+          "y": 73,
+          "right": 384,
+          "bottom": 372
+        },
+        "viewport": {
+          "width": 390,
+          "height": 844
+        },
+        "width": 376,
+        "content": 376,
+        "scrollable": "auto",
+        "close": {
+          "width": 44,
+          "height": 44
+        },
+        "text": [
+          {
+            "text": "Bounding-box dimensions\n(units)",
+            "width": 344,
+            "content": 344
+          },
+          {
+            "text": "Grid-cell spans, including gaps and partial cells.",
+            "width": 344,
+            "content": 344
+          },
+          {
+            "text": "Exposed surface area\nExact exposed surface area is unavailable for partial blocks.",
+            "width": 344,
+            "content": 344
+          }
+        ]
+      }
+    },
+    {
+      "name": "contrast: surface message is reachable and floating Studio never covers touch measurements",
+      "status": "pass",
+      "evidence": {
+        "messageFits": true,
+        "studioHidden": true,
+        "touch": true,
+        "portrait": true,
+        "actionOverlap": false,
+        "headingVisible": true
+      }
+    },
+    {
+      "name": "contrast: compact inspector accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "contrast: disclosure and close preserve geometry and student drafts",
+      "status": "pass",
+      "evidence": {
+        "preserved": true
+      }
+    },
+    {
+      "name": "contrast: closing measurement restores the collapsed Studio launcher",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "contrast: actual 3D scene is nonblank with no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "forced: solid native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 12,
+        "surface": 32,
+        "exact": true,
+        "solid": true
+      }
+    },
+    {
+      "name": "forced: stepped native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 28,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "forced: ring native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 32,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "forced: partial native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 1.5,
+        "surface": null,
+        "exact": false,
+        "solid": false
+      }
+    },
+    {
+      "name": "forced: larger partial-block panel fits and scrolls without horizontal overflow",
+      "status": "pass",
+      "evidence": {
+        "rect": {
+          "x": 482,
+          "y": 75,
+          "right": 912,
+          "bottom": 479
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "width": 428,
+        "content": 428,
+        "scrollable": "auto",
+        "close": {
+          "width": 44,
+          "height": 44
+        },
+        "text": [
+          {
+            "text": "Bounding-box dimensions\n(units)",
+            "width": 396,
+            "content": 396
+          },
+          {
+            "text": "Grid-cell spans, including gaps and partial cells.",
+            "width": 396,
+            "content": 396
+          },
+          {
+            "text": "Exposed surface area\nExact exposed surface area is unavailable for partial blocks.",
+            "width": 396,
+            "content": 396
+          }
+        ]
+      }
+    },
+    {
+      "name": "forced: surface message is reachable and floating Studio never covers touch measurements",
+      "status": "pass",
+      "evidence": {
+        "messageFits": true,
+        "studioHidden": false,
+        "touch": false,
+        "portrait": false,
+        "actionOverlap": false,
+        "headingVisible": true
+      }
+    },
+    {
+      "name": "forced: compact inspector accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "forced: disclosure and close preserve geometry and student drafts",
+      "status": "pass",
+      "evidence": {
+        "preserved": true
+      }
+    },
+    {
+      "name": "forced: closing measurement restores the collapsed Studio launcher",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "forced: actual 3D scene is nonblank with no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    }
+  ],
+  "failures": [],
+  "screenshots": [
+    "desktop-solid-inspector.png",
+    "desktop-partial-inspector.png",
+    "phone-solid-inspector.png",
+    "phone-partial-inspector.png",
+    "narrow-solid-inspector.png",
+    "narrow-partial-inspector.png",
+    "short-solid-inspector.png",
+    "short-partial-inspector.png",
+    "landscape-solid-inspector.png",
+    "landscape-partial-inspector.png",
+    "contrast-solid-inspector.png",
+    "contrast-partial-inspector.png",
+    "forced-solid-inspector.png",
+    "forced-partial-inspector.png"
+  ],
+  "resourcesClosed": true,
+  "completedAt": "2026-10-04T17:04:04.631Z"
+}

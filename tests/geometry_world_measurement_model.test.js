@@ -250,6 +250,17 @@ describe('Geometry World measurement model', () => {
     expect(math.comparePredictionRevision(original, '')).toBeNull();
   });
 
+  it('does not label rounded zero-percent revision errors as exact', () => {
+    const original = math.compareVolumePrediction('800', 1000);
+    const below = math.comparePredictionRevision(original, '999');
+    const above = math.comparePredictionRevision(original, '1001');
+    expect(below).toMatchObject({ percentError: 0, relation: 'under' });
+    expect(above).toMatchObject({ percentError: 0, relation: 'over' });
+    expect(below.feedback).not.toContain('exactly');
+    expect(above.feedback).not.toContain('exactly');
+    expect(math.comparePredictionRevision(original, '1000').feedback).toContain('exactly');
+  });
+
   it('requires meaningful evidence for geometry objectives', () => {
     const base = { answered: 0, totalQuestions: 2, blocksPlaced: 1, measurements: [], structureCount: 3 };
     expect(math.objectiveEvidenceFor('Build a room', base)).toMatchObject({ done: false, evidence: '1/5 blocks placed' });
@@ -277,8 +288,10 @@ describe('Geometry World measurement model', () => {
 
   it('requires reasoning for prediction objectives', () => {
     const unexplained = { measurements: [{ prediction: 20 }], structureCount: 1 };
-    const explained = { measurements: [{ prediction: 20, strategy: 'layers' }], structureCount: 1 };
+    const strategyOnly = { measurements: [{ prediction: 20, strategy: 'layers' }], structureCount: 1 };
+    const explained = { measurements: [{ prediction: 20, strategy: 'layers', reason: 'I counted the cubes in each equal layer.' }], structureCount: 1 };
     expect(math.objectiveEvidenceFor('Make and explain a volume prediction', unexplained).done).toBe(false);
+    expect(math.objectiveEvidenceFor('Make and explain a volume prediction', strategyOnly).done).toBe(false);
     expect(math.objectiveEvidenceFor('Make and explain a volume prediction', explained)).toMatchObject({ done: true, evidence: '1 explained prediction' });
     expect(math.objectiveEvidenceFor('Revise using evidence', { revisionCompleted: true }).done).toBe(true);
     expect(math.objectiveEvidenceFor('Revise using evidence', { reflectionsCompleted: 1 }).done).toBe(false);
@@ -319,6 +332,28 @@ describe('Geometry World measurement model', () => {
     ]);
     expect(math.determinePredictionScaffold(independent)).toMatchObject({ level: 'independent', label: 'Independent transfer' });
     expect(SOURCE).toContain("'data-geometry-prediction-scaffold': predictionScaffold.level");
+  });
+
+  it('retains prediction support when strategies are selected without explanation', () => {
+    const strategyOnly = [12, 24, 30, 18].map((prediction) => ({ prediction, strategy: 'layers', percentError: 0 }));
+    expect(math.determinePredictionScaffold(strategyOnly).level).toBe('guided');
+    strategyOnly[0].reason = 'I counted every equal layer.';
+    expect(math.determinePredictionScaffold(strategyOnly).level).toBe('supported');
+    strategyOnly[1].predictionReason = 'I multiplied the occupied base area by the height.';
+    expect(math.determinePredictionScaffold(strategyOnly).level).toBe('independent');
+    strategyOnly[1].predictionReason = '   ';
+    expect(math.determinePredictionScaffold(strategyOnly).level).toBe('supported');
+  });
+
+  it('does not mistake observation or nonfinite values for explained predictions', () => {
+    const records = [
+      { reason: 'I noticed equal layers.', percentError: 0 },
+      { prediction: NaN, reason: 'I used multiplication.', percentError: 0 },
+      { prediction: Infinity, reason: 'I used multiplication.', percentError: 0 },
+      { prediction: 20, reason: '   ', strategy: 'layers', percentError: 0 }
+    ];
+    expect(math.objectiveEvidenceFor('Explain a volume prediction', { measurements: records })).toMatchObject({ done: false, evidence: '0 explained predictions' });
+    expect(math.determinePredictionScaffold(records).level).toBe('guided');
   });
 
   it('connects solid, composite, and fractional volume representations', () => {
@@ -515,9 +550,12 @@ describe('Geometry World measurement model', () => {
     const scaling = math.buildRetrievalCheckpoint([earlier, latest]);
     expect(scaling).toMatchObject({ concept: 'scale_height', expected: 8 });
     expect(scaling.prompt).toContain('doubles the volume');
+    expect(math.checkRetrievalAnswer(scaling, '8').feedback).toContain('base area fixed');
+    expect(math.checkRetrievalAnswer(scaling, '8').feedback).toContain('8 units');
 
     const layer = math.buildRetrievalCheckpoint([earlier, latest, { ...latest, t: 3 }]);
     expect(layer).toMatchObject({ concept: 'layer_area', expected: 6 });
+    expect(math.checkRetrievalAnswer(layer, '6').feedback).toContain('6 square units');
   });
 
   it('retrieves composite and fractional volume relationships', () => {
@@ -525,15 +563,35 @@ describe('Geometry World measurement model', () => {
     const composite = { occupiedVolume: 8, boundingVolume: 12, blocks: 8, hasFractions: false, isSolidPrism: false, t: 2 };
     const emptySpace = math.buildRetrievalCheckpoint([earlier, composite]);
     expect(emptySpace).toMatchObject({ concept: 'empty_space', expected: 4 });
+    expect(math.checkRetrievalAnswer(emptySpace, '4').feedback).toContain('4 cubic units of empty space');
 
     const fractional = { occupiedVolume: 1.5, boundingVolume: 2, blocks: 2, hasFractions: true, isSolidPrism: false, t: 3 };
     const fractionalCheck = math.buildRetrievalCheckpoint([earlier, fractional]);
     expect(fractionalCheck).toMatchObject({ concept: 'fractional_volume', expected: 0.5 });
     expect(math.checkRetrievalAnswer(fractionalCheck, '1/2')).toMatchObject({ correct: true, valid: true });
+    expect(math.checkRetrievalAnswer(fractionalCheck, '1/2').feedback).toContain('Piece count and occupied volume are different quantities');
     expect(math.checkRetrievalAnswer(fractionalCheck, '1', 1)).toMatchObject({ correct: false, valid: true, feedback: expect.stringContaining('what stays the same') });
     expect(math.checkRetrievalAnswer(fractionalCheck, '1', 2)).toMatchObject({ correct: false, valid: true, feedback: fractionalCheck.hint });
     expect(math.checkRetrievalAnswer(fractionalCheck, '1/2', 2)).toMatchObject({ correct: true, valid: true });
     expect(math.checkRetrievalAnswer(fractionalCheck, '')).toMatchObject({ correct: false, valid: false });
+  });
+
+  it('uses zero as a valid volume difference and rejects invalid prism retrieval models', () => {
+    const previous = { occupiedVolume: 6, t: 1 };
+    const latest = { occupiedVolume: 6, t: 2 };
+    const equalVolumes = math.buildRetrievalCheckpoint([previous, latest]);
+    expect(equalVolumes).toMatchObject({ concept: 'volume_difference', expected: 0 });
+    expect(math.checkRetrievalAnswer(equalVolumes, '0')).toMatchObject({ correct: true, valid: true, feedback: expect.stringContaining('difference is 0 cubic units') });
+    expect(math.buildRetrievalCheckpoint([previous, { ...latest, isComplete: false }])).toBeNull();
+
+    for (const invalid of [
+      { ...latest, L: 1, W: 2, H: 3, isSolidPrism: false },
+      { ...latest, L: 1, W: 2, H: Infinity, isSolidPrism: true },
+      { ...latest, L: 1, W: 2, H: 9, isSolidPrism: true }
+    ]) expect(math.buildRetrievalCheckpoint([previous, invalid]).concept).toBe('volume_difference');
+    expect(math.checkRetrievalAnswer({ expected: -1 }, '-1')).toBeNull();
+    expect(math.checkRetrievalAnswer({ expected: Infinity }, '1')).toBeNull();
+    expect(math.checkRetrievalAnswer({ concept: 'constructor', expected: 2 }, '2').feedback).toContain('retrieved the relationship');
   });
 
   it('logs retrieval accuracy as teacher learning evidence', () => {
@@ -562,7 +620,7 @@ describe('Geometry World measurement model', () => {
       { type: 'reflection', data: { text: '   ' } }
     ]);
     expect(summary).toMatchObject({
-      explainedPredictions: 3,
+      explainedPredictions: 2,
       revisionsMade: 2,
       revisionsImproved: 1,
       averageRevisionImprovement: 14,
@@ -571,6 +629,17 @@ describe('Geometry World measurement model', () => {
     expect(summary.strategies).toEqual([{ strategy: 'layers', count: 2 }]);
     expect(summary.mostCommonMisconception).toMatchObject({ code: 'one_layer', count: 2 });
     expect(summary.misconceptions.map((item) => item.code)).toEqual(['one_layer', 'bounding_box']);
+  });
+
+  it('reports selected strategies separately from written prediction explanations', () => {
+    const summary = math.summarizeLearningEvidence([
+      { type: 'measurement', data: { prediction: 12, predictionStrategy: 'layers' } },
+      { type: 'measurement', data: { prediction: 18, predictionStrategy: 'layers', predictionReason: '  ' } },
+      { type: 'measurement', data: { prediction: 24, predictionStrategy: 'layers', predictionReason: 'I counted four equal layers.' } },
+      { type: 'measurement', data: { prediction: NaN, predictionReason: 'I tried multiplication.' } }
+    ]);
+    expect(summary.explainedPredictions).toBe(1);
+    expect(summary.strategies).toEqual([{ strategy: 'layers', count: 3 }]);
   });
 
   it('provides safe, actionable printable report guidance', () => {
@@ -618,7 +687,8 @@ describe('Geometry World measurement model', () => {
     expect(SOURCE).toContain("'data-geometry-measurement-incomplete': 'true'");
     expect(SOURCE).toContain('queue[queueIndex++]');
     expect(SOURCE).not.toContain('result.length < 500');
-    expect(SOURCE).toContain('COMPARE LATEST TWO COMPLETE');
+    expect(SOURCE).toContain('Latest two complete measurements');
+    expect(SOURCE).toContain("'aria-labelledby': 'gw-notebook-tab-compare'");
     expect(SOURCE).toContain('incompleteMeasurementAttempts: allMeasurements.length - measurements.length');
     expect(SOURCE).toContain("completedMeasurements.length + ' complete measurements'");
     expect(SOURCE).toContain("policy: 'descriptive-ungraded'");

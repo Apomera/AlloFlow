@@ -1,0 +1,266 @@
+{
+  "pass": true,
+  "finalSourceLfSha256": "ac1f6aaf8f6bd41449b79ee81c8de9bb4c971bf58b30864d0c6c2ecc126f9ff8",
+  "finalSourceRawSha256": "ac1f6aaf8f6bd41449b79ee81c8de9bb4c971bf58b30864d0c6c2ecc126f9ff8",
+  "runtimeCopiesByteEqual": true,
+  "unitChecks": {
+    "distinctPassedAcrossCheckpoints": 705,
+    "totalDistinct": 705,
+    "interactionCheckpoint": {
+      "passed": 232,
+      "total": 232,
+      "sourceLfSha256": "076c52eb1bfed83695fb2dfe138692a8fedc7c96155df91073484482ef97a75a"
+    },
+    "behaviorSupportCheckpoint": {
+      "passed": 473,
+      "total": 473,
+      "sourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7"
+    },
+    "note": "Changes after the behavior checkpoint reverse exactly: one CSS string, one pending-round rendering guard, and two paragraph direction attributes. The guard and interactions passed232 checks and five browser journeys; the last attributes passed the final Arabic supplement. Interrupted broad reruns are excluded from passing counts.",
+    "fixtures": [
+      {
+        "file": "tests/anatomy_activity_switch_continuity.test.js",
+        "sourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "passed": 112,
+        "total": 112
+      },
+      {
+        "file": "tests/anatomy_case_journey.test.js",
+        "sourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "passed": 238,
+        "total": 238
+      },
+      {
+        "file": "tests/anatomy_heading_structure.test.js",
+        "sourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "passed": 6,
+        "total": 6
+      },
+      {
+        "file": "tests/anatomy_mobile_a11y_polish.test.js",
+        "sourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "passed": 14,
+        "total": 14
+      },
+      {
+        "file": "tests/anatomy_spotter_marker_view.test.js",
+        "sourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "passed": 32,
+        "total": 32
+      },
+      {
+        "file": "tests/anatomy_spotter_navigation.test.js",
+        "sourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "passed": 36,
+        "total": 36
+      },
+      {
+        "file": "tests/anatomy_spotter_practice.test.js",
+        "sourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "passed": 28,
+        "total": 28
+      },
+      {
+        "file": "tests/anatomy_spotter_study_localization.test.js",
+        "sourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "passed": 7,
+        "total": 7
+      },
+      {
+        "file": "tests/anatomy_spotter_study_journey.test.js",
+        "sourceLfSha256": "076c52eb1bfed83695fb2dfe138692a8fedc7c96155df91073484482ef97a75a",
+        "passed": 232,
+        "total": 232
+      }
+    ]
+  },
+  "browser": {
+    "journeysPassed": 6,
+    "scansPassed": 23,
+    "mainCheckpoint": {
+      "sourceLfSha256": "076c52eb1bfed83695fb2dfe138692a8fedc7c96155df91073484482ef97a75a",
+      "journeys": 5,
+      "scans": 20,
+      "screenshots": 14
+    },
+    "finalRtlSupplement": {
+      "sourceLfSha256": "ac1f6aaf8f6bd41449b79ee81c8de9bb4c971bf58b30864d0c6c2ecc126f9ff8",
+      "journeys": 1,
+      "scans": 3,
+      "screenshots": 4
+    },
+    "violations": 0,
+    "pageErrors": 0,
+    "horizontalOverflow": 0,
+    "minPanelAndBannerFontPx": 16,
+    "minLargerFontPx": 17,
+    "minControlWidthPx": 46,
+    "minControlHeightPx": 44,
+    "minMeasuredContrastRatio": 7.294077894689702,
+    "screenshotCount": 18
+  },
+  "localization": {
+    "newEnglishKeys": 8,
+    "nativeTranslations": 24,
+    "catalogs": 8,
+    "audit": "localization-audit.json"
+  },
+  "preservation": [
+    {
+      "name": "authoredSystemsAndClinicalData",
+      "unchanged": true,
+      "beforeSha256": "4bb54a41de472242e5ecaf14a337e8423551766eebbc15955c39fdda330f924f",
+      "afterSha256": "4bb54a41de472242e5ecaf14a337e8423551766eebbc15955c39fdda330f924f",
+      "characters": 248693
+    },
+    {
+      "name": "clinicalStudyJourney",
+      "unchanged": true,
+      "beforeSha256": "9f62886146d8d5394a6e3b7c24df36d465c513ba149db6dd89fc2aff86462844",
+      "afterSha256": "9f62886146d8d5394a6e3b7c24df36d465c513ba149db6dd89fc2aff86462844",
+      "characters": 16945
+    }
+  ],
+  "evidence": [
+    {
+      "path": "support-final-d62-tests.json",
+      "sha256": "41cc04daa05e25e73c72b6e73aeaa540e6de0d48e5ef72f1a95aa66bf485b375"
+    },
+    {
+      "path": "localization-tests.json",
+      "sha256": "21f610a0178f5b530f95025f02f0cc925b51ad4c0eda83839e87f0d23afdc962"
+    },
+    {
+      "path": "support-final-metadata.json",
+      "sha256": "7233ebecc4c32ea20c85a6a4da0a9183a94b6ffae88d328636013346e9566267"
+    },
+    {
+      "path": "spotter-unit-results.json",
+      "sha256": "af693353664f77ee29d086a5e1c2f44bcd94bae3e4bee4d0b2ad940fd3980ce9"
+    },
+    {
+      "path": "spotter-unit-metadata.json",
+      "sha256": "84980b29c6bf188d4dc8a09170a8a3952ece7262fd8cb8d9627ae2489722dc18"
+    },
+    {
+      "path": "browser-verification.json",
+      "sha256": "e14806329d0fb73a30895969b24b8b89b159d4acdabe534be98be2708ea4f704"
+    },
+    {
+      "path": "browser-validation.json",
+      "sha256": "caa71cab401418d15f2fa1830136fc0664288ea5ef8bdb7e936e1451fbafe619"
+    },
+    {
+      "path": "playwright-results.json",
+      "sha256": "f8f79ebefc1df3e8ba6e789072e3afd21814dd169f6b1d9321fd8cc6cd9e79fc"
+    },
+    {
+      "path": "localization-audit.json",
+      "sha256": "4f75fbde5165c8d4c5499b0f02c2e4ff81be90ba011343ffe0522bb6d5e22a99"
+    },
+    {
+      "path": "source-preservation.json",
+      "sha256": "cd5d9f6a38e8a254e49dde9ac568d2cfe71d17b7414c6593ebeeb6929d9e9735"
+    },
+    {
+      "path": "visual-refinement.json",
+      "sha256": "d698299cd8a44407665480ef5520467f725d6f2d9845ff1ee5c4194aaefa3cfb"
+    },
+    {
+      "path": "pending-context-refinement.json",
+      "sha256": "528ce63eaf62b9bfe2615debd183da7bc406642fbb01960333771b9dcddbea53"
+    },
+    {
+      "path": "function-direction-refinement.json",
+      "sha256": "03585eab36621cf7c6b01dc45ec4b58224283c08a5283c9c9373865cd8bb9aab"
+    },
+    {
+      "path": "candidate-chain-proof.json",
+      "sha256": "b047859be08c11d975df1067e1e3a0fbd0441d346bd49129078f50b9f379ca4c"
+    },
+    {
+      "path": "screenshot-visual-review.json",
+      "sha256": "eb07fce375d3c6dd9908cea85692c1736840ff4e26fe4bc41a4a01eec4ed0c7a"
+    },
+    {
+      "path": "rtl-supplement/verification.json",
+      "sha256": "87faac547b31752b251987f5cffe2bdc7f415348e27df4b981214748b2099b58"
+    }
+  ],
+  "screenshots": [
+    {
+      "path": "screenshots/desktop-structured-feedback.png",
+      "sha256": "b6cd79d6d5f9f620910c1a4fe508a898d21c88b17795972296cfeba2b37fcd69"
+    },
+    {
+      "path": "screenshots/desktop-study-whole-model.png",
+      "sha256": "98692436538fa6a950a957b6e2b9cc2d709a6160a1e8efa45b628048c17d8e88"
+    },
+    {
+      "path": "screenshots/phone-arabic-dark-feedback.png",
+      "sha256": "36b645a0edc0f14aaa270ba06505a3209196025da139c0190a616598b84c625f"
+    },
+    {
+      "path": "screenshots/phone-arabic-dark-study-whole-model.png",
+      "sha256": "277d6ec4fa85a29fdb73a7ef6b617644144a962b647e488eefe053eada72fcf0"
+    },
+    {
+      "path": "screenshots/phone-contrast-feedback.png",
+      "sha256": "9765b9c026fe6d420871e87da3b9c64052a468ab55a7f549262193b1892eb510"
+    },
+    {
+      "path": "screenshots/phone-contrast-study-whole-model.png",
+      "sha256": "68801027b26caa76e70c25b15adba40164f9463261d62274a37616d0ebad1a3c"
+    },
+    {
+      "path": "screenshots/phone-forced-feedback.png",
+      "sha256": "eec7b2affa7f92c9886f94dc967aceb317f3d80494106b0c1419f42a8397d491"
+    },
+    {
+      "path": "screenshots/phone-forced-return-label.png",
+      "sha256": "3264208227856f489eb21061afdff5e5e6e43c2f305f79e2d85b29cbea4fc631"
+    },
+    {
+      "path": "screenshots/phone-forced-study-label.png",
+      "sha256": "43910bafec3771bc752efb15446a77d6e75b15d2faec6040912360ccfbe509c6"
+    },
+    {
+      "path": "screenshots/phone-forced-study-whole-model.png",
+      "sha256": "74c86830e34cdec5768800fde4c33cd90aec8b2681db4647c1d3928be8c1a26f"
+    },
+    {
+      "path": "screenshots/phone-paused-explore-whole-model.png",
+      "sha256": "3ebcea263ab9132e9e01aae9c956097b242a9bfe66746fbcae18b57a05358730"
+    },
+    {
+      "path": "screenshots/phone-pending-crosshair-whole-model.png",
+      "sha256": "9ad6f76eeccafe53219129c19a8f3c6e22dfd71b6c752a450eda779c032befc2"
+    },
+    {
+      "path": "screenshots/phone-reloaded-study-whole-model.png",
+      "sha256": "19b883026a185453c6ec1676f10eb556e7c2e1b15a99a53451f7ad92dea7d8a8"
+    },
+    {
+      "path": "screenshots/phone-returned-feedback.png",
+      "sha256": "8678215cbaa8dff1cc95ac7db354014ae45f8bd7d8903f2b667206a040b2630f"
+    },
+    {
+      "path": "rtl-supplement/screenshots/phone-arabic-contrast-feedback-direction.png",
+      "sha256": "79a80e7e199694f3364bf62b46cf103238314c189764f3608fc6549e96d4ae2b"
+    },
+    {
+      "path": "rtl-supplement/screenshots/phone-arabic-dark-feedback-direction.png",
+      "sha256": "1641a3e3c8eaba939339445f9560d9631c1de5d006185bd69d9d9898d6e744cf"
+    },
+    {
+      "path": "rtl-supplement/screenshots/phone-arabic-dark-study-direction.png",
+      "sha256": "277d6ec4fa85a29fdb73a7ef6b617644144a962b647e488eefe053eada72fcf0"
+    },
+    {
+      "path": "rtl-supplement/screenshots/phone-arabic-light-feedback-direction.png",
+      "sha256": "01fb1320ee89767ebfa8c68cbb9caecef602801666083053bca1480f20244920"
+    }
+  ],
+  "gitMutationPerformed": false,
+  "completedAt": "2026-10-03T01:42:42.133Z"
+}

@@ -1,0 +1,22 @@
+{
+  "sourceSha256": "35d953d4e3fb4fb508fce0435a9d8c1df174fdd5653c0111b53c3e789d24247b",
+  "archive": "initial-fixture-notice",
+  "archiveReceiptSha256": "f84be351824e757c534b5d367596a433cf540f5c0671d7319d172816fe75d055",
+  "beforeScriptSha256": "bf49c5bb8cee222dc1c1b9ebd07b690982a79a37fe7c031bc942bcd97ade8a87",
+  "afterScriptSha256": "797053772baed9b998b5afb7a4b5efa31d9a0469238c3b77019a67f61be69084",
+  "beforeSetupSha256": "6cfafc2ef1514ad0f8fd392cdafc0a4936f42b53acd6fa2d7341ff3fbfa2ce81",
+  "afterSetupSha256": "1003867fb98bcb920965dbfb28cbc84d3833d865c22bf4d39b8d8c906752ad03",
+  "changes": [
+    {
+      "before": "notebookNotice:''",
+      "after": "investigationNotice:''",
+      "reason": "Reset the actual existing transient notice when replacing saved observation fixtures."
+    },
+    {
+      "assertion": ".circuit-notebook-notice count equals 0 after each fixture reset",
+      "reason": "Prevent inconsistent saved-count screenshots."
+    }
+  ],
+  "productChanged": false,
+  "allNativeAndLayoutAssertionsRetained": true
+}

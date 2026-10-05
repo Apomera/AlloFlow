@@ -1,0 +1,12 @@
+{
+  "nativeSession": 1532,
+  "exitCode": 0,
+  "closed": true,
+  "browserClosed": true,
+  "sourceSha256": "5074437464753808786898645761149063f96f7a2d4bb610cad8f0a09c3bb7c4",
+  "scriptSha256": "4d17423d7435ccb2b6639b4af2f60c6067483b8c645d7fc492261c4a7c1affb9",
+  "resultSha256": "1d84c6261829a45ce690b214ac551c8706593c7a1cfd444ee0299eb5e7475fb1",
+  "browserCloseSha256": "f22a2f3530b506d35e83eb11b8a3b87c453fcc0d8da1c401ccb7793e6afcd70e",
+  "observation": "circuit_ui reported native session1532 exited0, all final checks passed and Chromium closed in finally. Root verified the matching passed browser results and disconnected closure artifact.",
+  "evidenceSource": "Observed native tool outcome relayed by circuit_ui in this conversation; root compiled this receipt after the completed audit."
+}

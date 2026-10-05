@@ -1,0 +1,27 @@
+
+Running 22 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › lab shelf phone retains readable controls and saved evidence (7.1s)
+  ok  2 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › lab shelf tablet retains readable controls and saved evidence (5.7s)
+  ok  3 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › lab shelf desktop retains readable controls and saved evidence (4.2s)
+  ok  4 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › lab shelf embedded-medium retains readable controls and saved evidence (4.4s)
+  ok  5 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › lab shelf embedded-large retains readable controls and saved evidence (7.4s)
+  ok  6 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › lab shelf forced-colors retains readable controls and saved evidence (4.9s)
+  ok  7 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › study shelf phone retains readable controls and saved evidence (10.2s)
+  ok  8 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › study shelf tablet retains readable controls and saved evidence (3.8s)
+  ok  9 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › study shelf desktop retains readable controls and saved evidence (4.6s)
+  ok 10 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › study shelf embedded-medium retains readable controls and saved evidence (4.8s)
+  ok 11 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › study shelf embedded-large retains readable controls and saved evidence (10.5s)
+  ok 12 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:23:62 › study shelf forced-colors retains readable controls and saved evidence (4.5s)
+  ok 13 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:34:5 › toolbar keyboard navigation opens shelves and reset cancellation preserves records (4.1s)
+  ok 14 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:41:5 › Study keyboard actions preserve evidence through flashcards and comparison (3.1s)
+  ok 15 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:44:5 › Essentials and assessment keep advanced controls hidden (2.8s)
+  ok 16 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:49:5 › embedded large-text reset reflows and retains focus while resizing (3.1s)
+  ok 17 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:52:5 › sheep-eye Study includes a readable 3D reference toggle (3.8s)
+  ok 18 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:55:5 › active practical retains an outlined end control and protected evidence (3.8s)
+  ok 19 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:58:5 › print media hides auxiliary shelves and toolbar (3.2s)
+  ok 20 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:61:5 › full notebook action reflows and opens management without replacing evidence (3.2s)
+  ok 21 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:64:5 › clearing annotation points changes only the drawing and disabled state (2.7s)
+  ok 22 [chromium] › tests\e2e\dissection-control-shelves.spec.ts:67:5 › forced-color reset confirmation has visible focus and cancels safely (3.3s)
+
+  22 passed (2.1m)

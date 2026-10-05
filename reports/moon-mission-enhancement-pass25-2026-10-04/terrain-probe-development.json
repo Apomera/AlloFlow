@@ -1,0 +1,38 @@
+{
+  "baselineSha256": "c261c4bbb7fd7ee719164628a0bdf92c1e797d7ff58453943b9dcc5169e75a54",
+  "tiers": [
+    {
+      "tier": "lighter",
+      "segments": 140,
+      "samples": 12642,
+      "maxSamplerError": 3.410605131648481e-13,
+      "worstAnalyticDisagreement": {
+        "difference": 2.4357279393490376,
+        "x": -265.54943084716797,
+        "z": -112.3899154663086,
+        "meshHeight": -12.053305625915527,
+        "analyticHeight": -9.61757768656649
+      },
+      "rmsAnalyticDisagreement": 0.29333693144344875,
+      "traceChecks": 843,
+      "maxTraceError": 2.831068712794149e-15
+    },
+    {
+      "tier": "detailed",
+      "segments": 220,
+      "samples": 31758,
+      "maxSamplerError": 3.623767952376511e-13,
+      "worstAnalyticDisagreement": {
+        "difference": 2.0744942100590027,
+        "x": -280.9010314941406,
+        "z": -126.09912109375,
+        "meshHeight": -11.809365749359245,
+        "analyticHeight": -9.734871539300242
+      },
+      "rmsAnalyticDisagreement": 0.15944098844522525,
+      "traceChecks": 1329,
+      "maxTraceError": 4.274358644806853e-15
+    }
+  ],
+  "scope": "Exact source-generated terrain and independent Three.Ray intersections; scene coordinates, not physical altitude metres."
+}

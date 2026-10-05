@@ -1,0 +1,115 @@
+{
+  "passed": true,
+  "sourceSha256": "b207d09a0e834d5abeae5fba88f8303e3e457189ba58088677af6f05e3d543fa",
+  "mirrorSha256": "b207d09a0e834d5abeae5fba88f8303e3e457189ba58088677af6f05e3d543fa",
+  "previousUncommittedSourcePreserved": "eb63c510e59a9aba7b6ae27cca7f4e3974fa983c8956d9d5283cf9631f25d8a7",
+  "regression": {
+    "passedTests": 318,
+    "files": 18,
+    "attempts": 18
+  },
+  "archivedTestCorrections": 2,
+  "browser": {
+    "views": 14,
+    "visibleFocusChecks": 28,
+    "measuredFontsAtTwiceNormal": 14,
+    "nativeTestTransitions": 2,
+    "lifecycleChecks": 3,
+    "rootInspectedScreenshots": 5,
+    "reviewerInspectedScreenshots": 14
+  },
+  "artifacts": {
+    "regressionSha256": "a06502fb38cc89c163620578107c4091ce2b1358d80d87c6d7d73dc32ed982e9",
+    "regressionReceiptSha256": "20324f548a684d9e70da2037c5661fdf62e658cab17515ce0eeeb1e301597264",
+    "browserResultsSha256": "31b7c178fdc555310ddbe74996c826c19a37e5ec10e21d809b120694a48012d4",
+    "visualReviewSha256": "087348399fdb3891a811f749e9fb3ec6012d7b6217cc9c788f8f79e3931fc9d9",
+    "independentReviewSha256": "57c152cd6f971ff4b755a6b04c95d6a5f6b477701dbd6dc521783eea2b7607a5",
+    "validatorSha256": "215a0efa5976003fdc5adf4097f5c9f9c001858f1331e3d4172c0e43755d93fc",
+    "screenshots": [
+      {
+        "file": "prediction-reasoning-gain-1280.png",
+        "sha256": "ab1cba1abe191ae602c30f7d17624c3d0903e7bf263bad8a6fd664fc5f931eda",
+        "width": 820,
+        "height": 339
+      },
+      {
+        "file": "prediction-reasoning-gain-390.png",
+        "sha256": "2343777fc652d4df5bb392646ab98ce303f7c246305364b690f7bec49beda3ef",
+        "width": 326,
+        "height": 414
+      },
+      {
+        "file": "prediction-reasoning-gain-320.png",
+        "sha256": "e3a4ff835f2c0adc717d640c833bf0ad43e679d1bbe600dcc372e5c74283f60e",
+        "width": 256,
+        "height": 456
+      },
+      {
+        "file": "prediction-reasoning-limit-1280.png",
+        "sha256": "384e056742549c51dde60232cd6e62f3c1f4873305f35e0c7642bb69fdf890e3",
+        "width": 820,
+        "height": 339
+      },
+      {
+        "file": "prediction-reasoning-limit-390.png",
+        "sha256": "6a1f955934c1f8e82b361c4257a5be9d7c2c679eb0ed56c5a7420415f4aa96a3",
+        "width": 326,
+        "height": 414
+      },
+      {
+        "file": "prediction-reasoning-limit-320.png",
+        "sha256": "e4d2b6bc25444c2d43d7ed51528fcb66a0e8dfce4c8cfc0222234dc5eb61a1cf",
+        "width": 256,
+        "height": 456
+      },
+      {
+        "file": "prediction-reasoning-sensor-1280.png",
+        "sha256": "5f0c413e06b5dec50184ceaa32e86be9e2d48dd894fdaf87fdb826f32e7e32fb",
+        "width": 820,
+        "height": 339
+      },
+      {
+        "file": "prediction-reasoning-sensor-390.png",
+        "sha256": "b9f9bc70501b4f14d7f5ab3fcc07bbe4b3ca039d86ef53cb8b9ccac43b83689c",
+        "width": 326,
+        "height": 414
+      },
+      {
+        "file": "prediction-reasoning-sensor-320.png",
+        "sha256": "f792c74dec08a84e481fd5e02b8791270937148327e02ebd48f680572f8cec67",
+        "width": 256,
+        "height": 456
+      },
+      {
+        "file": "prediction-reasoning-gain-200pct-text-320.png",
+        "sha256": "ec7573cf276b9f7179b82231608cb0b53854e7be6556d9bdd7b187b7ceb51e78",
+        "width": 256,
+        "height": 1137
+      },
+      {
+        "file": "prediction-reasoning-sensor-200pct-text-320.png",
+        "sha256": "bb5bc7837eb9f2803cc3c7ab084ba5dd03b5096995733e581f7a2d80a636231b",
+        "width": 256,
+        "height": 1454
+      },
+      {
+        "file": "forced-colors-prediction-reasoning-gain-320.png",
+        "sha256": "36b95548d3eae09845341df6e7e8901a9277dbb56925835a206ede3f62c18d04",
+        "width": 256,
+        "height": 456
+      },
+      {
+        "file": "forced-colors-prediction-reasoning-sensor-320.png",
+        "sha256": "e589e66e5b1bdaac49ebde05b80a941652bac73a1dd80392712482915fd607e1",
+        "width": 256,
+        "height": 456
+      },
+      {
+        "file": "tested-reasoning-wrong-choice-390.png",
+        "sha256": "e7c0b6b858b1e195b81899a38c14accdd3c4436a1a2bd5ffe22ee425b7d7f1de",
+        "width": 326,
+        "height": 446
+      }
+    ]
+  }
+}

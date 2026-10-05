@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-10-02T05:01:05.061Z",
+  "stats": {
+    "totalAA": 55,
+    "docApplicable": 20,
+    "automated": 11,
+    "structural": 6,
+    "manual": 3,
+    "na": 5,
+    "conditional": 30,
+    "activeTools": 32,
+    "activeScWithTool": 11,
+    "aaaTools": 1,
+    "legacyTools": 1,
+    "tools": 34,
+    "scWithTool": 13
+  },
+  "generatorSha256": "2aea25562e603a23b33347a0ba45ae9cbe1f488569a29d2206b126f61b8a0bb6",
+  "outputSha256": "d53fb43906f714c72688bd89aa4d25ba8cd164c43abe93cf0a67cd0e21262bee",
+  "sourceSha256": "38079063290cd275e91b83b41930d434e85cf1089997ec3a1bf4e65acb81739a",
+  "syntax": true,
+  "canonicalCheck": true
+}

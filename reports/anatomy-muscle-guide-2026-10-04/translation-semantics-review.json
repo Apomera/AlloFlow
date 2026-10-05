@@ -1,0 +1,34 @@
+{
+  "reviewedAt": "2026-10-04T22:27:28.190Z",
+  "reviewer": "/root/knee_review/muscle_locale_semantics",
+  "status": "passed",
+  "englishKeys": 74,
+  "nativeValues": 222,
+  "keysPerLanguage": 74,
+  "languages": [
+    "french",
+    "spanish_latin_america",
+    "arabic"
+  ],
+  "manifest": {
+    "path": "dev-tools/i18n/anatomy_muscle_guide_20261004.json",
+    "sha256": "37a1d5b24602285d6463eada87b7da6291147ff97dde16e199c218a3f158a3ab"
+  },
+  "reviewedInputs": {
+    "englishSha256": "9aa5b318a44bd6dc87f546f31ab6328f103480fb9372add85b59a97853432473",
+    "nativeSha256": "3c91f77d16911e333dec03af715ce679b38b33114cacd9f06d72d5067ae6501f"
+  },
+  "method": "Independent read-only semantic comparison of all 74 English labels and 222 native values by a second agent.",
+  "scope": [
+    "Four original activation step narratives",
+    "Myasthenia clinical title, nicotinic receptor loss, motor end plate safety factor and functional effect",
+    "Four mechanism captions",
+    "Anatomical terminology and numbered structure labels",
+    "Playback, navigation and clinical action labels",
+    "Scale labels and muscle-to-knee handoff",
+    "{current}/{total} placeholders and preserved Ca2+/Na+ tokens"
+  ],
+  "findings": "No concrete mistranslations or grammatical errors found. The native text preserves the English meaning.",
+  "defects": [],
+  "catalogEditsBySemanticReviewer": false
+}

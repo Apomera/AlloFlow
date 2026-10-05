@@ -1,0 +1,11 @@
+{
+  "observation": "Read-only diagnostic after the browser preflight stopped",
+  "driveFreeBytes": 14184448,
+  "freePhysicalMB": 810,
+  "freeVirtualMB": 746,
+  "pageFileAllocatedMB": 22697,
+  "ownedBrowserLaunched": false,
+  "ownedRegressionProcessesRemaining": false,
+  "unrelatedFilesOrProcessesChanged": false,
+  "cleanup": "Removed only the verified temporary prepared source copy from this thread workspace; repository source and mirror retained."
+}

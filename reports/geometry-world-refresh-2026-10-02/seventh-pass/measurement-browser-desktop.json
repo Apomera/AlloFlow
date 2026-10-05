@@ -1,0 +1,119 @@
+{
+  "startedAt": "2026-10-04T14:42:21.390Z",
+  "checks": [
+    {
+      "name": "desktop: solid native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 12,
+        "surface": 32,
+        "exact": true,
+        "solid": true
+      }
+    },
+    {
+      "name": "desktop: stepped native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 28,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "desktop: ring native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 8,
+        "surface": 32,
+        "exact": true,
+        "solid": false
+      }
+    },
+    {
+      "name": "desktop: partial native measurement has explicit units and truthful compact results",
+      "status": "pass",
+      "evidence": {
+        "volume": 1.5,
+        "surface": null,
+        "exact": false,
+        "solid": false
+      }
+    },
+    {
+      "name": "desktop: larger partial-block panel fits and scrolls without horizontal overflow",
+      "status": "pass",
+      "evidence": {
+        "rect": {
+          "x": 482,
+          "y": 75,
+          "right": 912,
+          "bottom": 315
+        },
+        "viewport": {
+          "width": 1280,
+          "height": 800
+        },
+        "width": 428,
+        "content": 428,
+        "scrollable": "auto",
+        "close": {
+          "width": 44,
+          "height": 44
+        },
+        "text": [
+          {
+            "text": "Bounding-box dimensions\n(units)",
+            "width": 396,
+            "content": 396
+          },
+          {
+            "text": "Grid-cell spans, including gaps and partial cells.",
+            "width": 396,
+            "content": 396
+          },
+          {
+            "text": "Exposed surface area\nExact exposed surface area is unavailable for partial blocks.",
+            "width": 396,
+            "content": 396
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop: compact inspector accessibility",
+      "status": "fail",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     id: 'aria-valid-attr-value',\n+     nodes: [\n+       {\n+         failureSummary: 'Fix all of the following:\\n' +\n+           '  Invalid ARIA attribute value: aria-controls=\"gw-history-panel\"',\n+         target: [\n+           '.gw-notebook-trigger'\n+         ]\n+       }\n+     ]\n+   }\n+ ]\n- []\n"
+    },
+    {
+      "name": "desktop: disclosure and close preserve geometry and student drafts",
+      "status": "pass",
+      "evidence": {
+        "preserved": true
+      }
+    },
+    {
+      "name": "desktop: actual 3D scene is nonblank with no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    }
+  ],
+  "failures": [
+    {
+      "name": "desktop: compact inspector accessibility",
+      "status": "fail",
+      "message": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     id: 'aria-valid-attr-value',\n+     nodes: [\n+       {\n+         failureSummary: 'Fix all of the following:\\n' +\n+           '  Invalid ARIA attribute value: aria-controls=\"gw-history-panel\"',\n+         target: [\n+           '.gw-notebook-trigger'\n+         ]\n+       }\n+     ]\n+   }\n+ ]\n- []\n"
+    }
+  ],
+  "screenshots": [
+    "desktop-solid-inspector.png",
+    "desktop-partial-inspector.png"
+  ],
+  "resourcesClosed": true,
+  "completedAt": "2026-10-04T14:43:15.670Z"
+}

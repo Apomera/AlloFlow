@@ -1,0 +1,14 @@
+{
+  "beforeSha256": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
+  "sourceSha256": "602f72891e3a4c4b4393f7bbad4ec09663732cd696ba720718343eba283e4aba",
+  "mirrorMatches": true,
+  "modelPrefixUnchanged": true,
+  "catalogKeys": [
+    "plot_choose_flight",
+    "plot_inspect_point",
+    "plot_view_analysis",
+    "plot_return_current",
+    "plot_return_latest"
+  ],
+  "stablePresentationKeys": true
+}

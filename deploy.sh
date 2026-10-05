@@ -327,7 +327,55 @@ BUILD_HASH=$(git rev-parse --short HEAD)
 echo "  Expected pluginCdnVersion (from HEAD): @${BUILD_HASH}"
 # Snapshot what is already dirty in the trees Steps 3-4.5 regenerate, so Step 6
 # commits only what the build wrote and leaves other sessions' in-flight files.
-GENERATED_ROOTS=(desktop/web-app/public app)
+# Keep this list aligned with build.js COMPILE_PAIRS; the deployment contract
+# test checks coverage. Root CDN outputs use the same before/after protection
+# as public files, so untouched pre-existing edits stay outside this commit.
+POST_MODULES=(
+  accessibility_evidence_module.js
+  allo_command_context_module.js
+  allo_commands_module.js
+  alt_text_module.js
+  app_styles_module.js
+  applied_challenge_module.js
+  brand_profile_editor_module.js
+  doc_builder_renderer_module.js
+  doc_pipeline_module.js
+  educator_evaluation_module.js
+  export_module.js
+  gemini_api_module.js
+  guided_mode_config_module.js
+  host_handlers_module.js
+  image_asset_editor_module.js
+  immersive_reader_module.js
+  lesson_teaching_script_module.js
+  live_aac_module.js
+  mailbox_script_source_module.js
+  memory_aid_module.js
+  persona_ui_module.js
+  personas_module.js
+  review_document_session_module.js
+  semantic_review_module.js
+  shared_activity_module.js
+  tts_module.js
+  udl_chat_module.js
+  verification_policy_module.js
+  video_studio_host_bridge_module.js
+  view_assignment_center_module.js
+  view_canvas_recovery_dialog_module.js
+  view_cold_path_surfaces_module.js
+  view_directions_composer_module.js
+  view_directions_result_module.js
+  view_end_session_preview_module.js
+  view_full_pack_run_module.js
+  view_lesson_teaching_script_module.js
+  view_live_session_dock_module.js
+  view_pdf_audit_module.js
+  view_persona_workspace_module.js
+  view_share_session_surfaces_module.js
+  view_sidebar_panels_module.js
+  view_video_ref_player_module.js
+)
+GENERATED_ROOTS=(desktop/web-app/public app "${POST_MODULES[@]}")
 _af_generated_dirty() {
   git status --porcelain=v1 -z -uall --no-renames -- "${GENERATED_ROOTS[@]}" |
   while IFS= read -r -d '' entry; do
@@ -427,16 +475,9 @@ if [[ -s "$DEPLOY_TMP/generated.lst" ]]; then
   tr '\n' '\0' < "$DEPLOY_TMP/generated.lst" > "$DEPLOY_TMP/generated.nul"
   git add --pathspec-from-file="$DEPLOY_TMP/generated.nul" --pathspec-file-nul
 fi
-# The Cloudflare CDN (alloflow-cdn.pages.dev) serves the REPO-ROOT compiled
-# modules. build.js (Step 3) recompiles the COMPILE_PAIRS each deploy but they
-# were never staged here — so doc_pipeline_module.js etc. lagged a deploy behind
-# on the CDN (only committed sporadically by other sessions). Stage them so the
-# served root module is fresh every deploy.
-POST_MODULES=(doc_pipeline_module.js persona_ui_module.js gemini_api_module.js tts_module.js personas_module.js export_module.js brand_profile_editor_module.js view_assignment_center_module.js view_directions_result_module.js)
-git add "${POST_MODULES[@]}" 2>/dev/null || true
 # Commit only this step's paths, by name: the index is shared, so a bare commit
 # would also take whatever another session had staged.
-{ printf '%s\n' "${POST_NAMED[@]}" "${POST_MODULES[@]}"; cat "$DEPLOY_TMP/generated.lst"; } | LC_ALL=C sort -u > "$DEPLOY_TMP/post_paths.lst"
+{ printf '%s\n' "${POST_NAMED[@]}"; cat "$DEPLOY_TMP/generated.lst"; } | LC_ALL=C sort -u > "$DEPLOY_TMP/post_paths.lst"
 _af_names git diff --cached --name-only --no-renames | LC_ALL=C comm -12 "$DEPLOY_TMP/post_paths.lst" - > "$DEPLOY_TMP/post_commit.lst"
 POST_COMMITTED=0
 if [[ ! -s "$DEPLOY_TMP/post_commit.lst" ]]; then

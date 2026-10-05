@@ -5,6 +5,7 @@
   function valid(p){return !!p&&[p.x,p.z,p.u,p.v].every(Number.isFinite);}
   function available(s,locked){
     if(locked||s.plated||s.time>=3600||s.log.length>=1200)return {ready:false,detail:'This recorded or finished cook can be explored, but new checks are locked.'};
+    if(s.pot.lid==='covered')return {ready:false,detail:'Lift the lid onto its rest before taking a fork sample.'};
     if(!s.pot.pasta||s.pot.drained)return {ready:false,detail:s.pot.drained?'The pasta is drained. Take a fresh sample from the pot before draining in your next cook.':'Add weighed pasta to boiling water before taking a fork sample.'};
     if(root.KitchenRecipes.serving(s).started)return {ready:false,detail:'Serving is in progress. Return the food to the pan before using cooking tools.'};
     return {ready:true,detail:'Start in the pot. Carry to the small saucer, press down, lift back, then release.'};

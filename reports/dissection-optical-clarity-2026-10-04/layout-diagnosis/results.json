@@ -1,0 +1,312 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-improving-interactivity-engagement-and/dissection-optical-2026-10-04/layout-diagnosis/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 240000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-optical-clarity.spec.ts",
+      "file": "dissection-optical-clarity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "optical controls are readable and independent on embedded-large",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 5336,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m275\u001b[39m\nReceived:    \u001b[31m294\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m275\u001b[39m\nReceived:    \u001b[31m294\u001b[39m\n    at readable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:57:92)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:95:3",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts",
+                      "column": 92,
+                      "line": 57
+                    },
+                    "snippet": "  55 | async function readable(p: Locator, available: number, large = false) {\n  56 |   const m = await metrics(p); expect(m.width).toBeLessThanOrEqual(available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);\n> 57 |   expect(Math.abs(m.width - m.parentWidth)).toBeLessThanOrEqual(1); expect(m.parentScroll).toBeLessThanOrEqual(m.parentClient + 1);\n     |                                                                                            ^\n  58 |   expect(m.buttons).toHaveLength(6);\n  59 |   for (const b of m.buttons) { expect(b.width).toBeGreaterThanOrEqual(47.9); expect(b.height).toBeGreaterThanOrEqual(47.9); expect(b.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(b.clipped).toBe(false); if (b.pressed === 'true') { expect(b.border).toBeGreaterThanOrEqual(2.9); expect(b.underline).toContain('underline'); } }\n  60 |   for (const t of m.text) { expect(t.font).toBeGreaterThanOrEqual(large ? 16 : 14); expect(t.clipped).toBe(false); }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts",
+                        "column": 92,
+                        "line": 57
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m275\u001b[39m\nReceived:    \u001b[31m294\u001b[39m\n\n  55 | async function readable(p: Locator, available: number, large = false) {\n  56 |   const m = await metrics(p); expect(m.width).toBeLessThanOrEqual(available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);\n> 57 |   expect(Math.abs(m.width - m.parentWidth)).toBeLessThanOrEqual(1); expect(m.parentScroll).toBeLessThanOrEqual(m.parentClient + 1);\n     |                                                                                            ^\n  58 |   expect(m.buttons).toHaveLength(6);\n  59 |   for (const b of m.buttons) { expect(b.width).toBeGreaterThanOrEqual(47.9); expect(b.height).toBeGreaterThanOrEqual(47.9); expect(b.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(b.clipped).toBe(false); if (b.pressed === 'true') { expect(b.border).toBeGreaterThanOrEqual(2.9); expect(b.underline).toContain('underline'); } }\n  60 |   for (const t of m.text) { expect(t.font).toBeGreaterThanOrEqual(large ? 16 : 14); expect(t.clipped).toBe(false); }\n    at readable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:57:92)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:95:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T01:55:38.815Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts",
+                    "column": 92,
+                    "line": 57
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "080b00e26b2aba23afc8-a881d3adfb8c0f218c4a",
+          "file": "dissection-optical-clarity.spec.ts",
+          "line": 82,
+          "column": 30
+        },
+        {
+          "title": "optical controls are readable and independent on forced-colors",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4245,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2.9\u001b[39m\nReceived:    \u001b[31m1\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2.9\u001b[39m\nReceived:    \u001b[31m1\u001b[39m\n    at readable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:59:257)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:95:3",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts",
+                      "column": 257,
+                      "line": 59
+                    },
+                    "snippet": "  57 |   expect(Math.abs(m.width - m.parentWidth)).toBeLessThanOrEqual(1); expect(m.parentScroll).toBeLessThanOrEqual(m.parentClient + 1);\n  58 |   expect(m.buttons).toHaveLength(6);\n> 59 |   for (const b of m.buttons) { expect(b.width).toBeGreaterThanOrEqual(47.9); expect(b.height).toBeGreaterThanOrEqual(47.9); expect(b.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(b.clipped).toBe(false); if (b.pressed === 'true') { expect(b.border).toBeGreaterThanOrEqual(2.9); expect(b.underline).toContain('underline'); } }\n     |                                                                                                                                                                                                                                                                 ^\n  60 |   for (const t of m.text) { expect(t.font).toBeGreaterThanOrEqual(large ? 16 : 14); expect(t.clipped).toBe(false); }\n  61 |   return m;\n  62 | }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts",
+                        "column": 257,
+                        "line": 59
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m2.9\u001b[39m\nReceived:    \u001b[31m1\u001b[39m\n\n  57 |   expect(Math.abs(m.width - m.parentWidth)).toBeLessThanOrEqual(1); expect(m.parentScroll).toBeLessThanOrEqual(m.parentClient + 1);\n  58 |   expect(m.buttons).toHaveLength(6);\n> 59 |   for (const b of m.buttons) { expect(b.width).toBeGreaterThanOrEqual(47.9); expect(b.height).toBeGreaterThanOrEqual(47.9); expect(b.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(b.clipped).toBe(false); if (b.pressed === 'true') { expect(b.border).toBeGreaterThanOrEqual(2.9); expect(b.underline).toContain('underline'); } }\n     |                                                                                                                                                                                                                                                                 ^\n  60 |   for (const t of m.text) { expect(t.font).toBeGreaterThanOrEqual(large ? 16 : 14); expect(t.clipped).toBe(false); }\n  61 |   return m;\n  62 | }\n    at readable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:59:257)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:95:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T01:55:55.868Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts",
+                    "column": 257,
+                    "line": 59
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "080b00e26b2aba23afc8-57eb8cd6ab33241d2bdd",
+          "file": "dissection-optical-clarity.spec.ts",
+          "line": 82,
+          "column": 30
+        },
+        {
+          "title": "resizing and text spacing preserve optical focus and settings",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3892,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m275\u001b[39m\nReceived:    \u001b[31m294\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m275\u001b[39m\nReceived:    \u001b[31m294\u001b[39m\n    at readable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:57:92)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:119:176",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts",
+                      "column": 92,
+                      "line": 57
+                    },
+                    "snippet": "  55 | async function readable(p: Locator, available: number, large = false) {\n  56 |   const m = await metrics(p); expect(m.width).toBeLessThanOrEqual(available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);\n> 57 |   expect(Math.abs(m.width - m.parentWidth)).toBeLessThanOrEqual(1); expect(m.parentScroll).toBeLessThanOrEqual(m.parentClient + 1);\n     |                                                                                            ^\n  58 |   expect(m.buttons).toHaveLength(6);\n  59 |   for (const b of m.buttons) { expect(b.width).toBeGreaterThanOrEqual(47.9); expect(b.height).toBeGreaterThanOrEqual(47.9); expect(b.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(b.clipped).toBe(false); if (b.pressed === 'true') { expect(b.border).toBeGreaterThanOrEqual(2.9); expect(b.underline).toContain('underline'); } }\n  60 |   for (const t of m.text) { expect(t.font).toBeGreaterThanOrEqual(large ? 16 : 14); expect(t.clipped).toBe(false); }"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts",
+                        "column": 92,
+                        "line": 57
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m275\u001b[39m\nReceived:    \u001b[31m294\u001b[39m\n\n  55 | async function readable(p: Locator, available: number, large = false) {\n  56 |   const m = await metrics(p); expect(m.width).toBeLessThanOrEqual(available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);\n> 57 |   expect(Math.abs(m.width - m.parentWidth)).toBeLessThanOrEqual(1); expect(m.parentScroll).toBeLessThanOrEqual(m.parentClient + 1);\n     |                                                                                            ^\n  58 |   expect(m.buttons).toHaveLength(6);\n  59 |   for (const b of m.buttons) { expect(b.width).toBeGreaterThanOrEqual(47.9); expect(b.height).toBeGreaterThanOrEqual(47.9); expect(b.font).toBeGreaterThanOrEqual(large ? 18 : 16); expect(b.clipped).toBe(false); if (b.pressed === 'true') { expect(b.border).toBeGreaterThanOrEqual(2.9); expect(b.underline).toContain('underline'); } }\n  60 |   for (const t of m.text) { expect(t.font).toBeGreaterThanOrEqual(large ? 16 : 14); expect(t.clipped).toBe(false); }\n    at readable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:57:92)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts:119:176"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T01:56:06.593Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\layout-diagnosis\\test-results\\dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-optical-clarity.spec.ts",
+                    "column": 92,
+                    "line": 57
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "080b00e26b2aba23afc8-5685d2413ea18847d5d6",
+          "file": "dissection-optical-clarity.spec.ts",
+          "line": 114,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-05T01:55:24.881Z",
+    "duration": 47170.747,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

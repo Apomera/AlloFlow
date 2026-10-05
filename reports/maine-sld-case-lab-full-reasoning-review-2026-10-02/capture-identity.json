@@ -1,0 +1,32 @@
+[
+  {
+    "file": "participant-review-before-guide-1366.png",
+    "oldSha256": "ca6a8d1d97e5c9a4e8c1cd975299cfbbf043d4991c022e7524277ab378fad860",
+    "finalSha256": "ca6a8d1d97e5c9a4e8c1cd975299cfbbf043d4991c022e7524277ab378fad860",
+    "identical": true
+  },
+  {
+    "file": "full-review-marisol-literal-320-dark.png",
+    "oldSha256": "65a792490403b5e9795618b220ce3f390a742b877bb207fc267272e02bd44969",
+    "finalSha256": "65a792490403b5e9795618b220ce3f390a742b877bb207fc267272e02bd44969",
+    "identical": true
+  },
+  {
+    "file": "full-review-marisol-expanded-1366-light.png",
+    "oldSha256": "1231c1fdde37eb37dc6524b54f1297b2a51ad4da6a5def64e1ef78598edb1190",
+    "finalSha256": "1231c1fdde37eb37dc6524b54f1297b2a51ad4da6a5def64e1ef78598edb1190",
+    "identical": true
+  },
+  {
+    "file": "full-review-evidence-detour-return-390-light.png",
+    "oldSha256": "9e6af67168aba2bcb3afc62009e4718dbf94b803a76783213bcf2380e83632ab",
+    "finalSha256": "21be1cf5922594ae7d059408d9fe4071b23c4d8cb700b40abc7a5e84aa15e9c2",
+    "identical": false
+  },
+  {
+    "file": "full-review-returned-controls-1366-light.png",
+    "oldSha256": "1a3fd39b612d86893c6bb5005b3c06d28fa4e11b3a6946985a7dc626369d6fc3",
+    "finalSha256": "1a3fd39b612d86893c6bb5005b3c06d28fa4e11b3a6946985a7dc626369d6fc3",
+    "identical": true
+  }
+]

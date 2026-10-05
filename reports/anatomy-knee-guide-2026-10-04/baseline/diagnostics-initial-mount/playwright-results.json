@@ -1,0 +1,143 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\knee-baseline.config.cjs",
+    "rootDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-4",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-4/knee-baseline-test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-4",
+        "testIgnore": [],
+        "testMatch": [
+          "knee-baseline.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-knee-guide-2026-10-04/baseline/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "knee-baseline.spec.ts",
+      "file": "knee-baseline.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Read-only knee baseline using real app CSS",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 16592,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-anatomy-atlas=\"patella\"]')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-anatomy-atlas=\"patella\"]')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-anatomy-atlas=\"patella\"]')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-anatomy-atlas=\"patella\"]')\u001b[22m\n\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\knee-baseline.spec.ts:18:322",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\knee-baseline.spec.ts",
+                      "column": 322,
+                      "line": 18
+                    },
+                    "snippet": "  16 |   await page.evaluate(()=>{const ctx=(window as any).__ctx;ctx.gradeLevel='9';ctx.gradeBand='g912';ctx.updateMulti('anatomy',{});});\n  17 |   for(const view of [{width:1280,theme:'light',clinical:false,name:'desktop-light'},{width:320,theme:'dark',clinical:false,name:'phone-dark'},{width:320,theme:'dark',clinical:true,name:'phone-dark-clinical-step-4'}]){\n> 18 |    await page.setViewportSize({width:view.width,height:1000});await page.evaluate(v=>{document.body.className=v.theme==='dark'?'theme-dark':'';(window as any).__ctx.updateMulti('anatomy',{_regionalAtlasStep:v.clinical?3:0,_regionalAtlasClinical:v.clinical});},view);const atlas=page.locator(selector);await expect(atlas).toBeVisible();\n     |                                                                                                                                                                                                                                                                                                                                  ^\n  19 |    const metrics=await atlas.evaluate(el=>{\n  20 |     const texts=[...el.querySelectorAll('svg text')].filter(node=>node.getBoundingClientRect().width&&node.getBoundingClientRect().height).map(node=>{const text=node as SVGTextElement,css=getComputedStyle(text),m=text.getScreenCTM(),b=text.getBoundingClientRect();return {text:text.textContent,font:parseFloat(css.fontSize),effectiveFont:parseFloat(css.fontSize)*(m?Math.hypot(m.c,m.d):0),box:{x:b.x,y:b.y,width:b.width,height:b.height}};});\n  21 |     const intersections:any[]=[];for(let i=0;i<texts.length;i++)for(let j=i+1;j<texts.length;j++){const a=texts[i].box,b=texts[j].box;if(Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)>0.5&&Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y)>0.5)intersections.push([texts[i].text,texts[j].text]);}"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\knee-baseline.spec.ts",
+                        "column": 322,
+                        "line": 18
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-anatomy-atlas=\"patella\"]')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-anatomy-atlas=\"patella\"]')\u001b[22m\n\n\n  16 |   await page.evaluate(()=>{const ctx=(window as any).__ctx;ctx.gradeLevel='9';ctx.gradeBand='g912';ctx.updateMulti('anatomy',{});});\n  17 |   for(const view of [{width:1280,theme:'light',clinical:false,name:'desktop-light'},{width:320,theme:'dark',clinical:false,name:'phone-dark'},{width:320,theme:'dark',clinical:true,name:'phone-dark-clinical-step-4'}]){\n> 18 |    await page.setViewportSize({width:view.width,height:1000});await page.evaluate(v=>{document.body.className=v.theme==='dark'?'theme-dark':'';(window as any).__ctx.updateMulti('anatomy',{_regionalAtlasStep:v.clinical?3:0,_regionalAtlasClinical:v.clinical});},view);const atlas=page.locator(selector);await expect(atlas).toBeVisible();\n     |                                                                                                                                                                                                                                                                                                                                  ^\n  19 |    const metrics=await atlas.evaluate(el=>{\n  20 |     const texts=[...el.querySelectorAll('svg text')].filter(node=>node.getBoundingClientRect().width&&node.getBoundingClientRect().height).map(node=>{const text=node as SVGTextElement,css=getComputedStyle(text),m=text.getScreenCTM(),b=text.getBoundingClientRect();return {text:text.textContent,font:parseFloat(css.fontSize),effectiveFont:parseFloat(css.fontSize)*(m?Math.hypot(m.c,m.d):0),box:{x:b.x,y:b.y,width:b.width,height:b.height}};});\n  21 |     const intersections:any[]=[];for(let i=0;i<texts.length;i++)for(let j=i+1;j<texts.length;j++){const a=texts[i].box,b=texts[j].box;if(Math.min(a.x+a.width,b.x+b.width)-Math.max(a.x,b.x)>0.5&&Math.min(a.y+a.height,b.y+b.height)-Math.max(a.y,b.y)>0.5)intersections.push([texts[i].text,texts[j].text]);}\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\knee-baseline.spec.ts:18:322"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:04:08.275Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\knee-baseline-test-results\\knee-baseline-Read-only-knee-baseline-using-real-app-CSS\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\knee-baseline.spec.ts",
+                    "column": 322,
+                    "line": 18
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b2af37d97feb269ca555-05ccf23a6c8a40cc4433",
+          "file": "knee-baseline.spec.ts",
+          "line": 9,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T06:04:06.921Z",
+    "duration": 18560.780000000002,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,130 @@
+{
+  "reviewedAt": "2026-10-04T14:39:42.438Z",
+  "reviewer": "/root/knee_review",
+  "method": "Independent source review and direct view_image inspection of all six saved captures at original detail. No browser tests rerun.",
+  "sourcePin": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "runtimeSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "mirrorSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "baselineSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "runtimeMirrorsIdentical": true,
+  "sourceReview": {
+    "status": "passed",
+    "scopeReversalExact": true,
+    "syntaxPassed": true,
+    "originalLiteralPathsPreserved": 19,
+    "originalRoutesPreserved": [
+      {
+        "step": 0,
+        "path": "M249 151 C269 129 324 122 374 149 C390 165 385 194 366 207 C329 226 282 218 258 196",
+        "color": "#64748b",
+        "marker": "anatomy-arrow-joint"
+      },
+      {
+        "step": 1,
+        "path": "M220 28 L226 116 L230 180 C242 205 257 229 275 244",
+        "color": "#dc2626",
+        "marker": "anatomy-arrow-extension"
+      },
+      {
+        "step": 2,
+        "path": "M382 294 C414 263 421 214 405 175 C396 153 383 136 364 124",
+        "color": "#7c3aed",
+        "marker": "anatomy-arrow-flexion"
+      },
+      {
+        "step": 3,
+        "path": "M289 193 L351 139 M333 191 L292 139 M369 136 C385 160 393 193 408 231",
+        "color": "#059669",
+        "marker": "anatomy-arrow-stability"
+      }
+    ],
+    "originalMechanismsPreserved": true,
+    "clinicalGeometryPreserved": true,
+    "findings": [
+      "Functional state updates merge against the latest anatomy state and preserve unrelated learning work.",
+      "Control context rejects stale navigation, atlas, step, playback, clinical, model focus, study-sheet and gallery actions.",
+      "Step changes preserve paused playback and avoid duplicate narration outside the atomic polite detail.",
+      "The knee-to-biceps handoff retains latest saved work and playback preference, selects canonical destination context, opens step 4 of 4 with clinical reset, and uses the existing delayed focus guard.",
+      "Diagram orientation matches the preserved original lateral schematic and the HTML cue.",
+      "SVG title/description IDs and arrow marker IDs are unique across the two figures."
+    ],
+    "clinicalOverlayPaintsAboveRoutes": true
+  },
+  "screenshots": [
+    {
+      "filename": "desktop-light-knee-guide.png",
+      "sha256": "a51536f57f5d10d0ffa76509e58dd9de3baf4193bc21fbefc72cd21d08bce116",
+      "viewed": true,
+      "detail": "original",
+      "review": "Clear overview and support figures. All numbered markers remain within the crop. The seven support leader lines converge around the cruciates, but remain individually traceable from their exterior circles to the preserved targets. Text, structure keys, controls, and orientation cue are clear.",
+      "defects": []
+    },
+    {
+      "filename": "desktop-knee-clinical-step-4.png",
+      "sha256": "c57538b6755d09df9b18b919d530ee2a52b18685d25614931b9a5ca1770b7fca",
+      "viewed": true,
+      "detail": "original",
+      "review": "The unchanged purple split ACL and red discontinuity X now paint above the active green stability route. The red X is clearly visible at the cruciate intersection. Clinical text, active keys, marker leaders, and controls remain clear.",
+      "defects": []
+    },
+    {
+      "filename": "phone-light-knee-guide.png",
+      "sha256": "2d4dc7440376942fa0f2ddb96df6a710844fde9eaf14e73e8b5b14c398087bb8",
+      "viewed": true,
+      "detail": "original",
+      "review": "At 320px, controls and long text stack cleanly. Numbered circles and ordered keys remain legible; leader endpoints are close around the cruciates but can be followed. No cropping or collision between marker circles.",
+      "defects": []
+    },
+    {
+      "filename": "phone-dark-knee-guide.png",
+      "sha256": "39d0c83608c93b79ba64e284543e4adb71fcf8f959420d461c49cd086b13f3ea",
+      "viewed": true,
+      "detail": "original",
+      "review": "Dark HTML cards retain clear text and cyan selection/focus cues. The light diagram surface preserves anatomical contrast; keys wrap within their cards without clipping.",
+      "defects": []
+    },
+    {
+      "filename": "phone-arabic-dark-larger-knee-guide.png",
+      "sha256": "048e2301180f56049f5e65841717bf16be47420565c372aa7fa6fd2a8fd08c5a",
+      "viewed": true,
+      "detail": "original",
+      "review": "Native RTL text, larger typography, clinical panel, and controls wrap within their cards. The diagram orientation stays stable; selected keys remain clear. The red ACL discontinuity X is now visible above the stability route, resolving the previous clinical occlusion.",
+      "defects": []
+    },
+    {
+      "filename": "phone-forced-colors-knee-guide.png",
+      "sha256": "27ede61a4b39f0b104cb9d566b6dbbf98b97ea263cd145b7d88a272071f58e99",
+      "viewed": true,
+      "detail": "original",
+      "review": "Selected keys and steps have visible purple outlines; keyboard focus remains distinct. Monochrome legend symbols and HTML labels remain readable; numbered schematic markers retain current-state contrast.",
+      "defects": []
+    }
+  ],
+  "defects": [],
+  "overallStatus": "passed",
+  "browserRunnerReview": {
+    "runnerProofSha256": "0a61d39fdaa6fbe51ad69f06054a2cf3d385d07077d6a9486f75c8701c5726f1",
+    "expectedSource": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+    "expectedFixture": "e322263597682212793b71f825ebd2baf8637ef508a25022b495574e91f24bc6",
+    "exitCode": 0,
+    "allPinnedFilesUnchanged": true,
+    "runtimeMirrorsIdentical": true,
+    "status": "passed"
+  },
+  "resolvedDefects": [
+    {
+      "id": "KNEE-VIS-01",
+      "priority": 2,
+      "title": "Active stability route obscures the ACL tear",
+      "locations": [
+        "desktop-knee-clinical-step-4.png",
+        "phone-arabic-dark-larger-knee-guide.png"
+      ],
+      "detail": "The unchanged clinical overlay is drawn before kneeRoute(3). The active green route retraces the continuous ACL and covers the purple discontinuity/red X, making the clinical comparison hard to read.",
+      "suggestedFix": "Draw the unchanged two-path clinical overlay after the four routes so the discontinuity marker remains visible.",
+      "status": "resolved",
+      "resolution": "The original two clinical paths paint after the four unchanged movement routes. Both final clinical captures show the red discontinuity marker above the green stability route."
+    }
+  ],
+  "priorEvidence": "../browser-c7eb2488-01/independent-visual-review.json"
+}

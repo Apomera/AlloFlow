@@ -11822,7 +11822,7 @@
         d.mode === 'reference' && _renderReferencePanel(d, upd, h),
         d.mode === 'sleuth' && _renderSleuthPanel(d, upd, h, addToast),
         d.mode === 'quiz' && h('div', { className: 'opticslab-dark-panel', 'data-op-dark-panel': 'quiz' }, _renderQuizPanel(d, upd, h, addToast, awardXP, setOpCeleb)),
-        d.mode === 'viz' && _renderVizPanel(d, upd, h),
+        d.mode === 'viz' && _renderVizPanel(d, upd, h, ctx),
         d.mode === 'mastery' && _renderMasteryPanel(d, upd, h),
         d.mode === 'inquiry' && (function() {
           // `|| defaults` only covers a MISSING object, not a partial one. A
@@ -22566,8 +22566,8 @@
       return typeof title === 'string' ? title + ' ' + (typeof desc === 'string' ? desc : '') : null;
     } catch (e) { return null; }
   }
-  function _renderVizPanel(d, upd, h) {
-    var panel = _renderVizPanelAll(d, upd, h);
+  function _renderVizPanel(d, upd, h, ctx) {
+    var panel = _renderVizPanelAll(d, upd, h, ctx);
     var kids = [].concat(panel.props.children).filter(Boolean);
     var intro = kids[0];
     var cards = kids.slice(1).map(function(c, i) {
@@ -22599,7 +22599,7 @@
     );
     return h(panel.type, panel.props, intro, search, shown);
   }
-  function _renderVizPanelAll(d, upd, h) {
+  function _renderVizPanelAll(d, upd, h, ctx) {
     return h('div', { className: 'opticslab-dark-panel', 'data-op-dark-panel': 'viz' },
       h('div', { style: { background: 'rgba(20,184,166,0.10)', border: '1px solid rgba(20,184,166,0.40)', borderRadius: 12, padding: '12px 14px', marginBottom: 14 } },
         h('h3', { style: { color: '#5eead4', fontSize: 17, fontWeight: 900, margin: '0 0 4px' } }, '🔬 Visual Optics Lab'),
@@ -30014,6 +30014,10 @@
           }, d.vizShowL96 ? 'Hide' : 'Open')
         ),
         h('p', { style: { fontSize: 11, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 0, marginBottom: 8, lineHeight: 1.5 } }, "10 famous optical illusions."),
+        h('button', {
+          type: 'button', onClick: function () { if (ctx && typeof ctx.setStemLabTool === 'function') ctx.setStemLabTool('perceptionLab'); },
+          style: { minHeight: 44, minWidth: 44, padding: '8px 12px', marginBottom: 8, border: '1px solid #0f766e', borderRadius: 8, background: '#f0fdfa', color: '#115e59', fontSize: 13, fontWeight: 700, cursor: 'pointer' }
+        }, __alloT('stem.perception.open_lab', 'Explore interactive illusions in Perception Lab')),
         d.vizShowL96 && h('div', { style: { marginTop: 8 } },
           h('div', { style: { padding: 12, borderRadius: 8, background: 'rgba(15,23,42,0.7)' } },
                         h('div', { style: { marginBottom: 8 } },

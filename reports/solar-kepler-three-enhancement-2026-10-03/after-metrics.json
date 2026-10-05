@@ -1,0 +1,1012 @@
+[
+  {
+    "dark": true,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 10.437777686203559,
+    "minimumTargetHeight": 44,
+    "plot": {
+      "width": 594,
+      "height": 382,
+      "left": 66,
+      "right": 570,
+      "top": 32,
+      "bottom": 322,
+      "labels": [
+        {
+          "text": "Mercury",
+          "x": 111.03938013686346,
+          "y": 288.10922569823373,
+          "width": 46.947265625,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Venus",
+          "x": 105.56226080747908,
+          "y": 257.05953063819186,
+          "width": 36.1435546875,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Earth",
+          "x": 136.92822265625,
+          "y": 240.9473684210526,
+          "width": 31.07177734375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Mars",
+          "x": 173.26901024691858,
+          "y": 220.00717086589214,
+          "width": 28.88818359375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Jupiter",
+          "x": 321.7007141672601,
+          "y": 158.9777474162656,
+          "width": 39.01904296875,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Saturn",
+          "x": 370.8235327584279,
+          "y": 128.8217117560743,
+          "width": 38.3017578125,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Uranus",
+          "x": 365.600102054788,
+          "y": 94.09053011433772,
+          "width": 41.9072265625,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Neptune",
+          "x": 394.7683375683466,
+          "y": 71.75852891191627,
+          "width": 49.14990234375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Pluto",
+          "x": 485.99040021288516,
+          "y": 86.2262650624557,
+          "width": 29.630859375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Ceres",
+          "x": 270.5669517391739,
+          "y": 190.3684812664062,
+          "width": 34.67724609375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Haumea",
+          "x": 424.02162515599423,
+          "y": 53.8022351023877,
+          "width": 49.13720703125,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Eris",
+          "x": 529.6739529435808,
+          "y": 34,
+          "width": 22.38818359375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Halley’s Comet",
+          "x": 421.54825072606616,
+          "y": 125.71827813205175,
+          "width": 87.1787109375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Encke’s Comet",
+          "x": 145.28470444394648,
+          "y": 201.37656774616121,
+          "width": 87.18505859375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        }
+      ],
+      "points": [
+        {
+          "id": "mercury",
+          "x": 101.03938013686346,
+          "y": 308.10922569823373
+        },
+        {
+          "id": "venus",
+          "x": 151.70581549497908,
+          "y": 277.05953063819186
+        },
+        {
+          "id": "earth",
+          "x": 178,
+          "y": 260.9473684210526
+        },
+        {
+          "id": "mars",
+          "x": 212.15719384066858,
+          "y": 240.00717086589214
+        },
+        {
+          "id": "jupiter",
+          "x": 311.7007141672601,
+          "y": 178.9777474162656
+        },
+        {
+          "id": "saturn",
+          "x": 360.8235327584279,
+          "y": 148.8217117560743
+        },
+        {
+          "id": "uranus",
+          "x": 417.507328617288,
+          "y": 114.09053011433772
+        },
+        {
+          "id": "neptune",
+          "x": 453.9182399120966,
+          "y": 91.75852891191627
+        },
+        {
+          "id": "pluto",
+          "x": 475.99040021288516,
+          "y": 78.2262650624557
+        },
+        {
+          "id": "ceres",
+          "x": 260.5669517391739,
+          "y": 210.3684812664062
+        },
+        {
+          "id": "haumea",
+          "x": 483.15883218724423,
+          "y": 73.8022351023877
+        },
+        {
+          "id": "eris",
+          "x": 519.6739529435808,
+          "y": 51.39526142095224
+        },
+        {
+          "id": "halley",
+          "x": 411.54825072606616,
+          "y": 117.71827813205175
+        },
+        {
+          "id": "encke",
+          "x": 242.46976303769648,
+          "y": 221.37656774616121
+        }
+      ]
+    },
+    "localTable": {
+      "clientWidth": 990,
+      "scrollWidth": 990
+    }
+  },
+  {
+    "dark": false,
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "minimumContrast": 6.958706037426012,
+    "minimumTargetHeight": 44,
+    "plot": {
+      "width": 594,
+      "height": 382,
+      "left": 66,
+      "right": 570,
+      "top": 32,
+      "bottom": 322,
+      "labels": [
+        {
+          "text": "Mercury",
+          "x": 111.03938013686346,
+          "y": 288.10922569823373,
+          "width": 46.947265625,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Venus",
+          "x": 105.56226080747908,
+          "y": 257.05953063819186,
+          "width": 36.1435546875,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Earth",
+          "x": 136.92822265625,
+          "y": 240.9473684210526,
+          "width": 31.07177734375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Mars",
+          "x": 173.26901024691858,
+          "y": 220.00717086589214,
+          "width": 28.88818359375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Jupiter",
+          "x": 321.7007141672601,
+          "y": 158.9777474162656,
+          "width": 39.01904296875,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Saturn",
+          "x": 370.8235327584279,
+          "y": 128.8217117560743,
+          "width": 38.3017578125,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Uranus",
+          "x": 365.600102054788,
+          "y": 94.09053011433772,
+          "width": 41.9072265625,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Neptune",
+          "x": 394.7683375683466,
+          "y": 71.75852891191627,
+          "width": 49.14990234375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Pluto",
+          "x": 485.99040021288516,
+          "y": 86.2262650624557,
+          "width": 29.630859375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Ceres",
+          "x": 270.5669517391739,
+          "y": 190.3684812664062,
+          "width": 34.67724609375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Haumea",
+          "x": 424.02162515599423,
+          "y": 53.8022351023877,
+          "width": 49.13720703125,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Eris",
+          "x": 529.6739529435808,
+          "y": 34,
+          "width": 22.38818359375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Halley’s Comet",
+          "x": 421.54825072606616,
+          "y": 125.71827813205175,
+          "width": 87.1787109375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Encke’s Comet",
+          "x": 145.28470444394648,
+          "y": 201.37656774616121,
+          "width": 87.18505859375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        }
+      ],
+      "points": [
+        {
+          "id": "mercury",
+          "x": 101.03938013686346,
+          "y": 308.10922569823373
+        },
+        {
+          "id": "venus",
+          "x": 151.70581549497908,
+          "y": 277.05953063819186
+        },
+        {
+          "id": "earth",
+          "x": 178,
+          "y": 260.9473684210526
+        },
+        {
+          "id": "mars",
+          "x": 212.15719384066858,
+          "y": 240.00717086589214
+        },
+        {
+          "id": "jupiter",
+          "x": 311.7007141672601,
+          "y": 178.9777474162656
+        },
+        {
+          "id": "saturn",
+          "x": 360.8235327584279,
+          "y": 148.8217117560743
+        },
+        {
+          "id": "uranus",
+          "x": 417.507328617288,
+          "y": 114.09053011433772
+        },
+        {
+          "id": "neptune",
+          "x": 453.9182399120966,
+          "y": 91.75852891191627
+        },
+        {
+          "id": "pluto",
+          "x": 475.99040021288516,
+          "y": 78.2262650624557
+        },
+        {
+          "id": "ceres",
+          "x": 260.5669517391739,
+          "y": 210.3684812664062
+        },
+        {
+          "id": "haumea",
+          "x": 483.15883218724423,
+          "y": 73.8022351023877
+        },
+        {
+          "id": "eris",
+          "x": 519.6739529435808,
+          "y": 51.39526142095224
+        },
+        {
+          "id": "halley",
+          "x": 411.54825072606616,
+          "y": 117.71827813205175
+        },
+        {
+          "id": "encke",
+          "x": 242.46976303769648,
+          "y": 221.37656774616121
+        }
+      ]
+    },
+    "localTable": {
+      "clientWidth": 990,
+      "scrollWidth": 990
+    }
+  },
+  {
+    "dark": true,
+    "width": 736,
+    "scrollWidth": 736,
+    "errors": [],
+    "minimumContrast": 10.437777686203559,
+    "minimumTargetHeight": 44,
+    "plot": {
+      "width": 672,
+      "height": 432,
+      "left": 66,
+      "right": 648,
+      "top": 32,
+      "bottom": 372,
+      "labels": [
+        {
+          "text": "Mercury",
+          "x": 116.4621413485209,
+          "y": 335.7142646117223,
+          "width": 46.947265625,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Venus",
+          "x": 118.82625606265441,
+          "y": 299.31117385167323,
+          "width": 36.1435546875,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Earth",
+          "x": 154.26155598958331,
+          "y": 280.42105263157896,
+          "width": 31.07177734375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Mars",
+          "x": 195.88857596035538,
+          "y": 255.87047618759766,
+          "width": 28.88818359375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Jupiter",
+          "x": 359.7258246931457,
+          "y": 184.3187383501045,
+          "width": 39.01904296875,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Saturn",
+          "x": 416.45098425675604,
+          "y": 148.96338619677678,
+          "width": 38.3017578125,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Uranus",
+          "x": 420.00004576936834,
+          "y": 108.24406978922352,
+          "width": 41.9072265625,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Neptune",
+          "x": 454.8033032690282,
+          "y": 82.06172355190182,
+          "width": 49.14990234375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Pluto",
+          "x": 549.4412954839269,
+          "y": 94.19631076287908,
+          "width": 29.630859375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Ceres",
+          "x": 300.67850379404604,
+          "y": 221.12166769164864,
+          "width": 34.67724609375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Haumea",
+          "x": 488.58192061354384,
+          "y": 61.0095170165925,
+          "width": 49.13720703125,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Eris",
+          "x": 599.8853980419922,
+          "y": 34.73927201077157,
+          "width": 22.38818359375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Halley’s Comet",
+          "x": 475.0259561955764,
+          "y": 140.49729160309516,
+          "width": 87.1787109375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        },
+        {
+          "text": "Encke’s Comet",
+          "x": 172.59550110454234,
+          "y": 234.027700116189,
+          "width": 87.18505859375,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        }
+      ],
+      "points": [
+        {
+          "id": "mercury",
+          "x": 106.4621413485209,
+          "y": 355.7142646117223
+        },
+        {
+          "id": "venus",
+          "x": 164.9698107501544,
+          "y": 319.31117385167323
+        },
+        {
+          "id": "earth",
+          "x": 195.33333333333331,
+          "y": 300.42105263157896
+        },
+        {
+          "id": "mars",
+          "x": 234.77675955410538,
+          "y": 275.87047618759766
+        },
+        {
+          "id": "jupiter",
+          "x": 349.7258246931457,
+          "y": 204.3187383501045
+        },
+        {
+          "id": "saturn",
+          "x": 406.45098425675604,
+          "y": 168.96338619677678
+        },
+        {
+          "id": "uranus",
+          "x": 471.90727233186834,
+          "y": 128.24406978922352
+        },
+        {
+          "id": "neptune",
+          "x": 513.9532056127782,
+          "y": 102.06172355190182
+        },
+        {
+          "id": "pluto",
+          "x": 539.4412954839269,
+          "y": 86.19631076287908
+        },
+        {
+          "id": "ceres",
+          "x": 290.67850379404604,
+          "y": 241.12166769164864
+        },
+        {
+          "id": "haumea",
+          "x": 547.7191276447938,
+          "y": 81.0095170165925
+        },
+        {
+          "id": "eris",
+          "x": 589.8853980419922,
+          "y": 54.73927201077157
+        },
+        {
+          "id": "halley",
+          "x": 465.0259561955764,
+          "y": 132.49729160309516
+        },
+        {
+          "id": "encke",
+          "x": 269.78055969829234,
+          "y": 254.027700116189
+        }
+      ]
+    },
+    "localTable": {
+      "clientWidth": 666,
+      "scrollWidth": 666
+    }
+  },
+  {
+    "dark": false,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 6.958706037426012,
+    "minimumTargetHeight": 44,
+    "plot": {
+      "width": 272,
+      "height": 360,
+      "left": 52,
+      "right": 248,
+      "top": 32,
+      "bottom": 300,
+      "labels": [
+        {
+          "text": "Jupiter",
+          "x": 157.5502777317123,
+          "y": 147.82771140537648,
+          "width": 39.01904296875,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        }
+      ],
+      "points": [
+        {
+          "id": "mercury",
+          "x": 65.62642560878024,
+          "y": 287.16300857629875
+        },
+        {
+          "id": "venus",
+          "x": 85.33003935915853,
+          "y": 258.4688076242601
+        },
+        {
+          "id": "earth",
+          "x": 95.55555555555554,
+          "y": 243.57894736842104
+        },
+        {
+          "id": "mars",
+          "x": 108.83890871581556,
+          "y": 224.2273165243417
+        },
+        {
+          "id": "jupiter",
+          "x": 147.5502777317123,
+          "y": 167.82771140537648
+        },
+        {
+          "id": "saturn",
+          "x": 166.65359607272197,
+          "y": 139.95937500216522
+        },
+        {
+          "id": "uranus",
+          "x": 188.69729446227868,
+          "y": 107.86297265738796
+        },
+        {
+          "id": "neptune",
+          "x": 202.8570932991487,
+          "y": 87.22512327032263
+        },
+        {
+          "id": "pluto",
+          "x": 211.44071119389977,
+          "y": 74.71944495426939
+        },
+        {
+          "id": "ceres",
+          "x": 127.6649256763454,
+          "y": 196.8370792392995
+        },
+        {
+          "id": "haumea",
+          "x": 214.22843473948387,
+          "y": 70.63103106013762
+        },
+        {
+          "id": "eris",
+          "x": 228.42875947805922,
+          "y": 49.923896761431735
+        },
+        {
+          "id": "halley",
+          "x": 186.37987528235905,
+          "y": 111.21551220479265
+        },
+        {
+          "id": "encke",
+          "x": 120.6271300702153,
+          "y": 207.01006950334897
+        }
+      ]
+    },
+    "localTable": {
+      "clientWidth": 270,
+      "scrollWidth": 640
+    },
+    "stickyWorldColumns": [
+      {
+        "world": "mercury",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "venus",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "earth",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "mars",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "jupiter",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "saturn",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "uranus",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "neptune",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "pluto",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "ceres",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "haumea",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "eris",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "halley",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "encke",
+        "headingInside": true,
+        "ratioInside": true
+      }
+    ]
+  },
+  {
+    "dark": true,
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "minimumContrast": 10.437777686203559,
+    "minimumTargetHeight": 44,
+    "plot": {
+      "width": 272,
+      "height": 360,
+      "left": 52,
+      "right": 248,
+      "top": 32,
+      "bottom": 300,
+      "labels": [
+        {
+          "text": "Jupiter",
+          "x": 157.5502777317123,
+          "y": 147.82771140537648,
+          "width": 39.01904296875,
+          "height": 16,
+          "fontSize": 13,
+          "score": 0
+        }
+      ],
+      "points": [
+        {
+          "id": "mercury",
+          "x": 65.62642560878024,
+          "y": 287.16300857629875
+        },
+        {
+          "id": "venus",
+          "x": 85.33003935915853,
+          "y": 258.4688076242601
+        },
+        {
+          "id": "earth",
+          "x": 95.55555555555554,
+          "y": 243.57894736842104
+        },
+        {
+          "id": "mars",
+          "x": 108.83890871581556,
+          "y": 224.2273165243417
+        },
+        {
+          "id": "jupiter",
+          "x": 147.5502777317123,
+          "y": 167.82771140537648
+        },
+        {
+          "id": "saturn",
+          "x": 166.65359607272197,
+          "y": 139.95937500216522
+        },
+        {
+          "id": "uranus",
+          "x": 188.69729446227868,
+          "y": 107.86297265738796
+        },
+        {
+          "id": "neptune",
+          "x": 202.8570932991487,
+          "y": 87.22512327032263
+        },
+        {
+          "id": "pluto",
+          "x": 211.44071119389977,
+          "y": 74.71944495426939
+        },
+        {
+          "id": "ceres",
+          "x": 127.6649256763454,
+          "y": 196.8370792392995
+        },
+        {
+          "id": "haumea",
+          "x": 214.22843473948387,
+          "y": 70.63103106013762
+        },
+        {
+          "id": "eris",
+          "x": 228.42875947805922,
+          "y": 49.923896761431735
+        },
+        {
+          "id": "halley",
+          "x": 186.37987528235905,
+          "y": 111.21551220479265
+        },
+        {
+          "id": "encke",
+          "x": 120.6271300702153,
+          "y": 207.01006950334897
+        }
+      ]
+    },
+    "localTable": {
+      "clientWidth": 270,
+      "scrollWidth": 640
+    },
+    "stickyWorldColumns": [
+      {
+        "world": "mercury",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "venus",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "earth",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "mars",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "jupiter",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "saturn",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "uranus",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "neptune",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "pluto",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "ceres",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "haumea",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "eris",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "halley",
+        "headingInside": true,
+        "ratioInside": true
+      },
+      {
+        "world": "encke",
+        "headingInside": true,
+        "ratioInside": true
+      }
+    ]
+  }
+]

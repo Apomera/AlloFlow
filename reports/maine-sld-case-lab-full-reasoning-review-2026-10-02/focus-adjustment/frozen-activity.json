@@ -1,0 +1,21 @@
+{
+  "frozenAt": "2026-10-03T00:19:33.054062+00:00",
+  "moduleSha256": "7f763553848c41d4db59ccb43bb0df7c449ddb4c7b85c36a1499e9b570229b38",
+  "moduleBytes": 177644,
+  "fourCopyHashes": {
+    "maine_sld_practice_module.js": "7f763553848c41d4db59ccb43bb0df7c449ddb4c7b85c36a1499e9b570229b38",
+    "desktop/web-app/public/maine_sld_practice_module.js": "7f763553848c41d4db59ccb43bb0df7c449ddb4c7b85c36a1499e9b570229b38",
+    "desktop/app-build/maine_sld_practice_module.js": "7f763553848c41d4db59ccb43bb0df7c449ddb4c7b85c36a1499e9b570229b38",
+    "desktop/web-app/build/maine_sld_practice_module.js": "7f763553848c41d4db59ccb43bb0df7c449ddb4c7b85c36a1499e9b570229b38"
+  },
+  "sourceHashes": {
+    "maine_sld_practice_source.jsx": "54d1bd79b4ea3fa9c2a3c05ca825d557b85c6be445642689b960ac9f8faa4e17",
+    "maine_sld_practice_core.js": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926",
+    "maine_sld_case_data.json": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e",
+    "_build_maine_sld_practice_module.js": "333019e7d0a1e5a8774f33b2022778183b089d7206efaa4193def039274949f4"
+  },
+  "caseDataCoreBuilderBytePreserved": true,
+  "printFunctionPrintCssSharedResponseLabelPreserved": true,
+  "worksheetSchemaPreserved": true,
+  "newReviewNavigationStateIsTransient": true
+}

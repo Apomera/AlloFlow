@@ -1,0 +1,42 @@
+{
+  "nativeSession": 81784,
+  "exitCode": 1,
+  "closed": true,
+  "toolChunkId": "3183cc",
+  "sourceSha256": "6c25d629097876a19c030e8236351c32191eea9085c20e7e6f4a99eb3dd2402b",
+  "reason": "The enlarged-text fixture recorded an immediate computed font size instead of measuring the settled override. Native note workflows and3 ordinary views completed before the fixture assertion.",
+  "files": [
+    {
+      "file": "browser-check.cjs",
+      "sha256": "30e98fa33c65aa6c2d2bf5c7389067d2a53a97d4a31f6ebe0bf906780dff4fc3"
+    },
+    {
+      "file": "browser-close.json",
+      "sha256": "5bec13f22d486509dde05404003e8b316559309bbb205f42322387444ceda153"
+    },
+    {
+      "file": "browser-results.json",
+      "sha256": "ebf04ac82885b038e3e47836b74284ddd0eaf4b1256c3d6ec6c864da9e2e4db2"
+    },
+    {
+      "file": "comparison-return-focus.png",
+      "sha256": "0c97f82c553155dac58bc445cd744a1ca7f1d70cacfbfd954a58abdba6a84656"
+    },
+    {
+      "file": "notes-desktop.png",
+      "sha256": "301c85288aca6e7642fbf967f6a4880b7f80b0695e7311307abf29b0ee841783"
+    },
+    {
+      "file": "notes-narrow-long-text.png",
+      "sha256": "d1b7d881444fa74f5555b81736c8bbe38be172d3b4cd07e94eca2ddf87daaf8c"
+    },
+    {
+      "file": "notes-phone-empty.png",
+      "sha256": "30b422bc3c43727c580e0cc33f43cdfdbf8c750d310ac7eeec25a236bcebf331"
+    },
+    {
+      "file": "original-note-editor.png",
+      "sha256": "de7ddd2b840353a9a4b924320417331499c1f504c2e63988157ff8390ee3ec1b"
+    }
+  ]
+}

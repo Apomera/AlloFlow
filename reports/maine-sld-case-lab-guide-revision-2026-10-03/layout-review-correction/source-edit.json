@@ -1,0 +1,11 @@
+{
+  "editedAt": "2026-10-04T02:52:38.266237+00:00",
+  "beforeSha256": "6c59be34f6c400164b12093f8c5b54380c97212c3356f0e61cdf36891488f741",
+  "afterSha256": "d96b8d5a34e9b689b691792ff6e47f63e3be16c856f38f383303988bee78c5e7",
+  "guardedReplacementCount": 9,
+  "reverseToBaselineByteExact": true,
+  "guideOriginIsTransient": true,
+  "worksheetSchemaPreserved": true,
+  "printFunctionPrintCssSharedResponseLabelPreserved": true,
+  "caseDataCoreBuilderBytePreserved": true
+}

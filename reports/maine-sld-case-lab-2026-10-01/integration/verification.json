@@ -1,0 +1,44 @@
+{
+  "verifiedAt": "2026-10-01T22:58:06.366Z",
+  "sourceParses": 4,
+  "deepLinkCases": 5,
+  "compiledMirrorParity": true,
+  "redirectsMirrorParity": true,
+  "checks": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "unrelatedBytesPreserved": true,
+      "sha256": "237383eb52e663db06cd605ffef4c2b1158a7b177e971a6f8bed8784a07955d1"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "unrelatedBytesPreserved": true,
+      "sha256": "237383eb52e663db06cd605ffef4c2b1158a7b177e971a6f8bed8784a07955d1"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "unrelatedBytesPreserved": true,
+      "sha256": "237383eb52e663db06cd605ffef4c2b1158a7b177e971a6f8bed8784a07955d1"
+    },
+    {
+      "file": "admin_hub_source.jsx",
+      "unrelatedBytesPreserved": true,
+      "sha256": "02ec95e105080a7e1e7484755afea27528c4702135fb9f4acc529ad1c359f978"
+    },
+    {
+      "file": "build.js",
+      "unrelatedBytesPreserved": true,
+      "sha256": "8b9ac57159f577c8841babf5bd06876f2aa638a1ddba30c53e53d35013e16b94"
+    },
+    {
+      "file": "_redirects",
+      "unrelatedBytesPreserved": true,
+      "sha256": "1aaac126ac190c674d45b276691b59249d89782e263a23c132360f967a8cbeac"
+    },
+    {
+      "file": "desktop/web-app/public/_redirects",
+      "unrelatedBytesPreserved": true,
+      "sha256": "1aaac126ac190c674d45b276691b59249d89782e263a23c132360f967a8cbeac"
+    }
+  ]
+}

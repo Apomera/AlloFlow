@@ -1,0 +1,65 @@
+{
+  "approved": false,
+  "sourceSha256": "81044cbe6bd8555c21d8bfd0d3b7b2afedc628eedfd855dc50f6f917590153d2",
+  "scriptSha256": "2b794cb7802a0bcbc5d1542051243031b3c0fe89cd960594fe3888bd7aa4999f",
+  "browserResultsSha256": "7e704c18c7d1c8c285d5c35feb2ba93796b5f8c8729270d461b2cedb41843f5c",
+  "nativeSession": 78389,
+  "nativeExitCode": 0,
+  "browserClosedByFinally": true,
+  "method": "All eight PNGs inspected at original resolution with view_image.",
+  "screenshots": [
+    {
+      "file": "same-current-summaries-1280.png",
+      "sha256": "98877330e0955f711f4a5b1324a2e9b7c69be9d40c473b1aba9ec8dfed7bb965",
+      "reviewed": true
+    },
+    {
+      "file": "same-current-summaries-390.png",
+      "sha256": "75f3f9e42e350d1821a7b0cd42f6a861de6b94e894a6c096dbabc33d304aa619",
+      "reviewed": true
+    },
+    {
+      "file": "same-current-summaries-320.png",
+      "sha256": "0fa7060a2a31b947c4d227f94931fdd852a5bab6674a91d1abc2ecce420f6fb6",
+      "reviewed": true
+    },
+    {
+      "file": "sensor-probe-summaries-320.png",
+      "sha256": "77dd3acdca80f190eeadcc70c3c7e629ad208aff63eaf7b05cf9190cdcde5040",
+      "reviewed": true
+    },
+    {
+      "file": "saved-summaries-200pct-text-320.png",
+      "sha256": "502449716f42113b1a324e9e6ba71f26170699ff83fedf180938ea7e2b508962",
+      "reviewed": true
+    },
+    {
+      "file": "forced-colors-saved-summaries-320.png",
+      "sha256": "7430ffd6aa0ac0443b0aba453eae4f2308ec4d58a26af890b90d45781b04dfb8",
+      "reviewed": true
+    },
+    {
+      "file": "rtl-saved-summaries-320.png",
+      "sha256": "9aa447bd747329465ebb76c5148e60559a16b8b14cba38a8ab66ffaadd971e7d",
+      "reviewed": true
+    },
+    {
+      "file": "localized-saved-summaries-320.png",
+      "sha256": "6b7099045d32c7f5d2351e7de140eb9aa4f36b770ed8cb370ba84aafeeeed4c4",
+      "reviewed": true
+    }
+  ],
+  "materialIssues": [
+    {
+      "file": "rtl-saved-summaries-320.png",
+      "description": "With inherited RTL and English fallback labels, individual isolated node names do not preserve the visual label/node pairing. Red collector and Black emitter render as emitter Red collector · Black; the Black label is detached from its node.",
+      "recommendation": "Isolate each complete translated label plus node pair using an automatic-direction wrapper, retain left-to-right isolation on each node, and keep the separator outside the two pairs."
+    }
+  ],
+  "observations": [
+    "Ordinary desktop/390/320, mixed sensor/probe, actual 200% and localized views remain clear.",
+    "At 200%, current magnitudes and captured inputs/light stay intact, with the disclosure indicator separate.",
+    "Forced colors keep labels and actions clear.",
+    "The automated audit passed eight scans; this visual finding is additional and is not overridden by those automated results."
+  ]
+}

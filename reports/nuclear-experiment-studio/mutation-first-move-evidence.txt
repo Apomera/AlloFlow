@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1535:5 › guided detector movement changes position while keeping the saved reading and evidence intact (17.9s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1535:5 › guided detector movement changes position while keeping the saved reading and evidence intact 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[data-ns-first-chart]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" with timeout 15000ms
+      - waiting for locator('[data-ns-first-chart]')
+        30 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      1542 |   const move = page.getByRole('button', { name: 'Move detector to 2 m' });
+      1543 |   await move.focus(); await page.keyboard.press('Enter');
+    > 1544 |   await expect(page.locator('[data-ns-first-chart]')).toHaveCount(0);
+           |                                                       ^
+      1545 |   await expect(page.locator('[data-ns-reading]')).toHaveText('100%');
+      1546 |   expect(Number(await page.locator('[data-ns-first-detector="current"]').getAttribute('x'))).toBe(195);
+      1547 |   await expect(page.locator('[data-ns-first-detector="saved"]')).toHaveAttribute('data-distance', '1');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1544:55
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-first-move-evidence\43-nuclearlab-experiment-s-29762-reading-and-evidence-intact-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-first-move-evidence\43-nuclearlab-experiment-s-29762-reading-and-evidence-intact-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-first-move-evidence\43-nuclearlab-experiment-s-29762-reading-and-evidence-intact-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-first-move-evidence\43-nuclearlab-experiment-s-29762-reading-and-evidence-intact-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-first-move-evidence\43-nuclearlab-experiment-s-29762-reading-and-evidence-intact-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1535:5 › guided detector movement changes position while keeping the saved reading and evidence intact 
+(node:6956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:6956) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-first-move-evidence.js in place of stem_lab/stem_tool_nuclearlab.js

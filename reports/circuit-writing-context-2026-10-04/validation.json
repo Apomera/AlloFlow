@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "sourceSha256": "e9c7d6a86b45def1263ffb3ba4ea98de19078563a471a6b14d95c285299fe030",
+  "mirrorSha256": "e9c7d6a86b45def1263ffb3ba4ea98de19078563a471a6b14d95c285299fe030",
+  "baselineSha256": "3f875d72cabfea1a5e6f4fa104504de2540871cde9292af32cc12def598b18de",
+  "previousSourcePreserved": true,
+  "existingTestsPreserved": 9,
+  "reversedFragments": 8,
+  "tests": 145,
+  "testFiles": 10,
+  "newTests": 13,
+  "browserViews": 6,
+  "nativeWorkflows": 3,
+  "screenshotsReviewed": 8,
+  "scopedChangesUnstaged": true,
+  "gitDiffCheck": true,
+  "scopedGitStatus": "M desktop/web-app/public/stem_lab/stem_tool_circuit.js\n M stem_lab/stem_tool_circuit.js\n?? reports/circuit-writing-context-2026-10-04/\n?? tests/circuit_writing_context.test.js",
+  "artifacts": {
+    "source-preservation.json": "835084672d42b493d4a8d97b645bb68cd01324a081f655dec26633825602a520",
+    "regression-receipt.json": "40eadaf6922e064ca8569cc171c588f90933a3fae4cfe7a31e4644b3848ce665",
+    "regression-native-exit.json": "c9e968fb87a136d3f3804eddbf7c66d0db4f86b033711bf22bfa45b214a9b3a6",
+    "browser-results.json": "32adc5379c431d68388d1916641661953022fd2e0e008cf612b4b60e22ee0c52",
+    "browser-native-exit.json": "db740b3a48a6089dedbdad5a92c24053771b652ca12f4d2dee811524757ff1e0",
+    "visual-review.json": "68de2866e294c8d40be0c0ac26196e560a6f3812cafb91c70ba99776c9252591",
+    "test-startup-failure.json": "4e0ac924331e22fce96c523e13f1ec4fa86fdfd9f9a430df84474ad950df74c5",
+    "validate.cjs": "27f3f54ef9ea40c5dc2be2460bbfc1a9f2468a99ddf83ff4f810f38d67d8f812"
+  }
+}

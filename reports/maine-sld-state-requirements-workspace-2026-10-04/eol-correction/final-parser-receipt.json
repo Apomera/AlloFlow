@@ -1,0 +1,9 @@
+{
+  "sourceSha256": "0ea0b1143ddefffbdd8f2cbaafc160f55482c7ab5ed0a796335d52d9ed28e27b",
+  "moduleSha256": "b774ddf6403b01d280d7164b175088817717ae6acb8794d344e4084f651ab27a",
+  "modulePin": "b774ddf6",
+  "moduleBytes": 3520189,
+  "exactlyTwoCrBytesRemoved": true,
+  "fourMirrorParity": true,
+  "onlyDocPipelinePinChangedInThreeCurrentHosts": true
+}

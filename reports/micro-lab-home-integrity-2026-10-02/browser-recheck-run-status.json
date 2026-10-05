@@ -1,0 +1,17 @@
+{
+  "kind": "browser-recheck",
+  "pid": 57672,
+  "started": "2026-10-03T04:27:22.033Z",
+  "phase": "passed",
+  "sourceSha256": "02560e3ccade76c6ca803b2bd785de774e4f85d3dcc08d0a1a502cc1eb5fe132",
+  "expected": 1,
+  "testInputs": {
+    "tests/e2e/microbiology-annotation-integrity.spec.ts": "18e5274d85b33fd66b5aa71d1f0402b551f4a17360fbf81e110337804ed78f75"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "finished": "2026-10-03T04:27:38.947Z",
+  "sourceStillMatches": true,
+  "testInputsStillMatch": true,
+  "syntaxChecksPassed": true
+}

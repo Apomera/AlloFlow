@@ -1431,7 +1431,7 @@ function MathView(props) {
       className: "animate-spin motion-reduce:animate-none"
     }), " ", t('math.check.checking') || 'Evaluating your work...') : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement(Sparkles, {
       size: 16
-    }), " ", t('math.check.button') || 'Check My Work')), !checkResult?.checked && (() => {
+    }), " ", checkResult?.verdict === 'error' ? 'Try checking again' : t('math.check.button') || 'Check My Work')), !checkResult?.checked && (() => {
       const hintInfo = getMathHintState(problem.__viewKey);
       return /*#__PURE__*/React.createElement("div", {
         className: "space-y-2",
@@ -1459,7 +1459,12 @@ function MathView(props) {
       }), " Thinking...") : /*#__PURE__*/React.createElement(React.Fragment, null, /*#__PURE__*/React.createElement("span", {
         className: "text-sm"
       }, "💡"), " ", hintInfo.count === 0 ? 'Give me a hint (-25% XP)' : hintInfo.count === 1 ? 'Another hint (-50% XP)' : 'Final hint (-75% XP)')));
-    })(), checkResult?.checked && /*#__PURE__*/React.createElement("div", {
+    })(), checkResult?.verdict === 'error' && !checkResult.checking && /*#__PURE__*/React.createElement("div", {
+      role: "alert",
+      className: "rounded-xl border-2 border-red-300 bg-red-50 p-4 text-sm text-red-900"
+    }, /*#__PURE__*/React.createElement("p", {
+      className: "font-bold"
+    }, "Your work has not been graded."), /*#__PURE__*/React.createElement("p", null, checkResult.feedback), /*#__PURE__*/React.createElement("p", null, "Your answer is saved. Use the check button above to try again.")), checkResult?.checked && checkResult.verdict !== 'error' && /*#__PURE__*/React.createElement("div", {
       role: "status",
       "aria-live": "polite",
       className: `rounded-xl border-2 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300 ${checkResult.verdict === 'correct' ? 'border-green-300 bg-green-50' : checkResult.verdict === 'partial' ? 'border-amber-300 bg-amber-50' : 'border-red-300 bg-red-50'}`

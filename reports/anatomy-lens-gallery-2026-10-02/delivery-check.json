@@ -1,0 +1,104 @@
+{
+  "date": "2026-10-03",
+  "sourceSha256": "508c53c171544738474cc2924191067f9f24966bc07867b7ae7e897e8fd70cb2",
+  "runtimeMirrorsIdentical": true,
+  "syntaxPassed": true,
+  "authoredAtlasData": {
+    "characters": 309592,
+    "sha256": "a54731f78e7c82243e53fe231eae3548233ab62d66c27a81493251c4f1394b87",
+    "unchangedFromPassBaseline": true
+  },
+  "catalogs": [
+    {
+      "path": "ui_strings.js",
+      "sha256": "690ad6127e4b78f31fa84b0cadf8e57d21a92ad85b7c0cd4ea35f549d891c967",
+      "mirrorsIdentical": true,
+      "registeredKeys": 39
+    },
+    {
+      "path": "lang/french.js",
+      "sha256": "fb3776e0cb92cf73079c73627f186df0acf0e939513ee0d0653b8b625587d506",
+      "mirrorsIdentical": true,
+      "registeredKeys": 39
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "sha256": "846871051f297d8d1586871f8f79dab1c52a1361aee929c50fcd28c92b55aab0",
+      "mirrorsIdentical": true,
+      "registeredKeys": 39
+    },
+    {
+      "path": "lang/arabic.js",
+      "sha256": "f0ba2e03a30d03efdf2a70bc4bcd505d6054fa7e56c6c7375d7aeca199163887",
+      "mirrorsIdentical": true,
+      "registeredKeys": 39
+    }
+  ],
+  "englishKeys": 39,
+  "nativeTranslations": 117,
+  "focusedTests": {
+    "passed": 97,
+    "newGalleryNavigation": 64,
+    "scaleRegression": 28,
+    "existingLens": 5
+  },
+  "browser": {
+    "journeys": 2,
+    "accessibilityScans": 5,
+    "violations": 0,
+    "pageErrors": 0,
+    "reviewedCaptures": [
+      {
+        "name": "desktop-kidney-destination.png",
+        "sha256": "1f54bca5d9ef8fc47e281c41aa46e785923bc7fc09d0a5e01760dec62f930d18"
+      },
+      {
+        "name": "desktop-light-lens-gallery.png",
+        "sha256": "33798319ba0a1118f4208b79b725bb291816fe3dd34457246bba0791161b5a4a"
+      },
+      {
+        "name": "phone-light-lens-gallery.png",
+        "sha256": "c48adc42c112f74c8bd7387df4d8cd99d1e8075b8c34980e7977bcfdb276535a"
+      },
+      {
+        "name": "phone-dark-lens-gallery.png",
+        "sha256": "6e19b59fa04db05dc66b4df06dc77c80e4de8fa5d6df59de7b4970581b5ab05e"
+      },
+      {
+        "name": "phone-arabic-dark-larger-lens-gallery.png",
+        "sha256": "e61fe83c26c118e1078a55a60391f112aec4174de2f9fffa4c3a0b51bd1141f2"
+      },
+      {
+        "name": "phone-forced-colors-lens-gallery.png",
+        "sha256": "b9506028383b70dbef31c65bafda8fdbb15de87471aa94642e27537b25a951a5"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "name": "gallery-navigation-tests.json",
+      "sha256": "a4882208f1a24118c3e51d527e66e413b9724d3858b2a61c8757d4150aac610f"
+    },
+    {
+      "name": "gallery-navigation-tests-proof.json",
+      "sha256": "a489abe59ca9a772b7348192ee666cffc809f812b500fea0af0595475454ea97"
+    },
+    {
+      "name": "existing-lens-tests.json",
+      "sha256": "0f42261da0890be40c6bd1fb2d4a2ccffd0fc854295936c550f7bf3b341e4ff0"
+    },
+    {
+      "name": "existing-lens-tests-proof.json",
+      "sha256": "df1e9574a6f749a81a7ed057f3528050af4f3da38da046b4291713f31b96e595"
+    },
+    {
+      "name": "browser-validation.json",
+      "sha256": "a37e6a4afb930ee7a7e23a2e68371defe685cb47ccad99822b1a25964542f530"
+    },
+    {
+      "name": "playwright-result.json",
+      "sha256": "a01289df1aa8dbc42a1efc30e3ee751f53afb80789d24011bcc88e34f96a1b69"
+    }
+  ],
+  "completed": true
+}

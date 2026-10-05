@@ -1,0 +1,23 @@
+{
+  "date": "2026-10-03",
+  "gitMutationsPerformed": false,
+  "scopedWhitespaceCheckPassed": true,
+  "scopedFilesUnstaged": true,
+  "checks": [
+    {
+      "command": "git --no-optional-locks diff --check -- stem_lab/stem_tool_anatomy.js desktop/web-app/public/stem_lab/stem_tool_anatomy.js ui_strings.js desktop/web-app/public/ui_strings.js lang/french.js lang/spanish_latin_america.js lang/arabic.js desktop/web-app/public/lang/french.js desktop/web-app/public/lang/spanish_latin_america.js desktop/web-app/public/lang/arabic.js tests/anatomy_alveolus_guide.test.js tests/anatomy_lab_science.test.js tests/e2e/anatomy-alveolus-guide.spec.ts dev-tools/i18n/anatomy_alveolus_guide_20261003.json reports/anatomy-alveolus-guide-2026-10-03",
+      "exitCode": 0,
+      "output": ""
+    },
+    {
+      "command": "git --no-optional-locks status --short -- stem_lab/stem_tool_anatomy.js desktop/web-app/public/stem_lab/stem_tool_anatomy.js ui_strings.js desktop/web-app/public/ui_strings.js lang/french.js lang/spanish_latin_america.js lang/arabic.js desktop/web-app/public/lang/french.js desktop/web-app/public/lang/spanish_latin_america.js desktop/web-app/public/lang/arabic.js tests/anatomy_alveolus_guide.test.js tests/anatomy_lab_science.test.js tests/e2e/anatomy-alveolus-guide.spec.ts dev-tools/i18n/anatomy_alveolus_guide_20261003.json reports/anatomy-alveolus-guide-2026-10-03",
+      "exitCode": 0,
+      "output": " M desktop/web-app/public/lang/arabic.js\n M desktop/web-app/public/lang/french.js\n M desktop/web-app/public/lang/spanish_latin_america.js\n M desktop/web-app/public/stem_lab/stem_tool_anatomy.js\n M desktop/web-app/public/ui_strings.js\n M lang/arabic.js\n M lang/french.js\n M lang/spanish_latin_america.js\n M stem_lab/stem_tool_anatomy.js\n M tests/anatomy_lab_science.test.js\n M ui_strings.js\n?? dev-tools/i18n/anatomy_alveolus_guide_20261003.json\n?? reports/anatomy-alveolus-guide-2026-10-03/\n?? tests/anatomy_alveolus_guide.test.js\n?? tests/e2e/anatomy-alveolus-guide.spec.ts\n"
+    },
+    {
+      "command": "git --no-optional-locks diff --cached --name-only -- stem_lab/stem_tool_anatomy.js desktop/web-app/public/stem_lab/stem_tool_anatomy.js ui_strings.js desktop/web-app/public/ui_strings.js lang/french.js lang/spanish_latin_america.js lang/arabic.js desktop/web-app/public/lang/french.js desktop/web-app/public/lang/spanish_latin_america.js desktop/web-app/public/lang/arabic.js tests/anatomy_alveolus_guide.test.js tests/anatomy_lab_science.test.js tests/e2e/anatomy-alveolus-guide.spec.ts dev-tools/i18n/anatomy_alveolus_guide_20261003.json reports/anatomy-alveolus-guide-2026-10-03",
+      "exitCode": 0,
+      "output": ""
+    }
+  ]
+}

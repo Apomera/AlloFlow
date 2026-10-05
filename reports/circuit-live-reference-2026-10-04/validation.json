@@ -1,0 +1,13 @@
+{
+  "passed": true,
+  "sourceSha256": "acb6c672744a47734694d993f69483c5424445a740c28ad77593cba6dc5296f6",
+  "sourceMirrorEqual": true,
+  "priorSourcePreserved": true,
+  "tests": 66,
+  "newTests": 12,
+  "testFiles": 4,
+  "browserViews": 6,
+  "browserWorkflows": 1,
+  "scopedDiffCheck": true,
+  "scopedIndexEmpty": true
+}

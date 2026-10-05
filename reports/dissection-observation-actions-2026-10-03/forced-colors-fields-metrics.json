@@ -1,0 +1,31 @@
+{
+  "client": 354,
+  "scroll": 354,
+  "text": [
+    {
+      "text": "Evidence note",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Draft present · review needed",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "How sure are you, based on your evidence?",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Confidence not rated",
+      "font": 14,
+      "clipped": false
+    }
+  ],
+  "ratings": [
+    50.390625,
+    50.390625,
+    50.390625
+  ]
+}

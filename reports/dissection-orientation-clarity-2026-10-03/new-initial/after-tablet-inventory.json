@@ -1,0 +1,27 @@
+[
+  {
+    "text": "DorsalBack side✓ Selected",
+    "pressed": "true",
+    "disabled": false
+  },
+  {
+    "text": "VentralBelly sideSelect view",
+    "pressed": "false",
+    "disabled": false
+  },
+  {
+    "text": "LateralSide study viewSelect view",
+    "pressed": "false",
+    "disabled": false
+  },
+  {
+    "text": "InternalOpened study viewSelect view",
+    "pressed": "false",
+    "disabled": false
+  },
+  {
+    "text": "Use preparation view: ventral",
+    "pressed": null,
+    "disabled": false
+  }
+]

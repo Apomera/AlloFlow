@@ -1,0 +1,326 @@
+{
+  "schemaVersion": 1,
+  "sampledAtUtc": "2026-10-04T02:36:42.9831508Z",
+  "rendererSha256": "2a2ff5929bdc6a54d080b973b8588fc1e1a5f5438cebce25c789859405afba18",
+  "method": [
+    "Each PNG was read into a single byte array. SHA-256 and bitmap sampling use that same in-memory snapshot, so later path replacement cannot change the recorded image identity.",
+    "Samples use the same blank background coordinates near text that were visually inspected in the earlier review. Text foreground RGB values come from the renderer CSS, avoiding antialiased glyph edge pixels.",
+    "For each sRGB channel c=byte/255, linear(c)=c/12.92 when c<=0.04045; otherwise ((c+0.055)/1.055)^2.4. Relative luminance=0.2126R+0.7152G+0.0722B. Contrast=(max(Lforeground,Lbackground)+0.05)/(min(Lforeground,Lbackground)+0.05).",
+    "Ratios are rounded to four decimal places."
+  ],
+  "limitations": [
+    "These are sampled text neighborhoods, not a measurement of every glyph or every possible layout. They do not provide complete automated contrast clearance.",
+    "The full-panel decorative pseudo-element causes axe to retain a color-contrast incomplete due to background overlap. This manual review does not erase or reclassify that incomplete.",
+    "The initial review did not retain a raw PNG hash. This record explicitly repeats the same samples against the final PNG snapshots read at sampledAtUtc.",
+    "Foreground colors are source CSS values; bitmap samples are nearby blank backgrounds. The review does not score antialiased text edges."
+  ],
+  "screenshots": [
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-mission-clarity-2026-10-03\\after-desktop.png",
+      "sha256": "5847220d876c484a32ee4a545ab720227cb61961b3fa6292b33eeed9bbc93843",
+      "width": 1180,
+      "height": 404,
+      "samples": [
+        {
+          "label": "Eyebrow adjacent background",
+          "coordinates": [
+            300,
+            30
+          ],
+          "foregroundSource": ".diss-mission__eyebrow color #99f6e4",
+          "foregroundRgb": [
+            153,
+            246,
+            228
+          ],
+          "sampledBackgroundRgb": [
+            17,
+            44,
+            79
+          ],
+          "contrastRatio": 11.1269
+        },
+        {
+          "label": "First body copy adjacent background",
+          "coordinates": [
+            605,
+            102
+          ],
+          "foregroundSource": ".diss-mission__copy color #e2edff",
+          "foregroundRgb": [
+            226,
+            237,
+            255
+          ],
+          "sampledBackgroundRgb": [
+            18,
+            55,
+            98
+          ],
+          "contrastRatio": 10.1749
+        },
+        {
+          "label": "Practice notice adjacent background",
+          "coordinates": [
+            750,
+            199
+          ],
+          "foregroundSource": ".diss-mission__copy color #e2edff",
+          "foregroundRgb": [
+            226,
+            237,
+            255
+          ],
+          "sampledBackgroundRgb": [
+            19,
+            69,
+            112
+          ],
+          "contrastRatio": 8.4203
+        },
+        {
+          "label": "Practice notice second line adjacent background",
+          "coordinates": [
+            280,
+            223
+          ],
+          "foregroundSource": ".diss-mission__copy color #e2edff",
+          "foregroundRgb": [
+            226,
+            237,
+            255
+          ],
+          "sampledBackgroundRgb": [
+            17,
+            50,
+            88
+          ],
+          "contrastRatio": 10.9756
+        },
+        {
+          "label": "Statistics label adjacent background",
+          "coordinates": [
+            955,
+            335
+          ],
+          "foregroundSource": ".diss-stat__label color #bae6fd",
+          "foregroundRgb": [
+            186,
+            230,
+            253
+          ],
+          "sampledBackgroundRgb": [
+            14,
+            68,
+            85
+          ],
+          "contrastRatio": 8.0057
+        },
+        {
+          "label": "Upcoming workflow adjacent background",
+          "coordinates": [
+            1080,
+            172
+          ],
+          "foregroundSource": ".diss-workflow li color #f8fafc",
+          "foregroundRgb": [
+            248,
+            250,
+            252
+          ],
+          "sampledBackgroundRgb": [
+            17,
+            75,
+            91
+          ],
+          "contrastRatio": 9.2013
+        }
+      ]
+    },
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-mission-clarity-2026-10-03\\after-phone.png",
+      "sha256": "bc9019a287559febd2cea9bd510936514ede5f3eccc3fe16a5ccc97c42f77685",
+      "width": 320,
+      "height": 831,
+      "samples": [
+        {
+          "label": "First body copy adjacent background",
+          "coordinates": [
+            299,
+            85
+          ],
+          "foregroundSource": ".diss-mission__copy color #e2edff",
+          "foregroundRgb": [
+            226,
+            237,
+            255
+          ],
+          "sampledBackgroundRgb": [
+            22,
+            81,
+            108
+          ],
+          "contrastRatio": 7.3287
+        },
+        {
+          "label": "First body copy second line adjacent background",
+          "coordinates": [
+            292,
+            112
+          ],
+          "foregroundSource": ".diss-mission__copy color #e2edff",
+          "foregroundRgb": [
+            226,
+            237,
+            255
+          ],
+          "sampledBackgroundRgb": [
+            22,
+            78,
+            107
+          ],
+          "contrastRatio": 7.6156
+        },
+        {
+          "label": "Practice notice adjacent background",
+          "coordinates": [
+            300,
+            346
+          ],
+          "foregroundSource": ".diss-mission__copy color #e2edff",
+          "foregroundRgb": [
+            226,
+            237,
+            255
+          ],
+          "sampledBackgroundRgb": [
+            18,
+            60,
+            107
+          ],
+          "contrastRatio": 9.4416
+        },
+        {
+          "label": "Practice notice final line adjacent background",
+          "coordinates": [
+            299,
+            391
+          ],
+          "foregroundSource": ".diss-mission__copy color #e2edff",
+          "foregroundRgb": [
+            226,
+            237,
+            255
+          ],
+          "sampledBackgroundRgb": [
+            17,
+            63,
+            107
+          ],
+          "contrastRatio": 9.1372
+        },
+        {
+          "label": "Statistics label adjacent background",
+          "coordinates": [
+            298,
+            732
+          ],
+          "foregroundSource": ".diss-stat__label color #bae6fd",
+          "foregroundRgb": [
+            186,
+            230,
+            253
+          ],
+          "sampledBackgroundRgb": [
+            22,
+            75,
+            88
+          ],
+          "contrastRatio": 7.2543
+        }
+      ]
+    }
+  ],
+  "solidColorChecks": [
+    {
+      "label": "Current workflow step",
+      "source": "#422006 on #fef3c7",
+      "foregroundRgb": [
+        66,
+        32,
+        6
+      ],
+      "backgroundRgb": [
+        254,
+        243,
+        199
+      ],
+      "contrastRatio": 13.0886,
+      "method": "Solid source CSS colors; no screenshot pixel sampling"
+    },
+    {
+      "label": "Workflow number",
+      "source": "#115e59 on #ccfbf1",
+      "foregroundRgb": [
+        17,
+        94,
+        89
+      ],
+      "backgroundRgb": [
+        204,
+        251,
+        241
+      ],
+      "contrastRatio": 6.73,
+      "method": "Solid source CSS colors; no screenshot pixel sampling"
+    },
+    {
+      "label": "Completed workflow step",
+      "source": "#f8fafc on #11464c",
+      "foregroundRgb": [
+        248,
+        250,
+        252
+      ],
+      "backgroundRgb": [
+        17,
+        70,
+        76
+      ],
+      "contrastRatio": 10.0143,
+      "method": "Solid source CSS colors; no screenshot pixel sampling"
+    },
+    {
+      "label": "Blue shortcut",
+      "source": "#143d60 on #eaf6ff",
+      "foregroundRgb": [
+        20,
+        61,
+        96
+      ],
+      "backgroundRgb": [
+        234,
+        246,
+        255
+      ],
+      "contrastRatio": 10.2483,
+      "method": "Solid source CSS colors; no screenshot pixel sampling"
+    },
+    {
+      "label": "Teal shortcut",
+      "source": "#134e4a on #ccfbf1",
+      "foregroundRgb": [
+        19,
+        78,
+        74
+      ],
+      "backgroundRgb": [
+        204,
+        251,
+        241
+      ],
+      "contrastRatio": 8.4087,
+      "method": "Solid source CSS colors; no screenshot pixel sampling"
+    }
+  ]
+}

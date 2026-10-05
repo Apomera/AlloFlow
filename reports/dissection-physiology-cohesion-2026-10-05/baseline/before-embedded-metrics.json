@@ -1,0 +1,133 @@
+{
+  "width": 500.40625,
+  "client": 500,
+  "scroll": 500,
+  "parentClient": 518,
+  "parentScroll": 518,
+  "optionsColumns": "500.406px",
+  "buttons": [
+    {
+      "text": "Systems and physiology tools",
+      "width": 500.40625,
+      "height": 40,
+      "font": 12,
+      "clipped": false
+    },
+    {
+      "text": "⚡ Nervous",
+      "width": 500.40625,
+      "height": 40.796875,
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "♥ Hide Circulatory",
+      "width": 500.40625,
+      "height": 40.796875,
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "◉ Digestive",
+      "width": 500.40625,
+      "height": 40.796875,
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "≈ Respiratory",
+      "width": 500.40625,
+      "height": 40.796875,
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "◆ Excretory",
+      "width": 500.40625,
+      "height": 40.796875,
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "✦ Endocrine",
+      "width": 500.40625,
+      "height": 40.796875,
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Function model on",
+      "width": 138.765625,
+      "height": 44,
+      "font": 13.12,
+      "clipped": false
+    },
+    {
+      "text": "⏸ Pause",
+      "width": 75.125,
+      "height": 44,
+      "font": 13.12,
+      "clipped": false
+    },
+    {
+      "text": "↻ Replay",
+      "width": 78.734375,
+      "height": 44,
+      "font": 13.12,
+      "clipped": false
+    },
+    {
+      "text": "Speed: normal",
+      "width": 111.796875,
+      "height": 44,
+      "font": 13.12,
+      "clipped": false
+    },
+    {
+      "text": "⏸ Pause",
+      "width": 75.125,
+      "height": 44,
+      "font": 13.12,
+      "clipped": false
+    },
+    {
+      "text": "↻ Replay",
+      "width": 78.734375,
+      "height": 44,
+      "font": 13.12,
+      "clipped": false
+    }
+  ],
+  "text": [
+    {
+      "text": "Buccal-pump ventilation",
+      "font": 14.4,
+      "clipped": false
+    },
+    {
+      "text": "The throat floor lowers to draw air in, then rises to push air into paired lungs.",
+      "font": 13.12,
+      "clipped": false
+    },
+    {
+      "text": "In-life physiology · not preserved motion",
+      "font": 13.12,
+      "clipped": false
+    },
+    {
+      "text": "Static · reduced motion",
+      "font": 12,
+      "clipped": false
+    },
+    {
+      "text": "Circulatory playback",
+      "font": 14.4,
+      "clipped": false
+    },
+    {
+      "text": "Static directions · reduced motion",
+      "font": 13.12,
+      "clipped": false
+    }
+  ]
+}

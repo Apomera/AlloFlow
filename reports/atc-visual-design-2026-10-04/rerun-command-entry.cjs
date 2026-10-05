@@ -1,0 +1,32 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const { spawnSync } = require('node:child_process');
+const previousText = fs.readFileSync(path.join(__dirname, 'browser-qa-results.json'), 'utf8');
+const previous = JSON.parse(previousText);
+assert.equal(previous.checks.length, 22);
+assert.equal(previous.checks.filter(check => check.pass === true).length, 21);
+const failed = previous.checks.filter(check => !check.pass);
+assert.equal(failed.length, 1);
+assert.match(failed[0].error, /strict mode violation/);
+assert.match(failed[0].name, /Command entry/);
+fs.writeFileSync(path.join(__dirname, 'locked-strip-fix-browser-results.json'), previousText);
+const log = fs.openSync(path.join(__dirname, 'targeted-browser-log.txt'), 'w');
+let run;
+try { run = spawnSync(process.execPath, [path.join(__dirname, 'browser-qa.cjs'), 'Command entry'], { cwd: path.resolve(__dirname, '../..'), stdio: ['ignore', log, log] }); }
+finally { fs.closeSync(log); }
+if (run.error) throw run.error;
+assert.equal(run.status, 0, 'Targeted command-entry check must pass');
+const targeted = JSON.parse(fs.readFileSync(path.join(__dirname, 'targeted-browser-results.json'), 'utf8'));
+assert.equal(targeted.sourceHash, previous.sourceHash);
+assert.equal(targeted.sourceStable, true);
+assert.equal(previous.sourceStable, true);
+assert.deepEqual(previous.errors, []);
+assert.deepEqual(targeted.errors, []);
+assert.equal(targeted.checks.length, 1);
+assert.equal(targeted.checks[0].name, failed[0].name);
+assert.equal(targeted.checks[0].pass, true);
+const merged = { ...previous, checks: previous.checks.map(check => check.name === targeted.checks[0].name ? targeted.checks[0] : check), completed: targeted.completed, passed: 22, failed: 0, screenshots: [...new Set([...previous.screenshots, ...targeted.screenshots])], validationRuns: [{ file: 'locked-strip-fix-browser-results.json', reason: 'Full final-source run; one harness locator matched both the labeled section and its scrollable child.' }, { file: 'targeted-browser-results.json', reason: 'Restricted the locator to the actual scrollable list and reran the failed check against the identical production source.' }] };
+assert.ok(merged.checks.every(check => check.pass));
+fs.writeFileSync(path.join(__dirname, 'browser-qa-results.json'), JSON.stringify(merged, null, 2) + '\n');
+console.log('22 focused visual checks verified on identical final production source; command entry selectively rerun after the locator correction.');

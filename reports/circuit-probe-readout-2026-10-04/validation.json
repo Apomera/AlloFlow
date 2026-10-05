@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "sourceSha256": "9b43c0d42971a646ec379e2faca8a4eeb57584fdbe289ebd6cdd079f623f9862",
+  "sourceMirrorEqual": true,
+  "priorSourcePreserved": true,
+  "tests": 84,
+  "newTests": 13,
+  "testFiles": 5,
+  "browserViews": 7,
+  "browserWorkflows": 1,
+  "scopedDiffCheck": true,
+  "scopedIndexEmpty": true,
+  "visualReview": {
+    "reviewedBy": "Root agent",
+    "finalDirectlyReviewed": [
+      "forced-colors.png",
+      "rtl-meter.png",
+      "small-phone-same-node.png",
+      "desktop-sensor.png"
+    ],
+    "unchangedFromReviewedCaptures": [
+      "desktop-positive.png",
+      "phone-negative.png",
+      "small-phone-equal-potential.png"
+    ],
+    "notes": "Reviewed text wrapping, node names, signed numbers and units, keyboard focus, selected shortcuts, phone layouts and system colors."
+  }
+}

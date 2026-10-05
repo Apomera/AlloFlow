@@ -1,0 +1,11 @@
+
+Running 6 tests using 1 worker
+
+  ok 1 [chromium] › ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-next-action-2026-10-04\tests\dissection-next-action-clarity.spec.ts:26:327 › next action phone stays readable with intact study evidence (3.8s)
+  ok 2 [chromium] › ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-next-action-2026-10-04\tests\dissection-next-action-clarity.spec.ts:26:327 › next action tablet stays readable with intact study evidence (2.3s)
+  ok 3 [chromium] › ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-next-action-2026-10-04\tests\dissection-next-action-clarity.spec.ts:26:327 › next action desktop stays readable with intact study evidence (2.3s)
+  ok 4 [chromium] › ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-next-action-2026-10-04\tests\dissection-next-action-clarity.spec.ts:26:327 › next action embedded-medium stays readable with intact study evidence (2.2s)
+  ok 5 [chromium] › ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-next-action-2026-10-04\tests\dissection-next-action-clarity.spec.ts:26:327 › next action embedded-large stays readable with intact study evidence (2.3s)
+  ok 6 [chromium] › ..\..\..\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-next-action-2026-10-04\tests\dissection-next-action-clarity.spec.ts:26:327 › next action forced-colors stays readable with intact study evidence (2.4s)
+
+  6 passed (19.9s)

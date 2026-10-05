@@ -1,0 +1,86 @@
+{
+  "startedAt": "2026-10-01T15:54:00.079Z",
+  "finishedAt": "2026-10-01T15:54:13.662Z",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/word_sounds_delivery_roundtrip.test.js",
+    "tests/word_sounds_runtime_audio_status.test.js",
+    "tests/word_sounds_audio_delivery_hardening.test.js",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--reporter=json"
+  ],
+  "exitCode": 1,
+  "success": false,
+  "tests": {
+    "total": 55,
+    "passed": 48,
+    "failed": 7,
+    "pending": 0
+  },
+  "sourceHashes": {
+    "live_aac_source.jsx": "f57962a9d363600281f4e1435946496c9a377e2fa47df7f430912fab227adb5e",
+    "word_sounds_module.js": "0b6c4b7ffdc75144e51d8604b6fbc8f56e2a53312328004a24f4f9c7c849ab3d",
+    "module_scope_extras_source.jsx": "e92f5d239a79e9d0b8d860a752c118289426a13258203275194326fa231dd74c",
+    "word_sounds_readiness_contract.js": "364c4241ff653f705ca529780e1142b8ad3147864953d1f315831791a918fb4e",
+    "tests/word_sounds_delivery_roundtrip.test.js": "43b2cfd776f82ed8a93206365d4d0a7aa8f75220babc6e35d5e7c2773838ea73",
+    "tests/word_sounds_runtime_audio_status.test.js": "e96dad5d9d4281700449e796540845ca27b5a7c6e4cff45fc8e9336a7546bc09",
+    "tests/word_sounds_audio_delivery_hardening.test.js": "e097ced7b4aa35bfa901439b9ad775c747fac38a517f8b76ef0efb723c1f2672"
+  },
+  "changedDuringRun": [],
+  "failures": [
+    {
+      "file": "tests/word_sounds_audio_delivery_hardening.test.js",
+      "title": "Word Sounds live audio delivery hardening gates teacher launch and every live push boundary when audio is incomplete",
+      "messages": [
+        "AssertionError: expected 'const ALLO_AAC_BOARD_FORMAT = \\'allof…' to contain 'const safePortableTtsAssets = (value)…'\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/word_sounds_audio_delivery_hardening.test.js:100:21\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+      ]
+    },
+    {
+      "file": "tests/word_sounds_delivery_roundtrip.test.js",
+      "title": "actual Word Sounds portable serializer allows prototype-special word names as own audio properties without prototype mutation",
+      "messages": [
+        "AssertionError: expected [ 'constructor' ] to deeply equal [ 'constructor', '__proto__' ]\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/word_sounds_delivery_roundtrip.test.js:301:52\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2305:20\n    at new Promise (<anonymous>)\n    at runWithTimeout (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2272:10)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2955:64"
+      ]
+    },
+    {
+      "file": "tests/word_sounds_delivery_roundtrip.test.js",
+      "title": "real project backup Blob and FileReader import route roundtrips the actual project JSON export and restores a full Word Sounds resource",
+      "messages": [
+        "AssertionError: expected undefined to deeply equal [ { …(10) } ]\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/word_sounds_delivery_roundtrip.test.js:360:29\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "file": "tests/word_sounds_delivery_roundtrip.test.js",
+      "title": "real project backup Blob and FileReader import route restores progress and prepared audio from a teacher project envelope, then preserves them on retry",
+      "messages": [
+        "AssertionError: expected undefined to deeply equal [ { …(10) } ]\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/word_sounds_delivery_roundtrip.test.js:376:29\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "file": "tests/word_sounds_delivery_roundtrip.test.js",
+      "title": "real project backup Blob and FileReader import route uses the real student self-open function to retain the saved sequence and every prepared clip after reload",
+      "messages": [
+        "TypeError: Cannot read properties of undefined (reading '0')\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/word_sounds_delivery_roundtrip.test.js:389:42\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "file": "tests/word_sounds_delivery_roundtrip.test.js",
+      "title": "real project backup Blob and FileReader import route retains the audio in the legacy wsPreloadedWords array that the real student opener consumes",
+      "messages": [
+        "TypeError: Cannot read properties of undefined (reading '0')\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/word_sounds_delivery_roundtrip.test.js:409:42\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    },
+    {
+      "file": "tests/word_sounds_delivery_roundtrip.test.js",
+      "title": "actual Firebase upload JSON references and hydration with mocked document I/O retains validated own prototype-special clips but rejects inherited clips on the direct Firebase path",
+      "messages": [
+        "AssertionError: expected [ 'constructor', 'prototype' ] to deeply equal [ 'constructor', '__proto__', …(1) ]\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/word_sounds_delivery_roundtrip.test.js:508:54\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    }
+  ],
+  "suiteErrors": [],
+  "stderr": ""
+}

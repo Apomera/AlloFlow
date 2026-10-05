@@ -1,0 +1,21 @@
+{
+  "tests": 215,
+  "testFiles": 21,
+  "browserGroups": 16,
+  "opArtBrowserGroups": 14,
+  "pageErrors": [],
+  "sourceHashes": {
+    "stem_lab/stem_tool_perception.js": "ad40b26227bb46c5d49b3072cdc59c9f875249d8592c6d5c819be6ee665b89f7",
+    "stem_lab/stem_tool_artstudio.js": "4f3ad47a3ad78868484caad42b8f7a32459913d96e00ce2f9b05870627b9dbb9",
+    "stem_lab/stem_tool_optics.js": "9c61c815d0ea6cbe8011e562fb161612fae02f76571f8baf07e5524d81b199ea"
+  },
+  "publicMirrors": true,
+  "existingIndexRecordsPreserved": 150,
+  "perceptionEnglishKeys": 124,
+  "stageSize": [
+    800,
+    480
+  ],
+  "commitCreated": false,
+  "checks": "Chromium React/STEM plugin harness; scoped unit and integration regressions"
+}

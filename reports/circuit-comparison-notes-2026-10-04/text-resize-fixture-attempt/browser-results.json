@@ -1,0 +1,330 @@
+{
+  "sourceSha256": "6c25d629097876a19c030e8236351c32191eea9085c20e7e6f4a99eb3dd2402b",
+  "scriptSha256": "30e98fa33c65aa6c2d2bf5c7389067d2a53a97d4a31f6ebe0bf906780dff4fc3",
+  "errors": [],
+  "views": [
+    {
+      "name": "notes-desktop",
+      "width": 778,
+      "forcedColors": false,
+      "fonts": [],
+      "colors": [],
+      "axeViolations": [],
+      "excludedRules": [],
+      "forcedColorsReason": null,
+      "accessibility": "- group:\n  - text: Review saved notes\n  - paragraph: Use what you noticed alongside these saved readings when you write your explanation.\n  - region \"First · Observation 1\":\n    - heading \"First · Observation 1\" [level=5]\n    - paragraph: At 1 V, the lamp was dim. I kept both resistors fixed.\n    - button \"Edit observation 1 note\"\n  - region \"Second · Observation 2\":\n    - heading \"Second · Observation 2\" [level=5]\n    - paragraph: At 1.5 V, the lamp was brighter. My readings support a change in current.\n    - button \"Edit observation 2 note\"",
+      "viewport": 1280,
+      "pageWidth": 1280,
+      "scrollWidth": 778,
+      "columns": "371px 371px",
+      "open": true,
+      "outside": [],
+      "duplicates": [],
+      "textNodes": [
+        "Review saved notes",
+        "Use what you noticed alongside these saved readings when you write your explanation.",
+        "First · Observation 1",
+        "At 1 V, the lamp was dim. I kept both resistors fixed.",
+        "Edit observation 1 note",
+        "Second · Observation 2",
+        "At 1.5 V, the lamp was brighter. My readings support a change in current.",
+        "Edit observation 2 note"
+      ],
+      "cards": [
+        {
+          "heading": "First · Observation 1",
+          "note": "At 1 V, the lamp was dim. I kept both resistors fixed.",
+          "direction": "ltr",
+          "button": "Edit observation 1 note",
+          "target": "At 1 V, the lamp was dim. I kept both resistors fixed."
+        },
+        {
+          "heading": "Second · Observation 2",
+          "note": "At 1.5 V, the lamp was brighter. My readings support a change in current.",
+          "direction": "ltr",
+          "button": "Edit observation 2 note",
+          "target": "At 1.5 V, the lamp was brighter. My readings support a change in current."
+        }
+      ],
+      "actions": [
+        {
+          "text": "Review saved notes",
+          "left": 251,
+          "right": 1029,
+          "top": 1407.4375,
+          "bottom": 1451.4375,
+          "width": 778,
+          "height": 44
+        },
+        {
+          "text": "Edit observation 1 note",
+          "left": 278,
+          "right": 619,
+          "top": 1608.734375,
+          "bottom": 1653.125,
+          "width": 341,
+          "height": 44.390625
+        },
+        {
+          "text": "Edit observation 2 note",
+          "left": 661,
+          "right": 1002,
+          "top": 1608.734375,
+          "bottom": 1653.125,
+          "width": 341,
+          "height": 44.390625
+        }
+      ]
+    },
+    {
+      "name": "notes-phone-empty",
+      "width": 288,
+      "forcedColors": false,
+      "fonts": [],
+      "colors": [],
+      "axeViolations": [],
+      "excludedRules": [],
+      "forcedColorsReason": null,
+      "accessibility": "- group:\n  - text: Review saved notes\n  - paragraph: Use what you noticed alongside these saved readings when you write your explanation.\n  - region \"First · Observation 1\":\n    - heading \"First · Observation 1\" [level=5]\n    - paragraph: I noticed more current in the lamp branch.\n    - button \"Edit observation 1 note\"\n  - region \"Second · Observation 2\":\n    - heading \"Second · Observation 2\" [level=5]\n    - paragraph: No note yet. Describe what you noticed about this reading.\n    - button \"Add observation 2 note\"",
+      "viewport": 390,
+      "pageWidth": 390,
+      "scrollWidth": 288,
+      "columns": "264px",
+      "open": true,
+      "outside": [],
+      "duplicates": [],
+      "textNodes": [
+        "Review saved notes",
+        "Use what you noticed alongside these saved readings when you write your explanation.",
+        "First · Observation 1",
+        "I noticed more current in the lamp branch.",
+        "Edit observation 1 note",
+        "Second · Observation 2",
+        "No note yet. Describe what you noticed about this reading.",
+        "Add observation 2 note"
+      ],
+      "cards": [
+        {
+          "heading": "First · Observation 1",
+          "note": "I noticed more current in the lamp branch.",
+          "direction": "ltr",
+          "button": "Edit observation 1 note",
+          "target": "I noticed more current in the lamp branch."
+        },
+        {
+          "heading": "Second · Observation 2",
+          "note": "No note yet. Describe what you noticed about this reading.",
+          "direction": "ltr",
+          "button": "Add observation 2 note",
+          "target": ""
+        }
+      ],
+      "actions": [
+        {
+          "text": "Review saved notes",
+          "left": 51,
+          "right": 339,
+          "top": -8738.59375,
+          "bottom": -8694.59375,
+          "width": 288,
+          "height": 44
+        },
+        {
+          "text": "Edit observation 1 note",
+          "left": 78,
+          "right": 312,
+          "top": -8488.296875,
+          "bottom": -8443.90625,
+          "width": 234,
+          "height": 44.390625
+        },
+        {
+          "text": "Add observation 2 note",
+          "left": 78,
+          "right": 312,
+          "top": -8301.109375,
+          "bottom": -8256.71875,
+          "width": 234,
+          "height": 44.390625
+        }
+      ]
+    },
+    {
+      "name": "notes-narrow-long-text",
+      "width": 218,
+      "forcedColors": false,
+      "fonts": [],
+      "colors": [],
+      "axeViolations": [],
+      "excludedRules": [],
+      "forcedColorsReason": null,
+      "accessibility": "- group:\n  - text: Review saved notes\n  - paragraph: Use what you noticed alongside these saved readings when you write your explanation.\n  - region \"First · Observation 1\":\n    - heading \"First · Observation 1\" [level=5]\n    - paragraph: \"My evidence label: connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_ The numbers belong to the saved circuit.\"\n    - button \"Edit observation 1 note\"\n  - region \"Second · Observation 2\":\n    - heading \"Second · Observation 2\" [level=5]\n    - paragraph: The probe positions stayed the same.\n    - button \"Edit observation 2 note\"",
+      "viewport": 320,
+      "pageWidth": 320,
+      "scrollWidth": 218,
+      "columns": "194px",
+      "open": true,
+      "outside": [],
+      "duplicates": [],
+      "textNodes": [
+        "Review saved notes",
+        "Use what you noticed alongside these saved readings when you write your explanation.",
+        "First · Observation 1",
+        "My evidence label: connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_\nThe numbers belong to the saved circuit.",
+        "Edit observation 1 note",
+        "Second · Observation 2",
+        "The probe positions stayed the same.",
+        "Edit observation 2 note"
+      ],
+      "cards": [
+        {
+          "heading": "First · Observation 1",
+          "note": "My evidence label: connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_\nThe numbers belong to the saved circuit.",
+          "direction": "ltr",
+          "button": "Edit observation 1 note",
+          "target": "My evidence label: connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_connected_reading_\nThe numbers belong to the saved circuit."
+        },
+        {
+          "heading": "Second · Observation 2",
+          "note": "The probe positions stayed the same.",
+          "direction": "ltr",
+          "button": "Edit observation 2 note",
+          "target": "The probe positions stayed the same."
+        }
+      ],
+      "actions": [
+        {
+          "text": "Review saved notes",
+          "left": 51,
+          "right": 269,
+          "top": -9835.71875,
+          "bottom": -9791.71875,
+          "width": 218,
+          "height": 44
+        },
+        {
+          "text": "Edit observation 1 note",
+          "left": 78,
+          "right": 242,
+          "top": -9193.421875,
+          "bottom": -9126.640625,
+          "width": 164,
+          "height": 66.78125
+        },
+        {
+          "text": "Edit observation 2 note",
+          "left": 78,
+          "right": 242,
+          "top": -8983.84375,
+          "bottom": -8917.0625,
+          "width": 164,
+          "height": 66.78125
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "original-note-editor.png",
+      "width": 390,
+      "clip": {
+        "x": 33,
+        "y": 5306,
+        "width": 324,
+        "height": 731
+      },
+      "sha256": "de7ddd2b840353a9a4b924320417331499c1f504c2e63988157ff8390ee3ec1b"
+    },
+    {
+      "file": "comparison-return-focus.png",
+      "width": 390,
+      "clip": {
+        "x": 33,
+        "y": 1374,
+        "width": 324,
+        "height": 61
+      },
+      "sha256": "0c97f82c553155dac58bc445cd744a1ca7f1d70cacfbfd954a58abdba6a84656"
+    },
+    {
+      "file": "notes-desktop.png",
+      "width": 1280,
+      "clip": {
+        "x": 244,
+        "y": 2150,
+        "width": 792,
+        "height": 288
+      },
+      "sha256": "301c85288aca6e7642fbf967f6a4880b7f80b0695e7311307abf29b0ee841783"
+    },
+    {
+      "file": "notes-phone-empty.png",
+      "width": 390,
+      "clip": {
+        "x": 44,
+        "y": 3513,
+        "width": 302,
+        "height": 524
+      },
+      "sha256": "30b422bc3c43727c580e0cc33f43cdfdbf8c750d310ac7eeec25a236bcebf331"
+    },
+    {
+      "file": "notes-narrow-long-text.png",
+      "width": 320,
+      "clip": {
+        "x": 44,
+        "y": 3723,
+        "width": 232,
+        "height": 960
+      },
+      "sha256": "d1b7d881444fa74f5555b81736c8bbe38be172d3b4cd07e94eca2ddf87daaf8c"
+    }
+  ],
+  "navigation": [
+    {
+      "action": "edit-return-edit",
+      "wholeStateUnchanged": true,
+      "originalNoteFocused": true,
+      "otherCardStayedClosed": true,
+      "retained": {
+        "value": "Line 1: I noticed the lamp changed when I raised the input.\nLine 2: I noticed the lamp changed when I raised the input.\nLine 3: I noticed the lamp changed when I raised the input.\nLine 4: I noticed the lamp changed when I raised the input.\nLine 5: I noticed the lamp changed when I raised the input.\nLine 6: I noticed the lamp changed when I raised the input.\nLine 7: I noticed the lamp changed when I raised the input.\nLine 8: I noticed the lamp changed when I raised the input.\nLine 9: I noticed the lamp changed when I raised the input.\nLine 10: I noticed the lamp changed when I raised the input.\nLine 11: I noticed the lamp changed when I raised the input.\nLine 12: I noticed the lamp changed when I raised the input.\nLine 13: I noticed the lamp changed when I raised the input.\nLine 14: I noticed the lamp changed when I raised the input.\nLine 15: I noticed the lamp changed when I raised the input.\nLine 16: I noticed the lamp changed when I raised the input.\nLine 17: I noticed the lamp chang",
+        "start": 100,
+        "end": 145,
+        "direction": "backward",
+        "height": "180px",
+        "scrollTop": 55
+      },
+      "after": {
+        "value": "Line 1: I noticed the lamp changed when I raised the input.\nLine 2: I noticed the lamp changed when I raised the input.\nLine 3: I noticed the lamp changed when I raised the input.\nLine 4: I noticed the lamp changed when I raised the input.\nLine 5: I noticed the lamp changed when I raised the input.\nLine 6: I noticed the lamp changed when I raised the input.\nLine 7: I noticed the lamp changed when I raised the input.\nLine 8: I noticed the lamp changed when I raised the input.\nLine 9: I noticed the lamp changed when I raised the input.\nLine 10: I noticed the lamp changed when I raised the input.\nLine 11: I noticed the lamp changed when I raised the input.\nLine 12: I noticed the lamp changed when I raised the input.\nLine 13: I noticed the lamp changed when I raised the input.\nLine 14: I noticed the lamp changed when I raised the input.\nLine 15: I noticed the lamp changed when I raised the input.\nLine 16: I noticed the lamp changed when I raised the input.\nLine 17: I noticed the lamp chang",
+        "start": 100,
+        "end": 145,
+        "direction": "backward",
+        "height": "180px",
+        "scrollTop": 55
+      }
+    },
+    {
+      "action": "edit-original-and-return",
+      "previewMatchesOriginal": true,
+      "reflectionPreserved": true,
+      "comparisonFocused": true
+    }
+  ],
+  "focus": [
+    {
+      "name": "original-note",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    },
+    {
+      "name": "comparison-return",
+      "focused": true,
+      "focusVisible": true,
+      "outlineStyle": "solid",
+      "outlineWidth": "2px"
+    }
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n14 !== 28\n\n    at inspect (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\circuit-comparison-notes-2026-10-04\\browser-check.cjs:49:189)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\circuit-comparison-notes-2026-10-04\\browser-check.cjs:77:101"
+}

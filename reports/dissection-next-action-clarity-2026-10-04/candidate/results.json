@@ -1,0 +1,568 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\next-action.config.cjs",
+    "rootDir": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-improving-interactivity-engagement-and/dissection-next-action-2026-10-04/tests",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-improving-interactivity-engagement-and/dissection-next-action-2026-10-04/candidate/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-improving-interactivity-engagement-and/dissection-next-action-2026-10-04/tests",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 240000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        null
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-next-action-clarity.spec.ts",
+      "file": "dissection-next-action-clarity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "next action phone stays readable with intact study evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6924,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-next-action-2026-10-04/candidate.js in place of stem_lab/stem_tool_dissection.js\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:03:15.315Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-48d098e3548a888d720f",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 26,
+          "column": 327
+        },
+        {
+          "title": "next action tablet stays readable with intact study evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3583,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:03:22.973Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-7d27e1db546e0a43c6ae",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 26,
+          "column": 327
+        },
+        {
+          "title": "next action desktop stays readable with intact study evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3560,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:03:26.570Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-eda27128ae91300089fb",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 26,
+          "column": 327
+        },
+        {
+          "title": "next action embedded-medium stays readable with intact study evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4168,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:03:30.142Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-8259465b9e70ff7c057e",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 26,
+          "column": 327
+        },
+        {
+          "title": "next action embedded-large stays readable with intact study evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18507,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:03:34.321Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-d5e164e273a7f262ffe2",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 26,
+          "column": 327
+        },
+        {
+          "title": "next action forced-colors stays readable with intact study evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16118,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:03:52.842Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-4100b51038c24cf317d0",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 26,
+          "column": 327
+        },
+        {
+          "title": "record action opens the missing note without writing evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3035,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:04:08.974Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-41e33f1644c7ac4ed495",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 35,
+          "column": 5
+        },
+        {
+          "title": "assessment summary action focuses first-attempt evidence without changing scores",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2452,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:04:12.021Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-d7600c1ffe43caf33b23",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 36,
+          "column": 5
+        },
+        {
+          "title": "Guided evidence action focuses the pending check without advancing the route",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2704,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:04:14.485Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-2762f603785d1a530e36",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 37,
+          "column": 5
+        },
+        {
+          "title": "next action procedure focuses its destination without performing a technique",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2723,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:04:17.201Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-6127f674b98d72416119",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 39,
+          "column": 39
+        },
+        {
+          "title": "next action setup focuses its destination without performing a technique",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2553,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:04:19.935Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-860973211819414ff5a8",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 39,
+          "column": 39
+        },
+        {
+          "title": "resizing and text spacing retain focus and full action labels",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2684,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:04:22.501Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-e5137c92142b5d054986",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 40,
+          "column": 5
+        },
+        {
+          "title": "planning checkpoints retain one action prompt",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17128,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-dissection-learning-check]')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-dissection-learning-check]')\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-dissection-learning-check]')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-dissection-learning-check]')\u001b[22m\n\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-next-action-2026-10-04\\tests\\dissection-next-action-clarity.spec.ts:41:209",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-next-action-2026-10-04\\tests\\dissection-next-action-clarity.spec.ts",
+                      "column": 209,
+                      "line": 41
+                    },
+                    "snippet": "  39 | for(const caution of [false,true])test(`next action ${caution?'setup':'procedure'} focuses its destination without performing a technique`,async({page})=>{await mount(page,{revealedLayers:{},procedureByLayer:{skin:readyProcedure},activeInstrument:'scalpel',anatomicalView:caution?'dorsal':'ventral',lensFocusDepth:'surface',lensMagnification:2,bladeAngle:caution?70:30});const p=card(page),before=await proof(page);await expect(p).toHaveAttribute('data-next-action',caution?'prepare':'procedure');await readable(p,320);await p.screenshot({path:`${out}/${caution?'setup':'procedure'}.png`,style:captureStyle});await p.locator('.diss-next-action__primary').focus();await page.keyboard.press('Enter');await expect(page.locator(caution?'#diss-instrument-scalpel':'#diss-canvas')).toBeFocused();expect(await proof(page)).toEqual(before);});\n  40 | test('resizing and text spacing retain focus and full action labels',async({page})=>{await mount(page,{toolbarStudyOpen:true,largeText:true},1440,1180);const p=card(page),primary=p.locator('.diss-next-action__primary'),before=await proof(page),items=await inventory(p);await primary.focus();expect((await metrics(p)).position).toBe('sticky');await page.addStyleTag({content:'#wrap {max-width:320px!important;} .diss-next-action :is(h3,p,span,button) {letter-spacing:.12em!important;word-spacing:.16em!important;line-height:1.5!important;}'});await expect(primary).toBeFocused();expect((await readable(p,320,true)).position).toBe('static');await focusStyle(primary);const title=p.locator('h3');await title.focus();await focusStyle(title);expect(await proof(page)).toEqual(before);expect(await inventory(p)).toEqual(items);await p.screenshot({path:`${out}/text-spacing.png`,style:captureStyle});});\n> 41 | test('planning checkpoints retain one action prompt',async({page})=>{await mount(page,{revealedLayers:{},procedureByLayer:{},exploredOrgans:{}});await expect(page.locator('[data-dissection-learning-check]')).toBeVisible();await expect(card(page)).toHaveCount(0);});\n     |                                                                                                                                                                                                                 ^\n  42 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-next-action-2026-10-04\\tests\\dissection-next-action-clarity.spec.ts",
+                        "column": 209,
+                        "line": 41
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeVisible\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-dissection-learning-check]')\nExpected: visible\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeVisible\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-dissection-learning-check]')\u001b[22m\n\n\n  39 | for(const caution of [false,true])test(`next action ${caution?'setup':'procedure'} focuses its destination without performing a technique`,async({page})=>{await mount(page,{revealedLayers:{},procedureByLayer:{skin:readyProcedure},activeInstrument:'scalpel',anatomicalView:caution?'dorsal':'ventral',lensFocusDepth:'surface',lensMagnification:2,bladeAngle:caution?70:30});const p=card(page),before=await proof(page);await expect(p).toHaveAttribute('data-next-action',caution?'prepare':'procedure');await readable(p,320);await p.screenshot({path:`${out}/${caution?'setup':'procedure'}.png`,style:captureStyle});await p.locator('.diss-next-action__primary').focus();await page.keyboard.press('Enter');await expect(page.locator(caution?'#diss-instrument-scalpel':'#diss-canvas')).toBeFocused();expect(await proof(page)).toEqual(before);});\n  40 | test('resizing and text spacing retain focus and full action labels',async({page})=>{await mount(page,{toolbarStudyOpen:true,largeText:true},1440,1180);const p=card(page),primary=p.locator('.diss-next-action__primary'),before=await proof(page),items=await inventory(p);await primary.focus();expect((await metrics(p)).position).toBe('sticky');await page.addStyleTag({content:'#wrap {max-width:320px!important;} .diss-next-action :is(h3,p,span,button) {letter-spacing:.12em!important;word-spacing:.16em!important;line-height:1.5!important;}'});await expect(primary).toBeFocused();expect((await readable(p,320,true)).position).toBe('static');await focusStyle(primary);const title=p.locator('h3');await title.focus();await focusStyle(title);expect(await proof(page)).toEqual(before);expect(await inventory(p)).toEqual(items);await p.screenshot({path:`${out}/text-spacing.png`,style:captureStyle});});\n> 41 | test('planning checkpoints retain one action prompt',async({page})=>{await mount(page,{revealedLayers:{},procedureByLayer:{},exploredOrgans:{}});await expect(page.locator('[data-dissection-learning-check]')).toBeVisible();await expect(card(page)).toHaveCount(0);});\n     |                                                                                                                                                                                                                 ^\n  42 |\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-next-action-2026-10-04\\tests\\dissection-next-action-clarity.spec.ts:41:209"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T06:04:25.198Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-next-action-2026-10-04\\candidate\\artifacts\\dissection-next-action-cla-57357-ts-retain-one-action-prompt-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-next-action-2026-10-04\\candidate\\artifacts\\dissection-next-action-cla-57357-ts-retain-one-action-prompt-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-next-action-2026-10-04\\candidate\\artifacts\\dissection-next-action-cla-57357-ts-retain-one-action-prompt-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-next-action-2026-10-04\\candidate\\artifacts\\dissection-next-action-cla-57357-ts-retain-one-action-prompt-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-next-action-2026-10-04\\tests\\dissection-next-action-clarity.spec.ts",
+                    "column": 209,
+                    "line": 41
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "b90ee8b294aa68006c07-768446142caaca504f84",
+          "file": "dissection-next-action-clarity.spec.ts",
+          "line": 41,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T06:03:14.141Z",
+    "duration": 89090.002,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

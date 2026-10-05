@@ -1,0 +1,46 @@
+Micro Lab resistance snapshot comparison
+Snapshot A: Evidence 7; saved history ends at round 3
+Snapshot B: Evidence 4; saved history ends at round 2
+Shared comparison round: 1
+Latest shared observed round: 2
+Different saved settings: Exposure strength, Planned rounds
+Random teaching model; snapshots may share a run. Differences do not establish which setting caused them. Shared-round counts use the selected round observed in both histories, without extrapolation. The latest shared observed round is the upper limit. Shares are rounded to whole percentages before subtraction; share differences are percentage points. Undefined means no living cells for a share, or an undefined share on either side of its difference. Snapshot endpoint counts are separate. Partial snapshots have no final prediction review; final reviews use each completed or extinct snapshot's own endpoint.
+
+Measure	A (Evidence 7)	B (Evidence 4)	B - A
+Sensitive cells	60	2	-58
+Resistant cells	8	6	-2
+Total living cells	68	8	-60
+Resistant share	12%	75%	+63 percentage points
+
+Original saved snapshots in A, B order
+Micro Lab resistance evidence notebook
+Random teaching model, not measured culture or treatment data. Each record is a saved snapshot; records may come from different rounds of the same run.
+Capacity: 80 cells. Shares are rounded to whole percentages. Extinction has an undefined resistant share.
+Later reflections are editable annotations; original snapshot notes stay unchanged.
+
+Evidence 7
+Status: completed
+Exposure strength: 30/100; planned rounds: 3; observed rounds: 3
+Requested initial resistance: 10%; actual resistant cells: 8/80 (10% rounded)
+Original prediction: increase
+Selected explanation: Not recorded
+My written evidence: Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. 
+Later reflection: Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. 
+Round	Sensitive	Resistant	Total alive	Resistant share
+0	72	8	80	10%
+1	60	8	68	12%
+2	50	8	58	14%
+3	40	8	48	17%
+
+Evidence 4
+Status: in-progress
+Exposure strength: 60/100; planned rounds: 8; observed rounds: 2
+Requested initial resistance: 10%; actual resistant cells: 8/80 (10% rounded)
+Original prediction: increase
+Selected explanation: Not recorded
+My written evidence: <img src=x onerror="window.__visualInjected=true"> Imported evidence stays literal.
+Later reflection: Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. Preserve imported observations and uncertainty. 
+Round	Sensitive	Resistant	Total alive	Resistant share
+0	72	8	80	10%
+1	2	6	8	75%
+2	0	4	4	100%

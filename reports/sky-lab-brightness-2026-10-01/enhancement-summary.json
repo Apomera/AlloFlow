@@ -1,0 +1,60 @@
+{
+  "title": "Sky Lab brightness explorer",
+  "checkedOn": "2026-10-01",
+  "enhancements": [
+    "Replaced the static magnitude panel with linked apparent-magnitude and received-light diagrams.",
+    "Added Sun, Sirius and Vega reference examples using named published V-band measurements.",
+    "Made intrinsic brightness, distance and foreground dust independent controls with keyboard and touch support.",
+    "Added readable phone figures, source tables, model limits and a Stars page shortcut.",
+    "Preserved unrelated saved investigations and recovered malformed restored input."
+  ],
+  "data": {
+    "band": "Johnson V",
+    "solar": {
+      "absoluteV": 4.81,
+      "source": "Willmer 2018, arXiv:1804.07788v1",
+      "url": "https://arxiv.org/abs/1804.07788"
+    },
+    "catalogue": {
+      "name": "ESA 1997 Hipparcos I/239/hip_main",
+      "download": "hipparcos-bright-stars.tsv",
+      "provenance": "download-provenance.json"
+    },
+    "runtimeNetworkRequestsRequired": false
+  },
+  "model": {
+    "equations": [
+      "m_V = M_V + 5 log10(d_pc/10) + A_V",
+      "F/F10 = (10/d_pc)^2 * 10^(-0.4 A_V)",
+      "L_V/L_Vsun = 10^(0.4 (4.81-M_V))"
+    ],
+    "assumptions": [
+      "Steady nearby point source; Euclidean inverse-square dilution.",
+      "Inferred catalogue M_V assumes negligible extinction for these nearby examples.",
+      "Foreground A_V is a separately chosen V-band dimming, not a fixed per-distance dust rate.",
+      "Quoted parallax errors are shown; measurement and calibration uncertainty are not propagated.",
+      "V-band luminosity ratios compare one filter and do not replace bolometric luminosity."
+    ],
+    "distancePcRange": [
+      0.1,
+      10000
+    ],
+    "customAbsoluteVRange": [
+      -10,
+      15
+    ],
+    "extinctionVRange": [
+      0,
+      5
+    ]
+  },
+  "validation": "verification.json",
+  "previews": [
+    "brightness-desktop.png",
+    "brightness-phone-contrast.png",
+    "brightness-curve-phone.png",
+    "brightness-flux-phone.png",
+    "brightness-catalog-phone.png"
+  ],
+  "committed": false
+}

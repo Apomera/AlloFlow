@@ -1,0 +1,19 @@
+
+Running 14 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:82:30 › optical controls are readable and independent on phone (6.2s)
+  ok  2 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:82:30 › optical controls are readable and independent on tablet (5.5s)
+  ok  3 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:82:30 › optical controls are readable and independent on desktop (10.8s)
+  ok  4 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:82:30 › optical controls are readable and independent on embedded-medium (11.0s)
+  ok  5 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:82:30 › optical controls are readable and independent on embedded-large (7.6s)
+  ok  6 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:82:30 › optical controls are readable and independent on forced-colors (11.3s)
+  ok  7 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:114:5 › resizing and text spacing preserve optical focus and settings (7.1s)
+  ok  8 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:122:5 › inset-only inspection enables the lens without changing specimen work (7.7s)
+  ok  9 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:129:5 › assessment and Essentials retain optical teaching restrictions (10.8s)
+  ok 10 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:135:5 › toolbar feedback follows the pinned optical target (11.6s)
+  ok 11 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:149:5 › magnification guidance recommends the modeled level for the tissue depth (18.1s)
+  ok 12 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:161:60 › Identify uses consistent specimen navigation without recording work (17.2s)
+  ok 13 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:161:60 › Guided uses consistent specimen navigation without recording work (17.3s)
+  ok 14 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:161:60 › Compare uses consistent specimen navigation without recording work (25.5s)
+
+  14 passed (3.7m)

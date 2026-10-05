@@ -85,13 +85,13 @@ describe('dissection reference workbench', () => {
     const state = { exploredOrgans: { 'frog|heart': true, 'frog|lungs': true }, organNotes: { 'frog|heart': 'Visible between the lungs.' }, organConfidence: { 'frog|heart': 2 } };
     const host = render('frog', 'heart', state);
     expect(host.querySelector('[data-note-handoff]').textContent).toContain('Note and confidence recorded');
-    expect([...host.querySelectorAll('[data-note-handoff] button')].map(button => button.textContent)).toContain('Continue notes: Lungs');
+    expect(host.querySelector('[data-next-record-action]').textContent).toBe('Open observation record: Lungs');
     expect(render('frog', 'heart').querySelector('[data-note-handoff] button')).toBeNull();
   });
   it('shows the actual missing evidence component in the directory', () => {
     const host = render('frog', null, { exploredOrgans: { 'frog|heart': true, 'frog|lungs': true }, organNotes: { 'frog|heart': 'A chambered structure.' } });
     expect(host.querySelector('[data-structure-record="heart"]').textContent).toBe('Add a confidence rating');
-    expect(host.querySelector('[data-structure-record="lungs"]').textContent).toBe('Add an evidence note');
+    expect(host.querySelector('[data-structure-record="lungs"]').textContent).toBe('Note and confidence needed');
     expect(host.querySelector('[data-structure-record="stomach"]').textContent).toBe('Not yet inspected');
   });
   it('corrects pumping and buoyancy concepts at the shared data source', () => {
@@ -146,7 +146,7 @@ describe('dissection structure discovery', () => {
     });
     for (const id of expectedIds) expect(host.querySelector('#diss-organ-' + id)).not.toBeNull();
     if (directoryFilter !== 'unviewed') expect(host.querySelector('#diss-organ-stomach')).toBeNull();
-    expect(host.querySelector('[data-dissection-directory]').textContent).toContain('not verified mastery');
+    expect(host.querySelector('[data-dissection-directory]').textContent).toContain('understanding is checked separately');
   });
   it('does not leak the discovery directory into an assessment', () => {
     const host = render('frog', null, { quizMode: true, organSearch: 'heart' });
@@ -351,7 +351,7 @@ describe('specimen-wide observation review', () => {
     expect([...panel.querySelectorAll('[data-observation-entry]')].map(el => el.dataset.observationEntry)).toEqual(['cornea','lens']);
     expect(panel.textContent).not.toContain('Uninspected draft');
     expect(panel.querySelector('[data-observation-review-count]').textContent).toBe('2 of 2 inspected structures shown.');
-    expect(panel.textContent).toContain('not accuracy scores');
+    expect(panel.textContent).toContain('Identification checks assess understanding.');
   });
   it('shows a locked saved note without offering a navigation bypass', () => {
     const item = review().querySelector('[data-observation-entry="lens"]');
@@ -412,7 +412,7 @@ describe('observation summary preview', () => {
     expect(text).toContain('Currently locked; saved note only');
     expect(text).toContain('does not verify identification accuracy or mastery');
   });
-  it.each([['uncertain', 'Low confidence', 'Crystalline Lens', '1. Cornea'], ['unfinished', 'Needs notes', 'Cornea', 'Crystalline Lens']])('exports only the %s filter', (filter, label, included, absent) => {
+  it.each([['uncertain', 'Low confidence', 'Crystalline Lens', '1. Cornea'], ['unfinished', 'Finish records', 'Cornea', 'Crystalline Lens']])('exports only the %s filter', (filter, label, included, absent) => {
     const text = summary({ _observationReviewFilter: filter }).querySelector('#diss-observation-summary').value;
     expect(text).toContain('Scope: ' + label + ' · 1 of 2 inspected structures');
     expect(text).toContain(included);
@@ -434,7 +434,7 @@ describe('observation search', () => {
     expect(panel.querySelector('[data-observation-entry]').dataset.observationEntry).toBe('lens');
     expect(panel.querySelector('[data-observation-note-match]')).not.toBeNull();
     expect(panel.querySelector('[data-observation-filter="all"]').textContent).toBe('All inspected (1)');
-    expect(panel.querySelector('[data-observation-filter="unfinished"]').textContent).toBe('Needs notes (0)');
+    expect(panel.querySelector('[data-observation-filter="unfinished"]').textContent).toBe('Finish records (0)');
   });
   it('keeps search independent from the 2D reference directory', () => {
     const panel = search('cornea', { organSearch: 'unrelated' });

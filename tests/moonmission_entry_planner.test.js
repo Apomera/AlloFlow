@@ -32,7 +32,7 @@ describe('entry planner uses the trajectory model', () => {
   ])('%s preset predicts the profile metrics at %s degrees', (id, angle, outcome) => {
     const app = mount();
     app.prop('data-entry-preset', id).onClick();
-    const profile = window.MoonMissionPure.entryProfile(angle), page = app.html();
+    const profile = window.MoonMissionPure.entryProfile(angle, { plan: window.MoonMissionPure.entryPlan(app.data().entryPlan) }), page = app.html();
     const metric = (key) => page.querySelector('[data-entry-predicted-value="' + key + '"]').textContent;
     expect(app.data().entryAngle).toBe(angle);
     expect(page.querySelector('[data-entry-preset="' + id + '"]').getAttribute('aria-pressed')).toBe('true');
@@ -66,7 +66,7 @@ describe('entry planner uses the trajectory model', () => {
   });
 
   it('begins a fresh unrecorded run once, clears the former result and preserves attempts without XP', () => {
-    const previous = { angle: -6.5, outcome: 'nominal', peakG: 6.9, completed: true, modelVersion: 1 };
+    const previous = window.MoonMissionPure.entryRecordedResult(window.MoonMissionPure.entryProfile(-6.5));
     const attempts = [previous];
     const app = mount({ entryAngle: -5, entryOutcome: previous, entryAttempts: attempts,
       entryRun: { version: 1, angle: -6.5, time: 800, recovery: 7, recorded: true }, reentryStatus: 4,
@@ -74,7 +74,7 @@ describe('entry planner uses the trajectory model', () => {
     const begin = app.prop('data-entry-begin', 'true');
     begin.onClick();
     begin.onClick();
-    expect(app.data().entryRun).toEqual({ version: 1, angle: -5, time: 0, recovery: 0, recorded: false });
+    expect(app.data().entryRun).toEqual({ version: 2, angle: -5, plan: { version: 2, mode: 'guided', bank: 0 }, time: 0, recovery: 0, recorded: false });
     expect(app.data().entryOutcome).toBeNull();
     expect(app.data().reentryStatus).toBe(0);
     expect(app.data().entryPaused).toBe(false);

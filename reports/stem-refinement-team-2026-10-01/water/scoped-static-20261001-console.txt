@@ -1,0 +1,26 @@
+{
+  "beforeCount": 35,
+  "currentCount": 36,
+  "delta": 1,
+  "files": [
+    {
+      "file": "stem_lab/water_worlds_view.js",
+      "sha256": "04f090b7311addd0062d0389e7168637ff634d841f76daed5fc5d360cbacee9d",
+      "syntaxExit": 0,
+      "syntaxOutput": ""
+    },
+    {
+      "file": "desktop/web-app/public/stem_lab/water_worlds_view.js",
+      "sha256": "04f090b7311addd0062d0389e7168637ff634d841f76daed5fc5d360cbacee9d",
+      "syntaxExit": 0,
+      "syntaxOutput": ""
+    },
+    {
+      "file": "desktop/web-app/build/stem_lab/water_worlds_view.js",
+      "sha256": "04f090b7311addd0062d0389e7168637ff634d841f76daed5fc5d360cbacee9d",
+      "syntaxExit": 0,
+      "syntaxOutput": ""
+    }
+  ],
+  "allCopiesEqual": true
+}

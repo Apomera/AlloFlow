@@ -1,0 +1,28 @@
+{
+  "sourcePin": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "reviewedAt": "2026-10-04T22:52:41.963Z",
+  "screenshots": [
+    {
+      "filename": "desktop-light.png",
+      "sha256": "8653547b27639ae48cf89b1cddda49bd33381c8308e5686e9a2e11b6d0e49c6e",
+      "viewed": true,
+      "detail": "original",
+      "observation": "Labels around the lobule are small, the top mechanism captions intersect, and the bottom lobule name overlaps the triad legend. Active arrowheads cover substantial geometry."
+    },
+    {
+      "filename": "phone-light.png",
+      "sha256": "45f619127a3c4bda17c9527886283b54ef438822b23dd84125203a15797dde6b",
+      "viewed": true,
+      "detail": "original",
+      "observation": "The whole three-scale drawing shrinks into a narrow strip, making its embedded words unreadable at 320px. Readable HTML controls remain much larger than the illustration."
+    },
+    {
+      "filename": "desktop-light-clinical-step-4.png",
+      "sha256": "a6022c5d5361f42a86689059ae7eb7a9647bc03947d2b536bdee3079ebb2956d",
+      "viewed": true,
+      "detail": "original",
+      "observation": "Fibrosis bands are visible, but the clinical caption intersects the mechanism captions. The active bile route and its oversized arrowhead obscure a fibrosis band on the lower right."
+    }
+  ],
+  "baselinePurpose": "Record inherited behavior and visual limitations before refinement."
+}

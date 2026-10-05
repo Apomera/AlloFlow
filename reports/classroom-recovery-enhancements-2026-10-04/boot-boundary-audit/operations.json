@@ -1,0 +1,62 @@
+[
+  {
+    "file": "AlloFlowANTI.txt",
+    "name": "handleNodeClick-plain-shim",
+    "before": "  const handleNodeClick = (...__a) => { markOrganizerLayoutEdited(); return _alloHostHandlers().handleNodeClick(...__a); };",
+    "after": "  const handleNodeClick = (...__a) => _alloHostHandlers().handleNodeClick(...__a);"
+  },
+  {
+    "file": "host_handlers_source.jsx",
+    "name": "handleNodeClick-keep-edit-marker",
+    "before": "const handleNodeClick = (e, nodeId) => {",
+    "after": "const handleNodeClick = (e, nodeId) => {\n      __d.markOrganizerLayoutEdited();"
+  },
+  {
+    "file": "AlloFlowANTI.txt",
+    "name": "handleAddManualNode-plain-shim",
+    "before": "  const handleAddManualNode = (...__a) => { markOrganizerLayoutEdited(); return _alloHostHandlers().handleAddManualNode(...__a); };",
+    "after": "  const handleAddManualNode = (...__a) => _alloHostHandlers().handleAddManualNode(...__a);"
+  },
+  {
+    "file": "host_handlers_source.jsx",
+    "name": "handleAddManualNode-keep-edit-marker",
+    "before": "const handleAddManualNode = () => {",
+    "after": "const handleAddManualNode = () => {\n      __d.markOrganizerLayoutEdited();"
+  },
+  {
+    "file": "AlloFlowANTI.txt",
+    "name": "handleResetLayout-plain-shim",
+    "before": "  const handleResetLayout = (...__a) => { markOrganizerLayoutEdited(); return _alloHostHandlers().handleResetLayout(...__a); };",
+    "after": "  const handleResetLayout = (...__a) => _alloHostHandlers().handleResetLayout(...__a);"
+  },
+  {
+    "file": "host_handlers_source.jsx",
+    "name": "handleResetLayout-keep-edit-marker",
+    "before": "const handleResetLayout = () => {",
+    "after": "const handleResetLayout = () => {\n      __d.markOrganizerLayoutEdited();"
+  },
+  {
+    "file": "AlloFlowANTI.txt",
+    "name": "resource-updater-host-owned",
+    "before": "  const onUpdateResource = useCallback((...__a) => _alloHostHandlers().onUpdateResource(...__a), [setHistory, setGeneratedContent]);",
+    "after": "  const onUpdateResource = useCallback((resourceId, updater, options = {}) => {\n    if (resourceId == null || typeof updater !== 'function') return false;\n    const id = String(resourceId);\n    // Imported packs can repeat a public id; given an instance, only that copy changes.\n    const instanceId = options && typeof options.instanceId === 'string' ? options.instanceId : '';\n    const sameCopy = item => !instanceId || _alloArtifactMatchesInstanceId(item, instanceId);\n    const current = _resourceMutationStateRef.current;\n    const artifact = (Array.isArray(current.history) ? current.history : []).find(item => item && String(item.id) === id && sameCopy(item))\n      || (current.generatedContent && String(current.generatedContent.id) === id && sameCopy(current.generatedContent) ? current.generatedContent : null);\n    if (!artifact) return false;\n    const candidate = updater(artifact);\n    if (!candidate || candidate === artifact) return false;\n    const preservesOriginal = (before, after) => before?.instructionalText?.form !== 'same-text-supported' || (after?.data === before.data && after?.sourceSnapshot?.text === before.sourceSnapshot?.text && after?.instructionalText?.form === 'same-text-supported');\n    if (!preservesOriginal(artifact, candidate)) return false;\n    const updatedAt = new Date().toISOString();\n    const apply = previous => {\n      if (!previous || String(previous.id) !== id || previous.type !== artifact.type || !sameCopy(previous)) return previous;\n      const next = previous === artifact ? candidate : updater(previous);\n      if (!next || next === previous || !preservesOriginal(previous, next)) return previous;\n      return { ...next, id: previous.id, type: previous.type, updatedAt };\n    };\n    setHistory(previous => previous.map(apply));\n    setGeneratedContent(apply);\n    return true;\n  }, [setHistory, setGeneratedContent]);"
+  },
+  {
+    "file": "host_handlers_source.jsx",
+    "name": "resource-updater-remove-moved-body",
+    "before": "const onUpdateResource = (resourceId, updater, options = {}) => {\n    if (resourceId == null || typeof updater !== 'function') return false;\n    const id = String(resourceId);\n    // Imported packs can repeat a public id; given an instance, only that copy changes.\n    const instanceId = options && typeof options.instanceId === 'string' ? options.instanceId : '';\n    const sameCopy = item => !instanceId || __d._alloArtifactMatchesInstanceId(item, instanceId);\n    const current = __d._resourceMutationStateRef.current;\n    const artifact = (Array.isArray(current.history) ? current.history : []).find(item => item && String(item.id) === id && sameCopy(item))\n      || (current.generatedContent && String(current.generatedContent.id) === id && sameCopy(current.generatedContent) ? current.generatedContent : null);\n    if (!artifact) return false;\n    const candidate = updater(artifact);\n    if (!candidate || candidate === artifact) return false;\n    const preservesOriginal = (before, after) => before?.instructionalText?.form !== 'same-text-supported' || (after?.data === before.data && after?.sourceSnapshot?.text === before.sourceSnapshot?.text && after?.instructionalText?.form === 'same-text-supported');\n    if (!preservesOriginal(artifact, candidate)) return false;\n    const updatedAt = new Date().toISOString();\n    const apply = previous => {\n      if (!previous || String(previous.id) !== id || previous.type !== artifact.type || !sameCopy(previous)) return previous;\n      const next = previous === artifact ? candidate : updater(previous);\n      if (!next || next === previous || !preservesOriginal(previous, next)) return previous;\n      return { ...next, id: previous.id, type: previous.type, updatedAt };\n    };\n    __d.setHistory(previous => previous.map(apply));\n    __d.setGeneratedContent(apply);\n    return true;\n  };\nfunction resumeReadThisPage()",
+    "after": "function resumeReadThisPage()"
+  },
+  {
+    "file": "host_handlers_source.jsx",
+    "name": "resource-updater-remove-factory-export",
+    "before": "openCachedPdfRemediation, onUpdateResource, resumeReadThisPage",
+    "after": "openCachedPdfRemediation, resumeReadThisPage"
+  },
+  {
+    "file": "AlloFlowANTI.txt",
+    "name": "organizer-edit-marker-getter",
+    "before": "    get mapContainerRef() { return mapContainerRef; },",
+    "after": "    get markOrganizerLayoutEdited() { return markOrganizerLayoutEdited; },\n    get mapContainerRef() { return mapContainerRef; },"
+  }
+]

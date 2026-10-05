@@ -1,0 +1,336 @@
+{
+  "baselineSHA": "a6a85471f36a50ca85a45f942e5acea54b6c75197195bcf1465f76713c6061fc",
+  "finalSHA": "c6de388c0ba89549aca25b045fbf2feca63ef21e6a332dc0ef95305b83f50a7e",
+  "specSHA": "bc91d34655a0764c8b0282b6be1fb672e14eca70916e27415e8f1ed08c40d72c",
+  "mirrorIdentical": true,
+  "cssOnly": true,
+  "reversalExact": true,
+  "lfOnly": true,
+  "parsed": true,
+  "browser": {
+    "passed": 22,
+    "failed": 0,
+    "flaky": 0,
+    "skipped": 0,
+    "exitCode": 0,
+    "durationMs": 123579.23599999999,
+    "canonical": true,
+    "attempt": "final-standalone/attempt.json"
+  },
+  "unit": {
+    "passed": 197,
+    "failed": 0,
+    "exitCode": 0
+  },
+  "audits": [
+    {
+      "name": "lab-phone",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "lab-tablet",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "lab-desktop",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "lab-embedded-medium",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "lab-embedded-large",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "lab-forced-colors",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "study-phone",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "study-tablet",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "study-desktop",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "study-embedded-medium",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "study-embedded-large",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "study-forced-colors",
+      "violations": 0,
+      "incomplete": 0
+    }
+  ],
+  "comparisons": [
+    {
+      "name": "lab-phone",
+      "beforeFont": 13,
+      "afterFont": 14,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 1,
+      "clipped": false
+    },
+    {
+      "name": "lab-tablet",
+      "beforeFont": 13,
+      "afterFont": 14,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 2,
+      "clipped": false
+    },
+    {
+      "name": "lab-desktop",
+      "beforeFont": 13,
+      "afterFont": 14,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 4,
+      "clipped": false
+    },
+    {
+      "name": "lab-embedded-medium",
+      "beforeFont": 13,
+      "afterFont": 14,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 1,
+      "clipped": false
+    },
+    {
+      "name": "lab-embedded-large",
+      "beforeFont": 16,
+      "afterFont": 16,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 1,
+      "clipped": false
+    },
+    {
+      "name": "lab-forced-colors",
+      "beforeFont": 13,
+      "afterFont": 14,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 1,
+      "clipped": false
+    },
+    {
+      "name": "study-phone",
+      "beforeFont": 13,
+      "afterFont": 14,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 1,
+      "clipped": false
+    },
+    {
+      "name": "study-tablet",
+      "beforeFont": 13,
+      "afterFont": 14,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 2,
+      "clipped": false
+    },
+    {
+      "name": "study-desktop",
+      "beforeFont": 13,
+      "afterFont": 14,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 3,
+      "clipped": false
+    },
+    {
+      "name": "study-embedded-medium",
+      "beforeFont": 13,
+      "afterFont": 14,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 1,
+      "clipped": false
+    },
+    {
+      "name": "study-embedded-large",
+      "beforeFont": 16,
+      "afterFont": 16,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 1,
+      "clipped": false
+    },
+    {
+      "name": "study-forced-colors",
+      "beforeFont": 13,
+      "afterFont": 14,
+      "beforeTarget": 44,
+      "afterTarget": 48,
+      "columns": 1,
+      "clipped": false
+    }
+  ],
+  "focus": [
+    {
+      "name": "lab-phone",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(23, 102, 210)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 5.429711502097148
+    },
+    {
+      "name": "lab-tablet",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(23, 102, 210)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 5.429711502097148
+    },
+    {
+      "name": "lab-desktop",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(23, 102, 210)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 5.429711502097148
+    },
+    {
+      "name": "lab-embedded-medium",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(23, 102, 210)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 5.429711502097148
+    },
+    {
+      "name": "lab-embedded-large",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 21
+    },
+    {
+      "name": "lab-forced-colors",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(55, 0, 110)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 15.134013837043632
+    },
+    {
+      "name": "study-phone",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(23, 102, 210)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 5.429711502097148
+    },
+    {
+      "name": "study-tablet",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(23, 102, 210)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 5.429711502097148
+    },
+    {
+      "name": "study-desktop",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(23, 102, 210)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 5.429711502097148
+    },
+    {
+      "name": "study-embedded-medium",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(23, 102, 210)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 5.429711502097148
+    },
+    {
+      "name": "study-embedded-large",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 21
+    },
+    {
+      "name": "study-forced-colors",
+      "width": 3,
+      "offset": -5,
+      "style": "solid",
+      "shadow": "none",
+      "color": "rgb(55, 0, 110)",
+      "background": "rgb(255, 255, 255)",
+      "contrast": 15.134013837043632
+    }
+  ],
+  "visualReview": [
+    "after-lab-phone.png",
+    "after-lab-desktop.png",
+    "after-lab-embedded-large.png",
+    "after-study-phone.png",
+    "after-study-desktop.png",
+    "focus-lab-forced-colors.png",
+    "reset-phone.png",
+    "reset-embedded-large.png",
+    "reset-forced.png",
+    "notebook-full.png"
+  ],
+  "notes": [
+    "Initial final spec passed 22 cases; final standalone spec replaced artifact-dependent expectations and added View/Tools mutual-exclusion checks.",
+    "Baseline run captured 12 layouts only; skipped behavior tests are excluded from final totals.",
+    "Screenshot-only style makes the unrelated Next best action card static; runtime assertions retain native layout."
+  ]
+}

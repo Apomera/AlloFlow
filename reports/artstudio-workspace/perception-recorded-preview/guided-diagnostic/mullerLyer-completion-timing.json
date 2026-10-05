@@ -1,0 +1,428 @@
+{
+  "loadedSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246",
+  "completionActiveCountAtUnchangedAssertion": 0,
+  "immediate": {
+    "state": {
+      "experiment": "mullerLyer",
+      "models": {
+        "brightness": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "Separate brightness draft",
+          "contrast": 80,
+          "target": 180,
+          "matching": false,
+          "swap": false,
+          "matchValue": 180
+        },
+        "ebbinghaus": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "surround": 36,
+          "gap": 12,
+          "matching": false,
+          "swap": false,
+          "matchValue": 48
+        },
+        "mullerLyer": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Same",
+          "note": "Fresh repeat note 3",
+          "angle": 65,
+          "fin": 42,
+          "matching": true,
+          "swap": false,
+          "matchValue": 445
+        },
+        "cafeWall": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "offset": 50,
+          "mortar": 5
+        },
+        "necker": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "depth": 95,
+          "cue": "none"
+        },
+        "moire": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Fine lines",
+          "note": "Unfinished moiré draft",
+          "angle": 8.3,
+          "spacing": 19
+        }
+      },
+      "expanded": false,
+      "studies": [
+        {
+          "id": "baseline-1",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Top",
+            "note": "Baseline note 1",
+            "angle": 30,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 380
+          },
+          "date": "2026-10-03T14:00:01.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 1,
+            "startValue": 326
+          }
+        },
+        {
+          "id": "baseline-2",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Top",
+            "note": "Baseline note 2",
+            "angle": 30,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 410
+          },
+          "date": "2026-10-03T14:00:02.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 2,
+            "startValue": 474
+          }
+        },
+        {
+          "id": "baseline-3",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Top",
+            "note": "Baseline note 3",
+            "angle": 30,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 425
+          },
+          "date": "2026-10-03T14:00:03.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 3,
+            "startValue": 364
+          }
+        },
+        {
+          "id": "muu72j84-10",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 1",
+            "angle": 65,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 400
+          },
+          "date": "2026-10-04T19:09:01.012Z",
+          "repeat": {
+            "id": "matches-muu72j2f-9",
+            "trial": 1,
+            "startValue": 326
+          }
+        },
+        {
+          "id": "muu72jbz-11",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 2",
+            "angle": 65,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 430
+          },
+          "date": "2026-10-04T19:09:01.151Z",
+          "repeat": {
+            "id": "matches-muu72j2f-9",
+            "trial": 2,
+            "startValue": 474
+          }
+        },
+        {
+          "id": "muu72jfp-12",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 3",
+            "angle": 65,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 445
+          },
+          "date": "2026-10-04T19:09:01.285Z",
+          "repeat": {
+            "id": "matches-muu72j2f-9",
+            "trial": 3,
+            "startValue": 364
+          }
+        }
+      ],
+      "comparison": {
+        "experiment": "necker",
+        "model": {
+          "context": true,
+          "reveal": true,
+          "prediction": "",
+          "note": "Pinned cube",
+          "depth": 72,
+          "cue": "front"
+        }
+      }
+    },
+    "savedTrialCount": 3,
+    "activeCount": 0,
+    "activeDOM": "",
+    "activeSummary": "",
+    "reviewGroup": "baseline",
+    "comparedGroup": "matches-muu72j2f-9",
+    "announcement": "Three new matches recorded. The baseline and new study are selected for comparison. Reveal each study separately when you are ready."
+  },
+  "afterCommitPaint": {
+    "state": {
+      "experiment": "mullerLyer",
+      "models": {
+        "brightness": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "Separate brightness draft",
+          "contrast": 80,
+          "target": 180,
+          "matching": false,
+          "swap": false,
+          "matchValue": 180
+        },
+        "ebbinghaus": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "surround": 36,
+          "gap": 12,
+          "matching": false,
+          "swap": false,
+          "matchValue": 48
+        },
+        "mullerLyer": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Same",
+          "note": "Fresh repeat note 3",
+          "angle": 65,
+          "fin": 42,
+          "matching": true,
+          "swap": false,
+          "matchValue": 445
+        },
+        "cafeWall": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "offset": 50,
+          "mortar": 5
+        },
+        "necker": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "depth": 95,
+          "cue": "none"
+        },
+        "moire": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Fine lines",
+          "note": "Unfinished moiré draft",
+          "angle": 8.3,
+          "spacing": 19
+        }
+      },
+      "expanded": false,
+      "studies": [
+        {
+          "id": "baseline-1",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Top",
+            "note": "Baseline note 1",
+            "angle": 30,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 380
+          },
+          "date": "2026-10-03T14:00:01.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 1,
+            "startValue": 326
+          }
+        },
+        {
+          "id": "baseline-2",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Top",
+            "note": "Baseline note 2",
+            "angle": 30,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 410
+          },
+          "date": "2026-10-03T14:00:02.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 2,
+            "startValue": 474
+          }
+        },
+        {
+          "id": "baseline-3",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Top",
+            "note": "Baseline note 3",
+            "angle": 30,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 425
+          },
+          "date": "2026-10-03T14:00:03.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 3,
+            "startValue": 364
+          }
+        },
+        {
+          "id": "muu72j84-10",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 1",
+            "angle": 65,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 400
+          },
+          "date": "2026-10-04T19:09:01.012Z",
+          "repeat": {
+            "id": "matches-muu72j2f-9",
+            "trial": 1,
+            "startValue": 326
+          }
+        },
+        {
+          "id": "muu72jbz-11",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 2",
+            "angle": 65,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 430
+          },
+          "date": "2026-10-04T19:09:01.151Z",
+          "repeat": {
+            "id": "matches-muu72j2f-9",
+            "trial": 2,
+            "startValue": 474
+          }
+        },
+        {
+          "id": "muu72jfp-12",
+          "experiment": "mullerLyer",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 3",
+            "angle": 65,
+            "fin": 42,
+            "matching": true,
+            "swap": false,
+            "matchValue": 445
+          },
+          "date": "2026-10-04T19:09:01.285Z",
+          "repeat": {
+            "id": "matches-muu72j2f-9",
+            "trial": 3,
+            "startValue": 364
+          }
+        }
+      ],
+      "comparison": {
+        "experiment": "necker",
+        "model": {
+          "context": true,
+          "reveal": true,
+          "prediction": "",
+          "note": "Pinned cube",
+          "depth": 72,
+          "cue": "front"
+        }
+      }
+    },
+    "savedTrialCount": 3,
+    "activeCount": 0,
+    "activeDOM": "",
+    "activeSummary": "",
+    "reviewGroup": "baseline",
+    "comparedGroup": "matches-muu72j2f-9",
+    "announcement": "Three new matches recorded. The baseline and new study are selected for comparison. Reveal each study separately when you are ready."
+  },
+  "diagnosticOnly": true,
+  "assertionPreserved": "Captured the exact prior active count; the original zero-count assertion remains below without relaxation."
+}

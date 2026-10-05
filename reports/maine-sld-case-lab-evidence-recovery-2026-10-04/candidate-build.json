@@ -1,0 +1,16 @@
+{
+  "compiledAt": "2026-10-04T06:10:08.217160+00:00",
+  "command": [
+    "C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe",
+    "_build_maine_sld_practice_module.js"
+  ],
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-evidence-recovery-2026-10-04\\staged-build",
+  "builderBytePreserved": true,
+  "sourceSha256": "7e1cad36c9f91244dc1a6050d0551fe573d4b467eb428be198c6d9615da64796",
+  "exitCode": 0,
+  "stdout": "Built maine_sld_practice_module.js: 52 results, 5 cases, 194222 bytes.\n",
+  "stderr": "",
+  "noRootSourceOrModuleMutation": true,
+  "moduleSha256": "6ed63fb29108f77606a56e24dcd2b2b407bd9dca23f52ccb4bcc80e9ed72f721",
+  "moduleBytes": 194222
+}

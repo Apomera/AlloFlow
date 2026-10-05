@@ -1,0 +1,18 @@
+{
+  "mode": "committed",
+  "passed": true,
+  "parent": "a83872bea4f05224645b5571c4b8fa9b2606b518",
+  "tree": "5c347c66356cb892f21948b67f7b70eb2dafef16",
+  "commit": "827b7bd6374c3d950b29204bd1ec3e93af314311",
+  "branch": "refs/heads/codex/micro-resistance-dashboard-2026-10-04",
+  "checkoutIndexPreserved": true,
+  "unrelatedStagingPreserved": true,
+  "changedFiles": 126,
+  "sealedFiles": 126,
+  "sourceSha256": "b17b162e70ccf92049a160ae6018a85b51f0b5c18ba18002c222187f9811547e",
+  "unitPassed": 1059,
+  "browserPassed": 89,
+  "registryScope": "Eight dashboard labels only; other registry changes excluded.",
+  "workingSourceLabelsValid": true,
+  "workingRegistrySha256Drift": []
+}

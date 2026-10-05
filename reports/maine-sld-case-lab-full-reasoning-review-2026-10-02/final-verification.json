@@ -1,0 +1,74 @@
+{
+  "verifiedAt": "2026-10-03T16:01:38.723670+00:00",
+  "status": "passed-frozen-activity-and-exact-host-snapshot-with-shared-source-drift",
+  "moduleSha256": "d69ff0908089f9d47dc0a572d676eadbbd846a8cfd5ea170637bd651720eb0f7",
+  "moduleBytes": 177749,
+  "fourModuleCopiesMatch": true,
+  "allSourcesMatchFinalFreeze": true,
+  "threeHostsMatchFinalExactTestedSnapshot": false,
+  "hostSourceSha256": "b5fb9c913c1fa3884d2fe0190a10401179cb5e362a48856d01a47db7a53f7fe7",
+  "hostBundleSha256": "5b1af4462c989d37f252fb61645f5c92556ce75c517356b7ca81ac81641d88bd",
+  "caseDataCoreBuilderBytePreserved": true,
+  "worksheetSchemaPreserved": true,
+  "printFunctionPrintCssSharedResponseLabelPreserved": true,
+  "targetedBrowserScenariosPassed": 6,
+  "newBrowserScenarios": 2,
+  "browserValidationSummary": "browser-validation/validation-summary.json",
+  "finalServedBytes": {
+    "app": {
+      "url": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+      "status": 200,
+      "bytes": 588,
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5"
+    },
+    "hostBundle": {
+      "url": "http://127.0.0.1:65063/__sld_preview/host.bundle.js",
+      "status": 200,
+      "bytes": 1973626,
+      "sha256": "5b1af4462c989d37f252fb61645f5c92556ce75c517356b7ca81ac81641d88bd"
+    },
+    "activityModule": {
+      "url": "http://127.0.0.1:65063/app/maine_sld_practice_module.js?v=d69ff090",
+      "status": 200,
+      "bytes": 177749,
+      "sha256": "d69ff0908089f9d47dc0a572d676eadbbd846a8cfd5ea170637bd651720eb0f7"
+    }
+  },
+  "previewPid": 12900,
+  "scopedAxeScans": 4,
+  "axeViolations": 0,
+  "rootAcceptedCaptureCount": 7,
+  "independentSourceAndLayoutReview": "source-and-layout-review.md",
+  "retainedPrintPageCount": 9,
+  "retainedPrintPdfSha256": "8fd65a71f399b21d5089ef3906bf3387a40cf71abd3c5ac62576c7f9705060a6",
+  "retainedPrintVisualQa": "all-nine-pages-accepted",
+  "printRerun": false,
+  "newReviewNavigationStateIsTransient": true,
+  "narrowFormGridBounded": true,
+  "formPanelOverflowRegressionCovered": true,
+  "historicalFullSuiteEvidencePreserved": true,
+  "noFullMatrixOrUnchangedCoreRerun": true,
+  "focusedSyntaxAndWhitespaceChecksPassed": true,
+  "commitPerformed": false,
+  "deploymentPerformed": false,
+  "sharedHostSourcesObservedAt": "2026-10-03T16:01:38.760298+00:00",
+  "sharedHostSourcesObserved": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "69b228c6f92ae7d102fdd5c954927bf69eb999f429ba8f71a94e2ee9ee1e47a6",
+      "finalMaineModulePinRetained": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "69b228c6f92ae7d102fdd5c954927bf69eb999f429ba8f71a94e2ee9ee1e47a6",
+      "finalMaineModulePinRetained": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "69b228c6f92ae7d102fdd5c954927bf69eb999f429ba8f71a94e2ee9ee1e47a6",
+      "finalMaineModulePinRetained": true
+    }
+  ],
+  "hostValidationScope": "Exact b5fb snapshot and served preview passed; later shared source changes were preserved and were not re-tested in this bounded activity pass.",
+  "additionalSharedHostSourceWritesPerformed": false
+}

@@ -1,0 +1,76 @@
+{
+  "baselineSHA": "ad1970ff112df529cc9115e0fbd69061c80393af9570aba38fa05b1c9cb6b91c",
+  "sourceSHA": "2ec075216538b88288d2e632525913d9ce830d3ff15ffd8e47757b190ea2465c",
+  "matchedImagePairs": 8,
+  "selectedBaselineAndCurrentImages": 16,
+  "finalPixelsMatchReviewedSkinProbe": true,
+  "protectedNaturalSnapshotsExact": true,
+  "detailSceneFixturesExact": true,
+  "pairs": [
+    {
+      "baseline": "baseline-views/squid-approach-desktop.png",
+      "current": "current-views/squid-approach-desktop.png",
+      "baselineSHA": "c97a93a36898c7e74ec25c1b4f1eac6950f038b83e4f7a483da885174c3ab93d",
+      "currentSHA": "87f9b0cc10d46cb5a8132be114701930ae26275bed5414c52864204198f78cb1",
+      "reviewedProbePixelsExact": true,
+      "protectedNaturalSnapshotsExact": true
+    },
+    {
+      "baseline": "baseline-views/squid-approach-desktop-gl.png",
+      "current": "current-views/squid-approach-desktop-gl.png",
+      "baselineSHA": "2f1f595b1ca2a918238bbefd0ca70b757e98431c54cc4c22d04d0ee3fcf8ecd1",
+      "currentSHA": "eee56e1670a291d09505aaf2756cac4a87963f9c33dae1bea3307e898fcc8648",
+      "reviewedProbePixelsExact": true,
+      "protectedNaturalSnapshotsExact": true
+    },
+    {
+      "baseline": "baseline-views/squid-approach-phone.png",
+      "current": "current-views/squid-approach-phone.png",
+      "baselineSHA": "a63e475127aa0c9d7916711ccb8fe09e7e23241014a46a17bb31ff305a33404c",
+      "currentSHA": "b651f2e1627a3b62d8ea67a94cfeb2df545fbaa6991ee7e8bac75a3d1efdd325",
+      "reviewedProbePixelsExact": true,
+      "protectedNaturalSnapshotsExact": true
+    },
+    {
+      "baseline": "baseline-views/squid-approach-phone-gl.png",
+      "current": "current-views/squid-approach-phone-gl.png",
+      "baselineSHA": "f33b5cf7aad8607e578b79668325f613a9422324a73404cd35f670bd392b25c2",
+      "currentSHA": "77fb31f3b39af9d8f40de2d86d7917206b609ca9a44f48fe1e53f01b2db9654d",
+      "reviewedProbePixelsExact": true,
+      "protectedNaturalSnapshotsExact": true
+    },
+    {
+      "baseline": "baseline-detail-fixed/squid-side-gl.png",
+      "current": "current-detail-fixed-retry/squid-side-gl.png",
+      "baselineSHA": "5eff43df9a9d3416122f0cd5d116238c02e5377fa4a3319bd21225d93346159e",
+      "currentSHA": "9bcac5b6bfc36bee4685fea128898d4156d1144d9b2188a96f79226ff1eb4e47",
+      "reviewedProbePixelsExact": true,
+      "fullSceneFixturesAndCameraPoseExact": true
+    },
+    {
+      "baseline": "baseline-detail-fixed/squid-dorsal-gl.png",
+      "current": "current-detail-fixed-retry/squid-dorsal-gl.png",
+      "baselineSHA": "c490d03b38768620dc9a532a706c5f1bef8873692cb01b2dd3ebab32c04af5a5",
+      "currentSHA": "dfba221f1fc0a52a16eba628736051b3c7f621f5e535b3c75f45c1289ce2e270",
+      "reviewedProbePixelsExact": true,
+      "fullSceneFixturesAndCameraPoseExact": true
+    },
+    {
+      "baseline": "baseline-detail-fixed/squid-front-gl.png",
+      "current": "current-detail-fixed-retry/squid-front-gl.png",
+      "baselineSHA": "2a925c7c41a24657dcfe6d0956be27e01e81e1929c15a19323830b0484954096",
+      "currentSHA": "7296d51aa91ef2f87350e43a3507e016e795a108e5e3c1477fb96d485ed6f0b1",
+      "reviewedProbePixelsExact": true,
+      "fullSceneFixturesAndCameraPoseExact": true
+    },
+    {
+      "baseline": "baseline-detail-fixed/squid-underside-gl.png",
+      "current": "current-detail-fixed-retry/squid-underside-gl.png",
+      "baselineSHA": "973d5a4c26b69a957e4e5483cafc04d72c77eb6a719bbfeccdf712a3bc2ae10f",
+      "currentSHA": "a2b25210b7ed14a1d2f00c91b09ba3e475fe186475749f0cb78a5fd4de519c10",
+      "reviewedProbePixelsExact": true,
+      "fullSceneFixturesAndCameraPoseExact": true
+    }
+  ],
+  "scope": "Two actual ordinary approach profiles (desktop balanced and phone low), each retaining page and native GL pixels, plus four camera-only actual squid detail views. All world/player/prey/camera/plant/UI/tick snapshots except wall-clock native draw counters match baseline. Full detail fixtures/poses match baseline. Final photo bytes equal the reviewed copied-source skin probe even though final source also fixes postcontact HUD. Draw/render counters are recorded but are not FPS benchmarks."
+}

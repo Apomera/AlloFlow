@@ -1,0 +1,16 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sourceSha256": "3053b056457909d7abd6f7317fc608d06b6454354c04b7cb6846d80a3aa668b7",
+  "matchingEnglishKeys": 1304,
+  "completeUnitChecksPassed": 242,
+  "newClaimIntervalChecksPassed": 6,
+  "browserWorkflowsPassed": 16,
+  "newBrowserWorkflowsPassed": 4,
+  "inputCombinations": 144,
+  "recordedSamplesChecked": 207504,
+  "recordedPowersChecked": 415008,
+  "detailMatrixWindowsChecked": 720,
+  "newFeatureCaptures": 12,
+  "commit": "not created; changes remain uncommitted"
+}

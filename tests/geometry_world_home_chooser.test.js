@@ -114,6 +114,28 @@ describe('Geometry World home chooser lifecycle', () => {
     document.body.innerHTML = '';
   });
 
+  it.each(['home','activity','concept'])('keeps the composed recovery dialog accessible above the %s surface',surface=>{
+    const m=mountTool(cfg,{worldActive:true,activeLesson:'volumeExplorer'}),engine=window[ENGINE_KEY];
+    if(surface!=='home'){
+      const lesson=engine.geometryHomeLessons.find(lesson=>lesson.id==='geometryGarden');
+      // This composed DOM fixture does not create decorative Three.js markers.
+      engine._currentLesson={...lesson,activities:lesson.activities.map(activity=>({...activity,position:null}))};
+      m.set({activeLesson:'geometryGarden',showGeometryHome:false,objectivesOpen:surface==='activity'});
+      if(surface==='concept')React.act(()=>engine.openConceptSnapshots());
+    }
+    const selector=surface==='home'?'.gwe-home-backdrop':surface==='activity'?'.gwe-activity-backdrop':'.gwe-concept-backdrop';
+    const initiating=m.container.querySelector(selector);expect(initiating).toBeTruthy();
+    m.set({showSaveRecovery:true,worldTransitionNotice:{title:'A new world',reason:'Autosave is unavailable.',confirming:false,exportStatus:''}});
+    const recovery=m.container.querySelector('[data-gw-save-recovery]'),dialog=recovery?.querySelector('[role="alertdialog"]');
+    expect(dialog).toBeTruthy();expect(recovery.hasAttribute('inert')).toBe(false);expect(recovery.getAttribute('aria-hidden')).toBeNull();
+    expect(initiating.hasAttribute('inert')).toBe(true);expect(initiating.getAttribute('aria-hidden')).toBe('true');
+    const workspace=m.container.querySelector('#geoworld-fs-workspace');
+    for(const child of workspace.children){if(child===recovery || child.tagName==='STYLE')continue;expect(child.hasAttribute('inert')).toBe(true);expect(child.getAttribute('aria-hidden')).toBe('true');}
+    m.set({showSaveRecovery:false,worldTransitionNotice:null});
+    expect(m.container.querySelector('[data-gw-save-recovery]')).toBeNull();expect(m.container.querySelector(selector)).toBe(initiating);
+    expect(initiating.hasAttribute('inert')).toBe(false);expect(initiating.getAttribute('aria-hidden')).toBeNull();m.unmount();
+  });
+
   it('THE REGRESSION: a returning user with _introShownOnce and a live world still gets the chooser, with Continue', () => {
     const m = mountTool(cfg, { _introShownOnce: true, worldActive: true, activeLesson: 'volumeExplorer' });
     m.rerender();
@@ -137,6 +159,124 @@ describe('Geometry World home chooser lifecycle', () => {
     expect(b._geometryHomeInitial).toBe(true);
     expect(m.container.querySelector('button.gwe-home-continue')).toBeNull();
     m.unmount();
+  });
+
+  it('shows an actual guided investigation on the first screen and starts the featured lesson', () => {
+    const m = mountTool(cfg, { geometryHomeLesson: 'areaSurface' });
+    const home = m.container.querySelector('.gwe-home');
+    expect(home.querySelector('h1').textContent).toBe('Geometry World');
+    const featured = home.querySelector('[data-gwe-featured-lesson]');
+    expect(featured.getAttribute('data-gwe-featured-lesson')).toBe('areaSurface');
+    expect(home.querySelector('.gwe-home-learning .gwe-lesson-concept').textContent).toContain('closed rectangular prism');
+    expect(home.querySelector('.gwe-home-learning .gwe-lesson-concept').textContent).toContain('SA =');
+    expect(home.querySelector('.gwe-home-learning .gwe-lesson-map svg')).toBeTruthy();
+    expect(home.querySelector('.gwe-home-learning .gwe-home-goals li')).toBeTruthy();
+    React.act(() => featured.click());
+    expect(m.bucket().activeLesson).toBe('areaSurface');
+    expect(m.bucket().showGeometryHome).toBe(false);
+    m.unmount();
+  });
+
+  it('keeps exploration worlds out of the featured guided lesson and opens the lesson selector', () => {
+    const m = mountTool(cfg, { geometryHomeLesson: 'geometryGarden' });
+    const featured = m.container.querySelector('[data-gwe-featured-lesson]');
+    expect(featured).toBeTruthy();
+    expect(['geometryGarden', 'skylineCity']).not.toContain(featured.getAttribute('data-gwe-featured-lesson'));
+    const browse = [...m.container.querySelectorAll('.gwe-home-learning-actions button')].find(button => button.textContent === 'All guided lessons');
+    React.act(() => browse.click());
+    expect(m.bucket().geometryHomePage).toBe('learn');
+    expect(m.container.querySelector('#gwe-home-lesson')).toBeTruthy();
+    expect(m.container.querySelector('.gwe-home-preview .gwe-lesson-concept')).toBeTruthy();
+    m.unmount();
+  });
+
+  it('browses real guided lessons by topic and keeps the native jump menu in sync', () => {
+    const m = mountTool(cfg, { geometryHomeLesson: 'volumeExplorer' });
+    React.act(() => m.container.querySelector('[data-path="learn"]').click());
+    const catalog = () => [...m.container.querySelectorAll('[data-gwe-lesson-row]')];
+    const topic = m.container.querySelector('#gwe-home-topic');
+    const jump = () => m.container.querySelector('#gwe-home-lesson');
+    expect(catalog().map(button => button.dataset.gweLessonRow)).toEqual([...jump().options].map(option => option.value));
+    expect(catalog().map(button => button.dataset.gweLessonRow)).not.toContain('geometryGarden');
+    React.act(() => {
+      topic.value = 'Surface area';
+      topic.dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(m.bucket().geometryHomeLessonTopic).toBe('Surface area');
+    expect(catalog().map(button => button.dataset.gweLessonRow)).toEqual(['areaSurface']);
+    expect(jump().value).toBe('areaSurface');
+    expect(catalog()[0].getAttribute('aria-pressed')).toBe('true');
+    expect(catalog()[0].getAttribute('aria-controls')).toBe('gwe-home-lesson-preview');
+    expect(m.container.querySelector('#gwe-home-selected-lesson').textContent).toContain('Surface');
+    React.act(() => {
+      jump().value = 'scaleUp';
+      jump().dispatchEvent(new Event('change', { bubbles: true }));
+    });
+    expect(m.bucket().geometryHomeLessonTopic).toBe('All topics');
+    expect(catalog().length).toBe(jump().options.length);
+    expect(m.container.querySelector('[data-gwe-lesson-row="scaleUp"]').getAttribute('aria-pressed')).toBe('true');
+    expect(m.container.querySelector('#gwe-home-selected-lesson').textContent).toContain('Scale');
+    m.unmount();
+  });
+
+  it('selects catalog rows without launching and launches only the selected investigation', () => {
+    const m = mountTool(cfg, { geometryHomeLesson: 'volumeExplorer' });
+    React.act(() => m.container.querySelector('[data-path="learn"]').click());
+    React.act(() => m.container.querySelector('[data-gwe-lesson-row="fractionBuilder"]').click());
+    expect(m.bucket().geometryHomeLesson).toBe('fractionBuilder');
+    expect(m.bucket().showGeometryHome).toBe(true);
+    expect(m.container.querySelector('#gwe-home-lesson').value).toBe('fractionBuilder');
+    expect(m.container.querySelector('[data-gwe-lesson-row="volumeExplorer"]').getAttribute('aria-pressed')).toBe('false');
+    expect(m.container.querySelector('#gwe-home-lesson-preview .gwe-lesson-concept').textContent).toContain('fraction');
+    expect(m.container.querySelector('.gwe-catalog-preview-link').getAttribute('href')).toBe('#gwe-home-selected-lesson');
+    expect(m.container.querySelector('.gwe-catalog-preview-link').textContent).toContain(m.container.querySelector('#gwe-home-selected-lesson').textContent);
+    React.act(() => m.container.querySelector('.gwe-guided-launch .gwe-home-primary').click());
+    expect(m.bucket().activeLesson).toBe('fractionBuilder');
+    expect(m.bucket().showGeometryHome).toBe(false);
+    m.unmount();
+  });
+
+  it('shows recorded completion and keeps save protection before a launch that precedes the map', () => {
+    const progress = window.StemLab.geometryWorldLessonProgress;
+    const completed = progress.completed;
+    progress.completed = id => id === 'areaSurface';
+    let m;
+    try {
+      m = mountTool(cfg, { worldActive: true, geometryHomeLesson: 'areaSurface' });
+      React.act(() => m.container.querySelector('[data-path="learn"]').click());
+      const selected = m.container.querySelector('[data-gwe-lesson-row="areaSurface"]');
+      expect(selected.querySelector('[data-completed="true"]').textContent).toBe('Completed');
+      expect(m.container.querySelector('[data-gwe-lesson-row="scaleUp"] [data-completed="false"]').textContent).toBe('Not completed');
+      expect(m.container.querySelector('[data-gwe-lessons-done]').textContent).toMatch(/^1 of \d+ guided lessons complete$/);
+      const preview = m.container.querySelector('#gwe-home-lesson-preview');
+      const warning = preview.querySelector('.gwe-home-save');
+      const launch = preview.querySelector('.gwe-guided-launch .gwe-home-primary');
+      const map = preview.querySelector('.gwe-lesson-map');
+      expect(launch.textContent).toBe('Revisit this lesson');
+      expect(warning.textContent).toContain('replaces the workspace');
+      expect(warning.compareDocumentPosition(launch) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+      expect(launch.compareDocumentPosition(map) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    } finally {
+      progress.completed = completed;
+      if (m) m.unmount();
+    }
+  });
+
+  it('falls back from a stale topic and includes saved lessons without inventing a topic', () => {
+    const previous = localStorage.getItem('gw_my_lessons');
+    localStorage.setItem('gw_my_lessons', JSON.stringify([{ _id: 'saved-angle', title: 'Angle investigation', description: 'Compare turns.', objectives: ['Compare right and obtuse angles.'] }]));
+    const m = mountTool(cfg, { geometryHomeLessonTopic: 'Old topic' });
+    React.act(() => m.container.querySelector('[data-path="learn"]').click());
+    expect(m.container.querySelector('#gwe-home-topic').value).toBe('All topics');
+    const saved = m.container.querySelector('[data-gwe-lesson-row="saved-angle"]');
+    expect(saved.querySelector('.gwe-catalog-lesson-meta').textContent).toContain('Other geometry');
+    expect(saved.querySelector('.gwe-catalog-lesson-meta').textContent).toContain('1 goal');
+    React.act(() => saved.click());
+    expect(m.container.querySelector('#gwe-home-selected-lesson').textContent).toBe('Angle investigation');
+    expect(m.container.querySelector('#gwe-home-lesson').value).toBe('saved-angle');
+    m.unmount();
+    if (previous === null) localStorage.removeItem('gw_my_lessons');
+    else localStorage.setItem('gw_my_lessons', previous);
   });
 
   it('clears the old lesson intro overlay when the chooser opens', () => {
@@ -271,6 +411,53 @@ describe('Geometry World home chooser lifecycle', () => {
     expect(m.bucket().geometryHomePage).toBe('build');
     React.act(()=>m.container.querySelector('.gwe-home-back').click());
     expect(document.activeElement).toBe(m.container.querySelector('[data-path="build"]'));
+    m.unmount();
+  });
+
+  it('opens the guided catalog from Free Build without replacing the workspace, and continues the same build', async () => {
+    const engine = window[ENGINE_KEY];
+    engine._currentLesson = window.StemLab.geometryWorldBuilderPure.FREE_BUILD_LESSON;
+    engine.blocks = { '2,1,3': { userData: { gridPos: { x: 2, y: 1, z: 3 }, blockType: 'wood', shape: 'cube', rotation: 0, _measurementLayer: 'student' } } };
+    engine._builderSelection = { blocks: [{ x: 2, y: 1, z: 3 }], exact: true };
+    engine._undoStack = [{ action: 'place', x: 2, y: 1, z: 3 }];
+    engine._redoStack = [{ action: 'remove', x: 4, y: 1, z: 3 }];
+    let loads = 0;
+    engine.loadLesson = () => { loads++; };
+    const measurement = { totalVolume: 1, blocks: [{ x: 2, y: 1, z: 3 }] };
+    const history = [{ totalVolume: 1 }];
+    const m = mountTool(cfg, { worldActive: true, activeLesson: 'builderSandbox', sandboxDockCollapsed: false, tutorialDismissed: true, measureResult: measurement, measureHistory: history, selectedBlock: 2, selectedShape: 0, blockRotation: 2 });
+    React.act(() => m.container.querySelector('.gwe-home-continue').click());
+    const before = { blocks: engine.blocks, selection: engine._builderSelection, undo: engine._undoStack, redo: engine._redoStack, camera: engine.camera, lesson: engine._currentLesson, loads };
+    const picker = [...m.container.querySelectorAll('button')].find(button => button.textContent.includes('Choose guided lesson'));
+    expect(picker).toBeTruthy();
+    expect(picker.getAttribute('aria-haspopup')).toBe('dialog');
+    React.act(() => picker.click());
+    expect(m.bucket().showGeometryHome).toBe(true);
+    expect(m.bucket().geometryHomePage).toBe('learn');
+    expect(m.bucket().showLessonIntro).toBe(false);
+    expect(m.bucket().activeLesson).toBe('builderSandbox');
+    expect(m.bucket().worldActive).toBe(true);
+    expect(m.container.querySelector('#gwe-home-lesson')).toBeTruthy();
+    expect(m.container.querySelector('#gwe-home-topic')).toBeTruthy();
+    expect(m.container.querySelector('.gwe-home-continue')).toBeTruthy();
+    expect(m.bucket().measureResult).toBe(measurement);
+    expect(m.bucket().measureHistory).toBe(history);
+    expect(loads).toBe(before.loads);
+    React.act(() => m.container.querySelector('.gwe-home-continue').click());
+    await React.act(async () => { await new Promise(resolve => setTimeout(resolve, 45)); });
+    expect(m.bucket().showGeometryHome).toBe(false);
+    expect(m.bucket().activeLesson).toBe('builderSandbox');
+    expect(m.bucket().worldActive).toBe(true);
+    expect(m.bucket().sandboxDockCollapsed).toBe(false);
+    expect([m.bucket().selectedBlock, m.bucket().selectedShape, m.bucket().blockRotation]).toEqual([2, 0, 2]);
+    expect(document.activeElement.id).toBe('geoworld-fs-wrap');
+    expect(engine.blocks).toBe(before.blocks);
+    expect(engine._builderSelection).toBe(before.selection);
+    expect(engine._undoStack).toBe(before.undo);
+    expect(engine._redoStack).toBe(before.redo);
+    expect(engine.camera).toBe(before.camera);
+    expect(engine._currentLesson).toBe(before.lesson);
+    expect(loads).toBe(before.loads);
     m.unmount();
   });
 

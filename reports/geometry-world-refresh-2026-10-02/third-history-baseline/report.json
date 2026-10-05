@@ -1,0 +1,1865 @@
+[
+  {
+    "profile": "desktop",
+    "state": "with-inspector",
+    "targets": [
+      {
+        "x": 10,
+        "y": 1,
+        "z": 2
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 15
+      }
+    ],
+    "surfaces": [
+      {
+        "selector": "#gw-history-panel",
+        "x": 230,
+        "y": 298,
+        "width": 280,
+        "height": 352,
+        "right": 510,
+        "bottom": 650,
+        "scrollWidth": 278,
+        "clientWidth": 278,
+        "scrollHeight": 390,
+        "clientHeight": 350
+      },
+      {
+        "selector": ".gw-measure-card",
+        "x": 840,
+        "y": 75,
+        "width": 430,
+        "height": 206.984375,
+        "right": 1270,
+        "bottom": 281.984375,
+        "scrollWidth": 428,
+        "clientWidth": 428,
+        "scrollHeight": 205,
+        "clientHeight": 205
+      },
+      null,
+      null
+    ],
+    "controls": [
+      {
+        "label": "Hide measurement history",
+        "width": 28,
+        "height": 28,
+        "x": 471,
+        "y": 312,
+        "bottom": 340,
+        "topHit": true
+      },
+      {
+        "label": "Retrieval checkpoint answer",
+        "width": 76,
+        "height": 44,
+        "x": 249,
+        "y": 627,
+        "bottom": 671,
+        "topHit": false
+      },
+      {
+        "label": "Check retrieval answer",
+        "width": 66.578125,
+        "height": 44,
+        "x": 331,
+        "y": 627,
+        "bottom": 671,
+        "topHit": false
+      }
+    ],
+    "overflow": [],
+    "text": "📏 MEASUREMENTS · 2/2 COMPLETE\n×\n5×4×3\n=48\n5×3×4\n=60\nCOMPARE LATEST TWO COMPLETE\nVolume: 60 → 48 (change 12)\nSurface area: 94 → 114 square units\nRETRIEVAL CHECK\nA bounding box is 60 cubic units and the structure occupies 48. How much space is empty?\nCheck",
+    "currentMeasurement": {
+      "count": 48,
+      "L": 5,
+      "W": 4,
+      "H": 3,
+      "minX": 2,
+      "minY": 1,
+      "minZ": 12,
+      "boundingVolume": 60,
+      "totalVolume": 48,
+      "hasFractions": false,
+      "shapeCounts": {
+        "cube": 48
+      },
+      "formattedVolume": "48",
+      "materialCounts": {
+        "stone": 48
+      },
+      "surfaceAreaExact": true,
+      "exposedSurfaceArea": 114,
+      "exposedFaces": {
+        "xFaces": 32,
+        "yFaces": 40,
+        "zFaces": 42,
+        "surfaceArea": 114
+      },
+      "isComplete": true,
+      "measurementLimit": 1500,
+      "blocks": [
+        {
+          "x": 2,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 14
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 14
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 13
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 13
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 14
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 14
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 13
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 13
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 12
+        }
+      ],
+      "occupiedVolume": 48,
+      "missingVolume": 12,
+      "fillPercent": 80,
+      "isSolidPrism": false,
+      "formattedOccupiedVolume": "48",
+      "accessibleMeasurementAnnouncement": "Measured composite structure: 48 cubic units occupied, 12 cubic units empty inside a 60 cubic unit bounding box. Observation only; no eligible committed estimate was compared."
+    },
+    "history": [
+      {
+        "L": 5,
+        "W": 3,
+        "H": 4,
+        "vol": "60",
+        "occupiedVolume": 60,
+        "boundingVolume": 60,
+        "missingVolume": 0,
+        "hasFractions": false,
+        "surfaceArea": 94,
+        "blocks": 60,
+        "materialCount": 1,
+        "isSolidPrism": true,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:10:1:2:5:3:4:60:60:ih9iw8",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034555523
+      },
+      {
+        "L": 5,
+        "W": 4,
+        "H": 3,
+        "vol": "48",
+        "occupiedVolume": 48,
+        "boundingVolume": 60,
+        "missingVolume": 12,
+        "hasFractions": false,
+        "surfaceArea": 114,
+        "blocks": 48,
+        "materialCount": 1,
+        "isSolidPrism": false,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:2:1:12:5:4:3:48:48:12ucttq",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034556601
+      }
+    ],
+    "errors": []
+  },
+  {
+    "profile": "desktop",
+    "state": "history",
+    "surfaces": [
+      {
+        "selector": "#gw-history-panel",
+        "x": 230,
+        "y": 298,
+        "width": 280,
+        "height": 352,
+        "right": 510,
+        "bottom": 650,
+        "scrollWidth": 278,
+        "clientWidth": 278,
+        "scrollHeight": 390,
+        "clientHeight": 350
+      },
+      null,
+      null,
+      null
+    ],
+    "controls": [
+      {
+        "label": "Hide measurement history",
+        "width": 28,
+        "height": 28,
+        "x": 471,
+        "y": 312,
+        "bottom": 340,
+        "topHit": true
+      },
+      {
+        "label": "Retrieval checkpoint answer",
+        "width": 76,
+        "height": 44,
+        "x": 249,
+        "y": 627,
+        "bottom": 671,
+        "topHit": false
+      },
+      {
+        "label": "Check retrieval answer",
+        "width": 66.578125,
+        "height": 44,
+        "x": 331,
+        "y": 627,
+        "bottom": 671,
+        "topHit": false
+      }
+    ],
+    "overflow": [],
+    "text": "📏 MEASUREMENTS · 2/2 COMPLETE\n×\n5×4×3\n=48\n5×3×4\n=60\nCOMPARE LATEST TWO COMPLETE\nVolume: 60 → 48 (change 12)\nSurface area: 94 → 114 square units\nRETRIEVAL CHECK\nA bounding box is 60 cubic units and the structure occupies 48. How much space is empty?\nCheck",
+    "currentMeasurement": null,
+    "history": [
+      {
+        "L": 5,
+        "W": 3,
+        "H": 4,
+        "vol": "60",
+        "occupiedVolume": 60,
+        "boundingVolume": 60,
+        "missingVolume": 0,
+        "hasFractions": false,
+        "surfaceArea": 94,
+        "blocks": 60,
+        "materialCount": 1,
+        "isSolidPrism": true,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:10:1:2:5:3:4:60:60:ih9iw8",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034555523
+      },
+      {
+        "L": 5,
+        "W": 4,
+        "H": 3,
+        "vol": "48",
+        "occupiedVolume": 48,
+        "boundingVolume": 60,
+        "missingVolume": 12,
+        "hasFractions": false,
+        "surfaceArea": 114,
+        "blocks": 48,
+        "materialCount": 1,
+        "isSolidPrism": false,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:2:1:12:5:4:3:48:48:12ucttq",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034556601
+      }
+    ],
+    "errors": []
+  },
+  {
+    "profile": "desktop",
+    "state": "textspacing",
+    "surfaces": [
+      {
+        "selector": "#gw-history-panel",
+        "x": 230,
+        "y": 298,
+        "width": 280,
+        "height": 352,
+        "right": 510,
+        "bottom": 650,
+        "scrollWidth": 278,
+        "clientWidth": 278,
+        "scrollHeight": 429,
+        "clientHeight": 350
+      },
+      null,
+      null,
+      null
+    ],
+    "controls": [
+      {
+        "label": "Hide measurement history",
+        "width": 28,
+        "height": 28,
+        "x": 471,
+        "y": 314.5,
+        "bottom": 342.5,
+        "topHit": true
+      },
+      {
+        "label": "Retrieval checkpoint answer",
+        "width": 76,
+        "height": 44,
+        "x": 249,
+        "y": 666,
+        "bottom": 710,
+        "topHit": false
+      },
+      {
+        "label": "Check retrieval answer",
+        "width": 74.375,
+        "height": 44,
+        "x": 331,
+        "y": 666,
+        "bottom": 710,
+        "topHit": false
+      }
+    ],
+    "overflow": [],
+    "text": "📏 MEASUREMENTS · 2/2 COMPLETE\n×\n5×4×3\n=48\n5×3×4\n=60\nCOMPARE LATEST TWO COMPLETE\nVolume: 60 → 48 (change 12)\nSurface area: 94 → 114 square units\nRETRIEVAL CHECK\nA bounding box is 60 cubic units and the structure occupies 48. How much space is empty?\nCheck",
+    "currentMeasurement": null,
+    "history": [
+      {
+        "L": 5,
+        "W": 3,
+        "H": 4,
+        "vol": "60",
+        "occupiedVolume": 60,
+        "boundingVolume": 60,
+        "missingVolume": 0,
+        "hasFractions": false,
+        "surfaceArea": 94,
+        "blocks": 60,
+        "materialCount": 1,
+        "isSolidPrism": true,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:10:1:2:5:3:4:60:60:ih9iw8",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034555523
+      },
+      {
+        "L": 5,
+        "W": 4,
+        "H": 3,
+        "vol": "48",
+        "occupiedVolume": 48,
+        "boundingVolume": 60,
+        "missingVolume": 12,
+        "hasFractions": false,
+        "surfaceArea": 114,
+        "blocks": 48,
+        "materialCount": 1,
+        "isSolidPrism": false,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:2:1:12:5:4:3:48:48:12ucttq",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034556601
+      }
+    ],
+    "errors": []
+  },
+  {
+    "profile": "narrow",
+    "state": "with-inspector",
+    "targets": [
+      {
+        "x": 10,
+        "y": 1,
+        "z": 2
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 15
+      }
+    ],
+    "surfaces": [
+      {
+        "selector": "#gw-history-panel",
+        "x": 8,
+        "y": 319.046875,
+        "width": 148,
+        "height": 286.953125,
+        "right": 156,
+        "bottom": 606,
+        "scrollWidth": 152,
+        "clientWidth": 146,
+        "scrollHeight": 558,
+        "clientHeight": 285
+      },
+      {
+        "selector": ".gw-measure-card",
+        "x": 6,
+        "y": 78,
+        "width": 308,
+        "height": 206.984375,
+        "right": 314,
+        "bottom": 284.984375,
+        "scrollWidth": 306,
+        "clientWidth": 306,
+        "scrollHeight": 205,
+        "clientHeight": 205
+      },
+      null,
+      null
+    ],
+    "controls": [
+      {
+        "label": "Hide measurement history",
+        "width": 28,
+        "height": 28,
+        "x": 133.109375,
+        "y": 338.546875,
+        "bottom": 366.546875,
+        "topHit": true
+      },
+      {
+        "label": "Retrieval checkpoint answer",
+        "width": 76,
+        "height": 44,
+        "x": 24,
+        "y": 769.046875,
+        "bottom": 813.046875,
+        "topHit": false
+      },
+      {
+        "label": "Check retrieval answer",
+        "width": 66.578125,
+        "height": 44,
+        "x": 24,
+        "y": 819.046875,
+        "bottom": 863.046875,
+        "topHit": false
+      }
+    ],
+    "overflow": [
+      {
+        "text": "📏 MEASUREMENTS · 2/2 COMPLETE×",
+        "overflow": 13,
+        "font": "13px"
+      }
+    ],
+    "text": "📏 MEASUREMENTS · 2/2 COMPLETE\n×\n5×4×3\n=48\n5×3×4\n=60\nCOMPARE LATEST TWO COMPLETE\nVolume: 60 → 48 (change 12)\nSurface area: 94 → 114 square units\nRETRIEVAL CHECK\nA bounding box is 60 cubic units and the structure occupies 48. How much space is empty?\nCheck",
+    "currentMeasurement": {
+      "count": 48,
+      "L": 5,
+      "W": 4,
+      "H": 3,
+      "minX": 2,
+      "minY": 1,
+      "minZ": 12,
+      "boundingVolume": 60,
+      "totalVolume": 48,
+      "hasFractions": false,
+      "shapeCounts": {
+        "cube": 48
+      },
+      "formattedVolume": "48",
+      "materialCounts": {
+        "stone": 48
+      },
+      "surfaceAreaExact": true,
+      "exposedSurfaceArea": 114,
+      "exposedFaces": {
+        "xFaces": 32,
+        "yFaces": 40,
+        "zFaces": 42,
+        "surfaceArea": 114
+      },
+      "isComplete": true,
+      "measurementLimit": 1500,
+      "blocks": [
+        {
+          "x": 2,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 14
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 14
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 13
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 13
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 14
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 14
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 13
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 13
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 12
+        }
+      ],
+      "occupiedVolume": 48,
+      "missingVolume": 12,
+      "fillPercent": 80,
+      "isSolidPrism": false,
+      "formattedOccupiedVolume": "48",
+      "accessibleMeasurementAnnouncement": "Measured composite structure: 48 cubic units occupied, 12 cubic units empty inside a 60 cubic unit bounding box. Observation only; no eligible committed estimate was compared."
+    },
+    "history": [
+      {
+        "L": 5,
+        "W": 3,
+        "H": 4,
+        "vol": "60",
+        "occupiedVolume": 60,
+        "boundingVolume": 60,
+        "missingVolume": 0,
+        "hasFractions": false,
+        "surfaceArea": 94,
+        "blocks": 60,
+        "materialCount": 1,
+        "isSolidPrism": true,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:10:1:2:5:3:4:60:60:ih9iw8",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034586738
+      },
+      {
+        "L": 5,
+        "W": 4,
+        "H": 3,
+        "vol": "48",
+        "occupiedVolume": 48,
+        "boundingVolume": 60,
+        "missingVolume": 12,
+        "hasFractions": false,
+        "surfaceArea": 114,
+        "blocks": 48,
+        "materialCount": 1,
+        "isSolidPrism": false,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:2:1:12:5:4:3:48:48:12ucttq",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034587080
+      }
+    ],
+    "errors": []
+  },
+  {
+    "profile": "narrow",
+    "state": "history",
+    "surfaces": [
+      {
+        "selector": "#gw-history-panel",
+        "x": 8,
+        "y": 319.046875,
+        "width": 148,
+        "height": 286.953125,
+        "right": 156,
+        "bottom": 606,
+        "scrollWidth": 152,
+        "clientWidth": 146,
+        "scrollHeight": 558,
+        "clientHeight": 285
+      },
+      null,
+      null,
+      null
+    ],
+    "controls": [
+      {
+        "label": "Hide measurement history",
+        "width": 28,
+        "height": 28,
+        "x": 133.109375,
+        "y": 338.546875,
+        "bottom": 366.546875,
+        "topHit": true
+      },
+      {
+        "label": "Retrieval checkpoint answer",
+        "width": 76,
+        "height": 44,
+        "x": 24,
+        "y": 769.046875,
+        "bottom": 813.046875,
+        "topHit": false
+      },
+      {
+        "label": "Check retrieval answer",
+        "width": 66.578125,
+        "height": 44,
+        "x": 24,
+        "y": 819.046875,
+        "bottom": 863.046875,
+        "topHit": false
+      }
+    ],
+    "overflow": [
+      {
+        "text": "📏 MEASUREMENTS · 2/2 COMPLETE×",
+        "overflow": 13,
+        "font": "13px"
+      }
+    ],
+    "text": "📏 MEASUREMENTS · 2/2 COMPLETE\n×\n5×4×3\n=48\n5×3×4\n=60\nCOMPARE LATEST TWO COMPLETE\nVolume: 60 → 48 (change 12)\nSurface area: 94 → 114 square units\nRETRIEVAL CHECK\nA bounding box is 60 cubic units and the structure occupies 48. How much space is empty?\nCheck",
+    "currentMeasurement": null,
+    "history": [
+      {
+        "L": 5,
+        "W": 3,
+        "H": 4,
+        "vol": "60",
+        "occupiedVolume": 60,
+        "boundingVolume": 60,
+        "missingVolume": 0,
+        "hasFractions": false,
+        "surfaceArea": 94,
+        "blocks": 60,
+        "materialCount": 1,
+        "isSolidPrism": true,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:10:1:2:5:3:4:60:60:ih9iw8",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034586738
+      },
+      {
+        "L": 5,
+        "W": 4,
+        "H": 3,
+        "vol": "48",
+        "occupiedVolume": 48,
+        "boundingVolume": 60,
+        "missingVolume": 12,
+        "hasFractions": false,
+        "surfaceArea": 114,
+        "blocks": 48,
+        "materialCount": 1,
+        "isSolidPrism": false,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:2:1:12:5:4:3:48:48:12ucttq",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034587080
+      }
+    ],
+    "errors": []
+  },
+  {
+    "profile": "narrow",
+    "state": "textspacing",
+    "surfaces": [
+      {
+        "selector": "#gw-history-panel",
+        "x": 8,
+        "y": 319.046875,
+        "width": 148,
+        "height": 286.953125,
+        "right": 156,
+        "bottom": 606,
+        "scrollWidth": 171,
+        "clientWidth": 146,
+        "scrollHeight": 686,
+        "clientHeight": 285
+      },
+      null,
+      null,
+      null
+    ],
+    "controls": [
+      {
+        "label": "Hide measurement history",
+        "width": 28,
+        "height": 28,
+        "x": 151.828125,
+        "y": 352.046875,
+        "bottom": 380.046875,
+        "topHit": false
+      },
+      {
+        "label": "Retrieval checkpoint answer",
+        "width": 76,
+        "height": 44,
+        "x": 24,
+        "y": 897.046875,
+        "bottom": 941.046875,
+        "topHit": null
+      },
+      {
+        "label": "Check retrieval answer",
+        "width": 74.375,
+        "height": 44,
+        "x": 24,
+        "y": 947.046875,
+        "bottom": 991.046875,
+        "topHit": null
+      }
+    ],
+    "overflow": [
+      {
+        "text": "📏 MEASUREMENTS · 2/2 COMPLETE×",
+        "overflow": 32,
+        "font": "13px"
+      }
+    ],
+    "text": "📏 MEASUREMENTS · 2/2 COMPLETE\n×\n5×4×3\n=48\n5×3×4\n=60\nCOMPARE LATEST TWO COMPLETE\nVolume: 60 → 48 (change 12)\nSurface area: 94 → 114 square units\nRETRIEVAL CHECK\nA bounding box is 60 cubic units and the structure occupies 48. How much space is empty?\nCheck",
+    "currentMeasurement": null,
+    "history": [
+      {
+        "L": 5,
+        "W": 3,
+        "H": 4,
+        "vol": "60",
+        "occupiedVolume": 60,
+        "boundingVolume": 60,
+        "missingVolume": 0,
+        "hasFractions": false,
+        "surfaceArea": 94,
+        "blocks": 60,
+        "materialCount": 1,
+        "isSolidPrism": true,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:10:1:2:5:3:4:60:60:ih9iw8",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034586738
+      },
+      {
+        "L": 5,
+        "W": 4,
+        "H": 3,
+        "vol": "48",
+        "occupiedVolume": 48,
+        "boundingVolume": 60,
+        "missingVolume": 12,
+        "hasFractions": false,
+        "surfaceArea": 114,
+        "blocks": 48,
+        "materialCount": 1,
+        "isSolidPrism": false,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:2:1:12:5:4:3:48:48:12ucttq",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034587080
+      }
+    ],
+    "errors": []
+  },
+  {
+    "profile": "short",
+    "state": "with-inspector",
+    "targets": [
+      {
+        "x": 10,
+        "y": 1,
+        "z": 2
+      },
+      {
+        "x": 2,
+        "y": 1,
+        "z": 15
+      }
+    ],
+    "surfaces": [
+      {
+        "selector": "#gw-history-panel",
+        "x": 8,
+        "y": 136.890625,
+        "width": 148,
+        "height": 193.109375,
+        "right": 156,
+        "bottom": 330,
+        "scrollWidth": 152,
+        "clientWidth": 146,
+        "scrollHeight": 558,
+        "clientHeight": 191
+      },
+      {
+        "selector": ".gw-measure-card",
+        "x": 6,
+        "y": 78,
+        "width": 308,
+        "height": 206.984375,
+        "right": 314,
+        "bottom": 284.984375,
+        "scrollWidth": 306,
+        "clientWidth": 306,
+        "scrollHeight": 205,
+        "clientHeight": 205
+      },
+      null,
+      null
+    ],
+    "controls": [
+      {
+        "label": "Hide measurement history",
+        "width": 28,
+        "height": 28,
+        "x": 133.109375,
+        "y": 156.390625,
+        "bottom": 184.390625,
+        "topHit": false
+      },
+      {
+        "label": "Retrieval checkpoint answer",
+        "width": 76,
+        "height": 44,
+        "x": 24,
+        "y": 586.890625,
+        "bottom": 630.890625,
+        "topHit": null
+      },
+      {
+        "label": "Check retrieval answer",
+        "width": 66.578125,
+        "height": 44,
+        "x": 24,
+        "y": 636.890625,
+        "bottom": 680.890625,
+        "topHit": null
+      }
+    ],
+    "overflow": [
+      {
+        "text": "📏 MEASUREMENTS · 2/2 COMPLETE×",
+        "overflow": 13,
+        "font": "13px"
+      }
+    ],
+    "text": "📏 MEASUREMENTS · 2/2 COMPLETE\n×\n5×4×3\n=48\n5×3×4\n=60\nCOMPARE LATEST TWO COMPLETE\nVolume: 60 → 48 (change 12)\nSurface area: 94 → 114 square units\nRETRIEVAL CHECK\nA bounding box is 60 cubic units and the structure occupies 48. How much space is empty?\nCheck",
+    "currentMeasurement": {
+      "count": 48,
+      "L": 5,
+      "W": 4,
+      "H": 3,
+      "minX": 2,
+      "minY": 1,
+      "minZ": 12,
+      "boundingVolume": 60,
+      "totalVolume": 48,
+      "hasFractions": false,
+      "shapeCounts": {
+        "cube": 48
+      },
+      "formattedVolume": "48",
+      "materialCounts": {
+        "stone": 48
+      },
+      "surfaceAreaExact": true,
+      "exposedSurfaceArea": 114,
+      "exposedFaces": {
+        "xFaces": 32,
+        "yFaces": 40,
+        "zFaces": 42,
+        "surfaceArea": 114
+      },
+      "isComplete": true,
+      "measurementLimit": 1500,
+      "blocks": [
+        {
+          "x": 2,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 14
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 14
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 13
+        },
+        {
+          "x": 2,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 15
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 3,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 13
+        },
+        {
+          "x": 2,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 15
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 14
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 4,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 3,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 2,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 15
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 14
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 13
+        },
+        {
+          "x": 5,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 4,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 3,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 14
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 13
+        },
+        {
+          "x": 6,
+          "y": 1,
+          "z": 12
+        },
+        {
+          "x": 5,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 4,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 13
+        },
+        {
+          "x": 6,
+          "y": 2,
+          "z": 12
+        },
+        {
+          "x": 5,
+          "y": 3,
+          "z": 12
+        },
+        {
+          "x": 6,
+          "y": 3,
+          "z": 12
+        }
+      ],
+      "occupiedVolume": 48,
+      "missingVolume": 12,
+      "fillPercent": 80,
+      "isSolidPrism": false,
+      "formattedOccupiedVolume": "48",
+      "accessibleMeasurementAnnouncement": "Measured composite structure: 48 cubic units occupied, 12 cubic units empty inside a 60 cubic unit bounding box. Observation only; no eligible committed estimate was compared."
+    },
+    "history": [
+      {
+        "L": 5,
+        "W": 3,
+        "H": 4,
+        "vol": "60",
+        "occupiedVolume": 60,
+        "boundingVolume": 60,
+        "missingVolume": 0,
+        "hasFractions": false,
+        "surfaceArea": 94,
+        "blocks": 60,
+        "materialCount": 1,
+        "isSolidPrism": true,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:10:1:2:5:3:4:60:60:ih9iw8",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034604593
+      },
+      {
+        "L": 5,
+        "W": 4,
+        "H": 3,
+        "vol": "48",
+        "occupiedVolume": 48,
+        "boundingVolume": 60,
+        "missingVolume": 12,
+        "hasFractions": false,
+        "surfaceArea": 114,
+        "blocks": 48,
+        "materialCount": 1,
+        "isSolidPrism": false,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:2:1:12:5:4:3:48:48:12ucttq",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034604904
+      }
+    ],
+    "errors": []
+  },
+  {
+    "profile": "short",
+    "state": "history",
+    "surfaces": [
+      {
+        "selector": "#gw-history-panel",
+        "x": 8,
+        "y": 136.890625,
+        "width": 148,
+        "height": 193.109375,
+        "right": 156,
+        "bottom": 330,
+        "scrollWidth": 152,
+        "clientWidth": 146,
+        "scrollHeight": 558,
+        "clientHeight": 191
+      },
+      null,
+      null,
+      null
+    ],
+    "controls": [
+      {
+        "label": "Hide measurement history",
+        "width": 28,
+        "height": 28,
+        "x": 133.109375,
+        "y": 156.390625,
+        "bottom": 184.390625,
+        "topHit": true
+      },
+      {
+        "label": "Retrieval checkpoint answer",
+        "width": 76,
+        "height": 44,
+        "x": 24,
+        "y": 586.890625,
+        "bottom": 630.890625,
+        "topHit": null
+      },
+      {
+        "label": "Check retrieval answer",
+        "width": 66.578125,
+        "height": 44,
+        "x": 24,
+        "y": 636.890625,
+        "bottom": 680.890625,
+        "topHit": null
+      }
+    ],
+    "overflow": [
+      {
+        "text": "📏 MEASUREMENTS · 2/2 COMPLETE×",
+        "overflow": 13,
+        "font": "13px"
+      }
+    ],
+    "text": "📏 MEASUREMENTS · 2/2 COMPLETE\n×\n5×4×3\n=48\n5×3×4\n=60\nCOMPARE LATEST TWO COMPLETE\nVolume: 60 → 48 (change 12)\nSurface area: 94 → 114 square units\nRETRIEVAL CHECK\nA bounding box is 60 cubic units and the structure occupies 48. How much space is empty?\nCheck",
+    "currentMeasurement": null,
+    "history": [
+      {
+        "L": 5,
+        "W": 3,
+        "H": 4,
+        "vol": "60",
+        "occupiedVolume": 60,
+        "boundingVolume": 60,
+        "missingVolume": 0,
+        "hasFractions": false,
+        "surfaceArea": 94,
+        "blocks": 60,
+        "materialCount": 1,
+        "isSolidPrism": true,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:10:1:2:5:3:4:60:60:ih9iw8",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034604593
+      },
+      {
+        "L": 5,
+        "W": 4,
+        "H": 3,
+        "vol": "48",
+        "occupiedVolume": 48,
+        "boundingVolume": 60,
+        "missingVolume": 12,
+        "hasFractions": false,
+        "surfaceArea": 114,
+        "blocks": 48,
+        "materialCount": 1,
+        "isSolidPrism": false,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:2:1:12:5:4:3:48:48:12ucttq",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034604904
+      }
+    ],
+    "errors": []
+  },
+  {
+    "profile": "short",
+    "state": "textspacing",
+    "surfaces": [
+      {
+        "selector": "#gw-history-panel",
+        "x": 8,
+        "y": 136.890625,
+        "width": 148,
+        "height": 193.109375,
+        "right": 156,
+        "bottom": 330,
+        "scrollWidth": 171,
+        "clientWidth": 146,
+        "scrollHeight": 686,
+        "clientHeight": 191
+      },
+      null,
+      null,
+      null
+    ],
+    "controls": [
+      {
+        "label": "Hide measurement history",
+        "width": 28,
+        "height": 28,
+        "x": 151.828125,
+        "y": 169.890625,
+        "bottom": 197.890625,
+        "topHit": false
+      },
+      {
+        "label": "Retrieval checkpoint answer",
+        "width": 76,
+        "height": 44,
+        "x": 24,
+        "y": 714.890625,
+        "bottom": 758.890625,
+        "topHit": null
+      },
+      {
+        "label": "Check retrieval answer",
+        "width": 74.375,
+        "height": 44,
+        "x": 24,
+        "y": 764.890625,
+        "bottom": 808.890625,
+        "topHit": null
+      }
+    ],
+    "overflow": [
+      {
+        "text": "📏 MEASUREMENTS · 2/2 COMPLETE×",
+        "overflow": 32,
+        "font": "13px"
+      }
+    ],
+    "text": "📏 MEASUREMENTS · 2/2 COMPLETE\n×\n5×4×3\n=48\n5×3×4\n=60\nCOMPARE LATEST TWO COMPLETE\nVolume: 60 → 48 (change 12)\nSurface area: 94 → 114 square units\nRETRIEVAL CHECK\nA bounding box is 60 cubic units and the structure occupies 48. How much space is empty?\nCheck",
+    "currentMeasurement": null,
+    "history": [
+      {
+        "L": 5,
+        "W": 3,
+        "H": 4,
+        "vol": "60",
+        "occupiedVolume": 60,
+        "boundingVolume": 60,
+        "missingVolume": 0,
+        "hasFractions": false,
+        "surfaceArea": 94,
+        "blocks": 60,
+        "materialCount": 1,
+        "isSolidPrism": true,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:10:1:2:5:3:4:60:60:ih9iw8",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034604593
+      },
+      {
+        "L": 5,
+        "W": 4,
+        "H": 3,
+        "vol": "48",
+        "occupiedVolume": 48,
+        "boundingVolume": 60,
+        "missingVolume": 12,
+        "hasFractions": false,
+        "surfaceArea": 114,
+        "blocks": 48,
+        "materialCount": 1,
+        "isSolidPrism": false,
+        "isComplete": true,
+        "estimateTargetKey": "gw-structure:2:1:12:5:4:3:48:48:12ucttq",
+        "estimateStatus": "observation",
+        "prediction": null,
+        "percentError": null,
+        "strategy": "",
+        "reason": "",
+        "diagnosisCode": "",
+        "t": 1791034604904
+      }
+    ],
+    "errors": []
+  }
+]

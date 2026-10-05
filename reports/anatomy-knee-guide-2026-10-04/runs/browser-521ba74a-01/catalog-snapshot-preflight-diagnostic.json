@@ -1,0 +1,14 @@
+{
+  "reason": "English catalog changed between sequential hash and gzip reads; Playwright was not started.",
+  "observedAt": "2026-10-04T14:33:39.754Z",
+  "latestCatalogs": {
+    "ui_strings.js": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+    "desktop/web-app/public/ui_strings.js": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+    "lang/french.js": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+    "desktop/web-app/public/lang/french.js": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+    "lang/spanish_latin_america.js": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+    "desktop/web-app/public/lang/spanish_latin_america.js": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+    "lang/arabic.js": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+    "desktop/web-app/public/lang/arabic.js": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027"
+  }
+}

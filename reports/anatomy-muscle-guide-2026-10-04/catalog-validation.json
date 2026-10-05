@@ -1,0 +1,3919 @@
+{
+  "date": "2026-10-04",
+  "namespace": "stem.anatomy",
+  "englishKeys": 74,
+  "nativeTranslations": 222,
+  "source": {
+    "englishSha256": "9aa5b318a44bd6dc87f546f31ab6328f103480fb9372add85b59a97853432473",
+    "translationsSha256": "3c91f77d16911e333dec03af715ce679b38b33114cacd9f06d72d5067ae6501f",
+    "candidatePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\anatomy-muscle-candidate.js",
+    "candidateSha256": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+    "everyEnglishValueMatchesCandidateFallback": true
+  },
+  "scientificNarratives": {
+    "baselinePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\anatomy-muscle-source-before.js",
+    "baselineSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+    "checks": [
+      {
+        "key": "muscle_guide_terminal_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_end_plate_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_calcium_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_sarcomere_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_clinical_title",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_clinical_change",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_clinical_effect",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_clinical_note",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_handoff_context",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_handoff_announcement",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_mechanism_terminal",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_mechanism_end_plate",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_mechanism_calcium",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "muscle_guide_mechanism_sarcomere",
+        "verbatimBaselineMatch": true
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "ui_strings.js",
+      "snapshot": "locale-before/ui_strings.js.before.gz",
+      "beforeSha256": "d87f2502417acd31b9d6eeab445645dbd13c0245569327ca8965725559b37413",
+      "beforeBytes": 11138871,
+      "afterSha256": "c8219a8de218ca3e0a19d1407f48c759bea6314b128827b928d51b608e1d087a",
+      "afterBytes": 11144825,
+      "addedKeys": [
+        "muscle_guide_title",
+        "muscle_guide_activation_title",
+        "muscle_guide_sarcomere_title",
+        "muscle_guide_marker_help",
+        "muscle_guide_orientation",
+        "muscle_guide_activation_svg_title",
+        "muscle_guide_activation_svg_description",
+        "muscle_guide_sarcomere_svg_title",
+        "muscle_guide_sarcomere_svg_description",
+        "muscle_guide_structure_key",
+        "muscle_guide_current_step",
+        "muscle_guide_key_axon",
+        "muscle_guide_key_terminal",
+        "muscle_guide_key_vesicles",
+        "muscle_guide_key_cleft",
+        "muscle_guide_key_receptors",
+        "muscle_guide_key_sarcolemma",
+        "muscle_guide_key_t_tubule",
+        "muscle_guide_key_sr",
+        "muscle_guide_key_actin",
+        "muscle_guide_key_myosin",
+        "muscle_guide_key_z_discs",
+        "muscle_guide_flow_key",
+        "muscle_guide_neural",
+        "muscle_guide_calcium",
+        "muscle_guide_contraction",
+        "muscle_guide_pause_flow",
+        "muscle_guide_play_flow",
+        "muscle_guide_flow_paused",
+        "muscle_guide_flow_playing",
+        "muscle_guide_previous",
+        "muscle_guide_next",
+        "muscle_guide_step_position",
+        "muscle_guide_focus_heading",
+        "muscle_guide_focus_terminal",
+        "muscle_guide_focus_end_plate",
+        "muscle_guide_focus_calcium",
+        "muscle_guide_focus_sarcomere",
+        "muscle_guide_terminal_label",
+        "muscle_guide_terminal_short",
+        "muscle_guide_terminal_detail",
+        "muscle_guide_end_plate_label",
+        "muscle_guide_end_plate_short",
+        "muscle_guide_end_plate_detail",
+        "muscle_guide_calcium_label",
+        "muscle_guide_calcium_short",
+        "muscle_guide_calcium_detail",
+        "muscle_guide_sarcomere_label",
+        "muscle_guide_sarcomere_short",
+        "muscle_guide_sarcomere_detail",
+        "muscle_guide_show_clinical",
+        "muscle_guide_hide_clinical",
+        "muscle_guide_clinical_shown",
+        "muscle_guide_clinical_hidden",
+        "muscle_guide_clinical_title",
+        "muscle_guide_clinical_change",
+        "muscle_guide_clinical_effect_heading",
+        "muscle_guide_clinical_effect",
+        "muscle_guide_clinical_note",
+        "muscle_guide_handoff_label",
+        "muscle_guide_handoff_lead",
+        "muscle_guide_handoff_context",
+        "muscle_guide_handoff_button",
+        "muscle_guide_handoff_announcement",
+        "muscle_guide_mechanism_heading",
+        "muscle_guide_mechanism_terminal",
+        "muscle_guide_mechanism_end_plate",
+        "muscle_guide_mechanism_calcium",
+        "muscle_guide_mechanism_sarcomere",
+        "muscle_guide_scale_label",
+        "muscle_guide_scale_neuron",
+        "muscle_guide_scale_fiber",
+        "muscle_guide_scale_sarcomere",
+        "muscle_guide_steps_label"
+      ],
+      "insertionCharacterOffset": 1271438,
+      "insertionByteOffset": 1275965,
+      "insertionAnchor": "knee_guide_mechanism_stability",
+      "addedText": ",\n      \"muscle_guide_title\": \"Muscle activation\",\n      \"muscle_guide_activation_title\": \"1. Nerve signal and calcium release\",\n      \"muscle_guide_sarcomere_title\": \"2. Sarcomere close-up\",\n      \"muscle_guide_marker_help\": \"Match each illustration’s numbered markers to its structure key.\",\n      \"muscle_guide_orientation\": \"The first illustration follows the signal into a muscle fiber. The close-up shows the sarcomere where filaments slide.\",\n      \"muscle_guide_activation_svg_title\": \"Motor neuron, neuromuscular junction, and muscle-fiber calcium release\",\n      \"muscle_guide_activation_svg_description\": \"A cellular schematic identifies the motor axon, axon terminal, synaptic vesicles, synaptic cleft, nicotinic acetylcholine receptors, sarcolemma, T-tubule, and sarcoplasmic reticulum. Signal and ion highlights follow the selected step.\",\n      \"muscle_guide_sarcomere_svg_title\": \"Actin, myosin, and Z discs during sarcomere shortening\",\n      \"muscle_guide_sarcomere_svg_description\": \"A larger view identifies actin, myosin, and both Z discs. In the contraction step, Z discs move closer while actin filaments keep their length.\",\n      \"muscle_guide_structure_key\": \"Structure key\",\n      \"muscle_guide_current_step\": \"Current step\",\n      \"muscle_guide_key_axon\": \"Motor axon\",\n      \"muscle_guide_key_terminal\": \"Axon terminal\",\n      \"muscle_guide_key_vesicles\": \"Synaptic vesicles\",\n      \"muscle_guide_key_cleft\": \"Synaptic cleft\",\n      \"muscle_guide_key_receptors\": \"Nicotinic ACh receptors\",\n      \"muscle_guide_key_sarcolemma\": \"Muscle sarcolemma\",\n      \"muscle_guide_key_t_tubule\": \"T-tubule\",\n      \"muscle_guide_key_sr\": \"Sarcoplasmic reticulum + Ca2+\",\n      \"muscle_guide_key_actin\": \"Actin\",\n      \"muscle_guide_key_myosin\": \"Myosin\",\n      \"muscle_guide_key_z_discs\": \"Z discs\",\n      \"muscle_guide_flow_key\": \"Muscle activation key\",\n      \"muscle_guide_neural\": \"neural signal\",\n      \"muscle_guide_calcium\": \"calcium\",\n      \"muscle_guide_contraction\": \"contraction\",\n      \"muscle_guide_pause_flow\": \"Pause activation\",\n      \"muscle_guide_play_flow\": \"Play activation\",\n      \"muscle_guide_flow_paused\": \"Activation paused\",\n      \"muscle_guide_flow_playing\": \"Activation playing\",\n      \"muscle_guide_previous\": \"Previous step\",\n      \"muscle_guide_next\": \"Next step\",\n      \"muscle_guide_step_position\": \"Step {current} of {total}\",\n      \"muscle_guide_focus_heading\": \"Focus in this step\",\n      \"muscle_guide_focus_terminal\": \"Motor axon · Axon terminal · Calcium channels\",\n      \"muscle_guide_focus_end_plate\": \"Acetylcholine · Nicotinic receptors · Motor end plate\",\n      \"muscle_guide_focus_calcium\": \"T-tubule · Sarcoplasmic reticulum · Troponin\",\n      \"muscle_guide_focus_sarcomere\": \"Actin · Myosin · Z discs\",\n      \"muscle_guide_terminal_label\": \"1. Nerve signal\",\n      \"muscle_guide_terminal_short\": \"Action potential reaches terminal\",\n      \"muscle_guide_terminal_detail\": \"A motor-neuron action potential reaches the axon terminal and opens voltage-gated calcium channels. Calcium entry triggers synaptic vesicles to fuse with the membrane.\",\n      \"muscle_guide_end_plate_label\": \"2. Motor end plate\",\n      \"muscle_guide_end_plate_short\": \"Acetylcholine activates fiber\",\n      \"muscle_guide_end_plate_detail\": \"Acetylcholine crosses the synaptic cleft and binds nicotinic receptors on the motor end plate. Sodium entry produces an end-plate potential that initiates a muscle action potential.\",\n      \"muscle_guide_calcium_label\": \"3. Calcium release\",\n      \"muscle_guide_calcium_short\": \"T-tubule signal reaches SR\",\n      \"muscle_guide_calcium_detail\": \"The action potential travels along the sarcolemma and down T-tubules. Voltage sensors activate ryanodine receptors in the sarcoplasmic reticulum, releasing calcium that binds troponin.\",\n      \"muscle_guide_sarcomere_label\": \"4. Sarcomere shortens\",\n      \"muscle_guide_sarcomere_short\": \"Actin slides past myosin\",\n      \"muscle_guide_sarcomere_detail\": \"Calcium moves tropomyosin away from actin binding sites. ATP-powered myosin cross-bridge cycles pull thin filaments toward the sarcomere center; calcium reuptake and acetylcholine breakdown allow relaxation.\",\n      \"muscle_guide_show_clinical\": \"Clinical lens\",\n      \"muscle_guide_hide_clinical\": \"Hide clinical lens\",\n      \"muscle_guide_clinical_shown\": \"Clinical lens shown.\",\n      \"muscle_guide_clinical_hidden\": \"Clinical lens hidden.\",\n      \"muscle_guide_clinical_title\": \"Myasthenia gravis\",\n      \"muscle_guide_clinical_change\": \"Fewer functional nicotinic acetylcholine receptors reduce the motor end plate safety factor.\",\n      \"muscle_guide_clinical_effect_heading\": \"Functional consequence\",\n      \"muscle_guide_clinical_effect\": \"Repeated nerve signals are less likely to trigger reliable muscle-fiber action potentials.\",\n      \"muscle_guide_clinical_note\": \"Educational comparison only — not a diagnostic view.\",\n      \"muscle_guide_handoff_label\": \"Muscle to knee\",\n      \"muscle_guide_handoff_lead\": \"Apply the force: \",\n      \"muscle_guide_handoff_context\": \"connect muscle tension and tendon pull to the changing geometry of a synovial joint.\",\n      \"muscle_guide_handoff_button\": \"Apply force at a joint\",\n      \"muscle_guide_handoff_announcement\": \"Opening knee extension mechanics, step 2 of 4.\",\n      \"muscle_guide_mechanism_heading\": \"Activation highlight\",\n      \"muscle_guide_mechanism_terminal\": \"terminal Ca2+ entry triggers vesicle fusion\",\n      \"muscle_guide_mechanism_end_plate\": \"Na+ entry depolarizes the end plate\",\n      \"muscle_guide_mechanism_calcium\": \"Ca2+ exposes actin binding sites\",\n      \"muscle_guide_mechanism_sarcomere\": \"Z discs move closer\",\n      \"muscle_guide_scale_label\": \"Scale progression\",\n      \"muscle_guide_scale_neuron\": \"Motor neuron\",\n      \"muscle_guide_scale_fiber\": \"Muscle fiber\",\n      \"muscle_guide_scale_sarcomere\": \"Sarcomere\",\n      \"muscle_guide_steps_label\": \"Muscle activation steps\"",
+      "addedBytes": 5954,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "muscle_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_axon",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_vesicles",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_cleft",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_receptors",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sarcolemma",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_t_tubule",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sr",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_actin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_myosin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_z_discs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_neural",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_contraction",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_neuron",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_fiber",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_steps_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "snapshot": "locale-before/desktop__web-app__public__ui_strings.js.before.gz",
+      "beforeSha256": "d87f2502417acd31b9d6eeab445645dbd13c0245569327ca8965725559b37413",
+      "beforeBytes": 11138871,
+      "afterSha256": "c8219a8de218ca3e0a19d1407f48c759bea6314b128827b928d51b608e1d087a",
+      "afterBytes": 11144825,
+      "addedKeys": [
+        "muscle_guide_title",
+        "muscle_guide_activation_title",
+        "muscle_guide_sarcomere_title",
+        "muscle_guide_marker_help",
+        "muscle_guide_orientation",
+        "muscle_guide_activation_svg_title",
+        "muscle_guide_activation_svg_description",
+        "muscle_guide_sarcomere_svg_title",
+        "muscle_guide_sarcomere_svg_description",
+        "muscle_guide_structure_key",
+        "muscle_guide_current_step",
+        "muscle_guide_key_axon",
+        "muscle_guide_key_terminal",
+        "muscle_guide_key_vesicles",
+        "muscle_guide_key_cleft",
+        "muscle_guide_key_receptors",
+        "muscle_guide_key_sarcolemma",
+        "muscle_guide_key_t_tubule",
+        "muscle_guide_key_sr",
+        "muscle_guide_key_actin",
+        "muscle_guide_key_myosin",
+        "muscle_guide_key_z_discs",
+        "muscle_guide_flow_key",
+        "muscle_guide_neural",
+        "muscle_guide_calcium",
+        "muscle_guide_contraction",
+        "muscle_guide_pause_flow",
+        "muscle_guide_play_flow",
+        "muscle_guide_flow_paused",
+        "muscle_guide_flow_playing",
+        "muscle_guide_previous",
+        "muscle_guide_next",
+        "muscle_guide_step_position",
+        "muscle_guide_focus_heading",
+        "muscle_guide_focus_terminal",
+        "muscle_guide_focus_end_plate",
+        "muscle_guide_focus_calcium",
+        "muscle_guide_focus_sarcomere",
+        "muscle_guide_terminal_label",
+        "muscle_guide_terminal_short",
+        "muscle_guide_terminal_detail",
+        "muscle_guide_end_plate_label",
+        "muscle_guide_end_plate_short",
+        "muscle_guide_end_plate_detail",
+        "muscle_guide_calcium_label",
+        "muscle_guide_calcium_short",
+        "muscle_guide_calcium_detail",
+        "muscle_guide_sarcomere_label",
+        "muscle_guide_sarcomere_short",
+        "muscle_guide_sarcomere_detail",
+        "muscle_guide_show_clinical",
+        "muscle_guide_hide_clinical",
+        "muscle_guide_clinical_shown",
+        "muscle_guide_clinical_hidden",
+        "muscle_guide_clinical_title",
+        "muscle_guide_clinical_change",
+        "muscle_guide_clinical_effect_heading",
+        "muscle_guide_clinical_effect",
+        "muscle_guide_clinical_note",
+        "muscle_guide_handoff_label",
+        "muscle_guide_handoff_lead",
+        "muscle_guide_handoff_context",
+        "muscle_guide_handoff_button",
+        "muscle_guide_handoff_announcement",
+        "muscle_guide_mechanism_heading",
+        "muscle_guide_mechanism_terminal",
+        "muscle_guide_mechanism_end_plate",
+        "muscle_guide_mechanism_calcium",
+        "muscle_guide_mechanism_sarcomere",
+        "muscle_guide_scale_label",
+        "muscle_guide_scale_neuron",
+        "muscle_guide_scale_fiber",
+        "muscle_guide_scale_sarcomere",
+        "muscle_guide_steps_label"
+      ],
+      "insertionCharacterOffset": 1271438,
+      "insertionByteOffset": 1275965,
+      "insertionAnchor": "knee_guide_mechanism_stability",
+      "addedText": ",\n      \"muscle_guide_title\": \"Muscle activation\",\n      \"muscle_guide_activation_title\": \"1. Nerve signal and calcium release\",\n      \"muscle_guide_sarcomere_title\": \"2. Sarcomere close-up\",\n      \"muscle_guide_marker_help\": \"Match each illustration’s numbered markers to its structure key.\",\n      \"muscle_guide_orientation\": \"The first illustration follows the signal into a muscle fiber. The close-up shows the sarcomere where filaments slide.\",\n      \"muscle_guide_activation_svg_title\": \"Motor neuron, neuromuscular junction, and muscle-fiber calcium release\",\n      \"muscle_guide_activation_svg_description\": \"A cellular schematic identifies the motor axon, axon terminal, synaptic vesicles, synaptic cleft, nicotinic acetylcholine receptors, sarcolemma, T-tubule, and sarcoplasmic reticulum. Signal and ion highlights follow the selected step.\",\n      \"muscle_guide_sarcomere_svg_title\": \"Actin, myosin, and Z discs during sarcomere shortening\",\n      \"muscle_guide_sarcomere_svg_description\": \"A larger view identifies actin, myosin, and both Z discs. In the contraction step, Z discs move closer while actin filaments keep their length.\",\n      \"muscle_guide_structure_key\": \"Structure key\",\n      \"muscle_guide_current_step\": \"Current step\",\n      \"muscle_guide_key_axon\": \"Motor axon\",\n      \"muscle_guide_key_terminal\": \"Axon terminal\",\n      \"muscle_guide_key_vesicles\": \"Synaptic vesicles\",\n      \"muscle_guide_key_cleft\": \"Synaptic cleft\",\n      \"muscle_guide_key_receptors\": \"Nicotinic ACh receptors\",\n      \"muscle_guide_key_sarcolemma\": \"Muscle sarcolemma\",\n      \"muscle_guide_key_t_tubule\": \"T-tubule\",\n      \"muscle_guide_key_sr\": \"Sarcoplasmic reticulum + Ca2+\",\n      \"muscle_guide_key_actin\": \"Actin\",\n      \"muscle_guide_key_myosin\": \"Myosin\",\n      \"muscle_guide_key_z_discs\": \"Z discs\",\n      \"muscle_guide_flow_key\": \"Muscle activation key\",\n      \"muscle_guide_neural\": \"neural signal\",\n      \"muscle_guide_calcium\": \"calcium\",\n      \"muscle_guide_contraction\": \"contraction\",\n      \"muscle_guide_pause_flow\": \"Pause activation\",\n      \"muscle_guide_play_flow\": \"Play activation\",\n      \"muscle_guide_flow_paused\": \"Activation paused\",\n      \"muscle_guide_flow_playing\": \"Activation playing\",\n      \"muscle_guide_previous\": \"Previous step\",\n      \"muscle_guide_next\": \"Next step\",\n      \"muscle_guide_step_position\": \"Step {current} of {total}\",\n      \"muscle_guide_focus_heading\": \"Focus in this step\",\n      \"muscle_guide_focus_terminal\": \"Motor axon · Axon terminal · Calcium channels\",\n      \"muscle_guide_focus_end_plate\": \"Acetylcholine · Nicotinic receptors · Motor end plate\",\n      \"muscle_guide_focus_calcium\": \"T-tubule · Sarcoplasmic reticulum · Troponin\",\n      \"muscle_guide_focus_sarcomere\": \"Actin · Myosin · Z discs\",\n      \"muscle_guide_terminal_label\": \"1. Nerve signal\",\n      \"muscle_guide_terminal_short\": \"Action potential reaches terminal\",\n      \"muscle_guide_terminal_detail\": \"A motor-neuron action potential reaches the axon terminal and opens voltage-gated calcium channels. Calcium entry triggers synaptic vesicles to fuse with the membrane.\",\n      \"muscle_guide_end_plate_label\": \"2. Motor end plate\",\n      \"muscle_guide_end_plate_short\": \"Acetylcholine activates fiber\",\n      \"muscle_guide_end_plate_detail\": \"Acetylcholine crosses the synaptic cleft and binds nicotinic receptors on the motor end plate. Sodium entry produces an end-plate potential that initiates a muscle action potential.\",\n      \"muscle_guide_calcium_label\": \"3. Calcium release\",\n      \"muscle_guide_calcium_short\": \"T-tubule signal reaches SR\",\n      \"muscle_guide_calcium_detail\": \"The action potential travels along the sarcolemma and down T-tubules. Voltage sensors activate ryanodine receptors in the sarcoplasmic reticulum, releasing calcium that binds troponin.\",\n      \"muscle_guide_sarcomere_label\": \"4. Sarcomere shortens\",\n      \"muscle_guide_sarcomere_short\": \"Actin slides past myosin\",\n      \"muscle_guide_sarcomere_detail\": \"Calcium moves tropomyosin away from actin binding sites. ATP-powered myosin cross-bridge cycles pull thin filaments toward the sarcomere center; calcium reuptake and acetylcholine breakdown allow relaxation.\",\n      \"muscle_guide_show_clinical\": \"Clinical lens\",\n      \"muscle_guide_hide_clinical\": \"Hide clinical lens\",\n      \"muscle_guide_clinical_shown\": \"Clinical lens shown.\",\n      \"muscle_guide_clinical_hidden\": \"Clinical lens hidden.\",\n      \"muscle_guide_clinical_title\": \"Myasthenia gravis\",\n      \"muscle_guide_clinical_change\": \"Fewer functional nicotinic acetylcholine receptors reduce the motor end plate safety factor.\",\n      \"muscle_guide_clinical_effect_heading\": \"Functional consequence\",\n      \"muscle_guide_clinical_effect\": \"Repeated nerve signals are less likely to trigger reliable muscle-fiber action potentials.\",\n      \"muscle_guide_clinical_note\": \"Educational comparison only — not a diagnostic view.\",\n      \"muscle_guide_handoff_label\": \"Muscle to knee\",\n      \"muscle_guide_handoff_lead\": \"Apply the force: \",\n      \"muscle_guide_handoff_context\": \"connect muscle tension and tendon pull to the changing geometry of a synovial joint.\",\n      \"muscle_guide_handoff_button\": \"Apply force at a joint\",\n      \"muscle_guide_handoff_announcement\": \"Opening knee extension mechanics, step 2 of 4.\",\n      \"muscle_guide_mechanism_heading\": \"Activation highlight\",\n      \"muscle_guide_mechanism_terminal\": \"terminal Ca2+ entry triggers vesicle fusion\",\n      \"muscle_guide_mechanism_end_plate\": \"Na+ entry depolarizes the end plate\",\n      \"muscle_guide_mechanism_calcium\": \"Ca2+ exposes actin binding sites\",\n      \"muscle_guide_mechanism_sarcomere\": \"Z discs move closer\",\n      \"muscle_guide_scale_label\": \"Scale progression\",\n      \"muscle_guide_scale_neuron\": \"Motor neuron\",\n      \"muscle_guide_scale_fiber\": \"Muscle fiber\",\n      \"muscle_guide_scale_sarcomere\": \"Sarcomere\",\n      \"muscle_guide_steps_label\": \"Muscle activation steps\"",
+      "addedBytes": 5954,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "muscle_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_axon",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_vesicles",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_cleft",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_receptors",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sarcolemma",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_t_tubule",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sr",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_actin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_myosin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_z_discs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_neural",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_contraction",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_neuron",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_fiber",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_steps_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/french.js",
+      "snapshot": "locale-before/lang__french.js.before.gz",
+      "beforeSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "beforeBytes": 8458242,
+      "afterSha256": "61ff7b2ba2d72a8ca89e9321e2650b2341f91007c44e7443e8a9f9648ea2c75e",
+      "afterBytes": 8465169,
+      "addedKeys": [
+        "muscle_guide_title",
+        "muscle_guide_activation_title",
+        "muscle_guide_sarcomere_title",
+        "muscle_guide_marker_help",
+        "muscle_guide_orientation",
+        "muscle_guide_activation_svg_title",
+        "muscle_guide_activation_svg_description",
+        "muscle_guide_sarcomere_svg_title",
+        "muscle_guide_sarcomere_svg_description",
+        "muscle_guide_structure_key",
+        "muscle_guide_current_step",
+        "muscle_guide_key_axon",
+        "muscle_guide_key_terminal",
+        "muscle_guide_key_vesicles",
+        "muscle_guide_key_cleft",
+        "muscle_guide_key_receptors",
+        "muscle_guide_key_sarcolemma",
+        "muscle_guide_key_t_tubule",
+        "muscle_guide_key_sr",
+        "muscle_guide_key_actin",
+        "muscle_guide_key_myosin",
+        "muscle_guide_key_z_discs",
+        "muscle_guide_flow_key",
+        "muscle_guide_neural",
+        "muscle_guide_calcium",
+        "muscle_guide_contraction",
+        "muscle_guide_pause_flow",
+        "muscle_guide_play_flow",
+        "muscle_guide_flow_paused",
+        "muscle_guide_flow_playing",
+        "muscle_guide_previous",
+        "muscle_guide_next",
+        "muscle_guide_step_position",
+        "muscle_guide_focus_heading",
+        "muscle_guide_focus_terminal",
+        "muscle_guide_focus_end_plate",
+        "muscle_guide_focus_calcium",
+        "muscle_guide_focus_sarcomere",
+        "muscle_guide_terminal_label",
+        "muscle_guide_terminal_short",
+        "muscle_guide_terminal_detail",
+        "muscle_guide_end_plate_label",
+        "muscle_guide_end_plate_short",
+        "muscle_guide_end_plate_detail",
+        "muscle_guide_calcium_label",
+        "muscle_guide_calcium_short",
+        "muscle_guide_calcium_detail",
+        "muscle_guide_sarcomere_label",
+        "muscle_guide_sarcomere_short",
+        "muscle_guide_sarcomere_detail",
+        "muscle_guide_show_clinical",
+        "muscle_guide_hide_clinical",
+        "muscle_guide_clinical_shown",
+        "muscle_guide_clinical_hidden",
+        "muscle_guide_clinical_title",
+        "muscle_guide_clinical_change",
+        "muscle_guide_clinical_effect_heading",
+        "muscle_guide_clinical_effect",
+        "muscle_guide_clinical_note",
+        "muscle_guide_handoff_label",
+        "muscle_guide_handoff_lead",
+        "muscle_guide_handoff_context",
+        "muscle_guide_handoff_button",
+        "muscle_guide_handoff_announcement",
+        "muscle_guide_mechanism_heading",
+        "muscle_guide_mechanism_terminal",
+        "muscle_guide_mechanism_end_plate",
+        "muscle_guide_mechanism_calcium",
+        "muscle_guide_mechanism_sarcomere",
+        "muscle_guide_scale_label",
+        "muscle_guide_scale_neuron",
+        "muscle_guide_scale_fiber",
+        "muscle_guide_scale_sarcomere",
+        "muscle_guide_steps_label"
+      ],
+      "insertionCharacterOffset": 3113155,
+      "insertionByteOffset": 3182730,
+      "insertionAnchor": "knee_guide_mechanism_stability",
+      "addedText": ",\n      \"muscle_guide_title\": \"Activation musculaire\",\n      \"muscle_guide_activation_title\": \"1. Signal nerveux et libération de calcium\",\n      \"muscle_guide_sarcomere_title\": \"2. Gros plan du sarcomère\",\n      \"muscle_guide_marker_help\": \"Associez les repères numérotés de chaque illustration à sa légende des structures.\",\n      \"muscle_guide_orientation\": \"La première illustration suit le signal jusqu’à l’intérieur d’une fibre musculaire. Le gros plan montre le sarcomère, où les filaments glissent.\",\n      \"muscle_guide_activation_svg_title\": \"Neurone moteur, jonction neuromusculaire et libération de calcium dans la fibre musculaire\",\n      \"muscle_guide_activation_svg_description\": \"Un schéma cellulaire identifie l’axone moteur, la terminaison axonale, les vésicules synaptiques, la fente synaptique, les récepteurs nicotiniques de l’acétylcholine, le sarcolemme, le tubule T et le réticulum sarcoplasmique. Les signaux et les ions mis en évidence correspondent à l’étape sélectionnée.\",\n      \"muscle_guide_sarcomere_svg_title\": \"Actine, myosine et disques Z pendant le raccourcissement du sarcomère\",\n      \"muscle_guide_sarcomere_svg_description\": \"Une vue agrandie identifie l’actine, la myosine et les deux disques Z. À l’étape de contraction, les disques Z se rapprochent tandis que les filaments d’actine conservent leur longueur.\",\n      \"muscle_guide_structure_key\": \"Légende des structures\",\n      \"muscle_guide_current_step\": \"Étape actuelle\",\n      \"muscle_guide_key_axon\": \"Axone moteur\",\n      \"muscle_guide_key_terminal\": \"Terminaison axonale\",\n      \"muscle_guide_key_vesicles\": \"Vésicules synaptiques\",\n      \"muscle_guide_key_cleft\": \"Fente synaptique\",\n      \"muscle_guide_key_receptors\": \"Récepteurs nicotiniques de l’ACh\",\n      \"muscle_guide_key_sarcolemma\": \"Sarcolemme musculaire\",\n      \"muscle_guide_key_t_tubule\": \"Tubule T\",\n      \"muscle_guide_key_sr\": \"Réticulum sarcoplasmique + Ca2+\",\n      \"muscle_guide_key_actin\": \"Actine\",\n      \"muscle_guide_key_myosin\": \"Myosine\",\n      \"muscle_guide_key_z_discs\": \"Disques Z\",\n      \"muscle_guide_flow_key\": \"Légende de l’activation musculaire\",\n      \"muscle_guide_neural\": \"signal nerveux\",\n      \"muscle_guide_calcium\": \"calcium\",\n      \"muscle_guide_contraction\": \"contraction\",\n      \"muscle_guide_pause_flow\": \"Mettre l’activation en pause\",\n      \"muscle_guide_play_flow\": \"Animer l’activation\",\n      \"muscle_guide_flow_paused\": \"Activation en pause\",\n      \"muscle_guide_flow_playing\": \"Activation animée\",\n      \"muscle_guide_previous\": \"Étape précédente\",\n      \"muscle_guide_next\": \"Étape suivante\",\n      \"muscle_guide_step_position\": \"Étape {current} sur {total}\",\n      \"muscle_guide_focus_heading\": \"À observer à cette étape\",\n      \"muscle_guide_focus_terminal\": \"Axone moteur · Terminaison axonale · Canaux calciques\",\n      \"muscle_guide_focus_end_plate\": \"Acétylcholine · Récepteurs nicotiniques · Plaque motrice\",\n      \"muscle_guide_focus_calcium\": \"Tubule T · Réticulum sarcoplasmique · Troponine\",\n      \"muscle_guide_focus_sarcomere\": \"Actine · Myosine · Disques Z\",\n      \"muscle_guide_terminal_label\": \"1. Signal nerveux\",\n      \"muscle_guide_terminal_short\": \"Le potentiel d’action atteint la terminaison\",\n      \"muscle_guide_terminal_detail\": \"Un potentiel d’action du neurone moteur atteint la terminaison axonale et ouvre les canaux calciques dépendants du voltage. L’entrée de calcium déclenche la fusion des vésicules synaptiques avec la membrane.\",\n      \"muscle_guide_end_plate_label\": \"2. Plaque motrice\",\n      \"muscle_guide_end_plate_short\": \"L’acétylcholine active la fibre\",\n      \"muscle_guide_end_plate_detail\": \"L’acétylcholine traverse la fente synaptique et se lie aux récepteurs nicotiniques de la plaque motrice. L’entrée de sodium produit un potentiel de plaque motrice qui déclenche un potentiel d’action musculaire.\",\n      \"muscle_guide_calcium_label\": \"3. Libération de calcium\",\n      \"muscle_guide_calcium_short\": \"Le signal des tubules T atteint le réticulum sarcoplasmique\",\n      \"muscle_guide_calcium_detail\": \"Le potentiel d’action se propage le long du sarcolemme et dans les tubules T. Les capteurs de voltage activent les récepteurs à la ryanodine du réticulum sarcoplasmique, qui libère du calcium se liant à la troponine.\",\n      \"muscle_guide_sarcomere_label\": \"4. Le sarcomère se raccourcit\",\n      \"muscle_guide_sarcomere_short\": \"L’actine glisse le long de la myosine\",\n      \"muscle_guide_sarcomere_detail\": \"Le calcium déplace la tropomyosine et dégage les sites de liaison de l’actine. Les cycles des ponts actine-myosine, alimentés par l’ATP, tirent les filaments fins vers le centre du sarcomère ; la recapture du calcium et la dégradation de l’acétylcholine permettent le relâchement.\",\n      \"muscle_guide_show_clinical\": \"Vue clinique\",\n      \"muscle_guide_hide_clinical\": \"Masquer la vue clinique\",\n      \"muscle_guide_clinical_shown\": \"Vue clinique affichée.\",\n      \"muscle_guide_clinical_hidden\": \"Vue clinique masquée.\",\n      \"muscle_guide_clinical_title\": \"Myasthénie\",\n      \"muscle_guide_clinical_change\": \"Un nombre réduit de récepteurs nicotiniques fonctionnels de l’acétylcholine diminue le facteur de sécurité de la plaque motrice.\",\n      \"muscle_guide_clinical_effect_heading\": \"Conséquence fonctionnelle\",\n      \"muscle_guide_clinical_effect\": \"Les signaux nerveux répétés ont moins de chances de déclencher des potentiels d’action fiables dans la fibre musculaire.\",\n      \"muscle_guide_clinical_note\": \"Comparaison pédagogique uniquement — ne constitue pas une vue diagnostique.\",\n      \"muscle_guide_handoff_label\": \"Du muscle au genou\",\n      \"muscle_guide_handoff_lead\": \"Appliquez la force : \",\n      \"muscle_guide_handoff_context\": \"reliez la tension musculaire et la traction du tendon aux changements de géométrie d’une articulation synoviale.\",\n      \"muscle_guide_handoff_button\": \"Appliquer la force à une articulation\",\n      \"muscle_guide_handoff_announcement\": \"Ouverture de la mécanique de l’extension du genou, étape 2 sur 4.\",\n      \"muscle_guide_mechanism_heading\": \"Activation mise en évidence\",\n      \"muscle_guide_mechanism_terminal\": \"l’entrée de Ca2+ dans la terminaison déclenche la fusion des vésicules\",\n      \"muscle_guide_mechanism_end_plate\": \"l’entrée de Na+ dépolarise la plaque motrice\",\n      \"muscle_guide_mechanism_calcium\": \"le Ca2+ expose les sites de liaison de l’actine\",\n      \"muscle_guide_mechanism_sarcomere\": \"les disques Z se rapprochent\",\n      \"muscle_guide_scale_label\": \"Progression des échelles\",\n      \"muscle_guide_scale_neuron\": \"Neurone moteur\",\n      \"muscle_guide_scale_fiber\": \"Fibre musculaire\",\n      \"muscle_guide_scale_sarcomere\": \"Sarcomère\",\n      \"muscle_guide_steps_label\": \"Étapes de l’activation musculaire\"",
+      "addedBytes": 6927,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "muscle_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_axon",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_vesicles",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_cleft",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_receptors",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sarcolemma",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_t_tubule",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sr",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_actin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_myosin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_z_discs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_neural",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_contraction",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_neuron",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_fiber",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_steps_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__french.js.before.gz",
+      "beforeSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "beforeBytes": 8458242,
+      "afterSha256": "61ff7b2ba2d72a8ca89e9321e2650b2341f91007c44e7443e8a9f9648ea2c75e",
+      "afterBytes": 8465169,
+      "addedKeys": [
+        "muscle_guide_title",
+        "muscle_guide_activation_title",
+        "muscle_guide_sarcomere_title",
+        "muscle_guide_marker_help",
+        "muscle_guide_orientation",
+        "muscle_guide_activation_svg_title",
+        "muscle_guide_activation_svg_description",
+        "muscle_guide_sarcomere_svg_title",
+        "muscle_guide_sarcomere_svg_description",
+        "muscle_guide_structure_key",
+        "muscle_guide_current_step",
+        "muscle_guide_key_axon",
+        "muscle_guide_key_terminal",
+        "muscle_guide_key_vesicles",
+        "muscle_guide_key_cleft",
+        "muscle_guide_key_receptors",
+        "muscle_guide_key_sarcolemma",
+        "muscle_guide_key_t_tubule",
+        "muscle_guide_key_sr",
+        "muscle_guide_key_actin",
+        "muscle_guide_key_myosin",
+        "muscle_guide_key_z_discs",
+        "muscle_guide_flow_key",
+        "muscle_guide_neural",
+        "muscle_guide_calcium",
+        "muscle_guide_contraction",
+        "muscle_guide_pause_flow",
+        "muscle_guide_play_flow",
+        "muscle_guide_flow_paused",
+        "muscle_guide_flow_playing",
+        "muscle_guide_previous",
+        "muscle_guide_next",
+        "muscle_guide_step_position",
+        "muscle_guide_focus_heading",
+        "muscle_guide_focus_terminal",
+        "muscle_guide_focus_end_plate",
+        "muscle_guide_focus_calcium",
+        "muscle_guide_focus_sarcomere",
+        "muscle_guide_terminal_label",
+        "muscle_guide_terminal_short",
+        "muscle_guide_terminal_detail",
+        "muscle_guide_end_plate_label",
+        "muscle_guide_end_plate_short",
+        "muscle_guide_end_plate_detail",
+        "muscle_guide_calcium_label",
+        "muscle_guide_calcium_short",
+        "muscle_guide_calcium_detail",
+        "muscle_guide_sarcomere_label",
+        "muscle_guide_sarcomere_short",
+        "muscle_guide_sarcomere_detail",
+        "muscle_guide_show_clinical",
+        "muscle_guide_hide_clinical",
+        "muscle_guide_clinical_shown",
+        "muscle_guide_clinical_hidden",
+        "muscle_guide_clinical_title",
+        "muscle_guide_clinical_change",
+        "muscle_guide_clinical_effect_heading",
+        "muscle_guide_clinical_effect",
+        "muscle_guide_clinical_note",
+        "muscle_guide_handoff_label",
+        "muscle_guide_handoff_lead",
+        "muscle_guide_handoff_context",
+        "muscle_guide_handoff_button",
+        "muscle_guide_handoff_announcement",
+        "muscle_guide_mechanism_heading",
+        "muscle_guide_mechanism_terminal",
+        "muscle_guide_mechanism_end_plate",
+        "muscle_guide_mechanism_calcium",
+        "muscle_guide_mechanism_sarcomere",
+        "muscle_guide_scale_label",
+        "muscle_guide_scale_neuron",
+        "muscle_guide_scale_fiber",
+        "muscle_guide_scale_sarcomere",
+        "muscle_guide_steps_label"
+      ],
+      "insertionCharacterOffset": 3113155,
+      "insertionByteOffset": 3182730,
+      "insertionAnchor": "knee_guide_mechanism_stability",
+      "addedText": ",\n      \"muscle_guide_title\": \"Activation musculaire\",\n      \"muscle_guide_activation_title\": \"1. Signal nerveux et libération de calcium\",\n      \"muscle_guide_sarcomere_title\": \"2. Gros plan du sarcomère\",\n      \"muscle_guide_marker_help\": \"Associez les repères numérotés de chaque illustration à sa légende des structures.\",\n      \"muscle_guide_orientation\": \"La première illustration suit le signal jusqu’à l’intérieur d’une fibre musculaire. Le gros plan montre le sarcomère, où les filaments glissent.\",\n      \"muscle_guide_activation_svg_title\": \"Neurone moteur, jonction neuromusculaire et libération de calcium dans la fibre musculaire\",\n      \"muscle_guide_activation_svg_description\": \"Un schéma cellulaire identifie l’axone moteur, la terminaison axonale, les vésicules synaptiques, la fente synaptique, les récepteurs nicotiniques de l’acétylcholine, le sarcolemme, le tubule T et le réticulum sarcoplasmique. Les signaux et les ions mis en évidence correspondent à l’étape sélectionnée.\",\n      \"muscle_guide_sarcomere_svg_title\": \"Actine, myosine et disques Z pendant le raccourcissement du sarcomère\",\n      \"muscle_guide_sarcomere_svg_description\": \"Une vue agrandie identifie l’actine, la myosine et les deux disques Z. À l’étape de contraction, les disques Z se rapprochent tandis que les filaments d’actine conservent leur longueur.\",\n      \"muscle_guide_structure_key\": \"Légende des structures\",\n      \"muscle_guide_current_step\": \"Étape actuelle\",\n      \"muscle_guide_key_axon\": \"Axone moteur\",\n      \"muscle_guide_key_terminal\": \"Terminaison axonale\",\n      \"muscle_guide_key_vesicles\": \"Vésicules synaptiques\",\n      \"muscle_guide_key_cleft\": \"Fente synaptique\",\n      \"muscle_guide_key_receptors\": \"Récepteurs nicotiniques de l’ACh\",\n      \"muscle_guide_key_sarcolemma\": \"Sarcolemme musculaire\",\n      \"muscle_guide_key_t_tubule\": \"Tubule T\",\n      \"muscle_guide_key_sr\": \"Réticulum sarcoplasmique + Ca2+\",\n      \"muscle_guide_key_actin\": \"Actine\",\n      \"muscle_guide_key_myosin\": \"Myosine\",\n      \"muscle_guide_key_z_discs\": \"Disques Z\",\n      \"muscle_guide_flow_key\": \"Légende de l’activation musculaire\",\n      \"muscle_guide_neural\": \"signal nerveux\",\n      \"muscle_guide_calcium\": \"calcium\",\n      \"muscle_guide_contraction\": \"contraction\",\n      \"muscle_guide_pause_flow\": \"Mettre l’activation en pause\",\n      \"muscle_guide_play_flow\": \"Animer l’activation\",\n      \"muscle_guide_flow_paused\": \"Activation en pause\",\n      \"muscle_guide_flow_playing\": \"Activation animée\",\n      \"muscle_guide_previous\": \"Étape précédente\",\n      \"muscle_guide_next\": \"Étape suivante\",\n      \"muscle_guide_step_position\": \"Étape {current} sur {total}\",\n      \"muscle_guide_focus_heading\": \"À observer à cette étape\",\n      \"muscle_guide_focus_terminal\": \"Axone moteur · Terminaison axonale · Canaux calciques\",\n      \"muscle_guide_focus_end_plate\": \"Acétylcholine · Récepteurs nicotiniques · Plaque motrice\",\n      \"muscle_guide_focus_calcium\": \"Tubule T · Réticulum sarcoplasmique · Troponine\",\n      \"muscle_guide_focus_sarcomere\": \"Actine · Myosine · Disques Z\",\n      \"muscle_guide_terminal_label\": \"1. Signal nerveux\",\n      \"muscle_guide_terminal_short\": \"Le potentiel d’action atteint la terminaison\",\n      \"muscle_guide_terminal_detail\": \"Un potentiel d’action du neurone moteur atteint la terminaison axonale et ouvre les canaux calciques dépendants du voltage. L’entrée de calcium déclenche la fusion des vésicules synaptiques avec la membrane.\",\n      \"muscle_guide_end_plate_label\": \"2. Plaque motrice\",\n      \"muscle_guide_end_plate_short\": \"L’acétylcholine active la fibre\",\n      \"muscle_guide_end_plate_detail\": \"L’acétylcholine traverse la fente synaptique et se lie aux récepteurs nicotiniques de la plaque motrice. L’entrée de sodium produit un potentiel de plaque motrice qui déclenche un potentiel d’action musculaire.\",\n      \"muscle_guide_calcium_label\": \"3. Libération de calcium\",\n      \"muscle_guide_calcium_short\": \"Le signal des tubules T atteint le réticulum sarcoplasmique\",\n      \"muscle_guide_calcium_detail\": \"Le potentiel d’action se propage le long du sarcolemme et dans les tubules T. Les capteurs de voltage activent les récepteurs à la ryanodine du réticulum sarcoplasmique, qui libère du calcium se liant à la troponine.\",\n      \"muscle_guide_sarcomere_label\": \"4. Le sarcomère se raccourcit\",\n      \"muscle_guide_sarcomere_short\": \"L’actine glisse le long de la myosine\",\n      \"muscle_guide_sarcomere_detail\": \"Le calcium déplace la tropomyosine et dégage les sites de liaison de l’actine. Les cycles des ponts actine-myosine, alimentés par l’ATP, tirent les filaments fins vers le centre du sarcomère ; la recapture du calcium et la dégradation de l’acétylcholine permettent le relâchement.\",\n      \"muscle_guide_show_clinical\": \"Vue clinique\",\n      \"muscle_guide_hide_clinical\": \"Masquer la vue clinique\",\n      \"muscle_guide_clinical_shown\": \"Vue clinique affichée.\",\n      \"muscle_guide_clinical_hidden\": \"Vue clinique masquée.\",\n      \"muscle_guide_clinical_title\": \"Myasthénie\",\n      \"muscle_guide_clinical_change\": \"Un nombre réduit de récepteurs nicotiniques fonctionnels de l’acétylcholine diminue le facteur de sécurité de la plaque motrice.\",\n      \"muscle_guide_clinical_effect_heading\": \"Conséquence fonctionnelle\",\n      \"muscle_guide_clinical_effect\": \"Les signaux nerveux répétés ont moins de chances de déclencher des potentiels d’action fiables dans la fibre musculaire.\",\n      \"muscle_guide_clinical_note\": \"Comparaison pédagogique uniquement — ne constitue pas une vue diagnostique.\",\n      \"muscle_guide_handoff_label\": \"Du muscle au genou\",\n      \"muscle_guide_handoff_lead\": \"Appliquez la force : \",\n      \"muscle_guide_handoff_context\": \"reliez la tension musculaire et la traction du tendon aux changements de géométrie d’une articulation synoviale.\",\n      \"muscle_guide_handoff_button\": \"Appliquer la force à une articulation\",\n      \"muscle_guide_handoff_announcement\": \"Ouverture de la mécanique de l’extension du genou, étape 2 sur 4.\",\n      \"muscle_guide_mechanism_heading\": \"Activation mise en évidence\",\n      \"muscle_guide_mechanism_terminal\": \"l’entrée de Ca2+ dans la terminaison déclenche la fusion des vésicules\",\n      \"muscle_guide_mechanism_end_plate\": \"l’entrée de Na+ dépolarise la plaque motrice\",\n      \"muscle_guide_mechanism_calcium\": \"le Ca2+ expose les sites de liaison de l’actine\",\n      \"muscle_guide_mechanism_sarcomere\": \"les disques Z se rapprochent\",\n      \"muscle_guide_scale_label\": \"Progression des échelles\",\n      \"muscle_guide_scale_neuron\": \"Neurone moteur\",\n      \"muscle_guide_scale_fiber\": \"Fibre musculaire\",\n      \"muscle_guide_scale_sarcomere\": \"Sarcomère\",\n      \"muscle_guide_steps_label\": \"Étapes de l’activation musculaire\"",
+      "addedBytes": 6927,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "muscle_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_axon",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_vesicles",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_cleft",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_receptors",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sarcolemma",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_t_tubule",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sr",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_actin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_myosin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_z_discs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_neural",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_contraction",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_neuron",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_fiber",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_steps_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "snapshot": "locale-before/lang__spanish_latin_america.js.before.gz",
+      "beforeSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "beforeBytes": 8879035,
+      "afterSha256": "51db391fcafe43211ae3b99147a7cdc7619c3899c306c29ea684c87d73b1b447",
+      "afterBytes": 8885765,
+      "addedKeys": [
+        "muscle_guide_title",
+        "muscle_guide_activation_title",
+        "muscle_guide_sarcomere_title",
+        "muscle_guide_marker_help",
+        "muscle_guide_orientation",
+        "muscle_guide_activation_svg_title",
+        "muscle_guide_activation_svg_description",
+        "muscle_guide_sarcomere_svg_title",
+        "muscle_guide_sarcomere_svg_description",
+        "muscle_guide_structure_key",
+        "muscle_guide_current_step",
+        "muscle_guide_key_axon",
+        "muscle_guide_key_terminal",
+        "muscle_guide_key_vesicles",
+        "muscle_guide_key_cleft",
+        "muscle_guide_key_receptors",
+        "muscle_guide_key_sarcolemma",
+        "muscle_guide_key_t_tubule",
+        "muscle_guide_key_sr",
+        "muscle_guide_key_actin",
+        "muscle_guide_key_myosin",
+        "muscle_guide_key_z_discs",
+        "muscle_guide_flow_key",
+        "muscle_guide_neural",
+        "muscle_guide_calcium",
+        "muscle_guide_contraction",
+        "muscle_guide_pause_flow",
+        "muscle_guide_play_flow",
+        "muscle_guide_flow_paused",
+        "muscle_guide_flow_playing",
+        "muscle_guide_previous",
+        "muscle_guide_next",
+        "muscle_guide_step_position",
+        "muscle_guide_focus_heading",
+        "muscle_guide_focus_terminal",
+        "muscle_guide_focus_end_plate",
+        "muscle_guide_focus_calcium",
+        "muscle_guide_focus_sarcomere",
+        "muscle_guide_terminal_label",
+        "muscle_guide_terminal_short",
+        "muscle_guide_terminal_detail",
+        "muscle_guide_end_plate_label",
+        "muscle_guide_end_plate_short",
+        "muscle_guide_end_plate_detail",
+        "muscle_guide_calcium_label",
+        "muscle_guide_calcium_short",
+        "muscle_guide_calcium_detail",
+        "muscle_guide_sarcomere_label",
+        "muscle_guide_sarcomere_short",
+        "muscle_guide_sarcomere_detail",
+        "muscle_guide_show_clinical",
+        "muscle_guide_hide_clinical",
+        "muscle_guide_clinical_shown",
+        "muscle_guide_clinical_hidden",
+        "muscle_guide_clinical_title",
+        "muscle_guide_clinical_change",
+        "muscle_guide_clinical_effect_heading",
+        "muscle_guide_clinical_effect",
+        "muscle_guide_clinical_note",
+        "muscle_guide_handoff_label",
+        "muscle_guide_handoff_lead",
+        "muscle_guide_handoff_context",
+        "muscle_guide_handoff_button",
+        "muscle_guide_handoff_announcement",
+        "muscle_guide_mechanism_heading",
+        "muscle_guide_mechanism_terminal",
+        "muscle_guide_mechanism_end_plate",
+        "muscle_guide_mechanism_calcium",
+        "muscle_guide_mechanism_sarcomere",
+        "muscle_guide_scale_label",
+        "muscle_guide_scale_neuron",
+        "muscle_guide_scale_fiber",
+        "muscle_guide_scale_sarcomere",
+        "muscle_guide_steps_label"
+      ],
+      "insertionCharacterOffset": 3048997,
+      "insertionByteOffset": 3092680,
+      "insertionAnchor": "knee_guide_mechanism_stability",
+      "addedText": ",\n      \"muscle_guide_title\": \"Activación muscular\",\n      \"muscle_guide_activation_title\": \"1. Señal nerviosa y liberación de calcio\",\n      \"muscle_guide_sarcomere_title\": \"2. Acercamiento al sarcómero\",\n      \"muscle_guide_marker_help\": \"Relaciona los marcadores numerados de cada ilustración con su clave de estructuras.\",\n      \"muscle_guide_orientation\": \"La primera ilustración sigue la señal hacia el interior de una fibra muscular. El acercamiento muestra el sarcómero, donde se deslizan los filamentos.\",\n      \"muscle_guide_activation_svg_title\": \"Neurona motora, unión neuromuscular y liberación de calcio en la fibra muscular\",\n      \"muscle_guide_activation_svg_description\": \"Un esquema celular identifica el axón motor, la terminal axónica, las vesículas sinápticas, la hendidura sináptica, los receptores nicotínicos de acetilcolina, el sarcolema, el túbulo T y el retículo sarcoplásmico. Los resaltados de señales e iones siguen el paso seleccionado.\",\n      \"muscle_guide_sarcomere_svg_title\": \"Actina, miosina y discos Z durante el acortamiento del sarcómero\",\n      \"muscle_guide_sarcomere_svg_description\": \"Una vista ampliada identifica la actina, la miosina y ambos discos Z. En el paso de contracción, los discos Z se acercan mientras los filamentos de actina conservan su longitud.\",\n      \"muscle_guide_structure_key\": \"Clave de estructuras\",\n      \"muscle_guide_current_step\": \"Paso actual\",\n      \"muscle_guide_key_axon\": \"Axón motor\",\n      \"muscle_guide_key_terminal\": \"Terminal axónica\",\n      \"muscle_guide_key_vesicles\": \"Vesículas sinápticas\",\n      \"muscle_guide_key_cleft\": \"Hendidura sináptica\",\n      \"muscle_guide_key_receptors\": \"Receptores nicotínicos de ACh\",\n      \"muscle_guide_key_sarcolemma\": \"Sarcolema muscular\",\n      \"muscle_guide_key_t_tubule\": \"Túbulo T\",\n      \"muscle_guide_key_sr\": \"Retículo sarcoplásmico + Ca2+\",\n      \"muscle_guide_key_actin\": \"Actina\",\n      \"muscle_guide_key_myosin\": \"Miosina\",\n      \"muscle_guide_key_z_discs\": \"Discos Z\",\n      \"muscle_guide_flow_key\": \"Clave de activación muscular\",\n      \"muscle_guide_neural\": \"señal nerviosa\",\n      \"muscle_guide_calcium\": \"calcio\",\n      \"muscle_guide_contraction\": \"contracción\",\n      \"muscle_guide_pause_flow\": \"Pausar activación\",\n      \"muscle_guide_play_flow\": \"Reproducir activación\",\n      \"muscle_guide_flow_paused\": \"Activación en pausa\",\n      \"muscle_guide_flow_playing\": \"Activación en reproducción\",\n      \"muscle_guide_previous\": \"Paso anterior\",\n      \"muscle_guide_next\": \"Paso siguiente\",\n      \"muscle_guide_step_position\": \"Paso {current} de {total}\",\n      \"muscle_guide_focus_heading\": \"Observa en este paso\",\n      \"muscle_guide_focus_terminal\": \"Axón motor · Terminal axónica · Canales de calcio\",\n      \"muscle_guide_focus_end_plate\": \"Acetilcolina · Receptores nicotínicos · Placa motora\",\n      \"muscle_guide_focus_calcium\": \"Túbulo T · Retículo sarcoplásmico · Troponina\",\n      \"muscle_guide_focus_sarcomere\": \"Actina · Miosina · Discos Z\",\n      \"muscle_guide_terminal_label\": \"1. Señal nerviosa\",\n      \"muscle_guide_terminal_short\": \"El potencial de acción llega a la terminal\",\n      \"muscle_guide_terminal_detail\": \"Un potencial de acción de la neurona motora llega a la terminal axónica y abre los canales de calcio dependientes del voltaje. La entrada de calcio desencadena la fusión de las vesículas sinápticas con la membrana.\",\n      \"muscle_guide_end_plate_label\": \"2. Placa motora\",\n      \"muscle_guide_end_plate_short\": \"La acetilcolina activa la fibra\",\n      \"muscle_guide_end_plate_detail\": \"La acetilcolina cruza la hendidura sináptica y se une a los receptores nicotínicos de la placa motora. La entrada de sodio produce un potencial de placa motora que inicia un potencial de acción muscular.\",\n      \"muscle_guide_calcium_label\": \"3. Liberación de calcio\",\n      \"muscle_guide_calcium_short\": \"La señal de los túbulos T llega al retículo sarcoplásmico\",\n      \"muscle_guide_calcium_detail\": \"El potencial de acción viaja por el sarcolema y desciende por los túbulos T. Los sensores de voltaje activan los receptores de rianodina del retículo sarcoplásmico, que libera calcio que se une a la troponina.\",\n      \"muscle_guide_sarcomere_label\": \"4. El sarcómero se acorta\",\n      \"muscle_guide_sarcomere_short\": \"La actina se desliza junto a la miosina\",\n      \"muscle_guide_sarcomere_detail\": \"El calcio desplaza la tropomiosina y descubre los sitios de unión de la actina. Los ciclos de puentes cruzados de miosina, impulsados por ATP, tiran de los filamentos delgados hacia el centro del sarcómero; la recaptación de calcio y la degradación de acetilcolina permiten la relajación.\",\n      \"muscle_guide_show_clinical\": \"Vista clínica\",\n      \"muscle_guide_hide_clinical\": \"Ocultar vista clínica\",\n      \"muscle_guide_clinical_shown\": \"Vista clínica mostrada.\",\n      \"muscle_guide_clinical_hidden\": \"Vista clínica oculta.\",\n      \"muscle_guide_clinical_title\": \"Miastenia gravis\",\n      \"muscle_guide_clinical_change\": \"Un menor número de receptores nicotínicos funcionales de acetilcolina reduce el factor de seguridad de la placa motora.\",\n      \"muscle_guide_clinical_effect_heading\": \"Consecuencia funcional\",\n      \"muscle_guide_clinical_effect\": \"Las señales nerviosas repetidas tienen menos probabilidades de desencadenar potenciales de acción confiables en la fibra muscular.\",\n      \"muscle_guide_clinical_note\": \"Comparación educativa solamente — no es una vista diagnóstica.\",\n      \"muscle_guide_handoff_label\": \"Del músculo a la rodilla\",\n      \"muscle_guide_handoff_lead\": \"Aplica la fuerza: \",\n      \"muscle_guide_handoff_context\": \"relaciona la tensión muscular y la tracción del tendón con los cambios de geometría de una articulación sinovial.\",\n      \"muscle_guide_handoff_button\": \"Aplicar fuerza en una articulación\",\n      \"muscle_guide_handoff_announcement\": \"Abriendo la mecánica de extensión de la rodilla, paso 2 de 4.\",\n      \"muscle_guide_mechanism_heading\": \"Activación resaltada\",\n      \"muscle_guide_mechanism_terminal\": \"la entrada de Ca2+ en la terminal desencadena la fusión de vesículas\",\n      \"muscle_guide_mechanism_end_plate\": \"la entrada de Na+ despolariza la placa motora\",\n      \"muscle_guide_mechanism_calcium\": \"el Ca2+ expone los sitios de unión de la actina\",\n      \"muscle_guide_mechanism_sarcomere\": \"los discos Z se acercan\",\n      \"muscle_guide_scale_label\": \"Progresión de escalas\",\n      \"muscle_guide_scale_neuron\": \"Neurona motora\",\n      \"muscle_guide_scale_fiber\": \"Fibra muscular\",\n      \"muscle_guide_scale_sarcomere\": \"Sarcómero\",\n      \"muscle_guide_steps_label\": \"Pasos de activación muscular\"",
+      "addedBytes": 6730,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "muscle_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_axon",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_vesicles",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_cleft",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_receptors",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sarcolemma",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_t_tubule",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sr",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_actin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_myosin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_z_discs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_neural",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_contraction",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_neuron",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_fiber",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_steps_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__spanish_latin_america.js.before.gz",
+      "beforeSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "beforeBytes": 8879035,
+      "afterSha256": "51db391fcafe43211ae3b99147a7cdc7619c3899c306c29ea684c87d73b1b447",
+      "afterBytes": 8885765,
+      "addedKeys": [
+        "muscle_guide_title",
+        "muscle_guide_activation_title",
+        "muscle_guide_sarcomere_title",
+        "muscle_guide_marker_help",
+        "muscle_guide_orientation",
+        "muscle_guide_activation_svg_title",
+        "muscle_guide_activation_svg_description",
+        "muscle_guide_sarcomere_svg_title",
+        "muscle_guide_sarcomere_svg_description",
+        "muscle_guide_structure_key",
+        "muscle_guide_current_step",
+        "muscle_guide_key_axon",
+        "muscle_guide_key_terminal",
+        "muscle_guide_key_vesicles",
+        "muscle_guide_key_cleft",
+        "muscle_guide_key_receptors",
+        "muscle_guide_key_sarcolemma",
+        "muscle_guide_key_t_tubule",
+        "muscle_guide_key_sr",
+        "muscle_guide_key_actin",
+        "muscle_guide_key_myosin",
+        "muscle_guide_key_z_discs",
+        "muscle_guide_flow_key",
+        "muscle_guide_neural",
+        "muscle_guide_calcium",
+        "muscle_guide_contraction",
+        "muscle_guide_pause_flow",
+        "muscle_guide_play_flow",
+        "muscle_guide_flow_paused",
+        "muscle_guide_flow_playing",
+        "muscle_guide_previous",
+        "muscle_guide_next",
+        "muscle_guide_step_position",
+        "muscle_guide_focus_heading",
+        "muscle_guide_focus_terminal",
+        "muscle_guide_focus_end_plate",
+        "muscle_guide_focus_calcium",
+        "muscle_guide_focus_sarcomere",
+        "muscle_guide_terminal_label",
+        "muscle_guide_terminal_short",
+        "muscle_guide_terminal_detail",
+        "muscle_guide_end_plate_label",
+        "muscle_guide_end_plate_short",
+        "muscle_guide_end_plate_detail",
+        "muscle_guide_calcium_label",
+        "muscle_guide_calcium_short",
+        "muscle_guide_calcium_detail",
+        "muscle_guide_sarcomere_label",
+        "muscle_guide_sarcomere_short",
+        "muscle_guide_sarcomere_detail",
+        "muscle_guide_show_clinical",
+        "muscle_guide_hide_clinical",
+        "muscle_guide_clinical_shown",
+        "muscle_guide_clinical_hidden",
+        "muscle_guide_clinical_title",
+        "muscle_guide_clinical_change",
+        "muscle_guide_clinical_effect_heading",
+        "muscle_guide_clinical_effect",
+        "muscle_guide_clinical_note",
+        "muscle_guide_handoff_label",
+        "muscle_guide_handoff_lead",
+        "muscle_guide_handoff_context",
+        "muscle_guide_handoff_button",
+        "muscle_guide_handoff_announcement",
+        "muscle_guide_mechanism_heading",
+        "muscle_guide_mechanism_terminal",
+        "muscle_guide_mechanism_end_plate",
+        "muscle_guide_mechanism_calcium",
+        "muscle_guide_mechanism_sarcomere",
+        "muscle_guide_scale_label",
+        "muscle_guide_scale_neuron",
+        "muscle_guide_scale_fiber",
+        "muscle_guide_scale_sarcomere",
+        "muscle_guide_steps_label"
+      ],
+      "insertionCharacterOffset": 3048997,
+      "insertionByteOffset": 3092680,
+      "insertionAnchor": "knee_guide_mechanism_stability",
+      "addedText": ",\n      \"muscle_guide_title\": \"Activación muscular\",\n      \"muscle_guide_activation_title\": \"1. Señal nerviosa y liberación de calcio\",\n      \"muscle_guide_sarcomere_title\": \"2. Acercamiento al sarcómero\",\n      \"muscle_guide_marker_help\": \"Relaciona los marcadores numerados de cada ilustración con su clave de estructuras.\",\n      \"muscle_guide_orientation\": \"La primera ilustración sigue la señal hacia el interior de una fibra muscular. El acercamiento muestra el sarcómero, donde se deslizan los filamentos.\",\n      \"muscle_guide_activation_svg_title\": \"Neurona motora, unión neuromuscular y liberación de calcio en la fibra muscular\",\n      \"muscle_guide_activation_svg_description\": \"Un esquema celular identifica el axón motor, la terminal axónica, las vesículas sinápticas, la hendidura sináptica, los receptores nicotínicos de acetilcolina, el sarcolema, el túbulo T y el retículo sarcoplásmico. Los resaltados de señales e iones siguen el paso seleccionado.\",\n      \"muscle_guide_sarcomere_svg_title\": \"Actina, miosina y discos Z durante el acortamiento del sarcómero\",\n      \"muscle_guide_sarcomere_svg_description\": \"Una vista ampliada identifica la actina, la miosina y ambos discos Z. En el paso de contracción, los discos Z se acercan mientras los filamentos de actina conservan su longitud.\",\n      \"muscle_guide_structure_key\": \"Clave de estructuras\",\n      \"muscle_guide_current_step\": \"Paso actual\",\n      \"muscle_guide_key_axon\": \"Axón motor\",\n      \"muscle_guide_key_terminal\": \"Terminal axónica\",\n      \"muscle_guide_key_vesicles\": \"Vesículas sinápticas\",\n      \"muscle_guide_key_cleft\": \"Hendidura sináptica\",\n      \"muscle_guide_key_receptors\": \"Receptores nicotínicos de ACh\",\n      \"muscle_guide_key_sarcolemma\": \"Sarcolema muscular\",\n      \"muscle_guide_key_t_tubule\": \"Túbulo T\",\n      \"muscle_guide_key_sr\": \"Retículo sarcoplásmico + Ca2+\",\n      \"muscle_guide_key_actin\": \"Actina\",\n      \"muscle_guide_key_myosin\": \"Miosina\",\n      \"muscle_guide_key_z_discs\": \"Discos Z\",\n      \"muscle_guide_flow_key\": \"Clave de activación muscular\",\n      \"muscle_guide_neural\": \"señal nerviosa\",\n      \"muscle_guide_calcium\": \"calcio\",\n      \"muscle_guide_contraction\": \"contracción\",\n      \"muscle_guide_pause_flow\": \"Pausar activación\",\n      \"muscle_guide_play_flow\": \"Reproducir activación\",\n      \"muscle_guide_flow_paused\": \"Activación en pausa\",\n      \"muscle_guide_flow_playing\": \"Activación en reproducción\",\n      \"muscle_guide_previous\": \"Paso anterior\",\n      \"muscle_guide_next\": \"Paso siguiente\",\n      \"muscle_guide_step_position\": \"Paso {current} de {total}\",\n      \"muscle_guide_focus_heading\": \"Observa en este paso\",\n      \"muscle_guide_focus_terminal\": \"Axón motor · Terminal axónica · Canales de calcio\",\n      \"muscle_guide_focus_end_plate\": \"Acetilcolina · Receptores nicotínicos · Placa motora\",\n      \"muscle_guide_focus_calcium\": \"Túbulo T · Retículo sarcoplásmico · Troponina\",\n      \"muscle_guide_focus_sarcomere\": \"Actina · Miosina · Discos Z\",\n      \"muscle_guide_terminal_label\": \"1. Señal nerviosa\",\n      \"muscle_guide_terminal_short\": \"El potencial de acción llega a la terminal\",\n      \"muscle_guide_terminal_detail\": \"Un potencial de acción de la neurona motora llega a la terminal axónica y abre los canales de calcio dependientes del voltaje. La entrada de calcio desencadena la fusión de las vesículas sinápticas con la membrana.\",\n      \"muscle_guide_end_plate_label\": \"2. Placa motora\",\n      \"muscle_guide_end_plate_short\": \"La acetilcolina activa la fibra\",\n      \"muscle_guide_end_plate_detail\": \"La acetilcolina cruza la hendidura sináptica y se une a los receptores nicotínicos de la placa motora. La entrada de sodio produce un potencial de placa motora que inicia un potencial de acción muscular.\",\n      \"muscle_guide_calcium_label\": \"3. Liberación de calcio\",\n      \"muscle_guide_calcium_short\": \"La señal de los túbulos T llega al retículo sarcoplásmico\",\n      \"muscle_guide_calcium_detail\": \"El potencial de acción viaja por el sarcolema y desciende por los túbulos T. Los sensores de voltaje activan los receptores de rianodina del retículo sarcoplásmico, que libera calcio que se une a la troponina.\",\n      \"muscle_guide_sarcomere_label\": \"4. El sarcómero se acorta\",\n      \"muscle_guide_sarcomere_short\": \"La actina se desliza junto a la miosina\",\n      \"muscle_guide_sarcomere_detail\": \"El calcio desplaza la tropomiosina y descubre los sitios de unión de la actina. Los ciclos de puentes cruzados de miosina, impulsados por ATP, tiran de los filamentos delgados hacia el centro del sarcómero; la recaptación de calcio y la degradación de acetilcolina permiten la relajación.\",\n      \"muscle_guide_show_clinical\": \"Vista clínica\",\n      \"muscle_guide_hide_clinical\": \"Ocultar vista clínica\",\n      \"muscle_guide_clinical_shown\": \"Vista clínica mostrada.\",\n      \"muscle_guide_clinical_hidden\": \"Vista clínica oculta.\",\n      \"muscle_guide_clinical_title\": \"Miastenia gravis\",\n      \"muscle_guide_clinical_change\": \"Un menor número de receptores nicotínicos funcionales de acetilcolina reduce el factor de seguridad de la placa motora.\",\n      \"muscle_guide_clinical_effect_heading\": \"Consecuencia funcional\",\n      \"muscle_guide_clinical_effect\": \"Las señales nerviosas repetidas tienen menos probabilidades de desencadenar potenciales de acción confiables en la fibra muscular.\",\n      \"muscle_guide_clinical_note\": \"Comparación educativa solamente — no es una vista diagnóstica.\",\n      \"muscle_guide_handoff_label\": \"Del músculo a la rodilla\",\n      \"muscle_guide_handoff_lead\": \"Aplica la fuerza: \",\n      \"muscle_guide_handoff_context\": \"relaciona la tensión muscular y la tracción del tendón con los cambios de geometría de una articulación sinovial.\",\n      \"muscle_guide_handoff_button\": \"Aplicar fuerza en una articulación\",\n      \"muscle_guide_handoff_announcement\": \"Abriendo la mecánica de extensión de la rodilla, paso 2 de 4.\",\n      \"muscle_guide_mechanism_heading\": \"Activación resaltada\",\n      \"muscle_guide_mechanism_terminal\": \"la entrada de Ca2+ en la terminal desencadena la fusión de vesículas\",\n      \"muscle_guide_mechanism_end_plate\": \"la entrada de Na+ despolariza la placa motora\",\n      \"muscle_guide_mechanism_calcium\": \"el Ca2+ expone los sitios de unión de la actina\",\n      \"muscle_guide_mechanism_sarcomere\": \"los discos Z se acercan\",\n      \"muscle_guide_scale_label\": \"Progresión de escalas\",\n      \"muscle_guide_scale_neuron\": \"Neurona motora\",\n      \"muscle_guide_scale_fiber\": \"Fibra muscular\",\n      \"muscle_guide_scale_sarcomere\": \"Sarcómero\",\n      \"muscle_guide_steps_label\": \"Pasos de activación muscular\"",
+      "addedBytes": 6730,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "muscle_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_axon",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_vesicles",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_cleft",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_receptors",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sarcolemma",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_t_tubule",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sr",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_actin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_myosin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_z_discs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_neural",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_contraction",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_neuron",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_fiber",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_steps_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/arabic.js",
+      "snapshot": "locale-before/lang__arabic.js.before.gz",
+      "beforeSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "beforeBytes": 8996023,
+      "afterSha256": "9ef82c45d632abbc832c6606e0bb831705c788e3c375124ea67d73160408609f",
+      "afterBytes": 9004489,
+      "addedKeys": [
+        "muscle_guide_title",
+        "muscle_guide_activation_title",
+        "muscle_guide_sarcomere_title",
+        "muscle_guide_marker_help",
+        "muscle_guide_orientation",
+        "muscle_guide_activation_svg_title",
+        "muscle_guide_activation_svg_description",
+        "muscle_guide_sarcomere_svg_title",
+        "muscle_guide_sarcomere_svg_description",
+        "muscle_guide_structure_key",
+        "muscle_guide_current_step",
+        "muscle_guide_key_axon",
+        "muscle_guide_key_terminal",
+        "muscle_guide_key_vesicles",
+        "muscle_guide_key_cleft",
+        "muscle_guide_key_receptors",
+        "muscle_guide_key_sarcolemma",
+        "muscle_guide_key_t_tubule",
+        "muscle_guide_key_sr",
+        "muscle_guide_key_actin",
+        "muscle_guide_key_myosin",
+        "muscle_guide_key_z_discs",
+        "muscle_guide_flow_key",
+        "muscle_guide_neural",
+        "muscle_guide_calcium",
+        "muscle_guide_contraction",
+        "muscle_guide_pause_flow",
+        "muscle_guide_play_flow",
+        "muscle_guide_flow_paused",
+        "muscle_guide_flow_playing",
+        "muscle_guide_previous",
+        "muscle_guide_next",
+        "muscle_guide_step_position",
+        "muscle_guide_focus_heading",
+        "muscle_guide_focus_terminal",
+        "muscle_guide_focus_end_plate",
+        "muscle_guide_focus_calcium",
+        "muscle_guide_focus_sarcomere",
+        "muscle_guide_terminal_label",
+        "muscle_guide_terminal_short",
+        "muscle_guide_terminal_detail",
+        "muscle_guide_end_plate_label",
+        "muscle_guide_end_plate_short",
+        "muscle_guide_end_plate_detail",
+        "muscle_guide_calcium_label",
+        "muscle_guide_calcium_short",
+        "muscle_guide_calcium_detail",
+        "muscle_guide_sarcomere_label",
+        "muscle_guide_sarcomere_short",
+        "muscle_guide_sarcomere_detail",
+        "muscle_guide_show_clinical",
+        "muscle_guide_hide_clinical",
+        "muscle_guide_clinical_shown",
+        "muscle_guide_clinical_hidden",
+        "muscle_guide_clinical_title",
+        "muscle_guide_clinical_change",
+        "muscle_guide_clinical_effect_heading",
+        "muscle_guide_clinical_effect",
+        "muscle_guide_clinical_note",
+        "muscle_guide_handoff_label",
+        "muscle_guide_handoff_lead",
+        "muscle_guide_handoff_context",
+        "muscle_guide_handoff_button",
+        "muscle_guide_handoff_announcement",
+        "muscle_guide_mechanism_heading",
+        "muscle_guide_mechanism_terminal",
+        "muscle_guide_mechanism_end_plate",
+        "muscle_guide_mechanism_calcium",
+        "muscle_guide_mechanism_sarcomere",
+        "muscle_guide_scale_label",
+        "muscle_guide_scale_neuron",
+        "muscle_guide_scale_fiber",
+        "muscle_guide_scale_sarcomere",
+        "muscle_guide_steps_label"
+      ],
+      "insertionCharacterOffset": 2466485,
+      "insertionByteOffset": 3416096,
+      "insertionAnchor": "knee_guide_mechanism_stability",
+      "addedText": ",\n      \"muscle_guide_title\": \"تنشيط العضلة\",\n      \"muscle_guide_activation_title\": \"1. الإشارة العصبية وإطلاق الكالسيوم\",\n      \"muscle_guide_sarcomere_title\": \"2. نظرة مقرّبة إلى القُسيم العضلي\",\n      \"muscle_guide_marker_help\": \"طابق العلامات المرقّمة في كل رسم مع مفتاح تراكيبه.\",\n      \"muscle_guide_orientation\": \"يتتبّع الرسم الأول الإشارة إلى داخل ليفة عضلية. ويُظهر الرسم المقرّب القُسيم العضلي حيث تنزلق الخيوط.\",\n      \"muscle_guide_activation_svg_title\": \"العصبون الحركي والوصلة العصبية العضلية وإطلاق الكالسيوم في الليفة العضلية\",\n      \"muscle_guide_activation_svg_description\": \"يحدّد مخطط خلوي المحور العصبي الحركي والنهاية المحورية والحويصلات المشبكية والشق المشبكي ومستقبلات الأستيل كولين النيكوتينية وغشاء الليفة العضلية والنُبيب المستعرض والشبكة الساركوبلازمية. تتبع الإشارات والأيونات المبرزة الخطوة المختارة.\",\n      \"muscle_guide_sarcomere_svg_title\": \"الأكتين والميوسين وأقراص Z أثناء تقصّر القُسيم العضلي\",\n      \"muscle_guide_sarcomere_svg_description\": \"يحدّد رسم مكبّر الأكتين والميوسين وقرصَي Z. في خطوة الانقباض، تتقارب أقراص Z بينما تحتفظ خيوط الأكتين بطولها.\",\n      \"muscle_guide_structure_key\": \"مفتاح التراكيب\",\n      \"muscle_guide_current_step\": \"الخطوة الحالية\",\n      \"muscle_guide_key_axon\": \"المحور العصبي الحركي\",\n      \"muscle_guide_key_terminal\": \"النهاية المحورية\",\n      \"muscle_guide_key_vesicles\": \"الحويصلات المشبكية\",\n      \"muscle_guide_key_cleft\": \"الشق المشبكي\",\n      \"muscle_guide_key_receptors\": \"مستقبلات الأستيل كولين النيكوتينية\",\n      \"muscle_guide_key_sarcolemma\": \"غشاء الليفة العضلية\",\n      \"muscle_guide_key_t_tubule\": \"النُبيب المستعرض\",\n      \"muscle_guide_key_sr\": \"الشبكة الساركوبلازمية + Ca2+\",\n      \"muscle_guide_key_actin\": \"الأكتين\",\n      \"muscle_guide_key_myosin\": \"الميوسين\",\n      \"muscle_guide_key_z_discs\": \"أقراص Z\",\n      \"muscle_guide_flow_key\": \"مفتاح تنشيط العضلة\",\n      \"muscle_guide_neural\": \"إشارة عصبية\",\n      \"muscle_guide_calcium\": \"كالسيوم\",\n      \"muscle_guide_contraction\": \"انقباض\",\n      \"muscle_guide_pause_flow\": \"إيقاف التنشيط مؤقتًا\",\n      \"muscle_guide_play_flow\": \"تشغيل التنشيط\",\n      \"muscle_guide_flow_paused\": \"التنشيط متوقف مؤقتًا\",\n      \"muscle_guide_flow_playing\": \"التنشيط قيد التشغيل\",\n      \"muscle_guide_previous\": \"الخطوة السابقة\",\n      \"muscle_guide_next\": \"الخطوة التالية\",\n      \"muscle_guide_step_position\": \"الخطوة {current} من {total}\",\n      \"muscle_guide_focus_heading\": \"ما يجب ملاحظته في هذه الخطوة\",\n      \"muscle_guide_focus_terminal\": \"المحور العصبي الحركي · النهاية المحورية · قنوات الكالسيوم\",\n      \"muscle_guide_focus_end_plate\": \"الأستيل كولين · المستقبلات النيكوتينية · اللوحة النهائية الحركية\",\n      \"muscle_guide_focus_calcium\": \"النُبيب المستعرض · الشبكة الساركوبلازمية · التروبونين\",\n      \"muscle_guide_focus_sarcomere\": \"الأكتين · الميوسين · أقراص Z\",\n      \"muscle_guide_terminal_label\": \"1. الإشارة العصبية\",\n      \"muscle_guide_terminal_short\": \"يصل جهد الفعل إلى النهاية المحورية\",\n      \"muscle_guide_terminal_detail\": \"يصل جهد فعل العصبون الحركي إلى النهاية المحورية ويفتح قنوات الكالسيوم المعتمدة على الجهد. ويحفّز دخول الكالسيوم اندماج الحويصلات المشبكية مع الغشاء.\",\n      \"muscle_guide_end_plate_label\": \"2. اللوحة النهائية الحركية\",\n      \"muscle_guide_end_plate_short\": \"الأستيل كولين ينشّط الليفة\",\n      \"muscle_guide_end_plate_detail\": \"يعبر الأستيل كولين الشق المشبكي ويرتبط بالمستقبلات النيكوتينية في اللوحة النهائية الحركية. ويولّد دخول الصوديوم جهدًا في اللوحة النهائية يبدأ جهد فعل عضليًا.\",\n      \"muscle_guide_calcium_label\": \"3. إطلاق الكالسيوم\",\n      \"muscle_guide_calcium_short\": \"تصل إشارة النُبيبات المستعرضة إلى الشبكة الساركوبلازمية\",\n      \"muscle_guide_calcium_detail\": \"ينتقل جهد الفعل على طول غشاء الليفة العضلية وإلى داخل النُبيبات المستعرضة. وتنشّط مستشعرات الجهد مستقبلات الريانودين في الشبكة الساركوبلازمية، فتُطلق الكالسيوم الذي يرتبط بالتروبونين.\",\n      \"muscle_guide_sarcomere_label\": \"4. يتقصّر القُسيم العضلي\",\n      \"muscle_guide_sarcomere_short\": \"الأكتين ينزلق بمحاذاة الميوسين\",\n      \"muscle_guide_sarcomere_detail\": \"يزيح الكالسيوم التروبوميوسين عن مواقع الارتباط على الأكتين. وتسحب دورات الجسور العرضية للميوسين، المدفوعة بطاقة ATP، الخيوط الرفيعة نحو مركز القُسيم العضلي؛ وتسمح إعادة امتصاص الكالسيوم وتحلّل الأستيل كولين بالارتخاء.\",\n      \"muscle_guide_show_clinical\": \"العرض السريري\",\n      \"muscle_guide_hide_clinical\": \"إخفاء العرض السريري\",\n      \"muscle_guide_clinical_shown\": \"تم إظهار العرض السريري.\",\n      \"muscle_guide_clinical_hidden\": \"تم إخفاء العرض السريري.\",\n      \"muscle_guide_clinical_title\": \"الوهن العضلي الوبيل\",\n      \"muscle_guide_clinical_change\": \"يقلّل انخفاض عدد مستقبلات الأستيل كولين النيكوتينية الوظيفية عامل الأمان في اللوحة النهائية الحركية.\",\n      \"muscle_guide_clinical_effect_heading\": \"النتيجة الوظيفية\",\n      \"muscle_guide_clinical_effect\": \"تصبح الإشارات العصبية المتكررة أقل احتمالًا لإطلاق جهود فعل موثوقة في الليفة العضلية.\",\n      \"muscle_guide_clinical_note\": \"مقارنة تعليمية فقط — ليست عرضًا تشخيصيًا.\",\n      \"muscle_guide_handoff_label\": \"من العضلة إلى الركبة\",\n      \"muscle_guide_handoff_lead\": \"طبّق القوة: \",\n      \"muscle_guide_handoff_context\": \"اربط الشدّ العضلي وسحب الوتر بتغيّر شكل المفصل الزليلي.\",\n      \"muscle_guide_handoff_button\": \"تطبيق القوة على مفصل\",\n      \"muscle_guide_handoff_announcement\": \"فتح ميكانيكا بسط الركبة، الخطوة 2 من 4.\",\n      \"muscle_guide_mechanism_heading\": \"التنشيط المبرز\",\n      \"muscle_guide_mechanism_terminal\": \"دخول Ca2+ إلى النهاية المحورية يحفّز اندماج الحويصلات\",\n      \"muscle_guide_mechanism_end_plate\": \"دخول Na+ يزيل استقطاب اللوحة النهائية\",\n      \"muscle_guide_mechanism_calcium\": \"يكشف Ca2+ مواقع الارتباط على الأكتين\",\n      \"muscle_guide_mechanism_sarcomere\": \"تتقارب أقراص Z\",\n      \"muscle_guide_scale_label\": \"تدرّج المقاييس\",\n      \"muscle_guide_scale_neuron\": \"العصبون الحركي\",\n      \"muscle_guide_scale_fiber\": \"الليفة العضلية\",\n      \"muscle_guide_scale_sarcomere\": \"القُسيم العضلي\",\n      \"muscle_guide_steps_label\": \"خطوات تنشيط العضلة\"",
+      "addedBytes": 8466,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "muscle_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_axon",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_vesicles",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_cleft",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_receptors",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sarcolemma",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_t_tubule",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sr",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_actin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_myosin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_z_discs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_neural",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_contraction",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_neuron",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_fiber",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_steps_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__arabic.js.before.gz",
+      "beforeSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "beforeBytes": 8996023,
+      "afterSha256": "9ef82c45d632abbc832c6606e0bb831705c788e3c375124ea67d73160408609f",
+      "afterBytes": 9004489,
+      "addedKeys": [
+        "muscle_guide_title",
+        "muscle_guide_activation_title",
+        "muscle_guide_sarcomere_title",
+        "muscle_guide_marker_help",
+        "muscle_guide_orientation",
+        "muscle_guide_activation_svg_title",
+        "muscle_guide_activation_svg_description",
+        "muscle_guide_sarcomere_svg_title",
+        "muscle_guide_sarcomere_svg_description",
+        "muscle_guide_structure_key",
+        "muscle_guide_current_step",
+        "muscle_guide_key_axon",
+        "muscle_guide_key_terminal",
+        "muscle_guide_key_vesicles",
+        "muscle_guide_key_cleft",
+        "muscle_guide_key_receptors",
+        "muscle_guide_key_sarcolemma",
+        "muscle_guide_key_t_tubule",
+        "muscle_guide_key_sr",
+        "muscle_guide_key_actin",
+        "muscle_guide_key_myosin",
+        "muscle_guide_key_z_discs",
+        "muscle_guide_flow_key",
+        "muscle_guide_neural",
+        "muscle_guide_calcium",
+        "muscle_guide_contraction",
+        "muscle_guide_pause_flow",
+        "muscle_guide_play_flow",
+        "muscle_guide_flow_paused",
+        "muscle_guide_flow_playing",
+        "muscle_guide_previous",
+        "muscle_guide_next",
+        "muscle_guide_step_position",
+        "muscle_guide_focus_heading",
+        "muscle_guide_focus_terminal",
+        "muscle_guide_focus_end_plate",
+        "muscle_guide_focus_calcium",
+        "muscle_guide_focus_sarcomere",
+        "muscle_guide_terminal_label",
+        "muscle_guide_terminal_short",
+        "muscle_guide_terminal_detail",
+        "muscle_guide_end_plate_label",
+        "muscle_guide_end_plate_short",
+        "muscle_guide_end_plate_detail",
+        "muscle_guide_calcium_label",
+        "muscle_guide_calcium_short",
+        "muscle_guide_calcium_detail",
+        "muscle_guide_sarcomere_label",
+        "muscle_guide_sarcomere_short",
+        "muscle_guide_sarcomere_detail",
+        "muscle_guide_show_clinical",
+        "muscle_guide_hide_clinical",
+        "muscle_guide_clinical_shown",
+        "muscle_guide_clinical_hidden",
+        "muscle_guide_clinical_title",
+        "muscle_guide_clinical_change",
+        "muscle_guide_clinical_effect_heading",
+        "muscle_guide_clinical_effect",
+        "muscle_guide_clinical_note",
+        "muscle_guide_handoff_label",
+        "muscle_guide_handoff_lead",
+        "muscle_guide_handoff_context",
+        "muscle_guide_handoff_button",
+        "muscle_guide_handoff_announcement",
+        "muscle_guide_mechanism_heading",
+        "muscle_guide_mechanism_terminal",
+        "muscle_guide_mechanism_end_plate",
+        "muscle_guide_mechanism_calcium",
+        "muscle_guide_mechanism_sarcomere",
+        "muscle_guide_scale_label",
+        "muscle_guide_scale_neuron",
+        "muscle_guide_scale_fiber",
+        "muscle_guide_scale_sarcomere",
+        "muscle_guide_steps_label"
+      ],
+      "insertionCharacterOffset": 2466485,
+      "insertionByteOffset": 3416096,
+      "insertionAnchor": "knee_guide_mechanism_stability",
+      "addedText": ",\n      \"muscle_guide_title\": \"تنشيط العضلة\",\n      \"muscle_guide_activation_title\": \"1. الإشارة العصبية وإطلاق الكالسيوم\",\n      \"muscle_guide_sarcomere_title\": \"2. نظرة مقرّبة إلى القُسيم العضلي\",\n      \"muscle_guide_marker_help\": \"طابق العلامات المرقّمة في كل رسم مع مفتاح تراكيبه.\",\n      \"muscle_guide_orientation\": \"يتتبّع الرسم الأول الإشارة إلى داخل ليفة عضلية. ويُظهر الرسم المقرّب القُسيم العضلي حيث تنزلق الخيوط.\",\n      \"muscle_guide_activation_svg_title\": \"العصبون الحركي والوصلة العصبية العضلية وإطلاق الكالسيوم في الليفة العضلية\",\n      \"muscle_guide_activation_svg_description\": \"يحدّد مخطط خلوي المحور العصبي الحركي والنهاية المحورية والحويصلات المشبكية والشق المشبكي ومستقبلات الأستيل كولين النيكوتينية وغشاء الليفة العضلية والنُبيب المستعرض والشبكة الساركوبلازمية. تتبع الإشارات والأيونات المبرزة الخطوة المختارة.\",\n      \"muscle_guide_sarcomere_svg_title\": \"الأكتين والميوسين وأقراص Z أثناء تقصّر القُسيم العضلي\",\n      \"muscle_guide_sarcomere_svg_description\": \"يحدّد رسم مكبّر الأكتين والميوسين وقرصَي Z. في خطوة الانقباض، تتقارب أقراص Z بينما تحتفظ خيوط الأكتين بطولها.\",\n      \"muscle_guide_structure_key\": \"مفتاح التراكيب\",\n      \"muscle_guide_current_step\": \"الخطوة الحالية\",\n      \"muscle_guide_key_axon\": \"المحور العصبي الحركي\",\n      \"muscle_guide_key_terminal\": \"النهاية المحورية\",\n      \"muscle_guide_key_vesicles\": \"الحويصلات المشبكية\",\n      \"muscle_guide_key_cleft\": \"الشق المشبكي\",\n      \"muscle_guide_key_receptors\": \"مستقبلات الأستيل كولين النيكوتينية\",\n      \"muscle_guide_key_sarcolemma\": \"غشاء الليفة العضلية\",\n      \"muscle_guide_key_t_tubule\": \"النُبيب المستعرض\",\n      \"muscle_guide_key_sr\": \"الشبكة الساركوبلازمية + Ca2+\",\n      \"muscle_guide_key_actin\": \"الأكتين\",\n      \"muscle_guide_key_myosin\": \"الميوسين\",\n      \"muscle_guide_key_z_discs\": \"أقراص Z\",\n      \"muscle_guide_flow_key\": \"مفتاح تنشيط العضلة\",\n      \"muscle_guide_neural\": \"إشارة عصبية\",\n      \"muscle_guide_calcium\": \"كالسيوم\",\n      \"muscle_guide_contraction\": \"انقباض\",\n      \"muscle_guide_pause_flow\": \"إيقاف التنشيط مؤقتًا\",\n      \"muscle_guide_play_flow\": \"تشغيل التنشيط\",\n      \"muscle_guide_flow_paused\": \"التنشيط متوقف مؤقتًا\",\n      \"muscle_guide_flow_playing\": \"التنشيط قيد التشغيل\",\n      \"muscle_guide_previous\": \"الخطوة السابقة\",\n      \"muscle_guide_next\": \"الخطوة التالية\",\n      \"muscle_guide_step_position\": \"الخطوة {current} من {total}\",\n      \"muscle_guide_focus_heading\": \"ما يجب ملاحظته في هذه الخطوة\",\n      \"muscle_guide_focus_terminal\": \"المحور العصبي الحركي · النهاية المحورية · قنوات الكالسيوم\",\n      \"muscle_guide_focus_end_plate\": \"الأستيل كولين · المستقبلات النيكوتينية · اللوحة النهائية الحركية\",\n      \"muscle_guide_focus_calcium\": \"النُبيب المستعرض · الشبكة الساركوبلازمية · التروبونين\",\n      \"muscle_guide_focus_sarcomere\": \"الأكتين · الميوسين · أقراص Z\",\n      \"muscle_guide_terminal_label\": \"1. الإشارة العصبية\",\n      \"muscle_guide_terminal_short\": \"يصل جهد الفعل إلى النهاية المحورية\",\n      \"muscle_guide_terminal_detail\": \"يصل جهد فعل العصبون الحركي إلى النهاية المحورية ويفتح قنوات الكالسيوم المعتمدة على الجهد. ويحفّز دخول الكالسيوم اندماج الحويصلات المشبكية مع الغشاء.\",\n      \"muscle_guide_end_plate_label\": \"2. اللوحة النهائية الحركية\",\n      \"muscle_guide_end_plate_short\": \"الأستيل كولين ينشّط الليفة\",\n      \"muscle_guide_end_plate_detail\": \"يعبر الأستيل كولين الشق المشبكي ويرتبط بالمستقبلات النيكوتينية في اللوحة النهائية الحركية. ويولّد دخول الصوديوم جهدًا في اللوحة النهائية يبدأ جهد فعل عضليًا.\",\n      \"muscle_guide_calcium_label\": \"3. إطلاق الكالسيوم\",\n      \"muscle_guide_calcium_short\": \"تصل إشارة النُبيبات المستعرضة إلى الشبكة الساركوبلازمية\",\n      \"muscle_guide_calcium_detail\": \"ينتقل جهد الفعل على طول غشاء الليفة العضلية وإلى داخل النُبيبات المستعرضة. وتنشّط مستشعرات الجهد مستقبلات الريانودين في الشبكة الساركوبلازمية، فتُطلق الكالسيوم الذي يرتبط بالتروبونين.\",\n      \"muscle_guide_sarcomere_label\": \"4. يتقصّر القُسيم العضلي\",\n      \"muscle_guide_sarcomere_short\": \"الأكتين ينزلق بمحاذاة الميوسين\",\n      \"muscle_guide_sarcomere_detail\": \"يزيح الكالسيوم التروبوميوسين عن مواقع الارتباط على الأكتين. وتسحب دورات الجسور العرضية للميوسين، المدفوعة بطاقة ATP، الخيوط الرفيعة نحو مركز القُسيم العضلي؛ وتسمح إعادة امتصاص الكالسيوم وتحلّل الأستيل كولين بالارتخاء.\",\n      \"muscle_guide_show_clinical\": \"العرض السريري\",\n      \"muscle_guide_hide_clinical\": \"إخفاء العرض السريري\",\n      \"muscle_guide_clinical_shown\": \"تم إظهار العرض السريري.\",\n      \"muscle_guide_clinical_hidden\": \"تم إخفاء العرض السريري.\",\n      \"muscle_guide_clinical_title\": \"الوهن العضلي الوبيل\",\n      \"muscle_guide_clinical_change\": \"يقلّل انخفاض عدد مستقبلات الأستيل كولين النيكوتينية الوظيفية عامل الأمان في اللوحة النهائية الحركية.\",\n      \"muscle_guide_clinical_effect_heading\": \"النتيجة الوظيفية\",\n      \"muscle_guide_clinical_effect\": \"تصبح الإشارات العصبية المتكررة أقل احتمالًا لإطلاق جهود فعل موثوقة في الليفة العضلية.\",\n      \"muscle_guide_clinical_note\": \"مقارنة تعليمية فقط — ليست عرضًا تشخيصيًا.\",\n      \"muscle_guide_handoff_label\": \"من العضلة إلى الركبة\",\n      \"muscle_guide_handoff_lead\": \"طبّق القوة: \",\n      \"muscle_guide_handoff_context\": \"اربط الشدّ العضلي وسحب الوتر بتغيّر شكل المفصل الزليلي.\",\n      \"muscle_guide_handoff_button\": \"تطبيق القوة على مفصل\",\n      \"muscle_guide_handoff_announcement\": \"فتح ميكانيكا بسط الركبة، الخطوة 2 من 4.\",\n      \"muscle_guide_mechanism_heading\": \"التنشيط المبرز\",\n      \"muscle_guide_mechanism_terminal\": \"دخول Ca2+ إلى النهاية المحورية يحفّز اندماج الحويصلات\",\n      \"muscle_guide_mechanism_end_plate\": \"دخول Na+ يزيل استقطاب اللوحة النهائية\",\n      \"muscle_guide_mechanism_calcium\": \"يكشف Ca2+ مواقع الارتباط على الأكتين\",\n      \"muscle_guide_mechanism_sarcomere\": \"تتقارب أقراص Z\",\n      \"muscle_guide_scale_label\": \"تدرّج المقاييس\",\n      \"muscle_guide_scale_neuron\": \"العصبون الحركي\",\n      \"muscle_guide_scale_fiber\": \"الليفة العضلية\",\n      \"muscle_guide_scale_sarcomere\": \"القُسيم العضلي\",\n      \"muscle_guide_steps_label\": \"خطوات تنشيط العضلة\"",
+      "addedBytes": 8466,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "muscle_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_activation_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_axon",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_vesicles",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_cleft",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_receptors",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sarcolemma",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_t_tubule",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_sr",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_actin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_myosin",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_key_z_discs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_neural",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_contraction",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_focus_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_terminal_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_end_plate_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_calcium_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_sarcomere_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_terminal",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_end_plate",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_calcium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_mechanism_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_neuron",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_fiber",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_scale_sarcomere",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "muscle_guide_steps_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    }
+  ],
+  "mirrors": [
+    {
+      "canonical": "ui_strings.js",
+      "mirror": "desktop/web-app/public/ui_strings.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "c8219a8de218ca3e0a19d1407f48c759bea6314b128827b928d51b608e1d087a",
+      "mirrorSha256": "c8219a8de218ca3e0a19d1407f48c759bea6314b128827b928d51b608e1d087a",
+      "muscleValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "a1147df01af83881894e7128059073d5940f3d4b5c1da80a267ca0be9030b95d",
+      "matchedMuscleKeys": 74,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    },
+    {
+      "canonical": "lang/french.js",
+      "mirror": "desktop/web-app/public/lang/french.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "61ff7b2ba2d72a8ca89e9321e2650b2341f91007c44e7443e8a9f9648ea2c75e",
+      "mirrorSha256": "61ff7b2ba2d72a8ca89e9321e2650b2341f91007c44e7443e8a9f9648ea2c75e",
+      "muscleValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "7035423ccebeb02222efb1e8c6f8f66fe2950487f5253cb6df54d9700bfeeedd",
+      "matchedMuscleKeys": 74,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    },
+    {
+      "canonical": "lang/spanish_latin_america.js",
+      "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "51db391fcafe43211ae3b99147a7cdc7619c3899c306c29ea684c87d73b1b447",
+      "mirrorSha256": "51db391fcafe43211ae3b99147a7cdc7619c3899c306c29ea684c87d73b1b447",
+      "muscleValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "67dc5ce2c434bc77bffebc79bed42158015e286996076f67e169a7647a5a01d1",
+      "matchedMuscleKeys": 74,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    },
+    {
+      "canonical": "lang/arabic.js",
+      "mirror": "desktop/web-app/public/lang/arabic.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "9ef82c45d632abbc832c6606e0bb831705c788e3c375124ea67d73160408609f",
+      "mirrorSha256": "9ef82c45d632abbc832c6606e0bb831705c788e3c375124ea67d73160408609f",
+      "muscleValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "c07bed49386463b3c791849b565f40a3ca82b325f589ba44c90e39e5bb909a18",
+      "matchedMuscleKeys": 74,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    }
+  ],
+  "failures": [],
+  "gitMutations": false,
+  "pairPolicy": "Preserve independent catalog bytes; require stable rereads and matching entire anatomy namespace values; record unrelated mirror differences.",
+  "gitIndexSha256Before": "d9a49ff0728c6ca9bc12d17a0ef2ffdc146c2c126f9ca557da606d972d9e9d64",
+  "sharedNativeWords": {
+    "french": [
+      "muscle_guide_calcium",
+      "muscle_guide_contraction"
+    ]
+  },
+  "complete": true,
+  "instructionsRead": [],
+  "preExistingMirrorDifferences": [
+    {
+      "canonical": "ui_strings.js",
+      "mirror": "desktop/web-app/public/ui_strings.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "d87f2502417acd31b9d6eeab445645dbd13c0245569327ca8965725559b37413",
+      "mirrorSha256": "d87f2502417acd31b9d6eeab445645dbd13c0245569327ca8965725559b37413",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "130617a54713a98c163210cf64f1e0baf232f2ac5cb6be270a6ba7e7286f2c1c"
+    },
+    {
+      "canonical": "lang/french.js",
+      "mirror": "desktop/web-app/public/lang/french.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "mirrorSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "15e55ec1fc7a1431b59e0607d2c379b970855aaf11e96ca031af9b7375d22b06"
+    },
+    {
+      "canonical": "lang/spanish_latin_america.js",
+      "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "mirrorSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "f2d8e6a99254e42a410ffd157d203fb6a6f47079e01849ddce1ff47156915b21"
+    },
+    {
+      "canonical": "lang/arabic.js",
+      "mirror": "desktop/web-app/public/lang/arabic.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "mirrorSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "47b3ba02167bfbe19adbc511e982d636f09d4ddaa58839b9e5555697f75c685b"
+    }
+  ],
+  "manifest": {
+    "path": "dev-tools/i18n/anatomy_muscle_guide_20261004.json",
+    "sha256": "37a1d5b24602285d6463eada87b7da6291147ff97dde16e199c218a3f158a3ab"
+  },
+  "gitIndexSha256After": "d9a49ff0728c6ca9bc12d17a0ef2ffdc146c2c126f9ca557da606d972d9e9d64",
+  "gitIndexUnchanged": true
+}

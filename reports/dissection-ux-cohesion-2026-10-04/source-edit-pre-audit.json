@@ -1,0 +1,66 @@
+{
+  "baseline": "c6de388c0ba89549aca25b045fbf2feca63ef21e6a332dc0ef95305b83f50a7e",
+  "candidate": "5726c3b2eab85af54e2e4076b1094e1fd963e6cce1a39fe7ff419a3fc74da3c4",
+  "edits": [
+    {
+      "old": ".diss-zoom-bar { min-height: 2.7rem; margin-top: .6rem !important; background: #edf4fb !important; }",
+      "new": ".diss-zoom-bar { min-height: 2.7rem; margin-top: .6rem !important; background: #edf4fb !important; }\n/* Keep specimen context and camera controls consistent with the lab action shelves. */\n[data-dissection-root] .diss-stage__header { min-width: 0; align-items: start; }\n[data-dissection-root] .diss-stage__header > div { min-width: 0; }\n[data-dissection-root] .diss-stage__eyebrow, [data-dissection-root] .diss-stage__status { font-size: .875rem !important; line-height: 1.45; overflow-wrap: anywhere; }\n[data-dissection-root] .diss-stage__title { font-size: 1.125rem; overflow-wrap: anywhere; }\n[data-dissection-root] .diss-stage__status { border-radius: .65rem; text-align: start; }\n[data-dissection-root] .diss-stage__handoff { gap: .5rem .65rem; padding: .75rem; border-inline-start-width: 3px; }\n[data-dissection-root] .diss-stage__handoff :is(strong, span) { font-size: .875rem !important; line-height: 1.45; }\n[data-dissection-root] .diss-stage__handoff strong { flex: 1 1 12rem; overflow-wrap: anywhere; }\n[data-dissection-root] .diss-stage__handoff-tool { opacity: 1; overflow-wrap: anywhere; }\n[data-dissection-root] .diss-stage__handoff-glyph { width: 1.75rem; height: 1.75rem; }\n[data-dissection-root] .diss-stage__handoff-progress { padding: .3rem .45rem; border: 1px solid currentColor; border-radius: .4rem; white-space: normal; }\n[data-dissection-root] .diss-zoom-bar { display: flex; flex-wrap: wrap; min-width: 0; gap: .6rem; padding: .85rem; border: 1px solid #9db2c7; border-radius: .85rem; background: #f3f7fc !important; }\n[data-dissection-root] .diss-camera-controls__heading { flex: 1 0 100%; display: grid; gap: .15rem; min-width: 0; color: #193454; }\n[data-dissection-root] .diss-camera-controls__heading strong { font-size: 1rem !important; line-height: 1.45; }\n[data-dissection-root] .diss-camera-controls__heading span { font-size: .875rem !important; line-height: 1.45; }\n[data-dissection-root] .diss-camera-controls__zoom-group { display: grid; grid-template-columns: minmax(0, 1fr) auto minmax(0, 1fr); align-items: center; gap: .5rem; flex: 1 1 17rem; min-width: 0; }\n[data-dissection-root] .diss-camera-controls__zoom-group button { width: 100%; align-self: stretch; }\n[data-dissection-root] .diss-zoom-bar button { min-width: 3rem; min-height: 3rem !important; max-width: 100%; padding: .65rem .75rem; border: 1px solid #9db2c7; border-radius: .65rem; background: #fff; color: #193454; font-size: 1rem !important; font-weight: 750; line-height: 1.45 !important; white-space: normal; overflow-wrap: anywhere; box-shadow: none; }\n[data-dissection-root] .diss-camera-controls__zoom { min-width: 3.5rem; color: #193454; font-size: 1rem !important; font-variant-numeric: tabular-nums; text-align: center; }\n[data-dissection-root] .diss-zoom-bar button:hover { background: #edf5fc; border-color: #1766d2; }\n[data-dissection-root] .diss-zoom-bar button:focus-visible { outline: 3px solid #1766d2; outline-offset: -5px; box-shadow: none !important; }\n[data-dissection-root] .diss-pan-controls { grid-template-columns: repeat(3, 3rem); gap: .35rem; }\n[data-dissection-root] .diss-pan-controls span { color: #334155; font-size: .875rem !important; line-height: 1.45; }\n[data-dissection-root][data-text-size=\"large\"] :is(.diss-stage__eyebrow, .diss-stage__status, .diss-stage__handoff strong, .diss-stage__handoff span, .diss-camera-controls__heading span, .diss-pan-controls span) { font-size: 1rem !important; }\n[data-dissection-root][data-text-size=\"large\"] .diss-stage__title { font-size: 1.25rem; }\n[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-stage__status, .diss-stage__handoff, .diss-zoom-bar) { border-color: #111827; background: #fff !important; color: #000; }\n[data-dissection-root][data-high-contrast=\"true\"] :is(.diss-stage__eyebrow, .diss-stage__title, .diss-camera-controls__heading, .diss-camera-controls__zoom, .diss-pan-controls span) { color: #000; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-zoom-bar button { background: #fff; color: #000; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-zoom-bar button:focus-visible { outline-color: #000; }\n@container dissection (max-width: 640px) { [data-dissection-root] .diss-zoom-bar .diss-pan-controls { flex: 1 0 100%; } }\n@container dissection (max-width: 520px) { [data-dissection-root] .diss-camera-controls__zoom-group { flex: 1 0 100%; } }\n@container dissection (max-width: 520px) { [data-dissection-root] .diss-stage__header { flex-direction: column; align-items: stretch; } [data-dissection-root] .diss-stage__status { max-width: 100%; align-self: start; } [data-dissection-root] .diss-stage__handoff-progress { margin-left: 0; } [data-dissection-root] .diss-zoom-bar > button { flex: 1 1 6.5rem; } }\n@media (forced-colors: active) {\n  [data-dissection-root] :is(.diss-stage__status, .diss-stage__handoff, .diss-zoom-bar) { border-color: CanvasText; background: Canvas !important; color: CanvasText; }\n  [data-dissection-root] .diss-zoom-bar button { background: Canvas; color: CanvasText; }\n  [data-dissection-root] .diss-zoom-bar button:focus-visible { outline-color: Highlight !important; }\n}\n"
+    },
+    {
+      "old": "React.createElement(\"div\", { className: \"diss-zoom-bar flex items-center justify-center gap-2 py-1 px-2 rounded-lg bg-slate-100 border border-slate-400\" },",
+      "new": "React.createElement(\"div\", { className: \"diss-zoom-bar flex items-center justify-center gap-2 py-1 px-2 rounded-lg bg-slate-100 border border-slate-400\", role: \"group\", \"aria-labelledby\": \"diss-camera-controls-title\" },\n                  React.createElement(\"div\", { className: \"diss-camera-controls__heading\" },\n                    React.createElement(\"strong\", { id: \"diss-camera-controls-title\" }, \"Specimen view\"),\n                    React.createElement(\"span\", null, \"Zoom and move the whole specimen.\")\n                  ),"
+    },
+    {
+      "old": "}, '\\u2796'),",
+      "new": "}, '\\u2796 Zoom out'),"
+    },
+    {
+      "old": "}, '\\u2795'),",
+      "new": "}, '\\u2795 Zoom in'),"
+    },
+    {
+      "old": "                  React.createElement(\"button\", { \"aria-label\": __alloT('stem.dissection.a11y_zoom_out_canvas', 'Zoom out canvas'),",
+      "new": "                  React.createElement(\"div\", { className: \"diss-camera-controls__zoom-group\", role: \"group\", \"aria-label\": \"Specimen zoom controls\" },\n                  React.createElement(\"button\", { \"aria-label\": __alloT('stem.dissection.a11y_zoom_out_canvas', 'Zoom out canvas'),"
+    },
+    {
+      "old": "}, '\\u2795 Zoom in'),\n                  (d.canvasZoom || 1) > 1.01 ?",
+      "new": "}, '\\u2795 Zoom in')\n                  ),\n                  (d.canvasZoom || 1) > 1.01 ?"
+    },
+    {
+      "old": "React.createElement(\"span\", { className: \"text-[11px] font-mono text-slate-600 min-w-[40px] text-center\" }, Math.round((d.canvasZoom || 1) * 100) + '%'),",
+      "new": "React.createElement(\"output\", { className: \"diss-camera-controls__zoom font-mono\", \"aria-label\": \"Specimen zoom\", \"aria-live\": \"off\" }, Math.round((d.canvasZoom || 1) * 100) + '%'),"
+    },
+    {
+      "old": "React.createElement(\"button\", { \"aria-label\": \"100%\",",
+      "new": "React.createElement(\"button\", { \"aria-label\": \"Reset specimen view to 100%\","
+    },
+    {
+      "old": "}, '\\u21BA 100%') : null,",
+      "new": "}, '\\u21BA Reset specimen view to 100%') : null,"
+    },
+    {
+      "old": "(d.canvasZoom || 1) !== 1 ? React.createElement(\"button\", { \"aria-label\": \"Reset specimen view to 100%\",",
+      "new": "React.createElement(\"button\", { \"aria-label\": \"Reset specimen view to 100%\","
+    },
+    {
+      "old": "}, '\\u21BA Reset specimen view to 100%') : null,",
+      "new": "}, '\\u21BA Reset specimen view to 100%'),"
+    },
+    {
+      "old": "var workflowState = workflowPosition < nextActionModel.step ? 'complete' : (workflowPosition === nextActionModel.step ? 'current' : 'upcoming');",
+      "new": "var workflowState = workflowPosition === nextActionModel.step ? 'current' : 'neutral';"
+    },
+    {
+      "old": ".diss-workflow li[data-state=\"complete\"] { border-color: #83bead; background: #11464c; }\n.diss-workflow li[data-state=\"current\"] { border: 3px solid #fde68a; background: #fef3c7; color: #422006; box-shadow: none; }\n.diss-workflow li[data-state=\"upcoming\"] { opacity: 1; }",
+      "new": ".diss-workflow li[data-state=\"current\"] { border: 3px solid #fde68a; background: #fef3c7; color: #422006; box-shadow: none; }\n.diss-workflow li[data-state=\"neutral\"] { border-color: #7794a5; background: #173b4f; color: #fff; opacity: 1; }"
+    },
+    {
+      "old": "nextActionModel = { step: 4, tone: 'caution', phase: 'Guided investigation', title: 'Make ' + currentGuided.name + ' visible to continue', description: visibilityTargetView ? 'Change to the ' + visibilityTargetView + ' view; the Guided target and step count will stay fixed.' : 'Improve the anatomical exposure before continuing the fixed Guided route.', label: visibilityTargetView ? 'Change to ' + visibilityTargetView + ' view' : 'Review field setup', action: 'visibility', targetView: visibilityTargetView };",
+      "new": "nextActionModel = { step: 4, tone: 'caution', phase: 'Guided investigation', title: 'Make ' + currentGuided.name + ' visible to continue', description: visibilityTargetView ? 'Change to the ' + visibilityTargetView + ' view; the Guided target and step count will stay fixed.' : 'Improve the anatomical exposure before continuing the fixed Guided route.', label: visibilityTargetView ? 'Choose ' + visibilityTargetView + ' view' : 'Review field setup', action: 'visibility', targetView: visibilityTargetView };"
+    },
+    {
+      "old": "nextActionModel = { step: 4, tone: 'caution', phase: 'Identify', title: 'Make ' + remainingUnexplored.name + ' visible', description: visibilityTargetView ? 'Change anatomical view before recording this structure as explored.' : 'Review exposure and field clarity before recording this structure.', label: visibilityTargetView ? 'Change to ' + visibilityTargetView + ' view' : 'Review field setup', action: 'visibility', targetView: visibilityTargetView };",
+      "new": "nextActionModel = { step: 4, tone: 'caution', phase: 'Identify', title: 'Make ' + remainingUnexplored.name + ' visible', description: visibilityTargetView ? 'Change anatomical view before recording this structure as explored.' : 'Review exposure and field clarity before recording this structure.', label: visibilityTargetView ? 'Choose ' + visibilityTargetView + ' view' : 'Review field setup', action: 'visibility', targetView: visibilityTargetView };"
+    }
+  ]
+}

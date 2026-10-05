@@ -1,0 +1,38 @@
+{
+  "date": "2026-10-03",
+  "baseline": {
+    "originalSuite": "5 files, 12 tests: static semantics/mirror contracts and SSR Ops Lab/menu renders",
+    "firstSandboxRun": "No tests executed. Vite cache rename EPERM in mapped TEMP, plus fork worker startup timeouts.",
+    "secondSandboxRun": "Workspace-local TEMP/TMP and threads executed all 12 tests. Seven passed. Five source/public parity tests failed while implementation was in progress; this was not a pristine baseline.",
+    "newDialogTestRun": "Sandbox worker startup timed out before execution. Elevated local run completed in 1.79 seconds: both new live React DOM tests and menu render passed; mirror parity still awaited final sync."
+  },
+  "runtimeFindingsResolved": [
+    {
+      "finding": "Start shift raised ReferenceError: towerCss is not defined.",
+      "resolution": "Shared stylesheet declaration moved to render scope. Fresh browser mount passed."
+    },
+    {
+      "finding": "High-contrast Continue traffic hover displayed white text on a pale mint background; axe measured 1.12:1 contrast.",
+      "resolution": "Added high-contrast hover background and text-color override. Math feedback axe check passed."
+    },
+    {
+      "finding": "At 320px, aircraft controls came after coaching and event log.",
+      "resolution": "Mobile grid places strips and commands before optional coaching/log. Refreshed screenshot reviewed."
+    }
+  ],
+  "auditTiming": "Axe checks wait 300ms after state-changing form removal to avoid auditing transient React disabled styles. An initial command-button contrast result disappeared on a settled DOM.",
+  "fixture": "Local React 18 UMD and canonical ATC source, seeded randomness, test-only gameRef exposure, localhost server, installed Chrome in headless mode. No deployed application is accessed.",
+  "finalResult": "28 browser checks passed; no uncaught browser errors. Final details and screenshots are recorded in browser-qa-results.json.",
+  "coverage": [
+    "Desktop, 390px and 320px menu, Ops Lab, lesson cards and lesson detail overflow checks",
+    "Menu tab keyboard behavior; Tab exits radar; input keys isolated from radar shortcuts",
+    "Explicit pause freezes clock, positions, fuel and altitude; heading form freezes a running shift",
+    "Click and actual touch flight-strip selection, runway assignment and heading submission",
+    "Exact zero, fractional 3.4, and arrival-order tie answers; solved count",
+    "Once-only end-shift totals, restart accumulation and session best-streak persistence",
+    "Same-frame same-runway and crossing-runway arrivals yield one landing and one automatic go-around",
+    "Serious/critical axe checks on paused playing, high-contrast math feedback and debrief",
+    "Visual review of mobile playing/Ops/lesson, desktop playing, forced-colors and crossing occupancy"
+  ],
+  "limits": "The fixture verifies the ATC module in isolation. It is not a full deployed-shell, screen-reader, or WCAG conformance audit."
+}

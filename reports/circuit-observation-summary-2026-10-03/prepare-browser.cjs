@@ -1,0 +1,20 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const expected=process.argv[2];assert.match(expected||'',/^[a-f0-9]{64}$/);
+let code=fs.readFileSync(path.join(__dirname,'../circuit-investigation-reading-wrap-2026-10-03/browser-check.cjs'),'utf8');
+function replace(old,next){assert.equal(code.split(old).length,2,'Unique anchor: '+old.slice(0,90));code=code.replace(old,next);}
+replace('a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6',expected);
+replace("const guideScope='.circuit-active-lesson-continuation'","const guideScope='.circuit-notebook-observations'");
+replace('Circuit investigation-reading-wrap audit: ','Circuit saved-observation summary audit: ');
+replace('<title>Circuit investigation prompt reading</title>','<title>Circuit saved observation summaries</title>');
+replace('handoffStates:[],readingLayouts:[],desktopComparison:[]','handoffStates:[],summaryStates:[],disclosures:[],bodyChecks:[],readingLayouts:[],desktopComparison:[]');
+replace('await handoffState(name,scope,width,scale);await readingLayout(name,width,scale);','await summaryState(name,width,scale);');
+replace('.circuit-continuation-inquiry-steps,.circuit-continuation-inquiry-step,.circuit-continuation-actions,.circuit-notebook-prompts,.circuit-notebook-field','.circuit-notebook-observation,.circuit-notebook-observation>summary');
+replace("page.locator(scope==='.circuit-active-notebook'?scope:labScope).locator('button,summary,textarea,select,input')","page.locator(scope).locator('button,summary,textarea,select,input')");
+replace("await focusCheck(name,scope==='.circuit-active-notebook'?scope:labScope,selector,width);","await focusCheck(name,scope,selector,width);");
+replace("'Complete all-tested continuation'","'Complete collapsed saved-observation summaries'");
+replace("nodes.forEach((node,i)=>{const key=node.tagName+'|'+node.className;if(Math.abs(sizes[i]-normal[key])>.01)throw Error('Font did not return to its normal baseline: '+key+' '+sizes[i]+' vs '+normal[key]);});","if(nodes.length!==normal.length)throw Error('Visible font node count changed.');nodes.forEach((node,i)=>{const key=node.tagName+'|'+node.className;if(key!==normal[i].key||Math.abs(sizes[i]-normal[i].size)>.01)throw Error('Font did not return to its own normal baseline: '+key+' '+sizes[i]);});");
+replace("normalFontSize:normal[node.tagName+'|'+node.className]","normalFontSize:normal[i].size");
+const start=code.indexOf('    const continuation=page.locator(guideScope)'),end=code.indexOf('  }catch(error)',start);assert.ok(start>0&&end>start);
+code=code.slice(0,start)+fs.readFileSync(path.join(__dirname,'workflow-fragment.txt'),'utf8')+'\n'+code.slice(end);
+replace("console.log('Investigation reading: '+results.openActions.length+' native notebook opens, '","console.log('Observation summaries: '+results.disclosures.length+' native disclosure actions, '");
+new Function(code);fs.writeFileSync(path.join(__dirname,'browser-check.cjs'),code);console.log(JSON.stringify({source:expected,script:crypto.createHash('sha256').update(code).digest('hex')}));

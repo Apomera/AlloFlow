@@ -55,7 +55,9 @@ describe('Aquaculture investigation loop', () => {
     const helpers = window.AquacultureLearningHelpers;
     const portfolio = helpers.buildLearningPortfolio(state, [], []);
     const html = helpers.portfolioToHtml(portfolio);
-    expect(html).toContain('Less starting oxygen'); expect(html).toContain('Full saved scenario settings');
+    expect(html).toContain('Less starting oxygen');
+    expect(html).toContain('Saved A settings');
+    expect(html).toContain('Saved B settings');
     await act(async () => root.unmount()); root = null; resetStemLab(); await mount();
     expect(host.querySelector('#aq-investigation-heading').textContent).toBe('Evidence saved');
     await click(button(host, 'Start another investigation'));

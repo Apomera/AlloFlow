@@ -1,0 +1,380 @@
+{
+  "version": 1,
+  "sourceSHA": "f2ef9cbc4c1a9899703bad86da73d2553704bb3953428cdac1b47098a8af3450",
+  "userConstraint": "Do not commit. No staging, commit, push or deployment performed by this pass.",
+  "final": {
+    "cpu": {
+      "cases": 36,
+      "files": 7,
+      "passed": 36,
+      "failed": 0,
+      "pending": 0,
+      "retries": 0,
+      "reportSHA256": "45b4810a309fc978004ea90f03c7c605230be64e93beb6687eb87daec15e4bee",
+      "casesDetail": [
+        {
+          "file": "tests/cephalopodlab_prey_fish.test.js",
+          "name": "Cephalopod Hunter silver schooling prey builds two finite render surfaces with one owned material and bounded geometry for every school index",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_fish.test.js",
+          "name": "Cephalopod Hunter silver schooling prey keeps a forward nose, bilateral eyes and a bright lateral silver band with a darker back",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_fish.test.js",
+          "name": "Cephalopod Hunter silver schooling prey joins each visible fin and eye patch to the actual triangulated body without detached ornament",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_fish.test.js",
+          "name": "Cephalopod Hunter silver schooling prey keeps the real tail waist inside the body through the full live yaw range and leaves a true caudal fork",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_fish.test.js",
+          "name": "Cephalopod Hunter silver schooling prey constructs deterministically without shared buffers and keeps all resources static as the rig turns and swims",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_fish.test.js",
+          "name": "Cephalopod Hunter silver schooling prey owns exactly two geometries and one material whose disposal leaves another fish usable",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_memory.test.js",
+          "name": "Cephalopod Hunter prey threat memory keeps the existing alarm rates, threshold and cap while reporting early detection",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_memory.test.js",
+          "name": "Cephalopod Hunter prey threat memory copies the last visible position and never reads a hidden player position",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_memory.test.js",
+          "name": "Cephalopod Hunter prey threat memory steers identically after different unseen movements, then responds to a visible reacquisition",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_memory.test.js",
+          "name": "Cephalopod Hunter prey threat memory forgets a threat when calm and clears it immediately during the existing display interruption",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_memory.test.js",
+          "name": "Cephalopod Hunter prey threat memory takes the short turn across the heading seam and remains finite at coincident positions",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_memory.test.js",
+          "name": "Cephalopod Hunter prey threat memory reports actionable intent without changing crab, distracted or existing fleeing wording",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_tail_finish.test.js",
+          "name": "Cephalopod Hunter rounded silver-prey tail preserves paired-reference body, peduncle, material and frames with a measured static two-surface budget",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_prey_tail_finish.test.js",
+          "name": "Cephalopod Hunter rounded silver-prey tail forms two genuinely cambered non-overlapping rounded lobes with an open fork and smooth actual tip normals",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_sand_finish.test.js",
+          "name": "Cephalopod Hunter static mineral sand finish retains the actual opaque grain field and world RNG stream while making a bounded warmer, darker mineral albedo",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_sand_finish.test.js",
+          "name": "Cephalopod Hunter static mineral sand finish keeps the actual texture settings, independent canvas/pixel ownership and untouched neighboring resource through real cleanup",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement rotates the calm staggered formation with its heading instead of world axes",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement keeps eight members alongside a traveling calm school and preserves lane order",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement tightens when wary, opens a broad escape fan and regroups after alarm clears",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement has no formation jump at the existing wary-to-fleeing alarm threshold",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement keeps calm, display and full-alarm center and member travel within their per-second budgets",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement reflects both components at a corner and moves back into the map on the next tick",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement turns before propulsion, aligns its nose with actual three-dimensional travel and slows a sharp turn",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement uses the short yaw turn across the heading seam and remains finite at a settled target",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement makes invalid or zero steps and captured members complete no-ops, and caps long frames",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement preserves swimming positions and heading under reduced motion while suppressing bank and tail",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shoal_movement.test.js",
+          "name": "Cephalopod Hunter coherent shoal movement uses allocation-free scalar stepping without random draws or hidden-player knowledge",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_squid_fin_roll.test.js",
+          "name": "Humboldt squid attached rolling fins rolls the live membrane without stretching it, opening its seam or snapping through repeated jet reversals",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_squid_fin_roll.test.js",
+          "name": "Humboldt squid attached rolling fins preserves original reduced-motion fins and freezes every existing buffer when simulation time stops",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_squid_fin_roll.test.js",
+          "name": "Humboldt squid attached rolling fins preserves Humboldt feeding anatomy and all eleven other species across swimming and strike poses",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_underwater_lighting.test.js",
+          "name": "Cephalopod Hunter underwater lighting finish retains three bounded native lights with clear shallow relief, cool depth, and a visible night transition",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_underwater_lighting.test.js",
+          "name": "Cephalopod Hunter underwater lighting finish smooths depth and day transitions in place and freezes exactly for zero blend",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_underwater_lighting.test.js",
+          "name": "Cephalopod Hunter underwater lighting finish modifies actual r128 sand and shared shaft shaders without extra textures or broken shader chunks",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_underwater_lighting.test.js",
+          "name": "Cephalopod Hunter underwater lighting finish transfers actual terrain tiles into the existing r128 caustic attribute and array with bit-exact positions",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_underwater_lighting.test.js",
+          "name": "Cephalopod Hunter underwater lighting finish executes the actual live day, depth, floor and shaft finish while preserving existing resource identities and static bytes",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_underwater_lighting.test.js",
+          "name": "Cephalopod Hunter underwater lighting finish uses the actual active gate to freeze paused and finished presentation, and freezes decorative motion under reduced motion",
+          "status": "passed"
+        }
+      ]
+    },
+    "native": {
+      "cases": 7,
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "workers": 1,
+      "retries": 0,
+      "aggregation": "Five still-current non-fish cases from native-final.json plus two current fish cases from native-fish-verified.json. There is no claim of a single seven-case all-pass reporter.",
+      "reports": {
+        "native-final.json": "01e6396e2da9ddad3f6997c133bb8ce10b04b61b1d109ee2cfaf09dc362c1482",
+        "native-fish-verified.json": "47e8ec265194e4f8dcbeb5162e1894db28d095c31ce83ed32e55cc7c841bd96f"
+      },
+      "casesDetail": [
+        {
+          "file": "cephalopod-habitat-lighting.spec.ts",
+          "name": "low natural habitat clusters keep open routes and grounded roots while actual plant, sand and water programs submit",
+          "project": "",
+          "status": "expected",
+          "retries": 0,
+          "report": "native-final.json",
+          "reportSHA256": "01e6396e2da9ddad3f6997c133bb8ce10b04b61b1d109ee2cfaf09dc362c1482"
+        },
+        {
+          "file": "cephalopod-habitat-lighting.spec.ts",
+          "name": "balanced natural habitat clusters keep open routes and grounded roots while actual plant, sand and water programs submit",
+          "project": "",
+          "status": "expected",
+          "retries": 0,
+          "report": "native-final.json",
+          "reportSHA256": "01e6396e2da9ddad3f6997c133bb8ce10b04b61b1d109ee2cfaf09dc362c1482"
+        },
+        {
+          "file": "cephalopod-habitat-lighting.spec.ts",
+          "name": "diagnostic day and depth changes drive existing lighting while pause and reduced motion retain live resources",
+          "project": "",
+          "status": "expected",
+          "retries": 0,
+          "report": "native-final.json",
+          "reportSHA256": "01e6396e2da9ddad3f6997c133bb8ce10b04b61b1d109ee2cfaf09dc362c1482"
+        },
+        {
+          "file": "cephalopod-pursuit-polish.spec.ts",
+          "name": "a strike keeps its committed prey in the ring and feedback when T selects the next target",
+          "project": "",
+          "status": "expected",
+          "retries": 0,
+          "report": "native-final.json",
+          "reportSHA256": "01e6396e2da9ddad3f6997c133bb8ce10b04b61b1d109ee2cfaf09dc362c1482"
+        },
+        {
+          "file": "cephalopod-pursuit-polish.spec.ts",
+          "name": "target detail gives signed depth guidance and free-mode miss feedback remains visible",
+          "project": "",
+          "status": "expected",
+          "retries": 0,
+          "report": "native-final.json",
+          "reportSHA256": "01e6396e2da9ddad3f6997c133bb8ce10b04b61b1d109ee2cfaf09dc362c1482"
+        },
+        {
+          "file": "cephalopod-prey-den-visuals.spec.ts",
+          "name": "low fish and shelter surfaces render native programs and preserve motion, inspection and owned resources",
+          "project": "",
+          "status": "expected",
+          "retries": 0,
+          "report": "native-fish-verified.json",
+          "reportSHA256": "47e8ec265194e4f8dcbeb5162e1894db28d095c31ce83ed32e55cc7c841bd96f"
+        },
+        {
+          "file": "cephalopod-prey-den-visuals.spec.ts",
+          "name": "balanced fish and shelter surfaces render native programs and preserve motion, inspection and owned resources",
+          "project": "",
+          "status": "expected",
+          "retries": 0,
+          "report": "native-fish-verified.json",
+          "reportSHA256": "47e8ec265194e4f8dcbeb5162e1894db28d095c31ce83ed32e55cc7c841bd96f"
+        }
+      ]
+    },
+    "testHashes": {
+      "tests/cephalopodlab_sand_finish.test.js": "4eb7748f35327adc450dcd8698f4b3965873fb0f043f44277aae9617b24ae799",
+      "tests/cephalopodlab_prey_tail_finish.test.js": "683c844147d8dbe23ff31f5bca0a6de651281f7875c293de99571d940fc2ae9a",
+      "tests/cephalopodlab_prey_fish.test.js": "d1c9deb90925fab298b6ff095388c53aa92df0bae01b9c40699abf35a1a0de06",
+      "tests/cephalopodlab_underwater_lighting.test.js": "5325df0afb0f3cc80d5c5fad60778a262806c5d00a6e5d1be26b9231072338a4",
+      "tests/cephalopodlab_shoal_movement.test.js": "77634caa93c18c3cbbc0796ce55a07ae07bfaa9d764c81186134897457088fcf",
+      "tests/cephalopodlab_prey_memory.test.js": "8a409cca62f3e115dc853faa169862ff709f8e6cbb3f90124832a2c687b51831",
+      "tests/cephalopodlab_squid_fin_roll.test.js": "ff4ad872907e4178d9b0b099c2c66467f6c34fa94fd85105eb3e3167b469e04d",
+      "tests/e2e/cephalopod-habitat-lighting.spec.ts": "eef7bdacca8a734f78ca416623c0e4c91502637682761796a0542a11bfc86cfc",
+      "tests/e2e/cephalopod-prey-den-visuals.spec.ts": "3dab0204175533b1e75ac1c0a1eeb60e90dcae9cbbd4df045a72582221c5988e",
+      "tests/e2e/cephalopod-pursuit-polish.spec.ts": "b12d5d91ae1a4077f79e4fb51952a9a50799da8f53feee8d435f8657aaf04cef"
+    },
+    "supportHashes": {
+      "tests/helpers/cephalopod_prey_tail_reference.cjs": "5a5f41204168df4194845107324ea2386c38e9cbb8b515c0cac1ef605b314f31",
+      "tests/helpers/cephalopod_squid_fin_reference.js": "f8a95fbe615230d90d9ffa6b1088df94ec4079cc217d2e66b8e110c6d7248a68",
+      "tests/e2e/helpers/cephalopod_controls.ts": "baae69c0994a1abe8698c991f5998e8a1759a8e113fb1be5caa75a12ebf93e6e"
+    },
+    "sourceHashesUnchangedThroughout": true,
+    "capturePairs": 10,
+    "images": 28,
+    "captureErrors": 0,
+    "captureLeaks": 0
+  },
+  "baselineEvidence": {
+    "nativeCases": 1,
+    "reportSHA256": "e9dad555f3ea0128e2ab736877cbe18956f4b51e38347c62b745665f19958131",
+    "testedSourceSHA": "ce0c01a8fc85d002bc970c5103fec84be77ff9d2fd42a295fbe629219c9e2182",
+    "naturalOrigin": "Exact-byte copies of accepted pass30 current-verified-views at the identical ce0c source; capture profiles unchanged"
+  },
+  "negativeControls": [
+    {
+      "kind": "CPU copied-source faults",
+      "faultSourceSHA": "77db1d5bc313a1eca9d92c076386d1dba53e6b2ddc185407f4053f2f9ec371a8",
+      "reportSHA": "cd143f99f39832ab237cbc4513848946daed1d26b518747fb51452a9315ea325",
+      "intendedFailures": 2,
+      "otherCasesPassed": 2,
+      "qualification": [
+        {
+          "fault": "Excessively dark sand",
+          "file": "tests/cephalopodlab_sand_finish.test.js",
+          "case": "Cephalopod Hunter static mineral sand finish retains the actual opaque grain field and world RNG stream while making a bounded warmer, darker mineral albedo",
+          "assertion": "Linear-light albedo must retain 78–90% of the original"
+        },
+        {
+          "fault": "Rendered caudal X positions flattened",
+          "file": "tests/cephalopodlab_prey_tail_finish.test.js",
+          "case": "Cephalopod Hunter rounded silver-prey tail forms two genuinely cambered non-overlapping rounded lobes with an open fork and smooth actual tip normals",
+          "assertion": "Stored normals must agree with actual rendered faces"
+        }
+      ],
+      "productionAndTestsUnchanged": true
+    },
+    {
+      "kind": "Native copied-source depth advice reversal",
+      "faultSourceSHA": "407b4b1f04f3707143d9d05e40a39a54841d13a956636f03f5763c588802953d",
+      "reportSHA": "0b59f786a6fe1f59f651e5d90643b882ad8f9b04d883fcfe336b53227f42f2e2",
+      "intendedFailures": 1,
+      "reason": "Actual UI reverted to OUT OF REACH for fish3m above, and the MATCH DEPTH assertion caught it",
+      "productionAndTestsUnchanged": true
+    }
+  ],
+  "priorAttempts": [
+    {
+      "kind": "Native compact controls fixture",
+      "reportSHA": "01e6396e2da9ddad3f6997c133bb8ce10b04b61b1d109ee2cfaf09dc362c1482",
+      "passed": 6,
+      "failed": 1,
+      "reason": "Balanced fish case rotated to phone width then directly clicked Help/settings, which lives in Tools. Existing controls helper now handles both Help/settings clicks. All rendering, resource, motion, inspection, reduced-motion and disposal assertions remain unchanged. Both fish cases rerun successfully on current spec; earlier fish results superseded."
+    },
+    {
+      "kind": "Baseline diagnostic grep",
+      "reportSHA": "555b78e48f5515b75ea0dc560442af6ff177e4048d3a54b30efd2c70049f79b7",
+      "executedCases": 0,
+      "childExit": 1,
+      "reason": "Anchored grep did not match the prefixed full case title. Substring grep executed the unchanged baseline diagnostic once successfully."
+    },
+    {
+      "kind": "Initial detail harness",
+      "folder": "baseline-detail-views",
+      "acceptedImages": 0,
+      "reason": "Bundled harness was required before changing process.cwd to repository, so React path returned404. Helper order corrected before successful baseline detail run."
+    },
+    {
+      "kind": "Unpaused detail fixture",
+      "folder": "current-detail-verified",
+      "acceptedImages": 0,
+      "reason": "Rejected before images because whole-scene transform hash differed and baseline JSON serialization normalized signed zero in fish matrices. Accepted fresh baseline-detail-fixed/current-detail-fixed use ordinary native pause at each fixed step and consistent JSON normalization; every recorded scene pose and camera fixture now compares exactly. No production changes."
+    },
+    {
+      "kind": "CPU fault controller qualification",
+      "reason": "The initial controller expected the later maximum-X assertion. Flattening the positions correctly failed the earlier face-normal consistency assertion. This read-only qualification verifies the existing report; no test or production code changed and no tests were rerun."
+    }
+  ],
+  "review": {
+    "tests": "Independent read-only audit verified all current source/test/support/reporter hashes, exact five-guard reversal, 36 CPU and seven unique native coverage, unchanged assertions and correctly detected negative controls."
+  },
+  "limits": [
+    "Focused43-case final validation, not a whole-repository suite",
+    "Baseline diagnostics and intentional faults are separate from final passing coverage",
+    "Static visual improvement is modest at normal school distance",
+    "Night diagnostic has a small visible crab pose drift",
+    "Existing390px hint edge and lowest fin-tip clearance remain; no wholly unobstructed-model claim",
+    "No target-device FPS or biological/hydrodynamic accuracy claim"
+  ]
+}

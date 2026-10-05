@@ -1,0 +1,99 @@
+{
+  "slug": "crew_teamwork_grade6_8",
+  "style": "Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately.",
+  "assets": [
+    {
+      "id": "cteam-term-part",
+      "kind": "term",
+      "term": "Part",
+      "title": "Part",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A single puzzle piece with a small blank name tag on it. Constraints: no letters. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+    },
+    {
+      "id": "cteam-term-whole",
+      "kind": "term",
+      "term": "Whole",
+      "title": "Whole",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A finished poster made of four visibly different pieces fitted together. Constraints: no text on poster. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+    },
+    {
+      "id": "cteam-term-loafing",
+      "kind": "term",
+      "term": "Social loafing",
+      "title": "Social loafing",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Four students around a table, each glancing sideways at another, an empty page in the middle. Constraints: nobody villainous. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+    },
+    {
+      "id": "cteam-term-expedition",
+      "kind": "term",
+      "term": "Expedition",
+      "title": "Expedition",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A school hallway exhibit of student panels with a small crowd looking, panels showing only shapes and images. Constraints: no readable text. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+    },
+    {
+      "id": "cteam-term-depend",
+      "kind": "term",
+      "term": "Depend",
+      "title": "Depend",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: Two puzzle pieces, one with an arrow pointing into a gap in the other. Constraints: plain arrow. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+    },
+    {
+      "id": "cteam-term-askearly",
+      "kind": "term",
+      "term": "Ask early",
+      "title": "Ask early",
+      "prompt": "Use case: illustration-story. Asset type: square glossary concept illustration for a Grade 6–8 Crew SEL learning pack. Subject: A phone with a single short message bubble going out, a calendar behind it with early days marked. Constraints: no words in bubble. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately."
+    },
+    {
+      "id": "cteam-img-trap",
+      "kind": "lesson",
+      "title": "Thursday night.",
+      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A dim kitchen, one student at a laptop late, three empty chairs; a calendar with the last square before a flag.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "caption": "worse than any one of them could have made alone.",
+      "plannedLabels": [
+        {
+          "text": "One person"
+        },
+        {
+          "text": "Three empty chairs"
+        }
+      ],
+      "afterType": "simplified"
+    },
+    {
+      "id": "cteam-img-sentence",
+      "kind": "lesson",
+      "title": "Monday, out loud.",
+      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: The same group on Monday in daylight, one student speaking with a finger on a shared screen showing four labelled shapes.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "caption": "a plan instead of a hope.",
+      "plannedLabels": [
+        {
+          "text": "What"
+        },
+        {
+          "text": "Where"
+        },
+        {
+          "text": "By when"
+        }
+      ],
+      "afterType": "anchor-chart"
+    },
+    {
+      "id": "cteam-img-baton",
+      "kind": "lesson",
+      "title": "The hand out early.",
+      "prompt": "Use case: illustration-story. Asset type: wide lesson panel for a Grade 6–8 Crew SEL learning pack. Scene: A relay track: one runner mid-stride and the next already reaching back with an open hand before the baton arrives.. Warm, simple flat educational illustration with clean rounded forms, muted coral, mustard, teal and navy on a pale warm background. A diverse middle-school cast; no faces of real people, school names, brands or logos. All papers, signs, calendars and screens have no words, letters, numerals or readable writing. No raster text, labels, captions or watermark. Native app labels will be added separately. If the scene mentions labelled shapes, draw plain shapes with blank space for native labels. If tally marks are required, simple strokes are allowed but no numerals.",
+      "caption": "waiting with your hands down is how relays get dropped.",
+      "plannedLabels": [
+        {
+          "text": "Your leg"
+        },
+        {
+          "text": "Hand out early"
+        }
+      ],
+      "afterType": "faq"
+    }
+  ]
+}

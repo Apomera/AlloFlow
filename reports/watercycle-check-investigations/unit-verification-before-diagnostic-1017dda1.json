@@ -1,0 +1,20 @@
+{
+  "sourcePath": "stem_lab/stem_tool_watercycle.js",
+  "sourceSha256Before": "1017dda1cfc05f1d541aef1c068e09964ec13a4698b4da60cd064c6c14e570e6",
+  "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+  "publicSha256Before": "1017dda1cfc05f1d541aef1c068e09964ec13a4698b4da60cd064c6c14e570e6",
+  "testFiles": [
+    {
+      "path": "tests/watercycle_check_investigations.test.js",
+      "sha256": "153d7feb0af4aefb3520e71ffbc254a5c9e0ca68c182be1fceb48aae8ae44eac"
+    },
+    {
+      "path": "tests/watercycle_controls_a11y.test.js",
+      "sha256": "428ea5a1db0b65049077376532f07116be0ecd4a73705d7af19bb04a620215a6"
+    },
+    {
+      "path": "tests/watercycle_content_invariants.test.js",
+      "sha256": "1220022fa041c0e1908ca41271aee50b035b30f87565ad7517651ccb1f050c4b"
+    }
+  ]
+}

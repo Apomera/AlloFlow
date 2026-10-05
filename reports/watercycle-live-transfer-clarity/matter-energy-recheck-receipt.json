@@ -1,0 +1,131 @@
+{
+  "mode": "matter-energy-recheck",
+  "runnerPid": 43680,
+  "childPid": 5152,
+  "startedAt": "2026-10-05T02:08:21.756Z",
+  "completedAt": "2026-10-05T02:08:30.137Z",
+  "command": {
+    "executable": "C:\\Program Files\\nodejs\\node.exe",
+    "args": [
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+      "run",
+      "tests/watercycle_matter_energy.test.js",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--testTimeout=120000",
+      "--hookTimeout=120000",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\watercycle-live-transfer-clarity\\matter-energy-recheck-results.json"
+    ],
+    "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+    "nodeOptions": "--max-old-space-size=768"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "expectedSha": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+  "sourceBefore": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+      "bytes": 3139939
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+      "bytes": 3139939
+    }
+  ],
+  "sourceAfter": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+      "bytes": 3139939
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+      "bytes": 3139939
+    }
+  ],
+  "testsBefore": [
+    {
+      "path": "tests/watercycle_matter_energy.test.js",
+      "sha256": "36f733e85337655afc2594eb45262e89e37b815373abf7faaa7caa2f8be249a0",
+      "bytes": 7307
+    }
+  ],
+  "testsAfter": [
+    {
+      "path": "tests/watercycle_matter_energy.test.js",
+      "sha256": "36f733e85337655afc2594eb45262e89e37b815373abf7faaa7caa2f8be249a0",
+      "bytes": 7307
+    }
+  ],
+  "fixturesBefore": [
+    {
+      "path": "tests/helpers/stem_widgets_smoke_harness.js",
+      "sha256": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+      "bytes": 12494
+    }
+  ],
+  "fixturesAfter": [
+    {
+      "path": "tests/helpers/stem_widgets_smoke_harness.js",
+      "sha256": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+      "bytes": 12494
+    }
+  ],
+  "preserved": true,
+  "recipe": {
+    "path": "reports/watercycle-live-transfer-clarity/recheck-matter-energy.cjs",
+    "sha256": "009f711c375865354d9cb701484ec2db9a4e352b77f817a087ae2b0b0d73e83c",
+    "bytes": 4303
+  },
+  "results": {
+    "path": "reports/watercycle-live-transfer-clarity/matter-energy-recheck-results.json",
+    "sha256": "b702b08ab9d7c60f846909c4f5826ec87eba068075c0905ea05603cc9d45b665",
+    "bytes": 2332
+  },
+  "log": {
+    "path": "reports/watercycle-live-transfer-clarity/matter-energy-recheck-results.log",
+    "sha256": "e3dda70bf83e1fafe1e7f8fbac48a222fe2ed5d5928a97a97aa33aa5d5769d6e",
+    "bytes": 764
+  },
+  "summary": {
+    "success": true,
+    "total": 5,
+    "passed": 5,
+    "failed": 0,
+    "pending": 0,
+    "failedSuites": 0
+  },
+  "complete": true,
+  "cases": [
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "fullName": "Water Cycle matter and energy trace defines one complete trace for all six visible stages",
+      "status": "passed"
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "fullName": "Water Cycle matter and energy trace distinguishes liquid plant uptake from liquid-to-vapor transpiration",
+      "status": "passed"
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "fullName": "Water Cycle matter and energy trace server-renders the visible semantic summary and 2D canvas contract",
+      "status": "passed"
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "fullName": "Water Cycle matter and energy trace applies journey-specific matter semantics to the 3D canvas contract",
+      "status": "passed"
+    },
+    {
+      "file": "tests/watercycle_matter_energy.test.js",
+      "fullName": "Water Cycle matter and energy trace includes the current trace in the semantic Data view",
+      "status": "passed"
+    }
+  ]
+}

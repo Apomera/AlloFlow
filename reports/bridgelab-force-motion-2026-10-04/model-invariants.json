@@ -1,0 +1,21 @@
+{
+  "status": "passed",
+  "sourceSha256": "c40a37ee881cf405f03b689694bb24da19657a0a6d8d6d2c81b9f53ac0b1427f",
+  "inputCombinations": 144,
+  "recordedFramesChecked": 207504,
+  "storingFrames": 76509,
+  "releasingFrames": 79011,
+  "restFrames": 51984,
+  "amplitudeClassificationChecks": 2196,
+  "unequalPairForceChecks": 4392,
+  "zeroTinyPairForceChecks": 216,
+  "zeroPairChecks": 108,
+  "syntheticRoundoffChecks": 72,
+  "estimatedTurn": {
+    "timeS": 16.346952513987862,
+    "displayedVelocityMps": -2.1873778829895052e-17,
+    "derivedDampingLossWPerKg": 1.322757333462633e-33,
+    "interpolatedRecordedDampingPowerWPerKg": 1.7540169646365523e-8
+  },
+  "powerConvention": "spring contribution to relative kinetic energy = spring force per kg times relative velocity; damping loss = minus damping force per kg times relative velocity"
+}

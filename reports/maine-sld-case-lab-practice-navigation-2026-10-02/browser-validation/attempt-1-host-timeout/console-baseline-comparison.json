@@ -1,0 +1,48 @@
+{
+  "current1890": {
+    "tracePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-practice-navigation-2026-10-02\\browser-validation\\attempt-1-host-timeout\\artifacts\\trace.zip",
+    "severityTotals": {
+      "log": 991,
+      "info": 9,
+      "warning": 19161,
+      "error": 3
+    },
+    "i18nMissingKeyWarnings": 19154,
+    "sharedKeyCounts": {
+      "[i18n] missing key: common.dismiss": 278,
+      "[i18n] missing key: live_connection.connected": 687,
+      "[i18n] missing key: adminhub.rewards_title": 299
+    },
+    "reactLoopWarnings": [],
+    "newComponentMentions": [],
+    "topErrors": [
+      {
+        "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "count": 3
+      }
+    ]
+  },
+  "prior879c": {
+    "tracePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-extended-practice-2026-10-02\\browser-validation\\print-followup\\attempt-1-timeout\\artifacts\\trace.zip",
+    "severityTotals": {
+      "log": 844,
+      "info": 9,
+      "warning": 15066,
+      "error": 3
+    },
+    "i18nMissingKeyWarnings": 15061,
+    "sharedKeyCounts": {
+      "[i18n] missing key: common.dismiss": 42,
+      "[i18n] missing key: live_connection.connected": 415,
+      "[i18n] missing key: adminhub.rewards_title": 169
+    },
+    "reactLoopWarnings": [],
+    "newComponentMentions": [],
+    "topErrors": [
+      {
+        "message": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+        "count": 3
+      }
+    ]
+  }
+}

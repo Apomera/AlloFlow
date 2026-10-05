@@ -1,0 +1,16 @@
+{
+  "mode": "regression",
+  "checkedAt": "2026-10-05T02:09:48.8776322Z",
+  "ownedProcessIds": [
+    17920,
+    45440
+  ],
+  "observedPresent": [],
+  "reusedProcessIds": [],
+  "survivingOwnedProcesses": [],
+  "allOwnedClosed": true,
+  "allPidsAbsent": true,
+  "childCloseAt": "2026-10-05T02:02:19.655Z",
+  "childExitCode": 1,
+  "sourcePreserved": true
+}

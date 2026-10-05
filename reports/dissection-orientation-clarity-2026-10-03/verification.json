@@ -1,0 +1,319 @@
+{
+  "date": "2026-10-03",
+  "source": {
+    "before": "9f658ceb5aed4d13f802f3b5a9d980bc9599f0fdb2f87d88847e142c9f871a4d",
+    "sha256": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+    "mirrored": true,
+    "parses": true,
+    "lineEndings": "LF",
+    "baselineReconstructed": true,
+    "scope": "Orientation guide CSS, three section headings and axis marker size only. Existing view actions, labels, assessment guards, axis data and progress logic unchanged.",
+    "edit": "source-edit.json"
+  },
+  "tests": {
+    "new": {
+      "passed": 11,
+      "failed": 0,
+      "sourceSha256": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+      "report": "new-results.json",
+      "run": "new-run.json"
+    },
+    "previous": {
+      "passed": 8,
+      "failed": 0,
+      "sourceSha256": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+      "report": "previous-results.json",
+      "run": "previous-run.json"
+    },
+    "baselineCaptures": {
+      "passed": 5,
+      "failed": 0,
+      "sourceSha256": "9f658ceb5aed4d13f802f3b5a9d980bc9599f0fdb2f87d88847e142c9f871a4d",
+      "report": "before-results.json",
+      "run": "before-run.json"
+    },
+    "unit": {
+      "passed": 243,
+      "failed": 0,
+      "files": 3,
+      "sourceSha256": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+      "report": "unit-results.json",
+      "run": "unit-run.json"
+    }
+  },
+  "totals": {
+    "browser": 19,
+    "unit": 243,
+    "baselineCaptures": 5
+  },
+  "layouts": [
+    {
+      "name": "phone",
+      "before": {
+        "viewColumns": 2,
+        "orientationColumns": 1,
+        "minimumLandmarkPx": 8.774999999999999,
+        "clippedText": 0
+      },
+      "after": {
+        "viewColumns": 1,
+        "orientationColumns": 1,
+        "clientWidth": 279,
+        "scrollWidth": 279,
+        "minimumTextPx": 14,
+        "minimumControlHeight": 48,
+        "minimumLandmarkPx": 15.86875,
+        "clippedText": 0
+      },
+      "inventoryUnchanged": true,
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "text[y=\"30\"]"
+            ],
+            [
+              "text[y=\"90\"]"
+            ]
+          ],
+          "summaries": [
+            "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+            "Fix any of the following:\n  Element's background color could not be determined because element contains an image node"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "tablet",
+      "before": {
+        "viewColumns": 4,
+        "orientationColumns": 2,
+        "minimumLandmarkPx": 10.489772727272728,
+        "clippedText": 0
+      },
+      "after": {
+        "viewColumns": 2,
+        "orientationColumns": 1,
+        "clientWidth": 703,
+        "scrollWidth": 703,
+        "minimumTextPx": 14,
+        "minimumControlHeight": 48,
+        "minimumLandmarkPx": 22,
+        "clippedText": 0
+      },
+      "inventoryUnchanged": true,
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "text[y=\"30\"]"
+            ],
+            [
+              "text[y=\"90\"]"
+            ]
+          ],
+          "summaries": [
+            "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+            "Fix any of the following:\n  Element's background color could not be determined because element contains an image node"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "desktop",
+      "before": {
+        "viewColumns": 4,
+        "orientationColumns": 2,
+        "minimumLandmarkPx": 11.502272727272727,
+        "clippedText": 0
+      },
+      "after": {
+        "viewColumns": 4,
+        "orientationColumns": 2,
+        "clientWidth": 763,
+        "scrollWidth": 763,
+        "minimumTextPx": 14,
+        "minimumControlHeight": 48,
+        "minimumLandmarkPx": 20.815625,
+        "clippedText": 0
+      },
+      "inventoryUnchanged": true,
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "text[y=\"30\"]"
+            ],
+            [
+              "text[y=\"90\"]"
+            ]
+          ],
+          "summaries": [
+            "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+            "Fix any of the following:\n  Element's background color could not be determined because element contains an image node"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "embedded-large",
+      "before": {
+        "viewColumns": 4,
+        "orientationColumns": 2,
+        "minimumLandmarkPx": 3.117613636363637,
+        "clippedText": 0
+      },
+      "after": {
+        "viewColumns": 1,
+        "orientationColumns": 1,
+        "clientWidth": 279,
+        "scrollWidth": 279,
+        "minimumTextPx": 16,
+        "minimumControlHeight": 70.78125,
+        "minimumLandmarkPx": 18.753977272727273,
+        "clippedText": 0
+      },
+      "inventoryUnchanged": true,
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "text[y=\"30\"]"
+            ],
+            [
+              "text[y=\"90\"]"
+            ]
+          ],
+          "summaries": [
+            "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+            "Fix any of the following:\n  Element's background color could not be determined because element contains an image node"
+          ]
+        }
+      ]
+    },
+    {
+      "name": "forced-colors",
+      "before": {
+        "viewColumns": 2,
+        "orientationColumns": 1,
+        "minimumLandmarkPx": 11.399999999999999,
+        "clippedText": 0
+      },
+      "after": {
+        "viewColumns": 1,
+        "orientationColumns": 1,
+        "clientWidth": 349,
+        "scrollWidth": 349,
+        "minimumTextPx": 14,
+        "minimumControlHeight": 48,
+        "minimumLandmarkPx": 20.68125,
+        "clippedText": 0
+      },
+      "inventoryUnchanged": true,
+      "violations": 0,
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "targets": [
+            [
+              "text[y=\"30\"]"
+            ],
+            [
+              "text[y=\"90\"]"
+            ]
+          ],
+          "summaries": [
+            "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+            "Fix any of the following:\n  Element's background color could not be determined because element contains an image node"
+          ]
+        }
+      ]
+    }
+  ],
+  "forcedSelection": {
+    "selected": 3,
+    "other": 1,
+    "focus": "solid"
+  },
+  "attempts": [
+    {
+      "suite": "before-setup",
+      "result": "No tests selected",
+      "evidence": "before-setup/attempt.json"
+    },
+    {
+      "suite": "before",
+      "result": "Five baseline captures",
+      "source": "9f658ceb5aed4d13f802f3b5a9d980bc9599f0fdb2f87d88847e142c9f871a4d",
+      "report": "before-results.json"
+    },
+    {
+      "suite": "new-initial",
+      "passed": 11,
+      "failed": 0,
+      "source": "7a730808a92c07efc777b5aaf19a524a053e1f62f4a2f3f9fa344a666a1e8ff8",
+      "evidence": "new-initial/attempt.json"
+    },
+    {
+      "suite": "new",
+      "passed": 11,
+      "failed": 0,
+      "source": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+      "report": "new-results.json"
+    },
+    {
+      "suite": "unit-initial",
+      "passed": 242,
+      "failed": 1,
+      "source": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+      "evidence": "unit-initial/attempt.json",
+      "report": "unit-initial/unit-results.json",
+      "repair": "catalog-mirror-repair.json"
+    },
+    {
+      "suite": "unit",
+      "passed": 243,
+      "failed": 0,
+      "source": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+      "report": "unit-results.json"
+    }
+  ],
+  "limits": [
+    "Browser verification uses the local working-tree Chromium harness.",
+    "Baseline captures measure the existing presentation and are excluded from the19 behavioral browser cases.",
+    "Accessibility audits cover the orientation guide only.",
+    "The next-action card uses static positioning during captures.",
+    "Listed automated contrast checks remain incomplete; manual screenshot review is recorded separately."
+  ],
+  "integrity": {
+    "scopedWhitespace": "passed",
+    "scopedStagedFiles": [],
+    "temporaryRegressionSpecs": [],
+    "committed": false
+  },
+  "catalogMirror": {
+    "repair": "catalog-mirror-repair.json",
+    "sourceUnchanged": true,
+    "commonValuesUnchanged": true,
+    "addedKeys": 39,
+    "sha256": "baca3a35fe9421bd7d4666280be1062118e616a32b7b0ef6bae70262066e6038"
+  },
+  "reviews": {
+    "visual": "Phone, embedded large text and forced-color captures reviewed independently and by the implementation agent. Headings, landmarks, wrapping, disclosure marker and separate selection/focus cues are readable.",
+    "source": "Six unique reversible edits reconstruct the original renderer hash. View-action logic, axis data, control names and assessment guards remain intact.",
+    "contrast": "Automated SVG contrast checks remain incomplete. Source styles and captures show readable dark landmark text on the light figure background, and black text on white in high-contrast/forced-color captures."
+  }
+}

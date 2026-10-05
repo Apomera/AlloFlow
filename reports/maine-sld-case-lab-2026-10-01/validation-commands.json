@@ -1,0 +1,42 @@
+{
+  "runtime": "C:\\Users\\cabba\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe",
+  "nodeVersion": "v24.19.0",
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "unit": {
+    "args": [
+      "node_modules/vitest/vitest.mjs",
+      "run",
+      "tests/maine_sld_practice.test.js",
+      "--maxWorkers=1",
+      "--reporter=json",
+      "--outputFile=reports/maine-sld-case-lab-2026-10-01/final-unit-result.json"
+    ],
+    "testCount": 11
+  },
+  "browser": {
+    "args": [
+      "node_modules/@playwright/test/cli.js",
+      "test",
+      "tests/e2e/maine-sld-practice.spec.ts",
+      "--project=chromium",
+      "--workers=1",
+      "--retries=0",
+      "--reporter=list,json",
+      "--output=reports/maine-sld-case-lab-2026-10-01/browser-final-artifacts"
+    ],
+    "environment": {
+      "SLD_HOST_BASE_URL": "http://127.0.0.1:65058/app",
+      "PLAYWRIGHT_JSON_OUTPUT_NAME": "reports/maine-sld-case-lab-2026-10-01/final-browser-result.json"
+    },
+    "testCount": 13
+  },
+  "retainedAttempts": {
+    "unit": "unit-attempt-1.json: unsupported Set matcher corrected; assertion retained",
+    "browser": "browser-attempt-1: exact implicit-label selector corrected; moderate nested-main findings led to component polish"
+  },
+  "limits": [
+    "Local working-tree source and Chromium only",
+    "Automated accessibility checks scoped to activity panel; not accessibility certification",
+    "No production release or packaged installer tested"
+  ]
+}

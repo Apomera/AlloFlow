@@ -1,0 +1,20 @@
+{
+  "phase": "host-only",
+  "attempt": "01",
+  "expectedModuleSha256": "c5af6b18d2a3a02d1fe99f885b874ea0bae04c1fa74b283a6bda7d69a2bdf87f",
+  "sourceSha256": "85b21dd96f2476e383beef207177736d859170244c35c6705d422e89771f41cb",
+  "browserTestSha256": "25f75f6b96dfdba61036c1267e932cd94d0e4691a9969e80867ebe865afd0771",
+  "workers": 1,
+  "automaticRetries": 0,
+  "timeoutMs": 120000,
+  "normalTracePolicy": "retain-on-failure",
+  "validationMethod": "original canonical specification and unchanged synchronous stylesheet setup",
+  "preparedAssetValidation": false,
+  "selectedScenarios": 1,
+  "availableScenarios": 37,
+  "original35PrefixBytePreserved": true,
+  "original35Sha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+  "original35Bytes": 174682,
+  "configSha256": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587",
+  "expectedBaselineFailure": false
+}

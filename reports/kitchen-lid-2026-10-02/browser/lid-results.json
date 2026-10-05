@@ -1,0 +1,34 @@
+{
+  "checks": [
+    "A filled pot is required; opening the lid notebook and camera view creates no cooking evidence.",
+    "Taps, partial lifting, partial lowering and sideways lifting return the lid without changing placement, water, heat or time.",
+    "Actual release coordinates and Escape invalidate a held or previously completed preview without logging a placement.",
+    "Desktop cover and uncover each record exactly one canonical lid action on release; automatic handle pickup preserves camera and layout.",
+    "A hot two-serving pot shows condensation while placement preserves its exact temperature, water volume and shared-clock time.",
+    "Covered-pot tools explain lifting the lid first; direct probe and pot-spoon attempts create no preview work, temperature check or cooking action.",
+    "The closed notebook keyboard route requires lift, correct destination, lower and Enter; wrong phases, repeated keys and duplicate placement do nothing.",
+    "A lid prediction matches the actual placement at unchanged temperature; a real thirty-second shared-clock step then changes the recorded water reading.",
+    "Reload preserves canonical lid placement; finished and replay cooks show their historical lid positions while all new placements remain locked.",
+    "Real phone touch gestures cover and uncover the hot four-serving pot with steady framing, visible held objects and condensation.",
+    "The cold four-serving touch path keeps the same placement rules and exact quantities without displaying hot-water condensation.",
+    "Touch cancellation, blur, external burner changes, resize and a second pointer return a held lid without recording stray placement actions.",
+    "At 320px in text view, the complete arrow-key lid interaction fits the screen and remains usable with forced colors.",
+    "Graphics loss cancels the physical lid preview and leaves the equivalent keyboard placement fully available."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop lid",
+      "violations": []
+    },
+    {
+      "name": "Phone lid",
+      "violations": []
+    },
+    {
+      "name": "320px forced-colors text lid",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

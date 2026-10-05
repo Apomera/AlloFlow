@@ -1,0 +1,187 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\alveolus-browser.config.cjs",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-alveolus-guide-2026-10-03/runs/browser-d87b46bb-02/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "anatomy-alveolus-guide.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-alveolus-guide-2026-10-03/runs/browser-d87b46bb-02/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "anatomy-alveolus-guide.spec.ts",
+      "file": "anatomy-alveolus-guide.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "A learner opens alveolar gas exchange, pauses exchange and navigates four steps without losing focus or saved work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 110119,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:10:47.746Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "980ee23785f974283b20-fcc7617c4edb3bf06dc1",
+          "file": "anatomy-alveolus-guide.spec.ts",
+          "line": 80,
+          "column": 5
+        },
+        {
+          "title": "Alveolar overview and barrier keys remain readable across desktop, 320px phones, Arabic larger text and forced colors",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 420000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 19565,
+                  "error": {
+                    "message": "Error: atlas\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m265\u001b[39m\nReceived:    \u001b[31m276\u001b[39m",
+                    "stack": "Error: atlas\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m265\u001b[39m\nReceived:    \u001b[31m276\u001b[39m\n    at scan (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-alveolus-guide.spec.ts:134:183)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-alveolus-guide.spec.ts:145:115",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-alveolus-guide.spec.ts",
+                      "column": 183,
+                      "line": 134
+                    },
+                    "snippet": "  132 |   const boxes=await page.locator(atlas+', '+atlas+' figure[data-anatomy-alveolus-scale]').evaluateAll(elements=>elements.map(element=>({tag:element.tagName,scale:element.getAttribute('data-anatomy-alveolus-scale'),client:element.clientWidth,scroll:element.scrollWidth,left:element.getBoundingClientRect().left,right:element.getBoundingClientRect().right}))),dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));\n  133 |   const violations=await page.evaluate(async selector=>{const result=await (window as any).axe.run({include:[[selector]]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22a','wcag22aa']}});return result.violations.map((item:any)=>({id:item.id,nodes:item.nodes.map((node:any)=>({target:node.target,summary:node.failureSummary}))}));},atlas);\n> 134 |   record.scans.push({view,boxes,dimensions,violations});expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.width);for(const box of boxes){expect(box.scroll,box.scale||'atlas').toBeLessThanOrEqual(box.client+1);expect(box.left).toBeGreaterThanOrEqual(0);expect(box.right).toBeLessThanOrEqual(dimensions.width);}expect(violations).toEqual([]);\n      |                                                                                                                                                                                       ^\n  135 | }\n  136 | async function capture(page:Page,record:any,locator:Locator,name:string){\n  137 |   const width=page.viewportSize()!.width,box=await locator.boundingBox();if(!box)throw Error('Missing screenshot target '+name);await page.setViewportSize({width,height:Math.ceil(box.height+200)});"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-alveolus-guide.spec.ts",
+                        "column": 183,
+                        "line": 134
+                      },
+                      "message": "Error: atlas\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m265\u001b[39m\nReceived:    \u001b[31m276\u001b[39m\n\n  132 |   const boxes=await page.locator(atlas+', '+atlas+' figure[data-anatomy-alveolus-scale]').evaluateAll(elements=>elements.map(element=>({tag:element.tagName,scale:element.getAttribute('data-anatomy-alveolus-scale'),client:element.clientWidth,scroll:element.scrollWidth,left:element.getBoundingClientRect().left,right:element.getBoundingClientRect().right}))),dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));\n  133 |   const violations=await page.evaluate(async selector=>{const result=await (window as any).axe.run({include:[[selector]]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22a','wcag22aa']}});return result.violations.map((item:any)=>({id:item.id,nodes:item.nodes.map((node:any)=>({target:node.target,summary:node.failureSummary}))}));},atlas);\n> 134 |   record.scans.push({view,boxes,dimensions,violations});expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.width);for(const box of boxes){expect(box.scroll,box.scale||'atlas').toBeLessThanOrEqual(box.client+1);expect(box.left).toBeGreaterThanOrEqual(0);expect(box.right).toBeLessThanOrEqual(dimensions.width);}expect(violations).toEqual([]);\n      |                                                                                                                                                                                       ^\n  135 | }\n  136 | async function capture(page:Page,record:any,locator:Locator,name:string){\n  137 |   const width=page.viewportSize()!.width,box=await locator.boundingBox();if(!box)throw Error('Missing screenshot target '+name);await page.setViewportSize({width,height:Math.ceil(box.height+200)});\n    at scan (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-alveolus-guide.spec.ts:134:183)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-alveolus-guide.spec.ts:145:115"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:12:39.703Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-alveolus-guide-2026-10-03\\runs\\browser-d87b46bb-02\\test-results\\anatomy-alveolus-guide-Alv-55012-rger-text-and-forced-colors\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-alveolus-guide-2026-10-03\\runs\\browser-d87b46bb-02\\test-results\\anatomy-alveolus-guide-Alv-55012-rger-text-and-forced-colors\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-alveolus-guide-2026-10-03\\runs\\browser-d87b46bb-02\\test-results\\anatomy-alveolus-guide-Alv-55012-rger-text-and-forced-colors\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-alveolus-guide.spec.ts",
+                    "column": 183,
+                    "line": 134
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "980ee23785f974283b20-5dca6e773ecf199cab8a",
+          "file": "anatomy-alveolus-guide.spec.ts",
+          "line": 141,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T16:10:31.101Z",
+    "duration": 152656.465,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

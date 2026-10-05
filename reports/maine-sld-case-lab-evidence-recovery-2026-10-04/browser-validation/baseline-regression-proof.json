@@ -1,0 +1,92 @@
+{
+  "recordedAt": "2026-10-04T14:22:34.955850+00:00",
+  "status": "EXPECTED_BASELINE_FAILURE",
+  "exitCode": 1,
+  "phase": "baseline-regression-01",
+  "sourceSha256": "46d1ce09304d70d98b60a4a7a758969b3c5f3eef99a6c5b522113a06e9397437",
+  "moduleSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+  "browserTestSha256": "286c499df4c04b5f7cd21f53010f95835c0987d3e6c83604b880f64089c5b1ab",
+  "testTitle": "most recent finding removal can restore exact roles and literal notes across all five case records and filtered score sources without transferring recovery state",
+  "failure": "Recovery group absent after removing the first selected Alex case finding; normal canonical setup completed successfully.",
+  "testDurationMs": 27278,
+  "stats": {
+    "startTime": "2026-10-04T14:18:27.203Z",
+    "duration": 143251.875,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "normalCanonicalSetup": true,
+  "workers": 1,
+  "automaticRetries": 0,
+  "timeoutMs": 120000,
+  "resultSha256": "8b650d810f6292de7e8f78b5caaa218d779d445cdd521ba3c93580a0b201c2db",
+  "files": [
+    {
+      "file": "baseline-regression-01/artifacts/.last-run.json",
+      "bytes": 96,
+      "sha256": "c703d6a8a51d464edd74feb29c48a85f44ad19bcf6d65cde525212292d1cd7e4"
+    },
+    {
+      "file": "baseline-regression-01/artifacts/maine-sld-practice-most-re-2c2de-transferring-recovery-state-chromium/error-context.md",
+      "bytes": 47547,
+      "sha256": "c15e66392f06af9a33cb6651183dc73450a2521e9f5e000cb15392087711bd83"
+    },
+    {
+      "file": "baseline-regression-01/artifacts/maine-sld-practice-most-re-2c2de-transferring-recovery-state-chromium/test-failed-1.png",
+      "bytes": 116112,
+      "sha256": "85ec845086d9ab244c3545925408c16983dbf21ca11178810a5f42e240039402"
+    },
+    {
+      "file": "baseline-regression-01/artifacts/maine-sld-practice-most-re-2c2de-transferring-recovery-state-chromium/trace.zip",
+      "bytes": 1178346,
+      "sha256": "21a2fb9026718a9223f5352b6415c4da6c22541c7e030eda76433f9005416897"
+    },
+    {
+      "file": "baseline-regression-01/artifacts/maine-sld-practice-most-re-2c2de-transferring-recovery-state-chromium/video.webm",
+      "bytes": 632497,
+      "sha256": "92928c32e03bfa6b6bc79cb3e0007f1948e0a6008bad10b9f72c5b8215bf887a"
+    },
+    {
+      "file": "baseline-regression-01/browser/browser-candidate.json",
+      "bytes": 290,
+      "sha256": "54e180307b48d6eaedf5f0e2f702a429eb12d58505de41b9bbf70aa4acc89a4d"
+    },
+    {
+      "file": "baseline-regression-01/browser/finding-removal-blank-worksheet.json",
+      "bytes": 5213,
+      "sha256": "c0d9b71a39e732d4156db2a36deceef2ad0a79ff950627c00f3c558a097266b1"
+    },
+    {
+      "file": "baseline-regression-01/browser/finding-removal-seed.json",
+      "bytes": 24377,
+      "sha256": "4c36768286a5217cbb5942340464fa8a5ae1b370eb77c0c728c0edb1f0e3de6a"
+    },
+    {
+      "file": "baseline-regression-01/result.json",
+      "bytes": 13455,
+      "sha256": "8b650d810f6292de7e8f78b5caaa218d779d445cdd521ba3c93580a0b201c2db"
+    },
+    {
+      "file": "baseline-regression-01/run-command.ps1",
+      "bytes": 1630,
+      "sha256": "69d47979d2a52ee71e35de4d917e2e4d36436cb63af708d56966c7e2a9e626b3"
+    },
+    {
+      "file": "baseline-regression-01/run-identity.json",
+      "bytes": 906,
+      "sha256": "eeeefedb7df8207cd5eb0d3a46adbf2772d93417f446f2cee2c827bcdc86f7c8"
+    },
+    {
+      "file": "baseline-regression-01/run.log",
+      "bytes": 7481,
+      "sha256": "42a1c2150200556a50c740d781b3bdef7b8eaab6ea6fa134b0b35066a0bf1e5c"
+    },
+    {
+      "file": "baseline-regression-01/runner-helper.py",
+      "bytes": 3977,
+      "sha256": "6169aa88bc664bff8cd3144aa3bdf4c8935521abfb4b08f6e1e7fd9a10e573b0"
+    }
+  ]
+}

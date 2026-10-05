@@ -1,0 +1,30 @@
+{
+  "verifiedAt": "2026-10-03T16:45:51.213Z",
+  "sourceSHA256": "e2ba62eac85491487767c284c681fb78e8b76d8d755bd0545035e5268e76c550",
+  "tests": {
+    "passed": 273,
+    "failed": 0,
+    "files": 23,
+    "initialRunPassed": false,
+    "cleanRetryFiles": 4,
+    "final": "final-regression-results.json"
+  },
+  "browser": {
+    "matchingGroups": 14,
+    "observeRegressionGroups": 16,
+    "pageErrors": [],
+    "browser": "Chromium",
+    "simulatedViewports": [
+      320,
+      390,
+      768,
+      1280,
+      1600
+    ]
+  },
+  "mirrors": true,
+  "unchangedArtAndOpticsSources": true,
+  "englishKeys": 175,
+  "staged": false,
+  "committed": false
+}

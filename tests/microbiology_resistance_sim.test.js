@@ -1293,8 +1293,8 @@ describe('Mounted resistance controls', { timeout: 60000 }, () => {
     expect(comparisonCells('resistant')).toEqual(['Resistant cells', '12', '2', '-10']);
     expect(comparisonCells('totalAlive')).toEqual(['Total living cells', '24', '2', '-22']);
     expect(comparisonCells('sharePct')).toEqual(['Resistant share', '50%', '100%', '+50 percentage points']);
-    expect(region.querySelectorAll('thead th[scope="col"]')).toHaveLength(4);
-    expect(region.querySelectorAll('tbody th[scope="row"]')).toHaveLength(4);
+    expect(region.querySelector('#micro-resistance-comparison-table').querySelectorAll('thead th[scope="col"]')).toHaveLength(4);
+    expect(region.querySelector('#micro-resistance-comparison-table').querySelectorAll('tbody th[scope="row"]')).toHaveLength(4);
     expect(region.querySelector('table').closest('[role="region"]').tabIndex).toBe(0);
     expect(Math.random.mock.calls).toHaveLength(randomCalls);
     expect(awardXP).not.toHaveBeenCalled();

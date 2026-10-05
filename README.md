@@ -150,6 +150,32 @@ The STEM Lab is a dynamically-loaded suite of browser-based interactive tools. A
 
 Each tool supports **Generate Drill** for instant related practice sets and saves/restores state with the session.
 
+Perception Lab adds six visual experiments and three **Match by eye** activities for brightness, circle size, and line length. Learners can swap or remove surroundings, reveal drawing values, compare pinned settings at the same scale, and save observations with deletion undo and JSON export. See the [Perception Lab enhancement report](reports/artstudio-workspace/perception-deep/enhancements.md) for previews and verification.
+
+Each matching activity also supports a **three-match study** with fixed surroundings, varied starting positions, and separate notes. After recording all three, learners can reveal their median and range, review a saved study, or repeat its settings. See the [repeated-study enhancement report](reports/artstudio-workspace/perception-repeat/enhancements.md) for verification and previews.
+
+Saved studies can be compared under the same experiment and reference. Independent reveals, a shared-scale plot, median shifts, and changed-setting explanations help learners compare their observations. See the [study-comparison enhancement report](reports/artstudio-workspace/perception-compare/enhancements.md).
+
+Complete saved studies also offer a one-setting repeat planner. It keeps the reference and actual starting positions, protects baseline records at the notebook limit, and opens the two studies for independent reveals after three new matches. See the [guided-study enhancement report](reports/artstudio-workspace/perception-guided/enhancements.md).
+
+Exported Perception notebooks can now be reopened with a previewed import. It preserves existing observations, keeps repeated matches together, checks the 24-record limit, and offers Undo import. See the [notebook import enhancement report](reports/artstudio-workspace/perception-import/enhancements.md).
+
+The Perception notebook also has a finder with observation and saved-study views, experiment/status filters, and search across visible notes, impressions, and titles. Repeated matches stay grouped, original notebook numbers remain visible, and open study comparisons are independent of the filters. See the [notebook finder enhancement report](reports/artstudio-workspace/perception-finder/enhancements.md).
+
+Revealed Perception studies now include previews of their actual recorded drawings. Choose any of the three trials, inspect its impression and note, and compare independently selected A/B trials at the same scale. Preview controls preserve the current drawing and notebook. See the [recorded drawing enhancement report](reports/artstudio-workspace/perception-recorded-preview/enhancements.md).
+
+Perception studies and ready A/B comparisons can now export standalone HTML reports containing every recorded drawing, full notes, settings, and results. Open the exported file in a browser to read or print it; incomplete or hidden studies cannot export. See the [portable study report enhancement report](reports/artstudio-workspace/perception-study-report/enhancements.md).
+
+The Perception notebook now shows saved and available spaces and preserves existing observations when full. Delete a whole saved study through a title/count preview, then restore all its records with one guarded Undo. See the [notebook preservation enhancement report](reports/artstudio-workspace/perception-notebook-capacity/enhancements.md).
+
+Recorded Perception drawings can be enlarged into a modal viewer with nearly full-window width, trial selection, measurement guides, and complete notes. Keyboard focus and saved-result visibility remain protected. See the [enlarged drawing enhancement report](reports/artstudio-workspace/perception-drawing-viewer/enhancements.md).
+
+Compatible Perception studies can also open together in an enlarged A/B viewer, with independent trial choices, equal drawing scale, and responsive or manual stacking. See the [paired drawing enhancement report](reports/artstudio-workspace/perception-paired-viewer/enhancements.md).
+
+Perception Lab now has illustrated experiment choices, a clearer drawing workspace, compact recorded-drawing controls, and distinct results and note sections across responsive and accessible themes. See the [visual presentation enhancement report](reports/artstudio-workspace/perception-visual-presentation/enhancements.md).
+
+Use **Focus experiment** to work in a nearly full-window Perception workspace with live controls, notes, matching studies, and pinned comparisons. Closing it preserves the drawing and returns keyboard focus to the workspace. See the [focused experiment enhancement report](reports/artstudio-workspace/perception-focus-workspace/enhancements.md).
+
 ---
 
 ## 💚 SEL Hub (72 Interactive Tools)

@@ -1,0 +1,7 @@
+{
+  "kind": "launcher",
+  "testsStarted": 0,
+  "reason": "Installed Vitest rejects --minWorkers. Removed unsupported option; retained --maxWorkers=1 and --pool=forks.",
+  "productSourceChanged": false,
+  "existingTestsChanged": false
+}

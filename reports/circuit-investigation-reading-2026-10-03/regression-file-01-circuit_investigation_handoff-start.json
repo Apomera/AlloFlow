@@ -1,0 +1,28 @@
+{
+  "startedAt": "2026-10-03T14:09:11.943Z",
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/circuit_investigation_handoff.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--isolate",
+    "--testTimeout=30000",
+    "--hookTimeout=60000",
+    "--silent",
+    "--reporter=dot",
+    "--reporter=json",
+    "--outputFile=reports/circuit-investigation-reading-2026-10-03/regression-file-01-circuit_investigation_handoff.json"
+  ],
+  "runnerSha256": "bb8196df43337ef45344a0d7f913ec39e9770250b0dc5ec0cf1c253f0aad112d",
+  "files": {
+    "stem_lab/stem_tool_circuit.js": "e81cf1cb831d3754b208ed31d6467b14cb6fa140c5b6c299855ce671c5c12257",
+    "desktop/web-app/public/stem_lab/stem_tool_circuit.js": "e81cf1cb831d3754b208ed31d6467b14cb6fa140c5b6c299855ce671c5c12257",
+    "reports/circuit-investigation-reading-2026-10-03/run-regression.cjs": "bb8196df43337ef45344a0d7f913ec39e9770250b0dc5ec0cf1c253f0aad112d",
+    "tests/circuit_investigation_handoff.test.js": "adce18c843924d0a249a291dd1bb9457a25ac3babdc55179a8ff2c89cc208f8d"
+  },
+  "selected": "tests/circuit_investigation_handoff.test.js",
+  "expectedAssertions": 12
+}

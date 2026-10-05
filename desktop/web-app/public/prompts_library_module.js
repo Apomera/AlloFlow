@@ -125,6 +125,8 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
         Target Grade: ${gradeLevel}
         Topic: "${sourceTopic || "General"}"
         Language: ${language}
+        ${hasCustom ? `USER CUSTOM REQUESTS FOR THE ENTIRE LESSON: "${customAdditions}"
+        Apply these requests to every applicable section, including pacing, materials, accessibility supports and activities. An explicitly requested overall lesson duration takes priority over the default class period. Fit all five timed segments within that total; scale the hook and mini-lesson to fit. Keep extensions optional and outside the core duration unless the user explicitly includes them.` : ''}
         CRITICAL INSTRUCTION: THE DYNAMIC MANIFEST & DIGITAL CONTEXT
         1. Do NOT write generic instructions like "Give students a quiz."
         2. Instead, you MUST reference the exact titles from the Asset Inventory.
@@ -140,9 +142,9 @@ const createPromptsLibrary = ({ STEM_TOOL_REGISTRY } = {}) => {
         1. **Materials Needed:** A comprehensive checklist. You MUST explicitly list every specific resource found in the "Asset Inventory" provided above (e.g., "Leveled Text", "Concept Sort Activity", "Visual Diagram"). Also include standard classroom supplies (pencils, paper, devices).
         2. Learning Objectives (SWBAT): Specific, measurable, aligned with the target standards provided.
         3. Essential Question: A provocative, open-ended question to guide inquiry.
-        4. "Hook" Activity: An engaging opening script (2-3 mins). **Explicitly reference** the "Visual Support" or "Adventure Mode" if available in context.
-        5. Direct Instruction Script (Mini-Lesson): A DETAILED, STEP-BY-STEP SCRIPT (10-15 mins).
-        PACING (REQUIRED): Every timed segment ("hook", "directInstruction", "guidedPractice", "independentPractice", "closure") MUST begin with its time estimate in parentheses using the literal token "min", e.g. "(10 min) Teacher says: ...". Keep the token "min" exactly as written even when the plan is in ${language}. The five estimates should add up to one realistic class period for ${gradeLevel} (typically 40-60 minutes) and must account for the reading load of the Leveled Text and the number of quiz items in the inventory.
+        4. "Hook" Activity: An engaging opening script (typically 2-3 mins when no overall duration is requested). **Explicitly reference** the "Visual Support" or "Adventure Mode" if available in context.
+        5. Direct Instruction Script (Mini-Lesson): A DETAILED, STEP-BY-STEP SCRIPT (typically 10-15 mins when no overall duration is requested).
+        PACING (REQUIRED): Every timed segment ("hook", "directInstruction", "guidedPractice", "independentPractice", "closure") MUST begin with its time estimate in parentheses using the literal token "min", e.g. "(10 min) Teacher says: ...". Keep the token "min" exactly as written even when the plan is in ${language}. The five estimates MUST add up to the explicitly requested overall lesson duration, when provided in USER CUSTOM REQUESTS. Otherwise, use one realistic class period for ${gradeLevel} (typically 40-60 minutes). Account for the reading load of the Leveled Text and the number of quiz items in the inventory; select a feasible subset of activities when the requested time is short.
            - Include specific dialogue for the teacher (using labels like "Teacher says:" translated into ${language}).
            - Break down the core concept clearly using analogies appropriate for ${gradeLevel}.
            - Include specific "Check for Understanding" questions to ask the class, along with expected student responses.

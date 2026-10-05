@@ -1,0 +1,8 @@
+{
+  "passed": false,
+  "error": "page.evaluate: Error: Timed out: initial native welcome {\"peers\":[{\"connection\":\"new\",\"ice\":\"new\",\"signaling\":\"have-local-offer\",\"local\":true,\"remote\":false}],\"rooms\":{\"FIRST\":{\"up\":[\"student\",\"rtc\"],\"down\":[]}},\"chunks\":0,\"packets\":0,\"failures\":[]}\n    at until (eval at evaluate (:302:30), <anonymous>:5:114)\n    at async eval (eval at evaluate (:302:30), <anonymous>:28:43)\n    at async <anonymous>:328:30\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\native-rtc.cjs:16:27",
+  "pageErrors": [
+    "Illegal invocation",
+    "Illegal invocation"
+  ]
+}

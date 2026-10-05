@@ -1,0 +1,36 @@
+{
+  "checkedAt": "2026-10-01T13:49:07.601Z",
+  "scope": [
+    "ui_strings.js",
+    "desktop/web-app/public/ui_strings.js"
+  ],
+  "keyCount": 20,
+  "keys": [
+    "review_fix_fixed",
+    "review_fix_requested",
+    "review_fix_unchanged",
+    "review_fix_empty",
+    "review_fix_stalled",
+    "review_fix_retry",
+    "review_pack_stopped",
+    "review_pack_recovered",
+    "review_pack_silent",
+    "review_gap_audio",
+    "review_gap_runtime_audio",
+    "review_gap_rhyme",
+    "review_gap_task",
+    "review_gap_images",
+    "review_gap_sentence_audio",
+    "review_gap_tiles",
+    "review_gap_unverified",
+    "review_gap_edited",
+    "review_gap_phonemes",
+    "review_missing_audio"
+  ],
+  "beforeSha256": "4e38dee293c780076fa7aa74c84a71785e94e5305a9b57adebc13f67a660443d",
+  "afterSha256": "4a7ec832288eecd8911fd41dfba1f0e6b39e3e442a5826ca40f8462c5826464f",
+  "preservesEveryExistingByte": true,
+  "preservesEveryExistingValue": true,
+  "otherLanguagePacksChanged": false,
+  "applied": true
+}

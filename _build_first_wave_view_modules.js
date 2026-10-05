@@ -55,7 +55,8 @@ function buildFirstWaveModule(key, sourceOverride) {
   const sourceBody = sourceOverride == null
     ? fs.readFileSync(path.join(ROOT, config.source), 'utf8')
     : String(sourceOverride);
-  const source = (key === 'ColdPathSurfaces' ? fs.readFileSync(path.join(ROOT, 'allobot_search_settings.jsx'), 'utf8') + '\n' : '') + sourceBody;
+  const readiness = key === 'HostHandlers' ? fs.readFileSync(path.join(ROOT, 'word_sounds_readiness_contract.js'), 'utf8') + '\n' : '';
+  const source = readiness + (key === 'ColdPathSurfaces' ? fs.readFileSync(path.join(ROOT, 'allobot_search_settings.jsx'), 'utf8') + '\n' : '') + sourceBody;
   const compiled = babel.transformSync(source, {
     plugins: ['@babel/plugin-transform-react-jsx'],
     configFile: false,
@@ -87,8 +88,11 @@ function writeOne(key) {
   const output = buildFirstWaveModule(key);
   const rootOutput = path.join(ROOT, config.output);
   const publicOutput = path.join(ROOT, 'desktop', 'web-app', 'public', config.output);
-  fs.writeFileSync(rootOutput, output, 'utf8');
-  fs.writeFileSync(publicOutput, output, 'utf8');
+  for (const target of [rootOutput, publicOutput]) {
+    const temporary = target + '.build-' + process.pid + '.tmp';
+    fs.writeFileSync(temporary, output, 'utf8');
+    fs.renameSync(temporary, target);
+  }
   console.log(`Built ${config.output} (${Buffer.byteLength(output)} bytes)`);
 }
 

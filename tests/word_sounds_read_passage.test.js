@@ -168,12 +168,23 @@ describe('the player treats the story as print', () => {
     expect(MODULE).toMatch(/lastWordForReadPassage\.current = null;/);
   });
 
-  it('the local fallback rotates three different frames', () => {
-    const idx = MODULE.indexOf('const parts = [0, 1, 2].map((offset) => {');
-    expect(idx).toBeGreaterThan(0);
-    expect(MODULE.slice(idx, idx + 220)).toMatch(/\(seed \+ offset\) % READ_SENTENCE_FRAMES\.length/);
-  });
-});
+  it('requires a reviewed prepared board instead of fabricating a local story', () => {
+    const start = MODULE.indexOf('      React.useEffect(() => {', MODULE.indexOf('const readPassagePreparedForRef'));
+    const end = MODULE.indexOf('      }, [wordSoundsActivity', start);
+    expect(start).toBeGreaterThan(0);
+    expect(end).toBeGreaterThan(start);
+    const effect = MODULE.slice(start, end) + '\n});';
+    const run = (prepared) => {
+      let board;
+      new Function('React', 'wordSoundsActivity', 'currentWordSoundsWord', 'wordSoundsPhonemes', 'lastWordForReadPassage', 'readPassagePreparedForRef', 'setReadPassageBoard', effect)(
+        { useEffect: fn => fn() }, 'read_passage', 'corn', { word: 'corn', activityItems: { read_passage: prepared } }, { current: null }, { current: null }, value => { board = value; });
+      return board;
+    };
+    expect(run(null)).toEqual({ contentStatus: 'teacher_review_required' });
+    const prepared = { story: 'Look at the corn. The corn is hot. We like the corn.', parts: [{ before: 'Look at the ', after: '.' }, { before: 'The ', after: ' is hot.' }, { before: 'We like the ', after: '.' }], options: ['corn', 'bat'] };
+    expect(run(prepared)).toEqual(prepared);
+    expect(run({ ...prepared, options: ['corn'] })).toEqual({ contentStatus: 'teacher_review_required' });
+  });});
 
 describe('one instruction string, three homes', () => {
   const INSTRUCTION = 'Read the story. Which word finishes it?';

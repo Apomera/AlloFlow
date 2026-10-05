@@ -1,0 +1,319 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass16-2026-10-02/browser-artifacts-initial",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-entry-dynamics-diagnostics.spec.ts",
+      "file": "moon-mission-entry-dynamics-diagnostics.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "full lift, signed projection and physical glyph scales distinguish bank from ballistic motion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 128506,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:54:23.790Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dynamics-forces-bank90",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\browser-artifacts-initial\\moon-mission-entry-dynamic-83f3e--bank-from-ballistic-motion-chromium\\attachments\\dynamics-forces-bank90-886102293987d14933b50f87afa70300df91760b.png"
+                    },
+                    {
+                      "name": "dynamics-forces-ballistic",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\browser-artifacts-initial\\moon-mission-entry-dynamic-83f3e--bank-from-ballistic-motion-chromium\\attachments\\dynamics-forces-ballistic-804ed24bd74a1da9124f897ec07076ec1bcfb7b4.png"
+                    },
+                    {
+                      "name": "dynamics-forces-bank180",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\browser-artifacts-initial\\moon-mission-entry-dynamic-83f3e--bank-from-ballistic-motion-chromium\\attachments\\dynamics-forces-bank180-be97e8f6d3c8965cf118b155a6d42b4d8ded7b61.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8d4e3f64651d7abe94b0-36839f5dff81e29b82f1",
+          "file": "moon-mission-entry-dynamics-diagnostics.spec.ts",
+          "line": 135,
+          "column": 5
+        },
+        {
+          "title": "force and energy views share the entry clock while thermal inspection stays independent",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 173635,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:56:35.400Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dynamics-energy-shared-clock",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\browser-artifacts-initial\\moon-mission-entry-dynamic-0abb5-nspection-stays-independent-chromium\\attachments\\dynamics-energy-shared-clock-633df56f5fe881fa9a012254ace5709082ef6081.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8d4e3f64651d7abe94b0-f63a6ad3800382486ec8",
+          "file": "moon-mission-entry-dynamics-diagnostics.spec.ts",
+          "line": 157,
+          "column": 5
+        },
+        {
+          "title": "earlier v1 source remains inspectable without a reconstructed bank or receipt changes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19384,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:59:29.054Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dynamics-v1-energy",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\browser-artifacts-initial\\moon-mission-entry-dynamic-4186a-ted-bank-or-receipt-changes-chromium\\attachments\\dynamics-v1-energy-404947dfdf0a69016d89569255c357c5af05ccaf.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8d4e3f64651d7abe94b0-525ba3f3b3f9541bafd9",
+          "file": "moon-mission-entry-dynamics-diagnostics.spec.ts",
+          "line": 188,
+          "column": 5
+        },
+        {
+          "title": "320 px diagrams and keyboard view controls retain accessible targets and readable units",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17748,
+                  "error": {
+                    "message": "Error: page.screenshot: Target page, context or browser has been closed\nBrowser logs:\n\n<launching> C:\\Users\\cabba\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\cabba\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-Gcixgu --remote-debugging-pipe --no-startup-window\n<launched> pid=15100\n[pid=15100][err] [1002/215427.857:ERROR:gpu\\ipc\\client\\command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.\n[pid=15100][err] Received fatal exception 0xe0000008\n[pid=15100][err] \tKERNELBASE!LoadLibraryExW [0x7ffae81f79e8+1ee128]\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n",
+                    "stack": "Error: page.screenshot: Target page, context or browser has been closed\nBrowser logs:\n\n<launching> C:\\Users\\cabba\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\cabba\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-Gcixgu --remote-debugging-pipe --no-startup-window\n<launched> pid=15100\n[pid=15100][err] [1002/215427.857:ERROR:gpu\\ipc\\client\\command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.\n[pid=15100][err] Received fatal exception 0xe0000008\n[pid=15100][err] \tKERNELBASE!LoadLibraryExW [0x7ffae81f79e8+1ee128]\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n    at capture (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-entry-dynamics-diagnostics.spec.ts:64:14)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-entry-dynamics-diagnostics.spec.ts:206:3",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-entry-dynamics-diagnostics.spec.ts",
+                      "column": 14,
+                      "line": 64
+                    },
+                    "snippet": "  62 | async function capture(page: Page, info: TestInfo, name: string) {\n  63 |   await mkdir(REPORT, { recursive: true }); const path = join(REPORT, name + '-' + info.project.name + '.png');\n> 64 |   await page.screenshot({ path, fullPage: true }); await info.attach(name, { path, contentType: 'image/png' });\n     |              ^\n  65 | }\n  66 | async function forceReadings(page: Page) {\n  67 |   const calculation = await expected(page, await time(page)), row = calculation.sample;"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-entry-dynamics-diagnostics.spec.ts",
+                        "column": 14,
+                        "line": 64
+                      },
+                      "message": "Error: page.screenshot: Target page, context or browser has been closed\nBrowser logs:\n\n<launching> C:\\Users\\cabba\\AppData\\Local\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe --disable-field-trial-config --disable-background-networking --disable-background-timer-throttling --disable-backgrounding-occluded-windows --disable-back-forward-cache --disable-breakpad --disable-client-side-phishing-detection --disable-component-extensions-with-background-pages --disable-component-update --no-default-browser-check --disable-default-apps --disable-dev-shm-usage --disable-edgeupdater --disable-extensions --disable-features=AvoidUnnecessaryBeforeUnloadCheckSync,BoundaryEventDispatchTracksNodeRemoval,DestroyProfileOnBrowserClose,DialMediaRouteProvider,GlobalMediaControls,HttpsUpgrades,LensOverlay,MediaRouter,PaintHolding,ThirdPartyStoragePartitioning,Translate,AutoDeElevate,RenderDocument,OptimizationHints,msForceBrowserSignIn,msEdgeUpdateLaunchServicesPreferredVersion --enable-features=CDPScreenshotNewSurface --allow-pre-commit-input --disable-hang-monitor --disable-ipc-flooding-protection --disable-popup-blocking --disable-prompt-on-repost --disable-renderer-backgrounding --force-color-profile=srgb --metrics-recording-only --no-first-run --password-store=basic --use-mock-keychain --no-service-autorun --export-tagged-pdf --disable-search-engine-choice-screen --unsafely-disable-devtools-self-xss-warnings --edge-skip-compat-layer-relaunch --disable-infobars --disable-search-engine-choice-screen --disable-sync --enable-unsafe-swiftshader --headless --hide-scrollbars --mute-audio --blink-settings=primaryHoverType=2,availableHoverTypes=2,primaryPointerType=4,availablePointerTypes=4 --no-sandbox --user-data-dir=C:\\Users\\cabba\\AppData\\Local\\Temp\\playwright_chromiumdev_profile-Gcixgu --remote-debugging-pipe --no-startup-window\n<launched> pid=15100\n[pid=15100][err] [1002/215427.857:ERROR:gpu\\ipc\\client\\command_buffer_proxy_impl.cc:285] ContextResult::kTransientFailure: Failed to send GpuControl.CreateCommandBuffer.\n[pid=15100][err] Received fatal exception 0xe0000008\n[pid=15100][err] \tKERNELBASE!LoadLibraryExW [0x7ffae81f79e8+1ee128]\nCall log:\n\u001b[2m  - taking page screenshot\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\n\n  62 | async function capture(page: Page, info: TestInfo, name: string) {\n  63 |   await mkdir(REPORT, { recursive: true }); const path = join(REPORT, name + '-' + info.project.name + '.png');\n> 64 |   await page.screenshot({ path, fullPage: true }); await info.attach(name, { path, contentType: 'image/png' });\n     |              ^\n  65 | }\n  66 | async function forceReadings(page: Page) {\n  67 |   const calculation = await expected(page, await time(page)), row = calculation.sample;\n    at capture (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-entry-dynamics-diagnostics.spec.ts:64:14)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-entry-dynamics-diagnostics.spec.ts:206:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T01:59:48.479Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\browser-artifacts-initial\\moon-mission-entry-dynamic-66ac0--targets-and-readable-units-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\browser-artifacts-initial\\moon-mission-entry-dynamic-66ac0--targets-and-readable-units-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\browser-artifacts-initial\\moon-mission-entry-dynamic-66ac0--targets-and-readable-units-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-entry-dynamics-diagnostics.spec.ts",
+                    "column": 14,
+                    "line": 64
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "8d4e3f64651d7abe94b0-573f811bb8862d90abc0",
+          "file": "moon-mission-entry-dynamics-diagnostics.spec.ts",
+          "line": 200,
+          "column": 5
+        },
+        {
+          "title": "completed report and replay retain own physics, precontact limits and once-only entry rewards",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19009,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T02:00:20.312Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "dynamics-completed-precontact",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\browser-artifacts-initial\\moon-mission-entry-dynamic-da873-and-once-only-entry-rewards-chromium\\attachments\\dynamics-completed-precontact-8705938eeeab6003f475d1b7e9acd8bdb78ba5ff.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8d4e3f64651d7abe94b0-7235b957a5710f879a06",
+          "file": "moon-mission-entry-dynamics-diagnostics.spec.ts",
+          "line": 225,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T01:54:17.624Z",
+    "duration": 394021.205,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

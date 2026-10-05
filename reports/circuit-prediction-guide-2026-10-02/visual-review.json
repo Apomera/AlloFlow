@@ -1,0 +1,116 @@
+{
+  "sourceSha256": "6478b21accc3061b34a7328507d83bffec5d7de7d4786565e300e1ddb7d7a4ba",
+  "scriptSha256": "5092cc14d20009cc5ba62bbcb5903a844f803ce9fea0d41f7ceba349e507a391",
+  "browserResultSha256": "61965367faee3c8c75d79777463ae96e6ae744e5762584a8987263ab424debe7",
+  "nativeSession": 69490,
+  "nativeExitCode": 0,
+  "browserClosedByFinally": true,
+  "reviewMethod": "All 14 PNGs inspected at original resolution with view_image.",
+  "screenshots": [
+    {
+      "file": "prediction-guide-transition-tested-390.png",
+      "sha256": "c9b77f287b5f70cd05ab5e5c474f9bbbd587275bd6594494b8b8a23037447895",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-closed-gain-320.png",
+      "sha256": "80f78ba7c3421be29fdf8f37b6d3060e758561c595a1af4010830a62985dffde",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-open-gain-1280.png",
+      "sha256": "76083d09b50dd1c1f32cf58dd9d25e0b97ff15786831828a70b6ef41f9ef3b62",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-open-gain-320.png",
+      "sha256": "4a31a6cc8b9ad1bd8da2d58d9f2f1dd10c8a8b7f65a46f639b13f6bb9bb5777f",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-closed-limit-320.png",
+      "sha256": "80f78ba7c3421be29fdf8f37b6d3060e758561c595a1af4010830a62985dffde",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-open-limit-1280.png",
+      "sha256": "46de2aa5fd925230c80088d354c9afe796510ec12080d9553dbf8feb91b12252",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-open-limit-320.png",
+      "sha256": "1dd95fb84e250ce26003e7b432a19da6ce895525e103dd84c63ec649951ba94d",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-closed-sensor-320.png",
+      "sha256": "20212b1e4f7da00d74b638ee27a7b8d20d9a96aac2b885ee03e6899936427198",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-open-sensor-1280.png",
+      "sha256": "a3eafa391862fbd6a4467a2e996d2e8d02c7677709481b48f22ba70144998334",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-open-sensor-320.png",
+      "sha256": "d77b274b53773acd1755dd0aec1c1496816b59c066e439c34b5aab81cb7e83d9",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-gain-200pct-text-320.png",
+      "sha256": "1dc86282ac99145150874c2b2f54fade5d5cefdb54698ea14fb7683d8118ea09",
+      "reviewed": true
+    },
+    {
+      "file": "prediction-guide-sensor-200pct-text-320.png",
+      "sha256": "35b2111e69f4863d29f35b333c7f1ddce1612d58c9e0de75c0bd32a6b5e3b41d",
+      "reviewed": true
+    },
+    {
+      "file": "forced-colors-prediction-guide-gain-320.png",
+      "sha256": "ff180d7d8bde751e2d74b1707a6f25cf61f4d0245bc4bd36940d9261c458a07e",
+      "reviewed": true
+    },
+    {
+      "file": "forced-colors-prediction-guide-sensor-320.png",
+      "sha256": "23d73caa019ef508433366426258b6308e82b1d38b13ae118686f33c2265e8a3",
+      "reviewed": true
+    }
+  ],
+  "materialIssues": [],
+  "observations": [
+    "All three experiment prompts are readable at desktop and320px, with clear numbered headings and restrained divider rules.",
+    "The three closed summaries remain compact with a native disclosure marker.",
+    "Both actual200% views keep complete words and list markers within the guide, with readable spacing and no clipping.",
+    "Both forced-color views retain clear text, rules, borders and a visible native marker.",
+    "The native Test context shows the preserved draft in its expanded textarea and the existing closed Build an explanation disclosure."
+  ],
+  "approved": true,
+  "passed": true,
+  "rootInspected": [
+    "prediction-guide-open-gain-1280.png",
+    "prediction-guide-open-sensor-320.png",
+    "prediction-guide-gain-200pct-text-320.png",
+    "forced-colors-prediction-guide-sensor-320.png",
+    "prediction-guide-closed-limit-320.png",
+    "prediction-guide-transition-tested-390.png"
+  ],
+  "screenshotsReviewedByCircuitUI": 14,
+  "screenshotSha256": {
+    "prediction-guide-transition-tested-390.png": "c9b77f287b5f70cd05ab5e5c474f9bbbd587275bd6594494b8b8a23037447895",
+    "prediction-guide-closed-gain-320.png": "80f78ba7c3421be29fdf8f37b6d3060e758561c595a1af4010830a62985dffde",
+    "prediction-guide-open-gain-1280.png": "76083d09b50dd1c1f32cf58dd9d25e0b97ff15786831828a70b6ef41f9ef3b62",
+    "prediction-guide-open-gain-320.png": "4a31a6cc8b9ad1bd8da2d58d9f2f1dd10c8a8b7f65a46f639b13f6bb9bb5777f",
+    "prediction-guide-closed-limit-320.png": "80f78ba7c3421be29fdf8f37b6d3060e758561c595a1af4010830a62985dffde",
+    "prediction-guide-open-limit-1280.png": "46de2aa5fd925230c80088d354c9afe796510ec12080d9553dbf8feb91b12252",
+    "prediction-guide-open-limit-320.png": "1dd95fb84e250ce26003e7b432a19da6ce895525e103dd84c63ec649951ba94d",
+    "prediction-guide-closed-sensor-320.png": "20212b1e4f7da00d74b638ee27a7b8d20d9a96aac2b885ee03e6899936427198",
+    "prediction-guide-open-sensor-1280.png": "a3eafa391862fbd6a4467a2e996d2e8d02c7677709481b48f22ba70144998334",
+    "prediction-guide-open-sensor-320.png": "d77b274b53773acd1755dd0aec1c1496816b59c066e439c34b5aab81cb7e83d9",
+    "prediction-guide-gain-200pct-text-320.png": "1dc86282ac99145150874c2b2f54fade5d5cefdb54698ea14fb7683d8118ea09",
+    "prediction-guide-sensor-200pct-text-320.png": "35b2111e69f4863d29f35b333c7f1ddce1612d58c9e0de75c0bd32a6b5e3b41d",
+    "forced-colors-prediction-guide-gain-320.png": "ff180d7d8bde751e2d74b1707a6f25cf61f4d0245bc4bd36940d9261c458a07e",
+    "forced-colors-prediction-guide-sensor-320.png": "23d73caa019ef508433366426258b6308e82b1d38b13ae118686f33c2265e8a3"
+  }
+}

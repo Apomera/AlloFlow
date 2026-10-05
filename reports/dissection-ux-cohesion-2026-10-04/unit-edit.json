@@ -1,0 +1,6 @@
+{
+  "baseline": "ac6feac17dae421685945889938e0573f3a11205cdba28fdfe7892dac376f70d",
+  "final": "e42bb75cac72a2879aa813239bc182ef589c1f2d47b00a4c65f96800e592486a",
+  "old": "const rail = root.querySelector('.diss-workflow');\n    expect(rail, 'workflow rail').not.toBeNull();\n    expect(rail.querySelectorAll('[aria-current=\"step\"]')).toHaveLength(1);",
+  "new": "const rail = root.querySelector('.diss-workflow');\n    expect(rail, 'workflow rail').not.toBeNull();\n    expect(rail.querySelectorAll('[aria-current=\"step\"]')).toHaveLength(1);\n    expect(rail.querySelectorAll('li[data-state=\"neutral\"]')).toHaveLength(5);\n    expect(rail.querySelectorAll('li[data-state=\"complete\"], li[data-state=\"upcoming\"]')).toHaveLength(0);"
+}

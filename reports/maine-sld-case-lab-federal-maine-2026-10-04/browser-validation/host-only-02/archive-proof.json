@@ -1,0 +1,98 @@
+{
+  "archivedAt": "2026-10-04T17:22:01.775436+00:00",
+  "name": "host-only-02",
+  "exitCode": 0,
+  "fileCount": 14,
+  "files": [
+    {
+      "file": "artifacts/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903",
+      "archiveByteExact": true
+    },
+    {
+      "file": "browser/actual-app-host.png",
+      "bytes": 81376,
+      "sha256": "024cfba397e432a2e5cd032c8015ef95bb5e2ad81f5edb0cf1615e9060c7a3c2",
+      "archiveByteExact": true
+    },
+    {
+      "file": "browser/actual-app-marisol-host.png",
+      "bytes": 83871,
+      "sha256": "2aa9b942952318834e885be33ca7fb51ab9b082bfadeee38755263f9f9426544",
+      "archiveByteExact": true
+    },
+    {
+      "file": "browser/actual-hub-card.png",
+      "bytes": 91031,
+      "sha256": "71c570c638e1515bd0ea4d1c612e62d4f58dd1a11b89035a2802baff7dbd256b",
+      "archiveByteExact": true
+    },
+    {
+      "file": "browser/browser-candidate.json",
+      "bytes": 290,
+      "sha256": "683266025ac23400ebf185363399aa7f90b144cf3413675b595f6f1481821bf0",
+      "archiveByteExact": true
+    },
+    {
+      "file": "host-guard-helper.py",
+      "bytes": 5004,
+      "sha256": "a70f441b29c378191ea79a11b3ab9bcd1ec57869c0f2e32d473bf8de924eaf64",
+      "archiveByteExact": true
+    },
+    {
+      "file": "preflight-http-host.bundle.js",
+      "bytes": 1977975,
+      "sha256": "69c86008789f489da23eb74cf3206e1101e48dfd86ef849c43632d466a86024f",
+      "archiveByteExact": true
+    },
+    {
+      "file": "preflight-http-maine_sld_practice_module.js",
+      "bytes": 199134,
+      "sha256": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+      "archiveByteExact": true
+    },
+    {
+      "file": "prelaunch-guard.json",
+      "bytes": 2455,
+      "sha256": "a46eb83aa9f6b92e00b5beb37ceea581d11ae07b56cbcaceb5f8b347d0242203",
+      "archiveByteExact": true
+    },
+    {
+      "file": "result.json",
+      "bytes": 3200,
+      "sha256": "b75dd792c7a371654ea3afc60a035d35370aeaaac028655e85f84c7e7c6b30bb",
+      "archiveByteExact": true
+    },
+    {
+      "file": "run-command.ps1",
+      "bytes": 1559,
+      "sha256": "26c393503c29c68459443a112f7e268604117546528883daf12f1092dab08789",
+      "archiveByteExact": true
+    },
+    {
+      "file": "run-identity.json",
+      "bytes": 879,
+      "sha256": "2fa30189b296458fd18a2cbfdb768e9825ace380872adf70ec658796d9c0eb06",
+      "archiveByteExact": true
+    },
+    {
+      "file": "run.log",
+      "bytes": 597,
+      "sha256": "b18debdbb30b6ddc2a960df7b1a25010416804be88f11f4244e737f1aed1e77f",
+      "archiveByteExact": true
+    },
+    {
+      "file": "runner-helper.py",
+      "bytes": 4697,
+      "sha256": "ad9572e74de967608f9197332f6fb18d47bae463dc6d40bb0eda401330a2e49e",
+      "archiveByteExact": true
+    }
+  ],
+  "resultFile": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/host-only-02/result.json",
+  "resultSha256": "b75dd792c7a371654ea3afc60a035d35370aeaaac028655e85f84c7e7c6b30bb",
+  "sourceSha256": "0ace7842ded217dfc67d240f357acdfbca59a493ae0e7aef709e0dd006b846df",
+  "moduleSha256": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+  "browserTestSha256": "2807144531c423401b691b10ad1c7e1cd6bfb7a6151ea68927a90d7ee4187e28",
+  "allRawFilesByteArchived": true
+}

@@ -1,0 +1,93 @@
+{
+  "runId": "9e383a14-2026-10-03T18-18-05-553Z",
+  "sourceSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "passed": 404,
+  "failed": 0,
+  "skipped": 139,
+  "stages": [
+    {
+      "stage": "heart-guide-units",
+      "report": "reports/anatomy-heart-guide-2026-10-03/heart-guide-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "proof": "reports/anatomy-heart-guide-2026-10-03/heart-guide-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "passed": 114,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    },
+    {
+      "stage": "alveolus-guide-units",
+      "report": "reports/anatomy-heart-guide-2026-10-03/alveolus-guide-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "proof": "reports/anatomy-heart-guide-2026-10-03/alveolus-guide-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "passed": 108,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    },
+    {
+      "stage": "kidney-guide-regression-units",
+      "report": "reports/anatomy-heart-guide-2026-10-03/kidney-guide-regression-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "proof": "reports/anatomy-heart-guide-2026-10-03/kidney-guide-regression-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "passed": 74,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    },
+    {
+      "stage": "lens-gallery-regression-units",
+      "report": "reports/anatomy-heart-guide-2026-10-03/lens-gallery-regression-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "proof": "reports/anatomy-heart-guide-2026-10-03/lens-gallery-regression-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "passed": 64,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    },
+    {
+      "stage": "scale-navigation-regression-units",
+      "report": "reports/anatomy-heart-guide-2026-10-03/scale-navigation-regression-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "proof": "reports/anatomy-heart-guide-2026-10-03/scale-navigation-regression-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    },
+    {
+      "stage": "heart-existing-science-units",
+      "report": "reports/anatomy-heart-guide-2026-10-03/heart-existing-science-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "proof": "reports/anatomy-heart-guide-2026-10-03/heart-existing-science-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 139,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    }
+  ]
+}

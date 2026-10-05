@@ -51,8 +51,9 @@ const SCOPE='Showcase and Print Lab use these blocks.';
 describe('selected creation takes priority without conflating measurements or placement totals',()=>{
   it.each(['b','ground'])('describes retained A while the separate inspector contains %s',fallback=>{
     const app=mount({retained:'a',fallback}),hero=app.hero(),before=worldState(app.engine),originalMeasurement=app.state().measureResult;
-    expect(hero).toBeTruthy();expect(hero.textContent).toContain('Selected creation');expect(hero.textContent).toContain('Outlined selection');expect(hero.textContent).toContain('Blocks selected');expect(hero.textContent).toContain('Block bounds');expect(hero.textContent).toContain(SCOPE);expect(hero.textContent).not.toContain('Placed');
-    expect(Array.from(hero.querySelectorAll('.gwe-metric strong')).map(el=>el.textContent)).toEqual(['2','2×1×1']);expect(hero.querySelectorAll('.gwe-metric')).toHaveLength(2);
+    expect(hero).toBeTruthy();expect(hero.textContent).toContain('Selected creation');expect(hero.textContent).toContain('Outlined selection');expect(hero.textContent).toContain('Blocks selected');expect(hero.textContent).toContain('Grid span');expect(hero.textContent).toContain(SCOPE);expect(hero.textContent).not.toContain('Placed');
+    expect(Array.from(hero.querySelectorAll('.gwe-metric strong')).map(el=>el.textContent)).toEqual(['2']);expect(hero.querySelectorAll('.gwe-metric')).toHaveLength(1);
+    expect(Array.from(hero.querySelectorAll('.gwe-grid-span dt')).map(el=>el.textContent)).toEqual(['Width (X)','Depth (Z)','Height (Y)']);expect(Array.from(hero.querySelectorAll('.gwe-grid-span dd')).map(el=>el.textContent)).toEqual(['2grid cells','1grid cell','1grid cell']);expect(hero.querySelector('.gwe-grid-span-note').textContent).toBe('Grid-cell bounds, including gaps; not occupied volume.');
     expect(app.host.querySelector('.gwe-current-tools')).toBeNull();
     expect(app.host.querySelector('[aria-label="Select and measure aimed build"]').textContent).toBe('Select another build');expect(app.state().measureResult).toBe(originalMeasurement);expect(worldState(app.engine)).toEqual(before);
     expect(app.host.querySelector('.gwe-print-dimensions').textContent).toContain('25 × 12.5 × 12.5 mm');
@@ -78,8 +79,28 @@ describe('selection changes keep useful editing state and export the displayed c
   });
   it('Select another build uses the existing action and the hero agrees with the exact selected STL handoff',()=>{
     const app=mount({fallback:'ground'}),before=worldState(app.engine),rawA=new Uint8Array(api.buildGeometryWorldStl(app.engine,app.groups.a).buffer),rawB=new Uint8Array(api.buildGeometryWorldStl(app.engine,app.groups.b).buffer);app.engine.aimed='b';
-    app.click(app.host.querySelector('[aria-label="Select and measure aimed build"]'));expect(app.engine._builderSelection.blocks).toEqual(app.groups.b);expect(Array.from(app.hero().querySelectorAll('.gwe-metric strong')).map(el=>el.textContent)).toEqual(['3','2×1×2']);expect(worldState(app.engine)).toEqual(before);
+    app.click(app.host.querySelector('[aria-label="Select and measure aimed build"]'));expect(app.engine._builderSelection.blocks).toEqual(app.groups.b);expect(Array.from(app.hero().querySelectorAll('.gwe-metric strong')).map(el=>el.textContent)).toEqual(['3']);expect(Array.from(app.hero().querySelectorAll('.gwe-grid-span dd')).map(el=>el.textContent)).toEqual(['2grid cells','1grid cell','2grid cells']);expect(worldState(app.engine)).toEqual(before);
     expect(new Uint8Array(api.buildGeometryWorldStl(app.engine,app.groups.a).buffer)).toEqual(rawA);expect(new Uint8Array(api.buildGeometryWorldStl(app.engine,app.groups.b).buffer)).toEqual(rawB);
     app.click(app.host.querySelector('[aria-label="Send selected build to Print Lab"]'));const handoff=window.__alloPrintLabPendingHandoff;expect(app.navigate).toHaveBeenCalledWith('printLab');expect(handoff.bytes).toEqual(rawB);expect(handoff.sourceModel.blocks).toHaveLength(3);expect(handoff.sourceModel.blocks.every(block=>block.type==='wood')).toBe(true);expect(handoff.unitMm).toBe(12.5);expect(worldState(app.engine)).toEqual(before);
+  });
+});
+
+describe('selected creation camera feedback follows the live framing state',()=>{
+  it.each(['front','side','top'])('identifies the %s selected view in both camera groups',preset=>{
+    const app=mount(),before=worldState(app.engine);app.engine._creationFocus={view:{name:preset},manual:false};app.engine._viewPreset='free';app.patch({creationFocusAvailable:true});
+    expect(app.host.querySelector('.gwe-creation-camera-status').textContent).toBe(preset[0].toUpperCase()+preset.slice(1)+' view');
+    const groups=app.host.querySelectorAll('.gwe-camera-presets,.gwe-camera-view-presets');expect(groups).toHaveLength(2);
+    for(const group of groups){expect(group.getAttribute('role')).toBe('group');expect(group.querySelectorAll('[aria-pressed="true"]')).toHaveLength(1);expect(group.querySelector('[aria-pressed="true"]').dataset.gweCreationView).toBe(preset);expect(group.querySelector('.gwe-camera-preset-check').getAttribute('aria-hidden')).toBe('true');}
+    expect(app.button('Free view')).toBeUndefined();expect(app.host.querySelectorAll('.gwe-focus-return>button')).toHaveLength(1);expect(worldState(app.engine)).toEqual(before);
+  });
+  it.each(['manual','orbit'])('reports Custom view after %s movement without retaining a misleading preset',kind=>{
+    const app=mount();app.engine._creationFocus={view:{name:'front'},manual:false};app.patch({creationFocusAvailable:true});const before=worldState(app.engine);
+    if(kind==='manual')app.engine._creationFocus.manual=true;else app.engine._creationFocus.view={name:'orbit'};
+    React.act(()=>vi.advanceTimersByTime(250));expect(app.host.querySelector('.gwe-creation-camera-status').textContent).toBe('Custom view');expect(app.host.querySelectorAll('[data-gwe-creation-view][aria-pressed="true"]')).toHaveLength(0);expect(worldState(app.engine)).toEqual(before);
+  });
+  it('keeps restoration as one Previous view command and removes feedback after return',()=>{
+    const app=mount();app.engine._creationFocus={view:null,manual:false};app.engine.restoreCreationView=vi.fn(()=>{app.engine._creationFocus.returning=true;return true;});app.patch({creationFocusAvailable:true});const before=worldState(app.engine);
+    expect(app.host.querySelector('.gwe-creation-camera-status').textContent).toBe('Creation framed');app.click(app.button('Previous view'));expect(app.engine.restoreCreationView).toHaveBeenCalledOnce();expect(app.host.querySelector('.gwe-creation-camera-status').textContent).toBe('Returning to previous view');expect(app.button('Previous view').disabled).toBe(true);expect(app.host.querySelectorAll('[data-gwe-creation-view][aria-pressed="true"]')).toHaveLength(0);
+    app.engine._creationFocus=null;React.act(()=>vi.advanceTimersByTime(250));expect(app.host.querySelector('.gwe-focus-return')).toBeNull();expect(worldState(app.engine)).toEqual(before);
   });
 });

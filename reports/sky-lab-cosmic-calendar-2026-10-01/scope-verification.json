@@ -1,0 +1,10 @@
+{
+  "sourceSha256": "8aa93b69807802a81cea74bd18956f510f23617fe36a296ffc5c00b1d607a691",
+  "baselineSha256": "6ad1ea8c99c288c049c61a19783a303ab61d7251f4c9d89ea6a06bc2c5542d91",
+  "sourceMatchesMirror": true,
+  "scopeReconstructsBaseline": true,
+  "syntaxValid": true,
+  "ownedEnglishLabels": 92,
+  "resilienceEditsConfinedToCalendar": true,
+  "committed": false
+}

@@ -1,0 +1,186 @@
+{
+  "checks": [
+    {
+      "experiment": "brightness",
+      "surroundingSetting": "contrast",
+      "plannedValue": 25,
+      "fixedReference": 128,
+      "reusedActualStarts": [
+        73,
+        185,
+        99
+      ],
+      "plannerPreservesState": true,
+      "freshTrialNotesAndPredictions": true,
+      "frozenSettings": true,
+      "independentReveals": true,
+      "automaticSavedPairReview": true,
+      "axe": []
+    },
+    {
+      "experiment": "ebbinghaus",
+      "surroundingSetting": "surround",
+      "plannedValue": 45,
+      "fixedReference": 48,
+      "reusedActualStarts": [
+        41,
+        59,
+        43
+      ],
+      "plannerPreservesState": true,
+      "freshTrialNotesAndPredictions": true,
+      "frozenSettings": true,
+      "independentReveals": true,
+      "automaticSavedPairReview": true,
+      "axe": []
+    },
+    {
+      "experiment": "mullerLyer",
+      "surroundingSetting": "angle",
+      "plannedValue": 65,
+      "fixedReference": 400,
+      "reusedActualStarts": [
+        326,
+        474,
+        364
+      ],
+      "plannerPreservesState": true,
+      "freshTrialNotesAndPredictions": true,
+      "frozenSettings": true,
+      "independentReveals": true,
+      "automaticSavedPairReview": true,
+      "axe": []
+    },
+    {
+      "removedSurroundingsPermitContextOnly": true,
+      "zeroBrightnessContrastDisablesSwap": true
+    },
+    {
+      "cancelPreservesDrawingAndSavedRecords": true
+    },
+    {
+      "toggleSetting": "context",
+      "plannedBoolean": true,
+      "freshStart": true,
+      "endedWithoutSavingOrRevealing": true
+    },
+    {
+      "toggleSetting": "context",
+      "plannedBoolean": false,
+      "freshStart": true,
+      "endedWithoutSavingOrRevealing": true
+    },
+    {
+      "toggleSetting": "swap",
+      "plannedBoolean": true,
+      "freshStart": true,
+      "endedWithoutSavingOrRevealing": true
+    },
+    {
+      "fullNotebookProtectsBaseline": true,
+      "preflightNoPartialMutation": true
+    },
+    {
+      "batchedExternalReplacementCancelsStart": true,
+      "baselineNotResurrected": true
+    },
+    {
+      "profileClearsLocalPlanner": true,
+      "hostOwnsPersistedNotebook": true
+    },
+    {
+      "deferredStartCanceledBy": "profile",
+      "queuedUpdaterDoesNotChangeReplacement": true
+    },
+    {
+      "deferredStartCanceledBy": "notebook",
+      "queuedUpdaterDoesNotChangeReplacement": true
+    },
+    {
+      "canceledDeferredStartPreservesState": true,
+      "cancelReachableWhileNotebookMasked": true,
+      "canceledUpdaterDoesNotResurrectStudy": true,
+      "plannerReopens": true
+    },
+    {
+      "viewport": 320,
+      "plannerAndRecording": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 390,
+      "plannerAndRecording": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 768,
+      "plannerAndRecording": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 1280,
+      "plannerAndRecording": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 1600,
+      "plannerAndRecording": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "plannerAndControlsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "plannerAndControlsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "plannerAndControlsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "plannerAndControlsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-contrast",
+      "plannerAndControlsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    }
+  ],
+  "errors": [],
+  "loadedSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "finalSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+}

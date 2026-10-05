@@ -1,0 +1,27 @@
+# Maine SLD Case Lab: saving and reflection
+
+When tab saving fails, participants now have a persistent, named recovery group with an immediate **Download worksheet** action and **Try saving again**. The existing [activity URL](http://127.0.0.1:65063/app/?tool=maine-sld-practice) serves the final candidate; refresh the open tab to load it. Work remains uncommitted by explicit user request.
+
+## Changes
+
+- The recovery notice explains that current work remains available in the open activity and recommends a downloaded copy before closing or refreshing. The download uses the current in-memory worksheet for all five cases. Failed automatic saves announce once per failure episode; recovery and explicit retry receive feedback. The native live region and optional host announcer have a single owner.
+- Automatic failure and recovery leave the active writing field focused. When recovery removes a focused warning button, focus returns to the persistent Worksheet tools toggle. The non-live group and its two actions fit narrow and short viewports in a bounded, scrollable footer.
+- After revealing the guide, an optional reflection prompt asks which evidence changed or reinforced the participant's reasoning and what remains uncertain. Participants can use an existing form note; no new field or completion requirement was added. Download feedback now reports that the download started.
+
+## Verification
+
+Four targeted module scenarios and one exact app-entry scenario passed using a temporary runner with hash-verified prepared styles, one worker, zero automatic retries and the existing 120-second limit. The original test bodies, helpers and assertions are byte-preserved; only the synchronous stylesheet-compilation statement was replaced, and the temporary configuration changes only the test directory and match. The canonical repository spec remains unchanged by that substitution. Two meaningful scenarios were added; the original 31 definitions are byte-preserved, for 33 available. Checks cover initially blocked storage, late quota failure, recovery and recurrence, announcement ownership, focus, all-five-case download and restoration, expired-session clearing and optional reflection across all five cases. 4 scoped axe scans found zero violations. Root and independent reviews inspected all seven final warning, writer, guide and keyboard-return images, including narrow, short-height and dark layouts. Raw preparation and browser-attempt history remain in [browser evidence](browser-validation/README.md).
+
+Three original browser invocations in this pass (02,04,05) timed out in the unchanged 120-second setup hook before any test body ran. Stylesheet generation took about 126 seconds in02 and172 seconds in04; final-source readiness02 generated the prepared stylesheet successfully in about473 seconds, with its readiness timing flag still false. These original invocations are not reported as passed. Prepared06 was also rejected before bodies because the helper wrote CRLF manifest bytes after hashing LF bytes. The helper was corrected to write exactly the hashed bytes, and prepared07 validated the actual on-disk manifest and cache plus three deliberately wrong serialized-manifest cases before the four bodies passed. That rejection and correction remain archived. The prepared host invocation separately passed its actual body. Stylesheet compilation was not repeated inside either passing prepared invocation.
+
+The original source/module freeze and its unserved host bundle were preserved before independent review recommended a non-live group role for the warning. No browser invocation had started before that one-attribute correction; see [semantic review evidence](semantic-review-correction/README.md) and [integration evidence](integration/README.md).
+
+The next candidate passed all four module scenarios, then a separate late-quota landscape capture found about ten pixels hidden at the active writer's bottom edge. A minimal content scroll on failed-saving transitions corrects that measured defect while preserving focus and selection, with seven pixels of focus-ring clearance. The final candidate was checked again using the same focused scenarios and a new capture-only geometry probe. The earlier passed candidate and clipped capture remain preserved in [layout correction evidence](layout-review-correction/README.md) and browser evidence.
+
+Core, case data, synthetic scores, legal/multilingual content, builder, worksheet schema and print behavior remain unchanged. No new legal or content accuracy review is claimed for this interface pass. The earlier accepted nine-page print PDF remains exact by SHA256; the unchanged print/core suites and full browser matrix were not repeated.
+
+Final source SHA256: `6c59be34f6c400164b12093f8c5b54380c97212c3356f0e61cdf36891488f741`. Module SHA256: `8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a` (187,182 bytes), pin `8771e0b3`. All four module copies and served bytes match. Tested host snapshot: `e3154edcba1aa5c418c8d658e051c304cad1a615eb1a769f27c06616bc42dbfb`.
+
+Later shared app edits advanced beyond the tested host snapshot. Those newer bytes are preserved, their observed hashes and retained Maine pins are recorded, and they have not been re-tested. The served preview remains the exact passed snapshot.
+
+See [independent review](source-and-layout-review.md), [root layout review](root-layout-review.json), and [final verification](final-verification.json). No Git staging, commit, push, deployment or full app/installer build was performed.

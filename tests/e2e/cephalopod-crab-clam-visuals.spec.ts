@@ -1,10 +1,11 @@
 import { test, expect, Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { clickCephalopodControl } from './helpers/cephalopod_controls';
 
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_cephalopodlab.js', toolId: 'cephalopodLab', width: 900, height: 1000, layout: 'document' });
 const errors = new WeakMap<Page, string[]>();
 const canvas = 'canvas[role=application]';
-const forage = (page: Page) => page.getByRole('button', { name: 'Forage [R]', exact: true });
+const forage = (page: Page) => page.getByRole('button', { name: /^Forage(?: \[R\])?$/, exact: true });
 
 async function advance(page: Page, frames: number) {
   await page.evaluate(async count => {
@@ -68,18 +69,19 @@ async function mount(page: Page, quality: 'low' | 'balanced') {
           return { name, size: at < 0 ? 0 : gl.getVertexAttrib(at, gl.VERTEX_ATTRIB_ARRAY_SIZE), enabled: at >= 0 && gl.getVertexAttrib(at, gl.VERTEX_ATTRIB_ARRAY_ENABLED), bound: at >= 0 && !!gl.getVertexAttrib(at, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING) };
         });
         w.__ccPrograms.set(kind, { kind, mesh: mesh.uuid, material: material.uuid, standard: !!material.isMeshStandardMaterial, vertexColors: material.vertexColors,
-          linked: gl.getProgramParameter(program, gl.LINK_STATUS), bindings, normal, determinant: normal ? new T.Matrix3().fromArray(normal).determinant() : null,
+          roughness: material.roughness, metalness: material.metalness, shellPiece: gl.getUniformLocation(program,'clHermitShellPiece') === null ? null : gl.getUniform(program,gl.getUniformLocation(program,'clHermitShellPiece')), surfaceKey: material.customProgramCacheKey(), cuticleScale: gl.getUniformLocation(program,'clCrabScale') === null ? null : gl.getUniform(program,gl.getUniformLocation(program,'clCrabScale')), cuticleHermit: gl.getUniformLocation(program,'clCrabHermit') === null ? null : gl.getUniform(program,gl.getUniformLocation(program,'clCrabHermit')), linked: gl.getProgramParameter(program, gl.LINK_STATUS), bindings, normal, determinant: normal ? new T.Matrix3().fromArray(normal).determinant() : null,
           shaders: gl.getAttachedShaders(program).map((shader: any) => ({ compiled: gl.getShaderParameter(shader, gl.COMPILE_STATUS), source: gl.getShaderSource(shader) })) });
       };
     }
-    [[0, 'crab-body'], [1, 'crab-eye'], [3, 'crab-leg'], [7, 'crab-rear-legs'], [9, 'crab-claw']].forEach(([index, kind]) => watch(w.__ccCrab.children[index as number], kind as string));
+    [[0, 'crab-body'], [1, 'crab-eye'], [2, 'crab-eye-right'], [3, 'crab-leg'], [7, 'crab-rear-legs'], [9, 'crab-claw']].forEach(([index, kind]) => watch(w.__ccCrab.children[index as number], kind as string));
     if (w.__ccHermit) {
+      watch(w.__ccHermit.children[0], 'hermit-body');
       watch(w.__ccHermit.children[7], 'hermit-support');
       [11, 12, 13, 14].forEach(index => watch(w.__ccHermit.children[index], 'hermit-shell-' + index));
     } else watch(w.__ccCatch.children[0], 'red-body');
     watch(w.__ccMeal.children[0], 'clam-lower'); watch(w.__ccMeal.children[1], 'clam-upper');
     watch(w.__ccNeighbor.children[0], 'clam-neighbor');
-    w.__ccKinds = ['crab-body', 'crab-eye', 'crab-leg', 'crab-rear-legs', 'crab-claw', ...(w.__ccHermit ? ['hermit-support', 'hermit-shell-11', 'hermit-shell-12', 'hermit-shell-13', 'hermit-shell-14'] : ['red-body']), 'clam-lower', 'clam-upper', 'clam-neighbor'];
+    w.__ccKinds = ['crab-body', 'crab-eye', 'crab-eye-right', 'crab-leg', 'crab-rear-legs', 'crab-claw', ...(w.__ccHermit ? ['hermit-body', 'hermit-support', 'hermit-shell-11', 'hermit-shell-12', 'hermit-shell-13', 'hermit-shell-14'] : ['red-body']), 'clam-lower', 'clam-upper', 'clam-neighbor'];
     const upper = w.__ccMeal.children[1], positions = upper.geometry.attributes.position;
     let hinge = 0, front = 0;
     for (let i = 1; i < positions.count; i++) {
@@ -151,6 +153,9 @@ for (const quality of ['low', 'balanced'] as const) test(`${quality} crab and cl
   for (const clam of anatomy.clams) { expect(clam.names).toEqual(['cl-clam-lower', 'cl-clam-upper']); expect(clam.materials).toBe(2); expect(clam.vertices).toBeLessThanOrEqual(1100); expect(clam.triangles).toBeLessThanOrEqual(2000); }
   expect(anatomy.programs.map((program: any) => program.kind).sort()).toEqual(anatomy.keys.sort());
   for (const program of anatomy.programs) {
+    if (['crab-body','hermit-body','red-body'].includes(program.kind)) { expect(program.surfaceKey).toBe('cl-crab-cuticle-v1'); expect(program.cuticleScale).toBeGreaterThan(0); expect(program.cuticleHermit).toBe(program.kind==='hermit-body'?1:0); const emitted=program.shaders.map((shader:any)=>shader.source).join('\n'); expect(emitted).toContain('clCrabCuticle'); expect(emitted).toContain('#define CL_CRAB_FILTERED 1'); } else { expect(program.cuticleScale).toBeNull(); expect(program.cuticleHermit).toBeNull(); }
+    if (['hermit-shell-11','hermit-shell-13','hermit-shell-14'].includes(program.kind)) { expect(program.surfaceKey).toBe('cl-hermit-shell-finish-v1'); expect(program.shellPiece).toBe(Number(program.kind.slice(-2))-11); const emitted=program.shaders.map((shader:any)=>shader.source).join('\n'); expect(emitted).toContain('clHermitShellFinish'); expect(emitted).toContain('#define CL_HERMIT_SHELL_FILTERED 1'); } else expect(program.shellPiece).toBeNull();
+    if (['crab-eye','crab-eye-right'].includes(program.kind)) { expect(program.standard).toBe(true); expect(program.roughness).toBe(0.32); expect(program.metalness).toBe(0); expect(program.bindings.map((binding:any)=>binding.name)).toEqual(['position','normal','color']); }
     expect(program.linked, program.kind).toBe(true); expect(program.shaders).toHaveLength(2); expect(program.shaders.every((shader: any) => shader.compiled)).toBe(true);
     for (const binding of program.bindings) { expect(binding.enabled && binding.bound, program.kind + '/' + binding.name).toBe(true); expect(binding.size).toBe(3); }
     if (program.standard) { expect(program.normal).toHaveLength(9); expect(program.normal.every(Number.isFinite)).toBe(true); expect(Math.abs(program.determinant)).toBeGreaterThan(1e-8); }
@@ -181,12 +186,12 @@ for (const quality of ['low', 'balanced'] as const) test(`${quality} crab and cl
     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth + 1)).toBe(true);
   }
   await page.getByRole('button', { name: 'Return to dive', exact: true }).click(); await advance(page, 6);
-  await page.getByRole('button', { name: 'Help / settings', exact: true }).click(); await page.getByLabel('Reduced motion', { exact: true }).check(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click();
+  await clickCephalopodControl(page, 'Help / settings'); await page.getByLabel('Reduced motion', { exact: true }).check(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click();
   await advance(page, 2); const reduced = await state(page); await advance(page, 5); const quiet = await state(page); stable(quiet, initial);
   // Existing crab walking remains active under reduced motion; neither the
   // geometry upgrade nor this fixture changes that simulation behavior.
   expect(quiet.legs).not.toEqual(reduced.legs); expect(quiet.phases).not.toEqual(reduced.phases); expect(quiet.upperAngle).toBe(0); expect(quiet.meals).toBe(0);
-  await page.getByRole('button', { name: 'Help / settings', exact: true }).click(); await page.getByLabel('Reduced motion', { exact: true }).uncheck(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await advance(page, 4);
+  await clickCephalopodControl(page, 'Help / settings'); await page.getByLabel('Reduced motion', { exact: true }).uncheck(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await advance(page, 4);
   expect((await freshDraws(page)).every(entry => entry.fresh)).toBe(true);
 
   // Real latched foraging completes one meal and releases only that clam's

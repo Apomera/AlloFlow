@@ -1,0 +1,24 @@
+{
+  "mode": "final-reviewed",
+  "started": "2026-10-05T01:47:54.495Z",
+  "sourceSHA": "ee2608fd48477d120397774ff775f28f8565a72a5a1dd06cec6845d722d34b72",
+  "mirrorSHA": "ee2608fd48477d120397774ff775f28f8565a72a5a1dd06cec6845d722d34b72",
+  "specSHA": "4aea031c5128195aff508761e480cc0d5704feb207fb00a847aae4f742fd01f0",
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/dissection-optical-clarity.spec.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\final-reviewed\\test-results",
+    "--timeout=240000"
+  ],
+  "canonical": true,
+  "runnerPID": 43392,
+  "testPID": 38796,
+  "finished": "2026-10-05T01:52:04.318Z",
+  "exitCode": 1,
+  "signal": null
+}

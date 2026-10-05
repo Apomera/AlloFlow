@@ -1,0 +1,123 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "expandedCanvas": {
+        "x": 166,
+        "y": 99,
+        "width": 816,
+        "height": 816
+      },
+      "detailCanvas": {
+        "x": -242,
+        "y": -309,
+        "width": 1632,
+        "height": 1632
+      },
+      "backing": [
+        1024,
+        1024
+      ],
+      "centerAnchor": {
+        "before": {
+          "x": 0.5,
+          "y": 0.5,
+          "left": 0,
+          "top": 0
+        },
+        "after": {
+          "x": 0.5,
+          "y": 0.5,
+          "left": 267,
+          "top": 408
+        }
+      },
+      "viewportStable": true,
+      "noPixelsOrHistoryChangedByZoom": true
+    },
+    {
+      "pureNavigation": {
+        "mouseDelta": [
+          120,
+          80
+        ],
+        "keyboardSteps": [
+          160,
+          48
+        ],
+        "homeEndEdges": true,
+        "fitPreservesMode": true,
+        "penTouchAndPointerOwnership": true,
+        "noHistoryEntryOrPixels": true
+      }
+    },
+    {
+      "detailPainting": {
+        "actualMouse": true,
+        "coordinatesMappedTo512UnitSheet": true,
+        "oneUndoEntry": true,
+        "exactUndoRedoPixels": true
+      }
+    },
+    "Changing zoom or navigation cancels provisional Line previews, excludes them from exports, ignores late release, and leaves completed history intact",
+    {
+      "overlays": {
+        "sheet": [
+          2448,
+          2448
+        ],
+        "canvas": [
+          2448,
+          2448
+        ],
+        "guides": [
+          0,
+          0,
+          0,
+          0
+        ],
+        "cursorError": [
+          0,
+          0
+        ],
+        "cursorShown": true
+      },
+      "excludedFromExport": true
+    },
+    "The actual Export PNG action downloads the exact complete clean 1024px transparent artwork while zoomed to 300%, excluding guides and keyboard cursor",
+    {
+      "savedStudy": {
+        "exactDrawingRestored": true,
+        "viewResetToFitPaint": true,
+        "viewAbsentFromSavedArtwork": true,
+        "originalUnchanged": true,
+        "historyReset": true
+      }
+    },
+    {
+      "phoneWidth": 390,
+      "controlHeights": [
+        44,
+        44,
+        44,
+        44
+      ],
+      "viewportStaysFixed": true,
+      "noHorizontalOverflow": true,
+      "artworkPreserved": true
+    },
+    {
+      "phoneWidth": 320,
+      "controlHeights": [
+        44,
+        44,
+        44,
+        44
+      ],
+      "viewportStaysFixed": true,
+      "noHorizontalOverflow": true,
+      "artworkPreserved": true
+    }
+  ],
+  "errors": []
+}

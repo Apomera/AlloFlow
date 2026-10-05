@@ -1,0 +1,177 @@
+{
+  "checks": [
+    {
+      "previewIsLocal": true,
+      "imported": 6,
+      "existingRetained": 3,
+      "noEviction": true,
+      "uniqueIDsAndWholeGroupRemap": true,
+      "datesAndModelsRetained": true,
+      "hiddenRevealUnchanged": true,
+      "completeAndPartialMembershipRetained": true,
+      "draftsPinAndOtherToolPreserved": true,
+      "undoImportRestoresOnlyNotebook": true,
+      "axe": []
+    },
+    {
+      "cancelPreviewDoesNotChangeState": true
+    },
+    {
+      "repeatedFileSkippedBySemanticsDespiteRemappedGroupIDs": true,
+      "duplicatesDoNotAddOrReveal": true
+    },
+    {
+      "insufficientCapacityDisablesAdd": true,
+      "existingRecordsNeverEvicted": true
+    },
+    {
+      "rejectedFile": "malformed-json",
+      "wholeFileRejectedWithoutPartialImport": true
+    },
+    {
+      "rejectedFile": "wrong-schema",
+      "wholeFileRejectedWithoutPartialImport": true
+    },
+    {
+      "rejectedFile": "wrong-version",
+      "wholeFileRejectedWithoutPartialImport": true
+    },
+    {
+      "rejectedFile": "over24-records",
+      "wholeFileRejectedWithoutPartialImport": true
+    },
+    {
+      "rejectedFile": "bad-experiment",
+      "wholeFileRejectedWithoutPartialImport": true
+    },
+    {
+      "rejectedFile": "bad-repeat-start",
+      "wholeFileRejectedWithoutPartialImport": true
+    },
+    {
+      "rejectedFile": "oversized-file",
+      "wholeFileRejectedWithoutPartialImport": true
+    },
+    {
+      "exact512KiBBoundaryAccepted": true
+    },
+    {
+      "deferredFileReadCanceledBy": "cancel",
+      "staleReadCannotOpenPreviewOrChangeState": true
+    },
+    {
+      "deferredFileReadCanceledBy": "profile",
+      "staleReadCannotOpenPreviewOrChangeState": true
+    },
+    {
+      "deferredFileReadCanceledBy": "notebook",
+      "staleReadCannotOpenPreviewOrChangeState": true
+    },
+    {
+      "retainedCommitClickExpiresOnExternalNotebook": true,
+      "noResurrectedOrImportedRecords": true
+    },
+    {
+      "deferredCommitCanceledBy": "profile",
+      "laterUpdaterPreservesReplacement": true
+    },
+    {
+      "deferredCommitCanceledBy": "notebook",
+      "laterUpdaterPreservesReplacement": true
+    },
+    {
+      "deferredCommitCanceledBy": "cancel",
+      "laterUpdaterPreservesReplacement": true
+    },
+    {
+      "undoRemovesImportedRecordsWhilePreservingLaterDrawingEdits": true
+    },
+    {
+      "undoExpiresOnExternalNotebook": true,
+      "staleUndoNeverDeletesReplacement": true
+    },
+    {
+      "activeMatchingStudyBlocksImport": true
+    },
+    {
+      "viewport": 320,
+      "previewAddedUndo": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 390,
+      "previewAddedUndo": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 768,
+      "previewAddedUndo": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 1280,
+      "previewAddedUndo": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 1600,
+      "previewAddedUndo": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "previewControlsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "previewControlsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "previewControlsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "previewControlsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-contrast",
+      "previewControlsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    }
+  ],
+  "errors": [],
+  "loadedSourceSHA256": "27eaab23275e8b54fa32e775b8db69c1891db5df63351afd3f5039ebf42cb0d7",
+  "finalSourceSHA256": "27eaab23275e8b54fa32e775b8db69c1891db5df63351afd3f5039ebf42cb0d7",
+  "sourceSHA256": "27eaab23275e8b54fa32e775b8db69c1891db5df63351afd3f5039ebf42cb0d7"
+}

@@ -1,0 +1,134 @@
+{
+  "checks": [
+    {
+      "experiment": "brightness",
+      "selectDoesNotReveal": true,
+      "sharedReference": 128,
+      "medianBMinusA": 10,
+      "percentOfFixedGeometryReference": null,
+      "RGBNoPercent": true,
+      "independentSavedGroupReveal": true,
+      "draftsAndPinPreserved": true,
+      "accessiblePlotAndTable": true,
+      "axe": []
+    },
+    {
+      "experiment": "ebbinghaus",
+      "selectDoesNotReveal": true,
+      "sharedReference": 48,
+      "medianBMinusA": 3,
+      "percentOfFixedGeometryReference": 6.25,
+      "RGBNoPercent": false,
+      "independentSavedGroupReveal": true,
+      "draftsAndPinPreserved": true,
+      "accessiblePlotAndTable": true,
+      "axe": []
+    },
+    {
+      "experiment": "mullerLyer",
+      "selectDoesNotReveal": true,
+      "sharedReference": 400,
+      "medianBMinusA": 20,
+      "percentOfFixedGeometryReference": 5,
+      "RGBNoPercent": false,
+      "independentSavedGroupReveal": true,
+      "draftsAndPinPreserved": true,
+      "accessiblePlotAndTable": true,
+      "axe": []
+    },
+    {
+      "eachSavedGroupRequiresItsOwnReveal": true,
+      "clearingSelectionPreservesAllData": true
+    },
+    {
+      "removedSurroundingsMakeControlsInactive": true,
+      "descriptiveStartingPositionsDiffer": true
+    },
+    {
+      "multipleActiveSettingsExplainedWithoutClaimingOneVariable": true
+    },
+    {
+      "sameGroupExcluded": true,
+      "experimentReferenceAndIncompleteChoicesExplainedAndDisabled": true
+    },
+    {
+      "deletedMatchRemovesPairImmediately": true,
+      "retainedPairIDsRestoreOnUndo": true
+    },
+    {
+      "capEvictionInvalidatesPair": true,
+      "noCachedAggregateAfterEviction": true
+    },
+    {
+      "staleRevealExperiment": "brightness",
+      "externalReplacementExpiresRetainedComparisonReveal": true,
+      "noResurrectedRecordsOrFalseSuccess": true
+    },
+    {
+      "staleRevealExperiment": "mullerLyer",
+      "externalReplacementExpiresRetainedComparisonReveal": true,
+      "noResurrectedRecordsOrFalseSuccess": true
+    },
+    {
+      "profileClearsLocalReviewAndPair": true,
+      "persistedDataRemainsWithHost": true
+    },
+    {
+      "viewport": 320,
+      "hiddenAndReadyPairs": true,
+      "noOverflow": true,
+      "targets44": true,
+      "axe": []
+    },
+    {
+      "viewport": 390,
+      "hiddenAndReadyPairs": true,
+      "noOverflow": true,
+      "targets44": true,
+      "axe": []
+    },
+    {
+      "viewport": 768,
+      "hiddenAndReadyPairs": true,
+      "noOverflow": true,
+      "targets44": true,
+      "axe": []
+    },
+    {
+      "viewport": 1280,
+      "hiddenAndReadyPairs": true,
+      "noOverflow": true,
+      "targets44": true,
+      "axe": []
+    },
+    {
+      "viewport": 1600,
+      "hiddenAndReadyPairs": true,
+      "noOverflow": true,
+      "targets44": true,
+      "axe": []
+    },
+    {
+      "contrastThemeNoOverflowAndAxe": []
+    },
+    {
+      "darkNoOverflowAndAxe": []
+    },
+    {
+      "text200PercentNoOverflowAndAxe": []
+    },
+    {
+      "forcedColorsPlotPresentAndAxe": []
+    },
+    {
+      "forcedColorsContrastThemeButtonsLinksAndAxe": []
+    },
+    {
+      "forcedColorsOSDarkPaletteButtonsLinksPlotTableAndAxe": []
+    }
+  ],
+  "errors": [],
+  "loadedSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+  "finalSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+  "sourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3"
+}

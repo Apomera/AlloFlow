@@ -1,0 +1,4613 @@
+{
+  "mode": "Contract CSS-state fixtures, not native Settings/fullscreen workflow coverage",
+  "sourceHash": "839701808B0AC211774FFBA84A2C4DF3195E65C7776C127FDBCCC1B4F18D8750",
+  "startedAt": "2026-10-04T03:57:49.326Z",
+  "checks": [
+    {
+      "name": "short-phone: normal standard clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "normal",
+          "font": "standard",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 84.65625,
+            "height": 55,
+            "right": 174.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 105,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 169.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 182.78125,
+            "height": 36,
+            "right": 194.78125,
+            "bottom": 164,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 247.5,
+            "right": 182,
+            "bottom": 291.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "normal",
+          "font": "standard",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 84.65625,
+            "height": 55,
+            "right": 174.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 105,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 169.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 222,
+            "height": 103.78125,
+            "right": 234,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 247.5,
+            "right": 182,
+            "bottom": 291.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "short-phone: normal large clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 182.78125,
+            "height": 36,
+            "right": 194.78125,
+            "bottom": 164,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 247.5,
+            "right": 182,
+            "bottom": 291.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 222,
+            "height": 103.78125,
+            "right": 234,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 247.5,
+            "right": 182,
+            "bottom": 291.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "short-phone: normal open Position hides compact overlays and restores on close",
+      "status": "pass",
+      "evidence": {
+        "opened": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": false
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": false
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 112,
+            "width": 140.09375,
+            "height": 138,
+            "right": 148.09375,
+            "bottom": 250,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": false
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 247.5,
+            "right": 182,
+            "bottom": 291.5
+          },
+          "labelFits": true,
+          "reachable": false,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        },
+        "closed": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 222,
+            "height": 103.78125,
+            "right": 234,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 247.5,
+            "right": 182,
+            "bottom": 291.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "short-phone: toolbar-collapsed standard clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "toolbar-collapsed",
+          "font": "standard",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 84.65625,
+            "height": 55,
+            "right": 174.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 105,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 169.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 182.78125,
+            "height": 36,
+            "right": 194.78125,
+            "bottom": 164,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "toolbar-collapsed",
+          "font": "standard",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 84.65625,
+            "height": 55,
+            "right": 174.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 105,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 169.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 222,
+            "height": 103.78125,
+            "right": 234,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "short-phone: toolbar-collapsed large clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "toolbar-collapsed",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 182.78125,
+            "height": 36,
+            "right": 194.78125,
+            "bottom": 164,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "toolbar-collapsed",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 222,
+            "height": 103.78125,
+            "right": 234,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "short-phone: toolbar-collapsed open Position hides compact overlays and restores on close",
+      "status": "pass",
+      "evidence": {
+        "opened": {
+          "state": "toolbar-collapsed",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": false
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": false
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 112,
+            "width": 140.09375,
+            "height": 138,
+            "right": 148.09375,
+            "bottom": 250,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": false
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": false,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        },
+        "closed": {
+          "state": "toolbar-collapsed",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 222,
+            "height": 103.78125,
+            "right": 234,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "short-phone: fullscreen standard clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "fullscreen",
+          "font": "standard",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 84.65625,
+            "height": 55,
+            "right": 174.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 105,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 169.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 182.78125,
+            "height": 36,
+            "right": 194.78125,
+            "bottom": 164,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "fullscreen",
+          "font": "standard",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 84.65625,
+            "height": 55,
+            "right": 174.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 105,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 169.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 222,
+            "height": 103.78125,
+            "right": 234,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "short-phone: fullscreen large clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "fullscreen",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 182.78125,
+            "height": 36,
+            "right": 194.78125,
+            "bottom": 164,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "fullscreen",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 222,
+            "height": 103.78125,
+            "right": 234,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "short-phone: fullscreen open Position hides compact overlays and restores on close",
+      "status": "pass",
+      "evidence": {
+        "opened": {
+          "state": "fullscreen",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": false
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": false
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 112,
+            "width": 140.09375,
+            "height": 138,
+            "right": 148.09375,
+            "bottom": 250,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": false
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": false,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        },
+        "closed": {
+          "state": "fullscreen",
+          "font": "large",
+          "dock": {
+            "x": 90,
+            "y": 68,
+            "width": 80.65625,
+            "height": 55,
+            "right": 170.65625,
+            "bottom": 123,
+            "visible": true
+          },
+          "studio": {
+            "x": 101,
+            "y": 73,
+            "width": 64.65625,
+            "height": 44,
+            "right": 165.65625,
+            "bottom": 117,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 57,
+            "right": 86.78125,
+            "bottom": 125,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 222,
+            "height": 103.78125,
+            "right": 234,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 246,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 348,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 112,
+            "width": 64,
+            "height": 236,
+            "right": 308,
+            "bottom": 348,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 218,
+            "right": 182,
+            "bottom": 262
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 44,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "short-phone: expanded Studio remains available with Position open",
+      "status": "pass",
+      "evidence": {
+        "expandedVisible": true
+      }
+    },
+    {
+      "name": "short-phone: layout and disclosure changes retain two student blocks",
+      "status": "pass",
+      "evidence": {
+        "studentBlocks": 2,
+        "runtimeErrors": []
+      }
+    },
+    {
+      "name": "narrow: normal standard clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "normal",
+          "font": "standard",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 96.65625,
+            "height": 59,
+            "right": 104.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 25,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 97.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 58.390625,
+            "right": 158,
+            "bottom": 186.390625,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 291.5,
+            "right": 182,
+            "bottom": 335.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "normal",
+          "font": "standard",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 96.65625,
+            "height": 59,
+            "right": 104.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 25,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 97.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 291.5,
+            "right": 182,
+            "bottom": 335.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "narrow: normal large clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 58.390625,
+            "right": 158,
+            "bottom": 186.390625,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 291.5,
+            "right": 182,
+            "bottom": 335.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 291.5,
+            "right": 182,
+            "bottom": 335.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "narrow: normal open Position hides compact overlays and restores on close",
+      "status": "pass",
+      "evidence": {
+        "opened": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": false
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": false
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 140.09375,
+            "height": 96,
+            "right": 148.09375,
+            "bottom": 164,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": false
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 291.5,
+            "right": 182,
+            "bottom": 335.5
+          },
+          "labelFits": true,
+          "reachable": false,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "closed": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 67,
+              "right": 274,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 67,
+              "right": 312,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 291.5,
+            "right": 182,
+            "bottom": 335.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "narrow: toolbar-collapsed standard clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "toolbar-collapsed",
+          "font": "standard",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 96.65625,
+            "height": 59,
+            "right": 104.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 25,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 97.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 58.390625,
+            "right": 158,
+            "bottom": 186.390625,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "toolbar-collapsed",
+          "font": "standard",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 96.65625,
+            "height": 59,
+            "right": 104.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 25,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 97.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "narrow: toolbar-collapsed large clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "toolbar-collapsed",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 58.390625,
+            "right": 158,
+            "bottom": 186.390625,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "toolbar-collapsed",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "narrow: toolbar-collapsed open Position hides compact overlays and restores on close",
+      "status": "pass",
+      "evidence": {
+        "opened": {
+          "state": "toolbar-collapsed",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": false
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": false
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 140.09375,
+            "height": 96,
+            "right": 148.09375,
+            "bottom": 164,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": false
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": false,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "closed": {
+          "state": "toolbar-collapsed",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "narrow: fullscreen standard clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "fullscreen",
+          "font": "standard",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 96.65625,
+            "height": 59,
+            "right": 104.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 25,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 97.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 58.390625,
+            "right": 158,
+            "bottom": 186.390625,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "fullscreen",
+          "font": "standard",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 96.65625,
+            "height": 59,
+            "right": 104.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 25,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 97.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "narrow: fullscreen large clear ready and longest cue",
+      "status": "pass",
+      "evidence": {
+        "ready": {
+          "state": "fullscreen",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 58.390625,
+            "right": 158,
+            "bottom": 186.390625,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "longest": {
+          "state": "fullscreen",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "narrow: fullscreen open Position hides compact overlays and restores on close",
+      "status": "pass",
+      "evidence": {
+        "opened": {
+          "state": "fullscreen",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": false
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": false
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 140.09375,
+            "height": 96,
+            "right": 148.09375,
+            "bottom": 164,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": false
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": false,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "closed": {
+          "state": "fullscreen",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 92.65625,
+            "height": 59,
+            "right": 100.65625,
+            "bottom": 329,
+            "visible": true
+          },
+          "studio": {
+            "x": 21,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 93.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 146,
+            "height": 130.78125,
+            "right": 158,
+            "bottom": 258.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 334,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 436,
+            "visible": true
+          },
+          "rail": {
+            "x": 244,
+            "y": 172,
+            "width": 64,
+            "height": 264,
+            "right": 308,
+            "bottom": 436,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 234,
+              "y": 8,
+              "right": 274,
+              "bottom": 42,
+              "visible": true
+            },
+            {
+              "x": 278,
+              "y": 8,
+              "right": 312,
+              "bottom": 42,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 138,
+            "y": 262,
+            "right": 182,
+            "bottom": 306
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        }
+      }
+    },
+    {
+      "name": "narrow: expanded Studio remains available with Position open",
+      "status": "pass",
+      "evidence": {
+        "expandedVisible": true
+      }
+    },
+    {
+      "name": "narrow: layout and disclosure changes retain two student blocks",
+      "status": "pass",
+      "evidence": {
+        "studentBlocks": 2,
+        "runtimeErrors": []
+      }
+    },
+    {
+      "name": "tall-phone: Position suppresses competing cue in collapsed Studio, restores it on close, and leaves expanded Studio available",
+      "status": "pass",
+      "evidence": {
+        "closed": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 96.65625,
+            "height": 64,
+            "right": 104.65625,
+            "bottom": 334,
+            "visible": true
+          },
+          "studio": {
+            "x": 25,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 97.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 216,
+            "height": 103.78125,
+            "right": 228,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 544,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 646,
+            "visible": true
+          },
+          "rail": {
+            "x": 314,
+            "y": 390,
+            "width": 64,
+            "height": 264,
+            "right": 378,
+            "bottom": 654,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 304,
+              "y": 67,
+              "right": 344,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 348,
+              "y": 67,
+              "right": 382,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 173,
+            "y": 429.5,
+            "right": 217,
+            "bottom": 473.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "opened": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 96.65625,
+            "height": 64,
+            "right": 104.65625,
+            "bottom": 334,
+            "visible": false
+          },
+          "studio": {
+            "x": 25,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 97.65625,
+            "bottom": 321,
+            "visible": false
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 140.09375,
+            "height": 149,
+            "right": 148.09375,
+            "bottom": 217,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 216,
+            "height": 103.78125,
+            "right": 228,
+            "bottom": 231.78125,
+            "visible": false
+          },
+          "joystick": {
+            "x": 20,
+            "y": 544,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 646,
+            "visible": true
+          },
+          "rail": {
+            "x": 314,
+            "y": 390,
+            "width": 64,
+            "height": 264,
+            "right": 378,
+            "bottom": 654,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 304,
+              "y": 67,
+              "right": 344,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 348,
+              "y": 67,
+              "right": 382,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 173,
+            "y": 429.5,
+            "right": 217,
+            "bottom": 473.5
+          },
+          "labelFits": true,
+          "reachable": false,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "restored": {
+          "state": "normal",
+          "font": "large",
+          "dock": {
+            "x": 8,
+            "y": 270,
+            "width": 96.65625,
+            "height": 64,
+            "right": 104.65625,
+            "bottom": 334,
+            "visible": true
+          },
+          "studio": {
+            "x": 25,
+            "y": 277,
+            "width": 72.65625,
+            "height": 44,
+            "right": 97.65625,
+            "bottom": 321,
+            "visible": true
+          },
+          "coordinates": {
+            "x": 8,
+            "y": 68,
+            "width": 78.78125,
+            "height": 56,
+            "right": 86.78125,
+            "bottom": 124,
+            "visible": true
+          },
+          "cue": {
+            "x": 12,
+            "y": 128,
+            "width": 216,
+            "height": 103.78125,
+            "right": 228,
+            "bottom": 231.78125,
+            "visible": true
+          },
+          "joystick": {
+            "x": 20,
+            "y": 544,
+            "width": 102,
+            "height": 102,
+            "right": 122,
+            "bottom": 646,
+            "visible": true
+          },
+          "rail": {
+            "x": 314,
+            "y": 390,
+            "width": 64,
+            "height": 264,
+            "right": 378,
+            "bottom": 654,
+            "visible": true
+          },
+          "controls": [
+            {
+              "x": 304,
+              "y": 67,
+              "right": 344,
+              "bottom": 101,
+              "visible": true
+            },
+            {
+              "x": 348,
+              "y": 67,
+              "right": 382,
+              "bottom": 101,
+              "visible": true
+            }
+          ],
+          "target": {
+            "x": 173,
+            "y": 429.5,
+            "right": 217,
+            "bottom": 473.5
+          },
+          "labelFits": true,
+          "reachable": true,
+          "actions": [
+            {
+              "label": "Up",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Down",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Place",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "Break",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            },
+            {
+              "label": "More",
+              "width": 64,
+              "height": 48,
+              "fits": true
+            }
+          ]
+        },
+        "expandedVisible": true,
+        "studentBlocks": 2,
+        "runtimeErrors": []
+      }
+    }
+  ],
+  "failures": [],
+  "screenshots": [
+    "studio-contract-short-phone-normal-large.png",
+    "studio-contract-short-phone-toolbar-collapsed-large.png",
+    "studio-contract-short-phone-fullscreen-large.png",
+    "studio-contract-narrow-normal-standard.png",
+    "studio-contract-narrow-normal-large.png",
+    "studio-contract-narrow-toolbar-collapsed-large.png",
+    "studio-contract-narrow-fullscreen-large.png",
+    "studio-contract-tall-phone-position-open.png"
+  ],
+  "completedAt": "2026-10-04T03:58:28.403Z",
+  "resourcesClosed": true
+}

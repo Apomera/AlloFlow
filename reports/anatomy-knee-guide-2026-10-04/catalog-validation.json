@@ -1,0 +1,3708 @@
+{
+  "date": "2026-10-04",
+  "namespace": "stem.anatomy",
+  "englishKeys": 70,
+  "nativeTranslations": 210,
+  "source": {
+    "englishSha256": "44205a1e6c4efd09f8bbdea5d2a135ffca5577f46ed5cd0bab40a0c259047032",
+    "translationsSha256": "12086eaa0957e4e2296c3b11febb2aa702a3acdc17bbacd1831e85cd3ea62213",
+    "candidatePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\anatomy-knee-candidate.js",
+    "candidateSha256": "c7eb2488927953f913f84cbe9a82b88b834aca899c8eed4a649ae3705d72d46f",
+    "everyEnglishValueMatchesCandidateFallback": true
+  },
+  "scientificNarratives": {
+    "baselinePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\anatomy-knee-source-before.js",
+    "baselineSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+    "checks": [
+      {
+        "key": "knee_guide_architecture_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "knee_guide_extension_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "knee_guide_flexion_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "knee_guide_stability_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "knee_guide_clinical_title",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "knee_guide_clinical_change",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "knee_guide_clinical_effect",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "knee_guide_clinical_note",
+        "verbatimBaselineMatch": true
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "ui_strings.js",
+      "snapshot": "locale-before/ui_strings.js.before.gz",
+      "beforeSha256": "e9864ad809dcc62f533196e2d0123d7b57bca5c5029f46cfd3d442b2af1b40cb",
+      "beforeBytes": 11130168,
+      "afterSha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+      "afterBytes": 11135387,
+      "addedKeys": [
+        "knee_guide_title",
+        "knee_guide_help",
+        "knee_guide_overview_title",
+        "knee_guide_support_title",
+        "knee_guide_marker_help",
+        "knee_guide_orientation",
+        "knee_guide_overview_svg_title",
+        "knee_guide_overview_svg_description",
+        "knee_guide_support_svg_title",
+        "knee_guide_support_svg_description",
+        "knee_guide_structure_key",
+        "knee_guide_current_step",
+        "knee_guide_key_femur",
+        "knee_guide_key_patella",
+        "knee_guide_key_tibia",
+        "knee_guide_key_fibula",
+        "knee_guide_key_quadriceps",
+        "knee_guide_key_patellar",
+        "knee_guide_key_cartilage",
+        "knee_guide_key_meniscus",
+        "knee_guide_key_acl",
+        "knee_guide_key_pcl",
+        "knee_guide_key_collateral",
+        "knee_guide_flow_key",
+        "knee_guide_bone",
+        "knee_guide_cartilage",
+        "knee_guide_force",
+        "knee_guide_pause_flow",
+        "knee_guide_play_flow",
+        "knee_guide_flow_paused",
+        "knee_guide_flow_playing",
+        "knee_guide_previous",
+        "knee_guide_next",
+        "knee_guide_step_position",
+        "knee_guide_focus_heading",
+        "knee_guide_focus_architecture",
+        "knee_guide_focus_extension",
+        "knee_guide_focus_flexion",
+        "knee_guide_focus_stability",
+        "knee_guide_architecture_label",
+        "knee_guide_architecture_short",
+        "knee_guide_architecture_detail",
+        "knee_guide_extension_label",
+        "knee_guide_extension_short",
+        "knee_guide_extension_detail",
+        "knee_guide_flexion_label",
+        "knee_guide_flexion_short",
+        "knee_guide_flexion_detail",
+        "knee_guide_stability_label",
+        "knee_guide_stability_short",
+        "knee_guide_stability_detail",
+        "knee_guide_show_clinical",
+        "knee_guide_hide_clinical",
+        "knee_guide_clinical_shown",
+        "knee_guide_clinical_hidden",
+        "knee_guide_clinical_title",
+        "knee_guide_clinical_change",
+        "knee_guide_clinical_effect_heading",
+        "knee_guide_clinical_effect",
+        "knee_guide_clinical_note",
+        "knee_guide_handoff_label",
+        "knee_guide_handoff_lead",
+        "knee_guide_handoff_context",
+        "knee_guide_handoff_button",
+        "knee_guide_handoff_announcement",
+        "knee_guide_mechanism_heading",
+        "knee_guide_mechanism_architecture",
+        "knee_guide_mechanism_extension",
+        "knee_guide_mechanism_flexion",
+        "knee_guide_mechanism_stability"
+      ],
+      "insertionCharacterOffset": 1266231,
+      "insertionByteOffset": 1270746,
+      "insertionAnchor": "heart_guide_handoff_announcement",
+      "addedText": ",\n      \"knee_guide_title\": \"Knee mechanics\",\n      \"knee_guide_help\": \"Explore the bones, tendons, and ligaments in a lateral knee cutaway, then follow the movement forces.\",\n      \"knee_guide_overview_title\": \"1. Bones of the knee\",\n      \"knee_guide_support_title\": \"2. Supporting tissues\",\n      \"knee_guide_marker_help\": \"Match each illustration’s numbered markers to its structure key.\",\n      \"knee_guide_orientation\": \"This lateral cutaway shows the patella to the left of the femur and tibia.\",\n      \"knee_guide_overview_svg_title\": \"Knee bones and movement forces\",\n      \"knee_guide_overview_svg_description\": \"A lateral knee schematic identifies the femur, patella, tibia, and fibula. Movement and load highlights follow the selected step.\",\n      \"knee_guide_support_svg_title\": \"Knee tendons, cartilage, and ligaments\",\n      \"knee_guide_support_svg_description\": \"The same lateral schematic identifies the quadriceps tendon, patellar tendon, articular cartilage, meniscus, ACL, PCL, and collateral ligament.\",\n      \"knee_guide_structure_key\": \"Structure key\",\n      \"knee_guide_current_step\": \"Current step\",\n      \"knee_guide_key_femur\": \"Femur\",\n      \"knee_guide_key_patella\": \"Patella\",\n      \"knee_guide_key_tibia\": \"Tibia\",\n      \"knee_guide_key_fibula\": \"Fibula\",\n      \"knee_guide_key_quadriceps\": \"Quadriceps tendon\",\n      \"knee_guide_key_patellar\": \"Patellar tendon\",\n      \"knee_guide_key_cartilage\": \"Articular cartilage\",\n      \"knee_guide_key_meniscus\": \"Meniscus\",\n      \"knee_guide_key_acl\": \"ACL\",\n      \"knee_guide_key_pcl\": \"PCL\",\n      \"knee_guide_key_collateral\": \"Collateral ligament\",\n      \"knee_guide_flow_key\": \"Knee mechanics key\",\n      \"knee_guide_bone\": \"bone\",\n      \"knee_guide_cartilage\": \"cartilage / meniscus\",\n      \"knee_guide_force\": \"force / motion\",\n      \"knee_guide_pause_flow\": \"Pause motion\",\n      \"knee_guide_play_flow\": \"Play motion\",\n      \"knee_guide_flow_paused\": \"Motion paused\",\n      \"knee_guide_flow_playing\": \"Motion playing\",\n      \"knee_guide_previous\": \"Previous step\",\n      \"knee_guide_next\": \"Next step\",\n      \"knee_guide_step_position\": \"Step {current} of {total}\",\n      \"knee_guide_focus_heading\": \"Focus in this step\",\n      \"knee_guide_focus_architecture\": \"Femur · Articular cartilage · Menisci\",\n      \"knee_guide_focus_extension\": \"Quadriceps tendon · Patella · Patellar tendon\",\n      \"knee_guide_focus_flexion\": \"Hamstrings · Tibia · Flexion arc\",\n      \"knee_guide_focus_stability\": \"ACL · PCL · Collateral ligament\",\n      \"knee_guide_architecture_label\": \"1. Joint architecture\",\n      \"knee_guide_architecture_short\": \"Bones, cartilage, menisci\",\n      \"knee_guide_architecture_detail\": \"The femur meets the tibia across articular cartilage and two menisci that improve fit, distribute load, and absorb shock. The patella glides in the femoral trochlea.\",\n      \"knee_guide_extension_label\": \"2. Extension\",\n      \"knee_guide_extension_short\": \"Quadriceps straightens knee\",\n      \"knee_guide_extension_detail\": \"Quadriceps force travels through the quadriceps tendon, patella, and patellar tendon to the tibial tuberosity. The patella increases the extensor lever arm.\",\n      \"knee_guide_flexion_label\": \"3. Flexion\",\n      \"knee_guide_flexion_short\": \"Hamstrings bend knee\",\n      \"knee_guide_flexion_detail\": \"Hamstrings pull the tibia posteriorly to flex the knee. Joint surfaces roll and glide while the cruciate ligaments guide motion.\",\n      \"knee_guide_stability_label\": \"4. Stability\",\n      \"knee_guide_stability_short\": \"Ligaments limit translation\",\n      \"knee_guide_stability_detail\": \"The ACL limits anterior tibial translation and rotation; the PCL limits posterior translation. Collateral ligaments resist side-to-side stress, while menisci share compressive load.\",\n      \"knee_guide_show_clinical\": \"Clinical lens\",\n      \"knee_guide_hide_clinical\": \"Hide clinical lens\",\n      \"knee_guide_clinical_shown\": \"Clinical lens shown.\",\n      \"knee_guide_clinical_hidden\": \"Clinical lens hidden.\",\n      \"knee_guide_clinical_title\": \"ACL tear\",\n      \"knee_guide_clinical_change\": \"A discontinuity interrupts the ligament that restrains anterior tibial translation and rotation.\",\n      \"knee_guide_clinical_effect_heading\": \"Functional consequence\",\n      \"knee_guide_clinical_effect\": \"The knee may become unstable during pivoting or rapid direction changes.\",\n      \"knee_guide_clinical_note\": \"Educational comparison only — not a diagnostic view.\",\n      \"knee_guide_handoff_label\": \"Knee to muscle\",\n      \"knee_guide_handoff_lead\": \"Trace the force source: \",\n      \"knee_guide_handoff_context\": \"use the neuromuscular model to see how skeletal muscle generates force that crosses a joint.\",\n      \"knee_guide_handoff_button\": \"Trace muscle force\",\n      \"knee_guide_handoff_announcement\": \"Opening skeletal muscle contraction, step 4 of 4.\",\n      \"knee_guide_mechanism_heading\": \"Movement highlight\",\n      \"knee_guide_mechanism_architecture\": \"load spreads across cartilage + menisci\",\n      \"knee_guide_mechanism_extension\": \"patella increases lever arm\",\n      \"knee_guide_mechanism_flexion\": \"flexed tibia position\",\n      \"knee_guide_mechanism_stability\": \"ligaments limit translation\"",
+      "addedBytes": 5219,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "snapshot": "locale-before/desktop__web-app__public__ui_strings.js.before.gz",
+      "beforeSha256": "e9864ad809dcc62f533196e2d0123d7b57bca5c5029f46cfd3d442b2af1b40cb",
+      "beforeBytes": 11130168,
+      "afterSha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+      "afterBytes": 11135387,
+      "addedKeys": [
+        "knee_guide_title",
+        "knee_guide_help",
+        "knee_guide_overview_title",
+        "knee_guide_support_title",
+        "knee_guide_marker_help",
+        "knee_guide_orientation",
+        "knee_guide_overview_svg_title",
+        "knee_guide_overview_svg_description",
+        "knee_guide_support_svg_title",
+        "knee_guide_support_svg_description",
+        "knee_guide_structure_key",
+        "knee_guide_current_step",
+        "knee_guide_key_femur",
+        "knee_guide_key_patella",
+        "knee_guide_key_tibia",
+        "knee_guide_key_fibula",
+        "knee_guide_key_quadriceps",
+        "knee_guide_key_patellar",
+        "knee_guide_key_cartilage",
+        "knee_guide_key_meniscus",
+        "knee_guide_key_acl",
+        "knee_guide_key_pcl",
+        "knee_guide_key_collateral",
+        "knee_guide_flow_key",
+        "knee_guide_bone",
+        "knee_guide_cartilage",
+        "knee_guide_force",
+        "knee_guide_pause_flow",
+        "knee_guide_play_flow",
+        "knee_guide_flow_paused",
+        "knee_guide_flow_playing",
+        "knee_guide_previous",
+        "knee_guide_next",
+        "knee_guide_step_position",
+        "knee_guide_focus_heading",
+        "knee_guide_focus_architecture",
+        "knee_guide_focus_extension",
+        "knee_guide_focus_flexion",
+        "knee_guide_focus_stability",
+        "knee_guide_architecture_label",
+        "knee_guide_architecture_short",
+        "knee_guide_architecture_detail",
+        "knee_guide_extension_label",
+        "knee_guide_extension_short",
+        "knee_guide_extension_detail",
+        "knee_guide_flexion_label",
+        "knee_guide_flexion_short",
+        "knee_guide_flexion_detail",
+        "knee_guide_stability_label",
+        "knee_guide_stability_short",
+        "knee_guide_stability_detail",
+        "knee_guide_show_clinical",
+        "knee_guide_hide_clinical",
+        "knee_guide_clinical_shown",
+        "knee_guide_clinical_hidden",
+        "knee_guide_clinical_title",
+        "knee_guide_clinical_change",
+        "knee_guide_clinical_effect_heading",
+        "knee_guide_clinical_effect",
+        "knee_guide_clinical_note",
+        "knee_guide_handoff_label",
+        "knee_guide_handoff_lead",
+        "knee_guide_handoff_context",
+        "knee_guide_handoff_button",
+        "knee_guide_handoff_announcement",
+        "knee_guide_mechanism_heading",
+        "knee_guide_mechanism_architecture",
+        "knee_guide_mechanism_extension",
+        "knee_guide_mechanism_flexion",
+        "knee_guide_mechanism_stability"
+      ],
+      "insertionCharacterOffset": 1266231,
+      "insertionByteOffset": 1270746,
+      "insertionAnchor": "heart_guide_handoff_announcement",
+      "addedText": ",\n      \"knee_guide_title\": \"Knee mechanics\",\n      \"knee_guide_help\": \"Explore the bones, tendons, and ligaments in a lateral knee cutaway, then follow the movement forces.\",\n      \"knee_guide_overview_title\": \"1. Bones of the knee\",\n      \"knee_guide_support_title\": \"2. Supporting tissues\",\n      \"knee_guide_marker_help\": \"Match each illustration’s numbered markers to its structure key.\",\n      \"knee_guide_orientation\": \"This lateral cutaway shows the patella to the left of the femur and tibia.\",\n      \"knee_guide_overview_svg_title\": \"Knee bones and movement forces\",\n      \"knee_guide_overview_svg_description\": \"A lateral knee schematic identifies the femur, patella, tibia, and fibula. Movement and load highlights follow the selected step.\",\n      \"knee_guide_support_svg_title\": \"Knee tendons, cartilage, and ligaments\",\n      \"knee_guide_support_svg_description\": \"The same lateral schematic identifies the quadriceps tendon, patellar tendon, articular cartilage, meniscus, ACL, PCL, and collateral ligament.\",\n      \"knee_guide_structure_key\": \"Structure key\",\n      \"knee_guide_current_step\": \"Current step\",\n      \"knee_guide_key_femur\": \"Femur\",\n      \"knee_guide_key_patella\": \"Patella\",\n      \"knee_guide_key_tibia\": \"Tibia\",\n      \"knee_guide_key_fibula\": \"Fibula\",\n      \"knee_guide_key_quadriceps\": \"Quadriceps tendon\",\n      \"knee_guide_key_patellar\": \"Patellar tendon\",\n      \"knee_guide_key_cartilage\": \"Articular cartilage\",\n      \"knee_guide_key_meniscus\": \"Meniscus\",\n      \"knee_guide_key_acl\": \"ACL\",\n      \"knee_guide_key_pcl\": \"PCL\",\n      \"knee_guide_key_collateral\": \"Collateral ligament\",\n      \"knee_guide_flow_key\": \"Knee mechanics key\",\n      \"knee_guide_bone\": \"bone\",\n      \"knee_guide_cartilage\": \"cartilage / meniscus\",\n      \"knee_guide_force\": \"force / motion\",\n      \"knee_guide_pause_flow\": \"Pause motion\",\n      \"knee_guide_play_flow\": \"Play motion\",\n      \"knee_guide_flow_paused\": \"Motion paused\",\n      \"knee_guide_flow_playing\": \"Motion playing\",\n      \"knee_guide_previous\": \"Previous step\",\n      \"knee_guide_next\": \"Next step\",\n      \"knee_guide_step_position\": \"Step {current} of {total}\",\n      \"knee_guide_focus_heading\": \"Focus in this step\",\n      \"knee_guide_focus_architecture\": \"Femur · Articular cartilage · Menisci\",\n      \"knee_guide_focus_extension\": \"Quadriceps tendon · Patella · Patellar tendon\",\n      \"knee_guide_focus_flexion\": \"Hamstrings · Tibia · Flexion arc\",\n      \"knee_guide_focus_stability\": \"ACL · PCL · Collateral ligament\",\n      \"knee_guide_architecture_label\": \"1. Joint architecture\",\n      \"knee_guide_architecture_short\": \"Bones, cartilage, menisci\",\n      \"knee_guide_architecture_detail\": \"The femur meets the tibia across articular cartilage and two menisci that improve fit, distribute load, and absorb shock. The patella glides in the femoral trochlea.\",\n      \"knee_guide_extension_label\": \"2. Extension\",\n      \"knee_guide_extension_short\": \"Quadriceps straightens knee\",\n      \"knee_guide_extension_detail\": \"Quadriceps force travels through the quadriceps tendon, patella, and patellar tendon to the tibial tuberosity. The patella increases the extensor lever arm.\",\n      \"knee_guide_flexion_label\": \"3. Flexion\",\n      \"knee_guide_flexion_short\": \"Hamstrings bend knee\",\n      \"knee_guide_flexion_detail\": \"Hamstrings pull the tibia posteriorly to flex the knee. Joint surfaces roll and glide while the cruciate ligaments guide motion.\",\n      \"knee_guide_stability_label\": \"4. Stability\",\n      \"knee_guide_stability_short\": \"Ligaments limit translation\",\n      \"knee_guide_stability_detail\": \"The ACL limits anterior tibial translation and rotation; the PCL limits posterior translation. Collateral ligaments resist side-to-side stress, while menisci share compressive load.\",\n      \"knee_guide_show_clinical\": \"Clinical lens\",\n      \"knee_guide_hide_clinical\": \"Hide clinical lens\",\n      \"knee_guide_clinical_shown\": \"Clinical lens shown.\",\n      \"knee_guide_clinical_hidden\": \"Clinical lens hidden.\",\n      \"knee_guide_clinical_title\": \"ACL tear\",\n      \"knee_guide_clinical_change\": \"A discontinuity interrupts the ligament that restrains anterior tibial translation and rotation.\",\n      \"knee_guide_clinical_effect_heading\": \"Functional consequence\",\n      \"knee_guide_clinical_effect\": \"The knee may become unstable during pivoting or rapid direction changes.\",\n      \"knee_guide_clinical_note\": \"Educational comparison only — not a diagnostic view.\",\n      \"knee_guide_handoff_label\": \"Knee to muscle\",\n      \"knee_guide_handoff_lead\": \"Trace the force source: \",\n      \"knee_guide_handoff_context\": \"use the neuromuscular model to see how skeletal muscle generates force that crosses a joint.\",\n      \"knee_guide_handoff_button\": \"Trace muscle force\",\n      \"knee_guide_handoff_announcement\": \"Opening skeletal muscle contraction, step 4 of 4.\",\n      \"knee_guide_mechanism_heading\": \"Movement highlight\",\n      \"knee_guide_mechanism_architecture\": \"load spreads across cartilage + menisci\",\n      \"knee_guide_mechanism_extension\": \"patella increases lever arm\",\n      \"knee_guide_mechanism_flexion\": \"flexed tibia position\",\n      \"knee_guide_mechanism_stability\": \"ligaments limit translation\"",
+      "addedBytes": 5219,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/french.js",
+      "snapshot": "locale-before/lang__french.js.before.gz",
+      "beforeSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "beforeBytes": 8452386,
+      "afterSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "afterBytes": 8458242,
+      "addedKeys": [
+        "knee_guide_title",
+        "knee_guide_help",
+        "knee_guide_overview_title",
+        "knee_guide_support_title",
+        "knee_guide_marker_help",
+        "knee_guide_orientation",
+        "knee_guide_overview_svg_title",
+        "knee_guide_overview_svg_description",
+        "knee_guide_support_svg_title",
+        "knee_guide_support_svg_description",
+        "knee_guide_structure_key",
+        "knee_guide_current_step",
+        "knee_guide_key_femur",
+        "knee_guide_key_patella",
+        "knee_guide_key_tibia",
+        "knee_guide_key_fibula",
+        "knee_guide_key_quadriceps",
+        "knee_guide_key_patellar",
+        "knee_guide_key_cartilage",
+        "knee_guide_key_meniscus",
+        "knee_guide_key_acl",
+        "knee_guide_key_pcl",
+        "knee_guide_key_collateral",
+        "knee_guide_flow_key",
+        "knee_guide_bone",
+        "knee_guide_cartilage",
+        "knee_guide_force",
+        "knee_guide_pause_flow",
+        "knee_guide_play_flow",
+        "knee_guide_flow_paused",
+        "knee_guide_flow_playing",
+        "knee_guide_previous",
+        "knee_guide_next",
+        "knee_guide_step_position",
+        "knee_guide_focus_heading",
+        "knee_guide_focus_architecture",
+        "knee_guide_focus_extension",
+        "knee_guide_focus_flexion",
+        "knee_guide_focus_stability",
+        "knee_guide_architecture_label",
+        "knee_guide_architecture_short",
+        "knee_guide_architecture_detail",
+        "knee_guide_extension_label",
+        "knee_guide_extension_short",
+        "knee_guide_extension_detail",
+        "knee_guide_flexion_label",
+        "knee_guide_flexion_short",
+        "knee_guide_flexion_detail",
+        "knee_guide_stability_label",
+        "knee_guide_stability_short",
+        "knee_guide_stability_detail",
+        "knee_guide_show_clinical",
+        "knee_guide_hide_clinical",
+        "knee_guide_clinical_shown",
+        "knee_guide_clinical_hidden",
+        "knee_guide_clinical_title",
+        "knee_guide_clinical_change",
+        "knee_guide_clinical_effect_heading",
+        "knee_guide_clinical_effect",
+        "knee_guide_clinical_note",
+        "knee_guide_handoff_label",
+        "knee_guide_handoff_lead",
+        "knee_guide_handoff_context",
+        "knee_guide_handoff_button",
+        "knee_guide_handoff_announcement",
+        "knee_guide_mechanism_heading",
+        "knee_guide_mechanism_architecture",
+        "knee_guide_mechanism_extension",
+        "knee_guide_mechanism_flexion",
+        "knee_guide_mechanism_stability"
+      ],
+      "insertionCharacterOffset": 3107400,
+      "insertionByteOffset": 3176874,
+      "insertionAnchor": "heart_guide_handoff_announcement",
+      "addedText": ",\n      \"knee_guide_title\": \"Mécanique du genou\",\n      \"knee_guide_help\": \"Explorez les os, les tendons et les ligaments dans une coupe latérale du genou, puis suivez les forces du mouvement.\",\n      \"knee_guide_overview_title\": \"1. Os du genou\",\n      \"knee_guide_support_title\": \"2. Tissus de soutien\",\n      \"knee_guide_marker_help\": \"Associez les repères numérotés de chaque illustration à sa légende des structures.\",\n      \"knee_guide_orientation\": \"Cette coupe latérale montre la rotule à gauche du fémur et du tibia.\",\n      \"knee_guide_overview_svg_title\": \"Os du genou et forces du mouvement\",\n      \"knee_guide_overview_svg_description\": \"Un schéma latéral du genou identifie le fémur, la rotule, le tibia et la fibula. Les indications de mouvement et de charge suivent l’étape sélectionnée.\",\n      \"knee_guide_support_svg_title\": \"Tendons, cartilage et ligaments du genou\",\n      \"knee_guide_support_svg_description\": \"Le même schéma latéral identifie le tendon du quadriceps, le tendon rotulien, le cartilage articulaire, le ménisque, le LCA, le LCP et le ligament collatéral.\",\n      \"knee_guide_structure_key\": \"Légende des structures\",\n      \"knee_guide_current_step\": \"Étape actuelle\",\n      \"knee_guide_key_femur\": \"Fémur\",\n      \"knee_guide_key_patella\": \"Rotule\",\n      \"knee_guide_key_tibia\": \"Tibia\",\n      \"knee_guide_key_fibula\": \"Fibula\",\n      \"knee_guide_key_quadriceps\": \"Tendon du quadriceps\",\n      \"knee_guide_key_patellar\": \"Tendon rotulien\",\n      \"knee_guide_key_cartilage\": \"Cartilage articulaire\",\n      \"knee_guide_key_meniscus\": \"Ménisque\",\n      \"knee_guide_key_acl\": \"LCA\",\n      \"knee_guide_key_pcl\": \"LCP\",\n      \"knee_guide_key_collateral\": \"Ligament collatéral\",\n      \"knee_guide_flow_key\": \"Légende de la mécanique du genou\",\n      \"knee_guide_bone\": \"os\",\n      \"knee_guide_cartilage\": \"cartilage / ménisque\",\n      \"knee_guide_force\": \"force / mouvement\",\n      \"knee_guide_pause_flow\": \"Mettre le mouvement en pause\",\n      \"knee_guide_play_flow\": \"Animer le mouvement\",\n      \"knee_guide_flow_paused\": \"Mouvement en pause\",\n      \"knee_guide_flow_playing\": \"Mouvement en cours\",\n      \"knee_guide_previous\": \"Étape précédente\",\n      \"knee_guide_next\": \"Étape suivante\",\n      \"knee_guide_step_position\": \"Étape {current} sur {total}\",\n      \"knee_guide_focus_heading\": \"À observer à cette étape\",\n      \"knee_guide_focus_architecture\": \"Fémur · Cartilage articulaire · Ménisques\",\n      \"knee_guide_focus_extension\": \"Tendon du quadriceps · Rotule · Tendon rotulien\",\n      \"knee_guide_focus_flexion\": \"Ischio-jambiers · Tibia · Arc de flexion\",\n      \"knee_guide_focus_stability\": \"LCA · LCP · Ligament collatéral\",\n      \"knee_guide_architecture_label\": \"1. Architecture articulaire\",\n      \"knee_guide_architecture_short\": \"Os, cartilage, ménisques\",\n      \"knee_guide_architecture_detail\": \"Le fémur s’articule avec le tibia par l’intermédiaire du cartilage articulaire et de deux ménisques qui améliorent l’ajustement, répartissent la charge et amortissent les chocs. La rotule glisse dans la trochlée fémorale.\",\n      \"knee_guide_extension_label\": \"2. Extension\",\n      \"knee_guide_extension_short\": \"Le quadriceps étend le genou\",\n      \"knee_guide_extension_detail\": \"La force du quadriceps se transmet à la tubérosité tibiale par le tendon du quadriceps, la rotule et le tendon rotulien. La rotule augmente le bras de levier des extenseurs.\",\n      \"knee_guide_flexion_label\": \"3. Flexion\",\n      \"knee_guide_flexion_short\": \"Les ischio-jambiers fléchissent le genou\",\n      \"knee_guide_flexion_detail\": \"Les ischio-jambiers tirent le tibia vers l’arrière pour fléchir le genou. Les surfaces articulaires roulent et glissent tandis que les ligaments croisés guident le mouvement.\",\n      \"knee_guide_stability_label\": \"4. Stabilité\",\n      \"knee_guide_stability_short\": \"Les ligaments limitent la translation\",\n      \"knee_guide_stability_detail\": \"Le LCA limite la translation antérieure et la rotation du tibia ; le LCP limite sa translation postérieure. Les ligaments collatéraux résistent aux contraintes latérales, tandis que les ménisques partagent la charge de compression.\",\n      \"knee_guide_show_clinical\": \"Vue clinique\",\n      \"knee_guide_hide_clinical\": \"Masquer la vue clinique\",\n      \"knee_guide_clinical_shown\": \"Vue clinique affichée.\",\n      \"knee_guide_clinical_hidden\": \"Vue clinique masquée.\",\n      \"knee_guide_clinical_title\": \"Rupture du LCA\",\n      \"knee_guide_clinical_change\": \"Une discontinuité interrompt le ligament qui limite la translation antérieure et la rotation du tibia.\",\n      \"knee_guide_clinical_effect_heading\": \"Conséquence fonctionnelle\",\n      \"knee_guide_clinical_effect\": \"Le genou peut devenir instable lors des pivots ou des changements rapides de direction.\",\n      \"knee_guide_clinical_note\": \"Comparaison pédagogique uniquement — ce n’est pas une vue diagnostique.\",\n      \"knee_guide_handoff_label\": \"Du genou au muscle\",\n      \"knee_guide_handoff_lead\": \"Suivez l’origine de la force : \",\n      \"knee_guide_handoff_context\": \"utilisez le modèle neuromusculaire pour voir comment le muscle squelettique produit une force qui s’exerce à travers une articulation.\",\n      \"knee_guide_handoff_button\": \"Suivre la force musculaire\",\n      \"knee_guide_handoff_announcement\": \"Ouverture de la contraction du muscle squelettique, étape 4 sur 4.\",\n      \"knee_guide_mechanism_heading\": \"Mouvement mis en évidence\",\n      \"knee_guide_mechanism_architecture\": \"la charge se répartit sur le cartilage et les ménisques\",\n      \"knee_guide_mechanism_extension\": \"la rotule augmente le bras de levier\",\n      \"knee_guide_mechanism_flexion\": \"position du tibia en flexion\",\n      \"knee_guide_mechanism_stability\": \"les ligaments limitent la translation\"",
+      "addedBytes": 5856,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__french.js.before.gz",
+      "beforeSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "beforeBytes": 8452386,
+      "afterSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "afterBytes": 8458242,
+      "addedKeys": [
+        "knee_guide_title",
+        "knee_guide_help",
+        "knee_guide_overview_title",
+        "knee_guide_support_title",
+        "knee_guide_marker_help",
+        "knee_guide_orientation",
+        "knee_guide_overview_svg_title",
+        "knee_guide_overview_svg_description",
+        "knee_guide_support_svg_title",
+        "knee_guide_support_svg_description",
+        "knee_guide_structure_key",
+        "knee_guide_current_step",
+        "knee_guide_key_femur",
+        "knee_guide_key_patella",
+        "knee_guide_key_tibia",
+        "knee_guide_key_fibula",
+        "knee_guide_key_quadriceps",
+        "knee_guide_key_patellar",
+        "knee_guide_key_cartilage",
+        "knee_guide_key_meniscus",
+        "knee_guide_key_acl",
+        "knee_guide_key_pcl",
+        "knee_guide_key_collateral",
+        "knee_guide_flow_key",
+        "knee_guide_bone",
+        "knee_guide_cartilage",
+        "knee_guide_force",
+        "knee_guide_pause_flow",
+        "knee_guide_play_flow",
+        "knee_guide_flow_paused",
+        "knee_guide_flow_playing",
+        "knee_guide_previous",
+        "knee_guide_next",
+        "knee_guide_step_position",
+        "knee_guide_focus_heading",
+        "knee_guide_focus_architecture",
+        "knee_guide_focus_extension",
+        "knee_guide_focus_flexion",
+        "knee_guide_focus_stability",
+        "knee_guide_architecture_label",
+        "knee_guide_architecture_short",
+        "knee_guide_architecture_detail",
+        "knee_guide_extension_label",
+        "knee_guide_extension_short",
+        "knee_guide_extension_detail",
+        "knee_guide_flexion_label",
+        "knee_guide_flexion_short",
+        "knee_guide_flexion_detail",
+        "knee_guide_stability_label",
+        "knee_guide_stability_short",
+        "knee_guide_stability_detail",
+        "knee_guide_show_clinical",
+        "knee_guide_hide_clinical",
+        "knee_guide_clinical_shown",
+        "knee_guide_clinical_hidden",
+        "knee_guide_clinical_title",
+        "knee_guide_clinical_change",
+        "knee_guide_clinical_effect_heading",
+        "knee_guide_clinical_effect",
+        "knee_guide_clinical_note",
+        "knee_guide_handoff_label",
+        "knee_guide_handoff_lead",
+        "knee_guide_handoff_context",
+        "knee_guide_handoff_button",
+        "knee_guide_handoff_announcement",
+        "knee_guide_mechanism_heading",
+        "knee_guide_mechanism_architecture",
+        "knee_guide_mechanism_extension",
+        "knee_guide_mechanism_flexion",
+        "knee_guide_mechanism_stability"
+      ],
+      "insertionCharacterOffset": 3107400,
+      "insertionByteOffset": 3176874,
+      "insertionAnchor": "heart_guide_handoff_announcement",
+      "addedText": ",\n      \"knee_guide_title\": \"Mécanique du genou\",\n      \"knee_guide_help\": \"Explorez les os, les tendons et les ligaments dans une coupe latérale du genou, puis suivez les forces du mouvement.\",\n      \"knee_guide_overview_title\": \"1. Os du genou\",\n      \"knee_guide_support_title\": \"2. Tissus de soutien\",\n      \"knee_guide_marker_help\": \"Associez les repères numérotés de chaque illustration à sa légende des structures.\",\n      \"knee_guide_orientation\": \"Cette coupe latérale montre la rotule à gauche du fémur et du tibia.\",\n      \"knee_guide_overview_svg_title\": \"Os du genou et forces du mouvement\",\n      \"knee_guide_overview_svg_description\": \"Un schéma latéral du genou identifie le fémur, la rotule, le tibia et la fibula. Les indications de mouvement et de charge suivent l’étape sélectionnée.\",\n      \"knee_guide_support_svg_title\": \"Tendons, cartilage et ligaments du genou\",\n      \"knee_guide_support_svg_description\": \"Le même schéma latéral identifie le tendon du quadriceps, le tendon rotulien, le cartilage articulaire, le ménisque, le LCA, le LCP et le ligament collatéral.\",\n      \"knee_guide_structure_key\": \"Légende des structures\",\n      \"knee_guide_current_step\": \"Étape actuelle\",\n      \"knee_guide_key_femur\": \"Fémur\",\n      \"knee_guide_key_patella\": \"Rotule\",\n      \"knee_guide_key_tibia\": \"Tibia\",\n      \"knee_guide_key_fibula\": \"Fibula\",\n      \"knee_guide_key_quadriceps\": \"Tendon du quadriceps\",\n      \"knee_guide_key_patellar\": \"Tendon rotulien\",\n      \"knee_guide_key_cartilage\": \"Cartilage articulaire\",\n      \"knee_guide_key_meniscus\": \"Ménisque\",\n      \"knee_guide_key_acl\": \"LCA\",\n      \"knee_guide_key_pcl\": \"LCP\",\n      \"knee_guide_key_collateral\": \"Ligament collatéral\",\n      \"knee_guide_flow_key\": \"Légende de la mécanique du genou\",\n      \"knee_guide_bone\": \"os\",\n      \"knee_guide_cartilage\": \"cartilage / ménisque\",\n      \"knee_guide_force\": \"force / mouvement\",\n      \"knee_guide_pause_flow\": \"Mettre le mouvement en pause\",\n      \"knee_guide_play_flow\": \"Animer le mouvement\",\n      \"knee_guide_flow_paused\": \"Mouvement en pause\",\n      \"knee_guide_flow_playing\": \"Mouvement en cours\",\n      \"knee_guide_previous\": \"Étape précédente\",\n      \"knee_guide_next\": \"Étape suivante\",\n      \"knee_guide_step_position\": \"Étape {current} sur {total}\",\n      \"knee_guide_focus_heading\": \"À observer à cette étape\",\n      \"knee_guide_focus_architecture\": \"Fémur · Cartilage articulaire · Ménisques\",\n      \"knee_guide_focus_extension\": \"Tendon du quadriceps · Rotule · Tendon rotulien\",\n      \"knee_guide_focus_flexion\": \"Ischio-jambiers · Tibia · Arc de flexion\",\n      \"knee_guide_focus_stability\": \"LCA · LCP · Ligament collatéral\",\n      \"knee_guide_architecture_label\": \"1. Architecture articulaire\",\n      \"knee_guide_architecture_short\": \"Os, cartilage, ménisques\",\n      \"knee_guide_architecture_detail\": \"Le fémur s’articule avec le tibia par l’intermédiaire du cartilage articulaire et de deux ménisques qui améliorent l’ajustement, répartissent la charge et amortissent les chocs. La rotule glisse dans la trochlée fémorale.\",\n      \"knee_guide_extension_label\": \"2. Extension\",\n      \"knee_guide_extension_short\": \"Le quadriceps étend le genou\",\n      \"knee_guide_extension_detail\": \"La force du quadriceps se transmet à la tubérosité tibiale par le tendon du quadriceps, la rotule et le tendon rotulien. La rotule augmente le bras de levier des extenseurs.\",\n      \"knee_guide_flexion_label\": \"3. Flexion\",\n      \"knee_guide_flexion_short\": \"Les ischio-jambiers fléchissent le genou\",\n      \"knee_guide_flexion_detail\": \"Les ischio-jambiers tirent le tibia vers l’arrière pour fléchir le genou. Les surfaces articulaires roulent et glissent tandis que les ligaments croisés guident le mouvement.\",\n      \"knee_guide_stability_label\": \"4. Stabilité\",\n      \"knee_guide_stability_short\": \"Les ligaments limitent la translation\",\n      \"knee_guide_stability_detail\": \"Le LCA limite la translation antérieure et la rotation du tibia ; le LCP limite sa translation postérieure. Les ligaments collatéraux résistent aux contraintes latérales, tandis que les ménisques partagent la charge de compression.\",\n      \"knee_guide_show_clinical\": \"Vue clinique\",\n      \"knee_guide_hide_clinical\": \"Masquer la vue clinique\",\n      \"knee_guide_clinical_shown\": \"Vue clinique affichée.\",\n      \"knee_guide_clinical_hidden\": \"Vue clinique masquée.\",\n      \"knee_guide_clinical_title\": \"Rupture du LCA\",\n      \"knee_guide_clinical_change\": \"Une discontinuité interrompt le ligament qui limite la translation antérieure et la rotation du tibia.\",\n      \"knee_guide_clinical_effect_heading\": \"Conséquence fonctionnelle\",\n      \"knee_guide_clinical_effect\": \"Le genou peut devenir instable lors des pivots ou des changements rapides de direction.\",\n      \"knee_guide_clinical_note\": \"Comparaison pédagogique uniquement — ce n’est pas une vue diagnostique.\",\n      \"knee_guide_handoff_label\": \"Du genou au muscle\",\n      \"knee_guide_handoff_lead\": \"Suivez l’origine de la force : \",\n      \"knee_guide_handoff_context\": \"utilisez le modèle neuromusculaire pour voir comment le muscle squelettique produit une force qui s’exerce à travers une articulation.\",\n      \"knee_guide_handoff_button\": \"Suivre la force musculaire\",\n      \"knee_guide_handoff_announcement\": \"Ouverture de la contraction du muscle squelettique, étape 4 sur 4.\",\n      \"knee_guide_mechanism_heading\": \"Mouvement mis en évidence\",\n      \"knee_guide_mechanism_architecture\": \"la charge se répartit sur le cartilage et les ménisques\",\n      \"knee_guide_mechanism_extension\": \"la rotule augmente le bras de levier\",\n      \"knee_guide_mechanism_flexion\": \"position du tibia en flexion\",\n      \"knee_guide_mechanism_stability\": \"les ligaments limitent la translation\"",
+      "addedBytes": 5856,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "snapshot": "locale-before/lang__spanish_latin_america.js.before.gz",
+      "beforeSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "beforeBytes": 8873203,
+      "afterSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "afterBytes": 8879035,
+      "addedKeys": [
+        "knee_guide_title",
+        "knee_guide_help",
+        "knee_guide_overview_title",
+        "knee_guide_support_title",
+        "knee_guide_marker_help",
+        "knee_guide_orientation",
+        "knee_guide_overview_svg_title",
+        "knee_guide_overview_svg_description",
+        "knee_guide_support_svg_title",
+        "knee_guide_support_svg_description",
+        "knee_guide_structure_key",
+        "knee_guide_current_step",
+        "knee_guide_key_femur",
+        "knee_guide_key_patella",
+        "knee_guide_key_tibia",
+        "knee_guide_key_fibula",
+        "knee_guide_key_quadriceps",
+        "knee_guide_key_patellar",
+        "knee_guide_key_cartilage",
+        "knee_guide_key_meniscus",
+        "knee_guide_key_acl",
+        "knee_guide_key_pcl",
+        "knee_guide_key_collateral",
+        "knee_guide_flow_key",
+        "knee_guide_bone",
+        "knee_guide_cartilage",
+        "knee_guide_force",
+        "knee_guide_pause_flow",
+        "knee_guide_play_flow",
+        "knee_guide_flow_paused",
+        "knee_guide_flow_playing",
+        "knee_guide_previous",
+        "knee_guide_next",
+        "knee_guide_step_position",
+        "knee_guide_focus_heading",
+        "knee_guide_focus_architecture",
+        "knee_guide_focus_extension",
+        "knee_guide_focus_flexion",
+        "knee_guide_focus_stability",
+        "knee_guide_architecture_label",
+        "knee_guide_architecture_short",
+        "knee_guide_architecture_detail",
+        "knee_guide_extension_label",
+        "knee_guide_extension_short",
+        "knee_guide_extension_detail",
+        "knee_guide_flexion_label",
+        "knee_guide_flexion_short",
+        "knee_guide_flexion_detail",
+        "knee_guide_stability_label",
+        "knee_guide_stability_short",
+        "knee_guide_stability_detail",
+        "knee_guide_show_clinical",
+        "knee_guide_hide_clinical",
+        "knee_guide_clinical_shown",
+        "knee_guide_clinical_hidden",
+        "knee_guide_clinical_title",
+        "knee_guide_clinical_change",
+        "knee_guide_clinical_effect_heading",
+        "knee_guide_clinical_effect",
+        "knee_guide_clinical_note",
+        "knee_guide_handoff_label",
+        "knee_guide_handoff_lead",
+        "knee_guide_handoff_context",
+        "knee_guide_handoff_button",
+        "knee_guide_handoff_announcement",
+        "knee_guide_mechanism_heading",
+        "knee_guide_mechanism_architecture",
+        "knee_guide_mechanism_extension",
+        "knee_guide_mechanism_flexion",
+        "knee_guide_mechanism_stability"
+      ],
+      "insertionCharacterOffset": 3043251,
+      "insertionByteOffset": 3086848,
+      "insertionAnchor": "heart_guide_handoff_announcement",
+      "addedText": ",\n      \"knee_guide_title\": \"Mecánica de la rodilla\",\n      \"knee_guide_help\": \"Explora los huesos, tendones y ligamentos en un corte lateral de la rodilla y luego sigue las fuerzas del movimiento.\",\n      \"knee_guide_overview_title\": \"1. Huesos de la rodilla\",\n      \"knee_guide_support_title\": \"2. Tejidos de soporte\",\n      \"knee_guide_marker_help\": \"Relaciona los marcadores numerados de cada ilustración con su leyenda de estructuras.\",\n      \"knee_guide_orientation\": \"Este corte lateral muestra la rótula a la izquierda del fémur y la tibia.\",\n      \"knee_guide_overview_svg_title\": \"Huesos de la rodilla y fuerzas del movimiento\",\n      \"knee_guide_overview_svg_description\": \"Un esquema lateral de la rodilla identifica el fémur, la rótula, la tibia y la fíbula. Los indicadores de movimiento y carga siguen el paso seleccionado.\",\n      \"knee_guide_support_svg_title\": \"Tendones, cartílago y ligamentos de la rodilla\",\n      \"knee_guide_support_svg_description\": \"El mismo esquema lateral identifica el tendón del cuádriceps, el tendón rotuliano, el cartílago articular, el menisco, el LCA, el LCP y el ligamento colateral.\",\n      \"knee_guide_structure_key\": \"Leyenda de estructuras\",\n      \"knee_guide_current_step\": \"Paso actual\",\n      \"knee_guide_key_femur\": \"Fémur\",\n      \"knee_guide_key_patella\": \"Rótula\",\n      \"knee_guide_key_tibia\": \"Tibia\",\n      \"knee_guide_key_fibula\": \"Fíbula\",\n      \"knee_guide_key_quadriceps\": \"Tendón del cuádriceps\",\n      \"knee_guide_key_patellar\": \"Tendón rotuliano\",\n      \"knee_guide_key_cartilage\": \"Cartílago articular\",\n      \"knee_guide_key_meniscus\": \"Menisco\",\n      \"knee_guide_key_acl\": \"LCA\",\n      \"knee_guide_key_pcl\": \"LCP\",\n      \"knee_guide_key_collateral\": \"Ligamento colateral\",\n      \"knee_guide_flow_key\": \"Leyenda de la mecánica de la rodilla\",\n      \"knee_guide_bone\": \"hueso\",\n      \"knee_guide_cartilage\": \"cartílago / menisco\",\n      \"knee_guide_force\": \"fuerza / movimiento\",\n      \"knee_guide_pause_flow\": \"Pausar movimiento\",\n      \"knee_guide_play_flow\": \"Reproducir movimiento\",\n      \"knee_guide_flow_paused\": \"Movimiento en pausa\",\n      \"knee_guide_flow_playing\": \"Movimiento en curso\",\n      \"knee_guide_previous\": \"Paso anterior\",\n      \"knee_guide_next\": \"Paso siguiente\",\n      \"knee_guide_step_position\": \"Paso {current} de {total}\",\n      \"knee_guide_focus_heading\": \"Qué observar en este paso\",\n      \"knee_guide_focus_architecture\": \"Fémur · Cartílago articular · Meniscos\",\n      \"knee_guide_focus_extension\": \"Tendón del cuádriceps · Rótula · Tendón rotuliano\",\n      \"knee_guide_focus_flexion\": \"Isquiotibiales · Tibia · Arco de flexión\",\n      \"knee_guide_focus_stability\": \"LCA · LCP · Ligamento colateral\",\n      \"knee_guide_architecture_label\": \"1. Arquitectura articular\",\n      \"knee_guide_architecture_short\": \"Huesos, cartílago, meniscos\",\n      \"knee_guide_architecture_detail\": \"El fémur se articula con la tibia mediante el cartílago articular y dos meniscos que mejoran el encaje, distribuyen la carga y absorben impactos. La rótula se desliza por la tróclea femoral.\",\n      \"knee_guide_extension_label\": \"2. Extensión\",\n      \"knee_guide_extension_short\": \"El cuádriceps extiende la rodilla\",\n      \"knee_guide_extension_detail\": \"La fuerza del cuádriceps se transmite a la tuberosidad tibial a través del tendón del cuádriceps, la rótula y el tendón rotuliano. La rótula aumenta el brazo de palanca del mecanismo extensor.\",\n      \"knee_guide_flexion_label\": \"3. Flexión\",\n      \"knee_guide_flexion_short\": \"Los isquiotibiales flexionan la rodilla\",\n      \"knee_guide_flexion_detail\": \"Los isquiotibiales tiran de la tibia hacia atrás para flexionar la rodilla. Las superficies articulares ruedan y se deslizan mientras los ligamentos cruzados guían el movimiento.\",\n      \"knee_guide_stability_label\": \"4. Estabilidad\",\n      \"knee_guide_stability_short\": \"Los ligamentos limitan la traslación\",\n      \"knee_guide_stability_detail\": \"El LCA limita la traslación anterior y la rotación de la tibia; el LCP limita la traslación posterior. Los ligamentos colaterales resisten las fuerzas laterales, mientras los meniscos comparten la carga de compresión.\",\n      \"knee_guide_show_clinical\": \"Vista clínica\",\n      \"knee_guide_hide_clinical\": \"Ocultar vista clínica\",\n      \"knee_guide_clinical_shown\": \"Vista clínica visible.\",\n      \"knee_guide_clinical_hidden\": \"Vista clínica oculta.\",\n      \"knee_guide_clinical_title\": \"Rotura del LCA\",\n      \"knee_guide_clinical_change\": \"Una discontinuidad interrumpe el ligamento que limita la traslación anterior y la rotación de la tibia.\",\n      \"knee_guide_clinical_effect_heading\": \"Consecuencia funcional\",\n      \"knee_guide_clinical_effect\": \"La rodilla puede volverse inestable al pivotar o cambiar rápidamente de dirección.\",\n      \"knee_guide_clinical_note\": \"Comparación educativa únicamente — no es una vista diagnóstica.\",\n      \"knee_guide_handoff_label\": \"De la rodilla al músculo\",\n      \"knee_guide_handoff_lead\": \"Sigue el origen de la fuerza: \",\n      \"knee_guide_handoff_context\": \"usa el modelo neuromuscular para ver cómo el músculo esquelético genera fuerza que se transmite a través de una articulación.\",\n      \"knee_guide_handoff_button\": \"Seguir la fuerza muscular\",\n      \"knee_guide_handoff_announcement\": \"Abriendo la contracción del músculo esquelético, paso 4 de 4.\",\n      \"knee_guide_mechanism_heading\": \"Movimiento destacado\",\n      \"knee_guide_mechanism_architecture\": \"la carga se distribuye entre el cartílago y los meniscos\",\n      \"knee_guide_mechanism_extension\": \"la rótula aumenta el brazo de palanca\",\n      \"knee_guide_mechanism_flexion\": \"posición de la tibia en flexión\",\n      \"knee_guide_mechanism_stability\": \"los ligamentos limitan la traslación\"",
+      "addedBytes": 5832,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__spanish_latin_america.js.before.gz",
+      "beforeSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "beforeBytes": 8873203,
+      "afterSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "afterBytes": 8879035,
+      "addedKeys": [
+        "knee_guide_title",
+        "knee_guide_help",
+        "knee_guide_overview_title",
+        "knee_guide_support_title",
+        "knee_guide_marker_help",
+        "knee_guide_orientation",
+        "knee_guide_overview_svg_title",
+        "knee_guide_overview_svg_description",
+        "knee_guide_support_svg_title",
+        "knee_guide_support_svg_description",
+        "knee_guide_structure_key",
+        "knee_guide_current_step",
+        "knee_guide_key_femur",
+        "knee_guide_key_patella",
+        "knee_guide_key_tibia",
+        "knee_guide_key_fibula",
+        "knee_guide_key_quadriceps",
+        "knee_guide_key_patellar",
+        "knee_guide_key_cartilage",
+        "knee_guide_key_meniscus",
+        "knee_guide_key_acl",
+        "knee_guide_key_pcl",
+        "knee_guide_key_collateral",
+        "knee_guide_flow_key",
+        "knee_guide_bone",
+        "knee_guide_cartilage",
+        "knee_guide_force",
+        "knee_guide_pause_flow",
+        "knee_guide_play_flow",
+        "knee_guide_flow_paused",
+        "knee_guide_flow_playing",
+        "knee_guide_previous",
+        "knee_guide_next",
+        "knee_guide_step_position",
+        "knee_guide_focus_heading",
+        "knee_guide_focus_architecture",
+        "knee_guide_focus_extension",
+        "knee_guide_focus_flexion",
+        "knee_guide_focus_stability",
+        "knee_guide_architecture_label",
+        "knee_guide_architecture_short",
+        "knee_guide_architecture_detail",
+        "knee_guide_extension_label",
+        "knee_guide_extension_short",
+        "knee_guide_extension_detail",
+        "knee_guide_flexion_label",
+        "knee_guide_flexion_short",
+        "knee_guide_flexion_detail",
+        "knee_guide_stability_label",
+        "knee_guide_stability_short",
+        "knee_guide_stability_detail",
+        "knee_guide_show_clinical",
+        "knee_guide_hide_clinical",
+        "knee_guide_clinical_shown",
+        "knee_guide_clinical_hidden",
+        "knee_guide_clinical_title",
+        "knee_guide_clinical_change",
+        "knee_guide_clinical_effect_heading",
+        "knee_guide_clinical_effect",
+        "knee_guide_clinical_note",
+        "knee_guide_handoff_label",
+        "knee_guide_handoff_lead",
+        "knee_guide_handoff_context",
+        "knee_guide_handoff_button",
+        "knee_guide_handoff_announcement",
+        "knee_guide_mechanism_heading",
+        "knee_guide_mechanism_architecture",
+        "knee_guide_mechanism_extension",
+        "knee_guide_mechanism_flexion",
+        "knee_guide_mechanism_stability"
+      ],
+      "insertionCharacterOffset": 3043251,
+      "insertionByteOffset": 3086848,
+      "insertionAnchor": "heart_guide_handoff_announcement",
+      "addedText": ",\n      \"knee_guide_title\": \"Mecánica de la rodilla\",\n      \"knee_guide_help\": \"Explora los huesos, tendones y ligamentos en un corte lateral de la rodilla y luego sigue las fuerzas del movimiento.\",\n      \"knee_guide_overview_title\": \"1. Huesos de la rodilla\",\n      \"knee_guide_support_title\": \"2. Tejidos de soporte\",\n      \"knee_guide_marker_help\": \"Relaciona los marcadores numerados de cada ilustración con su leyenda de estructuras.\",\n      \"knee_guide_orientation\": \"Este corte lateral muestra la rótula a la izquierda del fémur y la tibia.\",\n      \"knee_guide_overview_svg_title\": \"Huesos de la rodilla y fuerzas del movimiento\",\n      \"knee_guide_overview_svg_description\": \"Un esquema lateral de la rodilla identifica el fémur, la rótula, la tibia y la fíbula. Los indicadores de movimiento y carga siguen el paso seleccionado.\",\n      \"knee_guide_support_svg_title\": \"Tendones, cartílago y ligamentos de la rodilla\",\n      \"knee_guide_support_svg_description\": \"El mismo esquema lateral identifica el tendón del cuádriceps, el tendón rotuliano, el cartílago articular, el menisco, el LCA, el LCP y el ligamento colateral.\",\n      \"knee_guide_structure_key\": \"Leyenda de estructuras\",\n      \"knee_guide_current_step\": \"Paso actual\",\n      \"knee_guide_key_femur\": \"Fémur\",\n      \"knee_guide_key_patella\": \"Rótula\",\n      \"knee_guide_key_tibia\": \"Tibia\",\n      \"knee_guide_key_fibula\": \"Fíbula\",\n      \"knee_guide_key_quadriceps\": \"Tendón del cuádriceps\",\n      \"knee_guide_key_patellar\": \"Tendón rotuliano\",\n      \"knee_guide_key_cartilage\": \"Cartílago articular\",\n      \"knee_guide_key_meniscus\": \"Menisco\",\n      \"knee_guide_key_acl\": \"LCA\",\n      \"knee_guide_key_pcl\": \"LCP\",\n      \"knee_guide_key_collateral\": \"Ligamento colateral\",\n      \"knee_guide_flow_key\": \"Leyenda de la mecánica de la rodilla\",\n      \"knee_guide_bone\": \"hueso\",\n      \"knee_guide_cartilage\": \"cartílago / menisco\",\n      \"knee_guide_force\": \"fuerza / movimiento\",\n      \"knee_guide_pause_flow\": \"Pausar movimiento\",\n      \"knee_guide_play_flow\": \"Reproducir movimiento\",\n      \"knee_guide_flow_paused\": \"Movimiento en pausa\",\n      \"knee_guide_flow_playing\": \"Movimiento en curso\",\n      \"knee_guide_previous\": \"Paso anterior\",\n      \"knee_guide_next\": \"Paso siguiente\",\n      \"knee_guide_step_position\": \"Paso {current} de {total}\",\n      \"knee_guide_focus_heading\": \"Qué observar en este paso\",\n      \"knee_guide_focus_architecture\": \"Fémur · Cartílago articular · Meniscos\",\n      \"knee_guide_focus_extension\": \"Tendón del cuádriceps · Rótula · Tendón rotuliano\",\n      \"knee_guide_focus_flexion\": \"Isquiotibiales · Tibia · Arco de flexión\",\n      \"knee_guide_focus_stability\": \"LCA · LCP · Ligamento colateral\",\n      \"knee_guide_architecture_label\": \"1. Arquitectura articular\",\n      \"knee_guide_architecture_short\": \"Huesos, cartílago, meniscos\",\n      \"knee_guide_architecture_detail\": \"El fémur se articula con la tibia mediante el cartílago articular y dos meniscos que mejoran el encaje, distribuyen la carga y absorben impactos. La rótula se desliza por la tróclea femoral.\",\n      \"knee_guide_extension_label\": \"2. Extensión\",\n      \"knee_guide_extension_short\": \"El cuádriceps extiende la rodilla\",\n      \"knee_guide_extension_detail\": \"La fuerza del cuádriceps se transmite a la tuberosidad tibial a través del tendón del cuádriceps, la rótula y el tendón rotuliano. La rótula aumenta el brazo de palanca del mecanismo extensor.\",\n      \"knee_guide_flexion_label\": \"3. Flexión\",\n      \"knee_guide_flexion_short\": \"Los isquiotibiales flexionan la rodilla\",\n      \"knee_guide_flexion_detail\": \"Los isquiotibiales tiran de la tibia hacia atrás para flexionar la rodilla. Las superficies articulares ruedan y se deslizan mientras los ligamentos cruzados guían el movimiento.\",\n      \"knee_guide_stability_label\": \"4. Estabilidad\",\n      \"knee_guide_stability_short\": \"Los ligamentos limitan la traslación\",\n      \"knee_guide_stability_detail\": \"El LCA limita la traslación anterior y la rotación de la tibia; el LCP limita la traslación posterior. Los ligamentos colaterales resisten las fuerzas laterales, mientras los meniscos comparten la carga de compresión.\",\n      \"knee_guide_show_clinical\": \"Vista clínica\",\n      \"knee_guide_hide_clinical\": \"Ocultar vista clínica\",\n      \"knee_guide_clinical_shown\": \"Vista clínica visible.\",\n      \"knee_guide_clinical_hidden\": \"Vista clínica oculta.\",\n      \"knee_guide_clinical_title\": \"Rotura del LCA\",\n      \"knee_guide_clinical_change\": \"Una discontinuidad interrumpe el ligamento que limita la traslación anterior y la rotación de la tibia.\",\n      \"knee_guide_clinical_effect_heading\": \"Consecuencia funcional\",\n      \"knee_guide_clinical_effect\": \"La rodilla puede volverse inestable al pivotar o cambiar rápidamente de dirección.\",\n      \"knee_guide_clinical_note\": \"Comparación educativa únicamente — no es una vista diagnóstica.\",\n      \"knee_guide_handoff_label\": \"De la rodilla al músculo\",\n      \"knee_guide_handoff_lead\": \"Sigue el origen de la fuerza: \",\n      \"knee_guide_handoff_context\": \"usa el modelo neuromuscular para ver cómo el músculo esquelético genera fuerza que se transmite a través de una articulación.\",\n      \"knee_guide_handoff_button\": \"Seguir la fuerza muscular\",\n      \"knee_guide_handoff_announcement\": \"Abriendo la contracción del músculo esquelético, paso 4 de 4.\",\n      \"knee_guide_mechanism_heading\": \"Movimiento destacado\",\n      \"knee_guide_mechanism_architecture\": \"la carga se distribuye entre el cartílago y los meniscos\",\n      \"knee_guide_mechanism_extension\": \"la rótula aumenta el brazo de palanca\",\n      \"knee_guide_mechanism_flexion\": \"posición de la tibia en flexión\",\n      \"knee_guide_mechanism_stability\": \"los ligamentos limitan la traslación\"",
+      "addedBytes": 5832,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/arabic.js",
+      "snapshot": "locale-before/lang__arabic.js.before.gz",
+      "beforeSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "beforeBytes": 8988735,
+      "afterSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "afterBytes": 8996023,
+      "addedKeys": [
+        "knee_guide_title",
+        "knee_guide_help",
+        "knee_guide_overview_title",
+        "knee_guide_support_title",
+        "knee_guide_marker_help",
+        "knee_guide_orientation",
+        "knee_guide_overview_svg_title",
+        "knee_guide_overview_svg_description",
+        "knee_guide_support_svg_title",
+        "knee_guide_support_svg_description",
+        "knee_guide_structure_key",
+        "knee_guide_current_step",
+        "knee_guide_key_femur",
+        "knee_guide_key_patella",
+        "knee_guide_key_tibia",
+        "knee_guide_key_fibula",
+        "knee_guide_key_quadriceps",
+        "knee_guide_key_patellar",
+        "knee_guide_key_cartilage",
+        "knee_guide_key_meniscus",
+        "knee_guide_key_acl",
+        "knee_guide_key_pcl",
+        "knee_guide_key_collateral",
+        "knee_guide_flow_key",
+        "knee_guide_bone",
+        "knee_guide_cartilage",
+        "knee_guide_force",
+        "knee_guide_pause_flow",
+        "knee_guide_play_flow",
+        "knee_guide_flow_paused",
+        "knee_guide_flow_playing",
+        "knee_guide_previous",
+        "knee_guide_next",
+        "knee_guide_step_position",
+        "knee_guide_focus_heading",
+        "knee_guide_focus_architecture",
+        "knee_guide_focus_extension",
+        "knee_guide_focus_flexion",
+        "knee_guide_focus_stability",
+        "knee_guide_architecture_label",
+        "knee_guide_architecture_short",
+        "knee_guide_architecture_detail",
+        "knee_guide_extension_label",
+        "knee_guide_extension_short",
+        "knee_guide_extension_detail",
+        "knee_guide_flexion_label",
+        "knee_guide_flexion_short",
+        "knee_guide_flexion_detail",
+        "knee_guide_stability_label",
+        "knee_guide_stability_short",
+        "knee_guide_stability_detail",
+        "knee_guide_show_clinical",
+        "knee_guide_hide_clinical",
+        "knee_guide_clinical_shown",
+        "knee_guide_clinical_hidden",
+        "knee_guide_clinical_title",
+        "knee_guide_clinical_change",
+        "knee_guide_clinical_effect_heading",
+        "knee_guide_clinical_effect",
+        "knee_guide_clinical_note",
+        "knee_guide_handoff_label",
+        "knee_guide_handoff_lead",
+        "knee_guide_handoff_context",
+        "knee_guide_handoff_button",
+        "knee_guide_handoff_announcement",
+        "knee_guide_mechanism_heading",
+        "knee_guide_mechanism_architecture",
+        "knee_guide_mechanism_extension",
+        "knee_guide_mechanism_flexion",
+        "knee_guide_mechanism_stability"
+      ],
+      "insertionCharacterOffset": 2461304,
+      "insertionByteOffset": 3408808,
+      "insertionAnchor": "heart_guide_handoff_announcement",
+      "addedText": ",\n      \"knee_guide_title\": \"ميكانيكا الركبة\",\n      \"knee_guide_help\": \"استكشف العظام والأوتار والأربطة في مقطع جانبي للركبة، ثم تتبّع القوى التي تحرّكها.\",\n      \"knee_guide_overview_title\": \"1. عظام الركبة\",\n      \"knee_guide_support_title\": \"2. الأنسجة الداعمة\",\n      \"knee_guide_marker_help\": \"طابق العلامات المرقّمة في كل رسم مع مفتاح تراكيبه.\",\n      \"knee_guide_orientation\": \"يُظهر هذا المقطع الجانبي الرضفة إلى يسار عظم الفخذ والظنبوب.\",\n      \"knee_guide_overview_svg_title\": \"عظام الركبة وقوى الحركة\",\n      \"knee_guide_overview_svg_description\": \"يوضّح رسم تخطيطي جانبي للركبة عظم الفخذ والرضفة والظنبوب والشظية. تتبع مؤشرات الحركة والحمل الخطوة المختارة.\",\n      \"knee_guide_support_svg_title\": \"أوتار الركبة وغضاريفها وأربطتها\",\n      \"knee_guide_support_svg_description\": \"يوضّح الرسم الجانبي نفسه وتر العضلة رباعية الرؤوس والوتر الرضفي والغضروف المفصلي والغضروف الهلالي والرباط الصليبي الأمامي والرباط الصليبي الخلفي والرباط الجانبي.\",\n      \"knee_guide_structure_key\": \"مفتاح التراكيب\",\n      \"knee_guide_current_step\": \"الخطوة الحالية\",\n      \"knee_guide_key_femur\": \"عظم الفخذ\",\n      \"knee_guide_key_patella\": \"الرضفة\",\n      \"knee_guide_key_tibia\": \"الظنبوب\",\n      \"knee_guide_key_fibula\": \"الشظية\",\n      \"knee_guide_key_quadriceps\": \"وتر العضلة رباعية الرؤوس\",\n      \"knee_guide_key_patellar\": \"الوتر الرضفي\",\n      \"knee_guide_key_cartilage\": \"الغضروف المفصلي\",\n      \"knee_guide_key_meniscus\": \"الغضروف الهلالي\",\n      \"knee_guide_key_acl\": \"الرباط الصليبي الأمامي\",\n      \"knee_guide_key_pcl\": \"الرباط الصليبي الخلفي\",\n      \"knee_guide_key_collateral\": \"الرباط الجانبي\",\n      \"knee_guide_flow_key\": \"مفتاح ميكانيكا الركبة\",\n      \"knee_guide_bone\": \"عظم\",\n      \"knee_guide_cartilage\": \"غضروف / غضروف هلالي\",\n      \"knee_guide_force\": \"قوة / حركة\",\n      \"knee_guide_pause_flow\": \"إيقاف الحركة مؤقتًا\",\n      \"knee_guide_play_flow\": \"تشغيل الحركة\",\n      \"knee_guide_flow_paused\": \"الحركة متوقفة مؤقتًا\",\n      \"knee_guide_flow_playing\": \"الحركة قيد التشغيل\",\n      \"knee_guide_previous\": \"الخطوة السابقة\",\n      \"knee_guide_next\": \"الخطوة التالية\",\n      \"knee_guide_step_position\": \"الخطوة {current} من {total}\",\n      \"knee_guide_focus_heading\": \"ما يجب ملاحظته في هذه الخطوة\",\n      \"knee_guide_focus_architecture\": \"عظم الفخذ · الغضروف المفصلي · الغضاريف الهلالية\",\n      \"knee_guide_focus_extension\": \"وتر العضلة رباعية الرؤوس · الرضفة · الوتر الرضفي\",\n      \"knee_guide_focus_flexion\": \"عضلات المأبض · الظنبوب · قوس الثني\",\n      \"knee_guide_focus_stability\": \"الرباط الصليبي الأمامي · الرباط الصليبي الخلفي · الرباط الجانبي\",\n      \"knee_guide_architecture_label\": \"1. بنية المفصل\",\n      \"knee_guide_architecture_short\": \"العظام والغضروف والغضاريف الهلالية\",\n      \"knee_guide_architecture_detail\": \"يلتقي عظم الفخذ بالظنبوب عبر الغضروف المفصلي وغضروفين هلاليين يحسّنان تطابق السطحين ويوزّعان الحمل ويمتصّان الصدمات. تنزلق الرضفة في البَكرة الفخذية.\",\n      \"knee_guide_extension_label\": \"2. البسط\",\n      \"knee_guide_extension_short\": \"العضلة رباعية الرؤوس تبسط الركبة\",\n      \"knee_guide_extension_detail\": \"تنتقل قوة العضلة رباعية الرؤوس عبر وترها والرضفة والوتر الرضفي إلى الحدبة الظنبوبية. تزيد الرضفة ذراع عزم آلية البسط.\",\n      \"knee_guide_flexion_label\": \"3. الثني\",\n      \"knee_guide_flexion_short\": \"عضلات المأبض تثني الركبة\",\n      \"knee_guide_flexion_detail\": \"تسحب عضلات المأبض الظنبوب إلى الخلف لثني الركبة. تتدحرج أسطح المفصل وتنزلق بينما توجّه الأربطة الصليبية الحركة.\",\n      \"knee_guide_stability_label\": \"4. الثبات\",\n      \"knee_guide_stability_short\": \"الأربطة تحدّ من الانزياح\",\n      \"knee_guide_stability_detail\": \"يحدّ الرباط الصليبي الأمامي من انزياح الظنبوب إلى الأمام ودورانه؛ ويحدّ الرباط الصليبي الخلفي من انزياحه إلى الخلف. تقاوم الأربطة الجانبية الإجهاد من جانب إلى آخر، بينما تتقاسم الغضاريف الهلالية حمل الضغط.\",\n      \"knee_guide_show_clinical\": \"العرض السريري\",\n      \"knee_guide_hide_clinical\": \"إخفاء العرض السريري\",\n      \"knee_guide_clinical_shown\": \"تم إظهار العرض السريري.\",\n      \"knee_guide_clinical_hidden\": \"تم إخفاء العرض السريري.\",\n      \"knee_guide_clinical_title\": \"تمزّق الرباط الصليبي الأمامي\",\n      \"knee_guide_clinical_change\": \"يُحدث انقطاعٌ قطعًا في الرباط الذي يقيّد انزياح الظنبوب إلى الأمام ودورانه.\",\n      \"knee_guide_clinical_effect_heading\": \"النتيجة الوظيفية\",\n      \"knee_guide_clinical_effect\": \"قد تصبح الركبة غير مستقرة عند الارتكاز والدوران أو تغيير الاتجاه بسرعة.\",\n      \"knee_guide_clinical_note\": \"مقارنة تعليمية فقط — ليست عرضًا تشخيصيًا.\",\n      \"knee_guide_handoff_label\": \"من الركبة إلى العضلة\",\n      \"knee_guide_handoff_lead\": \"تتبّع مصدر القوة: \",\n      \"knee_guide_handoff_context\": \"استخدم النموذج العصبي العضلي لترى كيف تولّد العضلة الهيكلية قوة تنتقل عبر المفصل.\",\n      \"knee_guide_handoff_button\": \"تتبّع القوة العضلية\",\n      \"knee_guide_handoff_announcement\": \"فتح انقباض العضلة الهيكلية، الخطوة 4 من 4.\",\n      \"knee_guide_mechanism_heading\": \"الحركة المبرزة\",\n      \"knee_guide_mechanism_architecture\": \"يتوزّع الحمل على الغضروف والغضاريف الهلالية\",\n      \"knee_guide_mechanism_extension\": \"تزيد الرضفة ذراع العزم\",\n      \"knee_guide_mechanism_flexion\": \"موضع الظنبوب في حالة الثني\",\n      \"knee_guide_mechanism_stability\": \"الأربطة تحدّ من الانزياح\"",
+      "addedBytes": 7288,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__arabic.js.before.gz",
+      "beforeSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "beforeBytes": 8988735,
+      "afterSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "afterBytes": 8996023,
+      "addedKeys": [
+        "knee_guide_title",
+        "knee_guide_help",
+        "knee_guide_overview_title",
+        "knee_guide_support_title",
+        "knee_guide_marker_help",
+        "knee_guide_orientation",
+        "knee_guide_overview_svg_title",
+        "knee_guide_overview_svg_description",
+        "knee_guide_support_svg_title",
+        "knee_guide_support_svg_description",
+        "knee_guide_structure_key",
+        "knee_guide_current_step",
+        "knee_guide_key_femur",
+        "knee_guide_key_patella",
+        "knee_guide_key_tibia",
+        "knee_guide_key_fibula",
+        "knee_guide_key_quadriceps",
+        "knee_guide_key_patellar",
+        "knee_guide_key_cartilage",
+        "knee_guide_key_meniscus",
+        "knee_guide_key_acl",
+        "knee_guide_key_pcl",
+        "knee_guide_key_collateral",
+        "knee_guide_flow_key",
+        "knee_guide_bone",
+        "knee_guide_cartilage",
+        "knee_guide_force",
+        "knee_guide_pause_flow",
+        "knee_guide_play_flow",
+        "knee_guide_flow_paused",
+        "knee_guide_flow_playing",
+        "knee_guide_previous",
+        "knee_guide_next",
+        "knee_guide_step_position",
+        "knee_guide_focus_heading",
+        "knee_guide_focus_architecture",
+        "knee_guide_focus_extension",
+        "knee_guide_focus_flexion",
+        "knee_guide_focus_stability",
+        "knee_guide_architecture_label",
+        "knee_guide_architecture_short",
+        "knee_guide_architecture_detail",
+        "knee_guide_extension_label",
+        "knee_guide_extension_short",
+        "knee_guide_extension_detail",
+        "knee_guide_flexion_label",
+        "knee_guide_flexion_short",
+        "knee_guide_flexion_detail",
+        "knee_guide_stability_label",
+        "knee_guide_stability_short",
+        "knee_guide_stability_detail",
+        "knee_guide_show_clinical",
+        "knee_guide_hide_clinical",
+        "knee_guide_clinical_shown",
+        "knee_guide_clinical_hidden",
+        "knee_guide_clinical_title",
+        "knee_guide_clinical_change",
+        "knee_guide_clinical_effect_heading",
+        "knee_guide_clinical_effect",
+        "knee_guide_clinical_note",
+        "knee_guide_handoff_label",
+        "knee_guide_handoff_lead",
+        "knee_guide_handoff_context",
+        "knee_guide_handoff_button",
+        "knee_guide_handoff_announcement",
+        "knee_guide_mechanism_heading",
+        "knee_guide_mechanism_architecture",
+        "knee_guide_mechanism_extension",
+        "knee_guide_mechanism_flexion",
+        "knee_guide_mechanism_stability"
+      ],
+      "insertionCharacterOffset": 2461304,
+      "insertionByteOffset": 3408808,
+      "insertionAnchor": "heart_guide_handoff_announcement",
+      "addedText": ",\n      \"knee_guide_title\": \"ميكانيكا الركبة\",\n      \"knee_guide_help\": \"استكشف العظام والأوتار والأربطة في مقطع جانبي للركبة، ثم تتبّع القوى التي تحرّكها.\",\n      \"knee_guide_overview_title\": \"1. عظام الركبة\",\n      \"knee_guide_support_title\": \"2. الأنسجة الداعمة\",\n      \"knee_guide_marker_help\": \"طابق العلامات المرقّمة في كل رسم مع مفتاح تراكيبه.\",\n      \"knee_guide_orientation\": \"يُظهر هذا المقطع الجانبي الرضفة إلى يسار عظم الفخذ والظنبوب.\",\n      \"knee_guide_overview_svg_title\": \"عظام الركبة وقوى الحركة\",\n      \"knee_guide_overview_svg_description\": \"يوضّح رسم تخطيطي جانبي للركبة عظم الفخذ والرضفة والظنبوب والشظية. تتبع مؤشرات الحركة والحمل الخطوة المختارة.\",\n      \"knee_guide_support_svg_title\": \"أوتار الركبة وغضاريفها وأربطتها\",\n      \"knee_guide_support_svg_description\": \"يوضّح الرسم الجانبي نفسه وتر العضلة رباعية الرؤوس والوتر الرضفي والغضروف المفصلي والغضروف الهلالي والرباط الصليبي الأمامي والرباط الصليبي الخلفي والرباط الجانبي.\",\n      \"knee_guide_structure_key\": \"مفتاح التراكيب\",\n      \"knee_guide_current_step\": \"الخطوة الحالية\",\n      \"knee_guide_key_femur\": \"عظم الفخذ\",\n      \"knee_guide_key_patella\": \"الرضفة\",\n      \"knee_guide_key_tibia\": \"الظنبوب\",\n      \"knee_guide_key_fibula\": \"الشظية\",\n      \"knee_guide_key_quadriceps\": \"وتر العضلة رباعية الرؤوس\",\n      \"knee_guide_key_patellar\": \"الوتر الرضفي\",\n      \"knee_guide_key_cartilage\": \"الغضروف المفصلي\",\n      \"knee_guide_key_meniscus\": \"الغضروف الهلالي\",\n      \"knee_guide_key_acl\": \"الرباط الصليبي الأمامي\",\n      \"knee_guide_key_pcl\": \"الرباط الصليبي الخلفي\",\n      \"knee_guide_key_collateral\": \"الرباط الجانبي\",\n      \"knee_guide_flow_key\": \"مفتاح ميكانيكا الركبة\",\n      \"knee_guide_bone\": \"عظم\",\n      \"knee_guide_cartilage\": \"غضروف / غضروف هلالي\",\n      \"knee_guide_force\": \"قوة / حركة\",\n      \"knee_guide_pause_flow\": \"إيقاف الحركة مؤقتًا\",\n      \"knee_guide_play_flow\": \"تشغيل الحركة\",\n      \"knee_guide_flow_paused\": \"الحركة متوقفة مؤقتًا\",\n      \"knee_guide_flow_playing\": \"الحركة قيد التشغيل\",\n      \"knee_guide_previous\": \"الخطوة السابقة\",\n      \"knee_guide_next\": \"الخطوة التالية\",\n      \"knee_guide_step_position\": \"الخطوة {current} من {total}\",\n      \"knee_guide_focus_heading\": \"ما يجب ملاحظته في هذه الخطوة\",\n      \"knee_guide_focus_architecture\": \"عظم الفخذ · الغضروف المفصلي · الغضاريف الهلالية\",\n      \"knee_guide_focus_extension\": \"وتر العضلة رباعية الرؤوس · الرضفة · الوتر الرضفي\",\n      \"knee_guide_focus_flexion\": \"عضلات المأبض · الظنبوب · قوس الثني\",\n      \"knee_guide_focus_stability\": \"الرباط الصليبي الأمامي · الرباط الصليبي الخلفي · الرباط الجانبي\",\n      \"knee_guide_architecture_label\": \"1. بنية المفصل\",\n      \"knee_guide_architecture_short\": \"العظام والغضروف والغضاريف الهلالية\",\n      \"knee_guide_architecture_detail\": \"يلتقي عظم الفخذ بالظنبوب عبر الغضروف المفصلي وغضروفين هلاليين يحسّنان تطابق السطحين ويوزّعان الحمل ويمتصّان الصدمات. تنزلق الرضفة في البَكرة الفخذية.\",\n      \"knee_guide_extension_label\": \"2. البسط\",\n      \"knee_guide_extension_short\": \"العضلة رباعية الرؤوس تبسط الركبة\",\n      \"knee_guide_extension_detail\": \"تنتقل قوة العضلة رباعية الرؤوس عبر وترها والرضفة والوتر الرضفي إلى الحدبة الظنبوبية. تزيد الرضفة ذراع عزم آلية البسط.\",\n      \"knee_guide_flexion_label\": \"3. الثني\",\n      \"knee_guide_flexion_short\": \"عضلات المأبض تثني الركبة\",\n      \"knee_guide_flexion_detail\": \"تسحب عضلات المأبض الظنبوب إلى الخلف لثني الركبة. تتدحرج أسطح المفصل وتنزلق بينما توجّه الأربطة الصليبية الحركة.\",\n      \"knee_guide_stability_label\": \"4. الثبات\",\n      \"knee_guide_stability_short\": \"الأربطة تحدّ من الانزياح\",\n      \"knee_guide_stability_detail\": \"يحدّ الرباط الصليبي الأمامي من انزياح الظنبوب إلى الأمام ودورانه؛ ويحدّ الرباط الصليبي الخلفي من انزياحه إلى الخلف. تقاوم الأربطة الجانبية الإجهاد من جانب إلى آخر، بينما تتقاسم الغضاريف الهلالية حمل الضغط.\",\n      \"knee_guide_show_clinical\": \"العرض السريري\",\n      \"knee_guide_hide_clinical\": \"إخفاء العرض السريري\",\n      \"knee_guide_clinical_shown\": \"تم إظهار العرض السريري.\",\n      \"knee_guide_clinical_hidden\": \"تم إخفاء العرض السريري.\",\n      \"knee_guide_clinical_title\": \"تمزّق الرباط الصليبي الأمامي\",\n      \"knee_guide_clinical_change\": \"يُحدث انقطاعٌ قطعًا في الرباط الذي يقيّد انزياح الظنبوب إلى الأمام ودورانه.\",\n      \"knee_guide_clinical_effect_heading\": \"النتيجة الوظيفية\",\n      \"knee_guide_clinical_effect\": \"قد تصبح الركبة غير مستقرة عند الارتكاز والدوران أو تغيير الاتجاه بسرعة.\",\n      \"knee_guide_clinical_note\": \"مقارنة تعليمية فقط — ليست عرضًا تشخيصيًا.\",\n      \"knee_guide_handoff_label\": \"من الركبة إلى العضلة\",\n      \"knee_guide_handoff_lead\": \"تتبّع مصدر القوة: \",\n      \"knee_guide_handoff_context\": \"استخدم النموذج العصبي العضلي لترى كيف تولّد العضلة الهيكلية قوة تنتقل عبر المفصل.\",\n      \"knee_guide_handoff_button\": \"تتبّع القوة العضلية\",\n      \"knee_guide_handoff_announcement\": \"فتح انقباض العضلة الهيكلية، الخطوة 4 من 4.\",\n      \"knee_guide_mechanism_heading\": \"الحركة المبرزة\",\n      \"knee_guide_mechanism_architecture\": \"يتوزّع الحمل على الغضروف والغضاريف الهلالية\",\n      \"knee_guide_mechanism_extension\": \"تزيد الرضفة ذراع العزم\",\n      \"knee_guide_mechanism_flexion\": \"موضع الظنبوب في حالة الثني\",\n      \"knee_guide_mechanism_stability\": \"الأربطة تحدّ من الانزياح\"",
+      "addedBytes": 7288,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    }
+  ],
+  "mirrors": [
+    {
+      "canonical": "ui_strings.js",
+      "mirror": "desktop/web-app/public/ui_strings.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+      "mirrorSha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+      "kneeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "130617a54713a98c163210cf64f1e0baf232f2ac5cb6be270a6ba7e7286f2c1c",
+      "matchedKneeKeys": 70,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    },
+    {
+      "canonical": "lang/french.js",
+      "mirror": "desktop/web-app/public/lang/french.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "mirrorSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "kneeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "15e55ec1fc7a1431b59e0607d2c379b970855aaf11e96ca031af9b7375d22b06",
+      "matchedKneeKeys": 70,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    },
+    {
+      "canonical": "lang/spanish_latin_america.js",
+      "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "mirrorSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "kneeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "f2d8e6a99254e42a410ffd157d203fb6a6f47079e01849ddce1ff47156915b21",
+      "matchedKneeKeys": 70,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    },
+    {
+      "canonical": "lang/arabic.js",
+      "mirror": "desktop/web-app/public/lang/arabic.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "mirrorSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "kneeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "47b3ba02167bfbe19adbc511e982d636f09d4ddaa58839b9e5555697f75c685b",
+      "matchedKneeKeys": 70,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    }
+  ],
+  "failures": [],
+  "gitMutations": false,
+  "pairPolicy": "Preserve independent catalog bytes; require stable rereads and matching entire anatomy namespace values; record unrelated mirror differences.",
+  "gitIndexSha256Before": "bee2944f373bc559c1c2636f244a6cc681f9b361a662803482bb23f2e3b787ea",
+  "sharedNativeWords": {
+    "french": [
+      "knee_guide_key_tibia",
+      "knee_guide_key_fibula",
+      "knee_guide_extension_label",
+      "knee_guide_flexion_label"
+    ],
+    "spanish_latin_america": [
+      "knee_guide_key_tibia"
+    ]
+  },
+  "complete": true,
+  "instructionsRead": [],
+  "preExistingMirrorDifferences": [
+    {
+      "canonical": "ui_strings.js",
+      "mirror": "desktop/web-app/public/ui_strings.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "e9864ad809dcc62f533196e2d0123d7b57bca5c5029f46cfd3d442b2af1b40cb",
+      "mirrorSha256": "e9864ad809dcc62f533196e2d0123d7b57bca5c5029f46cfd3d442b2af1b40cb",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "50c04d63bc3563c5d966248d871108cca35fe0b4d462efad0bb71f8ab85a0e98"
+    },
+    {
+      "canonical": "lang/french.js",
+      "mirror": "desktop/web-app/public/lang/french.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "mirrorSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "989b3eef57d1d8fd3855e2890d79f00a98b6cda62c29623e914370acfae263e5"
+    },
+    {
+      "canonical": "lang/spanish_latin_america.js",
+      "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "mirrorSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "468e1f63bc12ab15161e39794177db6615ad2d680dd0d777d355d20dd5c61506"
+    },
+    {
+      "canonical": "lang/arabic.js",
+      "mirror": "desktop/web-app/public/lang/arabic.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "mirrorSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "f5fa7ac01f74529120b2f1a83bcf0c991a433ad3b2c3e7b325465e5fadb14191"
+    }
+  ],
+  "manifest": {
+    "path": "dev-tools/i18n/anatomy_knee_guide_20261004.json",
+    "sha256": "32aa32354b3f547279d088b29940bc67a65634e62ac11c9db532d1baacb084f7"
+  },
+  "gitIndexSha256After": "bee2944f373bc559c1c2636f244a6cc681f9b361a662803482bb23f2e3b787ea",
+  "gitIndexUnchanged": true
+}

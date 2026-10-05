@@ -157,20 +157,37 @@ test('a strike keeps its committed prey in the ring and feedback when T selects 
 
 test('target detail gives signed depth guidance and free-mode miss feedback remains visible', async ({ page }) => {
   await mount(page, 'humboldtSquid', 'free', true);
-  const setDepth = async (delta: number) => {
-    await page.evaluate(delta => {
+  const setDepth = async (delta: number, horizontal = 1) => {
+    await page.evaluate(({ delta, horizontal }) => {
       const w = window as any;
-      w.__schoolCenter.copy(w.__player.position).add(new w.THREE.Vector3(0, delta, 1));
+      w.__schoolCenter.copy(w.__player.position).add(new w.THREE.Vector3(0, delta, horizontal));
       w.__probeFish.position.copy(w.__schoolCenter);
-    }, delta);
+    }, { delta, horizontal });
     await advance(page, 4);
   };
   await setDepth(3);
   await expect(detail(page)).toContainText(/Rise\s+[0-9.]+\s*m/);
   await expect(detail(page)).not.toContainText('Dive');
+  await expect(action(page)).toContainText('MATCH DEPTH');
+  await expect(action(page)).toContainText('Q rises / Z descends');
   await setDepth(-3);
   await expect(detail(page)).toContainText(/Dive\s+[0-9.]+\s*m/);
   await expect(detail(page)).not.toContainText('Rise');
+  await expect(action(page)).toContainText('MATCH DEPTH');
+  // Horizontal range alone must retain the ordinary approach advice.
+  await setDepth(0, 4);
+  await expect(action(page)).toContainText('OUT OF REACH');
+  await expect(action(page)).not.toContainText('MATCH DEPTH');
+  await expect(detail(page)).not.toContainText(/\b(Rise|Dive)\b/);
+  // Keep this well inside 2.2 m while the original school AI remains live.
+  await setDepth(0, 0.5);
+  await expect(action(page)).toContainText('IN RANGE');
+  await expect(action(page)).not.toContainText('MATCH DEPTH');
+  await expect(detail(page)).not.toContainText(/\b(Rise|Dive)\b/);
+  // Restore the original below-player setup for Observe and failed-strike checks.
+  await setDepth(-3);
+  await expect(detail(page)).toContainText(/Dive\s+[0-9.]+\s*m/);
+  await expect(action(page)).toContainText('MATCH DEPTH');
   await clickCephalopodControl(page, 'Observe');
   await expect(page.locator('.cl-mission-brief')).toContainText(/Nearest prey/);
   await expect(readout(page)).toBeHidden();

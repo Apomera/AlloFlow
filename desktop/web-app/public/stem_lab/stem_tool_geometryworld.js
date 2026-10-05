@@ -706,6 +706,180 @@
   function renderWorkspaceIcon(el, icon) {
     return el('svg',{className:'gw-workspace-icon',viewBox:'0 0 24 24','aria-hidden':'true',focusable:'false',fill:'none',stroke:'currentColor',strokeWidth:1.6,strokeLinecap:'round',strokeLinejoin:'round'},el('path',{d:WORKSPACE_ICON_PATHS[icon] || WORKSPACE_ICON_PATHS.place}));
   }
+  function geometryLearningPathModel(entries) {
+    var goals = (Array.isArray(entries) ? entries : []).filter(function(entry) { return entry && entry.text; });
+    var done = goals.filter(function(entry) { return entry.status && entry.status.done === true; }).length;
+    return { total: goals.length, done: done, next: goals.filter(function(entry) { return !entry.status || entry.status.done !== true; })[0] || null, complete: goals.length > 0 && done === goals.length };
+  }
+  // Outrank the hidden-HUD rule, whose :not(#geoworld-fs-wrap) adds ID specificity.
+  var GW_SAVE_RECOVERY_CSS = '#geoworld-fs-workspace#geoworld-fs-workspace#geoworld-fs-workspace[data-hud-hidden="true"]>[data-gw-save-recovery]{display:flex!important}.gw-root [data-gw-save-recovery] button{display:inline-flex;align-items:center;justify-content:center;gap:6px;max-width:100%;overflow-wrap:anywhere;cursor:pointer}.gw-root [data-gw-save-recovery] .gw-workspace-icon{width:18px;height:18px;flex:none}.theme-contrast .gw-root [data-gw-save-recovery] section,[data-stem-theme="contrast"] .gw-root [data-gw-save-recovery] section{background:#000!important;color:#fff!important;border-color:#ffff00!important}.theme-contrast .gw-root [data-gw-save-recovery] p,[data-stem-theme="contrast"] .gw-root [data-gw-save-recovery] p{color:#fff!important}.theme-contrast .gw-root [data-gw-save-recovery] button,[data-stem-theme="contrast"] .gw-root [data-gw-save-recovery] button{background:#000!important;color:#00ff00!important;border-color:#00ff00!important}@media(forced-colors:active){.gw-root [data-gw-save-recovery] section,.gw-root [data-gw-save-recovery] button{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.gw-root [data-gw-save-recovery] p{color:CanvasText!important}}';
+
+  function geometryInstallWorldTransitionGuard(engine, hooks) {
+    hooks = hooks || {};
+    function signature() {
+      try { return JSON.stringify([engine._groundRevision, engine._historyRevision, engine._workshopProjectId, engine._workshopProjectVersion,
+        Object.keys(engine.blocks || {}).sort().map(function(key) { var m = engine.blocks[key], u = m && m.userData || {}; return [key, u.gridPos, u.blockType, u.shape, u.rotation, m && m.rotation && m.rotation.y]; })]);
+      } catch (error) { return null; }
+    }
+    function targetSignature(target) { try { return JSON.stringify(target); } catch (e) { return null; } }
+    function current(pending) {
+      return pending && pending === engine._pendingWorldTransition && !engine._destroyed && (!hooks.isCurrent || hooks.isCurrent()) &&
+        pending.lesson === engine._currentLesson && pending.signature !== null && pending.signature === signature() && pending.targetSignature !== null && pending.targetSignature === targetSignature(pending.target);
+    }
+    function clear() { engine._pendingWorldTransition = null; if (engine._modalState) engine._modalState.showSaveRecovery = false; if (hooks.cleared) hooks.cleared(); }
+    function execute(action) {
+      clear();
+      engine._worldTransitionDepth = (engine._worldTransitionDepth || 0) + 1;
+      try { return action(); } finally { engine._worldTransitionDepth--; }
+    }
+    engine.transitionWorld = function(target, action) {
+      if (engine._destroyed || typeof action !== 'function' || (hooks.isCurrent && !hooks.isCurrent())) return false;
+      if (engine._worldTransitionDepth) return action();
+      var result = { ok: true };
+      try {
+        if (engine.flushWorkshopDraft) result = engine.flushWorkshopDraft();
+        if (!result || result.ok !== true) result = { ok: false, reason: result && (result.reason || result.error) || 'The current build could not be saved. Browser storage may be unavailable.' };
+      } catch (error) { result = { ok: false, reason: 'The current build could not be saved. ' + (error && error.message || 'Browser storage is unavailable.') }; }
+      if (result.ok) return execute(action);
+      var previous = engine._pendingWorldTransition;
+      var pending = { target: target, action: action, reason: result.reason, lesson: engine._currentLesson, signature: signature(), targetSignature: targetSignature(target), opener: previous && previous.action === action ? previous.opener : typeof document !== 'undefined' ? document.activeElement : null };
+      engine._pendingWorldTransition = pending;
+      if (hooks.blocked) hooks.blocked(pending);
+      return false;
+    };
+    engine.cancelWorldTransition = function() { var pending = engine._pendingWorldTransition; clear(); return pending && pending.opener; };
+    engine.retryWorldTransition = function() {
+      var pending = engine._pendingWorldTransition;
+      if (!pending || pending.lesson !== engine._currentLesson || engine._destroyed || (hooks.isCurrent && !hooks.isCurrent()) || pending.targetSignature === null || pending.targetSignature !== targetSignature(pending.target)) { clear(); return false; }
+      return engine.transitionWorld(pending.target, pending.action);
+    };
+    // Confirmation is scoped to this exact workspace and destination, and is consumed once.
+    engine.discardWorldTransition = function(pending) {
+      if (!current(pending)) { clear(); return false; }
+      return execute(pending.action);
+    };
+    return engine;
+  }
+
+  function geometryReflectionSupportModel(lesson, lessonKey, measurement, prediction, revision) {
+    var concept = geometryLessonConceptModel(lesson, lessonKey);
+    var data = measurement && measurement.data ? measurement.data : measurement;
+    var complete = !!data && data.isComplete !== false;
+    var volume = data && (typeof data.occupiedVolume === 'number' ? data.occupiedVolume : data.volume);
+    var surface = data && (typeof data.exposedSurfaceArea === 'number' ? data.exposedSurfaceArea : data.surfaceArea);
+    var prompt = concept.question + ' What evidence supports your thinking?';
+    var evidence = false;
+    if (complete && concept.concept === 'surface' && data.surfaceAreaExact === true && Number.isFinite(surface) && surface >= 0) {
+      prompt = 'You measured ' + formatVolume(surface) + ' square units of exposed surface. Which faces did you include, and why?';
+      evidence = true;
+    } else if (complete && ['volume','composite','fraction_dimensions','fraction_pieces','build'].indexOf(concept.concept) >= 0 && Number.isFinite(volume) && volume >= 0) {
+      prompt = buildEvidenceReflectionPrompt(measurement, prediction, revision);
+      evidence = true;
+    }
+    return {
+      concept: concept.concept, prompt: prompt, evidence: evidence,
+      starter: 'I used ___ because ___. The evidence was ___. Next I would ___.',
+      questions: ['Which strategy did you choose, and why?', concept.question, 'What would you test or change in another structure?']
+    };
+  }
+  function geometryReflectionAutoPromptAllowed(state, lessonKey) {
+    if (!state || state.activeLesson !== lessonKey || !state.worldActive || !Number.isFinite(state.score) || !Number.isFinite(state.totalQuestions) || state.totalQuestions <= 0 || state.score < state.totalQuestions) return false;
+    return !['showSaveRecovery','showReflection','showGeometryHome','showLessonIntro','showNpcDialog','showGameSettings','showMyLessons','showTeacherView','showPeerWorlds','showLessonEditor','showHelp','showCreatorPanel','creatorMode','showGrowthNudge','showActivityGuide','objectivesOpen','showPredictionPanel'].some(function(key) { return !!state[key]; });
+  }
+  var GW_WORKSPACE_PREFERENCE_KEY = 'allo.geometryworld.hud.v1';
+  function geometryWorkspaceDefaults() {
+    return { version: 1, preset: 'minimal', toolbarCollapsed: false, uiTextSize: 'standard', uiSurface: 'solid', showCoordinates: true, showStationCompass: true };
+  }
+  function geometryNormalizeWorkspacePreferences(value) {
+    var result = geometryWorkspaceDefaults();
+    if (!value || typeof value !== 'object' || Array.isArray(value) || value.version !== 1) return result;
+    if (['minimal', 'learning', 'builder'].indexOf(value.preset) >= 0) result.preset = value.preset;
+    ['toolbarCollapsed', 'showCoordinates', 'showStationCompass'].forEach(function(key) { if (typeof value[key] === 'boolean') result[key] = value[key]; });
+    if (['standard', 'large'].indexOf(value.uiTextSize) >= 0) result.uiTextSize = value.uiTextSize;
+    if (['solid', 'glass'].indexOf(value.uiSurface) >= 0) result.uiSurface = value.uiSurface;
+    return result;
+  }
+  function geometryLoadWorkspacePreferences(storage) {
+    try {
+      if (storage === undefined) storage = typeof localStorage !== 'undefined' ? localStorage : null;
+      return geometryNormalizeWorkspacePreferences(storage ? JSON.parse(storage.getItem(GW_WORKSPACE_PREFERENCE_KEY)) : null);
+    } catch (e) { return geometryWorkspaceDefaults(); }
+  }
+  function geometrySaveWorkspacePreferences(patch, storage) {
+    try {
+      if (storage === undefined) storage = typeof localStorage !== 'undefined' ? localStorage : null;
+      if (!storage) return false;
+      var next = geometryLoadWorkspacePreferences(storage);
+      Object.keys(next).forEach(function(key) { if (key !== 'version' && patch && Object.prototype.hasOwnProperty.call(patch, key)) next[key] = patch[key]; });
+      storage.setItem(GW_WORKSPACE_PREFERENCE_KEY, JSON.stringify(geometryNormalizeWorkspacePreferences(next)));
+      return true;
+    } catch (e) { return false; }
+  }
+  var GW_CLARITY_CSS = [
+    '#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-hotbar-item{box-sizing:border-box;flex:0 0 88px!important;min-width:88px!important;width:88px!important}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-material-name{display:block;max-width:100%;white-space:nowrap;line-height:1.25}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-action-bar{box-sizing:border-box;flex-wrap:nowrap!important;min-height:50px}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-hotbar{justify-content:flex-start!important}',
+    '@media(max-width:600px){#geoworld-fs-workspace.gw-root .gw-settings-tabs button{font-size:13px}#geoworld-fs-workspace.gw-root .gw-settings-panel .gw-view-presets{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr));gap:6px!important;width:100%}#geoworld-fs-workspace.gw-root .gw-settings-panel .gw-view-presets-label{grid-column:1/-1;padding:4px!important}#geoworld-fs-workspace.gw-root .gw-settings-panel .gw-view-preset{width:100%;min-width:0!important}}',
+    '#geoworld-fs-workspace.gw-root .gw-settings-panel :is(button,select,input:not([type="checkbox"])){min-height:44px!important}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-settings-panel .gw-hud-preset-name{font-size:16px}.theme-contrast #geoworld-fs-workspace.gw-root.gw-root .gw-settings-panel :is(.gw-hud-preset-card,.gw-view-preset)[aria-pressed="true"],[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root.gw-root .gw-settings-panel :is(.gw-hud-preset-card,.gw-view-preset)[aria-pressed="true"]{background:#000!important;color:#0f0!important;border-color:#ff0!important;box-shadow:inset 0 0 0 2px #ff0!important}@media(forced-colors:active){#geoworld-fs-workspace.gw-root.gw-root .gw-settings-panel :is(.gw-hud-preset-card,.gw-view-preset)[aria-pressed="true"]{background:Canvas!important;color:CanvasText!important;box-shadow:none!important;outline:2px solid Highlight!important}}',
+    '#geoworld-fs-workspace.gw-root .gw-settings-dialog{width:min(760px,100%);background:#202728!important;border-radius:8px!important}.gw-settings-tabs{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));flex:none;border-bottom:1px solid #718984;padding:0 16px;gap:4px}.gw-settings-tabs button{min-width:0;min-height:48px;padding:8px 4px;border:0;border-bottom:3px solid transparent;background:transparent;color:#d9e5e3;font:600 14px/1.5 inherit;cursor:pointer}.gw-settings-tabs button[aria-selected="true"]{border-bottom-color:#b9eee4;color:#b9eee4}.gw-settings-body{overflow:auto;min-height:0;overscroll-behavior:contain;scrollbar-color:#9ebbb7 #202728}.gw-settings-panel{min-width:0;display:flex;align-items:center;align-content:flex-start;flex-wrap:wrap;gap:10px;padding:16px 20px 20px}.gw-settings-panel[hidden]{display:none!important}#geoworld-fs-workspace.gw-root .gw-settings-controls{display:block;overflow:visible;padding:0}#geoworld-fs-workspace.gw-root .gw-settings-panel :is(button,select,input:not([type="checkbox"]):not([type="range"])){box-sizing:border-box;min-height:44px;max-width:100%;font-size:14px!important;line-height:1.5;padding:8px 12px!important}#geoworld-fs-workspace.gw-root .gw-settings-header{padding:14px 20px}.gw-root .gw-settings-title{font-size:20px!important}.gw-root .gw-settings-close{min-width:44px!important;min-height:44px!important}.gw-settings-panel .gw-settings-section-title{font-size:13px;line-height:1.5;text-transform:none;letter-spacing:0;color:#d9e5e3!important;margin:4px 0;padding:8px 0}.gw-settings-field{display:grid;grid-template-columns:minmax(0,1fr) minmax(130px,1fr);align-items:center;gap:12px;flex:1 0 100%;min-width:0;font-size:14px;line-height:1.5;color:#f4f7f6}.gw-settings-field select{width:100%;min-width:0}.gw-settings-check{display:flex;align-items:center;gap:12px;flex:1 0 100%;min-height:44px;font-size:14px;line-height:1.5;color:#f4f7f6;cursor:pointer}.gw-settings-check input{width:20px;height:20px;flex:none;accent-color:#b9eee4}.gw-workspace-save-status{flex:1 0 100%;margin:4px 0 0;color:#c6d3d2;font-size:12px;line-height:1.5;min-height:18px}.gw-settings-panel .gw-hud-presets{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}.gw-settings-panel .gw-hud-preset-card{align-items:center!important;justify-content:center;min-height:44px!important;padding:8px!important;gap:6px!important;border-radius:6px!important;font-size:14px!important}.gw-settings-panel .gw-hud-preset-name{font-size:14px}.gw-settings-panel .gw-hud-preset-icon{display:flex;align-items:center}.gw-settings-panel .gw-hud-preset-icon svg{width:18px;height:18px}.gw-settings-panel .gw-hud-preset-card[aria-pressed="true"]{background:#b9eee4!important;border-color:#b9eee4!important;color:#173b38!important}.gw-settings-panel .gw-hud-preset-help{font-size:13px;color:#c6d3d2}.gw-settings-panel :is(.gw-quality-control,.gw-settings-look,.gw-view-presets){flex:1 0 100%;max-width:100%;box-sizing:border-box}.gw-settings-panel .gw-view-presets{flex-wrap:wrap;border-radius:6px!important}.gw-settings-panel .gw-view-presets-label{font-size:14px!important}.gw-settings-panel .gw-quality-control{flex-wrap:wrap}.gw-settings-panel .gw-quality-label{font-size:14px}.gw-settings-panel .gw-quality-help{font-size:12px;line-height:1.5}.gw-settings-panel .gw-quality-resolved{display:none}.gw-settings-panel .gw-settings-look{margin:0}.gw-settings-panel .gw-settings-look input{min-height:44px}.gw-settings-panel .gw-settings-look label{font-size:14px}.gw-settings-panel>div{min-width:0;max-width:100%}.gw-settings-panel input[type="range"]{accent-color:#b9eee4}',
+    '#geoworld-fs-workspace.gw-root .gw-settings-panel :is(.gw-hud-preset-card,.gw-view-preset)[aria-pressed="true"]{background:#b9eee4!important;color:#173b38!important;border-color:#b9eee4!important;box-shadow:inset 0 0 0 2px #173b38!important}.gw-root .gw-settings-panel .gw-hud-preset-card[aria-pressed="true"] .gw-hud-preset-icon{display:flex!important}#geoworld-fs-workspace.gw-root .gw-settings-tabs button{font-family:inherit;font-size:14px;font-weight:600;line-height:1.5}#geoworld-fs-workspace.gw-root .gw-settings-panel button{display:inline-flex;align-items:center;justify-content:center;gap:8px;font-family:inherit}.gw-settings-panel button svg{width:18px;height:18px;flex:none}#geoworld-fs-workspace.gw-root[data-ui-surface="solid"] :is(.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-touch-more,.gw-coordinate-hud,.gw-placement-hint,.gw-action-feedback,.gw-npc-peek,.gw-learning-compass,.gw-objective-panel,.gw-dialog,.gw-measure-card,.gw-history-panel,.gw-prediction-panel,.gw-fullscreen-quickbar){background:#202728!important;backdrop-filter:none!important}',
+    '#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gw-compact-action,.gw-action-bar button,.gw-touch-more button,.gw-npc-peek button,.gw-measure-card button,.gw-notebook-tabs button,.gw-material-name,.gw-shape-fraction){font-size:15px!important}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gw-objective-copy,.gw-learning-compass-title,.gw-notebook-record-title,.gw-notebook-question,.gw-measure-prompt,.gw-measure-self-check,.gw-measure-block-count,.gw-answer-unit,.gw-answer-recap,.gw-question-progress,.gw-dialog--npc label,.gw-notebook-quantities,.gw-settings-panel label,.gw-settings-panel button,.gw-settings-panel select){font-size:16px!important;line-height:1.6}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gw-question-text,.gw-measure-equation,.gw-dialog--npc input,.gw-dialog--npc .gw-answer-choice){font-size:18px!important;line-height:1.6}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gw-objective-evidence,.gw-notebook-caption,.gw-learning-compass-kicker,.gw-learning-compass-action,.gw-coordinate-hud){font-size:14px!important}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-action-bar{max-width:calc(100% - 24px);overflow-x:auto;justify-content:flex-start!important}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-action-bar button{flex-shrink:0}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-shape-tray{overflow-x:auto;justify-content:flex-start!important}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-shape-item{flex-shrink:0;min-width:64px}',
+    '@media(max-width:600px){.gw-settings-tabs{padding:0 8px;gap:0}.gw-settings-tabs button{font-size:13px}.gw-settings-panel{padding:12px;gap:8px}#geoworld-fs-workspace.gw-root .gw-settings-header{padding:12px}.gw-settings-field{grid-template-columns:minmax(0,1fr)}.gw-settings-panel .gw-hud-preset-icon{display:none}.gw-settings-panel .gw-view-presets{gap:2px!important}.gw-settings-panel .gw-view-presets-label{flex:1 0 100%}.gw-settings-panel .gw-view-preset{flex:1;min-width:0!important}.gw-settings-panel .gw-hud-preset-card{padding:8px 3px!important}}',
+    '.theme-contrast #geoworld-fs-workspace.gw-root.gw-root :is(.gw-settings-dialog,.gw-settings-header,.gw-settings-tabs,.gw-settings-panel,.gw-workspace-save-status),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root.gw-root :is(.gw-settings-dialog,.gw-settings-header,.gw-settings-tabs,.gw-settings-panel,.gw-workspace-save-status){background:#000!important;color:#fff!important;border-color:#ff0!important}.theme-contrast .gw-root .gw-settings-tabs button[aria-selected="true"],[data-stem-theme="contrast"] .gw-root .gw-settings-tabs button[aria-selected="true"]{border-bottom-color:#ff0!important}.theme-contrast .gw-root .gw-settings-panel :is(label,legend,h3,p,span),[data-stem-theme="contrast"] .gw-root .gw-settings-panel :is(label,legend,h3,p,span){color:#fff!important}@media(forced-colors:active){#geoworld-fs-workspace.gw-root.gw-root :is(.gw-settings-dialog,.gw-settings-header,.gw-settings-tabs,.gw-settings-panel,.gw-settings-panel *,.gw-workspace-save-status){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.gw-root .gw-settings-tabs button[aria-selected="true"]{border-bottom-color:Highlight!important}.gw-root .gw-settings-panel .gw-hud-preset-card[aria-pressed="true"]{outline:2px solid Highlight!important}}'
+    ,'#geoworld-fs-workspace.gw-root{--gw-solid-surface:#202728}.theme-contrast #geoworld-fs-workspace.gw-root,[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root{--gw-solid-surface:#000}#geoworld-fs-workspace.gw-root[data-ui-surface="solid"] :is(.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-touch-more,.gw-coordinate-hud,.gw-placement-hint,.gw-action-feedback,.gw-npc-peek,.gw-learning-compass,.gw-objective-panel,.gw-dialog,.gw-measure-card,.gw-history-panel,.gw-prediction-panel,.gw-fullscreen-quickbar){background:var(--gw-solid-surface)!important}#geoworld-fs-workspace.gw-root[data-ui-surface="solid"] .gw-placement-hint[data-allowed="false"]{background:#502d2b!important}#geoworld-fs-workspace.gw-root[data-ui-surface="solid"] .gw-placement-hint[data-placement-state="aim"]{background:#edf8f5!important}@media(forced-colors:active){#geoworld-fs-workspace.gw-root{--gw-solid-surface:Canvas}#geoworld-fs-workspace.gw-root.gw-root :is(.gw-settings-dialog,.gw-settings-dialog *){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}#geoworld-fs-workspace.gw-root.gw-root .gw-settings-tabs button[aria-selected="true"]{border-bottom-color:Highlight!important}#geoworld-fs-workspace.gw-root.gw-root[data-ui-surface="solid"] :is(.gw-coordinate-hud,.gw-placement-hint,.gw-placement-hint[data-allowed="false"],.gw-placement-hint[data-placement-state="aim"],.gw-action-feedback,.gw-npc-peek,.gw-learning-compass,.gw-objective-panel,.gw-dialog,.gw-measure-card,.gw-history-panel,.gw-prediction-panel){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}}'
+    ,'#geoworld-fs-workspace.gw-root .gw-measure-dimension-group{display:grid;gap:6px;min-width:0;padding-top:6px}#geoworld-fs-workspace.gw-root .gw-measure-dimension-caption{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 8px;font-size:12px;line-height:1.4;color:var(--allo-stem-text-soft)}#geoworld-fs-workspace.gw-root .gw-measure-dimension-caption strong{font-size:13px;color:var(--allo-stem-text)}#geoworld-fs-workspace.gw-root .gw-measure-dimension-note{margin:0;font-size:12px;line-height:1.4;color:var(--allo-stem-text-soft)}#geoworld-fs-workspace.gw-root .gw-measure-surface-summary{display:flex;align-items:baseline;justify-content:space-between;flex-wrap:wrap;gap:4px 8px;min-width:0;padding-top:8px;border-top:1px solid var(--allo-stem-border);font-size:13px;line-height:1.4;color:var(--allo-stem-text)}#geoworld-fs-workspace.gw-root .gw-measure-surface-summary>span:first-child{font-size:12px;color:var(--allo-stem-text-soft)}#geoworld-fs-workspace.gw-root .gw-measure-surface-value{white-space:nowrap}#geoworld-fs-workspace.gw-root .gw-measure-surface-value strong{font-size:18px;font-weight:750;color:var(--allo-stem-text)}#geoworld-fs-workspace.gw-root .gw-measure-surface-unavailable{flex:1 0 100%;font-size:12px;color:var(--allo-stem-text-soft)}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gw-measure-dimension-caption,.gw-measure-dimension-caption strong,.gw-measure-dimension-note,.gw-measure-surface-summary,.gw-measure-surface-summary>span:first-child,.gw-measure-surface-unavailable){font-size:15px;line-height:1.5}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-measure-surface-value strong{font-size:20px}'
+    ,'#geoworld-fs-workspace.gw-root .gw-measure-card[data-measurement-compact="true"][data-details-open="false"]{max-height:min(460px,calc(100% - 140px))!important}#geoworld-fs-workspace.gw-root .gw-measure-card>*{flex-shrink:0}#geoworld-fs-workspace.gw-root .gw-measure-card .gw-measure-heading{position:sticky;top:-16px;z-index:2}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gw-measure-dimension,.gw-measure-volume,.gw-measure-volume-value){font-size:15px!important;line-height:1.5}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-measure-dimension strong{font-size:18px}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gw-measure-volume-value strong{font-size:20px}'
+    ,'#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(>.gw-measure-card) .gwe-builder-dock[data-collapsed="true"]{visibility:hidden;pointer-events:none}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gw-measure-heading>[role="status"],.gw-measure-details-toggle){font-size:15px!important;line-height:1.5}'
+    ,'@media(forced-colors:active){#geoworld-fs-workspace.gw-root.gw-root .gw-measure-card,#geoworld-fs-workspace.gw-root.gw-root .gw-measure-card *{color:CanvasText!important;border-color:CanvasText!important}#geoworld-fs-workspace.gw-root.gw-root .gw-measure-card :is(.gw-measure-heading,.gw-measure-dimension,.gw-notebook-trigger,.gw-measure-details,.gw-measure-details-content){background:Canvas!important}#geoworld-fs-workspace.gw-root.gw-root .gw-measure-details-toggle:focus-visible{outline-color:Highlight!important}}'
+    ,'@media(forced-colors:active){#geoworld-fs-workspace.gw-root.gw-root .gw-measure-card .gw-notebook-trigger{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}}'
+    ,'@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-touch-active="true"] .gw-measure-card[data-measurement-compact="true"][data-details-open="false"]{max-height:min(460px,calc(100% - var(--gw-toolbar-height,58px) - 320px))!important}#geoworld-fs-workspace.gw-root[data-touch-active="true"][data-build-tools="open"] .gw-measure-card[data-measurement-compact="true"][data-details-open="false"]{max-height:min(460px,calc(100% - var(--gw-toolbar-height,58px) - 486px))!important}}'
+    ,'@media(max-width:800px) and (max-height:600px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(>.gw-measure-card) :is(.gw-touch-controls,.gw-hotbar,.gw-shape-tray,.gw-action-bar){display:none!important}#geoworld-fs-workspace.gw-root.gw-root.gw-root[data-touch-active="true"] .gw-measure-card[data-measurement-compact="true"][data-details-open="false"]{max-height:calc(100% - var(--gw-toolbar-height,58px) - 28px)!important}}'
+  ].join('\n');
+  var GW_WORKSPACE_REFRESH_CSS = [
+    '#geoworld-fs-workspace.gw-root{--gw-glass:#202728f5;--gw-line:#596969;--allo-stem-canvas:#202728;--allo-stem-panel:#2b3334;--allo-stem-deeper:#181d1e;--allo-stem-text:#f4f7f6;--allo-stem-text-soft:#c6d3d2;--allo-stem-border:#687c7b;--allo-stem-button-bg:#2b3334;--allo-stem-button-text:#f4f7f6;--allo-stem-button-border:#687c7b;letter-spacing:0}',
+    '#geoworld-fs-workspace.gw-root :is(button,input,select,textarea,h1,h2,h3,h4,p,span,summary,label){letter-spacing:0}',
+    '#geoworld-fs-workspace.gw-root>.gw-toolbar{background:#202728!important;border-bottom:1px solid #536463!important;box-shadow:none;min-height:58px;max-height:66px;padding:8px 12px!important}.gw-root .gw-brand-mark{background:#b9eee4!important;border-color:#b9eee4!important;border-radius:8px}.gw-root .gw-title{color:#f4f7f6!important;font-size:16px;letter-spacing:0}.gw-root .gw-lesson-title{color:#c6d3d2!important;font-size:12px!important}.gw-root .gw-status-cluster{gap:6px}',
+    '#geoworld-fs-workspace.gw-root .gw-compact-action{background:#303b3c!important;border-color:#647a78!important;color:#f4f7f6!important;min-width:44px;min-height:44px;border-radius:6px;font-size:12px;gap:6px}.gw-root .gw-compact-action .gw-workspace-icon{width:18px;height:18px}.gw-root .gw-compact-action-label{font-weight:650}#geoworld-fs-workspace.gw-root .gw-compact-action:hover{background:#405051!important}#geoworld-fs-workspace.gw-root .gw-compact-action[aria-expanded="true"]{background:#b9eee4!important;border-color:#b9eee4!important;color:#173b38!important}#geoworld-fs-workspace.gw-root .gw-stat-chip{background:#2b3334!important;color:#f4f7f6!important;border-color:#536463!important;border-radius:6px!important;font-size:12px!important}',
+    '#geoworld-fs-workspace.gw-root .gw-viewport{margin:0!important;border:0;border-radius:0!important;box-shadow:none}#geoworld-fs-workspace.gw-root :is(.gw-viewport-control,.gw-toolbar-reveal,.gw-fullscreen-quickbar .gw-compact-action,.gw-hud-restore){background:#202728f5!important;border-color:#8caaa6!important;color:#f4f7f6!important;border-radius:6px}',
+    '#geoworld-fs-workspace.gw-root :is(.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gw-touch-more){background:#202728f5!important;border-color:#79918c!important;border-radius:8px!important;box-shadow:0 4px 16px #11181740;scrollbar-color:#9ebbb7 #202728}#geoworld-fs-workspace.gw-root :is(.gw-action-bar button,.gw-touch-actions button,.gw-touch-more button,.gw-shape-rotate,.gw-shape-item){background:#303b3c!important;color:#f4f7f6!important;border-color:#5d7370!important;border-radius:6px!important}#geoworld-fs-workspace.gw-root :is(.gw-hotbar-item[data-active="true"],.gw-shape-item[aria-pressed="true"],.gw-build-toggle[aria-expanded="true"],.gw-touch-actions button[data-gw-touch-action="place"]){background:#b9eee4!important;border-color:#e1fff8!important;color:#173b38!important;box-shadow:none!important}#geoworld-fs-workspace.gw-root .gw-hotbar-item[data-active="true"] :is(.gw-material-name,.gw-material-key){color:#173b38!important}#geoworld-fs-workspace.gw-root :is(.gw-material-name,.gw-material-key,.gw-shape-heading,.gw-shape-fraction){color:#d9e5e3!important}#geoworld-fs-workspace.gw-root .gw-shape-item[aria-pressed="true"] .gw-shape-fraction{color:#173b38!important}',
+    '#geoworld-fs-workspace.gw-root :is(.gw-coordinate-hud,.gw-placement-hint,.gw-action-feedback,.gw-npc-peek){background:#202728f5!important;color:#f4f7f6!important;border-color:#79918c!important;border-radius:6px!important}#geoworld-fs-workspace.gw-root .gw-placement-hint[data-allowed="false"]{background:#502d2b!important;border-color:#f3a290!important;color:#ffe0d6!important}#geoworld-fs-workspace.gw-root .gw-placement-hint[data-placement-state="aim"]{background:#edf8f5!important;color:#213c38!important}#geoworld-fs-workspace.gw-root :is(.gw-placement-aim,.gw-npc-look,.gw-npc-peek button){background:#374746!important;border-color:#8aa5a0!important;color:#f4f7f6!important;border-radius:6px}',
+    '#geoworld-fs-workspace.gw-root :is(.gw-settings-dialog,.gw-dialog:not(.gw-dialog--intro),.gw-measure-card){background:#202728fa!important;border-color:#79918c!important;border-radius:8px!important;box-shadow:0 10px 40px #11181745}#geoworld-fs-workspace.gw-root :is(.gw-settings-header,.gw-measure-heading){background:#2b3334!important;border-color:#596e6b!important}#geoworld-fs-workspace.gw-root :is(.gw-settings-section-title,.gw-settings-title){color:#b9eee4!important}#geoworld-fs-workspace.gw-root :is(.gw-settings-controls button,.gw-settings-controls select,.gw-dialog input,.gw-dialog select,.gw-dialog textarea){background:#303b3c!important;border-color:#718984!important;color:#f4f7f6!important;border-radius:6px!important}#geoworld-fs-workspace.gw-root .gw-dialog-close{background:#303b3c!important;border-color:#718984!important;color:#f4f7f6!important;min-width:32px;min-height:32px;border-radius:6px!important}',
+    '#geoworld-fs-workspace.gw-root :is(.gw-measure-prompt,.gw-measure-self-check,.gw-measure-block-count,.gw-measure-view-progress-caption){font-size:12px!important;line-height:1.5;color:#d9e5e3!important}#geoworld-fs-workspace.gw-root .gw-measure-equation{font-size:14px!important;line-height:1.6;color:#b9eee4!important}#geoworld-fs-workspace.gw-root .gw-measure-card{padding:16px!important}.gw-root .gw-measure-card :is(input,textarea,select){font-size:14px!important;min-height:36px}.gw-root .gw-measure-card label{font-size:12px!important}.gw-root .gw-measure-card button{font-size:12px!important}',
+    '#geoworld-fs-workspace.gw-root .gw-objective-panel{top:72px;left:12px;width:min(320px,calc(100% - 24px));max-height:calc(100% - 144px);padding:16px;background:#202728fa;border:1px solid #8aa5a0;border-radius:8px;box-shadow:0 8px 28px #11181735}.gw-root .gw-objective-title{font-size:16px;color:#f4f7f6;font-weight:750}.gw-root .gw-objective-count{font-size:12px;color:#b9eee4;border-color:#79918c;border-radius:4px;background:#303b3c}.gw-root .gw-objective-header{align-items:center;flex-direction:row;gap:8px;margin-bottom:12px}.gw-root .gw-objective-summary{margin:0 0 12px;font-size:12px;line-height:1.5;color:#c6d3d2}.gw-root .gw-objective-list{gap:0}.gw-root .gw-objective-item{align-items:flex-start;min-height:54px;padding:12px 0;background:transparent;border:0;border-top:1px solid #536463;border-radius:0;gap:10px}.gw-root .gw-objective-item:hover:not(:disabled){background:#303b3c;border-color:#536463}.gw-root .gw-objective-item[data-next="true"]{color:#f4f7f6}.gw-root .gw-objective-item[data-complete="true"]{background:transparent;color:#b9eee4;opacity:1}.gw-root .gw-objective-marker{display:grid;place-items:center;min-width:24px;height:24px;margin-top:0;border:1px solid #8aa5a0;border-radius:50%;font-size:12px;font-weight:700;color:#c6d3d2}.gw-root .gw-objective-item[data-next="true"] .gw-objective-marker{background:#b9eee4;border-color:#b9eee4;color:#173b38}.gw-root .gw-objective-copy{font-size:13px;line-height:1.5}.gw-root .gw-objective-evidence{font-size:12px!important;line-height:1.5;color:#b9c9c5;opacity:1!important}.gw-root .gw-reset-button{font-size:12px;min-height:44px;background:#303b3c;color:#f4f7f6;border-color:#79918c;border-radius:6px}',
+    '.gw-learning-compass{position:absolute;left:12px;top:72px;z-index:23;box-sizing:border-box;width:min(290px,calc(100% - 80px));display:flex;flex-direction:column;align-items:flex-start;gap:6px;padding:12px 14px;border:1px solid #8aa5a0;border-left:3px solid #b9eee4;border-radius:6px;background:#202728f2;color:#f4f7f6;text-align:left;font:inherit;cursor:pointer;box-shadow:0 5px 18px #11181725}.gw-learning-compass:hover{background:#303b3c}.gw-learning-compass-kicker{display:flex;width:100%;justify-content:space-between;align-items:center;gap:12px;font-size:11px;line-height:1.4;color:#b9eee4;font-weight:750}.gw-learning-compass-title{font-size:13px;line-height:1.5;overflow-wrap:anywhere}.gw-learning-compass-action{display:flex;align-items:center;gap:6px;font-size:11px;line-height:1.4;color:#c6d3d2}.gw-learning-compass-action svg{width:15px;height:15px}',
+    '.gw-concept-reminder{margin:12px 0 0;padding-top:12px;border-top:1px solid #536463;color:#d9e5e3;font-size:13px;line-height:1.5}.gw-concept-reminder summary{min-height:36px;cursor:pointer;color:#b9eee4;font-weight:700}.gw-concept-reminder p{margin:8px 0}.gw-concept-reminder strong{color:#f4f7f6}.gw-root .gw-intro-concept{padding:16px 0;border-top:1px solid #536463;border-bottom:1px solid #536463;text-align:left}.gw-root .gw-intro-concept-title{font-size:14px;color:#b9eee4;margin:0 0 8px}.gw-root .gw-intro-concept-relationship{font:700 15px/1.5 ui-monospace,monospace;color:#f4f7f6;margin:0 0 8px}.gw-root :is(.gw-intro-concept-copy,.gw-intro-concept-question){font-size:13px;line-height:1.6;color:#d9e5e3;margin:8px 0}.gw-root .gw-intro-concept-question{color:#b9eee4}',
+    '#geoworld-fs-workspace.gw-root .gwe-builder-dock{background:#202728fa;border-color:#79918c;border-radius:8px;color:#f4f7f6;box-shadow:0 6px 26px #11181735}#geoworld-fs-workspace.gw-root :is(.gwe-builder-head,.gwe-builder-body){background:transparent}#geoworld-fs-workspace.gw-root :is(.gwe-builder-name,.gwe-section-title,.gwe-selected-heading h3){color:#f4f7f6}#geoworld-fs-workspace.gw-root :is(.gwe-builder-eyebrow,.gwe-selected-eyebrow,.gwe-metric span,.gwe-builder-intro,.gwe-builder-note,.gwe-selection-scope){color:#c6d3d2}#geoworld-fs-workspace.gw-root .gwe-builder-dock :is(button,input,select,textarea){border-color:#718984;border-radius:6px;background:#303b3c;color:#f4f7f6}#geoworld-fs-workspace.gw-root .gwe-builder-dock :is(.gwe-primary,.gwe-focus-action){background:#b9eee4!important;color:#173b38!important;border-color:#b9eee4!important}#geoworld-fs-workspace.gw-root :is(.gwe-creation-summary,.gwe-selected-metrics,.gwe-measure-summary,.gwe-metric){background:transparent;border-radius:0;box-shadow:none}#geoworld-fs-workspace.gw-root .gwe-creation-summary{padding:14px 0;border:0;border-top:1px solid #536463;border-bottom:1px solid #536463}#geoworld-fs-workspace.gw-root .gwe-metric strong{color:#b9eee4}#geoworld-fs-workspace.gw-root .gwe-workflow li[aria-current="step"]{color:#b9eee4}#geoworld-fs-workspace.gw-root .gwe-workflow li[aria-current="step"]>span{background:#b9eee4;color:#173b38}',
+    '#geoworld-fs-workspace.gw-root :is(button,input,select,textarea,summary,[tabindex]):focus-visible{outline:3px solid #ffb7a1!important;outline-offset:2px!important;box-shadow:none!important}#geoworld-fs-workspace.gw-root button:disabled{cursor:default}.gw-root .gw-touch-joystick{background:#20272880!important;border-color:#d9e5e3!important}.gw-root .gw-touch-joystick-thumb{background:#b9eee4!important;border-color:#e1fff8!important}',
+    '@media(max-width:800px){#geoworld-fs-workspace.gw-root>.gw-toolbar{min-height:58px;max-height:66px;padding:7px 8px!important}.gw-root .gw-title{font-size:14px}.gw-root .gw-lesson-title{font-size:11px!important;max-width:160px!important}.gw-root .gw-status-cluster{gap:4px}.gw-root .gw-compact-action{padding:6px!important}.gw-root .gw-learning-compass{top:72px;padding:9px 11px;width:min(270px,calc(100% - 80px))}.gw-root .gw-objective-panel{top:72px;left:8px;width:calc(100% - 16px);max-height:calc(100% - 144px);padding:14px}.gw-root .gw-measure-card{top:72px!important}.gw-root .gw-objective-copy{font-size:13px}.gw-root .gw-objective-header{flex-direction:row;align-items:center}}',
+    '@media(max-height:520px) and (orientation:landscape){.gw-root .gw-learning-compass{top:56px;width:240px;padding:8px 10px}.gw-root .gw-objective-panel{top:56px;max-height:calc(100% - 112px);width:min(320px,calc(100% - 24px))}}',
+    '#geoworld-fs-workspace.gw-root[data-toolbar-collapsed="true"] .gw-learning-compass,#geoworld-fs-workspace.gw-root[data-fullscreen="true"] .gw-learning-compass{top:56px}',
+    '.theme-contrast #geoworld-fs-workspace.gw-root,[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root{--allo-stem-canvas:#000;--allo-stem-panel:#000;--allo-stem-deeper:#000;--allo-stem-text:#fff;--allo-stem-text-soft:#fff;--allo-stem-border:#ff0;--allo-stem-button-bg:#000;--allo-stem-button-text:#0f0;--allo-stem-button-border:#0f0}.theme-contrast #geoworld-fs-workspace.gw-root :is(.gw-toolbar,.gw-learning-compass,.gw-objective-panel,.gw-settings-dialog,.gw-settings-header,.gw-dialog,.gw-measure-card,.gw-measure-heading,.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gwe-builder-dock,.gw-npc-peek,.gw-touch-more),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root :is(.gw-toolbar,.gw-learning-compass,.gw-objective-panel,.gw-settings-dialog,.gw-settings-header,.gw-dialog,.gw-measure-card,.gw-measure-heading,.gw-hotbar,.gw-shape-tray,.gw-action-bar,.gwe-builder-dock,.gw-npc-peek,.gw-touch-more){background:#000!important;border-color:#ff0!important;color:#fff!important}.theme-contrast #geoworld-fs-workspace.gw-root :is(button,input,select,textarea),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root :is(button,input,select,textarea){background:#000!important;color:#0f0!important;border-color:#0f0!important}.theme-contrast #geoworld-fs-workspace.gw-root :is(.gw-learning-compass span,.gw-objective-copy,.gw-objective-evidence,.gw-objective-title,.gw-concept-reminder,.gw-concept-reminder summary,.gw-concept-reminder strong,.gwe-metric strong,.gwe-metric span),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root :is(.gw-learning-compass span,.gw-objective-copy,.gw-objective-evidence,.gw-objective-title,.gw-concept-reminder,.gw-concept-reminder summary,.gw-concept-reminder strong,.gwe-metric strong,.gwe-metric span){color:#fff!important}',
+    '#geoworld-fs-workspace.gw-root .gw-dialog--intro{background:#202728f7!important}.gw-root .gw-intro-card{border:0!important;border-radius:0!important;background:transparent!important;box-shadow:none!important}.gw-root .gw-intro-title{font-size:24px;color:#f4f7f6}.gw-root .gw-intro-description{font-size:14px;line-height:1.6;color:#c6d3d2}.gw-root .gw-intro-section-title{color:#b9eee4}.gw-root .gw-intro-objectives li{font-size:13px;line-height:1.6}.gw-root .gw-primary-cta{background:#b9eee4!important;border-color:#b9eee4!important;color:#173b38!important;border-radius:6px!important;box-shadow:none!important}',
+    '.gw-concept-reminder summary{min-height:44px;padding:8px 0;box-sizing:border-box}',
+    '.gw-root .gw-objective-title{flex:1;min-width:0}.gw-root .gw-objective-close{display:grid;place-items:center;flex:0 0 44px;width:44px;height:44px;padding:0;border:1px solid #79918c;border-radius:6px;background:#303b3c;color:#f4f7f6;font:24px/1 system-ui,sans-serif;cursor:pointer}.gw-objective-close svg{width:18px;height:18px}',
+    '#geoworld-fs-workspace.gw-root>.gw-toolbar{max-height:none!important}#geoworld-fs-workspace.gw-root :is(.gw-learning-compass,.gw-objective-panel,.gw-prediction-panel){top:calc(var(--gw-toolbar-height,58px) + 14px)!important}#geoworld-fs-workspace.gw-root .gw-measure-card{top:calc(var(--gw-toolbar-height,58px) + 14px)!important}#geoworld-fs-workspace.gw-root:is([data-toolbar-collapsed="true"],[data-fullscreen="true"]) :is(.gw-learning-compass,.gw-objective-panel,.gw-measure-card,.gw-prediction-panel){top:56px!important}',
+    '@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root.gw-root .gw-measure-card{top:8px!important}}',
+    '@media(max-width:800px){#geoworld-fs-workspace.gw-root:has(>.gw-learning-compass) .gw-guide-compass,#geoworld-fs-workspace.gw-root:has(>.gw-objective-panel) .gw-guide-compass{display:none!important}}',
+    '@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-build-tools="closed"][data-touch-active="true"] .gw-action-feedback{box-sizing:border-box;left:12px!important;right:auto!important;transform:none!important;max-width:calc(100% - 108px)!important}}',
+    '#geoworld-fs-workspace.gw-root :is(.gw-prediction-panel,.gw-history-panel){background:#202728fa!important;border-color:#79918c!important;border-radius:8px!important;color:#f4f7f6!important}.gw-root .gw-prediction-panel :is(label,p,span,.gw-prediction-title){font-size:12px!important;line-height:1.5;color:#d9e5e3!important}.gw-root .gw-prediction-panel :is(input,select,button){box-sizing:border-box;min-height:44px!important;font-size:13px!important;border-radius:6px!important;background:#303b3c!important;color:#f4f7f6!important;border:1px solid #718984!important}.gw-root .gw-prediction-panel{max-height:calc(100% - 140px);overflow:auto}.gw-root .gw-prediction-heading{border-color:#536463}.gw-root .gw-history-title{font-size:13px;color:#b9eee4}.gw-root .gw-history-row{font-size:12px;line-height:1.5;min-height:32px}.gw-root .gw-history-row span{font-size:12px!important}.gw-root .gw-retrieval-title{font-size:12px;color:#b9eee4}.gw-root .gw-retrieval-card{background:transparent;border-color:#536463}.gw-root .gw-retrieval-card>div{font-size:12px!important;line-height:1.5}.gw-root .gw-retrieval-controls{flex-wrap:wrap}.gw-root .gw-retrieval-controls :is(input,button){min-height:44px;font-size:13px!important}',
+    '#geoworld-fs-workspace.gw-root .gw-measure-card :is(.gw-layer-explorer,[data-geometry-volume-representation],[data-geometry-prediction-result]){padding:12px 0!important;margin-top:8px!important;border:0!important;border-top:1px solid #596e6b!important;border-radius:0!important;background:transparent!important;max-width:100%!important}.gw-root .gw-measure-card :is(.gw-layer-explorer label,.gw-layer-explorer output,.gw-layer-explorer span,.gw-measure-view-picker>label,.gw-measure-view-progress-caption,[data-geometry-representation-connection]>label,#gw-representation-connect-prompt){color:#d9e5e3!important;font-size:12px!important;line-height:1.5!important}#geoworld-fs-workspace.gw-root .gw-measure-card :is(select,textarea,input:not([type="checkbox"]),button){background:#303b3c!important;color:#f4f7f6!important;border-color:#718984!important;font-size:13px!important;border-radius:6px!important}#geoworld-fs-workspace.gw-root .gw-measure-card :is(button,input,select){min-height:44px}#geoworld-fs-workspace.gw-root .gw-measure-card input[type="checkbox"]{min-height:18px}#geoworld-fs-workspace.gw-root .gw-measure-card input[type="range"]{background:transparent!important;accent-color:#b9eee4!important}.gw-root .gw-connection-readiness{margin:5px 0;color:#c6d3d2;font-size:12px;line-height:1.5}.gw-root .gw-connection-readiness[data-ready="true"]{color:#b9eee4}.gw-root .gw-reflect-trigger{display:inline-flex;align-items:center;justify-content:center;gap:8px;min-height:44px;padding:8px 12px;margin-top:8px;border:1px solid #79918c;border-radius:6px;background:#303b3c;color:#f4f7f6;font:600 13px/1.5 inherit;cursor:pointer}.gw-reflect-trigger svg{width:18px;height:18px}',
+    '.gw-reflection-backdrop{position:absolute;inset:0;z-index:160;display:grid;place-items:center;padding:16px;box-sizing:border-box;background:#111817b0}.gw-root .gw-reflection-backdrop .gw-reflection-dialog{position:relative!important;left:auto!important;top:auto!important;transform:none!important;width:min(500px,100%)!important;max-width:100%!important;max-height:100%;overflow:auto;padding:22px!important}.gw-root .gw-reflection-title{font-size:20px;color:#f4f7f6}.gw-root .gw-reflection-description{font-size:13px;line-height:1.5;color:#c6d3d2}.gw-root .gw-reflection-icon{background:transparent;border:0;border-radius:0;color:#b9eee4}.gw-root .gw-reflection-icon svg{width:28px;height:28px}.gw-root .gw-reflection-prompt{font-size:14px;line-height:1.6;padding:12px 0;border:0;border-top:1px solid #536463;border-bottom:1px solid #536463;border-radius:0;background:transparent;color:#f4f7f6}.gw-root .gw-reflection-label{font-size:13px;color:#d9e5e3}.gw-root .gw-reflection-textarea{min-height:120px;font-size:14px!important;line-height:1.6!important}.gw-root .gw-reflection-footer{font-size:12px;line-height:1.5;flex-wrap:wrap}.gw-root .gw-reflection-save{background:#b9eee4!important;color:#173b38!important;border-color:#b9eee4!important}.gw-root .gw-reflection-skip{background:#303b3c!important;color:#f4f7f6!important}.gw-root .gw-reflection-actions button{min-height:44px;font-size:13px!important;border-radius:6px!important}.gw-reflection-support{margin:12px 0;color:#c6d3d2;font-size:13px;line-height:1.6}.gw-reflection-support summary{min-height:44px;box-sizing:border-box;padding:10px 0;color:#b9eee4;cursor:pointer;font-weight:650}.gw-reflection-support ol{margin:0 0 8px;padding-left:22px}.gw-reflection-support li{padding:3px 0}.gw-root .gw-reflection-dialog textarea::placeholder{color:#aebfbc;opacity:1}',
+    '@media(max-width:600px){.gw-reflection-backdrop{padding:8px}.gw-root .gw-reflection-backdrop .gw-reflection-dialog{padding:16px!important}.gw-root .gw-reflection-title{font-size:18px}.gw-root .gw-reflection-heading{grid-template-columns:32px minmax(0,1fr);gap:8px}}',
+    '.gw-root :is(.gw-reflection-textarea,.gw-reflect-trigger){font-family:inherit}.gw-root .gw-reflect-trigger{font-size:13px;line-height:1.5;font-weight:600}',
+    '#geoworld-fs-workspace.gw-root[data-hud-hidden="true"]>.gw-reflection-backdrop:not(style):not(#geoworld-fs-wrap):not([role="dialog"]):not(.gw-hud-restore){display:grid!important}',
+    '@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-touch-active="true"] :is(.gw-measure-card[data-details-open="true"],.gw-prediction-panel){max-height:calc(100% - var(--gw-toolbar-height,58px) - 320px)!important}#geoworld-fs-workspace.gw-root[data-touch-active="true"][data-build-tools="open"] :is(.gw-measure-card[data-details-open="true"],.gw-prediction-panel){max-height:calc(100% - var(--gw-toolbar-height,58px) - 486px)!important}#geoworld-fs-workspace.gw-root .gw-measure-card[data-details-open="true"] .gw-measure-heading{position:sticky;top:-16px;z-index:2}}',
+    '@media(max-width:800px) and (max-height:600px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-measurement-expanded="true"] .gw-touch-controls,#geoworld-fs-workspace.gw-root:has(.gw-prediction-panel) .gw-touch-controls{display:none!important}#geoworld-fs-workspace.gw-root.gw-root[data-touch-active="true"] :is(.gw-measure-card[data-details-open="true"],.gw-prediction-panel){max-height:calc(100% - var(--gw-toolbar-height,58px) - 28px)!important}}',
+    '#geoworld-fs-workspace.gw-root .gw-history-panel{left:auto!important;right:10px!important;bottom:auto!important;top:calc(var(--gw-toolbar-height,58px) + 14px)!important;width:min(430px,calc(100% - 20px))!important;max-width:none!important;max-height:calc(100% - var(--gw-toolbar-height,58px) - 160px)!important;padding:12px!important;z-index:45!important;overflow:auto;overscroll-behavior:contain;scrollbar-color:#9ebbb7 #202728;font-size:13px;line-height:1.5;letter-spacing:0}.gw-root .gw-notebook-header{position:sticky;top:-12px;z-index:2;margin:-12px -12px 0;padding:8px 12px 12px;background:#202728;border-bottom:1px solid #596e6b}.gw-root .gw-history-title{margin:0 0 8px;color:#f4f7f6;font-size:14px;font-weight:700;letter-spacing:0;min-width:0}.gw-root .gw-history-title>span{min-width:0;overflow-wrap:anywhere}.gw-root .gw-history-panel .gw-hud-panel-close{box-sizing:border-box;flex:0 0 44px;width:44px;height:44px;min-height:44px;padding:0;font:400 24px/1 inherit;border-radius:6px;background:#303b3c;border-color:#718984}.gw-root .gw-notebook-tabs{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));border-bottom:1px solid #718984;gap:4px}.gw-root .gw-notebook-tabs button{min-width:0;min-height:44px;padding:6px 2px;border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;color:#d9e5e3;font-family:inherit;font-size:13px;font-weight:600;line-height:1.5;cursor:pointer;letter-spacing:0}.gw-root .gw-notebook-tabs button[aria-selected="true"]{color:#b9eee4;border-bottom-color:#b9eee4}.gw-root .gw-history-panel [role="tabpanel"][hidden]{display:none!important}.gw-root .gw-history-panel [role="tabpanel"]{padding-top:12px;min-width:0;outline-offset:-3px!important}.gw-root .gw-history-panel h3{margin:0 0 12px;font-size:14px;color:#f4f7f6;letter-spacing:0}.gw-root .gw-history-panel p{margin:8px 0;overflow-wrap:anywhere}',
+    '.gw-root .gw-notebook-records{list-style:none;margin:0;padding:0}.gw-root .gw-history-row{display:block!important;padding:12px 0;border:0;border-top:1px solid #536463;border-radius:0!important;background:transparent!important;min-width:0}.gw-root .gw-notebook-record-title{display:block;color:#f4f7f6;font-size:13px;line-height:1.5;overflow-wrap:anywhere}.gw-root .gw-history-row[data-incomplete="true"] .gw-notebook-record-title{color:#ffb7a1}.gw-root .gw-notebook-quantities{display:grid;grid-template-columns:minmax(0,1.15fr) minmax(0,1fr);gap:8px 12px;margin:10px 0;font-size:12px;line-height:1.5}.gw-root .gw-notebook-quantities dt{margin:0;color:#c6d3d2;overflow-wrap:anywhere}.gw-root .gw-notebook-quantities dd{margin:0;color:#f4f7f6;font-weight:650;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.gw-root .gw-history-panel .gw-notebook-caption{font-size:12px;color:#c6d3d2}.gw-root .gw-notebook-estimate{border:0;border-top:1px solid #536463;font-size:12px;color:#d9e5e3}.gw-root .gw-notebook-estimate summary{min-height:44px;box-sizing:border-box;padding:10px 0;color:#b9eee4;cursor:pointer}.gw-root .gw-history-comparison,.gw-root .gw-retrieval-card{margin:0;padding:0;border:0;border-radius:0;background:transparent}.gw-root .gw-notebook-insight,.gw-root .gw-notebook-question{color:#b9eee4;font-size:13px;line-height:1.6}.gw-root .gw-notebook-question{padding-top:12px;border-top:1px solid #536463}.gw-root .gw-notebook-empty{min-height:60px;color:#d9e5e3}.gw-root .gw-notebook-footer{position:sticky;bottom:-12px;margin:12px -12px -12px;padding:12px;background:#202728;border-top:1px solid #536463}.gw-root :is(.gw-notebook-trigger,.gw-notebook-return){box-sizing:border-box;min-height:44px;padding:8px 12px;border:1px solid #718984;border-radius:6px;background:#303b3c;color:#f4f7f6;font-family:inherit;font-size:13px;font-weight:600;line-height:1.5;cursor:pointer}.gw-root .gw-notebook-trigger{margin:6px 0}.gw-root .gw-history-panel .gw-retrieval-input{width:140px!important;max-width:100%;min-width:0;padding:8px!important;border:1px solid #718984!important;border-radius:6px!important;background:#303b3c!important;color:#f4f7f6!important;font-family:inherit;font-size:14px!important}.gw-root .gw-history-panel .gw-retrieval-button{padding:8px 12px!important;border-color:#b9eee4!important;border-radius:6px!important;background:#b9eee4!important;color:#173b38!important;font-family:inherit;font-size:13px!important}.gw-root .gw-history-panel .gw-retrieval-card label{font-size:12px;color:#d9e5e3}.gw-root .gw-history-panel .gw-retrieval-title{font-size:14px!important;letter-spacing:0}',
+    '#geoworld-fs-workspace.gw-root:is([data-toolbar-collapsed="true"],[data-fullscreen="true"]) .gw-history-panel{top:56px!important}@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-touch-active="true"] .gw-history-panel{max-height:calc(100% - var(--gw-toolbar-height,58px) - 320px)!important}#geoworld-fs-workspace.gw-root[data-touch-active="true"][data-build-tools="open"] .gw-history-panel{max-height:calc(100% - var(--gw-toolbar-height,58px) - 486px)!important}}@media(max-width:800px) and (max-height:600px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-hud-panel="history"] .gw-touch-controls{display:none!important}#geoworld-fs-workspace.gw-root.gw-root[data-touch-active="true"] .gw-history-panel{max-height:calc(100% - var(--gw-toolbar-height,58px) - 28px)!important}}',
+    '.theme-contrast .gw-root .gw-history-panel :is(.gw-notebook-header,.gw-notebook-footer,.gw-notebook-quantities dt,.gw-notebook-quantities dd,.gw-notebook-record-title,.gw-notebook-caption,.gw-notebook-insight,.gw-notebook-question,h3,p,summary,label),[data-stem-theme="contrast"] .gw-root .gw-history-panel :is(.gw-notebook-header,.gw-notebook-footer,.gw-notebook-quantities dt,.gw-notebook-quantities dd,.gw-notebook-record-title,.gw-notebook-caption,.gw-notebook-insight,.gw-notebook-question,h3,p,summary,label){background:#000!important;color:#fff!important;border-color:#ff0!important}@media(forced-colors:active){#geoworld-fs-workspace.gw-root .gw-history-panel,#geoworld-fs-workspace.gw-root .gw-history-panel *{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.gw-root .gw-notebook-tabs button[aria-selected="true"]{border-bottom-color:Highlight!important}}',
+    '.gw-root .gw-history-panel .gw-hud-panel-close{font-family:inherit;font-size:24px;font-weight:400;line-height:1}',
+    '#geoworld-fs-workspace.gw-root .gw-completion-actions :is(.gw-completion-review,.gw-completion-explore,.gw-completion-reflect){display:flex;align-items:center;justify-content:center;gap:8px;box-sizing:border-box;min-height:44px;padding:8px 12px;border:1px solid #79918c;border-radius:6px;background:#303b3c;color:#f4f7f6;font-family:inherit;font-size:13px;font-weight:650;line-height:1.5;cursor:pointer}#geoworld-fs-workspace.gw-root .gw-completion-actions .gw-completion-review{background:#b9eee4;color:#173b38;border-color:#b9eee4}',
+    '#geoworld-fs-workspace.gw-root .gw-dialog--npc .gw-npc-header{position:sticky;top:0;z-index:2;padding:8px 12px!important;background:#202728!important;border-bottom:1px solid #596e6b!important}.gw-root .gw-npc-header>div:nth-child(2){min-width:0;overflow-wrap:anywhere}#geoworld-fs-workspace.gw-root .gw-dialog--npc :is(.gw-dialog-close,.gw-npc-look){box-sizing:border-box;flex-shrink:0;min-width:44px;min-height:44px;height:44px}#geoworld-fs-workspace.gw-root .gw-dialog--npc .gw-dialog-close{font-size:22px}#geoworld-fs-workspace.gw-root .gw-npc-body{padding:12px!important}.gw-root .gw-question-progress{margin:12px 0 8px;font-size:12px;line-height:1.5;color:#b9eee4;font-weight:650}.gw-root .gw-question-text{margin:12px 0;font-size:15px;line-height:1.6;font-weight:700;color:#f4f7f6;overflow-wrap:anywhere}.gw-root .gw-answer-modes{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:4px;margin:12px 0;border-bottom:1px solid #718984}.gw-root .gw-answer-mode{box-sizing:border-box;min-height:44px;min-width:0;padding:8px 6px;border:0;border-bottom:3px solid transparent;border-radius:0;background:transparent;color:#d9e5e3;font-family:inherit;font-size:13px;font-weight:600;line-height:1.5;cursor:pointer}.gw-root .gw-answer-mode[aria-pressed="true"]{border-bottom-color:#b9eee4;color:#b9eee4}.gw-root .gw-answer-unit{display:block;margin:0 0 6px;color:#c6d3d2;font-size:12px;line-height:1.5}.gw-root .gw-dialog--npc .gw-typed-answer label{font-size:13px!important}.gw-root .gw-dialog--npc :is(.gw-typed-answer input,.gw-typed-answer button,.gw-answer-choice){box-sizing:border-box;min-height:44px!important;font-size:14px!important;line-height:1.5}.gw-root .gw-dialog--npc .gw-typed-answer button{padding:8px 14px!important;border:1px solid #b9eee4!important;background:#b9eee4!important;color:#173b38!important;border-radius:6px!important}.gw-root .gw-dialog--npc .gw-answer-choice{padding:9px 12px!important;margin-bottom:6px!important;border-color:#718984!important;box-shadow:none!important}.gw-root .gw-dialog--npc .gw-answer-choice:hover{background:#405051!important}.gw-root .gw-answer-recap{margin:8px 0;border:0;border-top:1px solid #536463;border-bottom:1px solid #536463;color:#d9e5e3;font-size:12px;line-height:1.5}.gw-root .gw-answer-recap summary{box-sizing:border-box;min-height:44px;padding:10px 0;color:#b9eee4;font-weight:650;cursor:pointer}.gw-root .gw-answer-recap dl{margin:0 0 12px}.gw-root .gw-answer-recap dt{margin:10px 0 3px;overflow-wrap:anywhere}.gw-root .gw-answer-recap dd{margin:0;overflow-wrap:anywhere}.gw-root .gw-answer-recap strong{color:#b9eee4}.gw-root .gw-answer-recap p{margin:6px 0}',
+    '@media(max-width:600px) and (max-height:600px) and (orientation:portrait){#geoworld-fs-workspace.gw-root .gw-dialog.gw-dialog--npc{top:calc(var(--gw-toolbar-height,58px) + 10px)!important;bottom:10px!important;max-height:calc(100% - var(--gw-toolbar-height,58px) - 20px)!important}#geoworld-fs-workspace.gw-root[data-npc-dialog="open"] .gw-touch-controls{display:none!important}}',
+    '.theme-contrast #geoworld-fs-workspace.gw-root .gw-dialog--npc :is(.gw-npc-header,.gw-question-progress,.gw-question-text,.gw-answer-unit,.gw-answer-recap,.gw-answer-recap summary,.gw-answer-recap strong),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root .gw-dialog--npc :is(.gw-npc-header,.gw-question-progress,.gw-question-text,.gw-answer-unit,.gw-answer-recap,.gw-answer-recap summary,.gw-answer-recap strong){background:#000!important;color:#fff!important;border-color:#ff0!important}@media(forced-colors:active){#geoworld-fs-workspace.gw-root .gw-dialog--npc :is(.gw-npc-header,.gw-question-progress,.gw-question-text,.gw-answer-unit,.gw-answer-recap,.gw-answer-recap summary,.gw-answer-recap strong){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.gw-root .gw-answer-mode[aria-pressed="true"]{border-bottom-color:Highlight!important}}',
+    '.theme-contrast #geoworld-fs-workspace.gw-root.gw-root :is(button,input,select,textarea),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root.gw-root :is(button,input,select,textarea){background:#000!important;color:#0f0!important;border-color:#0f0!important}',
+    '.theme-contrast #geoworld-fs-workspace.gw-root.gw-root :is(.gw-layer-explorer,[data-geometry-volume-representation],[data-geometry-prediction-result],.gw-prediction-panel,.gw-history-panel,.gw-reflection-prompt),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root.gw-root :is(.gw-layer-explorer,[data-geometry-volume-representation],[data-geometry-prediction-result],.gw-prediction-panel,.gw-history-panel,.gw-reflection-prompt){background:#000!important;color:#fff!important;border-color:#ff0!important}.theme-contrast #geoworld-fs-workspace.gw-root.gw-root :is(.gw-reflection-support,.gw-reflection-support summary,.gw-connection-readiness,.gw-prediction-panel label,.gw-prediction-panel span,.gw-measure-card label),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root.gw-root :is(.gw-reflection-support,.gw-reflection-support summary,.gw-connection-readiness,.gw-prediction-panel label,.gw-prediction-panel span,.gw-measure-card label){color:#fff!important}',
+    '@media(forced-colors:active){#geoworld-fs-workspace.gw-root :is(.gw-learning-compass,.gw-objective-panel,.gw-dialog,.gw-measure-card,.gwe-builder-dock){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.gw-root :is(.gw-learning-compass span,.gw-objective-copy,.gw-objective-marker,.gw-objective-evidence,.gw-concept-reminder,.gw-concept-reminder summary,.gw-concept-reminder strong){color:CanvasText!important}.gw-root .gw-objective-item[data-next="true"] .gw-objective-marker{background:Highlight!important;color:HighlightText!important}}'
+  ].join('\n');
   // Pointer and touch entry points for the measuring tools on T, V and N.
   var MEASURING_TOOLS = [
     { id: 'ruler', key: 'T', label: 'Ruler', action: 'useRuler', title: 'Ruler: aim at a point and use it, then aim at a second point and use it again (T)' },
@@ -1013,7 +1187,7 @@
       percentError: revised.percentError,
       relation: revised.relation,
       improvement: improvement,
-      feedback: revised.percentError === 0
+      feedback: revised.relation === 'exact'
         ? 'Revision matches the measured volume exactly.'
         : improvement > 0
           ? 'Your revision improved by ' + improvement + ' percentage point' + (improvement === 1 ? '' : 's') + '.'
@@ -1125,6 +1299,12 @@
     };
   }
 
+  function hasExplainedPrediction(record) {
+    var data = record && record.data ? record.data : (record || {});
+    return typeof data.prediction === 'number' && Number.isFinite(data.prediction)
+      && !!String(data.predictionReason || data.reason || '').trim();
+  }
+
   function objectiveEvidenceFor(text, context) {
     var objective = String(text || '');
     var ctx = context || {};
@@ -1135,10 +1315,7 @@
     var structureCount = Number(ctx.structureCount || 0);
     var representationConnections = Math.max(0, Number(ctx.representationConnections || 0));
     var reflectionsCompleted = Math.max(0, Number(ctx.reflectionsCompleted || 0));
-    var explainedPredictions = measurements.filter(function(record) {
-      var data = record && record.data ? record.data : (record || {});
-      return typeof data.prediction === 'number' && !!String(data.predictionReason || data.reason || data.predictionStrategy || data.strategy || '').trim();
-    }).length;
+    var explainedPredictions = measurements.filter(hasExplainedPrediction).length;
     var result = { done: false, evidence: 'No matching evidence yet' };
 
     if (/(equivalent|representation|two ways|multiple ways|different ways)/i.test(objective) && /(explain|connect|compare|represent|show)/i.test(objective)) {
@@ -1166,6 +1343,102 @@
       result = { done: measurements.length > 0, evidence: measurements.length + ' complete measurement' + (measurements.length === 1 ? '' : 's') };
     }
     return result;
+  }
+
+  function geometryLessonConceptModel(lesson, lessonKey) {
+    var data = lesson && typeof lesson === 'object' ? lesson : {};
+    var key = String(lessonKey || '');
+    var goals = [typeof data.title === 'string' ? data.title : ''].concat((Array.isArray(data.objectives) ? data.objectives : []).map(function(goal) {
+      return typeof goal === 'string' ? goal : (goal && typeof goal.text === 'string' ? goal.text : '');
+    })).join(' ').toLowerCase();
+    var known = {
+      volumeExplorer: 'volume', areaSurface: 'surface', buildChallenge: 'volume', realWorld: 'volume',
+      compositeVolume: 'composite', fractionVolume: 'fraction_dimensions', volumeEstimation: 'volume',
+      fractionBuilder: 'fraction_pieces', base10Blocks: 'volume', fluencyMaze: 'volume', scaleUp: 'scale',
+      geometryGarden: 'volume', geometryHarbor: 'geometry', skylineCity: 'geometry'
+    };
+    var concept = Object.prototype.hasOwnProperty.call(known, key) ? known[key]
+      : data.sandbox ? 'build'
+      : /\bscal(?:e|ed|es|ing)\b|\benlarg|similar shapes/.test(goals) ? 'scale'
+      : /fraction|half.?block|quarter|slab|wedge/.test(goals) ? (/\b(?:dimensions?|edges?|height)\b/.test(goals) ? 'fraction_dimensions' : 'fraction_pieces')
+      : /surface area|exposed faces|\bnets?\b/.test(goals) ? 'surface'
+      : /composite|decompos|empty space|bounding box|\bl[- ](?:block|shape)\b/.test(goals) ? 'composite'
+      : /\bperimeters?\b/.test(goals) && !/\b(?:volumes?|cubic)\b/.test(goals) ? 'perimeter'
+      : /\b(?:areas?|footprints?|floors?)\b/.test(goals) && !/\b(?:volumes?|cubic)\b/.test(goals) ? 'area'
+      : /\b(?:volumes?|cubic|layers?|prisms?)\b/.test(goals) ? 'volume' : 'geometry';
+    var models = {
+      volume: {
+        title: 'Reason with layers',
+        relationship: 'Solid rectangular prism: V = L \u00d7 W \u00d7 H',
+        copy: 'Base area counts square units in one layer. Volume counts cubic units in all layers. For gaps or composite shapes, count occupied space or add non-overlapping parts.',
+        question: 'Which equal layers or separate parts account for all the occupied space?',
+        units: 'cubic units'
+      },
+      surface: {
+        title: 'Distinguish covering from filling',
+        relationship: 'Full closed rectangular prism: SA = 2(LW + LH + WH)',
+        copy: 'Surface area counts exposed faces in square units; volume counts occupied space in cubic units. For open containers, include only the faces present. Shared interior faces do not count.',
+        question: 'Which faces are exposed, and which are hidden where blocks touch?',
+        units: 'square units'
+      },
+      composite: {
+        title: 'Account for every occupied part',
+        relationship: 'Volume = non-overlapping parts added; or full box minus empty space',
+        copy: 'L \u00d7 W \u00d7 H gives a filled rectangular prism. A composite shape can have gaps inside its bounding box. Count each occupied cubic unit once.',
+        question: 'Where could you split the shape without gaps or overlaps?',
+        units: 'cubic units'
+      },
+      fraction_dimensions: {
+        title: 'Extend layers to fractional edges',
+        relationship: 'Solid rectangular prism: V = L \u00d7 W \u00d7 H, including fractional edges',
+        copy: 'A fraction of a unit layer contributes a fraction of its volume. Measure the actual filled dimensions, then express occupied space in cubic units.',
+        question: 'What does a partial layer contribute compared with a full layer?',
+        units: 'cubic units'
+      },
+      fraction_pieces: {
+        title: 'Regroup parts into whole units',
+        relationship: 'Volume = sum of each piece\u2019s fraction of a unit cube',
+        copy: 'A slab or wedge can occupy less than one cubic unit. Piece count and occupied volume can differ. Combine fractional volumes; the enclosing box alone does not give the volume.',
+        question: 'Which fractional pieces combine to occupy one whole cubic unit?',
+        units: 'cubic units'
+      },
+      scale: {
+        title: 'Track how dimensions change',
+        relationship: 'Uniform scale k: length \u00d7 k; area \u00d7 k\u00b2; volume \u00d7 k\u00b3',
+        copy: 'These scale relationships apply when every length changes by the same factor. Changing only the height changes the number of layers while keeping the base area fixed.',
+        question: 'Which dimensions change, and which quantities stay the same?',
+        units: 'units, square units, cubic units'
+      },
+      area: {
+        title: 'Count the covered squares',
+        relationship: 'Rectangular face or footprint: A = L \u00d7 W',
+        copy: 'Area counts square units on a flat surface. Split other footprints into non-overlapping parts; height is needed only when finding volume.',
+        question: 'Which rows and columns cover the surface without counting a square twice?',
+        units: 'square units'
+      },
+      perimeter: {
+        title: 'Trace the boundary',
+        relationship: 'Rectangle: P = 2(L + W)',
+        copy: 'Perimeter measures boundary length in units. Trace every outside edge; area counts covered squares and volume counts occupied space.',
+        question: 'Which edges belong to the outside boundary?',
+        units: 'units'
+      },
+      build: {
+        title: 'Connect a design to its measurements',
+        relationship: 'Volume counts occupied space; surface area counts exposed faces',
+        copy: 'Use cubic units for volume and square units for surface area. Multiply L \u00d7 W \u00d7 H only for a solid rectangular prism; account for gaps and fractional pieces in other designs.',
+        question: 'How could you change the design while keeping its occupied volume the same?',
+        units: 'cubic units and square units'
+      },
+      geometry: {
+        title: 'Choose the quantity you are investigating',
+        relationship: 'Length: units; area: square units; volume: cubic units; angle: degrees',
+        copy: 'Match the method to the question. Trace boundaries for perimeter, cover surfaces for area, account for occupied space for volume, and compare turns for angles.',
+        question: 'What quantity are you investigating, and which evidence will explain it?',
+        units: 'units, square units, cubic units, degrees'
+      }
+    };
+    return Object.assign({ concept: concept }, models[concept]);
   }
 
   function buildEvidenceReflectionPrompt(measurement, prediction, revision) {
@@ -1364,11 +1637,11 @@
 
   function determinePredictionScaffold(history) {
     var complete = completeMeasurementRecords(history || []);
-    var explained = complete.filter(function(record) {
-      return typeof record.prediction === 'number' && !!String(record.reason || record.strategy || '').trim();
-    }).length;
+    var explained = complete.filter(hasExplainedPrediction).length;
     var close = complete.filter(function(record) {
-      return typeof record.percentError === 'number' && record.percentError <= 10;
+      return typeof record.prediction === 'number' && Number.isFinite(record.prediction)
+        && typeof record.percentError === 'number' && Number.isFinite(record.percentError)
+        && record.percentError >= 0 && record.percentError <= 10;
     }).length;
     if (complete.length < 2 || explained < 1) {
       return {
@@ -1379,7 +1652,7 @@
         reasonPrompt: 'How does your strategy count every cubic unit?'
       };
     }
-    if (complete.length < 4 || close < 2) {
+    if (complete.length < 4 || explained < 2 || close < 2) {
       return {
         level: 'supported',
         label: 'Light support',
@@ -1415,7 +1688,7 @@
       checkpoint.expected = latest.boundingVolume - volume;
       checkpoint.prompt = 'A bounding box is ' + formatVolume(latest.boundingVolume) + ' cubic units and the structure occupies ' + formatVolume(volume) + '. How much space is empty?';
       checkpoint.hint = 'Subtract occupied volume from bounding-box volume.';
-    } else if ([latest.L, latest.W, latest.H].every(function(value) { return typeof value === 'number' && value > 0; })) {
+    } else if (latest.isSolidPrism === true && [latest.L, latest.W, latest.H].every(function(value) { return typeof value === 'number' && Number.isFinite(value) && value > 0; }) && Math.abs(latest.L * latest.W * latest.H - volume) < 0.0001) {
       if (complete.length % 2 === 0) {
         checkpoint.concept = 'scale_height';
         checkpoint.expected = latest.H * 2;
@@ -1466,16 +1739,26 @@
   }
 
   function checkRetrievalAnswer(checkpoint, value, attemptNumber) {
-    if (!checkpoint || !Number.isFinite(checkpoint.expected)) return null;
+    if (!checkpoint || !Number.isFinite(checkpoint.expected) || checkpoint.expected < 0) return null;
     var answer = parseRetrievalAnswer(value);
     if (answer === null) return { correct: false, valid: false, feedback: 'Enter a number or fraction (0 is allowed).' };
     var correct = Math.abs(answer - checkpoint.expected) < 0.0001;
+    var amount = formatVolume(checkpoint.expected);
+    var feedbackByConcept = {
+      scale_height: 'With the base area fixed, twice the height gives twice the volume. The new height is ' + amount + ' units.',
+      layer_area: 'One layer covers ' + amount + ' square units. Multiplying base area by the number of equal unit layers gives volume.',
+      empty_space: 'Bounding-box volume minus occupied volume leaves ' + amount + ' cubic units of empty space.',
+      fractional_volume: 'The fractional pieces occupy ' + amount + ' cubic units less than that many whole cubes. Piece count and occupied volume are different quantities.',
+      volume_difference: checkpoint.expected === 0 ? 'Both structures have the same occupied volume, so their difference is 0 cubic units.' : 'Subtracting the smaller occupied volume from the larger gives a difference of ' + amount + ' cubic units.'
+    };
+    var successFeedback = Object.prototype.hasOwnProperty.call(feedbackByConcept, checkpoint.concept)
+      ? 'Correct. ' + feedbackByConcept[checkpoint.concept] : 'Correct - you retrieved the relationship from earlier evidence.';
     return {
       correct: correct,
       valid: true,
       answer: answer,
       expected: checkpoint.expected,
-      feedback: correct ? 'Correct - you retrieved the relationship from earlier evidence.' : (Number(attemptNumber || 1) <= 1 ? 'Pause before calculating: name what stays the same, what changes, and which operation connects them.' : checkpoint.hint)
+      feedback: correct ? successFeedback : (Number(attemptNumber || 1) <= 1 ? 'Pause before calculating: name what stays the same, what changes, and which operation connects them.' : checkpoint.hint)
     };
   }
 
@@ -1515,10 +1798,9 @@
     measurements.forEach(function(event) {
       var data = event.data || {};
       var strategy = String(data.predictionStrategy || data.strategy || '').trim();
-      var reason = String(data.predictionReason || data.reason || '').trim();
       var misconception = String(data.misconception || data.diagnosisCode || '').trim();
       if (strategy) strategyCounts[strategy] = (strategyCounts[strategy] || 0) + 1;
-      if (typeof data.prediction === 'number' && (strategy || reason)) explainedPredictions += 1;
+      if (hasExplainedPrediction(data)) explainedPredictions += 1;
       if (misconception && misconception !== 'exact' && misconception !== 'close') {
         misconceptionCounts[misconception] = (misconceptionCounts[misconception] || 0) + 1;
       }
@@ -1690,9 +1972,9 @@
     if (!previous || !latest || previous.isComplete === false || latest.isComplete === false) return null;
     var previousVolume = typeof previous.occupiedVolume === 'number' ? previous.occupiedVolume : parseVolumePrediction(previous.vol);
     var latestVolume = typeof latest.occupiedVolume === 'number' ? latest.occupiedVolume : parseVolumePrediction(latest.vol);
-    if (previousVolume === null || latestVolume === null) return null;
-    var previousSurface = typeof previous.surfaceArea === 'number' ? previous.surfaceArea : null;
-    var latestSurface = typeof latest.surfaceArea === 'number' ? latest.surfaceArea : null;
+    if (!Number.isFinite(previousVolume) || !Number.isFinite(latestVolume)) return null;
+    var previousSurface = Number.isFinite(previous.surfaceArea) && previous.surfaceArea >= 0 && previous.surfaceAreaExact !== false ? previous.surfaceArea : null;
+    var latestSurface = Number.isFinite(latest.surfaceArea) && latest.surfaceArea >= 0 && latest.surfaceAreaExact !== false ? latest.surfaceArea : null;
     var surfaceComparable = previousSurface !== null && latestSurface !== null;
     var sameVolume = Math.abs(latestVolume - previousVolume) < 0.000001;
     var surfaceDifference = surfaceComparable ? latestSurface - previousSurface : null;
@@ -1707,6 +1989,49 @@
       latestSurfaceArea: latestSurface,
       surfaceAreaDifference: surfaceDifference,
       moreSurfaceEfficient: moreEfficient
+    };
+  }
+
+  function formatMeasurementChange(value, kind) {
+    var surface = kind === 'surface';
+    if (!Number.isFinite(value)) return surface ? 'Exact surface area unavailable for one or both measurements.' : 'Occupied volume change unavailable.';
+    var magnitude = Math.abs(value);
+    if (magnitude < 0.000001) return surface ? 'No change (same exposed surface area)' : 'No change (same occupied volume)';
+    var unit = surface ? 'square unit' : 'cubic unit';
+    return 'Latest has ' + formatVolume(magnitude) + (value > 0 ? ' more ' : ' fewer ') + unit + (Math.abs(magnitude - 1) < 0.000001 ? '' : 's');
+  }
+
+  function renderCoordinateReadout(el, position, kind) {
+    var labelId = 'gw-coordinate-' + kind + '-label';
+    return el('section', { className: 'gw-coordinate-group' },
+      el('p', { className: 'gw-coordinate-label', id: labelId }, el('span', null, kind === 'camera' ? 'Camera position' : 'Target block'), el('span', { className: 'gw-coordinate-units' }, 'grid units')),
+      el('dl', { className: 'gw-coordinate-readout', 'data-coordinate-kind': kind, 'aria-labelledby': labelId },
+        ['x', 'y', 'z'].map(function(axis) {
+          return el('div', { key: axis },
+            el('dt', { className: 'gw-coordinate-axis', 'data-axis': axis }, axis.toUpperCase()),
+            el('dd', { className: 'gw-coordinate-value' }, kind === 'camera' ? Math.floor(position[axis]) : position[axis]));
+        })
+      )
+    );
+  }
+
+  function measurementNotebookEntry(record) {
+    var data = record || {};
+    var complete = data.isComplete !== false;
+    var volume = typeof data.occupiedVolume === 'number' ? data.occupiedVolume : parseVolumePrediction(data.vol);
+    var dimensions = [data.L, data.W, data.H];
+    var hasDimensions = dimensions.every(function(value) { return Number.isFinite(value) && value > 0; });
+    return {
+      complete: complete,
+      kind: !complete ? 'Incomplete scan' : data.isSolidPrism === true ? 'Solid rectangular prism' : data.hasFractions ? 'Fractional structure' : data.isSolidPrism === false ? 'Composite structure' : 'Structure',
+      dimensions: complete && hasDimensions ? dimensions.map(formatVolume).join(' \u00d7 ') + ' units' : null,
+      dimensionLabel: data.isSolidPrism === true ? 'Prism dimensions' : 'Bounding box',
+      volume: Number.isFinite(volume) && volume >= 0 ? formatVolume(volume) : null,
+      volumeLabel: complete ? 'Occupied volume' : 'Occupied volume, at least',
+      surfaceArea: complete && Number.isFinite(data.surfaceArea) && data.surfaceArea >= 0 && data.surfaceAreaExact !== false ? formatVolume(data.surfaceArea) : null,
+      estimate: Number.isFinite(data.prediction) && data.prediction > 0 ? formatVolume(data.prediction) : null,
+      strategy: String(data.strategy || '').trim(),
+      reason: String(data.reason || '').trim()
     };
   }
 
@@ -6581,8 +6906,10 @@
   // answered, in any order), so they rarely described what the student had done.
   var GW_OBJECTIVE_EVIDENCE = {
     volumeExplorer: [{ npc: 'Quiz Master' }, { npc: 'Builder Bot' }, { npc: 'L-Block Sage' }],
+    areaSurface: [{ npc: 'Flat Prism Quiz' }, { npc: 'Tall Prism Quiz' }, { npc: 'Layer Counter' }, { activity: 'area-surface-comparison-3', activityTitle: 'Count every outside face' }, { activity: 'area-layer-design-4', activityTitle: 'Make your own layered prism' }],
     buildChallenge: [{ buildHeight: 4 }, { npcs: ['Room Inspector', 'Volume Coach'] }, { self: true }, { self: true }],
     realWorld: [{ npc: 'Packing Expert' }, { npc: 'Inventory Checker' }, { npc: 'Design Challenge' }],
+    compositeVolume: [{ npc: 'T-Shape Quiz' }, { npc: 'Pyramid Guide' }, { npc: 'U-Shape Sage' }, { activity: 'composite-fifty-design-3', activityTitle: 'Design a 50-unit step' }],
     fractionVolume: [{ npc: 'Between Quiz' }, { npc: 'Height Detective' }, { npc: 'Between Quiz' }, { npc: 'Container Challenge' }],
     volumeEstimation: [{ predict: 1 }, { measure: 1 }, { npcs: ['Small Quiz', 'Medium Quiz', 'Large Quiz'] }, { complete: true }],
     fractionBuilder: [{ place: { shapes: ['halfA', 'halfB'], count: 2 } }, { npc: 'Half Quiz' }, { measureVolume: 3.5 }, { shapes: 3 }],
@@ -7012,10 +7339,49 @@
       return v == null || Math.abs(v - target) > 1e-9;
     });
   }
+  function geometryQuantityParts(text) {
+    var s = String(text == null ? '' : text).replace(/\([^)]*\)/g, ' ').replace(/(\d),(?=\d{3}\b)/g, '$1').trim();
+    var match = /^(?:\d+\s*\/\s*\d+|(?:\d*\.\d+|\d+)(?:\s*(?:\d+\s*\/\s*\d+|[\u00BD\u00BC\u00BE]))?|[\u00BD\u00BC\u00BE])/.exec(s);
+    return match ? { number: match[0], suffix: s.slice(match[0].length).trim().toLowerCase() } : null;
+  }
+  function geometryCanonicalQuantityUnit(suffix) {
+    var s = String(suffix || '').trim().toLowerCase().replace(/\s+/g, ' ').replace(/^(?:whole|more) /, '');
+    if (/^(?:square|sq\.?) units?$/.test(s) || /^units?(?:\^2|\u00B2)$/.test(s)) return 'square units';
+    if (/^(?:cubic|cu\.?) units?$/.test(s) || /^units?(?:\^3|\u00B3)$/.test(s)) return 'cubic units';
+    if (/^cop(?:y|ies)$/.test(s)) return 'copies';
+    var units = { unit: 'units', block: 'blocks', cube: 'cubes', layer: 'layers', quarter: 'quarters', pizza: 'pizzas', time: 'times', plant: 'plants', column: 'columns' };
+    var singular = s.replace(/s$/, '');
+    return Object.prototype.hasOwnProperty.call(units, singular) ? units[singular] : '';
+  }
+  function geometryQuantityUnit(step) {
+    var choice = step && Array.isArray(step.choices) && step.choices[step.correct];
+    var parts = geometryQuantityParts(choice);
+    return parts ? geometryCanonicalQuantityUnit(parts.suffix.split(',')[0]) : '';
+  }
+  function geometrySolvedQuestionSteps(question, currentStep, answered) {
+    var steps = geometryQuestionSequence(question);
+    var position = Number(currentStep);
+    var count = answered === true ? steps.length : Number.isFinite(position) && position >= 0 && position < steps.length ? Math.floor(position) : 0;
+    return steps.slice(0, count).filter(function(step) {
+      return Number.isInteger(step.correct) && step.correct >= 0 && step.correct < step.choices.length;
+    }).map(function(step) {
+      return { text: step.text.slice(0, 300), answer: String(step.choices[step.correct]).slice(0, 180), explanation: typeof step.explanation === 'string' ? step.explanation.slice(0, 300) : '' };
+    });
+  }
+  function geometryQuestionTransferPrompt(lesson, lessonKey) {
+    if (lessonKey === 'base10Blocks') return 'How could you regroup this model without changing its value? Explain how ones, tens, and hundreds are related.';
+    if (lessonKey === 'fluencyMaze') return 'Which edge-count or layer strategy kept your answer accurate, and how could you check it before choosing a path?';
+    return geometryLessonConceptModel(lesson, lessonKey).question;
+  }
   // A typed answer is read as the choice with the same quantity, so a typed
   // distractor gets that distractor's own feedback.
   function geometryTypedAnswer(step, typed) {
-    var value = geometryParseQuantity(typed);
+    var parts = geometryQuantityParts(typed), expectedUnit = geometryQuantityUnit(step);
+    var suppliedUnit = parts ? geometryCanonicalQuantityUnit(parts.suffix) : '';
+    var authoredChoice = ((step && step.choices) || []).some(function(choice) { return String(choice).trim() === String(typed).trim(); });
+    if (parts && parts.suffix && !suppliedUnit && !authoredChoice) return { status: 'invalid' };
+    if (expectedUnit && suppliedUnit && expectedUnit !== suppliedUnit) return { status: 'unit', expectedUnit: expectedUnit };
+    var value = geometryParseQuantity(suppliedUnit && parts ? parts.number : typed);
     if (value == null) return { status: 'invalid' };
     for (var i = 0; i < ((step && step.choices) || []).length; i++) {
       var v = geometryParseQuantity(step.choices[i]);
@@ -7052,9 +7418,20 @@
     });
     return out.sort(function (a, b) { return b.count - a.count; });
   }
+  // Reuse the journal model so reviewed goals follow the same saved lesson identity.
+  function geometryActivityObjectiveReviews(lesson, progress, guideModel) {
+    var guide = typeof guideModel === 'function' ? guideModel(lesson) : null;
+    if (!guide || !Array.isArray(guide.activities)) return {};
+    var journal = (progress || {})[guide.key] || {}, reviewed = journal.reviewed || {}, result = {};
+    guide.activities.forEach(function(activity) {
+      result[activity.id] = { reviewed: reviewed[activity.id] === true, title: activity.title };
+    });
+    return result;
+  }
+
   // Whether one objective's evidence is in. state: { answered: {npcName:true},
   // measurements: complete records, placements: [{shape}], nets: net_unfold data,
-  // builds: geometryStudentBuilds, studentHeight, complete, selfChecked }.
+  // builds: geometryStudentBuilds, activityReviews, studentHeight, complete, selfChecked }.
   function geometryObjectiveStatus(rule, state) {
     rule = rule || {}; state = state || {};
     var answered = state.answered || {}, measurements = state.measurements || [], placements = state.placements || [];
@@ -7066,6 +7443,11 @@
     if (rule.npc || rule.npcs) {
       var names = rule.npcs || [rule.npc], solved = names.filter(function (n) { return answered[n]; }).length;
       return { done: solved === names.length, evidence: names.length === 1 ? (solved ? rule.npc + ' solved' : 'Answer ' + rule.npc + '\u2019s question') : solved + ' of ' + names.length + ' guides solved', npcs: names };
+    }
+    if (rule.activity) {
+      var activity = (state.activityReviews || {})[rule.activity], reviewed = !!activity && activity.reviewed === true;
+      var title = activity && activity.title || rule.activityTitle || 'this activity';
+      return { done: reviewed, evidence: reviewed ? 'Activity self-review recorded (not scored)' : 'Review ' + title + ' in Activities (self-review, not scored)', activity: rule.activity };
     }
     if (rule.measure) return { done: measurements.length >= rule.measure, evidence: Math.min(measurements.length, rule.measure) + ' of ' + plural(rule.measure, 'measurement') };
     if (rule.measureVolume != null) {
@@ -8105,11 +8487,13 @@
   // ── Tool Registration ──
   // ══════════════════════════════════════════════════════════════
 
-  window.StemLab.geometryWorldLessonChecks = {normalizeBuildGoal:normalizeGeometryBuildGoal, localDay:geometryLocalDay, localStamp:geometryLocalStamp};
+  window.StemLab.geometryWorldLessonChecks = {normalizeBuildGoal:normalizeGeometryBuildGoal, localDay:geometryLocalDay, localStamp:geometryLocalStamp, conceptModel:geometryLessonConceptModel, learningPathModel:geometryLearningPathModel, reflectionModel:geometryReflectionSupportModel, reflectionAutoPromptAllowed:geometryReflectionAutoPromptAllowed};
   window.StemLab.geometryWorldWorksheets = {model:geometryWorksheetModel, html:generateWorksheetHTML, questions:geometryQuestionSequence, normalizeQuestion:normalizeGeometryQuestion, presets:function(){return JSON.parse(JSON.stringify(SAMPLE_LESSONS));}};
+  window.StemLab.geometryWorldTransitions = { install: geometryInstallWorldTransitionGuard };
+  window.StemLab.geometryWorldWorkspacePreferences = { defaults: geometryWorkspaceDefaults, normalize: geometryNormalizeWorkspacePreferences, load: geometryLoadWorkspacePreferences, save: geometrySaveWorkspacePreferences };
   window.StemLab.geometryWorldAnswerCoaching = {
     parseQuantity: geometryParseQuantity, stepTypeable: geometryStepTypeable, typedAnswer: geometryTypedAnswer,
-    wrongFeedback: geometryWrongFeedback, objectiveStatus: geometryObjectiveStatus, studentBuilds: geometryStudentBuilds,
+    wrongFeedback: geometryWrongFeedback, quantityUnit: geometryQuantityUnit, solvedSteps: geometrySolvedQuestionSteps, transferPrompt: geometryQuestionTransferPrompt, objectiveStatus: geometryObjectiveStatus, studentBuilds: geometryStudentBuilds, activityObjectiveReviews: geometryActivityObjectiveReviews,
     coaching: GW_LESSON_COACHING, objectiveEvidence: GW_OBJECTIVE_EVIDENCE
   };
   // The Home card (builder module) reads summary(); tests read the rest.
@@ -8149,6 +8533,21 @@
       var __alloFill = function (template, values) { return String(template).replace(/\{([A-Za-z0-9_]+)\}/g, function (m, k) { return Object.prototype.hasOwnProperty.call(values, k) ? String(values[k]) : m; }); };
       var React = ctx.React;
       var el = React.createElement;
+      var toolbarSizingRef = React.useRef(null);
+      var geometryToolbarRef = React.useCallback(function(node) {
+        if (toolbarSizingRef.current) toolbarSizingRef.current.disconnect();
+        toolbarSizingRef.current = null;
+        if (!node) return;
+        function syncToolbarHeight() {
+          var height = Math.ceil(node.getBoundingClientRect().height);
+          if (height > 0 && node.parentElement) node.parentElement.style.setProperty('--gw-toolbar-height', height + 'px');
+        }
+        syncToolbarHeight();
+        if (typeof window.ResizeObserver === 'function') {
+          toolbarSizingRef.current = new window.ResizeObserver(syncToolbarHeight);
+          toolbarSizingRef.current.observe(node);
+        }
+      }, []);
       var d = (ctx.toolData && ctx.toolData.geometryWorld) || {};
       var webglErrState = React.useState(false);
       var webglError = webglErrState[0];
@@ -8218,6 +8617,8 @@
       };
       var callGemini = ctx.callGemini || null;
       var addToast = ctx.addToast;
+      // This engine-backed toggle refreshes locally without writing learner data.
+      var coordinateHudRenderState = React.useState(0);
       // Wrap awardXP so the session-XP total is tracked on the engine for the HUD display.
       // Persists across React renders via engine._sessionXP (not reset until lesson load).
       var _rawAwardXP = ctx.awardXP;
@@ -8246,10 +8647,12 @@
         var dialog = ev.currentTarget;
         if (!dialog) return;
         var candidates = dialog.querySelectorAll(
-          'button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
+          'summary, button:not([disabled]), input:not([disabled]), select:not([disabled]), textarea:not([disabled]), a[href], [tabindex]:not([tabindex="-1"])'
         );
         var focusable = Array.prototype.filter.call(candidates, function(node) {
-          return node.getAttribute('aria-hidden') !== 'true' && node.tabIndex >= 0;
+          var closedDetails = node.closest('details:not([open])');
+          var style = window.getComputedStyle(node);
+          return !node.closest('[hidden], [inert], [aria-hidden="true"]') && node.tabIndex >= 0 && style.display !== 'none' && style.visibility !== 'hidden' && (!closedDetails || closedDetails.querySelector('summary') === node);
         });
         if (focusable.length === 0) {
           ev.preventDefault();
@@ -8303,11 +8706,11 @@
 
       function openGameSettings() {
         try { if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock(); } catch (e) {}
+        settingsTabState[1]('workspace');
         upd({ showGameSettings: true, showPredictionPanel: false, objectivesOpen: false });
         announceToSR(__alloT('stem.geometryworld.sr_game_settings_and_tools_opened', 'Game settings and tools opened.'));
       }
 
-      var GW_HUD_PRESET_KEY = 'allo.geometryworld.hud.v1';
       var GW_HUD_PRESETS = {
         minimal: { hudPanel: '', label: 'Minimal', announcement: 'Optional HUD panels are hidden.' },
         learning: { hudPanel: 'progress', label: 'Learning', announcement: 'Lesson progress is displayed.' },
@@ -8328,33 +8731,44 @@
       }
 
       function loadGeometryHudPreferences() {
-        try {
-          if (typeof localStorage === 'undefined') return {};
-          var raw = localStorage.getItem(GW_HUD_PRESET_KEY);
-          if (!raw) return {};
-          var parsed = JSON.parse(raw);
-          if (!parsed || parsed.version !== 1) return {};
-          return {
-            preset: isGeometryHudPreset(parsed.preset) ? parsed.preset : '',
-            toolbarCollapsed: parsed.toolbarCollapsed === true
-          };
-        } catch (e) { return {}; }
+        return geometryLoadWorkspacePreferences();
       }
 
       function saveGeometryHudPreferences(patch) {
-        try {
-          if (typeof localStorage === 'undefined') return false;
-          patch = patch || {};
-          var current = loadGeometryHudPreferences();
-          var nextPreset = gwHasOwn(patch, 'preset') && isGeometryHudPreset(patch.preset)
-            ? patch.preset
-            : (isGeometryHudPreset(current.preset) ? current.preset : 'minimal');
-          var nextCollapsed = gwHasOwn(patch, 'toolbarCollapsed')
-            ? !!patch.toolbarCollapsed
-            : current.toolbarCollapsed === true;
-          localStorage.setItem(GW_HUD_PRESET_KEY, JSON.stringify({ version: 1, preset: nextPreset, toolbarCollapsed: nextCollapsed }));
-          return true;
-        } catch (e) { return false; }
+        return geometrySaveWorkspacePreferences(patch);
+      }
+
+      function updateWorkspacePreference(key, value) {
+        var patch = {}; patch[key] = value;
+        var saved = saveGeometryHudPreferences(patch);
+        upd(patch);
+        workspaceSaveState[1](saved ? 'Saved on this device' : 'Session only: device storage unavailable');
+        announceToSR(saved ? 'Workspace preference saved on this device.' : 'Workspace preference applies for this session. Device storage is unavailable.');
+      }
+
+      function resetWorkspacePreferences() {
+        var defaults = geometryWorkspaceDefaults();
+        var saved = saveGeometryHudPreferences(defaults);
+        upd({ hudPreset: defaults.preset, hudPanel: '', toolbarCollapsed: false, uiTextSize: defaults.uiTextSize, uiSurface: defaults.uiSurface, showCoordinates: true, showStationCompass: true });
+        workspaceSaveState[1](saved ? 'Workspace defaults saved on this device' : 'Workspace defaults apply for this session');
+        announceToSR('Workspace appearance reset. Your world and learning progress are unchanged.');
+      }
+
+      function selectSettingsTab(next, focus) {
+        settingsTabState[1](next);
+        setTimeout(function() {
+          var body = document.querySelector('.gw-settings-body'); if (body) body.scrollTop = 0;
+          if (focus) { var node = document.querySelector('[data-gw-settings-tab="' + next + '"]'); if (node) node.focus(); }
+        }, 0);
+      }
+
+      function handleSettingsTabKey(ev, current) {
+        var ids = ['workspace', 'view', 'learning', 'create'], index = ids.indexOf(current), next;
+        if (ev.key === 'ArrowRight') next = ids[(index + 1) % ids.length];
+        else if (ev.key === 'ArrowLeft') next = ids[(index + ids.length - 1) % ids.length];
+        else if (ev.key === 'Home') next = ids[0];
+        else if (ev.key === 'End') next = ids[ids.length - 1];
+        if (next) { ev.preventDefault(); ev.stopPropagation(); selectSettingsTab(next, true); }
       }
 
       function applyHudPreset(preset) {
@@ -8362,17 +8776,17 @@
         if (!selected) return;
         var saved = saveGeometryHudPreferences({ preset: preset });
         setSceneMapOpen(false);
-        upd({ hudPreset: preset, hudPanel: selected.hudPanel, showGameSettings: false, showPredictionPanel: false, objectivesOpen: false });
+        upd({ hudPreset: preset, hudPanel: selected.hudPanel, showPredictionPanel: false, objectivesOpen: false });
+        workspaceSaveState[1](saved ? 'Saved on this device' : 'Session only: device storage unavailable');
         announceToSR(selected.label + ' HUD selected. ' + selected.announcement + (saved ? ' Preference saved on this device.' : ' Preference applies for this session.'));
-        setTimeout(focusWorldSurface, 0);
       }
 
       function setHudPanel(panel, label) {
         var next = hudPanel === panel ? '' : normalizeGeometryHudPanel(panel);
         setSceneMapOpen(false);
-        upd({ hudPanel: next, showGameSettings: false, showPredictionPanel: false, objectivesOpen: false });
-        announceToSR(next ? label + ' HUD opened. Only one optional HUD panel is shown at a time.' : label + ' HUD hidden.');
-        setTimeout(focusWorldSurface, 0);
+        upd({ hudPanel: next, showPredictionPanel: false, objectivesOpen: false });
+        workspaceSaveState[1]('Optional panel applies for this session');
+        announceToSR(next ? label + ' opened for this session.' : 'Optional panel hidden for this session.');
       }
 
       function closeHudPanel(label) {
@@ -8407,7 +8821,7 @@
         var left = active.offsetLeft, right = left + active.offsetWidth;
         if (left < palette.scrollLeft + 6) palette.scrollLeft = Math.max(0, left - 6);
         else if (right > palette.scrollLeft + palette.clientWidth - 6) palette.scrollLeft = right - palette.clientWidth + 6;
-      }, [selectedBlock, worldActive, threeReady]);
+      }, [selectedBlock, worldActive, threeReady, d.uiTextSize]);
       var score = d.score || 0;
       var totalQ = d.totalQ || 0;
       var showNpcDialog = d.showNpcDialog || false;
@@ -8456,20 +8870,55 @@
       var sceneMapOpen = sceneMapState[0];
       var setSceneMapOpen = sceneMapState[1];
       var showGameSettings = !!d.showGameSettings;
+      var settingsTabState = React.useState('workspace');
+      var settingsTab = settingsTabState[0];
+      var workspaceSaveState = React.useState('');
       var showPredictionPanel = !!d.showPredictionPanel;
       var hudPreferences = loadGeometryHudPreferences();
       var hudPreset = isGeometryHudPreset(d.hudPreset)
         ? d.hudPreset
         : (isGeometryHudPreset(hudPreferences.preset) ? hudPreferences.preset : 'minimal');
       var toolbarCollapsed = gwHasOwn(d, 'toolbarCollapsed') ? !!d.toolbarCollapsed : hudPreferences.toolbarCollapsed === true;
+      var workspacePreferences = geometryNormalizeWorkspacePreferences(Object.assign({}, hudPreferences, {
+        uiTextSize: gwHasOwn(d, 'uiTextSize') ? d.uiTextSize : hudPreferences.uiTextSize,
+        uiSurface: gwHasOwn(d, 'uiSurface') ? d.uiSurface : hudPreferences.uiSurface,
+        showCoordinates: gwHasOwn(d, 'showCoordinates') ? d.showCoordinates : hudPreferences.showCoordinates,
+        showStationCompass: gwHasOwn(d, 'showStationCompass') ? d.showStationCompass : hudPreferences.showStationCompass
+      }));
       var objectivesOpen = !!d.objectivesOpen;
       var hudPanel = gwHasOwn(d, 'hudPanel') ? normalizeGeometryHudPanel(d.hudPanel) : GW_HUD_PRESETS[hudPreset].hudPanel;
       var showReflection = d.showReflection || false;
+      var reflectionOpenerRef = React.useRef(null);
+      var reflectionNotebookRef = React.useRef(null);
+      var reflectionAutoTimerRef = React.useRef(null);
+      React.useEffect(function() { return function() { if (reflectionAutoTimerRef.current) clearTimeout(reflectionAutoTimerRef.current); }; }, []);
       var reflectionText = d.reflectionText || '';
       var lessonEditorJson = d.lessonEditorJson || '';
       var aiRefinePrompt = d.aiRefinePrompt || '';
       var lastGeneratedLesson = d.lastGeneratedLesson || null;
       var activeLesson = d.activeLesson || 'volumeExplorer';
+      var showSaveRecovery = !!d.showSaveRecovery;
+      var worldTransitionNotice = d.worldTransitionNotice || {};
+      var worldTransitionConfirmRef = React.useRef(null);
+      React.useEffect(function() {
+        if (!showSaveRecovery) { worldTransitionConfirmRef.current = null; return; }
+        var panel = document.querySelector('[data-gw-save-recovery]'), changed = [], node = panel;
+        while (node && node.parentElement && node.id !== 'geoworld-fs-wrap') {
+          Array.prototype.forEach.call(node.parentElement.children, function(sibling) {
+            if (sibling !== node && !sibling.hasAttribute('inert')) { sibling.setAttribute('inert', ''); changed.push(sibling); }
+          });
+          node = node.parentElement;
+        }
+        return function() { changed.forEach(function(sibling) { sibling.removeAttribute('inert'); }); };
+      }, [showSaveRecovery]);
+      // Exploration dismisses only this sitting's summary, not saved completion.
+      var completionReviewState = React.useState(null);
+      var completionReviewKey = activeLesson + '|' + totalQ;
+      var completionExploring = completionReviewState[0] === completionReviewKey && totalQ > 0 && score >= totalQ;
+      var completionVisible = worldActive && score >= totalQ && totalQ > 0 && !completionExploring && !showNpcDialog && !showReflection;
+      React.useEffect(function() {
+        if (completionReviewState[0] && (completionReviewState[0] !== completionReviewKey || !worldActive || totalQ <= 0 || score < totalQ)) completionReviewState[1](null);
+      }, [activeLesson, totalQ, score, worldActive]);
       // enrichMeasurement ASSIGNS onto this value, so a primitive throws
       // outright; and consumers call .toFixed on its numeric fields, so a
       // partial object is equally unusable. Require the numbers.
@@ -8525,6 +8974,18 @@
       var measurementDetailsState = React.useState(false);
       var measurementDetailsOpen = measurementDetailsState[0];
       var setMeasurementDetailsOpen = measurementDetailsState[1];
+      var notebookViewState = React.useState('records');
+      var notebookView = notebookViewState[0];
+      var setNotebookView = notebookViewState[1];
+      React.useEffect(function() { setNotebookView('records'); }, [activeLesson]);
+      React.useEffect(function() {
+        if (hudPanel !== 'history') return;
+        var timer = setTimeout(function() {
+          var tab = document.querySelector('#gw-history-panel [role="tab"][aria-selected="true"]');
+          if (tab) tab.focus();
+        }, 0);
+        return function() { clearTimeout(timer); };
+      }, [hudPanel]);
       // Explicit measurements append a timestamp. Connected-build polling may
       // replace the result or change its bounds, but must keep this disclosure open.
       var latestMeasurementStamp = measureHistory.length ? measureHistory[measureHistory.length - 1].t : null;
@@ -8535,7 +8996,6 @@
       var completedMeasurements = completeMeasurementRecords(measureHistory);
       var predictionScaffold = determinePredictionScaffold(measureHistory);
       var latestCompleteMeasurement = completedMeasurements.length ? completedMeasurements[completedMeasurements.length - 1] : null;
-      var reflectionEvidencePrompt = buildEvidenceReflectionPrompt(latestCompleteMeasurement, predictionResult, predictionRevisionResult);
       var measurementComparison = completedMeasurements.length >= 2 ? compareMeasurementRecords(completedMeasurements[completedMeasurements.length - 2], completedMeasurements[completedMeasurements.length - 1]) : null;
       var activeRetrievalCheckpoint = buildRetrievalCheckpoint(measureHistory);
       var actionFeedback = d.actionFeedback || ''; // brief action text
@@ -8665,9 +9125,9 @@
       React.useEffect(function() {
         var liveEngine = window[engineKey];
         if (liveEngine && typeof liveEngine.setTouchControlsEnabled === 'function') {
-          liveEngine.setTouchControlsEnabled(touchMode);
+          liveEngine.setTouchControlsEnabled(touchMode && !showSaveRecovery);
         }
-      }, [touchMode]);
+      }, [touchMode, showSaveRecovery]);
 
       // An objective met by doing (a build, a measurement, a net) ticks in a panel that is
       // usually closed, so say so when it turns done. Questions already say "Correct", so
@@ -8687,7 +9147,7 @@
         if (news.lesson !== lessonId) { news.lesson = lessonId; news.done = done; return; }
         statuses.forEach(function(o) {
           var rule = currentLesson.objectiveEvidence[o.index] || {};
-          if (!o.status.done || news.done[o.index] || rule.npc || rule.npcs || rule.self || rule.complete) return;
+          if (!o.status.done || news.done[o.index] || rule.npc || rule.npcs || rule.self || rule.activity || rule.complete) return;
           if (addToast) addToast('\u2705 Objective done: ' + o.text, 'success');
           announceToSR('Objective done: ' + o.text + '. ' + (o.status.evidence || ''));
         });
@@ -9984,7 +10444,7 @@
         // though the key handlers were all wired. Caught by the WebGL e2e, not by any
         // jsdom test — there is no animate loop without a GL context.
         engine.isInputActive = function() {
-          if(engine._showcase || engine._previewReviewCamera || (engine._modalState && (engine._modalState.showGeometryHome || engine._modalState.showActivityGuide)))return false;
+          if(engine._pendingWorldTransition || engine._showcase || engine._previewReviewCamera || (engine._modalState && (engine._modalState.showGeometryHome || engine._modalState.showActivityGuide)))return false;
           if (engine.isLocked || engine._touchActive) return true;
           var wrap = document.getElementById('geoworld-fs-wrap');
           return !!(wrap && document.activeElement === wrap);
@@ -10983,7 +11443,8 @@
           };
           engine.isDrawingAllowed=function() {
             var ms=engine._modalState || {};
-            return !!(engine._currentLesson && engine._currentLesson.sandbox && !engine._destroyed && engine._worldActive!==false && !engine._showcase && !Object.keys(ms).some(function(k){return k!=='hudPanel' && !!ms[k];}));
+            var flags=['showSaveRecovery','showGeometryHome','showNpcDialog','showHelp','showGrowthNudge','showGameSettings','showPredictionPanel','objectivesOpen','showActivityGuide','showPeerWorlds','showTeacherView','showMyLessons','showLessonEditor','showLessonIntro','showReflection','showCreatorPanel','creatorMode','touchMoreOpen','showCompletion'];
+            return !!(engine._currentLesson && engine._currentLesson.sandbox && !engine._destroyed && engine._worldActive!==false && !engine._showcase && !flags.some(function(k){return !!ms[k];}));
           };
           function publish(plan) {
             var dims=plan && plan.dimensions,info={mode:engine._drawMode,started:!!engine._drawStart,pinned:!!engine._drawPinned,ok:!!(plan && plan.ok),count:plan && plan.count || 0,dimensions:dims || null,reason:plan && plan.reason || 'Aim at a block face and set the start point.'};
@@ -11281,9 +11742,26 @@
           geometryRefreshGuideSprites(engine, engine.npcs[engine.npcs.length - 1], engine.npcs.length - 1, geometryGuideContrast(engine));
         };
 
+        // Protect live builds before any world replacement.
+        geometryInstallWorldTransitionGuard(engine, {
+          isCurrent: function() { return window[engineKey] === engine; },
+          blocked: function(pending) {
+            worldTransitionConfirmRef.current = null;
+            if (!engine._modalState) engine._modalState = {};
+            engine._modalState.showSaveRecovery = true;
+            if (engine.releaseInput) engine.releaseInput();
+            if (document.pointerLockElement && document.exitPointerLock) document.exitPointerLock();
+            upd({ showSaveRecovery: true, worldTransitionNotice: { title: pending.target && pending.target.title || 'another world', reason: pending.reason, confirming: false, exportStatus: '' } });
+          },
+          cleared: function() { worldTransitionConfirmRef.current = null; upd({ showSaveRecovery: false, worldTransitionNotice: null }); }
+        });
+        engine.stayInCurrentWorld = function() {
+          var opener = engine.cancelWorldTransition();
+          setTimeout(function() { if (opener && opener.isConnected) opener.focus(); else focusWorldSurface(); }, 0);
+        };
         engine.loadLesson = function(lesson) {
+          return engine.transitionWorld(lesson, function() {
           if(engine._previewReviewCamera)engine._previewReviewCamera.dispose(false);
-          if(engine.flushWorkshopDraft)engine.flushWorkshopDraft();
           engine._workshopProjectId=null;engine._workshopProjectVersion=null;engine._workshopSavedSignature=null;
           if(engine.endShowcase)engine.endShowcase();
           if(engine.cancelDrawing)engine.cancelDrawing(true);
@@ -11366,12 +11844,14 @@
           // so the HUD + build_10 quest don't display stale counts from a prior session/lesson.
           engine._predictionState = { input: '', strategy: '', reason: '', commitment: null, observedTargetKeys: [], history: [] };
           if (savedProgress && savedProgress.score > 0) {
-            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFeedback: {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+            upd({ totalQ: totalQCount, score: savedProgress.score, answeredNpcs: savedProgress.answeredNpcs || {}, npcFeedback: {}, npcAnswerDrafts: {}, npcFollowUpStep: savedProgress.npcFollowUpStep || {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
             if (addToast) addToast('\uD83D\uDCBE Progress restored: ' + savedProgress.score + '/' + totalQCount, 'info');
           } else {
-            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFeedback: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+            upd({ totalQ: totalQCount, score: 0, answeredNpcs: {}, npcFeedback: {}, npcAnswerDrafts: {}, npcFollowUpStep: {}, npcChatHistory: savedChat || {}, worldActive: true, blocksPlaced: 0, measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
           }
           engine._progressKey = progressKey;
+          return true;
+          });
         };
 
         // Measure all face-connected blocks in the same logical layer, even when
@@ -11674,7 +12154,7 @@
           engine._intersectionObserver.observe(container);
         }
         canvas.addEventListener('click', _cvH.click = function(ev) {
-          if(engine._previewReviewCamera || (engine._drawMode && engine._drawMode!=='single'))return;
+          if(engine._pendingWorldTransition || engine._previewReviewCamera || (engine._drawMode && engine._drawMode!=='single'))return;
           // Touch has its own movement and look handlers. A released action can
           // retarget its synthetic click here after a control is unmounted.
           if (ev && (ev.pointerType === 'touch' || (ev.sourceCapabilities && ev.sourceCapabilities.firesTouchEvents))) return;
@@ -11723,7 +12203,7 @@
           if(trackedText)announceToSR(trackedText);else announceToSR(summarizeNearbyNpcs(entries, 4));
         }
         document.addEventListener('mousemove', _docH.mousemove = function(ev) {
-          if (engine._showcase || document.pointerLockElement !== canvas) return;
+          if (engine._pendingWorldTransition || engine._showcase || document.pointerLockElement !== canvas) return;
           engine.euler.setFromQuaternion(engine.camera.quaternion);
           engine.euler.y -= ev.movementX * MOUSE_SENSITIVITY;
           engine.euler.x -= ev.movementY * MOUSE_SENSITIVITY;
@@ -11933,6 +12413,7 @@
           }
         };
         document.addEventListener('keydown', _docH.keydown = function(ev) {
+          if(engine._pendingWorldTransition){if(ev.code==='Escape' && engine.stayInCurrentWorld){ev.preventDefault();engine.stayInCurrentWorld();}return;}
           if(engine._modalState && engine._modalState.showGeometryHome){if(ev.code==='Escape' && engine.closeGeometryHome){ev.preventDefault();engine.closeGeometryHome();}return;}
           if(engine._showcase){if(ev.code==='Escape' && engine.endShowcase){ev.preventDefault();engine.endShowcase();}return;}
           if(engine._previewReviewCamera && ev.code!=='Escape')return;
@@ -11942,6 +12423,7 @@
           if (ev.code !== 'Escape' && ev.target && (
             ev.target.tagName === 'INPUT' ||
             ev.target.tagName === 'TEXTAREA' ||
+            ev.target.tagName === 'SELECT' ||
             ev.target.isContentEditable
           )) return;
           switch (ev.code) {
@@ -11952,6 +12434,7 @@
               // regardless of closure staleness (keydown handler was attached once).
               if (ev.shiftKey) {
                 ev.preventDefault();
+                if (engine.closeGeometryCompletion) engine.closeGeometryCompletion();
                 upd({ showGameSettings: false, showPredictionPanel: false, objectivesOpen: false, showNpcDialog: false, showMyLessons: false, showLessonEditor: false, showLessonIntro: false, showReflection: false, showHelp: false, showCreatorPanel: false, showGrowthNudge: false, showTeacherView: false, showPeerWorlds: false, hudPanel: '' });
                 focusWorldSurface();
                 if (addToast) addToast('🎮 Closed all overlays — back in the game', 'info');
@@ -11961,6 +12444,7 @@
               // Read from engine._modalState (updated each React render) to avoid stale closure.
               var ms = (engine && engine._modalState) || {};
               if (ms.touchMoreOpen) { upd('touchMoreOpen', false); break; }
+              if (ms.showCompletion && engine.closeGeometryCompletion) { ev.preventDefault(); engine.closeGeometryCompletion(); break; }
               if (ms.showNpcDialog) { upd('showNpcDialog', false); focusWorldSurface(); break; }
               if (ms.showGameSettings) { upd('showGameSettings', false); focusGameSettingsTrigger(); break; }
               if (ms.showPredictionPanel) { upd('showPredictionPanel', false); focusWorldSurface(); break; }
@@ -11973,7 +12457,7 @@
               if (ms.showMyLessons) { upd('showMyLessons', false); focusWorldSurface(); break; }
               if (ms.showLessonEditor) { upd('showLessonEditor', false); focusWorldSurface(); break; }
               if (ms.showLessonIntro) { upd('showLessonIntro', false); focusWorldSurface(); break; }
-              if (ms.showReflection) { upd('showReflection', false); focusWorldSurface(); break; }
+              if (ms.showReflection) { closeGeometryReflection(); break; }
               if (ms.showCreatorPanel) { upd('showCreatorPanel', false); focusWorldSurface(); break; }
               if (ms.creatorMode) { upd('creatorMode', false); focusWorldSurface(); break; }
               break;
@@ -12106,7 +12590,7 @@
               announceToSR(engine._coordAnnounce
                 ? 'Coordinate announcements on. Position at X ' + Math.floor(engine.camera.position.x) + ' Y ' + Math.floor(engine.camera.position.y) + ' Z ' + Math.floor(engine.camera.position.z)
                 : 'Coordinate announcements off');
-              upd('actionFeedback', engine._coordAnnounce ? '\uD83D\uDD0A Coord SR ON' : '\uD83D\uDD07 Coord SR OFF');
+              upd('actionFeedback', engine._coordAnnounce ? 'Spoken coordinates on' : 'Spoken coordinates off');
               setTimeout(function() { upd('actionFeedback', ''); }, 1500);
               break;
             case 'KeyV': // 3-point angle tool: click 3 blocks (A, vertex B, C), get the angle at B
@@ -12171,7 +12655,7 @@
         function canMatchAimedBlock() {
           if(engine._destroyed || engine._runtimeFailed || engine._showcase || engine._worldActive===false)return false;
           var modal=engine._modalState || {};
-          return !['showGeometryHome','showActivityGuide','showGameSettings','showNpcDialog','showMyLessons','showLessonEditor','showLessonIntro','showReflection','showHelp','showCreatorPanel','showGrowthNudge','showTeacherView','showPeerWorlds'].some(function(key){return !!modal[key];});
+          return !engine._pendingWorldTransition && !['showSaveRecovery','showGeometryHome','showActivityGuide','showGameSettings','showNpcDialog','showMyLessons','showLessonEditor','showLessonIntro','showReflection','showHelp','showCreatorPanel','showGrowthNudge','showTeacherView','showPeerWorlds'].some(function(key){return !!modal[key];});
         }
         // Copy canonical choices only. Matching never creates a block or changes
         // the retained selection, camera, construction geometry or history.
@@ -13075,7 +13559,7 @@
           var dt = Math.min(engine.clock.getDelta(), 0.1);
           // Home is opaque: retain the frame loop and drain its clock, but leave
           // the hidden world still until the learner returns to it.
-          if(engine._modalState && engine._modalState.showGeometryHome)return;
+          if(engine._pendingWorldTransition || (engine._modalState && engine._modalState.showGeometryHome))return;
 
           // ── Keyboard look (arrow keys) ──
           // Looking used to be mouse-only (pointer-lock mousemove / touch drag), which
@@ -14630,7 +15114,7 @@
 
       // ── Multi-pass AI generation handler ──
       // ── Load a lesson by key (used from intro screen, dropdown, Next Lesson) ──
-      function loadLessonByKey(lessonKey, _attempt, skipTutorial) {
+      function loadLessonByKey(lessonKey, _attempt, skipTutorial, afterLoad) {
         var eng = window[engineKey];
         // The engine is created ~100ms after the container mounts, so an eager click on
         // "Start Lesson" can land before it exists. Previously that dismissed the intro
@@ -14642,24 +15126,26 @@
           if (_attempt && !document.getElementById('geoworld-fs-wrap')) return;
           var attempt = _attempt || 0;
           if (attempt < 20) { // ~2s of retries
-            setTimeout(function() { loadLessonByKey(lessonKey, attempt + 1, skipTutorial); }, 100);
-            return;
+            setTimeout(function() { loadLessonByKey(lessonKey, attempt + 1, skipTutorial, afterLoad); }, 100);
+            return false;
           }
         }
-        if (eng && SAMPLE_LESSONS[lessonKey]) {
-          eng.loadLesson(SAMPLE_LESSONS[lessonKey]);
-        } else if (eng && geometryPracticeLessonForKey(lessonKey)) {
-          geometryPracticeBegin(geometryStorage(), lessonKey);
-          eng.loadLesson(geometryPracticeLessonForKey(lessonKey));
-        } else if (lessonKey && lessonKey.indexOf('ai_') === 0) {
-          var myL = getMyLessons();
-          var found = myL.filter(function(l) { return l._id === lessonKey; })[0];
-          if (found && eng) { eng.loadLesson(found); upd({ lastGeneratedLesson: found, lessonEditorJson: JSON.stringify(found, null, 2) }); }
-        }
-        var lessonState = { showLessonIntro: false, showReflection: false, measureHistory: [] };
-        if (skipTutorial) { lessonState.tutorialStep = 4; lessonState.tutorialDismissed = true; }
-        upd(lessonState);
+        var lesson = SAMPLE_LESSONS[lessonKey] || geometryPracticeLessonForKey(lessonKey);
+        if (!lesson && lessonKey && lessonKey.indexOf('ai_') === 0) lesson = getMyLessons().filter(function(l) { return l._id === lessonKey; })[0];
+        if (!eng || !lesson) return false;
+        return runWorldTransition(eng, lesson, function() {
+          if (lesson.practice) geometryPracticeBegin(geometryStorage(), lessonKey);
+          if (eng.loadLesson(lesson) === false) return false;
+          var lessonState = { activeLesson: lessonKey, pendingLesson: null, showLessonIntro: false, showReflection: false, measureHistory: [] };
+          if (lessonKey.indexOf('ai_') === 0) { lessonState.lastGeneratedLesson = lesson; lessonState.lessonEditorJson = JSON.stringify(lesson, null, 2); }
+          if (skipTutorial) { lessonState.tutorialStep = 4; lessonState.tutorialDismissed = true; }
+          upd(lessonState);
+          if (afterLoad) afterLoad();
+          return true;
+        });
       }
+
+      function runWorldTransition(eng, target, action) { return eng.transitionWorld ? eng.transitionWorld(target, action) : action(); }
 
       function cancelWorldGeneration() {
         aiGenerationRef.current.id++;
@@ -14764,11 +15250,16 @@
         lesson = validateLesson(lesson);
         var eng = window[engineKey];
         if (eng && lesson && lesson.structures.length > 0) {
-          eng.loadLesson(lesson);
+          var applied = runWorldTransition(eng, lesson, function() {
+          if (eng.loadLesson(lesson) === false) { upd({ aiGenerating: false, aiCurrentPass: 0 }); return false; }
           saveToMyLessons(lesson);
-          upd({ lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), aiGenerating: false, aiCurrentPass: 0, aiGenerationStatus: 'Lesson ready. Saved to My Lessons.', activeLesson: 'ai_generated' });
+          upd({ lastGeneratedLesson: lesson, pendingGeneratedLesson: null, lessonEditorJson: JSON.stringify(lesson, null, 2), aiGenerating: false, aiCurrentPass: 0, aiGenerationStatus: 'Lesson ready. Saved to My Lessons.', activeLesson: 'ai_generated' });
           if (addToast) addToast('\uD83E\uDDF1 AI generated: ' + (lesson.title || 'New World') + ' (' + lesson.npcs.length + ' NPCs, ' + lesson.structures.length + ' structures, saved to My Lessons)', 'success');
           if (typeof awardXP === 'function') awardXP('geometryWorld', 5, 'AI lesson generated');
+          return true;
+          });
+          if (applied === false) upd({ pendingGeneratedLesson: lesson, aiGenerating: false, aiCurrentPass: 0, aiGenerationStatus: 'Generated lesson is ready, but has not replaced your current world.' });
+          return applied;
         } else {
           upd({ aiGenerating: false, aiCurrentPass: 0 });
           if (addToast) addToast('Generated lesson had no valid structures', 'error');
@@ -14989,7 +15480,9 @@
         if (eng && eng.blocks && needs('build')) {
           builds = geometryStudentBuilds(Object.keys(eng.blocks).map(function(k) { var u = eng.blocks[k] && eng.blocks[k].userData; return u && !u._lessonBlock && u.gridPos && (!u._measurementLayer || u._measurementLayer === 'student') ? { x: u.gridPos.x, y: u.gridPos.y, z: u.gridPos.z, shape: u.shape } : null; }).filter(Boolean));
         }
-        var evidenceState = { answered: answeredNames, measurements: completeMeasurementRecords(measureHistory), placements: placements, nets: nets, builds: builds, studentHeight: studentHeight, complete: lessonDone };
+        var builderPure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+        var activityReviews = geometryActivityObjectiveReviews(currentLesson, d.lessonActivityProgress, builderPure && builderPure.activityGuideModel);
+        var evidenceState = { answered: answeredNames, measurements: completeMeasurementRecords(measureHistory), placements: placements, nets: nets, builds: builds, activityReviews: activityReviews, studentHeight: studentHeight, complete: lessonDone };
         return (currentLesson.objectives || []).map(function(obj, i) {
           var rule = rules[i];
           return { index: i, text: obj && obj.text ? obj.text : obj, status: rule ? geometryObjectiveStatus(rule, Object.assign({ selfChecked: !!checks[i] }, evidenceState)) : { done: lessonDone, evidence: lessonDone ? 'Lesson complete' : '' } };
@@ -15015,14 +15508,16 @@
       if (engine) engine.openGeometryWorksheet = openGeometryWorksheet;
 
       // Expose current React state to the engine so the compass rAF loop reads live data
+      completionVisible = completionVisible && !(showSaveRecovery || showGeometryHome || showLessonIntro || showGameSettings || showMyLessons || showLessonEditor || showHelp || showCreatorPanel || showGrowthNudge || showTeacherView || showPeerWorlds || creatorMode || objectivesOpen || showPredictionPanel || d.touchMoreOpen);
       if (engine) {
         engine.openGeometryHome = openGeometryHome;
         engine.geometryHomeLessons = Object.keys(SAMPLE_LESSONS).map(function(id){var l=SAMPLE_LESSONS[id];return {id:id,title:l.title,description:l.description,objectives:l.objectives || [],ground:l.ground,structures:l.structures || [],activities:l.activities || [],npcs:l.npcs || [],estimatedMinutes:l.estimatedMinutes,depth:l.depth,landscapeTheme:l.landscapeTheme,explore:!!l.explore,exploreName:l.exploreName || null,exploreBlurb:l.exploreBlurb || null};}).concat(getMyLessons().map(function(l){return {id:l._id,title:l.title || 'Saved lesson',description:l.description || '',objectives:l.objectives || [],ground:l.ground,structures:l.structures || [],activities:l.activities || [],npcs:l.npcs || [],estimatedMinutes:l.estimatedMinutes,depth:l.depth,landscapeTheme:l.landscapeTheme};}));
         engine.startHomeLesson = function(id){
           if(!engine.geometryHomeLessons.some(function(l){return l.id===id;}))return false;
-          loadLessonByKey(id);
+          return loadLessonByKey(id, 0, false, function() {
           upd({activeLesson:id,showGeometryHome:false,_geometryHomeInitial:false,showLessonIntro:false,creatorMode:false,showGameSettings:false,builderPanel:'build',hudPreset:'learning',hudPanel:'',sandboxDockCollapsed:false});
-          focusWorldSurface();return true;
+          focusWorldSurface();
+          });
         };
         // A practice round: a round key (practice_s42), a round number (a class
         // sharing one round) at a level, or a new round at that level.
@@ -15031,9 +15526,11 @@
           level = parsed ? parsed.level : level === 'stretch' ? 'stretch' : 'core';
           var seed = parsed ? parsed.seed : geometryPracticeSeed(round) || geometryPracticeNewSeed(geometryStorage(), level);
           var key = geometryPracticeKey(seed, level);
-          loadLessonByKey(key);
-          upd({activeLesson:key,showGeometryHome:false,_geometryHomeInitial:false,showLessonIntro:false,creatorMode:false,showGameSettings:false,builderPanel:'build',hudPreset:'learning',hudPanel:'',sandboxDockCollapsed:false,reflectionText:''});
-          focusWorldSurface();return seed;
+          var started = loadLessonByKey(key, 0, false, function() {
+          upd({activeLesson:key,showGeometryHome:false,_geometryHomeInitial:false,showLessonIntro:false,creatorMode:false,showGameSettings:false,builderPanel:'build',hudPreset:'learning',hudPanel:'',sandboxDockCollapsed:false,reflectionText:'',npcWrongCount:{},npcLastWrong:{},consecutiveWrong:0});
+          focusWorldSurface();
+          });
+          return started ? seed : false;
         };
         engine._answeredRef = answeredNpcs;
         engine._worldActive = worldActive;
@@ -15043,6 +15540,8 @@
         // and its closure captured these as first-render primitives. Mirror them onto
         // the engine on every React render so Esc/Shift+Esc always see current state.
         engine._modalState = {
+          showSaveRecovery: showSaveRecovery,
+          activeLesson: activeLesson, worldActive: worldActive, score: score, totalQuestions: totalQ, showCompletion: completionVisible,
           showNpcDialog: showNpcDialog, showHelp: showHelp, showGrowthNudge: showGrowthNudge,
           showGameSettings: showGameSettings, showPredictionPanel: showPredictionPanel, objectivesOpen: objectivesOpen, showActivityGuide:!!(objectivesOpen && currentLesson.activities && currentLesson.activities.length), hudPanel: hudPanel,
           showPeerWorlds: showPeerWorlds, showTeacherView: showTeacherView,
@@ -15071,11 +15570,92 @@
         // captured first-render empty values. Sync live data so avatars appear/update.
         engine._collabPlayersRef = collabPlayers;
         engine._playerNameRef = playerName;
+        engine.closeGeometryCompletion = function() { dismissGeometryCompletion(false); };
       }
 
       var hasLessonActivities=!!(currentLesson && Array.isArray(currentLesson.activities) && currentLesson.activities.length);
+      var learningPathEntries = worldActive && !currentLesson.sandbox && !hasLessonActivities ? lessonObjectiveStatuses() : [];
+      var learningPath = geometryLearningPathModel(learningPathEntries);
+      var reflectionMeasurement = measureResult || latestCompleteMeasurement;
+      var reflectionMeasurementData = reflectionMeasurement && reflectionMeasurement.data ? reflectionMeasurement.data : reflectionMeasurement;
+      var reflectionVolume = reflectionMeasurementData && reflectionMeasurementData.isComplete !== false && Number.isFinite(reflectionMeasurementData.occupiedVolume) ? reflectionMeasurementData.occupiedVolume : null;
+      var reflectionSupport = geometryReflectionSupportModel(currentLesson, activeLesson, reflectionMeasurement, predictionResult, predictionRevisionResult);
+      function openGeometryReflection() {
+        if (reflectionAutoTimerRef.current) clearTimeout(reflectionAutoTimerRef.current);
+        reflectionAutoTimerRef.current = null;
+        reflectionOpenerRef.current = document.activeElement;
+        reflectionNotebookRef.current = hudPanel === 'history' ? { lesson: activeLesson, view: notebookView, stamp: latestMeasurementStamp, count: measureHistory.length } : null;
+        setSceneMapOpen(false);
+        upd({ showReflection: true, objectivesOpen: false, showPredictionPanel: false, showGameSettings: false, hudPanel: '' });
+      }
+      function closeGeometryReflection() {
+        if (reflectionAutoTimerRef.current) clearTimeout(reflectionAutoTimerRef.current);
+        reflectionAutoTimerRef.current = null;
+        var notebook = reflectionNotebookRef.current;
+        reflectionNotebookRef.current = null;
+        var restoreNotebook = notebook && notebook.lesson === activeLesson && notebook.stamp === latestMeasurementStamp && notebook.count === measureHistory.length && measureHistory.length > 0 && worldActive && !showGeometryHome;
+        if (restoreNotebook) { setNotebookView(notebook.view); upd({ showReflection: false, hudPanel: 'history' }); }
+        else upd('showReflection', false);
+        setTimeout(function() {
+          var workspace = document.getElementById('geoworld-fs-workspace');
+          var completion = workspace && workspace.querySelector('.gw-completion-dialog');
+          var notebookTab = restoreNotebook && workspace && workspace.querySelector('#gw-history-panel [role="tab"][aria-selected="true"]');
+          var opener = reflectionOpenerRef.current;
+          if (completion) completion.focus();
+          else if (notebookTab) notebookTab.focus();
+          else if (opener && opener.isConnected && opener.getClientRects().length && window.getComputedStyle(opener).visibility !== 'hidden') opener.focus();
+          else focusWorldSurface();
+        }, 0);
+      }
+      function openLearningPath() {
+        setSceneMapOpen(false);
+        upd({ objectivesOpen: true, showPredictionPanel: false, showGameSettings: false, hudPanel: '' });
+        announceToSR(hasLessonActivities ? 'Activity guide opened.' : 'Learning path opened.');
+        setTimeout(function() { var title = document.getElementById('gw-objective-title'); if (title) title.focus(); }, 0);
+      }
+      function closeLearningPath() {
+        upd('objectivesOpen', false);
+        announceToSR('Learning path closed.');
+        setTimeout(function() {
+          var workspace = document.getElementById('geoworld-fs-workspace');
+          var candidates = workspace ? Array.prototype.slice.call(workspace.querySelectorAll('button[aria-controls="gw-objective-panel"]')) : [];
+          var compass = workspace && workspace.querySelector('.gw-learning-compass');
+          if (compass) candidates.unshift(compass);
+          var trigger = candidates.filter(function(node) {
+            return !node.disabled && node.getClientRects().length > 0 && window.getComputedStyle(node).visibility !== 'hidden';
+          })[0];
+          if (trigger) trigger.focus(); else focusWorldSurface();
+        }, 0);
+      }
+      function dismissGeometryCompletion(reviewGoals) {
+        if (totalQ <= 0 || score < totalQ) return;
+        if (reflectionAutoTimerRef.current) clearTimeout(reflectionAutoTimerRef.current);
+        reflectionAutoTimerRef.current = null;
+        completionReviewState[1](completionReviewKey);
+        if (reviewGoals) openLearningPath();
+        else setTimeout(focusWorldSurface, 0);
+      }
+      function reopenGeometryCompletion() {
+        if (reflectionAutoTimerRef.current) clearTimeout(reflectionAutoTimerRef.current);
+        reflectionAutoTimerRef.current = null;
+        setSceneMapOpen(false);
+        upd({ objectivesOpen: false, showPredictionPanel: false, showGameSettings: false, hudPanel: '' });
+        completionReviewState[1](null);
+      }
+      function toolbarIcon(name, fallback) {
+        return ctx.icons && Object.prototype.hasOwnProperty.call(ctx.icons, name) && ctx.icons[name]
+          ? el(ctx.icons[name], { size: 18, className: 'gw-workspace-icon', 'aria-hidden': 'true' })
+          : renderWorkspaceIcon(el, fallback);
+      }
+      function downloadRecoveryBuild() {
+        var pure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+        var ok = !!(pure && pure.saveEditableWorld && pure.saveEditableWorld(ctx));
+        upd('worldTransitionNotice', Object.assign({}, worldTransitionNotice, { exportStatus: ok ? 'Download started. Your current world is still here.' : 'The current build could not be exported. Stay here to keep it in this workspace.' }));
+      }
       // ── Modal tracking: count all open overlays so students can see/dismiss them all ──
       var OPEN_MODALS = [
+        { flag: showSaveRecovery, key:'showSaveRecovery',label:'Keep your current build',emoji:'' },
+        { flag: completionVisible, key:'showCompletion',label:'Lesson summary',emoji:'\u2713' },
         { flag: !!(objectivesOpen && currentLesson.activities && currentLesson.activities.length), key:'objectivesOpen',label:'Activity guide',emoji:'◇' },
         { flag: showGeometryHome, key: 'showGeometryHome', label: 'Geometry World home', emoji: '◇' },
         { flag: showGameSettings, key: 'showGameSettings', label: 'Game Settings', emoji: '\u2699\uFE0F' },
@@ -15092,8 +15672,10 @@
       ];
       var openModals = OPEN_MODALS.filter(function(m) { return m.flag; });
       function closeAllModals() {
+        if (showSaveRecovery && engine && engine.stayInCurrentWorld) { engine.stayInCurrentWorld(); return; }
+        reflectionNotebookRef.current = null;
         var patch = {};
-        OPEN_MODALS.forEach(function(m) { if (m.flag) patch[m.key] = false; });
+        OPEN_MODALS.forEach(function(m) { if (m.flag) { if (m.key === 'showCompletion') dismissGeometryCompletion(false); else patch[m.key] = false; } });
         if (Object.keys(patch).length > 0) {
           upd(patch);
           focusWorldSurface();
@@ -15150,10 +15732,10 @@
       // and the workspace collapsed to its toolbar plus the canvas's intrinsic 150px (a 164px world and a 220px home
       // chooser on a phone in the live shell, 2026-09-14). The calc keeps landscape phones sane; a host that gives a
       // real height is never capped.
-      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-build-tools': buildToolsOpen ? 'open' : 'closed', 'data-hud-hidden': hudHidden ? 'true' : 'false', 'data-npc-dialog': showNpcDialog ? (npcPeek ? 'peek' : 'open') : 'closed', 'data-hud-preset': hudPreset, 'data-measurement-expanded': isMobile && !!measureResult && measurementDetailsOpen ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 'min(640px, calc(100vh - 270px))', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
+      return el('div', { id: 'geoworld-fs-workspace', role: 'region', 'data-geometry-fullscreen-workspace': 'true', 'data-fullscreen': isWorkspaceFullscreen ? 'true' : 'false', 'data-toolbar-collapsed': toolbarCollapsed ? 'true' : 'false', 'data-build-tools': buildToolsOpen ? 'open' : 'closed', 'data-hud-hidden': hudHidden ? 'true' : 'false', 'data-npc-dialog': showNpcDialog ? (npcPeek ? 'peek' : 'open') : 'closed', 'data-hud-preset': hudPreset, 'data-hud-panel': hudPanel, 'data-ui-text-size': workspacePreferences.uiTextSize, 'data-ui-surface': workspacePreferences.uiSurface, 'data-measurement-expanded': isMobile && !!measureResult && measurementDetailsOpen && hudPanel !== 'history' ? 'true' : 'false', 'data-touch-mode': touchMode ? 'touch' : 'desktop', 'data-touch-active': isMobile && touchMode ? 'true' : 'false', className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World'), style: { display: 'flex', flexDirection: 'column', height: '100%', minHeight: 'min(640px, calc(100vh - 270px))', position: 'relative', background: 'var(--allo-stem-canvas, #000)' } },
         el('style', null, '#geoworld-fs-workspace:fullscreen,#geoworld-fs-workspace:-webkit-full-screen{width:100vw;height:100vh;height:100dvh;overflow:hidden;background:#020617}#geoworld-fs-workspace:fullscreen>.gw-toolbar,#geoworld-fs-workspace:-webkit-full-screen>.gw-toolbar{display:none!important}#geoworld-fs-workspace:fullscreen .gw-viewport,#geoworld-fs-workspace:-webkit-full-screen .gw-viewport{flex:1;min-height:0;margin:0!important;border:0!important;border-radius:0!important}'),
         // Top bar — glass style
-        el('header', { className: 'gw-toolbar', 'aria-label': currentLesson.sandbox ? 'Geometry World building tools' : __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls'), style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
+        el('header', { ref: geometryToolbarRef, className: 'gw-toolbar', 'aria-label': currentLesson.sandbox ? 'Geometry World building tools' : __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls'), style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '10px 14px', background: 'linear-gradient(180deg, rgba(15,23,42,0.94), rgba(15,23,42,0.82))', backdropFilter: 'blur(14px) saturate(120%)', borderBottom: '1px solid rgba(148,163,184,0.16)', flexShrink: 0, flexWrap: 'wrap' } },
           el('div', { className: 'gw-brand-lockup' },
             el('span', { className: 'gw-brand-mark', 'aria-hidden': 'true' }, renderShapeSwatch(el, 'cube')),
             el('div', { className: 'gw-brand-copy' },
@@ -15177,29 +15759,47 @@
               type: 'button', className: 'gw-compact-action gw-focusable',
               'aria-expanded': showPredictionPanel, 'aria-controls': 'gw-prediction-panel',
               'aria-label': showPredictionPanel ? 'Close volume estimate drawer' : 'Open volume estimate drawer',
+              title: showPredictionPanel ? 'Close volume estimate' : 'Estimate volume',
               onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); announceToSR(next ? 'Volume estimate drawer opened.' : 'Volume estimate drawer closed.'); }
-            }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Estimate')),
+            }, toolbarIcon('Calculator', 'measure'), el('span', { className: 'gw-compact-action-label' }, 'Estimate')),
             worldActive && (!currentLesson.sandbox || hasLessonActivities) && el('button', {
               type: 'button', className: 'gw-compact-action gw-focusable',
               'aria-expanded': objectivesOpen, 'aria-controls': 'gw-objective-panel',
               'aria-label': hasLessonActivities ? (objectivesOpen?'Close activity guide':'Open activity guide') : (objectivesOpen ? 'Close lesson objectives' : 'Open lesson objectives'),
+              title: hasLessonActivities ? 'Activity guide' : 'Learning path',
               onClick: function() { var next = !objectivesOpen; setSceneMapOpen(false); upd({ objectivesOpen: next, showPredictionPanel: false, showGameSettings: false, hudPanel: '' }); }
-            }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), el('span', { className: 'gw-compact-action-label' }, hasLessonActivities?'Activities':'Objectives')),
+            }, renderWorkspaceIcon(el, 'net'), el('span', { className: 'gw-compact-action-label' }, hasLessonActivities?'Activities':'Objectives')),
+            worldActive && completionExploring && openModals.length === 0 && el('button', {
+              type: 'button', className: 'gw-compact-action gw-focusable gw-completion-summary-trigger',
+              'aria-label': 'Review completed lesson summary', 'aria-haspopup': 'dialog', title: 'Lesson summary', onClick: reopenGeometryCompletion
+            }, toolbarIcon('Trophy', 'talk'), el('span', { className: 'gw-compact-action-label' }, 'Summary')),
             el('button', {
               type: 'button', className: 'gw-compact-action gw-focusable',
               'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog',
               'aria-expanded': showGameSettings, 'aria-controls': 'gw-settings-dialog',
-              'aria-label': __alloT('stem.geometryworld.a11y_open_game_settings_and_tools', 'Open game settings and tools'), onClick: openGameSettings
-            }, el('span', { 'aria-hidden': 'true' }, '\u2699\uFE0F'), el('span', { className: 'gw-compact-action-label' }, 'Menu')),
+              'aria-label': __alloT('stem.geometryworld.a11y_open_game_settings_and_tools', 'Open game settings and tools'), title: 'Settings and tools', onClick: openGameSettings
+            }, toolbarIcon('Settings', 'tools'), el('span', { className: 'gw-compact-action-label' }, 'Settings')),
             el('button', {
               type: 'button', className: 'gw-compact-action gw-toolbar-collapse gw-focusable',
               'aria-label': __alloT('stem.geometryworld.a11y_hide_the_geometry_world_game_bar', 'Hide the Geometry World game bar'), title: __alloT('stem.geometryworld.hide_game_bar','Hide game bar'),
               onClick: function() { var saved = saveGeometryHudPreferences({ toolbarCollapsed: true }); upd('toolbarCollapsed', true); announceToSR('Game bar hidden; use the Show game bar button to restore it.' + (saved ? ' Preference saved on this device.' : ' Preference applies for this session.')); }
-            }, '\u25B2')
+            }, renderWorkspaceIcon(el, 'up'))
           )
         ),
 
         el('style', { 'data-gw-room': 'true' }, GW_ROOM_CSS),
+        el('style', { 'data-gw-save-recovery-style': 'true' }, GW_SAVE_RECOVERY_CSS),
+        el('style', { 'data-gw-workspace-refresh': 'true' }, GW_WORKSPACE_REFRESH_CSS),
+        el('style', { 'data-gw-clarity': 'true' }, GW_CLARITY_CSS),
+        worldActive && learningPath.total > 0 && openModals.length === 0 && !objectivesOpen && !showPredictionPanel && !hudPanel && !measureResult && !npcPeek && el('button', {
+          type: 'button', className: 'gw-learning-compass gw-focusable',
+          'aria-controls': 'gw-objective-panel', 'aria-expanded': false,
+          'aria-label': (learningPath.complete ? 'Review learning path' : 'Open learning path: ' + learningPath.next.text), onClick: openLearningPath
+        },
+          el('span', { className: 'gw-learning-compass-kicker' }, el('span', null, learningPath.complete ? 'Objectives explored' : 'Next discovery'), el('span', null, learningPath.done + '/' + learningPath.total)),
+          el('span', { className: 'gw-learning-compass-title' }, learningPath.complete ? 'Revisit a strategy or try a different build.' : learningPath.next.text),
+          el('span', { className: 'gw-learning-compass-action' }, renderWorkspaceIcon(el, 'talk'), learningPath.complete ? 'Review your learning path' : 'View your learning path')
+        ),
         hudHidden && el('button', { type: 'button', className: 'gw-hud-restore gw-focusable', 'aria-keyshortcuts': 'U', 'aria-label': __alloT('stem.geometryworld.a11y_show_controls_shortcut_u', 'Show controls. Shortcut U'), onClick: function() { setHudHidden(false); } },
           renderWorkspaceIcon(el, 'eye'), 'Show controls'),
         toolbarCollapsed && !isWorkspaceFullscreen && el('button', {
@@ -15215,19 +15815,23 @@
             'aria-expanded': showPredictionPanel, 'aria-controls': 'gw-prediction-panel',
             'aria-label': showPredictionPanel ? 'Close volume estimate drawer' : 'Open volume estimate drawer',
             onClick: function() { var next = !showPredictionPanel; setSceneMapOpen(false); upd({ showPredictionPanel: next, showGameSettings: false, objectivesOpen: false, hudPanel: '' }); }
-          }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCDD'), el('span', { className: 'gw-compact-action-label' }, 'Estimate')),
+            }, toolbarIcon('Calculator', 'measure'), el('span', { className: 'gw-compact-action-label' }, 'Estimate')),
           worldActive && (!currentLesson.sandbox || hasLessonActivities) && el('button', {
             type: 'button', className: 'gw-compact-action gw-focusable',
             'aria-expanded': objectivesOpen, 'aria-controls': 'gw-objective-panel',
             'aria-label': hasLessonActivities ? (objectivesOpen?'Close activity guide':'Open activity guide') : (objectivesOpen ? 'Close lesson objectives' : 'Open lesson objectives'),
             onClick: function() { var next = !objectivesOpen; setSceneMapOpen(false); upd({ objectivesOpen: next, showPredictionPanel: false, showGameSettings: false, hudPanel: '' }); }
-          }, el('span', { 'aria-hidden': 'true' }, '\uD83D\uDCCB'), el('span', { className: 'gw-compact-action-label' }, hasLessonActivities?'Activities':'Objectives')),
+          }, renderWorkspaceIcon(el, 'net'), el('span', { className: 'gw-compact-action-label' }, hasLessonActivities?'Activities':'Objectives')),
+          worldActive && completionExploring && openModals.length === 0 && el('button', {
+            type: 'button', className: 'gw-compact-action gw-focusable gw-completion-summary-trigger',
+            'aria-label': 'Review completed lesson summary', 'aria-haspopup': 'dialog', title: 'Lesson summary', onClick: reopenGeometryCompletion
+          }, toolbarIcon('Trophy', 'talk'), el('span', { className: 'gw-compact-action-label' }, 'Summary')),
           el('button', {
             type: 'button', className: 'gw-compact-action gw-focusable',
             'data-geometry-settings-trigger': 'true', 'aria-haspopup': 'dialog',
             'aria-expanded': showGameSettings, 'aria-controls': 'gw-settings-dialog',
             'aria-label': __alloT('stem.geometryworld.a11y_open_game_settings_and_tools', 'Open game settings and tools'), onClick: openGameSettings
-          }, el('span', { 'aria-hidden': 'true' }, '\u2699\uFE0F'), el('span', { className: 'gw-compact-action-label' }, 'Menu'))
+          }, toolbarIcon('Settings', 'tools'), el('span', { className: 'gw-compact-action-label' }, 'Settings'))
         ),
 
           // Badge notification popup
@@ -15329,23 +15933,39 @@
               el('span', null, predictionScaffold.cue)
             )
           ),
-          measureResult && el('div', { role: 'region', className: 'gw-measure-card', 'data-measurement-compact': 'true', 'data-details-open': measurementDetailsOpen ? 'true' : 'false', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_inspector', 'Measurement inspector'), style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
+          measureResult && hudPanel !== 'history' && el('div', { role: 'region', className: 'gw-measure-card', 'data-measurement-compact': 'true', 'data-details-open': measurementDetailsOpen ? 'true' : 'false', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_inspector', 'Measurement inspector'), style: { display: 'flex', flexDirection: 'column', gap: '1px', fontSize: '11px', color: '#67e8f9', background: '#0c4a6e', padding: '4px 10px', borderRadius: '6px', lineHeight: 1.3 } },
             el('div', { className: 'gw-measure-heading', style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '10px' } },
               el('div', { role: 'status', 'aria-live': 'polite', style: { fontWeight: 800, color: '#cffafe' } }, '\uD83D\uDCCF ' + (measureResult.isComplete === false ? 'Large structure - incomplete measurement' : measureResult.isSolidPrism ? 'Solid rectangular prism' : 'Composite structure')),
-              el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': __alloT('stem.geometryworld.a11y_close_measurement_inspector', 'Close measurement inspector'), title: __alloT('stem.geometryworld.close_measurement_inspector','Close measurement inspector'), onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); setMeasurementDetailsOpen(false); upd('measureResult', null); } }, '\u00D7')
+              el('button', { type: 'button', className: 'gw-measure-close', 'aria-label': __alloT('stem.geometryworld.a11y_close_measurement_inspector', 'Close measurement inspector'), title: __alloT('stem.geometryworld.close_measurement_inspector','Close measurement inspector'), onClick: function() { var eng = window[engineKey]; if (eng && eng.clearLayerFocus) eng.clearLayerFocus(); setLayerFocus(0); setMeasurementDetailsOpen(false); upd('measureResult', null); setTimeout(focusWorldSurface, 0); } }, '\u00D7')
             ),
             measureResult.isComplete === false && el('div', { role: 'alert', 'data-geometry-measurement-incomplete': 'true',
               style: { margin: '2px 0', padding: '4px 6px', borderRadius: '4px', background: '#7f1d1d', color: '#fecaca', fontWeight: 700 } },
               'Measurement limit reached. At least ' + measureResult.count + ' connected blocks were found; volume, dimensions, and surface area below are partial and not exact.'),
-            measureResult.isComplete !== false && el('div', { className: 'gw-measure-dimensions', 'aria-label': __alloT('stem.geometryworld.principal_dimensions_in_units','Principal dimensions in units') },
+            measureResult.isComplete !== false && el('div', { className: 'gw-measure-dimension-group' },
+              el('div', { id: 'gw-measure-dimension-label', className: 'gw-measure-dimension-caption', 'data-geometry-dimension-model': measureResult.isSolidPrism ? 'prism' : 'bounding-box' },
+                el('strong', null, measureResult.isSolidPrism ? 'Prism dimensions' : 'Bounding-box dimensions'), el('span', null, '(units)')),
+              el('div', { className: 'gw-measure-dimensions', 'aria-labelledby': 'gw-measure-dimension-label', 'aria-label': __alloT('stem.geometryworld.principal_dimensions_in_units','Principal dimensions in units') },
               [['Length', measureResult.L], ['Width', measureResult.W], ['Height', measureResult.H]].map(function(dimension) {
                 return el('div', { className: 'gw-measure-dimension', key: dimension[0] }, el('span', null, dimension[0]), el('strong', null, dimension[1]));
-              })
+              })),
+              !measureResult.isSolidPrism && el('p', { className: 'gw-measure-dimension-note' }, 'Grid-cell spans, including gaps and partial cells.')
             ),
             el('div', { className: 'gw-measure-volume', 'data-geometry-occupied-volume': 'true' },
               el('span', null, measureResult.isComplete === false ? 'Occupied volume, at least' : 'Occupied volume'),
               el('span', { className: 'gw-measure-volume-value' }, el('strong', null, measureResult.formattedOccupiedVolume), el('span', null, ' cubic units'))
             ),
+            el('div', { className: 'gw-measure-surface-summary', 'data-geometry-surface-summary': measureResult.isComplete !== false && measureResult.surfaceAreaExact ? 'exact' : 'unavailable' },
+              el('span', null, 'Exposed surface area'),
+              measureResult.isComplete !== false && measureResult.surfaceAreaExact
+                ? el('span', { className: 'gw-measure-surface-value' }, el('strong', null, formatVolume(measureResult.exposedSurfaceArea)), el('span', null, ' square units'))
+                : el('span', { className: 'gw-measure-surface-unavailable' }, measureResult.isComplete === false
+                  ? 'Surface area unavailable until the full structure is measured'
+                  : measureResult.hasFractions ? 'Exact exposed surface area is unavailable for partial blocks.' : 'Exact exposed surface area is unavailable for this structure.')
+            ),
+            measureHistory.length > 0 && el('button', {
+              type: 'button', className: 'gw-notebook-trigger gw-focusable',
+              onClick: function() { setNotebookView(measurementComparison ? 'compare' : 'records'); setHudPanel('history', 'Measurements'); }
+            }, measurementComparison ? 'Compare measurements' : 'Measurement notebook'),
             el('details', { className: 'gw-measure-details', open: measurementDetailsOpen,
               onToggle: function(ev) { if (ev.currentTarget.open !== measurementDetailsOpen) setMeasurementDetailsOpen(ev.currentTarget.open); }
             },
@@ -15364,7 +15984,7 @@
             el('div', { 'data-geometry-surface-area': measureResult.surfaceAreaExact ? 'exact' : 'partial', style: { fontSize: '10px', color: measureResult.surfaceAreaExact ? '#86efac' : '#cbd5e1' } },
               measureResult.isComplete === false
                 ? 'Surface area unavailable until the full structure is measured'
-                : measureResult.surfaceAreaExact ? 'Exposed surface area = ' + measureResult.exposedSurfaceArea + ' square units' : 'Surface area needs partial-face analysis (press N)'),
+                : measureResult.surfaceAreaExact ? 'Exposed surface area = ' + measureResult.exposedSurfaceArea + ' square units' : measureResult.hasFractions ? 'Exact exposed surface area is unavailable for partial blocks.' : 'Exact exposed surface area is unavailable for this structure.'),
             layerExplorerHeight > 1 && el('section', { className: 'gw-layer-explorer', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_layer_explorer', 'Layer explorer'), 'data-geometry-layer-explorer': 'true', style: { marginTop: '4px', padding: '7px 8px', border: '1px solid rgba(45,212,191,0.28)', borderRadius: '8px', background: 'rgba(13,148,136,0.1)' } },
               el('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: '8px' } },
                 el('span', { style: { color: '#99f6e4', fontSize: '9px', fontWeight: 850, letterSpacing: '0.05em', textTransform: 'uppercase' } }, 'Layer explorer'),
@@ -15525,10 +16145,11 @@
                     el('span', null, 'I used evidence from the structure or equation.')
                   )
                 ),
+                el('p', { id: 'gw-connection-readiness', className: 'gw-connection-readiness', 'data-ready': representationConnectionReadiness.ready ? 'true' : 'false' }, volumeRepresentationConnectionSaved ? 'Explanation saved as learning evidence, not automatically graded.' : representationConnectionReadiness.ready ? 'Ready to save your explanation. The self-check records your own review.' : representationConnectionReadiness.message),
                 el('button', {
                   type: 'button', className: 'gw-focusable gw-measure-save-connection',
                   'data-state': volumeRepresentationConnectionSaved ? 'saved' : representationConnectionReadiness.ready ? 'ready' : 'draft',
-                  'aria-describedby': 'gw-representation-connect-prompt',
+                  'aria-describedby': 'gw-representation-connect-prompt gw-connection-readiness',
                   disabled: volumeRepresentationConnectionSaved,
                   onClick: function() {
                     var response = volumeRepresentationReason.trim();
@@ -15564,6 +16185,7 @@
             Object.keys(measureResult.materialCounts || {}).length > 1 && el('div', { 'data-geometry-material-breakdown': 'true', style: { fontSize: '10px', color: '#bfdbfe' } },
               'Materials: ' + Object.keys(measureResult.materialCounts).map(function(type) { return measureResult.materialCounts[type] + ' ' + type; }).join(', ')
             ),
+            el('button', { type: 'button', className: 'gw-reflect-trigger gw-focusable', 'data-geometry-reflect-trigger': 'measurement', title: 'Reflect on this structure', onClick: openGeometryReflection }, toolbarIcon('Sparkles', 'talk'), 'Reflect on this structure'),
             measureResult.isComplete !== false && el('button', {
               className: 'gw-measure-build-card gw-focusable',
               onClick: function() {
@@ -15587,19 +16209,24 @@
           },
             el('section', {
               id: 'gw-settings-dialog', role: 'dialog', 'aria-modal': 'true',
-              'aria-labelledby': 'gw-settings-title', 'aria-describedby': 'gw-settings-description',
+              'aria-labelledby': 'gw-settings-title',
               className: 'gw-settings-dialog', tabIndex: -1, ref: gwDialogRef,
-              onKeyDown: function(ev) { if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); closeGameSettings(); } }
+              onKeyDown: function(ev) { ev.stopPropagation(); if (ev.key === 'Escape') { ev.preventDefault(); closeGameSettings(); } }
             },
               el('div', { className: 'gw-settings-header' },
                 el('div', null,
-                  el('h2', { id: 'gw-settings-title', className: 'gw-settings-title' }, '\u2699\uFE0F Game settings & tools'),
-                  el('p', { id: 'gw-settings-description', className: 'gw-settings-description' }, 'Choose a saved HUD layout, adjust the lesson and view, or export your work. Closing this menu returns you to the game.')
+                  el('h2', { id: 'gw-settings-title', className: 'gw-settings-title' }, 'Settings')
                 ),
                 el('button', { type: 'button', className: 'gw-dialog-close gw-settings-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_close_game_settings_and_tools', 'Close game settings and tools'), onClick: closeGameSettings }, '\u00D7')
               ),
-              el('div', { className: 'gw-settings-controls' },
-                el('h3', { className: 'gw-settings-section-title' }, 'Play & view'),
+              el('div', { className: 'gw-settings-tabs', role: 'tablist', 'aria-label': 'Settings sections' },
+                [{ id: 'workspace', label: 'Workspace' }, { id: 'view', label: 'View' }, { id: 'learning', label: 'Learning' }, { id: 'create', label: 'Create' }].map(function(tab) {
+                  return el('button', { key: tab.id, type: 'button', role: 'tab', id: 'gw-settings-tab-' + tab.id, 'data-gw-settings-tab': tab.id, 'aria-selected': settingsTab === tab.id, 'aria-controls': 'gw-settings-panel-' + tab.id, tabIndex: settingsTab === tab.id ? 0 : -1, onClick: function() { selectSettingsTab(tab.id, false); }, onKeyDown: function(ev) { handleSettingsTabKey(ev, tab.id); } }, tab.label);
+                })
+              ),
+              el('div', { className: 'gw-settings-body' }, el('div', { className: 'gw-settings-controls' },
+                el('div', { className: 'gw-settings-panel', role: 'tabpanel', id: 'gw-settings-panel-view', 'aria-labelledby': 'gw-settings-tab-view', hidden: settingsTab !== 'view', tabIndex: 0 },
+                el('h3', { className: 'gw-settings-section-title' }, 'Graphics & camera'),
                 el('label', { className: 'gw-quality-control', title: renderQualityProfile.reason },
                   el('span', { className: 'gw-quality-label' }, '3D quality'),
                   el('select', {
@@ -15645,7 +16272,7 @@
                       'aria-pressed': active, 'aria-label': viewPresetLabels[preset] + ' camera view',
                       onClick: function() { if (engine && engine.setViewPreset) engine.setViewPreset(preset); closeGameSettings(); },
                       style: { minHeight: 30, minWidth: 42, padding: '4px 7px', border: active ? '1px solid #c4b5fd' : '1px solid transparent', borderRadius: 6, background: active ? '#5b21b6' : 'transparent', color: '#fff', fontSize: 10, fontWeight: 800, cursor: 'pointer' }
-                    }, viewPresetLabels[preset]);
+                    }, active && toolbarIcon('Check', 'eye'), viewPresetLabels[preset]);
                   })
                 ),
                 worldActive && tutorialDismissed && engine && el('button', {
@@ -15655,50 +16282,11 @@
                   onClick: function() { var next = !sceneMapOpen; setSceneMapOpen(next); if (next) upd({ hudPanel: '', showPredictionPanel: false, objectivesOpen: false }); announceToSR(next ? 'Textual scene map opened.' : 'Textual scene map closed.'); closeGameSettings(); },
                   style: { border: '1px solid rgba(45,212,191,0.5)', borderRadius: 8, background: '#115e59', color: '#fff', fontSize: 11, fontWeight: 800, cursor: 'pointer' }
                 }, sceneMapOpen ? 'Close scene map' : 'Scene map'),
-                worldActive && el('fieldset', { className: 'gw-hud-preset-fieldset', 'aria-describedby': 'gw-hud-preset-help' },
-                  el('legend', { className: 'gw-settings-section-title' }, 'HUD layout'),
-                  el('p', { id: 'gw-hud-preset-help', className: 'gw-hud-preset-help' }, 'Choose a default game view. Your preset and game-bar visibility are saved on this device.'),
-                  el('div', { className: 'gw-hud-presets', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_choose_a_saved_hud_preset', 'Choose a saved HUD preset'), 'aria-describedby': 'gw-hud-preset-help' },
-                    [
-                      { id: 'minimal', icon: '\uD83C\uDFAE', label: 'Minimal', description: 'Clear view with optional panels hidden.', ariaLabel: 'Use Minimal HUD: hide optional HUD panels' },
-                      { id: 'learning', icon: '\uD83C\uDF93', label: 'Learning', description: 'Lesson progress, score, and activity status.', ariaLabel: 'Use Learning HUD: show lesson progress' },
-                      { id: 'builder', icon: '\uD83E\uDDF1', label: 'Builder', description: 'Block counts and total constructed volume.', ariaLabel: 'Use Builder HUD: show block inventory' }
-                    ].map(function(preset) {
-                      var active = hudPreset === preset.id;
-                      return el('button', {
-                        key: preset.id, type: 'button', className: 'gw-hud-preset-card gw-focusable',
-                        'data-geometry-hud-preset': preset.id, 'aria-pressed': active,
-                        'aria-label': preset.ariaLabel,
-                        onClick: function() { applyHudPreset(preset.id); }
-                      },
-                        el('span', { className: 'gw-hud-preset-icon', 'aria-hidden': 'true' }, preset.icon),
-                        el('span', { className: 'gw-hud-preset-copy' },
-                          el('span', { className: 'gw-hud-preset-name' }, preset.label),
-                          el('span', { className: 'gw-hud-preset-description' }, preset.description)
-                        )
-                      );
-                    })
-                  )
-                ),
-                worldActive && el('h3', { className: 'gw-settings-section-title' }, 'Optional HUD overlays'),
-                worldActive && [
-                  { id: 'progress', controls: 'gw-progress-hud', icon: '\uD83D\uDCCA', label: 'Progress', disabled: false },
-                  { id: 'map', controls: 'gw-minimap', icon: '\uD83D\uDDFA\uFE0F', label: 'Minimap', disabled: !engine },
-                  { id: 'history', controls: 'gw-history-panel', icon: '\uD83D\uDCCF', label: 'Measurements', disabled: measureHistory.length === 0 },
-                  { id: 'inventory', controls: 'gw-inventory-panel', icon: '\uD83E\uDDF1', label: 'Block counts', disabled: !engine },
-                  { id: 'transform', controls: 'gw-transform-panel', icon: '\uD83D\uDCD0', label: 'Transform lab', disabled: false }
-                ].map(function(panel) {
-                  var active = hudPanel === panel.id;
-                  return el('button', {
-                    key: panel.id, type: 'button', className: 'gw-compact-action gw-hud-toggle gw-focusable',
-                    'aria-pressed': active, 'aria-controls': panel.controls, disabled: panel.disabled,
-                    title: panel.disabled ? panel.label + ' becomes available during play' : (active ? 'Hide ' + panel.label : 'Show ' + panel.label),
-                    onClick: function() { setHudPanel(panel.id, panel.label); }
-                  }, el('span', { 'aria-hidden': 'true' }, panel.icon), active ? 'Hide ' + panel.label : panel.label);
-                }),
-                el('h3', { className: 'gw-settings-section-title' }, 'Lesson & accessibility'),
-                !inFreeBuild && engine && engine.openFreeBuildLauncher && el('button', { type: 'button', className: 'gw-settings-free-build gw-focusable', 'data-gw-open-free-build': 'true',
-                  onClick: function() { var eng = window[engineKey]; if (eng && eng.openFreeBuildLauncher) eng.openFreeBuildLauncher(); } }, el('span', { 'aria-hidden': 'true' }, '\u2728'), 'Open Free Build'),
+                el('h3', { className: 'gw-settings-section-title' }, 'World appearance'),
+                el('label', { className: 'gw-settings-field' }, el('span', null, 'Environment'),
+                  el('select', { 'aria-label': __alloT('stem.geometryworld.time_of_day_environment_preset', 'Time of day / environment preset'), value: d.envPreset || 'day', onChange: function(ev) { var key = ev.target.value; upd('envPreset', key); var eng = window[engineKey]; if (eng) applyEnvPreset(eng, key); } },
+                    Object.keys(ENV_PRESETS).map(function(key) { return el('option', { key: key, value: key }, ENV_PRESETS[key].label); }))),
+                el('label', { className: 'gw-settings-check' }, el('input', { type: 'checkbox', checked: !!d.autoCycle, onChange: function(ev) { upd('autoCycle', ev.target.checked); } }), 'Automatic day and night'),
                 isMobile && touchMode && el('div', { className: 'gw-settings-look', role: 'group', 'aria-label': __alloT('stem.geometryworld.a11y_touch_look_settings', 'Touch look settings') },
                   el('label', { htmlFor: 'gw-touch-look-sensitivity' }, el('span', null, 'Look speed'), el('output', { htmlFor: 'gw-touch-look-sensitivity' }, Math.round(touchLookSensitivity / 0.004 * 100) + '%')),
                   el('input', { id: 'gw-touch-look-sensitivity', type: 'range', min: 0.002, max: 0.008, step: 0.001, value: touchLookSensitivity, 'aria-label': __alloT('stem.geometryworld.a11y_touch_look_sensitivity', 'Touch look sensitivity'), 'aria-valuetext': 'Look speed ' + Math.round(touchLookSensitivity / 0.004 * 100) + ' percent', onChange: function(ev) {
@@ -15706,15 +16294,59 @@
                     upd('touchLookSensitivity', next);
                     if (engine && engine.setTouchLookSensitivity) engine.setTouchLookSensitivity(next);
                   } })),
-
+                ),
+                el('div', { className: 'gw-settings-panel', role: 'tabpanel', id: 'gw-settings-panel-workspace', 'aria-labelledby': 'gw-settings-tab-workspace', hidden: settingsTab !== 'workspace', tabIndex: 0 },
+                el('h3', { className: 'gw-settings-section-title' }, 'Readability'),
+                el('label', { className: 'gw-settings-field' }, el('span', null, 'Interface text'),
+                  el('select', { 'data-gw-workspace-preference': 'uiTextSize', value: workspacePreferences.uiTextSize, onChange: function(ev) { updateWorkspacePreference('uiTextSize', ev.target.value); } }, el('option', { value: 'standard' }, 'Standard'), el('option', { value: 'large' }, 'Larger'))),
+                el('label', { className: 'gw-settings-field' }, el('span', null, 'Panel backgrounds'),
+                  el('select', { 'data-gw-workspace-preference': 'uiSurface', value: workspacePreferences.uiSurface, onChange: function(ev) { updateWorkspacePreference('uiSurface', ev.target.value); } }, el('option', { value: 'solid' }, 'Solid'), el('option', { value: 'glass' }, 'Translucent'))),
+                el('h3', { className: 'gw-settings-section-title' }, 'Visible controls'),
+                el('label', { className: 'gw-settings-check' }, el('input', { type: 'checkbox', 'data-gw-workspace-preference': 'toolbarCollapsed', checked: !toolbarCollapsed, onChange: function(ev) { updateWorkspacePreference('toolbarCollapsed', !ev.target.checked); } }), 'Show top bar'),
+                el('label', { className: 'gw-settings-check' }, el('input', { type: 'checkbox', 'data-gw-workspace-preference': 'showCoordinates', checked: workspacePreferences.showCoordinates, onChange: function(ev) { updateWorkspacePreference('showCoordinates', ev.target.checked); } }), 'Show coordinates'),
+                el('label', { className: 'gw-settings-check' }, el('input', { type: 'checkbox', 'data-gw-workspace-preference': 'showStationCompass', checked: workspacePreferences.showStationCompass, onChange: function(ev) { updateWorkspacePreference('showStationCompass', ev.target.checked); } }), 'Show station compass'),
+                worldActive && el('fieldset', { className: 'gw-hud-preset-fieldset' },
+                  el('legend', { className: 'gw-settings-section-title' }, 'Workspace layout'),
+                  el('div', { className: 'gw-hud-presets', role: 'group', 'aria-label': 'Workspace layout' },
+                    [
+                      { id: 'minimal', icon: 'Eye', label: 'Minimal', ariaLabel: 'Use Minimal HUD: hide optional HUD panels' },
+                      { id: 'learning', icon: 'GraduationCap', label: 'Learning', ariaLabel: 'Use Learning HUD: show lesson progress' },
+                      { id: 'builder', icon: 'Blocks', label: 'Builder', ariaLabel: 'Use Builder HUD: show block inventory' }
+                    ].map(function(preset) {
+                      var active = hudPreset === preset.id && hudPanel === GW_HUD_PRESETS[preset.id].hudPanel;
+                      return el('button', {
+                        key: preset.id, type: 'button', className: 'gw-hud-preset-card gw-focusable',
+                        'data-geometry-hud-preset': preset.id, 'aria-pressed': active,
+                        'aria-label': preset.ariaLabel,
+                        onClick: function() { applyHudPreset(preset.id); }
+                      },
+                        el('span', { className: 'gw-hud-preset-icon', 'aria-hidden': 'true' }, toolbarIcon(active ? 'Check' : preset.icon, 'eye')),
+                        el('span', { className: 'gw-hud-preset-copy' },
+                          el('span', { className: 'gw-hud-preset-name' }, preset.label)
+                        )
+                      );
+                    })
+                  )
+                ),
+                worldActive && el('label', { className: 'gw-settings-field' }, el('span', null, 'Optional panel'),
+                  el('select', { value: hudPanel, 'data-gw-workspace-panel': 'true', onChange: function(ev) { setHudPanel(ev.target.value, ev.target.options[ev.target.selectedIndex].text); } },
+                    el('option', { value: '' }, 'None'), el('option', { value: 'progress' }, 'Lesson progress'), el('option', { value: 'map', disabled: !engine }, 'Minimap'), el('option', { value: 'history', disabled: measureHistory.length === 0 }, 'Measurement notebook'), el('option', { value: 'inventory', disabled: !engine }, 'Block counts'), el('option', { value: 'transform' }, 'Transform lab'))),
+                worldActive && el('p', { className: 'gw-workspace-save-status' }, 'Current layout: ' + (hudPanel === GW_HUD_PRESETS[hudPreset].hudPanel ? GW_HUD_PRESETS[hudPreset].label : 'Custom')),
+                el('button', { type: 'button', 'data-gw-workspace-reset': 'true', onClick: resetWorkspacePreferences }, toolbarIcon('RotateCcw', 'undo'), 'Reset workspace appearance'),
+                el('p', { className: 'gw-workspace-save-status', role: 'status', 'aria-live': 'polite' }, workspaceSaveState[0]),
+                ),
+                el('div', { className: 'gw-settings-panel', role: 'tabpanel', id: 'gw-settings-panel-learning', 'aria-labelledby': 'gw-settings-tab-learning', hidden: settingsTab !== 'learning', tabIndex: 0 },
+                el('h3', { className: 'gw-settings-section-title' }, 'Lesson & accessibility'),
+                !inFreeBuild && engine && engine.openFreeBuildLauncher && el('button', { type: 'button', className: 'gw-settings-free-build gw-focusable', 'data-gw-open-free-build': 'true',
+                  onClick: function() { var eng = window[engineKey]; if (eng && eng.openFreeBuildLauncher) eng.openFreeBuildLauncher(); } }, el('span', { 'aria-hidden': 'true' }, '\u2728'), 'Open Free Build'),
           // Lesson selector (built-in + AI-generated)
-          el('select', {
+          el('label', { className: 'gw-settings-field' }, el('span', null, 'Lesson'), el('select', {
             'aria-label': __alloT('stem.geometryworld.choose_lesson', 'Choose lesson'),
-            value: activeLesson,
+            value: d.pendingLesson || activeLesson,
             onChange: function(ev) {
               var lessonKey = ev.target.value;
               if (lessonKey === 'practice_new' || lessonKey === 'practice_new_s') { var newLevel = lessonKey === 'practice_new_s' ? 'stretch' : 'core'; lessonKey = geometryPracticeKey(geometryPracticeNewSeed(geometryStorage(), newLevel), newLevel); }
-              upd({ activeLesson: lessonKey, showLessonIntro: true, showReflection: false, showGameSettings: false });
+              upd({ pendingLesson: lessonKey, showLessonIntro: true, showReflection: false, showGameSettings: false });
             },
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
           },
@@ -15744,9 +16376,9 @@
                 return el('option', { key: ml._id, value: ml._id }, '\u2728 ' + (ml.title || 'Untitled').slice(0, 30));
               })
             )
-          ),
+          )),
           // Home language selector (multilingual NPC voices)
-          el('select', {
+          el('label', { className: 'gw-settings-field' }, el('span', null, 'Home language'), el('select', {
             'aria-label': __alloT('stem.geometryworld.student_home_language_for_bilingual_np', 'Student home language for bilingual NPC speech'),
             value: homeLang,
             onChange: function(ev) { upd({ homeLang: ev.target.value, npcTranslations: {} }); },
@@ -15762,51 +16394,25 @@
             el('option', { value: 'vi' }, '\uD83C\uDDFB\uD83C\uDDF3 Ti\u1EBFng Vi\u1EC7t'),
             el('option', { value: 'zh' }, '\uD83C\uDDE8\uD83C\uDDF3 \u4E2D\u6587'),
             el('option', { value: 'sw' }, '\uD83C\uDDF0\uD83C\uDDEA Kiswahili')
-          ),
+          )),
           // Help toggle
           el('button', {
             onClick: function() { upd({ showHelp: !showHelp, showGameSettings: false }); },
             style: { background: 'var(--allo-stem-panel, #1e293b)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', borderRadius: '6px', padding: '4px 10px', cursor: 'pointer', fontSize: '11px', fontWeight: 600 }
           }, showHelp ? 'Hide Help' : '? Help'),
           // Sound mute toggle
-          el('button', {
-            onClick: function() {
-              var newMuted = !soundMuted;
+          el('label', { className: 'gw-settings-check' }, el('input', {
+            type: 'checkbox', checked: !soundMuted,
+            onChange: function(ev) {
+              var newMuted = !ev.target.checked;
               upd('soundMuted', newMuted);
               _gwMuted = newMuted; // every sound helper reads getAC(), which returns null while muted
               if (!newMuted) { var ac = getAC(); if (ac && ac.state === 'suspended') { try { ac.resume(); } catch (resumeError) {} } }
               if (addToast) addToast(newMuted ? '\uD83D\uDD07 Sound muted' : '\uD83D\uDD0A Sound on', 'info');
             },
-            title: soundMuted ? 'Unmute sounds' : 'Mute all sounds',
-            'aria-label': soundMuted ? 'Unmute sounds' : 'Mute all sounds',
-            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: soundMuted ? '#ef4444' : '#94a3b8', fontSize: '11px', cursor: 'pointer', fontWeight: 600 }
-          }, soundMuted ? '\uD83D\uDD07' : '\uD83D\uDD0A'),
-          // Environment preset selector
-          el('select', {
-            'aria-label': __alloT('stem.geometryworld.time_of_day_environment_preset', 'Time of day / environment preset'),
-            value: d.envPreset || 'day',
-            onChange: function(ev) {
-              var key = ev.target.value;
-              upd('envPreset', key);
-              var eng = window[engineKey];
-              if (eng) applyEnvPreset(eng, key);
-            },
-            title: __alloT('stem.geometryworld.time_of_day_environment', 'Time of day / environment'),
-            style: { background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '6px', padding: '3px 8px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '11px', fontFamily: 'inherit', cursor: 'pointer' }
-          },
-            Object.keys(ENV_PRESETS).map(function(k) {
-              return el('option', { key: k, value: k }, ENV_PRESETS[k].label);
-            })
+          }), 'Sound'),
           ),
-          // Auto day/night cycle toggle
-          el('button', {
-            type: 'button', className: 'gw-focusable',
-            'aria-label': d.autoCycle ? 'Stop automatic day and night cycle' : 'Start automatic day and night cycle',
-            'aria-pressed': d.autoCycle ? 'true' : 'false',
-            onClick: function() { upd('autoCycle', !(d.autoCycle || false)); },
-            title: d.autoCycle ? 'Stop auto day/night cycle' : 'Start auto day/night cycle (changes every 60s)',
-            style: { background: d.autoCycle ? '#f59e0b' : '#1e293b', border: '1px solid ' + (d.autoCycle ? '#fbbf24' : '#334155'), borderRadius: '6px', padding: '3px 6px', color: d.autoCycle ? '#000' : '#f59e0b', fontSize: '10px', cursor: 'pointer', fontWeight: 700 }
-          }, d.autoCycle ? '\u2600\uFE0F\u27F3' : '\u2600\uFE0F'),
+          el('div', { className: 'gw-settings-panel', role: 'tabpanel', id: 'gw-settings-panel-create', 'aria-labelledby': 'gw-settings-tab-create', hidden: settingsTab !== 'create', tabIndex: 0 },
           el('h3', { className: 'gw-settings-section-title' }, 'Create, share & export'),
           // Save/Export world
           engine && el('button', {
@@ -16014,15 +16620,23 @@
                         var bounds = checked.summary.bounds;
                         var promptText = 'Open "' + checked.value.title + '" with ' + checked.summary.blockCount + ' student blocks (bounds ' + bounds.width + ' x ' + bounds.depth + ' x ' + bounds.height + ')? This replaces the current world and cannot be undone.';
                         if (typeof window.confirm === 'function' && !window.confirm(promptText)) { if (addToast) addToast('World import canceled. The current world was not changed.', 'info'); return; }
+                        return runWorldTransition(eng, checked.value, function() {
                         var restored = builderPure.restoreEditableWorld(eng, checked.value);
                         if (!restored.ok) throw new Error(restored.error);
                         upd({ activeLesson: 'builderSandbox', worldActive: true, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', measureResult: null, measureHistory: [], blocksPlaced: restored.placedCount });
                         if (addToast) addToast('\uD83C\uDF0D Opened ' + restored.placedCount + ' validated student blocks', 'success');
+                        if (eng.logEvent) eng.logEvent('world_import', { title: worldData.title || 'imported', blockCount: (worldData.blocks || []).length });
+                        return true;
+                        });
                       } else if (worldData.structures || worldData.npcs) {
-                        eng.loadLesson(worldData);
+                        return runWorldTransition(eng, worldData, function() {
+                        if (eng.loadLesson(worldData) === false) return false;
+                        upd({ activeLesson: 'ai_generated', lastGeneratedLesson: worldData, lessonEditorJson: JSON.stringify(worldData, null, 2), pendingLesson: null, showLessonIntro: false });
                         if (addToast) addToast('\uD83C\uDF0D Loaded: ' + (worldData.title || 'World'), 'success');
+                        if (eng.logEvent) eng.logEvent('world_import', { title: worldData.title || 'imported', blockCount: (worldData.blocks || []).length });
+                        return true;
+                        });
                       } else throw new Error('This JSON file is neither a Geometry World lesson nor an editable world.');
-                      if (eng.logEvent) eng.logEvent('world_import', { title: worldData.title || 'imported', blockCount: (worldData.blocks || []).length });
                     }
                   } catch (err) {
                     if (addToast) addToast('Failed to load world: ' + err.message, 'error');
@@ -16162,6 +16776,7 @@
               style: { minHeight: '44px', padding: '8px 12px', borderRadius: '6px', border: '1px solid #64748b', color: 'var(--allo-stem-text, #e2e8f0)', background: 'var(--allo-stem-panel, #1e293b)', cursor: 'pointer' }
             }, 'Cancel generation'),
             d.aiGenerationStatus && el('p', { role: 'status', 'aria-live': 'polite', style: { flexBasis: '100%', fontSize: '11px', margin: '2px 0 6px', lineHeight: 1.5 } }, d.aiGenerationStatus),
+            d.pendingGeneratedLesson && el('button', { type: 'button', 'data-gw-pending-generated': 'true', onClick: function() { finishGeneration(d.pendingGeneratedLesson); }, style: { minHeight: '44px', padding: '8px 12px', border: '1px solid #7ba998', borderRadius: '6px', background: '#196754', color: '#fff', fontSize: '12px', fontWeight: 700, cursor: 'pointer' } }, toolbarIcon('Play', 'talk'), 'Open ready lesson: ' + (d.pendingGeneratedLesson.title || 'Generated lesson')),
             // Surprise Me (grade-aware topics)
             el('button', {
               onClick: function() {
@@ -16206,6 +16821,8 @@
             }, '\u270F\uFE0F JSON')
           )
               )
+              )
+              )
             )
           ),
 
@@ -16240,7 +16857,7 @@
         // ── NPC COMPASS — live-updating horizontal pip strip centered on camera facing ──
         // Pips colored green (answered) or red (unanswered) help students locate NPCs they've missed.
         // Self-contained: canvas ref boots a rAF loop that reads engine.camera + engine.npcs each frame.
-        worldActive && openModals.length === 0 && engine && engine.npcs && engine.npcs.length > 0 && el('canvas', {
+        workspacePreferences.showStationCompass && worldActive && openModals.length === 0 && engine && engine.npcs && engine.npcs.length > 0 && el('canvas', {
           // Decorative: an unlabelled canvas is noise in the accessibility tree, and
           // everything it encodes (who is where, who still owes a question) is now
           // spoken by L via summarizeNearbyNpcs.
@@ -16315,9 +16932,8 @@
 
         // ── FLOATING "BACK TO GAME" BUTTON — appears when any modal/overlay is open ──
         // Lets students instantly dismiss all overlays and return to the 3D world.
-        // Positioned bottom-center so it doesn't collide with any modal, high z-index so always visible.
-        // A character dialog has its own close button (and Esc), so it gets no Back to Game dock.
-        openModals.length > 0 && !(openModals.length === 1 && openModals[0].key === 'showNpcDialog') && el('div', { className: 'gw-return-dock',
+        // Character and completion dialogs have their own return actions.
+        openModals.length > 0 && !completionVisible && !(openModals.length === 1 && openModals[0].key === 'showNpcDialog') && el('div', { className: 'gw-return-dock',
           style: { position: 'absolute', bottom: '20px', left: '50%', transform: 'translateX(-50%)', zIndex: 100, display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '6px', pointerEvents: 'none' }
         },
           // Status pill: list of open overlays
@@ -16461,7 +17077,7 @@
                   // 'ai_generated' — that is the key currentLesson and the chat-history
                   // key are both resolved from, so a specific saved lesson has to be
                   // addressable rather than collapsing onto "whatever was last made".
-                  if (eng) { eng.loadLesson(lesson); upd({ showMyLessons: false, lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), activeLesson: lesson._id || 'ai_generated' }); }
+                  if (eng) runWorldTransition(eng, lesson, function() { if (eng.loadLesson(lesson) === false) return false; upd({ showMyLessons: false, lastGeneratedLesson: lesson, lessonEditorJson: JSON.stringify(lesson, null, 2), activeLesson: lesson._id || 'ai_generated' }); return true; });
                 },
                 style: { background: '#7c3aed', color: '#fff', border: 'none', borderRadius: '4px', padding: '3px 8px', fontSize: '10px', cursor: 'pointer', fontWeight: 700, flexShrink: 0 }
               }, '\u25B6'),
@@ -16500,13 +17116,16 @@
                   lesson = validateLesson(lesson);
                   var eng = window[engineKey];
                   if (eng && lesson && lesson.structures) {
-                    eng.loadLesson(lesson);
+                    return runWorldTransition(eng, lesson, function() {
+                    if (eng.loadLesson(lesson) === false) return false;
                     saveToMyLessons(lesson);
                     // Point activeLesson at what was just loaded. Without it the tool
                     // kept resolving currentLesson to the PREVIOUS lesson while the
                     // engine held the new one \u2014 wrong title, objectives and worksheet.
                     upd({ lastGeneratedLesson: lesson, showLessonEditor: false, activeLesson: lesson._id || 'ai_generated' });
                     if (addToast) addToast('\u2705 Lesson applied and saved!', 'success');
+                    return true;
+                    });
                   } else if (!lesson && addToast) {
                     addToast('\u274c That JSON is not a lesson object', 'error');
                   }
@@ -16594,9 +17213,12 @@
         // Objectives panel (left side) — glass style with progress bar
         objectivesOpen && !hasLessonActivities && el('section', { id: 'gw-objective-panel', className: 'gw-objective-panel', role: 'region', 'aria-labelledby': 'gw-objective-title' },
           el('div', { className: 'gw-objective-header' },
-            el('h2', { id: 'gw-objective-title', className: 'gw-objective-title' }, '\uD83D\uDCCB Objectives'),
-            totalQ > 0 && el('div', { className: 'gw-objective-count' }, score + '/' + totalQ)
+            el('h2', { id: 'gw-objective-title', className: 'gw-objective-title', tabIndex: -1 }, 'Your learning path'),
+            totalQ > 0 && el('div', { className: 'gw-objective-count' }, score + '/' + totalQ),
+            el('button', { type: 'button', className: 'gw-objective-close gw-focusable', title: 'Close learning path', 'aria-label': 'Close learning path', onClick: closeLearningPath },
+              ctx.icons && Object.prototype.hasOwnProperty.call(ctx.icons, 'X') && ctx.icons.X ? el(ctx.icons.X, { size: 18, 'aria-hidden': 'true' }) : el('span', { 'aria-hidden': 'true' }, '\u00d7'))
           ),
+          el('p', { className: 'gw-objective-summary' }, learningPath.done + ' of ' + learningPath.total + ' objectives explored' + (totalQ > 0 ? ' \u00b7 ' + score + ' of ' + totalQ + ' questions answered' : '')),
           // Semantic progress bar: question completion is determinate.
           totalQ > 0 && el('div', { className: 'gw-objective-progress', role: 'progressbar', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_question_progress', 'Lesson question progress'), 'aria-valuemin': 0, 'aria-valuemax': totalQ, 'aria-valuenow': Math.min(score, totalQ), 'aria-valuetext': score + ' of ' + totalQ + ' questions completed' },
             el('div', { className: 'gw-objective-progress-fill', style: { width: Math.min(100, Math.round((score / totalQ) * 100)) + '%', background: score >= totalQ ? 'linear-gradient(90deg, #fbbf24, #f59e0b)' : 'linear-gradient(90deg, #7c3aed, #a78bfa)' }, 'aria-hidden': 'true' })
@@ -16606,7 +17228,7 @@
             // to tick by answer count, in any order; one without a rule now ticks when
             // the lesson is complete.
             var eng = window[engineKey];
-            return el('div', { className: 'gw-objective-list' }, lessonObjectiveStatuses().map(function(entry) {
+            return el('div', { className: 'gw-objective-list' }, learningPathEntries.map(function(entry) {
               var i = entry.index, objectiveText = entry.text, status = entry.status;
               var isDone = status.done, canToggle = !!status.self;
               var target = !isDone && status.npcs && eng && eng.npcs ? eng.npcs.filter(function(n, idx) { return n && n.data && n.body && status.npcs.indexOf(n.data.name) >= 0 && !answeredNpcs[idx]; })[0] : null;
@@ -16626,17 +17248,29 @@
                 type: interactive ? 'button' : undefined,
                 className: 'gw-objective-item gw-focusable',
                 'data-complete': isDone ? 'true' : 'false',
+                'data-next': learningPath.next && learningPath.next.index === i ? 'true' : 'false',
                 'aria-pressed': canToggle ? (isDone ? 'true' : 'false') : undefined,
                 'aria-label': canToggle ? (isDone ? 'Marked done: ' : 'Mark done: ') + objectiveText : target ? 'Go to ' + target.data.name + ' for: ' + objectiveText : undefined,
                 title: isDone ? 'Completed' : canToggle ? 'Mark this done when you have finished it' : target ? 'Go to ' + target.data.name : undefined
               },
-                el('span', { className: 'gw-objective-marker', 'aria-hidden': 'true' }, isDone ? '\u2705' : '\u25CB'),
+                el('span', { className: 'gw-objective-marker', 'aria-hidden': 'true' }, isDone ? '\u2713' : i + 1),
                 el('span', { className: 'gw-objective-copy' },
                   el('span', { style: { textDecoration: isDone ? 'line-through' : 'none' } }, objectiveText),
                   status.evidence && el('small', { className: 'gw-objective-evidence', style: { display: 'block', marginTop: '2px', fontSize: '10px', opacity: 0.85 } }, status.evidence))
               );
             }));
           })(),
+          (function() {
+            var model = window.StemLab.geometryWorldLessonChecks.conceptModel;
+            var concept = model && model(currentLesson, activeLesson);
+            return concept && el('details', { className: 'gw-concept-reminder' },
+              el('summary', null, 'Make the connection'),
+              el('p', null, el('strong', null, concept.relationship)),
+              el('p', null, concept.copy),
+              el('p', null, el('strong', null, 'Think about: '), concept.question)
+            );
+          })(),
+          el('button', { type: 'button', className: 'gw-reflect-trigger gw-focusable', 'data-geometry-reflect-trigger': 'learning-path', title: 'Reflect on your discovery', onClick: openGeometryReflection }, toolbarIcon('Sparkles', 'talk'), 'Reflect on your discovery'),
           // Reset button
           el('button', {
             type: 'button',
@@ -16644,9 +17278,13 @@
             'aria-label': __alloT('stem.geometryworld.a11y_reset_lesson_progress_and_reload_the_world', 'Reset lesson progress and reload the world'),
             onClick: function() {
               var eng = window[engineKey];
-              if (eng) eng.loadLesson(currentLesson);
+              if (!eng) return;
+              return runWorldTransition(eng, currentLesson, function() {
+              if (eng.loadLesson(currentLesson) === false) return false;
               if (eng) eng._predictionState = { input: '', strategy: '', reason: '', commitment: null, observedTargetKeys: [], history: [] };
-              upd({ score: 0, answeredNpcs: {}, npcFeedback: {}, objectiveChecks: Object.assign({}, d.objectiveChecks || {}, (function(o) { o[activeLesson] = {}; return o; })({})), measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+              upd({ score: 0, answeredNpcs: {}, npcFeedback: {}, npcAnswerDrafts: {}, objectiveChecks: Object.assign({}, d.objectiveChecks || {}, (function(o) { o[activeLesson] = {}; return o; })({})), measureResult: null, measureHistory: [], volumePrediction: '', volumeEstimateCommitment: null, volumeEstimateObservedTargets: [], volumeEstimateCommitError: '', predictionStrategy: '', predictionReason: '', predictionResult: null, predictionRevision: '', predictionRevisionResult: null, predictionReflection: '' });
+              return true;
+              });
             },
             title: __alloT('stem.geometryworld.reset_lesson_progress_and_reload_the_world','Reset lesson progress and reload the world')
           }, '\u21BB Reset World')
@@ -16844,18 +17482,9 @@
           })
         )),
         // ── Coordinate & Compass HUD (bottom-left) ──
-        engine && engine.camera && el('details', { className:'gw-coordinate-hud', open:typeof window === 'undefined' || window.innerWidth > 800,
-          style: { position: 'absolute', bottom: '10px', left: '8px', zIndex: 20, background: 'rgba(0,0,0,0.6)', borderRadius: '8px', padding: '5px 10px', backdropFilter: 'blur(4px)', border: '1px solid rgba(255,255,255,0.06)', fontFamily: 'monospace', fontSize: '10px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5 }
-        },
-          el('summary', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, fontSize: '10px', letterSpacing: '0.5px', marginBottom: '1px', cursor:'pointer' } }, 'Position'),
-          el('div', null,
-            el('span', { style: { color: '#ef4444' } }, 'X'),
-            ' ' + Math.floor(engine.camera.position.x) + '  ',
-            el('span', { style: { color: '#22c55e' } }, 'Y'),
-            ' ' + Math.floor(engine.camera.position.y) + '  ',
-            el('span', { style: { color: '#3b82f6' } }, 'Z'),
-            ' ' + Math.floor(engine.camera.position.z)
-          ),
+        workspacePreferences.showCoordinates && engine && engine.camera && el('details', { className: 'gw-coordinate-hud', open: typeof window === 'undefined' || (window.innerWidth > 800 && window.innerHeight > 520) },
+          el('summary', { className: 'gw-coordinate-summary', onKeyDown: function(ev) { if (ev.key === ' ' || ev.key === 'Enter') ev.stopPropagation(); } }, 'Position'),
+          renderCoordinateReadout(el, engine.camera.position, 'camera'),
           (function() {
             // Compass: derive facing direction from camera
             var fwd = new (window.THREE.Vector3)();
@@ -16864,42 +17493,33 @@
             if (angle < 0) angle += 360;
             var dirs = ['N', 'NE', 'E', 'SE', 'S', 'SW', 'W', 'NW'];
             var idx = Math.round(angle / 45) % 8;
-            return el('div', { style: { display: 'flex', alignItems: 'center', gap: '4px', marginTop: '1px' } },
-              el('span', { style: { color: '#fbbf24', fontWeight: 700, fontSize: '11px' } }, dirs[idx]),
-              el('span', { style: { color: 'var(--allo-stem-text-soft, #475569)' } }, Math.round(angle) + '\u00b0')
+            return el('p', { className: 'gw-coordinate-facing' },
+              el('span', null, 'Facing'),
+              el('strong', null, dirs[idx]),
+              el('span', null, Math.round(angle) + '\u00b0')
             );
           })(),
           // Target block line — shows the XYZ of the block the player is aiming at.
-          engine._targetGrid && el('div', { style: { marginTop: '3px', paddingTop: '3px', borderTop: '1px solid rgba(255,255,255,0.08)' } },
-            el('span', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)', fontWeight: 600, fontSize: '8px', letterSpacing: '0.5px', marginRight: '4px' } }, 'TARGET'),
-            el('span', { style: { color: '#ef4444' } }, 'X'),
-            ' ' + engine._targetGrid.x + '  ',
-            el('span', { style: { color: '#22c55e' } }, 'Y'),
-            ' ' + engine._targetGrid.y + '  ',
-            el('span', { style: { color: '#3b82f6' } }, 'Z'),
-            ' ' + engine._targetGrid.z
-          ),
+          engine._targetGrid && renderCoordinateReadout(el, engine._targetGrid, 'target'),
           // SR-announce pill — indicator + click toggle (matches 'C' key). When on, position
           // is announced periodically to the shared live region so low-vision students can
           // navigate by coordinate.
           el('button', {
-            type: 'button', className: 'gw-focusable',
+            type: 'button', className: 'gw-focusable gw-coordinate-speech-toggle',
+            onKeyDown: function(ev) { if (ev.key === ' ' || ev.key === 'Enter') ev.stopPropagation(); },
             onClick: function() {
-              var eng = window[engineKey]; if (!eng) return;
+              var eng = window[engineKey]; if (!eng || !eng.camera) return;
               eng._coordAnnounce = !eng._coordAnnounce;
-              if (addToast) addToast(eng._coordAnnounce ? '\uD83D\uDD0A Coord announcements ON (press C to toggle)' : '\uD83D\uDD07 Coord announcements OFF', 'info');
-              if (eng._coordAnnounce && typeof announceToSR === 'function') {
-                announceToSR(__alloFill(__alloT('stem.geometryworld.sr_coordinate_announcements_on_position_at_x_y_z', 'Coordinate announcements on. Position at X {value1} Y {value2} Z {value3}'), { value1: Math.floor(eng.camera.position.x), value2: Math.floor(eng.camera.position.y), value3: Math.floor(eng.camera.position.z) }));
+              coordinateHudRenderState[1](function(value) { return value + 1; });
+              if (typeof announceToSR === 'function') {
+                announceToSR(eng._coordAnnounce ? __alloFill(__alloT('stem.geometryworld.sr_coordinate_announcements_on_position_at_x_y_z', 'Coordinate announcements on. Position at X {value1} Y {value2} Z {value3}'), { value1: Math.floor(eng.camera.position.x), value2: Math.floor(eng.camera.position.y), value3: Math.floor(eng.camera.position.z) }) : 'Coordinate announcements off');
               }
             },
             'aria-pressed': engine._coordAnnounce ? 'true' : 'false',
-            'aria-label': __alloT('stem.geometryworld.toggle_coordinate_screen_reader_announ', 'Toggle coordinate screen-reader announcements (key C)'),
-            title: __alloT('stem.geometryworld.announce_coordinates_to_screen_reader_', 'Announce coordinates to screen reader (C)'),
-            style: { marginTop: '4px', cursor: 'pointer', padding: '2px 6px', borderRadius: '6px', fontSize: '8px', fontWeight: 700, letterSpacing: '0.5px', display: 'inline-block',
-              background: engine._coordAnnounce ? 'rgba(34,211,238,0.25)' : 'rgba(100,116,139,0.15)',
-              color: engine._coordAnnounce ? '#67e8f9' : '#94a3b8',
-              border: '1px solid ' + (engine._coordAnnounce ? 'rgba(34,211,238,0.5)' : 'rgba(100,116,139,0.2)') }
-          }, engine._coordAnnounce ? '\uD83D\uDD0A SR ON' : '\uD83D\uDD07 SR OFF')
+            'aria-label': __alloT('stem.geometryworld.spoken_coordinates', 'Spoken coordinates'),
+            'aria-keyshortcuts': 'C',
+            title: __alloT('stem.geometryworld.announce_coordinates_to_screen_reader_', 'Spoken coordinate announcements (C)')
+          }, el('span', null, 'Spoken coordinates'), el('strong', null, engine._coordAnnounce ? 'On' : 'Off'))
         ),
         // ── Unified action bar (mode toggles, undo/redo, world actions) ──
         // All pills live in one wrapping flex row so they align regardless of which are
@@ -17087,38 +17707,75 @@
             boxShadow: '0 8px 24px rgba(2,6,23,0.35)', animation: 'fadeIn 0.2s ease-out' }
         }, actionFeedback)
         ),
-        // ── Measurement history panel (bottom-left, above position HUD) ──
+        // Measurement notebook keeps records, comparison, and transfer practice distinct.
         hudPanel === 'history' && measureHistory.length > 0 && el('section', { id: 'gw-history-panel', className: 'gw-history-panel', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_measurement_history', 'Measurement history') },
-          el('div', { className: 'gw-history-title gw-hud-panel-heading' }, el('span', null, '\uD83D\uDCCF MEASUREMENTS \u00b7 ' + completedMeasurements.length + '/' + measureHistory.length + ' COMPLETE'), el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_hide_measurement_history', 'Hide measurement history'), onClick: function() { closeHudPanel('Measurements'); } }, '\u00D7')),
-          measureHistory.slice(-5).reverse().map(function(mh, mi) {
-            return el('div', { key: mi, className: 'gw-history-row', 'data-current': mi === 0 ? 'true' : 'false', 'data-incomplete': mh.isComplete === false ? 'true' : 'false' },
-              el('span', null, mh.isComplete === false ? 'Incomplete scan' : mh.L + '\u00d7' + mh.W + '\u00d7' + mh.H),
-              el('span', { style: { color: mh.isComplete === false ? '#fca5a5' : mi === 0 ? '#fbbf24' : '#94a3b8' } }, mh.isComplete === false ? '\u2265' + mh.blocks : '=' + mh.vol),
-              mh.prediction != null && el('span', { title: 'Committed estimate ' + formatVolume(mh.prediction) + '; descriptive difference ' + mh.percentError + '%', style: { color: '#bfdbfe', fontSize: '8px' } }, 'E:' + formatVolume(mh.prediction) + ' (\u0394 ' + mh.percentError + '%)')
-            );
-          }),
-          measurementComparison && el('div', { className: 'gw-history-comparison', role: 'status', 'data-geometry-measurement-comparison': 'true' },
-            el('div', { style: { color: '#c4b5fd', fontWeight: 800, fontSize: '8px', letterSpacing: '0.4px' } }, 'COMPARE LATEST TWO COMPLETE'),
-            el('div', { style: { color: '#e2e8f0' } }, 'Volume: ' + formatVolume(measurementComparison.previousVolume) + ' \u2192 ' + formatVolume(measurementComparison.latestVolume) + (measurementComparison.sameVolume ? ' (same)' : ' (change ' + formatVolume(Math.abs(measurementComparison.volumeDifference)) + ')')),
-            measurementComparison.surfaceAreaDifference !== null && el('div', { style: { color: '#86efac' } }, 'Surface area: ' + measurementComparison.previousSurfaceArea + ' \u2192 ' + measurementComparison.latestSurfaceArea + ' square units'),
-            measurementComparison.moreSurfaceEfficient && el('div', { style: { color: '#fde68a', fontWeight: 700 } }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' shape uses ' + Math.abs(measurementComparison.surfaceAreaDifference) + ' fewer square units for the same volume.'),
-            measurementComparison.surfaceAreaDifference === null && el('div', { style: { color: '#94a3b8' } }, 'Surface comparison unavailable for partial blocks.')
+          el('div', { className: 'gw-notebook-header' },
+            el('div', { className: 'gw-history-title gw-hud-panel-heading' }, el('span', null, 'Measurement notebook'), el('button', { type: 'button', className: 'gw-hud-panel-close gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_hide_measurement_history', 'Hide measurement history'), onClick: function() { closeHudPanel('Measurements'); } }, '\u00D7')),
+            el('div', { role: 'tablist', 'aria-label': 'Measurement notebook views', className: 'gw-notebook-tabs' },
+              [{ key: 'records', label: 'Records' }, { key: 'compare', label: 'Compare' }, { key: 'practice', label: 'Practice' }].map(function(view) {
+                return el('button', { key: view.key, type: 'button', role: 'tab', id: 'gw-notebook-tab-' + view.key,
+                  'aria-selected': notebookView === view.key, 'aria-controls': 'gw-notebook-view-' + view.key, tabIndex: notebookView === view.key ? 0 : -1,
+                  onClick: function() { setNotebookView(view.key); },
+                  onKeyDown: function(ev) {
+                    var keys = ['records', 'compare', 'practice'];
+                    var index = keys.indexOf(view.key);
+                    var next = ev.key === 'ArrowRight' ? keys[(index + 1) % keys.length] : ev.key === 'ArrowLeft' ? keys[(index + keys.length - 1) % keys.length] : ev.key === 'Home' ? keys[0] : ev.key === 'End' ? keys[keys.length - 1] : null;
+                    if (!next) return;
+                    ev.preventDefault(); ev.stopPropagation(); setNotebookView(next);
+                    var nextTab = document.getElementById('gw-notebook-tab-' + next);
+                    if (nextTab) nextTab.focus();
+                  }
+                }, view.label);
+              })
+            )
           ),
-          activeRetrievalCheckpoint && el('div', { className: 'gw-retrieval-card', 'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept },
-            el('div', { className: 'gw-retrieval-title' }, 'RETRIEVAL CHECK'),
-            el('div', { style: { color: '#e2e8f0', fontSize: '9px', marginBottom: '4px' } }, activeRetrievalCheckpoint.prompt),
-            el('div', { className: 'gw-retrieval-controls' },
-              el('input', {
-                type: 'text', inputMode: 'decimal', value: retrievalAnswer, disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
-                className: 'gw-retrieval-input gw-focusable',
-                onChange: function(ev) { upd({ retrievalAnswer: ev.target.value, retrievalResult: null }); },
-                placeholder: 'answer', 'aria-label': __alloT('stem.geometryworld.a11y_retrieval_checkpoint_answer', 'Retrieval checkpoint answer'),
-                autoComplete: 'off'
-              }),
-              el('button', {
-                type: 'button', className: 'gw-focusable gw-retrieval-button',
-                disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
-                onClick: function() {
+          el('div', { role: 'tabpanel', id: 'gw-notebook-view-records', 'aria-labelledby': 'gw-notebook-tab-records', hidden: notebookView !== 'records', tabIndex: 0 },
+            el('p', { className: 'gw-notebook-caption' }, completedMeasurements.length + ' complete \u00b7 ' + measureHistory.length + ' scans retained' + (measureHistory.length > 5 ? ' \u00b7 latest 5 shown' : '')),
+            el('ol', { className: 'gw-notebook-records', 'aria-label': 'Recent measurement records' }, measureHistory.slice(-5).reverse().map(function(mh, mi) {
+              var entry = measurementNotebookEntry(mh);
+              return el('li', { key: mi, className: 'gw-history-row', 'data-current': mi === 0 ? 'true' : 'false', 'data-incomplete': entry.complete ? 'false' : 'true' },
+                el('strong', { className: 'gw-notebook-record-title' }, (mi === 0 ? 'Latest' : 'Record ' + (measureHistory.length - mi)) + ' \u00b7 ' + entry.kind),
+                el('dl', { className: 'gw-notebook-quantities' },
+                  entry.dimensions && el(React.Fragment, null, el('dt', null, entry.dimensionLabel), el('dd', null, entry.dimensions)),
+                  el('dt', null, entry.volumeLabel), el('dd', null, entry.volume === null ? 'Unavailable' : entry.volume + ' cubic units'),
+                  entry.surfaceArea !== null && el(React.Fragment, null, el('dt', null, 'Exposed surface area'), el('dd', null, entry.surfaceArea + ' square units'))
+                ),
+                !entry.complete && el('p', { className: 'gw-notebook-caption' }, 'Partial scan; not evidence for comparison or practice.'),
+                entry.estimate !== null && el('details', { className: 'gw-notebook-estimate' },
+                  el('summary', null, 'Estimate and reasoning'),
+                  el('p', null, 'Committed estimate: ' + entry.estimate + ' cubic units. Descriptive, ungraded.'),
+                  entry.strategy && el('p', null, 'Strategy: ' + entry.strategy),
+                  el('p', null, entry.reason ? 'Reason: ' + entry.reason : 'No written reason recorded.')
+                )
+              );
+            }))
+          ),
+          el('div', { role: 'tabpanel', id: 'gw-notebook-view-compare', 'aria-labelledby': 'gw-notebook-tab-compare', hidden: notebookView !== 'compare', tabIndex: 0 },
+            measurementComparison ? el('div', { className: 'gw-history-comparison', 'data-geometry-measurement-comparison': 'true' },
+              el('h3', null, 'Latest two complete measurements'),
+              el('dl', { className: 'gw-notebook-quantities' },
+                el('dt', null, 'Previous occupied volume'), el('dd', null, formatVolume(measurementComparison.previousVolume) + ' cubic units'),
+                el('dt', null, 'Latest occupied volume'), el('dd', null, formatVolume(measurementComparison.latestVolume) + ' cubic units'),
+                el('dt', null, 'Occupied volume change'), el('dd', { 'data-geometry-quantity-change': 'volume' }, formatMeasurementChange(measurementComparison.volumeDifference, 'volume')),
+                measurementComparison.surfaceAreaDifference !== null && el(React.Fragment, null,
+                  el('dt', null, 'Previous exposed surface'), el('dd', null, formatVolume(measurementComparison.previousSurfaceArea) + ' square units'),
+                  el('dt', null, 'Latest exposed surface'), el('dd', null, formatVolume(measurementComparison.latestSurfaceArea) + ' square units')),
+                el('dt', null, 'Exposed surface area change'), el('dd', { 'data-geometry-quantity-change': 'surface' }, formatMeasurementChange(measurementComparison.surfaceAreaDifference, 'surface'))
+              ),
+              measurementComparison.moreSurfaceEfficient && el('p', { className: 'gw-notebook-insight' }, (measurementComparison.moreSurfaceEfficient === 'latest' ? 'Latest' : 'Previous') + ' measurement has ' + formatVolume(Math.abs(measurementComparison.surfaceAreaDifference)) + ' fewer square units of exposed surface for the same occupied volume.'),
+              measurementComparison.surfaceAreaDifference === null && el('p', { className: 'gw-notebook-caption' }, 'Exact exposed surface areas are needed to compare covering.'),
+              el('p', { className: 'gw-notebook-question' }, measurementComparison.sameVolume ? measurementComparison.surfaceAreaDifference !== null && measurementComparison.surfaceAreaDifference !== 0 ? 'The occupied volume stayed the same. Which shared or exposed faces explain the surface-area difference?' : 'How could rearranging the same occupied units change the exposed faces?' : 'What changed in the occupied space? Which layers, gaps, or pieces explain the difference?'),
+              el('button', { type: 'button', className: 'gw-reflect-trigger gw-focusable', 'data-geometry-reflect-trigger': 'notebook', onClick: openGeometryReflection }, 'Reflect on the comparison')
+            ) : el('p', { className: 'gw-notebook-empty' }, 'Two complete measurements are needed for a comparison.')
+          ),
+          el('div', { role: 'tabpanel', id: 'gw-notebook-view-practice', 'aria-labelledby': 'gw-notebook-tab-practice', hidden: notebookView !== 'practice', tabIndex: 0 },
+          activeRetrievalCheckpoint ? el('div', { className: 'gw-retrieval-card', 'data-geometry-retrieval-checkpoint': activeRetrievalCheckpoint.concept },
+            el('h3', { className: 'gw-retrieval-title' }, 'Apply the relationship'),
+            el('p', { id: 'gw-retrieval-prompt' }, activeRetrievalCheckpoint.prompt),
+            el('label', { htmlFor: 'gw-retrieval-answer' }, 'Your answer (' + (activeRetrievalCheckpoint.concept === 'scale_height' ? 'units' : activeRetrievalCheckpoint.concept === 'layer_area' ? 'square units' : 'cubic units') + ')'),
+            el('form', { className: 'gw-retrieval-controls', onSubmit: function(ev) {
+                  ev.preventDefault();
+                  if (retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct) return;
                   var nextAttempt = retrievalAttemptCount + 1;
                   var result = checkRetrievalAnswer(activeRetrievalCheckpoint, retrievalAnswer, nextAttempt);
                   if (!result) return;
@@ -17131,12 +17788,24 @@
                     if (result.correct) sfxCorrect(); else sfxWrong();
                   }
                   announceToSR(result.feedback);
-                },
+                } },
+              el('input', {
+                id: 'gw-retrieval-answer', type: 'text', inputMode: 'decimal', value: retrievalAnswer, disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
+                className: 'gw-retrieval-input gw-focusable',
+                onChange: function(ev) { upd({ retrievalAnswer: ev.target.value, retrievalResult: null }); },
+                'aria-describedby': 'gw-retrieval-prompt', 'aria-invalid': retrievalResult && retrievalResult.valid === false ? 'true' : 'false',
+                placeholder: 'answer',
+                autoComplete: 'off'
+              }),
+              el('button', {
+                type: 'submit', className: 'gw-focusable gw-retrieval-button',
+                disabled: !!(retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && retrievalResult.correct),
                 'aria-label': __alloT('stem.geometryworld.a11y_check_retrieval_answer', 'Check retrieval answer')
               }, 'Check')
             ),
             retrievalResult && retrievalResult.checkpointId === activeRetrievalCheckpoint.id && el('div', { role: 'status', 'data-geometry-retrieval-result': retrievalResult.correct ? 'correct' : 'retry', style: { marginTop: '3px', color: retrievalResult.correct ? '#86efac' : '#fde68a', fontSize: '9px', fontWeight: 700 } }, retrievalResult.feedback)
-          )
+          ) : el('p', { className: 'gw-notebook-empty' }, 'Complete another measurement to investigate a related question.')),
+          el('div', { className: 'gw-notebook-footer' }, el('button', { type: 'button', className: 'gw-notebook-return gw-focusable', onClick: function() { closeHudPanel('Measurements'); } }, measureResult ? 'Back to measurement' : 'Return to world'))
         ),
         // ── Block inventory widget (top-right, shows counts per type) ──
         hudPanel === 'inventory' && engine && el('section', { id: 'gw-inventory-panel', className: 'gw-inventory-panel', role: 'region', 'aria-label': __alloT('stem.geometryworld.a11y_block_inventory', 'Block inventory') },
@@ -17274,7 +17943,10 @@
           ? [el('kbd', { key: 'k', className: 'gw-key-badge', 'aria-hidden': 'true' }, 'Esc'), el('span', { key: 't' }, __alloT('stem.geometryworld.hint_free_cursor', 'Free cursor'))]
           : [el('span', { key: 't' }, __alloT('stem.geometryworld.hint_click_to_look', 'Click the world to look'))]),
         // ── Lesson Intro Screen ──
-        showLessonIntro && el('div', {
+         showLessonIntro && (function() {
+           var activeLesson = d.pendingLesson || d.activeLesson || 'volumeExplorer';
+           var currentLesson = SAMPLE_LESSONS[activeLesson] || geometryPracticeLessonForKey(activeLesson) || getMyLessons().filter(function(l) { return l._id === activeLesson; })[0] || lastGeneratedLesson || SAMPLE_LESSONS.volumeExplorer;
+           return el('div', {
           role: 'dialog', className: 'gw-dialog gw-dialog--intro', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_introduction', 'Lesson introduction'), 'aria-labelledby': 'gw-intro-title', 'aria-describedby': 'gw-intro-description', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: 0, left: 0, right: 0, bottom: 0, zIndex: 40,
             background: 'linear-gradient(180deg, rgba(15,23,42,0.97) 0%, rgba(30,27,58,0.97) 100%)',
@@ -17297,10 +17969,15 @@
                 })
               )
             ),
-            // Key formulas
-            el('div', { className: 'gw-intro-formula', role: 'note', 'aria-label': __alloT('stem.geometryworld.a11y_key_formulas', 'Key formulas') },
-              'V = L \u00d7 W \u00d7 H \u2022 Area = L \u00d7 W'
-            ),
+            (function() {
+              var concept = geometryLessonConceptModel(currentLesson, activeLesson);
+              return el('section', { className: 'gw-intro-concept', 'data-geometry-concept': concept.concept, 'aria-labelledby': 'gw-intro-concept-title' },
+                el('h3', { id: 'gw-intro-concept-title', className: 'gw-intro-concept-title' }, concept.title),
+                el('div', { className: 'gw-intro-concept-relationship' }, concept.relationship),
+                el('p', { className: 'gw-intro-concept-copy' }, concept.copy),
+                el('p', { className: 'gw-intro-concept-question' }, concept.question)
+              );
+            })(),
             // NPC count
             el('div', { className: 'gw-intro-meta', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_overview', 'Lesson overview') },
               el('span', null, (currentLesson.npcs || []).length + ' guides'),
@@ -17321,30 +17998,32 @@
               }, 'Skip guided tour')
             )
           )
-        ),
-        // ── Student Reflection Prompt (before Next Lesson) ──
-        showReflection && score >= totalQ && totalQ > 0 && el('div', {
+         );
+         })(),
+         // ── Student Reflection Prompt (before Next Lesson) ──
+        showReflection && el('div', { className: 'gw-reflection-backdrop' }, el('div', {
           role: 'dialog', className: 'gw-dialog gw-dialog--compact gw-reflection-dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_quick_reflection', 'Quick reflection'), 'aria-labelledby': 'gw-reflection-title', 'aria-describedby': 'gw-reflection-description gw-reflection-prompt', tabIndex: -1, ref: gwDialogRef,
           style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 36, pointerEvents: 'auto',
             background: 'rgba(15,23,42,0.95)', backdropFilter: 'blur(12px)', border: '2px solid rgba(124,58,237,0.4)', borderRadius: '18px',
             padding: '24px 28px', maxWidth: '360px', textAlign: 'center', boxShadow: '0 8px 32px rgba(124,58,237,0.2)' }
         },
           el('div', { className: 'gw-reflection-heading' },
-            el('div', { className: 'gw-reflection-icon', 'aria-hidden': 'true' }, '\uD83E\uDD14'),
+            el('div', { className: 'gw-reflection-icon', 'aria-hidden': 'true' }, toolbarIcon('Sparkles', 'talk')),
             el('div', null,
               el('h2', { id: 'gw-reflection-title', className: 'gw-reflection-title' }, 'Quick reflection'),
               el('p', { id: 'gw-reflection-description', className: 'gw-reflection-description' }, 'Connect your strategy to evidence from the world.')
             )
           ),
-          el('div', { id: 'gw-reflection-prompt', className: 'gw-reflection-prompt', 'data-geometry-reflection-evidence': latestCompleteMeasurement ? 'true' : 'general' },
-            latestCompleteMeasurement ? reflectionEvidencePrompt : 'What strategy helped you understand volume or surface area today?'
+          el('div', { id: 'gw-reflection-prompt', className: 'gw-reflection-prompt', 'data-geometry-reflection-evidence': reflectionSupport.evidence ? 'true' : 'general', 'data-geometry-reflection-concept': reflectionSupport.concept },
+            reflectionSupport.prompt
           ),
+          el('details', { className: 'gw-reflection-support' }, el('summary', null, 'Thinking prompts'), el('ol', null, reflectionSupport.questions.map(function(question, index) { return el('li', { key: index }, question); }))),
           el('label', { htmlFor: 'gw-reflection-text', className: 'gw-reflection-label' }, 'Your reflection'),
           el('textarea', {
             id: 'gw-reflection-text', className: 'gw-reflection-textarea gw-focusable', value: reflectionText,
             maxLength: 600, 'aria-describedby': 'gw-reflection-prompt gw-reflection-count',
             onChange: function(ev) { upd('reflectionText', ev.target.value); },
-            placeholder: __alloT('stem.geometryworld.describe_what_you_noticed_tried_or_would_cha','Describe what you noticed, tried, or would change next time.')
+            placeholder: reflectionSupport.starter
           }),
           el('div', { className: 'gw-reflection-footer' },
             el('span', { className: 'gw-reflection-readiness', 'data-ready': reflectionText.trim() ? 'true' : 'false' }, reflectionText.trim() ? 'Ready to save' : 'Optional response'),
@@ -17355,20 +18034,21 @@
             el('button', {
               type: 'button', className: 'gw-reflection-save gw-focusable', disabled: !reflectionText.trim(),
               onClick: function() {
-                upd('showReflection', false);
+                closeGeometryReflection();
                 var eng = window[engineKey];
-                if (eng && eng.logEvent) eng.logEvent('reflection', { text: reflectionText.trim(), lesson: currentLesson.title, measuredVolume: latestCompleteMeasurement ? latestCompleteMeasurement.occupiedVolume : null, prediction: predictionResult ? predictionResult.prediction : null, revisedPrediction: predictionRevisionResult ? predictionRevisionResult.prediction : null, strategy: predictionResult ? predictionResult.strategy : '', misconception: predictionResult ? predictionResult.diagnosisCode : '' });
+                if (eng && eng.logEvent) eng.logEvent('reflection', { text: reflectionText.trim(), lesson: currentLesson.title, concept: reflectionSupport.concept, measuredVolume: reflectionVolume, prediction: predictionResult ? predictionResult.prediction : null, revisedPrediction: predictionRevisionResult ? predictionRevisionResult.prediction : null, strategy: predictionResult ? predictionResult.strategy : '', misconception: predictionResult ? predictionResult.diagnosisCode : '' });
               },
-            }, '\u2705 Save & Continue'),
+            }, 'Save & Continue'),
             // Secondary "later" — dismisses without firing the save event
             el('button', { type: 'button', className: 'gw-reflection-skip gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_continue_without_saving_a_reflection', 'Continue without saving a reflection'),
-              onClick: function() { upd('showReflection', false); },
+              onClick: closeGeometryReflection,
             }, 'Continue without reflection')
           )
-        ),
+        )),
         // ── Lesson Completion overlay with Next Lesson ──
-        score >= totalQ && totalQ > 0 && !showNpcDialog && !showReflection && el('div', {
+        completionVisible && el('div', {
           role: 'dialog', className: 'gw-dialog gw-dialog--compact gw-completion-dialog', 'aria-modal': 'true', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_complete', 'Lesson complete'), 'aria-labelledby': 'gw-completion-title', 'aria-describedby': 'gw-completion-description', tabIndex: -1, ref: gwDialogRef,
+          onKeyDown: function(event) { if (event.key === 'Escape') { event.preventDefault(); event.stopPropagation(); if (event.shiftKey) closeAllModals(); else dismissGeometryCompletion(false); } },
           style: { position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%,-50%)', zIndex: 35, pointerEvents: 'auto', textAlign: 'center',
             background: 'rgba(15,23,42,0.92)', backdropFilter: 'blur(12px)', border: '2px solid rgba(251,191,36,0.5)', borderRadius: '20px',
             padding: '24px 32px', maxWidth: '380px', boxShadow: '0 12px 40px rgba(251,191,36,0.2)' }
@@ -17415,28 +18095,33 @@
             var nextLesson = nextKey ? SAMPLE_LESSONS[nextKey] : null;
             var offerPractice = !!currentLesson.practice || journey.allComplete;
             return el('div', { className: 'gw-completion-actions' },
+              currentLesson.objectives && lessonObjectiveStatuses().some(function(goal) { return !goal.status.done; }) && el('button', { type: 'button', className: 'gw-completion-review gw-focusable', onClick: function() { dismissGeometryCompletion(true); } }, toolbarIcon('BookOpen', 'net'), 'Review remaining goals'),
+              el('button', { type: 'button', className: 'gw-completion-explore gw-focusable', onClick: function() { dismissGeometryCompletion(false); } }, toolbarIcon('Compass', 'talk'), 'Keep exploring'),
+              el('button', { type: 'button', className: 'gw-completion-reflect gw-focusable', onClick: openGeometryReflection }, toolbarIcon('Sparkles', 'talk'), 'Reflect on your learning'),
               offerPractice && el('button', { type: 'button', className: 'gw-completion-practice gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_start_a_new_practice_round_with_new_numbers', 'Start a new practice round with new numbers'),
                 onClick: function() {
-                  upd({ measureHistory: [], reflectionText: '', npcWrongCount: {}, npcLastWrong: {}, consecutiveWrong: 0 });
                   var eng = window[engineKey]; if (eng && eng.startPracticeRound) eng.startPracticeRound(undefined, currentLesson.practice ? currentLesson.practice.level : 'core');
                 },
               }, '\uD83C\uDFB2 ' + (currentLesson.practice ? 'New round' : 'Practice round')),
               nextLesson && el('button', { type: 'button', className: 'gw-completion-next gw-focusable', 'aria-label': 'Continue to next lesson: ' + (nextLesson.title || 'Next lesson'),
                 onClick: function() {
-                  upd({ activeLesson: nextKey, measureHistory: [], reflectionText: '' });
-                  var eng = window[engineKey]; if (eng) eng.loadLesson(nextLesson);
+                  var eng = window[engineKey]; if (eng) runWorldTransition(eng, nextLesson, function() { if (eng.loadLesson(nextLesson) === false) return false; upd({ activeLesson: nextKey, measureHistory: [], reflectionText: '' }); return true; });
                 },
               }, '\u27A1\uFE0F Next: ' + (nextLesson.title || '').split(' \u2014')[0]),
               el('button', { type: 'button', className: 'gw-completion-replay gw-focusable', 'aria-label': __alloT('stem.geometryworld.a11y_replay_current_lesson', 'Replay current lesson'),
                 onClick: function() {
                   // Clear the saved answers first or loadLesson restores them and this
                   // dialog returns at once. The lesson stays recorded as completed.
+                  var eng = window[engineKey]; if (!eng) return;
+                  return runWorldTransition(eng, currentLesson, function() {
                   var store = geometryStorage();
                   if (!currentLesson.practice) geometryMarkLessonCompleted(store, geometryProgressKey(currentLesson));
                   geometryClearLessonProgress(store, currentLesson);
-                  var eng = window[engineKey]; if (eng) eng.loadLesson(currentLesson);
+                  if (eng.loadLesson(currentLesson) === false) return false;
                   upd({ measureHistory: [], reflectionText: '' });
                   upd({ npcWrongCount: {}, npcLastWrong: {}, consecutiveWrong: 0 });
+                  return true;
+                  });
                 },
               }, '\uD83D\uDD04 Replay'),
               journey.allComplete && el('section', { className: 'gw-completion-journey', 'aria-labelledby': 'gw-journey-title' },
@@ -17472,10 +18157,37 @@
         }, (engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).length) >= MAX_BLOCKS
           ? '\u26A0\uFE0F Block limit reached (' + MAX_BLOCKS + ') \u2014 remove some blocks for performance'
           : '\u26A0\uFE0F ' + (engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks).length) + '/' + MAX_BLOCKS + ' blocks \u2014 approaching limit'),
+        showSaveRecovery && el('div', { 'data-gw-save-recovery': 'true', style: { position: 'fixed', inset: 0, zIndex: 10000, background: 'rgba(18,26,30,0.68)', display: 'flex', alignItems: 'center', justifyContent: 'center', padding: '16px', boxSizing: 'border-box', pointerEvents: 'auto' } },
+          el('section', { role: 'alertdialog', 'aria-modal': 'true', 'aria-labelledby': 'gw-save-recovery-title', 'aria-describedby': 'gw-save-recovery-reason', tabIndex: -1,
+            ref: function(node) { gwDialogRef(node); if (node && !node._gwRecoveryFocused) { node._gwRecoveryFocused = true; var stay = node.querySelector('button'); if (stay) stay.focus(); } }, onKeyDown: function(ev) { if (ev.key === 'Escape') { ev.preventDefault(); ev.stopPropagation(); if (engine && engine.stayInCurrentWorld) engine.stayInCurrentWorld(); } },
+            style: { width: '100%', maxWidth: '480px', maxHeight: 'calc(100dvh - 32px)', overflowY: 'auto', background: '#f8fafb', color: '#1f2c32', border: '1px solid #b7c5cc', borderRadius: '8px', padding: '20px', boxSizing: 'border-box', boxShadow: '0 12px 40px #0005', fontSize: '14px', lineHeight: 1.5 } },
+            el('h2', { id: 'gw-save-recovery-title', style: { margin: '0 0 12px', fontSize: '20px', lineHeight: 1.25 } }, worldTransitionNotice.confirming ? 'Leave without saving this build?' : 'Your current build is still here'),
+            el('p', { id: 'gw-save-recovery-reason', style: { margin: '0 0 12px', overflowWrap: 'anywhere' } }, worldTransitionNotice.confirming ? 'Unsaved changes will be lost when you open ' + worldTransitionNotice.title + '. Any earlier saved version stays unchanged.' : worldTransitionNotice.reason),
+            !worldTransitionNotice.confirming && el('p', { style: { margin: '0 0 16px', color: '#465962' } }, 'Before opening ' + worldTransitionNotice.title + ', keep a file of this build or try saving again.'),
+            el('p', { role: 'status', style: { margin: '0 0 12px' } }, worldTransitionNotice.exportStatus || ''),
+            el('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } },
+              el('button', { type: 'button', autoFocus: true, className: 'gw-focusable', onClick: function() { if (engine && engine.stayInCurrentWorld) engine.stayInCurrentWorld(); }, style: { minHeight: '44px', padding: '10px 14px', background: '#196754', color: '#fff', border: '1px solid #196754', borderRadius: '6px', font: 'inherit', fontWeight: 700 } }, 'Stay here'),
+              !worldTransitionNotice.confirming && el('button', { type: 'button', className: 'gw-focusable', onClick: downloadRecoveryBuild, style: { minHeight: '44px', padding: '10px 12px', background: '#fff', color: '#203941', border: '1px solid #7c969f', borderRadius: '6px', font: 'inherit' } }, toolbarIcon('Download', 'down'), 'Download build JSON'),
+              !worldTransitionNotice.confirming && el('button', { type: 'button', className: 'gw-focusable', onClick: function() { if (engine && engine.retryWorldTransition) engine.retryWorldTransition(); }, style: { minHeight: '44px', padding: '10px 12px', background: '#fff', color: '#203941', border: '1px solid #7c969f', borderRadius: '6px', font: 'inherit' } }, toolbarIcon('RotateCw', 'redo'), 'Retry saving'),
+              el('button', { type: 'button', className: 'gw-focusable', onClick: function() {
+                if (worldTransitionNotice.confirming) {
+                  var pending = worldTransitionConfirmRef.current;
+                  if (engine && engine.discardWorldTransition && engine.discardWorldTransition(pending) === false) {
+                    if (addToast) addToast('The workspace or destination changed. Choose the next world again; your build is still here.', 'info');
+                    setTimeout(function() { if (pending && pending.opener && pending.opener.isConnected) pending.opener.focus(); else focusWorldSurface(); }, 0);
+                  }
+                } else { worldTransitionConfirmRef.current = engine && engine._pendingWorldTransition; upd('worldTransitionNotice', Object.assign({}, worldTransitionNotice, { confirming: true })); }
+              }, style: { minHeight: '44px', padding: '10px 12px', background: '#fff', color: '#8b3038', border: '1px solid #bc8790', borderRadius: '6px', font: 'inherit' } }, worldTransitionNotice.confirming ? 'Confirm: leave without saving' : 'Continue without saving')
+            )
+          )
+        ),
         // NPC Dialog overlay
         npcPeek && engine && engine.npcs[dialogNpcIdx] && (function() {
           var peekData = engine.npcs[dialogNpcIdx].data || {};
-          var peekStep = peekData.question && !answeredNpcs[dialogNpcIdx] ? geometryQuestionSequence(peekData.question)[npcFollowUpStep[dialogNpcIdx] || 0] : null;
+          var peekSequence = geometryQuestionSequence(peekData.question);
+          var peekPosition = Number(npcFollowUpStep[dialogNpcIdx] || 0);
+          var peekIndex = Number.isFinite(peekPosition) && peekPosition >= 0 && peekPosition < peekSequence.length ? Math.floor(peekPosition) : 0;
+          var peekStep = peekData.question && answeredNpcs[dialogNpcIdx] !== true ? peekSequence[peekIndex] : null;
           return el('div', { className: 'gw-npc-peek', role: 'region', 'aria-label': peekData.name + '\u2019s question, folded away' },
             el('span', { className: 'gw-npc-peek-name' }, peekData.name),
             el('span', { className: 'gw-npc-peek-text' }, peekStep ? peekStep.text : (peekData.dialogue || '')),
@@ -17485,7 +18197,7 @@
         showNpcDialog && !npcPeek && engine && engine.npcs[dialogNpcIdx] && (function() {
           var npc = engine.npcs[dialogNpcIdx];
           var data = npc.data;
-          var isAnswered = !!answeredNpcs[dialogNpcIdx];
+          var isAnswered = answeredNpcs[dialogNpcIdx] === true;
           // Bilingual: auto-translate NPC dialogue when home language is set
           var transKey = dialogNpcIdx + '_' + homeLang;
           var translation = npcTranslations[transKey] || null;
@@ -17520,6 +18232,16 @@
               });
           };
           var npcHexColor = '#' + (data.color || 0x7c3aed).toString(16).padStart(6, '0');
+          var solvedSteps = geometrySolvedQuestionSteps(data.question, npcFollowUpStep[dialogNpcIdx], isAnswered);
+          function renderSolvedSteps() {
+            if (!solvedSteps.length) return null;
+            return el('details', { className: 'gw-answer-recap' },
+              el('summary', null, 'Checked steps (' + solvedSteps.length + ')'),
+              el('dl', null, solvedSteps.map(function(step, index) {
+                return el(React.Fragment, { key: 'checked-' + index },
+                  el('dt', null, step.text), el('dd', null, el('strong', null, step.answer), step.explanation && el('p', null, step.explanation)));
+              })));
+          }
           return el('div', {
               // The NPC dialog carries the lesson's actual assessment — the answer
               // choices — and opening it exits pointer lock, so the mouse is freed but
@@ -17555,7 +18277,7 @@
               boxShadow: '0 8px 32px rgba(0,0,0,0.4)'
             } },
             // Header bar with NPC color accent
-            el('div', { style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'linear-gradient(135deg, ' + npcHexColor + '22, ' + npcHexColor + '08)', borderBottom: '1px solid rgba(100,116,139,0.15)' } },
+            el('div', { className: 'gw-npc-header', style: { display: 'flex', alignItems: 'center', gap: '10px', padding: '12px 16px', background: 'linear-gradient(135deg, ' + npcHexColor + '22, ' + npcHexColor + '08)', borderBottom: '1px solid rgba(100,116,139,0.15)' } },
               // NPC avatar circle
               el('div', { style: { width: '32px', height: '32px', borderRadius: '50%', background: 'linear-gradient(135deg, ' + npcHexColor + ', ' + npcHexColor + '88)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '14px', color: '#fff', fontWeight: 800, flexShrink: 0, border: '2px solid ' + npcHexColor + '66' } }, data.name.charAt(0)),
               el('div', { style: { flex: 1 } },
@@ -17567,7 +18289,7 @@
               el('button', { type: 'button', className: 'gw-dialog-close', 'aria-label': __alloT('stem.geometryworld.close_npc_dialog', 'Close NPC dialog'), onClick: function() { upd({ showNpcDialog: false }); focusWorldSurface(); }, style: { background: 'rgba(100,116,139,0.15)', border: 'none', color: 'var(--allo-stem-text-soft, #94a3b8)', fontSize: '14px', cursor: 'pointer', borderRadius: '6px', width: '26px', height: '26px', display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 } }, '\u00d7')
             ),
             // Body content
-            el('div', { style: { padding: '12px 16px' } },
+            el('div', { className: 'gw-npc-body', style: { padding: '12px 16px' } },
             el('div', { style: { fontSize: '12px', color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6, marginBottom: homeLang !== 'en' ? '4px' : '10px', minHeight: '20px' } },
               // Typewriter effect: reveal characters progressively
               npcTypewriterNpc === dialogNpcIdx && npcTypewriterPos < (data.dialogue || '').length
@@ -17619,10 +18341,11 @@
             }, '\uD83C\uDF10 Translate (AI)'),
             data.question && !isAnswered && (function() {
               // Determine current question (base or follow-up)
-              var curStep = npcFollowUpStep[dialogNpcIdx] || 0;
               var questionSteps = geometryQuestionSequence(data.question);
-              var curQ = questionSteps[curStep] || questionSteps[0];
               var totalSteps = questionSteps.length;
+              var requestedStep = Number(npcFollowUpStep[dialogNpcIdx] || 0);
+              var curStep = Number.isFinite(requestedStep) && requestedStep >= 0 && requestedStep < totalSteps ? Math.floor(requestedStep) : 0;
+              var curQ = questionSteps[curStep] || questionSteps[0];
               if (!curQ) return el('p', {role:'status'}, 'This question needs teacher review before it can be answered.');
               var isLastStep = curStep >= totalSteps - 1;
 
@@ -17631,26 +18354,37 @@
               // Typing works where the answer is one quantity; the note from the last
               // wrong try stays under the question until the step is solved.
               var typeable = geometryStepTypeable(curQ), typeMode = !!d.gwTypeAnswers;
+              var expectedUnit = geometryQuantityUnit(curQ);
               var feedbackNote = (d.npcFeedback || {})[dialogNpcIdx];
               if (!feedbackNote || feedbackNote.step !== curStep || typeof feedbackNote.text !== 'string') feedbackNote = null;
+              var draft = (d.npcAnswerDrafts || {})[dialogNpcIdx];
+              var draftText = draft && draft.step === curStep && typeof draft.text === 'string' ? draft.text : '';
+              function retainAnswerDraft(text) {
+                var drafts = Object.assign({}, d.npcAnswerDrafts || {});
+                drafts[dialogNpcIdx] = { step: curStep, text: String(text).slice(0, 48) };
+                upd('npcAnswerDrafts', drafts);
+              }
               function renderTypedAnswer() {
                 var inputId = 'gw-typed-answer-' + dialogNpcIdx;
-                return el('form', { className: 'gw-typed-answer', style: { margin: '2px 0 4px' }, onSubmit: function(ev) {
+                var unitId = inputId + '-unit';
+                return el('form', { key: 'typed-' + dialogNpcIdx + '-' + curStep, className: 'gw-typed-answer', style: { margin: '2px 0 4px' }, onSubmit: function(ev) {
                   ev.preventDefault();
                   var input = ev.currentTarget.querySelector('input'), text = input ? input.value : '';
+                  retainAnswerDraft(text);
                   var result = geometryTypedAnswer(curQ, text);
-                  if (result.status === 'invalid') {
-                    var note = 'Type a number, like 12, 2.5 or 3 1/2.', map = Object.assign({}, d.npcFeedback || {});
-                    map[dialogNpcIdx] = { step: curStep, answer: '', text: note };
+                  if (result.status === 'invalid' || result.status === 'unit') {
+                    var note = result.status === 'unit' ? 'Check the quantity: this answer is in ' + expectedUnit + ', not the unit you entered.' : 'Type a number, like 12, 2.5 or 3 1/2' + (expectedUnit ? ', with ' + expectedUnit + ' or no unit.' : '.');
+                    var map = Object.assign({}, d.npcFeedback || {});
+                    map[dialogNpcIdx] = { step: curStep, answer: '', kind: result.status, text: note };
                     upd('npcFeedback', map); announceToSR(note); return;
                   }
-                  if (input) input.value = '';
                   if (result.status === 'other') submitAnswer(-1, String(text).trim().slice(0, 40), 'typed');
                   else submitAnswer(result.choiceIndex, curQ.choices[result.choiceIndex], 'typed');
                 } },
                   el('label', { htmlFor: inputId, style: { display: 'block', fontSize: '11px', fontWeight: 700, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: '4px' } }, 'Your answer'),
-                  el('div', { style: { display: 'flex', gap: '6px' } },
-                    el('input', { id: inputId, type: 'text', inputMode: 'decimal', autoComplete: 'off', maxLength: 24, className: 'gw-focusable', 'aria-describedby': feedbackNote ? 'gw-answer-feedback-' + dialogNpcIdx : undefined,
+                  expectedUnit && el('span', { id: unitId, className: 'gw-answer-unit' }, expectedUnit),
+                  el('div', { className: 'gw-answer-input-row', style: { display: 'flex', gap: '6px' } },
+                    el('input', { id: inputId, type: 'text', inputMode: 'decimal', autoComplete: 'off', maxLength: 48, value: draftText, onChange: function(ev) { retainAnswerDraft(ev.target.value); }, className: 'gw-focusable', 'aria-invalid': feedbackNote && (feedbackNote.kind === 'invalid' || feedbackNote.kind === 'unit') ? 'true' : undefined, 'aria-describedby': [expectedUnit ? unitId : '', feedbackNote ? 'gw-answer-feedback-' + dialogNpcIdx : ''].filter(Boolean).join(' ') || undefined,
                       style: { flex: 1, minWidth: 0, minHeight: '34px', padding: '6px 10px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid #64748b', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '13px', fontFamily: 'inherit' } }),
                     el('button', { type: 'submit', className: 'gw-focusable', style: { minHeight: '34px', padding: '6px 14px', background: '#7c3aed', border: 'none', borderRadius: '7px', color: '#fff', fontSize: '12px', fontWeight: 800, cursor: 'pointer', fontFamily: 'inherit' } }, 'Check')));
               }
@@ -17658,9 +18392,10 @@
                 if (ci === curQ.correct) {
                   sfxCorrect();
                   // Clear wrongs lesson-wide + this NPC's wrong count
-                  var clearedWrongs = Object.assign({}, d.npcWrongCount || {}), clearedFeedback = Object.assign({}, d.npcFeedback || {});
+                  var clearedWrongs = Object.assign({}, d.npcWrongCount || {}), clearedFeedback = Object.assign({}, d.npcFeedback || {}), clearedDrafts = Object.assign({}, d.npcAnswerDrafts || {});
                   delete clearedWrongs[dialogNpcIdx]; delete clearedFeedback[dialogNpcIdx];
-                  upd({ consecutiveWrong: 0, npcWrongCount: clearedWrongs, npcFeedback: clearedFeedback });
+                  delete clearedDrafts[dialogNpcIdx];
+                  upd({ consecutiveWrong: 0, npcWrongCount: clearedWrongs, npcFeedback: clearedFeedback, npcAnswerDrafts: clearedDrafts });
                   if (typeof awardXP === 'function') awardXP('geometryWorld', 2, 'Step correct: ' + data.name);
                   // Working out the number instead of recognising it earns a little more.
                   if (via === 'typed' && typeof awardXP === 'function') awardXP('geometryWorld', 1, 'Typed answer: ' + data.name);
@@ -17673,6 +18408,7 @@
                     newFU[dialogNpcIdx] = curStep + 1;
                     upd('npcFollowUpStep', newFU);
                     if (addToast) addToast('\u2705 Correct! Next step...', 'success');
+                    announceToSR('Correct. Step ' + (curStep + 2) + ' of ' + totalSteps + ': ' + questionSteps[curStep + 1].text);
                   } else {
                     // Final step — mark NPC as answered, award full score
                     var newAnswered = Object.assign({}, answeredNpcs);
@@ -17698,8 +18434,13 @@
                       sfxComplete();
                       if (addToast) addToast('\uD83C\uDFC6 Lesson Complete! Look up...', 'success');
                       announceToSR(__alloFill(__alloT('stem.geometryworld.sr_lesson_complete_you_answered_all_questions_correc', 'Lesson complete! You answered all {value1} questions correctly. The sun is setting \u2014 look up to see the celebration.'), { value1: totalQ }));
-                        // Trigger reflection prompt after a delay
-                        setTimeout(function() { upd({ showReflection: true, reflectionText: '' }); }, 5000);
+                        // Keep a delayed prompt in the completed world and preserve any draft.
+                        if (reflectionAutoTimerRef.current) clearTimeout(reflectionAutoTimerRef.current);
+                        var completedLessonKey = activeLesson;
+                        reflectionAutoTimerRef.current = setTimeout(function() {
+                          reflectionAutoTimerRef.current = null;
+                          if (window[engineKey] === eng && geometryReflectionAutoPromptAllowed(eng && eng._modalState, completedLessonKey)) upd({ showReflection: true });
+                        }, 5000);
                       if (typeof awardXP === 'function') awardXP('geometryWorld', 15, 'Lesson complete: ' + currentLesson.title);
                       if (eng && !eng.completionTriggered) {
                         eng.completionTriggered = true; eng.completionProgress = 0;
@@ -17750,12 +18491,12 @@
                   // Escalate scaffolding WITHOUT revealing the correct answer choice. The
                   // note written for this exact answer comes first; the old volume nudges
                   // stay as the fallback for lessons without coaching (AI and custom).
-                  var fallbackHint = newWrong >= 3 ? 'Try measuring with M first. Then count carefully: how many blocks long, wide, and tall?'
-                    : newWrong >= 2 ? (data.dialogue.indexOf('layer') >= 0 ? 'Count the blocks in one layer, then count how many layers tall.' : data.dialogue.indexOf('L-block') >= 0 ? 'Split it into two rectangles. Find each volume, then add.' : 'Count: how many blocks long? How many wide? How many tall? Multiply!')
-                    : 'Hint: think about ' + (data.dialogue.indexOf('layer') >= 0 ? 'counting the layers' : data.dialogue.indexOf('L-block') >= 0 ? 'splitting into two prisms' : 'L \u00d7 W \u00d7 H') + '.';
+                  var fallbackHint = newWrong >= 3 ? 'Return to the model. Check what each number counts and whether your units match the quantity asked.'
+                    : newWrong >= 2 ? 'Name what is being counted or measured. Which parts of the model are evidence for your answer?'
+                    : 'What quantity is the question asking for? Check the numbers and units you chose.';
                   var feedback = geometryWrongFeedback(curQ, choice, newWrong, fallbackHint);
                   var feedbackMap = Object.assign({}, d.npcFeedback || {});
-                  feedbackMap[dialogNpcIdx] = { step: curStep, answer: String(choice).slice(0, 80), text: feedback };
+                  feedbackMap[dialogNpcIdx] = { step: curStep, answer: String(choice).slice(0, 80), kind: 'retry', text: feedback };
                   upd('npcFeedback', feedbackMap);
                   if (addToast) addToast('\u274C Not quite. ' + feedback, 'error');
                   announceToSR('Not quite right. ' + feedback);
@@ -17763,25 +18504,22 @@
               }
 
               return el('div', null,
-                // Progress dots for multi-step questions
-                totalSteps > 1 && el('div', { style: { display: 'flex', gap: '4px', justifyContent: 'center', marginBottom: '6px' } },
-                  Array.apply(null, Array(totalSteps)).map(function(_, di) {
-                    return el('div', { key: 'stepdot-' + di, style: { width: 8, height: 8, borderRadius: '50%', background: di < curStep ? '#22c55e' : di === curStep ? '#7c3aed' : 'rgba(100,116,139,0.4)', transition: 'all 0.3s' } });
-                  })
-                ),
-                el('div', { style: { fontSize: '11px', fontWeight: 700, color: '#a78bfa', marginBottom: homeLang !== 'en' ? '2px' : '6px' } }, curQ.text),
+                el('div', { className: 'gw-question-progress' }, 'Step ' + (curStep + 1) + ' of ' + totalSteps),
+                renderSolvedSteps(),
+                el('h3', { className: 'gw-question-text' }, curQ.text),
                 homeLang !== 'en' && translation && translation.question && curStep === 0 && el('div', { style: { fontSize: '11px', color: '#fbbf24', marginBottom: '6px', fontStyle: 'italic' } }, translation.question),
+                typeable && el('div', { role: 'group', className: 'gw-answer-modes', 'aria-label': 'Response method' },
+                  el('button', { type: 'button', className: 'gw-focusable gw-answer-mode', 'aria-pressed': typeMode ? 'false' : 'true', onClick: function() { upd('gwTypeAnswers', false); } }, 'Choices'),
+                  el('button', { type: 'button', className: 'gw-focusable gw-answer-mode', 'aria-pressed': typeMode ? 'true' : 'false', onClick: function() { upd('gwTypeAnswers', true); } }, 'Type answer')),
                 typeMode && typeable ? renderTypedAnswer() : curQ.choices.map(function(choice, ci) {
                   return el('button', {
                     key: 'choice-' + ci + '-' + String(choice).slice(0, 24),
+                    type: 'button', className: 'gw-answer-choice gw-focusable',
                     'aria-label': __alloFill(__alloT('stem.geometryworld.a11y_answer_option', 'Answer option {value1}: {value2}'), { value1: (ci + 1), value2: choice }),
                     onClick: function() { submitAnswer(ci, choice, 'choice'); },
                     style: { display: 'block', width: '100%', padding: '6px 12px', marginBottom: '4px', background: 'var(--allo-stem-panel, #1e293b)', border: '1px solid var(--allo-stem-border, #334155)', borderRadius: '7px', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: '12px', cursor: 'pointer', textAlign: 'left', fontFamily: 'inherit', boxShadow: 'inset 0 0 0 1px #475569' }
                   }, choice);
                 }),
-                typeable && el('button', { type: 'button', className: 'gw-focusable gw-answer-mode', 'aria-pressed': typeMode ? 'true' : 'false', onClick: function() { upd('gwTypeAnswers', !typeMode); },
-                  style: { display: 'block', minHeight: '28px', margin: '2px 0 4px', padding: '4px 2px', background: 'none', border: 'none', color: '#c4b5fd', fontSize: '11px', fontWeight: 700, textDecoration: 'underline', cursor: 'pointer', fontFamily: 'inherit' } },
-                  typeMode ? 'Show the choices' : 'Type my answer instead (+1 XP)'),
                 feedbackNote && el('p', { id: 'gw-answer-feedback-' + dialogNpcIdx, className: 'gw-answer-feedback', role: 'status', style: { margin: '6px 0 2px', padding: '8px 10px', borderLeft: '3px solid #fbbf24', background: 'rgba(251,191,36,0.08)', borderRadius: '6px', color: '#fde68a', fontSize: '12px', lineHeight: 1.5 } }, feedbackNote.text),
                 // Gated AI hint (slice-2 pilot). Only shows when the teacher has
                 // enabled AI hints AND the student has missed this NPC >=2 times.
@@ -17801,22 +18539,11 @@
             })(),
             isAnswered && el('div', { style: { borderTop: '1px solid rgba(34,197,94,0.2)', paddingTop: '8px', marginTop: '4px' } },
               el('div', { style: { color: '#4ade80', fontWeight: 700, fontSize: '12px', marginBottom: '6px' } }, '\u2705 Great job!'),
+              renderSolvedSteps(),
               // The character's own reaction to this question, when the lesson has one.
               typeof data.after === 'string' && data.after && el('p', { className: 'gw-npc-after', style: { margin: '0 0 8px', fontSize: '12px', lineHeight: 1.55, color: 'var(--allo-stem-text, #e2e8f0)' } }, el('strong', null, data.name + ': '), data.after),
-              el('div', { style: { fontSize: '11px', color: 'var(--allo-stem-text-soft, #94a3b8)', lineHeight: 1.5, background: 'rgba(34,197,94,0.08)', borderRadius: '8px', padding: '8px 10px', border: '1px solid rgba(34,197,94,0.15)' } },
-                // Bonus fun fact based on dialogue content
-                data.dialogue.indexOf('volume') >= 0 || data.dialogue.indexOf('Volume') >= 0
-                  ? '\uD83E\uDDE0 Fun fact: The word "volume" comes from Latin "volumen" meaning a roll of papyrus. Ancient mathematicians measured volume by filling containers with water!'
-                  : data.dialogue.indexOf('area') >= 0 || data.dialogue.indexOf('Area') >= 0
-                  ? '\uD83E\uDDE0 Fun fact: The ancient Egyptians used area calculations to resurvey farmland after Nile floods. That\u2019s how geometry (earth-measuring) got its name!'
-                  : data.dialogue.indexOf('layer') >= 0
-                  ? '\uD83E\uDDE0 Fun fact: A stack of 1,000 sheets of paper is about 4 inches tall. Each sheet is a "layer" \u2014 just like counting block layers to find volume!'
-                  : data.dialogue.indexOf('L-block') >= 0 || data.dialogue.indexOf('composite') >= 0
-                  ? '\uD83E\uDDE0 Fun fact: Architects decompose complex buildings into rectangular sections (just like you did!) to calculate materials needed for construction.'
-                  : data.dialogue.indexOf('fraction') >= 0 || data.dialogue.indexOf('half') >= 0
-                  ? '\uD83E\uDDE0 Fun fact: A pizza box is about 1728 cubic inches (12\u00d712\u00d712). If you eat half, you\u2019ve consumed 864 cubic inches of pizza-space!'
-                  : '\uD83E\uDDE0 Fun fact: The largest known rectangular prism building is the Boeing Everett Factory at 472 million cubic feet \u2014 big enough to hold Disneyland!'
-              )
+              el('p', { className: 'gw-npc-transfer', style: { margin: '12px 0 0', paddingTop: '12px', borderTop: '1px solid #536463', fontSize: '13px', color: 'var(--allo-stem-text-soft, #c6d3d2)', lineHeight: 1.6 } },
+                el('strong', null, 'Think about: '), geometryQuestionTransferPrompt(currentLesson, activeLesson))
             ),
             // ── AI Chat with NPC (ask anything) ──
             callGemini && el('div', { style: { marginTop: '10px', borderTop: '1px solid var(--allo-stem-border, #334155)', paddingTop: '8px' } },
@@ -17980,17 +18707,25 @@
                       var eng = window[engineKey];
                       if (!eng) return;
                       var wd = world.data;
+                      if (!wd || !(wd.structures || wd.npcs || wd.blocks)) return;
+                      return runWorldTransition(eng, wd, function() {
                       if (wd.structures || wd.npcs) {
-                        eng.loadLesson(wd);
+                        if (eng.loadLesson(wd) === false) return false;
+                        upd({ activeLesson: 'ai_generated', lastGeneratedLesson: wd, lessonEditorJson: JSON.stringify(wd, null, 2), pendingLesson: null, showLessonIntro: false });
                       } else if (wd.blocks) {
-                        eng.clearWorld();
+                        var pure = window.StemLab && window.StemLab.geometryWorldBuilderPure;
+                        var imported = Object.assign({}, pure && pure.FREE_BUILD_LESSON || { sandbox: true, structures: [], npcs: [], ground: { xMin: -12, xMax: 12, zMin: -12, zMax: 12, y: 0, type: 'grass' }, spawnPoint: [0, 4, 0] }, { title: wd.title || world.title || 'Class build' });
+                        if (eng.loadLesson(imported) === false) return false;
                         eng.scene.background.setRGB(0.53, 0.81, 0.92);
                         wd.blocks.forEach(function(b) { eng.placeBlock(b.x, b.y, b.z, b.type || 'stone', b.shape, b.rotation); });
                         if (wd.npcs) wd.npcs.forEach(function(n) { eng.createNPC(n); });
+                        upd({ activeLesson: 'builderSandbox', pendingLesson: null, worldActive: true, showLessonIntro: false, hudPreset: 'builder' });
                       }
                       upd('showPeerWorlds', false);
                       if (addToast) addToast('\uD83C\uDF0D Loaded "' + world.title + '" by ' + world.author, 'success');
                       if (eng.logEvent) eng.logEvent('peer_world_loaded', { title: world.title, author: world.author });
+                      return true;
+                      });
                     }
                   },
                     el('div', { style: { display: 'flex', justifyContent: 'space-between', alignItems: 'center' } },
@@ -18053,7 +18788,7 @@
                   x.name + ': ' + (x.practice.finished ? 'finished' : x.practice.solved + ' of ' + GW_PRACTICE_STATIONS.length + ' stations'));
               })),
               el('div', { style: { display: 'flex', gap: '6px', flexWrap: 'wrap' } },
-                el('button', { type: 'button', 'data-gw-class-round-play': 'true', onClick: function() { var live = window[engineKey]; if (live && live.startPracticeRound) { toggleTeacherView(); live.startPracticeRound(classRound.key); } }, style: buttonStyle }, 'Play it here'),
+                el('button', { type: 'button', 'data-gw-class-round-play': 'true', onClick: function() { var live = window[engineKey]; if (live && live.startPracticeRound) runWorldTransition(live, geometryPracticeLessonForKey(classRound.key), function() { if (live.startPracticeRound(classRound.key) === false) return false; toggleTeacherView(); return true; }); }, style: buttonStyle }, 'Play it here'),
                 el('button', { type: 'button', 'data-gw-class-round-new': classRound.level, onClick: function() { newClassRound(classRound.level); }, style: buttonStyle }, 'Another round'),
                 el('button', { type: 'button', 'data-gw-class-round-clear': 'true', onClick: function() { upd('classPracticeRound', ''); }, style: buttonStyle }, 'Clear')));
           })(),

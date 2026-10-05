@@ -1,0 +1,27 @@
+{
+  "images": [
+    {
+      "file": "metadata-1280.png",
+      "sha256": "a7fec5edf342215b2265040d2248535d71bb73fc4aa8f183eaaac7d86b0b5c8d"
+    },
+    {
+      "file": "excerpt-1280.png",
+      "sha256": "e0bd6a6ee95d0df64fc94f48814236089f67321af0f79823aebb1d61037c43d7"
+    },
+    {
+      "file": "metadata-320.png",
+      "sha256": "e424c31a9f3b6f225ead7f450ecf0caeaa6fc1785a98ec4e077be21641e327b5"
+    },
+    {
+      "file": "excerpt-320.png",
+      "sha256": "915ede317d9c8f1ef0c6501d80607722db984aa754d6505d6da6e5bb1359d167"
+    },
+    {
+      "file": "excerpt-320-forced.png",
+      "sha256": "b326f7707c4ce236e504fb87796b800f298673abb44a64d9d32929454c82c8a1"
+    }
+  ],
+  "realSourceApp": true,
+  "fixture": "fictional layout-only local text",
+  "moduleSha256": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21"
+}

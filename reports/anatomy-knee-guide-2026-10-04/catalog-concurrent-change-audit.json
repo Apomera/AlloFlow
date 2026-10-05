@@ -1,0 +1,260 @@
+{
+  "checkedAt": "2026-10-04T14:41:14.720Z",
+  "success": true,
+  "onlyOffScopeChanges": true,
+  "registeredValues": 560,
+  "files": [
+    {
+      "path": "ui_strings.js",
+      "installedSha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+      "testedSha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+      "currentSha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+      "anatomyNamespaceSha256": "130617a54713a98c163210cf64f1e0baf232f2ac5cb6be270a6ba7e7286f2c1c",
+      "anatomyNamespaceUnchanged": true,
+      "kneeValuesUnchanged": true,
+      "registeredKeys": 70,
+      "preTestOffScopeDifferences": [
+        {
+          "path": "stem.bridgelab.recorded_peak_at",
+          "after": "Recorded at: "
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_inspect_a",
+          "after": "Inspect A recorded maximum"
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_inspect_b",
+          "after": "Inspect B recorded maximum"
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_markers",
+          "after": "Circle A marks the notebook reference maximum; diamond B marks the current maximum. Markers follow the signed curves; the cards report magnitudes. Scene labels identify the displayed trial."
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_scope",
+          "after": "These are the largest magnitudes in the recorded history, with the first occurrence shown for a tie. Full-event results use smaller calculation steps and may be larger. Inspect either time to compare both trials at that moment."
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_title",
+          "after": "Where do these trials peak?"
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_zero",
+          "after": "This recorded response is zero throughout the event. There is no distinguishable peak to inspect."
+        },
+        {
+          "path": "stem.dinolab.preview_target",
+          "after": "Next 3D stroke: {tool} at {coord}"
+        },
+        {
+          "path": "stem.dinolab.preview_canvas_key",
+          "after": "Solid 1 · dashed 0–1 · × 0 model layers"
+        },
+        {
+          "path": "stem.dinolab.preview_legend_title",
+          "after": "Read the 3D removal guide"
+        },
+        {
+          "path": "stem.dinolab.preview_solid",
+          "after": "Solid box: 1 model layer with the brush"
+        },
+        {
+          "path": "stem.dinolab.preview_dashed",
+          "after": "Dashed box: 0–1 model layer with the trowel"
+        },
+        {
+          "path": "stem.dinolab.preview_held",
+          "after": "Crossed surface: 0 layer removals"
+        },
+        {
+          "path": "stem.dinolab.preview_volume_hint",
+          "after": "Boxes span one top model layer at each current surface. A dashed box may stop at contact. The guide does not show buried finds."
+        },
+        {
+          "path": "stem.dinolab.preview_target_hint",
+          "after": "Move over the site to preview a stroke. Click or press Enter to use the displayed 3D target. Leaving the canvas restores the selected column."
+        },
+        {
+          "path": "stem.dinolab.preview_selected_hint",
+          "after": "This panel plans {coord}, the selected column. Moving the pointer changes only the canvas preview; it does not select a column or excavate."
+        }
+      ],
+      "offScopeDifferences": []
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "installedSha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+      "testedSha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+      "currentSha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+      "anatomyNamespaceSha256": "130617a54713a98c163210cf64f1e0baf232f2ac5cb6be270a6ba7e7286f2c1c",
+      "anatomyNamespaceUnchanged": true,
+      "kneeValuesUnchanged": true,
+      "registeredKeys": 70,
+      "preTestOffScopeDifferences": [
+        {
+          "path": "stem.bridgelab.recorded_peak_at",
+          "after": "Recorded at: "
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_inspect_a",
+          "after": "Inspect A recorded maximum"
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_inspect_b",
+          "after": "Inspect B recorded maximum"
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_markers",
+          "after": "Circle A marks the notebook reference maximum; diamond B marks the current maximum. Markers follow the signed curves; the cards report magnitudes. Scene labels identify the displayed trial."
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_scope",
+          "after": "These are the largest magnitudes in the recorded history, with the first occurrence shown for a tie. Full-event results use smaller calculation steps and may be larger. Inspect either time to compare both trials at that moment."
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_title",
+          "after": "Where do these trials peak?"
+        },
+        {
+          "path": "stem.bridgelab.recorded_peak_zero",
+          "after": "This recorded response is zero throughout the event. There is no distinguishable peak to inspect."
+        },
+        {
+          "path": "stem.dinolab.preview_target",
+          "after": "Next 3D stroke: {tool} at {coord}"
+        },
+        {
+          "path": "stem.dinolab.preview_canvas_key",
+          "after": "Solid 1 · dashed 0–1 · × 0 model layers"
+        },
+        {
+          "path": "stem.dinolab.preview_legend_title",
+          "after": "Read the 3D removal guide"
+        },
+        {
+          "path": "stem.dinolab.preview_solid",
+          "after": "Solid box: 1 model layer with the brush"
+        },
+        {
+          "path": "stem.dinolab.preview_dashed",
+          "after": "Dashed box: 0–1 model layer with the trowel"
+        },
+        {
+          "path": "stem.dinolab.preview_held",
+          "after": "Crossed surface: 0 layer removals"
+        },
+        {
+          "path": "stem.dinolab.preview_volume_hint",
+          "after": "Boxes span one top model layer at each current surface. A dashed box may stop at contact. The guide does not show buried finds."
+        },
+        {
+          "path": "stem.dinolab.preview_target_hint",
+          "after": "Move over the site to preview a stroke. Click or press Enter to use the displayed 3D target. Leaving the canvas restores the selected column."
+        },
+        {
+          "path": "stem.dinolab.preview_selected_hint",
+          "after": "This panel plans {coord}, the selected column. Moving the pointer changes only the canvas preview; it does not select a column or excavate."
+        }
+      ],
+      "offScopeDifferences": []
+    },
+    {
+      "path": "lang/french.js",
+      "installedSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "testedSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "currentSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "anatomyNamespaceSha256": "15e55ec1fc7a1431b59e0607d2c379b970855aaf11e96ca031af9b7375d22b06",
+      "anatomyNamespaceUnchanged": true,
+      "kneeValuesUnchanged": true,
+      "registeredKeys": 70,
+      "preTestOffScopeDifferences": [],
+      "offScopeDifferences": []
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "installedSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "testedSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "currentSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "anatomyNamespaceSha256": "15e55ec1fc7a1431b59e0607d2c379b970855aaf11e96ca031af9b7375d22b06",
+      "anatomyNamespaceUnchanged": true,
+      "kneeValuesUnchanged": true,
+      "registeredKeys": 70,
+      "preTestOffScopeDifferences": [],
+      "offScopeDifferences": []
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "installedSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "testedSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "currentSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "anatomyNamespaceSha256": "f2d8e6a99254e42a410ffd157d203fb6a6f47079e01849ddce1ff47156915b21",
+      "anatomyNamespaceUnchanged": true,
+      "kneeValuesUnchanged": true,
+      "registeredKeys": 70,
+      "preTestOffScopeDifferences": [],
+      "offScopeDifferences": []
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "installedSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "testedSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "currentSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "anatomyNamespaceSha256": "f2d8e6a99254e42a410ffd157d203fb6a6f47079e01849ddce1ff47156915b21",
+      "anatomyNamespaceUnchanged": true,
+      "kneeValuesUnchanged": true,
+      "registeredKeys": 70,
+      "preTestOffScopeDifferences": [],
+      "offScopeDifferences": []
+    },
+    {
+      "path": "lang/arabic.js",
+      "installedSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "testedSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "currentSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "anatomyNamespaceSha256": "47b3ba02167bfbe19adbc511e982d636f09d4ddaa58839b9e5555697f75c685b",
+      "anatomyNamespaceUnchanged": true,
+      "kneeValuesUnchanged": true,
+      "registeredKeys": 70,
+      "preTestOffScopeDifferences": [],
+      "offScopeDifferences": []
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "installedSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "testedSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "currentSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "anatomyNamespaceSha256": "47b3ba02167bfbe19adbc511e982d636f09d4ddaa58839b9e5555697f75c685b",
+      "anatomyNamespaceUnchanged": true,
+      "kneeValuesUnchanged": true,
+      "registeredKeys": 70,
+      "preTestOffScopeDifferences": [],
+      "offScopeDifferences": []
+    }
+  ],
+  "pairs": [
+    {
+      "path": "ui_strings.js",
+      "kneeValuesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "fullFilesIdentical": true
+    },
+    {
+      "path": "lang/french.js",
+      "kneeValuesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "fullFilesIdentical": true
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "kneeValuesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "fullFilesIdentical": true
+    },
+    {
+      "path": "lang/arabic.js",
+      "kneeValuesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "fullFilesIdentical": true
+    }
+  ]
+}

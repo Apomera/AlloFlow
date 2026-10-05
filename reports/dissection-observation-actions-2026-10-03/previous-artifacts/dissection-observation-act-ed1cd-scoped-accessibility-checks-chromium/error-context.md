@@ -1,0 +1,341 @@
+# Instructions
+
+- Following Playwright test failed.
+- Explain why, be concise, respect Playwright best practices.
+- Provide a snippet of code with the fix, if possible.
+
+# Test info
+
+- Name: dissection-observation-actions-previous-0.spec.ts >> phone review wraps saved notes and passes scoped accessibility checks
+- Location: tests\e2e\dissection-observation-actions-previous-0.spec.ts:59:5
+
+# Error details
+
+```
+Tearing down "context" exceeded the test timeout of 120000ms.
+```
+
+# Page snapshot
+
+```yaml
+- generic [ref=e3]:
+  - link "Skip to interactive specimen":
+    - /url: "#diss-canvas"
+  - link "Skip to structure directory and notes":
+    - /url: "#diss-structure-directory"
+  - status [ref=e4]:
+    - generic [ref=e5]: ✓
+    - generic [ref=e6]: Progress saved locally on this device.
+  - region "Virtual Dissection Lab" [ref=e7]:
+    - generic [ref=e8]:
+      - paragraph [ref=e9]: Virtual Biology Laboratory
+      - heading "Virtual Dissection Lab" [level=2] [ref=e10]
+      - paragraph [ref=e11]: "Work through the specimen one clear action at a time. Current focus: Predict before contact."
+      - list "Dissection workflow" [ref=e12]:
+        - listitem [ref=e13]:
+          - generic [ref=e14]: "1"
+          - text: Orient
+        - listitem [ref=e15]:
+          - generic [ref=e16]: "2"
+          - text: Prepare
+        - listitem [ref=e17]:
+          - generic [ref=e18]: "3"
+          - text: Reveal
+        - listitem [ref=e19]:
+          - generic [ref=e20]: "4"
+          - text: Identify
+        - listitem [ref=e21]:
+          - generic [ref=e22]: "5"
+          - text: Record evidence
+        - listitem [ref=e23]:
+          - generic [ref=e24]: "6"
+          - text: Review
+      - paragraph [ref=e25]: Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen.
+      - navigation "Lab workspace shortcuts" [ref=e26]:
+        - button "Go to specimen" [ref=e27] [cursor=pointer]
+        - button "Structures and notes" [ref=e28] [cursor=pointer]
+        - button "Continue activity" [ref=e29] [cursor=pointer]
+    - generic "Current lab status" [ref=e30]:
+      - generic [ref=e31]:
+        - generic [ref=e32]: Specimen
+        - generic "👁️ Sheep Eye" [ref=e33]
+      - generic [ref=e34]:
+        - generic [ref=e35]: Layer
+        - generic "1 of 2 · External" [ref=e36]
+      - generic [ref=e37]:
+        - generic [ref=e38]: Structures viewed
+        - generic "2 of 14" [ref=e39]
+  - toolbar "Learning route" [ref=e40]:
+    - button "Procedure practice" [pressed] [ref=e41] [cursor=pointer]: 🔎 Procedure practice
+    - button "Guided investigation" [ref=e42] [cursor=pointer]: 🧭 Guided investigation
+    - button "Study tools" [ref=e43] [cursor=pointer]: 📚 Study tools
+    - button "Practice assessment" [ref=e44] [cursor=pointer]: 🧠 Practice assessment
+    - group "Workspace detail" [ref=e45]:
+      - button "Essentials workspace" [pressed] [ref=e46] [cursor=pointer]: Essentials
+      - button "Advanced workspace" [ref=e47] [cursor=pointer]: Advanced
+  - region "Choose a specimen" [ref=e48]:
+    - generic [ref=e49]:
+      - heading "Choose a specimen" [level=3] [ref=e50]
+      - paragraph [ref=e51]: 7 comparative anatomy models
+    - tablist "Dissection specimens" [ref=e52]:
+      - 'tab "Select specimen: Frog (Rana)" [ref=e53] [cursor=pointer]': 🐸 Frog (Rana)
+      - 'tab "Select specimen: Earthworm (Lumbricus)" [ref=e54] [cursor=pointer]': 🪱 Earthworm (Lumbricus)
+      - 'tab "Select specimen: Fetal Pig (Sus scrofa)" [ref=e55] [cursor=pointer]': 🐷 Fetal Pig (Sus scrofa)
+      - 'tab "Select specimen: Perch (Perca)" [ref=e56] [cursor=pointer]': 🐟 Perch (Perca)
+      - 'tab "Select specimen: Crayfish (Cambarus)" [ref=e57] [cursor=pointer]': 🦞 Crayfish (Cambarus)
+      - 'tab "Select specimen: Sheep Eye" [selected] [ref=e58] [cursor=pointer]': 👁️ Sheep Eye
+      - 'tab "Select specimen: Sheep Heart" [ref=e59] [cursor=pointer]': ❤️ Sheep Heart
+  - navigation "Anatomical layers" [ref=e60]:
+    - generic [ref=e61]:
+      - heading "Anatomical layers" [level=3] [ref=e62]
+      - paragraph [ref=e63]: 0 of 2 layers revealed
+      - toolbar "Specimen display and lab tool controls" [ref=e64]:
+        - generic [ref=e65]: Controls
+        - button "View and accessibility options" [ref=e66] [cursor=pointer]: 👁 View & access ▼
+    - generic [ref=e67]:
+      - 'button "Layer 1: External, current" [ref=e68] [cursor=pointer]':
+        - generic [ref=e69]: "1"
+        - generic [ref=e70]:
+          - generic [ref=e71]: 👁️ External
+          - generic [ref=e72]: Current
+          - generic [ref=e73]: Awaiting reveal
+      - 'button "Layer 2: Internal, locked" [disabled] [ref=e74]':
+        - generic [ref=e75]: "2"
+        - generic [ref=e76]:
+          - generic [ref=e77]: 🫁 Internal
+          - generic [ref=e78]: Locked
+          - generic [ref=e79]: Reveal External first
+    - paragraph [ref=e80]: Use Left and Right to browse available layers; Enter selects. Scroll to see all layers.
+  - 'tabpanel "Select specimen: Sheep Eye" [ref=e81]':
+    - generic [ref=e82]:
+      - region "Plan the orientation check" [ref=e83]:
+        - generic [ref=e84]:
+          - paragraph [ref=e85]: Pause before contact
+          - heading "Plan the orientation check" [level=3] [ref=e86]
+          - paragraph [ref=e87]: What must be confirmed before any instrument contacts this specimen?
+        - generic "Learning cycle progress" [ref=e88]:
+          - generic [ref=e89]:
+            - generic [ref=e90]: 1 Predict
+            - generic [ref=e91]: Current
+          - generic [ref=e92]:
+            - generic [ref=e93]: 2 Perform
+            - generic [ref=e94]: Upcoming
+          - generic [ref=e95]:
+            - generic [ref=e96]: 3 Explain
+            - generic [ref=e97]: Upcoming
+        - group "Choose the safest plan" [ref=e98]:
+          - button "Confirm the lateral view, center the shallow equatorial corneoscleral opening, and account for Crystalline Lens, Retina, Optic Nerve." [ref=e99] [cursor=pointer]:
+            - generic [ref=e100]: "1"
+            - generic [ref=e101]: Confirm the lateral view, center the shallow equatorial corneoscleral opening, and account for Crystalline Lens, Retina, Optic Nerve.
+          - button "Open at the deepest-looking region first; the shallow equatorial corneoscleral opening can be re-established once the first opening is made." [ref=e102] [cursor=pointer]:
+            - generic [ref=e103]: "2"
+            - generic [ref=e104]: Open at the deepest-looking region first; the shallow equatorial corneoscleral opening can be re-established once the first opening is made.
+          - button "Select a cutting instrument first and let the opening incision reveal where Crystalline Lens, Retina, Optic Nerve sit." [ref=e105] [cursor=pointer]:
+            - generic [ref=e106]: "3"
+            - generic [ref=e107]: Select a cutting instrument first and let the opening incision reveal where Crystalline Lens, Retina, Optic Nerve sit.
+        - paragraph [ref=e108]: Arrow keys browse choices. Enter or Space checks the focused choice.
+      - region "👁️ Sheep Eye · External" [ref=e109]:
+        - generic [ref=e110]:
+          - generic [ref=e111]:
+            - generic [ref=e112]: Interactive specimen
+            - heading "👁️ Sheep Eye · External" [level=3] [ref=e113]
+          - generic [ref=e114]: Limited observation field · 46%
+        - group [ref=e115]:
+          - generic "View & orientation Dorsal · External +" [ref=e116] [cursor=pointer]:
+            - strong [ref=e117]: View & orientation
+            - generic [ref=e118]: Dorsal · External
+            - text: +
+        - 'group "Current action: What must be confirmed before any instrument contacts this specimen?. Predict before contact. Workflow step 1 of 6" [ref=e119]':
+          - generic [ref=e120]: "!"
+          - strong [ref=e121]: Next · Predict before contact
+          - generic [ref=e122]: Workflow 1/6
+        - group [ref=e123]:
+          - generic "Field monitor Limited observation field Exposure and tissue-response details" [ref=e124] [cursor=pointer]:
+            - strong [ref=e125]: Field monitor
+            - generic [ref=e126]: Limited observation field
+            - generic [ref=e127]: Exposure and tissue-response details
+        - 'group "Current pointer mode: Prediction required. Complete the prediction checkpoint before this instrument can contact the specimen." [ref=e128]':
+          - generic [ref=e129]: "!"
+          - generic [ref=e130]:
+            - strong [ref=e131]: Pointer mode ? Prediction required
+            - generic [ref=e132]: Complete the prediction checkpoint before this instrument can contact the specimen.
+        - generic [ref=e134]:
+          - generic [ref=e135]: Sheep Eye interactive specimen · External layer, dorsal view
+          - region "Specimen canvas description" [ref=e136]:
+            - heading "Specimen canvas description" [level=4] [ref=e137]
+            - paragraph [ref=e138]: Every canvas selection and drag action has a keyboard or button alternative. Use the structure directory for equivalent anatomical descriptions, the technique action button instead of drawing a stroke, the pin action button instead of dragging a pin, the probe action button instead of tracing a structure, and the pan controls instead of dragging a zoomed view. When the depth atlas is enabled, surface landmarks use circles, mid-depth landmarks use diamonds, and deep landmarks use double rings.
+            - paragraph [ref=e139]: "Sheep Eye virtual dissection. Specimen-specific procedure: Sheep eye equatorial access; recommended view lateral; access route shallow equatorial corneoscleral opening; protected landmarks Crystalline Lens, Retina, Optic Nerve. Current view: dorsal, standard condition, External layer. Progressive exposure: Covered anatomy, 22 percent; decision quality 48 percent. Observation field: Limited observation field, 46 percent; limiting factor: Access width. Surface model: translucent corneal and scleral layers. Surface microtexture uses radial detail aligned to overhead illumination, with sheen adjusted for 74 percent moisture and standard condition. Tool contact response: corneal ripple. Light direction: overhead. Illumination 68 percent: Balanced illumination; glare risk 12 percent. Focus isolation on. Tissue relief on and responsive to the inspection light. Depth atlas off. Selected and hovered structures use a labeled depth footprint with front and back edges, visibility-specific line styles, and boundary-attached relationship paths. Relationship types use distinct line patterns and moving marker shapes, with fixed markers when motion is reduced. Tubular, lobed, chambered, layered, and compact structure classes use distinct contours, internal patterns, and text labels. Anatomical orientation axis uses a circle for cornea and a diamond for optic nerve; current and target views are stated in text. View and layer navigation uses a labeled orientation sweep with circle start and diamond target markers, plus concentric depth rings for deeper or superficial movement; reduced motion switches instantly and uses text announcements. Depth motion off. 6 directly visible structures. Active instrument: probe. Action readiness: Prediction required, 70 percent. Complete the prediction checkpoint before this instrument can contact the specimen.. Directional contact footprint feedback is active. Engaged instrument tips use foreground tissue lips and paired depth notches to show partial insertion and opening-edge occlusion. Guided anatomical access corridor active; circle marks start and diamond marks finish. Directional target guidance uses a dashed arrow, labeled endpoint, and shape-coded reticle when an instrument is spatially misaligned. Localized action outcomes use a one-shot check or warning symbol with the changed tissue metric. Tissue opening, retraction, stabilization, hydration, and risk metrics transition spatially after each action; Undo reverses openings, retraction, pin placement, hydration, wick evidence, and probe traces; reduced motion snaps to the final state. Three-dimensional instrument pitch feedback is active. Light-aware instrument elevation feedback is active. Equivalent keyboard and button actions include an instrument approach, contact, and release replay. Recorded attempt replay progressively traces pressure with line width and states path alignment in text and shape. Direct forceps press-drag-release manipulation shows live lift direction, safe range, calibrated grip, speed, control, slip risk, and excess tension with text and geometry; the technique action button remains equivalent. Live pin stability preview shows endpoint spacing, calibrated angle, insertion depth, and flap tension with text and geometry. Direct pin press-drag-release placement adds shaft alignment, insertion travel, safe depth, and control feedback. Live probe palpation preview shows calibrated pressure, material resistance, anatomical depth, and tissue deformation with text and shape. Direct probe press-drag-release tracing adds contact coverage, alignment, resistance, deformation, and control feedback. Direct dropper press-drag-release hydration adds contact coverage, flow alignment, moisture, dose, and pooling feedback. Direct wick press-drag-release recovery adds pool-edge alignment, contact coverage, recovery distance, and control feedback. Live dropper spread forecast shows dose count, organism-specific flow direction, current saturation, and pooling risk with text and geometry. Absorbent-wick feedback shows pool-edge targeting, fluid recovery, and a localized balanced-film marker with text and cross-hatched geometry. Guided procedure handoff cue connects the next required instrument to its anatomical target and 6-step progress rail with text, shape, and line style. Persistent localized technique evidence maps edge stress, grip compression, anchor tension, probe pressure, and saline pooling to actual contact locations with text and distinct geometry; direct wick recovery maps pool-edge contact, recovery distance, and control. Press a visible structure, trace a short path while monitoring pressure, resistance, and contact, then release when controlled; the equivalent technique action button remains available. Occluded structures remain available in the structure directory."
+          - application "Sheep Eye interactive specimen · External layer, dorsal view" [ref=e140]
+        - generic [ref=e141]:
+          - button "Zoom out canvas" [ref=e142] [cursor=pointer]: ➖
+          - generic [ref=e143]: 100%
+          - button "Zoom in canvas" [ref=e144] [cursor=pointer]: ➕
+        - paragraph [ref=e145]: Every canvas action has a keyboard or button alternative. The specimen canvas description lists them.
+        - status [ref=e146]: "Predict before contact: Choose the safest plan. A correct plan unlocks the simulation action but never performs it for you. Answer it in the planning checkpoint above the specimen."
+        - group [ref=e147]:
+          - generic "Evidence notebook · 0/6 frames" [ref=e148] [cursor=pointer]
+        - group "Technique practice · step 1 of 6" [ref=e149]:
+          - generic "Technique controls Inspect corneoscleral landmarks and identify the optic-nerve pole" [ref=e150] [cursor=pointer]:
+            - strong [ref=e151]: Technique controls
+            - generic [ref=e152]: Inspect corneoscleral landmarks and identify the optic-nerve pole
+    - complementary "Structure directory and lab notes" [ref=e153]:
+      - link "Return to interactive specimen" [ref=e154] [cursor=pointer]:
+        - /url: "#diss-canvas"
+      - group [ref=e155]:
+        - generic "Review observations · 2 inspected" [ref=e156] [cursor=pointer]
+        - generic [ref=e157]:
+          - paragraph [ref=e158]: Your inspected structures across all layers of Sheep Eye. Review what you observed, then decide what evidence would strengthen your identification.
+          - paragraph [ref=e159]: Finish records shows missing notes or confidence. Low confidence means 1 of 3. Identification checks assess understanding.
+          - generic [ref=e160]:
+            - generic [ref=e161]: Search your observations
+            - searchbox "Search your observations" [ref=e162]
+            - paragraph [ref=e163]: Search names, layers, and your saved notes. All words must match; punctuation and accents are ignored. Filter counts reflect this search.
+          - group "Filter observation review" [ref=e164]:
+            - button "All inspected (2)" [pressed] [ref=e165] [cursor=pointer]:
+              - generic [ref=e166]: All inspected
+              - generic [ref=e167]: (2)
+            - button "Finish records (1)" [ref=e168] [cursor=pointer]:
+              - generic [ref=e169]: Finish records
+              - generic [ref=e170]: (1)
+            - button "Low confidence (1)" [ref=e171] [cursor=pointer]:
+              - generic [ref=e172]: Low confidence
+              - generic [ref=e173]: (1)
+          - status [ref=e174]: 2 of 2 inspected structures shown.
+          - button "Read observations in a larger view" [ref=e175] [cursor=pointer]
+          - group [ref=e176]:
+            - generic "Preview and export shown observations" [ref=e177] [cursor=pointer]
+          - list [ref=e178]:
+            - listitem [ref=e179]:
+              - heading "Cornea" [level=4] [ref=e180]
+              - paragraph [ref=e181]: External layer · Confidence not recorded
+              - paragraph [ref=e182]: Note and confidence needed
+              - 'button "Open observation record: Cornea" [ref=e183] [cursor=pointer]'
+            - listitem [ref=e184]:
+              - heading "Crystalline Lens" [level=4] [ref=e185]
+              - paragraph [ref=e186]: Internal layer · Confidence 1 of 3
+              - paragraph [ref=e187]: Note and confidence recorded
+              - group [ref=e188]:
+                - generic "Read saved note" [active] [ref=e189] [cursor=pointer]
+                - paragraph [ref=e190]: I observed two curved faces. The structure was behind the iris.
+              - paragraph [ref=e191]: What feature or relationship would help you check this identification?
+              - paragraph [ref=e192]: Layer locked. Complete its preparation before returning to this structure. Your saved note remains available above.
+      - region "👁️ External structures (6)" [ref=e193]:
+        - heading "👁️ External structures (6)" [level=3] [ref=e194]
+        - generic [ref=e195]: Find a structure
+        - textbox "Find a structure" [ref=e196]:
+          - /placeholder: Search names or functions…
+        - paragraph [ref=e197]: Down arrow moves to results. Use Up and Down to browse; Enter activates a result. Escape clears search and filters.
+        - group "Filter structures by learning progress" [ref=e198]:
+          - button "All structures, 6 structures" [pressed] [ref=e199] [cursor=pointer]:
+            - text: All structures
+            - generic [ref=e200]: "6"
+          - button "To inspect, 5 structures" [ref=e201] [cursor=pointer]:
+            - text: To inspect
+            - generic [ref=e202]: "5"
+          - button "Finish records, 1 structure" [ref=e203] [cursor=pointer]:
+            - text: Finish records
+            - generic [ref=e204]: "1"
+          - button "Recorded, 0 structures" [ref=e205] [cursor=pointer]:
+            - text: Recorded
+            - generic [ref=e206]: "0"
+        - paragraph [ref=e207]: Filters apply to this layer. Finish records shows missing notes or confidence ratings. Recorded tracks completed notes and confidence; understanding is checked separately.
+        - status [ref=e208]: 6 structures available in External.
+        - region "Directory results" [ref=e209]:
+          - button "Cornea, Open observation record, viewed" [ref=e210] [cursor=pointer]:
+            - generic [ref=e211]: "1"
+            - generic [ref=e212]:
+              - generic [ref=e213]: Cornea
+              - generic [ref=e214]: Note and confidence needed
+            - generic [ref=e215]:
+              - generic [ref=e216]: Visible
+              - generic [ref=e217]: Open observation record →
+          - button "Sclera, Inspect structure, not yet viewed" [ref=e218] [cursor=pointer]:
+            - generic [ref=e219]: "2"
+            - generic [ref=e220]:
+              - generic [ref=e221]: Sclera
+              - generic [ref=e222]: Not yet inspected
+            - generic [ref=e223]:
+              - generic [ref=e224]: Visible
+              - generic [ref=e225]: Inspect structure →
+          - button "Optic Nerve, Inspect structure, not yet viewed" [ref=e226] [cursor=pointer]:
+            - generic [ref=e227]: "3"
+            - generic [ref=e228]:
+              - generic [ref=e229]: Optic Nerve
+              - generic [ref=e230]: Not yet inspected
+            - generic [ref=e231]:
+              - generic [ref=e232]: Visible
+              - generic [ref=e233]: Inspect structure →
+          - button "Extraocular Muscles, Inspect structure, not yet viewed" [ref=e234] [cursor=pointer]:
+            - generic [ref=e235]: "4"
+            - generic [ref=e236]:
+              - generic [ref=e237]: Extraocular Muscles
+              - generic [ref=e238]: Not yet inspected
+            - generic [ref=e239]:
+              - generic [ref=e240]: Visible
+              - generic [ref=e241]: Inspect structure →
+          - button "Conjunctiva, Inspect structure, not yet viewed" [ref=e242] [cursor=pointer]:
+            - generic [ref=e243]: "5"
+            - generic [ref=e244]:
+              - generic [ref=e245]: Conjunctiva
+              - generic [ref=e246]: Not yet inspected
+            - generic [ref=e247]:
+              - generic [ref=e248]: Visible
+              - generic [ref=e249]: Inspect structure →
+          - button "Orbital Fat, Inspect structure, not yet viewed" [ref=e250] [cursor=pointer]:
+            - generic [ref=e251]: "6"
+            - generic [ref=e252]:
+              - generic [ref=e253]: Orbital Fat
+              - generic [ref=e254]: Not yet inspected
+            - generic [ref=e255]:
+              - generic [ref=e256]: Visible
+              - generic [ref=e257]: Inspect structure →
+      - generic [ref=e258]:
+        - generic [ref=e259]: Layer Progress
+        - generic [ref=e261]: 👁️ External
+        - generic [ref=e263]: 🫁 Internal
+        - generic [ref=e264]:
+          - paragraph [ref=e265]: Mammalian eye with cornea, lens, retina, and vitreous humor. Sheep-specific features include a tapetum lucidum and a horizontal retinal specialization rather than a human fovea.
+          - paragraph [ref=e266]: "Comparative learning model: specimen observations and human clinical connections are labeled separately. Anatomy varies by species, age, preservation, and individual."
+      - group [ref=e267]:
+        - generic "Biology fact ＋" [ref=e268] [cursor=pointer]
+      - generic [ref=e269]:
+        - generic [ref=e270]:
+          - generic [ref=e271]: 📊 Learning evidence
+          - generic [ref=e272]: 7%
+        - 'progressbar "Observation: structures viewed 2 of 14" [ref=e274]'
+        - generic [ref=e275]: "Observation: 2 of 14 structures viewed"
+        - generic "Learning evidence dimensions" [ref=e276]:
+          - generic [ref=e277]:
+            - generic [ref=e278]:
+              - generic [ref=e279]: Technique
+              - generic [ref=e280]: 0%
+            - generic [ref=e281]:
+              - progressbar "Technique evidence"
+          - generic [ref=e282]:
+            - generic [ref=e283]:
+              - generic [ref=e284]: Observation
+              - generic [ref=e285]: 14%
+            - progressbar "Observation evidence" [ref=e287]
+          - generic [ref=e288]:
+            - generic [ref=e289]:
+              - generic [ref=e290]: Evidence
+              - generic [ref=e291]: 7%
+            - progressbar "Evidence evidence" [ref=e293]
+          - generic [ref=e294]:
+            - generic [ref=e295]:
+              - generic [ref=e296]: Understanding
+              - generic [ref=e297]: 6%
+            - progressbar "Understanding evidence" [ref=e299]
+        - generic [ref=e300]: 0/2 guided identifications verified · 1/14 evidence records · completed first-attempt assessment 0/0
+        - generic [ref=e301]:
+          - generic [ref=e302]: Practice in progress
+          - generic [ref=e303]: Continue the investigation; the log distinguishes viewing from verified understanding.
+          - button "Copy practice log to clipboard" [ref=e304] [cursor=pointer]: Copy practice log
+      - group [ref=e305]:
+        - generic "Specimen stats ＋" [ref=e306] [cursor=pointer]
+      - group [ref=e307]:
+        - generic "Learning objectives ＋" [ref=e308] [cursor=pointer]
+      - text: ＋
+      - group [ref=e309]:
+        - generic "Key terms ＋" [ref=e310] [cursor=pointer]
+```

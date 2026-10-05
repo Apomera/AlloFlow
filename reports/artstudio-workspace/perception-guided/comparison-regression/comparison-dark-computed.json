@@ -1,0 +1,35 @@
+[
+  {
+    "selector": "[data-perception-lab]",
+    "theme": "dark",
+    "background": "rgb(16, 39, 56)",
+    "color": "rgb(231, 243, 248)",
+    "panel": "#183447",
+    "ground": "#102738",
+    "inline": null
+  },
+  {
+    "selector": ".perception-card",
+    "background": "rgb(24, 52, 71)",
+    "color": "rgb(231, 243, 248)",
+    "panel": "#183447",
+    "ground": "#102738",
+    "inline": null
+  },
+  {
+    "selector": "[data-perception-study-comparison]",
+    "background": "rgba(0, 0, 0, 0)",
+    "color": "rgb(231, 243, 248)",
+    "panel": "#183447",
+    "ground": "#102738",
+    "inline": null
+  },
+  {
+    "selector": "[data-perception-study-selector]",
+    "background": "rgb(24, 52, 71)",
+    "color": "rgb(231, 243, 248)",
+    "panel": "#183447",
+    "ground": "#102738",
+    "inline": null
+  }
+]

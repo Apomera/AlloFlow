@@ -1,0 +1,74 @@
+[
+  {
+    "file": "desktop/web-app/build/misc_components_module.js",
+    "matchesHead": true,
+    "matchesCurrent": false,
+    "bytes": 102071
+  },
+  {
+    "file": "desktop/web-app/build/view_math_module.js",
+    "matchesHead": true,
+    "matchesCurrent": false,
+    "bytes": 91214
+  },
+  {
+    "file": "desktop/web-app/build/prompts_library_module.js",
+    "matchesHead": true,
+    "matchesCurrent": false,
+    "bytes": 21589
+  },
+  {
+    "file": "desktop/web-app/build/view_export_preview_module.js",
+    "matchesHead": true,
+    "matchesCurrent": false,
+    "bytes": 933988
+  },
+  {
+    "file": "desktop/web-app/build/generation_helpers_module.js",
+    "matchesHead": true,
+    "matchesCurrent": false,
+    "bytes": 310629
+  },
+  {
+    "file": "desktop/web-app/build/doc_pipeline_module.js",
+    "matchesHead": true,
+    "matchesCurrent": false,
+    "bytes": 3516891
+  },
+  {
+    "file": "desktop/web-app/build/read_aloud_audio_service_module.js",
+    "matchesHead": true,
+    "matchesCurrent": true,
+    "bytes": 82717
+  },
+  {
+    "file": "desktop/web-app/build/session_transport_module.js",
+    "matchesHead": true,
+    "matchesCurrent": false,
+    "bytes": 15587
+  },
+  {
+    "file": "desktop/web-app/build/view_dbq_module.js",
+    "matchesHead": true,
+    "matchesCurrent": false,
+    "bytes": 106578
+  },
+  {
+    "file": "desktop/web-app/build/view_lesson_plan_module.js",
+    "matchesHead": true,
+    "matchesCurrent": false,
+    "bytes": 65199
+  },
+  {
+    "file": "desktop/web-app/build/generate_dispatcher_module.js",
+    "matchesHead": true,
+    "matchesCurrent": false,
+    "bytes": 639739
+  },
+  {
+    "file": "desktop/web-app/build/host_handlers_module.js",
+    "matchesHead": true,
+    "matchesCurrent": true,
+    "bytes": 513291
+  }
+]

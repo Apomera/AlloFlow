@@ -1,0 +1,412 @@
+{
+  "beforeLabelCount": 36,
+  "currentLabelCount": 36,
+  "labelDelta": 0,
+  "syntaxExit": 0,
+  "syntaxOutput": "",
+  "inputsStable": true,
+  "inputs": [
+    {
+      "Path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_epidemic.js",
+      "Hash": "90B6EA7D146BAC5595FD7DA4C307D48ED9CC4C2D7C0FA0E0948110F1C29DE1A5"
+    },
+    {
+      "Path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\epidemic_inquiry_recovery.test.js",
+      "Hash": "196BA9A76D78CA9F688E11E52BD75F149475DB028BBA831863AAAFFE86E60C64"
+    },
+    {
+      "Path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\epidemic-inquiry-recovery.spec.ts",
+      "Hash": "0406C46B7D021BA653102CDE6A9F3D8BA64678EC04BF75EAB48CBF06418F2687"
+    },
+    {
+      "Path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\setup.js",
+      "Hash": "F6100B28ABEC183CC8499663DB55FC7688284C721504C5653FA7FC9F669DA88E"
+    },
+    {
+      "Path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\helpers\\stem_widgets_smoke_harness.js",
+      "Hash": "54B6B790E8D6AC568724C0C1B59444AFC883053C930F3A63FA3A8424C358809C"
+    },
+    {
+      "Path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\stem-refinement-team-2026-10-01\\source-before\\stem_tool_epidemic.js",
+      "Hash": "D5AB6AE0B6177ADB8B69961BB43AB50FCC1F1C448ED423B0B72D6ACB1106FD74"
+    }
+  ],
+  "baseline": {
+    "total": 10,
+    "failed": 10,
+    "originalBehaviorFailures": 4,
+    "newControlAbsent": 6,
+    "harnessErrors": 0,
+    "exit": 1
+  },
+  "current": {
+    "total": 10,
+    "passed": 10,
+    "failed": 0,
+    "exit": 0
+  },
+  "beforeFindings": [
+    {
+      "line": 1862,
+      "attr": "aria-label",
+      "text": "SIR epidemic projection chart showing susceptible, infected, and recovered populations over time"
+    },
+    {
+      "line": 1862,
+      "attr": "aria-label",
+      "text": ", with a dashed previous-run comparison"
+    },
+    {
+      "line": 1862,
+      "attr": "aria-label",
+      "text": ", with a stochastic P10 to P90 uncertainty band"
+    },
+    {
+      "line": 1951,
+      "attr": "aria-label",
+      "text": " exact value"
+    },
+    {
+      "line": 2580,
+      "attr": "aria-label",
+      "text": " preset, R nought "
+    },
+    {
+      "line": 2580,
+      "attr": "aria-label",
+      "text": ", infectious period "
+    },
+    {
+      "line": 2580,
+      "attr": "aria-label",
+      "text": " days"
+    },
+    {
+      "line": 2916,
+      "attr": "aria-label",
+      "text": ", reduces transmission by "
+    },
+    {
+      "line": 2916,
+      "attr": "aria-label",
+      "text": " percent, cost "
+    },
+    {
+      "line": 3536,
+      "attr": "aria-label",
+      "text": "Open deep-dive for "
+    },
+    {
+      "line": 3614,
+      "attr": "aria-label",
+      "text": "Open deep-dive for "
+    },
+    {
+      "line": 3790,
+      "attr": "aria-label",
+      "text": "Deep-dive for "
+    },
+    {
+      "line": 3960,
+      "attr": "aria-label",
+      "text": "Outbreak map grid for day "
+    },
+    {
+      "line": 3960,
+      "attr": "aria-label",
+      "text": "Use arrow keys to move between cells, then Enter or Space to place a quarantine zone; activate a gold-covered cell to remove it."
+    },
+    {
+      "line": 3960,
+      "attr": "aria-label",
+      "text": "Use the history slider to inspect another day."
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "Row "
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": ", column "
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "susceptible"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "exposed"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "infectious"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "hospitalized"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "recovered"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "empty"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "Quarantine zone already covers this cell. Activate to remove it."
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "Activate to place a quarantine zone here."
+    },
+    {
+      "line": 4003,
+      "attr": "aria-label",
+      "text": "Map snapshot summary for day "
+    },
+    {
+      "line": 4113,
+      "attr": "aria-label",
+      "text": "Clinical map trajectories through day "
+    },
+    {
+      "line": 4113,
+      "attr": "aria-label",
+      "text": ", including a dashed no-additional-response infectious baseline"
+    },
+    {
+      "line": 4185,
+      "attr": "aria-label",
+      "text": "Contact network: "
+    },
+    {
+      "line": 4185,
+      "attr": "aria-label",
+      "text": " people, "
+    },
+    {
+      "line": 4187,
+      "attr": "aria-label",
+      "text": " of "
+    },
+    {
+      "line": 4187,
+      "attr": "aria-label",
+      "text": " infections traced so far. Tab to a person who is in contact with a confirmed case, then press Enter to test them."
+    },
+    {
+      "line": 4305,
+      "attr": "aria-label",
+      "text": " pandemic"
+    },
+    {
+      "line": 4422,
+      "attr": "aria-label",
+      "text": "option "
+    },
+    {
+      "line": 4685,
+      "attr": "aria-label",
+      "text": "Live SIR trajectories at R effective "
+    },
+    {
+      "line": 4685,
+      "attr": "aria-label",
+      "text": ": susceptible, infected, and recovered population fractions over model time"
+    }
+  ],
+  "currentFindings": [
+    {
+      "line": 1862,
+      "attr": "aria-label",
+      "text": "SIR epidemic projection chart showing susceptible, infected, and recovered populations over time"
+    },
+    {
+      "line": 1862,
+      "attr": "aria-label",
+      "text": ", with a dashed previous-run comparison"
+    },
+    {
+      "line": 1862,
+      "attr": "aria-label",
+      "text": ", with a stochastic P10 to P90 uncertainty band"
+    },
+    {
+      "line": 1951,
+      "attr": "aria-label",
+      "text": " exact value"
+    },
+    {
+      "line": 2580,
+      "attr": "aria-label",
+      "text": " preset, R nought "
+    },
+    {
+      "line": 2580,
+      "attr": "aria-label",
+      "text": ", infectious period "
+    },
+    {
+      "line": 2580,
+      "attr": "aria-label",
+      "text": " days"
+    },
+    {
+      "line": 2916,
+      "attr": "aria-label",
+      "text": ", reduces transmission by "
+    },
+    {
+      "line": 2916,
+      "attr": "aria-label",
+      "text": " percent, cost "
+    },
+    {
+      "line": 3536,
+      "attr": "aria-label",
+      "text": "Open deep-dive for "
+    },
+    {
+      "line": 3614,
+      "attr": "aria-label",
+      "text": "Open deep-dive for "
+    },
+    {
+      "line": 3790,
+      "attr": "aria-label",
+      "text": "Deep-dive for "
+    },
+    {
+      "line": 3960,
+      "attr": "aria-label",
+      "text": "Outbreak map grid for day "
+    },
+    {
+      "line": 3960,
+      "attr": "aria-label",
+      "text": "Use arrow keys to move between cells, then Enter or Space to place a quarantine zone; activate a gold-covered cell to remove it."
+    },
+    {
+      "line": 3960,
+      "attr": "aria-label",
+      "text": "Use the history slider to inspect another day."
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "Row "
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": ", column "
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "susceptible"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "exposed"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "infectious"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "hospitalized"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "recovered"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "empty"
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "Quarantine zone already covers this cell. Activate to remove it."
+    },
+    {
+      "line": 3973,
+      "attr": "aria-label",
+      "text": "Activate to place a quarantine zone here."
+    },
+    {
+      "line": 4003,
+      "attr": "aria-label",
+      "text": "Map snapshot summary for day "
+    },
+    {
+      "line": 4113,
+      "attr": "aria-label",
+      "text": "Clinical map trajectories through day "
+    },
+    {
+      "line": 4113,
+      "attr": "aria-label",
+      "text": ", including a dashed no-additional-response infectious baseline"
+    },
+    {
+      "line": 4185,
+      "attr": "aria-label",
+      "text": "Contact network: "
+    },
+    {
+      "line": 4185,
+      "attr": "aria-label",
+      "text": " people, "
+    },
+    {
+      "line": 4187,
+      "attr": "aria-label",
+      "text": " of "
+    },
+    {
+      "line": 4187,
+      "attr": "aria-label",
+      "text": " infections traced so far. Tab to a person who is in contact with a confirmed case, then press Enter to test them."
+    },
+    {
+      "line": 4305,
+      "attr": "aria-label",
+      "text": " pandemic"
+    },
+    {
+      "line": 4422,
+      "attr": "aria-label",
+      "text": "option "
+    },
+    {
+      "line": 4733,
+      "attr": "aria-label",
+      "text": "Live SIR trajectories at R effective "
+    },
+    {
+      "line": 4733,
+      "attr": "aria-label",
+      "text": ": susceptible, infected, and recovered population fractions over model time"
+    }
+  ]
+}

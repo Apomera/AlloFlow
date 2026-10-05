@@ -1,0 +1,294 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-10-03T16:04:27.838Z",
+  "startHead": "55787e4fba8779c0e35968453626a67de3ec51c8",
+  "files": [
+    {
+      "file": "utils_pure_source.jsx",
+      "before": "before/0-utils_pure_source.jsx",
+      "candidate": "candidate/0-utils_pure_source.jsx",
+      "patch": "0.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent",
+          "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent"
+        }
+      ],
+      "beforeSha256": "19b83ade09ad2ba0ef7b793a206debc397184d579dbe30f8cebe69d07d83c9da",
+      "afterSha256": "53d55c644e8fd2f979c717748763f9f6d68ad361348ec58b85ee8fe5d012d3dc",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 1703,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    },
+    {
+      "file": "utils_pure_module.js",
+      "before": "before/1-utils_pure_module.js",
+      "candidate": "candidate/1-utils_pure_module.js",
+      "patch": "1.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent",
+          "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent"
+        }
+      ],
+      "beforeSha256": "4a9dfc53ce019866ea1db5370f7c099075ecd260fb4f9710fdfc7460d75a97f3",
+      "afterSha256": "4c42773ddc303f5f0dea00957261e4ecec6e8e608fb3eae1584a7c60e94049ab",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 1711,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    },
+    {
+      "file": "desktop/web-app/public/utils_pure_module.js",
+      "before": "before/2-utils_pure_module.js",
+      "candidate": "candidate/2-utils_pure_module.js",
+      "patch": "2.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent",
+          "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent"
+        }
+      ],
+      "beforeSha256": "4a9dfc53ce019866ea1db5370f7c099075ecd260fb4f9710fdfc7460d75a97f3",
+      "afterSha256": "4c42773ddc303f5f0dea00957261e4ecec6e8e608fb3eae1584a7c60e94049ab",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 1711,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    },
+    {
+      "file": "view_persona_chat_source.jsx",
+      "before": "before/3-view_persona_chat_source.jsx",
+      "candidate": "candidate/3-view_persona_chat_source.jsx",
+      "patch": "3.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent",
+          "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent"
+        }
+      ],
+      "beforeSha256": "f6bb1eaebb2e420d7f9b40438c1368c68703d4d0927b5da601f1fe7aeb09adbb",
+      "afterSha256": "efeb8bdf8a622ef595c25c356d9884dcab3cd5b7e04c719f5fe1d125fdb00999",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 2682,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    },
+    {
+      "file": "view_persona_chat_module.js",
+      "before": "before/4-view_persona_chat_module.js",
+      "candidate": "candidate/4-view_persona_chat_module.js",
+      "patch": "4.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent",
+          "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent"
+        }
+      ],
+      "beforeSha256": "8178e750ab90348685be4e0c5fbfefbfe5b1da46d3d54247e5f389109191a69b",
+      "afterSha256": "3e93b1d37327ea50eadc08eacd5f8116c0cacbf8f500348ffbe47fd24cc29530",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 3059,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    },
+    {
+      "file": "desktop/web-app/public/view_persona_chat_module.js",
+      "before": "before/5-view_persona_chat_module.js",
+      "candidate": "candidate/5-view_persona_chat_module.js",
+      "patch": "5.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent",
+          "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent"
+        }
+      ],
+      "beforeSha256": "8178e750ab90348685be4e0c5fbfefbfe5b1da46d3d54247e5f389109191a69b",
+      "afterSha256": "3e93b1d37327ea50eadc08eacd5f8116c0cacbf8f500348ffbe47fd24cc29530",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 3059,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    },
+    {
+      "file": "export_handlers_module.js",
+      "before": "before/6-export_handlers_module.js",
+      "candidate": "candidate/6-export_handlers_module.js",
+      "patch": "6.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent",
+          "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent"
+        }
+      ],
+      "beforeSha256": "3c5179c19166a236cd45aa9cd792bb57763c5b7cfe21bc2046ee24c57a168fc0",
+      "afterSha256": "1104203ba482d3f4dca498d0cfefabfb6b8e15e6f5e89c4e3e452abb589c76fd",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 3144,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    },
+    {
+      "file": "desktop/web-app/public/export_handlers_module.js",
+      "before": "before/7-export_handlers_module.js",
+      "candidate": "candidate/7-export_handlers_module.js",
+      "patch": "7.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent",
+          "after": "https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent"
+        }
+      ],
+      "beforeSha256": "3c5179c19166a236cd45aa9cd792bb57763c5b7cfe21bc2046ee24c57a168fc0",
+      "afterSha256": "1104203ba482d3f4dca498d0cfefabfb6b8e15e6f5e89c4e3e452abb589c76fd",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 3144,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "before": "before/8-AlloFlowANTI.txt",
+      "candidate": "candidate/8-AlloFlowANTI.txt",
+      "patch": "8.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/utils_pure_module.js?v=6770c29ca",
+          "after": "https://alloflow-cdn.pages.dev/utils_pure_module.js?v=4c42773d"
+        },
+        {
+          "before": "https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=8178e750",
+          "after": "https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=3e93b1d3"
+        },
+        {
+          "before": "https://alloflow-cdn.pages.dev/export_handlers_module.js?v=6770c29ca",
+          "after": "https://alloflow-cdn.pages.dev/export_handlers_module.js?v=1104203b"
+        }
+      ],
+      "beforeSha256": "69b228c6f92ae7d102fdd5c954927bf69eb999f429ba8f71a94e2ee9ee1e47a6",
+      "afterSha256": "584569440f0a5b5aba8c446f23c2bdb001d675750eb4cbb1b8c73325d1b48817",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 46908,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "before/9-AlloFlowANTI.txt",
+      "candidate": "candidate/9-AlloFlowANTI.txt",
+      "patch": "9.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/utils_pure_module.js?v=6770c29ca",
+          "after": "https://alloflow-cdn.pages.dev/utils_pure_module.js?v=4c42773d"
+        },
+        {
+          "before": "https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=8178e750",
+          "after": "https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=3e93b1d3"
+        },
+        {
+          "before": "https://alloflow-cdn.pages.dev/export_handlers_module.js?v=6770c29ca",
+          "after": "https://alloflow-cdn.pages.dev/export_handlers_module.js?v=1104203b"
+        }
+      ],
+      "beforeSha256": "69b228c6f92ae7d102fdd5c954927bf69eb999f429ba8f71a94e2ee9ee1e47a6",
+      "afterSha256": "584569440f0a5b5aba8c446f23c2bdb001d675750eb4cbb1b8c73325d1b48817",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 46908,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "before": "before/10-App.jsx",
+      "candidate": "candidate/10-App.jsx",
+      "patch": "10.patch",
+      "replacements": [
+        {
+          "before": "https://alloflow-cdn.pages.dev/utils_pure_module.js?v=6770c29ca",
+          "after": "https://alloflow-cdn.pages.dev/utils_pure_module.js?v=4c42773d"
+        },
+        {
+          "before": "https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=8178e750",
+          "after": "https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=3e93b1d3"
+        },
+        {
+          "before": "https://alloflow-cdn.pages.dev/export_handlers_module.js?v=6770c29ca",
+          "after": "https://alloflow-cdn.pages.dev/export_handlers_module.js?v=1104203b"
+        }
+      ],
+      "beforeSha256": "69b228c6f92ae7d102fdd5c954927bf69eb999f429ba8f71a94e2ee9ee1e47a6",
+      "afterSha256": "584569440f0a5b5aba8c446f23c2bdb001d675750eb4cbb1b8c73325d1b48817",
+      "shape": {
+        "bom": false,
+        "crlf": 0,
+        "lf": 46908,
+        "loneCR": 0,
+        "finalNewline": true
+      }
+    }
+  ],
+  "pins": {
+    "utils_pure_module": "4c42773d",
+    "view_persona_chat_module": "3e93b1d3",
+    "export_handlers_module": "1104203b"
+  },
+  "contextInputs": [
+    {
+      "file": "_build_utils_pure_module.js",
+      "sha256": "727d7d7ae408dd8a00361f60da96a6e8fe58957071a673ff06d031446da27b98"
+    },
+    {
+      "file": "_build_view_persona_chat_module.js",
+      "sha256": "a2fc26c4049474107052d1861cab66b30f75509ba065c355bda84df903a44b6a"
+    },
+    {
+      "file": "build.js",
+      "sha256": "f2909fc8905c52b2fcc6e4bb32debf82473b47fcb0bb11194a3f589253b111c0"
+    }
+  ],
+  "scope": "Eight exact shared device-loader literals plus three selective own module URLs in each source host; global/build tokens untouched.",
+  "generation": {
+    "UtilsPure": "existing builder string-template equality",
+    "PersonaChat": "existing builder wrapper plus matching Babel options in memory",
+    "ExportHandlers": "canonical module maintained directly; root/public byte parity"
+  },
+  "limits": [
+    "UtilsPure and ExportHandlers are not persistent build.js content-pin entries; the next coordinated build selects fresh global URLs normally.",
+    "No full build, test, global token restamp or deployment was run."
+  ],
+  "testsRun": false,
+  "productionApplied": false,
+  "currentCI": "unverified"
+}

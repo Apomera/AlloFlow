@@ -1,0 +1,21 @@
+{
+  "mode": "committed",
+  "passed": true,
+  "parent": "b34cb765bc8048e88fd3427e0adcdec105473ae7",
+  "tree": "32ab4b99456e3dac34d61fa99556837817147575",
+  "commit": "ca981c6e06161c81f9946202e9fa3078d9ea43ed",
+  "branch": "refs/heads/codex/micro-mystery-integrity-2026-10-02",
+  "refUpdated": true,
+  "unrelatedStagingPreserved": true,
+  "isolatedBranch": true,
+  "checkoutIndexPreserved": true,
+  "checkoutStagingEntries": 81502,
+  "changedFiles": 120,
+  "sealedFiles": 120,
+  "sourceSha256": "5c4f2d3d83294a551a1ba822b9c74b5fb744005b8b6217e2a2590a56b6891a0b",
+  "unitPassed": 865,
+  "browserPassed": 63,
+  "workingFilesMatchSealedInputs": true,
+  "treeFilesMatchSealedInputs": true,
+  "registriesUnchanged": true
+}

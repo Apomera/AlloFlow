@@ -1,0 +1,59 @@
+{
+  "label": "candidate",
+  "completedAt": "2026-10-04T17:15:39.443Z",
+  "passed": true,
+  "total": 6,
+  "inputs": {
+    "AlloFlowANTI.txt": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\candidate\\AlloFlowANTI.txt",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0"
+    },
+    "host_handlers_source.jsx": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\candidate\\host_handlers_source.jsx",
+      "sha256": "ef290e2068207169ca205c0329a0b2c5260deb6a9943f2d4173cd65ec0907bba"
+    },
+    "host_handlers_module.js": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\candidate\\host_handlers_module.js",
+      "sha256": "b6aa6e66b3e151019db7c4830e36de5305deea23bf80e9113d334a0cea4271eb"
+    }
+  },
+  "actualHostShim": true,
+  "actualCompleteFactories": true,
+  "controlledBoundaries": [
+    "reading-support transition acknowledgement",
+    "voice APIs",
+    "state setters"
+  ],
+  "results": [
+    {
+      "mode": "source",
+      "name": "current allowed return stops voice and opens Start while preserving location",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "blocked and cancelled return preserves reading support, voice and workspace",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "confirmed delayed return performs the original behavior exactly once",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "current allowed return stops voice and opens Start while preserving location",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "blocked and cancelled return preserves reading support, voice and workspace",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "confirmed delayed return performs the original behavior exactly once",
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,254 @@
+{
+  "sourceSha256": "3314c07bc96271cb7eea1bcb5bb70ede100ecf28013b7237304c4e41176ad5b5",
+  "cases": [
+    {
+      "name": "cold engine",
+      "source": {
+        "alt": 300,
+        "vVel": -9,
+        "hVel": 4,
+        "fuel": 110,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "commands": {},
+      "unchanged": true,
+      "held": {
+        "kind": "contact",
+        "time": 14.463763239979563,
+        "altitude": 0,
+        "vertical": -32.48433141253747,
+        "lateral": 4,
+        "displacement": 57.855052959918254,
+        "fuelRemaining": 110,
+        "propellantUsed": 0,
+        "exhaustionTime": null,
+        "arrestBeforeContact": false,
+        "steps": 290
+      },
+      "fullCentered": {
+        "kind": "arrest",
+        "time": 2.070734386146064,
+        "altitude": 290.03172925006135,
+        "vertical": 7.247226568862786e-10,
+        "lateral": 4,
+        "displacement": 8.282937544584255,
+        "fuelRemaining": 102.38809280335539,
+        "propellantUsed": 30.023034230950543,
+        "exhaustionTime": null,
+        "arrestBeforeContact": true,
+        "steps": 42
+      }
+    },
+    {
+      "name": "already firing",
+      "source": {
+        "alt": 300,
+        "vVel": -9,
+        "hVel": 4,
+        "fuel": 110,
+        "thrust": 1,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "commands": {},
+      "unchanged": true,
+      "held": {
+        "kind": "contact",
+        "time": 14.773841140667399,
+        "altitude": 0,
+        "vertical": -32.29557567113237,
+        "lateral": 4,
+        "displacement": 59.095364562669594,
+        "fuelRemaining": 109.57377703913438,
+        "propellantUsed": 1.6843351080460707,
+        "exhaustionTime": null,
+        "arrestBeforeContact": false,
+        "steps": 296
+      },
+      "fullCentered": {
+        "kind": "arrest",
+        "time": 1.9226873849828994,
+        "altitude": 291.34019307936865,
+        "vertical": 1.4604775097626366e-9,
+        "lateral": 4,
+        "displacement": 7.6907495399315975,
+        "fuelRemaining": 102.53609170281531,
+        "propellantUsed": 29.440453312283353,
+        "exhaustionTime": null,
+        "arrestBeforeContact": true,
+        "steps": 39
+      }
+    },
+    {
+      "name": "tilted initially",
+      "source": {
+        "alt": 300,
+        "vVel": -9,
+        "hVel": 4,
+        "fuel": 110,
+        "thrust": 1,
+        "tilt": 0.35,
+        "x": 0,
+        "elapsed": 0
+      },
+      "commands": {
+        "throttle": 1,
+        "right": true
+      },
+      "unchanged": true,
+      "held": {
+        "kind": "arrest",
+        "time": 2.0931334813435827,
+        "altitude": 290.5715474041857,
+        "vertical": 9.587948161110527e-10,
+        "lateral": 8.525659713599666,
+        "displacement": 13.105522791842503,
+        "fuelRemaining": 101.87298309799216,
+        "propellantUsed": 32.05034734984838,
+        "exhaustionTime": null,
+        "arrestBeforeContact": true,
+        "steps": 42
+      },
+      "fullCentered": {
+        "kind": "arrest",
+        "time": 1.932081984976923,
+        "altitude": 291.26029428925955,
+        "vertical": 2.179997855844551e-9,
+        "lateral": 4.503162178072636,
+        "displacement": 8.58437832277822,
+        "fuelRemaining": 102.49954876558198,
+        "propellantUsed": 29.584304717703162,
+        "exhaustionTime": null,
+        "arrestBeforeContact": true,
+        "steps": 39
+      }
+    },
+    {
+      "name": "near-empty fuel",
+      "source": {
+        "alt": 300,
+        "vVel": -9,
+        "hVel": 4,
+        "fuel": 0.01,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "commands": {},
+      "unchanged": true,
+      "held": {
+        "kind": "contact",
+        "time": 14.463763239979563,
+        "altitude": 0,
+        "vertical": -32.48433141253747,
+        "lateral": 4,
+        "displacement": 57.855052959918254,
+        "fuelRemaining": 0.01,
+        "propellantUsed": 0,
+        "exhaustionTime": null,
+        "arrestBeforeContact": false,
+        "steps": 290
+      },
+      "fullCentered": {
+        "kind": "contact",
+        "time": 14.470989102124987,
+        "altitude": 0,
+        "vertical": -32.479823043067,
+        "lateral": 4,
+        "displacement": 57.88395640849995,
+        "fuelRemaining": 0,
+        "propellantUsed": 0.037273841711794375,
+        "exhaustionTime": 0.02398239523172379,
+        "arrestBeforeContact": false,
+        "steps": 290
+      }
+    },
+    {
+      "name": "late braking",
+      "source": {
+        "alt": 1,
+        "vVel": -20,
+        "hVel": 4,
+        "fuel": 110,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "commands": {},
+      "unchanged": true,
+      "held": {
+        "kind": "contact",
+        "time": 0.04989891052246093,
+        "altitude": 0,
+        "vertical": -20.081035784016,
+        "lateral": 4,
+        "displacement": 0.19959564208984373,
+        "fuelRemaining": 110,
+        "propellantUsed": 0,
+        "exhaustionTime": null,
+        "arrestBeforeContact": false,
+        "steps": 1
+      },
+      "fullCentered": {
+        "kind": "contact",
+        "time": 0.04995259344577789,
+        "altitude": 0,
+        "vertical": -20.01943859167166,
+        "lateral": 4,
+        "displacement": 0.19981037378311156,
+        "fuelRemaining": 109.96201701146184,
+        "propellantUsed": 0.15011555006913113,
+        "exhaustionTime": null,
+        "arrestBeforeContact": false,
+        "steps": 1
+      }
+    },
+    {
+      "name": "bounded high coast",
+      "source": {
+        "alt": 15000,
+        "vVel": -2,
+        "hVel": 4,
+        "fuel": 0,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "commands": {},
+      "unchanged": true,
+      "held": {
+        "kind": "horizon",
+        "time": 90.00000000000003,
+        "altitude": 8346.49314828781,
+        "vertical": -146.03831643588185,
+        "lateral": 4,
+        "displacement": 360.0000000000001,
+        "fuelRemaining": 0,
+        "propellantUsed": 0,
+        "exhaustionTime": 0,
+        "arrestBeforeContact": false,
+        "steps": 1800
+      },
+      "fullCentered": {
+        "kind": "horizon",
+        "time": 90.00000000000003,
+        "altitude": 8346.49314828781,
+        "vertical": -146.03831643588185,
+        "lateral": 4,
+        "displacement": 360.0000000000001,
+        "fuelRemaining": 0,
+        "propellantUsed": 0,
+        "exhaustionTime": 0,
+        "arrestBeforeContact": false,
+        "steps": 1800
+      }
+    }
+  ]
+}

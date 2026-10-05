@@ -1,0 +1,58 @@
+import { test, expect, type Page } from '@playwright/test';
+import { mkdir, writeFile } from 'node:fs/promises';
+import { GlHarness } from './helpers/stem_gl_harness';
+
+const out = 'reports/dissection-objective-clarity-2026-10-03';
+const baseline = process.env.DISSECTION_OBJECTIVE_BASELINE === '1';
+const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_dissection.js', toolId: 'dissection', width: 1180, height: 900, layout: 'document', appStyles: true, preScripts: ['stem_lab/stem_lab_module.js'] });
+const initial = { specimen: 'frog', _dissLoadedSpec: 'frog', activeLayer: 'organs', anatomicalView: 'internal', selectedOrgan: null, exploredOrgans: { 'frog|heart': true, 'frog|lungs': true }, organNotes: { 'frog|heart': 'Two atria feed a shared ventricle.' }, organConfidence: { 'frog|heart': 3 }, verifiedIdentifications: { 'frog|heart': { status: 'verified', at: 88 } }, revealedLayers: {}, quizScore: 1, quizTotal: 2, procedureScenario: 'structure-trace', scenarioStartedAt: 100, scenarioCompletedAt: 200, workspaceMode: 'essentials', reducedMotion: true, soundEnabled: false, sceneDetail: false };
+
+test.describe.configure({ retries: 0 });
+test.use({ video: 'off' });
+test.beforeAll(async () => { await harness.start(); await mkdir(out, { recursive: true }); });
+test.afterAll(async () => { await harness.stop(); });
+test.afterEach(async ({ page }) => { if (await page.evaluate(() => typeof (window as any).__unmount === 'function')) await harness.unmount(page); });
+
+async function mount(page: Page, state: any = {}, width = 390, available = width) {
+  await page.setViewportSize({ width, height: 1000 });
+  await harness.mount(page, { dissection: { ...initial, ...state } }, undefined, { expectCanvas: false });
+  await page.evaluate(() => { const meta = document.querySelector('meta[name="viewport"]') || document.head.appendChild(document.createElement('meta')); meta.setAttribute('name', 'viewport'); meta.setAttribute('content', 'width=device-width, initial-scale=1'); });
+  await page.addStyleTag({ content: `#wrap {width:100%!important;max-width:${available}px;}` });
+}
+function panel(page: Page) { return page.locator('summary').filter({ hasText: 'Learning objectives' }).locator('..'); }
+async function open(page: Page) { const p = panel(page); await p.locator(':scope > summary').click(); return p; }
+async function proof(page: Page) { return page.evaluate(() => { const d = (window as any).__ctx.toolData.dissection; return { specimen: d.specimen, layer: d.activeLayer, view: d.anatomicalView, selected: d.selectedOrgan, explored: d.exploredOrgans, notes: d.organNotes, confidence: d.organConfidence, verified: d.verifiedIdentifications, assessment: d.assessmentEvidence, revealed: d.revealedLayers, scores: [d.quizScore, d.quizTotal], procedures: d.procedureByLayer, scenario: [d.procedureScenario, d.scenarioStartedAt, d.scenarioCompletedAt] }; }); }
+async function inventory(p: ReturnType<typeof panel>) { return p.locator('.diss-objective-item').evaluateAll(nodes => nodes.map(n => ({ title: n.querySelector('.diss-objective-item__head > :first-child')?.textContent, status: n.getAttribute('data-objective-status'), label: n.querySelector('.diss-objective-item__status')?.textContent, progress: n.querySelector('[role="progressbar"]')?.getAttribute('aria-valuenow'), copy: Array.from(n.querySelectorAll('p')).map(p => p.textContent) }))); }
+async function metrics(p: ReturnType<typeof panel>) { return p.evaluate(el => ({ client: el.clientWidth, scroll: el.scrollWidth, width: el.getBoundingClientRect().width, summary: el.querySelector('summary')!.getBoundingClientRect().height,
+  text: Array.from(el.querySelectorAll('summary, summary strong, summary span, .diss-objective-item__head > :first-child, .diss-objective-item__status, p, .diss-objective-item__progress-label, .diss-objective-item__percent')).map(n => ({ text: n.textContent, font: parseFloat(getComputedStyle(n).fontSize), clipped: n.scrollWidth > n.clientWidth + 1 })),
+  cards: Array.from(el.querySelectorAll('.diss-objective-item')).map(n => { const title = n.querySelector('.diss-objective-item__head > :first-child')!.getBoundingClientRect(), status = n.querySelector('.diss-objective-item__status')!.getBoundingClientRect(), meter = n.querySelector('[role="progressbar"]')!.getBoundingClientRect(); return { width: n.getBoundingClientRect().width, client: n.clientWidth, scroll: n.scrollWidth, statusTop: status.top, titleBottom: title.bottom, overlaps: title.left < status.right && title.right > status.left && title.top < status.bottom && title.bottom > status.top, meter: meter.height }; }) })); }
+
+for (const c of [{ name: 'phone', width: 320, available: 320 }, { name: 'tablet', width: 768, available: 768 }, { name: 'desktop', width: 1440, available: 1180 }, { name: 'embedded-large', width: 1440, available: 320, large: true, contrast: true }, { name: 'forced-colors', width: 390, available: 390, forced: true }]) test(`learning objectives ${c.name} remain readable with distinct evidence states`, async ({ page }) => {
+  const errors: string[] = []; page.on('pageerror', e => errors.push(e.message)); if (c.forced) await page.emulateMedia({ forcedColors: 'active' });
+  await mount(page, { largeText: !!c.large, highContrast: !!c.contrast }, c.width, c.available); const before = await proof(page), p = await open(page), m = await metrics(p), items = await inventory(p);
+  await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-metrics.json`, JSON.stringify(m, null, 2)); await writeFile(`${out}/${baseline ? 'before' : 'after'}-${c.name}-inventory.json`, JSON.stringify(items, null, 2)); await page.mouse.move(c.width - 1, 0);
+  await p.screenshot({ path: `${out}/${baseline ? 'before' : 'after'}-${c.name}.png`, style: '.diss-next-action {position:static!important;}' }); if (baseline) return;
+  expect(items.map(i => i.status)).toEqual(['demonstrated', 'developing', 'not-started', 'not-started']); expect(items.map(i => i.progress)).toEqual(['100', '17', '0', '0']);
+  expect(m.width).toBeLessThanOrEqual(c.available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1); expect(m.summary).toBeGreaterThanOrEqual(47.9);
+  for (const n of m.text) { expect(n.font, n.text || '').toBeGreaterThanOrEqual(c.large ? 15.9 : 13.9); expect(n.clipped, n.text || '').toBe(false); }
+  for (const card of m.cards) { expect(card.scroll).toBeLessThanOrEqual(card.client + 1); expect(card.overlaps).toBe(false); expect(card.meter).toBeGreaterThanOrEqual(9.9); if (c.available <= 640) expect(card.statusTop).toBeGreaterThanOrEqual(card.titleBottom - 1); }
+  const cards = p.locator('.diss-objective-item'); for (let i = 0; i < items.length; i++) { const card = cards.nth(i); await expect(card.getByRole('heading', { level: 4 })).toHaveText(items[i].title!); await expect(card.getByRole('progressbar')).toHaveAccessibleName(`Evidence progress for objective ${i + 1}: ${items[i].title}`); await expect(card.locator('.diss-objective-item__percent')).toHaveText(`${items[i].progress}%`); }
+  await p.locator(':scope > summary').focus(); await page.keyboard.press('Tab'); await page.keyboard.press('Shift+Tab'); await expect(p.locator(':scope > summary')).toBeFocused(); const focus = await p.locator(':scope > summary').evaluate(el => ({ style: getComputedStyle(el).outlineStyle, width: parseFloat(getComputedStyle(el).outlineWidth), offset: parseFloat(getComputedStyle(el).outlineOffset) })); expect(focus.style).toBe('solid'); expect(focus.width).toBeGreaterThanOrEqual(2.9); expect(focus.offset).toBeLessThanOrEqual(-focus.width);
+  await p.screenshot({ path: `${out}/focus-${c.name}.png`, style: '.diss-next-action {position:static!important;}' }); await page.keyboard.press('Space'); await expect(p).not.toHaveAttribute('open', ''); await page.keyboard.press('Enter'); await expect(p).toHaveAttribute('open', ''); expect(await proof(page)).toEqual(before);
+  await page.addScriptTag({ path: 'node_modules/axe-core/axe.min.js' }); const audit = await page.evaluate(async () => (window as any).axe.run({ include: [['.diss-objectives']] }, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21aa'] } })); await writeFile(`${out}/${c.name}-axe.json`, JSON.stringify(audit, null, 2)); expect(audit.violations).toEqual([]); expect(errors).toEqual([]);
+});
+
+test('learning objectives reflow in an embedded lab while preserving focus and saved evidence', async ({ page }) => {
+  await mount(page, { largeText: true }, 1440, 1180); const p = await open(page), before = await proof(page); await p.locator(':scope > summary').focus(); await page.addStyleTag({ content: '#wrap {max-width:320px!important;}' }); await expect(p.locator(':scope > summary')).toBeFocused(); await expect(p).toHaveAttribute('open', ''); const m = await metrics(p); expect(m.scroll).toBeLessThanOrEqual(m.client + 1); for (const card of m.cards) { expect(card.statusTop).toBeGreaterThanOrEqual(card.titleBottom - 1); expect(card.overlaps).toBe(false); } expect(await proof(page)).toEqual(before);
+});
+
+test('learning objective percentages follow inspected, recorded and verified evidence', async ({ page }) => {
+  await mount(page, { exploredOrgans: {}, organNotes: {}, organConfidence: {}, verifiedIdentifications: {} }); const p = await open(page), card = p.locator('.diss-objective-item').first(); await expect(card).toHaveAttribute('data-objective-status', 'not-started'); await expect(card.locator('.diss-objective-item__percent')).toHaveText('0%');
+  await page.evaluate(() => (window as any).__ctx.setToolData((prev: any) => ({ ...prev, dissection: { ...prev.dissection, exploredOrgans: { 'frog|heart': true } } }))); await expect(card).toHaveAttribute('data-objective-status', 'developing'); await expect(card.locator('.diss-objective-item__percent')).toHaveText('33%');
+  await page.evaluate(() => (window as any).__ctx.setToolData((prev: any) => ({ ...prev, dissection: { ...prev.dissection, organNotes: { 'frog|heart': 'Two atria feed a shared ventricle.' }, organConfidence: { 'frog|heart': 3 } } }))); await expect(card.locator('.diss-objective-item__percent')).toHaveText('67%'); await expect(card).toContainText('Next: verify Heart');
+  await page.evaluate(() => (window as any).__ctx.setToolData((prev: any) => ({ ...prev, dissection: { ...prev.dissection, verifiedIdentifications: { 'frog|heart': { status: 'verified' } } } }))); await expect(card).toHaveAttribute('data-objective-status', 'demonstrated'); await expect(card.locator('.diss-objective-item__percent')).toHaveText('100%'); await expect(card.getByRole('progressbar')).toHaveAttribute('aria-valuenow', '100'); await expect(card).toContainText('Evidence demonstrated'); await p.screenshot({ path: `${out}/completed-heart.png`, style: '.diss-next-action {position:static!important;}' });
+});
+
+for (const specimen of ['pig', 'sheepEye', 'sheepHeart']) test(`${specimen} objective text fits a narrow lab with large text`, async ({ page }) => {
+  await mount(page, { specimen, _dissLoadedSpec: specimen, activeLayer: 'skin', anatomicalView: 'ventral', largeText: true, exploredOrgans: {}, organNotes: {}, organConfidence: {}, verifiedIdentifications: {} }, 1440, 320); const p = await open(page), before = await proof(page), m = await metrics(p); expect(m.scroll).toBeLessThanOrEqual(m.client + 1); for (const n of m.text) { expect(n.font, n.text || '').toBeGreaterThanOrEqual(15.9); expect(n.clipped, n.text || '').toBe(false); } for (const card of m.cards) expect(card.overlaps).toBe(false); expect(await proof(page)).toEqual(before); await p.screenshot({ path: `${out}/${specimen}-large.png`, style: '.diss-next-action {position:static!important;}' });
+});

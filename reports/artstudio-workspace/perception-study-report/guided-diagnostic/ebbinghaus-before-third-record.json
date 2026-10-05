@@ -1,0 +1,20 @@
+{
+  "loadedSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+  "experiment": "ebbinghaus",
+  "groupId": "matches-muuf7spe-5",
+  "savedTrialCount": 2,
+  "controlsText": "Adjust experiment\nObserve\nMatch by eye\n\nKeep the reference fixed. Adjust the right or bottom target until it looks like the reference, then reveal the drawing values.\n\nComparison target\nDecrease comparison\nIncrease comparison\nReset comparison\n\nRing positions stay fixed while you match. The gap setting leaves room for the largest comparison circle.\n\nRepeated matching study\n\nMatch 3 of 3. Adjust the comparison and choose an impression below. Your note is saved with this match; the next match starts with a blank note.\n\nSurrounding settings stay fixed during this study. The notebook and pinned view return after recording or ending the study.\n\nOne-setting repeat: the baseline reference and starting positions are preserved. The two studies will be selected for comparison after the third match.\n\nRecord match\nEnd repeated study\nWhich orange center circle looks larger?\nLeft\nSame\nRight\nUnsure\n\nRecord your impression. You can revise it; this is an observation, not a scored test.\n\nLarge surrounding radius\n45 units\nMinimum surround gap\n12 units\nRemove surroundings\nReveal measurements\nSwap surroundingsReset this experiment\nObservation note\nSave observation\nPin comparison\nExport SVG\n\nThe viewing area uses a fixed white background to keep comparisons consistent. Different people may notice different effects.\n\nArt Studio adapts shared pattern settings for composition. Your experiments and observations stay here.",
+  "activeCaption": "Repeated matching study\n\n2 of 3 matches recorded. Make each match by eye with the same surroundings.",
+  "announcement": "Match 3 of 3. Adjust the comparison, choose your impression, then record it.",
+  "model": {
+    "context": true,
+    "reveal": false,
+    "prediction": "Same",
+    "note": "Fresh repeat note 3",
+    "surround": 45,
+    "gap": 12,
+    "matching": true,
+    "swap": false,
+    "matchValue": 60
+  }
+}

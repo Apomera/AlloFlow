@@ -1,0 +1,36 @@
+{
+  "passed": true,
+  "reviewer": "root",
+  "reviewedAtOriginalResolution": true,
+  "sourceSha256": "0593f445c3f2f3ce9f34e94f9d96a661d4235ee2963dcc84c3bfb9253d7f5f86",
+  "browserResultsSha256": "fb2609bb9369bb9836bb64757c47d918dcd73e0d27dfc864303469cfea94be47",
+  "reviewed": [
+    "original-note-editor.png",
+    "comparison-return-focus.png",
+    "notes-desktop.png",
+    "notes-phone-empty.png",
+    "notes-narrow-long-text.png",
+    "notes-doubled-text.png",
+    "notes-forced-colors.png",
+    "notes-rtl.png"
+  ],
+  "screenshotSha256": {
+    "original-note-editor.png": "de7ddd2b840353a9a4b924320417331499c1f504c2e63988157ff8390ee3ec1b",
+    "comparison-return-focus.png": "0c97f82c553155dac58bc445cd744a1ca7f1d70cacfbfd954a58abdba6a84656",
+    "notes-desktop.png": "c5ca881125998d529f71abf54aca7452425436f9a263534084a7318188e620e4",
+    "notes-phone-empty.png": "30a0de9c51cb58a837331d4a83a077cec07c2851bee8e39002b2c44bee4f84cd",
+    "notes-narrow-long-text.png": "2543c4820967d9418d14776f873749df753c134317b7bd9f73d0c8ec42c72423",
+    "notes-doubled-text.png": "7f048c378cd3ed3e8e4648fa8d7103c7338627f53dd4f3b012790da7c5267df6",
+    "notes-forced-colors.png": "7ee17078c69a21c3a8c8fe033705ec3d8feb1894eb94b56e4e22af9a109ba259",
+    "notes-rtl.png": "d5f6170277348ef751a5bea3d481ec3a2a81213c56ae62ab7a2410b79cdd003b"
+  },
+  "materialIssues": [],
+  "findings": [
+    "Desktop cards keep selected note order clear and align their edit actions.",
+    "Phone cards stack with readable authored notes and a clear empty-note prompt.",
+    "Long authored text wraps inside the cards without horizontal overflow.",
+    "Doubled text retains complete content; compact edit labels avoid splitting the word observation.",
+    "Forced-colors outlines and text remain clear. Arabic notes retain their right-to-left reading direction.",
+    "The original note editor and comparison header show visible focus, and the selected draft text remains intact through the return path."
+  ]
+}

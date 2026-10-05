@@ -1,0 +1,10 @@
+{
+  "status": "STOPPED_BEFORE_BROWSER_LAUNCH",
+  "exitCode": 1,
+  "cause": "Overbroad current whole-host exact-hash guard found unrelated shared-host drift before Playwright launch.",
+  "browserAttemptLaunched": false,
+  "expectedHostSha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8",
+  "observedWholeHostSha256": "90a8fd750273edad17a570146cc8a7793b5cc4ea8af21a1209a254ef41c605ba",
+  "preservedProductFiles": true,
+  "resolution": "Validate immutable served host snapshot and exact borrowed route-reader region; retain current whole-host hashes separately; no rebuild."
+}

@@ -1,0 +1,159 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass20-2026-10-03/browser/webgl-check-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-vectors.spec.ts",
+      "file": "moon-mission-descent-vectors.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "WebGL flight vectors follow engine and attitude response while physical time stays independent",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 13751,
+                  "error": {
+                    "message": "Error: locator.selectOption: Error: strict mode violation: locator('[data-descent-camera]') resolved to 2 elements:\n    1) <canvas width=\"1014\" height=\"420\" aria-hidden=\"true\" data-descent-gl=\"true\" data-descent-camera=\"chase\" data-descent-model=\"apollo-shared\"></canvas> aka locator('canvas').nth(1)\n    2) <select id=\"moon-descent-camera\" data-descent-camera=\"true\" aria-describedby=\"moon-descent-camera-help\">…</select> aka getByLabel('Flight camera')\n\nCall log:\n\u001b[2m  - waiting for locator('[data-descent-camera]')\u001b[22m\n",
+                    "stack": "Error: locator.selectOption: Error: strict mode violation: locator('[data-descent-camera]') resolved to 2 elements:\n    1) <canvas width=\"1014\" height=\"420\" aria-hidden=\"true\" data-descent-gl=\"true\" data-descent-camera=\"chase\" data-descent-model=\"apollo-shared\"></canvas> aka locator('canvas').nth(1)\n    2) <select id=\"moon-descent-camera\" data-descent-camera=\"true\" aria-describedby=\"moon-descent-camera-help\">…</select> aka getByLabel('Flight camera')\n\nCall log:\n\u001b[2m  - waiting for locator('[data-descent-camera]')\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts:147:47",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts",
+                      "column": 47,
+                      "line": 147
+                    },
+                    "snippet": "  145 |   await page.waitForTimeout(300);\n  146 |   expect((await harness.glScene(page, '[data-descent-session]'))!.draws).toBe(pausedScene!.draws);\n> 147 |   await page.locator('[data-descent-camera]').selectOption('overhead');\n      |                                               ^\n  148 |   await expect(page.locator('[data-descent-gl]')).toHaveAttribute('data-descent-camera', 'overhead');\n  149 |   const overheadScene = await harness.glScene(page, '[data-descent-session]'); expect(overheadScene!.draws).toBeGreaterThan(pausedScene!.draws);\n  150 |   await page.setViewportSize({ width: 1000, height: 900 });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts",
+                        "column": 47,
+                        "line": 147
+                      },
+                      "message": "Error: locator.selectOption: Error: strict mode violation: locator('[data-descent-camera]') resolved to 2 elements:\n    1) <canvas width=\"1014\" height=\"420\" aria-hidden=\"true\" data-descent-gl=\"true\" data-descent-camera=\"chase\" data-descent-model=\"apollo-shared\"></canvas> aka locator('canvas').nth(1)\n    2) <select id=\"moon-descent-camera\" data-descent-camera=\"true\" aria-describedby=\"moon-descent-camera-help\">…</select> aka getByLabel('Flight camera')\n\nCall log:\n\u001b[2m  - waiting for locator('[data-descent-camera]')\u001b[22m\n\n\n  145 |   await page.waitForTimeout(300);\n  146 |   expect((await harness.glScene(page, '[data-descent-session]'))!.draws).toBe(pausedScene!.draws);\n> 147 |   await page.locator('[data-descent-camera]').selectOption('overhead');\n      |                                               ^\n  148 |   await expect(page.locator('[data-descent-gl]')).toHaveAttribute('data-descent-camera', 'overhead');\n  149 |   const overheadScene = await harness.glScene(page, '[data-descent-session]'); expect(overheadScene!.draws).toBeGreaterThan(pausedScene!.draws);\n  150 |   await page.setViewportSize({ width: 1000, height: 900 });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts:147:47"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T18:33:36.818Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\webgl-check-results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\webgl-check-results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\webgl-check-results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\webgl-check-results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\webgl-check-results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts",
+                    "column": 47,
+                    "line": 147
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3b0a921ff8586640a139-675870bbf9986511fa3d",
+          "file": "moon-mission-descent-vectors.spec.ts",
+          "line": 139,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T18:32:44.374Z",
+    "duration": 74819.43400000001,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

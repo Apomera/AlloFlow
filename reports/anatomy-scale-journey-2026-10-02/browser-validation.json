@@ -1,0 +1,3128 @@
+{
+  "metadata": {
+    "sourceLfSha256": "5655d23c8d954d056430ab27ef038cd61daf033672c9b5499816741a684a5dcf",
+    "sourceRawSha256": "5655d23c8d954d056430ab27ef038cd61daf033672c9b5499816741a684a5dcf",
+    "mirrorsEqual": true,
+    "startedAt": "2026-10-03T03:30:27.802Z",
+    "finishedSourceLfSha256": "5655d23c8d954d056430ab27ef038cd61daf033672c9b5499816741a684a5dcf",
+    "finishedMirrorsEqual": true,
+    "finishedAt": "2026-10-03T03:30:37.886Z"
+  },
+  "destinations": {
+    "errors": [],
+    "steps": [
+      {
+        "action": "open detail gallery",
+        "beforeScroll": 1428,
+        "gallery": {
+          "top": 16,
+          "bottom": 35.1875,
+          "scroll": 168,
+          "height": 1000
+        },
+        "selectedStructure": "quads",
+        "notesPreserved": true,
+        "scoresPreserved": true
+      },
+      {
+        "action": "open lung cell atlas",
+        "handoff": {
+          "tool": "cellAtlasLab",
+          "data": {
+            "_threeLoaded": true,
+            "cellAtlasLab": {
+              "tissue": "lung",
+              "view": "map",
+              "savedMemo": "Existing Cell Atlas work",
+              "_scaleJourneySource": "anatomy",
+              "_scaleJourneySystem": "respiratory",
+              "_scaleJourneyStructure": "alveoli",
+              "_scaleJourneyLabel": "Alveoli"
+            },
+            "anatomy": {
+              "system": "respiratory",
+              "view": "anterior",
+              "complexity": 3,
+              "_activeTab": "explore",
+              "quizMode": false,
+              "selectedStructure": "alveoli",
+              "search": "",
+              "_studyFilter": "all",
+              "_bodyView3d": false,
+              "_startHereDismissed": true,
+              "_structureNotes": {
+                "quads": "My saved explanation of knee extension.",
+                "alveoli": "My saved explanation of the air–blood barrier."
+              },
+              "_structureConfidence": {
+                "quads": "learning",
+                "alveoli": "practice"
+              },
+              "_spotterScore": 2,
+              "_spotterTotal": 3,
+              "_quizAttempts": 4,
+              "quizScore": 3,
+              "_flashcardRounds": {
+                "muscular": 1
+              },
+              "_connectionConcepts": {
+                "version": 1,
+                "answers": {
+                  "conn_3": "choice_1"
+                }
+              },
+              "_showAnatomyLens": false,
+              "_systemsExplored": {
+                "respiratory": true
+              },
+              "_viewsUsed": {
+                "anterior": true
+              },
+              "_structuresViewed": {
+                "alveoli": true
+              },
+              "_badges": {
+                "firstStructure": true
+              },
+              "_confettiParticles": [
+                {
+                  "x": 0.5156347512320703,
+                  "y": 0.1986517664454363,
+                  "vx": -0.5054853623457196,
+                  "vy": -2.4018755131365275,
+                  "rot": 5.443185032109219,
+                  "spin": -2.685128596331991,
+                  "ci": 0,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.3230480784392252,
+                  "y": 0.2976619031102523,
+                  "vx": 0.36201781026026025,
+                  "vy": -2.8532998892035724,
+                  "rot": 2.1630477578465657,
+                  "spin": 1.8539036544691796,
+                  "ci": 1,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.5885794286110705,
+                  "y": 0.27760784828558766,
+                  "vx": -0.6335508937552745,
+                  "vy": -1.9443693629598753,
+                  "rot": 1.3777761990334472,
+                  "spin": 2.3626337053921365,
+                  "ci": 2,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.3317698910270597,
+                  "y": 0.24207328783693843,
+                  "vx": 0.028450222811292614,
+                  "vy": -1.3068048129634304,
+                  "rot": 6.152521557353542,
+                  "spin": 1.6602230615300786,
+                  "ci": 3,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.4479554946589357,
+                  "y": 0.2041505352147722,
+                  "vx": -0.10341247533482956,
+                  "vy": -2.0248137803346875,
+                  "rot": 5.0492073166272915,
+                  "spin": 2.669939873425795,
+                  "ci": 4,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.40464740081531253,
+                  "y": 0.13973087390649636,
+                  "vx": -0.4860369396919959,
+                  "vy": -1.442643845228739,
+                  "rot": 2.649001678135206,
+                  "spin": -2.1701789359610144,
+                  "ci": 5,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.47465442264310653,
+                  "y": 0.1766440367162657,
+                  "vx": 0.29460269270244077,
+                  "vy": -1.2318162490366689,
+                  "rot": 4.260283553390673,
+                  "spin": -2.598805546912612,
+                  "ci": 6,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.5200876516889323,
+                  "y": 0.26123963812198525,
+                  "vx": -0.2763708132259932,
+                  "vy": -1.2947047723124085,
+                  "rot": 2.916911323220604,
+                  "spin": 1.9381273946316615,
+                  "ci": 7,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.4135641889340337,
+                  "y": 0.13048394703958982,
+                  "vx": -0.6387103050094693,
+                  "vy": -1.5625612165595613,
+                  "rot": 5.04731533262117,
+                  "spin": 1.9838949507303656,
+                  "ci": 8,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.32361049505122824,
+                  "y": 0.115901620158042,
+                  "vx": -0.34382776845823293,
+                  "vy": -2.6760679717056353,
+                  "rot": 1.8798071607003677,
+                  "spin": 2.8930310111979267,
+                  "ci": 9,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.45683557791163354,
+                  "y": 0.2776555201309332,
+                  "vx": -0.8419303403121536,
+                  "vy": -2.5128056026661465,
+                  "rot": 4.529841841663753,
+                  "spin": -2.822879476265254,
+                  "ci": 10,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.3028957241945386,
+                  "y": 0.1322720960725751,
+                  "vx": 0.419023549356891,
+                  "vy": -2.512972568781195,
+                  "rot": 5.910286122866319,
+                  "spin": -2.581390227231063,
+                  "ci": 11,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.3268524736442418,
+                  "y": 0.29221210543071807,
+                  "vx": 0.7193265228648043,
+                  "vy": -1.9575105789884677,
+                  "rot": 3.7672343666346806,
+                  "spin": 0.16226624704438763,
+                  "ci": 12,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.3073917375787583,
+                  "y": 0.10763331542091414,
+                  "vx": -0.34943925092784744,
+                  "vy": -1.0725551245327423,
+                  "rot": 4.487630087441747,
+                  "spin": -2.0164228813212386,
+                  "ci": 13,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.600421351596925,
+                  "y": 0.2522753673038364,
+                  "vx": -0.5337687051088615,
+                  "vy": -1.1153667215058767,
+                  "rot": 5.8683888242384326,
+                  "spin": 0.6009783626781255,
+                  "ci": 14,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.4682744642548537,
+                  "y": 0.2296862322874278,
+                  "vx": 0.6500412440838788,
+                  "vy": -1.447982813800592,
+                  "rot": 2.2016521453464857,
+                  "spin": 1.6497440916483652,
+                  "ci": 15,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.3404181679316343,
+                  "y": 0.1407722919503274,
+                  "vx": -0.8840401438271475,
+                  "vy": -1.7080968618561774,
+                  "rot": 2.340924872325249,
+                  "spin": 2.37241879240057,
+                  "ci": 16,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.5647650039489575,
+                  "y": 0.102203421897174,
+                  "vx": -0.8397754978054874,
+                  "vy": -2.481110375484956,
+                  "rot": 4.845696923639956,
+                  "spin": -2.406080303228636,
+                  "ci": 17,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.5129171232485394,
+                  "y": 0.17562031882063742,
+                  "vx": 0.4087522958476264,
+                  "vy": -1.684031713726981,
+                  "rot": 0.7429009517913896,
+                  "spin": 2.1250613967379195,
+                  "ci": 18,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.42623833183038196,
+                  "y": 0.11344212657599642,
+                  "vx": 0.260977596982249,
+                  "vy": -2.595473233601071,
+                  "rot": 0.15525613833947594,
+                  "spin": 0.9283881489405525,
+                  "ci": 19,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.46272527145629255,
+                  "y": 0.11933747140872158,
+                  "vx": 0.8367902650516037,
+                  "vy": -2.3720007322454313,
+                  "rot": 5.877103741523896,
+                  "spin": 2.4906386467393182,
+                  "ci": 20,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.6472775528338877,
+                  "y": 0.2249908167870766,
+                  "vx": 0.2153230665174395,
+                  "vy": -2.587648199505006,
+                  "rot": 0.1769550648131382,
+                  "spin": 2.733460859942479,
+                  "ci": 21,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.4705298661780861,
+                  "y": 0.22490193772936015,
+                  "vx": 0.10236868763556783,
+                  "vy": -2.602952987017183,
+                  "rot": 6.227736352280907,
+                  "spin": 0.5825218735655573,
+                  "ci": 22,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.3316778411789873,
+                  "y": 0.16164798173219636,
+                  "vx": 0.3199375715226296,
+                  "vy": -2.8004007018445853,
+                  "rot": 3.5221371974575884,
+                  "spin": 0.3958704252391507,
+                  "ci": 23,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.429781785289905,
+                  "y": 0.11235888727029962,
+                  "vx": -0.291855899726992,
+                  "vy": -2.6111205857346826,
+                  "rot": 5.191880533945838,
+                  "spin": -1.2793369778162826,
+                  "ci": 24,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.5090033024361675,
+                  "y": 0.27978967034623137,
+                  "vx": 0.09673431144529987,
+                  "vy": -2.7779166078609365,
+                  "rot": 0.8641328240859255,
+                  "spin": -1.1496348840200412,
+                  "ci": 25,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.599447455274814,
+                  "y": 0.14165221144405524,
+                  "vx": 0.012936509684092323,
+                  "vy": -1.6805903993440867,
+                  "rot": 5.18808031122286,
+                  "spin": -0.6099524510789176,
+                  "ci": 26,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.6710060270687468,
+                  "y": 0.19951398447535806,
+                  "vx": -0.9328855190827532,
+                  "vy": -1.88872335241065,
+                  "rot": 3.1078944600517597,
+                  "spin": 2.5100778456075967,
+                  "ci": 27,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.31821749937932864,
+                  "y": 0.18384718394337268,
+                  "vx": 0.3835423739449182,
+                  "vy": -2.557799458850168,
+                  "rot": 4.599102374318117,
+                  "spin": -0.21611057955528,
+                  "ci": 28,
+                  "born": 1790998229825
+                },
+                {
+                  "x": 0.6836181971965696,
+                  "y": 0.10317159852039247,
+                  "vx": 0.8858902650841205,
+                  "vy": -1.0496304080668144,
+                  "rot": 3.6104106357223027,
+                  "spin": 2.791630576435005,
+                  "ci": 29,
+                  "born": 1790998229825
+                }
+              ]
+            }
+          }
+        },
+        "selectedStructurePreserved": true,
+        "notesPreserved": true,
+        "scoresPreserved": true
+      },
+      {
+        "action": "pending Spotter conceals learning destinations; paused Explore restores them",
+        "target": "nasal_cavity"
+      }
+    ],
+    "scans": [],
+    "styles": [],
+    "captures": []
+  },
+  "display": {
+    "errors": [],
+    "steps": [
+      {
+        "view": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "desktop-light"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(7, 89, 133)"
+        }
+      },
+      {
+        "view": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "desktop-light"
+        },
+        "summaryFocus": {
+          "width": "3px",
+          "offset": "-4px",
+          "style": "solid",
+          "parentOverflow": "hidden"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "phone-light"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(7, 89, 133)"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "phone-light"
+        },
+        "summaryFocus": {
+          "width": "3px",
+          "offset": "-4px",
+          "style": "solid",
+          "parentOverflow": "hidden"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark",
+          "name": "phone-dark"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(125, 211, 252)"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark",
+          "name": "phone-dark"
+        },
+        "summaryFocus": {
+          "width": "3px",
+          "offset": "-4px",
+          "style": "solid",
+          "parentOverflow": "hidden"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark",
+          "name": "phone-arabic-dark-larger"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(125, 211, 252)"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark",
+          "name": "phone-arabic-dark-larger"
+        },
+        "summaryFocus": {
+          "width": "3px",
+          "offset": "-4px",
+          "style": "solid",
+          "parentOverflow": "hidden"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors",
+          "name": "phone-forced-colors"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(55, 0, 110)"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors",
+          "name": "phone-forced-colors"
+        },
+        "summaryFocus": {
+          "width": "3px",
+          "offset": "-4px",
+          "style": "solid",
+          "parentOverflow": "hidden"
+        }
+      }
+    ],
+    "scans": [
+      {
+        "view": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "desktop-light"
+        },
+        "box": {
+          "client": 390,
+          "scroll": 390,
+          "left": 95,
+          "right": 487
+        },
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "violations": []
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "phone-light"
+        },
+        "box": {
+          "client": 280,
+          "scroll": 280,
+          "left": 19,
+          "right": 301
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark",
+          "name": "phone-dark"
+        },
+        "box": {
+          "client": 280,
+          "scroll": 280,
+          "left": 19,
+          "right": 301
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark",
+          "name": "phone-arabic-dark-larger"
+        },
+        "box": {
+          "client": 280,
+          "scroll": 280,
+          "left": 19,
+          "right": 301
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors",
+          "name": "phone-forced-colors"
+        },
+        "box": {
+          "client": 280,
+          "scroll": 280,
+          "left": 19,
+          "right": 301
+        },
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      }
+    ],
+    "styles": [
+      {
+        "view": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "desktop-light"
+        },
+        "metrics": [
+          {
+            "tag": "SUMMARY",
+            "className": "anatomy-learning-tools-summary",
+            "text": "Learning toolsRoute & pin key",
+            "font": 16,
+            "width": 390,
+            "height": 85,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Learning tools",
+            "font": 16,
+            "width": 347.84375,
+            "height": 24,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Route & pin key",
+            "font": 14,
+            "width": 127.125,
+            "height": 31,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "H3",
+            "className": "",
+            "text": "Explore by scale",
+            "font": 20,
+            "width": 366,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Start with the body system, then open a detail or cell view.",
+            "font": 16,
+            "width": 366,
+            "height": 52.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "1Body system",
+            "font": 14,
+            "width": 152,
+            "height": 26,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "1",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "💪 Muscular",
+            "font": 16,
+            "width": 152,
+            "height": 24,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "💪",
+            "font": 16,
+            "width": 26.421875,
+            "height": 21,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Muscular",
+            "font": 16,
+            "width": 68.921875,
+            "height": 21,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "2Structure",
+            "font": 14,
+            "width": 152,
+            "height": 26,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "2",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Quadriceps Femoris",
+            "font": 16,
+            "width": 152,
+            "height": 24,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Quadriceps Femoris",
+            "font": 16,
+            "width": 148.453125,
+            "height": 21,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "anatomy-scale-step",
+            "text": "3Tissue / regionAnatomy Lens galleryOpen detail view",
+            "font": 16,
+            "width": 178,
+            "height": 143,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "3Tissue / region",
+            "font": 14,
+            "width": 150,
+            "height": 26,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "3",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Anatomy Lens gallery",
+            "font": 16,
+            "width": 150,
+            "height": 48,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Anatomy Lens gallery",
+            "font": 16,
+            "width": 106.71875,
+            "height": 45,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-action",
+            "text": "Open detail view",
+            "font": 14,
+            "width": 115.453125,
+            "height": 25,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "anatomy-scale-step",
+            "text": "4Cell scaleCell microdissectionOpen cell view",
+            "font": 16,
+            "width": 178,
+            "height": 143,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "4Cell scale",
+            "font": 14,
+            "width": 150,
+            "height": 26,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "4",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 150,
+            "height": 48,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 118.078125,
+            "height": 45,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-action",
+            "text": "Open cell view",
+            "font": 14,
+            "width": 99.703125,
+            "height": 25,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-scale-status",
+            "text": "Destinations for ⁨Quadriceps Femoris⁩. Choose a detail or cell view to continue.",
+            "font": 16,
+            "width": 366,
+            "height": 52.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "H4",
+            "className": "anatomy-scale-more-title",
+            "text": "More ways to explore",
+            "font": 16,
+            "width": 366,
+            "height": 39,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Organ dissection",
+            "font": 16,
+            "width": 366,
+            "height": 46,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 366,
+            "height": 46,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Microscope",
+            "font": 16,
+            "width": 366,
+            "height": 46,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-title",
+            "text": "Pin status",
+            "font": 16,
+            "width": 366,
+            "height": 24,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "•Unrated",
+            "font": 14,
+            "width": 83.765625,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "•",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "!Need practice",
+            "font": 14,
+            "width": 122.734375,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "!",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 7.2968756808423105,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "~Learning",
+            "font": 14,
+            "width": 88.21875,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "~",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "✓Got it",
+            "font": 14,
+            "width": 66.9375,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "✓",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": true
+          }
+        ]
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "phone-light"
+        },
+        "metrics": [
+          {
+            "tag": "SUMMARY",
+            "className": "anatomy-learning-tools-summary",
+            "text": "Learning toolsRoute & pin key",
+            "font": 16,
+            "width": 280,
+            "height": 85,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Learning tools",
+            "font": 16,
+            "width": 237.84375,
+            "height": 24,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Route & pin key",
+            "font": 14,
+            "width": 127.125,
+            "height": 31,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "H3",
+            "className": "",
+            "text": "Explore by scale",
+            "font": 20,
+            "width": 256,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Start with the body system, then open a detail or cell view.",
+            "font": 16,
+            "width": 256,
+            "height": 52.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "1Body system",
+            "font": 14,
+            "width": 230,
+            "height": 26,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "1",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "💪 Muscular",
+            "font": 16,
+            "width": 230,
+            "height": 24,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "💪",
+            "font": 16,
+            "width": 26.421875,
+            "height": 21,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Muscular",
+            "font": 16,
+            "width": 68.921875,
+            "height": 21,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "2Structure",
+            "font": 14,
+            "width": 230,
+            "height": 26,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "2",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Quadriceps Femoris",
+            "font": 16,
+            "width": 230,
+            "height": 24,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Quadriceps Femoris",
+            "font": 16,
+            "width": 148.453125,
+            "height": 21,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "anatomy-scale-step",
+            "text": "3Tissue / regionAnatomy Lens galleryOpen detail view",
+            "font": 16,
+            "width": 256,
+            "height": 119,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "3Tissue / region",
+            "font": 14,
+            "width": 228,
+            "height": 26,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "3",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Anatomy Lens gallery",
+            "font": 16,
+            "width": 228,
+            "height": 24,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Anatomy Lens gallery",
+            "font": 16,
+            "width": 163.015625,
+            "height": 21,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-action",
+            "text": "Open detail view",
+            "font": 14,
+            "width": 115.453125,
+            "height": 25,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 7.228493721290183,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "anatomy-scale-step",
+            "text": "4Cell scaleCell microdissectionOpen cell view",
+            "font": 16,
+            "width": 256,
+            "height": 119,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "4Cell scale",
+            "font": 14,
+            "width": 228,
+            "height": 26,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "4",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 228,
+            "height": 24,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 150.21875,
+            "height": 21,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-action",
+            "text": "Open cell view",
+            "font": 14,
+            "width": 99.703125,
+            "height": 25,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-scale-status",
+            "text": "Destinations for ⁨Quadriceps Femoris⁩. Choose a detail or cell view to continue.",
+            "font": 16,
+            "width": 256,
+            "height": 79.171875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "H4",
+            "className": "anatomy-scale-more-title",
+            "text": "More ways to explore",
+            "font": 16,
+            "width": 256,
+            "height": 39,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Organ dissection",
+            "font": 16,
+            "width": 256,
+            "height": 46,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 256,
+            "height": 46,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Microscope",
+            "font": 16,
+            "width": 256,
+            "height": 46,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-title",
+            "text": "Pin status",
+            "font": 16,
+            "width": 256,
+            "height": 24,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "•Unrated",
+            "font": 14,
+            "width": 83.765625,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "•",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "!Need practice",
+            "font": 14,
+            "width": 122.734375,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "!",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(159, 18, 57)",
+            "background": "rgb(255, 241, 242)",
+            "ratio": 7.2968756808423105,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "~Learning",
+            "font": 14,
+            "width": 88.21875,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "~",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "✓Got it",
+            "font": 14,
+            "width": 66.9375,
+            "height": 22,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "✓",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(6, 95, 70)",
+            "background": "rgb(236, 253, 245)",
+            "ratio": 7.294077894689702,
+            "ariaHidden": true
+          }
+        ]
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark",
+          "name": "phone-dark"
+        },
+        "metrics": [
+          {
+            "tag": "SUMMARY",
+            "className": "anatomy-learning-tools-summary",
+            "text": "Learning toolsRoute & pin key",
+            "font": 16,
+            "width": 280,
+            "height": 85,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Learning tools",
+            "font": 16,
+            "width": 237.84375,
+            "height": 24,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Route & pin key",
+            "font": 14,
+            "width": 127.125,
+            "height": 31,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "H3",
+            "className": "",
+            "text": "Explore by scale",
+            "font": 20,
+            "width": 256,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Start with the body system, then open a detail or cell view.",
+            "font": 16,
+            "width": 256,
+            "height": 52.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "1Body system",
+            "font": 14,
+            "width": 230,
+            "height": 26,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "1",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "💪 Muscular",
+            "font": 16,
+            "width": 230,
+            "height": 24,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "💪",
+            "font": 16,
+            "width": 26.421875,
+            "height": 21,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Muscular",
+            "font": 16,
+            "width": 68.921875,
+            "height": 21,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "2Structure",
+            "font": 14,
+            "width": 230,
+            "height": 26,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "2",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Quadriceps Femoris",
+            "font": 16,
+            "width": 230,
+            "height": 24,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Quadriceps Femoris",
+            "font": 16,
+            "width": 148.453125,
+            "height": 21,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "anatomy-scale-step",
+            "text": "3Tissue / regionAnatomy Lens galleryOpen detail view",
+            "font": 16,
+            "width": 256,
+            "height": 119,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "3Tissue / region",
+            "font": 14,
+            "width": 228,
+            "height": 26,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "3",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Anatomy Lens gallery",
+            "font": 16,
+            "width": 228,
+            "height": 24,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Anatomy Lens gallery",
+            "font": 16,
+            "width": 163.015625,
+            "height": 21,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-action",
+            "text": "Open detail view",
+            "font": 14,
+            "width": 115.453125,
+            "height": 25,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "anatomy-scale-step",
+            "text": "4Cell scaleCell microdissectionOpen cell view",
+            "font": 16,
+            "width": 256,
+            "height": 119,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "4Cell scale",
+            "font": 14,
+            "width": 228,
+            "height": 26,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "4",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 228,
+            "height": 24,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 150.21875,
+            "height": 21,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-action",
+            "text": "Open cell view",
+            "font": 14,
+            "width": 99.703125,
+            "height": 25,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-scale-status",
+            "text": "Destinations for ⁨Quadriceps Femoris⁩. Choose a detail or cell view to continue.",
+            "font": 16,
+            "width": 256,
+            "height": 79.171875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "H4",
+            "className": "anatomy-scale-more-title",
+            "text": "More ways to explore",
+            "font": 16,
+            "width": 256,
+            "height": 39,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Organ dissection",
+            "font": 16,
+            "width": 256,
+            "height": 46,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 256,
+            "height": 46,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Microscope",
+            "font": 16,
+            "width": 256,
+            "height": 46,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-title",
+            "text": "Pin status",
+            "font": 16,
+            "width": 256,
+            "height": 24,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "•Unrated",
+            "font": 14,
+            "width": 83.765625,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "•",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "!Need practice",
+            "font": 14,
+            "width": 122.734375,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "!",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(255, 228, 230)",
+            "background": "rgb(136, 19, 55)",
+            "ratio": 7.968422603633768,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "~Learning",
+            "font": 14,
+            "width": 88.21875,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "~",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "✓Got it",
+            "font": 14,
+            "width": 66.9375,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "✓",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": true
+          }
+        ]
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark",
+          "name": "phone-arabic-dark-larger"
+        },
+        "metrics": [
+          {
+            "tag": "SUMMARY",
+            "className": "anatomy-learning-tools-summary",
+            "text": "أدوات التعلّمالمسار ودليل العلامات",
+            "font": 17,
+            "width": 280,
+            "height": 97.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "أدوات التعلّم",
+            "font": 17,
+            "width": 237.84375,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "المسار ودليل العلامات",
+            "font": 17,
+            "width": 138.703125,
+            "height": 38.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "H3",
+            "className": "",
+            "text": "استكشف على مقاييس مختلفة",
+            "font": 20,
+            "width": 256,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "ابدأ بجهاز الجسم، ثم افتح عرضًا تفصيليًا أو عرضًا للخلايا.",
+            "font": 17,
+            "width": 256,
+            "height": 57.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "1جهاز الجسم",
+            "font": 17,
+            "width": 230,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "1",
+            "font": 17,
+            "width": 30,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "💪 العضلي",
+            "font": 17,
+            "width": 230,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "💪",
+            "font": 17,
+            "width": 28.078125,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "العضلي",
+            "font": 17,
+            "width": 56.78125,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "2البنية",
+            "font": 17,
+            "width": 230,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "2",
+            "font": 17,
+            "width": 30,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "العضلة رباعية الرؤوس الفخذية",
+            "font": 17,
+            "width": 230,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "العضلة رباعية الرؤوس الفخذية",
+            "font": 17,
+            "width": 209.96875,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "anatomy-scale-step",
+            "text": "3النسيج / المنطقةمعرض Anatomy Lensافتح العرض التفصيلي",
+            "font": 17,
+            "width": 256,
+            "height": 135.78125,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "3النسيج / المنطقة",
+            "font": 17,
+            "width": 228,
+            "height": 30,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "3",
+            "font": 17,
+            "width": 30,
+            "height": 30,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "معرض Anatomy Lens",
+            "font": 17,
+            "width": 228,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "معرض Anatomy Lens",
+            "font": 17,
+            "width": 166.359375,
+            "height": 22,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-action",
+            "text": "افتح العرض التفصيلي",
+            "font": 17,
+            "width": 120.96875,
+            "height": 32.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 8.773995827899993,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "anatomy-scale-step",
+            "text": "4مستوى الخليةالتشريح المجهري للخلاياافتح عرض الخلايا",
+            "font": 17,
+            "width": 256,
+            "height": 135.78125,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "4مستوى الخلية",
+            "font": 17,
+            "width": 228,
+            "height": 30,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "4",
+            "font": 17,
+            "width": 30,
+            "height": 30,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "التشريح المجهري للخلايا",
+            "font": 17,
+            "width": 228,
+            "height": 28.890625,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "التشريح المجهري للخلايا",
+            "font": 17,
+            "width": 159.84375,
+            "height": 22,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-action",
+            "text": "افتح عرض الخلايا",
+            "font": 17,
+            "width": 101.40625,
+            "height": 32.890625,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-scale-status",
+            "text": "وجهات خاصة بـ ⁨العضلة رباعية الرؤوس الفخذية⁩. اختر عرضًا تفصيليًا أو عرضًا للخلايا للمتابعة.",
+            "font": 17,
+            "width": 256,
+            "height": 86.671875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "H4",
+            "className": "anatomy-scale-more-title",
+            "text": "طرق أخرى للاستكشاف",
+            "font": 17,
+            "width": 256,
+            "height": 43.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "تشريح عضو",
+            "font": 17,
+            "width": 256,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "التشريح المجهري للخلايا",
+            "font": 17,
+            "width": 256,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "المجهر",
+            "font": 17,
+            "width": 256,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-title",
+            "text": "حالة العلامات",
+            "font": 17,
+            "width": 256,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "•لم تُقيّم بعد",
+            "font": 17,
+            "width": 85,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "•",
+            "font": 17,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "!أحتاج إلى تدريب",
+            "font": 17,
+            "width": 119,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "!",
+            "font": 17,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(255, 228, 230)",
+            "background": "rgb(136, 19, 55)",
+            "ratio": 7.968422603633768,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "~ما زلت أتعلم",
+            "font": 17,
+            "width": 95.40625,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "~",
+            "font": 17,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "✓فهمت",
+            "font": 17,
+            "width": 58.953125,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "✓",
+            "font": 17,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(209, 250, 229)",
+            "background": "rgb(6, 78, 59)",
+            "ratio": 8.569972246047666,
+            "ariaHidden": true
+          }
+        ]
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "forced-colors",
+          "name": "phone-forced-colors"
+        },
+        "metrics": [
+          {
+            "tag": "SUMMARY",
+            "className": "anatomy-learning-tools-summary",
+            "text": "Learning toolsRoute & pin key",
+            "font": 16,
+            "width": 280,
+            "height": 85,
+            "foreground": "rgb(0, 0, 159)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 13.994023083921398,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Learning tools",
+            "font": 16,
+            "width": 237.84375,
+            "height": 24,
+            "foreground": "rgb(0, 0, 159)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 13.994023083921398,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Route & pin key",
+            "font": 14,
+            "width": 127.125,
+            "height": 31,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "H3",
+            "className": "",
+            "text": "Explore by scale",
+            "font": 20,
+            "width": 256,
+            "height": 30,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Start with the body system, then open a detail or cell view.",
+            "font": 16,
+            "width": 256,
+            "height": 52.78125,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "1Body system",
+            "font": 14,
+            "width": 230,
+            "height": 26,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "1",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "💪 Muscular",
+            "font": 16,
+            "width": 230,
+            "height": 24,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "💪",
+            "font": 16,
+            "width": 20.453125,
+            "height": 21,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Muscular",
+            "font": 16,
+            "width": 68.921875,
+            "height": 21,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "2Structure",
+            "font": 14,
+            "width": 230,
+            "height": 26,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "2",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Quadriceps Femoris",
+            "font": 16,
+            "width": 230,
+            "height": 24,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Quadriceps Femoris",
+            "font": 16,
+            "width": 148.453125,
+            "height": 21,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "anatomy-scale-step",
+            "text": "3Tissue / regionAnatomy Lens galleryOpen detail view",
+            "font": 16,
+            "width": 256,
+            "height": 119,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "3Tissue / region",
+            "font": 14,
+            "width": 228,
+            "height": 26,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "3",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Anatomy Lens gallery",
+            "font": 16,
+            "width": 228,
+            "height": 24,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Anatomy Lens gallery",
+            "font": 16,
+            "width": 163.015625,
+            "height": 21,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-action",
+            "text": "Open detail view",
+            "font": 14,
+            "width": 115.453125,
+            "height": 25,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "anatomy-scale-step",
+            "text": "4Cell scaleCell microdissectionOpen cell view",
+            "font": 16,
+            "width": 256,
+            "height": 119,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-stage",
+            "text": "4Cell scale",
+            "font": 14,
+            "width": 228,
+            "height": 26,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-number",
+            "text": "4",
+            "font": 14,
+            "width": 26,
+            "height": 26,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 228,
+            "height": 24,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 150.21875,
+            "height": 21,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-scale-action",
+            "text": "Open cell view",
+            "font": 14,
+            "width": 99.703125,
+            "height": 25,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-scale-status",
+            "text": "Destinations for ⁨Quadriceps Femoris⁩. Choose a detail or cell view to continue.",
+            "font": 16,
+            "width": 256,
+            "height": 79.171875,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "H4",
+            "className": "anatomy-scale-more-title",
+            "text": "More ways to explore",
+            "font": 16,
+            "width": 256,
+            "height": 39,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Organ dissection",
+            "font": 16,
+            "width": 256,
+            "height": 46,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Cell microdissection",
+            "font": 16,
+            "width": 256,
+            "height": 46,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Microscope",
+            "font": 16,
+            "width": 256,
+            "height": 46,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-title",
+            "text": "Pin status",
+            "font": 16,
+            "width": 256,
+            "height": 24,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "•Unrated",
+            "font": 14,
+            "width": 83.765625,
+            "height": 22,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "•",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "!Need practice",
+            "font": 14,
+            "width": 122.734375,
+            "height": 22,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "!",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "~Learning",
+            "font": 14,
+            "width": 88.21875,
+            "height": 22,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "~",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-item",
+            "text": "✓Got it",
+            "font": 14,
+            "width": 66.9375,
+            "height": 22,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-marker-legend-symbol",
+            "text": "✓",
+            "font": 14,
+            "width": 22,
+            "height": 22,
+            "foreground": "rgb(0, 0, 0)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 21,
+            "ariaHidden": true
+          }
+        ]
+      }
+    ],
+    "captures": [
+      "desktop-light-learning-tools.png",
+      "phone-light-learning-tools.png",
+      "phone-dark-learning-tools.png",
+      "phone-arabic-dark-larger-learning-tools.png",
+      "phone-forced-colors-learning-tools.png"
+    ],
+    "currentDisplay": {
+      "width": 320,
+      "locale": "en",
+      "reading": false,
+      "theme": "forced-colors",
+      "name": "phone-forced-colors"
+    }
+  }
+}

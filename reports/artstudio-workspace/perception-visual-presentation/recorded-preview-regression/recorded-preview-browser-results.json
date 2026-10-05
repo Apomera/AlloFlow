@@ -1,0 +1,259 @@
+{
+  "checks": [
+    {
+      "experiment": "brightness",
+      "recordedTrialHelperReturnsExactActualMember": true,
+      "customStartingMetadataPreserved": true,
+      "modelIsDetachedCopy": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "recordedTrialHelperReturnsExactActualMember": true,
+      "customStartingMetadataPreserved": true,
+      "modelIsDetachedCopy": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "recordedTrialHelperReturnsExactActualMember": true,
+      "customStartingMetadataPreserved": true,
+      "modelIsDetachedCopy": true
+    },
+    {
+      "unavailableHelper": "missing",
+      "modelAndDrawingFieldsRedacted": true
+    },
+    {
+      "unavailableHelper": "partial",
+      "modelAndDrawingFieldsRedacted": true
+    },
+    {
+      "unavailableHelper": "conflict",
+      "modelAndDrawingFieldsRedacted": true
+    },
+    {
+      "unavailableHelper": "hidden",
+      "modelAndDrawingFieldsRedacted": true
+    },
+    {
+      "unavailableHelper": "trial",
+      "modelAndDrawingFieldsRedacted": true
+    },
+    {
+      "experiment": "brightness",
+      "actualTrialModelsAcrossReviewAndBothPairSlots": 9,
+      "originalCustomStarts": [
+        16,
+        240,
+        109
+      ],
+      "fullNotesAndDatesAndImpressions": true,
+      "equal800x480Scale": true,
+      "uniqueAccessibleSVGNames": true,
+      "persistedStateUnchanged": true
+    },
+    {
+      "experiment": "brightness",
+      "guidesAreIndependentLocalState": true,
+      "savedRevealDrawingPinOtherToolUnchanged": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "actualTrialModelsAcrossReviewAndBothPairSlots": 9,
+      "originalCustomStarts": [
+        32,
+        72,
+        51
+      ],
+      "fullNotesAndDatesAndImpressions": true,
+      "equal800x480Scale": true,
+      "uniqueAccessibleSVGNames": true,
+      "persistedStateUnchanged": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "guidesAreIndependentLocalState": true,
+      "savedRevealDrawingPinOtherToolUnchanged": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "actualTrialModelsAcrossReviewAndBothPairSlots": 9,
+      "originalCustomStarts": [
+        250,
+        550,
+        411
+      ],
+      "fullNotesAndDatesAndImpressions": true,
+      "equal800x480Scale": true,
+      "uniqueAccessibleSVGNames": true,
+      "persistedStateUnchanged": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "guidesAreIndependentLocalState": true,
+      "savedRevealDrawingPinOtherToolUnchanged": true
+    },
+    {
+      "independentReviewAndPairTrialSelections": true,
+      "filtersHideCardsButPreserveSelectedPreviews": true,
+      "previewControlsDoNotPersist": true
+    },
+    {
+      "changedPairResetsBothPairSlotsToTrialOneAndGuidesOn": true,
+      "reviewedStudySelectionRemainsIndependent": true
+    },
+    {
+      "changedReviewedGroupResetsTrialAndGuides": true,
+      "closedPairRemoved": true
+    },
+    {
+      "profileResetsPreviewOptionsAndReview": true,
+      "newReviewStartsAtActualTrialOne": true,
+      "hostStatePreserved": true
+    },
+    {
+      "hiddenStudiesNeverCreateSVGPreview": true,
+      "revealingBDoesNotExposeAOrPair": true,
+      "independentlyRevealedPairCreatesActualPreviews": true
+    },
+    {
+      "gatedStatus": "mixed-reveal",
+      "noRecordedPreviewForUnavailableStudy": true
+    },
+    {
+      "gatedStatus": "partial",
+      "noRecordedPreviewForUnavailableStudy": true
+    },
+    {
+      "gatedStatus": "conflict",
+      "noRecordedPreviewForUnavailableStudy": true
+    },
+    {
+      "deletionImmediatelyRemovesIncompletePreview": true,
+      "undoRestoresActualRecordPreviewsWithSafeDefaults": true
+    },
+    {
+      "externalNotebookRevisionClearsSavedReview": true,
+      "externallyRemovedComparedGroupCannotKeepStaleSVG": true,
+      "remainingCompleteGroupCanBeReviewedAgain": true
+    },
+    {
+      "externallyReplacedRecordRendersFreshSavedModel": true,
+      "staleCachedTrialCannotSurviveReplacement": true,
+      "reopenedPairUsesSafeDefaults": true
+    },
+    {
+      "experiment": "brightness",
+      "collectionAndUnrevealedCompletionHaveNoPreviews": true,
+      "activeRevealedPreviewUsesActualPersistedMembers": true,
+      "activePreviewControlsDoNotEditCurrentDrawing": true
+    },
+    {
+      "experiment": "brightness",
+      "endedStudyCanReviewActualFirstTrial": true,
+      "activeLocalOptionsDoNotCarryIntoSavedReview": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "collectionAndUnrevealedCompletionHaveNoPreviews": true,
+      "activeRevealedPreviewUsesActualPersistedMembers": true,
+      "activePreviewControlsDoNotEditCurrentDrawing": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "endedStudyCanReviewActualFirstTrial": true,
+      "activeLocalOptionsDoNotCarryIntoSavedReview": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "collectionAndUnrevealedCompletionHaveNoPreviews": true,
+      "activeRevealedPreviewUsesActualPersistedMembers": true,
+      "activePreviewControlsDoNotEditCurrentDrawing": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "endedStudyCanReviewActualFirstTrial": true,
+      "activeLocalOptionsDoNotCarryIntoSavedReview": true
+    },
+    {
+      "viewport": 320,
+      "readyReviewAndABPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 390,
+      "readyReviewAndABPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 768,
+      "readyReviewAndABPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 1280,
+      "readyReviewAndABPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 1600,
+      "readyReviewAndABPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "actualEbbinghausTrialPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "actualEbbinghausTrialPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "actualEbbinghausTrialPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "actualEbbinghausTrialPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-contrast",
+      "actualEbbinghausTrialPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "actualMullerLyerTrialPreviews": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    }
+  ],
+  "errors": [],
+  "loadedSourceSHA256": "099de233e9f0d239d19dd28c946f48b696e70c8606d852c1cd23dbb7b9a9697e",
+  "finalSourceSHA256": "099de233e9f0d239d19dd28c946f48b696e70c8606d852c1cd23dbb7b9a9697e",
+  "sourceSHA256": "099de233e9f0d239d19dd28c946f48b696e70c8606d852c1cd23dbb7b9a9697e"
+}

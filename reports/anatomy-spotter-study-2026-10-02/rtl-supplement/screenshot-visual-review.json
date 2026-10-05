@@ -1,0 +1,36 @@
+{
+  "sourceLfSha256": "ac1f6aaf8f6bd41449b79ee81c8de9bb4c971bf58b30864d0c6c2ecc126f9ff8",
+  "completed": true,
+  "reviewedAt": "2026-10-03T01:30:41.541Z",
+  "screenshots": [
+    {
+      "name": "phone-arabic-light-feedback-direction.png",
+      "sha256": "01fb1320ee89767ebfa8c68cbb9caecef602801666083053bca1480f20244920",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Arabic headings and controls read right to left; each English function paragraph reads left to right with final punctuation following its sentence. Phone wrapping is clear."
+    },
+    {
+      "name": "phone-arabic-dark-feedback-direction.png",
+      "sha256": "1641a3e3c8eaba939339445f9560d9631c1de5d006185bd69d9d9898d6e744cf",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Dark larger-text feedback retains Arabic heading direction and clear colors; both English functions now have normal sentence and parenthesis order without leading punctuation."
+    },
+    {
+      "name": "phone-arabic-contrast-feedback-direction.png",
+      "sha256": "79a80e7e199694f3364bf62b46cf103238314c189764f3608fc6549e96d4ae2b",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Contrast feedback preserves Arabic hierarchy and left-to-right English functions; named answer/correct states and Next remain legible with no horizontal clipping."
+    },
+    {
+      "name": "phone-arabic-dark-study-direction.png",
+      "sha256": "277d6ec4fa85a29fdb73a7ef6b617644144a962b647e488eefe053eada72fcf0",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Study banner and Arabic return remain right to left above the full 2D skeleton; direction refinement has no visible effect on the study context or diagram controls."
+    }
+  ],
+  "findings": [
+    "Both authored English function paragraphs use their own left-to-right reading direction; sentence periods and parentheses stay in the English reading order.",
+    "Arabic headings, instructions, answer labels and study-return context retain right-to-left direction.",
+    "All three themes at 320px and larger text are readable without clipped content; the full dark study model retains its layout."
+  ]
+}

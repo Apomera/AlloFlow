@@ -1,0 +1,83 @@
+{
+  "format": "alloflow-sld-state-references",
+  "version": 2,
+  "activeState": "Maine",
+  "byState": {
+    "Maine": {
+      "sources": [
+        {
+          "id": "legacy-rule",
+          "title": "Legacy source <literal>",
+          "url": "https://education.example.gov/legacy",
+          "fileName": "",
+          "pageSection": "Section 1",
+          "excerpt": "Legacy rule wording.",
+          "transferNotes": "Legacy notes.",
+          "content": "",
+          "fileFormat": "",
+          "extractionMethod": "",
+          "fileContentHash": "",
+          "effectiveDate": "",
+          "checkedDate": "2026-10-04",
+          "reviewedAt": "2026-10-04",
+          "importMethod": "manual",
+          "documentPartCount": 0,
+          "fileSize": 0,
+          "fileLastModified": 0,
+          "reviewed": true,
+          "revision": 1
+        }
+      ],
+      "comparison": {
+        "criteria": {
+          "sourceId": "legacy-rule",
+          "note": "Migrated source comparison retained despite quota.",
+          "followUp": "Check old source date.",
+          "status": "recorded",
+          "checkedRevision": 1,
+          "checkedAt": "2026-10-04"
+        },
+        "language": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "intervention": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "exclusions": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "special-education": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "documentation": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        }
+      }
+    }
+  }
+}

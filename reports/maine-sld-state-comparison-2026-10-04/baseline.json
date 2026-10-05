@@ -1,0 +1,66 @@
+{
+  "maine_sld_state_reference_core.js": {
+    "sha256": "447983ea23c58415f57dd2bf7cd6578c3ab079a4c9f2b76b4f20b5a76cafa96c",
+    "bytes": 9586
+  },
+  "maine_sld_state_workspace_source.jsx": {
+    "sha256": "8fe6a868b7fb3c6e119e6fc9cd1ddd1daaecf8bde66af715703d6829a567ee9d",
+    "bytes": 28764
+  },
+  "maine_sld_practice_module.js": {
+    "sha256": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21",
+    "bytes": 248870
+  },
+  "maine_sld_practice_source.jsx": {
+    "sha256": "243623bbe94aca528c0693e63327640c86d71f8cd892d4578def0019b848e766",
+    "bytes": 99134
+  },
+  "_build_maine_sld_practice_module.js": {
+    "sha256": "368b16765e9f54da9f2d5dfccc91e6402bdb3c3abc9fc9ac92355c1afcb976f8",
+    "bytes": 2339
+  },
+  "maine_sld_practice_core.js": {
+    "sha256": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926",
+    "bytes": 7848
+  },
+  "maine_sld_case_data.json": {
+    "sha256": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e",
+    "bytes": 91506
+  },
+  "maine_sld_state_documents.js": {
+    "sha256": "6b3e22c0ccc9fa55d61d2719d6bbb62da4984c27b2a48c2fc24ec489f8462129",
+    "bytes": 4296
+  },
+  "tests/e2e/maine-sld-practice.spec.ts": {
+    "sha256": "2807144531c423401b691b10ad1c7e1cd6bfb7a6151ea68927a90d7ee4187e28",
+    "bytes": 202527
+  },
+  "tests/e2e/maine-sld-state-requirements.spec.ts": {
+    "sha256": "2e77de920d14e93cebda492b561059febd7b42a74b270a57c4c1f0d474adf5ba",
+    "bytes": 16562
+  },
+  "desktop/web-app/public/maine_sld_practice_module.js": {
+    "sha256": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21",
+    "bytes": 248870
+  },
+  "desktop/app-build/maine_sld_practice_module.js": {
+    "sha256": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21",
+    "bytes": 248870
+  },
+  "desktop/web-app/build/maine_sld_practice_module.js": {
+    "sha256": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21",
+    "bytes": 248870
+  },
+  "AlloFlowANTI.txt": {
+    "sha256": "4225c850336e4c62482828ab6732f510aab8efad1eba641407cf31ad51821120",
+    "bytes": 2859613
+  },
+  "desktop/web-app/src/AlloFlowANTI.txt": {
+    "sha256": "4225c850336e4c62482828ab6732f510aab8efad1eba641407cf31ad51821120",
+    "bytes": 2859613
+  },
+  "desktop/web-app/src/App.jsx": {
+    "sha256": "4225c850336e4c62482828ab6732f510aab8efad1eba641407cf31ad51821120",
+    "bytes": 2859613
+  }
+}

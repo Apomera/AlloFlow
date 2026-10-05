@@ -1,0 +1,11 @@
+{
+  "status": "CONFIRMED_HELPER_SERIALIZATION_DEFECT",
+  "actualManifestSha256": "023f86f63ad3d933e0aa9c71db1b9e9fd7347a72c634aebfc5100b95159d22e7",
+  "embeddedExpectedManifestSha256": "ae3e774d7bbf3b063308f12398e98a677dba5a4b1e4ac8b0d061ce29457c4ebe",
+  "normalizedLfManifestSha256": "ae3e774d7bbf3b063308f12398e98a677dba5a4b1e4ac8b0d061ce29457c4ebe",
+  "actualCrLfCount": 132,
+  "lfNormalizedBytesExactlyEqualOriginalHashedSerialization": true,
+  "activityBodiesExecuted": false,
+  "strictGateRejectedMismatch": true,
+  "correction": "Write the same manifest_bytes with write_bytes, then assert the written SHA equals the embedded SHA. No guard weakening or product change."
+}

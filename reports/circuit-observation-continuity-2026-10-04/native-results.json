@@ -1,0 +1,38 @@
+{
+  "baseline": {
+    "toolChunk": "9b6f75",
+    "completed": true,
+    "exitCode": 1,
+    "passed": 3,
+    "failed": 9,
+    "sourceSha256": "e9c7d6a86b45def1263ffb3ba4ea98de19078563a471a6b14d95c285299fe030"
+  },
+  "legacyReproduction": {
+    "sessionId": 41650,
+    "toolChunk": "e66e52",
+    "completed": true,
+    "exitCode": 1,
+    "failed": 1,
+    "skipped": 12,
+    "sourceSha256": "d62195c5530468c475f3dbc49639789413957ff2d0e52d0f5806c813767c63d9"
+  },
+  "regression": {
+    "sessionId": 25041,
+    "toolChunk": "1a48fd",
+    "completed": true,
+    "exitCode": 0,
+    "passed": 158,
+    "testFiles": 11,
+    "durationSeconds": 165.08
+  },
+  "browser": {
+    "sessionId": 89809,
+    "toolChunk": "7a754b",
+    "completed": true,
+    "exitCode": 0,
+    "passed": true,
+    "views": 6,
+    "workflows": 4,
+    "screenshots": 6
+  }
+}

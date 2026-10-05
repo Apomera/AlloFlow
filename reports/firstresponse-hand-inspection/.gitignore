@@ -1,0 +1,14 @@
+*.log
+*-exit.json
+*.cjs
+.inputs.json
+.reviewed.json
+browser-artifacts/
+regression/
+commit-git/
+commit-message.txt
+.inputs-*.json
+geometry-*.json
+camera-diagnostic-metrics.json
+targeted-source-hashes.json
+targeted-exit-code.txt

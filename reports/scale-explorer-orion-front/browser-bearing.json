@@ -1,0 +1,226 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "scale-explorer-nebula-bearing.spec.ts",
+      "file": "scale-explorer-nebula-bearing.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "facing the central stars rotates smoothly at a fixed position and user controls cancel its orientation",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22912,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/scale-explorer-orion-front/candidate-source.js in place of stem_lab/stem_tool_scaleexplorer.js\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:07:06.730Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a791d9a08ed4c85ca86f-ae0f10243a351a45ef99",
+          "file": "scale-explorer-nebula-bearing.spec.ts",
+          "line": 42,
+          "column": 5
+        },
+        {
+          "title": "optional star locator projects the fixed reference and clips behind the camera, screen edges, title and console",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 7348,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\scale-explorer-nebula-bearing.spec.ts:60:746",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\scale-explorer-nebula-bearing.spec.ts",
+                      "column": 746,
+                      "line": 60
+                    },
+                    "snippet": "  58 | test('optional star locator projects the fixed reference and clips behind the camera, screen edges, title and console',async({page})=>{\n  59 |  const errors=await mount(page);await page.setViewportSize({width:960,height:1100});await canvas(page).scrollIntoViewIfNeeded();await canvas(page).focus();await page.waitForTimeout(150);const initial=await pose(page),before=identity(await scene(page)),button=navigation(page).getByRole('button',{name:'Star locator',exact:true});await expect(button).toHaveAttribute('aria-pressed','false');await expect(locator(page)).toBeHidden();await expect(canvas(page)).not.toHaveAttribute('data-atlas-nebula-locator',/.+/);\n> 60 |  await button.click();await expect(button).toHaveAttribute('aria-pressed','true');await assertMarker(page);await page.locator('.sx-stage').screenshot({path:path.join(out,'orion-star-locator-960.png')});expect(await navigation(page).evaluate(n=>n.scrollWidth<=n.clientWidth+1)).toBe(true);const readings=await navigation(page).locator('.sx-nebula-instruments output').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,text:n.textContent};}));console.log('960px nebula readouts:',readings);for(let i=0;i<readings.length;i++)for(let j=i+1;j<readings.length;j++){const a=readings[i],b=readings[j];expect(a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top).toBe(true);}\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ^\n  61 |  await turn(page,12);await expect(canvas(page)).toHaveAttribute('data-atlas-nebula-locator','offscreen');await expect(locator(page)).toBeHidden();expect((await scene(page)).projection.eyeZ).toBeGreaterThan(0);\n  62 |  await page.keyboard.press('r');await assertMarker(page);await turn(page,6);await expect(locator(page)).toBeHidden();const outside=(await scene(page)).projection;expect(outside.x<0||outside.x>outside.width||outside.z<=-1||outside.z>=1).toBe(true);\n  63 |  await page.keyboard.press('r');await assertMarker(page);await verticalLookTo(page,80);await expect(locator(page)).toBeHidden();const top=(await scene(page)).projection;expect(top.y).toBeGreaterThan(0);expect(top.y).toBeLessThan(105);expect(top.x).toBeGreaterThan(75);expect(top.x).toBeLessThan(top.width-75);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\scale-explorer-nebula-bearing.spec.ts",
+                        "column": 746,
+                        "line": 60
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  58 | test('optional star locator projects the fixed reference and clips behind the camera, screen edges, title and console',async({page})=>{\n  59 |  const errors=await mount(page);await page.setViewportSize({width:960,height:1100});await canvas(page).scrollIntoViewIfNeeded();await canvas(page).focus();await page.waitForTimeout(150);const initial=await pose(page),before=identity(await scene(page)),button=navigation(page).getByRole('button',{name:'Star locator',exact:true});await expect(button).toHaveAttribute('aria-pressed','false');await expect(locator(page)).toBeHidden();await expect(canvas(page)).not.toHaveAttribute('data-atlas-nebula-locator',/.+/);\n> 60 |  await button.click();await expect(button).toHaveAttribute('aria-pressed','true');await assertMarker(page);await page.locator('.sx-stage').screenshot({path:path.join(out,'orion-star-locator-960.png')});expect(await navigation(page).evaluate(n=>n.scrollWidth<=n.clientWidth+1)).toBe(true);const readings=await navigation(page).locator('.sx-nebula-instruments output').evaluateAll(nodes=>nodes.map(n=>{const r=n.getBoundingClientRect();return {left:r.left,right:r.right,top:r.top,bottom:r.bottom,text:n.textContent};}));console.log('960px nebula readouts:',readings);for(let i=0;i<readings.length;i++)for(let j=i+1;j<readings.length;j++){const a=readings[i],b=readings[j];expect(a.right<=b.left||b.right<=a.left||a.bottom<=b.top||b.bottom<=a.top).toBe(true);}\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                                          ^\n  61 |  await turn(page,12);await expect(canvas(page)).toHaveAttribute('data-atlas-nebula-locator','offscreen');await expect(locator(page)).toBeHidden();expect((await scene(page)).projection.eyeZ).toBeGreaterThan(0);\n  62 |  await page.keyboard.press('r');await assertMarker(page);await turn(page,6);await expect(locator(page)).toBeHidden();const outside=(await scene(page)).projection;expect(outside.x<0||outside.x>outside.width||outside.z<=-1||outside.z>=1).toBe(true);\n  63 |  await page.keyboard.press('r');await assertMarker(page);await verticalLookTo(page,80);await expect(locator(page)).toBeHidden();const top=(await scene(page)).projection;expect(top.y).toBeGreaterThan(0);expect(top.y).toBeLessThan(105);expect(top.x).toBeGreaterThan(75);expect(top.x).toBeLessThan(top.width-75);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\scale-explorer-nebula-bearing.spec.ts:60:746"
+                    }
+                  ],
+                  "stdout": [
+                    {
+                      "text": "960px nebula readouts: [\n  {\n    left: \u001b[33m175\u001b[39m,\n    right: \u001b[33m255.828125\u001b[39m,\n    top: \u001b[33m591.890625\u001b[39m,\n    bottom: \u001b[33m615.890625\u001b[39m,\n    text: \u001b[32m'7.28 ly'\u001b[39m\n  },\n  {\n    left: \u001b[33m248.328125\u001b[39m,\n    right: \u001b[33m329.15625\u001b[39m,\n    top: \u001b[33m577.890625\u001b[39m,\n    bottom: \u001b[33m601.890625\u001b[39m,\n    text: \u001b[32m'0.00 ly'\u001b[39m\n  },\n  {\n    left: \u001b[33m321.65625\u001b[39m,\n    right: \u001b[33m414.03125\u001b[39m,\n    top: \u001b[33m577.890625\u001b[39m,\n    bottom: \u001b[33m601.890625\u001b[39m,\n    text: \u001b[32m'+0.80 ly'\u001b[39m\n  }\n]\n"
+                    }
+                  ],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:07:29.868Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\scale-explorer-nebula-bear-e7a75-een-edges-title-and-console-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\scale-explorer-nebula-bear-e7a75-een-edges-title-and-console-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\test-results\\scale-explorer-nebula-bear-e7a75-een-edges-title-and-console-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\scale-explorer-nebula-bearing.spec.ts",
+                    "column": 746,
+                    "line": 60
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a791d9a08ed4c85ca86f-1857e441defb01195f62",
+          "file": "scale-explorer-nebula-bearing.spec.ts",
+          "line": 58,
+          "column": 5
+        },
+        {
+          "title": "320px WebGL 1 offers immediate facing, a readable cue and the new front viewpoint with reduced motion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8521,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [
+                    {
+                      "text": "[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/scale-explorer-orion-front/candidate-source.js in place of stem_lab/stem_tool_scaleexplorer.js\n"
+                    }
+                  ],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:07:38.974Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a791d9a08ed4c85ca86f-b89c2cf6944c8870ebc0",
+          "file": "scale-explorer-nebula-bearing.spec.ts",
+          "line": 69,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T15:07:04.481Z",
+    "duration": 45329.247,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

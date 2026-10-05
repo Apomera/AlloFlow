@@ -1,0 +1,251 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/save-and-reflection-validation/module-four-05/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "maine-sld-practice.spec.ts",
+      "file": "maine-sld-practice.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "participant planning review keeps all five case reflections and discussion tasks separate from the guide through reset restoration and reload",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 2,
+                  "error": {
+                    "message": "\u001b[31m\"beforeAll\" hook timeout of 120000ms exceeded.\u001b[39m",
+                    "stack": "\u001b[31m\"beforeAll\" hook timeout of 120000ms exceeded.\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:31:6",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                      "column": 6,
+                      "line": 31
+                    },
+                    "snippet": "  29 |  ReactDOM.createRoot(document.getElementById('app')).render(e(Host));\n  30 | };</script></body></html>`;\n> 31 | test.beforeAll(async()=>{\n     |      ^\n  32 |  const source=await readFile(join(ROOT,'AlloFlowANTI.txt'),'utf8');\n  33 |  const start=source.indexOf('// __ALLO_STEM_DEEP_LINKS_BEGIN__'), fn=source.indexOf('const _alloReadShellDeepLinkTool =',start), end=source.indexOf('\\n};',fn)+3;\n  34 |  if(start<0||fn<0||end<fn)throw new Error('Host route reader not found');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                        "column": 6,
+                        "line": 31
+                      },
+                      "message": "\u001b[31m\"beforeAll\" hook timeout of 120000ms exceeded.\u001b[39m\n\n  29 |  ReactDOM.createRoot(document.getElementById('app')).render(e(Host));\n  30 | };</script></body></html>`;\n> 31 | test.beforeAll(async()=>{\n     |      ^\n  32 |  const source=await readFile(join(ROOT,'AlloFlowANTI.txt'),'utf8');\n  33 |  const start=source.indexOf('// __ALLO_STEM_DEEP_LINKS_BEGIN__'), fn=source.indexOf('const _alloReadShellDeepLinkTool =',start), end=source.indexOf('\\n};',fn)+3;\n  34 |  if(start<0||fn<0||end<fn)throw new Error('Host route reader not found');\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:31:6"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:45:48.710Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\module-four-05\\artifacts\\maine-sld-practice-partici-a0ea5-eset-restoration-and-reload-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\module-four-05\\artifacts\\maine-sld-practice-partici-a0ea5-eset-restoration-and-reload-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\module-four-05\\artifacts\\maine-sld-practice-partici-a0ea5-eset-restoration-and-reload-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                    "column": 6,
+                    "line": 31
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-f8bebbbd2afcd9a86804",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 498,
+          "column": 5
+        },
+        {
+          "title": "planning reflection edits return by keyboard and contextual writing feedback remains bounded without persisting navigation state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:51:41.607Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-3dd79cf9550a8b57ce48",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 513,
+          "column": 5
+        },
+        {
+          "title": "session save warning preserves open work and focus across blocked access quota failure recovery and explicit retries",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:51:41.607Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-95af6e5e389028710484",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 555,
+          "column": 5
+        },
+        {
+          "title": "expired tab work can be recovered while optional guide reflection stays in existing notes for all five cases and native feedback announces transitions once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:51:41.608Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-ccf06133637769f7b815",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 566,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T01:42:05.883Z",
+    "duration": 576396.054,
+    "expected": 0,
+    "skipped": 3,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,351 @@
+{
+  "started": "2026-10-05T00:40:17.107Z",
+  "observations": [
+    {
+      "width": 1440,
+      "view": "welcome",
+      "launch": {
+        "top": 255.96875,
+        "bottom": 299.96875,
+        "height": 44,
+        "text": "Start Tower Shift"
+      },
+      "pace": {
+        "top": 553,
+        "bottom": 663.5,
+        "height": 110.5,
+        "text": "Choose your training paceStandard shiftTraffic arrives automatically. Sustained separation conflicts close the shift.Guided practiceStart paused and add aircraft when ready. Alerts stay active; conflicts do not close practice."
+      },
+      "practiceTab": {
+        "top": 683.5,
+        "bottom": 743.5,
+        "height": 60,
+        "text": "PracticeRepeatable exercises"
+      },
+      "selectedPace": "standard",
+      "overflow": false
+    },
+    {
+      "width": 1440,
+      "view": "pathway",
+      "recommended": {
+        "top": 369.234375,
+        "bottom": 413.234375,
+        "height": 44,
+        "text": "Continue training →"
+      },
+      "firstCard": {
+        "top": 461.078125,
+        "bottom": 686.453125,
+        "height": 225.375,
+        "text": "01Ready to tryRunway controlGuide one arrivalAssign runway 27 and guide TRAIN101 to touchdown.Begins pausedStart exercise"
+      },
+      "focus": {
+        "id": "stem-atctower-tab-practice",
+        "text": "PracticeRepeatable exercises"
+      }
+    },
+    {
+      "width": 1440,
+      "view": "debrief",
+      "actions": {
+        "top": 356,
+        "bottom": 400,
+        "height": 44,
+        "text": "Retry this exerciseTry another shiftChoose airportReview lessonsPractice pathway"
+      },
+      "reflection": {
+        "top": 418,
+        "bottom": 787.890625,
+        "height": 369.890625,
+        "text": "Review one decisionChoose a moment (optional)Reflect on the whole attempt0:00 · TRAIN101 assigned runway 27. Approach clearance is required.0:00 · TRAIN101 cleared approach runway 27. Automatic guidance will intercept final and descend.What did you intend?What changed in the aircraft or traffic?What will you keep or change next time?What will you try next?Optional: explain a decision and one change to try. Your saved note can remind you on a matching retry."
+      },
+      "focus": {
+        "tag": "H2",
+        "id": "atc-debrief-title",
+        "text": "Attempt recorded"
+      },
+      "decisions": "0:00 · TRAIN101 assigned runway 27. Approach clearance is required.\n0:00 · TRAIN101 cleared approach runway 27. Automatic guidance will intercept final and descend."
+    },
+    {
+      "width": 1440,
+      "view": "retry",
+      "state": {
+        "paused": true,
+        "trainingMode": "guided",
+        "practice": "first_landing",
+        "active": "H3",
+        "focusId": "atc-exercise-title",
+        "scroll": 0
+      }
+    },
+    {
+      "width": 390,
+      "view": "welcome",
+      "launch": {
+        "top": 383.84375,
+        "bottom": 427.84375,
+        "height": 44,
+        "text": "Start Tower Shift"
+      },
+      "pace": {
+        "top": 485.84375,
+        "bottom": 725.34375,
+        "height": 239.5,
+        "text": "Choose your training paceStandard shiftTraffic arrives automatically. Sustained separation conflicts close the shift.Guided practiceStart paused and add aircraft when ready. Alerts stay active; conflicts do not close practice."
+      },
+      "practiceTab": {
+        "top": 745.34375,
+        "bottom": 789.34375,
+        "height": 44,
+        "text": "PracticeRepeatable exercises"
+      },
+      "selectedPace": "standard",
+      "overflow": false
+    },
+    {
+      "width": 390,
+      "view": "pathway",
+      "recommended": {
+        "top": 584.1875,
+        "bottom": 628.1875,
+        "height": 44,
+        "text": "Continue training →"
+      },
+      "firstCard": {
+        "top": 659.1875,
+        "bottom": 905.5625,
+        "height": 246.375,
+        "text": "01Ready to tryRunway controlGuide one arrivalAssign runway 27 and guide TRAIN101 to touchdown.Begins pausedStart exercise"
+      },
+      "focus": {
+        "id": "stem-atctower-tab-practice",
+        "text": "PracticeRepeatable exercises"
+      }
+    },
+    {
+      "width": 390,
+      "view": "debrief",
+      "actions": {
+        "top": 374.5,
+        "bottom": 468.5,
+        "height": 94,
+        "text": "Retry this exerciseTry another shiftChoose airportReview lessonsPractice pathway"
+      },
+      "reflection": {
+        "top": 486.5,
+        "bottom": 895.390625,
+        "height": 408.890625,
+        "text": "Review one decisionChoose a moment (optional)Reflect on the whole attempt0:00 · TRAIN101 assigned runway 27. Approach clearance is required.0:00 · TRAIN101 cleared approach runway 27. Automatic guidance will intercept final and descend.What did you intend?What changed in the aircraft or traffic?What will you keep or change next time?What will you try next?Optional: explain a decision and one change to try. Your saved note can remind you on a matching retry."
+      },
+      "focus": {
+        "tag": "H2",
+        "id": "atc-debrief-title",
+        "text": "Attempt recorded"
+      },
+      "decisions": "0:00 · TRAIN101 assigned runway 27. Approach clearance is required.\n0:00 · TRAIN101 cleared approach runway 27. Automatic guidance will intercept final and descend."
+    },
+    {
+      "width": 390,
+      "view": "retry",
+      "state": {
+        "paused": true,
+        "trainingMode": "guided",
+        "practice": "first_landing",
+        "active": "H3",
+        "focusId": "atc-exercise-title",
+        "scroll": 0
+      }
+    },
+    {
+      "width": 320,
+      "view": "welcome",
+      "launch": {
+        "top": 405.53125,
+        "bottom": 449.53125,
+        "height": 44,
+        "text": "Start Tower Shift"
+      },
+      "pace": {
+        "top": 519.53125,
+        "bottom": 798.03125,
+        "height": 278.5,
+        "text": "Choose your training paceStandard shiftTraffic arrives automatically. Sustained separation conflicts close the shift.Guided practiceStart paused and add aircraft when ready. Alerts stay active; conflicts do not close practice."
+      },
+      "practiceTab": {
+        "top": 818.03125,
+        "bottom": 862.03125,
+        "height": 44,
+        "text": "PracticeRepeatable exercises"
+      },
+      "selectedPace": "standard",
+      "overflow": false
+    },
+    {
+      "width": 320,
+      "view": "pathway",
+      "recommended": {
+        "top": 686.6875,
+        "bottom": 730.6875,
+        "height": 44,
+        "text": "Continue training →"
+      },
+      "firstCard": {
+        "top": 761.6875,
+        "bottom": 1008.0625,
+        "height": 246.375,
+        "text": "01Ready to tryRunway controlGuide one arrivalAssign runway 27 and guide TRAIN101 to touchdown.Begins pausedStart exercise"
+      },
+      "focus": {
+        "id": "stem-atctower-tab-practice",
+        "text": "PracticeRepeatable exercises"
+      }
+    },
+    {
+      "width": 320,
+      "view": "debrief",
+      "actions": {
+        "top": 431,
+        "bottom": 575,
+        "height": 144,
+        "text": "Retry this exerciseTry another shiftChoose airportReview lessonsPractice pathway"
+      },
+      "reflection": {
+        "top": 593,
+        "bottom": 1043.484375,
+        "height": 450.484375,
+        "text": "Review one decisionChoose a moment (optional)Reflect on the whole attempt0:00 · TRAIN101 assigned runway 27. Approach clearance is required.0:00 · TRAIN101 cleared approach runway 27. Automatic guidance will intercept final and descend.What did you intend?What changed in the aircraft or traffic?What will you keep or change next time?What will you try next?Optional: explain a decision and one change to try. Your saved note can remind you on a matching retry."
+      },
+      "focus": {
+        "tag": "H2",
+        "id": "atc-debrief-title",
+        "text": "Attempt recorded"
+      },
+      "decisions": "0:00 · TRAIN101 assigned runway 27. Approach clearance is required.\n0:00 · TRAIN101 cleared approach runway 27. Automatic guidance will intercept final and descend."
+    },
+    {
+      "width": 320,
+      "view": "retry",
+      "state": {
+        "paused": true,
+        "trainingMode": "guided",
+        "practice": "first_landing",
+        "active": "H3",
+        "focusId": "atc-exercise-title",
+        "scroll": 0
+      }
+    },
+    {
+      "width": 390,
+      "view": "initial-first_landing",
+      "coaching": "Next action\n\nAssign a runway to this aircraft.\n\nHide coaching",
+      "objectives": "RUNWAY CONTROL · 1 / 4\n\nIn progress\nExercise objectives · Guide one arrival\n\nAssign runway 27 and guide TRAIN101 to touchdown.\n\n0 / 1 landings\n○\nRemaining: Land TRAIN101.\nBriefing & safety rules",
+      "roster": [
+        {
+          "callsign": "TRAIN101",
+          "altitude": 5000,
+          "speed": 90,
+          "heading": 270,
+          "assignedRunway": null,
+          "state": "inbound"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "view": "initial-arrival_sequence",
+      "coaching": "Next action\n\nThe runway plan shows a timing concern. Compare the arrival gap and occupied area before clearing more traffic; a hold or a go-around may protect the sequence.\n\nHide coaching",
+      "objectives": "ARRIVAL SEQUENCING · 2 / 4\n\nIn progress\nExercise objectives · Compare distance and speed\n\nCompare distance and speed, then space two landings.\n\n0 / 2 landings\n○\nRemaining: Land both exercise aircraft.\n○\nRemaining: Land FAST102 before NEAR101.\nBriefing & safety rules",
+      "roster": [
+        {
+          "callsign": "NEAR101",
+          "altitude": 9000,
+          "speed": 90,
+          "heading": 270,
+          "assignedRunway": {
+            "hdg": 270,
+            "x": 150,
+            "y": 200,
+            "len": 40
+          },
+          "state": "inbound"
+        },
+        {
+          "callsign": "FAST102",
+          "altitude": 5500,
+          "speed": 140,
+          "heading": 270,
+          "assignedRunway": {
+            "hdg": 270,
+            "x": 150,
+            "y": 200,
+            "len": 40
+          },
+          "state": "inbound"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "view": "initial-separation_recovery",
+      "coaching": "Next action\n\nAssign a runway to this aircraft.\n\nHide coaching",
+      "objectives": "TRAFFIC SEPARATION · 3 / 4\n\nIn progress\nExercise objectives · Protect converging traffic\n\nBuild 1,000 feet of spacing before the tracks cross.\n\n0 / 2 actions\n○\nRemaining: Build at least 1,000 feet of vertical separation.\n○\nRemaining: Protect traffic through six shift seconds.\nBriefing & safety rules",
+      "roster": [
+        {
+          "callsign": "SOUTH101",
+          "altitude": 5000,
+          "speed": 140,
+          "heading": 180,
+          "assignedRunway": null,
+          "state": "inbound"
+        },
+        {
+          "callsign": "EAST102",
+          "altitude": 5000,
+          "speed": 140,
+          "heading": 90,
+          "assignedRunway": null,
+          "state": "inbound"
+        }
+      ]
+    },
+    {
+      "width": 390,
+      "view": "initial-crossing_priority",
+      "coaching": "Next action\n\nThe runway plan shows a timing concern. Compare the arrival gap and occupied area before clearing more traffic; a hold or a go-around may protect the sequence.\n\nHide coaching",
+      "objectives": "PRIORITY DECISIONS · 4 / 4\n\nIn progress\nExercise objectives · Prioritize across crossing runways\n\nGive MED101 priority while protecting the shared runway area.\n\n0 / 2 landings\n○\nRemaining: Land both exercise aircraft.\n○\nRemaining: Land MED101 before ROUT102.\nBriefing & safety rules",
+      "roster": [
+        {
+          "callsign": "MED101",
+          "altitude": 6000,
+          "speed": 140,
+          "heading": 180,
+          "assignedRunway": {
+            "hdg": 180,
+            "x": 150,
+            "y": 200,
+            "len": 40
+          },
+          "state": "inbound"
+        },
+        {
+          "callsign": "ROUT102",
+          "altitude": 6000,
+          "speed": 135,
+          "heading": 270,
+          "assignedRunway": {
+            "hdg": 270,
+            "x": 150,
+            "y": 200,
+            "len": 40
+          },
+          "state": "inbound"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "completed": "2026-10-05T00:41:49.412Z",
+  "sourceHash": "10e2cc7380c02927570bc2b27a0bce4d4afe3101031110ed41998211fd8a70b0",
+  "sourceStable": false
+}

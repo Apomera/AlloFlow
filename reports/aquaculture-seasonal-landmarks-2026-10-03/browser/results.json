@@ -1,0 +1,117 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "case": "shared oxygen landmarks",
+      "width": 1280,
+      "checks": [
+        "native disclosure and metric/species keyboard selection",
+        "helper and independent actual-model min/max/absolute gap",
+        "all tied months and earliest tie navigation",
+        "inspection focus and selected month",
+        "view-only inputs/writing/notebook/archive/parked preservation",
+        "exact selected-month capture value and units",
+        "complete captured/protected state survives reload",
+        "scoped axe, 44px controls, reduced motion and reflow"
+      ],
+      "errors": []
+    },
+    {
+      "case": "shared oxygen landmarks",
+      "width": 390,
+      "checks": [
+        "native disclosure and metric/species keyboard selection",
+        "helper and independent actual-model min/max/absolute gap",
+        "all tied months and earliest tie navigation",
+        "inspection focus and selected month",
+        "view-only inputs/writing/notebook/archive/parked preservation",
+        "exact selected-month capture value and units",
+        "complete captured/protected state survives reload",
+        "scoped axe, 44px controls, reduced motion and reflow"
+      ],
+      "errors": []
+    },
+    {
+      "case": "shared oxygen landmarks",
+      "width": 320,
+      "checks": [
+        "native disclosure and metric/species keyboard selection",
+        "helper and independent actual-model min/max/absolute gap",
+        "all tied months and earliest tie navigation",
+        "inspection focus and selected month",
+        "view-only inputs/writing/notebook/archive/parked preservation",
+        "exact selected-month capture value and units",
+        "complete captured/protected state survives reload",
+        "scoped axe, 44px controls, reduced motion and reflow",
+        "forced colors"
+      ],
+      "errors": []
+    },
+    {
+      "case": "species progress and metric refresh",
+      "width": 320,
+      "checks": [
+        "actual oyster progress min/max/gap independent arithmetic",
+        "earliest tied month actions and focus",
+        "exact species progress percent capture",
+        "protected work and reload",
+        "metric changes update landmarks",
+        "shared temperature semantics following oyster",
+        "scoped axe, reduced motion, reflow and forced colors"
+      ],
+      "errors": []
+    },
+    {
+      "case": "one-sided species, missing A and equal trajectories",
+      "width": 320,
+      "checks": [
+        "no baseline retains B low/high",
+        "all-zero gap removes gap action",
+        "A-only species is unavailable rather than zero",
+        "B-only species retains B extrema but has no paired gap",
+        "availability navigation preserves complete workspace",
+        "scoped axe and responsive screenshots"
+      ],
+      "edges": [
+        {
+          "case": "no-baseline",
+          "state": "no-baseline",
+          "validBMonths": 12,
+          "errors": []
+        },
+        {
+          "case": "all-zero-gap",
+          "state": "match",
+          "validBMonths": 12,
+          "errors": []
+        },
+        {
+          "case": "species-only-in-A",
+          "state": "unavailable",
+          "validBMonths": 0,
+          "errors": []
+        },
+        {
+          "case": "species-only-in-B",
+          "state": "unavailable",
+          "validBMonths": 12,
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "shared water and fixed-support applicability",
+      "width": 320,
+      "checks": [
+        "support excludes biomass/survival/progress",
+        "following support retains whole-system oxygen landmarks",
+        "exact system capture value/units despite species following",
+        "model mismatch keeps B extrema and suppresses gap",
+        "pure helper support applicability guard",
+        "full protected workspace preservation",
+        "scoped axe, reduced motion, reflow and forced colors"
+      ],
+      "errors": []
+    }
+  ]
+}

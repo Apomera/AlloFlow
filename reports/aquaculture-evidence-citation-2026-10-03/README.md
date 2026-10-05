@@ -1,0 +1,36 @@
+# AquacultureLab Evidence citation readiness
+
+Completed locally on 2026-10-03. Changes remain unstaged and uncommitted. No push, deployment, full app or installer build.
+
+## What changed
+
+Each live captured reading now previews its complete citation before the learner adds it to structured Evidence writing. The exact candidate includes the captured source, values, units, date and model provenance, including earlier-settings and earlier-model prefixes. Native **Preview complete citation** disclosures contain escaped plain text, so imported HTML labels remain literal text.
+
+The 500-character budget uses the raw existing Evidence string, including its whitespace, and counts the separating newline and the entire candidate. An exact 500-character result fits; a 501-character result explains the overflow and preserves the original writing. There is no partial append or truncation. A citation body already present is **already added**, including when its current provenance prefix changes or the Evidence is full. The preview never rewrites an existing citation automatically.
+
+Per-reading counts are ordinary text with unique IDs, described by each existing Add reading button. They introduce no per-row live announcements while the learner types. **Edit Evidence writing** and **Review Evidence writing** are native buttons that open the existing structured disclosure and focus its Evidence field. They show normal and forced-color focus and text. Saved archive copies have no new citation controls, including copies sharing a live note ID.
+
+The original append behavior is unchanged: only a deliberate successful Add changes Evidence, preserving its exact original whitespace and adding one separating newline when the existing string is nonempty. Full and duplicate attempts write nothing. Claim, reasoning, next test, reflection, original captures, saved investigations and parked drafts are preserved. The physiology and frozen measurement construction are byte-preserved; the model version remains `2026.10-stock-feedback`.
+
+## Validation and retained attempts
+
+- **243 distinct native tests across 18 files passed** on final source `774d86b9cd99cddea8c5ab669aade6d3907c65ff9c4445435c5737728db7ef53`: 223 existing cases and 20 new citation-readiness cases. Four smaller serial processes contain 77, 36, 58 and 72 cases respectively, using one worker, the existing shorter hook limits, the unchanged 30-second default and no automatic retries. [batch-1-tests.json](batch-1-tests.json) · [log](batch-1-tests.log); [batch-2-tests.json](batch-2-tests.json) · [log](batch-2-tests.log); [batch-3-tests.json](batch-3-tests.json) · [log](batch-3-tests.log); [batch-4-tests.json](batch-4-tests.json) · [log](batch-4-tests.log). [Distinct-case accounting](resolved-tests.json).
+- Final-batch failures are listed in [verification metadata](verification.json), with separately run native [recovery assertions](timing-recovery-tests.json) and their [execution log](timing-recovery-tests.log). The learning-workspace case “separates lesson completion from visits and persists the learner decision” stopped in its existing 10-second beforeEach setup hook; its product assertion did not execute. The unchanged case was run separately with that same hook limit. Each case is counted once using its latest executed native assertion, which must pass; filtered recovery skips retain their existing final-batch passes. No automatic retries or relaxed timeouts were used.
+- The initial full focused attempt stopped with native V8 out-of-memory after five existing failed case entries across four files. Its [original execution log](focused-tests.log) is retained; it produced no native JSON and contributes no assertion passes. The final serial processes used 768 MB old space and 8 MB semi space per process, versus 1024 MB old space for the interrupted attempt. Assertions and timeout limits were unchanged.
+- Four earlier passing pre-color batches are retained separately: [before-colors/batch-1-tests.json](before-colors/batch-1-tests.json) · [log](before-colors/batch-1-tests.log); [before-colors/batch-2-tests.json](before-colors/batch-2-tests.json) · [log](before-colors/batch-2-tests.log); [before-colors/batch-3-tests.json](before-colors/batch-3-tests.json) · [log](before-colors/batch-3-tests.log); [before-colors/batch-4-tests.json](before-colors/batch-4-tests.json) · [log](before-colors/batch-4-tests.log). They do not substitute for final-source validation.
+- **Six Chromium workflow groups passed** at 1280, 390 and 320 pixels, covering exact complete citation previews, keyboard disclosures and direct Evidence focus, unchanged writing and frozen records, live/archive ID separation, raw whitespace and newline budgets, exact 500/501 boundaries, duplicate priority through provenance changes, literal imported markup, reflow and forced colors. [Final browser results](browser/results.json) · [Execution log](browser-execution.log).
+- The first browser attempt exposed a forced-color contrast violation at the existing Evidence destination. Its [execution log](browser-initial-execution.log) and [initial browser evidence](browser-initial/) are retained. Narrow system-color, summary and focus CSS corrected the structured Evidence disclosure and textarea. Final browser and all four native test batches were repeated on the final source after that correction.
+- **15 final scoped axe scans, zero violations**. 14 scans contain incomplete items (color-contrast), reviewed manually by root and an independent source/visual reviewer against normal and forced-color destination screenshots. This is scoped evidence for the changed controls and destination, not certification of the entire app. [Scan and review metadata](verification.json).
+- Syntax, scoped whitespace, exact LF source/public parity, the preserved model/measurement section and the empty scoped Git index passed. An initial drafting syntax error was corrected before integration; final source checks report no syntax issue.
+
+Provenance edge fixtures use actual current-model readings with deliberately changed imported model labels or metadata to exercise citation boundaries. They are not historical model simulations. Primary browser reading and append workflows use actual annual summaries and monthly traces; unit fixtures also isolate canonical validation with synthetic notes.
+
+## Preview and replay
+
+- [sample-ready-citation-1280.png](browser/sample-ready-citation-1280.png)
+- [sample-ready-citation-390.png](browser/sample-ready-citation-390.png)
+- [sample-full-citation-501-320-forced-colors.png](browser/sample-full-citation-501-320-forced-colors.png)
+- [sample-prefix-change-duplicate-320.png](browser/sample-prefix-change-duplicate-320.png)
+- [sample-full-citation-501-320-evidence-forced-colors.png](browser/sample-full-citation-501-320-evidence-forced-colors.png)
+
+Normal and forced-color structured Evidence destination screenshots, scoped axe records, state probes and escaped report evidence are retained beside [browser results](browser/results.json). The [portable browser harness](evidence-citation-browser-qa.cjs) resolves the report's parent repository by default; optional `AQUACULTURE_REPO` and `AQUACULTURE_QA_OUT` override paths. It uses installed Node/Playwright dependencies and closes Chromium and its local HTTP server.

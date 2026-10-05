@@ -1,0 +1,29 @@
+{
+  "forcedColors": true,
+  "theme": "contrast",
+  "color": "rgb(0, 0, 0)",
+  "background": "rgba(255, 255, 255, 0)",
+  "controls": [
+    {
+      "tag": "INPUT",
+      "text": "",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgba(255, 255, 255, 0)",
+      "disabled": false
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Add observations",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgb(255, 255, 255)",
+      "disabled": false
+    },
+    {
+      "tag": "BUTTON",
+      "text": "Cancel import",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgb(255, 255, 255)",
+      "disabled": false
+    }
+  ]
+}

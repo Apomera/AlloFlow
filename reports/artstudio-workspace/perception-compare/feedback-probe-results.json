@@ -1,0 +1,11 @@
+{
+  "passed": true,
+  "checks": [
+    "Independent comparison reveal produces the correct median shift.",
+    "Deleting an unselected previous study preserves the selected pair and accurate Undo feedback.",
+    "Undo restores the previous observation without changing the selected pair.",
+    "Clearing the comparison removes its results and focuses its selector."
+  ],
+  "sourceSHA256": "f6cbfc10754e41c9f28c0d681f551275a9fa88efe6d4618348e1607ead18d39c",
+  "runner": "Standalone React createRoot + JSDOM + node:assert, without a Vitest worker"
+}

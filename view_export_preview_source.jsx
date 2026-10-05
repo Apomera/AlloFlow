@@ -3694,7 +3694,7 @@ function _builderReadingAccessReview(history, exportConfig) {
       'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
       outline: 'includeOutline', faq: 'includeFaq', 'sentence-frames': 'includeSentenceFrames', image: 'includeImage',
       math: 'includeMath', dbq: 'includeDbq', 'lesson-plan': 'includeLessonPlan', 'udl-advice': 'includeUdlAdvice',
-      brainstorm: 'includeBrainstorm',
+      brainstorm: 'includeBrainstorm', 'concept-sort': 'includeConceptSort',
     };
     const selected = source.filter((item) => {
       if (!item) return false;
@@ -3764,6 +3764,7 @@ function _builderResourceOptions(history, t) {
     ['includeSimplified', '📖 Adapted Text', 'simplified'],
     ['includeGlossary', '📚 Glossary', 'glossary'],
     ['includeQuiz', '❓ Quiz', 'quiz'],
+    ['includeConceptSort', translate('concept_sort.title') || 'Concept Sort', 'concept-sort'],
     ['includeOutline', '🗂️ Graphic Organizer', 'outline'],
     ['includeFaq', '💬 FAQ', 'faq'],
     ['includeMemoryAid', translate('sidebar.tool_memory_aid') || 'Memory Aid Studio', 'memory-aid'],
@@ -3780,7 +3781,7 @@ function _builderResourceOptions(history, t) {
   return entries.filter(([, , type]) => types.has(type));
 }
 function _builderResourceIncluded(config, key) {
-  return ['includeMemoryAid', 'includeAppliedChallenge', 'includeOriginalReading'].includes(key) ? config?.[key] !== false : !!config?.[key];
+  return ['includeMemoryAid', 'includeAppliedChallenge', 'includeOriginalReading', 'includeConceptSort'].includes(key) ? config?.[key] !== false : !!config?.[key];
 }
 function _builderBulkResourceUpdate(history, config, t) {
   const available = _builderResourceOptions(history, t);

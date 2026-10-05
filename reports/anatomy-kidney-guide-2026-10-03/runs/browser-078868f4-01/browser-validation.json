@@ -1,0 +1,2710 @@
+{
+  "metadata": {
+    "sourceLfSha256": "078868f49a910a331dc31f333bb8912d41c7d13f21f1fe18873300c867fb09b2",
+    "sourceRawSha256": "078868f49a910a331dc31f333bb8912d41c7d13f21f1fe18873300c867fb09b2",
+    "mirrorsEqual": true,
+    "startedAt": "2026-10-03T14:41:53.304Z",
+    "finishedSourceLfSha256": "078868f49a910a331dc31f333bb8912d41c7d13f21f1fe18873300c867fb09b2",
+    "finishedMirrorsEqual": true,
+    "finishedAt": "2026-10-03T14:42:01.210Z"
+  },
+  "journey": {
+    "errors": [],
+    "steps": [
+      {
+        "action": "pause filtrate flow",
+        "focus": "flow",
+        "workPreserved": true
+      },
+      {
+        "action": "choose step",
+        "step": "tubular_reabsorption",
+        "playing": false,
+        "focus": "step",
+        "workPreserved": true
+      },
+      {
+        "action": "choose step",
+        "step": "tubular_secretion",
+        "playing": false,
+        "focus": "step",
+        "workPreserved": true
+      },
+      {
+        "action": "choose step",
+        "step": "urine_concentration",
+        "playing": false,
+        "focus": "step",
+        "workPreserved": true
+      },
+      {
+        "action": "previous stops at first step",
+        "boundary": "start",
+        "playing": false
+      },
+      {
+        "action": "next stops at final step",
+        "boundary": "end",
+        "playing": false
+      },
+      {
+        "action": "step while playing retains flow preference",
+        "playing": true
+      },
+      {
+        "action": "clinical overlay retains protein-leak shapes and readable explanation",
+        "workPreserved": true
+      }
+    ],
+    "scans": [],
+    "styles": [],
+    "captures": [
+      "desktop-kidney-clinical-step-3.png"
+    ]
+  },
+  "display": {
+    "errors": [],
+    "steps": [
+      {
+        "view": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "desktop-light"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(7, 89, 133)",
+          "offset": "3px"
+        }
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "phone-light"
+        },
+        "keyboardFocus": {
+          "width": "3px",
+          "style": "solid",
+          "color": "rgb(7, 89, 133)",
+          "offset": "3px"
+        }
+      }
+    ],
+    "scans": [
+      {
+        "view": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "desktop-light"
+        },
+        "boxes": [
+          {
+            "tag": "SECTION",
+            "scale": null,
+            "client": 630,
+            "scroll": 630,
+            "left": 550,
+            "right": 1182
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "body",
+            "client": 289,
+            "scroll": 289,
+            "left": 569,
+            "right": 860
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "regions",
+            "client": 289,
+            "scroll": 289,
+            "left": 872,
+            "right": 1163
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "nephron",
+            "client": 592,
+            "scroll": 592,
+            "left": 569,
+            "right": 1163
+          }
+        ],
+        "dimensions": {
+          "width": 1280,
+          "scroll": 1280
+        },
+        "violations": []
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "phone-light"
+        },
+        "boxes": [
+          {
+            "tag": "SECTION",
+            "scale": null,
+            "client": 264,
+            "scroll": 264,
+            "left": 28,
+            "right": 294
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "body",
+            "client": 238,
+            "scroll": 238,
+            "left": 41,
+            "right": 281
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "regions",
+            "client": 238,
+            "scroll": 238,
+            "left": 41,
+            "right": 281
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "nephron",
+            "client": 238,
+            "scroll": 238,
+            "left": 41,
+            "right": 281
+          }
+        ],
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      }
+    ],
+    "styles": [
+      {
+        "view": {
+          "width": 1280,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "desktop-light"
+        },
+        "metrics": [
+          {
+            "tag": "H5",
+            "className": "",
+            "text": "Kidney filtration",
+            "font": 24,
+            "width": 343.671875,
+            "height": 33.59375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Explore body location and kidney regions, then follow one nephron.",
+            "font": 16,
+            "width": 343.671875,
+            "height": 52.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Play flow",
+            "font": 16,
+            "width": 103.53125,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-playback",
+            "text": "Flow paused",
+            "font": 16,
+            "width": 93.484375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Clinical lens",
+            "font": 16,
+            "width": 122.796875,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "1. FiltrationBlood to Bowman capsule",
+            "font": 16,
+            "width": 292,
+            "height": 81.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Filtration",
+            "font": 18,
+            "width": 262,
+            "height": 27,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood to Bowman capsule",
+            "font": 16,
+            "width": 262,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "2. ReabsorptionTubule to blood",
+            "font": 16,
+            "width": 292,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. Reabsorption",
+            "font": 18,
+            "width": 262,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Tubule to blood",
+            "font": 16,
+            "width": 262,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "3. SecretionBlood to tubule",
+            "font": 16,
+            "width": 292,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "3. Secretion",
+            "font": 18,
+            "width": 262,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood to tubule",
+            "font": 16,
+            "width": 262,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "4. Urine formationCollecting duct to ureter",
+            "font": 16,
+            "width": 292,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "4. Urine formation",
+            "font": 18,
+            "width": 262,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Collecting duct to ureter",
+            "font": 16,
+            "width": 262,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Previous step",
+            "font": 16,
+            "width": 136.734375,
+            "height": 48.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Next step",
+            "font": 16,
+            "width": 106.640625,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-atlas-step-position",
+            "text": "Step 1 of 4",
+            "font": 16,
+            "width": 101.09375,
+            "height": 35.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Filtration",
+            "font": 20,
+            "width": 558,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Blood pressure pushes water and small solutes across the glomerular filtration barrier into Bowman capsule. Blood cells and most proteins remain in the circulation.",
+            "font": 16,
+            "width": 558,
+            "height": 81.5625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Focus in this step",
+            "font": 16,
+            "width": 558,
+            "height": 25.59375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Glomerulus · Filtration barrier · Bowman capsule",
+            "font": 16,
+            "width": 558,
+            "height": 27.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-kidney-marker-help",
+            "text": "Match the numbered markers to the structure key.",
+            "font": 16,
+            "width": 594,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "1. Body location",
+            "font": 18,
+            "width": 261,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Posterior view",
+            "font": 16,
+            "width": 261,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Kidneys",
+            "font": 16,
+            "width": 54.53125,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "2. Kidney regions",
+            "font": 18,
+            "width": 261,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Cortex",
+            "font": 16,
+            "width": 45.984375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Medulla",
+            "font": 16,
+            "width": 57.109375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Renal pelvis",
+            "font": 16,
+            "width": 82.90625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "3. Nephron flow",
+            "font": 18,
+            "width": 564,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Glomerulus",
+            "font": 16,
+            "width": 80.71875,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Proximal tubule",
+            "font": 16,
+            "width": 110.484375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Loop of Henle",
+            "font": 16,
+            "width": 99.859375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "4",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Distal tubule",
+            "font": 16,
+            "width": 88.890625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "5",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Collecting duct",
+            "font": 16,
+            "width": 106.234375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Flow key",
+            "font": 16,
+            "width": 65.8125,
+            "height": 24,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-flow-symbol",
+            "text": "F",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(109, 40, 217)",
+            "ratio": 7.104892978519159,
+            "key": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Filtrate",
+            "font": 16,
+            "width": 48.484375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-flow-symbol",
+            "text": "B",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(185, 28, 28)",
+            "ratio": 6.4700447145121895,
+            "key": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Capillary blood",
+            "font": 16,
+            "width": 106.359375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-flow-symbol",
+            "text": "U",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(3, 105, 161)",
+            "ratio": 5.933638668604332,
+            "key": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Urine pathway",
+            "font": 16,
+            "width": 101.703125,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Connect renal circulation: relate filtration and fluid balance to the cardiac output that supplies renal blood flow.",
+            "font": 16,
+            "width": 373.53125,
+            "height": 79.171875,
+            "foreground": "rgb(71, 85, 105)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.577663953533317,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Connect renal circulation:",
+            "font": 16,
+            "width": 196.34375,
+            "height": 21,
+            "foreground": "rgb(51, 65, 85)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 10.35474573184942,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "px-3 py-1.5 text-[0.6875rem] font-bold border border-blue-300 bg-white text-blue-800 hover:bg-blue-50 active:scale-[0.97]",
+            "text": "Connect cardiac output",
+            "font": 16,
+            "width": 212.46875,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          }
+        ],
+        "diagrams": [
+          {
+            "scale": "body",
+            "width": 247,
+            "height": 230,
+            "texts": [
+              {
+                "text": "1",
+                "font": 26,
+                "effectiveFont": 21.205673758865245,
+                "box": {
+                  "left": 737.10546875,
+                  "right": 747.35546875,
+                  "top": 2049.29443359375,
+                  "bottom": 2077.29443359375
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "regions",
+            "width": 247,
+            "height": 230,
+            "texts": [
+              {
+                "text": "1",
+                "font": 26,
+                "effectiveFont": 21.357142857142858,
+                "box": {
+                  "left": 973.7288208007812,
+                  "right": 984.0569458007812,
+                  "top": 1975.2142333984375,
+                  "bottom": 2003.2142333984375
+                }
+              },
+              {
+                "text": "2",
+                "font": 26,
+                "effectiveFont": 21.357142857142858,
+                "box": {
+                  "left": 992.208740234375,
+                  "right": 1005.005615234375,
+                  "top": 2114.03564453125,
+                  "bottom": 2142.03564453125
+                }
+              },
+              {
+                "text": "3",
+                "font": 26,
+                "effectiveFont": 21.357142857142858,
+                "box": {
+                  "left": 1073.5301513671875,
+                  "right": 1086.3270263671875,
+                  "top": 2023.6785888671875,
+                  "bottom": 2051.678466796875
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "nephron",
+            "width": 550,
+            "height": 464.0625,
+            "texts": [
+              {
+                "text": "1",
+                "font": 26,
+                "effectiveFont": 37.239583333333336,
+                "box": {
+                  "left": 633.5624389648438,
+                  "right": 651.5624389648438,
+                  "top": 2478.104248046875,
+                  "bottom": 2527.104248046875
+                }
+              },
+              {
+                "text": "2",
+                "font": 26,
+                "effectiveFont": 37.239583333333336,
+                "box": {
+                  "left": 804.7135009765625,
+                  "right": 827.0260009765625,
+                  "top": 2470.942626953125,
+                  "bottom": 2519.942626953125
+                }
+              },
+              {
+                "text": "3",
+                "font": 26,
+                "effectiveFont": 37.239583333333336,
+                "box": {
+                  "left": 781.7968139648438,
+                  "right": 804.1093139648438,
+                  "top": 2829.015625,
+                  "bottom": 2878.015625
+                }
+              },
+              {
+                "text": "4",
+                "font": 26,
+                "effectiveFont": 37.239583333333336,
+                "box": {
+                  "left": 963.2994384765625,
+                  "right": 986.4088134765625,
+                  "top": 2465.213623046875,
+                  "bottom": 2514.213623046875
+                }
+              },
+              {
+                "text": "5",
+                "font": 26,
+                "effectiveFont": 37.239583333333336,
+                "box": {
+                  "left": 1095.46875,
+                  "right": 1117.78125,
+                  "top": 2735.916748046875,
+                  "bottom": 2784.916748046875
+                }
+              }
+            ],
+            "intersections": []
+          }
+        ]
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "light",
+          "name": "phone-light"
+        },
+        "metrics": [
+          {
+            "tag": "H5",
+            "className": "",
+            "text": "Kidney filtration",
+            "font": 24,
+            "width": 240,
+            "height": 33.59375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Explore body location and kidney regions, then follow one nephron.",
+            "font": 16,
+            "width": 240,
+            "height": 52.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Play flow",
+            "font": 16,
+            "width": 103.53125,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-playback",
+            "text": "Flow paused",
+            "font": 16,
+            "width": 93.484375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Clinical lens",
+            "font": 16,
+            "width": 122.796875,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "1. FiltrationBlood to Bowman capsule",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Filtration",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood to Bowman capsule",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(240, 249, 255)",
+            "ratio": 7.094569638887048,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "2. ReabsorptionTubule to blood",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. Reabsorption",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Tubule to blood",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "3. SecretionBlood to tubule",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "3. Secretion",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood to tubule",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "4. Urine formationCollecting duct to ureter",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "4. Urine formation",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Collecting duct to ureter",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Previous step",
+            "font": 16,
+            "width": 115,
+            "height": 74.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Next step",
+            "font": 16,
+            "width": 115,
+            "height": 74.78125,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-atlas-step-position",
+            "text": "Step 1 of 4",
+            "font": 16,
+            "width": 101.09375,
+            "height": 35.1875,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Filtration",
+            "font": 20,
+            "width": 212,
+            "height": 30,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Blood pressure pushes water and small solutes across the glomerular filtration barrier into Bowman capsule. Blood cells and most proteins remain in the circulation.",
+            "font": 16,
+            "width": 212,
+            "height": 163.125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Focus in this step",
+            "font": 16,
+            "width": 212,
+            "height": 25.59375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Glomerulus · Filtration barrier · Bowman capsule",
+            "font": 16,
+            "width": 212,
+            "height": 54.375,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-kidney-marker-help",
+            "text": "Match the numbered markers to the structure key.",
+            "font": 16,
+            "width": 240,
+            "height": 52.78125,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": false
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "1. Body location",
+            "font": 18,
+            "width": 218,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Posterior view",
+            "font": 16,
+            "width": 218,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Kidneys",
+            "font": 16,
+            "width": 54.53125,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "2. Kidney regions",
+            "font": 18,
+            "width": 218,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Cortex",
+            "font": 16,
+            "width": 45.984375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Medulla",
+            "font": 16,
+            "width": 57.109375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Renal pelvis",
+            "font": 16,
+            "width": 82.90625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "3. Nephron flow",
+            "font": 18,
+            "width": 218,
+            "height": 27,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Glomerulus",
+            "font": 16,
+            "width": 80.71875,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Proximal tubule",
+            "font": 16,
+            "width": 110.484375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Loop of Henle",
+            "font": 16,
+            "width": 99.859375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "4",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Distal tubule",
+            "font": 16,
+            "width": 88.890625,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "5",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Collecting duct",
+            "font": 16,
+            "width": 106.234375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 17.85253496299567,
+            "key": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Flow key",
+            "font": 16,
+            "width": 65.8125,
+            "height": 24,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-flow-symbol",
+            "text": "F",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(109, 40, 217)",
+            "ratio": 7.104892978519159,
+            "key": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Filtrate",
+            "font": 16,
+            "width": 48.484375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-flow-symbol",
+            "text": "B",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(185, 28, 28)",
+            "ratio": 6.4700447145121895,
+            "key": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Capillary blood",
+            "font": 16,
+            "width": 106.359375,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-flow-symbol",
+            "text": "U",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(3, 105, 161)",
+            "ratio": 5.933638668604332,
+            "key": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Urine pathway",
+            "font": 16,
+            "width": 101.703125,
+            "height": 26.390625,
+            "foreground": "rgb(15, 23, 42)",
+            "background": "rgb(248, 250, 252)",
+            "ratio": 17.062933971317335,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Connect renal circulation: relate filtration and fluid balance to the cardiac output that supplies renal blood flow.",
+            "font": 16,
+            "width": 240,
+            "height": 105.5625,
+            "foreground": "rgb(71, 85, 105)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.577663953533317,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Connect renal circulation:",
+            "font": 16,
+            "width": 196.34375,
+            "height": 21,
+            "foreground": "rgb(51, 65, 85)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 10.35474573184942,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "px-3 py-1.5 text-[0.6875rem] font-bold border border-blue-300 bg-white text-blue-800 hover:bg-blue-50 active:scale-[0.97]",
+            "text": "Connect cardiac output",
+            "font": 16,
+            "width": 212.46875,
+            "height": 48.390625,
+            "foreground": "rgb(7, 89, 133)",
+            "background": "rgb(255, 255, 255)",
+            "ratio": 7.562998081458594,
+            "key": false
+          }
+        ],
+        "diagrams": [
+          {
+            "scale": "body",
+            "width": 204,
+            "height": 230,
+            "texts": [
+              {
+                "text": "1",
+                "font": 26,
+                "effectiveFont": 21.205673758865245,
+                "box": {
+                  "left": 183.60549926757812,
+                  "right": 193.85549926757812,
+                  "top": 3065.52880859375,
+                  "bottom": 3093.52880859375
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "regions",
+            "width": 204,
+            "height": 230,
+            "texts": [
+              {
+                "text": "1",
+                "font": 26,
+                "effectiveFont": 21.357142857142858,
+                "box": {
+                  "left": 117.22879791259766,
+                  "right": 127.55692291259766,
+                  "top": 3416.83935546875,
+                  "bottom": 3444.83935546875
+                }
+              },
+              {
+                "text": "2",
+                "font": 26,
+                "effectiveFont": 21.357142857142858,
+                "box": {
+                  "left": 135.70870971679688,
+                  "right": 148.50558471679688,
+                  "top": 3555.66064453125,
+                  "bottom": 3583.66064453125
+                }
+              },
+              {
+                "text": "3",
+                "font": 26,
+                "effectiveFont": 21.357142857142858,
+                "box": {
+                  "left": 217.03013610839844,
+                  "right": 229.82701110839844,
+                  "top": 3465.303466796875,
+                  "bottom": 3493.303466796875
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "nephron",
+            "width": 204,
+            "height": 172.125,
+            "texts": [
+              {
+                "text": "1",
+                "font": 26,
+                "effectiveFont": 13.8125,
+                "box": {
+                  "left": 74.78124237060547,
+                  "right": 81.46873474121094,
+                  "top": 3902,
+                  "bottom": 3920
+                }
+              },
+              {
+                "text": "2",
+                "font": 26,
+                "effectiveFont": 13.8125,
+                "box": {
+                  "left": 138.265625,
+                  "right": 146.546875,
+                  "top": 3899.34375,
+                  "bottom": 3917.34375
+                }
+              },
+              {
+                "text": "3",
+                "font": 26,
+                "effectiveFont": 13.8125,
+                "box": {
+                  "left": 129.765625,
+                  "right": 138.046875,
+                  "top": 4032.15625,
+                  "bottom": 4050.15625
+                }
+              },
+              {
+                "text": "4",
+                "font": 26,
+                "effectiveFont": 13.8125,
+                "box": {
+                  "left": 197.0859375,
+                  "right": 206.08595275878906,
+                  "top": 3897.21875,
+                  "bottom": 3915.21875
+                }
+              },
+              {
+                "text": "5",
+                "font": 26,
+                "effectiveFont": 13.8125,
+                "box": {
+                  "left": 246.109375,
+                  "right": 254.390625,
+                  "top": 3997.625,
+                  "bottom": 4015.625
+                }
+              }
+            ],
+            "intersections": []
+          }
+        ]
+      },
+      {
+        "view": {
+          "width": 320,
+          "locale": "en",
+          "reading": false,
+          "theme": "dark",
+          "name": "phone-dark"
+        },
+        "metrics": [
+          {
+            "tag": "H5",
+            "className": "",
+            "text": "Kidney filtration",
+            "font": 24,
+            "width": 240,
+            "height": 33.59375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Explore body location and kidney regions, then follow one nephron.",
+            "font": 16,
+            "width": 240,
+            "height": 52.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Play flow",
+            "font": 16,
+            "width": 103.53125,
+            "height": 48.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-playback",
+            "text": "Flow paused",
+            "font": 16,
+            "width": 93.484375,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Clinical lens",
+            "font": 16,
+            "width": 122.796875,
+            "height": 48.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "1. FiltrationBlood to Bowman capsule",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Filtration",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood to Bowman capsule",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "2. ReabsorptionTubule to blood",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. Reabsorption",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Tubule to blood",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "3. SecretionBlood to tubule",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "3. Secretion",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Blood to tubule",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "4. Urine formationCollecting duct to ureter",
+            "font": 16,
+            "width": 240,
+            "height": 81.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "4. Urine formation",
+            "font": 18,
+            "width": 210,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Collecting duct to ureter",
+            "font": 16,
+            "width": 210,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Previous step",
+            "font": 16,
+            "width": 115,
+            "height": 74.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "Next step",
+            "font": 16,
+            "width": 115,
+            "height": 74.78125,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-atlas-step-position",
+            "text": "Step 1 of 4",
+            "font": 16,
+            "width": 101.09375,
+            "height": 35.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. Filtration",
+            "font": 20,
+            "width": 212,
+            "height": 30,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Blood pressure pushes water and small solutes across the glomerular filtration barrier into Bowman capsule. Blood cells and most proteins remain in the circulation.",
+            "font": 16,
+            "width": 212,
+            "height": 163.125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Focus in this step",
+            "font": 16,
+            "width": 212,
+            "height": 25.59375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "Glomerulus · Filtration barrier · Bowman capsule",
+            "font": 16,
+            "width": 212,
+            "height": 54.375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-kidney-marker-help",
+            "text": "Match the numbered markers to the structure key.",
+            "font": 16,
+            "width": 240,
+            "height": 52.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "1. Body location",
+            "font": 18,
+            "width": 218,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": true
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Posterior view",
+            "font": 16,
+            "width": 218,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Kidneys",
+            "font": 16,
+            "width": 54.53125,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "2. Kidney regions",
+            "font": 18,
+            "width": 218,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Cortex",
+            "font": 16,
+            "width": 45.984375,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Medulla",
+            "font": 16,
+            "width": 57.109375,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Renal pelvis",
+            "font": 16,
+            "width": 82.90625,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "3. Nephron flow",
+            "font": 18,
+            "width": 218,
+            "height": 27,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "1",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Glomerulus",
+            "font": 16,
+            "width": 80.71875,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-current",
+            "text": "Current step",
+            "font": 16,
+            "width": 97.78125,
+            "height": 26.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "2",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Proximal tubule",
+            "font": 16,
+            "width": 110.484375,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "3",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Loop of Henle",
+            "font": 16,
+            "width": 99.859375,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "4",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Distal tubule",
+            "font": 16,
+            "width": 88.890625,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-key-number",
+            "text": "5",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Collecting duct",
+            "font": 16,
+            "width": 106.234375,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Flow key",
+            "font": 16,
+            "width": 65.8125,
+            "height": 24,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-flow-symbol",
+            "text": "F",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(109, 40, 217)",
+            "ratio": 7.104892978519159,
+            "key": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Filtrate",
+            "font": 16,
+            "width": 48.484375,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-flow-symbol",
+            "text": "B",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(185, 28, 28)",
+            "ratio": 6.4700447145121895,
+            "key": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Capillary blood",
+            "font": 16,
+            "width": 106.359375,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-kidney-flow-symbol",
+            "text": "U",
+            "font": 16,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(3, 105, 161)",
+            "ratio": 5.933638668604332,
+            "key": false
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "Urine pathway",
+            "font": 16,
+            "width": 101.703125,
+            "height": 26.390625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "Connect renal circulation: relate filtration and fluid balance to the cardiac output that supplies renal blood flow.",
+            "font": 16,
+            "width": 240,
+            "height": 105.5625,
+            "foreground": "rgb(71, 85, 105)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 2.3559417615334315,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "Connect renal circulation:",
+            "font": 16,
+            "width": 196.34375,
+            "height": 21,
+            "foreground": "rgb(51, 65, 85)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 1.7240920661223322,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "px-3 py-1.5 text-[0.6875rem] font-bold border border-blue-300 bg-white text-blue-800 hover:bg-blue-50 active:scale-[0.97]",
+            "text": "Connect cardiac output",
+            "font": 16,
+            "width": 212.46875,
+            "height": 48.390625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          }
+        ],
+        "diagrams": [
+          {
+            "scale": "body",
+            "width": 204,
+            "height": 230,
+            "texts": [
+              {
+                "text": "1",
+                "font": 26,
+                "effectiveFont": 21.205673758865245,
+                "box": {
+                  "left": 183.60549926757812,
+                  "right": 193.85549926757812,
+                  "top": 1348.5286865234375,
+                  "bottom": 1376.5286865234375
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "regions",
+            "width": 204,
+            "height": 230,
+            "texts": [
+              {
+                "text": "1",
+                "font": 26,
+                "effectiveFont": 21.357142857142858,
+                "box": {
+                  "left": 117.22879791259766,
+                  "right": 127.55692291259766,
+                  "top": 1699.8392333984375,
+                  "bottom": 1727.8392333984375
+                }
+              },
+              {
+                "text": "2",
+                "font": 26,
+                "effectiveFont": 21.357142857142858,
+                "box": {
+                  "left": 135.70870971679688,
+                  "right": 148.50558471679688,
+                  "top": 1838.6607666015625,
+                  "bottom": 1866.6607666015625
+                }
+              },
+              {
+                "text": "3",
+                "font": 26,
+                "effectiveFont": 21.357142857142858,
+                "box": {
+                  "left": 217.03013610839844,
+                  "right": 229.82701110839844,
+                  "top": 1748.3035888671875,
+                  "bottom": 1776.3035888671875
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "nephron",
+            "width": 204,
+            "height": 172.125,
+            "texts": [
+              {
+                "text": "1",
+                "font": 26,
+                "effectiveFont": 13.8125,
+                "box": {
+                  "left": 74.78124237060547,
+                  "right": 81.46873474121094,
+                  "top": 2185,
+                  "bottom": 2203
+                }
+              },
+              {
+                "text": "2",
+                "font": 26,
+                "effectiveFont": 13.8125,
+                "box": {
+                  "left": 138.265625,
+                  "right": 146.546875,
+                  "top": 2182.34375,
+                  "bottom": 2200.34375
+                }
+              },
+              {
+                "text": "3",
+                "font": 26,
+                "effectiveFont": 13.8125,
+                "box": {
+                  "left": 129.765625,
+                  "right": 138.046875,
+                  "top": 2315.15625,
+                  "bottom": 2333.15625
+                }
+              },
+              {
+                "text": "4",
+                "font": 26,
+                "effectiveFont": 13.8125,
+                "box": {
+                  "left": 197.0859375,
+                  "right": 206.08595275878906,
+                  "top": 2180.21875,
+                  "bottom": 2198.21875
+                }
+              },
+              {
+                "text": "5",
+                "font": 26,
+                "effectiveFont": 13.8125,
+                "box": {
+                  "left": 246.109375,
+                  "right": 254.390625,
+                  "top": 2280.625,
+                  "bottom": 2298.625
+                }
+              }
+            ],
+            "intersections": []
+          }
+        ]
+      }
+    ],
+    "captures": [
+      "desktop-light-kidney-guide.png",
+      "phone-light-kidney-guide.png"
+    ],
+    "currentDisplay": {
+      "width": 320,
+      "locale": "en",
+      "reading": false,
+      "theme": "dark",
+      "name": "phone-dark"
+    }
+  },
+  "diagnostics": [
+    "diagnostic-Kidney-scale-figures-and-keys-remain-readable-across-desktop-320px-phones-Arabic-larger-text-and-for.png"
+  ]
+}

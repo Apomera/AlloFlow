@@ -600,21 +600,37 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
   // speech. The shared session sanitizer removes nested `base64` fields;
   // restore only this tool-owned, tightly validated audio map. Microphone
   // recordings and arbitrary resource audio remain excluded.
-  if (item.type === 'word-sounds' && Array.isArray(item?.data) && Array.isArray(cleaned?.data)) {
+  if (item.type === 'word-sounds') {
     let remainingAudioChars = 6 * 1024 * 1024;
     let remainingAudioItems = 512;
-    const safePortableTtsAssets = value => {
+    const omittedAudioKeys = new Set();
+    const safeTtsKey = value => String(value || '').trim().toLowerCase().replace(/\s+/g, ' ').replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 240);
+    const recordOmittedTtsKey = (key, omittedKeys) => {
+      if (!key || !omittedAudioKeys.has(key) && omittedAudioKeys.size >= 512) return;
+      omittedAudioKeys.add(key);
+      omittedKeys.add(key);
+    };
+    const safePortableTtsAssets = (value, omittedKeys) => {
       if (!value || typeof value !== 'object' || Array.isArray(value)) return null;
-      const safeAssets = {};
+      const safeAssets = Object.create(null);
       for (const [rawKey, rawAsset] of Object.entries(value)) {
-        if (remainingAudioItems <= 0 || remainingAudioChars <= 0) break;
-        const key = String(rawKey || '').trim().replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 240);
-        if (!key || !rawAsset || typeof rawAsset !== 'object' || Array.isArray(rawAsset)) continue;
-        const mime = String(rawAsset.mime || '').trim().toLowerCase();
-        const base64 = typeof rawAsset.base64 === 'string' ? rawAsset.base64.replace(/\s+/g, '') : '';
-        if (!/^audio\/[a-z0-9.+-]{1,48}$/i.test(mime)) continue;
-        if (!base64 || base64.length > 512 * 1024 || base64.length > remainingAudioChars) continue;
-        if (!/^[a-z0-9+/]+={0,2}$/i.test(base64)) continue;
+        const key = safeTtsKey(rawKey);
+        if (!key) continue;
+        const dataAudio = typeof rawAsset === 'string' ? rawAsset.match(/^data:([^;]+);base64,([\s\S]*)$/i) : null;
+        const asset = dataAudio ? {
+          mime: dataAudio[1],
+          base64: dataAudio[2]
+        } : rawAsset;
+        const mime = asset && typeof asset === 'object' && !Array.isArray(asset) ? String(asset.mime || '').trim().toLowerCase() : '';
+        const base64 = asset && typeof asset.base64 === 'string' ? asset.base64.replace(/\s+/g, '') : '';
+        if (!/^audio\/[a-z0-9.+-]{1,48}$/i.test(mime) || !base64 || base64.length > 512 * 1024 || base64.length > remainingAudioChars || remainingAudioItems <= 0 || !/^[a-z0-9+/]+={0,2}$/i.test(base64) || base64.length % 4 === 1 || base64.includes('=') && base64.length % 4 !== 0) {
+          recordOmittedTtsKey(key, omittedKeys);
+          continue;
+        }
+        if (Object.prototype.hasOwnProperty.call(safeAssets, key)) {
+          recordOmittedTtsKey(key, omittedKeys);
+          continue;
+        }
         safeAssets[key] = {
           mime,
           base64
@@ -626,16 +642,29 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     };
     const safeRequiredTtsKeys = value => {
       if (!Array.isArray(value)) return null;
-      const keys = Array.from(new Set(value.map(rawKey => String(rawKey || '').trim().toLowerCase().replace(/\s+/g, ' ').replace(/[\u0000-\u001f\u007f]/g, '').slice(0, 240)).filter(Boolean))).slice(0, 1024);
+      const keys = Array.from(new Set(value.map(safeTtsKey).filter(Boolean))).slice(0, 1024);
       return keys.length > 0 ? keys : null;
     };
-    item.data.forEach((sourceWord, wordIndex) => {
-      const packedWord = cleaned.data[wordIndex];
-      if (!sourceWord || !packedWord || typeof packedWord !== 'object') return;
-      const safeAssets = safePortableTtsAssets(sourceWord._ttsAssets);
-      if (safeAssets) packedWord._ttsAssets = safeAssets;else delete packedWord._ttsAssets;
-      const requiredKeys = safeRequiredTtsKeys(sourceWord._ttsRequiredKeys);
-      if (requiredKeys) packedWord._ttsRequiredKeys = requiredKeys;else delete packedWord._ttsRequiredKeys;
+    ['wsPreloadedWords', 'data'].forEach(layout => {
+      if (!Array.isArray(referenceAudioSource[layout]) || !Array.isArray(cleaned?.[layout])) return;
+      referenceAudioSource[layout].forEach((sourceWord, wordIndex) => {
+        const packedWord = cleaned[layout][wordIndex];
+        if (!sourceWord || !packedWord || typeof packedWord !== 'object') return;
+        const omittedKeys = new Set();
+        const sourceTarget = sourceWord.targetWord || sourceWord.word || sourceWord.term || sourceWord.singleWord || sourceWord.displayWord;
+        const targetWord = packedWord.targetWord || packedWord.word || packedWord.term || packedWord.singleWord || packedWord.displayWord;
+        const rowMatches = safeTtsKey(sourceTarget) === safeTtsKey(targetWord);
+        const metadataSource = rowMatches ? sourceWord : packedWord;
+        const safeAssets = rowMatches ? safePortableTtsAssets(sourceWord._ttsAssets, omittedKeys) : null;
+        if (!rowMatches) recordOmittedTtsKey(safeTtsKey(targetWord), omittedKeys);
+        if (safeAssets) packedWord._ttsAssets = safeAssets;else delete packedWord._ttsAssets;
+        const requiredKeys = safeRequiredTtsKeys([targetWord, ...(Array.isArray(metadataSource._ttsRequiredKeys) ? metadataSource._ttsRequiredKeys : [])]);
+        if (requiredKeys) packedWord._ttsRequiredKeys = requiredKeys;else delete packedWord._ttsRequiredKeys;
+        const priorOmittedKeys = safeRequiredTtsKeys(metadataSource._ttsOmittedKeys) || [];
+        priorOmittedKeys.forEach(key => recordOmittedTtsKey(key, omittedKeys));
+        const unresolvedOmittedKeys = Array.from(omittedKeys).filter(key => !safeAssets || !Object.prototype.hasOwnProperty.call(safeAssets, key));
+        if (unresolvedOmittedKeys.length) packedWord._ttsOmittedKeys = unresolvedOmittedKeys;else delete packedWord._ttsOmittedKeys;
+      });
     });
   }
   const readAloud = typeof window !== 'undefined' && window.AlloModules?.ResourceReadAloud;
@@ -776,7 +805,31 @@ const _alloSerializeResourceForStudentPack = (item, deps = {}) => {
     karaokeStudentAudio,
     ...safe
   } = cleaned || {};
-  return stripUndefined(withholdGradedQuizKeys(stripTeacherOnlyFields(safe)));
+  const packedResource = stripUndefined(withholdGradedQuizKeys(stripTeacherOnlyFields(safe)));
+  if (item.type === 'word-sounds') {
+    ['wsPreloadedWords', 'data'].forEach(layout => {
+      if (!Array.isArray(cleaned?.[layout]) || !Array.isArray(packedResource?.[layout])) return;
+      cleaned[layout].forEach((word, index) => {
+        const assets = word?._ttsAssets;
+        const target = packedResource[layout][index];
+        if (!assets || !target || typeof target !== 'object') return;
+        ['__proto__', 'constructor', 'prototype'].forEach(key => {
+          if (!Object.prototype.hasOwnProperty.call(assets, key)) return;
+          if (!target._ttsAssets || typeof target._ttsAssets !== 'object' || Array.isArray(target._ttsAssets)) target._ttsAssets = Object.create(null);
+          Object.defineProperty(target._ttsAssets, key, {
+            value: {
+              mime: assets[key].mime,
+              base64: assets[key].base64
+            },
+            enumerable: true,
+            configurable: true,
+            writable: true
+          });
+        });
+      });
+    });
+  }
+  return packedResource;
 };
 
 // Mailbox media preparation is separate from the synchronous privacy serializer.

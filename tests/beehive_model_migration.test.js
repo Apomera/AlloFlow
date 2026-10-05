@@ -79,6 +79,49 @@ describe('Beehive saved daily-model provenance', () => {
     expect(old).toEqual(before);
   });
 
+  it.each([undefined, null, '', '  ', {}, 'x'.repeat(65), 'colony\ndaily'])('keeps unverified model identity partial even when Day0 tracking was claimed: %j', (modelVersion) => {
+    const initial = savedColony(modelVersion);
+    const before = structuredClone(initial);
+    const provenance = BH.bhExperimentProvenance(initial);
+    expect(provenance).toMatchObject({ modelVersion: BH.BEEHIVE_UNKNOWN_MODEL_VERSION, seededFromDay: 0, exactFromStart: false });
+    const checkpoint = BH.bhCreateExperimentSnapshot(initial);
+    expect(checkpoint).toMatchObject({ modelVersion: BH.BEEHIVE_UNKNOWN_MODEL_VERSION, exactFromStart: false });
+    expect(BH.bhNormalizeExperimentSnapshot({ ...checkpoint, exactFromStart: true }).exactFromStart).toBe(false);
+    expect(initial).toEqual(before);
+  });
+
+  it('preserves explicit composite and older identities instead of relabeling their history', () => {
+    for (const modelVersion of ['colony-daily-1.1', `${BH.BEEHIVE_COLONY_MODEL_VERSION}:honey-stores-1`, 'previous-colony-model']) {
+      const initial = savedColony(modelVersion);
+      const checkpoint = BH.bhCreateExperimentSnapshot(initial);
+      expect(BH.bhExperimentProvenance(initial)).toMatchObject({ modelVersion, exactFromStart: true });
+      expect(BH.bhNormalizeExperimentSnapshot(checkpoint)).toMatchObject({ modelVersion, exactFromStart: true });
+    }
+  });
+
+  it('starts honest tracking at the saved day when unknown history adopts the current model', async () => {
+    const initial = savedColony(undefined);
+    const expectedRandom = BH.bhCreateSeededRandom(initial.randomState);
+    expectedRandom.rand();
+    await mount(initial);
+    expect(BH.bhExperimentProvenance(latest.beehive).exactFromStart).toBe(false);
+    expect(host.querySelector('[data-beehive-model-migration-note]').textContent).toContain('no verified model identity');
+    expect(host.querySelector('[data-beehive-seed-migration-note]').textContent).toContain('unverified model history');
+    await nextDay();
+    expect(latest.beehive).toMatchObject({ day: 48, modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, seededFromDay: 47, randomState: expectedRandom.getState() });
+    expect(BH.bhExperimentProvenance(latest.beehive).exactFromStart).toBe(false);
+  }, 30000);
+
+  it('adopts the current model on a new Day0 colony without claiming earlier saved outcomes', async () => {
+    await mount(savedColony(undefined, { day: 0, randomState: 777 }));
+    expect(BH.bhExperimentProvenance(latest.beehive).exactFromStart).toBe(false);
+    expect(host.querySelector('[data-beehive-model-migration-note]')).toBeNull();
+    expect(host.querySelector('[data-beehive-seed-migration-note]')).toBeNull();
+    await nextDay();
+    expect(latest.beehive).toMatchObject({ day: 1, modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, seededFromDay: 0 });
+    expect(BH.bhExperimentProvenance(latest.beehive).exactFromStart).toBe(true);
+  }, 30000);
+
   it('explains the pending model change without migrating an unopened day', async () => {
     await mount(savedColony('colony-daily-1.0'));
     expect(latest.beehive.modelVersion).toBe('colony-daily-1.0');

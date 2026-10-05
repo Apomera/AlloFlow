@@ -1,0 +1,53 @@
+{
+  "namespace": "stem.anatomy",
+  "date": "2026-10-02",
+  "english": {
+    "spot_journey_activity_help": "Identify the structure at the crosshair, then choose one of four answers. Review the feedback to compare their functions.",
+    "spot_journey_study_origin": "Studying {name} from Spotter",
+    "spot_journey_return": "Return to this Spotter feedback",
+    "spot_journey_study_help": "Your answer is saved. Study this structure, then return to compare it with your choice.",
+    "spot_journey_score": "{correct} correct · {total} answered",
+    "spot_journey_marked": "Marked structure",
+    "spot_journey_study_announcement": "Studying {name}. Your Spotter answer stays saved.",
+    "spot_journey_choose_help": "Choose an answer in the Spotter question. Diagram clicks do not submit an answer."
+  },
+  "translations": {
+    "french": {
+      "spot_journey_activity_help": "Identifie la structure indiquée par la croix, puis choisis l’une des quatre réponses. Consulte le résultat pour comparer leurs fonctions.",
+      "spot_journey_study_origin": "Étude de {name} depuis le repérage",
+      "spot_journey_return": "Revenir au résultat de ce repérage",
+      "spot_journey_study_help": "Ta réponse est enregistrée. Étudie cette structure, puis reviens la comparer avec ton choix.",
+      "spot_journey_score": "{correct} correctes · {total} réponses données",
+      "spot_journey_marked": "Structure indiquée",
+      "spot_journey_study_announcement": "Étude de {name}. Ta réponse au repérage reste enregistrée.",
+      "spot_journey_choose_help": "Choisis une réponse dans la question de repérage. Cliquer sur le schéma ne valide pas une réponse."
+    },
+    "spanish_latin_america": {
+      "spot_journey_activity_help": "Identifica la estructura señalada por la cruz y elige una de las cuatro respuestas. Revisa el resultado para comparar sus funciones.",
+      "spot_journey_study_origin": "Estudio de {name} desde el localizador",
+      "spot_journey_return": "Volver al resultado de esta identificación",
+      "spot_journey_study_help": "Tu respuesta está guardada. Estudia esta estructura y luego vuelve para compararla con tu elección.",
+      "spot_journey_score": "{correct} correctas · {total} respondidas",
+      "spot_journey_marked": "Estructura marcada",
+      "spot_journey_study_announcement": "Estudio de {name}. Tu respuesta de identificación sigue guardada.",
+      "spot_journey_choose_help": "Elige una respuesta en la pregunta de identificación. Los clics en el diagrama no envían una respuesta."
+    },
+    "arabic": {
+      "spot_journey_activity_help": "حدّد البنية عند علامة التصويب، ثم اختر إحدى الإجابات الأربع. راجع الملاحظات لمقارنة وظائفها.",
+      "spot_journey_study_origin": "دراسة {name} من نشاط التحديد",
+      "spot_journey_return": "العودة إلى نتيجة محاولة التحديد هذه",
+      "spot_journey_study_help": "إجابتك محفوظة. ادرس هذه البنية، ثم عد لمقارنتها باختيارك.",
+      "spot_journey_score": "{correct} صحيحة · {total} إجابات",
+      "spot_journey_marked": "البنية المشار إليها",
+      "spot_journey_study_announcement": "دراسة {name}. تبقى إجابتك في نشاط التحديد محفوظة.",
+      "spot_journey_choose_help": "اختر إجابة في سؤال التحديد. النقر على المخطط لا يرسل إجابة."
+    }
+  },
+  "coverage": {
+    "languageCount": 3,
+    "keysPerLanguage": 8,
+    "translatedValues": 24,
+    "desktopMirrors": true
+  },
+  "scope": "Spotter question instructions, saved-answer study origins, exact feedback return, and answer-score labels. All existing Spotter, Clinical, and Connection labels are retained."
+}

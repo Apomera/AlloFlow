@@ -43,7 +43,7 @@ async function mount(page:Page,width=1280) {
   await page.addStyleTag({content:'#wrap{width:100%!important;max-width:1160px;margin:0 auto}body{margin:0}'});
 }
 const pose=(page:Page)=>page.evaluate(()=>(window as any).__legPose());
-const visible=(points:number[][])=>points.every(p=>Math.abs(p[0])<.94&&Math.abs(p[1])<.94&&p[2]>-1&&p[2]<1);
+const visible=(points:number[][]|undefined)=>!!points&&points.every(p=>Math.abs(p[0])<.94&&Math.abs(p[1])<.94&&p[2]>-1&&p[2]<1);
 const span=(points:number[][],axis:number)=>Math.max(...points.map(p=>p[axis]))-Math.min(...points.map(p=>p[axis]));
 function angle(joints:number[][]) {
   const [hip,knee,ankle]=joints;
@@ -52,7 +52,7 @@ function angle(joints:number[][]) {
 }
 async function inspect(page:Page,name:string) {
   await page.getByRole('button',{name:'Legs + feet',exact:true}).click();
-  await expect.poll(async()=>visible((await pose(page)).points)).toBe(true);
+  await expect.poll(async()=>visible((await pose(page))?.points)).toBe(true);
   await expect.poll(async()=>Math.max(span((await pose(page)).bounds,0),span((await pose(page)).bounds,1))).toBeGreaterThan(.65);
   await page.locator('.fr-body3d-stage').screenshot({path:report+'/'+name+'.png'});
 }
@@ -90,7 +90,7 @@ test('leg camera reveals the raised knee and final support without stretching an
       }
     }
     await page.getByRole('button',{name:'Whole manikin',exact:true}).click();
-    await expect.poll(async()=>visible((await pose(page)).points)).toBe(true);
+    await expect.poll(async()=>visible((await pose(page))?.points)).toBe(true);
     await page.locator('.fr-body3d-stage').screenshot({path:report+'/'+age+'-whole-recovery.png'});
   }
   await audit(page);
@@ -104,7 +104,7 @@ test('leg inspection supports phone keyboard controls, text spacing and contrast
   for(let i=0;i<7;i++)await steps.nth(i).click();
   const camera=page.getByRole('button',{name:'Legs + feet',exact:true});
   await camera.focus();await page.keyboard.press('Enter');
-  await expect.poll(async()=>visible((await pose(page)).points)).toBe(true);
+  await expect.poll(async()=>visible((await pose(page))?.points)).toBe(true);
   const before=(await pose(page)).camera;
   await page.getByRole('button',{name:'Rotate view left',exact:true}).focus();await page.keyboard.press('Enter');
   await expect.poll(async()=>(await pose(page)).camera).not.toEqual(before);
@@ -168,6 +168,7 @@ test('pose review works by keyboard on a phone and resumes from an earlier pose'
   await page.emulateMedia({forcedColors:'active',reducedMotion:'reduce'});await audit(page);
   await page.emulateMedia({forcedColors:'none',reducedMotion:'reduce'});
   await page.evaluate(()=>{(window as any).__ctx.isContrast=true;(window as any).__rerender();});
+  await page.locator('.fr-body3d-stage').evaluate(el=>el.scrollIntoView({block:'center',behavior:'instant' as ScrollBehavior}));
   await expect.poll(async()=>(await pose(page))?.contrast).toBe(true);await audit(page);
   await page.getByRole('button',{name:/Start again/}).click();await expect(select).toHaveCount(0);await expect(steps.nth(0)).toBeEnabled();
 });

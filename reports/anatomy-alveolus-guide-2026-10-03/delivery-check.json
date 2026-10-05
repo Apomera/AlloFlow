@@ -1,0 +1,137 @@
+{
+  "date": "2026-10-03",
+  "sourceSha256": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+  "runtimeMirrorsIdentical": true,
+  "syntaxPassed": true,
+  "authoredAtlasData": {
+    "characters": 309592,
+    "sha256": "a54731f78e7c82243e53fe231eae3548233ab62d66c27a81493251c4f1394b87",
+    "unchanged": true
+  },
+  "onlyAlveolusRendererAndScopedCssChanged": true,
+  "originalNarrativesUnchanged": 8,
+  "catalogPairs": 4,
+  "englishKeys": 62,
+  "nativeTranslations": 186,
+  "focusedTests": {
+    "passed": 283,
+    "newAlveolus": 108,
+    "kidneyRegression": 74,
+    "galleryRegression": 64,
+    "scaleRegression": 28,
+    "scienceRegression": 9,
+    "unselectedScienceSkipped": 146
+  },
+  "browser": {
+    "journeys": 2,
+    "accessibilityScans": 5,
+    "violations": 0,
+    "pageErrors": 0,
+    "horizontalOverflow": false,
+    "markerIntersections": 0,
+    "minTextContrast": 5.933638668604332,
+    "minNumericMarkerContrast": 7.562998081458594,
+    "minControlHeight": 48.390625,
+    "minControlWidth": 106.640625,
+    "minNumericMarkerSize": 14.668253968253968,
+    "normalHtmlText": 16,
+    "largerHtmlText": 17,
+    "reviewedCaptures": [
+      {
+        "name": "desktop-alveolus-clinical-step-2.png",
+        "sha256": "a206e07187a4d45e7ddf42448579d86f6f9bf20e331cde41fec9c09d99ec3a10"
+      },
+      {
+        "name": "desktop-light-alveolus-guide.png",
+        "sha256": "edc54c92e05b43ec5b6ae46798cc2322b8d559a53b8ea3059747c24e6455d61b"
+      },
+      {
+        "name": "phone-light-alveolus-guide.png",
+        "sha256": "4b2578d074ddc5fbf2652ff58721ad8b0e6cfaa5441e77ffee87a4541e449866"
+      },
+      {
+        "name": "phone-dark-alveolus-guide.png",
+        "sha256": "f3a513b7da3e9f6fd63e54bd5a64fd4687b4e139f8445438af68cc9940dddefd"
+      },
+      {
+        "name": "phone-arabic-dark-larger-alveolus-guide.png",
+        "sha256": "205c0bd4e5f6bec335774186151fc82d3152cd6a4160588ebbb1bd77556ba83f"
+      },
+      {
+        "name": "phone-forced-colors-alveolus-guide.png",
+        "sha256": "472c3a19bf45166bb981cc6443580c2f262ac97b4308ea58130c679b66eb842f"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "name": "alveolus-existing-science-units-02a0343a-2026-10-03T16-44-48-402Z-proof.json",
+      "sha256": "edc78d5aedc4edc61bd780c9d60197ff6b18c66dfd0502caa45dca70850f3034"
+    },
+    {
+      "name": "alveolus-guide-units-02a0343a-2026-10-03T16-34-33-530Z-proof.json",
+      "sha256": "a41c0ee38de24f756f02348d2ad764073caf4d191d5d262a4dd28ebc06371226"
+    },
+    {
+      "name": "kidney-guide-regression-units-02a0343a-2026-10-03T16-34-33-530Z-proof.json",
+      "sha256": "7c293694a00dd1d04560432c39670b72551326da76c4c8f12c9d4edcac6ea2a1"
+    },
+    {
+      "name": "lens-gallery-regression-units-02a0343a-2026-10-03T16-34-33-530Z-proof.json",
+      "sha256": "d34b898e987f07542b1661175c2597c8c30789d5d77b7b6d1e588675eed6fbf0"
+    },
+    {
+      "name": "scale-navigation-regression-units-02a0343a-2026-10-03T16-44-48-402Z-proof.json",
+      "sha256": "2bdf8f0d2e722b9bc37127f14cf5b3d414ae4aeb925c3ccf58a550581ebb7479"
+    },
+    {
+      "name": "alveolus-existing-science-units-02a0343a-2026-10-03T16-44-48-402Z.json",
+      "sha256": "dac901d045eaf910fda5297d785c54bfff60d70aff7c046b01785d278205cec9"
+    },
+    {
+      "name": "alveolus-guide-units-02a0343a-2026-10-03T16-34-33-530Z.json",
+      "sha256": "3c80ac769365cefc1f5e829e75bc6a082eb9acf53be2742e90592723fed9625a"
+    },
+    {
+      "name": "kidney-guide-regression-units-02a0343a-2026-10-03T16-34-33-530Z.json",
+      "sha256": "adf5b1685a61f0551482d25269336286af3e2822ae9671583b442eda95d6cd3c"
+    },
+    {
+      "name": "lens-gallery-regression-units-02a0343a-2026-10-03T16-34-33-530Z.json",
+      "sha256": "b2a67e4d355ec6d0d42103dc5c64e1c3298d4f05b97158260c43c035a620abe1"
+    },
+    {
+      "name": "scale-navigation-regression-units-02a0343a-2026-10-03T16-44-48-402Z.json",
+      "sha256": "223e3ef68575b6ae5f2d2c3f2758f74c48c9051d284dd88a7b22ec5d1700820d"
+    },
+    {
+      "name": "source-scope-proof.json",
+      "sha256": "3df9fa021de2d598f6cd9583f89dd23e3c5c5fc2b2973d2de4a53dd6a060de1d"
+    },
+    {
+      "name": "catalog-validation.json",
+      "sha256": "f501c264af2274974173034693e9d9dbe7473d1f02cbc0d4fe7ba0d16416147f"
+    },
+    {
+      "name": "catalog-readback.json",
+      "sha256": "255327cccafad6b70edbd1c6490dd749ca65461eb605b272e81ee41f3d704c31"
+    },
+    {
+      "name": "browser-validation.json",
+      "sha256": "4ce31cac0b8db8ce57df2c397c25b446bbe6620a29e67312d0b5a735ab7fc261"
+    },
+    {
+      "name": "playwright-results.json",
+      "sha256": "e7d862a9d42f570676d0673ab77a4cb3bb7a66002b1b65e2952f7d445f83fdbb"
+    },
+    {
+      "name": "browser-review-summary.json",
+      "sha256": "5a059e8102eecd5fd25bd8b3e76b293b64b33b19a0f1f5613ae311bd34f62725"
+    },
+    {
+      "name": "runs/browser-02a0343a-01/independent-visual-review.json",
+      "sha256": "9d287d299a8d834d8bdb6a9e64808ce3cf421995c2cb353cbb72e3e02a46fd0b"
+    }
+  ],
+  "completed": true
+}

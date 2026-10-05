@@ -1,0 +1,242 @@
+{
+  "reviewDate": "2026-10-02",
+  "finalModuleSha256": "2a2e0dd185b387eda6325be662a98a9969155511bbe8c9a3a1bfb44fe5b2b607",
+  "testedSourceHostAppSha256": "f734222b7cfaad3264b75e93fc8e4deccbc345813a5eb65e63c4eee5962248fa",
+  "testSourceSha256": "e58ba106bff79257e7f3d637cbaf387dee808b0068b890cb3c293f3fa6ac957f",
+  "sourceHost": "http://127.0.0.1:65059/app",
+  "browser": "Chromium",
+  "workerCount": 1,
+  "automaticRetries": 0,
+  "testTimeoutMs": 120000,
+  "exitCode": 0,
+  "distinctScenariosPassed": 16,
+  "failed": 0,
+  "skipped": 0,
+  "flaky": 0,
+  "durationMs": 85076.305,
+  "scopedAxeScans": 34,
+  "axeViolations": 0,
+  "themeStepScans": [
+    {
+      "file": "final-browser/axe-1440-contrast.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-contrast.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-contrast.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-contrast.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-contrast.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-dark.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-dark.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-dark.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-dark.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-dark.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-light.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-light.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-light.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-light.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-1440-light.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-contrast.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-contrast.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-contrast.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-contrast.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-contrast.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-dark.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-dark.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-dark.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-dark.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-dark.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-light.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-light.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-light.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-light.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "file": "final-browser/axe-390-light.json",
+      "step": "debrief",
+      "violations": []
+    }
+  ],
+  "constrainedLayouts": [
+    {
+      "width": 320,
+      "height": 700,
+      "contentHeight": 314.5,
+      "collapsedGuideHeight": 36,
+      "expandedGuideHeight": 419.3125,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "contentHeight": 505.5,
+      "collapsedGuideHeight": 36,
+      "expandedGuideHeight": 326.9375,
+      "violations": []
+    },
+    {
+      "width": 1366,
+      "height": 720,
+      "contentHeight": 464.453125,
+      "collapsedGuideHeight": 28,
+      "expandedGuideHeight": 171.375,
+      "violations": []
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "contentHeight": 212,
+      "collapsedGuideHeight": 28,
+      "expandedGuideHeight": 226.5625,
+      "violations": []
+    }
+  ],
+  "covered": [
+    "Native Leadership card and both route aliases",
+    "All three case tasks and reviewed case text",
+    "Complete52-score record and assessment/search filters",
+    "Evidence and Q8/Q9 notes across case switches and reload",
+    "Revealed debrief, participant-only print, literal HTML, reset focus/cancel",
+    "Five steps across1440/390 and light/dark/contrast",
+    "Storage failure fallback",
+    "Case-specific share links contain no worksheet responses",
+    "Confirmation-protected worksheet restore clears selected/search/assessment filters",
+    "320x700,390x844,1366x720,844x390 tools/guidance reachability",
+    "Tools Enter/Tab/Escape with reset cancellation",
+    "Selected score and evidence-card removal focus",
+    "Neutral Q8/Q9/evidence-request review, direct edits and plain-text markup",
+    "Actual source-app public entry, configured educator gate and Hub card roundtrip"
+  ],
+  "attempts": [
+    {
+      "file": "new-scenarios-result.json",
+      "passed": 3,
+      "countedFinalCoverage": false,
+      "reason": "Earlier focused geometry candidate; final16 repeats all coverage."
+    },
+    {
+      "file": "superseded-attempt-1-result.json",
+      "passed": 16,
+      "countedFinalCoverage": false,
+      "reason": "Root rebuilt restore-filter fix during live-disk batch. Retained, excluded from final coverage."
+    },
+    {
+      "file": "final-browser-result.json",
+      "passed": 16,
+      "countedFinalCoverage": true,
+      "reason": "Frozen final candidate and exact source-app snapshot; complete batch exit0."
+    }
+  ],
+  "limits": "Scoped local Chromium coverage, not a production-release, comprehensive assistive-technology or legal-certification audit. No full build, commit, push or deployment."
+}

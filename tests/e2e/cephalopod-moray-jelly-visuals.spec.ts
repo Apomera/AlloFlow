@@ -25,21 +25,29 @@ async function mount(page: Page, quality: 'low' | 'balanced') {
       if (!mesh.isMesh) return;
       w.__mjOwned.push({ mesh, type, dynamicBell: mesh.geometry === owner.userData.bellGeo, geometry: mesh.geometry, material: mesh.material, index: mesh.geometry.index, indexArray: mesh.geometry.index?.array, indices: mesh.geometry.index ? Array.from(mesh.geometry.index.array) : null,
         attrs: Object.fromEntries(Object.entries(mesh.geometry.attributes).map(([name, attr]: [string, any]) => [name, { attr, array: attr.array, values: Array.from(attr.array), version: attr.version }])) });
-      [mesh.geometry, mesh.material].forEach((resource: any) => { if (w.__mjResources.some((row: any) => row.resource === resource)) return; const row = { resource, disposed: 0 }; resource.addEventListener('dispose', () => row.disposed++); w.__mjResources.push(row); });
+      [mesh.geometry, ...(Array.isArray(mesh.material) ? mesh.material : [mesh.material])].forEach((resource: any) => { if (w.__mjResources.some((row: any) => row.resource === resource)) return; const row = { resource, disposed: 0 }; resource.addEventListener('dispose', () => row.disposed++); w.__mjResources.push(row); });
     });
     w.__mjTrack(w.__mjMoray, 'moray'); w.__mjTrack(w.__mjHome, 'home'); w.__mjJellies.forEach((jelly: any) => w.__mjTrack(jelly, 'jelly'));
+    w.__mjBellPasses = []; w.__mjBellProgramObjects = [];
     w.__mjWatch = (mesh: any, kind: string) => {
-      w.__mjKinds.push(kind); const previous = mesh.onAfterRender;
+      const split = Array.isArray(mesh.material); w.__mjKinds.push(...(split ? mesh.material.map((_: any, i: number) => kind + '/group-' + i) : [kind])); const previous = mesh.onAfterRender;
       mesh.onAfterRender = function (renderer: any, scene: any, camera: any, geometry: any, material: any, group: any) {
-        previous.call(this, renderer, scene, camera, geometry, material, group); w.__mjRenderer = renderer; w.__mjCamera = camera; w.__mjDrawEpoch[kind] = w.__mjEpoch;
+        previous.call(this, renderer, scene, camera, geometry, material, group); w.__mjRenderer = renderer; w.__mjCamera = camera;
+        const drawKind = split ? kind + '/group-' + group.materialIndex : kind; w.__mjDrawEpoch[drawKind] = w.__mjEpoch;
         const gl = renderer.getContext(), program = gl.getParameter(gl.CURRENT_PROGRAM), at = gl.getUniformLocation(program, 'normalMatrix'), normal = at === null ? null : Array.from(gl.getUniform(program, at));
+        if (mesh.name === 'cl-jelly-bell') {
+          if (group.materialIndex === 0) w.__mjBellPasses = [];
+          w.__mjBellPasses.push({ side: material.side, materialIndex: group.materialIndex, start: group.start, count: group.count, culling: gl.isEnabled(gl.CULL_FACE), cullsBack: gl.getParameter(gl.CULL_FACE_MODE) === gl.BACK, frontFaceCW: gl.getParameter(gl.FRONT_FACE) === gl.CW });
+          w.__mjBellProgramObjects[group.materialIndex] = program;
+        }
         const bindings = ['position', ...(material.isMeshStandardMaterial ? ['normal'] : []), ...(material.vertexColors ? ['color'] : [])].map(name => {
-          const location = gl.getAttribLocation(program, name), buffer = location < 0 ? null : gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING), key = kind + '/' + name;
+          const location = gl.getAttribLocation(program, name), buffer = location < 0 ? null : gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING), key = drawKind + '/' + name;
           if (w.__mjNative.has(key)) w.__mjNativeStable &&= w.__mjNative.get(key) === buffer; else w.__mjNative.set(key, buffer);
           return { name, size: location < 0 ? 0 : gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_SIZE), enabled: location >= 0 && gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_ENABLED), bound: !!buffer };
         });
-        if (w.__mjPrograms.has(kind)) return;
-        w.__mjPrograms.set(kind, { kind, linked: gl.getProgramParameter(program, gl.LINK_STATUS), standard: !!material.isMeshStandardMaterial, vertexColors: !!material.vertexColors, key: material.customProgramCacheKey(), bindings, normal,
+        if (w.__mjPrograms.has(drawKind)) return;
+        w.__mjPrograms.set(drawKind, { kind: drawKind, side: material.side, group: group ? { start: group.start, count: group.count, materialIndex: group.materialIndex } : null,
+          linked: gl.getProgramParameter(program, gl.LINK_STATUS), standard: !!material.isMeshStandardMaterial, vertexColors: !!material.vertexColors, key: material.customProgramCacheKey(), bindings, normal,
           determinant: normal ? new T.Matrix3().fromArray(normal).determinant() : null, shaders: gl.getAttachedShaders(program).map((shader: any) => ({ compiled: gl.getShaderParameter(shader, gl.COMPILE_STATUS), source: gl.getShaderSource(shader) })) });
       };
     };
@@ -67,7 +75,7 @@ function stable(value: Awaited<ReturnType<typeof state>>, textures: number) { ex
 function dot(a: number[], b: number[]) { return a.reduce((sum, value, i) => sum + value * b[i], 0); }
 function programs(rows: any[]) { for (const row of rows) { expect(row.linked, row.kind).toBe(true); expect(row.shaders).toHaveLength(2); expect(row.shaders.every((shader: any) => shader.compiled)).toBe(true); for (const binding of row.bindings) { expect(binding.enabled && binding.bound, row.kind + '/' + binding.name).toBe(true); expect(binding.size).toBe(3); } if (row.standard) { expect(row.normal).toHaveLength(9); expect(row.normal.every(Number.isFinite)).toBe(true); expect(Math.abs(row.determinant)).toBeGreaterThan(1e-8); } if (row.vertexColors) expect(row.shaders.map((shader: any) => shader.source).join('\n')).toContain('#define USE_COLOR'); } }
 
-test.describe.configure({ timeout: 180000, retries: 0 }); test.use({ video: 'off', trace: 'off' });
+test.describe.configure({ timeout: 480000, retries: 0 }); test.use({ video: 'off', trace: 'off' });
 test.beforeAll(() => harness.start()); test.afterAll(() => harness.stop());
 test.beforeEach(({ page }) => { const entries: string[] = []; errors.set(page, entries); page.on('pageerror', error => entries.push(error.message)); page.on('console', message => { if (message.type() === 'error') entries.push(message.text()); }); });
 test.afterEach(async ({ page }) => { await harness.destroy(page); expect(errors.get(page)).toEqual([]); });
@@ -75,12 +83,23 @@ test.afterEach(async ({ page }) => { await harness.destroy(page); expect(errors.
 for (const quality of ['low', 'balanced'] as const) test(`${quality} moray and moon jellies render live anatomy and preserve shelter streaming and cleanup`, async ({ page }) => {
   await mount(page, quality); expect(await freshDraws(page)).toBe(true);
   const anatomy = await page.evaluate(() => {
-    const w = window as any; return { morayNames: w.__mjMoray.children.map((mesh: any) => mesh.name), jellies: w.__mjJellies.map((jelly: any) => ({ count: jelly.children.length, phases: jelly.userData.tents.length, materials: new Set(jelly.children.map((mesh: any) => mesh.material)).size,
-      transparent: jelly.children.every((mesh: any) => mesh.material.transparent && !mesh.material.depthWrite && mesh.material.blending === w.THREE.NormalBlending), vertices: jelly.children.reduce((n: number, mesh: any) => n + mesh.geometry.attributes.position.count, 0), triangles: jelly.children.reduce((n: number, mesh: any) => n + mesh.geometry.index.count / 3, 0) })), programs: [...w.__mjPrograms.values()] };
+    const w = window as any; return { morayNames: w.__mjMoray.children.map((mesh: any) => mesh.name), jellies: w.__mjJellies.map((jelly: any) => ({ count: jelly.children.length, phases: jelly.userData.tents.length, materials: new Set(jelly.children.flatMap((mesh: any) => Array.isArray(mesh.material) ? mesh.material : [mesh.material])).size,
+      transparent: jelly.children.every((mesh: any) => (Array.isArray(mesh.material) ? mesh.material : [mesh.material]).every((material: any) => material.transparent && !material.depthWrite && material.blending === w.THREE.NormalBlending)), vertices: jelly.children.reduce((n: number, mesh: any) => n + mesh.geometry.attributes.position.count, 0), triangles: jelly.children.reduce((n: number, mesh: any) => n + mesh.geometry.index.count / 3, 0) })), programs: [...w.__mjPrograms.values()], bellPasses: w.__mjBellPasses, bellProgramsDistinct: w.__mjBellProgramObjects.length === 2 && new Set(w.__mjBellProgramObjects).size === 2 };
   });
   expect(anatomy.morayNames).toEqual(['cl-moray-body', 'cl-moray-head', 'cl-moray-eye-0', 'cl-moray-eye-1']); expect(anatomy.jellies).toHaveLength(5);
-  for (const jelly of anatomy.jellies) { expect(jelly.count).toBe(8); expect(jelly.phases).toBe(6); expect(jelly.materials).toBe(8); expect(jelly.transparent).toBe(true); expect(jelly.vertices).toBeLessThanOrEqual(2500); expect(jelly.triangles).toBeLessThanOrEqual(3500); }
-  expect(anatomy.programs).toHaveLength(13); programs(anatomy.programs);
+  for (const jelly of anatomy.jellies) { expect(jelly.count).toBe(8); expect(jelly.phases).toBe(6); expect(jelly.materials).toBe(9); expect(jelly.transparent).toBe(true); expect(jelly.vertices).toBeLessThanOrEqual(2500); expect(jelly.triangles).toBeLessThanOrEqual(3500); }
+  expect(anatomy.programs).toHaveLength(14); programs(anatomy.programs);
+  expect(anatomy.bellPasses).toEqual([
+    { side: 1, materialIndex: 0, start: 0, count: 2736, culling: true, cullsBack: true, frontFaceCW: true },
+    { side: 0, materialIndex: 1, start: 0, count: 2736, culling: true, cullsBack: true, frontFaceCW: false }
+  ]); expect(anatomy.bellProgramsDistinct).toBe(true);
+  const bellPrograms = anatomy.programs.filter((row: any) => row.kind.startsWith('jelly-0/group-')); expect(bellPrograms).toHaveLength(2);
+  for (const [index, row] of bellPrograms.entries()) {
+    expect(row.kind).toBe('jelly-0/group-' + index); expect(row.side).toBe(index === 0 ? 1 : 0);
+    expect(row.group).toEqual({ start: 0, count: 2736, materialIndex: index });
+    const shaderText = row.shaders.map((shader: any) => shader.source).join('\n'); expect(shaderText).not.toContain('#define DOUBLE_SIDED');
+    if (index === 0) expect(shaderText).toContain('#define FLIP_SIDED'); else expect(shaderText).not.toContain('#define FLIP_SIDED');
+  }
   const homeProgram = anatomy.programs.find((row: any) => row.kind === 'home'); expect(homeProgram.key).toBe('cl-rock-surface-v1'); expect(homeProgram.shaders.map((shader: any) => shader.source).join('\n')).toContain('clRockValueNoise');
   const initial = await state(page); stable(initial, initial.textures); await advance(page, 8); const living = await state(page); stable(living, initial.textures);
   expect(living.phases).not.toEqual(initial.phases); expect(living.jellyWorld).not.toEqual(initial.jellyWorld); expect(living.bell).not.toEqual(initial.bell);

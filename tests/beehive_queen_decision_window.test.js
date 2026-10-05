@@ -82,4 +82,60 @@ describe('Beehive Queen mode - decision window feedback', () => {
     expect(latest.beehive.queen.pheromones.alarm).toBe(50);
     expect(latest.beehive.queen.lastImpact.title).toBe('Worker Alarm Response');
   });
+
+  it('keeps winter and spent-signal availability consistent in both decks and the recommendation', async () => {
+    await mountQueen({ day: 31, pheromones: { qmp: 20, alarm: 0, nasonov: 50, brood: 40 }, signalUsed: { emit_qmp: 31 } });
+    for (const id of ['scout_rival', 'raid_rival']) {
+      for (const selector of ['data-quick-command', 'data-queen-command']) {
+        const command = host.querySelector(`[${selector}="${id}"]`);
+        expect(command.getAttribute('aria-disabled')).toBe('true');
+        expect(command.getAttribute('data-command-ready')).toBe('false');
+        expect(command.textContent).toContain('Too cold to fly in winter');
+      }
+    }
+    expect(host.querySelector('[data-queen-command="emit_qmp"]').textContent).toContain('Already spreading this cycle');
+    expect(host.querySelector('[data-rts-recommended-command]')).toBeNull();
+    expect(host.querySelector('[data-rts-recommended-unavailable]').textContent).toContain('available next cycle');
+    const readyCount = host.querySelectorAll('[data-queen-command][data-command-ready="true"]').length;
+    expect(host.querySelector('[data-rts-command-ready-count]').textContent).toBe(`${readyCount}/8 ready`);
+    const before = JSON.stringify(latest.beehive.queen);
+    await act(async () => { host.querySelector('[data-queen-command="scout_rival"]').click(); await Promise.resolve(); });
+    expect(JSON.stringify(latest.beehive.queen)).toBe(before);
+  });
+
+  it('does not recommend a free defense signal again during its current cycle', async () => {
+    await mountQueen({ rival: { name: 'Rival', health: 100, strength: 360, stores: 35, structures: 3, pressure: 62, intel: 40 }, signalUsed: { alarm_signal: 0 } });
+    expect(host.querySelector('[data-rts-decision-window="defend"]')).toBeTruthy();
+    expect(host.querySelector('[data-rts-recommended-command]')).toBeNull();
+    expect(host.querySelector('[data-rts-recommended-unavailable]').textContent).toContain('Already spreading this cycle');
+    expect(host.querySelector('[data-quick-command="alarm_signal"]').getAttribute('aria-disabled')).toBe('true');
+  });
+
+  it('blocks depleted-resource commands and all commands after a match ends', async () => {
+    await mountQueen({ resources: { nectar: 0, pollen: 0, wax: 0, royalJelly: 0 } });
+    expect(host.querySelector('[data-rts-recommended-command]')).toBeNull();
+    expect(host.querySelector('[data-rts-recommended-unavailable]').textContent).toContain('have 0 / need 3');
+    expect(host.querySelector('[data-rts-command-ready-count]').textContent).toBe('3/8 ready');
+    const before = JSON.stringify(latest.beehive.queen);
+    await act(async () => { host.querySelector('[data-queen-command="lay_workers"]').click(); await Promise.resolve(); });
+    expect(JSON.stringify(latest.beehive.queen)).toBe(before);
+    act(() => root.unmount()); root = ReactDOMClient.createRoot(host);
+    await mountQueen({ result: 'victory' });
+    expect(host.querySelector('[data-rts-command-ready-count]').textContent).toBe('0/8 ready');
+    expect(host.querySelectorAll('[data-queen-command][aria-disabled="true"]')).toHaveLength(8);
+    expect(host.querySelector('[data-rts-recommended-command]')).toBeNull();
+  });
+
+  it('admits one free signal when two activations arrive before a render', async () => {
+    await mountQueen();
+    const alarm = host.querySelector('[data-queen-command="alarm_signal"]');
+    await act(async () => { alarm.click(); alarm.click(); await Promise.resolve(); });
+    expect(latest.beehive.queen.population.guards).toBe(70);
+    expect(latest.beehive.queen.population.foragers).toBe(280);
+    expect(latest.beehive.queen.score).toBe(5);
+    expect(latest.beehive.queen.signalUsed.alarm_signal).toBe(0);
+    const before = JSON.stringify(latest.beehive.queen);
+    await act(async () => { alarm.click(); await Promise.resolve(); });
+    expect(JSON.stringify(latest.beehive.queen)).toBe(before);
+  });
 });

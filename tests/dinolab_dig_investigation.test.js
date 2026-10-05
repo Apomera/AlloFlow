@@ -124,6 +124,12 @@ describe('bounded evidence-based excavation', () => {
     expect(document.querySelector('#dino-dig-cell-0').getAttribute('aria-label')).toContain('bone fragment uncovered');
     expect(document.querySelectorAll('[data-dig-candidate]')).toHaveLength(6);
     expect(document.querySelectorAll('[id^=dino-dig-cell-][tabindex="0"]')).toHaveLength(1);
-    expect(document.querySelectorAll('#dinopanel button').length).toBeLessThan(40);
+    // The selection-only survey adds exactly 24 buttons; prior excavation/choice controls retain their original bound.
+    const surveyCells = document.querySelectorAll('#dino-field-survey [data-dig-survey-cell]');
+    expect(surveyCells).toHaveLength(24);
+    const cameraButtons = document.querySelectorAll('#dino-voxel-camera-controls [data-dig-camera-command]');
+    expect(cameraButtons).toHaveLength(3);
+    expect([...cameraButtons].map(button => button.getAttribute('data-dig-camera-command'))).toEqual(['zoom-in', 'zoom-out', 'reset']);
+    expect(document.querySelectorAll('#dinopanel button').length - surveyCells.length - cameraButtons.length).toBeLessThan(60);
   });
 });

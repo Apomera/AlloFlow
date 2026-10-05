@@ -1,5 +1,6 @@
 import { test, expect, Page } from '@playwright/test';
 import { GlHarness } from './helpers/stem_gl_harness';
+import { clickCephalopodControl } from './helpers/cephalopod_controls';
 
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_cephalopodlab.js', toolId: 'cephalopodLab', width: 900, height: 1000, layout: 'document' });
 const errors = new WeakMap<Page, string[]>();
@@ -66,10 +67,12 @@ async function mount(page: Page, quality: 'low' | 'balanced') {
         if (w.__pdPrograms.has(kind)) return;
         const gl = renderer.getContext(), program = gl.getParameter(gl.CURRENT_PROGRAM), normalLocation = gl.getUniformLocation(program, 'normalMatrix');
         const normal = normalLocation === null ? null : Array.from(gl.getUniform(program, normalLocation));
-        const bindings = ['position', ...(kind.startsWith('fish') ? ['normal', 'color'] : kind === 'den-rock' ? ['normal'] : kind === 'den-shadow' ? ['color'] : [])].map(name => {
+        const bindings = ['position', ...(kind.startsWith('fish') ? ['normal', 'color', 'clFishPart'] : kind === 'den-rock' ? ['normal'] : kind === 'den-shadow' ? ['color'] : [])].map(name => {
           const location = gl.getAttribLocation(program, name);
           return { name, enabled: location >= 0 && gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_ENABLED),
             size: location < 0 ? 0 : gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_SIZE),
+            type: location < 0 ? 0 : gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_TYPE),
+            normalized: location >= 0 && gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_NORMALIZED),
             bound: location >= 0 && !!gl.getVertexAttrib(location, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING) };
         });
         w.__pdPrograms.set(kind, { kind, meshId: mesh.uuid, materialId: material.uuid, materialType: material.type, key: material.customProgramCacheKey(),
@@ -153,13 +156,14 @@ for (const quality of ['low', 'balanced'] as const) test(`${quality} fish and sh
   expect(anatomy.programs.map((program: any) => program.kind).sort()).toEqual(['den-ring', 'den-rock', 'den-shadow', 'fish-body', 'fish-tail']);
   for (const program of anatomy.programs) {
     expect(program.linked, program.kind).toBe(true); expect(program.shaders).toHaveLength(2); expect(program.shaders.every((shader: any) => shader.compiled)).toBe(true);
-    for (const binding of program.bindings) { expect(binding.enabled && binding.bound, program.kind + '/' + binding.name).toBe(true); expect(binding.size).toBe(3); }
+    for (const binding of program.bindings) { expect(binding.enabled && binding.bound, program.kind + '/' + binding.name).toBe(true); expect(binding.size).toBe(binding.name === 'clFishPart' ? 1 : 3); if (binding.name === 'clFishPart') { expect(binding.type).toBe(5121); expect(binding.normalized).toBe(false); } }
     const source = program.shaders.map((shader: any) => shader.source).join('\n');
     if (program.kind === 'den-rock' || program.kind.startsWith('fish')) {
       expect(program.materialType).toBe('MeshStandardMaterial'); expect(program.normal).toHaveLength(9); expect(program.normal.every(Number.isFinite)).toBe(true); expect(Math.abs(program.determinant)).toBeGreaterThan(1e-8);
     }
     if (program.kind === 'den-rock') { expect(program.key).toBe('cl-rock-surface-v1'); expect(source).toContain('clRockPosition'); expect(source).toContain('clRockValueNoise'); }
     if (program.kind.startsWith('fish') || program.kind === 'den-shadow') expect(source).toContain('#define USE_COLOR');
+    if (program.kind.startsWith('fish')) { expect(program.key).toBe('cl-fish-surface-v1'); expect(source).toContain('clFishPosition'); expect(source).toContain('clFishFinish'); expect(source).toContain('#define CL_FISH_FILTERED 1'); }
     if (program.kind === 'den-shadow') expect(program.materialType).toBe('MeshBasicMaterial');
   }
   const fishPrograms = anatomy.programs.filter((program: any) => program.kind.startsWith('fish'));
@@ -189,12 +193,12 @@ for (const quality of ['low', 'balanced'] as const) test(`${quality} fish and sh
   }
   await page.getByRole('button', { name: 'Return to dive', exact: true }).click(); await advance(page, 6); const resumed = await state(page);
   stable(resumed, initial); expect(resumed.tails).not.toEqual(inspected.tails); expect(resumed.world.fish).not.toEqual(inspected.world.fish);
-  await page.getByRole('button', { name: 'Help / settings', exact: true }).click(); await page.getByLabel('Reduced motion', { exact: true }).check(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await advance(page, 2);
+  await clickCephalopodControl(page, 'Help / settings'); await page.getByLabel('Reduced motion', { exact: true }).check(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await advance(page, 2);
   const reduced = await state(page); expect(reduced.tails.every(angle => angle === 0)).toBe(true); await advance(page, 5); const quiet = await state(page);
   stable(quiet, initial); expect(quiet.tails).toEqual(reduced.tails); expect(quiet.phases).toEqual(reduced.phases); expect(quiet.world.dens).toEqual(reduced.world.dens);
   // Reduced motion suppresses decorative tail motion while live fish still swim.
   expect(quiet.world.fish).not.toEqual(reduced.world.fish);
-  await page.getByRole('button', { name: 'Help / settings', exact: true }).click(); await page.getByLabel('Reduced motion', { exact: true }).uncheck(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await advance(page, 5);
+  await clickCephalopodControl(page, 'Help / settings'); await page.getByLabel('Reduced motion', { exact: true }).uncheck(); await page.getByRole('button', { name: 'Resume dive', exact: true }).click(); await advance(page, 5);
   const final = await state(page); stable(final, initial); expect(final.tails).not.toEqual(reduced.tails); expect(final.phases).not.toEqual(reduced.phases);
   // On balanced this also observes fresh native fish/den submissions after
   // returning to the dive at the actual phone viewport.

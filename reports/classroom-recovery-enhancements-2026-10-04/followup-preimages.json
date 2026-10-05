@@ -1,0 +1,30 @@
+[
+  {
+    "file": "AlloFlowANTI.txt",
+    "sha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8"
+  },
+  {
+    "file": "desktop/web-app/src/AlloFlowANTI.txt",
+    "sha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8"
+  },
+  {
+    "file": "desktop/web-app/src/App.jsx",
+    "sha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8"
+  },
+  {
+    "file": "host_handlers_source.jsx",
+    "sha256": "91d5320f2e53388173688ad04a7d984faea330aca3cd95695708d34c2041c685"
+  },
+  {
+    "file": "host_handlers_module.js",
+    "sha256": "30e7ada1f228fe06aa6864a9c00e13bcb3c7af302c525216df81b582831868f3"
+  },
+  {
+    "file": "desktop/web-app/public/host_handlers_module.js",
+    "sha256": "30e7ada1f228fe06aa6864a9c00e13bcb3c7af302c525216df81b582831868f3"
+  },
+  {
+    "file": "dev-tools/host_handlers_wave3_manifest.json",
+    "sha256": "789fe00f29f041f007ad978ea62dc6fcdc8d75fddfa5a6257514086d67df679b"
+  }
+]

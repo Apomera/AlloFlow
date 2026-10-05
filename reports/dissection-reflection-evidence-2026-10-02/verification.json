@@ -1,0 +1,162 @@
+{
+  "sourceSha256": "44b73ddc5643e15f318d7a58ea123e9d18b923896041bfbf930181773bcb9b1d",
+  "prePassSourceSha256": "ff223edafc8954c72dc762dc641678108c0a17d2681f55904d9477d37d03f1a4",
+  "browserImplementationSha256": "83f35aef8c7ad200c093be738cdec137840b5115a0516f757c050b9156211ad8",
+  "mirrorByteIdentical": true,
+  "syntax": "valid",
+  "lineEndings": "LF",
+  "browser": {
+    "distinctNewScenarios": 18,
+    "existingScenarios": 14,
+    "distinctTotal": 32,
+    "runs": [
+      {
+        "file": "browser-results.json",
+        "stats": {
+          "startTime": "2026-10-02T04:11:54.957Z",
+          "duration": 76580.568,
+          "expected": 16,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      {
+        "file": "followup-browser-results.json",
+        "stats": {
+          "startTime": "2026-10-02T10:47:30.372Z",
+          "duration": 24296.236,
+          "expected": 3,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      {
+        "file": "copy-browser-results.json",
+        "stats": {
+          "startTime": "2026-10-02T10:51:22.684Z",
+          "duration": 9726.505000000001,
+          "expected": 3,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      {
+        "file": "previous-browser-results.json",
+        "stats": {
+          "startTime": "2026-10-02T10:48:36.132Z",
+          "duration": 49313.178,
+          "expected": 14,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    ],
+    "newScenarioTitles": [
+      "reflection phone keeps saved evidence readable beside choices",
+      "reflection tablet keeps saved evidence readable beside choices",
+      "reflection desktop keeps saved evidence readable beside choices",
+      "reflection embedded-large keeps saved evidence readable beside choices",
+      "reflection forced-colors keeps saved evidence readable beside choices",
+      "keyboard review selects the pending response and returns without granting credit",
+      "partial and invalid saved pairs stay missing instead of acquiring defaults",
+      "reflection no-record explains missing saved evidence",
+      "reflection no-pairs explains missing saved evidence",
+      "reflection truncated explains missing saved evidence",
+      "repeated actions use the last matching response without timestamp guessing",
+      "prediction keeps reflection evidence out of the current task",
+      "performance keeps reflection evidence out of the current task",
+      "quiz keeps reflection evidence out of the current task",
+      "timed-practical keeps reflection evidence out of the current task",
+      "real inspection exposes its response and Undo restores the previous checkpoint",
+      "direct input and risk increases describe the saved action independently",
+      "every genuine protocol action supplies its own evidence until its explanation is verified"
+    ]
+  },
+  "unit": {
+    "passed": 349,
+    "total": 349,
+    "failed": 0,
+    "runs": [
+      "unit-core-results.json",
+      "unit-broad-results.json"
+    ],
+    "suites": [
+      {
+        "name": "dissection_canvas_loop.test.js",
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "name": "dissection_reference_workbench.test.js",
+        "passed": 149,
+        "failed": 0
+      },
+      {
+        "name": "dissection_workspace_bands.test.js",
+        "passed": 106,
+        "failed": 0
+      },
+      {
+        "name": "dissection_lab_improvements.test.js",
+        "passed": 91,
+        "failed": 0
+      }
+    ]
+  },
+  "layouts": [
+    {
+      "name": "phone",
+      "clientWidth": 318,
+      "scrollWidth": 318,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "clippedTargets": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "tablet",
+      "clientWidth": 766,
+      "scrollWidth": 766,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "clippedTargets": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "desktop",
+      "clientWidth": 826,
+      "scrollWidth": 826,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "clippedTargets": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "embedded-large",
+      "clientWidth": 318,
+      "scrollWidth": 318,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 16,
+      "clippedText": 0,
+      "clippedTargets": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "forced-colors",
+      "clientWidth": 388,
+      "scrollWidth": 388,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "clippedTargets": 0,
+      "axeViolations": 0
+    }
+  ]
+}

@@ -1,0 +1,10 @@
+{
+  "baselineSHA": "b94ab684c363306b58925e331582047c06b0dc7af09dcf6e59297deae6517f54",
+  "finalSHA": "ee2608fd48477d120397774ff775f28f8565a72a5a1dd06cec6845d722d34b72",
+  "edits": [
+    {
+      "old": "@container dissection (max-width: 640px) { [data-dissection-root] .diss-optics__controls { grid-template-columns: minmax(0, 1fr); } }",
+      "new": "@container dissection (max-width: 640px) { [data-dissection-root] .diss-optics__controls { grid-template-columns: minmax(0, 1fr); } [data-dissection-root] .diss-scenario-console { grid-column: 1 / -1; } }"
+    }
+  ]
+}

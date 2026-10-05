@@ -1,0 +1,26 @@
+{
+  "mode": "browser",
+  "pid": 47988,
+  "startedAt": "2026-10-05T01:21:25.997Z",
+  "sourceSha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+  "sourceBytes": 3139939,
+  "publicHostSha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+  "harnessSha256": "c2b31d49d2d72e607f1466efd74fab0067bd490d25a87d63ed218c3ece2bdff1",
+  "checks": [],
+  "cases": [],
+  "nativeActions": [],
+  "audits": [],
+  "captures": [],
+  "errors": [
+    "browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{7f0811a2-92a3-4fa9-a86e-e43076c6af78}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\watercycle_live_transfer_clarity_qa.cjs:102:25\n    at Object.<anonymous> (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\watercycle_live_transfer_clarity_qa.cjs:159:534)"
+  ],
+  "consoleErrors": [],
+  "completed": false,
+  "successful": false,
+  "browserClosed": false,
+  "serverUsed": false,
+  "serverClosed": true,
+  "serverClosedAt": null,
+  "resourcesClosed": true,
+  "completedAt": "2026-10-05T01:21:26.031Z"
+}

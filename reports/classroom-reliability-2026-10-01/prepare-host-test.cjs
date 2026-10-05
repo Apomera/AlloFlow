@@ -1,0 +1,14 @@
+const fs = require('node:fs');
+const path = require('node:path');
+const assert = require('node:assert/strict');
+const root = path.resolve(__dirname, '../..');
+const source = fs.readFileSync(path.join(root, 'tests/read_aloud_host_retention_resume.test.js'), 'utf8');
+const start = source.indexOf(' const patches = JSON.parse(');
+const end = source.indexOf(' const slice =', start);
+assert(start > 0 && end > start);
+const target = path.join(root, 'tests/classroom_host_audio_integration.test.js');
+assert(!fs.existsSync(target), 'Do not replace an existing test file');
+const body = source.slice(0, start) + source.slice(end);
+assert(!body.includes('host.replace('));
+fs.writeFileSync(target, '// Exercises the integrated production host directly, without replaying candidate patches.\n' + body);
+console.log('Prepared seven direct production host regressions.');

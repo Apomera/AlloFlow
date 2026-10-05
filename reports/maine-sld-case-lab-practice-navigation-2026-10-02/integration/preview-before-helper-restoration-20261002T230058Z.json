@@ -1,0 +1,15 @@
+{
+  "builtAt": "2026-10-02T21:22:40.402Z",
+  "baseUrl": "http://127.0.0.1:65063",
+  "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+  "sourceSha256": "5aca767b8f1e6466afaf2a4ed366b06d465f6ee90cc76600c4017d3bbe8466ef",
+  "currentSourceSha256": "5aca767b8f1e6466afaf2a4ed366b06d465f6ee90cc76600c4017d3bbe8466ef",
+  "sourceDriftDuringCompile": false,
+  "bundleSha256": "ff636aa9912c61d45c30f4fcfdb608e30586c743dbdd0bc52f1e995561f01b61",
+  "moduleSha256": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25",
+  "previewOnlyTransforms": [],
+  "preservesProductionFiles": true,
+  "localModuleResolution": "Existing host localhost /app/ detection; preview server serves current root/public assets under that path.",
+  "startedAt": "2026-10-02T21:23:41.958Z",
+  "pid": 18480
+}

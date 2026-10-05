@@ -1,0 +1,11 @@
+{
+  "sourceSha256": "41cec14e60d43ce0c9f11e9279605e666342b2ef08123020b39164fbdb5ebb31",
+  "baselineSha256": "184b508f7e68d00464a03ba211065d0afa0844ecf34e872063b4c5b825d00404",
+  "sourceMatchesMirror": true,
+  "scopeReconstructsBaseline": true,
+  "syntaxValid": true,
+  "ownedEnglishLabels": 68,
+  "unrelatedAstronomyLabelsPreserved": true,
+  "existingTableTestsPreserved": true,
+  "committed": false
+}

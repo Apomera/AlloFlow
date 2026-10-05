@@ -1,0 +1,98 @@
+{
+  "sourceLfSha256": "076c52eb1bfed83695fb2dfe138692a8fedc7c96155df91073484482ef97a75a",
+  "completed": true,
+  "reviewedAt": "2026-10-03T01:15:49.670Z",
+  "screenshots": [
+    {
+      "name": "desktop-structured-feedback.png",
+      "sha256": "b6cd79d6d5f9f620910c1a4fe508a898d21c88b17795972296cfeba2b37fcd69",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Named chosen and marked structure sections separate the two functions. Next is filled, End is neutral, and the full feedback is unclipped."
+    },
+    {
+      "name": "desktop-study-whole-model.png",
+      "sha256": "98692436538fa6a950a957b6e2b9cc2d709a6160a1e8efa45b628048c17d8e88",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Saved-answer banner and filled return control appear before the full 2D skeleton; selected Skull label and reading entry are clear."
+    },
+    {
+      "name": "phone-reloaded-study-whole-model.png",
+      "sha256": "19b883026a185453c6ec1676f10eb556e7c2e1b15a99a53451f7ad92dea7d8a8",
+      "reviewedAtOriginalResolution": true,
+      "observation": "At 320px the saved-answer context and return wrap cleanly above the complete diagram after reload."
+    },
+    {
+      "name": "phone-returned-feedback.png",
+      "sha256": "8678215cbaa8dff1cc95ac7db354014ae45f8bd7d8903f2b667206a040b2630f",
+      "reviewedAtOriginalResolution": true,
+      "observation": "At 320px the same marked and chosen structures, cumulative count, functions and next action remain clearly separated."
+    },
+    {
+      "name": "phone-pending-crosshair-whole-model.png",
+      "sha256": "9ad6f76eeccafe53219129c19a8f3c6e22dfd71b6c752a450eda779c032befc2",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Unanswered matching saved selection shows a cyan crosshair and generic Name this label; learning tools and Skull name are absent."
+    },
+    {
+      "name": "phone-paused-explore-whole-model.png",
+      "sha256": "3ebcea263ab9132e9e01aae9c956097b242a9bfe66746fbcae18b57a05358730",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Paused Explore shows the normally selected Mandible name, reading control and learning tools without a Spotter crosshair."
+    },
+    {
+      "name": "phone-contrast-feedback.png",
+      "sha256": "9765b9c026fe6d420871e87da3b9c64052a468ab55a7f549262193b1892eb510",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Contrast theme keeps selected/correct icon and text distinctions, readable function paragraphs, and a filled Next action."
+    },
+    {
+      "name": "phone-contrast-study-whole-model.png",
+      "sha256": "68801027b26caa76e70c25b15adba40164f9463261d62274a37616d0ebad1a3c",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Contrast study context has a clear filled return and the complete labeled diagram without clipped phone content."
+    },
+    {
+      "name": "phone-arabic-dark-feedback.png",
+      "sha256": "36b645a0edc0f14aaa270ba06505a3209196025da139c0190a616598b84c625f",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Arabic headings and controls wrap cleanly and text contrast is strong. English authored function paragraphs inherit RTL, moving sentence-final punctuation; a focused dir=auto correction is required."
+    },
+    {
+      "name": "phone-arabic-dark-study-whole-model.png",
+      "sha256": "277d6ec4fa85a29fdb73a7ef6b617644144a962b647e488eefe053eada72fcf0",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Arabic study context and larger text remain readable above the full diagram; expanded guidance and learning tools are visible without horizontal clipping."
+    },
+    {
+      "name": "phone-forced-feedback.png",
+      "sha256": "eec7b2affa7f92c9886f94dc967aceb317f3d80494106b0c1419f42a8397d491",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Forced colors retain readable black text, named feedback sections and answer/correct icons independent of colored fills."
+    },
+    {
+      "name": "phone-forced-study-whole-model.png",
+      "sha256": "74c86830e34cdec5768800fde4c33cd90aec8b2681db4647c1d3928be8c1a26f",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Forced colors retain the entire selected diagram context and clearly bordered return control with readable label."
+    },
+    {
+      "name": "phone-forced-study-label.png",
+      "sha256": "43910bafec3771bc752efb15446a77d6e75b15d2faec6040912360ccfbe509c6",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Original label crop contains complete visible black Study text and white background; all wrapped words are legible."
+    },
+    {
+      "name": "phone-forced-return-label.png",
+      "sha256": "3264208227856f489eb21061afdff5e5e6e43c2f305f79e2d85b29cbea4fc631",
+      "reviewedAtOriginalResolution": true,
+      "observation": "Original label crop contains complete visible black Return text on white; the second feedback line is legible."
+    }
+  ],
+  "findings": [
+    "Study context and its explicit return appear above the complete 2D diagram.",
+    "Named chosen and marked structure blocks provide a clear function comparison; Next and Return have primary styling.",
+    "Matching saved selection stays concealed during an unanswered round, and paused Explore restores labels and controls.",
+    "Phone, larger Arabic text, contrast and forced colors retain readable labels and avoid clipped content.",
+    "Visual follow-up identified: the two authored English function paragraphs should use dir=auto within Arabic feedback to keep sentence punctuation in reading order."
+  ]
+}

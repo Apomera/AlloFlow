@@ -1,0 +1,428 @@
+{
+  "loadedSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246",
+  "completionActiveCountAtUnchangedAssertion": 0,
+  "immediate": {
+    "state": {
+      "experiment": "ebbinghaus",
+      "models": {
+        "brightness": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "Separate brightness draft",
+          "contrast": 80,
+          "target": 180,
+          "matching": false,
+          "swap": false,
+          "matchValue": 180
+        },
+        "ebbinghaus": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Same",
+          "note": "Fresh repeat note 3",
+          "surround": 45,
+          "gap": 12,
+          "matching": true,
+          "swap": false,
+          "matchValue": 60
+        },
+        "mullerLyer": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "angle": 30,
+          "fin": 42,
+          "matching": false,
+          "swap": false,
+          "matchValue": 400
+        },
+        "cafeWall": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "offset": 50,
+          "mortar": 5
+        },
+        "necker": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "depth": 95,
+          "cue": "none"
+        },
+        "moire": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Fine lines",
+          "note": "Unfinished moiré draft",
+          "angle": 8.3,
+          "spacing": 19
+        }
+      },
+      "expanded": false,
+      "studies": [
+        {
+          "id": "baseline-1",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 1",
+            "surround": 36,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 44
+          },
+          "date": "2026-10-03T14:00:01.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 1,
+            "startValue": 41
+          }
+        },
+        {
+          "id": "baseline-2",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 2",
+            "surround": 36,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 50
+          },
+          "date": "2026-10-03T14:00:02.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 2,
+            "startValue": 59
+          }
+        },
+        {
+          "id": "baseline-3",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 3",
+            "surround": 36,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 54
+          },
+          "date": "2026-10-03T14:00:03.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 3,
+            "startValue": 43
+          }
+        },
+        {
+          "id": "muu72hq3-6",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 1",
+            "surround": 45,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 48
+          },
+          "date": "2026-10-04T19:08:59.067Z",
+          "repeat": {
+            "id": "matches-muu72hm3-5",
+            "trial": 1,
+            "startValue": 41
+          }
+        },
+        {
+          "id": "muu72hux-7",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 2",
+            "surround": 45,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 53
+          },
+          "date": "2026-10-04T19:08:59.241Z",
+          "repeat": {
+            "id": "matches-muu72hm3-5",
+            "trial": 2,
+            "startValue": 59
+          }
+        },
+        {
+          "id": "muu72hzd-8",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 3",
+            "surround": 45,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 60
+          },
+          "date": "2026-10-04T19:08:59.402Z",
+          "repeat": {
+            "id": "matches-muu72hm3-5",
+            "trial": 3,
+            "startValue": 43
+          }
+        }
+      ],
+      "comparison": {
+        "experiment": "necker",
+        "model": {
+          "context": true,
+          "reveal": true,
+          "prediction": "",
+          "note": "Pinned cube",
+          "depth": 72,
+          "cue": "front"
+        }
+      }
+    },
+    "savedTrialCount": 3,
+    "activeCount": 0,
+    "activeDOM": "",
+    "activeSummary": "",
+    "reviewGroup": "baseline",
+    "comparedGroup": "matches-muu72hm3-5",
+    "announcement": "Three new matches recorded. The baseline and new study are selected for comparison. Reveal each study separately when you are ready."
+  },
+  "afterCommitPaint": {
+    "state": {
+      "experiment": "ebbinghaus",
+      "models": {
+        "brightness": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "Separate brightness draft",
+          "contrast": 80,
+          "target": 180,
+          "matching": false,
+          "swap": false,
+          "matchValue": 180
+        },
+        "ebbinghaus": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Same",
+          "note": "Fresh repeat note 3",
+          "surround": 45,
+          "gap": 12,
+          "matching": true,
+          "swap": false,
+          "matchValue": 60
+        },
+        "mullerLyer": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "angle": 30,
+          "fin": 42,
+          "matching": false,
+          "swap": false,
+          "matchValue": 400
+        },
+        "cafeWall": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "offset": 50,
+          "mortar": 5
+        },
+        "necker": {
+          "context": true,
+          "reveal": false,
+          "prediction": "",
+          "note": "",
+          "depth": 95,
+          "cue": "none"
+        },
+        "moire": {
+          "context": true,
+          "reveal": false,
+          "prediction": "Fine lines",
+          "note": "Unfinished moiré draft",
+          "angle": 8.3,
+          "spacing": 19
+        }
+      },
+      "expanded": false,
+      "studies": [
+        {
+          "id": "baseline-1",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 1",
+            "surround": 36,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 44
+          },
+          "date": "2026-10-03T14:00:01.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 1,
+            "startValue": 41
+          }
+        },
+        {
+          "id": "baseline-2",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 2",
+            "surround": 36,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 50
+          },
+          "date": "2026-10-03T14:00:02.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 2,
+            "startValue": 59
+          }
+        },
+        {
+          "id": "baseline-3",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Left",
+            "note": "Baseline note 3",
+            "surround": 36,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 54
+          },
+          "date": "2026-10-03T14:00:03.000Z",
+          "repeat": {
+            "id": "baseline",
+            "trial": 3,
+            "startValue": 43
+          }
+        },
+        {
+          "id": "muu72hq3-6",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 1",
+            "surround": 45,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 48
+          },
+          "date": "2026-10-04T19:08:59.067Z",
+          "repeat": {
+            "id": "matches-muu72hm3-5",
+            "trial": 1,
+            "startValue": 41
+          }
+        },
+        {
+          "id": "muu72hux-7",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 2",
+            "surround": 45,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 53
+          },
+          "date": "2026-10-04T19:08:59.241Z",
+          "repeat": {
+            "id": "matches-muu72hm3-5",
+            "trial": 2,
+            "startValue": 59
+          }
+        },
+        {
+          "id": "muu72hzd-8",
+          "experiment": "ebbinghaus",
+          "model": {
+            "context": true,
+            "reveal": false,
+            "prediction": "Same",
+            "note": "Fresh repeat note 3",
+            "surround": 45,
+            "gap": 12,
+            "matching": true,
+            "swap": false,
+            "matchValue": 60
+          },
+          "date": "2026-10-04T19:08:59.402Z",
+          "repeat": {
+            "id": "matches-muu72hm3-5",
+            "trial": 3,
+            "startValue": 43
+          }
+        }
+      ],
+      "comparison": {
+        "experiment": "necker",
+        "model": {
+          "context": true,
+          "reveal": true,
+          "prediction": "",
+          "note": "Pinned cube",
+          "depth": 72,
+          "cue": "front"
+        }
+      }
+    },
+    "savedTrialCount": 3,
+    "activeCount": 0,
+    "activeDOM": "",
+    "activeSummary": "",
+    "reviewGroup": "baseline",
+    "comparedGroup": "matches-muu72hm3-5",
+    "announcement": "Three new matches recorded. The baseline and new study are selected for comparison. Reveal each study separately when you are ready."
+  },
+  "diagnosticOnly": true,
+  "assertionPreserved": "Captured the exact prior active count; the original zero-count assertion remains below without relaxation."
+}

@@ -7601,6 +7601,20 @@ ${modeListForAuto}
          const _dbqCustomEssayFocus = _dbqField('dbqCustomEssayFocus', 'dbq-custom-essay-focus');
          const _dbqTeacherLinks = _dbqField('dbqTeacherLinks', 'dbq-teacher-links');
          console.log('[DBQ] Mode=' + _dbqMode + ', focusTopic=' + _dbqFocusTopic.substring(0, 60) + ', hasCustomDocs=' + !!_dbqCustomDocs + ', hasTeacherLinks=' + !!_dbqTeacherLinks);
+         // Captured before model generation. Model objects are never source records.
+         const _dbqUrl = value => { try { const url = new URL(String(value || '').trim()); return ['https:', 'http:'].includes(url.protocol) && !url.username && !url.password ? url.href : ''; } catch (_) { return ''; } };
+         const _dbqSourceRecords = [{ id: 'reading', title: 'Supplied reading', source: 'Supplied reading; author and date not recorded', url: '', text: textToProcess, origin: 'supplied' }];
+         if (_dbqMode === 'custom' && _dbqCustomDocs.trim()) {
+           _dbqSourceRecords.length = 0;
+           _dbqCustomDocs.split(/(?:^|\n)\s*---+\s*(?:\n|$)/).filter(part => part.trim()).forEach((part, index) => {
+             const lines = part.trim().split('\n');
+             const title = lines.find(line => /^Title:/i.test(line.trim()));
+             const source = lines.find(line => /^Source:/i.test(line.trim()));
+             const link = lines.map(line => _dbqUrl(line)).find(Boolean) || '';
+             const text = lines.filter(line => !/^\s*(?:Title|Source):/i.test(line) && !_dbqUrl(line)).join('\n').trim();
+             _dbqSourceRecords.push({ id: 'custom-' + index, title: title ? title.replace(/^\s*Title:\s*/i, '') : 'Teacher-supplied document ' + (index + 1), source: source ? source.replace(/^\s*Source:\s*/i, '') : 'Teacher-supplied document; author and date not recorded', url: link, text, origin: 'supplied' });
+           });
+         }
          let _dbqSearchResults = '';
          if (!usesLocalTextBackend && (_dbqMode === 'search' || _dbqMode === 'links') && (window._webSearch || window._aiBackend?.webSearch)) {
            try {
@@ -7614,8 +7628,10 @@ ${modeListForAuto}
                  try {
                    const domain = new URL(url.trim()).hostname;
                    const siteResults = await searcher.search(`site:${domain} ${topic}`, 1);
-                   allResults.push({ url: url.trim(), title: siteResults[0]?.title || domain, snippet: siteResults[0]?.snippet || 'Teacher-provided source' });
-                 } catch(e) { allResults.push({ url: url.trim(), title: url.trim().split('/').pop(), snippet: 'Teacher-provided document' }); }
+                   // A domain search result may describe a different page. Bind metadata only to the exact supplied URL.
+                   const exact = (Array.isArray(siteResults) ? siteResults : []).find(result => _dbqUrl(result.url) === _dbqUrl(url));
+                   allResults.push({ url: url.trim(), title: exact?.title || 'Teacher-provided link', snippet: exact?.snippet || '' });
+                 } catch(e) { allResults.push({ url: url.trim(), title: 'Teacher-provided link', snippet: '' }); }
                }
              } else {
                const [archiveResults, generalResults] = await Promise.all([
@@ -7627,6 +7643,8 @@ ${modeListForAuto}
                  if (r.url && !seen.has(r.url)) { seen.add(r.url); allResults.push(r); }
                });
              }
+             allResults = allResults.filter(result => result && _dbqUrl(result.url)).slice(0, 8);
+             allResults.forEach((result, index) => _dbqSourceRecords.push({ id: 'web-' + index, title: String(result.title || 'Retrieved source'), source: String(result.title || 'Retrieved source') + '; author and date not recorded', url: _dbqUrl(result.url), text: String(result.snippet || ''), origin: _dbqMode === 'links' ? 'supplied-link' : 'retrieved' }));
              if (allResults.length > 0) {
                _dbqSearchResults = '\n\nREAL WEB SOURCES FOUND (use these URLs and information to build document excerpts):\n' +
                  allResults.slice(0, 8).map((r, i) => `${i + 1}. "${r.title}" — ${r.url}\n   Preview: ${r.snippet || 'No preview available'}`).join('\n') +
@@ -7791,6 +7809,8 @@ Return ONLY JSON:
   "teacherNotes": "Brief notes on scaffolding, differentiation, or extension ideas"
 }`;
          }
+         const _dbqRequestedCount = _dbqMode === 'custom' && _dbqCustomDocs.trim() ? _dbqSourceRecords.length : (usesLocalTextBackend ? 3 : isElementary ? 3 : isMiddle ? 4 : 6);
+         dbqPrompt += '\nCreate exactly ' + _dbqRequestedCount + ' documents. Multiple excerpts from one reading are excerpts of the SAME source, not independent historical sources. Do not invent document titles, authors, dates or links. Unknown source metadata stays unknown.';
          console.log('[DBQ] About to call Gemini. Prompt length=' + dbqPrompt.length);
          const result = await callGemini(dbqPrompt, true);
          if (usesLocalTextBackend) setGenerationTaskProgress(1, 1, 'Creating Document-Based Questions...');
@@ -7802,7 +7822,7 @@ Return ONLY JSON:
              // Unique ids, honest excerpt kinds (a "verbatim" excerpt must appear in the supplied text), live references only.
              {
                const _dbqFlat = value => String(value || '').toLowerCase().replace(/[‘’]/g, "'").replace(/[“”]/g, '"').replace(/\s+/g, ' ').trim();
-               const _dbqSuppliedText = _dbqFlat([textToProcess, _dbqCustomDocs, _dbqSearchResults].join(' '));
+               const _dbqSuppliedText = _dbqFlat(_dbqSourceRecords.map(record => record.text).join(' '));
                const _usedDbqIds = new Set();
                const _nextDbqId = () => { for (let n = 0; ; n++) { const id = String.fromCharCode(65 + (n % 26)) + (n >= 26 ? Math.floor(n / 26) + 1 : ''); if (!_usedDbqIds.has(id)) return id; } };
                content.documents = (Array.isArray(content.documents) ? content.documents : []).filter(d => d && typeof d === 'object' && !Array.isArray(d)).map(d => {
@@ -7813,8 +7833,23 @@ Return ONLY JSON:
                  let excerptKind = String(d.excerptKind || '').trim().toLowerCase();
                  if (!['verbatim', 'adapted', 'reconstructed'].includes(excerptKind)) excerptKind = fallbackKind;
                  if (excerptKind === 'verbatim' && (!_dbqFlat(d.excerpt) || !_dbqSuppliedText.includes(_dbqFlat(d.excerpt)))) excerptKind = fallbackKind;
-                 return { ...d, id, excerptKind };
+                 const candidateUrl = _dbqUrl(d.sourceUrl);
+                 const record = (_dbqMode === 'custom' ? _dbqSourceRecords[content.documents.indexOf(d)] : null)
+                   || _dbqSourceRecords.find(record => candidateUrl && record.url === candidateUrl)
+                   || _dbqSourceRecords.find(record => _dbqFlat(d.excerpt) && _dbqFlat(record.text).includes(_dbqFlat(d.excerpt)))
+                   || (_dbqMode === 'custom' ? _dbqSourceRecords[content.documents.indexOf(d)] : _dbqSourceRecords[0]);
+                 if (excerptKind === 'verbatim' && (!record || !_dbqFlat(record.text).includes(_dbqFlat(d.excerpt)))) excerptKind = 'reconstructed';
+                 return { ...d, id, title: 'Document ' + id + ': ' + (record?.title || 'Unverified generated passage'), source: record?.source || 'Source not verified; author and date not recorded', date: '', author: '', sourceUrl: record?.url || '', excerpt: _dbqMode === 'custom' && record ? record.text : d.excerpt, excerptKind: _dbqMode === 'custom' && record ? 'verbatim' : excerptKind,
+                   sourceRecordId: record?.id || '', sourceProvenance: record ? { version: 1, recordId: record.id, origin: record.origin, url: record.url, title: record.title } : null };
+
                });
+               if (content.documents.length > _dbqRequestedCount) content.documents = content.documents.slice(0, _dbqRequestedCount);
+               _usedDbqIds.clear(); content.documents.forEach(doc => _usedDbqIds.add(doc.id));
+               const sourceCounts = {}; content.documents.forEach(doc => { if (doc.sourceRecordId) sourceCounts[doc.sourceRecordId] = (sourceCounts[doc.sourceRecordId] || 0) + 1; });
+               content.documents = content.documents.map(doc => ({ ...doc, sameSourceExcerpts: (sourceCounts[doc.sourceRecordId] || 0) > 1 }));
+               content.documentCount = { requested: _dbqRequestedCount, actual: content.documents.length, distinctSources: Object.keys(sourceCounts).length };
+               content.sourceDisclosure = 'Documents are learning excerpts. ' + Object.keys(sourceCounts).length + ' supplied or retrieved source record(s); multiple excerpts of the same record are not independent sources.';
+               content.title = _dbqFocusTopic ? 'DBQ: ' + _dbqFocusTopic : 'Document-Based Question';
                const _knownDbqIds = ids => (Array.isArray(ids) ? ids : []).map(v => String(v).trim().replace(/^(?:document|doc)\.?\s+/i, '')).filter(v => _usedDbqIds.has(v));
                content.corroborationClaims = (Array.isArray(content.corroborationClaims) ? content.corroborationClaims : []).filter(c => c && typeof c === 'object').map(c => ({ ...c, supportingDocs: _knownDbqIds(c.supportingDocs), challengingDocs: _knownDbqIds(c.challengingDocs) }));
                if (Array.isArray(content.perspectives)) content.perspectives = content.perspectives.filter(p => p && typeof p === 'object').map(p => ({ ...p, docIds: _knownDbqIds(p.docIds) }));

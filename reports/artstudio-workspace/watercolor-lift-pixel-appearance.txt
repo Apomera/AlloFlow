@@ -1,0 +1,41 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > groups a continuous opacity drag into one Undo and keeps every original cell
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > groups repeated keyboard changes and starts a separate edit after key release
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > updates blend output, resets appearance in one edit, and restores both settings
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > prevents appearance edits on a locked layer, including synthetic input events
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > duplicates appearance independently and bakes Normal opacity once when merging
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > remounts the opacity control across learner and layer changes and ignores stale input
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > saves and forks appearance with all original pixels and leaves the stored study unchanged
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > retains appearance through resolution changes and Undo restores the complete prior stack
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_pixel_appearance_workflows.test.js (8 tests) 932ms
+stdout | tests/artstudio_pixel_appearance.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_pixel_appearance.test.js (19 tests) 8ms
+
+ Test Files  2 passed (2)
+      Tests  27 passed (27)
+   Start at  11:00:08
+   Duration  3.30s (transform 47ms, setup 54ms, import 81ms, tests 940ms, environment 1.79s)
+

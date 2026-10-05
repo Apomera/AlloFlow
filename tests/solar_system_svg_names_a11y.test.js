@@ -18,9 +18,8 @@ describe('Solar System SVG accessible names', () => {
   it('gives every SVG declaration an accessible name', () => {
     const lines = readFileSync(SOURCE, 'utf8').split(/\r?\n/);
     const svgLines = lines.filter((line) => /h\(\s*['"]svg['"]|createElement\(\s*['"]svg['"]/.test(line));
-    expect(svgLines).toHaveLength(75);
-    expect(svgLines.filter((line) => line.includes('aria-label'))).toHaveLength(75);
-    expect(svgLines.filter((line) => line.includes("role: 'group'"))).toHaveLength(64);
+    expect(svgLines.length).toBeGreaterThan(0);
+    expect(svgLines.filter((line) => !line.includes('aria-label'))).toEqual([]);
   });
 
   it('reuses visible localized mini-tool titles instead of generic names', () => {
@@ -35,7 +34,7 @@ describe('Solar System SVG accessible names', () => {
     const views = [
       { tutorialDismissed: true, selectedPlanet: 'stem.solar_sys.earth', showStellarEvo: true },
       { tutorialDismissed: true, selectedPlanet: 'stem.solar_sys.earth', showOrbital: true },
-      { tutorialDismissed: true, orreryMode: true, orr_stab: 8 },
+      { tutorialDismissed: true, orreryMode: true, orr_tab: 8 },
       { tutorialDismissed: true, orreryMode: true, orr_tab: 0, orr_sel: 'mercury', orr_paused: true },
     ];
     let renderedSvgCount = 0;

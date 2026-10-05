@@ -1,0 +1,83 @@
+{
+  "format": "alloflow-sld-state-references",
+  "version": 2,
+  "activeState": "Maine",
+  "byState": {
+    "Maine": {
+      "sources": [
+        {
+          "id": "42371993-0ef6-4e63-bf84-1ca589d24bde",
+          "title": "Local primary stays reviewed",
+          "url": "https://education.example.gov/sld",
+          "fileName": "",
+          "pageSection": "Section 4",
+          "excerpt": "Literal <img src=x onerror=alert(1)>\n语言 access and evidence.",
+          "transferNotes": "Compare criteria, language access and documentation.",
+          "content": "",
+          "fileFormat": "",
+          "extractionMethod": "",
+          "fileContentHash": "",
+          "effectiveDate": "",
+          "checkedDate": "2026-10-04",
+          "reviewedAt": "2026-10-04",
+          "importMethod": "manual",
+          "documentPartCount": 0,
+          "fileSize": 0,
+          "fileLastModified": 0,
+          "reviewed": true,
+          "revision": 1
+        }
+      ],
+      "comparison": {
+        "criteria": {
+          "sourceId": "42371993-0ef6-4e63-bf84-1ca589d24bde",
+          "note": "Local note changed while research was pending.",
+          "followUp": "",
+          "status": "recorded",
+          "checkedRevision": 1,
+          "checkedAt": "2026-10-04"
+        },
+        "language": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "intervention": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "exclusions": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "special-education": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "documentation": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        }
+      }
+    }
+  }
+}

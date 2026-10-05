@@ -1,0 +1,308 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass15-2026-10-02/browser-artifacts-verified",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-entry-thermal.spec.ts",
+      "file": "moon-mission-entry-thermal.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "material controls and independent cooling inspection preserve flight evidence and rewards",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 21184,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T19:46:22.633Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "thermal-independent-cooling",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-verified\\moon-mission-entry-thermal-cf289-flight-evidence-and-rewards-chromium\\attachments\\thermal-independent-cooling-ccf97b1c6977bef333e18b781e88701a0507b999.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9bd6b93c6ac0fb4c70dd-454f93d6c652744129a8",
+          "file": "moon-mission-entry-thermal.spec.ts",
+          "line": 122,
+          "column": 5
+        },
+        {
+          "title": "v1 and v2 source plans remain immutable while lab follow and independent clocks diverge",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 37716,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T19:46:44.057Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "thermal-source-follow-v1",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-verified\\moon-mission-entry-thermal-ca79e--independent-clocks-diverge-chromium\\attachments\\thermal-source-follow-v1-04e68a98d6bfbf41b4af085163848d3492b01cf3.png"
+                    },
+                    {
+                      "name": "thermal-source-follow-v2",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-verified\\moon-mission-entry-thermal-ca79e--independent-clocks-diverge-chromium\\attachments\\thermal-source-follow-v2-658c6566bc8c97bc7fc75a9d6eb55270b225801d.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9bd6b93c6ac0fb4c70dd-2e5f627fb2a59308d5bd",
+          "file": "moon-mission-entry-thermal.spec.ts",
+          "line": 145,
+          "column": 5
+        },
+        {
+          "title": "320 px keyboard controls, thermal charts and slab use readable accessible targets",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13820,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T19:47:21.789Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "thermal-phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-verified\\moon-mission-entry-thermal-7601c-readable-accessible-targets-chromium\\attachments\\thermal-phone-320-1de6d1bc979254a6b28cfb9c80b766f6b994965d.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9bd6b93c6ac0fb4c70dd-b0ca60a40f3f1247e0ca",
+          "file": "moon-mission-entry-thermal.spec.ts",
+          "line": 176,
+          "column": 5
+        },
+        {
+          "title": "bounded thermal controls and independent time survive reopen without altering entry data",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 317541,
+                  "error": {
+                    "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 180000ms.\u001b[39m",
+                    "stack": "\u001b[31mTearing down \"context\" exceeded the test timeout of 180000ms.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 180000ms.\u001b[39m"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T19:47:35.620Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "thermal-reopened-independent-time",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-verified\\moon-mission-entry-thermal-82fda-without-altering-entry-data-chromium\\attachments\\thermal-reopened-independent-time-34fbc68206410f999b8f653e4551c937204e4b19.png"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-verified\\moon-mission-entry-thermal-82fda-without-altering-entry-data-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-verified\\moon-mission-entry-thermal-82fda-without-altering-entry-data-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-verified\\moon-mission-entry-thermal-82fda-without-altering-entry-data-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-verified\\moon-mission-entry-thermal-82fda-without-altering-entry-data-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "9bd6b93c6ac0fb4c70dd-9e2396dbc6f0a4c32ed7",
+          "file": "moon-mission-entry-thermal.spec.ts",
+          "line": 209,
+          "column": 5
+        },
+        {
+          "title": "optional thermal report and replay preserve the experiment source while entry rewards remain once-only",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 102517,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T19:55:52.192Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "thermal-included-report-debrief",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-verified\\moon-mission-entry-thermal-45966-ry-rewards-remain-once-only-chromium\\attachments\\thermal-included-report-debrief-36c70c8e3bfe224883c43fb3d30f42083eaf9981.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9bd6b93c6ac0fb4c70dd-dc4e73a9b81ec8edbbc8",
+          "file": "moon-mission-entry-thermal.spec.ts",
+          "line": 233,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T19:46:21.907Z",
+    "duration": 686315.284,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

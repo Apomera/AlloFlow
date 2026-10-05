@@ -1,0 +1,7 @@
+[
+  {
+    "scope": "homework-shelf-open",
+    "before": "const openHomeworkShelf = () => {\n      const shelf = __d.homeworkShelf;\n      if (!shelf || !Array.isArray(shelf.resources) || !shelf.resources.length) return;",
+    "after": "const openHomeworkShelf = () => {\n      const shelf = __d.homeworkShelf;\n      if (!shelf || !Array.isArray(shelf.resources) || !shelf.resources.length) return;\n      __d.setPendingQrAssignmentResource(null);\n      __d.cancelActiveProjectLoad({ notifyLifecycle: false });\n      __d.cancelActiveFileIntakeOperations('homework-shelf-open');\n      __d.invalidateLocalDataHydration();"
+  }
+]

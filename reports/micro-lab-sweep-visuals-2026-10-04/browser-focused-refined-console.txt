@@ -1,0 +1,15 @@
+
+Running 6 tests using 1 worker
+
+(node:32564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:32564) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  ok 1 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:260:5 › temperature, pH and oxygen sweeps use independent simulated samples on true numeric axes without accepting forged imported populations (8.1s)
+  ok 2 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:278:5 › current and previous sample inspection remain independent and saved response curves stay fixed while next-run drafts change (12.6s)
+  ok 3 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:301:5 › zero-response sweeps keep square markers and equal-sample guidance while an unsampled saved setting starts at the first best sample (7.5s)
+  ok 4 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:321:5 › phone, four-hundred-percent zoom, reduced-motion and forced-colour layouts retain readable axes, distinct response shapes and focused keyboard inspection (14.3s)
+  ok 5 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:345:5 › preparing a current sweep sample changes only normalized next-trial conditions and preserves all original notebook evidence and metadata (4.9s)
+  ok 6 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:364:5 › JSON reload and notebook export retain both saved sweep descriptors and model-exact samples regardless of local inspection (5.7s)
+
+  6 passed (55.2s)

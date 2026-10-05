@@ -1,0 +1,52 @@
+{
+  "id": "m-muspgw21-804wc",
+  "capturedAt": 1791050911561,
+  "modelVersion": "2026.10-stock-feedback",
+  "scope": "month",
+  "month": 6,
+  "speciesId": "system",
+  "metricId": "oxygen",
+  "metricLabel": "Dissolved oxygen",
+  "unit": " mg/L",
+  "deltaUnit": " mg/L",
+  "aState": "recorded",
+  "bState": "recorded",
+  "a": 6.97,
+  "b": 8.17,
+  "baselineScenario": {
+    "environmentId": "longline",
+    "organisms": {
+      "oyster": 2,
+      "kelp": 1,
+      "nitrifiers": 1
+    },
+    "water": {
+      "temperature": 14,
+      "salinity": 30,
+      "oxygen": 8,
+      "pH": 8,
+      "ammonia": 0.04,
+      "exchange": 82
+    },
+    "disturbanceId": "heatwave"
+  },
+  "currentScenario": {
+    "environmentId": "longline",
+    "organisms": {
+      "oyster": 2,
+      "kelp": 1,
+      "nitrifiers": 1
+    },
+    "water": {
+      "temperature": 14,
+      "salinity": 30,
+      "oxygen": 9.2,
+      "pH": 8,
+      "ammonia": 0.04,
+      "exchange": 82
+    },
+    "disturbanceId": "heatwave"
+  },
+  "aEvent": "Marine heatwave",
+  "bEvent": "Marine heatwave"
+}

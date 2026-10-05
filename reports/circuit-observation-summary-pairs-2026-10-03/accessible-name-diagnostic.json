@@ -1,0 +1,127 @@
+{
+  "sourceSha256": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+  "scriptSha256": "8006511f84c478eae3d6aebd2621c9684ee328dc7aacce081972808145e966ab",
+  "checks": [],
+  "errors": [],
+  "axe": [],
+  "layouts": [],
+  "contentBounds": [],
+  "actions": [],
+  "focus": [],
+  "focusTransitions": [],
+  "nodeIds": [],
+  "textResize": [],
+  "motion": [],
+  "styleScope": [],
+  "scanStyles": [],
+  "screenshots": [],
+  "visualIssues": [],
+  "guideStates": [],
+  "guideToggles": [],
+  "transitions": [],
+  "handoffStates": [],
+  "summaryStates": [],
+  "probePairs": [],
+  "accessibleSummaries": [],
+  "disclosures": [],
+  "bodyChecks": [],
+  "readingLayouts": [],
+  "desktopComparison": [],
+  "notebookStates": [],
+  "openActions": [],
+  "instances": [],
+  "readingOrder": [],
+  "lifecycle": [],
+  "numericIntegrity": [],
+  "forcedColors": [],
+  "rtlGuides": [],
+  "mirrorSha256": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+  "forcedColorsDiagnostic": {
+    "file": "../circuit-explanation-guide-2026-10-01/forced-colors-diagnostic.json",
+    "sha256": "211de59d56f77fdc793293b7bf74730196b3c21d386fd35a6d95387022fbe8d5"
+  },
+  "diagnostic": {
+    "dom": {
+      "textContent": "01 Manual control Lamp current 21.82 mA  Input 3.30V Red collector · Black emitter",
+      "innerText": "01\nManual control\nLamp current\n21.82\nmA\nInput \n3.30V\nRed collector · Black emitter",
+      "outerHTML": "<summary><span class=\"circuit-observation-summary-title\"><b>01</b> <span class=\"circuit-observation-summary-project\">Manual control</span></span> <span class=\"circuit-observation-summary-reading\"><span class=\"circuit-observation-summary-reading-label\">Lamp current</span> <strong><bdi class=\"circuit-observation-summary-quantity\" dir=\"ltr\"><span class=\"circuit-observation-summary-magnitude\">21.82</span> <span class=\"circuit-observation-summary-unit\">mA</span></bdi></strong></span> <span class=\"circuit-observation-summary-disclosure\" aria-hidden=\"true\"></span> <span class=\"circuit-observation-summary-context\"><span class=\"circuit-observation-summary-input\">Input <bdi class=\"circuit-observation-summary-quantity\" dir=\"ltr\"><span class=\"circuit-observation-summary-magnitude\">3.30V</span></bdi></span> <span class=\"circuit-observation-summary-probes\"><span class=\"circuit-observation-summary-probe-pair\" dir=\"auto\" data-probe-lead=\"red\"><span class=\"circuit-observation-summary-probe-label\">Red</span> <bdi class=\"circuit-observation-summary-probe-node\" dir=\"ltr\">collector</bdi></span> · <span class=\"circuit-observation-summary-probe-pair\" dir=\"auto\" data-probe-lead=\"black\"><span class=\"circuit-observation-summary-probe-label\">Black</span> <bdi class=\"circuit-observation-summary-probe-node\" dir=\"ltr\">emitter</bdi></span></span></span></summary>",
+      "label": "Lamp current",
+      "value": "21.82 mA",
+      "readingDisplay": "flex"
+    },
+    "ariaSnapshot": "- text: 01 Manual control Lamp current\n- strong: 21.82 mA\n- text: Input 3.30V Red collector · Black emitter",
+    "axNodes": [
+      {
+        "nodeId": "19",
+        "ignored": false,
+        "role": {
+          "type": "internalRole",
+          "value": "DisclosureTriangle"
+        },
+        "chromeRole": {
+          "type": "internalRole",
+          "value": 37
+        },
+        "name": {
+          "type": "computedString",
+          "value": "01 Manual control Lamp current 21.82 mA Input 3.30V Red collector · Black emitter",
+          "sources": [
+            {
+              "type": "relatedElement",
+              "attribute": "aria-labelledby"
+            },
+            {
+              "type": "attribute",
+              "attribute": "aria-label"
+            },
+            {
+              "type": "contents",
+              "value": {
+                "type": "computedString",
+                "value": "01 Manual control Lamp current 21.82 mA Input 3.30V Red collector · Black emitter"
+              }
+            },
+            {
+              "type": "attribute",
+              "attribute": "title",
+              "superseded": true
+            }
+          ]
+        },
+        "properties": [
+          {
+            "name": "focusable",
+            "value": {
+              "type": "booleanOrUndefined",
+              "value": true
+            }
+          },
+          {
+            "name": "expanded",
+            "value": {
+              "type": "booleanOrUndefined",
+              "value": false
+            }
+          }
+        ],
+        "parentId": "20",
+        "childIds": [
+          "309",
+          "312",
+          "318",
+          "319"
+        ],
+        "backendDOMNodeId": 19
+      }
+    ],
+    "role": "DisclosureTriangle",
+    "name": "01 Manual control Lamp current 21.82 mA Input 3.30V Red collector · Black emitter"
+  },
+  "passed": true,
+  "sourceSha256AtEnd": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+  "mirrorSha256AtEnd": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+  "scriptSha256AtEnd": "8006511f84c478eae3d6aebd2621c9684ee328dc7aacce081972808145e966ab",
+  "scriptChangedDuringRun": false,
+  "sourceChangedDuringRun": false,
+  "mirrorMatches": true
+}

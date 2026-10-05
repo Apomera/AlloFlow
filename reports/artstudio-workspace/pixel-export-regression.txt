@@ -1,0 +1,1124 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/artstudio_semantics_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > names the harmony visualization, inquiry fields, and restorable experiments
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stderr | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > names the harmony visualization, inquiry fields, and restorable experiments
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+
+stdout | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > names the interactive and output stereogram canvases
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stderr | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > names the interactive and output stereogram canvases
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+
+stdout | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > associates visible AI labels with their textareas
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stderr | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > associates visible AI labels with their textareas
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+
+stdout | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > keeps every collapsed disclosure target mounted, hidden, and labelled
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stderr | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > keeps every collapsed disclosure target mounted, hidden, and labelled
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+
+stdout | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > uses explicit stereogram announcements without duplicate playback live regions
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stderr | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > uses explicit stereogram announcements without duplicate playback live regions
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+
+stdout | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > exposes the watercolor canvas, controls, and keyboard instructions
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stderr | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > exposes the watercolor canvas, controls, and keyboard instructions
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+
+stdout | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > suppresses the AI pulse when reduced motion is requested
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stderr | tests/artstudio_semantics_a11y.test.js > Art Studio graphic and form semantics > suppresses the AI pulse when reduced motion is requested
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+
+ ✓ tests/artstudio_semantics_a11y.test.js (10 tests) 1866ms
+     ✓ names the harmony visualization, inquiry fields, and restorable experiments  495ms
+     ✓ keeps every collapsed disclosure target mounted, hidden, and labelled  991ms
+stdout | tests/artstudio_watercolor_engine.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > blots water and whole mobile pigment parcels while preserving dry glazes, masks, and brush loads
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > leaves completely dry loose pigment and settled paint unchanged when blotting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > gives blot strength and pressure independent control over textured pickup without adding water or color
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > can take up a clear-water puddle and differs from the rewetted Lift brush
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > takes up rewetted low-staining color more readily and leaves the remaining fixed color anchored
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps a complete blotting stroke in one history step and retains pickup through compact restore
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > offers Blot with an accessible strength control and disables only its inactive paint loads
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps a late pointer release from redrawing after Clear and recovers the interrupted mark
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > pushes pigment out of a wetter patch into a backrun without adding or deleting paint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > does not invent a central backrun on evenly wetted paper
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps pressure-driven pigment on its side of a masking-fluid barrier
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps capillary transport finite, nonnegative, and conservative at a paper corner
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > turns a tilted flat brush across angle wraparound without spinning a wide blot into the stroke
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps lightly pressed rigger strokes evenly covered across the narrow contact area
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps the paint load consistent between high-frequency and bundled stylus samples
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > updates stationary pressure and timing without paint, and retains the final coalesced endpoint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > enables working Undo and Redo buttons when the engine history changes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > offers finger painting beside the color controls and keeps both touch controls in sync
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > redistributes damp washes into salt crystals without losing pigment or disturbing settled glazes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > leaves dry paint unchanged when salt is applied, even before loose pigment settles
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps salt away from masked cells and preserves a dry underpainting in a wet glaze
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > settles the final traces of water before becoming idle without losing pigment
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > stops requesting frames after drying and saves the final settled painting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > gives light stylus pressure a fine tip and firm pressure a broad stroke
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > shows brush size for hover and keyboard without putting the cursor in the paint or export
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > places crisp marks on dry paper and softer marks on a prewetted sheet
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > responds to drying rate and pigment opacity during transport
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > carries pigment downhill and keeps fully dry paint still
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > wets paper without adding pigment, respects masking, and supports undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > preserves color mass when saturated glazes are dried and rewetted
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > conserves deposited pigment and color while a wash flows and settles
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps painted pixels unchanged when only the next pigment load changes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > retains pigment hue when repeated strokes saturate the paper
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > deposits water and pigment and restores compact undo/redo states
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > gives flat, mop, and rigger brushes materially different footprints
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > captures clean artwork before repainting screen-only flow diagnostics
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > lets high-mobility color channels travel ahead of low-mobility channels
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > rewets low-staining dry pigment more readily while conserving pigment mass
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > retains more water and bloom under humid low-airflow studio conditions
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > models sizing-driven surface retention, fiber fixation, and adjustable bloom response
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_watercolor_engine.test.js (40 tests) 64459ms
+     ✓ blots water and whole mobile pigment parcels while preserving dry glazes, masks, and brush loads  2884ms
+     ✓ leaves completely dry loose pigment and settled paint unchanged when blotting  589ms
+     ✓ gives blot strength and pressure independent control over textured pickup without adding water or color  632ms
+     ✓ can take up a clear-water puddle and differs from the rewetted Lift brush  1022ms
+     ✓ takes up rewetted low-staining color more readily and leaves the remaining fixed color anchored  928ms
+     ✓ keeps a complete blotting stroke in one history step and retains pickup through compact restore  818ms
+     ✓ offers Blot with an accessible strength control and disables only its inactive paint loads  1673ms
+     ✓ keeps a late pointer release from redrawing after Clear and recovers the interrupted mark  2751ms
+     ✓ pushes pigment out of a wetter patch into a backrun without adding or deleting paint  4964ms
+     ✓ does not invent a central backrun on evenly wetted paper  2880ms
+     ✓ keeps pressure-driven pigment on its side of a masking-fluid barrier  1543ms
+     ✓ keeps capillary transport finite, nonnegative, and conservative at a paper corner  732ms
+     ✓ turns a tilted flat brush across angle wraparound without spinning a wide blot into the stroke  550ms
+     ✓ keeps lightly pressed rigger strokes evenly covered across the narrow contact area  349ms
+     ✓ keeps the paint load consistent between high-frequency and bundled stylus samples  443ms
+     ✓ updates stationary pressure and timing without paint, and retains the final coalesced endpoint  741ms
+     ✓ enables working Undo and Redo buttons when the engine history changes  428ms
+     ✓ offers finger painting beside the color controls and keeps both touch controls in sync  457ms
+     ✓ redistributes damp washes into salt crystals without losing pigment or disturbing settled glazes  1016ms
+     ✓ leaves dry paint unchanged when salt is applied, even before loose pigment settles  10536ms
+     ✓ keeps salt away from masked cells and preserves a dry underpainting in a wet glaze  2119ms
+     ✓ settles the final traces of water before becoming idle without losing pigment  1655ms
+     ✓ stops requesting frames after drying and saves the final settled painting  2154ms
+     ✓ gives light stylus pressure a fine tip and firm pressure a broad stroke  617ms
+     ✓ shows brush size for hover and keyboard without putting the cursor in the paint or export  448ms
+     ✓ places crisp marks on dry paper and softer marks on a prewetted sheet  370ms
+     ✓ responds to drying rate and pigment opacity during transport  1148ms
+     ✓ carries pigment downhill and keeps fully dry paint still  979ms
+     ✓ wets paper without adding pigment, respects masking, and supports undo  526ms
+     ✓ preserves color mass when saturated glazes are dried and rewetted  2385ms
+     ✓ conserves deposited pigment and color while a wash flows and settles  1239ms
+     ✓ keeps painted pixels unchanged when only the next pigment load changes  2105ms
+     ✓ retains pigment hue when repeated strokes saturate the paper  914ms
+     ✓ deposits water and pigment and restores compact undo/redo states  641ms
+     ✓ gives flat, mop, and rigger brushes materially different footprints  853ms
+     ✓ captures clean artwork before repainting screen-only flow diagnostics  1041ms
+     ✓ lets high-mobility color channels travel ahead of low-mobility channels  1010ms
+     ✓ rewets low-staining dry pigment more readily while conserving pigment mass  1386ms
+     ✓ retains more water and bloom under humid low-airflow studio conditions  3369ms
+     ✓ models sizing-driven surface retention, fiber fixation, and adjustable bloom response  3555ms
+stdout | tests/artstudio_watercolor_navigation.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > offers accessible Paint, Pan, zoom, and Fit controls without changing stored painting settings
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > zooms the sheet to 1.5× while retaining the fixed 1024 backing and simulation
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > zooms the sheet to 2× while retaining the fixed 1024 backing and simulation
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > zooms the sheet to 3× while retaining the fixed 1024 backing and simulation
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > pans with a mouse without depositing paint, draining brush loads, or adding history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > pans with a pen without depositing paint, draining brush loads, or adding history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > pans with a touch without depositing paint, draining brush loads, or adding history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > keeps a pan owned by its original pointer and releases cancelled capture safely
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > pans by keyboard and prevents Enter or Space from making a dab in Pan mode
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > keeps identical sheet coordinates, brush footprint, and deposited parcels at different zoom levels
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > safely ends an active painting stroke when changing mode and ignores its late release
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > safely ends an active painting stroke when changing zoom and ignores its late release
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > safely ends an active painting stroke when changing fit and ignores its late release
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > resumes ordinary keyboard and pointer painting after leaving Pan
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > uses Fit to restore the whole sheet and scroll origin while retaining the chosen mode and paint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > cancels navigation on clear or state restoration so a late move cannot scroll the new artwork
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stderr | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > cancels navigation on clear or state restoration so a late move cannot scroll the new artwork
+Warning: An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at App (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/artstudio_watercolor_navigation.test.js:106:62)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > switches to Paint when finger drawing or scrolling is explicitly chosen and keeps guidance accurate
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > resets view and gesture ownership for a restored study and for a new learner
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > keeps brush guides in sheet coordinates after the viewport has scrolled
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_watercolor_navigation.test.js (19 tests) 37512ms
+     ✓ offers accessible Paint, Pan, zoom, and Fit controls without changing stored painting settings  4446ms
+     ✓ zooms the sheet to 1.5× while retaining the fixed 1024 backing and simulation  2607ms
+     ✓ zooms the sheet to 2× while retaining the fixed 1024 backing and simulation  2435ms
+     ✓ zooms the sheet to 3× while retaining the fixed 1024 backing and simulation  2097ms
+     ✓ pans with a mouse without depositing paint, draining brush loads, or adding history  2083ms
+     ✓ pans with a pen without depositing paint, draining brush loads, or adding history  2881ms
+     ✓ pans with a touch without depositing paint, draining brush loads, or adding history  2664ms
+     ✓ keeps a pan owned by its original pointer and releases cancelled capture safely  2202ms
+     ✓ pans by keyboard and prevents Enter or Space from making a dab in Pan mode  1639ms
+     ✓ keeps identical sheet coordinates, brush footprint, and deposited parcels at different zoom levels  2328ms
+     ✓ safely ends an active painting stroke when changing mode and ignores its late release  1961ms
+     ✓ safely ends an active painting stroke when changing zoom and ignores its late release  604ms
+     ✓ safely ends an active painting stroke when changing fit and ignores its late release  732ms
+     ✓ resumes ordinary keyboard and pointer painting after leaving Pan  754ms
+     ✓ uses Fit to restore the whole sheet and scroll origin while retaining the chosen mode and paint  588ms
+     ✓ cancels navigation on clear or state restoration so a late move cannot scroll the new artwork  1050ms
+     ✓ switches to Paint when finger drawing or scrolling is explicitly chosen and keeps guidance accurate  1646ms
+     ✓ resets view and gesture ownership for a restored study and for a new learner  2655ms
+     ✓ keeps brush guides in sheet coordinates after the viewport has scrolled  2136ms
+stdout | tests/artstudio_artwork_roundtrip.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > saves a full pixel layer stack, keeps the study immutable, and forks every layer and active selection
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > opens an old flat pixel study through the real fork path without inheriting newer layers
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > preserves Spin Art paint and live drips through navigation and a same-lab study fork
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > preserves transparent Symmetry paint through navigation and restores a study without current strokes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > replaces a mounted watercolor simulation and keeps the saved study immutable after editing and clearing
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > clears current watercolor pigment when a saved checkpoint has only a portable PNG
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > waits for delayed symmetry paint before exporting or saving a paper-colored preview
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > waits for delayed spinArt paint before exporting or saving a paper-colored preview
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > keeps pending watercolor metadata intact and cancels a queued save after navigation
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_artwork_roundtrip.test.js > Art Studio artwork checkpoints > settles watercolor readiness after an image decode error
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_artwork_roundtrip.test.js (10 tests) 37573ms
+     ✓ saves a full pixel layer stack, keeps the study immutable, and forks every layer and active selection  31033ms
+     ✓ opens an old flat pixel study through the real fork path without inheriting newer layers  433ms
+     ✓ preserves Spin Art paint and live drips through navigation and a same-lab study fork  324ms
+     ✓ preserves transparent Symmetry paint through navigation and restores a study without current strokes  582ms
+     ✓ replaces a mounted watercolor simulation and keeps the saved study immutable after editing and clearing  1292ms
+     ✓ clears current watercolor pigment when a saved checkpoint has only a portable PNG  1916ms
+     ✓ keeps pending watercolor metadata intact and cancels a queued save after navigation  1050ms
+     ✓ settles watercolor readiness after an image decode error  572ms
+stdout | tests/artstudio_watercolor_lifting.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > retains the settled glaze response beneath fresh washes with different staining
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > does not let the selected pigment traits alter an existing glaze during lifting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > leaves more staining dry color anchored and makes sized paper easier to lift
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > gives gentle and strong lifting distinct monotonic pickup while keeping residual paint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > uses zero strength to add clear water without removing any color or properties
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > requires moisture and can lift a damp wash with an unloaded water brush
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > increases pickup with stylus pressure without bleaching the remaining pigment parcels
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > protects masked cells and keeps color and water outside the brush unchanged
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > clamps invalid strengths, falls back safely, and keeps repeated lifting finite
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > stores a coalesced stroke in one Undo step and restores lifted color in compact saves
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > exposes associated Lift strength and disables only the inactive pigment load
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > reconfigures a live Lift brush with the saved strength before the next dab
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_watercolor_lifting.test.js (12 tests) 19650ms
+     ✓ retains the settled glaze response beneath fresh washes with different staining  5401ms
+     ✓ does not let the selected pigment traits alter an existing glaze during lifting  2226ms
+     ✓ leaves more staining dry color anchored and makes sized paper easier to lift  3466ms
+     ✓ gives gentle and strong lifting distinct monotonic pickup while keeping residual paint  843ms
+     ✓ uses zero strength to add clear water without removing any color or properties  527ms
+     ✓ requires moisture and can lift a damp wash with an unloaded water brush  681ms
+     ✓ increases pickup with stylus pressure without bleaching the remaining pigment parcels  1355ms
+     ✓ protects masked cells and keeps color and water outside the brush unchanged  1248ms
+     ✓ clamps invalid strengths, falls back safely, and keeps repeated lifting finite  871ms
+     ✓ stores a coalesced stroke in one Undo step and restores lifted color in compact saves  819ms
+     ✓ exposes associated Lift strength and disables only the inactive pigment load  955ms
+     ✓ reconfigures a live Lift brush with the saved strength before the next dab  1256ms
+stdout | tests/artstudio_pixel_export_workflows.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > exposes associated labels, announced dimensions, and native defaults
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > exports native defaults separately from the on-screen decorated canvas
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > updates preferences and dimensions without creating artwork edits or history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > preserves both artwork history directions when export preferences change
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > keeps the no-argument native API independent of saved export preferences
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > preserves fractional and modern saved CSS in native and enlarged output
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > derives selected export dimensions from the current 8-cell grid
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > derives selected export dimensions from the current 16-cell grid
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > derives selected export dimensions from the current 24-cell grid
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > derives selected export dimensions from the current 32-cell grid
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > derives selected export dimensions from the current 48-cell grid
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > derives selected export dimensions from the current 64-cell grid
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > tracks a resolution edit and its Undo without treating preferences as painting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > combines visible normal layer appearance and leaves protected original cells intact
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > combines visible multiply layer appearance and leaves protected original cells intact
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > combines visible screen layer appearance and leaves protected original cells intact
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > exports a fully hidden stack as transparent while preserving its saved paint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > excludes preview backgrounds, the keyboard cursor, and selection bounds
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > exports committed cells rather than an unfinished shape preview
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > exports the original cells while a selection move is only a preview
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > saves and forks export preferences with exact artwork without changing the saved study
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > normalizes malformed saved export preferences without rewriting paint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > rejects PNG serialization failures with a useful error and no download or edit
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > rejects an unavailable export context with no blank download
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_export_workflows.test.js > Pixel sprite and tile export through actual controls > treats an empty serialized PNG as failure and allows a later successful retry
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_pixel_export_workflows.test.js (25 tests) 4659ms
+     ✓ exposes associated labels, announced dimensions, and native defaults  426ms
+     ✓ exports native defaults separately from the on-screen decorated canvas  481ms
+     ✓ updates preferences and dimensions without creating artwork edits or history  339ms
+     ✓ preserves both artwork history directions when export preferences change  847ms
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > replaces equivalent artwork colors through the real controls as one reversible edit
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > guards incomplete hex input and uses exact RGB brush colors without painting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > fills a connected visible color across equivalent hex, RGB and HSL spellings
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > keeps preview choices separate from artwork history and restores editing drafts on owner change
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > rotates a rectangular selection at the edge without clipping, and undoes the whole edit
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > flips only the selected pixels with flip-x and keeps transparent cells empty
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > flips only the selected pixels with flip-y and keeps transparent cells empty
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > keeps selection transforms disabled during a drag and skips history for an unchanged transform
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > moves an overlapping selection as one undoable edit without saving the drag preview
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > cancels moved selections and ignores unrelated pointers without adding history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > cuts and pastes with keyboard shortcuts, preserving transparent holes and destination colors
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > nudges and pastes whole selections within the canvas bounds
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > keeps the keyboard anchor visible while nudging a zoomed selection
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > discards selection and its internal clipboard when the learner or artwork changes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > paints a square brush footprint and undoes the whole stamp
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > paints a round brush footprint and undoes the whole stamp
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > rounds larger brush corners, clips at the grid edge, and erases without dithering
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > keeps 25% undefined dithering anchored across overlapping strokes and preserves the other color
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > keeps 50% undefined dithering anchored across overlapping strokes and preserves the other color
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > keeps 75% undefined dithering anchored across overlapping strokes and preserves the other color
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > shows the mirrored brush footprint on hover without changing artwork or export
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > previews one straight line, cancels it without history, and commits just the final path
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > draws an exact rectangle with filled=false as one undoable gesture
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > draws an exact rectangle with filled=true as one undoable gesture
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > draws symmetric ellipse outlines and filled ellipses with the keyboard
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > mirrors shapes and discards interrupted previews without affecting saved cells
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > pans with pointer or keyboard without painting and ignores unrelated pointers
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > transforms pixels exactly with Rotate 90° and supports complete Undo/Redo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > transforms pixels exactly with Flip left / right and supports complete Undo/Redo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > transforms pixels exactly with Flip top / bottom and supports complete Undo/Redo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > draws mirrored keyboard lines and picks their color without adding an undo step
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > drops old history and active strokes when restoring a study or changing learner
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > renders visible keyboard instructions, shortcuts, focus styling, and accurate tool states
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stderr | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > renders visible keyboard instructions, shortcuts, focus styling, and accurate tool states
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+Warning: useLayoutEffect does nothing on the server, because its effect cannot be encoded into the server renderer's output format. This will lead to a mismatch between the initial, non-hydrated UI and the intended UI. To avoid this, useLayoutEffect should only be used in components that render exclusively on the client. See https://reactjs.org/link/uselayouteffect-ssr for common fixes.
+    at Comp (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/helpers/stem_widgets_smoke_harness.js:249:43)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > renders visible keyboard instructions, shortcuts, focus styling, and accurate tool states
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > moves the keyboard cursor, paints the selected cell, and announces both actions
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > supports Home, End, Enter, and erasing without requiring a pointer
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > keeps source and active public mirrors identical
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > fills fast pointer strokes through the release cell and undoes the whole gesture
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > resamples artwork on grid changes and restores the original resolution with Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_keyboard_a11y.test.js > Art Studio Pixel Art keyboard accessibility > exports artwork without grid lines or the focused keyboard cursor
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_pixel_keyboard_a11y.test.js (39 tests) 13206ms
+     ✓ replaces equivalent artwork colors through the real controls as one reversible edit  710ms
+     ✓ guards incomplete hex input and uses exact RGB brush colors without painting  309ms
+     ✓ moves an overlapping selection as one undoable edit without saving the drag preview  793ms
+     ✓ cuts and pastes with keyboard shortcuts, preserving transparent holes and destination colors  857ms
+     ✓ nudges and pastes whole selections within the canvas bounds  996ms
+     ✓ keeps the keyboard anchor visible while nudging a zoomed selection  749ms
+     ✓ paints a round brush footprint and undoes the whole stamp  715ms
+     ✓ transforms pixels exactly with Rotate 90° and supports complete Undo/Redo  453ms
+     ✓ transforms pixels exactly with Flip left / right and supports complete Undo/Redo  439ms
+     ✓ draws mirrored keyboard lines and picks their color without adding an undo step  1049ms
+     ✓ drops old history and active strokes when restoring a study or changing learner  389ms
+     ✓ moves the keyboard cursor, paints the selected cell, and announces both actions  523ms
+     ✓ supports Home, End, Enter, and erasing without requiring a pointer  341ms
+     ✓ fills fast pointer strokes through the release cell and undoes the whole gesture  351ms
+     ✓ resamples artwork on grid changes and restores the original resolution with Undo  667ms
+stdout | tests/artstudio_canvas_context_guards.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_canvas_context_guards.test.js (9 tests) 2662ms
+     ✓ never calls a 2d context method on an unchecked getContext (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\desktop\web-app\build\stem_lab\stem_tool_artstudio.js)  1137ms
+     ✓ never calls a 2d context method on an unchecked getContext (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\desktop\app-build\stem_lab\stem_tool_artstudio.js)  1418ms
+stdout | tests/artstudio_pixel_tiling_workflows.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > preserves ordinary clipped drawing until wrapping is explicitly enabled
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > wraps a corner brush onto all four corners in one reversible pointer stroke
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > keeps a round tip intact across corners when painted with the keyboard
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > anchors 25 percent dithering to wrapped artwork cells rather than brush dabs
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > anchors 50 percent dithering to wrapped artwork cells rather than brush dabs
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > anchors 75 percent dithering to wrapped artwork cells rather than brush dabs
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > combines wrapping and both mirror axes without creating off-grid pixels
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > erases across edges while preserving lower layers, other cells, and full-stack Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > joins equivalent Fill colors across the 0,3 / 7,3 seam only when enabled
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > joins equivalent Fill colors across the 3,0 / 3,7 seam only when enabled
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > terminates a wrapped 64×64 empty Fill and never produces duplicate or invalid coordinates
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > centers x seams using exact cells and keeps layer appearance and one-step Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > centers y seams using exact cells and keeps layer appearance and one-step Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > centers both seams using exact cells and keeps layer appearance and one-step Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > restores exact position and transparency after two half-tile shifts at 8 cells
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > restores exact position and transparency after two half-tile shifts at 16 cells
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > restores exact position and transparency after two half-tile shifts at 24 cells
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > restores exact position and transparency after two half-tile shifts at 32 cells
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > restores exact position and transparency after two half-tile shifts at 48 cells
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > restores exact position and transparency after two half-tile shifts at 64 cells
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > protects a locked, hidden, or empty active layer from seam shifts: {"locked":true}
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > protects a locked, hidden, or empty active layer from seam shifts: {"visible":false}
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > protects a locked, hidden, or empty active layer from seam shifts: {"pixels":{}}
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > does not consume Undo for an unchanged periodic pattern
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > finishes wrapping-mode changes safely when a pointer stroke is in progress
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > keeps a seam shift separate from an interrupted stroke and rejects its late release
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > recovers wrapped edits and seam placement through Save and Fork without modifying the original study
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_tiling_workflows.test.js > Seamless Pixel tile editing > resets edit history on learner changes and treats malformed wrapping settings as disabled
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_pixel_tiling_workflows.test.js (28 tests) 9684ms
+     ✓ preserves ordinary clipped drawing until wrapping is explicitly enabled  1255ms
+     ✓ wraps a corner brush onto all four corners in one reversible pointer stroke  345ms
+     ✓ anchors 50 percent dithering to wrapped artwork cells rather than brush dabs  356ms
+     ✓ combines wrapping and both mirror axes without creating off-grid pixels  339ms
+     ✓ terminates a wrapped 64×64 empty Fill and never produces duplicate or invalid coordinates  570ms
+     ✓ centers y seams using exact cells and keeps layer appearance and one-step Undo  364ms
+     ✓ centers both seams using exact cells and keeps layer appearance and one-step Undo  491ms
+     ✓ restores exact position and transparency after two half-tile shifts at 24 cells  346ms
+     ✓ restores exact position and transparency after two half-tile shifts at 64 cells  332ms
+     ✓ keeps a seam shift separate from an interrupted stroke and rejects its late release  788ms
+     ✓ recovers wrapped edits and seam placement through Save and Fork without modifying the original study  1046ms
+     ✓ resets edit history on learner changes and treats malformed wrapping settings as disabled  411ms
+stdout | tests/artstudio_pointer_completion_pass3.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_pointer_completion_pass3.test.js > Art Studio pointer completion and interrupted strokes > finishes a fast Watercolor stroke at the release coordinate and keeps it one undoable gesture
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pointer_completion_pass3.test.js > Art Studio pointer completion and interrupted strokes > does not add pigment when Watercolor is released at the last painted point
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pointer_completion_pass3.test.js > Art Studio pointer completion and interrupted strokes > keeps Watercolor cancellation at its last actual paint sample and ignores later hover movement
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pointer_completion_pass3.test.js > Art Studio pointer completion and interrupted strokes > keeps a Symmetry freehand stroke at the last real sample when pointer capture is lost
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pointer_completion_pass3.test.js > Art Studio pointer completion and interrupted strokes > cancels a Symmetry line preview instead of committing an artificial endpoint after capture loss
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_pointer_completion_pass3.test.js (5 tests) 3685ms
+     ✓ finishes a fast Watercolor stroke at the release coordinate and keeps it one undoable gesture  1487ms
+     ✓ does not add pigment when Watercolor is released at the last painted point  854ms
+     ✓ keeps Watercolor cancellation at its last actual paint sample and ignores later hover movement  875ms
+stdout | tests/artstudio_pixel_layer_workflows.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > adds a drawing layer, paints over a legacy background, and erases to reveal it with gesture Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with brush
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with eraser
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with fill
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with line
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with rectangle
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > blocks keyboard and pointer edits on a locked layer with ellipse
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > protects hidden paint, preserves it in checkpoints, and reveals it again when shown
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > copies pixels from a locked layer into a new layer without sharing or modifying source data
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > recolors only the active layer and keeps identical colors on other layers untouched
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > duplicates independent pixels, changes stacking, merges, deletes, and restores the exact stack with Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > resamples every hidden/locked layer and undoes resolution and all original cells together
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > renames in one Undo step on blur, handles literal markup safely, and keeps Escape recoverable
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > cancels unfinished shapes when changing layers and keeps the internal clipboard scoped to the artwork
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_layer_workflows.test.js > Pixel layer editing through real controls > limits the stack and disables the final layer removal through actual controls
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_pixel_layer_workflows.test.js (15 tests) 8611ms
+     ✓ adds a drawing layer, paints over a legacy background, and erases to reveal it with gesture Undo  1138ms
+     ✓ blocks keyboard and pointer edits on a locked layer with brush  765ms
+     ✓ protects hidden paint, preserves it in checkpoints, and reveals it again when shown  477ms
+     ✓ copies pixels from a locked layer into a new layer without sharing or modifying source data  597ms
+     ✓ recolors only the active layer and keeps identical colors on other layers untouched  583ms
+     ✓ duplicates independent pixels, changes stacking, merges, deletes, and restores the exact stack with Undo  1957ms
+     ✓ renames in one Undo step on blur, handles literal markup safely, and keeps Escape recoverable  390ms
+     ✓ cancels unfinished shapes when changing layers and keeps the internal clipboard scoped to the artwork  808ms
+     ✓ limits the stack and disables the final layer removal through actual controls  901ms
+stdout | tests/artstudio_pixel_import_workflows.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_pixel_import_workflows.test.js > Previewed image imports through actual controls > previews locally without changing artwork or creating Undo history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_import_workflows.test.js > Previewed image imports through actual controls > imports as the top editable layer, keeps hidden/locked artwork, and restores the complete stack with Undo/Redo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_import_workflows.test.js > Previewed image imports through actual controls > updates fitting and palette previews without painting until Import is chosen
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_import_workflows.test.js > Previewed image imports through actual controls > rebuilds the preview for a changed grid and imports at the displayed resolution
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_import_workflows.test.js > Previewed image imports through actual controls > cancels previews and pending reads and allows choosing the same file again
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_import_workflows.test.js > Previewed image imports through actual controls > ignores an earlier decode when a newer file has been chosen
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_import_workflows.test.js > Previewed image imports through actual controls > invalidates a queued decode across study restore, navigation, and returning to the same learner
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_import_workflows.test.js > Previewed image imports through actual controls > respects the 16-layer ceiling and blocks empty transparent imports without adding history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_import_workflows.test.js > Previewed image imports through actual controls > rejects unsupported, oversized, and unreadable files while leaving artwork untouched
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_import_workflows.test.js > Previewed image imports through actual controls > rejects excessive decoded dimensions and handles missing canvas contexts
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_pixel_import_workflows.test.js (10 tests) 15122ms
+     ✓ previews locally without changing artwork or creating Undo history  3579ms
+     ✓ imports as the top editable layer, keeps hidden/locked artwork, and restores the complete stack with Undo/Redo  4034ms
+     ✓ updates fitting and palette previews without painting until Import is chosen  1557ms
+     ✓ rebuilds the preview for a changed grid and imports at the displayed resolution  1597ms
+     ✓ cancels previews and pending reads and allows choosing the same file again  515ms
+     ✓ ignores an earlier decode when a newer file has been chosen  445ms
+     ✓ invalidates a queued decode across study restore, navigation, and returning to the same learner  1195ms
+     ✓ respects the 16-layer ceiling and blocks empty transparent imports without adding history  780ms
+     ✓ rejects unsupported, oversized, and unreadable files while leaving artwork untouched  653ms
+     ✓ rejects excessive decoded dimensions and handles missing canvas contexts  719ms
+stdout | tests/artstudio_pixel_selection_editing.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Crisp Pixel selection resizing > doubles exact color strings and alpha into 2×2 cells without inventing colors
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Crisp Pixel selection resizing > samples odd rectangular bounds at cell centers and retains transparent holes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Crisp Pixel selection resizing > rejects unsupported or overflowing dimensions 0 2 2
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Crisp Pixel selection resizing > rejects unsupported or overflowing dimensions 65 2 0.5
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Crisp Pixel selection resizing > rejects unsupported or overflowing dimensions 2 null 2
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Crisp Pixel selection resizing > rejects unsupported or overflowing dimensions 2 2 3
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Crisp Pixel selection resizing > rejects unsupported or overflowing dimensions 33 2 2
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Crisp Pixel selection resizing > rejects unsupported or overflowing dimensions 2 2 null
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Crisp Pixel selection resizing > ignores inherited cell colors and rejects non-map input
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > grows at the bottom edge, preserves destination cells under holes, and undoes the whole edit
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > retains paint in transparent destination cells while growing
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > shrinks odd bounds without smoothing and restores fine detail with Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > guards grow overflow and one-cell shrink even when the canvas API is called directly
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > copies to an independent adjacent layer with the same appearance and preserves the selection
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > moves only selected paint while keeping composite colors and restoring both layers with one Undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > allows copying a locked source but protects it from Move and resizing
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > keeps hidden-source copies hidden and never modifies hidden paint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > guards the 16-layer cap through both controls and the canvas API without adding history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > disables edits during an unfinished selection and exposes associated guidance
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > saves and forks a moved layer with exact paint and appearance, without changing the saved original
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_selection_editing.test.js > Pixel selection editing through actual controls > clears selection/history on learner changes and leaves no pending layer selection to leak
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_pixel_selection_editing.test.js (21 tests) 6525ms
+     ✓ grows at the bottom edge, preserves destination cells under holes, and undoes the whole edit  1650ms
+     ✓ retains paint in transparent destination cells while growing  386ms
+     ✓ shrinks odd bounds without smoothing and restores fine detail with Undo  321ms
+     ✓ copies to an independent adjacent layer with the same appearance and preserves the selection  357ms
+     ✓ moves only selected paint while keeping composite colors and restoring both layers with one Undo  521ms
+     ✓ allows copying a locked source but protects it from Move and resizing  402ms
+     ✓ keeps hidden-source copies hidden and never modifies hidden paint  461ms
+     ✓ saves and forks a moved layer with exact paint and appearance, without changing the saved original  508ms
+     ✓ clears selection/history on learner changes and leaves no pending layer selection to leak  767ms
+stdout | tests/artstudio_pixel_appearance_workflows.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > groups a continuous opacity drag into one Undo and keeps every original cell
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > groups repeated keyboard changes and starts a separate edit after key release
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > updates blend output, resets appearance in one edit, and restores both settings
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > prevents appearance edits on a locked layer, including synthetic input events
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > duplicates appearance independently and bakes Normal opacity once when merging
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > remounts the opacity control across learner and layer changes and ignores stale input
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > saves and forks appearance with all original pixels and leaves the stored study unchanged
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_pixel_appearance_workflows.test.js > Pixel layer appearance through actual controls > retains appearance through resolution changes and Undo restores the complete prior stack
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_pixel_appearance_workflows.test.js (8 tests) 4141ms
+     ✓ groups a continuous opacity drag into one Undo and keeps every original cell  2948ms
+stdout | tests/artstudio_sr_announcements_i18n.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_sr_announcements_i18n.test.js (7 tests) 1020ms
+     ✓ registers every announcement key in all three English registries  459ms
+stdout | tests/artstudio_aria_labels_i18n.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_aria_labels_i18n.test.js (9 tests) 1084ms
+     ✓ registers every keyed label in all three English registries  448ms
+stdout | tests/artstudio_capture_ownership_pass2.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_capture_ownership_pass2.test.js > Art Studio pending capture ownership > cancels a queued study after a learner switch without reviving the previous project
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_capture_ownership_pass2.test.js > Art Studio pending capture ownership > cancels a queued handoff even when the learner switches away and back before decoding
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_capture_ownership_pass2.test.js > Art Studio pending capture ownership > keeps Clear effective when an earlier Symmetry image eventually decodes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_capture_ownership_pass2.test.js > Art Studio pending capture ownership > settles captures canceled by Clear without waiting for the discarded image
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_capture_ownership_pass2.test.js (4 tests) 844ms
+     ✓ cancels a queued study after a learner switch without reviving the previous project  515ms
+stdout | tests/artstudio_process_titles_i18n.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_process_titles_i18n.test.js > Art Studio Process Shelf titles and localization > names each action, lineage relationship and comparison by its displayed custom title
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_process_titles_i18n.test.js > Art Studio Process Shelf titles and localization > translates shelf controls and reflection defaults without translating learner titles or changing scope IDs
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_process_titles_i18n.test.js (2 tests) 613ms
+     ✓ names each action, lineage relationship and comparison by its displayed custom title  442ms
+stdout | tests/artstudio_pixel_import.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_pixel_import.test.js (15 tests) 29ms
+stdout | tests/artstudio_pixel_export.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_pixel_export.test.js (39 tests) 16ms
+stdout | tests/artstudio_pixel_colors.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_pixel_colors.test.js (14 tests) 15ms
+stdout | tests/artstudio_pixel_appearance.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_pixel_appearance.test.js (19 tests) 7ms
+stdout | tests/artstudio_pixel_layers.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_pixel_layers.test.js (12 tests) 7ms
+stdout | tests/artstudio_toast_keys_i18n.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_toast_keys_i18n.test.js (7 tests) 6ms
+stdout | tests/artstudio_watercolor_mixing.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_watercolor_mixing.test.js (5 tests) 5ms
+stdout | tests/artstudio_hostile_saved_state.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_hostile_saved_state.test.js (5 tests) 8ms
+stdout | tests/artstudio_paused_loops_idle.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_paused_loops_idle.test.js (3 tests) 5ms
+
+ Test Files  27 passed (27)
+      Tests  392 passed (392)
+   Start at  19:02:48
+   Duration  357.81s (transform 1.98s, setup 1.03s, import 4.05s, tests 233.01s, environment 94.68s)
+

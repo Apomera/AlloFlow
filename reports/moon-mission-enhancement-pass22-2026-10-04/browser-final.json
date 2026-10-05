@@ -1,0 +1,849 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass22-2026-10-04/browser-final/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-energy.spec.ts",
+      "file": "moon-mission-descent-energy.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "live WebGL energy responds to actual engine force and motion and holds while paused",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17049,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T17:00:06.999Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "live-webgl-energy",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-energ-928ee-tion-and-holds-while-paused-chromium\\attachments\\live-webgl-energy-a9a308be6f69b844941a2750c5a14f1242772a5d.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0368b572a747f3cada40-dec2ee151aad0d0d188c",
+          "file": "moon-mission-descent-energy.spec.ts",
+          "line": 178,
+          "column": 5
+        }
+      ],
+      "suites": [
+        {
+          "title": "fallback flight energy",
+          "file": "moon-mission-descent-energy.spec.ts",
+          "line": 113,
+          "column": 6,
+          "specs": [
+            {
+              "title": "paused energy is measured, remains optional, and does not operate controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4460,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T16:59:50.777Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "paused-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-energ-3f0af-d-does-not-operate-controls-chromium\\attachments\\paused-energy-c1dd1e55bfbe345e7798a4b84ecfdbaeba18c0c9.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0368b572a747f3cada40-c50780597fad52769a01",
+              "file": "moon-mission-descent-energy.spec.ts",
+              "line": 120,
+              "column": 7
+            },
+            {
+              "title": "recorded energy shows conservative coasting, braking power, changing direction, contact and legacy omissions",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7325,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T16:59:55.415Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "coast-contact-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-energ-a8010-ontact-and-legacy-omissions-chromium\\attachments\\coast-contact-energy-ff81561707dad0c580c37d83daad0ca9d11a8b47.png"
+                        },
+                        {
+                          "name": "recorded-braking-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-energ-a8010-ontact-and-legacy-omissions-chromium\\attachments\\recorded-braking-energy-90bbfb15737946b5ce459a054d077cacfba8aa74.png"
+                        },
+                        {
+                          "name": "recorded-rising-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-energ-a8010-ontact-and-legacy-omissions-chromium\\attachments\\recorded-rising-energy-a79febff788e9b6fea7fdf3f6efc2d69dd078f73.png"
+                        },
+                        {
+                          "name": "first-recorded-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-energ-a8010-ontact-and-legacy-omissions-chromium\\attachments\\first-recorded-energy-bf62e4a7aa8b45dea3a1ed44dff1c91c440785f9.png"
+                        },
+                        {
+                          "name": "legacy-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-energ-a8010-ontact-and-legacy-omissions-chromium\\attachments\\legacy-energy-d67ceec066c8811eeb2ad72737a49ae815e99e1f.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0368b572a747f3cada40-8fe11df602018d0f7b80",
+              "file": "moon-mission-descent-energy.spec.ts",
+              "line": 131,
+              "column": 7
+            },
+            {
+              "title": "320 px energy supports keyboard operation, readable rulers and forced colors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4233,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:00:02.754Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "phone-energy-320",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-energ-6332b-le-rulers-and-forced-colors-chromium\\attachments\\phone-energy-320-ed901ff4b9b9099aee65803cd84948577f66cd50.png"
+                        },
+                        {
+                          "name": "phone-energy-forced",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-energ-6332b-le-rulers-and-forced-colors-chromium\\attachments\\phone-energy-forced-f8fa52e9469d9fda46a86d99fee2893db85c88f5.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0368b572a747f3cada40-f053a1a6db9a84b5f3a1",
+              "file": "moon-mission-descent-energy.spec.ts",
+              "line": 158,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "moon-mission-descent-history.spec.ts",
+      "file": "moon-mission-descent-history.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "live WebGL history samples actual motion and engine response, then holds during inspection",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 19427,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T17:00:42.240Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "live-webgl-history",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-histo-d6497-hen-holds-during-inspection-chromium\\attachments\\live-webgl-history-ed2dd7651dc04e45932304886e43281c566e32c1.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "a996eec5107c41f95976-b2e9844bf9ce0cbe6069",
+          "file": "moon-mission-descent-history.spec.ts",
+          "line": 179,
+          "column": 5
+        }
+      ],
+      "suites": [
+        {
+          "title": "fallback measured flight history",
+          "file": "moon-mission-descent-history.spec.ts",
+          "line": 114,
+          "column": 6,
+          "specs": [
+            {
+              "title": "paused startup waits for measured history and does not operate or save controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4041,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:00:24.084Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "paused-start",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-histo-008ca-ot-operate-or-save-controls-chromium\\attachments\\paused-start-9cebbe58e003f6dec6cc1eb59f2636c898dc1bd7.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a996eec5107c41f95976-9e4fc4594dce64acda87",
+              "file": "moon-mission-descent-history.spec.ts",
+              "line": 122,
+              "column": 7
+            },
+            {
+              "title": "signed recorded history ends at inspection, follows scrubbing and preserves contact and legacy receipts",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7182,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:00:28.154Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "recorded-contact",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-histo-a832c-contact-and-legacy-receipts-chromium\\attachments\\recorded-contact-5e242700beaf953f7e0d96a460a25109f4e0555e.png"
+                        },
+                        {
+                          "name": "recorded-direction-change",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-histo-a832c-contact-and-legacy-receipts-chromium\\attachments\\recorded-direction-change-dab34be974f8ec03f9a2a41fbbe5be0f63f460f2.png"
+                        },
+                        {
+                          "name": "first-recorded-sample",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-histo-a832c-contact-and-legacy-receipts-chromium\\attachments\\first-recorded-sample-a4d4c1186d1461bd5731794cc35aae353312a169.png"
+                        },
+                        {
+                          "name": "legacy-no-history",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-histo-a832c-contact-and-legacy-receipts-chromium\\attachments\\legacy-no-history-f25b536e88b408f909da0a202f2e94a999b010a8.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a996eec5107c41f95976-8ce25d07ef88f8a151da",
+              "file": "moon-mission-descent-history.spec.ts",
+              "line": 133,
+              "column": 7
+            },
+            {
+              "title": "320 px history keeps HTML rulers aligned with keyboard, reduced motion and forced colors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6873,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:00:35.352Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "phone-320",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-histo-ee4fa-ed-motion-and-forced-colors-chromium\\attachments\\phone-320-3862afdcb88ec1f145deb3d26368f460f4349a18.png"
+                        },
+                        {
+                          "name": "phone-forced-colors",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-histo-ee4fa-ed-motion-and-forced-colors-chromium\\attachments\\phone-forced-colors-347700ac49e57b5b120fc9540510cfbae20e9e4f.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a996eec5107c41f95976-1ed4cf52ed0df238bc42",
+              "file": "moon-mission-descent-history.spec.ts",
+              "line": 159,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "moon-mission-descent-predictions.spec.ts",
+      "file": "moon-mission-descent-predictions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "paused control comparisons are numerical, update immediately, and persist only the panel preference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 26521,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T17:01:01.717Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-paused-controls",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-predi-7b73a-t-only-the-panel-preference-chromium\\attachments\\prediction-paused-controls-c8e0ba3d3c8d65b5a9fc74bb4d9777ff8ddad4bf.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-c931efc69d7ce2376cff",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "active prediction clocks follow the flight and leave the original impact and once-only outcome intact",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 31403,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T17:01:28.285Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-actual-contact",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-predi-00341-nd-once-only-outcome-intact-chromium\\attachments\\prediction-actual-contact-d117360c8f011cde8fb5703c72dc7b68567bc1fb.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-7cabc1b79f7145c1b87d",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 116,
+          "column": 5
+        },
+        {
+          "title": "recorded sample projections preserve the landing receipt and omit missing legacy measurements",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15658,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T17:01:59.703Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-recorded-sample",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-predi-f73f5-missing-legacy-measurements-chromium\\attachments\\prediction-recorded-sample-cd0690e6b95a510ad7223ba75238ff028b7cd805.png"
+                    },
+                    {
+                      "name": "prediction-legacy-measurements",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-predi-f73f5-missing-legacy-measurements-chromium\\attachments\\prediction-legacy-measurements-6837d78f1ec11c27d576c67d7ea0586629316cfd.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-d3b15c5cf186749021db",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 135,
+          "column": 5
+        },
+        {
+          "title": "320 px keyboard controls and equal-axis paths remain accessible in the fallback view",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8688,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T17:02:15.379Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-predi-89658-ssible-in-the-fallback-view-chromium\\attachments\\prediction-phone-320-9e5345bee76bcbf24963d0768bb1bc311a08151f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-975bdd21d6fc950fd36c",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 167,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "moon-mission-descent-vectors.spec.ts",
+      "file": "moon-mission-descent-vectors.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "WebGL flight vectors follow engine and attitude response while physical time stays independent",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 38668,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T17:03:31.153Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "live-tilted-burn",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\attachments\\live-tilted-burn-b863f3fc7664c34fd46b4e2fe0d21a0a7d58fd6f.png"
+                    },
+                    {
+                      "name": "flight-view-webgl",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\attachments\\flight-view-webgl-6fdb5831be11e4e0a2c6e635daeb16e73d9417c9.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "3b0a921ff8586640a139-675870bbf9986511fa3d",
+          "file": "moon-mission-descent-vectors.spec.ts",
+          "line": 139,
+          "column": 5
+        }
+      ],
+      "suites": [
+        {
+          "title": "fallback flight vector instruments",
+          "file": "moon-mission-descent-vectors.spec.ts",
+          "line": 70,
+          "column": 6,
+          "specs": [
+            {
+              "title": "paused desktop vectors show actual measurements and do not operate the lander",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 8799,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:02:24.159Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "desktop-coast",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-vecto-4d172-d-do-not-operate-the-lander-chromium\\attachments\\desktop-coast-4e98ef685e8464b0cd50b0efa307f798f1f2022d.png"
+                        },
+                        {
+                          "name": "coast-vector-diagrams",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-vecto-4d172-d-do-not-operate-the-lander-chromium\\attachments\\coast-vector-diagrams-bb18d1f0b411b945e51b233b95cbaca0585b7ac5.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b0a921ff8586640a139-561acaca434fd0a12a98",
+              "file": "moon-mission-descent-vectors.spec.ts",
+              "line": 78,
+              "column": 7
+            },
+            {
+              "title": "recorded tilted burn and contact preserve receipts and omit missing legacy vectors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 25067,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:02:33.033Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "contact-velocity",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\attachments\\contact-velocity-e1e1a052e201f3246073c5674437bce3c58e28d6.png"
+                        },
+                        {
+                          "name": "recorded-tilted-burn",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\attachments\\recorded-tilted-burn-8a8255b509fa8f6ad69ca203d7d58b69debebdc7.png"
+                        },
+                        {
+                          "name": "tilted-vector-diagrams",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\attachments\\tilted-vector-diagrams-1c95ab3632fd6ff63b1dd96eb269381aa320ca04.png"
+                        },
+                        {
+                          "name": "legacy-no-vectors",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\attachments\\legacy-no-vectors-4e415279a2ae13e99574a1d37f28ec6a7577759d.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b0a921ff8586640a139-f05699c9985575143c60",
+              "file": "moon-mission-descent-vectors.spec.ts",
+              "line": 89,
+              "column": 7
+            },
+            {
+              "title": "320 px flight vectors support keyboard, reduced motion and forced colors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 33024,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:02:58.115Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "phone-320",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-vecto-5ffb6-ed-motion-and-forced-colors-chromium\\attachments\\phone-320-fafd68c105b447526dc8b8504db681574d9d4dc3.png"
+                        },
+                        {
+                          "name": "phone-forced-colors",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass22-2026-10-04\\browser-final\\results\\moon-mission-descent-vecto-5ffb6-ed-motion-and-forced-colors-chromium\\attachments\\phone-forced-colors-8c366b20b8bb2474f64490eb2b4c2066d4871d76.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b0a921ff8586640a139-446f5b8f9746e066f854",
+              "file": "moon-mission-descent-vectors.spec.ts",
+              "line": 119,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T16:59:49.771Z",
+    "duration": 272620.75,
+    "expected": 16,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

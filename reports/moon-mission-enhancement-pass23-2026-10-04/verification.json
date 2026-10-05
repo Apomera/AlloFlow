@@ -1,0 +1,273 @@
+{
+  "completedLocally": true,
+  "date": "2026-10-04",
+  "sourceSha256": "2ada5eb685576b2573a29a99e03c7038dd7cdff7b7fa45dd95c23a8458d6e9bd",
+  "sourceBytes": 1389480,
+  "unitChecks": 242,
+  "unitFiles": 15,
+  "newDustUnitChecks": 26,
+  "distinctBrowserWorkflows": 12,
+  "browserRetries": 0,
+  "browserWorkers": 1,
+  "browserWorkflowLimitSeconds": 180,
+  "finalBrowserResults": [
+    {
+      "file": "browser-energy-final.json",
+      "stats": {
+        "startTime": "2026-10-04T17:59:31.158Z",
+        "duration": 40098.664000000004,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "file": "browser-vectors-isolated-1.json",
+      "stats": {
+        "startTime": "2026-10-04T23:40:04.830Z",
+        "duration": 37554.332,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "file": "browser-vectors-isolated-2.json",
+      "stats": {
+        "startTime": "2026-10-04T23:41:29.650Z",
+        "duration": 12321.353,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "file": "browser-vectors-isolated-3.json",
+      "stats": {
+        "startTime": "2026-10-04T23:43:29.335Z",
+        "duration": 98875.174,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "file": "browser-vectors-isolated-4.json",
+      "stats": {
+        "startTime": "2026-10-04T23:49:19.849Z",
+        "duration": 110154.932,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "file": "browser-dust-isolated-1-corrected.json",
+      "stats": {
+        "startTime": "2026-10-05T00:33:11.380Z",
+        "duration": 55039.837,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "file": "browser-dust-isolated-2.json",
+      "stats": {
+        "startTime": "2026-10-05T00:34:34.762Z",
+        "duration": 23844.614999999998,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "file": "browser-dust-isolated-3.json",
+      "stats": {
+        "startTime": "2026-10-05T00:36:52.382Z",
+        "duration": 59231.263,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    {
+      "file": "browser-dust-isolated-4.json",
+      "stats": {
+        "startTime": "2026-10-05T00:38:13.627Z",
+        "duration": 38287.575,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  ],
+  "scopedAxeScans": [
+    {
+      "file": "browser-energy-final/energy/desktop-axe.json",
+      "violations": 0
+    },
+    {
+      "file": "browser-energy-final/energy/live-axe.json",
+      "violations": 0
+    },
+    {
+      "file": "browser-energy-final/energy/paused-axe.json",
+      "violations": 0
+    },
+    {
+      "file": "browser-energy-final/energy/phone-axe.json",
+      "violations": 0
+    },
+    {
+      "file": "browser-energy-final/energy/phone-forced-axe.json",
+      "violations": 0
+    },
+    {
+      "file": "browser-vectors-isolated-1/vectors/desktop-axe.json",
+      "violations": 0
+    },
+    {
+      "file": "browser-vectors-isolated-3/vectors/phone-axe.json",
+      "violations": 0
+    },
+    {
+      "file": "browser-vectors-isolated-3/vectors/phone-forced-axe.json",
+      "violations": 0
+    },
+    {
+      "file": "browser-dust-isolated-1-corrected/dust/desktop-axe.json",
+      "violations": 0
+    },
+    {
+      "file": "browser-dust-isolated-3/dust/phone-forced-axe.json",
+      "violations": 0
+    }
+  ],
+  "newDustCapturesReviewed": 11,
+  "dustPixelProof": {
+    "width": 1014,
+    "height": 420,
+    "changed": 142,
+    "delta": 5672
+  },
+  "physicsProbe": {
+    "sourceSha256": "2ada5eb685576b2573a29a99e03c7038dd7cdff7b7fa45dd95c23a8458d6e9bd",
+    "cases": [
+      {
+        "capacity": 12,
+        "steps": 1801,
+        "peakLiveGrains": 7,
+        "births": 62,
+        "maxPhysicalLifetimeSeconds": 1.9094565640275403,
+        "settledAtEnd": true
+      },
+      {
+        "capacity": 90,
+        "steps": 1801,
+        "peakLiveGrains": 44,
+        "births": 468,
+        "maxPhysicalLifetimeSeconds": 1.9805014270905952,
+        "settledAtEnd": true
+      },
+      {
+        "capacity": 220,
+        "steps": 1801,
+        "peakLiveGrains": 102,
+        "births": 1143,
+        "maxPhysicalLifetimeSeconds": 2.048797452309955,
+        "settledAtEnd": true
+      },
+      {
+        "capacity": 256,
+        "steps": 1801,
+        "peakLiveGrains": 118,
+        "births": 1330,
+        "maxPhysicalLifetimeSeconds": 2.048797452309955,
+        "settledAtEnd": true
+      }
+    ],
+    "inspectedParticleStates": 193437,
+    "maxSpecificEnergyErrorJPerKg": 1.1368683772161603e-13,
+    "maxFiniteDifferenceGravityErrorMPerSecSquared": 1.3437036239238864e-07,
+    "originalFlightPreservedAtEveryStep": true,
+    "originalFlightComparisonSteps": 215,
+    "contact": {
+      "alt": 0,
+      "vVel": -9.605995335081877,
+      "hVel": 4.027970826940647,
+      "fuel": 109.87214326849382,
+      "thrust": 2.230619571092644e-15,
+      "tilt": 3.4980634455903304e-08,
+      "x": 14.412319553432868,
+      "elapsed": 3.5785776630043884,
+      "contact": true
+    },
+    "illustrativeEmissionSpeedsMPerSec": [
+      15,
+      40
+    ],
+    "illustrativeElevationDegrees": [
+      1,
+      2.5
+    ],
+    "quantitativePlumeModel": false,
+    "sources": [
+      "https://ntrs.nasa.gov/citations/20130012063",
+      "https://ntrs.nasa.gov/citations/20090022233"
+    ]
+  },
+  "preservation": {
+    "sourceSha256": "2ada5eb685576b2573a29a99e03c7038dd7cdff7b7fa45dd95c23a8458d6e9bd",
+    "sourceBytes": 1389480,
+    "canonicalPublicByteIdentical": true,
+    "integrationOperations": 15,
+    "exactAcceptedBaselineReversal": true,
+    "acceptedBaselineSha256": "711738efbb3fca5af72d26a4ae87862985ad5aa4b20690f58761eaf5fb3e393e",
+    "priorTestFilesUnchanged": 21,
+    "scopedIndexUnchanged": true,
+    "newTestFilesUnstaged": true,
+    "sourceSyntaxPassed": true,
+    "scopedWhitespacePassed": true,
+    "status": [
+      " M desktop/web-app/public/stem_lab/stem_tool_moonmission.js",
+      " M stem_lab/stem_tool_moonmission.js",
+      "?? tests/e2e/moon-mission-descent-dust.spec.ts",
+      "?? tests/e2e/moon-mission-descent-energy.spec.ts",
+      "?? tests/e2e/moon-mission-descent-history.spec.ts",
+      "?? tests/e2e/moon-mission-descent-landmarks.spec.ts",
+      "?? tests/e2e/moon-mission-descent-predictions.spec.ts",
+      "?? tests/e2e/moon-mission-descent-vectors.spec.ts",
+      "?? tests/e2e/moon-mission-descent-visuals.spec.ts",
+      "?? tests/moonmission_descent_dust.test.js",
+      "?? tests/moonmission_descent_energy.test.js",
+      "?? tests/moonmission_descent_history.test.js",
+      "?? tests/moonmission_descent_prediction_charts.test.js",
+      "?? tests/moonmission_descent_prediction_landmarks.test.js",
+      "?? tests/moonmission_descent_prediction_physics.test.js",
+      "?? tests/moonmission_descent_prediction_visuals.test.js",
+      "?? tests/moonmission_descent_vectors.test.js"
+    ]
+  },
+  "verificationScope": "Working-tree local React/Three browser harness with application stylesheet; no full host build, deployed application, hardware performance benchmark or assistive-technology audit.",
+  "modelLimits": [
+    "Qualitative plume emission: speeds, density, onset, visibility and launch footprint are illustrative.",
+    "Dust returns to a flat local launch surface; decorative terrain occlusion is visual, without terrain collision or erosion physics.",
+    "Airborne dust history is absent from the existing recorder and is omitted during replay.",
+    "The side view exaggerates vertical particle clearance for readability."
+  ],
+  "committed": false,
+  "staged": false,
+  "pushed": false,
+  "deployed": false,
+  "fullBuildRun": false
+}

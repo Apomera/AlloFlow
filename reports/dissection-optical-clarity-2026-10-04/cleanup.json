@@ -1,0 +1,38 @@
+{
+  "verifiedFiles": 176,
+  "removedScratch": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04",
+  "removedHelpers": [
+    {
+      "name": "optical-prepare.cjs",
+      "SHA": "f9f3ef79eef40cf643a79e90f17b2a3ccf5fb396c82192a9297ebed35f5da4c2"
+    },
+    {
+      "name": "optical-run.cjs",
+      "SHA": "df067397079eb1a7859ae4f9c67a0f3745cca0cac1941bc1e099b77a532bd1b3"
+    },
+    {
+      "name": "optical-tests-edit.cjs",
+      "SHA": "b7a92368c7f88f926b0577de5f0b77d6ae4f9765c6b51d6fbceb62d5d6aae56c"
+    },
+    {
+      "name": "optical-grid-record.cjs",
+      "SHA": "5bd2993f2ff961f72014e1a0b2985befc4975c7951338e7d53cd05e8803ad1ee"
+    },
+    {
+      "name": "optical-polish-record.cjs",
+      "SHA": "830f9a20bf0cc83c5ba9bff2bc3bb1271e43b626eb5c6b9655afe0343d9ddbab"
+    },
+    {
+      "name": "optical-report.cjs",
+      "SHA": "6aa3cbc1f2e61312200ab026f8a123a0fd97493276ef9e052e87bff5e5b47c33"
+    },
+    {
+      "name": "optical-archive.cjs",
+      "SHA": "11c3fd3a80945e95093b0c1eac7bb5034f5d132a00a6963c10cfb019d614e041"
+    },
+    {
+      "name": "optical-cleanup.cjs",
+      "SHA": "37a2eeaded83a3e08ca71c8aebc7a31901cea9f4ba3adcb913de007d86d8b177"
+    }
+  ]
+}

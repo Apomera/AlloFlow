@@ -44,7 +44,10 @@ for(const width of [1100,420])test.describe('Raptor target guidance '+width,()=>
     await page.getByRole('button',{name:'Scenic view',exact:true}).click();await command('targetProbe',{ndcX:0,ndcY:0,ndcZ:0});await expect(tracker).toBeVisible();
     snap=await command('trail');expect(snap.targetGuideVisible).toBe(false);expect(snap.targetHaloVisible).toBe(false);await expect(tracker).toBeHidden();
     await command('trail');await expect(tracker).toBeVisible();
-    await page.emulateMedia({reducedMotion:'reduce'});snap=await command('targetProbe',{ndcX:1.6,ndcY:0,ndcZ:0});expect(snap.reducedMotion).toBe(true);expect(snap.targetGuideVisible).toBe(false);await expect(tracker).toBeVisible();
+    await page.emulateMedia({reducedMotion:'reduce'});
+    // The browser delivers the media-query change asynchronously after emulation.
+    await expect.poll(()=>page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().reducedMotion)).toBe(true);
+    snap=await command('targetProbe',{ndcX:1.6,ndcY:0,ndcZ:0});expect(snap.reducedMotion).toBe(true);expect(snap.targetGuideVisible).toBe(false);await expect(tracker).toBeVisible();
     await command('targetProbe',{ndcX:0,ndcY:0,ndcZ:2});await expect(tracker).toBeHidden();
     expect(await page.evaluate(()=>(window as any).__events.errors)).toEqual([]);
   });

@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "sourceSha256": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+  "scriptSha256": "0ad50b7b8618c245d779980cc58a251bfe1ec5bda768517810eb3e2f4d0c9901",
+  "browserResultsSha256": "91c202b86beb1337a81382b3f9ee4d782075385448e1d8c0ae643ebed0ac0fa6",
+  "inspection": "All eight final PNGs viewed at original resolution through view_image.",
+  "reviewed": [
+    "same-current-summaries-1280.png",
+    "same-current-summaries-390.png",
+    "same-current-summaries-320.png",
+    "sensor-probe-summaries-320.png",
+    "saved-summaries-200pct-text-320.png",
+    "forced-colors-saved-summaries-320.png",
+    "rtl-saved-summaries-320.png",
+    "localized-saved-summaries-320.png"
+  ],
+  "screenshotSha256": {
+    "same-current-summaries-1280.png": "98877330e0955f711f4a5b1324a2e9b7c69be9d40c473b1aba9ec8dfed7bb965",
+    "same-current-summaries-390.png": "75f3f9e42e350d1821a7b0cd42f6a861de6b94e894a6c096dbabc33d304aa619",
+    "same-current-summaries-320.png": "0fa7060a2a31b947c4d227f94931fdd852a5bab6674a91d1abc2ecce420f6fb6",
+    "sensor-probe-summaries-320.png": "77dd3acdca80f190eeadcc70c3c7e629ad208aff63eaf7b05cf9190cdcde5040",
+    "saved-summaries-200pct-text-320.png": "8c56254b3f22f65c95b07eac162e8b883b4fc9dce00435d2776ab1f4d4461cb3",
+    "forced-colors-saved-summaries-320.png": "7430ffd6aa0ac0443b0aba453eae4f2308ec4d58a26af890b90d45781b04dfb8",
+    "rtl-saved-summaries-320.png": "61f0efe820549066db5f7593a85371fccc233ac56b0ba61cb2d1ad6ae0626710",
+    "localized-saved-summaries-320.png": "4e6fdc1810fa87cbf417b4333cb1c978b3652aebb6555a5b324a8c47e11dacd4"
+  },
+  "findings": [
+    "Saved 3.30V and 5.00V inputs distinguish cards with equal lamp current.",
+    "Desktop labels and phone reading rows are clear.",
+    "Sensor light levels and ordered probe connections are visible.",
+    "Doubled text wraps without clipping numeric tokens or probe pairs.",
+    "Forced colors retain readable labels, values, borders, and disclosure markers.",
+    "Right-to-left layouts keep each lead label with its node.",
+    "Translated labels wrap cleanly."
+  ],
+  "materialIssues": []
+}

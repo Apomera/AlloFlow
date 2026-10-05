@@ -1,0 +1,83 @@
+{
+  "format": "alloflow-sld-state-references",
+  "version": 2,
+  "activeState": "Maine",
+  "byState": {
+    "Maine": {
+      "sources": [
+        {
+          "id": "c04f72f7-3388-4b19-961f-e2380bce96fc",
+          "title": "state-requirements.txt",
+          "url": "",
+          "fileName": "state-requirements.txt",
+          "pageSection": "",
+          "excerpt": "Evidence and instruction.",
+          "transferNotes": "",
+          "content": "Official state rule sample for local extraction.\nSection 2\n<em>literal markup</em> language: 文本\nEvidence and instruction.",
+          "fileFormat": "txt",
+          "extractionMethod": "browser-text",
+          "fileContentHash": "kh3t2w",
+          "effectiveDate": "",
+          "checkedDate": "2026-10-04",
+          "reviewedAt": "2026-10-04",
+          "importMethod": "local-file",
+          "documentPartCount": 1,
+          "fileSize": 125,
+          "fileLastModified": 1791158177768,
+          "reviewed": true,
+          "revision": 1
+        }
+      ],
+      "comparison": {
+        "criteria": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "language": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "intervention": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "exclusions": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "special-education": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        },
+        "documentation": {
+          "sourceId": "",
+          "note": "",
+          "followUp": "",
+          "status": "draft",
+          "checkedRevision": 0,
+          "checkedAt": ""
+        }
+      }
+    }
+  }
+}

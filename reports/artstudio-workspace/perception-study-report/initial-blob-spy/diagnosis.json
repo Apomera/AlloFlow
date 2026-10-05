@@ -1,0 +1,9 @@
+{
+  "success": false,
+  "total": 78,
+  "passed": 56,
+  "failed": 22,
+  "uniqueFullNames": 78,
+  "diagnosis": "All 22 failures at shared downloadedDocument Blob instance MIME assertion; constructor MIME options assertion passed. Fix test spy to delegate construction to preserved native Blob. Product source unchanged and no product edits.",
+  "testSha256": "ce1965d02dd2b7410f316100268443f394137c669b900c8b1325e584cc11f428"
+}

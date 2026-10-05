@@ -1,0 +1,7 @@
+{
+  "passed": 49,
+  "failed": 1,
+  "correction": "The inspection shortcut test expected an inactive scenario with an absent timestamp to be changed to zero. It now asserts preservation of the entire existing scenario array, alongside the expected selection and inspection changes.",
+  "sourceChanged": false,
+  "testDeadlinesChanged": false
+}

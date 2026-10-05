@@ -1,0 +1,25 @@
+{
+  "enhancement": "Cosmic Calendar",
+  "changes": [
+    "12 named, source-linked milestones retain the existing selection identifiers.",
+    "One linear conversion drives calendar dates, full-year markers, recent-history zooms and lifetime readouts.",
+    "Hour, minute and second views display separate selectable event rows and explicitly identify selections outside the window.",
+    "The present is the exact year-end boundary. Solar System formation maps to September 1; neutral-hydrogen formation maps to about 14.47 minutes after the start.",
+    "Formation phases and quoted age uncertainties are identified separately from approximate point examples.",
+    "Native lifetime range, keyboard event navigation and SVG touch/keyboard selection retain other saved investigations.",
+    "Phone contrast diagrams use readable labels and separated timeline ticks."
+  ],
+  "limits": [
+    "Uses a rounded, fixed 13.8-billion-year age and a 365-day calendar.",
+    "Clock precision describes scale arithmetic. Universe-age uncertainty is not propagated.",
+    "Published ages are embedded examples; source links provide provenance. No live data fetch is required."
+  ],
+  "previewFiles": [
+    "calendar-desktop.png",
+    "calendar-phone-contrast.png",
+    "calendar-year-phone.png",
+    "calendar-hour-phone.png",
+    "calendar-second-phone.png"
+  ],
+  "committed": false
+}

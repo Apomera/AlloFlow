@@ -147,8 +147,9 @@ describe('Cephalopod Hunter plant geometry', () => {
     try {
       const all = [...fixture.grass, ...fixture.kelp], arrays = all.map(plant => plant.mesh.geometry.attributes.position.array), snapshots = arrays.map(array => Array.from(array));
       sway(fixture.kelp, fixture.grass, state, 1200);
-      fixture.grass.forEach(plant => expect(plant.flex.value.x).toBe((1200 * .001 + plant.phase) % (Math.PI * 2)));
-      fixture.kelp.forEach(plant => expect(plant.flex.value.x).toBe((1200 * .0008 + plant.phase) % (Math.PI * 2)));
+      all.forEach(plant => expect(plant.flex.value.x).toBe((1200 * .00035) % (Math.PI * 2)));
+      fixture.grass.forEach(plant => expect(plant.flex.value.y).toBe((1200 * .001 + plant.phase) % (Math.PI * 2)));
+      fixture.kelp.forEach(plant => expect(plant.flex.value.y).toBe((1200 * .0008 + plant.phase) % (Math.PI * 2)));
       expect(all.every(plant => plant.mesh.rotation.z === 0 && plant.flex.value.w === 1)).toBe(true);
       const poses = all.map(plant => plant.flex.value.toArray());state.paused = true;
       sway(fixture.kelp, fixture.grass, state, 5500);
@@ -156,8 +157,9 @@ describe('Cephalopod Hunter plant geometry', () => {
       state.paused = false;state.a11y.reducedMotion = true;
       for (const now of [5600, 8000, 15000]) { sway(fixture.kelp, fixture.grass, state, now);expect(all.every(plant => plant.mesh.rotation.z === 0 && plant.flex.value.w === 0)).toBe(true);expect(all.map(plant => plant.flex.value.toArray())).toEqual(poses.map(pose => [...pose.slice(0, 3), 0])); }
       state.a11y.reducedMotion = false;sway(fixture.kelp, fixture.grass, state, 16000);
-      fixture.grass.forEach(plant => expect(plant.flex.value.x).toBe((16000 * .001 + plant.phase) % (Math.PI * 2)));
-      fixture.kelp.forEach(plant => expect(plant.flex.value.x).toBe((16000 * .0008 + plant.phase) % (Math.PI * 2)));
+      all.forEach(plant => expect(plant.flex.value.x).toBe((16000 * .00035) % (Math.PI * 2)));
+      fixture.grass.forEach(plant => expect(plant.flex.value.y).toBe((16000 * .001 + plant.phase) % (Math.PI * 2)));
+      fixture.kelp.forEach(plant => expect(plant.flex.value.y).toBe((16000 * .0008 + plant.phase) % (Math.PI * 2)));
       expect(all.every(plant => plant.flex.value.w === 1)).toBe(true);
       all.forEach((plant, i) => { expect(plant.mesh.geometry.attributes.position.array).toBe(arrays[i]);expect(Array.from(arrays[i])).toEqual(snapshots[i]); });
     } finally { dispose(fixture); }

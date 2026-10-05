@@ -1,0 +1,21 @@
+{
+  "reason": "Two fork worker startup timeouts executed zero assertions; a thread worker avoids the extra child process startup.",
+  "beforeRunnerSha256": "01a747bc9bc61e214d51245c9bd5cb542bc424c3ab9e2d725bd52e898f9780b6",
+  "afterRunnerSha256": "904f43bab62d11ff5121a0b7a7b6e76806d8bc96cd85bd87bb455a2c48783146",
+  "exactReplacement": {
+    "after": "--pool=threads",
+    "before": "--pool=forks"
+  },
+  "separatePerFileProcesses": true,
+  "maxWorkers": 1,
+  "testTimeout": 30000,
+  "hookTimeout": 60000,
+  "sourceSha256": "3424b78369802606dd709faf9c308c1d444b0d18633c69062a7e7486e5614453",
+  "testSha256": "adce18c843924d0a249a291dd1bb9457a25ac3babdc55179a8ff2c89cc208f8d",
+  "resourceSampleAfterInitialFailure": {
+    "freeVirtualMemoryKB": 4646456,
+    "freeDiskBytes": 6323326976,
+    "freePhysicalMemoryKB": 593996
+  },
+  "note": "Runner console wording is preserved; actual command and receipts identify the threads pool."
+}

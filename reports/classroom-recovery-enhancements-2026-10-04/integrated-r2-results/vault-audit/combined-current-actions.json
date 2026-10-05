@@ -1,0 +1,99 @@
+{
+  "label": "combined-current",
+  "completedAt": "2026-10-04T15:05:43.483Z",
+  "passed": true,
+  "total": 16,
+  "failed": 0,
+  "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\host_handlers_source.jsx",
+  "modulePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\host_handlers_module.js",
+  "sourceSha256": "91d5320f2e53388173688ad04a7d984faea330aca3cd95695708d34c2041c685",
+  "moduleSha256": "30e7ada1f228fe06aa6864a9c00e13bcb3c7af302c525216df81b582831868f3",
+  "modes": "Complete actual editable and generated factories",
+  "controlledBoundaries": [
+    "credential acknowledgement",
+    "plaintext read completion",
+    "explicit action retirement"
+  ],
+  "results": [
+    {
+      "mode": "source",
+      "name": "older unlock completion preserves a newer pending unlock and its busy state",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "new credential attempt retires an old plaintext read before credentials resolve",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "older credential failure cannot erase newer unlock feedback",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "older recovery continuation cannot release a newer unlock",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "explicitly retired action keeps the replacement busy indicator and feedback",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "current credential error stays visible and releases its own busy state",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "current plaintext-read failure locks the vault and preserves error feedback",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "current recovery success still publishes its own feedback",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "older unlock completion preserves a newer pending unlock and its busy state",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "new credential attempt retires an old plaintext read before credentials resolve",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "older credential failure cannot erase newer unlock feedback",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "older recovery continuation cannot release a newer unlock",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "explicitly retired action keeps the replacement busy indicator and feedback",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "current credential error stays visible and releases its own busy state",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "current plaintext-read failure locks the vault and preserves error feedback",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "current recovery success still publishes its own feedback",
+      "passed": true
+    }
+  ]
+}

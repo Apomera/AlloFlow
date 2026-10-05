@@ -1,0 +1,38 @@
+{
+  "archive": "initial-context-crop",
+  "archiveReceiptSha256": "74dd9a80b74d1793aa892e2a8a2f5c890741f280284487b6f767443c58e3afdf",
+  "archivedProductSourceSha256": "f007cc1844729655033fd2810fa01b74b51b28fa55cd94cda24d8ad5616ba6dc",
+  "beforeScriptSha256": "38cae56cafc4dc52842495776a24f16d43e9e6d738a4427d1a24e98c2fbd4ca5",
+  "afterScriptSha256": "f9085cebfa93bb4f17c6b9bf5700a05e71df4666683b43072d3248134a193421",
+  "sourceSha256": "5074437464753808786898645761149063f96f7a2d4bb610cad8f0a09c3bb7c4",
+  "changes": [
+    {
+      "type": "capture-and-font-scope",
+      "before": ".circuit-observation-comparison > .circuit-help",
+      "after": ".circuit-observation-comparison > h4 + .circuit-help",
+      "reason": "End primary context captures at the comparison status; exclude the later shared-scale help."
+    },
+    {
+      "type": "explicit-reading-verification",
+      "description": "Add exact formatted text, LTR isolation, atomic magnitude/unit geometry and inherited text-style checks for chart, metric, same-probe and different-probe quantities in every primary state."
+    },
+    {
+      "type": "explicit-rtl-detail",
+      "description": "Add one RTL chart/metric/probe screenshot and native AX static-text checks for each complete magnitude and unit."
+    },
+    {
+      "type": "source-pin",
+      "description": "Root fixed existing quantity-direction markup after the wider initial RTL screenshot exposed the issue; source formulas, formatters and state are unchanged."
+    }
+  ],
+  "originalWorkflowAssertionsRetained": true,
+  "productEditedByThisAgent": false,
+  "initialNative": {
+    "session": 61138,
+    "exitCode": 0,
+    "browserClosed": true
+  },
+  "generatorSha256": "b1b3be7b98942017fc0f6046b3c7b498e4bde0c2498461557731ac0ce5979fc7",
+  "workflowSha256": "2ff67c01290892399f4744ff5a3acdd8abc53ad20a91da5a897310e1cd23ca6c",
+  "readingChecksSha256": "85f16756f77a4f07997105438a1f06f4145345f2c1877f0fecfb5f9797ad4a24"
+}

@@ -1,0 +1,104 @@
+{
+  "completedDate": "2026-10-03",
+  "verifiedAtUtc": "2026-10-03T19:34:52.456274+00:00",
+  "sourceSha256": "6d4b89496c0a78aacefd7bf0bb608ff6aa5eac0a3627b53047fb447883ee7df1",
+  "sourceBytes": 1347660,
+  "canonicalPublicByteIdentical": true,
+  "units": {
+    "fileCount": 8,
+    "uniqueChecks": 120,
+    "newVectorChecks": 26,
+    "passed": 120,
+    "failed": 0,
+    "report": "unit-accepted.json",
+    "exitCode": 0,
+    "workers": 1,
+    "testTimeoutMs": 30000
+  },
+  "browser": {
+    "uniqueWorkflows": 8,
+    "passed": 8,
+    "failed": 0,
+    "retries": 0,
+    "workers": 1,
+    "testTimeoutMs": 180000,
+    "report": "browser-accepted.json",
+    "exitCode": 0,
+    "scopedAxeReports": [
+      "browser/vectors-accepted/desktop-axe.json",
+      "browser/vectors-accepted/phone-axe.json",
+      "browser/vectors-accepted/phone-forced-axe.json",
+      "browser/predictions-accepted/phone-axe.json"
+    ],
+    "scopedAxeViolations": 0
+  },
+  "vectors": {
+    "probeCases": 11,
+    "sourcesUnchanged": true,
+    "maxAccelerationDerivativeErrorMps2": 1.2580545920570785e-06,
+    "velocityAxesEqual": true,
+    "forceAxesEqual": true,
+    "fixedAccelerationRangeMps2": 10,
+    "contactForcesOmitted": true,
+    "missingLegacyStateOmitted": true
+  },
+  "webgl": {
+    "realPageCreatedContext": true,
+    "sceneVisibleMeshes": 160,
+    "unchangedPausedDraws": true,
+    "cameraAndResizeRedraw": true,
+    "activeFlightResponse": true,
+    "hardwareBenchmark": false,
+    "report": "browser/vectors-accepted/webgl-evidence.json"
+  },
+  "visual": {
+    "reviewedCaptures": 10,
+    "report": "visual-review.json"
+  },
+  "preservation": {
+    "exactPriorBaselineReversal": true,
+    "integrationOperations": 9,
+    "priorTestFilesUnchanged": 10,
+    "sharedScopedIndexUnchanged": true,
+    "report": "preservation.json"
+  },
+  "history": [
+    {
+      "report": "browser-initial.json",
+      "sourceSha256": "12989a074084a01b5af5b52e8304a7d678028c0ce3a89fad110773f762a92f2d",
+      "passed": 6,
+      "failed": 2,
+      "resolution": "Unique source-label marker; WebGL harness query uses the containing session."
+    },
+    {
+      "report": "browser-final.json",
+      "sourceSha256": "b23960aa0fd7c94dd65289110292b9d7703c5278f36658ec27aa2729db437765",
+      "passed": 7,
+      "failed": 1,
+      "resolution": "Unchanged paused WebGL frames now reuse their successful render. Capture timeout retained."
+    },
+    {
+      "report": "browser-webgl-check.json",
+      "sourceSha256": "6d4b89496c0a78aacefd7bf0bb608ff6aa5eac0a3627b53047fb447883ee7df1",
+      "passed": 0,
+      "failed": 1,
+      "resolution": "Camera test explicitly targets the native select; its paused-draw assertion had passed."
+    },
+    {
+      "report": "unit-incomplete-runner.json",
+      "sourceSha256": "6d4b89496c0a78aacefd7bf0bb608ff6aa5eac0a3627b53047fb447883ee7df1",
+      "passedAssertions": 113,
+      "exitCode": 1,
+      "omittedFile": "moonmission_descent_clock.test.js",
+      "resolution": "Seven clock checks passed independently; the complete 120-check rerun passed with readable diagnostics."
+    },
+    {
+      "commandSetup": "Unsupported --minWorkers flag was rejected before test execution; removed for supported --maxWorkers=1."
+    }
+  ],
+  "stagingPerformed": false,
+  "commitPerformed": false,
+  "pushPerformed": false,
+  "deploymentPerformed": false,
+  "fullBuildPerformed": false
+}

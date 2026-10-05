@@ -1,0 +1,20 @@
+PASS An actual recorded attempt supplies preserved instruction evidence and an initially empty optional reflection cue
+PASS Evidence-linked reflection appears before detailed evidence and fits accessibly at 1440px
+PASS Evidence-linked reflection appears before detailed evidence and fits accessibly at 390px
+PASS Evidence-linked reflection appears before detailed evidence and fits accessibly at 320px
+PASS Retry carries a closed readable saved-plan disclosure without changing traffic at 1440px
+PASS Retry carries a closed readable saved-plan disclosure without changing traffic at 390px
+PASS Retry carries a closed readable saved-plan disclosure without changing traffic at 320px
+PASS Reflection cues retain full chronological event context without changing a saved learner note
+PASS Evidence filtering does not shrink the optional reflection cue or erase its selected event
+PASS Dismissing a carried plan affects only this new attempt and preserves the original saved reflection
+PASS A carried plan and its dismissed state survive checkpoint restoration with traffic paused
+PASS A latest matching attempt with no note never borrows an older note
+PASS A different exercise cannot inherit the first-arrival reflection
+PASS Standard guided shifts carry only a same-airport non-exercise reflection
+PASS Practice history distinguishes the scenario and saved plan then reopens the actual latest debrief
+PASS Verified completion persists while a newer unfinished attempt has its own accurate result and review link
+PASS A completion retained beyond the eight full debriefs does not fabricate a review destination
+PASS Editing an existing saved reflection preserves all eight notes while a ninth shift remains bounded to eight
+PASS Reflection and carried-plan controls work at 200 percent zoom in forced colors
+{"passed":19,"failed":0,"runtimeErrors":[],"sourceStable":true}

@@ -1,0 +1,139 @@
+{
+  "kind": "final",
+  "sourceSha256": "e2bbe901e5b6fb40eacf121607bbf096c62ef9d35fdae52e66c9fa2dcfb96324",
+  "publicSha256": "e2bbe901e5b6fb40eacf121607bbf096c62ef9d35fdae52e66c9fa2dcfb96324",
+  "checks": [
+    {
+      "label": "No browser runtime errors",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "failures": [],
+  "cases": [
+    {
+      "label": "style and state probe",
+      "style": {
+        "styles": [
+          {
+            "id": "",
+            "hasCloudEvidence": false,
+            "length": 102
+          },
+          {
+            "id": "stem-input-controls-css",
+            "hasCloudEvidence": false,
+            "length": 2339
+          },
+          {
+            "id": "allo-basic-math-controls-css",
+            "hasCloudEvidence": false,
+            "length": 1467
+          },
+          {
+            "id": "allo-stem-motion-reduce-css",
+            "hasCloudEvidence": false,
+            "length": 1515
+          },
+          {
+            "id": "allo-stem-theme-contract-css",
+            "hasCloudEvidence": false,
+            "length": 904
+          },
+          {
+            "id": "wc-a11y-css",
+            "hasCloudEvidence": false,
+            "length": 190
+          },
+          {
+            "id": "allo-watercycle-polish-css",
+            "hasCloudEvidence": false,
+            "length": 407111
+          },
+          {
+            "id": "wc-five-mode-style",
+            "hasCloudEvidence": true,
+            "length": 135728
+          },
+          {
+            "id": "",
+            "hasCloudEvidence": false,
+            "length": 6448
+          },
+          {
+            "id": "",
+            "hasCloudEvidence": false,
+            "length": 167
+          },
+          {
+            "id": "",
+            "hasCloudEvidence": false,
+            "length": 7144
+          }
+        ],
+        "font": "8.8px",
+        "display": "block",
+        "textareaWidth": "162px"
+      },
+      "delta": [
+        {
+          "key": "stormTime",
+          "after": 52
+        },
+        {
+          "key": "stormDistanceKm",
+          "after": 3
+        },
+        {
+          "key": "soundEnabled",
+          "after": false
+        },
+        {
+          "key": "thunderEstimateKm",
+          "after": 3
+        },
+        {
+          "key": "thunderEstimateChecked",
+          "after": false
+        },
+        {
+          "key": "showAirflow",
+          "after": true
+        },
+        {
+          "key": "lightningStudyStep",
+          "after": "auto"
+        },
+        {
+          "key": "cameraFocus",
+          "after": "storm"
+        },
+        {
+          "key": "environment",
+          "after": "forest"
+        },
+        {
+          "key": "stormTrack",
+          "after": 0
+        },
+        {
+          "key": "transitionSeconds",
+          "after": 6
+        }
+      ],
+      "keyOrderEqual": false
+    }
+  ],
+  "actions": [],
+  "audits": [],
+  "captures": [],
+  "errors": [],
+  "completed": true,
+  "browserClosed": true,
+  "serverClosed": true,
+  "finalSourceSha256": "440e11f0cc05fb2817e81a8081f1ec7df54d0b11ade8dc3f630e5af95108329e",
+  "finalPublicSha256": "440e11f0cc05fb2817e81a8081f1ec7df54d0b11ade8dc3f630e5af95108329e",
+  "passed": 1,
+  "failed": 0,
+  "successful": true
+}

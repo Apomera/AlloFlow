@@ -1,0 +1,327 @@
+{
+  "checks": [
+    {
+      "saved": 0,
+      "capacityHelperAndVisibleGlobalCount": true
+    },
+    {
+      "saved": 1,
+      "capacityHelperAndVisibleGlobalCount": true
+    },
+    {
+      "saved": 21,
+      "capacityHelperAndVisibleGlobalCount": true
+    },
+    {
+      "saved": 22,
+      "capacityHelperAndVisibleGlobalCount": true
+    },
+    {
+      "saved": 23,
+      "capacityHelperAndVisibleGlobalCount": true
+    },
+    {
+      "saved": 24,
+      "capacityHelperAndVisibleGlobalCount": true
+    },
+    {
+      "filtersNeverChangeGlobalCapacity": true,
+      "emptyFilteredResultsRetainAllRecords": true
+    },
+    {
+      "oneObservationUsesOneRemainingSlot": true,
+      "savedRecordsNeverEvicted": true,
+      "fullNotebookDisablesSave": true
+    },
+    {
+      "fullNotebookPreservesReadyPairAndAllOriginalRecords": true,
+      "noEvictionOrCachedMissingGroup": true
+    },
+    {
+      "twoBatchedSavesCannotOverfillOrEvict": true,
+      "exactlyOneFinalSlotFilled": true
+    },
+    {
+      "saveChecksCommittedCapacityInsideUpdater": true,
+      "staleButtonCannotEvictNewHostObservation": true
+    },
+    {
+      "queuedSaveRejectedAfter": "profile",
+      "noEvictionOrWrongProfileRecord": true
+    },
+    {
+      "queuedSaveRejectedAfter": "full-notebook",
+      "noEvictionOrWrongProfileRecord": true
+    },
+    {
+      "free": 0,
+      "ordinaryStudyRequiresThreeAvailableSpaces": true,
+      "noPartialStart": true
+    },
+    {
+      "free": 1,
+      "ordinaryStudyRequiresThreeAvailableSpaces": true,
+      "noPartialStart": true
+    },
+    {
+      "free": 2,
+      "ordinaryStudyRequiresThreeAvailableSpaces": true,
+      "noPartialStart": true
+    },
+    {
+      "savedRepeatRequiresThreeFreeSpaces": true,
+      "sourceAndDrawingRemainIntact": true
+    },
+    {
+      "savedRepeatStartsWithExactlyThreeFreeSpaces": true,
+      "originalHiddenGroupUnchanged": true
+    },
+    {
+      "guidedRepeatFreeSpaces": 2,
+      "sameThreeSpacePolicy": true,
+      "planningNeverReservesOrMutatesRecords": true
+    },
+    {
+      "guidedRepeatFreeSpaces": 3,
+      "sameThreeSpacePolicy": true,
+      "planningNeverReservesOrMutatesRecords": true
+    },
+    {
+      "queuedThreeMatchStartRejectedAfter": "profile",
+      "noPartialDrawingOrGroupMutation": true
+    },
+    {
+      "queuedThreeMatchStartRejectedAfter": "full-notebook",
+      "noPartialDrawingOrGroupMutation": true
+    },
+    {
+      "experiment": "brightness",
+      "threeAvailableSpacesFitAllThreeMatchesWithoutEviction": true,
+      "sequentialStoredTrialsAndHiddenResults": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "threeAvailableSpacesFitAllThreeMatchesWithoutEviction": true,
+      "sequentialStoredTrialsAndHiddenResults": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "threeAvailableSpacesFitAllThreeMatchesWithoutEviction": true,
+      "sequentialStoredTrialsAndHiddenResults": true
+    },
+    {
+      "queuedMatchChecksLatestCapacityAndRevision": true,
+      "recordedFirstMatchAndNewHostObservationsNeverEvicted": true
+    },
+    {
+      "singleObservationUndoRefusesFullNotebook": true,
+      "allExistingPositionsPreserved": true
+    },
+    {
+      "deletePreviewNamesStudyAndRetainedCount": true,
+      "hiddenMatchesStartsAndSettingsNotLeaked": true,
+      "cancelReturnsFocusAndPreservesEverything": true
+    },
+    {
+      "cancelWithFilteredAwayOpenerFocusesNotebookHeading": true,
+      "noFocusLostToRemovedCard": true
+    },
+    {
+      "escapeCancelsDeletionAndReturnsFocus": true,
+      "notebookAndDraftPreserved": true
+    },
+    {
+      "expiredDeletionFocus": "visible",
+      "visibleReturnOrNotebookFallback": true,
+      "outsidePreviewFocusNotStolen": false
+    },
+    {
+      "expiredDeletionFocus": "removed",
+      "visibleReturnOrNotebookFallback": true,
+      "outsidePreviewFocusNotStolen": false
+    },
+    {
+      "expiredDeletionFocus": "outside-preview",
+      "visibleReturnOrNotebookFallback": false,
+      "outsidePreviewFocusNotStolen": true
+    },
+    {
+      "group": "complete-hidden",
+      "allRetainedMembersDeletedAtomically": 3,
+      "undoRestoresExactPositionsModelsDatesStartsAndReveal": true,
+      "unrelatedObservationsDrawingPinOtherToolPreserved": true
+    },
+    {
+      "group": "partial-mixed",
+      "allRetainedMembersDeletedAtomically": 2,
+      "undoRestoresExactPositionsModelsDatesStartsAndReveal": true,
+      "unrelatedObservationsDrawingPinOtherToolPreserved": true
+    },
+    {
+      "group": "conflicting-settings",
+      "allRetainedMembersDeletedAtomically": 3,
+      "undoRestoresExactPositionsModelsDatesStartsAndReveal": true,
+      "unrelatedObservationsDrawingPinOtherToolPreserved": true
+    },
+    {
+      "group": "conflicting-mixed-experiments",
+      "allRetainedMembersDeletedAtomically": 3,
+      "undoRestoresExactPositionsModelsDatesStartsAndReveal": true,
+      "unrelatedObservationsDrawingPinOtherToolPreserved": true
+    },
+    {
+      "filteredStudyDeletionIncludesAllMembers": true,
+      "filtersAndOriginalWholeGroupSurviveUndo": true
+    },
+    {
+      "wholeGroupDeletionClearsReviewPairRecordedPreviewsAndReportActions": true,
+      "undoReopenedPreviewsUseDefaults": true,
+      "restoredReadOnlyReportContainsAllSixOriginalMembers": true,
+      "reportBlobInspectedWithoutNativeDownloadOrPDF": true
+    },
+    {
+      "deletingComparisonBClosesPairWhilePreservingReviewedA": true,
+      "ALocalTrialAndSingleReportRemainAvailable": true
+    },
+    {
+      "deletionPreviewExpiresOn": "profile",
+      "noPersistedDeletion": true
+    },
+    {
+      "deletionPreviewExpiresOn": "notebook",
+      "noPersistedDeletion": true
+    },
+    {
+      "sameBatchStaleConfirmCannotDeleteChangedMembers": true,
+      "replacementNotesAndMembershipPreserved": true
+    },
+    {
+      "deferredWholeStudyDeletionCanceledBy": "profile",
+      "queuedUpdaterCannotAlterReplacement": true
+    },
+    {
+      "deferredWholeStudyDeletionCanceledBy": "notebook",
+      "queuedUpdaterCannotAlterReplacement": true
+    },
+    {
+      "batchedDoubleConfirmationDeletesOnce": true,
+      "oneAtomicUndoRestoresAllMembers": true
+    },
+    {
+      "staleGroupUndoCannotEvictFullReplacementNotebook": true,
+      "atomicRestoreRefusesWithoutThreeSpaces": true
+    },
+    {
+      "atomicUndoRefusesTwoAvailableSpacesForThreeMemberGroup": true,
+      "originalUndoBufferRemainsReusableWithEnoughSpace": true
+    },
+    {
+      "retainedSingleUndoCannotEvictReplacementLastSlot": true,
+      "staleUndoRejectedInsideUpdater": true
+    },
+    {
+      "laterOwnSavePreservesGroupUndoBufferButDisablesInsufficientSpaceRestore": true,
+      "twoSpacesCannotPartlyRestoreThreeMatches": true,
+      "helpfulCapacityExplanation": true
+    },
+    {
+      "fullNotebookSingleUndoDisabledAndExplained": true,
+      "deletedRecordNeverRestoredByEvictingLaterSave": true
+    },
+    {
+      "queuedAtomicUndoRejectedAcrossProfilesEvenWithIdenticalEmptyFingerprint": true,
+      "oldStudyNotResurrectedInNewProfile": true
+    },
+    {
+      "queuedSingleDeletionRejectedAcrossProfiles": true,
+      "latestNotebookPreserved": true
+    },
+    {
+      "groupDeletionExpiresStaleImportPreview": true,
+      "importAfterAtomicUndoPreservesAllOriginalRecords": true
+    },
+    {
+      "activeCollectionMasksNotebookGroupDeletion": true,
+      "saveAndImportRemainLockedDuringStudy": true
+    },
+    {
+      "externallyRemovedActiveStudyCannotLeaveCachedSummaryOrReport": true,
+      "originalDraftAndPinPreserved": true
+    },
+    {
+      "viewport": 320,
+      "deletePreviewAndGlobalCapacityNoOverflow": true,
+      "visibleControls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 390,
+      "deletePreviewAndGlobalCapacityNoOverflow": true,
+      "visibleControls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 768,
+      "deletePreviewAndGlobalCapacityNoOverflow": true,
+      "visibleControls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 1280,
+      "deletePreviewAndGlobalCapacityNoOverflow": true,
+      "visibleControls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 1600,
+      "deletePreviewAndGlobalCapacityNoOverflow": true,
+      "visibleControls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "deletionAndCapacityReadableSystemPalette": true,
+      "visibleControls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "deletionAndCapacityReadableSystemPalette": true,
+      "visibleControls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "deletionAndCapacityReadableSystemPalette": true,
+      "visibleControls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "deletionAndCapacityReadableSystemPalette": true,
+      "visibleControls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-contrast",
+      "deletionAndCapacityReadableSystemPalette": true,
+      "visibleControls44px": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "deletionControlsAndCapacityNoOverflow": true,
+      "visibleControls44px": true,
+      "axe": []
+    }
+  ],
+  "errors": [],
+  "loadedSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "finalSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+}

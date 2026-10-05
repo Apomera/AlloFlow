@@ -1,0 +1,82 @@
+{
+  "status": "INTEGRATED_NOT_TESTED",
+  "reviewedBackendSha256": "cd1a5a87fe805b91f8345499262e66b89cbc13ecbdbe4d74cfce0655295538d4",
+  "preloadPin": "cd1a5a87",
+  "files": [
+    {
+      "file": "app/ai_backend_module.js",
+      "beforeSha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528",
+      "sha256": "cd1a5a87fe805b91f8345499262e66b89cbc13ecbdbe4d74cfce0655295538d4",
+      "bytes": 176054,
+      "byteMatchesReviewedBackend": true,
+      "baselineGuarded": true
+    },
+    {
+      "file": "app/index.html",
+      "beforeSha256": "e7a090248b741588a9b51dd4e51b7bbe4a6cf16bb2af4a989fcfdc2c4655d2e1",
+      "sha256": "d677b6dddc672b21e60e45e92fa0caff8fb36e90eb08dd4eb873a0ed49858204",
+      "bytes": 10773,
+      "onlyExistingBackendPreloadVersionChanged": true,
+      "editExactlyReversible": true
+    },
+    {
+      "file": "desktop/web-app/public/app/ai_backend_module.js",
+      "beforeSha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528",
+      "sha256": "cd1a5a87fe805b91f8345499262e66b89cbc13ecbdbe4d74cfce0655295538d4",
+      "bytes": 176054,
+      "byteMatchesReviewedBackend": true,
+      "baselineGuarded": true
+    },
+    {
+      "file": "desktop/web-app/public/app/index.html",
+      "beforeSha256": "e7a090248b741588a9b51dd4e51b7bbe4a6cf16bb2af4a989fcfdc2c4655d2e1",
+      "sha256": "d677b6dddc672b21e60e45e92fa0caff8fb36e90eb08dd4eb873a0ed49858204",
+      "bytes": 10773,
+      "onlyExistingBackendPreloadVersionChanged": true,
+      "editExactlyReversible": true
+    },
+    {
+      "file": "desktop/app-build/ai_backend_module.js",
+      "beforeSha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528",
+      "sha256": "cd1a5a87fe805b91f8345499262e66b89cbc13ecbdbe4d74cfce0655295538d4",
+      "bytes": 176054,
+      "byteMatchesReviewedBackend": true,
+      "baselineGuarded": true
+    },
+    {
+      "file": "desktop/app-build/index.html",
+      "beforeSha256": "d838c66e78db4eb98f90e0f7535eed1644de19407cafe32a5eca1ced268b7311",
+      "sha256": "4e8cd0eb388d009492c2d4b2a574621f248ef2cd512b7aebf6e00cb887aff37e",
+      "bytes": 10757,
+      "onlyExistingBackendPreloadVersionChanged": true,
+      "editExactlyReversible": true
+    },
+    {
+      "file": "desktop/web-app/build/ai_backend_module.js",
+      "beforeSha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528",
+      "sha256": "cd1a5a87fe805b91f8345499262e66b89cbc13ecbdbe4d74cfce0655295538d4",
+      "bytes": 176054,
+      "byteMatchesReviewedBackend": true,
+      "baselineGuarded": true
+    },
+    {
+      "file": "desktop/web-app/build/index.html",
+      "beforeSha256": "b3def7bbaa380524b15131837ea5f144148a50f0227527a3e3123e4a23dcf61c",
+      "sha256": "f20ed86909b817fb1d9d617d6fc96b307351103540b79a0b96c578d90841f732",
+      "bytes": 10754,
+      "onlyExistingBackendPreloadVersionChanged": true,
+      "editExactlyReversible": true
+    }
+  ],
+  "allSixBackendCopiesByteEqual": true,
+  "allOtherIndexBytesPreserved": true,
+  "previousEightTestDefinitionsBytePreserved": true,
+  "newServedCopyTestCount": 1,
+  "totalNewSearchTests": 9,
+  "testFile": "tests/maine_sld_state_search_policy.test.js",
+  "testSha256": "a0c9d49b4f93b43bfcd9d0ee836581e70af51dc4a0b29fa62193d3572c9724a7",
+  "hostPinsEdited": false,
+  "remoteSearchCalled": false,
+  "deployed": false,
+  "committed": false
+}

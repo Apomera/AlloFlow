@@ -43,6 +43,8 @@ describe('dissection workspace bands', () => {
     const rail = root.querySelector('.diss-workflow');
     expect(rail, 'workflow rail').not.toBeNull();
     expect(rail.querySelectorAll('[aria-current="step"]')).toHaveLength(1);
+    expect(rail.querySelectorAll('li[data-state="neutral"]')).toHaveLength(5);
+    expect(rail.querySelectorAll('li[data-state="complete"], li[data-state="upcoming"]')).toHaveLength(0);
   }, 60_000);
 
   it.each(DISSECTION_PATHS)('keeps one visibility rule for the checkpoint and its signpost in %s', (filePath) => {

@@ -1,0 +1,31 @@
+{
+  "preparedAt": "2026-10-03T18:02:30.826Z",
+  "port": 65063,
+  "baseUrl": "http://127.0.0.1:65063",
+  "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+  "priorPreviewPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-full-reasoning-review-2026-10-02\\integration\\source-preview",
+  "priorPreviewFiles": [
+    {
+      "file": "index.html",
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5"
+    },
+    {
+      "file": "host.css",
+      "sha256": "58a85c127571ce1dbda03af6ac60d44788a0b69689f709d5470c094bba92f84c"
+    },
+    {
+      "file": "tested-host.jsx",
+      "sha256": "b5fb9c913c1fa3884d2fe0190a10401179cb5e362a48856d01a47db7a53f7fe7"
+    },
+    {
+      "file": "host.bundle.js",
+      "sha256": "5b1af4462c989d37f252fb61645f5c92556ce75c517356b7ca81ac81641d88bd"
+    },
+    {
+      "file": "preview.json",
+      "sha256": "8df9d0bf4a7993ddb8e400a32f8e6490a8f3aff4a579ec3fe060beb6fe346b8d"
+    }
+  ],
+  "previousArtifactsPreserved": true,
+  "previewOnly": true
+}

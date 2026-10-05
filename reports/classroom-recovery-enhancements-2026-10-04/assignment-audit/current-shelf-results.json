@@ -1,0 +1,50 @@
+{
+  "sourceFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\AlloFlowANTI.txt",
+  "handlersFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\host_handlers_source.jsx",
+  "sourceSha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+  "handlersSha256": "ef290e2068207169ca205c0329a0b2c5260deb6a9943f2d4173cd65ec0907bba",
+  "completedAt": "2026-10-04T17:15:56.379Z",
+  "actualHandler": true,
+  "actualQrEffect": true,
+  "actualInvalidate": true,
+  "actualPendingSetter": true,
+  "passed": true,
+  "cases": [
+    {
+      "name": "valid shelf retains exact array and selects Directions first",
+      "passed": true
+    },
+    {
+      "name": "valid shelf without Directions selects first saved resource",
+      "passed": true
+    },
+    {
+      "name": "accepted shelf retires pending, project and file owners before replacement",
+      "passed": true
+    },
+    {
+      "name": "accepted shelf retires pending opener before first role setter",
+      "passed": true
+    },
+    {
+      "name": "shelf opened during earlier QR decode retains accepted shelf after completion",
+      "passed": true
+    },
+    {
+      "name": "shelf opened during earlier QR decode suppresses stale failure feedback",
+      "passed": true
+    },
+    {
+      "name": "missing shelf preserves current workspace and owners",
+      "passed": true
+    },
+    {
+      "name": "malformed resources shelf preserves current workspace and owners",
+      "passed": true
+    },
+    {
+      "name": "empty shelf preserves current workspace and owners",
+      "passed": true
+    }
+  ]
+}

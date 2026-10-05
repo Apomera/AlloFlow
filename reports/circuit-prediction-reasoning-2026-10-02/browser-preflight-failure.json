@@ -1,0 +1,13 @@
+{
+  "nativeSession": 83885,
+  "exitCode": 1,
+  "stage": "PowerShell disk guard before Node or Chromium launch",
+  "requiredFreeBytes": 1073741824,
+  "observedFreeBytesAfterExit": 106627072,
+  "error": "Browser audit needs at least 1 GB free disk.",
+  "rawOutput": "Exception: \r\nLine |\r\n   2 |  …  -lt 1GB) { throw 'Browser audit needs at least 1 GB free disk.' }; n …\r\n     |                ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\r\n     | Browser audit needs at least 1 GB free disk.\r\n",
+  "browserLaunched": false,
+  "screenshotsWritten": 0,
+  "sourceSha256": "b207d09a0e834d5abeae5fba88f8303e3e457189ba58088677af6f05e3d543fa",
+  "scriptSha256": "0518b3f3b88e6bebc615540b57d0e9a82bafd6c219f608e1a4fb5358f23ed2c0"
+}

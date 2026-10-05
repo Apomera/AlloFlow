@@ -1,0 +1,275 @@
+{
+  "baselineSHA": "5341b12917c5784bc7d78ca4dc7f04d9ab364658d2a2ff678ad2c5d16199d722",
+  "sourceSHA": "c3ba3189fce6d0bd1eda77179c2c8345e7fa970817391925ac83080e45c5e17c",
+  "specSHA": "b14a6a17094ebd0f2154e3b73e0ce13e0d255dd52c525acb21d25102745cf835",
+  "edits": 14,
+  "mirrorIdentical": true,
+  "parsed": true,
+  "lfOnly": true,
+  "exactSourceReversal": true,
+  "exactTestReversals": true,
+  "browser": {
+    "optical": {
+      "startTime": "2026-10-05T01:59:12.644Z",
+      "duration": 223378.38,
+      "expected": 14,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "navigation": {
+      "startTime": "2026-10-05T02:05:58.100Z",
+      "duration": 133415.155,
+      "expected": 13,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "totalPassed": 27
+  },
+  "unit": {
+    "passed": 197,
+    "failed": 0,
+    "pending": 0
+  },
+  "audits": [
+    {
+      "name": "phone",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "tablet",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "desktop",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "embedded-medium",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "embedded-large",
+      "violations": 0,
+      "incomplete": 0
+    },
+    {
+      "name": "forced-colors",
+      "violations": 0,
+      "incomplete": 0
+    }
+  ],
+  "metrics": [
+    {
+      "name": "phone",
+      "beforeMinimumHeight": 32,
+      "afterMinimumHeight": 48,
+      "afterMinimumWidth": 105.203125,
+      "panelWidth": 274.40625,
+      "parentWidth": 274.40625,
+      "parentClient": 274,
+      "parentScroll": 274,
+      "minimumFont": 16,
+      "textClipped": false
+    },
+    {
+      "name": "tablet",
+      "beforeMinimumHeight": 32,
+      "afterMinimumHeight": 48,
+      "afterMinimumWidth": 97.53125,
+      "panelWidth": 711.21875,
+      "parentWidth": 711.21875,
+      "parentClient": 711,
+      "parentScroll": 711,
+      "minimumFont": 16,
+      "textClipped": false
+    },
+    {
+      "name": "desktop",
+      "beforeMinimumHeight": 32,
+      "afterMinimumHeight": 48,
+      "afterMinimumWidth": 107.53125,
+      "panelWidth": 771.21875,
+      "parentWidth": 771.21875,
+      "parentClient": 771,
+      "parentScroll": 771,
+      "minimumFont": 16,
+      "textClipped": false
+    },
+    {
+      "name": "embedded-medium",
+      "beforeMinimumHeight": 32,
+      "afterMinimumHeight": 48,
+      "afterMinimumWidth": 134.125,
+      "panelWidth": 474.40625,
+      "parentWidth": 474.40625,
+      "parentClient": 474,
+      "parentScroll": 474,
+      "minimumFont": 16,
+      "textClipped": false
+    },
+    {
+      "name": "embedded-large",
+      "beforeMinimumHeight": 38.15625,
+      "afterMinimumHeight": 49,
+      "afterMinimumWidth": 105.203125,
+      "panelWidth": 274.40625,
+      "parentWidth": 274.40625,
+      "parentClient": 274,
+      "parentScroll": 274,
+      "minimumFont": 18,
+      "textClipped": false
+    },
+    {
+      "name": "forced-colors",
+      "beforeMinimumHeight": 32,
+      "afterMinimumHeight": 48,
+      "afterMinimumWidth": 90.796875,
+      "panelWidth": 344.40625,
+      "parentWidth": 344.40625,
+      "parentClient": 344,
+      "parentScroll": 344,
+      "minimumFont": 16,
+      "textClipped": false
+    }
+  ],
+  "focus": [
+    {
+      "name": "phone",
+      "initial": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(23, 102, 210)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 5.429711502097148
+      },
+      "selected": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(23, 102, 210)",
+        "background": "rgb(237, 233, 254)",
+        "contrast": 4.573270638596763
+      }
+    },
+    {
+      "name": "tablet",
+      "initial": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(23, 102, 210)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 5.429711502097148
+      },
+      "selected": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(23, 102, 210)",
+        "background": "rgb(237, 233, 254)",
+        "contrast": 4.573270638596763
+      }
+    },
+    {
+      "name": "desktop",
+      "initial": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(23, 102, 210)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 5.429711502097148
+      },
+      "selected": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(23, 102, 210)",
+        "background": "rgb(237, 233, 254)",
+        "contrast": 4.573270638596763
+      }
+    },
+    {
+      "name": "embedded-medium",
+      "initial": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(23, 102, 210)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 5.429711502097148
+      },
+      "selected": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(23, 102, 210)",
+        "background": "rgb(237, 233, 254)",
+        "contrast": 4.573270638596763
+      }
+    },
+    {
+      "name": "embedded-large",
+      "initial": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 21
+      },
+      "selected": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(0, 0, 0)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 21
+      }
+    },
+    {
+      "name": "forced-colors",
+      "initial": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(55, 0, 110)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 15.134013837043632
+      },
+      "selected": {
+        "width": 3,
+        "offset": -5,
+        "style": "solid",
+        "shadow": "none",
+        "color": "rgb(55, 0, 110)",
+        "background": "rgb(255, 255, 255)",
+        "contrast": 15.134013837043632
+      }
+    }
+  ],
+  "unsuccessfulAttempts": [
+    "baseline",
+    "final",
+    "final-reviewed",
+    "layout-diagnosis"
+  ]
+}

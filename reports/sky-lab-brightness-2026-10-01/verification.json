@@ -1,0 +1,173 @@
+{
+  "checkedOn": "2026-10-01",
+  "sourceSha256": "10af968746cad65620de0d3c223f84b6b71ce89d48f8fe4df6907faa5ee4c2dc",
+  "scope": {
+    "sourceSha256": "10af968746cad65620de0d3c223f84b6b71ce89d48f8fe4df6907faa5ee4c2dc",
+    "baselineSha256": "8aa93b69807802a81cea74bd18956f510f23617fe36a296ffc5c00b1d607a691",
+    "sourceMatchesMirror": true,
+    "scopeReconstructsBaseline": true,
+    "syntaxValid": true,
+    "ownedEnglishLabels": 61,
+    "existingTableTestsPreserved": true,
+    "committed": false
+  },
+  "unitChecks": {
+    "passed": 211,
+    "failed": 0,
+    "report": "unit-verified.json",
+    "files": [
+      {
+        "file": "astronomy_cosmic_calendar.test.js",
+        "tests": 38,
+        "status": "passed"
+      },
+      {
+        "file": "astronomy_magnitude_explorer.test.js",
+        "tests": 39,
+        "status": "passed"
+      },
+      {
+        "file": "astronomy_stellar_comparison.test.js",
+        "tests": 25,
+        "status": "passed"
+      },
+      {
+        "file": "astronomy_stellar_spectrum.test.js",
+        "tests": 27,
+        "status": "passed"
+      },
+      {
+        "file": "astronomy_tables_a11y.test.js",
+        "tests": 2,
+        "status": "passed"
+      },
+      {
+        "file": "astronomy_ui_resilience.test.js",
+        "tests": 80,
+        "status": "passed"
+      }
+    ],
+    "timing": "Completed before the final SVG label spacing and table column widths; source logic unchanged by those layout adjustments."
+  },
+  "browserScenarios": {
+    "passed": 12,
+    "failed": 0,
+    "newMagnitudeScenarios": [
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "published examples reproduce the catalogue, link both figures and preserve other notes",
+        "report": "browser-layout-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "keyboard distance and magnitude controls preserve focus and express independent assumptions",
+        "report": "browser-verified.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "touch chooses distance continuously and cancellation leaves the plot usable",
+        "report": "browser-verified.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "five-magnitude examples give a hundredfold V-light change and bounded extremes stay visible",
+        "report": "browser-verified.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "restored values recover without snapping catalogue distances or losing independent work",
+        "report": "browser-verified.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "320px contrast diagrams, controls and catalogue stay readable with scientific limits exposed",
+        "report": "browser-layout-final.json",
+        "status": "passed",
+        "attempts": 1
+      }
+    ],
+    "calendarRegressionScenarios": [
+      {
+        "file": "astronomy-cosmic-calendar.spec.ts",
+        "title": "all milestone choices link computed dates, markers, source ages and saved notes",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-cosmic-calendar.spec.ts",
+        "title": "roving tabs wrap, preserve focus and navigate with Home and End",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-cosmic-calendar.spec.ts",
+        "title": "zoom rows accept touch and keyboard without jumping the scale or faking offscreen markers",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-cosmic-calendar.spec.ts",
+        "title": "lifetime range and examples stay synchronized across scales, including zero",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-cosmic-calendar.spec.ts",
+        "title": "restored legacy selections and malformed controls recover coherently while retaining other work",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-cosmic-calendar.spec.ts",
+        "title": "320px contrast retains readable, unclipped figures and 44px controls with clear age limits",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      }
+    ],
+    "coverage": "Aggregated unique passing scenarios from the cited reports. Earlier layout failures remain in their original reports; corrected phone layout and published-reference flow passed again on the final source.",
+    "finalLayoutRun": {
+      "report": "browser-layout-final.json",
+      "stats": {
+        "startTime": "2026-10-01T21:36:17.046Z",
+        "duration": 104177.118,
+        "expected": 2,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    }
+  },
+  "phone": {
+    "widthPx": 320,
+    "horizontalOverflow": false,
+    "svgTextOverlaps": 0,
+    "minSvgFontPx": 13.077777777777778,
+    "minimumControlHeightPx": 44,
+    "catalogue": {
+      "overflow": false,
+      "columnHeaders": 4,
+      "rowHeaders": 2
+    },
+    "report": "phone-geometry.json"
+  },
+  "syntaxAndSourceScopeVerified": true,
+  "scopedDiffWhitespaceCheck": "passed",
+  "provenance": "data-provenance.json",
+  "committed": false
+}

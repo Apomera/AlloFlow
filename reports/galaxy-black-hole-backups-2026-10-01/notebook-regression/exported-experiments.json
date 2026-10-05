@@ -1,0 +1,167 @@
+{
+  "schema": "galaxy-black-hole-experiments",
+  "version": 1,
+  "model": "Nonrotating Schwarzschild center paths; illustrative tidal deformation",
+  "comparison": {
+    "blackHoleDropObject": "star",
+    "blackHoleMassMode": "supermassive",
+    "blackHoleReleaseRadius": 6.6,
+    "blackHoleSideways": 1,
+    "blackHoleRadialVelocity": 0,
+    "blackHoleLaunchAngle": 49
+  },
+  "experiments": [
+    {
+      "id": "bh_mupvbtz9_nlon7f3",
+      "number": 1,
+      "note": "Close approach <script>plain note text</script>",
+      "settings": {
+        "blackHoleDropObject": "probe",
+        "blackHoleMassMode": "stellar",
+        "blackHoleReleaseRadius": 5,
+        "blackHoleSideways": 0,
+        "blackHoleRadialVelocity": 0,
+        "blackHoleLaunchAngle": 41
+      },
+      "prediction": {
+        "outcome": "captured",
+        "minimumRadius": 1,
+        "maximumRadius": 5,
+        "closestTime": 6.740173585403649
+      }
+    },
+    {
+      "id": "bh_mupvby7i_csksimh",
+      "number": 2,
+      "note": "Adjusted throw",
+      "settings": {
+        "blackHoleDropObject": "probe",
+        "blackHoleMassMode": "stellar",
+        "blackHoleReleaseRadius": 6.6,
+        "blackHoleSideways": -0.55,
+        "blackHoleRadialVelocity": 0,
+        "blackHoleLaunchAngle": 49
+      },
+      "prediction": {
+        "outcome": "captured",
+        "minimumRadius": 1,
+        "maximumRadius": 6.6,
+        "closestTime": 12.675142780344785
+      }
+    },
+    {
+      "id": "bh_mupvbyp4_sch6fre",
+      "number": 3,
+      "note": "",
+      "settings": {
+        "blackHoleDropObject": "star",
+        "blackHoleMassMode": "supermassive",
+        "blackHoleReleaseRadius": 6.6,
+        "blackHoleSideways": 1,
+        "blackHoleRadialVelocity": 0,
+        "blackHoleLaunchAngle": 49
+      },
+      "prediction": {
+        "outcome": "orbit",
+        "minimumRadius": 6.6,
+        "maximumRadius": 6.6,
+        "closestTime": 0
+      }
+    },
+    {
+      "id": "bh_mupvc28c_frolm3b",
+      "number": 4,
+      "note": "",
+      "settings": {
+        "blackHoleDropObject": "probe",
+        "blackHoleMassMode": "stellar",
+        "blackHoleReleaseRadius": 5,
+        "blackHoleSideways": 0,
+        "blackHoleRadialVelocity": 0,
+        "blackHoleLaunchAngle": 41
+      },
+      "prediction": {
+        "outcome": "captured",
+        "minimumRadius": 1,
+        "maximumRadius": 5,
+        "closestTime": 6.740173585403649
+      }
+    },
+    {
+      "id": "bh_mupvc2an_z9gxh98",
+      "number": 5,
+      "note": "",
+      "settings": {
+        "blackHoleDropObject": "probe",
+        "blackHoleMassMode": "stellar",
+        "blackHoleReleaseRadius": 5,
+        "blackHoleSideways": 0,
+        "blackHoleRadialVelocity": 0,
+        "blackHoleLaunchAngle": 41
+      },
+      "prediction": {
+        "outcome": "captured",
+        "minimumRadius": 1,
+        "maximumRadius": 5,
+        "closestTime": 6.740173585403649
+      }
+    },
+    {
+      "id": "bh_mupvc2cz_cg2x6mg",
+      "number": 6,
+      "note": "",
+      "settings": {
+        "blackHoleDropObject": "probe",
+        "blackHoleMassMode": "stellar",
+        "blackHoleReleaseRadius": 5,
+        "blackHoleSideways": 0,
+        "blackHoleRadialVelocity": 0,
+        "blackHoleLaunchAngle": 41
+      },
+      "prediction": {
+        "outcome": "captured",
+        "minimumRadius": 1,
+        "maximumRadius": 5,
+        "closestTime": 6.740173585403649
+      }
+    },
+    {
+      "id": "bh_mupvc2f9_cdzvinx",
+      "number": 7,
+      "note": "",
+      "settings": {
+        "blackHoleDropObject": "probe",
+        "blackHoleMassMode": "stellar",
+        "blackHoleReleaseRadius": 5,
+        "blackHoleSideways": 0,
+        "blackHoleRadialVelocity": 0,
+        "blackHoleLaunchAngle": 41
+      },
+      "prediction": {
+        "outcome": "captured",
+        "minimumRadius": 1,
+        "maximumRadius": 5,
+        "closestTime": 6.740173585403649
+      }
+    },
+    {
+      "id": "bh_mupvc2i4_ya9ly31",
+      "number": 8,
+      "note": "",
+      "settings": {
+        "blackHoleDropObject": "probe",
+        "blackHoleMassMode": "stellar",
+        "blackHoleReleaseRadius": 5,
+        "blackHoleSideways": 0,
+        "blackHoleRadialVelocity": 0,
+        "blackHoleLaunchAngle": 41
+      },
+      "prediction": {
+        "outcome": "captured",
+        "minimumRadius": 1,
+        "maximumRadius": 5,
+        "closestTime": 6.740173585403649
+      }
+    }
+  ]
+}

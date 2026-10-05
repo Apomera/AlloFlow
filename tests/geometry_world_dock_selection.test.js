@@ -23,7 +23,8 @@ describe('dock summary and actual exported selection agree',()=>{
     const ctx={React,toolData:{geometryWorld:{worldActive:true,activeLesson:'builderSandbox',builderPanel:'measure',measureResult:unrelated}},setStemLabTool:vi.fn(),addToast(){}};
     function dock(){const host=document.createElement('div');host.innerHTML=ReactDOMServer.renderToStaticMarkup(React.createElement(function Host(){return window.StemLab._registry.geometryWorld.render(ctx);}));return host;}
     let ui=dock();
-    expect(Array.from(ui.querySelectorAll('[aria-label="Selected build summary"] .gwe-metric')).map(metric=>metric.textContent)).toEqual(['2Blocks selected','2×1×1Block bounds']);
+    expect(Array.from(ui.querySelectorAll('[aria-label="Selected build summary"] .gwe-metric')).map(metric=>metric.textContent)).toEqual(['2Blocks selected']);
+    expect(Array.from(ui.querySelectorAll('.gwe-grid-span dd')).map(value=>value.textContent)).toEqual(['2grid cells','1grid cell','1grid cell']);
     expect(ui.querySelector('.gwe-creation-summary').dataset.selected).toBe('true');
     expect(ui.querySelector('.gwe-selection-scope').textContent).toBe('Showcase and Print Lab use these blocks.');
     expect(ui.querySelector('[aria-label="Print Lab block envelope"]').textContent).toContain('10 × 5 × 5 mm');
@@ -36,7 +37,7 @@ describe('dock summary and actual exported selection agree',()=>{
       // Core's ordinary M-key measurement of another student build explicitly
       // changes retention. The dock and actual handoff must then follow B.
       engine._builderSelection={blocks:[b]};ctx.toolData.geometryWorld.measureResult={blocks:a,count:2,isComplete:true,L:2,W:1,H:1};
-      ui=dock();expect(Array.from(ui.querySelectorAll('[aria-label="Selected build summary"] .gwe-metric')).map(metric=>metric.textContent)).toEqual(['1Blocks selected','1×1×1Block bounds']);
+      ui=dock();expect(Array.from(ui.querySelectorAll('[aria-label="Selected build summary"] .gwe-metric')).map(metric=>metric.textContent)).toEqual(['1Blocks selected']);expect(Array.from(ui.querySelectorAll('.gwe-grid-span dd')).map(value=>value.textContent)).toEqual(['1grid cell','1grid cell','1grid cell']);
       expect(ui.querySelector('.gwe-creation-summary').dataset.selected).toBe('true');
       expect(ui.querySelector('[aria-label="Print Lab block envelope"]').textContent).toContain('5 × 5 × 5 mm');
       api.openSelectedBuildInPrintLab(ctx);

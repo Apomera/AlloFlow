@@ -1,0 +1,83 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-pixel-tiling.js" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+index b21ca2e70..701b2ac2f 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-pixel-tiling.js"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+@@ -2606,6 +2606,28 @@ const d = labToolData.artStudio || {};
+             });
+             updMany(artStudioPixelLayerSnapshot(model,undefined,size));
+           }
++          function changePixelWrapping(enabled) {
++            var canvas=document.getElementById('pixelCanvas');
++            if(canvas && canvas._pixelCancelGesture)canvas._pixelCancelGesture();
++            upd('pixelWrapEdges',enabled===true);
++          }
++          function offsetPixelTile(axis) {
++            if(['x','y','both'].indexOf(axis)<0)return;
++            var canvas=document.getElementById('pixelCanvas');
++            if(canvas && canvas._pixelCancelGesture)canvas._pixelCancelGesture();
++            var before=currentPixelCheckpoint(),model=artStudioPixelLayerModel(before,pixelLayerDefaultName);
++            var active=model.layers.find(function(layer){return layer.id===model.activeId;});
++            if(!active || !active.visible || active.locked)return;
++            var current=active.pixels,next={},half=Math.floor(model.size/2);
++            Object.keys(current).forEach(function(key){
++              var point=artStudioPixelCell(key,model.size);if(!point)return;
++              var x=(point[0]+(axis==='y'?0:half))%model.size,y=(point[1]+(axis==='x'?0:half))%model.size;
++              next[x+','+y]=current[key];
++            });
++            if(Object.keys(current).every(function(key){return next[key]===current[key];}))return;
++            rememberPixelArtwork(before);updMany(artStudioPixelLayerSnapshot(model,next));
++            if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.pixel_tile_offset_done','Active layer shifted by half a tile. Repeat the same shift to restore its position, or use Undo.'));
++          }
+           function transformPixelArtwork(operation) {
+             var canvas = document.getElementById('pixelCanvas');
+             if (canvas && canvas._pixelCancelGesture) canvas._pixelCancelGesture();
+@@ -6632,9 +6654,13 @@ const d = labToolData.artStudio || {};
+               var size = (!d.pixelTool || d.pixelTool === 'brush' || d.pixelTool === 'eraser') ? pixelBrushSize : 1;
+               var startX = x - Math.floor(size / 2), startY = y - Math.floor(size / 2);
+               var center = (size - 1) / 2;
++              var wrapBrush=d.pixelWrapEdges===true && (!d.pixelTool || d.pixelTool==='brush' || d.pixelTool==='eraser');
+               for (var by = 0; by < size; by++) for (var bx = 0; bx < size; bx++) {
+                 var px = startX + bx, py = startY + by;
+-                if (px < 0 || py < 0 || px >= gridSize || py >= gridSize) continue;
++                if (px < 0 || py < 0 || px >= gridSize || py >= gridSize) {
++                  if(!wrapBrush)continue;
++                  px=(px+gridSize)%gridSize;py=(py+gridSize)%gridSize;
++                }
+                 if (d.pixelBrushShape === 'round' && (bx-center)*(bx-center)+(by-center)*(by-center) > size*size/4) continue;
+                 // Anchor ordered dithering to the artwork, not each brush dab.
+                 // Repeated or overlapping strokes therefore keep one pattern.
+@@ -6877,7 +6903,9 @@ const d = labToolData.artStudio || {};
+               if (targetKey === (artStudioPixelColorKey(fillColor) || fillColor)) return;
+               var queue = [[startX, startY]], visited = {};
+               for (var index = 0; index < queue.length; index++) {
+-                var x = queue[index][0], y = queue[index][1], key = x + ',' + y;
++                var x = queue[index][0], y = queue[index][1];
++                if(d.pixelWrapEdges===true){x=(x+gridSize)%gridSize;y=(y+gridSize)%gridSize;}
++                var key = x + ',' + y;
+                 if (x < 0 || x >= gridSize || y < 0 || y >= gridSize || visited[key]) continue;
+                 visited[key] = true;
+                 if ((artStudioPixelColorKey(grid[key]) || grid[key] || null) !== targetKey) continue;
+@@ -10491,6 +10519,9 @@ const d = labToolData.artStudio || {};
+                 .artstudio-pixel-layer-list{display:flex;flex-direction:column;gap:4px;max-height:184px;overflow:auto;margin:8px 0}
+                 .artstudio-pixel-layer-list button{text-align:left;overflow-wrap:anywhere;padding:6px 8px;border:1px solid #94a3b8;border-radius:6px;background:#fff;color:#0f172a;font-size:12px}
+                 .artstudio-pixel-layer-list button[aria-pressed=true]{border:2px solid #be185d;background:#fdf2f8}
++                .artstudio-pixel-tiling{min-width:0}
++                .artstudio-pixel-tiling button{width:100%;min-height:44px;white-space:normal;text-align:left}
++                .artstudio-pixel-tiling :is(button,input):focus-visible{outline:3px solid #2563eb;outline-offset:2px}
+                 .artstudio-pixel-layers :is(button,input,select):focus-visible{outline:3px solid #2563eb;outline-offset:2px}
+                 .artstudio-pixel-layers :is(input[type=range],select){display:block;width:100%;min-height:44px;min-width:0;max-width:100%;accent-color:#be185d}
+                 .artstudio-pixel-layers select{border:1px solid #94a3b8;border-radius:6px;background:#fff;padding:0 8px;font-size:12px}
+@@ -10699,6 +10730,13 @@ const d = labToolData.artStudio || {};
+                   React.createElement('legend',{className:'text-xs font-bold'},__alloT('stem.artstudio.pixel_mirror_shapes','Mirror brush, eraser and shapes')),
+                   [['pixelMirrorX',__alloT('stem.artstudio.pixel_mirror_x','Left / right')],['pixelMirrorY',__alloT('stem.artstudio.pixel_mirror_y','Top / bottom')]].map(function(option){return React.createElement('label',{key:option[0],className:'flex min-h-[44px] items-center gap-2 text-xs font-bold'},React.createElement('input',{type:'checkbox',checked:!!d[option[0]],onChange:function(e){upd(option[0],e.target.checked);}}),option[1]);})
+                 ),
++                React.createElement('fieldset',{id:'artstudio-pixel-tiling',className:'artstudio-pixel-tiling my-2 rounded-lg border border-slate-300 p-2'},
++                  React.createElement('legend',{className:'text-xs font-bold'},__alloT('stem.artstudio.pixel_tile_tools','Seamless tiles')),
++                  React.createElement('label',{className:'flex min-h-[44px] items-center gap-2 text-xs font-bold'},
++                    React.createElement('input',{id:'artstudio-pixel-wrap-edges',type:'checkbox',checked:d.pixelWrapEdges===true,'aria-describedby':'artstudio-pixel-tiling-help',onChange:function(event){changePixelWrapping(event.target.checked);}}),__alloT('stem.artstudio.pixel_wrap_edges','Wrap brush and Fill at edges')),
++                  React.createElement('div',{className:'space-y-1'},[['x',__alloT('stem.artstudio.pixel_tile_offset_x','Center left / right seam')],['y',__alloT('stem.artstudio.pixel_tile_offset_y','Center top / bottom seam')],['both',__alloT('stem.artstudio.pixel_tile_offset_both','Center both seams')]].map(function(option){return React.createElement('button',{id:'artstudio-pixel-tile-offset-'+option[0],key:option[0],type:'button',disabled:!pixelLayerEditable || !Object.keys(pixelActiveLayer.pixels).length,'aria-describedby':'artstudio-pixel-tiling-help',onClick:function(){offsetPixelTile(option[0]);},className:'rounded-lg border border-slate-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},option[1]);})),
++                  React.createElement('p',{id:'artstudio-pixel-tiling-help',className:'my-2 text-xs text-slate-600'},__alloT('stem.artstudio.pixel_tile_help',"Brush and Eraser continue on the opposite edge; Fill connects matching cells across edges. Center a seam on the active layer, repair it, then repeat the same shift to restore the position. Check the repeating-tile preview. Locked and hidden layers stay protected."))
++                ),
+                 React.createElement('p',{className:'my-2 text-xs text-slate-600'},__alloT('stem.artstudio.pixel_shape_hint','Drag a shape to preview; release to draw. Pick color reuses a painted cell.')),
+                 React.createElement('button',{type:'button',className:'my-2 min-h-[44px] rounded-lg border border-emerald-700 px-3 text-xs font-bold text-emerald-800',onClick:function(){var c=document.getElementById('pixelCanvas');if(!c || !c._pixelExportNative)return;var link=document.createElement('a');link.download='pixel-sprite-'+pixelGridSize+'x'+pixelGridSize+'.png';link.href=c._pixelExportNative();link.click();}},__alloT('stem.artstudio.pixel_native_png','Export transparent sprite')+' ('+pixelGridSize+'×'+pixelGridSize+')'),
+                 renderStudioColorCapsule({prefix:'pixel',color:pixelColor,label:__alloT('stem.artstudio.pixel_custom_color','Custom pixel color')}),

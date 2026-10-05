@@ -1,0 +1,236 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/artstudio_watercolor_engine.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > blots water and whole mobile pigment parcels while preserving dry glazes, masks, and brush loads
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > leaves completely dry loose pigment and settled paint unchanged when blotting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > gives blot strength and pressure independent control over textured pickup without adding water or color
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > can take up a clear-water puddle and differs from the rewetted Lift brush
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > takes up rewetted low-staining color more readily and leaves the remaining fixed color anchored
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps a complete blotting stroke in one history step and retains pickup through compact restore
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > offers Blot with an accessible strength control and disables only its inactive paint loads
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps a late pointer release from redrawing after Clear and recovers the interrupted mark
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > pushes pigment out of a wetter patch into a backrun without adding or deleting paint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > does not invent a central backrun on evenly wetted paper
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps pressure-driven pigment on its side of a masking-fluid barrier
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps capillary transport finite, nonnegative, and conservative at a paper corner
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > turns a tilted flat brush across angle wraparound without spinning a wide blot into the stroke
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps lightly pressed rigger strokes evenly covered across the narrow contact area
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps the paint load consistent between high-frequency and bundled stylus samples
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > updates stationary pressure and timing without paint, and retains the final coalesced endpoint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > enables working Undo and Redo buttons when the engine history changes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > offers finger painting beside the color controls and keeps both touch controls in sync
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > redistributes damp washes into salt crystals without losing pigment or disturbing settled glazes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > leaves dry paint unchanged when salt is applied, even before loose pigment settles
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps salt away from masked cells and preserves a dry underpainting in a wet glaze
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > settles the final traces of water before becoming idle without losing pigment
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > stops requesting frames after drying and saves the final settled painting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > gives light stylus pressure a fine tip and firm pressure a broad stroke
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > shows brush size for hover and keyboard without putting the cursor in the paint or export
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > places crisp marks on dry paper and softer marks on a prewetted sheet
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > responds to drying rate and pigment opacity during transport
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > carries pigment downhill and keeps fully dry paint still
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > wets paper without adding pigment, respects masking, and supports undo
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > preserves color mass when saturated glazes are dried and rewetted
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > conserves deposited pigment and color while a wash flows and settles
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > keeps painted pixels unchanged when only the next pigment load changes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > retains pigment hue when repeated strokes saturate the paper
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > deposits water and pigment and restores compact undo/redo states
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > gives flat, mop, and rigger brushes materially different footprints
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > captures clean artwork before repainting screen-only flow diagnostics
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > lets high-mobility color channels travel ahead of low-mobility channels
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > rewets low-staining dry pigment more readily while conserving pigment mass
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > retains more water and bloom under humid low-airflow studio conditions
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_engine.test.js > Art Studio watercolor simulation engine > models sizing-driven surface retention, fiber fixation, and adjustable bloom response
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_watercolor_engine.test.js (40 tests) 16278ms
+     ✓ blots water and whole mobile pigment parcels while preserving dry glazes, masks, and brush loads  534ms
+     ✓ leaves completely dry loose pigment and settled paint unchanged when blotting  329ms
+     ✓ gives blot strength and pressure independent control over textured pickup without adding water or color  371ms
+     ✓ takes up rewetted low-staining color more readily and leaves the remaining fixed color anchored  321ms
+     ✓ keeps a complete blotting stroke in one history step and retains pickup through compact restore  304ms
+     ✓ pushes pigment out of a wetter patch into a backrun without adding or deleting paint  603ms
+     ✓ does not invent a central backrun on evenly wetted paper  377ms
+     ✓ keeps pressure-driven pigment on its side of a masking-fluid barrier  422ms
+     ✓ keeps capillary transport finite, nonnegative, and conservative at a paper corner  383ms
+     ✓ updates stationary pressure and timing without paint, and retains the final coalesced endpoint  426ms
+     ✓ redistributes damp washes into salt crystals without losing pigment or disturbing settled glazes  426ms
+     ✓ leaves dry paint unchanged when salt is applied, even before loose pigment settles  2235ms
+     ✓ keeps salt away from masked cells and preserves a dry underpainting in a wet glaze  492ms
+     ✓ responds to drying rate and pigment opacity during transport  540ms
+     ✓ carries pigment downhill and keeps fully dry paint still  572ms
+     ✓ wets paper without adding pigment, respects masking, and supports undo  313ms
+     ✓ preserves color mass when saturated glazes are dried and rewetted  762ms
+     ✓ conserves deposited pigment and color while a wash flows and settles  323ms
+     ✓ keeps painted pixels unchanged when only the next pigment load changes  650ms
+     ✓ retains pigment hue when repeated strokes saturate the paper  374ms
+     ✓ deposits water and pigment and restores compact undo/redo states  324ms
+     ✓ rewets low-staining dry pigment more readily while conserving pigment mass  321ms
+     ✓ retains more water and bloom under humid low-airflow studio conditions  327ms
+     ✓ models sizing-driven surface retention, fiber fixation, and adjustable bloom response  369ms
+stdout | tests/artstudio_watercolor_lifting.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > retains the settled glaze response beneath fresh washes with different staining
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > does not let the selected pigment traits alter an existing glaze during lifting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > leaves more staining dry color anchored and makes sized paper easier to lift
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > gives gentle and strong lifting distinct monotonic pickup while keeping residual paint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > uses zero strength to add clear water without removing any color or properties
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > requires moisture and can lift a damp wash with an unloaded water brush
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > increases pickup with stylus pressure without bleaching the remaining pigment parcels
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > protects masked cells and keeps color and water outside the brush unchanged
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > clamps invalid strengths, falls back safely, and keeps repeated lifting finite
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > stores a coalesced stroke in one Undo step and restores lifted color in compact saves
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > exposes associated Lift strength and disables only the inactive pigment load
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > reconfigures a live Lift brush with the saved strength before the next dab
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ❯ tests/artstudio_watercolor_lifting.test.js (12 tests | 1 failed) 4228ms
+     ✓ retains the settled glaze response beneath fresh washes with different staining  529ms
+     ✓ does not let the selected pigment traits alter an existing glaze during lifting  401ms
+     ✓ leaves more staining dry color anchored and makes sized paper easier to lift  347ms
+     ✓ gives gentle and strong lifting distinct monotonic pickup while keeping residual paint 259ms
+     × uses zero strength to add clear water without removing any color or properties 282ms
+     ✓ requires moisture and can lift a damp wash with an unloaded water brush  315ms
+     ✓ increases pickup with stylus pressure without bleaching the remaining pigment parcels 265ms
+     ✓ protects masked cells and keeps color and water outside the brush unchanged 276ms
+     ✓ clamps invalid strengths, falls back safely, and keeps repeated lifting finite  508ms
+     ✓ stores a coalesced stroke in one Undo step and restores lifted color in compact saves  469ms
+     ✓ exposes associated Lift strength and disables only the inactive pigment load 276ms
+     ✓ reconfigures a live Lift brush with the saved strength before the next dab 297ms
+stdout | tests/artstudio_watercolor_mixing.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/artstudio_watercolor_mixing.test.js (5 tests) 5ms
+
+⎯⎯⎯⎯⎯⎯⎯ Failed Tests 1 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/artstudio_watercolor_lifting.test.js > Watercolor gradual lifting and independent glaze traits > uses zero strength to add clear water without removing any color or properties
+AssertionError: bloom: expected false to be true // Object.is equality
+
+- Expected
++ Received
+
+- true
++ false
+
+ ❯ identical tests/artstudio_watercolor_lifting.test.js:160:148
+    158| const fixedFields=mobileFields.map(f=>f.replace('pigment','stain'));
+    159| const sum=a=>a.reduce((n,v)=>n+v,0),difference=(a,b)=>a.reduce((n,v,i)…
+    160| const identical=(a,b,label)=>expect(Buffer.from(a.buffer,a.byteOffset,…
+       |                                                                                                                                                    ^
+    161| function glaze(engine,{wet=.25,staining=.2,mobileStaining=.8,mobile=1.…
+    162|   const s=engine.captureState();s.paused=true;
+ ❯ tests/artstudio_watercolor_lifting.test.js:201:70
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/1]⎯
+
+
+ Test Files  1 failed | 2 passed (3)
+      Tests  1 failed | 56 passed (57)
+   Start at  10:56:30
+   Duration  24.35s (transform 80ms, setup 78ms, import 166ms, tests 20.51s, environment 2.96s)
+

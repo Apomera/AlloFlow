@@ -1,0 +1,29 @@
+{
+  "verifiedAt": "2026-10-04T23:52:53.399Z",
+  "moduleHash": "36955de0aef08c88a6ac2cae501019f34ad22558d2e5daeccc79e3ee46a90520",
+  "modulePin": "36955de0",
+  "moduleFourCopyParity": true,
+  "currentHostThreeCopyParity": true,
+  "jsxSourcesParsed": 3,
+  "testedHostSha256": "278543b8cbf467457a38d52034ffffa08918f4f12bceab5e1876e22e813f804f",
+  "observedHostHashes": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "278543b8cbf467457a38d52034ffffa08918f4f12bceab5e1876e22e813f804f",
+      "matchesTestedSnapshot": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "278543b8cbf467457a38d52034ffffa08918f4f12bceab5e1876e22e813f804f",
+      "matchesTestedSnapshot": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "278543b8cbf467457a38d52034ffffa08918f4f12bceab5e1876e22e813f804f",
+      "matchesTestedSnapshot": true
+    }
+  ],
+  "currentSourcesMatchTestedSnapshot": true,
+  "previewOnlyTransforms": [],
+  "previousAcceptedPreviewPreserved": true
+}

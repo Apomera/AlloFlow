@@ -15310,11 +15310,11 @@ var createDocPipeline = function(deps) {
       // when a range is set, because a whole-document count against a 10-page output is a
       // guaranteed false "dropped links" warning. (check_free_vars caught the first attempt to read
       // a `pageRange` that does not exist in this scope — three ReferenceErrors in waiting.)
-      try { if (typeof window !== 'undefined') window.__alloSourceLinkCount = _srcLinkAnnotations; } catch (_) {}
+      try { if (deps.publishSourceTelemetry !== false && typeof window !== 'undefined') window.__alloSourceLinkCount = _srcLinkAnnotations; } catch (_) {}
       // Distinct field names where the PDF supplies them (a radio group is several
       // widgets but ONE field); widget count otherwise.
       try {
-        if (typeof window !== 'undefined') {
+        if (deps.publishSourceTelemetry !== false && typeof window !== 'undefined') {
           window.__alloSourceFormFields = {
             fields: _srcFieldNames.size > 0 ? _srcFieldNames.size : _srcFieldWidgets,
             widgets: _srcFieldWidgets,
@@ -15326,7 +15326,7 @@ var createDocPipeline = function(deps) {
       // Distinct (text, url) pairs, longest text first so a link whose text contains a
       // shorter link's text is re-attached before the shorter one can claim the words.
       try {
-        if (typeof window !== 'undefined') {
+        if (deps.publishSourceTelemetry !== false && typeof window !== 'undefined') {
           const _seen = new Set();
           // Keep how MANY times each pair occurred. A URL repeated on every page — the
           // district footer the link-count comment warns about — is one distinct pair but
@@ -40405,7 +40405,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
         'lesson-plan': 'includeLessonPlan', 'simplified': 'includeSimplified', 'outline': 'includeOutline',
         'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
           'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
-        'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq'
+        'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq', 'concept-sort': 'includeConceptSort'
       };
       const toggleKey = originalReading ? 'includeOriginalReading' : typeToggleMap[item.type];
       if (toggleKey && cfg[toggleKey] === false) return '';
@@ -43084,6 +43084,36 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
             </div>
         `;
       } else if (item.type === 'lesson-plan') {
+function projectStudentGuideValue(value) {
+    if (typeof value === 'string' || typeof value === 'number') return value;
+    if (Array.isArray(value)) return value.map(projectStudentGuideValue).filter(function (entry) { return entry != null; });
+    if (!value || typeof value !== 'object') return null;
+    var kept = {};
+    ['en', 'text', 'description', 'title', 'label', 'name', 'item', 'statement', 'instructions', 'studentTask', 'activity', 'steps', 'questions', 'prompt'].forEach(function (key) {
+      if (value[key] != null) { var next = projectStudentGuideValue(value[key]); if (next != null) kept[key] = next; }
+    });
+    return Object.keys(kept).length ? kept : null;
+  }
+function projectStudentGuideData(data, mode) {
+    var out = {};
+    data = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+    ["essentialQuestion","objectives","materialsNeeded","hook","directInstruction","guidedPractice","independentPractice","closure"].concat(['successCriteria', 'extensions', 'activities']).forEach(function (key) {
+      if (mode !== 'study' && mode !== 'family' && ['hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'].indexOf(key) !== -1 && (typeof data[key] === 'string' || typeof data[key] === 'number')) return;
+      if (data[key] != null) { var next = projectStudentGuideValue(data[key]); if (next != null) out[key] = next; }
+    });
+    return out;
+  }
+
+
+          const learnerGuideMode = item.config?.generationInputs?.mode;
+          // The key split is independent of audience. Only an explicitly scoped teacher export retains teacher narrative in the no-key copy.
+          const learnerGuideCopy = !isTeacher && cfg.audience !== 'teacher';
+          if (learnerGuideCopy) {
+              const transport = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SessionTransport;
+              item = { ...item, data: transport && typeof transport.projectStudentGuideData === 'function'
+                ? transport.projectStudentGuideData(item.data, learnerGuideMode) : projectStudentGuideData(item.data, learnerGuideMode) };
+          }
+
           const { materialsNeeded, essentialQuestion, objectives, hook, directInstruction, guidedPractice, independentPractice, closure, extensions, activities, assessmentIdeas } = item.data;
           const savedGuideMode = item.config?.generationInputs?.mode;
           // In a Study or Family Guide, teacher-facing parts leave the STUDENT split; the teacher copy keeps them.
@@ -43111,9 +43141,10 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
               return label.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
           };
           const lessonTextDirection = language => { if (!language) return 'auto'; try { return isRtlLang(language) ? 'rtl' : 'ltr'; } catch (_) { return 'auto'; } };
+          const lessonFieldText = value => typeof value === 'string' || typeof value === 'number' ? String(value) : Array.isArray(value) ? value.map(lessonFieldText).filter(Boolean).join('\n') : value && typeof value === 'object' ? lessonFieldText(value.en ?? value.text ?? value.description ?? value.title ?? value.label ?? value.name ?? value.studentTask ?? value.activity ?? value.steps) : '';
           const renderBilingualField = (textInput, translationTarget = lessonTranslationTarget, sourceLanguage = lessonSourceLanguage) => {
               if (!textInput) return '';
-              const text = String(textInput);
+              const text = typeof textInput === 'object' ? lessonFieldText(textInput) : String(textInput);
               if (text.includes('--- ENGLISH TRANSLATION ---')) {
                   const parts = text.split('--- ENGLISH TRANSLATION ---');
                   const targetLangText = parts[0].trim();
@@ -43166,7 +43197,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           const legacyLabel = (key, fallback) => { const value = t(key); return typeof value === 'string' && value && value !== key ? value : fallback; };
           const legacyActivityRows = legacyList(activities).map(activity => {
               const title = typeof activity === 'object' ? legacyText(activity.title || activity.name) : legacyText(activity);
-              const description = typeof activity === 'object' ? legacyText(activity.description || activity.text || activity.en) : '';
+              const description = typeof activity === 'object' ? legacyText(activity.description || activity.text || activity.en || activity.studentTask || activity.activity || activity.steps) : '';
               const duration = typeof activity === 'object' ? legacyText(activity.duration) : '';
               if (!title && !description && !duration) return '';
               return `<li style="margin-bottom:14px;break-inside:avoid;"><h4 style="margin:0 0 6px;font-size:1em;">${renderBilingualField(title || legacyLabel('lesson_plan.activities_header', 'Activity'))}</h4>${description ? `<div>${renderBilingualField(description)}</div>` : ''}${duration ? `<div style="margin-top:6px;font-size:0.9em;">${renderBilingualField(duration)}</div>` : ''}</li>`;
@@ -43219,6 +43250,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           return `
               <div class="section" id="${item.id}" style="border-left:4px solid ${tv.color};border-radius:12px;">
                   ${enhancedHeader}
+                  ${learnerGuideCopy && !['study', 'family'].includes(learnerGuideMode) ? '<p role="status">This learner copy includes structured tasks and learning goals. Teacher narrative sections are omitted because separate learner text was not recorded.</p>' : ''}
                   <div style="background: #f8fafc; padding: 20px; border: 1px solid #e2e8f0; border-radius: 8px;">
                       ${materialsNeeded && materialsNeeded.length > 0 ? `
                       <div style="margin-bottom: 20px; border-bottom: 1px dashed #cbd5e1; padding-bottom: 15px;">
@@ -43243,7 +43275,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
                               ${renderHeader('objectives')}
                           </h3>
                           <ul style="margin: 0; padding-left: 20px;">
-                              ${objectives.map(o => `<li>${renderBilingualField(o)}</li>`).join('')}
+                              ${legacyList(objectives).map(o => `<li>${renderBilingualField(o)}</li>`).join('')}
                           </ul>
                       </div>
                       <div style="margin-bottom: 20px;">
@@ -44422,7 +44454,7 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
           'lesson-plan': 'includeLessonPlan', 'simplified': 'includeSimplified', 'outline': 'includeOutline',
           'glossary': 'includeGlossary', 'quiz': 'includeQuiz', 'faq': 'includeFaq',
           'memory-aid': 'includeMemoryAid', 'applied-challenge': 'includeAppliedChallenge',
-          'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq'
+          'sentence-frames': 'includeSentenceFrames', 'image': 'includeImage', 'math': 'includeMath', 'dbq': 'includeDbq', 'concept-sort': 'includeConceptSort'
         };
         const originalReading = !!readingContract?.isSupportedOriginal?.(item);
         const key = originalReading ? 'includeOriginalReading' : toggleMap[item.type];
@@ -49734,6 +49766,8 @@ Return ONLY the CSS — no explanation, no markdown fences, just pure CSS.`);
 
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.createDocPipeline = createDocPipeline;
+// Standalone local imports can avoid publishing another workspace’s source baseline.
+window.AlloModules.createDocPipeline.supportsSourceTelemetryIsolation = true;
 window.AlloModules.createDocPipeline.deriveVerificationState = _alloDeriveVerificationState;
 window.AlloModules.createDocPipeline.createVerificationHtmlBinding = _alloCreateVerificationHtmlBinding;
 window.AlloModules.createDocPipeline.verifyVerificationHtmlBinding = _alloVerifyVerificationHtmlBinding;

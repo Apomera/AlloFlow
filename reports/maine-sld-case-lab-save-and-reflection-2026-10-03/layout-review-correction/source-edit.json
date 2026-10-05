@@ -1,0 +1,18 @@
+{
+  "editedAt": "2026-10-03T18:44:00.907549+00:00",
+  "beforeSha256": "0977f3f47dbc6a9f0de837eca298a1ecfcea201a852d3a39e93d3acf9ef59329",
+  "afterSha256": "2b60700ee898454509a230eecc975dd13292191cafcdb5a5c5c0072787a8c056",
+  "worksheetSchemaPreserved": true,
+  "printFunctionPrintCssSharedResponseLabelPreserved": true,
+  "caseDataCoreBuilderPreserved": true,
+  "availabilityRefIsTransient": true,
+  "singleAnnouncementOwner": true,
+  "noHostSourceWritesYet": true,
+  "moduleInstallBaselineSha256": "69ea05c9f6351a53e4e1129ef2380b591e98106c59bfc8f3e7c59c4f2b4eda4c",
+  "semanticReviewCorrection": {
+    "changedAt": "2026-10-03T18:49:43.781089+00:00",
+    "groupRoleAdded": true,
+    "announcementOrStorageBehaviorChanged": false,
+    "priorCandidatePreserved": true
+  }
+}

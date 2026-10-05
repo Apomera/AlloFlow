@@ -1,0 +1,886 @@
+{
+  "phase": "before",
+  "startedAt": "2026-10-03T15:18:01.364Z",
+  "profiles": [
+    {
+      "profile": "desktop",
+      "states": [
+        {
+          "state": "top",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "guide": {
+            "left": 330,
+            "right": 950,
+            "top": 16,
+            "bottom": 784,
+            "width": 620,
+            "height": 768
+          },
+          "close": {
+            "left": 861.46875,
+            "right": 925,
+            "top": 47.75,
+            "bottom": 91.75,
+            "width": 63.53125,
+            "height": 44,
+            "hit": true
+          },
+          "challenge": {
+            "left": 374,
+            "right": 906,
+            "top": 405.65625,
+            "bottom": 436.65625,
+            "width": 532,
+            "height": 31
+          },
+          "scrollTop": 0,
+          "scrollHeight": 2096,
+          "clientHeight": 766,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gw-objective-panel",
+          "note": ""
+        },
+        {
+          "state": "note",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "guide": {
+            "left": 330,
+            "right": 950,
+            "top": 16,
+            "bottom": 784,
+            "width": 620,
+            "height": 768
+          },
+          "close": {
+            "left": 861.46875,
+            "right": 925,
+            "top": -1030.25,
+            "bottom": -986.25,
+            "width": 63.53125,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 374,
+            "right": 906,
+            "top": -672.34375,
+            "bottom": -641.34375,
+            "width": 532,
+            "height": 31
+          },
+          "scrollTop": 1078,
+          "scrollHeight": 2096,
+          "clientHeight": 766,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gwe-activity-note",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "bottom",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "guide": {
+            "left": 330,
+            "right": 950,
+            "top": 16,
+            "bottom": 784,
+            "width": 620,
+            "height": 768
+          },
+          "close": {
+            "left": 861.46875,
+            "right": 925,
+            "top": -1282.25,
+            "bottom": -1238.25,
+            "width": 63.53125,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 374,
+            "right": 906,
+            "top": -924.34375,
+            "bottom": -893.34375,
+            "width": 532,
+            "height": 31
+          },
+          "scrollTop": 1330,
+          "scrollHeight": 2096,
+          "clientHeight": 766,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "next",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "guide": {
+            "left": 330,
+            "right": 950,
+            "top": 16,
+            "bottom": 784,
+            "width": 620,
+            "height": 768
+          },
+          "close": {
+            "left": 861.46875,
+            "right": 925,
+            "top": -1304.25,
+            "bottom": -1260.25,
+            "width": 63.53125,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 374,
+            "right": 906,
+            "top": -946.34375,
+            "bottom": -915.34375,
+            "width": 532,
+            "height": 31
+          },
+          "scrollTop": 1352,
+          "scrollHeight": 2118,
+          "clientHeight": 766,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "",
+          "note": ""
+        },
+        {
+          "state": "textspacing",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "guide": {
+            "left": 330,
+            "right": 950,
+            "top": 16,
+            "bottom": 784,
+            "width": 620,
+            "height": 768
+          },
+          "close": {
+            "left": 853.0625,
+            "right": 925,
+            "top": 58.25,
+            "bottom": 102.25,
+            "width": 71.9375,
+            "height": 44,
+            "hit": true
+          },
+          "challenge": {
+            "left": 374,
+            "right": 906,
+            "top": 450.1875,
+            "bottom": 480.1875,
+            "width": 532,
+            "height": 30
+          },
+          "scrollTop": 0,
+          "scrollHeight": 2383,
+          "clientHeight": 766,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "spaced-note",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "guide": {
+            "left": 330,
+            "right": 950,
+            "top": 16,
+            "bottom": 784,
+            "width": 620,
+            "height": 768
+          },
+          "close": {
+            "left": 853.0625,
+            "right": 925,
+            "top": -1277.75,
+            "bottom": -1233.75,
+            "width": 71.9375,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 374,
+            "right": 906,
+            "top": -885.8125,
+            "bottom": -855.8125,
+            "width": 532,
+            "height": 30
+          },
+          "scrollTop": 1336,
+          "scrollHeight": 2383,
+          "clientHeight": 766,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gwe-activity-note",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "contrast",
+          "viewport": {
+            "width": 1280,
+            "height": 800
+          },
+          "guide": {
+            "left": 330,
+            "right": 950,
+            "top": 16,
+            "bottom": 784,
+            "width": 620,
+            "height": 768
+          },
+          "close": {
+            "left": 853.0625,
+            "right": 925,
+            "top": -1279.75,
+            "bottom": -1235.75,
+            "width": 71.9375,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 374,
+            "right": 906,
+            "top": -887.8125,
+            "bottom": -857.8125,
+            "width": 532,
+            "height": 30
+          },
+          "scrollTop": 1338,
+          "scrollHeight": 2387,
+          "clientHeight": 766,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gwe-activity-note",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        }
+      ],
+      "retained": {
+        "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately.",
+        "reviewed": true
+      },
+      "axe": [],
+      "errors": [],
+      "hostErrors": []
+    },
+    {
+      "profile": "390x844",
+      "states": [
+        {
+          "state": "top",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "guide": {
+            "left": 8,
+            "right": 382,
+            "top": 8,
+            "bottom": 836,
+            "width": 374,
+            "height": 828
+          },
+          "close": {
+            "left": 301.46875,
+            "right": 365,
+            "top": 25,
+            "bottom": 69,
+            "width": 63.53125,
+            "height": 44,
+            "hit": true
+          },
+          "challenge": {
+            "left": 39,
+            "right": 351,
+            "top": 401.53125,
+            "bottom": 432.53125,
+            "width": 312,
+            "height": 31
+          },
+          "scrollTop": 0,
+          "scrollHeight": 2757,
+          "clientHeight": 826,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gw-objective-panel",
+          "note": ""
+        },
+        {
+          "state": "note",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "guide": {
+            "left": 8,
+            "right": 382,
+            "top": 8,
+            "bottom": 836,
+            "width": 374,
+            "height": 828
+          },
+          "close": {
+            "left": 301.46875,
+            "right": 365,
+            "top": -1600,
+            "bottom": -1556,
+            "width": 63.53125,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 39,
+            "right": 351,
+            "top": -1223.46875,
+            "bottom": -1192.46875,
+            "width": 312,
+            "height": 31
+          },
+          "scrollTop": 1625,
+          "scrollHeight": 2757,
+          "clientHeight": 826,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gwe-activity-note",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "bottom",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "guide": {
+            "left": 8,
+            "right": 382,
+            "top": 8,
+            "bottom": 836,
+            "width": 374,
+            "height": 828
+          },
+          "close": {
+            "left": 301.46875,
+            "right": 365,
+            "top": -1906,
+            "bottom": -1862,
+            "width": 63.53125,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 39,
+            "right": 351,
+            "top": -1529.46875,
+            "bottom": -1498.46875,
+            "width": 312,
+            "height": 31
+          },
+          "scrollTop": 1931,
+          "scrollHeight": 2757,
+          "clientHeight": 826,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "next",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "guide": {
+            "left": 8,
+            "right": 382,
+            "top": 8,
+            "bottom": 836,
+            "width": 374,
+            "height": 828
+          },
+          "close": {
+            "left": 301.46875,
+            "right": 365,
+            "top": -1958,
+            "bottom": -1914,
+            "width": 63.53125,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 39,
+            "right": 351,
+            "top": -1581.46875,
+            "bottom": -1519.46875,
+            "width": 312,
+            "height": 62
+          },
+          "scrollTop": 1983,
+          "scrollHeight": 2809,
+          "clientHeight": 826,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "",
+          "note": ""
+        },
+        {
+          "state": "textspacing",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "guide": {
+            "left": 8,
+            "right": 382,
+            "top": 8,
+            "bottom": 836,
+            "width": 374,
+            "height": 828
+          },
+          "close": {
+            "left": 293.0625,
+            "right": 365,
+            "top": 25,
+            "bottom": 69,
+            "width": 71.9375,
+            "height": 44,
+            "hit": true
+          },
+          "challenge": {
+            "left": 39,
+            "right": 351,
+            "top": 465.1875,
+            "bottom": 525.1875,
+            "width": 312,
+            "height": 60
+          },
+          "scrollTop": 0,
+          "scrollHeight": 3190,
+          "clientHeight": 826,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "spaced-note",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "guide": {
+            "left": 8,
+            "right": 382,
+            "top": 8,
+            "bottom": 836,
+            "width": 374,
+            "height": 828
+          },
+          "close": {
+            "left": 293.0625,
+            "right": 365,
+            "top": -1946,
+            "bottom": -1902,
+            "width": 71.9375,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 39,
+            "right": 351,
+            "top": -1505.8125,
+            "bottom": -1445.8125,
+            "width": 312,
+            "height": 60
+          },
+          "scrollTop": 1971,
+          "scrollHeight": 3190,
+          "clientHeight": 826,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gwe-activity-note",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "contrast",
+          "viewport": {
+            "width": 390,
+            "height": 844
+          },
+          "guide": {
+            "left": 8,
+            "right": 382,
+            "top": 8,
+            "bottom": 836,
+            "width": 374,
+            "height": 828
+          },
+          "close": {
+            "left": 293.0625,
+            "right": 365,
+            "top": -1950,
+            "bottom": -1906,
+            "width": 71.9375,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 39,
+            "right": 351,
+            "top": -1509.8125,
+            "bottom": -1449.8125,
+            "width": 312,
+            "height": 60
+          },
+          "scrollTop": 1975,
+          "scrollHeight": 3196,
+          "clientHeight": 826,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gwe-activity-note",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        }
+      ],
+      "retained": {
+        "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately.",
+        "reviewed": true
+      },
+      "axe": [],
+      "errors": [],
+      "hostErrors": []
+    },
+    {
+      "profile": "320x568",
+      "states": [
+        {
+          "state": "top",
+          "viewport": {
+            "width": 320,
+            "height": 568
+          },
+          "guide": {
+            "left": 8,
+            "right": 312,
+            "top": 8,
+            "bottom": 560,
+            "width": 304,
+            "height": 552
+          },
+          "close": {
+            "left": 231.46875,
+            "right": 295,
+            "top": 25,
+            "bottom": 69,
+            "width": 63.53125,
+            "height": 44,
+            "hit": true
+          },
+          "challenge": {
+            "left": 39,
+            "right": 281,
+            "top": 448.40625,
+            "bottom": 510.40625,
+            "width": 242,
+            "height": 62
+          },
+          "scrollTop": 0,
+          "scrollHeight": 3125,
+          "clientHeight": 550,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gw-objective-panel",
+          "note": ""
+        },
+        {
+          "state": "note",
+          "viewport": {
+            "width": 320,
+            "height": 568
+          },
+          "guide": {
+            "left": 8,
+            "right": 312,
+            "top": 8,
+            "bottom": 560,
+            "width": 304,
+            "height": 552
+          },
+          "close": {
+            "left": 231.46875,
+            "right": 295,
+            "top": -1989,
+            "bottom": -1945,
+            "width": 63.53125,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 39,
+            "right": 281,
+            "top": -1565.59375,
+            "bottom": -1503.59375,
+            "width": 242,
+            "height": 62
+          },
+          "scrollTop": 2014,
+          "scrollHeight": 3125,
+          "clientHeight": 550,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gwe-activity-note",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "bottom",
+          "viewport": {
+            "width": 320,
+            "height": 568
+          },
+          "guide": {
+            "left": 8,
+            "right": 312,
+            "top": 8,
+            "bottom": 560,
+            "width": 304,
+            "height": 552
+          },
+          "close": {
+            "left": 231.46875,
+            "right": 295,
+            "top": -2550,
+            "bottom": -2506,
+            "width": 63.53125,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 39,
+            "right": 281,
+            "top": -2126.59375,
+            "bottom": -2064.59375,
+            "width": 242,
+            "height": 62
+          },
+          "scrollTop": 2575,
+          "scrollHeight": 3125,
+          "clientHeight": 550,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "next",
+          "viewport": {
+            "width": 320,
+            "height": 568
+          },
+          "guide": {
+            "left": 8,
+            "right": 312,
+            "top": 8,
+            "bottom": 560,
+            "width": 304,
+            "height": 552
+          },
+          "close": {
+            "left": 231.46875,
+            "right": 295,
+            "top": -2550,
+            "bottom": -2506,
+            "width": 63.53125,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 39,
+            "right": 281,
+            "top": -2126.59375,
+            "bottom": -2064.59375,
+            "width": 242,
+            "height": 62
+          },
+          "scrollTop": 2575,
+          "scrollHeight": 3125,
+          "clientHeight": 550,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "",
+          "note": ""
+        },
+        {
+          "state": "textspacing",
+          "viewport": {
+            "width": 320,
+            "height": 568
+          },
+          "guide": {
+            "left": 8,
+            "right": 312,
+            "top": 8,
+            "bottom": 560,
+            "width": 304,
+            "height": 552
+          },
+          "close": {
+            "left": 223.0625,
+            "right": 295,
+            "top": 25,
+            "bottom": 69,
+            "width": 71.9375,
+            "height": 44,
+            "hit": true
+          },
+          "challenge": {
+            "left": 39,
+            "right": 281,
+            "top": 496.6875,
+            "bottom": 556.6875,
+            "width": 242,
+            "height": 60
+          },
+          "scrollTop": 0,
+          "scrollHeight": 3541,
+          "clientHeight": 550,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "spaced-note",
+          "viewport": {
+            "width": 320,
+            "height": 568
+          },
+          "guide": {
+            "left": 8,
+            "right": 312,
+            "top": 8,
+            "bottom": 560,
+            "width": 304,
+            "height": 552
+          },
+          "close": {
+            "left": 223.0625,
+            "right": 295,
+            "top": -2320,
+            "bottom": -2276,
+            "width": 71.9375,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 39,
+            "right": 281,
+            "top": -1848.3125,
+            "bottom": -1788.3125,
+            "width": 242,
+            "height": 60
+          },
+          "scrollTop": 2345,
+          "scrollHeight": 3541,
+          "clientHeight": 550,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gwe-activity-note",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        },
+        {
+          "state": "contrast",
+          "viewport": {
+            "width": 320,
+            "height": 568
+          },
+          "guide": {
+            "left": 8,
+            "right": 312,
+            "top": 8,
+            "bottom": 560,
+            "width": 304,
+            "height": 552
+          },
+          "close": {
+            "left": 223.0625,
+            "right": 295,
+            "top": -2325,
+            "bottom": -2281,
+            "width": 71.9375,
+            "height": 44,
+            "hit": false
+          },
+          "challenge": {
+            "left": 39,
+            "right": 281,
+            "top": -1853.3125,
+            "bottom": -1793.3125,
+            "width": 242,
+            "height": 60
+          },
+          "scrollTop": 2350,
+          "scrollHeight": 3547,
+          "clientHeight": 550,
+          "overflowX": 0,
+          "overflow": [],
+          "active": "gwe-activity-note",
+          "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately."
+        }
+      ],
+      "retained": {
+        "note": "One layer gives the base area; adding layers changes occupied space. I will compare the outside faces separately.",
+        "reviewed": true
+      },
+      "axe": [],
+      "errors": [],
+      "hostErrors": []
+    }
+  ],
+  "checks": [],
+  "screenshots": [
+    "desktop-journal-top.png",
+    "desktop-journal-notes.png",
+    "desktop-journal-bottom.png",
+    "desktop-journal-next.png",
+    "desktop-journal-textspacing.png",
+    "desktop-journal-textspacing-notes.png",
+    "desktop-journal-contrast.png",
+    "390x844-journal-top.png",
+    "390x844-journal-notes.png",
+    "390x844-journal-bottom.png",
+    "390x844-journal-next.png",
+    "390x844-journal-textspacing.png",
+    "390x844-journal-textspacing-notes.png",
+    "390x844-journal-contrast.png",
+    "320x568-journal-top.png",
+    "320x568-journal-notes.png",
+    "320x568-journal-bottom.png",
+    "320x568-journal-next.png",
+    "320x568-journal-textspacing.png",
+    "320x568-journal-textspacing-notes.png",
+    "320x568-journal-contrast.png"
+  ],
+  "completedAt": "2026-10-03T15:23:06.282Z"
+}

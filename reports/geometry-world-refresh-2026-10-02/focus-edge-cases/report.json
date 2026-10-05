@@ -1,0 +1,98 @@
+[
+  {
+    "scenario": "collapsed toolbar with measurement inspector",
+    "status": "pass",
+    "evidence": {
+      "label": "Volume Explorer — Rectangular Prisms — interactive 3D world. 0 of 3 questions answered.",
+      "quickbar": false,
+      "visible": true,
+      "width": 1280,
+      "height": 800,
+      "collapsed": "true",
+      "fullscreen": "false",
+      "measurement": true,
+      "compass": false
+    }
+  },
+  {
+    "scenario": "fullscreen with measurement inspector",
+    "status": "pass",
+    "evidence": {
+      "label": "Open lesson objectives",
+      "quickbar": true,
+      "visible": true,
+      "width": 106.703125,
+      "height": 44,
+      "collapsed": "false",
+      "fullscreen": "true",
+      "measurement": true,
+      "compass": false
+    }
+  },
+  {
+    "scenario": "390px measurement feedback avoids action rail and joystick",
+    "status": "pass",
+    "evidence": {
+      "toast": {
+        "left": 12,
+        "right": 294,
+        "top": 647.4375,
+        "bottom": 712,
+        "width": 282,
+        "height": 64.5625
+      },
+      "rail": {
+        "left": 314,
+        "right": 378,
+        "top": 560,
+        "bottom": 824,
+        "width": 64,
+        "height": 264
+      },
+      "joystick": {
+        "left": 20,
+        "right": 122,
+        "top": 722,
+        "bottom": 824,
+        "width": 102,
+        "height": 102
+      },
+      "railOverlap": false,
+      "joystickOverlap": false
+    },
+    "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\geometry-world-refresh-2026-10-02\\final-phone\\phone-measurement.png"
+  },
+  {
+    "scenario": "320px measurement feedback avoids action rail and joystick",
+    "status": "pass",
+    "evidence": {
+      "toast": {
+        "left": 12,
+        "right": 224,
+        "top": 631.25,
+        "bottom": 712,
+        "width": 212,
+        "height": 80.75
+      },
+      "rail": {
+        "left": 244,
+        "right": 308,
+        "top": 560,
+        "bottom": 824,
+        "width": 64,
+        "height": 264
+      },
+      "joystick": {
+        "left": 20,
+        "right": 122,
+        "top": 722,
+        "bottom": 824,
+        "width": 102,
+        "height": 102
+      },
+      "railOverlap": false,
+      "joystickOverlap": false
+    },
+    "screenshot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\geometry-world-refresh-2026-10-02\\build-320\\measurement.png"
+  }
+]

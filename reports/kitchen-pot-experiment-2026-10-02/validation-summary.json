@@ -1,0 +1,70 @@
+{
+  "date": "2026-10-02",
+  "version": "20261002-pot-experiment",
+  "features": [
+    "Measured fresh-water jug with carry, level, tip and release",
+    "Pot experiment with view-local predictions and canonical temperature observations",
+    "Draggable observation timeline, equivalent controls and read-only replay",
+    "Current-state water keyboard routes and irreversible preparation quest recovery"
+  ],
+  "unit": {
+    "tests": 522,
+    "passed": 522,
+    "failed": 0,
+    "files": 46
+  },
+  "browser": {
+    "checks": 53,
+    "accessibilityScans": 12,
+    "violations": 0,
+    "suites": [
+      {
+        "name": "Pot experiment",
+        "report": "browser\\pot-lab-results.json",
+        "checks": 11,
+        "accessibilityScans": 3,
+        "violations": 0,
+        "passed": true
+      },
+      {
+        "name": "Fresh-water jug",
+        "report": "fresh-water-regression\\fresh-water-results.json",
+        "checks": 19,
+        "accessibilityScans": 3,
+        "violations": 0,
+        "passed": true
+      },
+      {
+        "name": "Skill quests",
+        "report": "quest-regression\\quest-results.json",
+        "checks": 6,
+        "accessibilityScans": 3,
+        "violations": 0,
+        "passed": true
+      },
+      {
+        "name": "Recorded dry pasta",
+        "report": "pasta-regression\\pasta-entry-results.json",
+        "checks": 17,
+        "accessibilityScans": 3,
+        "violations": 0,
+        "passed": true
+      }
+    ]
+  },
+  "runtime": {
+    "files": 52,
+    "parsedScripts": 43,
+    "mirrorsExact": true,
+    "httpExactFiles": 11,
+    "diffCheck": true
+  },
+  "kitchenStagedFiles": [],
+  "commitCreated": false,
+  "preview": "http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html?v=20261002-pot-experiment",
+  "screenshots": [
+    "browser/desktop-pot-experiment.png",
+    "browser/phone-pot-experiment.png",
+    "browser/compact-text-pot-experiment.png"
+  ]
+}

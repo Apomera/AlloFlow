@@ -1,0 +1,21 @@
+.pot-lid-tools{margin:12px 0;border:1px solid #adc3ad;border-radius:14px;background:#fbfcf2;color:#284b3a;overflow:hidden}
+.pot-lid-tools>summary{display:flex;justify-content:space-between;gap:16px;align-items:center;padding:14px 16px;cursor:pointer}
+.pot-lid-tools>summary strong,.pot-lid-tools>summary small{display:block}
+.pot-lid-tools>summary small{font-size:.8rem;margin-top:3px;color:#526b5b}
+.pot-lid-tools>summary>span:last-child{font-size:.85rem;text-align:right}
+.pot-lid-body{padding:0 16px 16px}.pot-lid-body p{line-height:1.5;margin:10px 0}
+.pot-lid-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.pot-lid-actions button{min-height:44px;padding:9px 13px;border:1px solid #91ac92;border-radius:9px;background:#edf3dd;color:#284b3a;font:inherit;cursor:pointer}
+.pot-lid-actions button:disabled{opacity:.55;cursor:default}
+.pot-lid-tools :focus-visible{outline:3px solid #8b611f;outline-offset:3px}
+.pot-lid-status{padding:10px 12px;border-left:4px solid #87aa83;background:#eef3e4;min-height:1.5em}
+.pot-lid-science{border:1px solid #bccdad;border-radius:10px;padding:12px 14px;background:#f4f5e4}
+.pot-lid-science>strong{font-size:.95rem}.pot-lid-science p{font-size:.88rem}
+#lidControl{display:block;width:100%;max-width:520px;max-height:280px;margin:8px auto;background:#f4f5e8;border:1px solid #b3c8b1;border-radius:12px;touch-action:none}
+#lidControl[aria-disabled=true]{opacity:.65}
+#lidKeyboardPanel h3{font-size:1rem;margin:14px 0 6px}
+@media(max-width:480px){.pot-lid-tools>summary,.pot-lid-body{padding-left:12px;padding-right:12px}.pot-lid-actions button{flex:1 1 125px}.pot-lid-science{padding:10px}.pot-lid-tools>summary{gap:8px}}
+@media(forced-colors:active){.pot-lid-tools,.pot-lid-science,#lidControl{border-color:CanvasText}.pot-lid-tools :focus-visible{outline-color:Highlight}.pot-lid-status{border-color:Highlight}.pot-lid-actions button{border-color:ButtonText}}
+
+/* Keep the handle, pot and marked rest visible during narrow-screen carries. */
+@media(max-width:500px){.kitchen-gesture-coach[data-tool="lid"]{top:auto;bottom:9px}}

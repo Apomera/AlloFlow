@@ -1,0 +1,5 @@
+[
+ {"stage":"temp producer timestamp selection","exitCode":1,"browserStarted":false,"reason":"No timestamp-matching temp producer was found; no asset or source change was inferred."},
+ {"stage":"strict trace response extraction","exitCode":1,"browserStarted":false,"reason":"JS response body was not retained in trace. HTML/CSS were present; module binding was made explicit using actual producer browser-candidate hash and current source/module guards."},
+ {"stage":"natural-editor-probe-01 browser launch","exitCode":1,"browserStarted":false,"reason":"Default sandbox redirected Playwright cache to an AppContainer path without the installed Chromium. Probe helper snapshot was preserved. The authorized read-only browser probe is rerun elevated using the existing user cache; no browser installation or product modification."}
+]

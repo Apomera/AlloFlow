@@ -1,0 +1,728 @@
+{
+  "status": "PASS",
+  "completedAt": "2026-10-04T03:51:20.156396+00:00",
+  "scenarioCount": 6,
+  "distinctTargetedScenarios": 6,
+  "passed": 6,
+  "passed6": true,
+  "moduleScenariosPassed": 5,
+  "moduleScenariosPassed5": true,
+  "hostScenarioPassed": 1,
+  "hostScenarioPassed1": true,
+  "newScenarios": 2,
+  "retainedScenarios": 4,
+  "retainedOriginalScenarios": 33,
+  "availableScenariosAfterAddition": 35,
+  "original33PrefixBytePreserved": true,
+  "original33Sha256": "32341725cd74244a0f50c9fb149b500bea68fcc179f5de41ba4d862e499014b8",
+  "original33Bytes": 155187,
+  "workers": 1,
+  "automaticRetries": 0,
+  "timeoutMs": 120000,
+  "normalTracePolicy": "retain-on-failure",
+  "finalModuleInvocation": {
+    "name": "module-five-02",
+    "stats": {
+      "startTime": "2026-10-04T03:44:30.431Z",
+      "duration": 49894.595,
+      "expected": 5,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "tests": [
+      {
+        "title": "reviewed guide revision buttons focus each existing question without replacing participant reasoning",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 3874,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "title": "participant review edits return to each exact control and retain their origin through evidence detours without persisting navigation context",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 7607,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "title": "session save warning preserves open work and focus across blocked access quota failure recovery and explicit retries",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 5887,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "title": "reviewed guide revisions return by keyboard to all nine originating questions in all five cases while preserving literal notes and an explicit finding detour",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 21884,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "title": "reviewed guide narrative status treats whitespace as blank and guide return context clears through navigation case isolation reset restore and reload",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 6604,
+            "retry": 0
+          }
+        ]
+      }
+    ],
+    "exitCode": 0,
+    "resultSha256": "61ae565833da15ed350250d27dcbc4097577d54f0ce3aaf2672d8b60aeb5c251",
+    "resultFile": "module-five-02/result.json",
+    "logFile": "module-five-02/run.log",
+    "runCommand": "module-five-02/run-command.ps1",
+    "preparedAssetValidation": false,
+    "validationMethod": "original canonical specification and unchanged synchronous stylesheet setup"
+  },
+  "finalHostInvocation": {
+    "name": "host-only-03",
+    "stats": {
+      "startTime": "2026-10-04T03:49:02.092Z",
+      "duration": 16725.301,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "tests": [
+      {
+        "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 15124,
+            "retry": 0
+          }
+        ]
+      }
+    ],
+    "exitCode": 0,
+    "resultSha256": "82597ab26158194b44000687ec0be6789705d287f26e87429a5377d21bd29182",
+    "resultFile": "host-only-03/result.json",
+    "logFile": "host-only-03/run.log",
+    "runCommand": "host-only-03/run-command.ps1",
+    "preparedAssetValidation": false,
+    "validationMethod": "original canonical specification and unchanged synchronous stylesheet setup"
+  },
+  "moduleSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+  "sourceSha256": "46d1ce09304d70d98b60a4a7a758969b3c5f3eef99a6c5b522113a06e9397437",
+  "browserTestSha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+  "browserSpecSha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+  "testedHostSourceSha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+  "testedHostBundleSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+  "sourceHostBaseUrl": "http://127.0.0.1:65063/app",
+  "exactServedSnapshotVerified": true,
+  "sharedHostObservation": {
+    "observedAt": "2026-10-04T03:54:16.414Z",
+    "observationAfterActualHostResult": true,
+    "hostValidation": {
+      "attempt": "host-only-03",
+      "status": "passed",
+      "exitCode": 0,
+      "bodySeconds": 15.1,
+      "invocationSeconds": 16.7,
+      "originalCanonicalSpec": true,
+      "testTimeoutMs": 120000,
+      "workers": 1,
+      "retries": 0,
+      "evidenceSource": "Validation owner and root confirmed completed result"
+    },
+    "testedHostSha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+    "bundleSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+    "moduleHash": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+    "moduleFourCopyParity": true,
+    "observedModuleCopies": [
+      {
+        "file": "maine_sld_practice_module.js",
+        "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+        "bytes": 189988
+      },
+      {
+        "file": "desktop/web-app/public/maine_sld_practice_module.js",
+        "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+        "bytes": 189988
+      },
+      {
+        "file": "desktop/app-build/maine_sld_practice_module.js",
+        "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+        "bytes": 189988
+      },
+      {
+        "file": "desktop/web-app/build/maine_sld_practice_module.js",
+        "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+        "bytes": 189988
+      }
+    ],
+    "frozenSourceHashes": {
+      "maine_sld_practice_source.jsx": "46d1ce09304d70d98b60a4a7a758969b3c5f3eef99a6c5b522113a06e9397437",
+      "maine_sld_practice_core.js": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926",
+      "maine_sld_case_data.json": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e",
+      "_build_maine_sld_practice_module.js": "333019e7d0a1e5a8774f33b2022778183b089d7206efaa4193def039274949f4"
+    },
+    "observedHostHashes": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+        "bytes": 2853895,
+        "matchesTestedSnapshot": true,
+        "observedMaineLoaderPins": [
+          "018f7f78"
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+        "bytes": 2853895,
+        "matchesTestedSnapshot": true,
+        "observedMaineLoaderPins": [
+          "018f7f78"
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+        "bytes": 2853895,
+        "matchesTestedSnapshot": true,
+        "observedMaineLoaderPins": [
+          "018f7f78"
+        ]
+      }
+    ],
+    "currentHostThreeCopyParity": true,
+    "currentHostsHaveReviewedLoaderPin": true,
+    "currentSourcesMatchTestedSnapshot": true,
+    "servedImmutableIdentity": {
+      "verifiedAt": "2026-10-04T03:54:18.716Z",
+      "baseUrl": "http://127.0.0.1:65063",
+      "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+      "runtimePid": 19880,
+      "managedSessionId": 95388,
+      "runtimeMetadataSha256": "569c2c23534e504c3e5d272790376d11a1a4cf38dd0f1f23945cf05317d12694",
+      "ownedHelperPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide_layout_integration.cjs",
+      "ownedHelperSha256": "b170417c2a4f85bd41ed18b2ab63e187eddd924722bbdad8165ed6d409fbeb0e",
+      "launchArguments": [
+        "serve",
+        "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc"
+      ],
+      "checks": [
+        {
+          "path": "/app/?tool=maine-sld-practice",
+          "status": 200,
+          "downloadedBytes": 588,
+          "seconds": 0.004698,
+          "servedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+          "expectedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+          "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-layout-post-host-http\\index.html",
+          "failure": null
+        },
+        {
+          "path": "/__sld_preview/host.bundle.js",
+          "status": 200,
+          "downloadedBytes": 1976991,
+          "seconds": 0.005509,
+          "servedSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+          "expectedSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+          "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-layout-post-host-http\\host.bundle.js",
+          "failure": null
+        },
+        {
+          "path": "/app/maine_sld_practice_module.js?v=018f7f78",
+          "status": 200,
+          "downloadedBytes": 189988,
+          "seconds": 0.006042,
+          "servedSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+          "expectedSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+          "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-layout-post-host-http\\maine_sld_practice_module.js",
+          "failure": null
+        }
+      ],
+      "allExactHttp200": true
+    },
+    "boundedSnapshotRetained": true,
+    "rebuildPerformed": false,
+    "pinChangesPerformed": false,
+    "runtimeChangesPerformed": false
+  },
+  "integrationServedVerification": "../integration/layout-review-correction/served-verification.json",
+  "axeScans": 4,
+  "axeViolations": 0,
+  "accessibilityScanCount": 4,
+  "accessibilityScans": [
+    {
+      "file": "module-five-02/browser/axe-full-review-returned-1366-light.json",
+      "violations": 0,
+      "sha256": "591150f6e3cf14675a9b97fb4bb9612fda2d12b8ac8e718b68bc449fa540c571"
+    },
+    {
+      "file": "module-five-02/browser/axe-guide-revision-editor-844x390-dark.json",
+      "violations": 0,
+      "sha256": "231532eb8d5b9277cfd8561b703af5c3232ee97a0ff6f3b941db9e6ce4c2968f"
+    },
+    {
+      "file": "module-five-02/browser/axe-guide-revision-returned-320-dark.json",
+      "violations": 0,
+      "sha256": "7c08f0386a12bcebe287c8ab5a53e1de9c8375ad798efa998943de5e5eebec3b"
+    },
+    {
+      "file": "module-five-02/browser/axe-save-warning-320-dark.json",
+      "violations": 0,
+      "sha256": "388c63533297ddb3615529867b34bfca89033abecd33c212b09a05861067e1de"
+    }
+  ],
+  "representativeScreenshots": [
+    {
+      "file": "module-five-02/browser/guide-revision-returned-marisol-q9-320-dark.png",
+      "description": "Exact keyboard return to the originating Q9 revise control in Marisol at 320px dark; visible focus outline."
+    },
+    {
+      "file": "module-five-02/browser/guide-revision-writing-taylor-q9-844x390-dark.png",
+      "description": "Complete active Taylor Q9 writer, focus outline, character limit and adjacent guide return in the short landscape viewport."
+    },
+    {
+      "file": "module-five-02/browser/guide-revision-returned-marisol-q8-1366-light.png",
+      "description": "Returned Marisol Q8 guide in desktop light, showing literal multiline participant reasoning."
+    },
+    {
+      "file": "module-five-02/browser/guide-revision-blank-q5-marisol-320-light.png",
+      "description": "Whitespace-only Q5 narrative shown as not yet recorded in the narrow guide."
+    },
+    {
+      "file": "module-five-02/browser/guide-revision-blank-q6-marisol-320-light.png",
+      "description": "Whitespace-only Q6 narrative shown as not yet recorded in the narrow guide."
+    },
+    {
+      "file": "natural-editor-probe-03/taylor-q9-natural-after-fill-844x390-dark.png",
+      "description": "Capture-only natural typing flow after the focus scroll correction, without manual scroll or writer focus."
+    },
+    {
+      "file": "natural-editor-probe-03/taylor-q9-natural-after-keyboard-844x390-dark.png",
+      "description": "Further keyboard typing retains writer focus, caret and unchanged main scroll with both writer and guide return visible."
+    },
+    {
+      "file": "natural-editor-probe-03/taylor-q9-natural-source-focus-844x390-dark.png",
+      "description": "Natural guide revision first focuses the existing Q9 response selector, before the participant enters the textarea; capture-only probe provenance is recorded separately."
+    }
+  ],
+  "attempts": [
+    {
+      "name": "module-five-01",
+      "stats": {
+        "startTime": "2026-10-04T03:07:40.377Z",
+        "duration": 297004.26800000004,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "tests": [
+        {
+          "title": "reviewed guide revision buttons focus each existing question without replacing participant reasoning",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 13129,
+              "retry": 0
+            }
+          ]
+        },
+        {
+          "title": "participant review edits return to each exact control and retain their origin through evidence detours without persisting navigation context",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 22503,
+              "retry": 0
+            }
+          ]
+        },
+        {
+          "title": "session save warning preserves open work and focus across blocked access quota failure recovery and explicit retries",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 11121,
+              "retry": 0
+            }
+          ]
+        },
+        {
+          "title": "reviewed guide revisions return by keyboard to all nine originating questions in all five cases while preserving literal notes and an explicit finding detour",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "failed",
+              "durationMs": 115385,
+              "retry": 0
+            }
+          ]
+        },
+        {
+          "title": "reviewed guide narrative status treats whitespace as blank and guide return context clears through navigation case isolation reset restore and reload",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 23074,
+              "retry": 0
+            }
+          ]
+        }
+      ],
+      "moduleSha256": "0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+      "browserTestSha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+      "finalCandidate": false,
+      "errors": []
+    },
+    {
+      "name": "host-only-01",
+      "stats": {
+        "startTime": "2026-10-04T03:18:09.439Z",
+        "duration": 180166.092,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "tests": [
+        {
+          "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "timedOut",
+              "durationMs": 127901,
+              "retry": 0
+            }
+          ]
+        }
+      ],
+      "moduleSha256": "0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+      "browserTestSha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+      "finalCandidate": false,
+      "errors": []
+    },
+    {
+      "name": "host-only-02",
+      "stats": {
+        "startTime": "2026-10-04T03:33:02.150Z",
+        "duration": 70603.647,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "tests": [
+        {
+          "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 34984,
+              "retry": 0
+            }
+          ]
+        }
+      ],
+      "moduleSha256": "0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+      "browserTestSha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+      "finalCandidate": false,
+      "errors": []
+    },
+    {
+      "name": "module-five-02",
+      "stats": {
+        "startTime": "2026-10-04T03:44:30.431Z",
+        "duration": 49894.595,
+        "expected": 5,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "tests": [
+        {
+          "title": "reviewed guide revision buttons focus each existing question without replacing participant reasoning",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 3874,
+              "retry": 0
+            }
+          ]
+        },
+        {
+          "title": "participant review edits return to each exact control and retain their origin through evidence detours without persisting navigation context",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 7607,
+              "retry": 0
+            }
+          ]
+        },
+        {
+          "title": "session save warning preserves open work and focus across blocked access quota failure recovery and explicit retries",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 5887,
+              "retry": 0
+            }
+          ]
+        },
+        {
+          "title": "reviewed guide revisions return by keyboard to all nine originating questions in all five cases while preserving literal notes and an explicit finding detour",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 21884,
+              "retry": 0
+            }
+          ]
+        },
+        {
+          "title": "reviewed guide narrative status treats whitespace as blank and guide return context clears through navigation case isolation reset restore and reload",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 6604,
+              "retry": 0
+            }
+          ]
+        }
+      ],
+      "moduleSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+      "browserTestSha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+      "finalCandidate": true,
+      "errors": []
+    },
+    {
+      "name": "host-only-03",
+      "stats": {
+        "startTime": "2026-10-04T03:49:02.092Z",
+        "duration": 16725.301,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "tests": [
+        {
+          "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 15124,
+              "retry": 0
+            }
+          ]
+        }
+      ],
+      "moduleSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+      "browserTestSha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+      "finalCandidate": true,
+      "errors": []
+    }
+  ],
+  "preparedAssetValidation": false,
+  "validationMethod": "original canonical specification and unchanged synchronous stylesheet setup",
+  "originalBodiesBytePreserved": true,
+  "guideFocusCaptureOnlyProbe": {
+    "file": "natural-editor-probe-03/capture-evidence.json",
+    "passed": true,
+    "checks": {
+      "naturalAfterFillBothFullyVisible": true,
+      "sevenPixelMargins": true,
+      "literalValuePreserved": true,
+      "selectionPreservedThroughFocusScroll": true,
+      "keyboardAppendPreserved": true,
+      "noAdditionalMainScrollWhileTyping": true,
+      "afterKeyboardBothFullyVisible": true
+    },
+    "rawHtmlJsBodyMissingLimit": true,
+    "producerModuleSha256": "0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+    "producerCssSha256": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163",
+    "geometryReuseOnly": true,
+    "writerTopMarginPx": 24.3125,
+    "returnBottomMarginPx": 7.1875,
+    "earlierClippedProbe": "natural-editor-probe-02/capture-evidence.json"
+  },
+  "appendProof": "append-proof.json",
+  "preparationHistory": "append-preparation-history.json",
+  "captureProbePreparationHistory": "natural-editor-probe-preparation-history.json",
+  "failedEarlierCandidateModuleInvocation": "module-five-01",
+  "failedEarlierCandidateHostInvocation": "host-only-01",
+  "provisionalEarlierCandidateHostPass": "host-only-02",
+  "initialFailureInterpretation": "Original module01 passed four targets and failed one short-viewport geometry assertion. A separate natural typing probe confirmed a real 27.3125px writer clip on that candidate. The root corrected guide-origin textarea focus scrolling; the unchanged canonical35 specification then passed all five final module targets. Original host01 reached every successful UI assertion but crossed the whole-test deadline during eventual successful page-close cleanup; unchanged host02 passed on the prior candidate. The final host result uses the separately frozen corrected candidate.",
+  "independentVisualReviewReport": "../source-and-layout-review.md",
+  "visualReviewPending": false,
+  "fullSuiteCoreAndPrintRerun": false,
+  "postHostSharedHostObservation": {
+    "observedAt": "2026-10-04T03:54:16.414Z",
+    "observationAfterActualHostResult": true,
+    "hostValidation": {
+      "attempt": "host-only-03",
+      "status": "passed",
+      "exitCode": 0,
+      "bodySeconds": 15.1,
+      "invocationSeconds": 16.7,
+      "originalCanonicalSpec": true,
+      "testTimeoutMs": 120000,
+      "workers": 1,
+      "retries": 0,
+      "evidenceSource": "Validation owner and root confirmed completed result"
+    },
+    "testedHostSha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+    "bundleSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+    "moduleHash": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+    "moduleFourCopyParity": true,
+    "observedModuleCopies": [
+      {
+        "file": "maine_sld_practice_module.js",
+        "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+        "bytes": 189988
+      },
+      {
+        "file": "desktop/web-app/public/maine_sld_practice_module.js",
+        "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+        "bytes": 189988
+      },
+      {
+        "file": "desktop/app-build/maine_sld_practice_module.js",
+        "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+        "bytes": 189988
+      },
+      {
+        "file": "desktop/web-app/build/maine_sld_practice_module.js",
+        "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+        "bytes": 189988
+      }
+    ],
+    "frozenSourceHashes": {
+      "maine_sld_practice_source.jsx": "46d1ce09304d70d98b60a4a7a758969b3c5f3eef99a6c5b522113a06e9397437",
+      "maine_sld_practice_core.js": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926",
+      "maine_sld_case_data.json": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e",
+      "_build_maine_sld_practice_module.js": "333019e7d0a1e5a8774f33b2022778183b089d7206efaa4193def039274949f4"
+    },
+    "observedHostHashes": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+        "bytes": 2853895,
+        "matchesTestedSnapshot": true,
+        "observedMaineLoaderPins": [
+          "018f7f78"
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+        "bytes": 2853895,
+        "matchesTestedSnapshot": true,
+        "observedMaineLoaderPins": [
+          "018f7f78"
+        ]
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+        "bytes": 2853895,
+        "matchesTestedSnapshot": true,
+        "observedMaineLoaderPins": [
+          "018f7f78"
+        ]
+      }
+    ],
+    "currentHostThreeCopyParity": true,
+    "currentHostsHaveReviewedLoaderPin": true,
+    "currentSourcesMatchTestedSnapshot": true,
+    "servedImmutableIdentity": {
+      "verifiedAt": "2026-10-04T03:54:18.716Z",
+      "baseUrl": "http://127.0.0.1:65063",
+      "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+      "runtimePid": 19880,
+      "managedSessionId": 95388,
+      "runtimeMetadataSha256": "569c2c23534e504c3e5d272790376d11a1a4cf38dd0f1f23945cf05317d12694",
+      "ownedHelperPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide_layout_integration.cjs",
+      "ownedHelperSha256": "b170417c2a4f85bd41ed18b2ab63e187eddd924722bbdad8165ed6d409fbeb0e",
+      "launchArguments": [
+        "serve",
+        "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc"
+      ],
+      "checks": [
+        {
+          "path": "/app/?tool=maine-sld-practice",
+          "status": 200,
+          "downloadedBytes": 588,
+          "seconds": 0.004698,
+          "servedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+          "expectedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+          "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-layout-post-host-http\\index.html",
+          "failure": null
+        },
+        {
+          "path": "/__sld_preview/host.bundle.js",
+          "status": 200,
+          "downloadedBytes": 1976991,
+          "seconds": 0.005509,
+          "servedSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+          "expectedSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+          "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-layout-post-host-http\\host.bundle.js",
+          "failure": null
+        },
+        {
+          "path": "/app/maine_sld_practice_module.js?v=018f7f78",
+          "status": 200,
+          "downloadedBytes": 189988,
+          "seconds": 0.006042,
+          "servedSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+          "expectedSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+          "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-layout-post-host-http\\maine_sld_practice_module.js",
+          "failure": null
+        }
+      ],
+      "allExactHttp200": true
+    },
+    "boundedSnapshotRetained": true,
+    "rebuildPerformed": false,
+    "pinChangesPerformed": false,
+    "runtimeChangesPerformed": false
+  },
+  "postHostSharedHostObservationFile": "../integration/layout-review-correction/final-observed-identity.json",
+  "postHostSharedHostObservationSha256": "6b7328a309fd784f8de8c0816bf7a402d674f7f63b66ca51cd7ece590a03fffa",
+  "independentVisualReviewSha256": "26ece7c16dc0c3a9c555a228b00be53fe258c7617bb2ddfa6fd39c315c3eca28",
+  "metadataCompletedAt": "2026-10-04T03:55:12.877854+00:00",
+  "summaryBeforeFinalMetadata": "validation-summary-before-final-metadata.json",
+  "summaryBeforeFinalMetadataSha256": "d92abdc35317e542f8fe587b8c15d8f86ed21444f7a0a95aade1bee6b325ab74"
+}

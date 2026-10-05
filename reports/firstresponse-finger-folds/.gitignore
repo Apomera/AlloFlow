@@ -1,0 +1,7 @@
+*.log
+*-exit.json
+.*inputs.json
+.reviewed.json
+browser-artifacts/
+regression/
+geometry-*.json

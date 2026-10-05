@@ -1,0 +1,26 @@
+{
+  "sourceBeforeSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "sourceAfterSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "expectedSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "exitCode": 0,
+  "signal": null,
+  "error": null,
+  "testFiles": [
+    "tests/perception_lab_experiments.test.js",
+    "tests/perception_lab_matching.test.js",
+    "tests/perception_lab_notebook.test.js",
+    "tests/perception_lab_repeat_notebook.test.js",
+    "tests/perception_lab_repeat_study.test.js",
+    "tests/perception_lab_study_comparison.test.js",
+    "tests/perception_lab_guided_study.test.js",
+    "tests/perception_lab_notebook_import.test.js",
+    "tests/perception_lab_notebook_finder.test.js",
+    "tests/perception_lab_recorded_preview.test.js",
+    "tests/perception_lab_study_report.test.js"
+  ],
+  "privateTemp": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/notebook-capacity-existing-vitest-temp",
+  "workers": 1,
+  "pool": "forks",
+  "testTimeout": 30000,
+  "hookTimeout": 30000
+}

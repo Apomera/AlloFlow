@@ -42,7 +42,7 @@ describe('Geometry World survives the shell on a phone', () => {
     for (const file of BUILDER) {
       const source = readFileSync(file, 'utf8');
       expect(source).toContain('@media(max-width:768px){.gwe-home nav.gwe-home-grid{overflow:visible;scroll-snap-type:none;flex-wrap:wrap}.gwe-home nav.gwe-home-grid>button.gwe-home-card{white-space:normal;min-width:0;flex-shrink:1;scroll-snap-align:none}}');
-      expect(source).toContain("h('nav',{className:'gwe-home-grid','aria-label':'Geometry World modes'}");
+      expect(source.includes("h('nav',{className:'gwe-home-grid','aria-label':__alloT('stem.geometryworld_builder.geometry_world_modes','Geometry World modes')}")).toBe(true);
     }
     // The reason must stay true: the shell still ships that rule at the same breakpoint.
     const host = readFileSync('ui_font_library_module.js', 'utf8');

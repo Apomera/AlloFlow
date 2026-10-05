@@ -1,0 +1,79 @@
+[
+  {
+    "file": "browser-dust-isolated-1-corrected/dust/fallback-burning-dust.png",
+    "sha256": "8e7f3509f8e4e08c4eb3f0803c374beff749dc708b37a865f6c825cca6caa907",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "Shallow surface streaks stay below the tilted lander; flight readings and controls remain clear."
+  },
+  {
+    "file": "browser-dust-isolated-1-corrected/dust/fallback-after-engine-cutoff.png",
+    "sha256": "cf14e1be27980394c911f6553f11932d2116d88640257a45d86389ec789005fa",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "The engine plume is absent while surviving grains continue along the surface."
+  },
+  {
+    "file": "browser-dust-isolated-1-corrected/dust/fallback-settled-contact.png",
+    "sha256": "ae522b013caf574277429f5f96933fc8af74ce0e6c448037d09420865c3c5505",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "Dust clears after physical surface return; the impact receipt remains visible."
+  },
+  {
+    "file": "browser-dust-isolated-2/dust/recorded-dust-omitted.png",
+    "sha256": "8120827e27ef03b141bbbfd0e78c74c5228cba4be4f4a5275c7f67afdc0d1ac8",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "A recorded firing frame retains its recording banner and shows no invented airborne grains."
+  },
+  {
+    "file": "browser-dust-isolated-2/dust/legacy-no-invented-dust.png",
+    "sha256": "6e1befca85138dabc48c77939e6d451f818fb675bda087e09bbacc9cb4fefbc2",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "A saved landing without measured dust history stays clear and keeps its receipt."
+  },
+  {
+    "file": "browser-dust-isolated-3/dust/phone-ballistic-dust.png",
+    "sha256": "28bb25cfee87149c121f46a9c8884e3fd1901eac8212dba1c36dc4d3c78d40e5",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "The 320 px view keeps the lander, surface, readings and native flight controls within the viewport."
+  },
+  {
+    "file": "browser-dust-isolated-3/dust/phone-dust-forced-colors.png",
+    "sha256": "fd822e1e16d742e9c1fa1ca9a65c69a96135d0aacefe03ced968a83a7f04acea",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "System colors keep the native flight controls legible at 320 px."
+  },
+  {
+    "file": "browser-dust-isolated-3/dust/phone-model-notes-forced.png",
+    "sha256": "64efe21cbbb9cfd2b8961f02e0845116b4a6ddbfe78db8a62dbfd2133c1c0ef0",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "The open model notes wrap within the phone width, with dark text and a distinct link on the system background."
+  },
+  {
+    "file": "browser-dust-isolated-4/dust/webgl-ballistic-dust.png",
+    "sha256": "f35aaafc5e4ee34775ed9306d993a8469d468d239495fa091030ca0ebef1a919",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "Real WebGL shows restrained radial streaks on the shaded surface beneath the lander."
+  },
+  {
+    "file": "browser-dust-isolated-4/dust/webgl-landing-view-dust.png",
+    "sha256": "4633d2b3aefa0a7df913fb9c7ab06ca62d57943733a1095c01590f23f72b71a7",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "The landing camera preserves the same particles and shows their shallow surface motion."
+  },
+  {
+    "file": "browser-dust-isolated-4/dust/context-loss-keeps-ballistic-dust.png",
+    "sha256": "899cba5c0066cfce02e243df62f4555c319d61263ce620e5727cfe3194a2627e",
+    "reviewedBy": "root, native image inspection",
+    "accepted": true,
+    "observation": "Context loss restores the 2D view with the same held grains and readable flight controls."
+  }
+]

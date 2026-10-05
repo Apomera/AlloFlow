@@ -1,0 +1,36 @@
+{
+  "finalSource": true,
+  "before": {
+    "sourceLfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+    "sourceRawSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+    "mirrorsByteEqual": true
+  },
+  "after": {
+    "sourceLfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+    "sourceRawSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+    "mirrorsByteEqual": true
+  },
+  "syntaxChecksPassed": true,
+  "fixtures": [
+    "tests/anatomy_spotter_practice.test.js",
+    "tests/anatomy_spotter_navigation.test.js",
+    "tests/anatomy_spotter_marker_view.test.js",
+    "tests/anatomy_case_journey.test.js",
+    "tests/anatomy_activity_switch_continuity.test.js",
+    "tests/anatomy_heading_structure.test.js",
+    "tests/anatomy_mobile_a11y_polish.test.js",
+    "tests/anatomy_spotter_study_localization.test.js"
+  ],
+  "outputFile": "reports/anatomy-spotter-study-2026-10-02/support-final-tests-3b4598e6.json",
+  "pool": "threads",
+  "maxWorkers": 1,
+  "assertionsUnchanged": true,
+  "outerTimeoutMs": 900000,
+  "exitCode": null,
+  "runnerError": "spawnSync C:\\Program Files\\nodejs\\node.exe ETIMEDOUT",
+  "totalTests": 0,
+  "passedTests": 0,
+  "failedTests": 0,
+  "success": false,
+  "completedAt": "2026-10-03T00:14:49.033Z"
+}

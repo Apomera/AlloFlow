@@ -1,0 +1,131 @@
+{
+  "date": "2026-10-03",
+  "sourceSHA256": "f6cbfc10754e41c9f28c0d681f551275a9fa88efe6d4618348e1607ead18d39c",
+  "pluginMirrorSHA256": "f6cbfc10754e41c9f28c0d681f551275a9fa88efe6d4618348e1607ead18d39c",
+  "pluginMirrorIdentical": true,
+  "tests": {
+    "earlierRuns": [
+      {
+        "file": "reports/artstudio-workspace/perception-compare/existing-perception-results.json",
+        "label": "Existing Perception tests, earlier in this enhancement pass",
+        "success": true,
+        "total": 161,
+        "passed": 161,
+        "failed": 0,
+        "testFiles": [
+          "perception_lab_experiments.test.js",
+          "perception_lab_matching.test.js",
+          "perception_lab_notebook.test.js",
+          "perception_lab_repeat_notebook.test.js",
+          "perception_lab_repeat_study.test.js"
+        ]
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-study-comparison/study-comparison-results.json",
+        "label": "New comparison tests before final review fixes",
+        "success": true,
+        "total": 41,
+        "passed": 41,
+        "failed": 0,
+        "testFiles": [
+          "perception_lab_study_comparison.test.js"
+        ]
+      }
+    ],
+    "earlierPassed": 202,
+    "finalVitestRunCompleted": false,
+    "startupFailures": [
+      {
+        "file": "reports/artstudio-workspace/perception-compare/regression-results.json",
+        "label": "Final retry: test workers failed to start",
+        "success": false,
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "testFiles": []
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-compare/deep-links-retry-results.json",
+        "label": "Final retry: test workers failed to start",
+        "success": false,
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "testFiles": []
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-compare/deep-links-threads-results.json",
+        "label": "Final retry: test workers failed to start",
+        "success": false,
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "testFiles": []
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-compare/study-comparison-results.json",
+        "label": "Final retry: test workers failed to start",
+        "success": false,
+        "total": 0,
+        "passed": 0,
+        "failed": 0,
+        "testFiles": []
+      }
+    ],
+    "reason": "Vitest worker startup timed out before setup, environment, imports, or tests, using both fork and thread pools. Assertions and dependencies were not relaxed."
+  },
+  "finalSourceChecks": {
+    "feedback": {
+      "file": "reports/artstudio-workspace/perception-compare/feedback-probe-results.json",
+      "passed": true,
+      "checks": [
+        "Independent comparison reveal produces the correct median shift.",
+        "Deleting an unselected previous study preserves the selected pair and accurate Undo feedback.",
+        "Undo restores the previous observation without changing the selected pair.",
+        "Clearing the comparison removes its results and focuses its selector."
+      ],
+      "sourceSHA256": "f6cbfc10754e41c9f28c0d681f551275a9fa88efe6d4618348e1607ead18d39c",
+      "runner": "Standalone React createRoot + JSDOM + node:assert, without a Vitest worker"
+    },
+    "browser": {
+      "file": "reports/artstudio-workspace/perception-compare/comparison-browser-results.json",
+      "groups": 23,
+      "errors": [],
+      "sourceSHA256": "f6cbfc10754e41c9f28c0d681f551275a9fa88efe6d4618348e1607ead18d39c"
+    }
+  },
+  "discovery": {
+    "perceptionEnglishKeys": 254,
+    "metadataParity": true,
+    "englishMirror": true,
+    "indexMirror": true,
+    "indexedTools": 151,
+    "changedExistingIndexRecordCount": 0,
+    "changedIndexFields": {},
+    "perceptionDeepLink": true,
+    "redirectMirror": true
+  },
+  "integration": {
+    "mainJSXParses": 3,
+    "mainMirrors": true,
+    "hubMirror": true,
+    "englishMirror": true,
+    "newArtEnglishKeys": 26,
+    "perceptionCatalogCategory": "Learning & Behavioral Science",
+    "startupLoader": true,
+    "deepLinkFileLoader": true,
+    "pluginFallback": true
+  },
+  "checks": {
+    "syntax": true,
+    "scopedWhitespace": true,
+    "desktopPhoneDarkAndLargeTextPreviewsReviewed": true,
+    "forcedColorLabelsAndReadingLinksReviewed": true,
+    "stagedFiles": [],
+    "committedByThisTask": false
+  },
+  "limitations": [
+    "Two three-match studies provide descriptive drawing observations, not calibrated measurements or causal proof.",
+    "Final Vitest retries executed zero tests because their workers did not start. Earlier passing tests are not presented as a full final-source rerun."
+  ]
+}

@@ -1,0 +1,71 @@
+{
+  "sourceBeforeSHA256": "c27632add7e43763444c0b2ab41e0e52aeda9a5e25c669fd21c602eea23a51d6",
+  "sourceAfterSHA256": "c27632add7e43763444c0b2ab41e0e52aeda9a5e25c669fd21c602eea23a51d6",
+  "expectedSourceSHA256": "c27632add7e43763444c0b2ab41e0e52aeda9a5e25c669fd21c602eea23a51d6",
+  "exitCode": 0,
+  "testFiles": [
+    "tests/perception_lab_experiments.test.js",
+    "tests/perception_lab_matching.test.js",
+    "tests/perception_lab_notebook.test.js",
+    "tests/perception_lab_repeat_notebook.test.js",
+    "tests/perception_lab_repeat_study.test.js",
+    "tests/perception_lab_study_comparison.test.js",
+    "tests/perception_lab_guided_study.test.js",
+    "tests/perception_lab_notebook_import.test.js",
+    "tests/perception_lab_notebook_finder.test.js",
+    "tests/perception_lab_recorded_preview.test.js",
+    "tests/perception_lab_study_report.test.js",
+    "tests/perception_lab_notebook_capacity.test.js",
+    "tests/perception_lab_drawing_viewer.test.js"
+  ],
+  "batches": [
+    {
+      "index": 1,
+      "files": [
+        "tests/perception_lab_experiments.test.js",
+        "tests/perception_lab_matching.test.js",
+        "tests/perception_lab_notebook.test.js",
+        "tests/perception_lab_repeat_notebook.test.js",
+        "tests/perception_lab_repeat_study.test.js",
+        "tests/perception_lab_study_comparison.test.js"
+      ],
+      "result": "perception-tests-batch-1-results.json",
+      "sourceSHA256": "c27632add7e43763444c0b2ab41e0e52aeda9a5e25c669fd21c602eea23a51d6",
+      "exitCode": 0,
+      "signal": null,
+      "error": null
+    },
+    {
+      "index": 2,
+      "files": [
+        "tests/perception_lab_guided_study.test.js",
+        "tests/perception_lab_notebook_import.test.js",
+        "tests/perception_lab_notebook_finder.test.js",
+        "tests/perception_lab_recorded_preview.test.js",
+        "tests/perception_lab_drawing_viewer.test.js"
+      ],
+      "result": "perception-tests-batch-2-results.json",
+      "sourceSHA256": "c27632add7e43763444c0b2ab41e0e52aeda9a5e25c669fd21c602eea23a51d6",
+      "exitCode": 0,
+      "signal": null,
+      "error": null
+    },
+    {
+      "index": 3,
+      "files": [
+        "tests/perception_lab_study_report.test.js",
+        "tests/perception_lab_notebook_capacity.test.js"
+      ],
+      "result": "perception-tests-batch-3-results.json",
+      "sourceSHA256": "c27632add7e43763444c0b2ab41e0e52aeda9a5e25c669fd21c602eea23a51d6",
+      "exitCode": 0,
+      "signal": null,
+      "error": null
+    }
+  ],
+  "privateTemp": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/drawing-viewer-vitest-temp",
+  "workers": 1,
+  "pool": "forks",
+  "testTimeout": 30000,
+  "hookTimeout": 30000
+}

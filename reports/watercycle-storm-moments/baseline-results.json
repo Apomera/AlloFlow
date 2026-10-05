@@ -1,0 +1,4284 @@
+{
+  "mode": "baseline",
+  "pid": 55752,
+  "startedAt": "2026-10-02T15:05:11.927Z",
+  "sourceSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+  "sourceBytes": 3058809,
+  "publicHostSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+  "harnessSha256": "284b7ce2fbe3b69cfa49466040f9fbf13c8e6a8b25a574dbde3392f0e86ec031",
+  "checks": [
+    {
+      "label": "Native baseline lifecycle mounted desktop",
+      "passed": true
+    },
+    {
+      "label": "Baseline paused chamber desktop",
+      "passed": true
+    },
+    {
+      "label": "Native baseline lifecycle mounted phone320",
+      "passed": true
+    },
+    {
+      "label": "Baseline paused chamber phone320",
+      "passed": true
+    },
+    {
+      "label": "Native baseline lifecycle mounted dark",
+      "passed": true
+    },
+    {
+      "label": "Baseline paused chamber dark",
+      "passed": true
+    }
+  ],
+  "cases": [
+    {
+      "variant": "desktop",
+      "context": "lifecycle",
+      "scope": {
+        "x": 37,
+        "y": 1167.71875,
+        "width": 715.4375,
+        "height": 209,
+        "top": 1167.71875,
+        "right": 752.4375,
+        "bottom": 1376.71875,
+        "left": 37
+      },
+      "scrollWidth": 713,
+      "clientWidth": 713,
+      "pageOverflow": false,
+      "text": [
+        {
+          "tag": "STRONG",
+          "id": "wcStormLifecycleTitle",
+          "classes": "",
+          "text": "Storm lifecycle",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 12,
+          "fontWeight": "700",
+          "range": {
+            "x": 48,
+            "y": 1178.71875,
+            "width": 83.1875,
+            "height": 16,
+            "top": 1178.71875,
+            "right": 131.1875,
+            "bottom": 1194.71875,
+            "left": 48
+          },
+          "clipped": false,
+          "html": "<strong id=\"wcStormLifecycleTitle\">Storm lifecycle</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Mature · 52/100",
+          "foreground": "rgb(3, 105, 161)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 5.771123493744087,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 656.0625,
+            "y": 1179.96875,
+            "width": 85.375,
+            "height": 12,
+            "top": 1179.96875,
+            "right": 741.4375,
+            "bottom": 1191.96875,
+            "left": 656.0625
+          },
+          "clipped": false,
+          "html": "<span>Mature · 52/100</span>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Developing",
+          "foreground": "rgb(23, 60, 69)",
+          "backgrounds": [
+            [
+              255,
+              255,
+              255
+            ]
+          ],
+          "minimumContrast": 11.873064285638113,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 129.640625,
+            "y": 1215.71875,
+            "width": 64.515625,
+            "height": 16,
+            "top": 1215.71875,
+            "right": 194.15625,
+            "bottom": 1231.71875,
+            "left": 129.640625
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-pressed=\"false\">Developing</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Mature",
+          "foreground": "rgb(255, 255, 255)",
+          "backgrounds": [
+            [
+              3,
+              105,
+              161
+            ]
+          ],
+          "minimumContrast": 5.933638668604332,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 374.171875,
+            "y": 1215.71875,
+            "width": 41.09375,
+            "height": 16,
+            "top": 1215.71875,
+            "right": 415.265625,
+            "bottom": 1231.71875,
+            "left": 374.171875
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-pressed=\"true\">Mature</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Weakening",
+          "foreground": "rgb(23, 60, 69)",
+          "backgrounds": [
+            [
+              255,
+              255,
+              255
+            ]
+          ],
+          "minimumContrast": 11.873064285638113,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 595.984375,
+            "y": 1215.71875,
+            "width": 63.078125,
+            "height": 16,
+            "top": 1215.71875,
+            "right": 659.0625,
+            "bottom": 1231.71875,
+            "left": 595.984375
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-pressed=\"false\">Weakening</button>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "wc-storm-time-head",
+          "text": "Storm time · 52/100",
+          "foreground": "rgb(3, 105, 161)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 5.771123493744087,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 48,
+            "y": 1251.71875,
+            "width": 106.390625,
+            "height": 12,
+            "top": 1251.71875,
+            "right": 154.390625,
+            "bottom": 1263.71875,
+            "left": 48
+          },
+          "clipped": false,
+          "html": "<span class=\"wc-storm-time-head\">Storm time · 52/100</span>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Previous",
+          "foreground": "rgb(23, 60, 69)",
+          "backgrounds": [
+            [
+              255,
+              255,
+              255
+            ]
+          ],
+          "minimumContrast": 11.873064285638113,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 559.359375,
+            "y": 1274.21875,
+            "width": 48.390625,
+            "height": 16,
+            "top": 1274.21875,
+            "right": 607.75,
+            "bottom": 1290.21875,
+            "left": 559.359375
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-label=\"Move storm lifecycle backward\">Previous</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn is-primary",
+          "text": "Static",
+          "foreground": "rgb(255, 255, 255)",
+          "backgrounds": [
+            [
+              23,
+              107,
+              110
+            ]
+          ],
+          "minimumContrast": 6.241329931377702,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 638.75,
+            "y": 1274.21875,
+            "width": 31.40625,
+            "height": 16,
+            "top": 1274.21875,
+            "right": 670.15625,
+            "bottom": 1290.21875,
+            "left": 638.75
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn is-primary\" aria-pressed=\"false\" aria-disabled=\"true\">Static</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Next",
+          "foreground": "rgb(23, 60, 69)",
+          "backgrounds": [
+            [
+              255,
+              255,
+              255
+            ]
+          ],
+          "minimumContrast": 11.873064285638113,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 701.15625,
+            "y": 1274.21875,
+            "width": 27.28125,
+            "height": 16,
+            "top": 1274.21875,
+            "right": 728.4375,
+            "bottom": 1290.21875,
+            "left": 701.15625
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-label=\"Move storm lifecycle forward\">Next</button>"
+        },
+        {
+          "tag": "P",
+          "id": "",
+          "classes": "wc-storm-stage-copy",
+          "text": "Cloud depth, lift, precipitation, and electrical activity are near their peak.",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 10,
+          "fontWeight": "400",
+          "range": {
+            "x": 48,
+            "y": 1308.21875,
+            "width": 316.328125,
+            "height": 14,
+            "top": 1308.21875,
+            "right": 364.328125,
+            "bottom": 1322.21875,
+            "left": 48
+          },
+          "clipped": false,
+          "html": "<p class=\"wc-storm-stage-copy\">Cloud depth, lift, precipitation, and electrical activity are near their peak.</p>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Snow",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 48,
+            "y": 1330.71875,
+            "width": 24.09375,
+            "height": 12,
+            "top": 1330.71875,
+            "right": 72.09375,
+            "bottom": 1342.71875,
+            "left": 48
+          },
+          "clipped": false,
+          "html": "<span>Snow</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "0/100",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 48,
+            "y": 1345.21875,
+            "width": 24.703125,
+            "height": 12,
+            "top": 1345.21875,
+            "right": 72.703125,
+            "bottom": 1357.21875,
+            "left": 48
+          },
+          "clipped": false,
+          "html": "<strong>0/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Glaze",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 187.6875,
+            "y": 1330.71875,
+            "width": 24,
+            "height": 12,
+            "top": 1330.71875,
+            "right": 211.6875,
+            "bottom": 1342.71875,
+            "left": 187.6875
+          },
+          "clipped": false,
+          "html": "<span>Glaze</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "0/100",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 187.6875,
+            "y": 1345.21875,
+            "width": 24.703125,
+            "height": 12,
+            "top": 1345.21875,
+            "right": 212.390625,
+            "bottom": 1357.21875,
+            "left": 187.6875
+          },
+          "clipped": false,
+          "html": "<strong>0/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Hail",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 327.375,
+            "y": 1330.71875,
+            "width": 17.828125,
+            "height": 12,
+            "top": 1330.71875,
+            "right": 345.203125,
+            "bottom": 1342.71875,
+            "left": 327.375
+          },
+          "clipped": false,
+          "html": "<span>Hail</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "0/100",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 327.375,
+            "y": 1345.21875,
+            "width": 24.703125,
+            "height": 12,
+            "top": 1345.21875,
+            "right": 352.078125,
+            "bottom": 1357.21875,
+            "left": 327.375
+          },
+          "clipped": false,
+          "html": "<strong>0/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Puddles",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 467.0625,
+            "y": 1330.71875,
+            "width": 35.265625,
+            "height": 12,
+            "top": 1330.71875,
+            "right": 502.328125,
+            "bottom": 1342.71875,
+            "left": 467.0625
+          },
+          "clipped": false,
+          "html": "<span>Puddles</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "8/100",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 467.0625,
+            "y": 1345.21875,
+            "width": 24.703125,
+            "height": 12,
+            "top": 1345.21875,
+            "right": 491.765625,
+            "bottom": 1357.21875,
+            "left": 467.0625
+          },
+          "clipped": false,
+          "html": "<strong>8/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Runoff",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 606.75,
+            "y": 1330.71875,
+            "width": 30.875,
+            "height": 12,
+            "top": 1330.71875,
+            "right": 637.625,
+            "bottom": 1342.71875,
+            "left": 606.75
+          },
+          "clipped": false,
+          "html": "<span>Runoff</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "6/100",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 606.75,
+            "y": 1345.21875,
+            "width": 24.703125,
+            "height": 12,
+            "top": 1345.21875,
+            "right": 631.453125,
+            "bottom": 1357.21875,
+            "left": 606.75
+          },
+          "clipped": false,
+          "html": "<strong>6/100</strong>"
+        }
+      ],
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Developing",
+          "value": "",
+          "pressed": "false",
+          "bounds": {
+            "x": 48,
+            "y": 1202.71875,
+            "width": 227.8125,
+            "height": 42,
+            "top": 1202.71875,
+            "right": 275.8125,
+            "bottom": 1244.71875,
+            "left": 48
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(23, 60, 69)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Mature",
+          "value": "",
+          "pressed": "true",
+          "bounds": {
+            "x": 280.8125,
+            "y": 1202.71875,
+            "width": 227.8125,
+            "height": 42,
+            "top": 1202.71875,
+            "right": 508.625,
+            "bottom": 1244.71875,
+            "left": 280.8125
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(255, 255, 255)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Weakening",
+          "value": "",
+          "pressed": "false",
+          "bounds": {
+            "x": 513.625,
+            "y": 1202.71875,
+            "width": 227.8125,
+            "height": 42,
+            "top": 1202.71875,
+            "right": 741.4375,
+            "bottom": 1244.71875,
+            "left": 513.625
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(23, 60, 69)"
+        },
+        {
+          "tag": "INPUT",
+          "id": "wcPrecipStormTime",
+          "text": "",
+          "value": "52",
+          "pressed": null,
+          "bounds": {
+            "x": 48,
+            "y": 1265.21875,
+            "width": 490.359375,
+            "height": 32,
+            "top": 1265.21875,
+            "right": 538.359375,
+            "bottom": 1297.21875,
+            "left": 48
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(23, 60, 69)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Previous",
+          "value": "",
+          "pressed": null,
+          "bounds": {
+            "x": 546.359375,
+            "y": 1261.21875,
+            "width": 74.390625,
+            "height": 42,
+            "top": 1261.21875,
+            "right": 620.75,
+            "bottom": 1303.21875,
+            "left": 546.359375
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(23, 60, 69)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Static",
+          "value": "",
+          "pressed": "false",
+          "bounds": {
+            "x": 625.75,
+            "y": 1261.21875,
+            "width": 57.40625,
+            "height": 42,
+            "top": 1261.21875,
+            "right": 683.15625,
+            "bottom": 1303.21875,
+            "left": 625.75
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(255, 255, 255)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Next",
+          "value": "",
+          "pressed": null,
+          "bounds": {
+            "x": 688.15625,
+            "y": 1261.21875,
+            "width": 53.28125,
+            "height": 42,
+            "top": 1261.21875,
+            "right": 741.4375,
+            "bottom": 1303.21875,
+            "left": 688.15625
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(23, 60, 69)"
+        }
+      ],
+      "svgs": []
+    },
+    {
+      "variant": "phone320",
+      "context": "lifecycle",
+      "scope": {
+        "x": 25,
+        "y": 379.453125,
+        "width": 270,
+        "height": 401.5,
+        "top": 379.453125,
+        "right": 295,
+        "bottom": 780.953125,
+        "left": 25
+      },
+      "scrollWidth": 268,
+      "clientWidth": 268,
+      "pageOverflow": false,
+      "text": [
+        {
+          "tag": "STRONG",
+          "id": "wcStormLifecycleTitle",
+          "classes": "",
+          "text": "Storm lifecycle",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 12,
+          "fontWeight": "700",
+          "range": {
+            "x": 36,
+            "y": 390.453125,
+            "width": 83.1875,
+            "height": 16,
+            "top": 390.453125,
+            "right": 119.1875,
+            "bottom": 406.453125,
+            "left": 36
+          },
+          "clipped": false,
+          "html": "<strong id=\"wcStormLifecycleTitle\">Storm lifecycle</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Mature · 52/100",
+          "foreground": "rgb(3, 105, 161)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 5.771123493744087,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 198.625,
+            "y": 391.703125,
+            "width": 85.375,
+            "height": 12,
+            "top": 391.703125,
+            "right": 284,
+            "bottom": 403.703125,
+            "left": 198.625
+          },
+          "clipped": false,
+          "html": "<span>Mature · 52/100</span>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Developing",
+          "foreground": "rgb(23, 60, 69)",
+          "backgrounds": [
+            [
+              255,
+              255,
+              255
+            ]
+          ],
+          "minimumContrast": 11.873064285638113,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 64.484375,
+            "y": 427.453125,
+            "width": 64.515625,
+            "height": 16,
+            "top": 427.453125,
+            "right": 129,
+            "bottom": 443.453125,
+            "left": 64.484375
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-pressed=\"false\">Developing</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Mature",
+          "foreground": "rgb(255, 255, 255)",
+          "backgrounds": [
+            [
+              3,
+              105,
+              161
+            ]
+          ],
+          "minimumContrast": 5.933638668604332,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 202.703125,
+            "y": 427.453125,
+            "width": 41.09375,
+            "height": 16,
+            "top": 427.453125,
+            "right": 243.796875,
+            "bottom": 443.453125,
+            "left": 202.703125
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-pressed=\"true\">Mature</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Weakening",
+          "foreground": "rgb(23, 60, 69)",
+          "backgrounds": [
+            [
+              255,
+              255,
+              255
+            ]
+          ],
+          "minimumContrast": 11.873064285638113,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 128.453125,
+            "y": 474.453125,
+            "width": 63.078125,
+            "height": 16,
+            "top": 474.453125,
+            "right": 191.53125,
+            "bottom": 490.453125,
+            "left": 128.453125
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-pressed=\"false\">Weakening</button>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "wc-storm-time-head",
+          "text": "Storm time · 52/100",
+          "foreground": "rgb(3, 105, 161)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 5.771123493744087,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 36,
+            "y": 510.453125,
+            "width": 106.390625,
+            "height": 12,
+            "top": 510.453125,
+            "right": 142.390625,
+            "bottom": 522.453125,
+            "left": 36
+          },
+          "clipped": false,
+          "html": "<span class=\"wc-storm-time-head\">Storm time · 52/100</span>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Previous",
+          "foreground": "rgb(23, 60, 69)",
+          "backgrounds": [
+            [
+              255,
+              255,
+              255
+            ]
+          ],
+          "minimumContrast": 11.873064285638113,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 51.46875,
+            "y": 582.953125,
+            "width": 48.390625,
+            "height": 16,
+            "top": 582.953125,
+            "right": 99.859375,
+            "bottom": 598.953125,
+            "left": 51.46875
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-label=\"Move storm lifecycle backward\">Previous</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn is-primary",
+          "text": "Static",
+          "foreground": "rgb(255, 255, 255)",
+          "backgrounds": [
+            [
+              23,
+              107,
+              110
+            ]
+          ],
+          "minimumContrast": 6.241329931377702,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 144.296875,
+            "y": 582.953125,
+            "width": 31.40625,
+            "height": 16,
+            "top": 582.953125,
+            "right": 175.703125,
+            "bottom": 598.953125,
+            "left": 144.296875
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn is-primary\" aria-pressed=\"false\" aria-disabled=\"true\">Static</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Next",
+          "foreground": "rgb(23, 60, 69)",
+          "backgrounds": [
+            [
+              255,
+              255,
+              255
+            ]
+          ],
+          "minimumContrast": 11.873064285638113,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 230.6875,
+            "y": 582.953125,
+            "width": 27.28125,
+            "height": 16,
+            "top": 582.953125,
+            "right": 257.96875,
+            "bottom": 598.953125,
+            "left": 230.6875
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-label=\"Move storm lifecycle forward\">Next</button>"
+        },
+        {
+          "tag": "P",
+          "id": "",
+          "classes": "wc-storm-stage-copy",
+          "text": "Cloud depth, lift, precipitation, and electrical activity are near their peak.",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 10,
+          "fontWeight": "400",
+          "range": {
+            "x": 36,
+            "y": 616.953125,
+            "width": 245.15625,
+            "height": 27.5,
+            "top": 616.953125,
+            "right": 281.15625,
+            "bottom": 644.453125,
+            "left": 36
+          },
+          "clipped": false,
+          "html": "<p class=\"wc-storm-stage-copy\">Cloud depth, lift, precipitation, and electrical activity are near their peak.</p>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Snow",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 36,
+            "y": 652.953125,
+            "width": 24.09375,
+            "height": 12,
+            "top": 652.953125,
+            "right": 60.09375,
+            "bottom": 664.953125,
+            "left": 36
+          },
+          "clipped": false,
+          "html": "<span>Snow</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "0/100",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 36,
+            "y": 667.453125,
+            "width": 24.703125,
+            "height": 12,
+            "top": 667.453125,
+            "right": 60.703125,
+            "bottom": 679.453125,
+            "left": 36
+          },
+          "clipped": false,
+          "html": "<strong>0/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Glaze",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 162.5,
+            "y": 652.953125,
+            "width": 24,
+            "height": 12,
+            "top": 652.953125,
+            "right": 186.5,
+            "bottom": 664.953125,
+            "left": 162.5
+          },
+          "clipped": false,
+          "html": "<span>Glaze</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "0/100",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 162.5,
+            "y": 667.453125,
+            "width": 24.703125,
+            "height": 12,
+            "top": 667.453125,
+            "right": 187.203125,
+            "bottom": 679.453125,
+            "left": 162.5
+          },
+          "clipped": false,
+          "html": "<strong>0/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Hail",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 36,
+            "y": 693.953125,
+            "width": 17.828125,
+            "height": 12,
+            "top": 693.953125,
+            "right": 53.828125,
+            "bottom": 705.953125,
+            "left": 36
+          },
+          "clipped": false,
+          "html": "<span>Hail</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "0/100",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 36,
+            "y": 708.453125,
+            "width": 24.703125,
+            "height": 12,
+            "top": 708.453125,
+            "right": 60.703125,
+            "bottom": 720.453125,
+            "left": 36
+          },
+          "clipped": false,
+          "html": "<strong>0/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Puddles",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 162.5,
+            "y": 693.953125,
+            "width": 35.265625,
+            "height": 12,
+            "top": 693.953125,
+            "right": 197.765625,
+            "bottom": 705.953125,
+            "left": 162.5
+          },
+          "clipped": false,
+          "html": "<span>Puddles</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "8/100",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 162.5,
+            "y": 708.453125,
+            "width": 24.703125,
+            "height": 12,
+            "top": 708.453125,
+            "right": 187.203125,
+            "bottom": 720.453125,
+            "left": 162.5
+          },
+          "clipped": false,
+          "html": "<strong>8/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Runoff",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 7.37012091776395,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 36,
+            "y": 734.953125,
+            "width": 30.875,
+            "height": 12,
+            "top": 734.953125,
+            "right": 66.875,
+            "bottom": 746.953125,
+            "left": 36
+          },
+          "clipped": false,
+          "html": "<span>Runoff</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "6/100",
+          "foreground": "rgb(15, 23, 42)",
+          "backgrounds": [
+            [
+              252.9,
+              253.5,
+              252
+            ],
+            [
+              249.9,
+              252.3,
+              251.70000000000002
+            ]
+          ],
+          "minimumContrast": 17.36357565771119,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 36,
+            "y": 749.453125,
+            "width": 24.703125,
+            "height": 12,
+            "top": 749.453125,
+            "right": 60.703125,
+            "bottom": 761.453125,
+            "left": 36
+          },
+          "clipped": false,
+          "html": "<strong>6/100</strong>"
+        }
+      ],
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Developing",
+          "value": "",
+          "pressed": "false",
+          "bounds": {
+            "x": 36,
+            "y": 414.453125,
+            "width": 121.5,
+            "height": 42,
+            "top": 414.453125,
+            "right": 157.5,
+            "bottom": 456.453125,
+            "left": 36
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(23, 60, 69)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Mature",
+          "value": "",
+          "pressed": "true",
+          "bounds": {
+            "x": 162.5,
+            "y": 414.453125,
+            "width": 121.5,
+            "height": 42,
+            "top": 414.453125,
+            "right": 284,
+            "bottom": 456.453125,
+            "left": 162.5
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(255, 255, 255)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Weakening",
+          "value": "",
+          "pressed": "false",
+          "bounds": {
+            "x": 36,
+            "y": 461.453125,
+            "width": 248,
+            "height": 42,
+            "top": 461.453125,
+            "right": 284,
+            "bottom": 503.453125,
+            "left": 36
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(23, 60, 69)"
+        },
+        {
+          "tag": "INPUT",
+          "id": "wcPrecipStormTime",
+          "text": "",
+          "value": "52",
+          "pressed": null,
+          "bounds": {
+            "x": 36,
+            "y": 523.953125,
+            "width": 248,
+            "height": 32,
+            "top": 523.953125,
+            "right": 284,
+            "bottom": 555.953125,
+            "left": 36
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(23, 60, 69)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Previous",
+          "value": "",
+          "pressed": null,
+          "bounds": {
+            "x": 36,
+            "y": 569.953125,
+            "width": 79.328125,
+            "height": 42,
+            "top": 569.953125,
+            "right": 115.328125,
+            "bottom": 611.953125,
+            "left": 36
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(23, 60, 69)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Static",
+          "value": "",
+          "pressed": "false",
+          "bounds": {
+            "x": 120.328125,
+            "y": 569.953125,
+            "width": 79.34375,
+            "height": 42,
+            "top": 569.953125,
+            "right": 199.671875,
+            "bottom": 611.953125,
+            "left": 120.328125
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(255, 255, 255)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Next",
+          "value": "",
+          "pressed": null,
+          "bounds": {
+            "x": 204.671875,
+            "y": 569.953125,
+            "width": 79.328125,
+            "height": 42,
+            "top": 569.953125,
+            "right": 284,
+            "bottom": 611.953125,
+            "left": 204.671875
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(23, 60, 69)"
+        }
+      ],
+      "svgs": []
+    },
+    {
+      "variant": "dark",
+      "context": "lifecycle",
+      "scope": {
+        "x": 37,
+        "y": 380.71875,
+        "width": 715.4375,
+        "height": 209,
+        "top": 380.71875,
+        "right": 752.4375,
+        "bottom": 589.71875,
+        "left": 37
+      },
+      "scrollWidth": 713,
+      "clientWidth": 713,
+      "pageOverflow": false,
+      "text": [
+        {
+          "tag": "STRONG",
+          "id": "wcStormLifecycleTitle",
+          "classes": "",
+          "text": "Storm lifecycle",
+          "foreground": "rgb(248, 250, 252)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 16.12997554678723,
+          "fontSize": 12,
+          "fontWeight": "700",
+          "range": {
+            "x": 48,
+            "y": 391.71875,
+            "width": 83.1875,
+            "height": 16,
+            "top": 391.71875,
+            "right": 131.1875,
+            "bottom": 407.71875,
+            "left": 48
+          },
+          "clipped": false,
+          "html": "<strong id=\"wcStormLifecycleTitle\">Storm lifecycle</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Mature · 52/100",
+          "foreground": "rgb(125, 211, 252)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 10.122109805622241,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 656.0625,
+            "y": 392.96875,
+            "width": 85.375,
+            "height": 12,
+            "top": 392.96875,
+            "right": 741.4375,
+            "bottom": 404.96875,
+            "left": 656.0625
+          },
+          "clipped": false,
+          "html": "<span>Mature · 52/100</span>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Developing",
+          "foreground": "rgb(237, 248, 244)",
+          "backgrounds": [
+            [
+              23,
+              55,
+              65
+            ]
+          ],
+          "minimumContrast": 11.652456723728926,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 129.640625,
+            "y": 428.71875,
+            "width": 64.515625,
+            "height": 16,
+            "top": 428.71875,
+            "right": 194.15625,
+            "bottom": 444.71875,
+            "left": 129.640625
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-pressed=\"false\">Developing</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Mature",
+          "foreground": "rgb(8, 47, 73)",
+          "backgrounds": [
+            [
+              14,
+              165,
+              233
+            ]
+          ],
+          "minimumContrast": 5.007712959407888,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 374.171875,
+            "y": 428.71875,
+            "width": 41.09375,
+            "height": 16,
+            "top": 428.71875,
+            "right": 415.265625,
+            "bottom": 444.71875,
+            "left": 374.171875
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-pressed=\"true\">Mature</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Weakening",
+          "foreground": "rgb(237, 248, 244)",
+          "backgrounds": [
+            [
+              23,
+              55,
+              65
+            ]
+          ],
+          "minimumContrast": 11.652456723728926,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 595.984375,
+            "y": 428.71875,
+            "width": 63.078125,
+            "height": 16,
+            "top": 428.71875,
+            "right": 659.0625,
+            "bottom": 444.71875,
+            "left": 595.984375
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-pressed=\"false\">Weakening</button>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "wc-storm-time-head",
+          "text": "Storm time · 52/100",
+          "foreground": "rgb(125, 211, 252)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 10.122109805622241,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 48,
+            "y": 464.71875,
+            "width": 106.390625,
+            "height": 12,
+            "top": 464.71875,
+            "right": 154.390625,
+            "bottom": 476.71875,
+            "left": 48
+          },
+          "clipped": false,
+          "html": "<span class=\"wc-storm-time-head\">Storm time · 52/100</span>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Previous",
+          "foreground": "rgb(237, 248, 244)",
+          "backgrounds": [
+            [
+              23,
+              55,
+              65
+            ]
+          ],
+          "minimumContrast": 11.652456723728926,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 559.359375,
+            "y": 487.21875,
+            "width": 48.390625,
+            "height": 16,
+            "top": 487.21875,
+            "right": 607.75,
+            "bottom": 503.21875,
+            "left": 559.359375
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-label=\"Move storm lifecycle backward\">Previous</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn is-primary",
+          "text": "Static",
+          "foreground": "rgb(255, 255, 255)",
+          "backgrounds": [
+            [
+              43,
+              123,
+              126
+            ]
+          ],
+          "minimumContrast": 4.956134152676283,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 638.75,
+            "y": 487.21875,
+            "width": 31.40625,
+            "height": 16,
+            "top": 487.21875,
+            "right": 670.15625,
+            "bottom": 503.21875,
+            "left": 638.75
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn is-primary\" aria-pressed=\"false\" aria-disabled=\"true\">Static</button>"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "classes": "wc-precip-btn",
+          "text": "Next",
+          "foreground": "rgb(237, 248, 244)",
+          "backgrounds": [
+            [
+              23,
+              55,
+              65
+            ]
+          ],
+          "minimumContrast": 11.652456723728926,
+          "fontSize": 12,
+          "fontWeight": "750",
+          "range": {
+            "x": 701.15625,
+            "y": 487.21875,
+            "width": 27.28125,
+            "height": 16,
+            "top": 487.21875,
+            "right": 728.4375,
+            "bottom": 503.21875,
+            "left": 701.15625
+          },
+          "clipped": false,
+          "html": "<button type=\"button\" class=\"wc-precip-btn\" aria-label=\"Move storm lifecycle forward\">Next</button>"
+        },
+        {
+          "tag": "P",
+          "id": "",
+          "classes": "wc-storm-stage-copy",
+          "text": "Cloud depth, lift, precipitation, and electrical activity are near their peak.",
+          "foreground": "rgb(203, 213, 225)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 11.366860627072233,
+          "fontSize": 10,
+          "fontWeight": "400",
+          "range": {
+            "x": 48,
+            "y": 521.21875,
+            "width": 316.328125,
+            "height": 14,
+            "top": 521.21875,
+            "right": 364.328125,
+            "bottom": 535.21875,
+            "left": 48
+          },
+          "clipped": false,
+          "html": "<p class=\"wc-storm-stage-copy\">Cloud depth, lift, precipitation, and electrical activity are near their peak.</p>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Snow",
+          "foreground": "rgb(203, 213, 225)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 11.366860627072233,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 48,
+            "y": 543.71875,
+            "width": 24.09375,
+            "height": 12,
+            "top": 543.71875,
+            "right": 72.09375,
+            "bottom": 555.71875,
+            "left": 48
+          },
+          "clipped": false,
+          "html": "<span>Snow</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "0/100",
+          "foreground": "rgb(248, 250, 252)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 16.12997554678723,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 48,
+            "y": 558.21875,
+            "width": 24.703125,
+            "height": 12,
+            "top": 558.21875,
+            "right": 72.703125,
+            "bottom": 570.21875,
+            "left": 48
+          },
+          "clipped": false,
+          "html": "<strong>0/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Glaze",
+          "foreground": "rgb(203, 213, 225)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 11.366860627072233,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 187.6875,
+            "y": 543.71875,
+            "width": 24,
+            "height": 12,
+            "top": 543.71875,
+            "right": 211.6875,
+            "bottom": 555.71875,
+            "left": 187.6875
+          },
+          "clipped": false,
+          "html": "<span>Glaze</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "0/100",
+          "foreground": "rgb(248, 250, 252)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 16.12997554678723,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 187.6875,
+            "y": 558.21875,
+            "width": 24.703125,
+            "height": 12,
+            "top": 558.21875,
+            "right": 212.390625,
+            "bottom": 570.21875,
+            "left": 187.6875
+          },
+          "clipped": false,
+          "html": "<strong>0/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Hail",
+          "foreground": "rgb(203, 213, 225)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 11.366860627072233,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 327.375,
+            "y": 543.71875,
+            "width": 17.828125,
+            "height": 12,
+            "top": 543.71875,
+            "right": 345.203125,
+            "bottom": 555.71875,
+            "left": 327.375
+          },
+          "clipped": false,
+          "html": "<span>Hail</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "0/100",
+          "foreground": "rgb(248, 250, 252)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 16.12997554678723,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 327.375,
+            "y": 558.21875,
+            "width": 24.703125,
+            "height": 12,
+            "top": 558.21875,
+            "right": 352.078125,
+            "bottom": 570.21875,
+            "left": 327.375
+          },
+          "clipped": false,
+          "html": "<strong>0/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Puddles",
+          "foreground": "rgb(203, 213, 225)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 11.366860627072233,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 467.0625,
+            "y": 543.71875,
+            "width": 35.265625,
+            "height": 12,
+            "top": 543.71875,
+            "right": 502.328125,
+            "bottom": 555.71875,
+            "left": 467.0625
+          },
+          "clipped": false,
+          "html": "<span>Puddles</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "8/100",
+          "foreground": "rgb(248, 250, 252)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 16.12997554678723,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 467.0625,
+            "y": 558.21875,
+            "width": 24.703125,
+            "height": 12,
+            "top": 558.21875,
+            "right": 491.765625,
+            "bottom": 570.21875,
+            "left": 467.0625
+          },
+          "clipped": false,
+          "html": "<strong>8/100</strong>"
+        },
+        {
+          "tag": "SPAN",
+          "id": "",
+          "classes": "",
+          "text": "Runoff",
+          "foreground": "rgb(203, 213, 225)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 11.366860627072233,
+          "fontSize": 9,
+          "fontWeight": "900",
+          "range": {
+            "x": 606.75,
+            "y": 543.71875,
+            "width": 30.875,
+            "height": 12,
+            "top": 543.71875,
+            "right": 637.625,
+            "bottom": 555.71875,
+            "left": 606.75
+          },
+          "clipped": false,
+          "html": "<span>Runoff</span>"
+        },
+        {
+          "tag": "STRONG",
+          "id": "",
+          "classes": "",
+          "text": "6/100",
+          "foreground": "rgb(248, 250, 252)",
+          "backgrounds": [
+            [
+              15.3,
+              28.7,
+              44.4
+            ],
+            [
+              15.3,
+              29.9,
+              45.6
+            ]
+          ],
+          "minimumContrast": 16.12997554678723,
+          "fontSize": 9,
+          "fontWeight": "700",
+          "range": {
+            "x": 606.75,
+            "y": 558.21875,
+            "width": 24.703125,
+            "height": 12,
+            "top": 558.21875,
+            "right": 631.453125,
+            "bottom": 570.21875,
+            "left": 606.75
+          },
+          "clipped": false,
+          "html": "<strong>6/100</strong>"
+        }
+      ],
+      "controls": [
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Developing",
+          "value": "",
+          "pressed": "false",
+          "bounds": {
+            "x": 48,
+            "y": 415.71875,
+            "width": 227.8125,
+            "height": 42,
+            "top": 415.71875,
+            "right": 275.8125,
+            "bottom": 457.71875,
+            "left": 48
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(237, 248, 244)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Mature",
+          "value": "",
+          "pressed": "true",
+          "bounds": {
+            "x": 280.8125,
+            "y": 415.71875,
+            "width": 227.8125,
+            "height": 42,
+            "top": 415.71875,
+            "right": 508.625,
+            "bottom": 457.71875,
+            "left": 280.8125
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(8, 47, 73)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Weakening",
+          "value": "",
+          "pressed": "false",
+          "bounds": {
+            "x": 513.625,
+            "y": 415.71875,
+            "width": 227.8125,
+            "height": 42,
+            "top": 415.71875,
+            "right": 741.4375,
+            "bottom": 457.71875,
+            "left": 513.625
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(237, 248, 244)"
+        },
+        {
+          "tag": "INPUT",
+          "id": "wcPrecipStormTime",
+          "text": "",
+          "value": "52",
+          "pressed": null,
+          "bounds": {
+            "x": 48,
+            "y": 478.21875,
+            "width": 490.359375,
+            "height": 32,
+            "top": 478.21875,
+            "right": 538.359375,
+            "bottom": 510.21875,
+            "left": 48
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(226, 232, 240)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Previous",
+          "value": "",
+          "pressed": null,
+          "bounds": {
+            "x": 546.359375,
+            "y": 474.21875,
+            "width": 74.390625,
+            "height": 42,
+            "top": 474.21875,
+            "right": 620.75,
+            "bottom": 516.21875,
+            "left": 546.359375
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(237, 248, 244)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Static",
+          "value": "",
+          "pressed": "false",
+          "bounds": {
+            "x": 625.75,
+            "y": 474.21875,
+            "width": 57.40625,
+            "height": 42,
+            "top": 474.21875,
+            "right": 683.15625,
+            "bottom": 516.21875,
+            "left": 625.75
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(255, 255, 255)"
+        },
+        {
+          "tag": "BUTTON",
+          "id": "",
+          "text": "Next",
+          "value": "",
+          "pressed": null,
+          "bounds": {
+            "x": 688.15625,
+            "y": 474.21875,
+            "width": 53.28125,
+            "height": 42,
+            "top": 474.21875,
+            "right": 741.4375,
+            "bottom": 516.21875,
+            "left": 688.15625
+          },
+          "outline": "none",
+          "outlineWidth": 3,
+          "outlineColor": "rgb(237, 248, 244)"
+        }
+      ],
+      "svgs": []
+    }
+  ],
+  "nativeActions": [],
+  "audits": [
+    {
+      "label": "baseline lifecycle desktop",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                ".wc-storm-stage-segments"
+              ],
+              "html": "<div class=\"wc-storm-stage-segments\" aria-label=\"Jump to storm stage\">",
+              "summary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation"
+              ],
+              "html": "<div class=\"wc-storm-accumulation\" aria-label=\"Qualitative ground accumulation indices\">",
+              "summary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                "#wcStormLifecycleTitle"
+              ],
+              "html": "<strong id=\"wcStormLifecycleTitle\">Storm lifecycle</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-lifecycle-head > span"
+              ],
+              "html": "<span>Mature · 52/100</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-time-head"
+              ],
+              "html": "<span class=\"wc-storm-time-head\">Storm time · 52/100</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-stage-copy"
+              ],
+              "html": "<p class=\"wc-storm-stage-copy\">Cloud depth, lift, precipitation, and electrical activity are near their peak.</p>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "7.5pt (10px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(1) > span"
+              ],
+              "html": "<span>Snow</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(1) > strong"
+              ],
+              "html": "<strong>0/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(2) > span"
+              ],
+              "html": "<span>Glaze</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(2) > strong"
+              ],
+              "html": "<strong>0/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(3) > span"
+              ],
+              "html": "<span>Hail</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(3) > strong"
+              ],
+              "html": "<strong>0/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(4) > span"
+              ],
+              "html": "<span>Puddles</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(4) > strong"
+              ],
+              "html": "<strong>8/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(5) > span"
+              ],
+              "html": "<span>Runoff</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(5) > strong"
+              ],
+              "html": "<strong>6/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "baseline lifecycle phone320",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                ".wc-storm-stage-segments"
+              ],
+              "html": "<div class=\"wc-storm-stage-segments\" aria-label=\"Jump to storm stage\">",
+              "summary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation"
+              ],
+              "html": "<div class=\"wc-storm-accumulation\" aria-label=\"Qualitative ground accumulation indices\">",
+              "summary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                "#wcStormLifecycleTitle"
+              ],
+              "html": "<strong id=\"wcStormLifecycleTitle\">Storm lifecycle</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-lifecycle-head > span"
+              ],
+              "html": "<span>Mature · 52/100</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-time-head"
+              ],
+              "html": "<span class=\"wc-storm-time-head\">Storm time · 52/100</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-stage-copy"
+              ],
+              "html": "<p class=\"wc-storm-stage-copy\">Cloud depth, lift, precipitation, and electrical activity are near their peak.</p>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "7.5pt (10px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(1) > span"
+              ],
+              "html": "<span>Snow</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(1) > strong"
+              ],
+              "html": "<strong>0/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(2) > span"
+              ],
+              "html": "<span>Glaze</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(2) > strong"
+              ],
+              "html": "<strong>0/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(3) > span"
+              ],
+              "html": "<span>Hail</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(3) > strong"
+              ],
+              "html": "<strong>0/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(4) > span"
+              ],
+              "html": "<span>Puddles</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(4) > strong"
+              ],
+              "html": "<strong>8/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(5) > span"
+              ],
+              "html": "<span>Runoff</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(5) > strong"
+              ],
+              "html": "<strong>6/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "baseline lifecycle dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                ".wc-storm-stage-segments"
+              ],
+              "html": "<div class=\"wc-storm-stage-segments\" aria-label=\"Jump to storm stage\">",
+              "summary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation"
+              ],
+              "html": "<div class=\"wc-storm-accumulation\" aria-label=\"Qualitative ground accumulation indices\">",
+              "summary": "Fix all of the following:\n  aria-label attribute is not well supported on a div with no valid role attribute.",
+              "any": [],
+              "all": [],
+              "none": [
+                {
+                  "id": "aria-prohibited-attr",
+                  "data": {
+                    "role": null,
+                    "nodeName": "div",
+                    "messageKey": "noRoleSingular",
+                    "prohibited": [
+                      "aria-label"
+                    ]
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "aria-label attribute is not well supported on a div with no valid role attribute."
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                "#wcStormLifecycleTitle"
+              ],
+              "html": "<strong id=\"wcStormLifecycleTitle\">Storm lifecycle</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-lifecycle-head > span"
+              ],
+              "html": "<span>Mature · 52/100</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-time-head"
+              ],
+              "html": "<span class=\"wc-storm-time-head\">Storm time · 52/100</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-stage-copy"
+              ],
+              "html": "<p class=\"wc-storm-stage-copy\">Cloud depth, lift, precipitation, and electrical activity are near their peak.</p>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "7.5pt (10px)",
+                    "fontWeight": "normal",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(1) > span"
+              ],
+              "html": "<span>Snow</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(1) > strong"
+              ],
+              "html": "<strong>0/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(2) > span"
+              ],
+              "html": "<span>Glaze</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(2) > strong"
+              ],
+              "html": "<strong>0/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(3) > span"
+              ],
+              "html": "<span>Hail</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(3) > strong"
+              ],
+              "html": "<strong>0/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(4) > span"
+              ],
+              "html": "<span>Puddles</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(4) > strong"
+              ],
+              "html": "<strong>8/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(5) > span"
+              ],
+              "html": "<span>Runoff</span>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-storm-accumulation-item:nth-child(5) > strong"
+              ],
+              "html": "<strong>6/100</strong>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined due to a background gradient",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgGradient",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<div class=\"wc-storm-lifecycle\" role=\"group\" aria-labelledby=\"wcStormLifecycleTitle\" data-storm-lifecycle=\"mature\">",
+                      "target": [
+                        ".wc-storm-lifecycle"
+                      ]
+                    },
+                    {
+                      "html": "<section class=\"wc-precip-lab\" role=\"region\" aria-labelledby=\"wcPrecipLabTitle\" data-precipitation-kind=\"rain\" data-precipitation-reach=\"ground\" data-precipitation-view=\"2d\" data-lightning-study-step=\"auto\" data-lightning-study-mode=\"hidden\">",
+                      "target": [
+                        ".wc-precip-lab"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined due to a background gradient"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "captures": [
+    {
+      "path": "baseline-lifecycle-desktop.png",
+      "sha256": "5e935a2631cecf28fd0041b9c20af46e1d6cc2e2ec4b99ecbefedd69f62bedde",
+      "bytes": 17538,
+      "width": 716,
+      "height": 210,
+      "sourceSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "capturedAt": "2026-10-02T15:05:19.432Z",
+      "selector": ".wc-storm-lifecycle",
+      "variant": "desktop",
+      "context": "lifecycle"
+    },
+    {
+      "path": "baseline-lifecycle-phone320.png",
+      "sha256": "9c12c7353f88c006c9715444ce02e10a9679a1eda898b49593e5d406aad2f4b3",
+      "bytes": 14861,
+      "width": 270,
+      "height": 402,
+      "sourceSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "capturedAt": "2026-10-02T15:05:23.219Z",
+      "selector": ".wc-storm-lifecycle",
+      "variant": "phone320",
+      "context": "lifecycle"
+    },
+    {
+      "path": "baseline-lifecycle-dark.png",
+      "sha256": "5e327d9d6fd69b1bcf6fbcde2f2e120dd840c8168654f1fb291684894bae9e63",
+      "bytes": 14081,
+      "width": 716,
+      "height": 210,
+      "sourceSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "capturedAt": "2026-10-02T15:05:25.265Z",
+      "selector": ".wc-storm-lifecycle",
+      "variant": "dark",
+      "context": "lifecycle"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "completed": true,
+  "successful": true,
+  "browserClosed": true,
+  "serverUsed": false,
+  "serverClosed": true,
+  "serverClosedAt": null,
+  "resourcesClosed": true,
+  "browserLaunchedAt": "2026-10-02T15:05:12.358Z",
+  "browserClosedAt": "2026-10-02T15:05:28.247Z",
+  "completedAt": "2026-10-02T15:05:28.247Z"
+}

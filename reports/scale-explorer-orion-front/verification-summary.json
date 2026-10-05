@@ -1,0 +1,304 @@
+{
+  "source": {
+    "sourceSha256": "156f534c598972c70dd7a65d1fde5b6a94daaf0c3dfa2c9a928146d40709e8d6",
+    "edits": 36,
+    "mirrorsMatch": true,
+    "candidateMatch": true,
+    "syntaxValid": true,
+    "localizedKeys": 14
+  },
+  "preview": {
+    "status": 200,
+    "sourceSha256": "156f534c598972c70dd7a65d1fde5b6a94daaf0c3dfa2c9a928146d40709e8d6",
+    "sourceMatches": true,
+    "cacheControl": "no-store",
+    "url": "http://127.0.0.1:54391/?tool=scaleExplorer&focus=orion-nebula&v=bearing"
+  },
+  "units": {
+    "total": 65,
+    "passed": 65,
+    "failed": 0
+  },
+  "browser": {
+    "generatedAt": "2026-10-02T20:07:11.020Z",
+    "finalSourceSha256": "156f534c598972c70dd7a65d1fde5b6a94daaf0c3dfa2c9a928146d40709e8d6",
+    "uniquePassedCount": 13,
+    "finalTargetedPassedCount": 4,
+    "passedCases": [
+      {
+        "title": "facing the central stars rotates smoothly at a fixed position and user controls cancel its orientation",
+        "file": "scale-explorer-nebula-bearing.spec.ts",
+        "reports": [
+          "browser-bearing-container.json"
+        ]
+      },
+      {
+        "title": "optional star locator projects the fixed reference and clips behind the camera, screen edges, title and console",
+        "file": "scale-explorer-nebula-bearing.spec.ts",
+        "reports": [
+          "browser-bearing-container.json",
+          "browser-final-targeted.json"
+        ]
+      },
+      {
+        "title": "320px WebGL 1 offers immediate facing, a readable cue and the new front viewpoint with reduced motion",
+        "file": "scale-explorer-nebula-bearing.spec.ts",
+        "reports": [
+          "browser-bearing-container.json",
+          "browser-final-targeted.json"
+        ]
+      },
+      {
+        "title": "inside camera translates at one scale, explores four cloud viewpoints and restores an exact notebook pose",
+        "file": "scale-explorer-nebula-navigation.spec.ts",
+        "reports": [
+          "browser-orion-regressions.json"
+        ]
+      },
+      {
+        "title": "320px WebGL 1 navigation supports discrete steps, touch look and whole-cloud comparison exits",
+        "file": "scale-explorer-nebula-navigation.spec.ts",
+        "reports": [
+          "browser-orion-regressions.json"
+        ]
+      },
+      {
+        "title": "manual movement cancels a passage and an observation restores a mid-passage pose without restarting travel",
+        "file": "scale-explorer-nebula-passage.spec.ts",
+        "reports": [
+          "browser-orion-regressions.json"
+        ]
+      },
+      {
+        "title": "scrolling away pauses a passage and reset or exit clears its course without idle rendering",
+        "file": "scale-explorer-nebula-passage.spec.ts",
+        "reports": [
+          "browser-orion-regressions.json"
+        ]
+      },
+      {
+        "title": "320px WebGL 1 honors reduced motion with immediate, stable viewpoint changes",
+        "file": "scale-explorer-nebula-passage.spec.ts",
+        "reports": [
+          "browser-orion-regressions.json"
+        ]
+      },
+      {
+        "title": "ray-marched gas changes with orbit and visibility without moving stars or measured bounds",
+        "file": "scale-explorer-nebula.spec.ts",
+        "reports": [
+          "browser-orion-regressions.json"
+        ]
+      },
+      {
+        "title": "four landmarks and an orthographic comparison keep the nebula at its catalog scale",
+        "file": "scale-explorer-nebula.spec.ts",
+        "reports": [
+          "browser-orion-regressions.json"
+        ]
+      },
+      {
+        "title": "phone keyboard exploration restores and exports cloud visibility in the notebook",
+        "file": "scale-explorer-nebula.spec.ts",
+        "reports": [
+          "browser-orion-regressions.json"
+        ]
+      },
+      {
+        "title": "a passage moves continuously with ambience paused, brakes, resumes and arrives at an exact viewpoint",
+        "file": "scale-explorer-nebula-passage.spec.ts",
+        "reports": [
+          "browser-final-targeted.json"
+        ]
+      },
+      {
+        "title": "the cloud and its stars render with a WebGL 1 context",
+        "file": "scale-explorer-nebula.spec.ts",
+        "reports": [
+          "browser-final-targeted.json"
+        ]
+      }
+    ],
+    "reportStats": {
+      "browser-bearing-container.json": {
+        "startTime": "2026-10-02T15:14:05.860Z",
+        "duration": 50291.431000000004,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "browser-orion-regressions.json": {
+        "startTime": "2026-10-02T15:16:57.792Z",
+        "duration": 230259.764,
+        "expected": 8,
+        "skipped": 0,
+        "unexpected": 2,
+        "flaky": 0
+      },
+      "browser-final-targeted.json": {
+        "startTime": "2026-10-02T20:02:35.180Z",
+        "duration": 173619.36899999998,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "priorStartupFailuresReplacedByFinalSuccess": [
+      {
+        "title": "a passage moves continuously with ambience paused, brakes, resumes and arrives at an exact viewpoint",
+        "file": "scale-explorer-nebula-passage.spec.ts",
+        "reason": "Error: worker process exited unexpectedly (code=3221226505, signal=null)",
+        "replacedByFinalSuccess": true
+      },
+      {
+        "title": "the cloud and its stars render with a WebGL 1 context",
+        "file": "scale-explorer-nebula.spec.ts",
+        "reason": "TimeoutError: page.waitForFunction: Timeout 30000ms exceeded.\n\n   at helpers\\stem_gl_harness.ts:712\n\n  710 |     }, null, { timeout: 30000 }).catch(() => { /* leave it to the assertions */ });\n  711 |     if (readyExpr) {\n> 712 |       await page.waitForFunction(`(function(){ return !!(${readyExpr}); })()`, null, { timeout: 30000 });\n      |                  ^\n  713 |     }\n  714 |     await page.waitForTimeout(700); // let three.js settle a few frames\n  715 |   }\n    at GlHarness.mount (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\helpers\\stem_gl_harness.ts:712:18)\n    at mount (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\scale-explorer-nebula.spec.ts:17:3)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\scale-explorer-nebula.spec.ts:88:3",
+        "replacedByFinalSuccess": true
+      }
+    ],
+    "measurements": {
+      "orion-960": {
+        "window": {
+          "width": 960,
+          "height": 1100
+        },
+        "canvas": {
+          "x": 15,
+          "y": 265.140625,
+          "width": 608,
+          "height": 360
+        },
+        "stage": {
+          "x": 14,
+          "y": 264.140625,
+          "width": 610,
+          "height": 1148.75
+        },
+        "viewport": {
+          "x": 15,
+          "y": 265.140625,
+          "width": 608,
+          "height": 360
+        },
+        "console": {
+          "x": 15,
+          "y": 625.140625,
+          "width": 608,
+          "height": 786.75
+        },
+        "consoleFits": true,
+        "documentFits": true,
+        "fullscreen": false
+      },
+      "orion-640": {
+        "window": {
+          "width": 640,
+          "height": 1100
+        },
+        "canvas": {
+          "x": 15,
+          "y": 356.28125,
+          "width": 610,
+          "height": 581.25
+        },
+        "stage": {
+          "x": 14,
+          "y": 355.28125,
+          "width": 612,
+          "height": 1370
+        },
+        "viewport": {
+          "x": 15,
+          "y": 356.28125,
+          "width": 610,
+          "height": 581.25
+        },
+        "console": {
+          "x": 15,
+          "y": 937.53125,
+          "width": 610,
+          "height": 786.75
+        },
+        "consoleFits": true,
+        "documentFits": true,
+        "fullscreen": false
+      },
+      "orion-320": {
+        "window": {
+          "width": 320,
+          "height": 780
+        },
+        "canvas": {
+          "x": 15,
+          "y": 178.421875,
+          "width": 290,
+          "height": 422.90625
+        },
+        "stage": {
+          "x": 14,
+          "y": 177.421875,
+          "width": 292,
+          "height": 1370
+        },
+        "viewport": {
+          "x": 15,
+          "y": 178.421875,
+          "width": 290,
+          "height": 422.90625
+        },
+        "console": {
+          "x": 15,
+          "y": 601.328125,
+          "width": 290,
+          "height": 945.09375
+        },
+        "consoleFits": true,
+        "documentFits": true,
+        "fullscreen": false
+      },
+      "orion-fullscreen": {
+        "window": {
+          "width": 640,
+          "height": 1100
+        },
+        "canvas": {
+          "x": 21,
+          "y": 362.28125,
+          "width": 598,
+          "height": 581.25
+        },
+        "stage": {
+          "x": 20,
+          "y": 361.28125,
+          "width": 600,
+          "height": 1370
+        },
+        "viewport": {
+          "x": 21,
+          "y": 362.28125,
+          "width": 598,
+          "height": 581.25
+        },
+        "console": {
+          "x": 21,
+          "y": 943.53125,
+          "width": 598,
+          "height": 786.75
+        },
+        "consoleFits": true,
+        "documentFits": true,
+        "fullscreen": true
+      }
+    },
+    "notes": [
+      "The earlier failures were worker startup and WebGL atlas initialization failures; final targeted reruns passed with retries disabled.",
+      "The final height change preserves a minimum 360px WebGL canvas. Native fullscreen supports vertical scrolling; its full-element screenshot includes an uncaptured lower region beyond the fullscreen surface.",
+      "No production files were edited or committed by the browser verification agent."
+    ]
+  },
+  "committed": false,
+  "staged": false
+}

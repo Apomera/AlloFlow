@@ -1,0 +1,11 @@
+{
+  "reason": "The app activates reading mode on the shell with data-reading-mode=true. The guide now uses that established selector.",
+  "beforeSha256": "fb644f98b8d1074655c47dc8d3289427a4ad1c39b958412cd68c2d9e4683a305",
+  "afterSha256": "e9ee5d4e7ae3a4e45f60226e4ae8df129e4b2f254b4f213c76034153383870dc",
+  "onlyScopedReadingModeCssChanged": true,
+  "sourceReversalExact": true,
+  "from": ".anatomy-tool-shell .practice-reading-large .anatomy-liver-guide :is(p,button,span,li),.anatomy-tool-shell .practice-reading-large .anatomy-liver-guide .anatomy-atlas-step-position{font-size:17px!important;line-height:1.7!important}",
+  "to": ".anatomy-tool-shell[data-reading-mode=true] .anatomy-liver-guide :is(p,span,li,button,strong){font-size:17px!important;line-height:1.7!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-liver-guide :is(h6,.anatomy-atlas-steps strong,.anatomy-atlas-step-detail>strong){font-size:20px!important;line-height:1.6!important}.anatomy-tool-shell[data-reading-mode=true] .anatomy-liver-guide .anatomy-atlas-header h5{font-size:24px!important;line-height:1.5!important}",
+  "runtimeMirrorsIdentical": true,
+  "diagnosticRun": "runs/English-probe-fb644f98-01"
+}

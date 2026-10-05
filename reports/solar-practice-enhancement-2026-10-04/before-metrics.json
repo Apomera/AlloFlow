@@ -1,0 +1,34 @@
+[
+  {
+    "tab": 6,
+    "dark": true,
+    "state": "pending",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": []
+  },
+  {
+    "tab": 6,
+    "dark": false,
+    "state": "pending",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": []
+  },
+  {
+    "tab": 7,
+    "dark": true,
+    "state": "pending",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": []
+  },
+  {
+    "tab": 7,
+    "dark": false,
+    "state": "pending",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": []
+  }
+]

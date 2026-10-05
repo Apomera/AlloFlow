@@ -1,0 +1,21 @@
+{
+  "before": "bf7568de2f6c38b431665a33aa9f473ed7ac020efb13c1b6be25f3850d1c5d60",
+  "after": "d4139aac60f4124a19f03738e9d20156d81ec4b308aeefef8d7facf610240977",
+  "mirrored": true,
+  "changes": [
+    "            var key = specimen + '|' + org.id;\n            var inspected = !!(d.exploredOrgans || {}",
+    "__alloT('stem.dissection.filter_notes', 'Needs notes')",
+    "{ id: 'unfinished', label: 'Needs notes',",
+    "              var key = specimen + '|' + organ.id;\n              return !String((d.organNotes || {})",
+    "            var tone = evidence.inspected ? 'prior' : (visible ? 'ready' : 'caution');",
+    "            if (evidence.inspected) {\n              detail = 'Open the directory result to review yo",
+    "evidence.inspected ? 'Record review' : 'Before inspection'",
+    "              React.createElement('h4', { id: 'diss-directory-context-title' }, org.name),\n         ",
+    ".diss-directory-context__state {",
+    ".diss-directory-filters button span { float: right; margin-left: .3rem; font-variant-numeric: tabula",
+    ".diss-directory-browser .diss-directory-filters button { min-height:",
+    "choice.label + \", \" + count + \" structures\"",
+    "Needs notes includes missing notes or confidence. Low confidence means 1 of 3. These are review cues",
+    "__alloT('stem.dissection.directory_scope', 'Filters apply to this layer. Recorded means a note and c"
+  ]
+}

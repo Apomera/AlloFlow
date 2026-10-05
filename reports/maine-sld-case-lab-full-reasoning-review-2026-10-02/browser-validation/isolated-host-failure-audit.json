@@ -1,0 +1,231 @@
+{
+  "isolatedHostExitCode": 1,
+  "stats": {
+    "startTime": "2026-10-03T01:43:17.070Z",
+    "duration": 439269.842,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "traceStreams": [
+    {
+      "file": "test.trace",
+      "lastEvents": [
+        {
+          "type": "after",
+          "callId": "hook@128",
+          "endTime": 408862.687
+        },
+        {
+          "type": "after",
+          "callId": "hook@98",
+          "endTime": 408862.948,
+          "error": {
+            "name": "",
+            "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 120000ms.\u001b[39m",
+            "stack": "\u001b[31mTearing down \"context\" exceeded the test timeout of 120000ms.\u001b[39m"
+          }
+        },
+        {
+          "type": "before",
+          "callId": "hook@177",
+          "startTime": 408863.675,
+          "class": "Test",
+          "method": "hook",
+          "title": "Worker Cleanup"
+        },
+        {
+          "type": "before",
+          "callId": "fixture@180",
+          "startTime": 408866.044,
+          "class": "Test",
+          "method": "fixture",
+          "title": "Fixture \"video\""
+        },
+        {
+          "type": "after",
+          "callId": "fixture@180",
+          "endTime": 408866.081
+        },
+        {
+          "type": "before",
+          "callId": "fixture@181",
+          "startTime": 408866.767,
+          "class": "Test",
+          "method": "fixture",
+          "title": "Fixture \"browser\""
+        },
+        {
+          "type": "after",
+          "callId": "fixture@181",
+          "endTime": 424738.788
+        },
+        {
+          "type": "before",
+          "callId": "fixture@185",
+          "startTime": 424741.472,
+          "class": "Test",
+          "method": "fixture",
+          "title": "Fixture \"defaultBrowserType\""
+        },
+        {
+          "type": "after",
+          "callId": "fixture@185",
+          "endTime": 424741.503
+        },
+        {
+          "type": "before",
+          "callId": "fixture@186",
+          "startTime": 424742.072,
+          "class": "Test",
+          "method": "fixture",
+          "title": "Fixture \"screenshot\""
+        },
+        {
+          "type": "after",
+          "callId": "fixture@186",
+          "endTime": 424742.098
+        },
+        {
+          "type": "after",
+          "callId": "hook@177",
+          "endTime": 424745.099
+        }
+      ],
+      "browserErrorEvents": []
+    },
+    {
+      "file": "1-trace.trace",
+      "lastEvents": [],
+      "browserErrorEvents": []
+    },
+    {
+      "file": "0-trace.trace",
+      "lastEvents": [
+        {
+          "type": "before",
+          "callId": "call@24",
+          "startTime": 192974.691,
+          "class": "Frame",
+          "method": "selectOption"
+        },
+        {
+          "type": "after",
+          "callId": "call@24",
+          "endTime": 194063.914
+        },
+        {
+          "type": "before",
+          "callId": "call@26",
+          "startTime": 194263.312,
+          "class": "Frame",
+          "method": "click"
+        },
+        {
+          "type": "after",
+          "callId": "call@26",
+          "endTime": 197302.018
+        },
+        {
+          "type": "before",
+          "callId": "call@28",
+          "startTime": 198684.492,
+          "class": "Frame",
+          "method": "expect",
+          "title": "Expect \"toHaveCount\""
+        },
+        {
+          "type": "after",
+          "callId": "call@28",
+          "endTime": 198739.987
+        },
+        {
+          "type": "before",
+          "callId": "call@30",
+          "startTime": 198825.841,
+          "class": "Page",
+          "method": "screenshot"
+        },
+        {
+          "type": "after",
+          "callId": "call@30",
+          "endTime": 199029.434
+        },
+        {
+          "type": "before",
+          "callId": "call@32",
+          "startTime": 199081.573,
+          "class": "Frame",
+          "method": "goto"
+        },
+        {
+          "type": "after",
+          "callId": "call@32",
+          "endTime": 203040.543
+        },
+        {
+          "type": "before",
+          "callId": "call@34",
+          "startTime": 206410.718,
+          "class": "Frame",
+          "method": "expect",
+          "title": "Expect \"toBeVisible\""
+        },
+        {
+          "type": "after",
+          "callId": "call@34",
+          "endTime": 275606.121
+        }
+      ],
+      "browserErrorEvents": [
+        {
+          "type": "console",
+          "messageType": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "args": [],
+          "location": {
+            "url": "http://127.0.0.1:65063/allo-shell-config.json",
+            "lineNumber": 0,
+            "columnNumber": 0
+          },
+          "time": 156236.316,
+          "pageId": "page@a3a480b1b39e59c166642a9d6e9b9e05"
+        },
+        {
+          "type": "console",
+          "messageType": "error",
+          "text": "Failed to load resource: the server responded with a status of 404 (Not Found)",
+          "args": [],
+          "location": {
+            "url": "http://127.0.0.1:65063/allo-shell-config.json",
+            "lineNumber": 0,
+            "columnNumber": 0
+          },
+          "time": 218248.953,
+          "pageId": "page@a3a480b1b39e59c166642a9d6e9b9e05"
+        }
+      ]
+    }
+  ],
+  "acceptedBaselineHost": [
+    {
+      "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+      "results": [
+        {
+          "status": "passed",
+          "errors": [],
+          "durationMs": 82968
+        }
+      ]
+    }
+  ],
+  "baselineRawResultPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-practice-navigation-2026-10-02\\browser-validation\\host-after-preview-restart\\result.json",
+  "baselineRawResultAvailable": true,
+  "baselineConsoleTraceAvailable": false,
+  "originalSourceHostAssertionsPreserved": true,
+  "traceOffDiagnosticUsed": false,
+  "phase": "Second Marisol panel visibility wait timed out, followed by context teardown; later assertions did not complete.",
+  "baselineSelectionCorrection": "Initial audit selected the earlier unsuccessful top-level navigation result. This audit uses the accepted host-after-preview-restart result; the original audit is preserved.",
+  "originalAudit": "isolated-host-failure-audit-before-baseline-correction.json"
+}

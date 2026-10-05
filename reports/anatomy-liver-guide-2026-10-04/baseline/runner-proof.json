@@ -1,0 +1,27 @@
+{
+  "startedAt": "2026-10-04T22:51:26.000Z",
+  "finishedAt": "2026-10-04T22:51:36.495Z",
+  "expectedSource": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "before": {
+    "stem_lab/stem_tool_anatomy.js": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420"
+  },
+  "after": {
+    "stem_lab/stem_tool_anatomy.js": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420"
+  },
+  "runtimeStable": true,
+  "runtimeMirrorsEqual": true,
+  "fixtureSha256": "2d4736b22076a0ee62e4bd6496818f30e3b92cbe42e93468c64f900fcf88b4aa",
+  "configSha256": "569c6119474ba91d60f49c5a5406bd45fbd18bb089a0c922e8aa245dae91b192",
+  "resourcePrecheck": {
+    "totalMemoryBytes": 16757260288,
+    "availableMemoryBytes": 1849315328,
+    "diskAvailableBytes": 6152048640,
+    "recordedAt": "2026-10-04T22:51:25.988Z",
+    "ownedProcessInventory": "PowerShell preflight returned no node, chrome or chromium processes"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "error": null
+}

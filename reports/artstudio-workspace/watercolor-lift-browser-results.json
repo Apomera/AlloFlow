@@ -1,0 +1,71 @@
+{
+  "passed": true,
+  "checks": [
+    "Actual Lift selection exposes keyboard-adjustable strength, associated help, active Water, and inactive Pigment loads",
+    "Zero-strength pointer strokes only rewet; visible Undo restores the wash before lifting",
+    {
+      "desktopCanvas": {
+        "x": 142,
+        "y": 370,
+        "width": 820,
+        "height": 820
+      },
+      "backing": [
+        1024,
+        1024
+      ],
+      "pickup": {
+        "before": {
+          "water": 3910.3822926282883,
+          "mobile": 5270.7239138484,
+          "fixed": 3825.482327401638,
+          "mask": 114,
+          "paused": true
+        },
+        "after": {
+          "water": 5130.244956672192,
+          "mobile": 4738.049022313207,
+          "fixed": 3625.4094598442316,
+          "mask": 114,
+          "paused": true
+        },
+        "preservation": {
+          "masked": true,
+          "dry": true
+        }
+      }
+    },
+    {
+      "visibleHistory": {
+        "undoMaxWaterError": 0,
+        "redoMaxPigmentError": 0.000019073486328125
+      }
+    },
+    "The visible Export PNG action downloads the exact 1024-pixel painting",
+    {
+      "savedStudy": {
+        "brush": "lift",
+        "strength": 86,
+        "restored": {
+          "water": 5130.244889378548,
+          "mobile": 4738.048330590129,
+          "fixed": 3625.4089212417603,
+          "mask": 114,
+          "paused": true
+        },
+        "originalUnchanged": true
+      }
+    },
+    {
+      "phoneWidth": 390,
+      "strengthHeight": 44,
+      "noHorizontalOverflow": true
+    },
+    {
+      "phoneWidth": 320,
+      "strengthHeight": 44,
+      "noHorizontalOverflow": true
+    }
+  ],
+  "errors": []
+}

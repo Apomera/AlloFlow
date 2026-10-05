@@ -1384,6 +1384,342 @@
     return { get: get, resolve: resolve, key: key, createSession: createSession, normalizeSession: normalizeSession, navigation: navigation, isCurrent: isCurrent, allowedAnswer: allowedAnswer, updateReview: updateReview, saveReview: saveReview, history: history };
   })();
 
+  // Read a pore-scale schematic independently of the live water parcel.
+  var WCGroundwaterLens = (function() {
+    var parts = [
+      { id: 'soil', label: 'Soil pore water', title: 'Air and water share pore space', condition: 'Unsaturated soil', reading: 'Some spaces contain air; others hold liquid water or water films.', detail: 'Water entering soil is infiltration. It can remain as soil water, move toward roots, evaporate, or continue deeper.', look: 'Find water beside air between the solid grains. Unsaturated does not mean completely dry.' },
+      { id: 'boundary', label: 'Water table', title: 'A boundary, not a solid underground floor', condition: 'Water-table boundary', reading: 'The water table marks the top of groundwater in this unconfined example.', detail: 'Water can cling to grain surfaces and rise into small pores. This creates a capillary fringe above the water table that can be saturated or nearly saturated. Actual water-table depth varies with local conditions.', look: 'Follow the dashed boundary across the cutaway. It does not represent an impermeable layer.' },
+      { id: 'groundwater', label: 'Groundwater pores', title: 'Water fills connected spaces', condition: 'Saturated groundwater', reading: 'Liquid water fills pore spaces between solid grains.', detail: 'Groundwater can move through connected pores and fractures. An aquifer stores and transmits groundwater; it is not simply an empty underground lake.', look: 'Trace the possible flow through the water-filled spaces around grains. The arrow does not measure speed.' }
+    ];
+    var choices = [
+      { id: 'soil_storage', label: 'It shows soil water; recharge needs more evidence.' },
+      { id: 'all_recharge', label: 'All water that enters soil has reached groundwater.' },
+      { id: 'dry_soil', label: 'Soil above the water table contains only air.' }
+    ];
+    function own(value, key) { return value && typeof value === 'object' && !Array.isArray(value) && Object.prototype.hasOwnProperty.call(value, key) ? value[key] : undefined; }
+    function validScope(scope) { return scope === 'explorer' || scope === 'check'; }
+    function part(id) { return parts.filter(function(item) { return item.id === id; })[0] || null; }
+    function choice(id) { return choices.some(function(item) { return item.id === id; }); }
+    function context(scope, identity) { return scope === 'explorer' ? 'groundwater-lens-v1' : typeof identity === 'string' ? identity : ''; }
+    function read(data, scope, identity) {
+      if (!validScope(scope)) return null;
+      var record = own(data, scope), selected = part(own(record, 'part'));
+      var expected = context(scope, identity);
+      var answer = selected && expected && own(record, 'identity') === expected && own(record, 'version') === 1 && choice(own(record, 'answer')) ? own(record, 'answer') : '';
+      return { version: 1, identity: expected, part: (selected || parts[0]).id, answer: answer, result: !answer ? 'waiting' : answer === 'soil_storage' ? 'supported' : 'retry' };
+    }
+    function copy(data) {
+      var result = {};
+      ['explorer','check'].forEach(function(scope) { var record = read(data, scope, own(own(data, scope), 'identity')); result[scope] = { version: 1, identity: record.identity, part: record.part, answer: record.answer }; });
+      return result;
+    }
+    function select(data, scope, id, identity) {
+      var result = copy(data);
+      if (validScope(scope) && part(id)) result[scope] = { version: 1, identity: context(scope, identity), part: id, answer: '' };
+      return result;
+    }
+    function answer(data, scope, id, identity) {
+      var result = copy(data);
+      if (validScope(scope) && choice(id) && context(scope, identity)) { var selected = read(data, scope, identity); result[scope] = { version: 1, identity: selected.identity, part: selected.part, answer: id }; }
+      return result;
+    }
+    return { parts: function() { return parts.map(function(item) { return Object.assign({}, item); }); }, choices: function() { return choices.map(function(item) { return Object.assign({}, item); }); }, read: read, select: select, answer: answer };
+  })();
+  var WC_GROUNDWATER_LENS_STYLE = ".wc-groundwater-lens{--gw-paper:#f7fcfc;--gw-tint:#eaf3f2;--gw-ink:#153d47;--gw-muted:#365e68;--gw-line:#9bb9bc;--gw-accent:#086779;--gw-water:#197a99;--gw-air:#fff;--gw-grain:#a8b3aa;--gw-grain-line:#405d61;--gw-soil:#f0ebe0;container:groundwater-lens / inline-size;min-width:0;border:1px solid var(--gw-line);border-radius:18px;background:var(--gw-paper);color:var(--gw-ink);margin:16px 0;box-shadow:0 8px 22px #12384208;font-size:14px;line-height:1.6}.wc-groundwater-lens.is-dark{--gw-paper:#102c37;--gw-tint:#193e49;--gw-ink:#effaff;--gw-muted:#c6dfe5;--gw-line:#64838c;--gw-accent:#6be1e6;--gw-water:#65c7e3;--gw-air:#102c37;--gw-grain:#7b918b;--gw-grain-line:#d5e9e7;--gw-soil:#293b3d}.wc-groundwater-lens.is-contrast{--gw-paper:#fff;--gw-tint:#fff;--gw-ink:#111;--gw-muted:#222;--gw-line:#111;--gw-accent:#005266;--gw-water:#006477;--gw-air:#fff;--gw-grain:#aaa;--gw-grain-line:#111;--gw-soil:#eee}\n.wc-groundwater-lens>summary{display:list-item;list-style:revert;min-height:44px;padding:14px 18px;cursor:pointer;font-size:16px;font-weight:800}.wc-gw-content{padding:0 18px 18px;min-width:0}.wc-groundwater-lens :is(p,h5,h6,figure,dl){margin:0}.wc-groundwater-lens p{margin-top:10px;font-size:14px;line-height:1.6;color:var(--gw-ink)}.wc-groundwater-lens h5{font-size:19px;line-height:1.35;color:var(--gw-ink)}.wc-groundwater-lens h6{font-size:16px;line-height:1.4;color:var(--gw-ink)}.wc-gw-intro{color:var(--gw-muted)!important}.wc-gw-options{display:grid;gap:8px;margin:16px 0}.wc-groundwater-lens button{min-height:44px;width:100%;padding:10px 12px;border:1px solid var(--gw-line);border-radius:10px;background:var(--gw-paper);color:var(--gw-ink);font:inherit;font-weight:750;text-align:left;cursor:pointer;white-space:normal}.wc-groundwater-lens button[aria-pressed=true]{border:2px solid var(--gw-accent);background:var(--gw-tint)}.wc-gw-choice-mark{display:inline-block;width:1.3em;font-weight:900}.wc-groundwater-lens :is(button,summary,a):focus-visible,.wc-groundwater-lens [tabindex='-1']:focus{outline:3px solid var(--gw-accent);outline-offset:3px;border-radius:5px}\n.wc-gw-diagrams{display:grid;gap:14px;margin-top:16px}.wc-gw-diagrams>figure{min-width:0;border:1px solid var(--gw-line);border-radius:14px;padding:14px;background:var(--gw-paper)}.wc-gw-diagrams figcaption{font-weight:800;margin-bottom:10px}.wc-gw-cutaway{display:grid;grid-template-columns:minmax(64px,.7fr) minmax(0,1fr);gap:12px;align-items:center}.wc-gw-cutaway>svg{width:100%;height:210px;display:block}.wc-gw-layer-labels{display:grid;grid-template-rows:78px 54px 78px;min-width:0}.wc-gw-layer-labels>div{display:flex;align-items:center;padding:7px;border-left:3px solid var(--gw-line);font-size:13px;line-height:1.4;overflow-wrap:normal}.wc-gw-layer-labels>div[data-active=true]{border-left-color:var(--gw-accent);background:var(--gw-tint);font-weight:800}.wc-gw-pore-view{display:block;width:100%;height:210px}.wc-gw-key{list-style:none;display:flex;flex-wrap:wrap;gap:8px 15px;margin:14px 0 0;padding:0;font-size:13px;color:var(--gw-muted)}.wc-gw-key li{display:flex;gap:6px;align-items:center}.wc-gw-swatch{width:15px;height:15px;border:1px solid var(--gw-grain-line);border-radius:4px;display:inline-block}.wc-gw-swatch[data-material=grain]{background:var(--gw-grain)}.wc-gw-swatch[data-material=water]{background:var(--gw-water)}.wc-gw-swatch[data-material=air]{background:var(--gw-air);border-style:dashed}.wc-gw-grain{fill:var(--gw-grain);stroke:var(--gw-grain-line);stroke-width:2;vector-effect:non-scaling-stroke}.wc-gw-water{fill:var(--gw-water)}.wc-gw-air{fill:var(--gw-air)}.wc-gw-soil{fill:var(--gw-soil)}.wc-gw-boundary{stroke:var(--gw-accent);stroke-width:3;stroke-dasharray:7 5;fill:none;vector-effect:non-scaling-stroke}.wc-gw-flow{fill:none;stroke:var(--gw-accent);stroke-width:3;stroke-linejoin:round;stroke-linecap:round;vector-effect:non-scaling-stroke}.wc-gw-outline{fill:none;stroke:var(--gw-accent);stroke-width:3;stroke-dasharray:4 4;vector-effect:non-scaling-stroke}.wc-gw-crosshatch{stroke:var(--gw-grain-line);stroke-width:1;vector-effect:non-scaling-stroke}.wc-gw-pore-dot{fill:var(--gw-grain-line)}\n.wc-gw-reading{margin-top:16px;padding:14px;border:1px solid var(--gw-line);border-radius:14px;background:var(--gw-tint)}.wc-gw-reading>small{display:block;color:var(--gw-muted);font-size:12px;font-weight:800;letter-spacing:.05em;text-transform:uppercase;margin-bottom:5px}.wc-gw-check{margin-top:16px;border-top:1px solid var(--gw-line)}.wc-gw-check>summary{display:list-item;list-style:revert;min-height:44px;padding:12px 2px;cursor:pointer;font-size:14px;font-weight:800}.wc-gw-answers{display:grid;gap:8px;margin-top:12px}.wc-gw-feedback{margin-top:12px;border-left:3px solid var(--gw-accent);border-radius:0 10px 10px 0;padding:12px;background:var(--gw-tint)}.wc-groundwater-lens .wc-gw-scope{font-size:13px;color:var(--gw-muted)}.wc-groundwater-lens a{color:var(--gw-accent);text-decoration:underline;text-underline-offset:3px;display:inline-flex;align-items:center;min-height:44px}.wc-check-pores.wc-groundwater-lens{margin:16px 0}\n@container groundwater-lens (min-width:520px){.wc-gw-options{grid-template-columns:repeat(3,minmax(0,1fr))}.wc-gw-diagrams{grid-template-columns:1fr 1fr}.wc-gw-layer-labels>div{font-size:14px}}@container groundwater-lens (max-width:300px){.wc-gw-content{padding-inline:12px}.wc-groundwater-lens>summary{padding-inline:12px}.wc-gw-diagrams>figure{padding:10px}.wc-gw-cutaway{grid-template-columns:64px minmax(0,1fr);gap:9px}.wc-groundwater-lens h5{font-size:18px}}\n@media(forced-colors:active){.wc-groundwater-lens{--gw-paper:Canvas!important;--gw-tint:Canvas!important;--gw-ink:CanvasText!important;--gw-muted:CanvasText!important;--gw-line:CanvasText!important;--gw-accent:Highlight!important;--gw-water:Highlight!important;--gw-air:Canvas!important;--gw-grain:Canvas!important;--gw-grain-line:CanvasText!important;--gw-soil:Canvas!important;forced-color-adjust:none;box-shadow:none}.wc-groundwater-lens button{background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}.wc-gw-layer-labels>div[data-active=true]{border-left-color:Highlight!important}.wc-gw-swatch[data-material=grain]{background:repeating-linear-gradient(45deg,Canvas,Canvas 3px,CanvasText 3px,CanvasText 4px)}.wc-gw-swatch[data-material=water]{background:Highlight!important}.wc-gw-swatch[data-material=air]{background:Canvas!important}.wc-gw-grain{fill:Canvas!important;stroke:CanvasText!important}.wc-gw-crosshatch{stroke:CanvasText!important}.wc-gw-pore-dot{fill:CanvasText!important}}\n";
+
+  WC_GROUNDWATER_LENS_STYLE += ".wc-explorer-root .wc-groundwater-lens.wc-check-pores{padding:0;background:var(--gw-paper);border-color:var(--gw-line);color:var(--gw-ink)}.wc-explorer-root .wc-groundwater-lens .wc-gw-cutaway>svg,.wc-explorer-root .wc-groundwater-lens svg.wc-gw-pore-view{height:210px;max-height:none}.wc-groundwater-lens .wc-gw-diagrams figcaption{font-size:14px;color:var(--gw-ink)}\n";
+  WC_GROUNDWATER_LENS_STYLE += ".wc-groundwater-lens .wc-gw-cutaway{grid-template-columns:120px minmax(0,1fr)}.wc-groundwater-lens .wc-gw-cutaway>svg{width:120px;height:210px}@container groundwater-lens (max-width:300px){.wc-groundwater-lens .wc-gw-cutaway{grid-template-columns:minmax(0,1fr);justify-items:center}.wc-groundwater-lens .wc-gw-layer-labels{width:100%;grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:auto;gap:5px}.wc-groundwater-lens .wc-gw-layer-labels>div{align-items:flex-start;min-height:44px;padding:6px;border-left:0;border-top:3px solid var(--gw-line);font-size:13px}.wc-groundwater-lens .wc-gw-layer-labels>div[data-active=true]{border-top-color:var(--gw-accent)}}@container groundwater-lens (max-width:240px){.wc-groundwater-lens .wc-gw-layer-labels{grid-template-columns:minmax(0,1fr)}}\n";
+  WC_GROUNDWATER_LENS_STYLE += ".wc-groundwater-lens{--gw-grain-line:#062b35}.wc-groundwater-lens.is-dark{--gw-grain-line:#102c37}.wc-groundwater-lens.is-contrast{--gw-grain-line:#111}.wc-groundwater-lens .wc-gw-pore-dot{fill:var(--gw-ink)}.wc-groundwater-lens .wc-gw-swatch[data-material=grain]{background:repeating-linear-gradient(135deg,var(--gw-grain),var(--gw-grain) 3px,var(--gw-grain-line) 3px,var(--gw-grain-line) 4px)}.wc-groundwater-lens .wc-gw-boundary{stroke:var(--gw-grain-line)}.wc-groundwater-lens[data-gw-part=boundary] .wc-gw-outline{stroke:var(--gw-grain-line)}.wc-groundwater-lens[data-gw-part=groundwater] .wc-gw-outline{stroke:var(--gw-air)}@media(forced-colors:active){.wc-groundwater-lens .wc-gw-boundary{stroke:Canvas!important}.wc-groundwater-lens[data-gw-part=boundary] .wc-gw-outline{stroke:Canvas!important}}\n";
+  WC_GROUNDWATER_LENS_STYLE += ".wc-groundwater-lens .wc-gw-swatch[data-material=air]{border-color:var(--gw-ink)}\n";
+  WC_GROUNDWATER_LENS_STYLE += ".wc-explorer-root .wc-groundwater-lens.wc-check-pores [tabindex='-1']:focus{outline:3px solid var(--gw-accent);outline-offset:3px;border-radius:5px}\n";
+  // Compare fixed positions in the existing precipitation model without moving the chamber.
+  var WCStormMoments = (function() {
+    var stageItems = [
+      { id: 'developing', label: 'Developing', time: 16 },
+      { id: 'mature', label: 'Mature', time: 52 },
+      { id: 'weakening', label: 'Weakening', time: 86 }
+    ];
+    var metricItems = [
+      { id: 'snow', label: 'Snow / pellets', detail: 'This track represents modeled snow, ice-pellet or mixed frozen buildup.' },
+      { id: 'glaze', label: 'Surface glaze', detail: 'This track represents modeled ice coating from freezing rain.' },
+      { id: 'hail', label: 'Hail buildup', detail: 'This track represents modeled hail collecting at the surface.' },
+      { id: 'puddling', label: 'Puddling', detail: 'This track represents modeled liquid-water pooling at the surface.' },
+      { id: 'runoff', label: 'Runoff', detail: 'This track represents a modeled surface-flow response; it is not a discharge measurement.' }
+    ];
+    var answerItems = [
+      { id: 'split', label: 'Activity is lower; the ground index stays level or rises.' },
+      { id: 'both_lower', label: 'Both displayed indices are lower.' },
+      { id: 'no_activity_drop', label: 'The displayed activity does not drop.' }
+    ];
+    function own(object, key) { return object && typeof object === 'object' && !Array.isArray(object) && Object.prototype.hasOwnProperty.call(object, key) ? object[key] : undefined; }
+    function find(items, id) { return items.filter(function(item) { return item.id === id; })[0] || null; }
+    function index(value) { return typeof value === 'number' && isFinite(value) && value >= 0 && value <= 100 ? Math.round(value) : null; }
+    function defaultForPhase(phase) { return phase === 'snow' || phase === 'sleet' || phase === 'mix' ? 'snow' : phase === 'freezing-rain' ? 'glaze' : phase === 'hail' ? 'hail' : phase === 'rain' ? 'puddling' : 'runoff'; }
+    function signatureFor(setup, rows) { return JSON.stringify({ version: 1, question: 'mature-to-weakening', setup: setup, rows: rows }); }
+    function contextValid(context) {
+      var signature = own(context, 'signature'), setup = own(context, 'setup'), rows = own(context, 'rows');
+      if (typeof signature !== 'string' || !signature || !setup || typeof setup !== 'object' || Array.isArray(setup) || own(setup, 'stormTime') !== 52 || !Array.isArray(rows) || rows.length !== 3 || !find(metricItems, own(context, 'defaultMetric'))) return false;
+      var valid = stageItems.every(function(stage, position) {
+        var row = rows[position], accumulation = own(row, 'accumulation'), value = own(row, 'intensity');
+        return own(row, 'id') === stage.id && own(row, 'label') === stage.label && own(row, 'time') === stage.time &&
+          (value === null || index(value) === value) && ['clear','virga','rain','snow','mix','freezing-rain','sleet','hail'].indexOf(own(row, 'visualType')) >= 0 && typeof own(row, 'phaseLabel') === 'string' &&
+          typeof own(row, 'reachesGround') === 'boolean' && typeof own(row, 'lightningEligible') === 'boolean' &&
+          metricItems.every(function(metric) { var reading = own(accumulation, metric.id); return reading === null || index(reading) === reading; });
+      });
+      if (!valid || context.defaultMetric !== defaultForPhase(rows[1].visualType)) return false;
+      try { return JSON.stringify(setup) === JSON.stringify(wcPrecipSetupSnapshot(setup)) && signature === signatureFor(setup, rows); } catch (e) { return false; }
+    }
+    function build(config) {
+      var setup = wcPrecipSetupSnapshot(Object.assign({}, wcPrecipSetupSnapshot(config), { stormTime: 52 }));
+      var rows = stageItems.map(function(stage) {
+        var model = computeWcPrecipitationModel(Object.assign({}, setup, { stormTime: stage.time }));
+        var accumulation = {};
+        metricItems.forEach(function(metric) { accumulation[metric.id] = index(model.lifecycle.accumulation[metric.id]); });
+        return Object.freeze({ id: stage.id, label: stage.label, time: stage.time,
+          intensity: index(model.relativeIntensity), accumulation: Object.freeze(accumulation),
+          visualType: model.visualType, phaseLabel: model.phaseLabel,
+          reachesGround: model.reachesGround === true, lightningEligible: model.lightningEligible === true });
+      });
+      var defaultMetric = defaultForPhase(rows[1].visualType);
+      var signature = signatureFor(setup, rows);
+      return Object.freeze({ setup: setup, rows: Object.freeze(rows), signature: signature, defaultMetric: defaultMetric });
+    }
+    function compare(context, metricId) {
+      if (!contextValid(context) || !find(metricItems, metricId)) return null;
+      var mature = context.rows.filter(function(row) { return own(row, 'id') === 'mature'; })[0];
+      var weakening = context.rows.filter(function(row) { return own(row, 'id') === 'weakening'; })[0];
+      var a = index(own(mature, 'intensity')), b = index(own(weakening, 'intensity'));
+      var ga = index(own(own(mature, 'accumulation'), metricId)), gb = index(own(own(weakening, 'accumulation'), metricId));
+      if (a === null || b === null || ga === null || gb === null) return null;
+      return { matureIntensity: a, weakeningIntensity: b, matureGround: ga, weakeningGround: gb,
+        correct: b >= a ? 'no_activity_drop' : gb < ga ? 'both_lower' : 'split' };
+    }
+    function read(metadata, context) {
+      if (!contextValid(context)) return null;
+      var stage = find(stageItems, own(metadata, 'stage'));
+      var metric = find(metricItems, own(metadata, 'metric'));
+      var metricId = metric ? metric.id : context.defaultMetric;
+      var identity = JSON.stringify([1, 'mature-to-weakening', context.signature, metricId]);
+      var evidence = compare(context, metricId);
+      var answer = evidence && metric && own(metadata, 'version') === 1 && own(metadata, 'identity') === identity && find(answerItems, own(metadata, 'answer')) ? own(metadata, 'answer') : '';
+      return { version: 1, stage: stage ? stage.id : 'mature', metric: metricId, identity: identity,
+        answer: answer, result: !evidence ? 'unavailable' : !answer ? 'waiting' : answer === evidence.correct ? 'supported' : 'retry' };
+    }
+    function record(reading) { return reading ? { version: 1, stage: reading.stage, metric: reading.metric, identity: reading.identity, answer: reading.answer } : {}; }
+    function selectMomentStage(metadata, context, id) {
+      var reading = read(metadata, context), result = record(reading);
+      if (reading && find(stageItems, id)) result.stage = id;
+      return result;
+    }
+    function selectMetric(metadata, context, id) {
+      var reading = read(metadata, context), result = record(reading);
+      if (reading && find(metricItems, id) && id !== reading.metric) {
+        result.metric = id; result.identity = JSON.stringify([1, 'mature-to-weakening', context.signature, id]); result.answer = '';
+      }
+      return result;
+    }
+    function answer(metadata, context, id) {
+      var reading = read(metadata, context), result = record(reading);
+      if (reading && compare(context, reading.metric) && find(answerItems, id)) result.answer = id;
+      return result;
+    }
+    function currentCopy(model) {
+      var stage = own(own(model, 'lifecycle'), 'stageKey');
+      if (stage === 'developing') return 'This developing part of the model sequence illustrates strengthening cloud growth and lift.';
+      if (stage === 'mature') return 'This is the peak part of the model sequence. ' + (own(model, 'lightningEligible') === true ? 'The current setup also supports modeled lightning.' : 'Lightning is unavailable in the current setup.');
+      if (stage === 'weakening') return 'This part of the sequence illustrates fading lift. Ground-effect indices still include earlier exposure for the fixed setup.';
+      return 'Choose a model position to inspect the sequence.';
+    }
+    function catalog(items) { return items.map(function(item) { return Object.assign({}, item); }); }
+    return { stages: function() { return catalog(stageItems); }, metrics: function() { return catalog(metricItems); }, choices: function() { return catalog(answerItems); },
+      build: build, compare: compare, read: read, selectStage: selectMomentStage, selectMetric: selectMetric, answer: answer, currentCopy: currentCopy };
+  })();
+  var WC_STORM_MOMENTS_STYLE = ".wc-precip-lab {container:storm-lab / inline-size}\n.wc-storm-lifecycle {\n  --sm-paper:#f4fbfd; --sm-card:#fff; --sm-tint:#e8f2f5; --sm-ink:#173f4c;\n  --sm-muted:#3b626f; --sm-line:#6f939f; --sm-focus:#0b6579;\n  --sm-activity:#126680; --sm-ground:#276849; --sm-cloud:#d5e6ee; --sm-cloud-line:#153f4c;\n  container:storm-lifecycle / inline-size;\n}\n.dark .wc-storm-lifecycle,.wc-storm-moments.is-dark {\n  --sm-paper:#112c37; --sm-card:#173743; --sm-tint:#1d424e; --sm-ink:#f0fbff;\n  --sm-muted:#c7dfe8; --sm-line:#668a96; --sm-focus:#7ae4e8;\n  --sm-activity:#73cde7; --sm-ground:#a7d5ac; --sm-cloud:#345a6b; --sm-cloud-line:#edfafe;\n}\n.wc-storm-moments.is-contrast {\n  --sm-paper:#fff; --sm-card:#fff; --sm-tint:#fff; --sm-ink:#111;\n  --sm-muted:#222; --sm-line:#111; --sm-focus:#005369;\n  --sm-activity:#005d79; --sm-ground:#205638; --sm-cloud:#e4e4e4; --sm-cloud-line:#111;\n}\n.wc-precip-lab .wc-storm-lifecycle {\n  padding:16px; border:1px solid var(--sm-line); border-radius:16px;\n  background:var(--sm-paper); color:var(--sm-ink); min-width:0;\n}\n.wc-precip-lab .wc-storm-lifecycle-head {font-size:14px;gap:8px;flex-wrap:wrap;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-lifecycle-head>strong {font-size:16px;line-height:1.4}\n.wc-precip-lab #wcStormLifecycleTitle {color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-lifecycle-head>span {font-size:13px;color:var(--sm-muted)}\n.wc-precip-lab .wc-storm-lifecycle .wc-precip-btn {\n  min-height:44px;font-size:14px;line-height:1.4;white-space:normal;\n  background:var(--sm-card);color:var(--sm-ink);border-color:var(--sm-line);\n}\n.wc-precip-lab .wc-storm-lifecycle .wc-precip-btn.is-primary {background:var(--sm-focus);color:var(--sm-paper);border-color:var(--sm-focus)}\n.wc-precip-lab .wc-storm-lifecycle .wc-storm-stage-segments button[aria-pressed=true] {background:var(--sm-tint);color:var(--sm-ink);border:2px solid var(--sm-focus)}\n.wc-precip-lab .wc-storm-stage-segments {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px}\n.wc-precip-lab .wc-storm-time-row {display:grid;grid-template-columns:1fr;gap:10px}\n.wc-precip-lab .wc-storm-time-row label {min-width:0}\n.wc-precip-lab .wc-storm-time-head {font-size:14px;line-height:1.5;color:var(--sm-ink);display:block}\n.wc-precip-lab .wc-storm-time-row input[type=range] {width:100%;min-height:44px;accent-color:var(--sm-focus)}\n.wc-precip-lab .wc-storm-playback {display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px;width:100%}\n.wc-precip-lab .wc-storm-stage-copy {font-size:14px;line-height:1.6;color:var(--sm-ink);margin:12px 0}\n.wc-precip-lab .wc-storm-accumulation {display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,110px),1fr));gap:8px}\n.wc-precip-lab .wc-storm-accumulation-item {min-width:0;padding:9px;background:var(--sm-card);border-radius:8px}\n.wc-precip-lab .wc-storm-accumulation-item>span {font-size:13px;line-height:1.4;color:var(--sm-muted)}\n.wc-precip-lab .wc-storm-accumulation-item>strong {font-size:14px;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-accumulation-track {height:8px;background:var(--sm-tint);border:1px solid var(--sm-line)}\n.wc-precip-lab .wc-storm-accumulation-track i {background:var(--sm-ground)}\n.wc-storm-moments {margin-top:16px;border-top:1px solid var(--sm-line);color:var(--sm-ink);font-size:14px;line-height:1.6;min-width:0}\n.wc-storm-moments>summary {display:list-item;list-style:revert;min-height:44px;padding:12px 0;cursor:pointer;font-size:16px;font-weight:800;color:var(--sm-ink)}\n.wc-sm-body {min-width:0;padding-top:2px}\n.wc-precip-lab .wc-storm-moments p {font-size:14px;line-height:1.6;color:var(--sm-ink);margin:10px 0}\n.wc-sm-controls {margin:16px 0;display:grid;gap:6px}\n.wc-sm-controls label {font-size:14px;font-weight:750;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-moments select {width:100%;min-height:44px;font:inherit;padding:8px 10px;border:1px solid var(--sm-line);border-radius:9px;background:var(--sm-card);color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-moments .wc-sm-scale-note {font-size:13px;color:var(--sm-muted);margin:5px 0}\n.wc-sm-cards {display:grid;grid-template-columns:1fr;gap:12px}\n.wc-sm-card {min-width:0;padding:12px;border:1px solid var(--sm-line);border-radius:14px;background:var(--sm-card);box-shadow:0 8px 20px #18394a0a}\n.wc-sm-card[data-selected=true] {border:2px solid var(--sm-focus);padding:11px;background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments button {min-height:44px;width:100%;font:inherit;font-weight:750;line-height:1.45;white-space:normal;border:1px solid var(--sm-line);border-radius:9px;padding:8px 10px;background:var(--sm-card);color:var(--sm-ink);cursor:pointer}\n.wc-precip-lab .wc-storm-moments button[aria-pressed=true] {border:2px solid var(--sm-focus);background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments .wc-sm-stage-button {display:flex;flex-direction:column;align-items:flex-start;justify-content:center;gap:3px;min-height:72px;text-align:left}\n.wc-sm-stage-button>span:first-child {font-size:15px}\n.wc-sm-stage-button>span:last-child {font-size:13px;font-weight:600;white-space:nowrap}\n.wc-sm-scene {display:block;width:100%;height:104px;margin:8px 0;background:radial-gradient(ellipse at 50% 30%,var(--sm-tint),var(--sm-card) 75%);border-radius:9px}\n.wc-sm-cloud {fill:var(--sm-cloud);stroke:var(--sm-cloud-line);stroke-width:2;vector-effect:non-scaling-stroke}\n.wc-sm-particle {fill:var(--sm-activity);stroke:var(--sm-activity);stroke-width:2;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}\n.wc-sm-ground-line {stroke:var(--sm-ground);stroke-width:3;vector-effect:non-scaling-stroke}\n.wc-sm-lightning {fill:none;stroke:var(--sm-cloud-line);stroke-width:3;stroke-linecap:round;stroke-linejoin:round;vector-effect:non-scaling-stroke}\n.wc-sm-readouts {margin:0;display:grid;gap:10px}\n.wc-sm-readouts>div {min-width:0}\n.wc-sm-readouts dt {font-size:13px;color:var(--sm-muted);line-height:1.4;margin:0 0 3px}\n.wc-sm-readouts dd {display:flex;justify-content:space-between;gap:5px;font-size:14px;font-weight:750;color:var(--sm-ink);margin:0 0 4px}\n.wc-sm-track {height:10px;border:1px solid var(--sm-line);border-radius:4px;background:var(--sm-card);overflow:hidden}\n.wc-sm-track>span {display:block;height:100%;background:var(--sm-activity)}\n.wc-sm-track[data-track=ground]>span {background:repeating-linear-gradient(135deg,var(--sm-ground),var(--sm-ground) 4px,var(--sm-card) 4px,var(--sm-card) 6px)}\n.wc-precip-lab .wc-storm-moments .wc-sm-phase {font-size:13px;line-height:1.5;margin:10px 0 0;color:var(--sm-muted)}\n.wc-sm-phase strong,.wc-sm-phase span {display:block}\n.wc-sm-reading {margin-top:16px;border:1px solid var(--sm-line);border-radius:12px;padding:14px;background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments h4 {font-size:18px;line-height:1.4;margin:0;color:var(--sm-ink)}\n.wc-precip-lab .wc-storm-moments h5 {font-size:16px;line-height:1.4;margin:0;color:var(--sm-ink)}\n.wc-sm-reading dl {margin:10px 0;display:grid;gap:8px}\n.wc-sm-reading dl>div {display:grid;gap:2px}\n.wc-sm-reading dt {font-size:13px;color:var(--sm-muted)}\n.wc-sm-reading dd {margin:0;font-size:14px;color:var(--sm-ink);font-weight:650}\n.wc-sm-question {margin-top:16px;padding-top:4px;border-top:1px solid var(--sm-line)}\n.wc-sm-question>summary {display:list-item;list-style:revert;min-height:44px;padding:12px 0;cursor:pointer;font-size:14px;font-weight:750}\n.wc-sm-answers {display:grid;gap:8px;margin:12px 0}\n.wc-sm-answers button {text-align:left}\n.wc-precip-lab .wc-storm-moments button:disabled {opacity:1;cursor:default;color:var(--sm-muted)}\n.wc-sm-feedback {padding:12px;border-left:3px solid var(--sm-focus);border-radius:0 10px 10px 0;background:var(--sm-tint)}\n.wc-precip-lab .wc-storm-moments .wc-sm-limit {font-size:13px;line-height:1.6;color:var(--sm-muted);margin-top:14px}\n.wc-precip-lab .wc-storm-moments a {display:inline-flex;align-items:center;min-height:44px;color:var(--sm-focus);text-decoration:underline;text-underline-offset:3px}\n.wc-precip-lab .wc-storm-lifecycle :is(button,input,select,summary,a):focus-visible,\n.wc-precip-lab .wc-storm-moments [tabindex='-1']:focus {outline:3px solid var(--sm-focus);outline-offset:3px;border-radius:5px}\n@container storm-lab (max-width:820px) {\n  .wc-precip-lab .wc-precip-layout {grid-template-columns:minmax(0,1fr)}\n  .wc-precip-lab .wc-precip-controls {grid-template-columns:repeat(2,minmax(0,1fr))}\n  .wc-precip-lab .wc-precip-control-group:last-child {grid-column:1/-1}\n  .wc-precip-lab .wc-precip-head-actions {width:100%}\n}\n@container storm-lab (max-width:560px) {\n  .wc-precip-lab .wc-precip-controls,.wc-precip-lab .wc-precip-metrics,\n  .wc-precip-lab .wc-precip-notebook-body,.wc-precip-lab .wc-precip-select-grid {grid-template-columns:minmax(0,1fr)}\n  .wc-precip-lab .wc-precip-control-group:last-child {grid-column:auto}\n  .wc-precip-lab .wc-precip-canvas {height:290px}\n}\n@container storm-lifecycle (min-width:620px) {.wc-sm-cards{grid-template-columns:repeat(3,minmax(0,1fr))}}\n@container storm-lifecycle (max-width:330px) {\n  .wc-precip-lab .wc-storm-stage-segments {grid-template-columns:1fr}\n  .wc-precip-lab .wc-storm-playback {grid-template-columns:1fr}\n  .wc-sm-stage-button {flex-wrap:wrap}\n}\n@media(forced-colors:active) {\n  .wc-storm-lifecycle,.wc-storm-moments {\n    --sm-paper:Canvas!important;--sm-card:Canvas!important;--sm-tint:Canvas!important;\n    --sm-ink:CanvasText!important;--sm-muted:CanvasText!important;--sm-line:CanvasText!important;\n    --sm-focus:Highlight!important;--sm-activity:Highlight!important;--sm-ground:CanvasText!important;\n    --sm-cloud:Canvas!important;--sm-cloud-line:CanvasText!important;forced-color-adjust:none;\n  }\n  .wc-precip-lab .wc-storm-lifecycle .wc-precip-btn,.wc-precip-lab .wc-storm-moments button,.wc-precip-lab .wc-storm-moments select {background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}\n  .wc-precip-lab .wc-storm-lifecycle .wc-precip-btn.is-primary {background:Highlight!important;color:HighlightText!important}\n  .wc-sm-scene {background:Canvas;box-shadow:none}\n  .wc-sm-card {box-shadow:none}\n}\n";
+  var WCThermalLayerInspector = (function() {
+    var tlNodeCatalog = [
+      { id: 'cloud', label: 'Cloud base', progress: 0 },
+      { id: 'middle', label: 'Middle air', progress: 0.55 },
+      { id: 'surface', label: 'Near surface', progress: 1 }
+    ];
+    var tlChoiceCatalog = [
+      { id: 'solid', label: 'Solid ice' },
+      { id: 'liquid', label: 'Liquid water' },
+      { id: 'mixed', label: 'Mixture of ice and liquid' },
+      { id: 'virga', label: 'Evaporation aloft' },
+      { id: 'none', label: 'No sustained falling particle' }
+    ];
+    var tlQuestion = 'Which description fits the modeled particle cue at this level?';
+    var tlPhaseCatalog = {
+      snow: { label: 'Snow or ice crystals', category: 'solid', detail: 'The model shows frozen particles at this level.' },
+      sleet: { label: 'Ice pellets', category: 'solid', detail: 'The model shows drops that have refrozen into solid pellets in the air.' },
+      hail: { label: 'Hail: solid ice', category: 'solid', detail: 'Hail is solid ice. This schematic does not trace its repeated growth in an updraft.' },
+      rain: { label: 'Liquid raindrop', category: 'liquid', detail: 'The model shows a liquid drop at this level.' },
+      'freezing-rain': { label: 'Liquid before surface contact', category: 'liquid', detail: 'The model keeps this particle liquid until surface contact. In below-freezing air it is supercooled; surface ice is a separate contact outcome.' },
+      mix: { label: 'Ice and liquid: mixed cue', category: 'mixed', detail: 'The model uses a mixed or partly melted particle cue around this part of the path.' },
+      virga: { label: 'Evaporation aloft', category: 'virga', detail: 'The model shows particles evaporating before reaching the surface; this cue does not specify their liquid or ice state.' },
+      clear: { label: 'No sustained falling particle', category: 'none', detail: 'This setup does not show a sustained falling particle to inspect.' }
+    };
+    function tlOwn(record, key) { return Object.prototype.hasOwnProperty.call(record, key); }
+    function tlRecord(value) { return value && typeof value === 'object' && !Array.isArray(value); }
+    function tlFinite(value) { return typeof value === 'number' && isFinite(value); }
+    function tlFind(items, id) {
+      for (var tlIndex = 0; tlIndex < items.length; tlIndex++) if (items[tlIndex].id === id) return items[tlIndex];
+      return null;
+    }
+    function tlTemperatureText(value) {
+      return (value === 0 ? '0' : Number(value.toPrecision(3)).toString()) + ' \u00B0C';
+    }
+    function tlDescribe(code, temperatureC) {
+      if (typeof code !== 'string' || !tlOwn(tlPhaseCatalog, code)) return null;
+      if (code === 'freezing-rain' && tlFinite(temperatureC) && temperatureC < 0) {
+        return { label: 'Supercooled liquid drop', category: 'liquid', detail: tlPhaseCatalog[code].detail };
+      }
+      return tlPhaseCatalog[code];
+    }
+    function tlSignature(context) {
+      return JSON.stringify({ version: 1, question: tlQuestion, choices: tlChoiceCatalog,
+        setup: context.setup, nodes: context.nodes, crossings: context.crossings,
+        phasePathLabel: context.phasePathLabel, visualType: context.visualType, reachesGround: context.reachesGround });
+    }
+    function tlBuild(model) {
+      try {
+        if (!tlRecord(model) || !tlOwn(model, 'config') || !tlRecord(model.config) ||
+            !tlOwn(model, 'thermalLayers') || !tlRecord(model.thermalLayers) ||
+            !tlOwn(model, 'visualType') || !tlDescribe(model.visualType) ||
+            !tlOwn(model, 'reachesGround') || typeof model.reachesGround !== 'boolean') return null;
+        var tlThermal = model.thermalLayers;
+        if (!tlOwn(tlThermal, 'temperaturePoints') || !Array.isArray(tlThermal.temperaturePoints) || tlThermal.temperaturePoints.length !== 3 ||
+            !tlOwn(tlThermal, 'crossings') || !Array.isArray(tlThermal.crossings) || tlThermal.crossings.length > 2 ||
+            !tlOwn(tlThermal, 'phasePathLabel') || typeof tlThermal.phasePathLabel !== 'string' || !tlThermal.phasePathLabel.trim()) return null;
+        var tlOriginalSetup = wcPrecipSetupSnapshot(model.config);
+        if (!Object.keys(tlOriginalSetup).every(function(tlConfigKey) {
+          return tlOwn(model.config, tlConfigKey) && model.config[tlConfigKey] === tlOriginalSetup[tlConfigKey];
+        })) return null;
+        var tlSetup = wcPrecipSetupSnapshot(Object.assign({}, tlOriginalSetup, { stormTime: 52 }));
+        var tlTemperatureKeys = ['tempC', 'midLevelTempC', 'surfaceTempC'];
+        var tlRows = [];
+        for (var tlRowIndex = 0; tlRowIndex < tlNodeCatalog.length; tlRowIndex++) {
+          var tlPoint = tlThermal.temperaturePoints[tlRowIndex];
+          var tlNode = tlNodeCatalog[tlRowIndex];
+          if (!tlRecord(tlPoint) || !tlOwn(tlPoint, 'progress') || tlPoint.progress !== tlNode.progress ||
+              !tlOwn(tlPoint, 'temperatureC') || !tlFinite(tlPoint.temperatureC) || tlPoint.temperatureC !== tlSetup[tlTemperatureKeys[tlRowIndex]]) return null;
+          var tlCode = wcPrecipPhaseFromModel(model, tlPoint.progress);
+          var tlPhase = tlDescribe(tlCode, tlPoint.temperatureC);
+          if (!tlPhase) return null;
+          tlRows.push(Object.freeze({ id: tlNode.id, label: tlNode.label, progress: tlPoint.progress,
+            temperatureC: tlPoint.temperatureC, temperatureText: tlTemperatureText(tlPoint.temperatureC),
+            particleCode: tlCode, particleLabel: tlPhase.label, category: tlPhase.category, detail: tlPhase.detail }));
+        }
+        var tlCrossings = [];
+        for (var tlCrossIndex = 0; tlCrossIndex < tlThermal.crossings.length; tlCrossIndex++) {
+          var tlCross = tlThermal.crossings[tlCrossIndex];
+          if (!tlRecord(tlCross) || !tlOwn(tlCross, 'kind') || ['melting', 'freezing'].indexOf(tlCross.kind) < 0 ||
+              !tlOwn(tlCross, 'progress') || !tlFinite(tlCross.progress) || tlCross.progress < 0.04 || tlCross.progress > 0.96 ||
+              (tlCrossIndex && tlCross.progress < tlCrossings[tlCrossIndex - 1].progress)) return null;
+          tlCrossings.push(Object.freeze({ kind: tlCross.kind, progress: tlCross.progress }));
+        }
+        var tlContext = { version: 1, setup: tlSetup, nodes: Object.freeze(tlRows), crossings: Object.freeze(tlCrossings),
+          phasePathLabel: tlThermal.phasePathLabel, visualType: model.visualType, reachesGround: model.reachesGround };
+        tlContext.signature = tlSignature(tlContext);
+        return Object.freeze(tlContext);
+      } catch (tlError) { return null; }
+    }
+    function tlContextValid(context) {
+      try {
+        if (!tlRecord(context) || !tlOwn(context, 'version') || context.version !== 1 ||
+            !tlOwn(context, 'setup') || !tlRecord(context.setup) || !tlOwn(context.setup, 'stormTime') || context.setup.stormTime !== 52 ||
+            !tlOwn(context, 'nodes') || !Array.isArray(context.nodes) || context.nodes.length !== 3 ||
+            !tlOwn(context, 'crossings') || !Array.isArray(context.crossings) || context.crossings.length > 2 ||
+            !tlOwn(context, 'phasePathLabel') || typeof context.phasePathLabel !== 'string' || !context.phasePathLabel.trim() ||
+            !tlOwn(context, 'visualType') || !tlDescribe(context.visualType) ||
+            !tlOwn(context, 'reachesGround') || typeof context.reachesGround !== 'boolean' ||
+            !tlOwn(context, 'signature') || typeof context.signature !== 'string' || !context.signature) return false;
+        var tlNormalized = wcPrecipSetupSnapshot(context.setup);
+        if (!Object.keys(tlNormalized).every(function(tlKey) { return tlOwn(context.setup, tlKey); }) ||
+            JSON.stringify(tlNormalized) !== JSON.stringify(context.setup)) return false;
+        var tlTempKeys = ['tempC', 'midLevelTempC', 'surfaceTempC'];
+        var tlFields = ['id', 'label', 'progress', 'temperatureC', 'temperatureText', 'particleCode', 'particleLabel', 'category', 'detail'];
+        for (var tlValidIndex = 0; tlValidIndex < 3; tlValidIndex++) {
+          var tlRow = context.nodes[tlValidIndex];
+          var tlDefinition = tlNodeCatalog[tlValidIndex];
+          var tlDescription = tlRecord(tlRow) ? tlDescribe(tlRow.particleCode, tlRow.temperatureC) : null;
+          if (!tlRecord(tlRow) || !tlFields.every(function(tlField) { return tlOwn(tlRow, tlField); }) ||
+              tlRow.id !== tlDefinition.id || tlRow.label !== tlDefinition.label || tlRow.progress !== tlDefinition.progress ||
+              !tlFinite(tlRow.temperatureC) || tlRow.temperatureC !== context.setup[tlTempKeys[tlValidIndex]] ||
+              tlRow.temperatureText !== tlTemperatureText(tlRow.temperatureC) || !tlDescription ||
+              tlRow.particleLabel !== tlDescription.label || tlRow.category !== tlDescription.category || tlRow.detail !== tlDescription.detail) return false;
+        }
+        for (var tlValidCrossIndex = 0; tlValidCrossIndex < context.crossings.length; tlValidCrossIndex++) {
+          var tlValidCross = context.crossings[tlValidCrossIndex];
+          if (!tlRecord(tlValidCross) || !tlOwn(tlValidCross, 'kind') || ['melting', 'freezing'].indexOf(tlValidCross.kind) < 0 ||
+              !tlOwn(tlValidCross, 'progress') || !tlFinite(tlValidCross.progress) || tlValidCross.progress < 0.04 || tlValidCross.progress > 0.96 ||
+              (tlValidCrossIndex && tlValidCross.progress < context.crossings[tlValidCrossIndex - 1].progress)) return false;
+        }
+        return context.signature === tlSignature(context);
+      } catch (tlError) { return false; }
+    }
+    function tlIdentity(context, nodeId) { return JSON.stringify([1, tlQuestion, context.signature, nodeId]); }
+    function tlRead(raw, context) {
+      if (!tlContextValid(context)) return null;
+      try {
+        var tlRaw = tlRecord(raw) ? raw : {};
+        var tlSavedNode = tlOwn(tlRaw, 'node') && tlFind(tlNodeCatalog, tlRaw.node) ? tlRaw.node : '';
+        var tlSelected = tlSavedNode || 'middle';
+        var tlAnswer = tlSavedNode && tlOwn(tlRaw, 'version') && tlRaw.version === 1 &&
+          tlOwn(tlRaw, 'identity') && tlRaw.identity === tlIdentity(context, tlSelected) &&
+          tlOwn(tlRaw, 'answer') && tlFind(tlChoiceCatalog, tlRaw.answer) ? tlRaw.answer : '';
+        var tlSelectedRow = context.nodes.filter(function(tlItem) { return tlItem.id === tlSelected; })[0];
+        return { version: 1, node: tlSelected, identity: tlIdentity(context, tlSelected), answer: tlAnswer,
+          result: tlAnswer ? (tlAnswer === tlSelectedRow.category ? 'supported' : 'retry') : 'waiting' };
+      } catch (tlError) {
+        return { version: 1, node: 'middle', identity: tlIdentity(context, 'middle'), answer: '', result: 'waiting' };
+      }
+    }
+    function tlFresh(state) { return { version: 1, node: state.node, identity: state.identity, answer: state.answer }; }
+    function tlSelect(raw, context, id) {
+      var tlState = tlRead(raw, context);
+      if (!tlState) return {};
+      if (tlFind(tlNodeCatalog, id) && id !== tlState.node) {
+        tlState.node = id; tlState.identity = tlIdentity(context, id); tlState.answer = '';
+      }
+      return tlFresh(tlState);
+    }
+    function tlAnswer(raw, context, choice) {
+      var tlState = tlRead(raw, context);
+      if (!tlState) return {};
+      if (tlFind(tlChoiceCatalog, choice)) tlState.answer = choice;
+      return tlFresh(tlState);
+    }
+    function tlNodes() { return tlNodeCatalog.map(function(tlItem) { return Object.assign({}, tlItem); }); }
+    function tlChoices() { return tlChoiceCatalog.map(function(tlItem) { return Object.assign({}, tlItem); }); }
+    return { build: tlBuild, read: tlRead, select: tlSelect, answer: tlAnswer, nodes: tlNodes, choices: tlChoices };
+  })();
+  var WC_THERMAL_LAYER_INSPECTOR_STYLE = ".wc-thermal-layer-inspector {\n  --tl-paper:#f4f9fb;--tl-card:#fff;--tl-ink:#183c4a;--tl-muted:#355766;\n  --tl-line:#68828d;--tl-focus:#075f78;--tl-cold:#d6edf4;--tl-warm:#fbe8ce;\n  --tl-path:#174f64;--tl-cold-ink:#245c72;--tl-warm-ink:#774811;\n  margin:12px 0;border:1px solid var(--tl-line);border-radius:16px;\n  background:var(--tl-paper);color:var(--tl-ink);min-width:0;\n}\n.dark .wc-thermal-layer-inspector,.wc-thermal-layer-inspector.is-dark {\n  --tl-paper:#102d38;--tl-card:#173b48;--tl-ink:#eefbff;--tl-muted:#c7dfe8;\n  --tl-line:#7195a3;--tl-focus:#82e4ef;--tl-cold:#234f63;--tl-warm:#59432c;\n  --tl-path:#b9edf7;--tl-cold-ink:#c1edf9;--tl-warm-ink:#ffe0ad;\n}\n.wc-thermal-layer-inspector.is-contrast {\n  --tl-paper:#fff;--tl-card:#fff;--tl-ink:#111;--tl-muted:#222;--tl-line:#111;\n  --tl-focus:#005269;--tl-cold:#e9f3f7;--tl-warm:#fff1dc;--tl-path:#111;\n  --tl-cold-ink:#123b4b;--tl-warm-ink:#603700;\n}\n.wc-precip-lab .wc-thermal-layer-inspector>summary {\n  min-height:48px;box-sizing:border-box;padding:13px 14px;cursor:pointer;\n  color:var(--tl-ink);font-size:15px;font-weight:750;line-height:1.45;\n}\n.wc-tl-body {container:thermal-inspector / inline-size;padding:0 12px 14px;min-width:0}\n.wc-precip-lab .wc-thermal-layer-inspector p {font-size:14px;line-height:1.6;color:var(--tl-muted);margin:8px 0;overflow-wrap:anywhere}\n.wc-precip-lab .wc-thermal-layer-inspector h4,.wc-precip-lab .wc-thermal-layer-inspector h5 {\n  color:var(--tl-ink);font-size:16px;line-height:1.45;margin:0 0 8px;\n}\n.wc-tl-layout {display:grid;grid-template-columns:1fr;gap:14px}\n.wc-tl-chart {padding:12px;border:1px solid var(--tl-line);border-radius:12px;background:var(--tl-card);min-width:0}\n.wc-tl-chart-title {display:block;font-size:14px;line-height:1.4;margin-bottom:10px;color:var(--tl-ink)}\n.wc-tl-zones,.wc-tl-axis {display:flex;justify-content:space-between;gap:8px;font-size:13px;line-height:1.4;color:var(--tl-ink)}\n.wc-tl-zones span:first-child {color:var(--tl-cold-ink)}\n.wc-tl-zones span:last-child {color:var(--tl-warm-ink)}\n.wc-tl-axis {position:relative;height:20px;margin-top:6px}\n.wc-tl-axis span {position:absolute;top:0}\n.wc-tl-axis span:first-child {left:6.67%}\n.wc-tl-axis span:nth-child(2) {left:50%;transform:translateX(-50%)}\n.wc-tl-axis span:last-child {right:6.67%}\n.wc-tl-plot {display:block;width:100%;height:228px;margin-top:8px;border-radius:10px}\n.wc-tl-cold {fill:var(--tl-cold)}.wc-tl-warm {fill:var(--tl-warm)}\n.wc-tl-hatch {fill:none;stroke:var(--tl-cold-ink);stroke-width:1;opacity:.28}\n.wc-tl-guide {stroke:var(--tl-line);stroke-width:1;fill:none;vector-effect:non-scaling-stroke}\n.wc-tl-zero {stroke:var(--tl-path);stroke-width:1.5;stroke-dasharray:3 4;vector-effect:non-scaling-stroke}\n.wc-tl-cross {stroke:var(--tl-path);stroke-width:1.5;stroke-dasharray:7 4;vector-effect:non-scaling-stroke;fill:var(--tl-card)}\n.wc-tl-path {fill:none;stroke:var(--tl-path);stroke-width:3;vector-effect:non-scaling-stroke}\n.wc-tl-point {fill:var(--tl-card);stroke:var(--tl-path);stroke-width:2;vector-effect:non-scaling-stroke}\n.wc-tl-point[data-selected=true] {fill:var(--tl-path);stroke:var(--tl-card);stroke-width:2}\n.wc-tl-selected-ring {fill:none;stroke:var(--tl-path);stroke-width:2;vector-effect:non-scaling-stroke}\n.wc-tl-crossing-list {display:grid;gap:8px;margin:12px 0 0;padding:0;list-style:none;font-size:13px;line-height:1.5;color:var(--tl-muted)}\n.wc-tl-crossing-list li {padding:8px;border:1px dashed var(--tl-line);border-radius:8px}\n.wc-tl-crossing-list strong {color:var(--tl-ink)}\n.wc-tl-nodes {display:grid;gap:8px;align-content:start;min-width:0}\n.wc-precip-lab .wc-tl-node {\n  width:100%;min-height:76px;text-align:left;display:grid;grid-template-columns:1fr auto;gap:5px 8px;\n  padding:11px 12px;border:1px solid var(--tl-line);border-radius:12px;\n  background:var(--tl-card);color:var(--tl-ink);font:inherit;font-size:14px;line-height:1.5;cursor:pointer;\n}\n.wc-tl-node>strong {font-size:15px}.wc-tl-node>span {grid-column:1/-1;color:var(--tl-muted);font-size:13px}\n.wc-tl-node>em {font-size:13px;font-style:normal;font-weight:700}\n.wc-precip-lab .wc-tl-node[aria-pressed=true] {border:2px solid var(--tl-focus);padding:10px 11px}\n.wc-tl-node-temperature {font-variant-numeric:tabular-nums;white-space:nowrap;font-weight:750}\n.wc-tl-detail,.wc-tl-surface,.wc-tl-question {margin-top:14px;padding:12px;border:1px solid var(--tl-line);border-radius:12px;background:var(--tl-card);min-width:0}\n.wc-tl-detail-head {display:flex;align-items:center;gap:12px}\n.wc-tl-particle {width:52px;height:52px;flex:0 0 52px;fill:var(--tl-cold);stroke:var(--tl-path);stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}\n.wc-tl-reading {display:grid;grid-template-columns:1fr;gap:10px;margin:12px 0}\n.wc-tl-reading>div {padding:10px;border:1px solid var(--tl-line);border-radius:10px;background:var(--tl-paper);min-width:0}\n.wc-tl-reading dt {font-size:13px;line-height:1.4;color:var(--tl-muted);margin-bottom:4px}\n.wc-tl-reading dd {font-size:15px;line-height:1.5;font-weight:750;margin:0;color:var(--tl-ink)}\n.wc-tl-surface>strong {font-size:14px;color:var(--tl-ink);line-height:1.5}\n.wc-precip-lab .wc-tl-question>summary {min-height:44px;box-sizing:border-box;padding:9px 0;font-size:14px;line-height:1.5;font-weight:750;cursor:pointer;color:var(--tl-ink)}\n.wc-tl-answers {display:grid;gap:8px}\n.wc-precip-lab .wc-tl-answers button {min-height:44px;border:1px solid var(--tl-line);border-radius:9px;background:var(--tl-paper);color:var(--tl-ink);padding:10px 12px;font:inherit;font-size:14px;line-height:1.5;text-align:left;cursor:pointer}\n.wc-precip-lab .wc-tl-answers button[aria-pressed=true] {border:2px solid var(--tl-focus);padding:9px 11px;font-weight:750}\n.wc-tl-feedback {margin-top:12px;padding:12px;border-left:3px solid var(--tl-focus);background:var(--tl-paper);border-radius:0 9px 9px 0}\n.wc-precip-lab .wc-thermal-layer-inspector :is(button,summary,h4,h5):focus-visible {outline:3px solid var(--tl-focus);outline-offset:3px}\n@container thermal-inspector (min-width:560px) {.wc-tl-layout {grid-template-columns:minmax(0,1fr) minmax(0,1fr)}.wc-tl-reading {grid-template-columns:1fr 1fr}}\n@media(forced-colors:active) {\n  .wc-thermal-layer-inspector {--tl-paper:Canvas!important;--tl-card:Canvas!important;--tl-ink:CanvasText!important;--tl-muted:CanvasText!important;--tl-line:CanvasText!important;--tl-focus:Highlight!important;--tl-cold:Canvas!important;--tl-warm:Canvas!important;--tl-path:CanvasText!important;--tl-cold-ink:CanvasText!important;--tl-warm-ink:CanvasText!important;forced-color-adjust:none}\n  .wc-precip-lab .wc-thermal-layer-inspector button {background:ButtonFace!important;color:ButtonText!important;border-color:ButtonText!important}\n  .wc-tl-hatch {opacity:1}\n}\n";
+  var WCLiveTransferStory = (function() {
+    var ltStories = {
+      ocean: { label: 'Ocean storage', cue: 'Water remains in the ocean store in this frame.', kind: 'storage' },
+      evaporating: { label: 'Evaporation', cue: 'Surface liquid becomes invisible water vapor.', kind: 'transfer' },
+      condensing: { label: 'Cloud formation', cue: 'Vapor forms cloud droplets, or ice by deposition, on tiny particles.', kind: 'transfer' },
+      precipitating: { label: 'Precipitation', cue: 'Cloud water or ice falls toward land under gravity.', kind: 'transfer' },
+      ground_choice: { label: 'Land pathway choice', cue: 'Water has reached land. Choose a route; the next transfer has not started.', kind: 'choice' },
+      river_runoff: { label: 'Surface runoff', cue: 'Liquid follows the terrain toward a river, estuary and ocean.', kind: 'transfer' },
+      infiltrating: { label: 'Infiltration and soil storage', cue: 'Water enters soil pore spaces. Entering soil does not establish groundwater recharge.', kind: 'transfer' },
+      aquifer_flow: { label: 'Groundwater flow and discharge', cue: 'This selected groundwater path follows connected pores toward surface water or ocean discharge.', kind: 'transfer' },
+      plant_absorb: { label: 'Root uptake and xylem transport', cue: 'Soil water enters roots and moves through xylem as liquid. Leaf evaporation is a later step.', kind: 'transfer' },
+      transpiring: { label: 'Transpiration', cue: 'Liquid evaporates at leaf surfaces; invisible water vapor leaves the plant.', kind: 'transfer' },
+      complete: { label: 'Ocean storage after return', cue: 'The illustrated parcel is back in ocean storage. Another transfer can begin in a new loop.', kind: 'storage' }
+    };
+    function ltDescribe(active, state, stageId, previewLabel, previewCue) {
+      var ltState = typeof state === 'string' && Object.prototype.hasOwnProperty.call(ltStories, state) ? state : 'ocean';
+      var ltStory = active ? ltStories[ltState] : null;
+      return Object.freeze({ id: active ? ltState : stageId,
+        label: ltStory ? ltStory.label : previewLabel,
+        cue: ltStory ? ltStory.cue : previewCue,
+        kind: ltStory ? ltStory.kind : 'transfer', active: !!active });
+    }
+    return { describe: ltDescribe };
+  })();
+  var WC_LIVE_TRANSFER_STYLE = ".wc-live-transfer,.wc-live-data {\n  --lt-paper:#f2f8f8;--lt-card:#fff;--lt-ink:#173e49;--lt-muted:#385d68;\n  --lt-line:#7997a1;--lt-water:#0b657b;--lt-water-fill:#c8edf3;--lt-heat:#805322;\n  --lt-heat-fill:#fae7c8;--lt-focus:#005d76;\n}\n.dark .wc-live-transfer,.dark .wc-live-data,.wc-live-transfer.is-dark,.wc-live-data.is-dark {\n  --lt-paper:#102b36;--lt-card:#173945;--lt-ink:#f0fbff;--lt-muted:#c6dfe8;\n  --lt-line:#7097a6;--lt-water:#97e0f0;--lt-water-fill:#214f62;--lt-heat:#ffdfa6;\n  --lt-heat-fill:#4a3c2d;--lt-focus:#80e7ef;\n}\n.wc-live-transfer.is-contrast,.wc-live-data.is-contrast {\n  --lt-paper:#fff;--lt-card:#fff;--lt-ink:#111;--lt-muted:#222;--lt-line:#111;\n  --lt-water:#004c63;--lt-water-fill:#e5f4f8;--lt-heat:#563800;--lt-heat-fill:#fff2d6;--lt-focus:#004c63;\n}\n.wc-live-transfer.wc-stage-focus {container:live-transfer / inline-size;display:block;min-width:0;padding:18px;border:1px solid var(--lt-line);border-left:4px solid var(--lt-water)!important;border-radius:18px;background:var(--lt-paper);color:var(--lt-ink)}\n.wc-live-transfer .wc-stage-focus-copy {min-width:0}\n.wc-live-transfer .wc-stage-focus-kicker {font-size:13px;line-height:1.5;letter-spacing:.035em;color:var(--lt-muted)}\n.wc-live-transfer .wc-stage-focus-title {font-size:21px;line-height:1.4;color:var(--lt-ink);gap:10px;align-items:center}\n.wc-live-transfer .wc-stage-focus-title strong {font-size:21px;line-height:1.4;color:var(--lt-ink);overflow-wrap:anywhere}\n.wc-live-transfer .wc-stage-focus-summary,.wc-live-transfer .wc-subsurface-note {font-size:14px;line-height:1.65;color:var(--lt-muted);margin:8px 0 12px}\n.wc-live-transfer .wc-subsurface-note {padding:12px;border:1px solid var(--lt-line);border-radius:10px;background:var(--lt-card)}\n.wc-live-transfer .wc-stage-focus-meta {position:static;margin-top:12px;font-size:13px;line-height:1.5;color:var(--lt-muted);background:transparent;border:0;display:block;text-align:right}\n.wc-live-transfer .wc-matter-energy {padding:14px 0 0;margin:14px 0 0;border:0;border-top:1px solid var(--lt-line);background:transparent}\n.wc-live-transfer #wcMatterEnergyTitle {font-size:18px;line-height:1.45;color:var(--lt-ink);margin:0 0 8px}\n.wc-live-transfer .wc-matter-energy-note {font-size:14px;line-height:1.6;color:var(--lt-muted);margin:0 0 12px}\n.wc-live-transfer .wc-science-story {margin:0 0 14px;padding:13px;border:1px solid var(--lt-line);border-radius:13px;background:var(--lt-card);color:var(--lt-ink)}\n.wc-live-transfer .wc-science-story-title {font-size:14px;line-height:1.5;color:var(--lt-ink);margin-bottom:10px;display:block}\n.wc-live-transfer .wc-science-story-chain {display:grid;grid-template-columns:1fr;gap:8px;align-items:stretch}\n.wc-live-transfer .wc-science-story-step {padding:10px 12px;background:var(--lt-paper);border:1px solid var(--lt-line);border-radius:10px;min-width:0}\n.wc-live-transfer .wc-science-story-step>span {display:block;font-size:13px;line-height:1.5;color:var(--lt-muted);margin-bottom:4px}\n.wc-live-transfer .wc-science-story-step>strong {display:block;font-size:14px;line-height:1.6;color:var(--lt-ink)}\n.wc-live-transfer .wc-science-story-arrow {font-size:20px;line-height:1;color:var(--lt-water);justify-self:center;transform:rotate(90deg)}\n.wc-live-transfer .wc-matter-energy-grid {display:grid;grid-template-columns:1fr;gap:12px;margin:0}\n.wc-live-transfer .wc-matter-energy-grid>div {padding:13px;border:1px solid var(--lt-line);border-radius:13px;background:var(--lt-card);min-width:0}\n.wc-live-transfer .wc-matter-energy-grid dt {font-size:13px;line-height:1.5;font-weight:700;color:var(--lt-muted);margin-bottom:7px}\n.wc-live-transfer .wc-matter-energy-grid dd {font-size:14px;line-height:1.6;color:var(--lt-ink);margin:0}\n.wc-live-transfer .wc-matter-energy-grid dd strong {font-size:15px;line-height:1.5;color:var(--lt-ink)}\n.wc-live-transfer .wc-matter-energy-grid dd>span {display:block;margin-top:6px;font-size:14px;line-height:1.6;color:var(--lt-muted)}\n.wc-live-water-transfer {margin:12px 0;padding:14px;border:1px solid var(--lt-line);border-radius:14px;background:var(--lt-card);min-width:0}\n.wc-live-water-transfer figcaption {font-size:14px;line-height:1.5;font-weight:750;margin-bottom:12px;color:var(--lt-ink)}\n.wc-lt-water-path {display:grid;grid-template-columns:1fr;gap:10px;align-items:center;min-width:0}\n.wc-lt-water-node {display:flex;gap:12px;align-items:center;padding:12px;border:1px solid var(--lt-line);border-radius:12px;background:var(--lt-paper);min-width:0}\n.wc-lt-water-node>div {display:grid;gap:4px;min-width:0}\n.wc-lt-node-role {font-size:13px;line-height:1.4;color:var(--lt-muted)}\n.wc-lt-water-node strong {font-size:15px;line-height:1.5;color:var(--lt-ink)}\n.wc-lt-node-phase {font-size:14px;line-height:1.5;color:var(--lt-muted)}\n.wc-lt-water-symbol {flex:0 0 56px;width:56px;height:56px;overflow:visible}\n.wc-lt-drop {stroke:var(--lt-water);fill:var(--lt-water-fill);stroke-width:2.3;stroke-linejoin:round}\n.wc-lt-ice {stroke:var(--lt-water);fill:none;stroke-width:2.3;stroke-linecap:round;stroke-linejoin:round}\n.wc-lt-vapor {stroke:var(--lt-water);fill:var(--lt-card);stroke-width:2}\n.wc-lt-water-connector {display:grid;justify-items:center;gap:4px;font-size:13px;line-height:1.5;color:var(--lt-muted)}\n.wc-lt-water-connector svg {width:40px;height:28px;transform:rotate(90deg);margin:8px 0}\n.wc-lt-water-connector path,.wc-lt-heat-arrow path {fill:none;stroke:var(--lt-water);stroke-width:2.5;stroke-linecap:round;stroke-linejoin:round}\n.wc-live-transfer .wc-lt-symbol-note {font-size:13px;line-height:1.6;color:var(--lt-muted);margin:10px 0 0}\n.wc-live-heat-path {min-width:0;container:live-heat / inline-size}\n.wc-lt-heat-flow {display:grid;grid-template-columns:1fr;gap:8px;align-items:center;padding:10px;border:1px solid var(--lt-line);border-radius:10px;background:var(--lt-paper)}\n.wc-lt-heat-actor {display:flex;justify-content:center;align-items:center;gap:8px;font-size:14px;line-height:1.5;color:var(--lt-ink);text-align:center}\n.wc-lt-heat-actor i {display:inline-block;flex:0 0 22px;width:22px;height:22px;border:2px solid var(--lt-heat);background:var(--lt-heat-fill);border-radius:4px;box-sizing:border-box}\n.wc-lt-heat-actor .wc-lt-water-mark {border-color:var(--lt-water);background:var(--lt-water-fill);border-radius:50% 50% 50% 5%;transform:rotate(-45deg)}\n.wc-lt-heat-arrow {display:grid;justify-items:center;gap:2px;font-size:13px;line-height:1.5;color:var(--lt-heat)}\n.wc-lt-heat-arrow svg {width:56px;height:28px;transform:rotate(90deg);margin:8px 0}\n.wc-lt-heat-arrow path {stroke:var(--lt-heat)}\n.wc-live-transfer .wc-lt-no-latent,.wc-live-transfer .wc-lt-heat-reading {font-size:14px;line-height:1.6;color:var(--lt-ink);margin:8px 0 0}\n.wc-live-transfer .wc-lt-no-latent {padding:10px;border:1px dashed var(--lt-line);border-radius:10px;background:var(--lt-paper)}\n.wc-live-data.wc-data-view {container:live-data / inline-size;background:var(--lt-paper);color:var(--lt-ink);border-color:var(--lt-line)}\n.wc-live-data .wc-data-summary {min-height:48px;padding:12px;font-size:15px;line-height:1.5;color:var(--lt-ink)}\n.wc-live-data .wc-data-summary-title {font-size:15px;color:var(--lt-ink)}\n.wc-live-data .wc-data-summary-note {font-size:13px;line-height:1.5;color:var(--lt-muted)}\n.wc-live-data .wc-data-table {width:100%;table-layout:fixed;border-collapse:collapse;font-size:14px;line-height:1.6;background:var(--lt-card);color:var(--lt-ink)}\n.wc-live-data .wc-data-table th,.wc-live-data .wc-data-table td {padding:12px;vertical-align:top;border-color:var(--lt-line);color:var(--lt-ink);font-size:14px;line-height:1.6;overflow-wrap:anywhere}\n.wc-live-data .wc-data-table th {width:29%;font-size:13px;color:var(--lt-muted);background:var(--lt-paper)}\n.wc-live-data .wc-data-table strong {font-size:14px;line-height:1.6;color:var(--lt-ink)}\n.wc-live-data .wc-data-table td>span {display:block;font-size:13px;line-height:1.6;color:var(--lt-muted);margin-top:5px}\n.wc-live-data summary:focus-visible {outline:3px solid var(--lt-focus);outline-offset:3px}\n@container live-transfer (min-width:620px) {\n  .wc-lt-water-path {grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr)}\n  .wc-live-water-transfer[data-lt-kind=storage] .wc-lt-water-path {grid-template-columns:1fr}\n  .wc-lt-water-connector svg {width:52px;transform:none;margin:0}\n  .wc-live-transfer .wc-science-story-chain {grid-template-columns:minmax(0,1fr) 20px minmax(0,1fr) 20px minmax(0,1fr);align-items:center}\n  .wc-live-transfer .wc-science-story-arrow {transform:none}\n  .wc-live-transfer .wc-matter-energy-grid {grid-template-columns:1fr 1fr}\n}\n@container live-heat (min-width:360px) {\n  .wc-lt-heat-flow {grid-template-columns:minmax(0,1fr) 64px minmax(0,1fr)}\n  .wc-lt-heat-arrow svg {transform:none;margin:0}\n  .wc-lt-heat-actor {flex-wrap:wrap}\n}\n@container live-data (max-width:360px) {\n  .wc-live-data .wc-data-table th {width:40%}\n  .wc-live-data .wc-data-table th,.wc-live-data .wc-data-table td {padding:10px 8px}\n}\n@media(forced-colors:active) {\n  .wc-live-transfer,.wc-live-data {--lt-paper:Canvas!important;--lt-card:Canvas!important;--lt-ink:CanvasText!important;--lt-muted:CanvasText!important;--lt-line:CanvasText!important;--lt-water:CanvasText!important;--lt-water-fill:Canvas!important;--lt-heat:CanvasText!important;--lt-heat-fill:Canvas!important;--lt-focus:Highlight!important;forced-color-adjust:none}\n  .wc-live-transfer.wc-stage-focus {box-shadow:none}\n}\n\n.wc-stage-focus.wc-live-transfer .wc-matter-energy-grid > div {\n  display: block;\n  min-width: 0;\n}\n.wc-stage-focus.wc-live-transfer .wc-matter-energy-grid dt {\n  display: block;\n  width: auto;\n  margin: 0 0 8px;\n}\n.wc-stage-focus.wc-live-transfer .wc-matter-energy-grid dd {\n  display: block;\n  width: auto;\n  min-width: 0;\n  max-width: none;\n  margin: 0;\n}\n.wc-stage-focus.wc-live-transfer .wc-live-heat-path {\n  display: block;\n  width: 100%;\n  min-width: 0;\n}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-actor {\n  display: flex;\n  justify-content: center;\n  align-items: center;\n  gap: 8px;\n  font-size: 14px;\n  line-height: 1.5;\n  color: var(--lt-ink);\n  text-align: center;\n}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-arrow > span {\n  font-size: 13px;\n  line-height: 1.5;\n  color: var(--lt-heat);\n}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-flow {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);\n  align-items: center;\n  gap: 12px;\n  min-width: 0;\n}\n.wc-stage-focus.wc-live-transfer .wc-lt-heat-arrow {\n  display: grid;\n  grid-template-columns: minmax(0, 1fr);\n  justify-items: center;\n  align-items: center;\n  gap: 2px;\n  min-width: 0;\n}\n@container live-heat (min-width: 360px) {\n  .wc-stage-focus.wc-live-transfer .wc-lt-heat-flow {\n    grid-template-columns: minmax(0, 1fr) 84px minmax(0, 1fr);\n  }\n}\n\n.wc-live-data.wc-data-view .wc-data-table td strong {\n  color: var(--lt-ink);\n}\n";
   // Chapter inspection has its own state; it never moves the animated parcel.
   var WCJourneyChapters = (function() {
     var chapters = [
@@ -7903,42 +8239,145 @@ const d = labToolData.waterCycle || {};
                 ctx2.restore();
               }
 
+              // ── Measured Storm captions: presentation only ──
+              var stormCaptionRequests2d = [];
+              function layoutPrecipCaptions2d(ctx2, w, h, requests, reservations) {
+                var cards = [];
+                var occupied = (reservations || []).slice();
+                var margin = 8;
+                function overlapsCaption2d(a, b) {
+                  return a.x < b.x + b.width + 3 && a.x + a.width + 3 > b.x &&
+                    a.y < b.y + b.height + 3 && a.y + a.height + 3 > b.y;
+                }
+                function wrapCaption2d(text, font, available) {
+                  ctx2.font = font;
+                  var words = String(text || '').trim().split(/\s+/).filter(Boolean);
+                  var lines = [], line = '';
+                  words.forEach(function(word) {
+                    var candidate = line ? line + ' ' + word : word;
+                    if (ctx2.measureText(candidate).width <= available) { line = candidate; return; }
+                    if (line) { lines.push(line); line = ''; }
+                    // A long token may wrap, but is never squeezed or truncated.
+                    for (var letter = 0; letter < word.length; letter++) {
+                      if (line && ctx2.measureText(line + word.charAt(letter)).width > available) {
+                        lines.push(line); line = '';
+                      }
+                      line += word.charAt(letter);
+                    }
+                  });
+                  if (line) lines.push(line);
+                  return lines;
+                }
+                ctx2.save();
+                requests.forEach(function(request) {
+                  var titleSize = request.titleSize || 12;
+                  var bodySize = request.bodySize || 11;
+                  var titleFont = '800 ' + titleSize + 'px system-ui, sans-serif';
+                  var bodyFont = '600 ' + bodySize + 'px system-ui, sans-serif';
+                  var maximumWidth = Math.max(36, Math.min(request.width || 160, w - margin * 2));
+                  ctx2.font = titleFont;
+                  var naturalWidth = ctx2.measureText(request.title || '').width;
+                  if (request.body) {
+                    ctx2.font = bodyFont;
+                    naturalWidth = Math.max(naturalWidth, ctx2.measureText(request.body).width);
+                  }
+                  var width = Math.min(maximumWidth, Math.max(64, naturalWidth + 18));
+                  var titleLines = wrapCaption2d(request.title, titleFont, width - 18);
+                  var bodyLines = wrapCaption2d(request.body, bodyFont, width - 18);
+                  var lines = [];
+                  titleLines.forEach(function(text) { lines.push({ text: text, font: titleFont, size: titleSize, color: '#f8fafc' }); });
+                  bodyLines.forEach(function(text) { lines.push({ text: text, font: bodyFont, size: bodySize, color: '#d7edf5' }); });
+                  var height = 12 + titleLines.length * (titleSize + 2) + bodyLines.length * (bodySize + 2) + (bodyLines.length ? 2 : 0);
+                  var x = request.align === 'right' ? request.x - width : request.align === 'center' ? request.x - width / 2 : request.x;
+                  x = Math.max(margin, Math.min(w - width - margin, x));
+                  var preferredY = request.vertical === 'center' ? request.y - height / 2 : request.y;
+                  preferredY = Math.max(margin, Math.min(h - height - margin, preferredY));
+                  var candidates = [preferredY, margin, h - height - margin];
+                  occupied.forEach(function(obstacle) {
+                    candidates.push(obstacle.y + obstacle.height + 4, obstacle.y - height - 4);
+                  });
+                  candidates = candidates.filter(function(y) { return y >= margin && y + height <= h - margin; });
+                  candidates.sort(function(a, b) { return Math.abs(a - preferredY) - Math.abs(b - preferredY); });
+                  var y = preferredY;
+                  for (var candidateIndex = 0; candidateIndex < candidates.length; candidateIndex++) {
+                    var candidateBox = { x: x, y: candidates[candidateIndex], width: width, height: height };
+                    if (!occupied.some(function(obstacle) { return overlapsCaption2d(candidateBox, obstacle); })) {
+                      y = candidates[candidateIndex]; break;
+                    }
+                  }
+                  var card = { id: request.id, x: x, y: y, width: width, height: height, lines: lines,
+                    accent: request.accent || '#7dd3fc', anchorX: request.anchorX, anchorY: request.anchorY,
+                    titleLineCount: titleLines.length, titleSize: titleSize, bodySize: bodySize };
+                  cards.push(card); occupied.push(card);
+                });
+                ctx2.restore();
+                return cards;
+              }
+
+              function drawPrecipCaption2d(ctx2, caption) {
+                var x = caption.x, y = caption.y, width = caption.width, height = caption.height;
+                var radius = 6;
+                ctx2.save();
+                ctx2.globalAlpha = 1;
+                ctx2.globalCompositeOperation = 'source-over';
+                ctx2.shadowBlur = 0;
+                ctx2.setLineDash([]);
+                if (isFinite(caption.anchorX) && isFinite(caption.anchorY)) {
+                  var connectorX = Math.max(x, Math.min(x + width, caption.anchorX));
+                  var connectorY = Math.max(y, Math.min(y + height, caption.anchorY));
+                  if (Math.abs(connectorX - caption.anchorX) + Math.abs(connectorY - caption.anchorY) > 5) {
+                    ctx2.strokeStyle = caption.accent;
+                    ctx2.lineWidth = 1;
+                    ctx2.beginPath(); ctx2.moveTo(caption.anchorX, caption.anchorY);
+                    ctx2.lineTo(connectorX, connectorY); ctx2.stroke();
+                    ctx2.fillStyle = caption.accent;
+                    ctx2.beginPath(); ctx2.arc(caption.anchorX, caption.anchorY, 1.8, 0, Math.PI * 2); ctx2.fill();
+                  }
+                }
+                ctx2.beginPath(); ctx2.moveTo(x + radius, y);
+                ctx2.lineTo(x + width - radius, y); ctx2.quadraticCurveTo(x + width, y, x + width, y + radius);
+                ctx2.lineTo(x + width, y + height - radius); ctx2.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
+                ctx2.lineTo(x + radius, y + height); ctx2.quadraticCurveTo(x, y + height, x, y + height - radius);
+                ctx2.lineTo(x, y + radius); ctx2.quadraticCurveTo(x, y, x + radius, y); ctx2.closePath();
+                ctx2.fillStyle = '#071c2c'; ctx2.fill();
+                ctx2.strokeStyle = '#537c8e'; ctx2.lineWidth = 1; ctx2.stroke();
+                ctx2.fillStyle = caption.accent;
+                ctx2.fillRect(x + 3, y + 8, 2, height - 16);
+                ctx2.textAlign = 'left'; ctx2.textBaseline = 'middle';
+                var lineY = y + 6;
+                caption.lines.forEach(function(line, index) {
+                  if (index === caption.titleLineCount && index > 0) lineY += 2;
+                  ctx2.font = line.font; ctx2.fillStyle = line.color;
+                  ctx2.fillText(line.text, x + 9, lineY + (line.size + 2) / 2);
+                  lineY += line.size + 2;
+                });
+                ctx2.restore();
+              }
+              // ── End measured Storm caption helpers ──
+
               function drawPrecipThermalRail(ctx2, w, cloudBase, groundY) {
                 var railX = 10;
-                var badgeX = 17;
                 var railNodes = [
-                  { label: 'CLOUD', temperatureC: model.config.tempC, y: Math.max(20, cloudBase - 38) },
-                  { label: 'MIDDLE', temperatureC: model.config.midLevelTempC, y: cloudBase + (groundY - cloudBase) * 0.52 },
-                  { label: 'SURFACE', temperatureC: model.config.surfaceTempC, y: groundY - 15 }
+                  { id: 'cloud-temperature', label: 'CLOUD', temperatureC: model.config.tempC, y: Math.max(20, cloudBase - 38) },
+                  { id: 'middle-temperature', label: 'MIDDLE', temperatureC: model.config.midLevelTempC, y: cloudBase + (groundY - cloudBase) * 0.52 },
+                  { id: 'surface-temperature', label: 'SURFACE', temperatureC: model.config.surfaceTempC, y: groundY - 15 }
                 ];
                 ctx2.save();
-                ctx2.font = '800 9px system-ui, sans-serif';
-                ctx2.textAlign = 'left';
-                ctx2.textBaseline = 'middle';
-                ctx2.strokeStyle = 'rgba(224,242,254,.5)';
-                ctx2.lineWidth = 1;
-                ctx2.setLineDash([3, 4]);
-                ctx2.beginPath();
-                ctx2.moveTo(railX, railNodes[0].y);
-                ctx2.lineTo(railX, railNodes[railNodes.length - 1].y);
-                ctx2.stroke();
+                ctx2.strokeStyle = 'rgba(224,242,254,.5)'; ctx2.lineWidth = 1;
+                ctx2.setLineDash([3, 4]); ctx2.beginPath();
+                ctx2.moveTo(railX, railNodes[0].y); ctx2.lineTo(railX, railNodes[railNodes.length - 1].y); ctx2.stroke();
                 ctx2.setLineDash([]);
                 railNodes.forEach(function(railNode) {
-                  var signedTemperature = railNode.temperatureC > 0
-                    ? '+' + Math.round(railNode.temperatureC)
-                    : String(Math.round(railNode.temperatureC));
-                  var railText = railNode.label + ' ' + signedTemperature + '\u00B0C';
-                  var badgeWidth = Math.min(Math.max(82, ctx2.measureText(railText).width + 18), Math.max(82, w * 0.31));
+                  // Keep small positive/negative values distinct from exact zero.
+                  var signedTemperature = (railNode.temperatureC > 0 ? '+' : '') +
+                    (railNode.temperatureC === 0 ? '0' : String(Number(railNode.temperatureC.toPrecision(3))));
                   var thermalColor = railNode.temperatureC <= 0 ? '#7dd3fc' : '#fbbf24';
-                  ctx2.fillStyle = 'rgba(3,18,31,.78)';
-                  ctx2.fillRect(badgeX, railNode.y - 9, badgeWidth, 18);
-                  ctx2.fillStyle = thermalColor;
-                  ctx2.fillRect(badgeX, railNode.y - 9, 3, 18);
-                  ctx2.beginPath();
-                  ctx2.arc(railX, railNode.y, 3.2, 0, Math.PI * 2);
-                  ctx2.fill();
-                  ctx2.fillStyle = '#f8fafc';
-                  ctx2.fillText(railText, badgeX + 8, railNode.y + 0.5);
+                  ctx2.fillStyle = thermalColor; ctx2.beginPath();
+                  ctx2.arc(railX, railNode.y, 3.2, 0, Math.PI * 2); ctx2.fill();
+                  stormCaptionRequests2d.push({ id: railNode.id, title: railNode.label,
+                    body: signedTemperature + ' °C', titleSize: 11, bodySize: 12,
+                    x: 17, y: railNode.y, vertical: 'center', width: w < 420 ? 88 : 104,
+                    anchorX: railX, anchorY: railNode.y, accent: thermalColor, priority: 1 });
                 });
                 ctx2.restore();
               }
@@ -8084,19 +8523,10 @@ const d = labToolData.waterCycle || {};
                   }
                 }
 
-                var saturationLabel2d = 'SATURATION · TRACER → VISIBLE DROPLETS';
-                ctx2.font = '800 11px system-ui, sans-serif';
-                ctx2.textAlign = 'center';
-                ctx2.textBaseline = 'middle';
-                var saturationLabelWidth2d = Math.min(cloudBaseHalfWidth2d * 1.86,
-                  ctx2.measureText(saturationLabel2d).width + 14);
-                ctx2.globalAlpha = 1;
-                ctx2.fillStyle = 'rgba(3,18,31,.8)';
-                ctx2.fillRect(cloudCenter - saturationLabelWidth2d / 2, cloudBase - 10,
-                  saturationLabelWidth2d, 20);
-                ctx2.fillStyle = '#cffafe';
-                ctx2.fillText(saturationLabel2d, cloudCenter, cloudBase + 0.5,
-                  Math.max(0, saturationLabelWidth2d - 12));
+                stormCaptionRequests2d.push({ id: 'cloud-formation', title: 'Cloud formation',
+                  body: model.cloudPhase, x: w - 8, y: cloudBase - 12, align: 'right',
+                  width: w < 420 ? Math.max(92, w - 120) : 180,
+                  anchorX: cloudCenter, anchorY: cloudBase, accent: '#67e8f9', priority: 2 });
                 ctx2.restore();
               }
 
@@ -8120,6 +8550,7 @@ const d = labToolData.waterCycle || {};
 
                 var w = cssWidth;
                 var h = cssHeight;
+                stormCaptionRequests2d = [];
                 var groundY = h * 0.82;
                 var depthNormalized = (model.config.cloudDepth - 1) / 11;
                 var updraftNormalized = model.config.updraft / 100 * model.lifecycle.updraftFactor;
@@ -8171,15 +8602,12 @@ const d = labToolData.waterCycle || {};
                   context.lineTo(w, freezingLevelY);
                   context.stroke();
                   context.setLineDash([]);
-                  var thermalLabelText = (thermalCrossing.kind === 'melting' ? 'MELTING LAYER' : 'FREEZING LAYER') +
-                    ' \u00B7 SCHEMATIC';
-                  context.font = '800 9px system-ui, sans-serif';
-                  var thermalLabelWidth = Math.min(w - 20, context.measureText(thermalLabelText).width + 12);
-                  var thermalLabelX = thermalCrossingIndex % 2 === 0 ? 6 : Math.max(6, w - thermalLabelWidth - 6);
-                  context.fillStyle = 'rgba(3,18,31,.74)';
-                  context.fillRect(thermalLabelX, freezingLevelY - 19, thermalLabelWidth, 15);
-                  context.fillStyle = '#f8fafc';
-                  context.fillText(thermalLabelText, thermalLabelX + 6, freezingLevelY - 8);
+                  // A 0°C air crossing does not itself prove a particle froze.
+                  stormCaptionRequests2d.push({ id: 'air-crossing-' + thermalCrossingIndex, title: '0°C crossing',
+                    body: (thermalCrossing.kind === 'melting' ? 'Warmer below' : 'Colder below') + ' · schematic',
+                    x: w - 8, y: freezingLevelY - 22, align: 'right', width: w < 420 ? Math.max(92, w - 120) : 180,
+                    anchorX: w - 5, anchorY: freezingLevelY,
+                    accent: thermalCrossing.kind === 'melting' ? '#fde68a' : '#a5f3fc', priority: 3 });
                   context.restore();
                 });
                 context.save();
@@ -8244,14 +8672,11 @@ const d = labToolData.waterCycle || {};
                   context.stroke();
                   context.setLineDash([]);
                   var virgaDryLabel2d = 'DRY LAYER · DROPS SHRINK → INVISIBLE VAPOR';
-                  context.font = '800 11px system-ui, sans-serif';
-                  var virgaDryLabelWidth2d = Math.min(w - 20, context.measureText(virgaDryLabel2d).width + 14);
-                  context.fillStyle = 'rgba(48,33,8,.76)';
-                  context.fillRect(8, virgaEvaporationTop2d + 6, virgaDryLabelWidth2d, 20);
-                  context.fillStyle = '#fde68a';
-                  context.textAlign = 'left';
-                  context.textBaseline = 'middle';
-                  context.fillText(virgaDryLabel2d, 15, virgaEvaporationTop2d + 16, Math.max(0, virgaDryLabelWidth2d - 14));
+                  var virgaCaptionParts2d = virgaDryLabel2d.split(' · ');
+                  stormCaptionRequests2d.push({ id: 'virga-dry-layer', title: virgaCaptionParts2d[0],
+                    body: virgaCaptionParts2d[1].charAt(0) + virgaCaptionParts2d[1].slice(1).toLowerCase(),
+                    x: w - 8, y: virgaEvaporationTop2d + 8, align: 'right', width: w < 420 ? Math.max(92, w - 120) : 224,
+                    anchorX: w - 5, anchorY: virgaEvaporationTop2d, accent: '#fde68a', priority: 4 });
                   context.restore();
                 }
                 var stormDrift = windSign * model.config.wind / 40 * w * 0.24;
@@ -8365,11 +8790,18 @@ const d = labToolData.waterCycle || {};
                       ridgeX - windSign * 7, ridgeY - 2, '#ddd6fe', 0.88);
                     drawArrow(context, ridgeX + windSign * 16, ridgeY + 2,
                       ridgeX + windSign * 48, ridgeY + 24, '#fcd34d', 0.62);
-                    context.font = '800 9px system-ui, sans-serif';
-                    context.fillStyle = '#ede9fe';
-                    context.fillText('WINDWARD LIFT', w * (windSign > 0 ? 0.34 : 0.72), ridgeY - 9);
-                    context.fillStyle = '#fde68a';
-                    context.fillText('LEEWARD DRYING', w * (windSign > 0 ? 0.73 : 0.16), groundY - h * 0.03);
+                    var windwardCaption2d = 'WINDWARD LIFT';
+                    var leewardCaption2d = 'LEEWARD DRYING';
+                    var windwardParts2d = windwardCaption2d.split(' ');
+                    var leewardParts2d = leewardCaption2d.split(' ');
+                    stormCaptionRequests2d.push({ id: 'windward', title: windwardParts2d[0], body: windwardParts2d[1],
+                      x: windSign > 0 ? 8 : w - 8, align: windSign > 0 ? 'left' : 'right',
+                      y: ridgeY - 20, width: w < 420 ? 96 : 148,
+                      anchorX: ridgeX - windSign * 34, anchorY: ridgeY + 16, accent: '#ddd6fe', priority: 5 });
+                    stormCaptionRequests2d.push({ id: 'leeward', title: leewardParts2d[0], body: leewardParts2d[1],
+                      x: windSign > 0 ? w - 8 : 8, align: windSign > 0 ? 'right' : 'left',
+                      y: groundY - h * 0.075, width: w < 420 ? 96 : 148,
+                      anchorX: ridgeX + windSign * 48, anchorY: ridgeY + 24, accent: '#fcd34d', priority: 6 });
                     context.restore();
                   }
                   if (convectiveBuild > 0.58) {
@@ -8571,13 +9003,9 @@ const d = labToolData.waterCycle || {};
                 }
 
                 context.save();
-                context.font = '800 10px system-ui, sans-serif';
                 var lifecycleBadge = model.lifecycle.stageLabel.toUpperCase() + ' · T=' + model.lifecycle.time;
-                var lifecycleBadgeWidth = Math.min(w - 20, context.measureText(lifecycleBadge).width + 14);
-                context.fillStyle = 'rgba(3,18,31,.76)';
-                context.fillRect(w - lifecycleBadgeWidth - 7, 7, lifecycleBadgeWidth, 20);
-                context.fillStyle = '#f8fafc';
-                context.fillText(lifecycleBadge, w - lifecycleBadgeWidth, 21);
+                stormCaptionRequests2d.push({ id: 'lifecycle', title: lifecycleBadge,
+                  x: w - 8, y: 8, align: 'right', width: Math.min(190, w - 24), accent: '#94d7ef', priority: 0 });
                 context.restore();
 
                 var lightningCadence = Math.max(5.8, model.thunder.delaySeconds + 1.15);
@@ -8673,6 +9101,31 @@ const d = labToolData.waterCycle || {};
                   context.restore();
                 }
                 drawThunderWavefront(context, w, h, cloudCenter, cloudBase, groundY);
+
+                // Paint labels above the weather field; their leaders retain the
+                // exact semantic anchors when nearby cards need more breathing room.
+                var captionReservations2d = [];
+                if (model.config.showStormAnatomy && model.lightningEligible) {
+                  captionReservations2d.push({ x: Math.max(5, cloudCenter - 112), y: Math.max(4, cloudY - 56), width: 92, height: 14 });
+                  captionReservations2d.push({ x: Math.max(5, cloudCenter - 112), y: cloudBase - 18, width: 82, height: 14 });
+                }
+                if (lightningLeaderVisible || (lightningReturnVisible && lightningStudyAvailable)) {
+                  captionReservations2d.push({ x: Math.max(8, boltX - 68), y: Math.max(18, boltTop - 7) - 9,
+                    width: Math.min(190, w - 16), height: 12 });
+                }
+                if (canvasEl.dataset.thunderWave === 'expanding' || canvasEl.dataset.thunderWave === 'study-static') {
+                  var captionWaveProgress2d = parseFloat(canvasEl.dataset.thunderWaveProgress || '0');
+                  var captionWaveX2d = cloudCenter + (model.config.windDirection === 'west' ? -1 : 1) * 12;
+                  var captionWaveY2d = cloudBase + (groundY - cloudBase) * 0.46;
+                  var captionWaveRadius2d = 15 + captionWaveProgress2d * Math.min(w * 0.34, h * 0.44);
+                  captionReservations2d.push({ x: Math.max(8, Math.min(w - 210, captionWaveX2d - captionWaveRadius2d)),
+                    y: Math.max(16, captionWaveY2d - captionWaveRadius2d * 0.58 - 5) - 9,
+                    width: Math.min(210, w - 16), height: 12 });
+                }
+                stormCaptionRequests2d.sort(function(a, b) { return a.priority - b.priority; });
+                layoutPrecipCaptions2d(context, w, h, stormCaptionRequests2d, captionReservations2d).forEach(function(caption) {
+                  drawPrecipCaption2d(context, caption);
+                });
                 schedulePrecipFrame();
               }
 
@@ -12528,8 +12981,8 @@ const d = labToolData.waterCycle || {};
                       h('text', { className: 'wc-profile-tick-label', x: precipProfileX(tick), y: 170,
                         textAnchor: 'middle' }, tick + '\u00B0'));
                   }),
-                  h('text', { className: 'wc-profile-zone-label', x: 31, y: 28 }, 'FROZEN'),
-                  h('text', { className: 'wc-profile-zone-label', x: 188, y: 28 }, 'WARM'),
+                  h('text', { className: 'wc-profile-zone-label', x: 31, y: 28 }, 'COLD AIR'),
+                  h('text', { className: 'wc-profile-zone-label', x: 188, y: 28 }, 'WARM AIR'),
                   h('path', { className: 'wc-profile-temperature-line', d: profilePath }),
                   profilePoints.map(function(point, pointIndex) {
                     var pointX = precipProfileX(point.temperatureC);
@@ -12603,11 +13056,213 @@ const d = labToolData.waterCycle || {};
                   : null
               );
             }
+            function renderThermalLayerInspector() {
+              var tlContext = WCThermalLayerInspector.build(precipModel);
+              var tlReading = WCThermalLayerInspector.read(d.wcThermalLayerInspector, tlContext);
+              if (!tlReading) return null;
+              var tlSelected = tlContext.nodes.filter(function(tlRow) { return tlRow.id === tlReading.node; })[0];
+              var tlExtent = Math.max(20, Math.ceil(Math.max.apply(null, tlContext.nodes.map(function(tlRow) { return Math.abs(tlRow.temperatureC); })) / 10) * 10);
+              function tlChartX(tlTemperature) { return 16 + (tlTemperature + tlExtent) / (2 * tlExtent) * 208; }
+              function tlChartY(tlProgress) { return 22 + tlProgress * 182; }
+              function tlChooseNode(tlId) {
+                upd('wcThermalLayerInspector', WCThermalLayerInspector.select(d.wcThermalLayerInspector, tlContext, tlId));
+                focusWcComparisonTarget('wcThermalLayerDetailTitle');
+              }
+              function tlChooseAnswer(tlId) {
+                upd('wcThermalLayerInspector', WCThermalLayerInspector.answer(d.wcThermalLayerInspector, tlContext, tlId));
+                focusWcComparisonTarget('wcThermalLayerFeedbackTitle');
+              }
+              function tlParticlePicture(tlCode) {
+                var tlSnow = h('path', { d: 'M26 10v32M12 18l28 16M12 34l28-16M22 14l4 4 4-4M22 38l4-4 4 4', fill: 'none' });
+                var tlDrop = h('path', { d: 'M26 8C24 14 13 25 15 33C18 46 37 44 38 33C39 24 29 14 26 8Z', fill: tlCode === 'freezing-rain' ? 'none' : undefined });
+                return h('svg', { className: 'wc-tl-particle', viewBox: '0 0 52 52', 'aria-hidden': true, focusable: 'false', 'data-tl-glyph': tlCode, 'data-tl-particle-kind': tlCode },
+                  tlCode === 'clear' ? h('g', { fill: 'none' }, h('circle', { cx: 26, cy: 26, r: 16 }), h('path', { d: 'M15 37L37 15' }))
+                  : tlCode === 'virga' ? h('g', { fill: 'none', strokeDasharray: '2 5' }, h('path', { d: 'M15 9v32M26 9v25M37 9v18' }))
+                  : tlCode === 'snow' ? tlSnow
+                  : tlCode === 'sleet' ? h('g', null, h('circle', { cx: 26, cy: 27, r: 12 }), h('path', { d: 'M20 24l4-4', fill: 'none' }))
+                  : tlCode === 'hail' ? h('g', null, h('path', { d: 'M15 14Q28 6 38 16Q46 29 36 39Q23 46 13 34Q6 24 15 14Z' }), h('path', { d: 'M21 20Q30 15 34 24Q38 33 27 35Q18 34 18 27Z', fill: 'none' }))
+                  : tlCode === 'mix' ? h('g', null, h('g', { transform: 'translate(-8 0) scale(.72)' }, tlSnow), h('g', { transform: 'translate(18 13) scale(.65)' }, tlDrop))
+                  : tlDrop);
+              }
+              var tlSurfaceCopy = tlContext.visualType === 'freezing-rain'
+                ? 'The particle arrives as liquid. It freezes on contact with a cold surface, forming an ice coating. Surface glaze is separate from the particle cue above.'
+                : tlContext.visualType === 'sleet'
+                  ? 'Ice pellets have already frozen in the air before reaching the ground.'
+                  : tlContext.visualType === 'hail'
+                    ? 'Solid hail reaches the ground. This three-level sketch does not trace its repeated growth in an updraft.'
+                    : tlContext.visualType === 'snow'
+                      ? 'Frozen snow or ice crystals reach the ground in this setup.'
+                      : tlContext.visualType === 'mix'
+                        ? 'The surface cue includes frozen and liquid water; this schematic does not estimate their proportions.'
+                        : tlContext.visualType === 'virga'
+                          ? 'The modeled particles evaporate aloft. No precipitation arrives at the surface in this setup.'
+                          : tlContext.visualType === 'clear'
+                            ? 'There is no sustained falling precipitation in this setup.'
+                            : 'Liquid raindrops reach the ground in this setup.';
+              var tlFeedbackTitle = tlReading.result === 'supported' ? 'Supported by this particle cue' : tlReading.result === 'retry' ? 'Read the particle cue again' : 'Use the selected level';
+              var tlFeedbackCopy = tlReading.answer
+                ? tlSelected.particleLabel + '. ' + tlSelected.detail + ' Air temperature and particle state are separate observations.'
+                : 'Read the modeled particle cue beside the air temperature, then choose its description. This practice is unscored.';
+              return h('details', { className: 'wc-thermal-layer-inspector' + (isDark ? ' is-dark' : '') + (isContrast ? ' is-contrast' : ''), 'data-tl-inspector': 'three-level' },
+                h('style', { 'data-wc-thermal-style': '1' }, WC_THERMAL_LAYER_INSPECTOR_STYLE),
+                h('summary', { id: 'wcThermalLayerSummary' }, 'Inspect the falling particle'),
+                h('div', { className: 'wc-tl-body' },
+                  h('p', null, 'Choose a level to compare its air temperature with the modeled particle cue. Below-freezing air alone does not establish that a particle is solid.'),
+                  h('div', { className: 'wc-tl-layout' },
+                    h('div', { className: 'wc-tl-chart' },
+                      h('strong', { className: 'wc-tl-chart-title' }, 'Air temperature through the column'),
+                      h('div', { className: 'wc-tl-zones' }, h('span', null, 'Cold air'), h('span', null, 'Warm air')),
+                      h('svg', { className: 'wc-tl-plot', viewBox: '0 0 240 228', preserveAspectRatio: 'none', 'aria-hidden': true, focusable: 'false', 'data-tl-extent': tlExtent },
+                        h('rect', { className: 'wc-tl-cold', x: 16, y: 10, width: 104, height: 206, rx: 8 }),
+                        h('rect', { className: 'wc-tl-warm', x: 120, y: 10, width: 104, height: 206, rx: 8 }),
+                        [28,52,76,100].map(function(tlX) { return h('path', { key: tlX, className: 'wc-tl-hatch', d: 'M' + tlX + ' 14v198' }); }),
+                        h('line', { className: 'wc-tl-zero', 'data-tl-boundary': 'zero', x1: 120, y1: 10, x2: 120, y2: 216 }),
+                        tlContext.nodes.map(function(tlRow) { return h('line', { key: tlRow.id, className: 'wc-tl-guide', x1: 16, y1: tlChartY(tlRow.progress), x2: 224, y2: tlChartY(tlRow.progress) }); }),
+                        tlContext.crossings.map(function(tlCrossing, tlIndex) { return h('g', { key: tlIndex, 'data-tl-crossing': tlCrossing.kind, 'data-tl-progress': tlCrossing.progress },
+                          h('line', { className: 'wc-tl-cross', x1: 16, y1: tlChartY(tlCrossing.progress), x2: 224, y2: tlChartY(tlCrossing.progress) }),
+                          h('rect', { className: 'wc-tl-cross', x: 116, y: tlChartY(tlCrossing.progress) - 4, width: 8, height: 8 })); }),
+                        h('path', { className: 'wc-tl-path', d: tlContext.nodes.map(function(tlRow, tlIndex) { return (tlIndex ? 'L' : 'M') + tlChartX(tlRow.temperatureC) + ' ' + tlChartY(tlRow.progress); }).join(' ') }),
+                        tlContext.nodes.map(function(tlRow) { return h('circle', { key: tlRow.id, className: 'wc-tl-point', 'data-tl-point': tlRow.id, 'data-tl-marker': tlRow.id, 'data-tl-temperature': tlRow.temperatureC, 'data-tl-progress': tlRow.progress, 'data-selected': String(tlRow.id === tlReading.node), cx: tlChartX(tlRow.temperatureC), cy: tlChartY(tlRow.progress), r: 5 }); }),
+                        h('circle', { className: 'wc-tl-selected-ring', cx: tlChartX(tlSelected.temperatureC), cy: tlChartY(tlSelected.progress), r: 10 })),
+                      h('div', { className: 'wc-tl-axis', role: 'group', 'aria-label': 'Temperature axis in degrees Celsius' }, h('span', null, '\u2212' + tlExtent + '\u00B0C'), h('span', null, '0\u00B0C'), h('span', null, '+' + tlExtent + '\u00B0C')),
+                      h('ul', { className: 'wc-tl-crossing-list' }, tlContext.crossings.length
+                        ? tlContext.crossings.map(function(tlCrossing, tlIndex) { return h('li', { key: tlIndex, 'data-tl-crossing-copy': tlCrossing.kind },
+                          h('strong', null, '0\u00B0C crossing ' + (tlIndex + 1) + ': '),
+                          tlCrossing.kind === 'melting' ? 'air changes from cold to warm.' : 'air changes from warm to cold.'); })
+                        : h('li', null, 'No full 0\u00B0C crossing in this profile.'))),
+                    h('div', { className: 'wc-tl-nodes', role: 'group', 'aria-label': 'Choose a level to inspect' }, tlContext.nodes.map(function(tlRow) { return h('button', {
+                      key: tlRow.id, type: 'button', className: 'wc-tl-node', 'data-tl-select': tlRow.id, 'data-tl-temperature': tlRow.temperatureC,
+                      'data-tl-phase': tlRow.particleCode, 'aria-pressed': tlRow.id === tlReading.node, 'aria-controls': 'wcThermalLayerDetail', onClick: function() { tlChooseNode(tlRow.id); }
+                    }, h('strong', null, tlRow.label), h('b', { className: 'wc-tl-node-temperature' }, tlRow.temperatureText), h('span', null, tlRow.particleLabel),
+                      h('em', null, tlRow.id === tlReading.node ? 'Selected level' : 'Inspect level')); }))),
+                  h('section', { id: 'wcThermalLayerDetail', className: 'wc-tl-detail', 'aria-labelledby': 'wcThermalLayerDetailTitle', 'data-tl-detail': tlSelected.id, 'data-tl-phase': tlSelected.particleCode, 'data-tl-temperature': tlSelected.temperatureC },
+                    h('div', { className: 'wc-tl-detail-head' }, tlParticlePicture(tlSelected.particleCode), h('h4', { id: 'wcThermalLayerDetailTitle', tabIndex: -1 }, tlSelected.label + ': read the two cues')),
+                    h('dl', { className: 'wc-tl-reading' }, h('div', null, h('dt', null, 'Air temperature'), h('dd', { 'data-tl-air-reading': '1' }, tlSelected.temperatureText)),
+                      h('div', null, h('dt', null, 'Modeled particle cue'), h('dd', { 'data-tl-particle-reading': '1' }, tlSelected.particleLabel))),
+                    h('p', null, tlSelected.detail), h('p', null, h('strong', null, 'Illustrated path: '), tlContext.phasePathLabel)),
+                  h('div', { className: 'wc-tl-surface', 'data-tl-surface': tlContext.visualType, 'data-tl-reaches-ground': String(tlContext.reachesGround) }, h('strong', null, 'At the surface'), h('p', null, tlSurfaceCopy)),
+                  h('details', { className: 'wc-tl-question' }, h('summary', null, 'Check the particle cue'),
+                    h('h5', { id: 'wcThermalLayerQuestion' }, 'Which description fits the modeled particle cue at this level?'),
+                    h('div', { className: 'wc-tl-answers', role: 'group', 'aria-labelledby': 'wcThermalLayerQuestion' }, WCThermalLayerInspector.choices().map(function(tlChoice) { return h('button', { key: tlChoice.id, type: 'button', 'data-tl-answer': tlChoice.id, 'aria-pressed': tlReading.answer === tlChoice.id, 'aria-controls': 'wcThermalLayerFeedback', onClick: function() { tlChooseAnswer(tlChoice.id); } }, tlChoice.label); })),
+                    h('div', { id: 'wcThermalLayerFeedback', className: 'wc-tl-feedback', 'data-tl-result': tlReading.result, role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+                      h('h5', { id: 'wcThermalLayerFeedbackTitle', tabIndex: -1 }, tlFeedbackTitle), h('p', null, tlFeedbackCopy))),
+                  h('p', null, 'Levels are schematic relative positions, not measured altitudes or fall times. Dashed bands mark the model\u2019s clamped 0\u00B0C crossings; the particle cues use its illustrative transition bands. A crossing does not guarantee an instantaneous change of state.')));
+            }
             var precipMotionReduced = false;
             try {
               precipMotionReduced = typeof window !== 'undefined' && !!(window.matchMedia &&
                 window.matchMedia('(prefers-reduced-motion: reduce)').matches);
             } catch (e) {}
+
+            function renderStormMoments() {
+              var context = WCStormMoments.build(precipConfig);
+              var reading = WCStormMoments.read(d.wcStormMoments, context);
+              if (!reading) return null;
+              var metric = WCStormMoments.metrics().filter(function(item) { return item.id === reading.metric; })[0];
+              var selected = context.rows.filter(function(row) { return row.id === reading.stage; })[0];
+              var evidence = WCStormMoments.compare(context, reading.metric);
+              function chooseStage(id) {
+                upd('wcStormMoments', WCStormMoments.selectStage(d.wcStormMoments, context, id));
+                focusWcComparisonTarget('wcStormMomentDetailTitle');
+              }
+              function chooseMetric(id) {
+                upd('wcStormMoments', WCStormMoments.selectMetric(d.wcStormMoments, context, id));
+              }
+              function chooseAnswer(id) {
+                upd('wcStormMoments', WCStormMoments.answer(d.wcStormMoments, context, id));
+                focusWcComparisonTarget('wcStormMomentFeedbackTitle');
+              }
+              function numberText(value) { return value === null ? 'Unavailable' : value + ' / 100'; }
+              function reachText(row) { return row.reachesGround ? 'Reaches the surface' : row.visualType === 'virga' ? 'Evaporates aloft' : 'No surface precipitation'; }
+              function particle(x, y, kind, key) {
+                var common = { key: key, className: 'wc-sm-particle', 'data-sm-particle-kind': kind };
+                if (kind === 'snow') return h('path', Object.assign({}, common, { d: 'M'+x+' '+(y-5)+'v10m-4-8 8 6m-8 0 8-6', style: { fill: 'none' } }));
+                if (kind === 'sleet') return h('circle', Object.assign({}, common, { cx: x, cy: y, r: 3.5 }));
+                if (kind === 'hail') return h('path', Object.assign({}, common, { d: 'M'+(x-4)+' '+(y-2)+'l4-3 4 3v5l-4 3-4-3Z' }));
+                return h('path', Object.assign({}, common, { d: 'M'+x+' '+(y-6)+'q-6 7-3 10q3 3 6 0q3-3-3-10Z', style: kind === 'freezing-rain' ? { fill: 'none' } : undefined }));
+              }
+              function picture(row) {
+                var cloud = row.id === 'developing'
+                  ? 'M60 53Q46 48 53 37Q58 29 71 33Q66 18 82 13Q97 8 106 20Q114 8 131 13Q145 17 141 31Q160 27 170 38Q177 50 166 54Z'
+                  : row.id === 'mature'
+                    ? 'M35 53Q23 48 32 37Q43 27 62 33Q61 17 79 11Q97 4 111 15Q118 4 137 9Q155 13 158 31Q179 22 197 34Q213 46 200 54Z'
+                    : 'M27 53Q19 43 37 35Q54 29 82 31Q78 23 95 21Q112 19 126 27Q143 18 169 24Q183 26 198 34Q222 37 214 52Z';
+                return h('svg', { className: 'wc-sm-scene', viewBox: '0 0 240 104', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': true, focusable: 'false', 'data-sm-picture': row.id, 'data-sm-phase': row.visualType },
+                  h('path', { className: 'wc-sm-cloud', d: cloud, 'data-sm-cue': 'cloud-stage' }),
+                  row.visualType !== 'clear' && [76,116,156].map(function(x, position) {
+                    var kind = row.visualType === 'mix' ? (position % 2 ? 'rain' : 'snow') : row.visualType;
+                    return particle(x, row.reachesGround ? 70 + position * 5 : 65 + position * 3, kind, position);
+                  }),
+                  row.visualType === 'virga' && h('path', { className: 'wc-sm-particle', d: 'M70 85h12m28 0h12m28 0h12', style: { fill: 'none', strokeDasharray: '3 3' }, 'data-sm-cue': 'evaporation' }),
+                  row.lightningEligible && h('path', { className: 'wc-sm-lightning', d: 'M197 57l-12 17h10l-8 17', 'data-sm-cue': 'lightning-available' }),
+                  h('path', { className: 'wc-sm-ground-line', d: 'M22 96H218', 'data-sm-cue': 'surface' })
+                );
+              }
+              function track(label, value, kind) {
+                return h('div', { 'data-sm-readout': kind, 'data-sm-value': value === null ? 'unavailable' : String(value) },
+                  h('dt', null, label),
+                  h('dd', null, numberText(value)),
+                  h('div', { className: 'wc-sm-track', 'data-track': kind, 'aria-hidden': true },
+                    value !== null && h('span', { style: { width: value + '%' } }))
+                );
+              }
+              var feedback = 'Compare changes within each track from Mature to Weakening. This practice is unscored.';
+              if (evidence) {
+                var activityCopy = evidence.weakeningIntensity < evidence.matureIntensity
+                  ? 'Falling activity drops from ' + evidence.matureIntensity + ' to ' + evidence.weakeningIntensity + '.'
+                  : evidence.weakeningIntensity === evidence.matureIntensity
+                    ? 'Displayed falling activity is ' + evidence.matureIntensity + ' at both moments.'
+                    : 'Displayed falling activity rises from ' + evidence.matureIntensity + ' to ' + evidence.weakeningIntensity + '.';
+                var groundCopy = evidence.matureGround === 0 && evidence.weakeningGround === 0
+                  ? 'Both ' + metric.label.toLowerCase() + ' readings are zero; this setup shows no modeled response on that track.'
+                  : evidence.weakeningGround > evidence.matureGround
+                    ? 'The ' + metric.label.toLowerCase() + ' index rises from ' + evidence.matureGround + ' to ' + evidence.weakeningGround + '.'
+                    : evidence.weakeningGround === evidence.matureGround
+                      ? 'The ' + metric.label.toLowerCase() + ' index stays at ' + evidence.matureGround + '.'
+                      : 'The ' + metric.label.toLowerCase() + ' index drops from ' + evidence.matureGround + ' to ' + evidence.weakeningGround + '.';
+                if (reading.answer) feedback = activityCopy + ' ' + groundCopy + ' Each track has its own qualitative index.';
+              } else feedback = 'A complete pair of model readings is unavailable. An interpretation cannot be checked yet.';
+              return h('details', { className: 'wc-storm-moments' + (isDark ? ' is-dark' : '') + (isContrast ? ' is-contrast' : ''), 'data-sm-stage': reading.stage, 'data-sm-metric': reading.metric },
+                h('style', null, WC_STORM_MOMENTS_STYLE),
+                h('summary', { id: 'wcStormMomentsSummary' }, 'Compare three moments'),
+                h('div', { className: 'wc-sm-body' },
+                  h('p', null, 'Inspect the same weather setup at three fixed model positions. Weather-control changes recompute all three snapshots. The timeline above moves the live chamber.'),
+                  h('div', { className: 'wc-sm-controls' },
+                    h('label', { htmlFor: 'wcStormMomentMetric' }, 'Ground response to compare'),
+                    h('select', { id: 'wcStormMomentMetric', value: reading.metric, 'aria-describedby': 'wcStormMomentScale', onChange: function(event) { chooseMetric(event.target.value); } },
+                      WCStormMoments.metrics().map(function(item) { return h('option', { key: item.id, value: item.id }, item.label); })),
+                    h('p', { id: 'wcStormMomentScale', className: 'wc-sm-scale-note' }, 'Each track uses its own qualitative 0–100 index. Compare stages within a track.')),
+                  h('div', { className: 'wc-sm-cards', role: 'group', 'aria-label': 'Choose a fixed snapshot to inspect' },
+                    context.rows.map(function(row) {
+                      return h('article', { key: row.id, className: 'wc-sm-card', 'data-sm-card': row.id, 'data-selected': String(row.id === reading.stage), 'aria-labelledby': 'wcStormMoment-' + row.id },
+                        h('button', { id: 'wcStormMoment-' + row.id, type: 'button', className: 'wc-sm-stage-button', 'data-sm-select': row.id, 'aria-pressed': reading.stage === row.id, 'aria-controls': 'wcStormMomentDetail', onClick: function() { chooseStage(row.id); } },
+                          h('span', null, 'Inspect ' + row.label), h('span', null, row.time + ' / 100')),
+                        picture(row),
+                        h('dl', { className: 'wc-sm-readouts' }, track('Falling activity now', row.intensity, 'activity'), track(metric.label + ' so far', row.accumulation[reading.metric], 'ground')),
+                        h('p', { className: 'wc-sm-phase' }, h('strong', null, row.phaseLabel), h('span', null, reachText(row)))
+                      );
+                    })),
+                  h('section', { className: 'wc-sm-reading', id: 'wcStormMomentDetail', 'aria-labelledby': 'wcStormMomentDetailTitle' },
+                    h('h4', { id: 'wcStormMomentDetailTitle', tabIndex: -1 }, selected.label + ' · model position ' + selected.time + '/100'),
+                    h('p', null, metric.detail),
+                    h('dl', null,
+                      h('div', null, h('dt', null, 'Selected ground response'), h('dd', null, numberText(selected.accumulation[reading.metric]))),
+                      h('div', null, h('dt', null, 'Surface arrival'), h('dd', null, reachText(selected))),
+                      h('div', null, h('dt', null, 'Lightning in this snapshot'), h('dd', null, selected.lightningEligible ? 'Supported by the modeled setup' : 'Unavailable in the modeled setup'))),
+                    h('p', null, selected.id === 'weakening' ? 'The weakening moment illustrates the later, fading part of this model sequence.' : selected.id === 'developing' ? 'This snapshot is early in the model sequence.' : 'This snapshot is in the peak part of the model sequence.')),
+                  h('details', { className: 'wc-sm-question' },
+                    h('summary', null, 'Read the changing signals'),
+                    h('h5', { id: 'wcStormMomentQuestion' }, 'From Mature to Weakening, what do the two tracks show?'),
+                    h('div', { className: 'wc-sm-answers', role: 'group', 'aria-labelledby': 'wcStormMomentQuestion' },
+                      WCStormMoments.choices().map(function(item) { return h('button', { key: item.id, type: 'button', 'data-sm-answer': item.id, disabled: !evidence, 'aria-pressed': reading.answer === item.id, onClick: function() { chooseAnswer(item.id); } }, item.label); })),
+                    h('div', { className: 'wc-sm-feedback', role: 'status', 'data-sm-result': reading.result },
+                      h('h5', { id: 'wcStormMomentFeedbackTitle', tabIndex: -1 }, reading.result === 'supported' ? 'Your reading matches both tracks.' : reading.result === 'retry' ? 'Compare the two tracks again.' : reading.result === 'unavailable' ? 'More model evidence is needed.' : 'Choose an interpretation.'),
+                      h('p', null, feedback))),
+                  h('p', { className: 'wc-sm-limit' }, 'Positions 16, 52 and 86 describe the illustrative sequence. The icons are schematic. Ground-effect indices are computed for the fixed setup through each position; they do not record earlier weather edits. Real drainage, melting, evaporation and soil storage can change surface effects. These indices do not measure water depth, discharge or hazard.'),
+                  h('p', { className: 'wc-sm-limit' }, 'For thunderstorm lifecycle context, ', h('a', { href: 'https://www.weather.gov/spotterguide/life', target: '_blank', rel: 'noopener noreferrer' }, 'read the NWS guide to an ordinary cell'), '. Other weather setups in this lab also use the model sequence.')
+                )
+              );
+            }
 
             var stormStageStops = [
               { key: 'developing', label: 'Developing', time: 16 },
@@ -12879,7 +13534,7 @@ const d = labToolData.waterCycle || {};
                     h('div', { className: 'wc-storm-lifecycle-head' },
                       h('strong', { id: 'wcStormLifecycleTitle' }, 'Storm lifecycle'),
                       h('span', null, precipModel.lifecycle.stageLabel + ' · ' + precipModel.lifecycle.time + '/100')),
-                    h('div', { className: 'wc-storm-stage-segments', 'aria-label': __alloT('stem.watercycle.a11y_jump_to_storm_stage', 'Jump to storm stage') },
+                    h('div', { className: 'wc-storm-stage-segments', role: 'group', 'aria-label': __alloT('stem.watercycle.a11y_jump_to_storm_stage', 'Jump to storm stage') },
                       stormStageStops.map(function(stageStop) {
                         return h('button', { key: stageStop.key, type: 'button', className: 'wc-precip-btn',
                           'aria-pressed': precipModel.lifecycle.stageKey === stageStop.key,
@@ -12907,8 +13562,8 @@ const d = labToolData.waterCycle || {};
                         h('button', { type: 'button', className: 'wc-precip-btn',
                           'aria-label': t('stem.watercycle.move_storm_lifecycle_forward', 'Move storm lifecycle forward'),
                           onClick: function() { setStormLifecycleTime(precipModel.lifecycle.time + 4, false); } }, t('stem.watercycle.next', 'Next')))),
-                    h('p', { className: 'wc-storm-stage-copy' }, precipModel.lifecycle.stageCopy),
-                    h('div', { className: 'wc-storm-accumulation', 'aria-label': t('stem.watercycle.qualitative_ground_accumulation', 'Qualitative ground accumulation indices') },
+                    h('p', { className: 'wc-storm-stage-copy' }, WCStormMoments.currentCopy(precipModel)),
+                    h('div', { className: 'wc-storm-accumulation', role: 'group', 'aria-label': t('stem.watercycle.qualitative_ground_accumulation', 'Qualitative ground accumulation indices') },
                       stormAccumulationKeys.map(function(accumulationItem) {
                         var accumulationValue = precipModel.lifecycle.accumulation[accumulationItem.key];
                         return h('div', { key: accumulationItem.key, className: 'wc-storm-accumulation-item' },
@@ -12916,7 +13571,7 @@ const d = labToolData.waterCycle || {};
                           h('strong', null, accumulationValue + '/100'),
                           h('div', { className: 'wc-storm-accumulation-track', 'aria-hidden': 'true' },
                             h('i', { style: { width: accumulationValue + '%' } })));
-                      }))),
+                      })), renderStormMoments()),
                   precipConfig.showStormAnatomy && h('section', { className: 'wc-storm-anatomy', role: 'region',
                     'aria-labelledby': 'wcStormAnatomyTitle', 'data-storm-anatomy': precipModel.stormAnatomy.chargeSeparation.state },
                     h('div', { className: 'wc-storm-anatomy-head' },
@@ -13001,6 +13656,7 @@ const d = labToolData.waterCycle || {};
                   h('div', { className: 'wc-precip-control-group' },
                     h('span', { className: 'wc-precip-control-title' }, 'Vertical temperature profile'),
                     renderPrecipTemperatureProfile(),
+                    renderThermalLayerInspector(),
                     temperatureProfileSliders.map(precipSlider),
                     h('span', { className: 'wc-precip-control-title', style: { marginTop: 10 } }, 'Fall survival'),
                     survivalSliders.map(precipSlider)),
@@ -23267,6 +23923,14 @@ const d = labToolData.waterCycle || {};
             // quiet lane of moving marks, rather than a second set of animated
             // particles competing with the tracked parcel.
             function drawFlowChevrons2d(stageId, journeyState) {
+              if (journeyState === 'ocean' || journeyState === 'complete') {
+                canvasEl.dataset.flowCue = 'ocean-storage-no-transfer';
+                return;
+              }
+              if (journeyState === 'ground_choice') {
+                canvasEl.dataset.flowCue = 'land-choice-no-transfer';
+                return;
+              }
               var cueStage2d = stageId;
               if (journeyState === 'river_runoff') cueStage2d = 'collection';
               if (journeyState === 'plant_absorb' || journeyState === 'transpiring') cueStage2d = 'transpiration';
@@ -23332,7 +23996,7 @@ const d = labToolData.waterCycle || {};
               var anchors2d = { evaporation: [0.13, 0.49], condensation: [0.52, 0.22],
                 precipitation: [0.48, 0.45], collection: [0.25, 0.70],
                 transpiration: [0.79, 0.39], infiltration: [0.79, 0.80] };
-              var anchor2d = anchors2d[stageId] || anchors2d.collection;
+              var anchor2d = role === 'choice' ? [0.34, 0.62] : (anchors2d[stageId] || anchors2d.collection);
               var glyphX2d = cW * anchor2d[0], glyphY2d = cH * anchor2d[1];
               var boundedRank2d = Math.max(0, Math.min(4, parseInt(rank, 10) || 0));
               var storageGlyph2d = role === 'storage' || role === 'storage-transfer';
@@ -23375,10 +24039,21 @@ const d = labToolData.waterCycle || {};
 
             function drawMatterEnergyEvidence2d(stageId, journeyState, metrics) {
               var evidenceState2d = journeyState && journeyState !== 'idle' ? journeyState : stageId;
+              canvasEl.dataset.matterEvidenceCue = evidenceState2d === 'ocean' || evidenceState2d === 'complete'
+                ? 'ocean-storage' : evidenceState2d === 'ground_choice' ? 'land-pathway-choice' : 'process-evidence';
               drawPhysicalTimeGlyph2d(metrics.timeRole, metrics.timeRank, stageId);
               canvasEl.dataset.timeLensVisual = metrics.timeRole === 'choice' ? 'choice-fork' : metrics.timeRole === 'storage' ? 'storage-rings' : metrics.timeRole === 'storage-transfer' ? 'storage-transfer-rings' : 'transfer-ticks';
               ctx.save();
-              if (stageId === 'evaporation' || evidenceState2d === 'evaporating') {
+              if (evidenceState2d === 'ocean' || evidenceState2d === 'complete') {
+                ctx.strokeStyle = '#38bdf8';
+                ctx.lineWidth = 2 * dpr;
+                ctx.beginPath();
+                ctx.ellipse(cW * 0.22, cH * 0.67, cW * 0.12, 8 * dpr, 0, 0, Math.PI * 2);
+                ctx.stroke();
+                evidenceLabel2d('LIQUID WATER IN OCEAN STORAGE', cW * 0.07, cH * 0.73, '#38bdf8', cW * 0.22, cH * 0.67);
+              } else if (evidenceState2d === 'ground_choice') {
+                evidenceLabel2d('ON LAND — CHOOSE A PATH', cW * 0.24, cH * 0.55, '#60a5fa', cW * 0.34, cH * 0.62);
+              } else if (stageId === 'evaporation' || evidenceState2d === 'evaporating') {
                 var evapSurfaceX2d = cW * 0.22;
                 var evapSurfaceY2d = cH * 0.61;
                 evidenceArrow2d(cW * 0.08, cH * 0.38, evapSurfaceX2d - 8 * dpr, evapSurfaceY2d - 4 * dpr, '#f59e0b', false);
@@ -23769,41 +24444,92 @@ const d = labToolData.waterCycle || {};
               ctx.restore();
 
               // ── Mountains ──
+              // Illustration only: the peaks, foothills and meltwater anchors
+              // retain their existing locations. One clip keeps snow and relief
+              // on the same slope, rather than floating outside its silhouette.
+              function drawMountainRelief2d(ridge, peakX, peakY, front) {
+                function traceRidge2d() {
+                  ctx.beginPath();
+                  ctx.moveTo(ridge[0][0] * cW, ridge[0][1] * cH);
+                  for (var ridgePoint2d = 1; ridgePoint2d < ridge.length; ridgePoint2d++) {
+                    ctx.lineTo(ridge[ridgePoint2d][0] * cW, ridge[ridgePoint2d][1] * cH);
+                  }
+                  ctx.closePath();
+                }
+                ctx.save();
+                traceRidge2d();
+                ctx.clip();
+                var mountainBody2d = ctx.createLinearGradient(cW * (peakX - 0.09), cH * peakY,
+                  cW * (peakX + 0.13), cH * 0.65);
+                mountainBody2d.addColorStop(0, isDark ? (front ? '#59677e' : '#8290a6') : (front ? '#8aa5a9' : '#b4c9cc'));
+                mountainBody2d.addColorStop(0.48, isDark ? (front ? '#283a50' : '#465a70') : (front ? '#577f88' : '#86a5ad'));
+                mountainBody2d.addColorStop(1, isDark ? (front ? '#101d31' : '#263a50') : (front ? '#355964' : '#658993'));
+                ctx.fillStyle = mountainBody2d;
+                ctx.fillRect(cW * 0.5, cH * 0.28, cW * 0.5, cH * 0.38);
 
-              // Back mountain
-              var backMountainGrad = ctx.createLinearGradient(cW * 0.64, cH * 0.31, cW * 0.86, cH * 0.65);
-              backMountainGrad.addColorStop(0, isDark ? '#64748b' : '#a4b9bf');
-              backMountainGrad.addColorStop(0.46, isDark ? '#334155' : '#7d979f');
-              backMountainGrad.addColorStop(1, isDark ? '#162132' : '#566f79');
-              ctx.fillStyle = backMountainGrad;
+                // Broad interlocking faces make the ridge readable at phone size.
+                // Their low contrast leaves the process arrows in the foreground.
+                ctx.fillStyle = isDark ? 'rgba(203,213,225,0.16)' : 'rgba(241,250,250,0.26)';
+                ctx.beginPath(); ctx.moveTo(cW * peakX, cH * peakY);
+                ctx.lineTo(cW * (peakX - 0.025), cH * (peakY + 0.13));
+                ctx.lineTo(cW * (peakX - 0.073), cH * 0.51);
+                ctx.lineTo(cW * (peakX - 0.105), cH * 0.59);
+                ctx.lineTo(cW * (peakX - 0.17), cH * 0.65);
+                ctx.lineTo(cW * (peakX - 0.19), cH * 0.65); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = isDark ? 'rgba(2,6,23,0.26)' : 'rgba(25,56,70,0.24)';
+                ctx.beginPath(); ctx.moveTo(cW * peakX, cH * peakY);
+                ctx.lineTo(cW * (peakX + 0.048), cH * (peakY + 0.15));
+                ctx.lineTo(cW * (peakX + 0.075), cH * 0.55);
+                ctx.lineTo(cW * (peakX + 0.14), cH * 0.65);
+                ctx.lineTo(cW * (peakX + 0.022), cH * 0.65);
+                ctx.lineTo(cW * (peakX + 0.016), cH * (peakY + 0.17)); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = isDark ? 'rgba(148,163,184,0.10)' : 'rgba(219,237,237,0.15)';
+                ctx.beginPath(); ctx.moveTo(cW * (peakX - 0.13), cH * 0.57);
+                ctx.lineTo(cW * (peakX - 0.069), cH * 0.51);
+                ctx.lineTo(cW * (peakX - 0.025), cH * 0.53);
+                ctx.lineTo(cW * (peakX + 0.014), cH * 0.58);
+                ctx.lineTo(cW * (peakX + 0.08), cH * 0.61);
+                ctx.lineTo(cW * (peakX + 0.12), cH * 0.65);
+                ctx.lineTo(cW * (peakX - 0.16), cH * 0.65); ctx.closePath(); ctx.fill();
 
-              ctx.beginPath(); ctx.moveTo(cW * 0.55, cH * 0.65); ctx.lineTo(cW * 0.72, cH * 0.3); ctx.lineTo(cW * 0.9, cH * 0.65); ctx.fill();
+                var snowDepth2d = front ? 0.052 : 0.075;
+                var snowSpan2d = front ? 0.033 : 0.047;
+                var snowLight2d = ctx.createLinearGradient(cW * (peakX - snowSpan2d), cH * peakY,
+                  cW * (peakX + snowSpan2d), cH * (peakY + snowDepth2d));
+                snowLight2d.addColorStop(0, isDark ? '#dbe5ef' : '#ffffff');
+                snowLight2d.addColorStop(0.5, isDark ? '#c2d1e4' : '#edf6f8');
+                snowLight2d.addColorStop(1, isDark ? '#8198b8' : '#afccd9');
+                ctx.fillStyle = snowLight2d;
+                ctx.beginPath(); ctx.moveTo(cW * (peakX - snowSpan2d), cH * (peakY + 0.015));
+                ctx.lineTo(cW * peakX, cH * peakY);
+                ctx.lineTo(cW * (peakX + snowSpan2d), cH * (peakY + 0.025));
+                ctx.lineTo(cW * (peakX + snowSpan2d * 0.62), cH * (peakY + snowDepth2d * 0.85));
+                ctx.lineTo(cW * (peakX + snowSpan2d * 0.30), cH * (peakY + snowDepth2d * 0.63));
+                ctx.lineTo(cW * (peakX + 0.005), cH * (peakY + snowDepth2d));
+                ctx.lineTo(cW * (peakX - snowSpan2d * 0.30), cH * (peakY + snowDepth2d * 0.69));
+                ctx.lineTo(cW * (peakX - snowSpan2d * 0.56), cH * (peakY + snowDepth2d * 0.88));
+                ctx.lineTo(cW * (peakX - snowSpan2d * 0.78), cH * (peakY + snowDepth2d * 0.48)); ctx.closePath(); ctx.fill();
+                ctx.fillStyle = isDark ? 'rgba(67,91,124,0.36)' : 'rgba(112,153,177,0.26)';
+                ctx.beginPath(); ctx.moveTo(cW * peakX, cH * peakY);
+                ctx.lineTo(cW * (peakX + 0.005), cH * (peakY + snowDepth2d));
+                ctx.lineTo(cW * (peakX + snowSpan2d * 0.30), cH * (peakY + snowDepth2d * 0.63));
+                ctx.lineTo(cW * (peakX + snowSpan2d * 0.62), cH * (peakY + snowDepth2d * 0.85)); ctx.closePath(); ctx.fill();
 
-              ctx.fillStyle = isDark ? 'rgba(148,163,184,0.16)' : 'rgba(226,232,240,0.22)';
-              ctx.beginPath(); ctx.moveTo(cW * 0.72, cH * 0.3); ctx.lineTo(cW * 0.55, cH * 0.65);
-              ctx.lineTo(cW * 0.695, cH * 0.55); ctx.lineTo(cW * 0.735, cH * 0.42); ctx.closePath(); ctx.fill();
-              ctx.fillStyle = isDark ? 'rgba(2,6,23,0.25)' : 'rgba(15,23,42,0.18)';
-              ctx.beginPath(); ctx.moveTo(cW * 0.72, cH * 0.3); ctx.lineTo(cW * 0.9, cH * 0.65);
-              ctx.lineTo(cW * 0.79, cH * 0.56); ctx.lineTo(cW * 0.75, cH * 0.43); ctx.closePath(); ctx.fill();
-
-              // Back mountain rock cracks
-              ctx.strokeStyle = isDark ? 'rgba(15,23,42,0.6)' : 'rgba(30,41,59,0.3)'; ctx.lineWidth = 1 * dpr;
-
-              for (var mci = 0; mci < 5; mci++) {
-                var mcx = cW * 0.62 + mci * cW * 0.055;
-                var mcy = cH * 0.4 + mci * cH * 0.04;
-                ctx.beginPath(); ctx.moveTo(mcx, mcy); ctx.lineTo(mcx + 8 * dpr, mcy + 15 * dpr); ctx.stroke();
+                var mountainFoot2d = ctx.createLinearGradient(0, cH * 0.56, 0, cH * 0.65);
+                mountainFoot2d.addColorStop(0, 'rgba(187,221,226,0)');
+                mountainFoot2d.addColorStop(1, isDark ? 'rgba(84,121,151,0.19)' : 'rgba(196,225,226,0.25)');
+                ctx.fillStyle = mountainFoot2d;
+                ctx.fillRect(cW * 0.5, cH * 0.56, cW * 0.5, cH * 0.09);
+                ctx.restore();
               }
 
-              // Snow cap
-              ctx.fillStyle = isDark ? '#cbd5e1' : '#e2e8f0';
-
-              ctx.beginPath(); ctx.moveTo(cW * 0.685, cH * 0.34); ctx.lineTo(cW * 0.72, cH * 0.3); ctx.lineTo(cW * 0.755, cH * 0.34);
-              ctx.lineTo(cW * 0.74, cH * 0.37); ctx.lineTo(cW * 0.725, cH * 0.36); ctx.lineTo(cW * 0.71, cH * 0.375); ctx.lineTo(cW * 0.695, cH * 0.355); ctx.closePath(); ctx.fill();
-
-              // Snow highlights
-              ctx.fillStyle = 'rgba(255,255,255,0.5)';
-              ctx.beginPath(); ctx.arc(cW * 0.72, cH * 0.32, 4 * dpr, 0, Math.PI * 2); ctx.fill();
+              // Back mountain: irregular shoulders preserve its original footprint.
+              drawMountainRelief2d([
+                [0.55, 0.65], [0.603, 0.542], [0.632, 0.508], [0.652, 0.437],
+                [0.684, 0.40], [0.705, 0.337], [0.72, 0.30], [0.739, 0.342],
+                [0.758, 0.354], [0.78, 0.411], [0.799, 0.442], [0.826, 0.488],
+                [0.846, 0.547], [0.873, 0.583], [0.90, 0.65]
+              ], 0.72, 0.30, false);
 
               // Snow melt stream
               ctx.strokeStyle = 'rgba(147,197,253,0.4)'; ctx.lineWidth = 1.5 * dpr;
@@ -23812,38 +24538,13 @@ const d = labToolData.waterCycle || {};
               ctx.quadraticCurveTo(cW * 0.728, cH * 0.54, cW * 0.74, cH * 0.6);
               ctx.stroke();
 
-              // Front mountain
-              var frontMountainGrad = ctx.createLinearGradient(cW * 0.73, cH * 0.39, cW * 0.96, cH * 0.67);
-              frontMountainGrad.addColorStop(0, isDark ? '#475569' : '#789399');
-              frontMountainGrad.addColorStop(0.5, isDark ? '#1e293b' : '#506e75');
-              frontMountainGrad.addColorStop(1, isDark ? '#0b1322' : '#324e57');
-              ctx.fillStyle = frontMountainGrad;
-
-              ctx.beginPath(); ctx.moveTo(cW * 0.65, cH * 0.65); ctx.lineTo(cW * 0.82, cH * 0.38); ctx.lineTo(cW * 0.98, cH * 0.65); ctx.fill();
-
-              ctx.fillStyle = isDark ? 'rgba(148,163,184,0.12)' : 'rgba(226,232,240,0.18)';
-              ctx.beginPath(); ctx.moveTo(cW * 0.82, cH * 0.38); ctx.lineTo(cW * 0.65, cH * 0.65);
-              ctx.lineTo(cW * 0.79, cH * 0.54); ctx.closePath(); ctx.fill();
-              ctx.fillStyle = isDark ? 'rgba(2,6,23,0.3)' : 'rgba(15,23,42,0.22)';
-              ctx.beginPath(); ctx.moveTo(cW * 0.82, cH * 0.38); ctx.lineTo(cW * 0.98, cH * 0.65);
-              ctx.lineTo(cW * 0.86, cH * 0.57); ctx.closePath(); ctx.fill();
-
-              // Front mountain rock textures
-              ctx.strokeStyle = isDark ? 'rgba(30,41,59,0.5)' : 'rgba(55,65,81,0.4)'; ctx.lineWidth = 0.8 * dpr;
-
-              for (var mti = 0; mti < 6; mti++) {
-                var mtx = cW * 0.72 + mti * cW * 0.04;
-                var mty = cH * 0.45 + mti * cH * 0.02;
-                ctx.beginPath(); ctx.moveTo(mtx, mty);
-                ctx.lineTo(mtx + (mti % 2 === 0 ? 6 : -5) * dpr, mty + 12 * dpr);
-                ctx.lineTo(mtx + 3 * dpr, mty + 20 * dpr); ctx.stroke();
-              }
-
-              // Front mountain snow patch
-              ctx.fillStyle = isDark ? '#cbd5e1' : '#e2e8f0';
-
-              ctx.beginPath(); ctx.moveTo(cW * 0.8, cH * 0.40); ctx.lineTo(cW * 0.82, cH * 0.38); ctx.lineTo(cW * 0.84, cH * 0.41);
-              ctx.lineTo(cW * 0.83, cH * 0.43); ctx.lineTo(cW * 0.81, cH * 0.42); ctx.closePath(); ctx.fill();
+              // Front mountain: a distinct ridge and stronger foreground shadow.
+              drawMountainRelief2d([
+                [0.65, 0.65], [0.69, 0.583], [0.719, 0.568], [0.741, 0.512],
+                [0.771, 0.477], [0.792, 0.421], [0.807, 0.406], [0.82, 0.38],
+                [0.841, 0.42], [0.856, 0.429], [0.879, 0.493], [0.901, 0.522],
+                [0.929, 0.576], [0.947, 0.595], [0.98, 0.65]
+              ], 0.82, 0.38, true);
 
               // A deterministic tree line separates foreground from mountain
               // scale and adds fine detail without introducing visual noise.
@@ -24124,10 +24825,10 @@ const d = labToolData.waterCycle || {};
                   }
                   ctx.stroke();
                 });
-                // Pore spaces. Above the water table they are air-filled (dark);
-                // below it they are water-filled (blue). That single visual
-                // difference IS the vadose/phreatic distinction the tool already
-                // explains in prose but never showed.
+                // Groundwater pore illustration: begin.
+                // Unsaturated soil can hold both air and liquid water.
+                // These deterministic decorative fills are schematic, not a
+                // calculation of soil wetness, water-table depth or recharge.
                 for (var pi = 0; pi < 90; pi++) {
                   var pxx = ((pi * 137.508) % 100) / 100 * cW;
                   var pyy = soilTop2d + (((pi * 73) % 97) / 97) * (cH - soilTop2d);
@@ -24139,7 +24840,15 @@ const d = labToolData.waterCycle || {};
                     ? (isDark ? 'rgba(56,189,248,0.5)' : 'rgba(14,165,233,0.55)')
                     : (isDark ? 'rgba(0,0,0,0.45)' : 'rgba(48,28,12,0.34)');
                   ctx.fill();
+                  if (!saturated) {
+                    ctx.save();
+                    ctx.clip();
+                    ctx.fillStyle = isDark ? 'rgba(103,232,249,0.8)' : 'rgba(14,165,233,0.85)';
+                    ctx.fillRect(pxx - pr, pyy + pr * 0.1, pr * 2, pr * 0.9);
+                    ctx.restore();
+                  }
                 }
+                // Groundwater pore illustration: end.
                 // Parent material: angular clasts, deterministic, increasingly
                 // large with depth so the eye reads "rock" rather than "gravel".
                 for (var ri = 0; ri < 22; ri++) {
@@ -24898,16 +25607,34 @@ const d = labToolData.waterCycle || {};
               // ── Clouds ──
 
               function drawCloud(ccx, ccy, sz) {
-
-                // Volumetric puffs: each lobe is a radial gradient lit from the
-                // upper-right (sun side) with a soft shadowed underbelly, instead
-                // of flat circles over a hard-edged base rectangle. Moonlit slate
-                // tones whenever the SKY is dark (dark theme or solar slider low)
-                // so clouds stop glowing white against a night sky.
+                // A continuous scalloped body makes visible cloud water distinct
+                // from the small vapor tracers. Only the illustration changes;
+                // its existing center, extent, drift and scale remain fixed.
                 var duskCloud2d = isDark || skyBright < 0.4;
-                var cloudHi = duskCloud2d ? 'rgba(203,213,225,0.55)' : 'rgba(255,255,255,0.95)';
-                var cloudMid = duskCloud2d ? 'rgba(148,163,184,0.36)' : 'rgba(241,245,249,0.82)';
-                var cloudEdge = duskCloud2d ? 'rgba(71,85,105,0)' : 'rgba(203,213,225,0)';
+                function traceCloudBody2d() {
+                  ctx.beginPath();
+                  ctx.moveTo(ccx - sz * 1.44, ccy + sz * 0.22);
+                  ctx.bezierCurveTo(ccx - sz * 1.48, ccy - sz * 0.23, ccx - sz * 1.15, ccy - sz * 0.55, ccx - sz * 0.79, ccy - sz * 0.47);
+                  ctx.bezierCurveTo(ccx - sz * 0.63, ccy - sz * 1.04, ccx + sz * 0.03, ccy - sz * 1.20, ccx + sz * 0.39, ccy - sz * 0.92);
+                  ctx.bezierCurveTo(ccx + sz * 0.70, ccy - sz * 1.02, ccx + sz * 0.97, ccy - sz * 0.73, ccx + sz * 0.98, ccy - sz * 0.46);
+                  ctx.bezierCurveTo(ccx + sz * 1.52, ccy - sz * 0.41, ccx + sz * 1.78, ccy + sz * 0.27, ccx + sz * 1.38, ccy + sz * 0.68);
+                  ctx.bezierCurveTo(ccx + sz * 1.11, ccy + sz * 0.96, ccx + sz * 0.70, ccy + sz * 0.89, ccx + sz * 0.37, ccy + sz * 0.91);
+                  ctx.bezierCurveTo(ccx - sz * 0.24, ccy + sz * 1.05, ccx - sz * 0.89, ccy + sz * 0.98, ccx - sz * 1.14, ccy + sz * 0.72);
+                  ctx.bezierCurveTo(ccx - sz * 1.32, ccy + sz * 0.67, ccx - sz * 1.45, ccy + sz * 0.45, ccx - sz * 1.44, ccy + sz * 0.22);
+                  ctx.closePath();
+                }
+                ctx.save();
+                traceCloudBody2d();
+                ctx.clip();
+                var cloudBody2d = ctx.createLinearGradient(ccx + sz * 0.4, ccy - sz, ccx - sz * 0.2, ccy + sz);
+                cloudBody2d.addColorStop(0, duskCloud2d ? '#a5b8d0' : '#ffffff');
+                cloudBody2d.addColorStop(0.42, duskCloud2d ? '#7289a6' : '#eff7fa');
+                cloudBody2d.addColorStop(0.78, duskCloud2d ? '#4a637f' : '#cbdfe9');
+                cloudBody2d.addColorStop(1, duskCloud2d ? '#344d6b' : '#a9c5d5');
+                ctx.fillStyle = cloudBody2d;
+                ctx.fillRect(ccx - sz * 1.6, ccy - sz * 1.2, sz * 3.3, sz * 2.3);
+
+                // Gentle internal light joins the lobes without isolated white dots.
                 var cloudLobes = [
                   { dx: 0, dy: 0, r: 1 },
                   { dx: -0.72, dy: 0.2, r: 0.72 },
@@ -24918,22 +25645,27 @@ const d = labToolData.waterCycle || {};
                 for (var cli = 0; cli < cloudLobes.length; cli++) {
                   var clb = cloudLobes[cli];
                   var clx = ccx + clb.dx * sz, cly = ccy + clb.dy * sz, clr = sz * clb.r;
-                  var clg = ctx.createRadialGradient(clx + clr * 0.3, cly - clr * 0.35, clr * 0.12, clx, cly, clr);
-                  clg.addColorStop(0, cloudHi);
-                  clg.addColorStop(0.6, cloudMid);
-                  clg.addColorStop(1, cloudEdge);
-                  ctx.fillStyle = clg;
+                  var cloudLight2d = ctx.createRadialGradient(clx + clr * 0.25, cly - clr * 0.38, 0, clx, cly, clr);
+                  cloudLight2d.addColorStop(0, duskCloud2d ? 'rgba(222,236,251,0.18)' : 'rgba(255,255,255,0.42)');
+                  cloudLight2d.addColorStop(0.65, duskCloud2d ? 'rgba(222,236,251,0.04)' : 'rgba(255,255,255,0.10)');
+                  cloudLight2d.addColorStop(1, 'rgba(255,255,255,0)');
+                  ctx.fillStyle = cloudLight2d;
                   ctx.beginPath(); ctx.arc(clx, cly, clr, 0, Math.PI * 2); ctx.fill();
                 }
+                var cloudBase2d = ctx.createRadialGradient(ccx - sz * 0.12, ccy + sz * 0.95, 0,
+                  ccx, ccy + sz * 0.75, sz * 1.45);
+                cloudBase2d.addColorStop(0, duskCloud2d ? 'rgba(13,29,53,0.22)' : 'rgba(73,112,143,0.13)');
+                cloudBase2d.addColorStop(1, 'rgba(73,112,143,0)');
+                ctx.fillStyle = cloudBase2d;
+                ctx.fillRect(ccx - sz * 1.6, ccy - sz * 1.2, sz * 3.3, sz * 2.3);
 
-                // Soft shadowed underbelly
-
-                var cug = ctx.createRadialGradient(ccx, ccy + sz * 0.5, sz * 0.1, ccx, ccy + sz * 0.5, sz * 1.3);
-                cug.addColorStop(0, duskCloud2d ? 'rgba(30,41,59,0.30)' : 'rgba(148,163,184,0.28)');
-                cug.addColorStop(1, 'rgba(148,163,184,0)');
-                ctx.fillStyle = cug;
-                ctx.beginPath(); ctx.ellipse(ccx, ccy + sz * 0.5, sz * 1.3, sz * 0.45, 0, 0, Math.PI * 2); ctx.fill();
-
+                // Restrained lit edge, clipped to the body like every other layer.
+                traceCloudBody2d();
+                ctx.strokeStyle = duskCloud2d ? 'rgba(219,234,254,0.22)' : 'rgba(255,255,255,0.58)';
+                ctx.lineWidth = 1.1 * dpr;
+                ctx.lineJoin = 'round';
+                ctx.stroke();
+                ctx.restore();
               }
 
               drawCloud(cW * 0.2 + Math.sin(tick * 0.004) * 15, cH * 0.14, 16 * dpr);
@@ -30940,6 +31672,7 @@ const d = labToolData.waterCycle || {};
           var currentStageFlow = activeJourneyMatterEnergy
             ? { from: activeJourneyMatterEnergy.source, to: activeJourneyMatterEnergy.destination }
             : (STAGE_FLOW[resolvedStageId] || STAGE_FLOW.collection);
+          var wcLiveTransfer = WCLiveTransferStory.describe(!!d.journeyActive, d.journeyState, resolvedStageId, currentStageLabel, currentStageCue);
           var wcCanvasGuideEnergyText = currentMatterEnergy.energyTransfer === 'absorbed'
             ? __alloT('stem.watercycle.diagram_guide_heat_absorbed', 'Latent heat absorbed')
             : currentMatterEnergy.energyTransfer === 'released'
@@ -31133,7 +31866,8 @@ const d = labToolData.waterCycle || {};
                 ),
                 React.createElement('div', { className: 'wc-chapter-question' }, React.createElement('strong', null, 'Trace and explain'),
                   React.createElement('p', null, chapter.question)),
-                React.createElement('p', { className: 'wc-chapter-note', 'data-chapter-note': 'true' }, chapter.note)
+                React.createElement('p', { className: 'wc-chapter-note', 'data-chapter-note': 'true' }, chapter.note),
+                chapter.id === 'land' && renderWcGroundwaterLens('explorer')
               ),
               React.createElement('p', { className: 'wc-chapters-help wc-chapters-scope' }, 'One illustrated route through a branching cycle. Diagrams are not to scale, and animation time is compressed.')
             );
@@ -31172,6 +31906,54 @@ const d = labToolData.waterCycle || {};
               ),
               React.createElement('small', { className: 'wc-process-caveat' }, wcProcessCaveat(id))
             );
+          }
+          function ltWaterSymbol(label) {
+            var ltText = String(label || '').toLowerCase();
+            var ltVapor = ltText.indexOf('vapor') >= 0;
+            var ltLiquid = ltText.indexOf('liquid') >= 0 || ltText.indexOf('droplet') >= 0 || ltText.indexOf('cloud water') >= 0;
+            var ltSolid = ltText.indexOf('solid') >= 0 || ltText.indexOf('ice') >= 0;
+            var ltDrop = React.createElement('path', { d: 'M28 9C25 17 15 26 16 35C18 48 38 48 40 35C41 26 31 17 28 9Z', className: 'wc-lt-drop' });
+            var ltIce = React.createElement('path', { d: 'M28 12v32M14 20l28 16M14 36l28-16M24 16l4 4 4-4M24 40l4-4 4 4', className: 'wc-lt-ice' });
+            return React.createElement('svg', { className: 'wc-lt-water-symbol', viewBox: '0 0 56 56', 'aria-hidden': true, focusable: 'false', 'data-lt-water-symbol': ltVapor ? 'vapor' : ltLiquid && ltSolid ? 'liquid-or-solid' : ltSolid ? 'solid' : 'liquid' },
+              ltVapor ? React.createElement('g', { className: 'wc-lt-vapor' }, [ [13,15], [33,11], [43,29], [20,34], [32,46], [11,47] ].map(function(ltPosition, ltIndex) { return React.createElement('circle', { key: ltIndex, cx: ltPosition[0], cy: ltPosition[1], r: 3 }); }))
+              : ltLiquid && ltSolid ? React.createElement('g', null, React.createElement('g', { transform: 'translate(-6 5) scale(.72)' }, ltDrop), React.createElement('g', { transform: 'translate(22 2) scale(.62)' }, ltIce))
+              : ltSolid ? ltIce : ltDrop);
+          }
+          function renderWcLiveWaterTransfer() {
+            function ltWaterNode(place, phase, side) {
+              return React.createElement('div', { className: 'wc-lt-water-node', 'data-lt-water-side': side },
+                ltWaterSymbol(phase), React.createElement('div', null,
+                  React.createElement('span', { className: 'wc-lt-node-role' }, wcLiveTransfer.kind === 'storage' ? 'Store' : side === 'from' ? 'From' : wcLiveTransfer.kind === 'choice' ? 'Next pathway' : 'To'),
+                  React.createElement('strong', { 'data-lt-place': side }, place),
+                  React.createElement('span', { className: 'wc-lt-node-phase', 'data-lt-phase': side }, phase)));
+            }
+            return React.createElement('figure', { className: 'wc-live-water-transfer', 'data-lt-kind': wcLiveTransfer.kind, 'data-lt-state': wcLiveTransfer.id, 'aria-labelledby': 'wcLiveWaterTitle' },
+              React.createElement('style', { 'data-wc-live-transfer-style': '1' }, WC_LIVE_TRANSFER_STYLE),
+              React.createElement('figcaption', { id: 'wcLiveWaterTitle' }, wcLiveTransfer.kind === 'storage' ? 'Water remains in storage' : wcLiveTransfer.kind === 'choice' ? 'Water is ready for a pathway choice' : 'Water path in this view'),
+              React.createElement('div', { className: 'wc-lt-water-path' },
+                ltWaterNode(currentMatterEnergy.source, currentMatterEnergy.phaseFrom, 'from'),
+                wcLiveTransfer.kind !== 'storage' && React.createElement('div', { className: 'wc-lt-water-connector' },
+                  wcLiveTransfer.kind === 'choice' ? React.createElement('span', null, 'Awaiting choice') : React.createElement(React.Fragment, null,
+                    React.createElement('svg', { viewBox: '0 0 60 28', 'aria-hidden': true, focusable: 'false', 'data-lt-water-arrow': 'from-to' }, React.createElement('path', { d: 'M5 14h48M43 4l10 10-10 10' })),
+                    React.createElement('span', null, 'to'))),
+                wcLiveTransfer.kind !== 'storage' && ltWaterNode(currentMatterEnergy.destination, currentMatterEnergy.phaseTo, 'to')),
+              /vapor/i.test(currentMatterEnergy.phaseFrom + ' ' + currentMatterEnergy.phaseTo) && React.createElement('p', { className: 'wc-lt-symbol-note' }, 'Water vapor is invisible. The spaced marks are a schematic gas symbol.'),
+              /\bor\b/i.test(currentMatterEnergy.phaseFrom + ' ' + currentMatterEnergy.phaseTo) && React.createElement('p', { className: 'wc-lt-symbol-note' }, 'Liquid and ice symbols show the stated possibilities; they do not imply that every particle changes state.'));
+          }
+          function renderWcLiveHeatPath() {
+            var ltEnergy = currentMatterEnergy.energyTransfer;
+            var ltAbsorbed = ltEnergy === 'absorbed';
+            var ltReleased = ltEnergy === 'released';
+            return React.createElement('div', { className: 'wc-live-heat-path', 'data-lt-energy': ltEnergy, 'data-lt-heat-direction': ltAbsorbed ? 'into-water' : ltReleased ? 'out-of-water' : 'not-required' },
+              ltAbsorbed || ltReleased ? React.createElement('div', { className: 'wc-lt-heat-flow', role: 'group', 'aria-label': ltAbsorbed ? 'Latent heat flows from surroundings into water' : 'Latent heat flows from water to surrounding air' },
+                React.createElement('span', { className: 'wc-lt-heat-actor' }, React.createElement('i', { className: 'wc-lt-surroundings-mark', 'aria-hidden': true }), ltReleased ? 'Surrounding air' : 'Surroundings'),
+                React.createElement('div', { className: 'wc-lt-heat-arrow' },
+                  React.createElement('span', null, 'Latent heat'),
+                  React.createElement('svg', { viewBox: '0 0 84 28', 'aria-hidden': true, focusable: 'false', 'data-lt-heat-arrow': ltAbsorbed ? 'right' : 'left' },
+                    React.createElement('path', { d: ltAbsorbed ? 'M8 14h68M65 4l11 10-11 10' : 'M76 14H8M19 4L8 14l11 10' }))),
+                React.createElement('span', { className: 'wc-lt-heat-actor' }, React.createElement('i', { className: 'wc-lt-water-mark', 'aria-hidden': true }), 'Water'))
+                : React.createElement('p', { className: 'wc-lt-no-latent' }, 'No latent heat transfer is required by this process. Water can still move, warm or cool.'),
+              React.createElement('p', { className: 'wc-lt-heat-reading' }, currentMatterEnergy.energyLabel));
           }
           function wcCheckAnswerLabel(value) { return typeof value === 'boolean' ? (value ? 'True' : 'False') : String(value == null ? 'Not chosen' : value); }
           function wcCheckCurrentQuestion(session) { return session && session.kind === 'myth' ? d.wcMyth : d.wcQuiz; }
@@ -31238,16 +32020,97 @@ const d = labToolData.waterCycle || {};
               ), React.createElement('p', { className: 'wc-check-detail' }, wcProcessCaveat(id))
             );
           }
-          function renderWcCheckPores() {
-            return React.createElement('figure', { className: 'wc-check-pores' },
-              React.createElement('svg', { viewBox: '0 0 300 100', 'aria-hidden': 'true', focusable: 'false' },
-                React.createElement('rect', { x: 2, y: 2, width: 296, height: 96, rx: 16, fill: 'currentColor', opacity: 0.06 }),
-                React.createElement('path', { d: 'M25 30L70 55L115 30L160 55L205 30L250 55', fill: 'none', stroke: 'currentColor', strokeWidth: 9, opacity: 0.18 }),
-                [25,70,115,160,205,250].map(function(x, i) { return React.createElement('circle', { key: x, cx: x, cy: i % 2 ? 55 : 30, r: 16, fill: 'none', stroke: 'currentColor', strokeWidth: 2 }); }),
-                [25,70,115,160,205,250].map(function(x, i) { return React.createElement('circle', { key: x, cx: x, cy: i % 2 ? 55 : 30, r: 5, fill: 'currentColor' }); }),
-                React.createElement('path', { d: 'M38 82H270m-8-6 8 6-8 6', fill: 'none', stroke: 'currentColor', strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' })
-              ), React.createElement('figcaption', null, 'Liquid water occupies connected spaces between soil or rock particles. The arrow shows a possible flow direction, not measured speed.')
+          function renderWcGroundwaterLens(scope) {
+            var checkSession = scope === 'check' ? WCCheckInvestigation.normalizeSession(d.wcCheckInvestigation) : null;
+            var identity = checkSession ? checkSession.key : '';
+            var reading = WCGroundwaterLens.read(d.wcGroundwaterLens, scope, identity);
+            if (!reading) return null;
+            var part = WCGroundwaterLens.parts().filter(function(item) { return item.id === reading.part; })[0];
+            var prefix = 'wcGroundwater-' + scope;
+            function choose(id) {
+              upd('wcGroundwaterLens', WCGroundwaterLens.select(d.wcGroundwaterLens, scope, id, identity));
+              focusWcComparisonTarget(prefix + '-DetailTitle');
+            }
+            function answer(id) {
+              upd('wcGroundwaterLens', WCGroundwaterLens.answer(d.wcGroundwaterLens, scope, id, identity));
+              focusWcComparisonTarget(prefix + '-FeedbackTitle');
+            }
+            function grain(x, y, radius, key) {
+              return React.createElement('g', { key: key, 'data-gw-material': 'grain' },
+                React.createElement('ellipse', { className: 'wc-gw-grain', cx: x, cy: y, rx: radius, ry: radius * 0.78 }),
+                React.createElement('path', { className: 'wc-gw-crosshatch', d: 'M' + (x-radius*.48) + ' ' + (y+radius*.32) + 'l' + radius*.85 + ' ' + (-radius*.62) + 'm' + (-radius*.64) + ' ' + (-radius*.09) + 'l' + radius*.55 + ' ' + (-radius*.4) })
+              );
+            }
+            var feedback = reading.result === 'supported'
+              ? 'Soil water is evidence of water in soil. Recharge means adding water to the groundwater system; entering soil alone does not show how much reaches it or when.'
+              : reading.answer === 'all_recharge'
+                ? 'Entry into soil is infiltration. Water can stay in soil or take other pathways. Reaching the groundwater system is an additional step.'
+                : reading.answer === 'dry_soil'
+                  ? 'Unsaturated soil can hold both air and water. Compare its open air spaces with the water-filled spaces in the groundwater view.'
+                  : 'Use the soil pore view and the boundary explanation. This practice is unscored.';
+            return React.createElement('details', { className: 'wc-groundwater-lens' + (scope === 'check' ? ' wc-check-pores' : '') + (isDark ? ' is-dark' : '') + (isContrast ? ' is-contrast' : ''), 'data-gw-scope': scope, 'data-gw-part': part.id },
+              React.createElement('style', null, WC_GROUNDWATER_LENS_STYLE),
+              React.createElement('summary', { id: prefix + '-Summary' }, 'Look inside the ground'),
+              React.createElement('div', { className: 'wc-gw-content' },
+                React.createElement('p', { className: 'wc-gw-intro' }, 'Choose a part of this porous-ground schematic. Compare the cutaway with a magnified view of spaces between solid grains.'),
+                React.createElement('div', { className: 'wc-gw-options', role: 'group', 'aria-label': 'Choose a groundwater feature to inspect' },
+                  WCGroundwaterLens.parts().map(function(item) { return React.createElement('button', { key: item.id, type: 'button', 'data-gw-select': item.id, 'aria-pressed': reading.part === item.id, 'aria-controls': prefix + '-Detail', onClick: function() { choose(item.id); } }, React.createElement('span', { className: 'wc-gw-choice-mark', 'aria-hidden': true }, reading.part === item.id ? '✓' : '○'), item.label); })
+                ),
+                React.createElement('div', { className: 'wc-gw-diagrams' },
+                  React.createElement('figure', { 'data-gw-figure': 'cutaway' },
+                    React.createElement('figcaption', null, 'Find it in the cutaway'),
+                    React.createElement('div', { className: 'wc-gw-cutaway' },
+                      React.createElement('svg', { viewBox: '0 0 120 210', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': true, focusable: 'false' },
+                        React.createElement('rect', { className: 'wc-gw-soil', x: 3, y: 3, width: 114, height: 204, rx: 10 }),
+                        React.createElement('path', { className: 'wc-gw-water', 'data-gw-material': 'water', d: 'M5 112Q35 107 60 112T115 112V196Q115 207 104 207H16Q5 207 5 196Z' }),
+                        React.createElement('path', { className: 'wc-gw-water', 'data-gw-cue': 'capillary-fringe', d: 'M5 93Q28 96 60 91T115 94V112H5Z' }),
+                        React.createElement('path', { className: 'wc-gw-water', 'data-gw-cue': 'soil-water', d: 'M7 31Q25 36 43 28L42 43Q21 48 7 41ZM61 57Q81 51 113 58V69Q81 72 62 66Z' }),
+                        [[24,20],[66,28],[101,20],[29,65],[77,75],[105,88],[26,103],[67,106],[29,145],[79,145],[105,172],[33,189],[76,189]].map(function(position, index) { return grain(position[0], position[1], 10, index); }),
+                        React.createElement('path', { className: 'wc-gw-boundary', 'data-gw-cue': 'water-table', d: 'M5 112Q35 107 60 112T115 112' }),
+                        React.createElement('rect', { className: 'wc-gw-outline', 'data-gw-cue': 'inspected-zone', x: 3, y: part.id === 'soil' ? 3 : part.id === 'boundary' ? 87 : 121, width: 114, height: part.id === 'soil' ? 80 : part.id === 'boundary' ? 33 : 86, rx: 8 })
+                      ),
+                      React.createElement('div', { className: 'wc-gw-layer-labels' },
+                        [['soil','Air + water'],['boundary','Water table'],['groundwater','Water in pores']].map(function(item) { return React.createElement('div', { key: item[0], 'data-gw-layer': item[0], 'data-active': String(part.id === item[0]) }, item[1]); })
+                      )
+                    ),
+                    React.createElement('p', { className: 'wc-gw-scope' }, 'Dashed line: schematic water table. The thin band above it represents the capillary fringe.')
+                  ),
+                  React.createElement('figure', { 'data-gw-figure': 'pores' },
+                    React.createElement('figcaption', null, 'Magnified · ' + part.condition),
+                    React.createElement('svg', { className: 'wc-gw-pore-view', viewBox: '0 0 260 210', preserveAspectRatio: 'xMidYMid meet', 'aria-hidden': true, focusable: 'false', 'data-gw-pore-state': part.id },
+                      React.createElement('rect', { className: 'wc-gw-air', 'data-gw-material': 'air', x: 2, y: 2, width: 256, height: 206, rx: 12 }),
+                      part.id === 'soil' ? React.createElement('path', { className: 'wc-gw-water', 'data-gw-material': 'water', 'data-gw-cue': 'partial-water', d: 'M3 36Q45 54 73 34L78 60Q43 82 3 55ZM148 58Q207 47 257 55V77Q206 88 151 76ZM54 106Q105 102 138 116L135 133Q99 128 56 126ZM3 180Q27 182 46 176L56 208H14Q3 208 3 196ZM163 184Q205 172 257 182V196Q257 208 244 208H159Z' })
+                        : React.createElement('path', { className: 'wc-gw-water', 'data-gw-material': 'water', 'data-gw-cue': part.id === 'boundary' ? 'capillary-water' : 'filled-pores', d: part.id === 'boundary' ? 'M3 89Q54 98 89 86T166 91T257 88V196Q257 208 244 208H14Q3 208 3 196Z' : 'M14 2H246Q258 2 258 14V196Q258 208 246 208H14Q2 208 2 196V14Q2 2 14 2Z' }),
+                      [[28,30],[92,25],[166,30],[228,28],[45,88],[123,88],[203,88],[29,165],[105,165],[184,165],[239,170]].map(function(position, index) { return grain(position[0], position[1], 19 + index % 3, index); }),
+                      part.id === 'soil' && [[75,40],[164,106],[69,169]].map(function(position, index) { return React.createElement('g', { key: index, 'data-gw-cue': 'open-air' }, React.createElement('circle', { className: 'wc-gw-pore-dot', cx: position[0], cy: position[1], r: 2 }), React.createElement('circle', { className: 'wc-gw-pore-dot', cx: position[0]+5, cy: position[1]-4, r: 1.5 })); }),
+                      part.id === 'boundary' && React.createElement('path', { className: 'wc-gw-boundary', 'data-gw-cue': 'water-table', d: 'M4 116H256' }),
+                      part.id === 'groundwater' && React.createElement('path', { className: 'wc-gw-flow', style: { stroke: 'var(--gw-air)' }, 'data-gw-cue': 'possible-flow', d: 'M24 118Q60 128 84 119T141 119T218 121L232 121m-8-6 8 6-8 6' })
+                    ),
+                    React.createElement('p', { className: 'wc-gw-scope' }, part.reading)
+                  )
+                ),
+                React.createElement('ul', { className: 'wc-gw-key', 'aria-label': 'Diagram key' }, [['grain','Solid grains · hatched'],['water','Liquid water'],['air','Air space · open']].map(function(item) { return React.createElement('li', { key: item[0] }, React.createElement('span', { className: 'wc-gw-swatch', 'data-material': item[0], 'aria-hidden': true }), item[1]); })),
+                React.createElement('section', { id: prefix + '-Detail', className: 'wc-gw-reading', 'aria-labelledby': prefix + '-DetailTitle' },
+                  React.createElement('small', null, 'Inspecting · ' + part.label),
+                  React.createElement('h5', { id: prefix + '-DetailTitle', tabIndex: -1 }, part.title),
+                  React.createElement('p', null, part.detail), React.createElement('p', null, React.createElement('strong', null, 'Look for: '), part.look)
+                ),
+                React.createElement('details', { className: 'wc-gw-check' },
+                  React.createElement('summary', null, 'Check the distinction'),
+                  React.createElement('h6', { id: prefix + '-Question' }, 'Does seeing water in soil establish groundwater recharge?'),
+                  React.createElement('div', { className: 'wc-gw-answers', role: 'group', 'aria-labelledby': prefix + '-Question' }, WCGroundwaterLens.choices().map(function(item) { return React.createElement('button', { key: item.id, type: 'button', 'data-gw-answer': item.id, 'aria-pressed': reading.answer === item.id, onClick: function() { answer(item.id); } }, item.label); })),
+                  React.createElement('div', { className: 'wc-gw-feedback', role: 'status', 'data-gw-result': reading.result },
+                    React.createElement('h6', { id: prefix + '-FeedbackTitle', tabIndex: -1 }, reading.result === 'supported' ? 'Your interpretation fits the evidence.' : reading.result === 'retry' ? 'Look at the pore spaces again.' : 'Choose an interpretation.'),
+                    React.createElement('p', null, feedback)
+                  )
+                ),
+                React.createElement('p', { className: 'wc-gw-scope' }, 'Magnified schematic of an unconfined groundwater setting. Grain sizes, layer depths and arrows are illustrative. This view does not measure recharge, water-table depth or travel time.'),
+                React.createElement('a', { href: 'https://pubs.usgs.gov/circ/circ1186/html/gen_facts.html', target: '_blank', rel: 'noopener noreferrer' }, 'Read the USGS explanation of groundwater zones')
+              )
             );
+          }
+          function renderWcCheckPores() {
+            return renderWcGroundwaterLens('check');
           }
           function renderWcCheckAction(kind, question) {
             var spec = WCCheckInvestigation.resolve(kind, question);
@@ -31895,7 +32758,7 @@ const d = labToolData.waterCycle || {};
             : wcExperimentLog.length
               ? 'The trail preserves claims, modeled evidence, pathway-mix snapshots, recorded inputs, and your explanations. Download or remove an entry when it is full.'
               : 'Save an observation after interpreting the evidence to build a trail.';
-          var wcDataViewStatus = currentStageLabel + ' selected. ' +
+          var wcDataViewStatus = wcLiveTransfer.label + '. ' +
             'Climate ' + currentTemp + ' degrees C, solar ' + currentSolar.toFixed(2) + ' times baseline, wind ' + currentWind.toFixed(1) + ' times baseline. ' +
             'Land routing indices: runoff ' + runoffTendency + ' of 100; infiltration ' + infiltrationOpportunity + ' of 100. ' +
             'Relative teaching shares: runoff ' + wcRouteShares.runoff + ' percent; underground ' + wcRouteShares.infiltration + ' percent; plant ' + wcRouteShares.plant + ' percent.';
@@ -32515,7 +33378,7 @@ const d = labToolData.waterCycle || {};
                 role: "img",
                 tabIndex: journeyView === '2d' ? 0 : -1,
                 "aria-hidden": journeyView === '3d' ? "true" : undefined,
-                "aria-label": "Water cycle animation showing " + wcCanvasGuideProcessLabel + ". Water moves from " + currentStageFlow.from + " to " + currentStageFlow.to + ".",
+                "aria-label": "Water cycle animation showing " + wcLiveTransfer.label + ". " + (wcLiveTransfer.kind === "storage" ? "Water remains in " + currentMatterEnergy.source + "." : wcLiveTransfer.kind === "choice" ? "Water is at " + currentMatterEnergy.source + "; the next pathway awaits your choice." : "Water path from " + currentMatterEnergy.source + " to " + currentMatterEnergy.destination + "."),
                 "aria-describedby": journeyView === '2d' ? "wcStageFocusDescription wcCanvasGuideDescription" : undefined,
                 "aria-keyshortcuts": journeyView === '2d' ? "Space Enter" : undefined,
                 onKeyDown: journeyView === '2d' ? handleWc2dKey : undefined,
@@ -33345,7 +34208,8 @@ const d = labToolData.waterCycle || {};
             ),
 
 React.createElement("div", {
-              className: "wc-stage-focus",
+              className: "wc-stage-focus" + " wc-live-transfer" + (isDark ? " is-dark" : "") + (isContrast ? " is-contrast" : ""),
+              "data-lt-process": wcLiveTransfer.id,
               id: "wcStageFocusDescription",
               role: "status",
               "aria-live": "polite",
@@ -33356,20 +34220,12 @@ React.createElement("div", {
                 React.createElement("span", { className: "wc-stage-focus-kicker" }, journeyView === '3d' ? t('stem.watercycle.journey_focus', "Journey focus") : t('stem.watercycle.selected_process', "Selected process")),
                 React.createElement("div", { className: "wc-stage-focus-title" },
                   React.createElement("span", { "aria-hidden": "true" }, resolvedStage ? resolvedStage.emoji : "\uD83D\uDCA7"),
-                  React.createElement("strong", null, currentStageLabel)
+                  React.createElement("strong", { "data-lt-label": "focus" }, wcLiveTransfer.label)
                 ),
-                React.createElement("p", { className: "wc-stage-focus-summary" }, journeyView === '3d'
+                React.createElement("p", { className: "wc-stage-focus-summary", "data-lt-cue": "summary" }, d.journeyActive ? wcLiveTransfer.cue : (journeyView === '3d'
                   ? t('stem.watercycle.track_the_droplet_in_the_scene_below', "Track the droplet in the scene below; use the controls to pause, move, or refocus the camera.")
-                  : (selDesc || t('stem.watercycle.choose_a_stage_to_spotlight', "Choose a stage to spotlight its movement in the live model."))),
-                React.createElement("div", {
-                  className: "wc-stage-focus-flow"
-                },
-                  React.createElement("span", { className: "wc-stage-focus-flow-label" }, "Transfer"),
-                  React.createElement("strong", null, currentStageFlow.from),
-                  React.createElement("span", { className: "wc-stage-focus-flow-arrow", "aria-hidden": "true" }, "\u2192"),
-                  React.createElement("span", { className: "sr-only" }, " to "),
-                  React.createElement("strong", null, currentStageFlow.to)
-                ),
+                  : (selDesc || t('stem.watercycle.choose_a_stage_to_spotlight', "Choose a stage to spotlight its movement in the live model.")))),
+                renderWcLiveWaterTransfer(),
                 currentSubsurfacePhase !== 'hidden' && React.createElement("p", {
                   className: "wc-subsurface-note",
                   "data-subsurface-summary": currentSubsurfacePhase
@@ -33386,7 +34242,7 @@ React.createElement("div", {
                   React.createElement("div", {
                     className: "wc-science-story",
                     role: "group",
-                    "aria-label": "Science story for " + currentStageLabel
+                    "aria-label": "Science story for " + wcLiveTransfer.label
                   },
                     React.createElement("span", { className: "wc-science-story-title" }, "Read the process: cause to evidence"),
                     React.createElement("div", { className: "wc-science-story-chain" },
@@ -33396,13 +34252,13 @@ React.createElement("div", {
                       ),
                       React.createElement("span", { className: "wc-science-story-arrow", "aria-hidden": "true" }, "\u2192"),
                       React.createElement("div", { className: "wc-science-story-step" },
-                        React.createElement("span", null, "Water changes"),
+                        React.createElement("span", null, "Water state"),
                         React.createElement("strong", null, currentMatterEnergyPhaseLabel)
                       ),
                       React.createElement("span", { className: "wc-science-story-arrow", "aria-hidden": "true" }, "\u2192"),
                       React.createElement("div", { className: "wc-science-story-step" },
                         React.createElement("span", null, "Look for"),
-                        React.createElement("strong", null, currentStageCue || "Follow water from one store to the next.")
+                        React.createElement("strong", { "data-lt-cue": "story" }, wcLiveTransfer.cue || "Follow water from one store to the next.")
                       )
                     )
                   ),
@@ -33417,7 +34273,7 @@ React.createElement("div", {
                     ),
                     React.createElement("div", null,
                       React.createElement("dt", null, "Energy"),
-                      React.createElement("dd", null, currentMatterEnergy.energyLabel)
+                      React.createElement("dd", null, renderWcLiveHeatPath())
                     ),
                     React.createElement("div", null,
                       React.createElement("dt", null, "Driver"),
@@ -33443,7 +34299,7 @@ React.createElement("div", {
 
             // ═══ CLIMATE LAB  -  Interactive Controls ═══
             React.createElement("details", {
-              className: "wc-data-view wc-focus-secondary"
+              className: "wc-data-view wc-focus-secondary wc-live-data" + (isDark ? " is-dark" : "") + (isContrast ? " is-contrast" : "")
             },
               React.createElement("summary", { className: "wc-data-summary", "aria-describedby": "wcDataViewStatus" },
                 React.createElement("span", { className: "wc-data-summary-title" }, "Data view"),
@@ -33466,8 +34322,8 @@ React.createElement("div", {
                     React.createElement("tr", null,
                       React.createElement("th", { scope: "row" }, "Current process"),
                       React.createElement("td", null,
-                        React.createElement("strong", null, currentStageLabel),
-                        React.createElement("span", null, currentStageCue || "The selected process is highlighted in the model.")
+                        React.createElement("strong", { "data-lt-label": "data" }, wcLiveTransfer.label),
+                        React.createElement("span", { "data-lt-cue": "data" }, wcLiveTransfer.cue || "The selected process is highlighted in the model.")
                       )
                     ),
                     React.createElement("tr", null,

@@ -1,0 +1,26 @@
+{
+  "loadedAt": "2026-10-02T23:22:15.601Z",
+  "completedAt": "2026-10-02T23:22:30.149Z",
+  "loadedRuntimes": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+      "bytes": 3119260
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+      "bytes": 3119260
+    }
+  ],
+  "loadedTest": {
+    "path": "tests/watercycle_thermal_layer_inspector.test.js",
+    "sha256": "eae17e5a1a6576e78c602fea99f06cc1fa8ae782de1089c0364d6c0c18fdf4f7",
+    "bytes": 28386
+  },
+  "loadedBaseline": {
+    "path": "reports/watercycle-thermal-layer-inspector/baseline-runtime.js",
+    "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+    "bytes": 3088929
+  }
+}

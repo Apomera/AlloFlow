@@ -1,0 +1,242 @@
+--- accepted-pass24/stem_lab/stem_tool_moonmission.js
++++ pass25/stem_lab/stem_tool_moonmission.js
+@@ -1690,6 +1690,81 @@
+     text('[data-descent-energy-history-scale]',geo.unit+' · time in seconds from piloted handover. The history and current bars share the same energy scale.');
+     text('[data-descent-energy-history-note]',geo.curves?'Dots mark the inspected state. Only earlier measurements are shown. Stored samples are linked by straight lines; brief transients may fall between samples.':
+       model.history?'Inspect a later sample or resume flight to show changes over time.':'This state has no measured flight history. Current energy readings remain available.');
++  }
++  function mmCreateDescentTerrainSampler(geometry) {
++    var p=geometry&&geometry.attributes&&geometry.attributes.position,index=geometry&&geometry.index;
++    var parameters=geometry&&geometry.parameters,columns=parameters&&parameters.widthSegments+1,rows=parameters&&parameters.heightSegments+1;
++    if(!p||!index||typeof p.getX!=='function'||typeof p.getY!=='function'||typeof p.getZ!=='function'||typeof index.getX!=='function'||
++      !Number.isInteger(columns)||!Number.isInteger(rows)||columns<2||rows<2||columns*rows>262144||
++      p.count!==columns*rows||index.count!==(columns-1)*(rows-1)*6)return null;
++    // Snapshot the actual Float32 mesh coordinates. Its triangles, rather than
++    // the smooth crater formula between vertices, define the visible surface.
++    var xs=new Float64Array(columns),zs=new Float64Array(rows),heights=new Float64Array(p.count);
++    var diagonals=new Uint8Array((columns-1)*(rows-1));
++    for(var x=0;x<columns;x++) {
++      xs[x]=p.getX(x);if(!mmNum(xs[x])||(x&&xs[x]<=xs[x-1]))return null;
++    }
++    for(var z=0;z<rows;z++) {
++      zs[z]=p.getZ(z*columns);if(!mmNum(zs[z])||(z&&zs[z]<=zs[z-1]))return null;
++      for(var col=0;col<columns;col++) {
++        var vertex=z*columns+col,y=p.getY(vertex);
++        if(!mmNum(y)||p.getX(vertex)!==xs[col]||p.getZ(vertex)!==zs[z])return null;
++        heights[vertex]=y;
++      }
++    }
++    for(var row=0;row<rows-1;row++)for(var cell=0;cell<columns-1;cell++) {
++      var a=row*columns+cell,b=a+columns,c=b+1,d=a+1,offset=(row*(columns-1)+cell)*6;
++      var first=0,second=0;
++      for(var k=0;k<6;k++) {
++        var v=index.getX(offset+k),mask=v===a?1:v===b?2:v===c?4:v===d?8:0;
++        if(!mask)return null;
++        if(k<3)first|=mask;else second|=mask;
++      }
++      if((first===11&&second===14)||(first===14&&second===11))diagonals[row*(columns-1)+cell]=0;
++      else if((first===7&&second===13)||(first===13&&second===7))diagonals[row*(columns-1)+cell]=1;
++      else return null;
++    }
++    function interval(axis,value) {
++      var lo=0,hi=axis.length-2;
++      while(lo<hi){var mid=Math.ceil((lo+hi)/2);if(axis[mid]<=value)lo=mid;else hi=mid-1;}
++      return lo;
++    }
++    function heightAt(x,z) {
++      if(!mmNum(x)||!mmNum(z)||x<xs[0]||x>xs[columns-1]||z<zs[0]||z>zs[rows-1])return null;
++      var ix=interval(xs,x),iz=interval(zs,z),u=(x-xs[ix])/(xs[ix+1]-xs[ix]),v=(z-zs[iz])/(zs[iz+1]-zs[iz]);
++      var a=iz*columns+ix,ha=heights[a],hd=heights[a+1],hb=heights[a+columns],hc=heights[a+columns+1],h;
++      if(diagonals[iz*(columns-1)+ix])h=v>=u?ha+(hc-hb)*u+(hb-ha)*v:ha+(hd-ha)*u+(hc-hd)*v;
++      else h=u+v<=1?ha+(hd-ha)*u+(hb-ha)*v:hc+(hb-hc)*(1-u)+(hd-hc)*(1-v);
++      return mmNum(h)?h:null;
++    }
++    function trace(x0,z0,x1,z1,lift) {
++      lift=lift===undefined?0:lift;
++      if(!mmNum(lift)||heightAt(x0,z0)===null||heightAt(x1,z1)===null)return null;
++      var dx=x1-x0,dz=z1-z0,cuts=[0,1];
++      function crossAxis(axis,start,delta) {
++        if(!delta)return;
++        for(var i=1;i<axis.length-1;i++){var t=(axis[i]-start)/delta;if(t>0&&t<1)cuts.push(t);}
++      }
++      crossAxis(xs,x0,dx);crossAxis(zs,z0,dz);cuts.sort(function(a,b){return a-b;});
++      cuts=cuts.filter(function(t,i){return !i||t-cuts[i-1]>1e-12;});
++      var refined=cuts.slice();
++      // Split at each crossed cell diagonal too. A straight marker segment then
++      // lies on a single rendered face, including across crater rims.
++      for(var ci=1;ci<cuts.length;ci++) {
++        var mid=(cuts[ci-1]+cuts[ci])/2,ix=interval(xs,x0+dx*mid),iz=interval(zs,z0+dz*mid);
++        var width=xs[ix+1]-xs[ix],depth=zs[iz+1]-zs[iz],u=(x0-xs[ix])/width,v=(z0-zs[iz])/depth;
++        var diagonal=diagonals[iz*(columns-1)+ix],start=diagonal?v-u:u+v-1,speed=diagonal?dz/depth-dx/width:dx/width+dz/depth;
++        if(speed){var t=-start/speed;if(t>cuts[ci-1]+1e-12&&t<cuts[ci]-1e-12)refined.push(t);}
++      }
++      refined.sort(function(a,b){return a-b;});
++      return Object.freeze(refined.map(function(t) {
++        var x=t===0?x0:t===1?x1:Math.max(xs[0],Math.min(xs[columns-1],x0+dx*t));
++        var z=t===0?z0:t===1?z1:Math.max(zs[0],Math.min(zs[rows-1],z0+dz*t));
++        return Object.freeze({x:x,y:heightAt(x,z)+lift,z:z});
++      }));
++    }
++    return Object.freeze({columns:columns,rows:rows,
++      bounds:Object.freeze({minX:xs[0],maxX:xs[columns-1],minZ:zs[0],maxZ:zs[rows-1]}),heightAt:heightAt,trace:trace});
+   }
+   // Direction toward the existing teaching-scene Sun. Magnitude is arbitrary;
+   // parallel-light projection depends on direction, not distance from a lamp.
+@@ -2245,6 +2320,7 @@
+     descentHistoryView:mmDescentHistoryView,updateDescentHistory:mmUpdateDescentHistory,
+     descentEnergy:mmDescentEnergy,descentEnergyGeometry:mmDescentEnergyGeometry,
+     descentEnergyView:mmDescentEnergyView,updateDescentEnergy:mmUpdateDescentEnergy,
++    createDescentTerrainSampler:mmCreateDescentTerrainSampler,
+     descentSun:MM_DESCENT_SUN,projectDescentShadow:mmProjectDescentShadow,descentSidePose:mmDescentSidePose,
+     descentShadowVertices:mmDescentShadowVertices,buildDescentShadow:mmBuildDescentShadow,
+     descentDust:MM_DESCENT_DUST,newDescentDust:mmNewDescentDust,stepDescentDust:mmStepDescentDust,
+@@ -7585,10 +7661,8 @@
+       if (Math.abs(localZ) < localR + 10 && Math.abs(localX) < 160) continue;
+       craters.push({ x: localX, z: localZ, r: localR, d: localR * (0.1 + cRng.next() * 0.14) });
+     }
+-    // One height function, shared by the mesh and by everything that must sit ON the
+-    // ground. The lander used to hold a fixed height above y = 0 while drift slid
+-    // relief of +-110 units under it, so after touchdown the camera could end up
+-    // inside a hill looking at the ground's underside.
++    // The crater formula authors mesh vertices. Contact cues below sample the
++    // finished triangles, whose faces can differ from this smooth formula.
+     function terrainHeight(vx, vz) {
+       // Rolling mare relief under the craters.
+       var hgt = Math.sin(vx * 0.0042) * 7 + Math.cos(vz * 0.0035) * 6
+@@ -7626,6 +7700,13 @@
+     }
+     terGeo.setAttribute('color', new THREE.BufferAttribute(terColors, 3));
+     terGeo.computeVertexNormals();
++    var renderedTerrain=mmCreateDescentTerrainSampler(terGeo);
++    function surfaceHeight(x,z) {
++      var height=renderedTerrain?renderedTerrain.heightAt(x,z):null;
++      // Retain the earlier far-field behavior beyond the finite rendered mesh.
++      return height===null?terrainHeight(x,z):height;
++    }
++    glCv.dataset.descentTerrainMode=renderedTerrain?'mesh-triangles':'analytic';
+     var microSize = lowPower ? 128 : 256;
+     var microDetail = mmRegolithDetail(microSize, 0x4c4d1969);
+     var groundColorCanvas = document.createElement('canvas'), groundHeightCanvas = document.createElement('canvas');
+@@ -7653,6 +7734,7 @@
+     // pushed it over the bloom threshold so the landing site washed out.
+     var terMat = new THREE.MeshStandardMaterial({ color: 0x8f8a80, map: groundTexture, bumpMap: groundBump, bumpScale: 0.08, vertexColors: true, roughness: 1.0, metalness: 0.0 });
+     var terrain = new THREE.Mesh(terGeo, terMat);
++    terrain.name='moon-descent-terrain';terrain.userData.descentSurface=renderedTerrain;
+     terrain.receiveShadow = true;
+     terrain.castShadow = !lowPower;
+     scene.add(terrain);
+@@ -7663,11 +7745,13 @@
+     var nadirGeo = new THREE.BufferGeometry();
+     var nadirPos = new Float32Array(64 * 3);
+     nadirGeo.setAttribute('position', new THREE.BufferAttribute(nadirPos, 3));
+-    var nadir = new THREE.LineLoop(nadirGeo, nadirMat); nadir.renderOrder = 3; nadir.frustumCulled = false; scene.add(nadir);
++    var nadir = new THREE.LineLoop(nadirGeo, nadirMat); nadir.name='moon-descent-nadir'; nadir.renderOrder = 3; nadir.frustumCulled = false; scene.add(nadir);
+     var driftGeo = new THREE.BufferGeometry();
+-    driftGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6 * 3), 3));
++    var driftCapacity=renderedTerrain?12*(renderedTerrain.columns+renderedTerrain.rows)+24:6;
++    driftGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(driftCapacity*3), 3));
++    driftGeo.setDrawRange(0,0);
+     var drift = new THREE.LineSegments(driftGeo, new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.9, depthTest: false }));
+-    drift.renderOrder = 4; drift.frustumCulled = false; scene.add(drift);
++    drift.name='moon-descent-drift';drift.renderOrder = 4; drift.frustumCulled = false; scene.add(drift);
+ 
+     // A reusable, deterministic scatter adds scale near the final approach.
+     var rockRng = _seededRand(12021969);
+@@ -7678,7 +7762,7 @@
+       var rs = 0.35 + Math.pow(rockRng.next(), 2) * 2.8;
+       var rock = new THREE.Mesh(rockGeos[ri % rockGeos.length], rockMat);
+       rock.scale.set(rs, rs * 0.6, rs * 0.85); rock.rotation.y = rockRng.next() * Math.PI;
+-      rock.position.set(rx, terrainHeight(rx, rz) + rs * 0.3, rz);
++      rock.position.set(rx, surfaceHeight(rx, rz) + rs * 0.3, rz);
+       rock.castShadow = !lowPower; rock.receiveShadow = true; terrain.add(rock);
+     }
+ 
+@@ -7896,11 +7980,11 @@
+       terrain.position.x = -(s.groundX || 0);
+       terrain.position.z = -(s.groundZ || 0);
+       // The terrain slides and the lander does not, so read the ground under it.
+-      var groundH = terrainHeight(-terrain.position.x, -terrain.position.z);
++      var groundH = surfaceHeight(-terrain.position.x, -terrain.position.z);
+       var groundX = -terrain.position.x, groundZ = -terrain.position.z;
+       // Grading still uses the flat-surface flight model. This is only the
+       // visual rigid-body support: keep every tilted pad above local relief.
+-      var padSupportY = landingPadSupport(landingPads, tilt, terrainHeight, groundX, groundZ);
++      var padSupportY = landingPadSupport(landingPads, tilt, surfaceHeight, groundX, groundZ);
+       lm.position.set(0, padSupportY + (altUnits - 2.2) + 0.01, 0);
+       var bankCos = Math.cos(tilt), bankSin = Math.sin(tilt);
+       for (var cp = 0; cp < contactProbes.length; cp++) {
+@@ -7911,7 +7995,7 @@
+           var ty = anchor.y - Math.cos(bend) * 1.05;
+           var tz = anchor.z + radialZ * Math.sin(bend) * 1.05 * direction;
+           var wx = tx * bankCos + ty * bankSin;
+-          return lm.position.y - tx * bankSin + ty * bankCos - terrainHeight(groundX + wx, groundZ + tz);
++          return lm.position.y - tx * bankSin + ty * bankCos - surfaceHeight(groundX + wx, groundZ + tz);
+         }
+         var probeBend = 0, foldDirection = 1;
+         if (probeTipClearance(0, 1) < 0) {
+@@ -7934,16 +8018,24 @@
+       var ringRadius = 4.5 + Math.min(8, altUnits * 0.045);
+       for (var ni = 0; ni < 64; ni++) {
+         var na = ni / 64 * Math.PI * 2, nx = Math.cos(na) * ringRadius, nz = Math.sin(na) * ringRadius;
+-        nadirGeo.attributes.position.setXYZ(ni, nx, terrainHeight(groundX + nx, groundZ + nz) + 0.3, nz);
++        nadirGeo.attributes.position.setXYZ(ni, nx, surfaceHeight(groundX + nx, groundZ + nz) + 0.3, nz);
+       }
+       nadirGeo.attributes.position.needsUpdate = true;
+       var driftX = Math.max(-140, Math.min(140, (s.hVel || 0) * 5 * 0.6));
+-      var driftH = terrainHeight(groundX + driftX, groundZ) + 0.45;
+       var headX = driftX - Math.sign(driftX) * Math.min(3.5, Math.abs(driftX) * 0.4);
+-      var driftP = driftGeo.attributes.position;
+-      driftP.setXYZ(0, 0, groundH + 0.45, 0); driftP.setXYZ(1, driftX, driftH, 0);
+-      driftP.setXYZ(2, driftX, driftH, 0); driftP.setXYZ(3, headX, driftH, 1.6);
+-      driftP.setXYZ(4, driftX, driftH, 0); driftP.setXYZ(5, headX, driftH, -1.6);
++      var driftP=driftGeo.attributes.position,driftCount=0;
++      function groundStroke(x0,z0,x1,z1) {
++        var points=renderedTerrain&&renderedTerrain.trace(groundX+x0,groundZ+z0,groundX+x1,groundZ+z1,0.45);
++        if(!points)points=[{x:groundX+x0,y:surfaceHeight(groundX+x0,groundZ+z0)+0.45,z:groundZ+z0},
++          {x:groundX+x1,y:surfaceHeight(groundX+x1,groundZ+z1)+0.45,z:groundZ+z1}];
++        for(var i=1;i<points.length;i++) {
++          var a=points[i-1],b=points[i];
++          driftP.setXYZ(driftCount++,a.x-groundX,a.y,a.z-groundZ);
++          driftP.setXYZ(driftCount++,b.x-groundX,b.y,b.z-groundZ);
++        }
++      }
++      groundStroke(0,0,driftX,0);groundStroke(driftX,0,headX,1.6);groundStroke(driftX,0,headX,-1.6);
++      driftGeo.setDrawRange(0,driftCount);
+       driftP.needsUpdate = true; drift.visible = !s.done && Math.abs(s.hVel || 0) > 0.15;
+ 
+       sun.target.position.copy(lm.position);
+@@ -7965,7 +8057,7 @@
+       if (burning) {
+         var chug = reduce ? 1 : 1 + Math.sin(simTime * 19) * 0.015;
+         var nozzleX = bankSin * bellExitY, nozzleY = lm.position.y + bankCos * bellExitY;
+-        var nozzleClearance = Math.max(0, nozzleY - terrainHeight(groundX + nozzleX, groundZ));
++        var nozzleClearance = Math.max(0, nozzleY - surfaceHeight(groundX + nozzleX, groundZ));
+         var exhaustLength = Math.min(0.55 + thrust * 0.85, nozzleClearance / Math.max(0.1, bankCos) / 5.5);
+         plumeGrp.scale.set(0.8 + thrust * 0.25, exhaustLength * chug, 0.8 + thrust * 0.25);
+         plumeMat.opacity = 0.045 + thrust * 0.07;
+@@ -7977,7 +8069,7 @@
+       var dustFrame=s.dust||[],dp=dustGeo.attributes.position,da=dustGeo.attributes.opacity;
+       var shownDust=Math.min(dustN,dustFrame.length);
+       for(var k=0;k<shownDust;k++) {
+-        var grain=dustFrame[k],launchH=terrainHeight(grain.launchX*0.6,grain.launchZ*0.6);
++        var grain=dustFrame[k],launchH=surfaceHeight(grain.launchX*0.6,grain.launchZ*0.6);
+         dp.setXYZ(k*2,grain.tailX*0.6-groundX,launchH+grain.tailHeight*0.6,grain.tailZ*0.6-groundZ);
+         dp.setXYZ(k*2+1,grain.x*0.6-groundX,launchH+grain.height*0.6,grain.z*0.6-groundZ);
+         da.setX(k*2,grain.opacity);da.setX(k*2+1,grain.opacity);
+@@ -8014,7 +8106,7 @@
+         camera.updateProjectionMatrix();
+         glCv.dataset.descentCamera = cameraMode;
+       }
+-      var camFloor = terrainHeight(camX - terrain.position.x, camZ - terrain.position.z) + 3;
++      var camFloor = surfaceHeight(camX - terrain.position.x, camZ - terrain.position.z) + 3;
+       camera.position.set(camX, Math.max(lm.position.y + up, camFloor), camZ);
+       // Look progressively further ahead of the vehicle as height grows, so high
+       // up you read the approach and low down you read the touchdown point.
+@@ -11691,6 +11783,7 @@
+                 h('p', null, t('stem.moonmission.scene_model_explanation', 'The scene compresses altitude to keep the lander visible. Cyan marks the ground below the lander; amber shows five seconds of drift at the current speed. The terrain is illustrative and is not a landing hazard map.')),
+                 h('p', { 'data-descent-dust-note': true }, 'Surface dust follows shallow ballistic arcs under lunar gravity and keeps moving after engine cutoff. Grain speeds and density are illustrative. Recorded frames omit airborne dust.'),
+                 h('p', { 'data-descent-shadow-note': true }, 'The lander casts a shadow along the fixed scene sunlight. Both 3D views follow the terrain; the lighter view uses a smaller shadow map. Scene height is compressed, so the shadow is a visual cue rather than an altitude measurement.'),
++                h('p', { 'data-descent-surface-note': true }, 'In 3D, the feet, ground markers and exhaust clearance follow the visible cratered surface. The flight model uses level ground when deciding touchdown and grading the landing.'),
+                 h('p', null, t('stem.moonmission.engine_model_explanation', 'Educational final-approach model: 46.7 kN maximum engine thrust, 311 s specific impulse, and an assumed 7,000 kg mass without remaining descent propellant. The throttle range and landing limits are simplified for practice.')),
+                 h('a', { href: 'https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/', target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', padding: '10px 0', color: '#7dd3fc', textDecoration: 'underline' } }, 'NASA ideal rocket equation')
+               )

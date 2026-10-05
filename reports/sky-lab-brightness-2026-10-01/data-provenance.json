@@ -1,0 +1,78 @@
+{
+  "checkedOn": "2026-10-01",
+  "band": "Johnson V",
+  "solarCalibration": {
+    "absoluteV": 4.81,
+    "source": "Willmer 2018, arXiv:1804.07788v1",
+    "url": "https://arxiv.org/abs/1804.07788"
+  },
+  "catalogue": {
+    "name": "ESA 1997 Hipparcos I/239/hip_main",
+    "download": "hipparcos-bright-stars.tsv",
+    "provenance": "download-provenance.json"
+  },
+  "references": [
+    {
+      "id": "sun",
+      "name": "Sun reference",
+      "absoluteV": 4.81,
+      "distancePc": 10,
+      "source": "Willmer 2018 · Solar V magnitude",
+      "href": "https://arxiv.org/abs/1804.07788",
+      "basis": "Adopted solar M_V = +4.81 from Willmer (2018), in the Vega magnitude system. The Sun example starts at the standard distance of 10 pc."
+    },
+    {
+      "id": "sirius",
+      "name": "Sirius",
+      "hip": 32349,
+      "apparentV": -1.44,
+      "parallaxMas": 379.21,
+      "parallaxErrorMas": 1.58,
+      "source": "ESA 1997 · Hipparcos catalogue",
+      "href": "https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=I/239/hip_main&HIP=32349,91262",
+      "basis": "HIP 32349: Johnson V = −1.44; parallax = 379.21 ± 1.58 mas in the ESA 1997 catalogue. M_V is inferred from these inputs assuming negligible extinction."
+    },
+    {
+      "id": "vega",
+      "name": "Vega",
+      "hip": 91262,
+      "apparentV": 0.03,
+      "parallaxMas": 128.93,
+      "parallaxErrorMas": 0.55,
+      "source": "ESA 1997 · Hipparcos catalogue",
+      "href": "https://vizier.cds.unistra.fr/viz-bin/VizieR?-source=I/239/hip_main&HIP=32349,91262",
+      "basis": "HIP 91262: Johnson V = +0.03; parallax = 128.93 ± 0.55 mas in the ESA 1997 catalogue. M_V is inferred from these inputs assuming negligible extinction."
+    }
+  ],
+  "model": {
+    "equations": [
+      "m_V = M_V + 5 log10(d_pc/10) + A_V",
+      "F/F10 = (10/d_pc)^2 * 10^(-0.4 A_V)",
+      "L_V/L_Vsun = 10^(0.4 (4.81-M_V))"
+    ],
+    "assumptions": [
+      "Steady nearby point source; Euclidean inverse-square dilution.",
+      "Inferred catalogue M_V assumes negligible extinction for these nearby examples.",
+      "Foreground A_V is a separately chosen V-band dimming, not a fixed per-distance dust rate.",
+      "Quoted parallax errors are shown; measurement and calibration uncertainty are not propagated.",
+      "V-band luminosity ratios compare one filter and do not replace bolometric luminosity."
+    ],
+    "distancePcRange": [
+      0.1,
+      10000
+    ],
+    "customAbsoluteVRange": [
+      -10,
+      15
+    ],
+    "extinctionVRange": [
+      0,
+      5
+    ]
+  },
+  "formulaSources": [
+    "https://astro.unl.edu/naap/distance/distance_modulus.html",
+    "https://astro.wku.edu/labs/m100/mags.html"
+  ],
+  "runtimeNetworkRequestsRequired": false
+}

@@ -1,0 +1,118 @@
+{
+  "sourceSha256": "729418d54d2d93973e8bc3adcf48ef43273d46098a003970aa3a868416f17c87",
+  "mirrorByteIdentical": true,
+  "syntax": "valid",
+  "browser": {
+    "startTime": "2026-10-01T04:42:03.670Z",
+    "duration": 342993.941,
+    "expected": 20,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "emptyReview": {
+    "startTime": "2026-10-01T04:51:15.304Z",
+    "duration": 131677.70299999998,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "unit": {
+    "passed": 344,
+    "total": 349,
+    "failed": 5,
+    "baselineFailuresMatchExactly": true,
+    "existingFailures": [
+      {
+        "name": "dissection improved UI render protects destructive reset and announces filtered structure results with focus recovery",
+        "message": "AssertionError: expected '// ── Reduced motion CSS (WCAG 2.3.3)…' to contain '\"aria-describedby\": \"diss-directory-c…'"
+      },
+      {
+        "name": "dissection improved UI render provides constrained precision navigation and discoverable keyboard parity",
+        "message": "AssertionError: expected '// ── Reduced motion CSS (WCAG 2.3.3)…' to contain 'var compassBottomInset = guidedMode &…'"
+      },
+      {
+        "name": "dissection improved UI render renders guided instruments, progress, depth controls, and an equivalent action button",
+        "message": "AssertionError: expected '<div class=\"space-y-3\" data-dissectio…' to contain 'Selected · Ready'"
+      },
+      {
+        "name": "dissection improved UI render renders the evidence workflow and comparative-model notice",
+        "message": "AssertionError: expected <div …(4)><ol …(1)>…(3)</ol></div> to be <details …(3)>…(2)</details> // Object.is equality"
+      },
+      {
+        "name": "dissection improvement contracts models a persistent, accessible procedural instrument workflow",
+        "message": "AssertionError: expected '// ── Reduced motion CSS (WCAG 2.3.3)…' to contain '\\'Next \\u00B7 \\' + toolState.label'"
+      }
+    ],
+    "suites": [
+      {
+        "name": "dissection_canvas_loop.test.js",
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "name": "dissection_lab_improvements.test.js",
+        "passed": 86,
+        "failed": 5
+      },
+      {
+        "name": "dissection_reference_workbench.test.js",
+        "passed": 149,
+        "failed": 0
+      },
+      {
+        "name": "dissection_workspace_bands.test.js",
+        "passed": 106,
+        "failed": 0
+      }
+    ]
+  },
+  "layout": [
+    {
+      "name": "phone",
+      "width": 300.40625,
+      "clientWidth": 298,
+      "scrollWidth": 298,
+      "minimumTextSize": 14,
+      "minimumTargetHeight": 48,
+      "axeViolations": 0
+    },
+    {
+      "name": "tablet",
+      "width": 737.21875,
+      "clientWidth": 735,
+      "scrollWidth": 735,
+      "minimumTextSize": 14,
+      "minimumTargetHeight": 48,
+      "axeViolations": 0
+    },
+    {
+      "name": "embedded-large",
+      "width": 300.40625,
+      "clientWidth": 298,
+      "scrollWidth": 298,
+      "minimumTextSize": 16,
+      "minimumTargetHeight": 48,
+      "axeViolations": 0
+    },
+    {
+      "name": "desktop",
+      "width": 797.21875,
+      "clientWidth": 795,
+      "scrollWidth": 795,
+      "minimumTextSize": 14,
+      "minimumTargetHeight": 48,
+      "axeViolations": 0
+    },
+    {
+      "name": "forced-colors",
+      "width": 370.40625,
+      "clientWidth": 368,
+      "scrollWidth": 368,
+      "minimumTextSize": 14,
+      "minimumTargetHeight": 48,
+      "axeViolations": 0
+    }
+  ]
+}

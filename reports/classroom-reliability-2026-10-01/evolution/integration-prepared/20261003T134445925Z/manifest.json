@@ -1,0 +1,82 @@
+{
+  "kind": "evolution-reveal-integration",
+  "preparedUtc": "2026-10-03T13:44:46.003Z",
+  "repositoryRoot": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "sources": [
+    {
+      "path": "stem_lab/stem_tool_evolab.js",
+      "snapshotPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-reliability-2026-10-01\\evolution\\integration-prepared\\20261003T134445925Z\\canonical.before.js",
+      "beforeSha256": "2f95fc6d1dc23848c471fda8a54218d04d666c4372258bb5f2b4a132e325e7bb",
+      "candidateSha256": "b587a28fcb14a13e6a70a1d81e41ded97694cb6577b0e45c11bf04ddfa47563f",
+      "bytesBefore": 2034058,
+      "bytesAfter": 2034427,
+      "eol": {
+        "crlf": 0,
+        "loneLf": 18788,
+        "loneCr": 0,
+        "utf8Bom": false,
+        "finalNewline": true
+      }
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_evolab.js",
+      "snapshotPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-reliability-2026-10-01\\evolution\\integration-prepared\\20261003T134445925Z\\public.before.js",
+      "beforeSha256": "2f95fc6d1dc23848c471fda8a54218d04d666c4372258bb5f2b4a132e325e7bb",
+      "candidateSha256": "b587a28fcb14a13e6a70a1d81e41ded97694cb6577b0e45c11bf04ddfa47563f",
+      "bytesBefore": 2034058,
+      "bytesAfter": 2034427,
+      "eol": {
+        "crlf": 0,
+        "loneLf": 18788,
+        "loneCr": 0,
+        "utf8Bom": false,
+        "finalNewline": true
+      }
+    }
+  ],
+  "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-reliability-2026-10-01\\evolution\\integration-prepared\\20261003T134445925Z\\stem_tool_evolab.current.candidate.js",
+  "patchPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-reliability-2026-10-01\\evolution\\integration-prepared\\20261003T134445925Z\\evolution-reveal.patch",
+  "changes": [
+    {
+      "purpose": "Withhold the full outcome report during the parents/survivors stages of a new walkthrough; retain ordinary historical playback.",
+      "before": "})), briefing ? h(IslandFieldReport,",
+      "after": "})), (!watching || phase === 'offspring') && (briefing ? h(IslandFieldReport,"
+    },
+    {
+      "purpose": "Keep the fallback summary inside that same disclosure boundary.",
+      "before": "h('small', null, s[1])); }))),",
+      "after": "h('small', null, s[1])); })))),"
+    },
+    {
+      "purpose": "Use existing registered extinction/generation-limit review guidance beside disabled habitat controls.",
+      "before": "h('p', { className: 'ei-small' }, tx('hint_' + shownHabitat, env.hint)),",
+      "after": "h('p', { className: 'ei-small' }, ended ? (extinct ? tx('extinction', 'Your population went extinct. This is evidence to investigate, not a failed score. Rewind the timeline and inspect the last breeding generation.') : tx('finished', '60 generations recorded. Your expedition is complete: explore the timeline, export your data, and explain what changed.')) : tx('hint_' + shownHabitat, env.hint)),"
+    }
+  ],
+  "anchorChecks": [
+    {
+      "purpose": "Withhold the full outcome report during the parents/survivors stages of a new walkthrough; retain ordinary historical playback.",
+      "beforeCount": 1,
+      "afterCount": 0
+    },
+    {
+      "purpose": "Keep the fallback summary inside that same disclosure boundary.",
+      "beforeCount": 1,
+      "afterCount": 0
+    },
+    {
+      "purpose": "Use existing registered extinction/generation-limit review guidance beside disabled habitat controls.",
+      "beforeCount": 1,
+      "afterCount": 0
+    }
+  ],
+  "reverseExact": true,
+  "syntax": {
+    "parser": "node:vm.Script",
+    "executed": false,
+    "passed": true
+  },
+  "preservedScope": "Exactly three substitutions on the fresh canonical/public pair; no ignored build copies, hosts, pins, shared registries, tests, commits or deployments.",
+  "productionApplied": false,
+  "candidateTested": false
+}

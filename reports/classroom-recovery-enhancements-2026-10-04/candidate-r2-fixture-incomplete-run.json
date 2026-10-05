@@ -1,0 +1,55 @@
+{
+  "label": "candidate",
+  "passed": false,
+  "completedAt": "2026-10-04T15:01:58.300Z",
+  "results": [
+    {
+      "name": "restore",
+      "status": 0,
+      "elapsedMs": 1727,
+      "error": null,
+      "stdout": "{\"total\":26,\"passed\":26,\"failed\":0,\"destination\":\"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\classroom-recovery-enhancements-2026-10-04\\\\restore-audit\\\\candidate-results.json\"}\n",
+      "stderr": ""
+    },
+    {
+      "name": "entry",
+      "status": 0,
+      "elapsedMs": 693,
+      "error": null,
+      "stdout": "{\"passed\":true,\"checks\":30,\"failed\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "shelf",
+      "status": 0,
+      "elapsedMs": 1670,
+      "error": null,
+      "stdout": "{\"passed\":true,\"checks\":9,\"failed\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "host-boundaries",
+      "status": 0,
+      "elapsedMs": 1405,
+      "error": null,
+      "stdout": "{\"passed\":true,\"checks\":16,\"failed\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "host-boundaries",
+      "status": 0,
+      "elapsedMs": 1179,
+      "error": null,
+      "stdout": "{\"passed\":true,\"checks\":16,\"failed\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "vault",
+      "status": 1,
+      "elapsedMs": 1631,
+      "error": null,
+      "stdout": "{\"label\":\"combined-candidate\",\"total\":58,\"failed\":2,\"failedNames\":[\"source: actual record decrypt cannot expose contents after explicit lock\",\"generated: actual record decrypt cannot expose contents after explicit lock\"]}\n",
+      "stderr": ""
+    }
+  ]
+}

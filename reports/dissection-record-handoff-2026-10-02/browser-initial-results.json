@@ -1,0 +1,562 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-record-handoff-2026-10-02/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 240000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-record-handoff.spec.ts",
+      "file": "dissection-record-handoff.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "record handoff phone is readable and opens the actual missing field",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13338,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:07:54.297Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-3e6dd63741dad891084b",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 36,
+          "column": 8
+        },
+        {
+          "title": "record handoff tablet is readable and opens the actual missing field",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16277,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:08:08.742Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-646781318c07fdfb3ad2",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 36,
+          "column": 8
+        },
+        {
+          "title": "record handoff desktop is readable and opens the actual missing field",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 15700,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:08:25.055Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-b72a6732c80320d8c65e",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 36,
+          "column": 8
+        },
+        {
+          "title": "record handoff embedded-large is readable and opens the actual missing field",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13862,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:08:40.789Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-5e5a7c06640a8b366873",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 36,
+          "column": 8
+        },
+        {
+          "title": "record handoff forced-colors is readable and opens the actual missing field",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11654,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:08:54.688Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-64660f75092b46e68c3b",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 36,
+          "column": 8
+        },
+        {
+          "title": "next action names the confidence missing from the record",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8336,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:09:07.037Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-e5c746aadb2862943b86",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 54,
+          "column": 56
+        },
+        {
+          "title": "next action names the note missing from the record",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8189,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:09:15.385Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-71e10dfc5cdb569f001e",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 54,
+          "column": 56
+        },
+        {
+          "title": "next action names the both missing from the record",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8062,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:09:23.586Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-e72da23022b68392cbe2",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 54,
+          "column": 56
+        },
+        {
+          "title": "finishing records advances the handoff only after explicit writing or rating",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 21399,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeChecked\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('radio', { name: 'Confidence 2 of 3: Some evidence', exact: true })\nExpected: checked\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeChecked\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('radio', { name: 'Confidence 2 of 3: Some evidence', exact: true })\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeChecked\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('radio', { name: 'Confidence 2 of 3: Some evidence', exact: true })\nExpected: checked\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeChecked\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('radio', { name: 'Confidence 2 of 3: Some evidence', exact: true })\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-record-handoff.spec.ts:71:232",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-record-handoff.spec.ts",
+                      "column": 232,
+                      "line": 71
+                    },
+                    "snippet": "  69 |   await expect(handoff.locator('[data-record-complete]')).toHaveText('Note and confidence recorded'); await expect(handoff).toContainText('2 of 4 inspected structures');\n  70 |   await expect(handoff.locator('[data-next-record]')).toHaveAttribute('data-next-record', organs[2].id); await expect(handoff).toContainText('Note needed');\n> 71 |   await handoff.locator('[data-next-record-action]').click(); await expect(page.locator(`#diss-note-${organs[2].id}`)).toBeFocused(); await expect(page.getByRole('radio', { name: 'Confidence 2 of 3: Some evidence', exact: true })).toBeChecked();\n     |                                                                                                                                                                                                                                        ^\n  72 |   await page.locator(`#diss-note-${organs[2].id}`).fill('I observed the external membrane next to the eye.');\n  73 |   await expect(handoff).toContainText('3 of 4 inspected structures'); await expect(handoff.locator('[data-next-record]')).toHaveAttribute('data-next-record', organs[3].id); await expect(handoff).toContainText('Note and confidence needed');\n  74 |   await handoff.locator('[data-next-record-action]').click(); await expect(page.locator(`#diss-note-${organs[3].id}`)).toBeFocused(); await page.locator(`#diss-note-${organs[3].id}`).fill('I observed the protective eyelid and its position.');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-record-handoff.spec.ts",
+                        "column": 232,
+                        "line": 71
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeChecked\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator: getByRole('radio', { name: 'Confidence 2 of 3: Some evidence', exact: true })\nExpected: checked\nTimeout: 15000ms\nError: element(s) not found\n\nCall log:\n\u001b[2m  - Expect \"toBeChecked\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByRole('radio', { name: 'Confidence 2 of 3: Some evidence', exact: true })\u001b[22m\n\n\n  69 |   await expect(handoff.locator('[data-record-complete]')).toHaveText('Note and confidence recorded'); await expect(handoff).toContainText('2 of 4 inspected structures');\n  70 |   await expect(handoff.locator('[data-next-record]')).toHaveAttribute('data-next-record', organs[2].id); await expect(handoff).toContainText('Note needed');\n> 71 |   await handoff.locator('[data-next-record-action]').click(); await expect(page.locator(`#diss-note-${organs[2].id}`)).toBeFocused(); await expect(page.getByRole('radio', { name: 'Confidence 2 of 3: Some evidence', exact: true })).toBeChecked();\n     |                                                                                                                                                                                                                                        ^\n  72 |   await page.locator(`#diss-note-${organs[2].id}`).fill('I observed the external membrane next to the eye.');\n  73 |   await expect(handoff).toContainText('3 of 4 inspected structures'); await expect(handoff.locator('[data-next-record]')).toHaveAttribute('data-next-record', organs[3].id); await expect(handoff).toContainText('Note and confidence needed');\n  74 |   await handoff.locator('[data-next-record-action]').click(); await expect(page.locator(`#diss-note-${organs[3].id}`)).toBeFocused(); await page.locator(`#diss-note-${organs[3].id}`).fill('I observed the protective eyelid and its position.');\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-record-handoff.spec.ts:71:232"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:09:31.660Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-record-handoff-2026-10-02\\browser-artifacts\\dissection-record-handoff--0e069--explicit-writing-or-rating-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-record-handoff-2026-10-02\\browser-artifacts\\dissection-record-handoff--0e069--explicit-writing-or-rating-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-record-handoff-2026-10-02\\browser-artifacts\\dissection-record-handoff--0e069--explicit-writing-or-rating-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-record-handoff-2026-10-02\\browser-artifacts\\dissection-record-handoff--0e069--explicit-writing-or-rating-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-record-handoff.spec.ts",
+                    "column": 232,
+                    "line": 71
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-8aba7215e72f8f4e4d32",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 66,
+          "column": 5
+        },
+        {
+          "title": "clearing the current note keeps a pending record visible when no other record is unfinished",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6281,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:09:54.434Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-20a2414dcea31b50ff65",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 83,
+          "column": 5
+        },
+        {
+          "title": "next-record navigation preserves the guided route, view, and scenario completion",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4723,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:10:01.155Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-68f5c4024d9fb5d58879",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 90,
+          "column": 5
+        },
+        {
+          "title": "quiz hides the observation handoff",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2228,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:10:05.896Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-7aa685939ec1c067601f",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 96,
+          "column": 44
+        },
+        {
+          "title": "timed practical hides the observation handoff",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2318,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T15:10:08.153Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "eff8a5f7679c2899a8c5-b6f9972ae66db543bc59",
+          "file": "dissection-record-handoff.spec.ts",
+          "line": 96,
+          "column": 44
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T15:07:51.877Z",
+    "duration": 138812.949,
+    "expected": 12,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,28 @@
+{
+  "runtimeSha256": "d6d5f4ab11cd11b0d3f6c93bf6d88bba9ff5813a6cadd1805a63af55edb79bc9",
+  "test": {
+    "file": "aquaculture_archive_integrity.test.js",
+    "sha256": "b2f33f5f6367095a8a230fefea89bc292de5350c5176251985c07eec19f36789",
+    "cases": 30
+  },
+  "manualReview": {
+    "rootAccepted": true,
+    "independentAccepted": true,
+    "independentReviewer": "/root/archive_integrity_review",
+    "scope": "Final archive views and seven workflows only; five normal contrast incompletes manually reviewed, no whole-app accessibility claim."
+  },
+  "browser": {
+    "sha256": "40957676921b9d19cf1f5c9f4a1e21a2c9de03a1cc0d992e434d536c3056a2fb",
+    "groups": 7,
+    "entries": 7,
+    "axeScans": 9,
+    "screenshots": 17,
+    "previews": [
+      { "source": "desktop-exact-remove-1280-archive.png", "output": "aquaculture-archive-integrity-desktop.png" },
+      { "source": "phone-duplicates-390-archive.png", "output": "aquaculture-archive-integrity-phone.png" },
+      { "source": "identical-sibling-undo-320-archive-forced-colors.png", "output": "aquaculture-archive-integrity-forced-colors.png" },
+      { "source": "identical-sibling-undo-320-undo-forced-colors.png", "output": "aquaculture-archive-integrity-undo-forced-colors.png" }
+    ]
+  },
+  "recoveryRuns": []
+}

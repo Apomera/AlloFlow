@@ -1,0 +1,94 @@
+{
+  "contexts": [
+    {
+      "id": 1,
+      "type": "webgl2",
+      "mount": 1,
+      "createdBy": "page",
+      "lost": false,
+      "lostBy": null,
+      "draws": 428,
+      "renders": 50,
+      "lastDrawAgoMs": 1617,
+      "connected": true,
+      "inWrap": true,
+      "width": 1014,
+      "height": 420,
+      "creator": [
+        "mmBuildDescent3D (stem_lab/stem_tool_moonmission.js:7207:18)",
+        "bootDescent3D (stem_lab/stem_tool_moonmission.js:11267:31)",
+        "drawDescent (stem_lab/stem_tool_moonmission.js:10745:91)"
+      ]
+    }
+  ],
+  "scene": {
+    "renders": 770,
+    "draws": 10207,
+    "hasScene": true,
+    "objects": 175,
+    "meshes": 160,
+    "visibleMeshes": 160,
+    "lines": 2,
+    "points": 2,
+    "sprites": 0,
+    "lights": 3
+  },
+  "pausedScene": {
+    "renders": 50,
+    "draws": 428,
+    "hasScene": true,
+    "objects": 175,
+    "meshes": 160,
+    "visibleMeshes": 158,
+    "lines": 2,
+    "points": 2,
+    "sprites": 0,
+    "lights": 3
+  },
+  "overheadScene": {
+    "renders": 65,
+    "draws": 613,
+    "hasScene": true,
+    "objects": 175,
+    "meshes": 160,
+    "visibleMeshes": 158,
+    "lines": 2,
+    "points": 2,
+    "sprites": 0,
+    "lights": 3
+  },
+  "heldScene": {
+    "renders": 770,
+    "draws": 10207,
+    "hasScene": true,
+    "objects": 175,
+    "meshes": 160,
+    "visibleMeshes": 160,
+    "lines": 2,
+    "points": 2,
+    "sprites": 0,
+    "lights": 3
+  },
+  "unchangedPausedDraws": true,
+  "cameraAndResizeRedraw": true,
+  "before": {
+    "alt": 300,
+    "vVel": -9,
+    "hVel": 4,
+    "fuel": 110,
+    "thrust": 0,
+    "tilt": 0,
+    "x": 0,
+    "elapsed": 0
+  },
+  "held": {
+    "alt": 290.10802014178097,
+    "vVel": 6.405830765843933,
+    "hVel": 12.397899276850316,
+    "fuel": 92.65295475860215,
+    "thrust": 0.6499999999999994,
+    "tilt": 0.3499999999992612,
+    "x": 52.8836757367158,
+    "elapsed": 6.966666666666803
+  }
+}

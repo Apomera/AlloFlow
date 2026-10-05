@@ -1,0 +1,7 @@
+{
+  "kind": "harness-text-expectation",
+  "sourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+  "initialFinding": "Checking absence of generic Study A on overview page also matched the intended comparison table header.",
+  "resolution": "Check exact Study A · Lines section heading instead; final text verification passed with unchanged product/PDFs.",
+  "productSourceChanged": false
+}

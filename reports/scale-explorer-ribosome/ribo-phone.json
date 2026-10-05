@@ -1,0 +1,148 @@
+{
+  "initial": {
+    "type": "webgl",
+    "scale": 3,
+    "declaredExtent": 1,
+    "dimension": "x",
+    "measureCenter": 0,
+    "width": 0.9934166371822357,
+    "aligned": 1.0000000000000002,
+    "targetError": 0,
+    "cutaway": false,
+    "small": [
+      0,
+      0,
+      0
+    ],
+    "large": [
+      0,
+      0,
+      0
+    ],
+    "bound": [
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ],
+      [
+        0,
+        0,
+        0
+      ]
+    ],
+    "meshes": [
+      {
+        "geometry": "4210C986-05C7-43EE-AB79-2472CEED1578",
+        "material": "04B0E513-770D-47D7-AB43-2D9E872F9502",
+        "kind": "rna",
+        "part": "small",
+        "visible": true,
+        "triangles": 36084,
+        "clips": []
+      },
+      {
+        "geometry": "5B6296F3-3E9B-441C-9734-9CB5D8B9D0C7",
+        "material": "207C8D00-444D-4994-B895-F26E7F555E1D",
+        "kind": "protein",
+        "part": "large",
+        "visible": true,
+        "triangles": 35420,
+        "clips": []
+      },
+      {
+        "geometry": "D64CA015-8082-4057-B8E8-4CF647F0DE7A",
+        "material": "6731CEC9-7762-478A-BCE6-8D7A98AC4C98",
+        "kind": "protein",
+        "part": "small",
+        "visible": true,
+        "triangles": 23850,
+        "clips": []
+      },
+      {
+        "geometry": "E7A906BE-740F-485F-A817-1B6CE9C9F1FD",
+        "material": "FBB9D897-9F01-4969-8702-106E7A04D6D2",
+        "kind": "rna",
+        "part": "large",
+        "visible": true,
+        "triangles": 70200,
+        "clips": []
+      },
+      {
+        "geometry": "C530E406-F065-466C-8A33-4F8B81345C5E",
+        "material": "2E8C5ABC-51EE-402D-BB39-DE32ECD37DED",
+        "kind": "rna",
+        "part": "trna-p",
+        "visible": true,
+        "triangles": 3616,
+        "clips": []
+      },
+      {
+        "geometry": "77235F27-8559-4992-9365-C36509CEEAC9",
+        "material": "5593E618-F5D1-4D42-875D-E3CD554CAABF",
+        "kind": "rna",
+        "part": "trna-e",
+        "visible": true,
+        "triangles": 3616,
+        "clips": []
+      },
+      {
+        "geometry": "0AC80378-A9F8-4A3F-8314-8925EB75A5EC",
+        "material": "368D9864-E37C-480D-811A-4EACEBB93578",
+        "kind": "rna",
+        "part": "mrna",
+        "visible": true,
+        "triangles": 496,
+        "clips": []
+      },
+      {
+        "geometry": "081B19A2-1A2C-4361-9442-C4F1820BD0D2",
+        "material": "8A4B3203-7EF9-4DF0-8EDC-33861C0E7584",
+        "kind": "rna",
+        "part": "trna-a",
+        "visible": true,
+        "triangles": 3616,
+        "clips": []
+      }
+    ],
+    "stats": {
+      "residues": 10596,
+      "segments": 10536,
+      "gaps": 3,
+      "triangles": 176898,
+      "drawables": 8
+    },
+    "detail": "",
+    "draws": 126,
+    "renders": 6,
+    "localClipping": true,
+    "sliceActive": false,
+    "markers": [
+      {
+        "visible": false,
+        "scale": [
+          1,
+          1,
+          1
+        ],
+        "projected": [
+          9.237011967006309e-17,
+          -0.07778972584816263,
+          0.9851882997438638
+        ]
+      }
+    ]
+  },
+  "errors": [],
+  "external": []
+}

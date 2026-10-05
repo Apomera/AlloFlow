@@ -6,7 +6,7 @@ describe('Ingredient exploration follows real cooking state',()=>{
  it('updates portion observations only after recording the scale',()=>{let s=R.start();expect(I.describe(s,'pasta').notice).toContain('0 g recorded');s=R.act(s,'measure',160);expect(I.describe(s,'pasta').notice).toContain('160 g recorded');});
  it('does not claim that a rejected garlic pass minced a clove',()=>{let s=R.act(R.start(),'minceGarlic',0);expect(s.log.at(-1).accepted).toBe(false);expect(I.describe(s,'garlic').notice).toContain('0 of 2');s=R.act(s,'wash');for(let i=0;i<3;i++)s=R.act(s,'minceGarlic',0);expect(I.describe(s,'garlic').notice).toContain('1 of 2');});
  it('tracks the finite jug through an actual pour and restoration',()=>{let s=R.startRescue('dry',0,'practice');expect(I.describe(s,'saved').tool).toBe('pour');s=R.act(s,'pour',50);expect(I.describe(s,'saved').notice).toBe('150 mL left in the jug · 50 mL added to the pan.');expect(I.describe(R.restore(s),'saved')).toEqual(I.describe(s,'saved'));});
- it('changes produce activities after the produce reaches the pan',()=>{expect(I.describe(R.start(),'produce').tool).toBe('cut');expect(I.describe(R.startRescue('dry',0,'practice'),'produce').tool).toBe('arrange');expect(I.describe(R.startRescue('watery',1,'practice'),'produce').tool).toBe('crush');});
+ it('changes produce activities after the produce reaches the pan',()=>{expect(I.describe(R.start(),'produce')).toMatchObject({tool:'wash',view:'wash',zone:'prep'});expect(I.describe(R.act(R.act(R.start(),'wash'),'rinse'),'produce').tool).toBe('cut');expect(I.describe(R.startRescue('dry',0,'practice'),'produce').tool).toBe('arrange');expect(I.describe(R.startRescue('watery',1,'practice'),'produce').tool).toBe('crush');});
 });
 describe('Ingredient guide controls',()=>{
  let host,ui,s;
@@ -16,3 +16,5 @@ describe('Ingredient guide controls',()=>{
  it('keeps replay exploration read-only and resumes current controls afterward',()=>{ui.render(s,true);document.querySelector('[data-ingredient="produce"]').click();expect(document.getElementById('ingredientReading').textContent).toContain('Recorded bench');expect(document.getElementById('ingredientHandle').disabled).toBe(true);document.getElementById('ingredientHandle').click();expect(host.open).not.toHaveBeenCalled();ui.render(s,false);expect(document.getElementById('ingredientHandle').disabled).toBe(false);});
  it('offers the existing hands-on controls when 3D is unavailable',()=>{host.has3D=()=>false;ui.render(s,false);expect(document.getElementById('ingredientHandle').textContent).toBe('Open hands-on controls');document.getElementById('ingredientKeyboard').click();expect(host.open).toHaveBeenCalledWith('pasta',expect.objectContaining({tool:'weigh'}),true);});
 });
+
+// Raw produce directs learners to the handwashing station before rinsing.

@@ -1,0 +1,14 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/perception_lab_recorded_preview.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/perception_lab_recorded_preview.test.js (63 tests) 3297ms
+
+ Test Files  1 passed (1)
+      Tests  63 passed (63)
+   Start at  18:19:43
+   Duration  5.64s (transform 61ms, setup 51ms, import 100ms, tests 3.30s, environment 1.87s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/artstudio-workspace/perception-recorded-preview/recorded-preview-focused-results.json

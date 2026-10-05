@@ -1,0 +1,81 @@
+{
+  "scope": "Actual controller/native Web Crypto; completed stale repository read versus accepted different-DEK backup; no browser/App or other-tab revocation.",
+  "passed": 18,
+  "failed": 0,
+  "modulePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allo_device_vault_module.js",
+  "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6",
+  "checks": [
+    {
+      "name": "readPlainStore: newer accepted backup session starts unlocked",
+      "passed": true
+    },
+    {
+      "name": "readPlainStore: obsolete head cannot produce old plaintext",
+      "passed": true
+    },
+    {
+      "name": "readPlainStore: retired old-head failure uses locked contract",
+      "passed": true
+    },
+    {
+      "name": "readPlainStore: old-head verification preserves new accepted key",
+      "passed": true
+    },
+    {
+      "name": "readPlainStore: new accepted backup remains readable",
+      "passed": true
+    },
+    {
+      "name": "readPlainStore: current backup retains its own content",
+      "passed": true
+    },
+    {
+      "name": "listSnapshots: newer accepted backup session starts unlocked",
+      "passed": true
+    },
+    {
+      "name": "listSnapshots: obsolete head cannot produce old plaintext",
+      "passed": true
+    },
+    {
+      "name": "listSnapshots: retired old-head failure uses locked contract",
+      "passed": true
+    },
+    {
+      "name": "listSnapshots: old-head verification preserves new accepted key",
+      "passed": true
+    },
+    {
+      "name": "listSnapshots: new accepted backup remains readable",
+      "passed": true
+    },
+    {
+      "name": "listSnapshots: current backup retains its own content",
+      "passed": true
+    },
+    {
+      "name": "restoreSnapshot: newer accepted backup session starts unlocked",
+      "passed": true
+    },
+    {
+      "name": "restoreSnapshot: obsolete head cannot produce old plaintext",
+      "passed": true
+    },
+    {
+      "name": "restoreSnapshot: retired old-head failure uses locked contract",
+      "passed": true
+    },
+    {
+      "name": "restoreSnapshot: old-head verification preserves new accepted key",
+      "passed": true
+    },
+    {
+      "name": "restoreSnapshot: new accepted backup remains readable",
+      "passed": true
+    },
+    {
+      "name": "restoreSnapshot: current backup retains its own content",
+      "passed": true
+    }
+  ]
+}

@@ -1,0 +1,150 @@
+{
+  "date": "2026-10-01",
+  "feature": "Cosmic distance and time explorer",
+  "build": {
+    "sourceScopeReconstruction": true,
+    "syntaxValid": true,
+    "mirrorEqual": true,
+    "englishLabelsAddedOrCorrected": 52,
+    "sourceSHA256": "e3a74483db343089eb2b9c2c02b25f92bca37adb7aea527e814884142c764a9b"
+  },
+  "checks": {
+    "unit": {
+      "passed": 142,
+      "failed": 0,
+      "newModelChecks": 37,
+      "redshiftRegressionChecks": 25,
+      "uiResilienceChecks": 80
+    },
+    "browser": {
+      "passed": 10,
+      "failed": 0,
+      "newDistanceScenarios": 6,
+      "existingSpectrumScenarios": 4,
+      "scenarios": [
+        {
+          "title": "redshift examples synchronize both views, travel time and cosmic ages while preserving other simulations",
+          "status": "passed"
+        },
+        {
+          "title": "keyboard and native rate controls keep fixed matter assumptions and published input labels accurate",
+          "status": "passed"
+        },
+        {
+          "title": "touch chart selection and pointer cancellation leave controls editable and focus intact",
+          "status": "passed"
+        },
+        {
+          "title": "published spectrum redshift imports its provenance and survives restore until the distance setting changes",
+          "status": "passed"
+        },
+        {
+          "title": "phone contrast keeps glyphs readable, axis labels separated, shared scales accurate and targets usable",
+          "status": "passed"
+        },
+        {
+          "title": "damaged persisted values recover to finite linked views and retain valid notes",
+          "status": "passed"
+        },
+        {
+          "title": "teaching presets preserve the physical wavelength ratios and accessible values",
+          "status": "passed"
+        },
+        {
+          "title": "measured galaxy examples preserve precision and distinguish measurements from modeled lines",
+          "status": "passed"
+        },
+        {
+          "title": "keyboard changes, bounds and section navigation keep the current comparison coherent",
+          "status": "passed"
+        },
+        {
+          "title": "320px contrast layout keeps measured values, controls and chart within the viewport",
+          "status": "passed"
+        }
+      ]
+    },
+    "diffCheck": "passed",
+    "screenshotsReviewed": [
+      "cosmic-distance-desktop.png",
+      "cosmic-distance-phone-contrast.png"
+    ],
+    "phone": {
+      "viewportWidth": 320,
+      "minimumRenderedSvgFontPx": 11,
+      "minimumControlHeightPx": 44,
+      "axisLabelsWithinViewBox": true,
+      "noHorizontalOverflow": true
+    }
+  },
+  "scientificInputs": [
+    {
+      "study": "Planck 2018 results VI (published 2020)",
+      "h0KmsMpc": 67.4,
+      "h0Error": 0.5,
+      "omegaM": 0.315,
+      "omegaMError": 0.007,
+      "url": "https://arxiv.org/abs/1807.06209"
+    },
+    {
+      "study": "Riess et al. 2022 / SH0ES",
+      "h0KmsMpc": 73.04,
+      "h0Error": 1.04,
+      "url": "https://arxiv.org/abs/2112.04510"
+    },
+    {
+      "study": "Schouws et al. 2025 / imported JADES-GS-z14-0 reference",
+      "z": 14.1793,
+      "zError": 0.0007,
+      "url": "https://arxiv.org/abs/2409.20549"
+    },
+    {
+      "study": "Hogg / distance measures and lookback definitions",
+      "url": "https://arxiv.org/abs/astro-ph/9905116"
+    },
+    {
+      "study": "Riess et al. 2024 / JWST Cepheid crowding test",
+      "url": "https://arxiv.org/abs/2401.04773"
+    }
+  ],
+  "model": {
+    "flat": true,
+    "omegaMFixed": 0.315,
+    "omegaLambda": 0.685,
+    "zRange": [
+      0,
+      15
+    ],
+    "h0Range": [
+      50,
+      90
+    ],
+    "displayPrecision": "3 significant figures",
+    "distanceIntegration": "Adaptive Simpson quadrature",
+    "ageSolution": "Analytic matter + cosmological constant",
+    "independentValidation": "Fixed-grid Simpson integration with 16,000 intervals for distance, lookback time and age using a different integration variable for age",
+    "plottedDistances": "Present comoving separation, proper separation at emission and c times lookback time on a fixed 0–50 Gly linear scale",
+    "limitations": [
+      "Radiation and detailed neutrino evolution omitted",
+      "No peculiar velocities or gravitational redshift",
+      "No recombination, CMB or inflation simulation",
+      "Published uncertainties displayed but not propagated",
+      "SH0ES comparison changes H0 only; matter fraction stays fixed",
+      "Named historical inputs, not a live estimate",
+      "Galaxy symbols have fixed illustrative sizes; rows are epoch snapshots, not photon trajectories"
+    ]
+  },
+  "behavior": [
+    "Slider, chart, epoch positions and physical readouts share one redshift",
+    "Touch, keyboard, pointer cancellation and saved-state recovery verified",
+    "Published redshift source labels persist only for matching values",
+    "Spectrum handoff transfers redshift and provenance, scrolls and focuses distance section",
+    "Other simulation state and investigation notes preserved",
+    "No new playback clock or network request added"
+  ],
+  "corrections": [
+    "Hubble-tension copy now limits JWST conclusions to tested crowding and photometry effects"
+  ],
+  "initialRunRecovery": "Initial unit run passed 141 of 142. Corrected an assertion to exercise the SH0ES comparison branch; final clean run passed 142 with exit code 0. Initial run also reported a fork teardown timeout.",
+  "committed": false
+}

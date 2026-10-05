@@ -1,0 +1,12 @@
+{
+  "sourceSha256": "90b6ea7d146bac5595fd7da4c307d48ed9cc4c2d7c0fa0e0948110f1c29de1a5",
+  "source": "stem_lab/stem_tool_epidemic.js",
+  "destinations": [
+    "desktop/web-app/public/stem_lab/stem_tool_epidemic.js",
+    "desktop/web-app/build/stem_lab/stem_tool_epidemic.js",
+    "desktop/app-build/stem_lab/stem_tool_epidemic.js"
+  ],
+  "destinationBeforeSha256": "d5ab6ae0b6177adb8b69961bb43ab50fcc1f1c448ed423b0b72d6acb1106fd74",
+  "capturedUtc": "2026-10-01T14:08:45.7255866Z",
+  "result": "exact-byte copies verified"
+}

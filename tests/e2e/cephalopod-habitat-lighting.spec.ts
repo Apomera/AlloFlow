@@ -179,7 +179,8 @@ function rendered(rows: Awaited<ReturnType<typeof native>>, quality: 'low' | 'ba
       else { expect(row.draw.instanced).toBe(false); expect(row.draw.count).toBe(1272); }
     } else if (row.kind === 'sand') {
       expect(row.type).toBe('MeshStandardMaterial'); expect(source).toContain('clSandDownwelling');
-      expect(row.key).toBe('cl-sand-downwelling-v24');
+      expect(row.key).toBe('cl-sand-relief-v36');
+      for (const marker of ['#define CL_SAND_DERIVATIVES 1', 'clRippleHarmonicAA', 'clRipplePhaseGradient', 'clSandGradient', 'roughnessFactor=clamp(roughnessFactor+']) expect(source, 'native sand relief').toContain(marker);
       if(quality==='balanced'){expect(row.shadowBias).toBeCloseTo(-0.0007,8);expect(row.shadowNormalBias).toBeCloseTo(0.03,7);}else{expect(row.shadowBias).toBeNull();expect(row.shadowNormalBias).toBeNull();}
       expect(row.downwelling).toBeGreaterThanOrEqual(0); expect(row.downwelling).toBeLessThanOrEqual(1);
       for (const color of [row.ambient, row.keyLight, row.skyFill, row.groundFill]) { expect(color).toHaveLength(3); expect(color.every(Number.isFinite)).toBe(true); }

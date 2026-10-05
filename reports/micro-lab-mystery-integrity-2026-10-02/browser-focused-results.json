@@ -1,0 +1,358 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/micro-lab-mystery-integrity-2026-10-02/browser-focused-test-output",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "microbiology-mystery-integrity.spec.ts",
+      "file": "microbiology-mystery-integrity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "keyboard report view round trip keeps raw imported notes, metadata, saved versions and JSON reload intact",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6749,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T04:14:25.965Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "792cb30009f69a0d2243-c89712575538738abf3a",
+          "file": "microbiology-mystery-integrity.spec.ts",
+          "line": 73,
+          "column": 5
+        },
+        {
+          "title": "case buttons and next unrecorded case preserve every untouched raw case and long imported notebook note",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4368,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T04:14:35.691Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "792cb30009f69a0d2243-11b377c642f3534155b9",
+          "file": "microbiology-mystery-integrity.spec.ts",
+          "line": 91,
+          "column": 5
+        },
+        {
+          "title": "next pending revision selects the existing working view without rewriting any imported draft or report",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2683,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T04:14:40.074Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "792cb30009f69a0d2243-4dda336eca9d09e5de02",
+          "file": "microbiology-mystery-integrity.spec.ts",
+          "line": 106,
+          "column": 5
+        },
+        {
+          "title": "editing, checking, recording and restoring touch only the selected leaves and preserve exact previous raw report metadata",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2597,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T04:14:42.771Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "792cb30009f69a0d2243-14f29ed990059fe02d59",
+          "file": "microbiology-mystery-integrity.spec.ts",
+          "line": 116,
+          "column": 5
+        },
+        {
+          "title": "case navigation keeps concurrent unrelated notes and rejects later active case, report, or tab updates",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8263,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T04:14:45.381Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "792cb30009f69a0d2243-318ad6c7a3d6a868ac73",
+          "file": "microbiology-mystery-integrity.spec.ts",
+          "line": 170,
+          "column": 5
+        },
+        {
+          "title": "a queued reasoning edit preserves unrelated latest evidence and cannot overwrite a newer draft, report, case or tab",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22753,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T04:14:53.661Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "792cb30009f69a0d2243-4331eb0ed7a0ca64ba08",
+          "file": "microbiology-mystery-integrity.spec.ts",
+          "line": 176,
+          "column": 5
+        },
+        {
+          "title": "phone and enlarged report navigation stays keyboard usable while imported markup and long untouched notes remain intact",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 150000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 51387,
+                  "error": {
+                    "message": "Error: {\"viewport\":{\"width\":1280,\"scroll\":1280,\"zoom\":\"4\"},\"box\":{\"client\":320,\"scroll\":423}}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m",
+                    "stack": "Error: {\"viewport\":{\"width\":1280,\"scroll\":1280,\"zoom\":\"4\"},\"box\":{\"client\":320,\"scroll\":423}}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n    at noOverflow (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-mystery-integrity.spec.ts:69:77)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-mystery-integrity.spec.ts:190:5",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-mystery-integrity.spec.ts",
+                      "column": 77,
+                      "line": 69
+                    },
+                    "snippet": "  67 |   for (const target of [page.locator('[data-microbiology-tool]'), panel(page), page.getByRole('region', { name: 'Classification and reasoning', exact: true })]) {\n  68 |     const box = await target.evaluate(node => ({ client: node.clientWidth, scroll: node.scrollWidth }));\n> 69 |     expect(box.scroll <= box.client + 1, JSON.stringify({ viewport, box })).toBe(true);\n     |                                                                             ^\n  70 |   }\n  71 | }\n  72 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-mystery-integrity.spec.ts",
+                        "column": 77,
+                        "line": 69
+                      },
+                      "message": "Error: {\"viewport\":{\"width\":1280,\"scroll\":1280,\"zoom\":\"4\"},\"box\":{\"client\":320,\"scroll\":423}}\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBe\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // Object.is equality\u001b[22m\n\nExpected: \u001b[32mtrue\u001b[39m\nReceived: \u001b[31mfalse\u001b[39m\n\n  67 |   for (const target of [page.locator('[data-microbiology-tool]'), panel(page), page.getByRole('region', { name: 'Classification and reasoning', exact: true })]) {\n  68 |     const box = await target.evaluate(node => ({ client: node.clientWidth, scroll: node.scrollWidth }));\n> 69 |     expect(box.scroll <= box.client + 1, JSON.stringify({ viewport, box })).toBe(true);\n     |                                                                             ^\n  70 |   }\n  71 | }\n  72 |\n    at noOverflow (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-mystery-integrity.spec.ts:69:77)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-mystery-integrity.spec.ts:190:5"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T04:15:16.447Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-mystery-integrity-2026-10-02\\browser-focused-test-output\\microbiology-mystery-integ-cc9ca-touched-notes-remain-intact-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-mystery-integrity-2026-10-02\\browser-focused-test-output\\microbiology-mystery-integ-cc9ca-touched-notes-remain-intact-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-mystery-integrity-2026-10-02\\browser-focused-test-output\\microbiology-mystery-integ-cc9ca-touched-notes-remain-intact-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\micro-lab-mystery-integrity-2026-10-02\\browser-focused-test-output\\microbiology-mystery-integ-cc9ca-touched-notes-remain-intact-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\microbiology-mystery-integrity.spec.ts",
+                    "column": 77,
+                    "line": 69
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "792cb30009f69a0d2243-983b1db81cd3ac5ced6b",
+          "file": "microbiology-mystery-integrity.spec.ts",
+          "line": 182,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T04:14:18.483Z",
+    "duration": 126453.424,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

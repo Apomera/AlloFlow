@@ -1,0 +1,11 @@
+
+<--- Last few GCs --->
+
+[25712:000002AF21825000]       20 ms: Scavenge 1.8 (4.0) -> 1.5 (4.3) MB, pooled: 0 MB, 0.64 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+[25712:000002AF21825000]       36 ms: Scavenge 2.8 (4.8) -> 2.5 (7.3) MB, pooled: 0 MB, 0.68 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+[25712:000002AF21825000]     3209 ms: Scavenge 13.1 (16.2) -> 12.5 (16.7) MB, pooled: 0 MB, 0.84 / 0.00 ms  (average mu = 1.000, current mu = 1.000) allocation failure; 
+
+FATAL ERROR: Committing semi space failed. Allocation failed - JavaScript heap out of memory
+----- Native stack trace -----
+
+ 1: 00007FF6600DBA4C v8::base::CPU::has_sse42+24436

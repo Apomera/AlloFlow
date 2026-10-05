@@ -1,0 +1,48 @@
+{
+  "sourceSha256": "9faaef017b8cff11cf5d0968334e861a84a34994415c4be2d67dc32e7af358fc",
+  "baselineSha256": "508c53c171544738474cc2924191067f9f24966bc07867b7ae7e897e8fd70cb2",
+  "runtimeMirrorsIdentical": true,
+  "syntaxPassed": true,
+  "onlyKidneyRendererAndScopedCssChanged": true,
+  "authoredAtlasData": {
+    "characters": 309592,
+    "sha256": "a54731f78e7c82243e53fe231eae3548233ab62d66c27a81493251c4f1394b87",
+    "unchanged": true
+  },
+  "originalGeometry": {
+    "paths": 17,
+    "preserved": 15,
+    "removedConnectors": [
+      "M-30 143 C-4 140 22 128 51 116",
+      "M221 125 C245 110 255 89 270 82"
+    ]
+  },
+  "catalogs": [
+    {
+      "path": "ui_strings.js",
+      "sha256": "b1c608d9cd26833aa1a0c81f9aff74e47d13a30a3c18d2a5b347f0dc72d3b6d2",
+      "mirrorsIdentical": true,
+      "registeredKeys": 59
+    },
+    {
+      "path": "lang/french.js",
+      "sha256": "09db6d85c081f6923a8609886e2da0f0ebf46db35359673777467dbc7d53796d",
+      "mirrorsIdentical": true,
+      "registeredKeys": 59
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "sha256": "deaa9f45f7c183325b7c4dfb833e03ad8fd21ca8f8d9a974e862f0fa3152dec4",
+      "mirrorsIdentical": true,
+      "registeredKeys": 59
+    },
+    {
+      "path": "lang/arabic.js",
+      "sha256": "a6ff757698e917828ccf5cf1ff8aa8cf0ccf9954988aa1554a78e62c5526a007",
+      "mirrorsIdentical": true,
+      "registeredKeys": 59
+    }
+  ],
+  "englishKeys": 59,
+  "nativeTranslations": 177
+}

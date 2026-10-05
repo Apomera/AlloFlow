@@ -1,0 +1,21 @@
+{
+  "date": "2026-10-03",
+  "timezone": "America/New_York",
+  "batches": [
+    {"report": "builder-continuity-results.json", "exitCode": 0, "files": 4, "passed": 94, "failed": 0},
+    {"report": "builder-persistence-results.json", "exitCode": 0, "files": 4, "passed": 65, "failed": 0},
+    {"report": "builder-mounted-final.json", "exitCode": 0, "files": 2, "passed": 46, "failed": 0, "repeatsExistingCases": true}
+  ],
+  "distinctFiles": 8,
+  "passedTests": 159,
+  "failedTests": 0,
+  "builderSha256": "A13858A7C05ECDE13E53D766FA6177B2CAA9CEDFB46572083EA57B9CEDB2A6BF",
+  "coreRunWindowStartSha256": "E8A95AE9EA961EDC7E48B70B8A3B945464DA1B09C9E2F49E79CD2089909E3478",
+  "coreRunWindowEndSha256": "B292355E69B126AA48E5844CCDE4DCF54F42AE4C0AA9EB70E96F96058B63E517",
+  "coreMountedRerunStartSha256": "B292355E69B126AA48E5844CCDE4DCF54F42AE4C0AA9EB70E96F96058B63E517",
+  "coreFinalSha256": "554F23F1EC0FFD22F148885EEB2DC4DA356BD7DB96127207763F58DC79759FCF",
+  "lateCoreChangesCssOnly": true,
+  "sourceMirrorsMatch": true,
+  "activeVerificationCommands": 0,
+  "note": "159 distinct cases across eight files passed; the mounted final 46 are repeated cases. Core changed during both run windows; the core owner confirmed CSS-only hidden-HUD recovery visibility selector changes. Final browser evidence is separate."
+}

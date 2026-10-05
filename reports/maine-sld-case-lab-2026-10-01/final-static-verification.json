@@ -1,0 +1,16 @@
+{
+  "moduleHashes": {
+    "maine_sld_practice_module.js": "94bb51978ae58be5b7e88e36fc1cdc0150d4cf35ecc9f5ad91ae82c62062ef1f",
+    "desktop/web-app/public/maine_sld_practice_module.js": "94bb51978ae58be5b7e88e36fc1cdc0150d4cf35ecc9f5ad91ae82c62062ef1f",
+    "desktop/app-build/maine_sld_practice_module.js": "94bb51978ae58be5b7e88e36fc1cdc0150d4cf35ecc9f5ad91ae82c62062ef1f",
+    "desktop/web-app/build/maine_sld_practice_module.js": "94bb51978ae58be5b7e88e36fc1cdc0150d4cf35ecc9f5ad91ae82c62062ef1f"
+  },
+  "hostHashes": {
+    "AlloFlowANTI.txt": "2866c01a445f4fdb205ba6f3bd100ca3bccba2404cab6146e46de33a5e0728a8",
+    "desktop/web-app/src/AlloFlowANTI.txt": "2866c01a445f4fdb205ba6f3bd100ca3bccba2404cab6146e46de33a5e0728a8",
+    "desktop/web-app/src/App.jsx": "2866c01a445f4fdb205ba6f3bd100ca3bccba2404cab6146e46de33a5e0728a8"
+  },
+  "adminHubRuntimeHash": "9e9f9641a17436d9430bc901adecc580f40a92119a1f44f3db862762c4037097",
+  "activityPins": "94bb5197",
+  "ownedParityPassed": true
+}

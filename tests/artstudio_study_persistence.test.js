@@ -169,7 +169,10 @@ function accessibleName(node) {
 //
 // If one times out at this value on a QUIET box, persistence genuinely got
 // slower -- profile it; do not simply raise the number.
-const STUDY_PERSISTENCE_TIMEOUT_MS = 20000;
+const STUDY_PERSISTENCE_TIMEOUT_MS = (() => {
+  const timeout = Number(process.env.ALLOFLOW_ARTSTUDIO_TEST_TIMEOUT_MS);
+  return Number.isFinite(timeout) ? Math.max(20000, timeout) : 20000;
+})();
 
 describe('Art Studio durable study persistence', () => {
   let config;

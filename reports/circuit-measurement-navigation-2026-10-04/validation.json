@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "sourceSha256": "de3dbe261ec7fed28903ddb85ad7059e045d8b52b4cd09d05033ed6016a2efe6",
+  "sourceMirrorEqual": true,
+  "priorSourcePreserved": true,
+  "tests": 61,
+  "newTests": 15,
+  "testFiles": 4,
+  "browserViews": 9,
+  "browserWorkflows": 2,
+  "browserFocusChecks": 16,
+  "scopedDiffCheck": true,
+  "scopedIndexEmpty": true,
+  "visualReview": {
+    "reviewedBy": "Root agent",
+    "finalDirectlyReviewed": [
+      "desktop-explorer.png",
+      "desktop-lamp-meter.png",
+      "small-phone-meter.png",
+      "phone-return-explorer.png",
+      "phone-sensor-meter.png",
+      "forced-colors-meter.png",
+      "forced-colors-explorer.png",
+      "rtl-meter.png",
+      "rtl-explorer.png"
+    ],
+    "notes": "Reviewed meter focus, current readings, return controls, focused source buttons, 320 px layout, sensor readings, system colors, proportional voltage column and numeric direction."
+  }
+}

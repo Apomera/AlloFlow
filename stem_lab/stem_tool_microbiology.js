@@ -630,24 +630,98 @@
       });
       return { notebook: normalizeNotebook(Object.assign({}, notebook, { records: records })), status: 'updated', id: id };
     }
-    function compare(value, pairValue) {
+    // Selection intents retain the raw record identities shown by the controls.
+    // A display projection is never written back over an imported notebook.
+    function comparisonEntries(value) {
+      var raw = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+      var entries = (Array.isArray(raw.records) ? raw.records : []).map(function(item, index) { return { item: item, index: index }; }).filter(function(entry) {
+        var item = entry.item;
+        return item && typeof item === 'object' && item.evidence && typeof item.evidence === 'object' && !Array.isArray(item.evidence) && evidence(item.evidence).day > 0;
+      }).slice(-MAX_RECORDS);
+      var display = normalizeNotebook(raw).records;
+      return entries.map(function(entry, index) { return { item: entry.item, index: entry.index, id: display[index].id }; });
+    }
+    function comparisonOwner(value, pairValue, targetId) {
+      var raw = pairValue && typeof pairValue === 'object' && !Array.isArray(pairValue) ? pairValue : {};
+      var pair = normalizeComparison(raw, value), entries = comparisonEntries(value);
+      var ids = [pair.aId, pair.bId, targetId].filter(function(id, index, all) { return id != null && all.indexOf(id) === index; });
+      return Object.freeze({ targetId: targetId, notebook: value, aId: pair.aId, bId: pair.bId, fields: Object.freeze(['aId', 'bId', 'round'].map(function(key) {
+        return Object.freeze({ key: key, own: Object.prototype.hasOwnProperty.call(raw, key), value: raw[key] });
+      })), records: Object.freeze(ids.map(function(id) {
+        var entry = entries.find(function(item) { return item.id === id; });
+        return entry ? Object.freeze({ id: id, record: entry.item, rawId: entry.item.id, evidence: entry.item.evidence, signature: JSON.stringify(evidence(entry.item.evidence)) }) : null;
+      })) });
+    }
+    function changeComparison(value, pairValue, key, selection, owner) {
+      function result(status, notebook, comparison) { return Object.freeze({ status: status, changed: status === 'updated',
+        notebook: notebook === undefined ? value : notebook, comparison: comparison === undefined ? pairValue : comparison }); }
+      if (!owner || !Array.isArray(owner.fields) || owner.fields.length !== 3 || !Array.isArray(owner.records) ||
+          !['aId', 'bId', 'round'].every(function(field, index) { return owner.fields[index] && owner.fields[index].key === field; }) ||
+          ['aId', 'bId', 'round'].indexOf(key) < 0) return result('invalid');
+      var raw = pairValue && typeof pairValue === 'object' && !Array.isArray(pairValue) ? pairValue : {};
+      var entries = comparisonEntries(value), pair = normalizeComparison(raw, value);
+      if (pair.aId !== owner.aId || pair.bId !== owner.bId || (!owner.records.length && value !== owner.notebook) ||
+          !owner.fields.every(function(field) { return field.own === Object.prototype.hasOwnProperty.call(raw, field.key) && Object.is(field.value, raw[field.key]); }) ||
+          !owner.records.every(function(saved) {
+            var entry = saved && entries.find(function(item) { return item.id === saved.id; });
+            return entry && entry.item === saved.record && Object.is(entry.item.id, saved.rawId) && entry.item.evidence === saved.evidence && JSON.stringify(evidence(entry.item.evidence)) === saved.signature;
+          })) return result('stale');
+      var nextNotebook = value, next = Object.assign({}, raw, pair);
+      if (key === 'round') {
+        if (selection !== null && (typeof selection !== 'number' || !Number.isInteger(selection))) return result('invalid');
+        if (!compare(value, pair, selection === null ? undefined : selection)) return result('invalid');
+        next.round = selection;
+      } else {
+        if (selection !== null && (!validId(selection) || owner.targetId !== selection)) return result('invalid');
+        var target = selection === null ? null : entries.find(function(item) { return item.id === selection; });
+        if (selection !== null && !target) return result('missing');
+        if (target && target.item.id !== selection) {
+          var records = value.records.slice();
+          records[target.index] = Object.assign({}, target.item, { id: selection });
+          nextNotebook = Object.assign({}, value, { records: records });
+          // A repaired ID must not validate an older review preference that
+          // referred to no original record before this explicit choice.
+          if (value.selectedId === selection && normalizeNotebook(value).selectedId !== selection) nextNotebook.selectedId = null;
+        }
+        next[key] = selection;
+        if (Object.prototype.hasOwnProperty.call(raw, 'round')) next.round = null;
+      }
+      if (nextNotebook === value && ['aId', 'bId', 'round'].every(function(field) {
+        return Object.prototype.hasOwnProperty.call(next, field) === Object.prototype.hasOwnProperty.call(raw, field) && Object.is(next[field], raw[field]);
+      })) return result('unchanged');
+      return result('updated', nextNotebook, next);
+    }
+    function pointCounts(point) {
+      var total = point.sensitive + point.resistant;
+      return Object.freeze({ sensitive: point.sensitive, resistant: point.resistant, totalAlive: total,
+        sharePct: total ? Math.round(point.resistant / total * 100) : null });
+    }
+    function compare(value, pairValue, round) {
       var notebook = normalizeNotebook(value), pair = normalizeComparison(pairValue, value);
       if (pair.aId === null || pair.bId === null || pair.aId === pair.bId) return null;
       var a = notebook.records.find(function(item) { return item.id === pair.aId; });
       var b = notebook.records.find(function(item) { return item.id === pair.bId; });
-      var sharedRound = Math.min(a.evidence.day, b.evidence.day);
+      var latestSharedRound = Math.min(a.evidence.day, b.evidence.day);
+      if (round !== undefined && (typeof round !== 'number' || !Number.isInteger(round) || round < 0 || round > latestSharedRound)) return null;
+      var sharedRound = round === undefined ? latestSharedRound : round;
       function counts(record) {
-        var point = record.evidence.history[sharedRound], total = point.sensitive + point.resistant;
-        return Object.freeze({ sensitive: point.sensitive, resistant: point.resistant, totalAlive: total,
-          sharePct: total ? Math.round(point.resistant / total * 100) : null });
+        return pointCounts(record.evidence.history[sharedRound]);
       }
       var ac = counts(a), bc = counts(b);
-      return Object.freeze({ records: Object.freeze([a, b]), sharedRound: sharedRound,
+      return Object.freeze({ records: Object.freeze([a, b]), sharedRound: sharedRound, latestSharedRound: latestSharedRound,
         counts: Object.freeze({ a: ac, b: bc }),
         difference: Object.freeze({ sensitive: bc.sensitive - ac.sensitive, resistant: bc.resistant - ac.resistant,
           totalAlive: bc.totalAlive - ac.totalAlive,
           sharePercentagePoints: ac.sharePct === null || bc.sharePct === null ? null : bc.sharePct - ac.sharePct }),
         changedSettings: Object.freeze(['dose', 'duration', 'initRes'].filter(function(key) { return a.evidence[key] !== b.evidence[key]; })) });
+    }
+    function comparisonHistory(value, pairValue) {
+      var result = compare(value, pairValue);
+      if (!result) return null;
+      var points = [];
+      for (var day = 0; day <= result.latestSharedRound; day++) points.push(Object.freeze({ day: day,
+        a: pointCounts(result.records[0].evidence.history[day]), b: pointCounts(result.records[1].evidence.history[day]) }));
+      return Object.freeze({ latestSharedRound: result.latestSharedRound, points: Object.freeze(points) });
     }
     function exportText(value) {
       var notebook = normalizeNotebook(value);
@@ -686,9 +760,9 @@
       }
       return rows.map(function(row) { return row.map(cell).join(','); }).join('\r\n');
     }
-    var comparisonModelNote = 'Random teaching model; snapshots may share a run. Differences do not establish which setting caused them. Shared-round counts use the latest round observed in both histories, without extrapolation. Shares are rounded to whole percentages before subtraction; share differences are percentage points. Undefined means no living cells for a share, or an undefined share on either side of its difference. Snapshot endpoint counts are separate. Partial snapshots have no final prediction review; final reviews use each completed or extinct snapshot\'s own endpoint.';
-    function exportComparisonText(value, pairValue) {
-      var result = compare(value, pairValue);
+    var comparisonModelNote = 'Random teaching model; snapshots may share a run. Differences do not establish which setting caused them. Shared-round counts use the selected round observed in both histories, without extrapolation. The latest shared observed round is the upper limit. Shares are rounded to whole percentages before subtraction; share differences are percentage points. Undefined means no living cells for a share, or an undefined share on either side of its difference. Snapshot endpoint counts are separate. Partial snapshots have no final prediction review; final reviews use each completed or extinct snapshot\'s own endpoint.';
+    function exportComparisonText(value, pairValue, round) {
+      var result = compare(value, pairValue, round);
       if (!result) return null;
       function share(value) { return value === null ? 'Undefined' : value + '%'; }
       function delta(value) { return value === null ? 'Undefined' : (value > 0 ? '+' : '') + value; }
@@ -698,6 +772,7 @@
         'Snapshot A: Evidence ' + a.id + '; saved history ends at round ' + a.evidence.day,
         'Snapshot B: Evidence ' + b.id + '; saved history ends at round ' + b.evidence.day,
         'Shared comparison round: ' + result.sharedRound,
+        'Latest shared observed round: ' + result.latestSharedRound,
         'Different saved settings: ' + (result.changedSettings.map(function(key) { return settingLabels[key]; }).join(', ') || 'None'),
         comparisonModelNote, '',
         'Measure\tA (Evidence ' + a.id + ')\tB (Evidence ' + b.id + ')\tB - A',
@@ -707,10 +782,10 @@
         ['Resistant share', share(ac.sharePct), share(bc.sharePct), delta(diff.sharePercentagePoints) + (diff.sharePercentagePoints === null ? '' : ' percentage points')].join('\t'),
         '', 'Original saved snapshots in A, B order', exportText({ records: result.records })].join('\n');
     }
-    function exportComparisonCSV(value, pairValue) {
-      var result = compare(value, pairValue);
+    function exportComparisonCSV(value, pairValue, round) {
+      var result = compare(value, pairValue, round);
       if (!result) return null;
-      var headers = ['row_kind', 'comparison_a_id', 'comparison_b_id', 'shared_round', 'evidence_id', 'saved_end_round', 'snapshot_status',
+      var headers = ['row_kind', 'comparison_a_id', 'comparison_b_id', 'shared_round', 'latest_shared_observed_round', 'evidence_id', 'saved_end_round', 'snapshot_status',
         'exposure_strength_0_100', 'planned_rounds', 'requested_initial_resistance_pct', 'actual_initial_resistant_cells',
         'original_prediction', 'selected_explanation', 'explanation_submitted', 'written_evidence',
         'shared_sensitive_cells', 'shared_resistant_cells', 'shared_total_alive', 'shared_resistant_share_pct_rounded', 'shared_share_difference_percentage_points',
@@ -733,14 +808,14 @@
         return '"' + text.replace(/"/g, '""') + '"';
       }
       return [headers.map(cell).join(',')].concat(rows.map(function(row) {
-        row.comparison_a_id = result.records[0].id; row.comparison_b_id = result.records[1].id; row.shared_round = result.sharedRound;
+        row.comparison_a_id = result.records[0].id; row.comparison_b_id = result.records[1].id; row.shared_round = result.sharedRound; row.latest_shared_observed_round = result.latestSharedRound;
         row.changed_settings = result.changedSettings.join('; '); row.model_note = comparisonModelNote;
         return headers.map(function(key) { return cell(row[key]); }).join(',');
       })).join('\r\n');
     }
     return Object.freeze({ evidence: evidence, status: function(value) { return evidence(value).status; }, normalizeNotebook: normalizeNotebook,
       save: save, setReviewNote: setReviewNote, annotationOwner: annotationOwner, changeReviewNote: changeReviewNote, selectRecord: selectRecord, removeRecord: removeRecord, restoreRecord: restoreRecord, keepRemoval: keepRemoval,
-      normalizeComparison: normalizeComparison, compare: compare, exportText: exportText, exportCSV: exportCSV,
+      normalizeComparison: normalizeComparison, comparisonOwner: comparisonOwner, changeComparison: changeComparison, compare: compare, comparisonHistory: comparisonHistory, exportText: exportText, exportCSV: exportCSV,
       exportComparisonText: exportComparisonText, exportComparisonCSV: exportComparisonCSV, maxRecords: MAX_RECORDS });
   })();
   window.__MicrobiologyCore = { getResistanceKillProbabilities: getResistanceKillProbabilities, classifyResistanceTrend: classifyResistanceTrend, evaluateResistancePrediction: evaluateResistancePrediction, evaluateResistanceExplanation: evaluateResistanceExplanation, createResistancePopulation: createResistancePopulation, normalizeResistanceInvestigation: normalizeResistanceInvestigation };
@@ -789,7 +864,14 @@
     var rawNotebook = props.d && props.d.resistanceNotebook;
     var notebook = MicroResistanceNotebook.normalizeNotebook(rawNotebook);
     var comparisonPair = MicroResistanceNotebook.normalizeComparison(props.d && props.d.resistanceComparison, rawNotebook);
-    R.useEffect(function() { setComparisonNotice(''); }, [comparisonPair.aId, comparisonPair.bId]);
+    var requestedRound = props.d && props.d.resistanceComparison && props.d.resistanceComparison.round;
+    var comparisonRound = typeof requestedRound === 'number' && MicroResistanceNotebook.compare(rawNotebook, comparisonPair, requestedRound) ? requestedRound : undefined;
+    R.useEffect(function() { setComparisonNotice(''); }, [comparisonPair.aId, comparisonPair.bId, comparisonRound]);
+    function selectComparison(key, value) {
+      var owner = MicroResistanceNotebook.comparisonOwner(rawNotebook, props.d && props.d.resistanceComparison, key === 'round' ? undefined : value);
+      if (typeof props.selectComparison === 'function') props.selectComparison(key, value, owner);
+      setComparisonNotice('');
+    }
     var notebookFocusRef = R.useRef(null), resistanceOwnerRef = R.useRef(null);
     R.useEffect(function() {
       var request = notebookFocusRef.current, owner = resistanceOwnerRef.current;
@@ -912,7 +994,12 @@
     function updateNotebook(value, explicitPair) {
       var nextNotebook = MicroResistanceNotebook.normalizeNotebook(value), patch = { resistanceNotebook: nextNotebook };
       if (explicitPair !== undefined || (props.d && props.d.resistanceComparison !== undefined)) {
-        patch.resistanceComparison = MicroResistanceNotebook.normalizeComparison(explicitPair === undefined ? comparisonPair : explicitPair, nextNotebook);
+        var rawPair = props.d && props.d.resistanceComparison;
+        var nextPair = MicroResistanceNotebook.normalizeComparison(explicitPair === undefined ? comparisonPair : explicitPair, nextNotebook);
+        patch.resistanceComparison = Object.assign({}, rawPair && typeof rawPair === 'object' && !Array.isArray(rawPair) ? rawPair : {}, nextPair);
+        if (Object.prototype.hasOwnProperty.call(patch.resistanceComparison, 'round') &&
+            (nextPair.aId !== comparisonPair.aId || nextPair.bId !== comparisonPair.bId ||
+             !MicroResistanceNotebook.compare(nextNotebook, nextPair, comparisonRound))) patch.resistanceComparison.round = null;
       }
       if (typeof props.upd === 'function') props.upd(patch);
       setComparisonNotice('');
@@ -962,12 +1049,12 @@
       }
     }
     function downloadComparison(format) {
-      var result = MicroResistanceNotebook.compare(rawNotebook, comparisonPair);
+      var result = MicroResistanceNotebook.compare(rawNotebook, comparisonPair, comparisonRound);
       if (!result) return;
       var link, url;
       try {
         var csv = format === 'csv';
-        var contents = csv ? MicroResistanceNotebook.exportComparisonCSV(rawNotebook, comparisonPair) : MicroResistanceNotebook.exportComparisonText(rawNotebook, comparisonPair);
+        var contents = csv ? MicroResistanceNotebook.exportComparisonCSV(rawNotebook, comparisonPair, comparisonRound) : MicroResistanceNotebook.exportComparisonText(rawNotebook, comparisonPair, comparisonRound);
         if (contents === null) return;
         url = URL.createObjectURL(new Blob([contents], { type: csv ? 'text/csv;charset=utf-8' : 'text/plain;charset=utf-8' }));
         link = document.createElement('a'); link.href = url;
@@ -1003,20 +1090,131 @@
       return __alloMBT('stem.microbiology.resistance_notebook_not_recorded', 'Not recorded');
     }
     var notebookButtonStyle = { padding: '9px 12px', minHeight: 44, border: '1px solid #64748b', borderRadius: 7, background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, cursor: 'pointer' };
+    function livePopulationCounts() {
+      var counts = { sensitive: totalAlive - totalRes, resistant: totalRes, unoccupied: 80 - totalAlive };
+      var labels = {
+        sensitive: __alloMBT('stem.microbiology.resistance_visual_sensitive', 'Sensitive'),
+        resistant: __alloMBT('stem.microbiology.resistance_visual_resistant', 'Resistant'),
+        unoccupied: __alloMBT('stem.microbiology.resistance_visual_unoccupied', 'Unoccupied')
+      };
+      return hh('section', { id: 'micro-resistance-population', 'aria-labelledby': 'micro-resistance-population-title', style: { marginTop: 16 } },
+        hh('h4', { id: 'micro-resistance-population-title', style: { margin: '0 0 10px' } }, __alloMBT('stem.microbiology.resistance_visual_population_title', 'Population counts')),
+        hh('div', { id: 'micro-resistance-capacity', 'aria-hidden': true, style: { display: 'flex', height: 12, borderRadius: 6, overflow: 'hidden', border: '1px solid #64748b' } },
+          ['sensitive', 'resistant', 'unoccupied'].map(function(type) { return hh('span', { key: type, 'data-resistance-capacity': type, 'data-count': counts[type],
+            style: { display: 'block', width: counts[type] / 80 * 100 + '%', flexShrink: 0, background: type === 'sensitive' ? '#22d3ee' : type === 'resistant' ? '#fb7185' : 'repeating-linear-gradient(135deg,#334155 0,#334155 4px,#64748b 4px,#64748b 6px)' } }); })),
+        hh('dl', { className: 'micro-resistance-population-counts' }, ['sensitive', 'resistant', 'unoccupied'].map(function(type) {
+          return hh('div', { key: type, 'data-resistance-count-card': type },
+            hh('dt', null, labels[type]), hh('dd', { 'data-resistance-population': type }, counts[type]));
+        })),
+        hh('p', { style: { margin: '8px 0 0', fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)' } }, __alloMBT('stem.microbiology.resistance_visual_capacity_help', 'The bar uses all 80 model positions. Resistant share uses living cells only.')));
+    }
+    function comparisonHistoryView(result, ct) {
+      var timeline = MicroResistanceNotebook.comparisonHistory(rawNotebook, comparisonPair);
+      if (!timeline) return null;
+      var last = timeline.latestSharedRound, chosen = timeline.points[result.sharedRound];
+      function x(day) { return day / Math.max(1, last) * 100; }
+      var roundTicks = [0];
+      var roundStep = last <= 4 ? 1 : last <= 10 ? 2 : last <= 20 ? 5 : 10;
+      for (var round = roundStep; round < last; round += roundStep) roundTicks.push(round);
+      if (last > 0) {
+        if (roundTicks.length > 1 && last - roundTicks[roundTicks.length - 1] < roundStep / 2) roundTicks.pop();
+        roundTicks.push(last);
+      }
+      function diagram(kind, title, maximum) {
+        var metric = kind === 'count' ? 'resistant' : 'sharePct', id = 'micro-resistance-history-' + kind;
+        function y(value) { return 100 - value / maximum * 100; }
+        function value(point, side) { return point[side][metric]; }
+        function line(side) {
+          var connected = false, commands = [];
+          timeline.points.forEach(function(point) {
+            var count = value(point, side);
+            if (count === null) { connected = false; return; }
+            commands.push((connected ? 'L' : 'M') + x(point.day).toFixed(4) + ',' + y(count).toFixed(4)); connected = true;
+          });
+          return commands.join(' ');
+        }
+        function marker(side, point, selected) {
+          var count = value(point, side);
+          if (count === null) return null;
+          return hh('span', { key: (selected ? 'selected-' : '') + side + '-' + point.day, 'aria-hidden': true,
+            className: selected ? 'micro-resistance-history-selected' : 'micro-resistance-history-point',
+            'data-resistance-history-marker': selected ? undefined : side, 'data-resistance-selected-marker': selected ? side : undefined,
+            'data-side': side, 'data-round': point.day, 'data-value': count, style: { left: x(point.day) + '%', top: y(count) + '%' } });
+        }
+        function reading(side) {
+          var count = value(chosen, side);
+          return count === null ? ct('undefined', 'Undefined') : count + (kind === 'share' ? '%' : ' ' + ct('history_cells', 'cells'));
+        }
+        var difference = kind === 'count' ? result.difference.resistant : result.difference.sharePercentagePoints;
+        function differenceText() {
+          if (difference === null) return ct('undefined', 'Undefined');
+          return (difference > 0 ? '+' : '') + difference + ' ' + (kind === 'share' ? ct('percentage_points', 'percentage points') : ct('history_cells', 'cells'));
+        }
+        return hh('figure', { key: kind, id: id + '-figure', className: 'micro-resistance-history-figure' },
+          hh('h5', { style: { margin: '0 0 8px', fontSize: 16 } }, title),
+          hh('p', { id: id + '-scale', style: { margin: '0 0 8px', fontSize: 14 }, 'data-resistance-history-scale': kind }, kind === 'count'
+            ? ct('history_count_scale', 'Fixed scale: 0–80 living resistant cells.') : ct('history_share_scale', 'Fixed scale: 0–100% of living cells.')),
+          hh('div', { id: id + '-axes', className: 'micro-resistance-history-axes' },
+            hh('div', { className: 'micro-resistance-history-y', 'aria-hidden': true }, [1, 0.75, 0.5, 0.25, 0].map(function(fraction) {
+              var value = maximum * fraction;
+              return hh('span', { key: value, 'data-resistance-history-y-label': value, style: { top: y(value) + '%' } }, value + (kind === 'share' ? '%' : ''));
+            })),
+            hh('div', { id: id + '-plot', className: 'micro-resistance-history-plot' },
+          hh('svg', { id: id, viewBox: '0 0 100 100', preserveAspectRatio: 'none', role: 'img', 'aria-labelledby': id + '-title', 'aria-describedby': id + '-description ' + id + '-scale ' + id + '-value ' + id + '-values',
+            'data-min': 0, 'data-max': maximum, 'data-last-round': last, style: { position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' } },
+            hh('title', { id: id + '-title' }, title),
+            hh('desc', { id: id + '-description' }, ct('history_description', 'Saved observations at shared rounds. A uses a solid line and circles; B uses a dashed line and outlined diamonds. The vertical guide marks the selected round. Undefined shares have no point or connecting line.')),
+            [0, 0.25, 0.5, 0.75, 1].map(function(fraction) { return hh('line', { key: fraction, 'data-resistance-history-level': maximum * fraction, x1: 0, x2: 100, y1: y(maximum * fraction), y2: y(maximum * fraction), stroke: '#64748b', strokeWidth: 1, opacity: fraction === 0 || fraction === 1 ? 0.8 : 0.4, vectorEffect: 'non-scaling-stroke', 'aria-hidden': true }); }),
+            hh('line', { x1: x(result.sharedRound), x2: x(result.sharedRound), y1: 0, y2: 100, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '3 4', vectorEffect: 'non-scaling-stroke', 'aria-hidden': true,
+              'data-resistance-history-guide': result.sharedRound }),
+            ['a', 'b'].map(function(side) { return hh('path', { key: side, d: line(side), fill: 'none', stroke: side === 'a' ? '#6ee7b7' : '#c4b5fd',
+              strokeWidth: 3, strokeDasharray: side === 'b' ? '8 5' : undefined, vectorEffect: 'non-scaling-stroke', 'data-resistance-series': side, 'aria-hidden': true }); })),
+            ['a', 'b'].map(function(side) { return timeline.points.map(function(point) { return marker(side, point, false); }); }),
+            ['a', 'b'].map(function(side) { return marker(side, chosen, true); })),
+            hh('div', { className: 'micro-resistance-history-x', 'aria-hidden': true }, roundTicks.map(function(day) {
+              return hh('span', { key: day, 'data-resistance-history-x-label': day, style: { left: x(day) + '%', transform: day === 0 ? undefined : day === last ? 'translateX(-100%)' : 'translateX(-50%)' } }, day);
+            })),
+            hh('div', { className: 'micro-resistance-history-axis-title', 'aria-hidden': true }, ct('round_option', 'Round'))),
+          hh('figcaption', { id: id + '-value', 'data-resistance-history-readout': kind, 'data-round': result.sharedRound, style: { marginTop: 10, fontSize: 14, overflowWrap: 'anywhere' } },
+            ct('history_selected', 'Highlighted shared round') + ': ' + result.sharedRound + '. A: ' + reading('a') + '; B: ' + reading('b') + '.'),
+          hh('dl', { id: id + '-values', className: 'micro-resistance-history-values' }, ['a', 'b', 'difference'].map(function(side) {
+            var selectedValue = side === 'difference' ? difference : value(chosen, side);
+            return hh('div', { key: side, 'data-history-reading-card': side },
+              hh('dt', null, side === 'difference' ? ct('difference', 'B − A') : (side === 'a' ? ct('snapshot_a', 'Snapshot A') : ct('snapshot_b', 'Snapshot B')) + ' · ' + ct('evidence', 'Evidence') + ' ' + result.records[side === 'a' ? 0 : 1].id),
+              hh('dd', { 'data-resistance-history-reading': side, 'data-value': selectedValue === null ? 'undefined' : selectedValue }, side === 'difference' ? differenceText() : reading(side)));
+          })));
+      }
+      return hh('section', { id: 'micro-resistance-history', 'aria-labelledby': 'micro-resistance-history-title', style: { marginTop: 18, minWidth: 0 } },
+        hh('style', null, '.micro-resistance-history-figure{margin:0;min-width:0;padding:14px 10px;border:1px solid #64748b;border-radius:10px;background:#071426;color:#e2e8f0}.micro-resistance-history-axes{display:grid;grid-template-columns:3.5em minmax(0,1fr);grid-template-rows:auto 34px auto;column-gap:4px;min-width:0;padding-top:12px;margin-top:12px;font-size:14px;line-height:20px}.micro-resistance-history-y{grid-column:1;grid-row:1;position:relative;color:#cbd5e1}.micro-resistance-history-y span{position:absolute;right:0;white-space:nowrap;transform:translateY(-50%)}.micro-resistance-history-plot{grid-column:2;grid-row:1;position:relative;min-width:0;height:clamp(180px,24vw,280px);margin:0 12px}.micro-resistance-history-x{grid-column:2;grid-row:2;position:relative;margin:14px 12px 0;color:#cbd5e1}.micro-resistance-history-x span{position:absolute;white-space:nowrap}.micro-resistance-history-axis-title{grid-column:2;grid-row:3;text-align:center;margin-top:4px}.micro-resistance-history-point,.micro-resistance-history-selected{position:absolute;box-sizing:border-box;pointer-events:none;transform:translate(-50%,-50%)}.micro-resistance-history-point[data-side=a]{width:6px;height:6px;border-radius:50%;background:#6ee7b7;border:1px solid #6ee7b7}.micro-resistance-history-point[data-side=b]{width:7px;height:7px;border:1.5px solid #c4b5fd;background:transparent;transform:translate(-50%,-50%) rotate(45deg)}.micro-resistance-history-selected[data-side=a]{width:22px;height:22px;border:3px solid #6ee7b7;border-radius:50%;background:transparent}.micro-resistance-history-selected[data-side=b]{width:11px;height:11px;border:2px solid #c4b5fd;background:transparent;transform:translate(-50%,-50%) rotate(45deg)}.micro-resistance-history-values{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,120px),1fr));gap:8px;margin:12px 0 0}.micro-resistance-history-values>div{min-width:0;padding:10px 8px;border:1px solid #475569;border-radius:8px;background:#0f172a}.micro-resistance-history-values dt{font-size:14px;line-height:1.5;color:#cbd5e1}.micro-resistance-history-values dd{margin:4px 0 0;font-size:24px;line-height:1.3;font-weight:800;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}.micro-resistance-history-values [data-history-reading-card=a]{border-top:3px solid #6ee7b7}.micro-resistance-history-values [data-history-reading-card=b]{border-top:3px dashed #c4b5fd}.micro-resistance-history-values [data-history-reading-card=difference] dd{font-size:18px}.theme-contrast .micro-resistance-history-figure,.theme-contrast .micro-resistance-history-values>div{background:#000;color:#ffff00;border-color:#ffff00}.theme-contrast .micro-resistance-history-figure :is(dt,.micro-resistance-history-x,.micro-resistance-history-y){color:#ffff00}.theme-contrast #micro-resistance-history [data-resistance-history-legend] span{color:#ffff00!important}.theme-contrast .micro-resistance-history-figure [data-resistance-series],.theme-contrast .micro-resistance-history-figure [data-resistance-history-guide]{stroke:#ffff00}.theme-contrast .micro-resistance-history-point[data-side=a]{background:#ffff00;border-color:#ffff00}.theme-contrast .micro-resistance-history-point[data-side=b],.theme-contrast .micro-resistance-history-selected{border-color:#ffff00}@media(forced-colors:active){.micro-resistance-history-figure,.micro-resistance-history-values>div{background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}.micro-resistance-history-figure :is(dt,.micro-resistance-history-x,.micro-resistance-history-y){color:CanvasText!important}#micro-resistance-history [data-resistance-history-legend] span{color:CanvasText!important}.micro-resistance-history-figure [data-resistance-series]{stroke:CanvasText!important;forced-color-adjust:none}.micro-resistance-history-figure [data-resistance-series=b]{stroke:LinkText!important}.micro-resistance-history-figure [data-resistance-history-guide]{stroke:CanvasText!important;forced-color-adjust:none}.micro-resistance-history-point[data-side=a]{background:CanvasText!important;border-color:CanvasText!important;forced-color-adjust:none}.micro-resistance-history-point[data-side=b],.micro-resistance-history-selected{border-color:CanvasText!important;forced-color-adjust:none}}'),
+        hh('h4', { id: 'micro-resistance-history-title' }, ct('history_title', 'Visualize saved Resistance histories')),
+        hh('p', null, ct('history_intro', 'Compare how resistant-cell counts and their share changed together. A larger share can occur even when fewer resistant cells survive.')),
+        hh('p', { id: 'micro-resistance-history-selected-round' }, ct('history_selected', 'Highlighted shared round') + ': ' + result.sharedRound + '.'),
+        hh('div', { 'data-resistance-history-legend': true, style: { display: 'flex', flexWrap: 'wrap', gap: 16, fontSize: 14, marginBottom: 12 } },
+          hh('span', { style: { color: '#6ee7b7' } }, '● A · ' + ct('evidence', 'Evidence') + ' ' + result.records[0].id + ' · ' + ct('history_a_style', 'Solid line and circles')),
+          hh('span', { style: { color: '#c4b5fd' } }, '◇ B · ' + ct('evidence', 'Evidence') + ' ' + result.records[1].id + ' · ' + ct('history_b_style', 'Dashed line and diamonds'))),
+        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,280px),1fr))', gap: 12 } },
+          diagram('count', ct('history_count_title', 'Living resistant cells'), 80), diagram('share', ct('history_share_title', 'Resistant share'), 100)),
+        hh('p', { id: 'micro-resistance-history-note', style: { fontSize: 14 } }, ct('history_note', 'Both plots use only rounds observed in both saved histories. Lines connect saved observations; they do not add intervening measurements or track individual cells. No survivors means an undefined share, so that share has no plotted point.')),
+        hh('details', { id: 'micro-resistance-history-data' },
+          hh('summary', null, ct('history_data', 'Read the shared history as a table')),
+          hh('div', { style: { overflowX: 'auto' }, role: 'region', tabIndex: 0, 'aria-label': ct('history_table_region', 'Shared Resistance history data') },
+            hh('table', { id: 'micro-resistance-history-table', style: { borderCollapse: 'collapse', width: '100%', minWidth: '440px', tableLayout: 'fixed', textAlign: 'right', overflowWrap: 'anywhere' }, 'aria-describedby': 'micro-resistance-history-note' },
+              hh('caption', { style: { textAlign: 'left' } }, ct('history_table_caption', 'Observed shared rounds, living resistant-cell counts, and rounded resistant shares.')),
+              hh('thead', null, hh('tr', null, [ct('round_option', 'Round'), 'A · ' + ct('resistant', 'Resistant cells'), 'B · ' + ct('resistant', 'Resistant cells'), 'A · ' + ct('share', 'Resistant share'), 'B · ' + ct('share', 'Resistant share')].map(function(label, index) { return hh('th', { key: index, scope: 'col', style: { padding: '8px 4px' } }, label); }))),
+              hh('tbody', null, timeline.points.map(function(point) { return hh('tr', { key: point.day, 'data-round': point.day, 'aria-current': point.day === result.sharedRound ? 'true' : undefined },
+                hh('th', { scope: 'row', style: { padding: '8px 4px' } }, point.day),
+                [point.a.resistant, point.b.resistant, point.a.sharePct === null ? ct('undefined', 'Undefined') : point.a.sharePct + '%', point.b.sharePct === null ? ct('undefined', 'Undefined') : point.b.sharePct + '%'].map(function(value, index) { return hh('td', { key: index, style: { padding: '8px 4px' } }, value); })); }))))));
+    }
     function evidenceComparison() {
       function ct(key, fallback) { return __alloMBT('stem.microbiology.resistance_comparison_' + key, fallback); }
       var pair = comparisonPair;
-      var result = MicroResistanceNotebook.compare(rawNotebook, pair);
+      var result = MicroResistanceNotebook.compare(rawNotebook, pair, comparisonRound);
       var settingLabels = { dose: ct('strength', 'Exposure strength'), duration: ct('duration', 'Planned rounds'), initRes: ct('requested', 'Requested initial resistance') };
       function selectSnapshot(key, label, id) {
         return hh('div', { key: key, style: { minWidth: 0 } }, hh('label', { htmlFor: id, style: { display: 'block', fontWeight: 700, marginBottom: 5 } }, label),
           hh('select', { id: id, value: pair[key] === null ? '' : pair[key], 'aria-describedby': 'micro-resistance-comparison-status',
             onChange: function(event) {
-              var nextPair = Object.assign({}, pair); nextPair[key] = event.target.value === '' ? null : Number(event.target.value);
-              if (nextPair[key] !== null && MicroResistanceNotebook.normalizeComparison({ aId: nextPair[key] }, rawNotebook).aId === null) {
-                updateNotebook(notebook, nextPair);
-              } else if (typeof props.upd === 'function') props.upd({ resistanceComparison: MicroResistanceNotebook.normalizeComparison(nextPair, notebook) });
-              setComparisonNotice('');
+              selectComparison(key, event.target.value === '' ? null : Number(event.target.value));
             }, style: Object.assign({}, notebookButtonStyle, { width: '100%', maxWidth: '100%', font: 'inherit' }) },
             hh('option', { value: '' }, ct('choose', 'Choose saved evidence')),
             notebook.records.map(function(item) { return hh('option', { key: item.id, value: item.id }, ct('evidence', 'Evidence') + ' ' + item.id + ' · ' + ct('ends', 'ends at round') + ' ' + item.evidence.day); })));
@@ -1031,12 +1229,26 @@
       return hh('details', { id: 'micro-resistance-comparison', className: 'micro-resistance-comparison', style: { marginTop: 16 } },
         hh('style', null, '@media(max-width:600px){#micro-resistance-comparison-table th,#micro-resistance-comparison-table td{padding:7px 4px}}'),
         hh('summary', { style: { cursor: 'pointer', fontWeight: 800, padding: '8px 0' } }, ct('title', 'Compare saved resistance snapshots')),
-        hh('p', null, ct('intro', 'Choose two saved snapshots. Compare the latest round observed in both, even when their saved histories end at different rounds.')),
+        hh('p', null, ct('intro', 'Choose two saved snapshots, then inspect any round observed in both histories. Start with their latest shared round or return to earlier counts.')),
         hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,210px),1fr))', gap: 12 } },
           selectSnapshot('aId', ct('snapshot_a', 'Snapshot A'), 'micro-resistance-compare-a'),
           selectSnapshot('bId', ct('snapshot_b', 'Snapshot B'), 'micro-resistance-compare-b')),
+        result ? hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 12, alignItems: 'end', marginTop: 12 } },
+          hh('div', { style: { flex: '1 1 210px', minWidth: 0 } },
+            hh('label', { htmlFor: 'micro-resistance-compare-round', style: { display: 'block', fontWeight: 700, marginBottom: 5 } }, ct('round_label', 'Shared comparison round')),
+            hh('select', { id: 'micro-resistance-compare-round', value: comparisonRound === undefined ? '' : comparisonRound,
+              'aria-describedby': 'micro-resistance-comparison-round-note micro-resistance-comparison-status',
+              onChange: function(event) { selectComparison('round', event.target.value === '' ? null : Number(event.target.value)); },
+              style: Object.assign({}, notebookButtonStyle, { width: '100%', maxWidth: '100%', font: 'inherit' }) },
+              hh('option', { value: '' }, ct('latest_option', 'Latest shared round') + ' · ' + result.latestSharedRound),
+              Array.from({ length: result.latestSharedRound + 1 }, function(_, round) { return hh('option', { key: round, value: round },
+                ct('round_option', 'Round') + ' ' + round + (round === 0 ? ' · ' + ct('starting_counts', 'Starting counts') : '')); }))),
+          hh('button', { id: 'micro-resistance-comparison-latest', type: 'button', 'aria-disabled': comparisonRound === undefined,
+            onClick: function() { if (comparisonRound !== undefined) selectComparison('round', null); },
+            style: Object.assign({}, notebookButtonStyle, comparisonRound === undefined ? { opacity: 0.65, cursor: 'default' } : {}) }, ct('latest_button', 'Return to latest shared round'))) : null,
+        result ? hh('p', { id: 'micro-resistance-comparison-round-note' }, ct('round_note', 'Round 0 shows the starting population. Only rounds saved in both histories are available. Your choice also sets the round in both comparison downloads.')) : null,
         hh('p', { id: 'micro-resistance-comparison-status', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, result
-          ? hh('span', { id: 'micro-resistance-comparison-round' }, ct('comparing_round', 'Comparing round') + ' ' + result.sharedRound + '. ' + ct('shared_round', 'This is the latest round observed in both snapshots.'))
+          ? hh('span', { id: 'micro-resistance-comparison-round' }, ct('comparing_round', 'Comparing round') + ' ' + result.sharedRound + '. ' + ct('observed_range', 'Both snapshots have observed counts from round 0 through') + ' ' + result.latestSharedRound + '.')
           : hh('span', { id: 'micro-resistance-comparison-unavailable' }, ct('unavailable', 'Choose two different saved evidence records to compare. Missing or removed records are not replaced automatically.'))),
         hh('div', { style: { display: 'flex', flexWrap: 'wrap', gap: 8 } },
           hh('button', { id: 'micro-resistance-comparison-download-text', type: 'button', disabled: !result, 'aria-describedby': 'micro-resistance-comparison-export-note', onClick: function() { downloadComparison('text'); }, style: notebookButtonStyle }, ct('download_text', 'Download comparison report')),
@@ -1072,7 +1284,8 @@
                   hh('td', null, value(result.counts.a)), hh('td', null, value(result.counts.b)),
                   hh('td', null, difference === null ? ct('undefined', 'Undefined') : signed(difference) + (share ? ' ' + ct('percentage_points', 'percentage points') : '')));
               })))),
-          hh('p', { id: 'micro-resistance-comparison-units' }, ct('units', 'Shares are rounded to whole percentages. The share difference subtracts those rounded values and is expressed in percentage points. With no living cells, the share and its difference are undefined.'))
+          hh('p', { id: 'micro-resistance-comparison-units' }, ct('units', 'Shares are rounded to whole percentages. The share difference subtracts those rounded values and is expressed in percentage points. With no living cells, the share and its difference are undefined.')),
+          comparisonHistoryView(result, ct)
         ) : null,
         hh('p', { style: { color: 'var(--allo-stem-text-soft, #94a3b8)' } }, ct('limits', 'This random teaching model illustrates survival and reproduction. Snapshots may come from different rounds of the same run. A difference between snapshots does not establish which setting caused it. Original predictions are reviewed against each saved endpoint in the evidence review.')));
     }
@@ -1180,6 +1393,7 @@
       onKeyDownCapture: cancelNotebookFocus, onFocusCapture: cancelNotebookFocus, onInputCapture: cancelNotebookFocus, onChangeCapture: cancelNotebookFocus,
       style: { background: 'var(--allo-stem-deeper, rgba(15,23,42,0.7))', borderRadius: 12, padding: 16, marginBottom: 14, borderTop: '1px solid rgba(239,68,68,0.30)', borderRight: '1px solid rgba(239,68,68,0.30)', borderBottom: '1px solid rgba(239,68,68,0.30)', borderLeft: '4px solid #ef4444', boxShadow: '0 4px 20px rgba(239,68,68,0.10)', fontSize: 14, lineHeight: 1.6, minWidth: 0, overflowWrap: 'anywhere' } },
       hh('style', null, '[data-micro-resistance-workspace] :is(button,summary,select,input,textarea,[tabindex]):focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}[data-micro-resistance-workspace] :is(button,select,summary){min-height:44px;box-sizing:border-box;max-width:100%;white-space:normal;overflow-wrap:anywhere}[data-micro-resistance-workspace] summary{padding:10px 0;cursor:pointer}[data-micro-resistance-workspace] input[type=range]{height:44px;min-width:0;margin:0}[data-micro-resistance-workspace] input[type=radio]{width:18px;height:18px;flex-shrink:0}[data-micro-resistance-workspace] fieldset{min-width:0}[data-micro-resistance-workspace] h4{font-size:16px}[data-micro-resistance-workspace] [data-resistance-marker]{flex-shrink:0}.theme-contrast [data-micro-resistance-workspace] :focus-visible{outline-color:#ffff00}@media(forced-colors:active){[data-micro-resistance-workspace] [data-resistance-marker]{background:CanvasText!important;border-color:CanvasText!important;forced-color-adjust:none}}'),
+      hh('div', { id: 'micro-resistance-dashboard' },
       hh('div', { style: { display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' } },
         hh('div', { 'aria-hidden': 'true', style: { width: 36, height: 36, borderRadius: '50%', background: 'rgba(239,68,68,0.18)', border: '1.5px solid #ef4444', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18 } }, '🧫'),
         hh('div', { style: { flex: '1 1 200px', minWidth: 0 } },
@@ -1187,41 +1401,48 @@
           hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Model selection acting on pre-existing resistant cells across repeated exposure rounds.')
         )
       ),
-      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: 12, marginBottom: 12 } },
-        hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(2,6,23,0.7))', borderRadius: 10, padding: 8 } },
+      hh('style', null, '.micro-resistance-visual-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,320px),1fr));gap:14px;margin-bottom:14px;min-width:0}.micro-resistance-visual-card{min-width:0;padding:14px 10px;border:1px solid #334155;border-radius:14px;background:linear-gradient(160deg,#122237,#071426)}.micro-resistance-population-counts{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,105px),1fr));gap:8px;margin:12px 0 0}.micro-resistance-population-counts>div{min-width:0;padding:8px;border:1px solid #475569;border-radius:8px;background:#0f172a}.micro-resistance-population-counts dt{font-size:14px;color:#cbd5e1}.micro-resistance-population-counts dd{margin:2px 0 0;font-size:24px;font-weight:850;font-variant-numeric:tabular-nums;color:#e2e8f0;line-height:1.2}.micro-resistance-population-counts [data-resistance-count-card="sensitive"]{border-top:3px solid #22d3ee}.micro-resistance-population-counts [data-resistance-count-card="resistant"]{border-top:3px solid #fb7185}.micro-resistance-population-counts [data-resistance-count-card="unoccupied"]{border-top:3px dashed #94a3b8}#micro-resistance-playback{padding:12px;margin:0 0 14px;border:1px solid #475569;border-radius:10px;background:#0f172a}#micro-resistance-history-table tbody tr[aria-current="true"]{font-weight:800;background:#172b44}#micro-resistance-history-table tbody tr[aria-current="true"]>th:first-child{border-left:3px solid #fbbf24}#micro-resistance-history-table tbody tr[aria-current="true"]>*{border-top:1px solid #fbbf24;border-bottom:1px solid #fbbf24}.theme-contrast :is(.micro-resistance-visual-card,.micro-resistance-population-counts>div,#micro-resistance-playback){background:#000;border-color:#ffff00}.theme-contrast .micro-resistance-population-counts :is(dt,dd){color:#ffff00}'),
+      hh('style', null, '.micro-resistance-visual-card{container-type:inline-size}@container(max-width:300px){.micro-resistance-population-counts [data-resistance-count-card="unoccupied"]{grid-column:1/-1;display:flex;align-items:center;justify-content:space-between;gap:8px}.micro-resistance-population-counts [data-resistance-count-card="unoccupied"] dd{margin:0}}'),
+      hh('div', { className: 'micro-resistance-visual-grid', id: 'micro-resistance-live-visuals' },
+        hh('div', { className: 'micro-resistance-visual-card' },
           hh('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, textAlign: 'center' } }, 'Petri dish · Round ' + day + ' of ' + duration),
-          hh('svg', { viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': 'Petri dish model at exposure round ' + day + '. ' + totalAlive + ' cells remain; resistant share: ' + shareText + '. Circles are sensitive cells and diamonds are resistant cells.', style: { width: '100%', maxWidth: 240, display: 'block', margin: '0 auto' } },
-            hh('defs', null, hh('radialGradient', { id: 'dishBg', cx: '50%', cy: '50%', r: '50%' }, hh('stop', { offset: '0%', stopColor: '#1e293b' }), hh('stop', { offset: '100%', stopColor: '#0f172a' }))),
-            hh('circle', { cx: 100, cy: 100, r: 95, fill: 'url(#dishBg)', stroke: '#475569', strokeWidth: 1.5 }),
+          hh('svg', { id: 'micro-resistance-dish', viewBox: '0 0 200 200', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': 'Petri dish model at exposure round ' + day + '. ' + totalAlive + ' cells remain; resistant share: ' + shareText + '. Circles are sensitive cells and diamonds are resistant cells. Open rings mark unoccupied model positions.', style: { width: '100%', maxWidth: 280, display: 'block', margin: '0 auto' } },
+            hh('defs', null, hh('radialGradient', { id: 'dishBg', cx: '38%', cy: '30%', r: '72%' }, hh('stop', { offset: '0%', stopColor: '#183a4a' }), hh('stop', { offset: '100%', stopColor: '#071426' }))),
+            hh('circle', { cx: 100, cy: 100, r: 96, fill: 'url(#dishBg)', stroke: '#64748b', strokeWidth: 2 }),
+            hh('circle', { cx: 100, cy: 100, r: 90, fill: 'none', stroke: '#7dd3fc', strokeWidth: 0.7, opacity: 0.25, 'aria-hidden': true }),
+            hh('path', { d: 'M 32 57 A 81 81 0 0 1 111 20', fill: 'none', stroke: '#e0f2fe', strokeWidth: 1.5, strokeLinecap: 'round', opacity: 0.25, 'aria-hidden': true }),
             day < duration && day > 0 ? hh('circle', { cx: 100, cy: 100, r: 95, fill: '#fbbf24', opacity: 0.04 + (dose / 100) * 0.10 }) : null,
             bact.map(function(b, i) {
-              if (!b.alive) return hh('circle', { key: 'b-' + i, cx: b.x, cy: b.y, r: 1.2, fill: '#475569', opacity: 0.18 });
+              if (!b.alive) return hh('circle', { key: 'b-' + i, 'data-resistance-cell': 'unoccupied', cx: b.x, cy: b.y, r: 2, fill: 'none', stroke: '#94a3b8', strokeWidth: 0.7, opacity: 0.55 });
               if (b.resistant) {
-                var size = 3.2 * b.jitter;
-                return hh('rect', { key: 'b-' + i, x: b.x - size / 2, y: b.y - size / 2, width: size, height: size, fill: '#ef4444', stroke: '#fecaca', strokeWidth: 0.45, opacity: 0.9, transform: 'rotate(45 ' + b.x + ' ' + b.y + ')' });
+                var size = 4.4 * b.jitter;
+                return hh('rect', { key: 'b-' + i, 'data-resistance-cell': 'resistant', x: b.x - size / 2, y: b.y - size / 2, width: size, height: size, fill: '#fb7185', stroke: '#ffe4e6', strokeWidth: 0.65, transform: 'rotate(45 ' + b.x + ' ' + b.y + ')' });
               }
-              return hh('circle', { key: 'b-' + i, cx: b.x, cy: b.y, r: 2.2 * b.jitter, fill: '#22d3ee', opacity: 0.85 });
+              return hh('circle', { key: 'b-' + i, 'data-resistance-cell': 'sensitive', cx: b.x, cy: b.y, r: 2.6 * b.jitter, fill: '#22d3ee', stroke: '#a5f3fc', strokeWidth: 0.3, opacity: 0.95 });
             })
           ),
           hh('div', { 'data-resistance-shape-legend': true, style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginTop: 10, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } },
             hh('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 7 } }, hh('span', { 'aria-hidden': true, 'data-resistance-marker': 'sensitive', style: { display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: '#22d3ee', border: '1px solid #0e7490' } }), 'sensitive circles'),
-            hh('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 7 } }, hh('span', { 'aria-hidden': true, 'data-resistance-marker': 'resistant', style: { display: 'inline-block', width: 11, height: 11, background: '#ef4444', border: '2px solid #fecaca', transform: 'rotate(45deg)' } }), 'resistant diamonds')
-          )
+            hh('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 7 } }, hh('span', { 'aria-hidden': true, 'data-resistance-marker': 'resistant', style: { display: 'inline-block', width: 11, height: 11, background: '#fb7185', border: '2px solid #ffe4e6', transform: 'rotate(45deg)' } }), 'resistant diamonds'),
+            hh('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 7 } }, hh('span', { 'aria-hidden': true, style: { display: 'inline-block', width: 11, height: 11, border: '2px solid #94a3b8', borderRadius: '50%' } }), __alloMBT('stem.microbiology.resistance_visual_empty_ring', 'unoccupied rings'))
+          ), livePopulationCounts()
         ),
-        hh('div', { style: { background: 'var(--allo-stem-deeper, rgba(2,6,23,0.7))', borderRadius: 10, padding: 10 } },
-          hh('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, textAlign: 'center' } }, '% resistant over time'),
+        hh('div', { className: 'micro-resistance-visual-card' },
+          hh('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text, #e2e8f0)', marginBottom: 14, textAlign: 'center' } }, __alloMBT('stem.microbiology.resistance_visual_trend_title', 'Resistant share over exposure rounds')),
           hh('div', { 'data-resistance-trend': true, style: { display: 'grid', gridTemplateColumns: '42px minmax(0,1fr)', gap: '2px 4px', minWidth: 0 } },
-            hh('div', { 'aria-hidden': true, style: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '8px 0', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('span', null, '100%'), hh('span', null, '0%')),
-            hh('svg', { viewBox: '0 0 100 60', preserveAspectRatio: 'none', role: 'img', 'aria-describedby': 'micro-resistance-share-help', 'aria-label': 'Resistance trend from round 0 to round ' + day + '. Current resistant share is ' + shareText + '. The line stops when no cells survive.', style: { width: '100%', height: 160, display: 'block', minWidth: 0 } },
-            hh('line', { x1: 4, y1: 56, x2: 96, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
+            hh('div', { 'aria-hidden': true, style: { position: 'relative', fontSize: 14, lineHeight: '14px', color: 'var(--allo-stem-text, #e2e8f0)' } }, [100, 75, 50, 25, 0].map(function(level) { return hh('span', { key: level, style: { position: 'absolute', top: ((4 + (100 - level) / 100 * 52) / 60 * 100) + '%', transform: 'translateY(-50%)' } }, level + '%'); })),
+            hh('svg', { viewBox: '0 0 100 60', preserveAspectRatio: 'none', role: 'img', 'aria-describedby': 'micro-resistance-share-help', 'aria-label': 'Resistance trend from round 0 to round ' + day + '. Current resistant share is ' + shareText + '. The line stops when no cells survive.', style: { width: '100%', height: 'clamp(160px,25vw,320px)', display: 'block', minWidth: 0 } },
+            [0, 25, 50, 75, 100].map(function(level) { var y = 56 - level / 100 * 52; return hh('line', { key: level, 'data-resistance-trend-level': level, x1: 4, y1: y, x2: 96, y2: y, stroke: '#64748b', strokeWidth: 0.7, vectorEffect: 'non-scaling-stroke', opacity: level === 0 || level === 100 ? 0.8 : 0.4 }); }),
             hh('line', { x1: 4, y1: 4, x2: 4, y2: 56, stroke: 'rgba(148,163,184,0.30)', strokeWidth: 0.4 }),
-            hh('line', { x1: 4, y1: 4, x2: 96, y2: 4, stroke: 'rgba(239,68,68,0.20)', strokeWidth: 0.3, strokeDasharray: '1,1' }),
-            history.length > 1 ? hh('polyline', { points: history.filter(function(p) { return p.sensitive + p.resistant > 0; }).map(function(p) { var pct = p.resistant / (p.sensitive + p.resistant); var x = 4 + (p.day / Math.max(1, duration)) * 92; var y = 56 - pct * 52; return x + ',' + y; }).join(' '), fill: 'none', stroke: '#ef4444', strokeWidth: 1.2 }) : null,
+            history.length > 1 ? hh('polyline', { points: history.filter(function(p) { return p.sensitive + p.resistant > 0; }).map(function(p) { var pct = p.resistant / (p.sensitive + p.resistant); var x = 4 + (p.day / Math.max(1, duration)) * 92; var y = 56 - pct * 52; return x + ',' + y; }).join(' '), fill: 'none', stroke: '#fb7185', strokeWidth: 2.5, vectorEffect: 'non-scaling-stroke' }) : null,
+            history.filter(function(point) { return point.sensitive + point.resistant > 0; }).map(function(point) { var pct = point.resistant / (point.sensitive + point.resistant) * 100, x = 4 + point.day / Math.max(1, duration) * 92, y = 56 - pct / 100 * 52; return hh('polygon', { key: point.day, 'data-resistance-observation': point.day, 'data-value': pct,
+              points: x + ',' + (y - 1.5) + ' ' + (x + 1.2) + ',' + y + ' ' + x + ',' + (y + 1.5) + ' ' + (x - 1.2) + ',' + y, fill: '#fb7185', stroke: '#ffe4e6', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }),
             pctRes !== null ? hh('circle', { cx: 4 + (day / Math.max(1, duration)) * 92, cy: 56 - (pctRes / 100) * 52, r: 1.8, fill: '#ef4444', stroke: '#fff', strokeWidth: 0.4 }) : null
             ),
             hh('div', { 'aria-hidden': true, style: { gridColumn: 2, display: 'flex', justifyContent: 'space-between', gap: 8, padding: '0 4%', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('span', null, '0'), hh('span', { style: { textAlign: 'center' } }, 'exposure rounds'), hh('span', null, duration))
           ),
-          hh('div', { style: { display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 6, marginTop: 8 } },
+          hh('p', { id: 'micro-resistance-live-readout', style: { margin: '12px 0', fontSize: 14, fontWeight: 750 } }, __alloMBT('stem.microbiology.resistance_visual_current_round', 'Current round') + ': ' + day + ' · ' + shareText),
+          hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,100px),1fr))', gap: 8, marginTop: 8 } },
             hh('div', { style: { padding: 6, borderRadius: 6, background: 'rgba(34,211,238,0.10)', border: '1px solid rgba(34,211,238,0.30)' } },
               hh('div', { style: { fontSize: 14, fontWeight: 800, color: microInk('#67e8f9'), textTransform: 'uppercase' } }, 'Alive'),
               hh('div', { style: { fontSize: 22, fontWeight: 900, color: microInk('#22d3ee') } }, totalAlive)
@@ -1233,9 +1454,20 @@
           )
         )
       ),
+      hh('div', { id: 'micro-resistance-playback' },
+      hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' } },
+        hh('button', { type: 'button', onClick: function() { setPlaying(function(p) { return !p; }); }, disabled: !investigationReady || finished, style: { padding: '8px 18px', borderRadius: 8, background: playing ? '#ef4444' : 'rgba(239,68,68,0.18)', color: playing ? '#fff' : '#fca5a5', border: '1.5px solid #ef4444', fontSize: 14, fontWeight: 800, cursor: !investigationReady || finished ? 'default' : 'pointer', opacity: !investigationReady || finished ? 0.4 : 1 } }, playing ? '⏸ Pause' : '▶ Play'),
+        hh('button', { type: 'button', onClick: function() { setPlaying(false); step(); }, disabled: !investigationReady || finished, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 14, fontWeight: 700, cursor: !investigationReady || finished ? 'default' : 'pointer', opacity: !investigationReady || finished ? 0.4 : 1 } }, 'Step round'),
+        hh('button', { type: 'button', onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 14, fontWeight: 700, cursor: 'pointer' } }, __alloMBT('stem.microbiology.resistance_notebook_reset', '↺ Reset current run'))
+      ),
+      day > 0 ? hh('p', { style: { fontSize: 14, color: microInk('#fde68a'), textAlign: 'center' } }, __alloMBT('stem.microbiology.resistance_notebook_reset_reminder', 'Reset clears the current observations and notes. Save evidence below first if you want to keep them. Saved notebook records stay available.')) : null,
+      !investigationReady && day === 0 ? hh('div', { role: 'status', style: { marginBottom: 10, color: microInk('#fde68a'), fontSize: 14, textAlign: 'center', fontWeight: 700 } }, 'Choose a prediction to unlock the culture controls.') : null,
+      day > 0 && !prediction ? hh('p', { role: 'status', style: { fontSize: 14, color: microInk('#fde68a') } }, finished ? __alloMBT('stem.microbiology.resistance_restored_completed_without_prediction', 'No prediction was saved for this restored run. Its observed outcome is shown without a prediction comparison.') : __alloMBT('stem.microbiology.resistance_restored_without_prediction', 'No prediction was saved for this restored run. You can continue observing its evidence.')) : null
+      ),
+      ),
       hh('div', { role: 'note', style: { padding: 9, marginBottom: 10, borderRadius: 7, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.28)', color: microInk('#fde68a'), fontSize: 14, lineHeight: 1.5 } }, 'Model boundary: this dish holds 80 cells; the starting resistant count is rounded to a whole cell. Survival and reproduction are random. Resistant cells are present only when initial resistance is above zero. The simulation omits mutation, horizontal gene transfer, drug concentration over time, immune responses, and patient dosing. It demonstrates selection, not a treatment recommendation.'),
       hh('p', { id: 'micro-resistance-share-help', style: { margin: '0 0 12px', fontSize: 14 } }, __alloMBT('stem.microbiology.resistance_share_help', 'Resistant share is the percentage of living cells that are resistant: resistant cells ÷ all living cells × 100. With no survivors, the share is undefined.')),
-      hh('fieldset', { disabled: day > 0, 'aria-describedby': 'micro-resistance-share-help', style: { margin: '0 0 10px', padding: 10, borderRadius: 8, border: '1px solid rgba(167,243,208,0.38)', opacity: day > 0 ? 0.72 : 1 } },
+      hh('fieldset', { id: 'micro-resistance-prediction', disabled: day > 0, 'aria-describedby': 'micro-resistance-share-help', style: { margin: '0 0 10px', padding: 10, borderRadius: 8, border: '1px solid rgba(167,243,208,0.38)', opacity: day > 0 ? 0.72 : 1 } },
         hh('legend', { style: { padding: '0 6px', color: microInk('#a7f3d0'), fontSize: 14, fontWeight: 800 } }, '1. Predict the resistant share after exposure'),
         hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 7 } }, [{ id: 'increase', label: 'Increase' }, { id: 'similar', label: 'Stay about the same' }, { id: 'decrease', label: 'Decrease' }, { id: 'extinct', label: 'No survivors to compare' }].map(function(option) {
           return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'center', gap: 9, padding: 10, minHeight: 44, boxSizing: 'border-box', borderRadius: 6, background: prediction === option.id ? 'rgba(16,185,129,0.22)' : 'rgba(2,6,23,0.35)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, cursor: day > 0 ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-prediction', value: option.id, checked: prediction === option.id, onChange: function() { setPrediction(option.id); }, style: { accentColor: '#10b981' } }), option.label);
@@ -1258,14 +1490,6 @@
           hh('p', { id: 'micro-resistance-initial-help', style: { margin: '4px 0 0', fontSize: 14, lineHeight: 1.6 } }, __alloMBT('stem.microbiology.resistance_initial_help', 'Requested starting percentage; the model rounds it to whole cells in a dish of 80.'))
         )
       ),
-      hh('div', { style: { display: 'flex', gap: 8, justifyContent: 'center', marginBottom: 10, flexWrap: 'wrap' } },
-        hh('button', { type: 'button', onClick: function() { setPlaying(function(p) { return !p; }); }, disabled: !investigationReady || finished, style: { padding: '8px 18px', borderRadius: 8, background: playing ? '#ef4444' : 'rgba(239,68,68,0.18)', color: playing ? '#fff' : '#fca5a5', border: '1.5px solid #ef4444', fontSize: 14, fontWeight: 800, cursor: !investigationReady || finished ? 'default' : 'pointer', opacity: !investigationReady || finished ? 0.4 : 1 } }, playing ? '⏸ Pause' : '▶ Play'),
-        hh('button', { type: 'button', onClick: function() { setPlaying(false); step(); }, disabled: !investigationReady || finished, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 14, fontWeight: 700, cursor: !investigationReady || finished ? 'default' : 'pointer', opacity: !investigationReady || finished ? 0.4 : 1 } }, 'Step round'),
-        hh('button', { type: 'button', onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 14, fontWeight: 700, cursor: 'pointer' } }, __alloMBT('stem.microbiology.resistance_notebook_reset', '↺ Reset current run'))
-      ),
-      day > 0 ? hh('p', { style: { fontSize: 14, color: microInk('#fde68a'), textAlign: 'center' } }, __alloMBT('stem.microbiology.resistance_notebook_reset_reminder', 'Reset clears the current observations and notes. Save evidence below first if you want to keep them. Saved notebook records stay available.')) : null,
-      !investigationReady && day === 0 ? hh('div', { role: 'status', style: { marginBottom: 10, color: microInk('#fde68a'), fontSize: 14, textAlign: 'center', fontWeight: 700 } }, 'Choose a prediction to unlock the culture controls.') : null,
-      day > 0 && !prediction ? hh('p', { role: 'status', style: { fontSize: 14, color: microInk('#fde68a') } }, finished ? __alloMBT('stem.microbiology.resistance_restored_completed_without_prediction', 'No prediction was saved for this restored run. Its observed outcome is shown without a prediction comparison.') : __alloMBT('stem.microbiology.resistance_restored_without_prediction', 'No prediction was saved for this restored run. You can continue observing its evidence.')) : null,
       hh('details', { style: { marginBottom: 12, padding: 9, borderRadius: 8, background: 'rgba(148,163,184,0.08)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } },
         hh('summary', { style: { cursor: 'pointer', fontWeight: 700 } }, 'View counts by exposure round'),
         hh('table', { 'data-resistance-current-history': 'true', 'aria-describedby': 'micro-resistance-share-help', style: { width: '100%', tableLayout: 'fixed', overflowWrap: 'anywhere', borderCollapse: 'collapse', marginTop: 8, textAlign: 'right' } },
@@ -2916,6 +3140,81 @@
     );
   }
 
+  var MICRO_GROWTH_SWEEP_VISUAL_CSS =
+    '.micro-sweep-observation{min-width:0}.micro-sweep-observation .micro-growth-sweep-figure figcaption{font-size:16px;font-weight:750}' +
+    '.micro-sweep-observation .micro-sweep-select{max-width:340px;margin-bottom:16px}.micro-sweep-observation :is(label,select,p,dt){font-size:14px}' +
+    '.micro-sweep-axes{display:grid;grid-template-columns:36px minmax(0,1fr);gap:0 10px;padding:10px 8px 0 0;min-width:0}' +
+    '.micro-sweep-y{position:relative;font-size:14px;line-height:20px}.micro-sweep-plot{position:relative;height:clamp(180px,24vw,300px);margin:0 9px}' +
+    '.micro-sweep-x{grid-column:2;position:relative;height:24px;margin:10px 9px 0;font-size:14px;line-height:20px}.micro-sweep-axis-title{grid-column:2;text-align:center;font-size:14px;margin:2px 0 0}' +
+    '.micro-sweep-point,.micro-sweep-selected{position:absolute;transform:translate(-50%,-50%);pointer-events:none;box-sizing:border-box}' +
+    '.micro-sweep-point{width:8px;height:8px;background:#6ee7b7;border:1px solid #ecfdf5;z-index:2}.micro-sweep-point[data-response=flat]{background:#fbbf24;border-color:#fef3c7}' +
+    '.micro-sweep-selected{width:18px;height:18px;border:3px solid #fbbf24;background:transparent;z-index:3}' +
+    '.micro-sweep-values{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:10px;margin:12px 0}' +
+    '.micro-sweep-values>div{min-width:0;border:1px solid #475569;border-top:3px solid #7dd3fc;border-radius:8px;background:#0f172a;padding:10px}' +
+    '.micro-sweep-values dt{color:#cbd5e1;font-size:14px;line-height:1.5}.micro-sweep-values dd{margin:4px 0 0;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}' +
+    '.micro-sweep-values [data-sweep-readout=response]{font-size:16px;line-height:1.5}.micro-sweep-selected-label{font-weight:750}' +
+    '.micro-sweep-observation tr[aria-current=true]{background:#172b44;font-weight:750}.micro-sweep-observation tr[aria-current=true]>*{border-top:1px solid #fbbf24;border-bottom:1px solid #fbbf24}.micro-sweep-observation tr[aria-current=true]>th{border-left:3px solid #fbbf24}' +
+    '.theme-contrast .micro-sweep-observation [data-sweep-curve]{stroke:#ffff00}.theme-contrast .micro-sweep-point{background:#00ff00;border-color:#000}.theme-contrast .micro-sweep-point[data-response=flat]{background:#ffff00}.theme-contrast .micro-sweep-selected{border-color:#ffff00}' +
+    '.theme-contrast .micro-sweep-values>div,.theme-contrast .micro-sweep-observation tr[aria-current=true]{background:#000;border-color:#ffff00}.theme-contrast .micro-sweep-values :is(dt,dd){color:#ffff00}' +
+    '@media(forced-colors:active){.micro-sweep-observation [data-sweep-curve],.theme-contrast .micro-sweep-observation [data-sweep-curve]{stroke:LinkText}.micro-sweep-observation [data-sweep-guide]{stroke:CanvasText}.micro-sweep-point,.theme-contrast .micro-sweep-point,.micro-sweep-point[data-response=flat],.theme-contrast .micro-sweep-point[data-response=flat]{background:CanvasText;border-color:CanvasText}.micro-sweep-selected,.theme-contrast .micro-sweep-selected{border-color:CanvasText}}';
+
+  function MicroGrowthSweepVisual(props) {
+    var React = props.React, h = React.createElement, gt = props.translate, result = props.result, prefix = props.prefix;
+    var values = MicroGrowth.sweepSteps[result.variable], min = values[0], max = values[values.length - 1];
+    var initial = values.indexOf(result.conditions[result.variable]) >= 0 ? result.conditions[result.variable] : result.bestValues[0];
+    var choice = React.useState(initial), setChoice = choice[1];
+    var selected = result.points.find(function(point) { return point.value === choice[0]; }) || result.points[0];
+    var ticks = result.variable === 'tempC' ? [0, 30, 60, 90] : result.variable === 'pH' ? [3, 5, 7, 10] : [0, 25, 50, 75, 100];
+    function x(value) { return (value - min) / (max - min) * 100; }
+    function y(population) { return 100 - population; }
+    function location(point) { return { left: x(point.value) + '%', top: y(point.finalPopulation) + '%', borderRadius: point.score === 0 ? 0 : '50%' }; }
+    var path = result.points.map(function(point, index) { return (index ? 'L' : 'M') + x(point.value).toFixed(4) + ',' + y(point.finalPopulation).toFixed(4); }).join(' ');
+    return h('div', { className: 'micro-sweep-observation' },
+      h('style', null, MICRO_GROWTH_SWEEP_VISUAL_CSS),
+      h('figure', { id: prefix + '-figure', className: 'micro-growth-figure micro-growth-sweep-figure' },
+        h('figcaption', null, props.label + ': ' + gt('sweep_response', 'Response to') + ' ' + props.variableLabel + ' · ' + gt('sweep_final_units', 'Population at hour 24, arbitrary units')),
+        h('p', { id: prefix + '-scale', className: 'micro-growth-muted' }, __alloMBT('stem.microbiology.sweep_visual_scale', 'Fixed population scale: 0–100 arbitrary units at hour 24.')),
+        h('div', { className: 'micro-sweep-select' },
+          h('label', { htmlFor: prefix + '-setting' }, __alloMBT('stem.microbiology.sweep_visual_inspect', 'Inspect sampled setting') + ' · ' + props.label),
+          h('select', { id: prefix + '-setting', value: selected.value, 'aria-controls': prefix + '-chart ' + prefix + '-values ' + prefix + '-table', 'aria-describedby': prefix + '-note', onChange: function(event) {
+            var value = Number(event.target.value);
+            if (values.indexOf(value) >= 0) setChoice(value);
+          } }, values.map(function(value) { return h('option', { key: value, value: value }, props.settingText(result.variable, value)); }))
+        ),
+        h('div', { id: prefix + '-axes', className: 'micro-sweep-axes' },
+          h('div', { className: 'micro-sweep-y', 'aria-hidden': true }, [100, 75, 50, 25, 0].map(function(value) {
+            return h('span', { key: value, 'data-sweep-y-label': value, style: { position: 'absolute', top: (100 - value) + '%', right: 0, transform: 'translateY(-50%)' } }, value);
+          })),
+          h('div', { id: prefix + '-plot', className: 'micro-sweep-plot' },
+            h('svg', { id: prefix + '-chart', viewBox: '0 0 100 100', preserveAspectRatio: 'none', role: 'img',
+              'aria-label': props.label + '. ' + gt('sweep_chart_alt', 'Sampled growth response across one environmental variable. The table below provides every setting and result.'),
+              'aria-describedby': prefix + '-scale ' + prefix + '-selected ' + prefix + '-legend', style: { position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' } },
+              [0, 25, 50, 75, 100].map(function(value) { return h('line', { key: value, 'data-sweep-level': value, x1: 0, x2: 100, y1: y(value), y2: y(value), stroke: '#64748b', strokeWidth: 1, opacity: value === 0 || value === 100 ? 0.8 : 0.4, vectorEffect: 'non-scaling-stroke' }); }),
+              h('path', { 'data-sweep-curve': result.variable, d: path, fill: 'none', stroke: '#7dd3fc', strokeWidth: 3, strokeDasharray: '5 4', vectorEffect: 'non-scaling-stroke' }),
+              h('line', { 'data-sweep-guide': selected.value, x1: x(selected.value), x2: x(selected.value), y1: 0, y2: 100, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '4 4', vectorEffect: 'non-scaling-stroke' })
+            ),
+            result.points.map(function(point) { return h('span', { key: point.value, 'aria-hidden': true, className: 'micro-sweep-point', 'data-sweep-point': point.value,
+              'data-population': point.finalPopulation, 'data-response': point.score === 0 ? 'flat' : 'increase', style: location(point) }); }),
+            h('span', { 'aria-hidden': true, className: 'micro-sweep-selected', 'data-sweep-selected': selected.value, 'data-population': selected.finalPopulation, style: location(selected) })
+          ),
+          h('div', { className: 'micro-sweep-x', 'aria-hidden': true }, ticks.map(function(value) {
+            return h('span', { key: value, 'data-sweep-x-label': value, style: { position: 'absolute', left: x(value) + '%', whiteSpace: 'nowrap', transform: value === min ? undefined : value === max ? 'translateX(-100%)' : 'translateX(-50%)' } }, value);
+          })),
+          h('div', { className: 'micro-sweep-axis-title', 'aria-hidden': true }, props.variableLabel + (result.variable === 'tempC' ? ' (°C)' : result.variable === 'oxygen' ? ' (0–100)' : ''))
+        ),
+        h('div', { id: prefix + '-legend', className: 'micro-growth-legend' }, h('span', null, '● ' + gt('sweep_increase', 'Population increases')), h('span', null, '■ ' + gt('sweep_flat', 'No modeled increase'))),
+        h('p', { id: prefix + '-selected', className: 'micro-sweep-selected-label', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, __alloMBT('stem.microbiology.sweep_visual_selected', 'Selected sampled setting') + ': ' + props.settingText(result.variable, selected.value)),
+        h('dl', { id: prefix + '-values', className: 'micro-sweep-values' },
+          h('div', null, h('dt', null, __alloMBT('stem.microbiology.sweep_visual_selected', 'Selected sampled setting')), h('dd', { 'data-sweep-readout': 'setting' }, props.settingText(result.variable, selected.value))),
+          h('div', null, h('dt', null, gt('sweep_final', 'Population at hour 24')), h('dd', { 'data-sweep-readout': 'population', 'data-value': selected.finalPopulation }, Number(selected.finalPopulation).toFixed(1))),
+          h('div', null, h('dt', null, gt('sweep_response_label', 'Modeled response')), h('dd', { 'data-sweep-readout': 'response' }, selected.score === 0 ? gt('sweep_flat', 'No modeled increase') : gt('sweep_increase', 'Population increases')))
+        ),
+        h('p', { id: prefix + '-note', className: 'micro-growth-muted' }, __alloMBT('stem.microbiology.sweep_visual_note', 'Inspecting a sampled setting keeps saved sweeps and next-trial conditions unchanged.'))
+      ),
+      props.afterFigure(selected.value)
+    );
+  }
+
   function MicroGrowthSweepHistory(props) {
     var React = props.React, h = React.createElement, book = props.book, gt = props.translate;
     var descriptorKey = JSON.stringify([book.sweep, book.previousSweep || null]);
@@ -3838,6 +4137,20 @@
         });
       }
 
+      function updateResistanceComparison(key, value, owner) {
+        if (!owner) return;
+        __alloMBUpdateVersion++;
+        setLabToolData(function(previous) {
+          var current = previous && previous.microbiology;
+          if (!current || current.tab !== 'resistance') return previous;
+          var result = MicroResistanceNotebook.changeComparison(current.resistanceNotebook, current.resistanceComparison, key, value, owner);
+          if (!result.changed) return previous;
+          return Object.assign({}, previous, { microbiology: Object.assign({}, current, {
+            resistanceNotebook: result.notebook, resistanceComparison: result.comparison
+          }) });
+        });
+      }
+
       function renderMicroscopeLink(type, id) {
         var mapping = {
           ecoli: { slide: 'ecoli', mag: 1000, scope: 'lightbright' },
@@ -3918,15 +4231,25 @@
         function ht(key, fallback) { return __alloT('stem.microbiology.workspace_' + key, fallback); }
         var work = MicroWork.summarize(d);
         var nextActions = MicroWork.nextActions(d);
-        function openActivity(tab, anchor, patch) {
+        function openActivity(tab, anchor, destination, activity) {
           var originalTab = document.getElementById('micro-tab-' + tab);
-          var owner = originalTab && originalTab.closest('[data-microbiology-tool]'), request = {};
+          var owner = originalTab && originalTab.closest('[data-microbiology-tool]'), request = {}, transitions = [];
           if (owner) owner.__microHomeFocusRequest = request;
-          upd(Object.assign({}, patch, { tab: tab }));
+          __alloMBUpdateVersion++;
+          setLabToolData(function(previous) {
+            var latest = previous && previous.microbiology;
+            if (!latest || homeTab(latest) !== 'home' || (destination && !destination.matches(latest))) return previous;
+            var patch = destination ? resumePatch(latest, activity, destination.next) : {};
+            if (!patch) return previous;
+            var next = Object.assign({}, latest, patch, { tab: tab });
+            transitions.push(captureHomeOwner(next, activity, destination && destination.next));
+            return Object.assign({}, previous, { microbiology: next });
+          });
           var updateVersion = __alloMBUpdateVersion;
           setTimeout(function() {
             var activeTab = document.getElementById('micro-tab-' + tab);
-            if (!owner || !owner.isConnected || owner.__microHomeFocusRequest !== request || updateVersion !== __alloMBUpdateVersion || activeTab !== originalTab || !activeTab || !owner.contains(activeTab) || activeTab.getAttribute('aria-selected') !== 'true') return;
+            var latest = __alloMBCtx && __alloMBCtx.toolData && __alloMBCtx.toolData.microbiology;
+            if (!latest || !transitions.some(function(matches) { return matches(latest); }) || !owner || !owner.isConnected || owner.__microHomeFocusRequest !== request || updateVersion !== __alloMBUpdateVersion || activeTab !== originalTab || !activeTab || !owner.contains(activeTab) || activeTab.getAttribute('aria-selected') !== 'true') return;
             var target = owner.querySelector('#' + (anchor || 'micro-content')) || owner.querySelector('#micro-content');
             var disclosure = target && target.closest('details');
             if (disclosure) disclosure.open = true;
@@ -3934,16 +4257,124 @@
           }, 0);
         }
         function objectValue(value) { return value && typeof value === 'object' && !Array.isArray(value) ? value : {}; }
+        function homeTab(value) { return TABS.some(function(item) { return item.id === value.tab; }) ? value.tab : 'home'; }
+        function snapshotHomeFields(value, keys) {
+          return keys.map(function(key) {
+            var field = value && value[key], items = null;
+            if (Array.isArray(field)) {
+              items = [];
+              for (var i = 0; i < field.length; i++) items.push({ own: Object.prototype.hasOwnProperty.call(field, i), value: field[i] });
+            }
+            return { key: key, own: !!value && Object.prototype.hasOwnProperty.call(value, key), value: field, items: items };
+          });
+        }
+        function homeFieldsMatch(value, snapshot) {
+          return snapshot.every(function(field) {
+            var current = value && value[field.key];
+            return field.own === (!!value && Object.prototype.hasOwnProperty.call(value, field.key)) && Object.is(current, field.value) &&
+              (!field.items || (current.length === field.items.length && field.items.every(function(item, index) {
+                return item.own === Object.prototype.hasOwnProperty.call(current, index) && Object.is(item.value, current[index]);
+              })));
+          });
+        }
+        function homeEntries(value, growth) {
+          var key = growth ? 'trials' : 'records', api = growth ? MicroGrowth : MicroResistanceNotebook;
+          return (Array.isArray(value[key]) ? value[key] : []).map(function(item, index) { return { item: item, index: index }; }).filter(function(entry) {
+            var single = {}; single[key] = [entry.item];
+            return api.normalizeNotebook(single)[key].length > 0;
+          }).slice(-api.maxRecords);
+        }
+        function homeTarget(value, activity, next) {
+          var book, entries, normalized, index, growth = activity === 'growth';
+          if (activity === 'mystery') return objectValue(objectValue(value.mysteryLab).cases)[next.id];
+          if (activity === 'growth' || activity === 'resistance') {
+            book = objectValue(value[growth ? 'growthInvestigation' : 'resistanceNotebook']);
+            if (next.kind === 'recovery') return objectValue(book.removed)[growth ? 'trial' : 'record'];
+            entries = homeEntries(book, growth);
+            normalized = (growth ? MicroGrowth : MicroResistanceNotebook).normalizeNotebook(book)[growth ? 'trials' : 'records'];
+            index = normalized.findIndex(function(item) { return item.id === next.id; });
+            return index >= 0 && entries[index] ? entries[index].item : undefined;
+          }
+          if (activity === 'microscope') return objectValue(value.microscopeMeasurements)[next.id];
+          if (activity === 'gram') return value.gramInvestigation;
+          return value.quizPractice;
+        }
+        function captureHomeOwner(value, activity, next) {
+          var field = { mystery: 'mysteryLab', growth: 'growthInvestigation', resistance: 'resistanceNotebook', microscope: 'microscopeMeasurements', gram: 'gramInvestigation', quiz: 'quizPractice' }[activity];
+          var book = value[field], target = next ? homeTarget(value, activity, next) : book;
+          var selection = snapshotHomeFields(objectValue(book), activity === 'mystery' ? ['active'] : activity === 'growth' || activity === 'resistance' ? ['selectedId'] : []);
+          var keys = activity === 'mystery' ? ['revealed', 'collapsed', 'claim', 'evidence', 'reasoning', 'limitation', 'checked', 'reportView', 'record', 'previousRecord']
+            : activity === 'growth' ? ['id', 'conditions', 'control', 'prediction', 'hypothesis', 'explanation', 'citedHours']
+            : activity === 'resistance' ? ['id', 'evidence', 'reviewNote']
+            : activity === 'microscope' ? ['draft', 'result', 'previousResult']
+            : activity === 'gram' ? ['prediction', 'interpretation', 'explanation', 'step', 'maxStep', 'record', 'previousRecord'] : ['answers', 'checked'];
+          var fields = snapshotHomeFields(target, keys), nested = [];
+          var nestedKeys = activity === 'mystery' ? ['record', 'previousRecord'] : activity === 'growth' ? ['conditions', 'control'] : activity === 'resistance' ? ['evidence'] : activity === 'microscope' ? ['draft', 'result', 'previousResult'] : [];
+          nestedKeys.forEach(function(key) {
+            nested.push({ key: key, fields: snapshotHomeFields(target && target[key], activity === 'mystery' ? ['claim', 'evidence', 'reasoning', 'limitation']
+              : activity === 'growth' ? ['profile', 'tempC', 'pH', 'oxygen'] : activity === 'resistance' ? ['dose', 'duration', 'initRes', 'prediction', 'notes', 'day', 'history'] : ['value', 'unit', 'context']) });
+          });
+          var rootFields = snapshotHomeFields(value, activity === 'quiz' ? ['quizAnswers', 'quizSubmitted', 'quizMode', 'quizPractice'] : activity === 'gram' ? ['gramStep'] : activity === 'microscope' ? ['scopeOrganism'] : []);
+          var recovery = next && next.kind === 'recovery' ? snapshotHomeFields(objectValue(book), ['removed']) : null;
+          var recoveryFields = recovery ? snapshotHomeFields(objectValue(book).removed, ['index', activity === 'growth' ? 'trial' : 'record']) : null;
+          function projection(data) {
+            var item = next && homeTarget(data, activity, next), single = {};
+            if (activity === 'growth' || activity === 'resistance') {
+              single[activity === 'growth' ? 'trials' : 'records'] = [item];
+              return (activity === 'growth' ? MicroGrowth : MicroResistanceNotebook).normalizeNotebook(single);
+            }
+            if (activity === 'mystery') return MicroMystery.normalize(data.mysteryLab).cases[next.id];
+            if (activity === 'microscope') return MicroMeasurements.normalize(data.microscopeMeasurements)[next.id];
+            if (activity === 'gram') return MicroGram.normalize(data.gramInvestigation, data.gramStep);
+            return { answers: MicroQuiz.summarize(data.quizAnswers), practice: MicroQuiz.practice(data.quizPractice, MicroQuiz.summarize(data.quizAnswers).missed) };
+          }
+          var signature = next ? JSON.stringify(projection(value)) : null;
+          return function(latest) {
+            var latestBook = latest[field], current = next ? homeTarget(latest, activity, next) : latestBook;
+            return current === target && (!next || target && typeof target === 'object' || latestBook === book) &&
+              homeFieldsMatch(objectValue(latestBook), selection) && homeFieldsMatch(current, fields) && homeFieldsMatch(latest, rootFields) &&
+              nested.every(function(item) { return homeFieldsMatch(current && current[item.key], item.fields); }) &&
+              (!recovery || (homeFieldsMatch(objectValue(latestBook), recovery) && homeFieldsMatch(objectValue(latestBook).removed, recoveryFields))) &&
+              (!next || JSON.stringify(projection(latest)) === signature);
+          };
+        }
+        function resumePatch(latest, activity, next) {
+          if (activity === 'mystery') {
+            var mystery = objectValue(latest.mysteryLab), cases = Object.assign({}, objectValue(mystery.cases));
+            cases[next.id] = Object.assign({}, objectValue(cases[next.id]), { reportView: 'working' });
+            return { mysteryLab: Object.assign({}, mystery, { active: next.id, cases: cases, notice: '' }) };
+          }
+          if ((activity === 'growth' || activity === 'resistance') && next.kind !== 'recovery') {
+            var growth = activity === 'growth', field = growth ? 'growthInvestigation' : 'resistanceNotebook', key = growth ? 'trials' : 'records';
+            var book = objectValue(latest[field]), target = homeTarget(latest, activity, next), patch = {}, selected = Object.assign({}, book, { selectedId: next.id });
+            if (!target) return null;
+            if (target.id !== next.id) {
+              var entries = homeEntries(book, growth), entry = entries.find(function(item) { return item.item === target; });
+              var records = book[key].slice(); records[entry.index] = Object.assign({}, target, { id: next.id }); selected[key] = records;
+              if (!growth) patch.resistanceComparison = Object.assign({}, objectValue(latest.resistanceComparison), MicroResistanceNotebook.normalizeComparison(latest.resistanceComparison, book));
+            }
+            patch[field] = selected;
+            return patch;
+          }
+          return activity === 'quiz' && next.kind === 'practice' ? { quizMode: 'practice' } : {};
+        }
+        function guardedDestination(id, destination) {
+          if (!destination) return null;
+          var next = nextActions[id], owns = captureHomeOwner(savedMicrobiology, id, next);
+          destination.next = next;
+          destination.matches = function(latest) {
+            var current = MicroWork.nextActions(latest)[id];
+            return !!current && current.kind === next.kind && current.id === next.id && owns(latest);
+          };
+          return destination;
+        }
         function nextDestination(id) {
           var next = nextActions[id];
           if (!next) return null;
           if (id === 'mystery') {
             var specimen = MicroMystery.catalog().find(function(item) { return item.id === next.id; });
-            var mystery = objectValue(d.mysteryLab), cases = Object.assign({}, objectValue(mystery.cases));
-            cases[next.id] = Object.assign({}, objectValue(cases[next.id]), { reportView: 'working' });
             return { label: (next.kind === 'revision' ? ht('review_revision', 'Review working revision') : next.kind === 'draft' ? ht('continue_case', 'Continue case notes') : ht('begin_case', 'Begin unrecorded case')) + ' · ' + specimen.code + ': ' + specimen.title,
-              anchor: next.kind === 'revision' ? 'micro-mystery-report-heading' : 'micro-mystery-observation-heading',
-              patch: { mysteryLab: Object.assign({}, mystery, { active: next.id, cases: cases, notice: '' }) } };
+              anchor: next.kind === 'revision' ? 'micro-mystery-report-heading' : 'micro-mystery-observation-heading' };
           }
           if (id === 'microscope') {
             var names = { ecoli: ht('slide_ecoli', 'E. coli'), strep: ht('slide_strep', 'Streptococcus'), parame: ht('slide_parame', 'Paramecium'), plasmo: ht('slide_plasmo', 'Plasmodium'), phage: ht('slide_phage', 'T4 bacteriophage') };
@@ -3952,11 +4383,7 @@
           if (id === 'growth' && next.kind === 'recovery') return { label: ht('review_removed_trial', 'Review removed trial') + ' ' + next.id,
             anchor: work.growth.records >= MicroGrowth.maxRecords ? 'gl-removed-trial' : 'gl-restore-removed' };
           if (id === 'growth') {
-            var growthPatch = Object.assign({}, objectValue(d.growthInvestigation), { selectedId: next.id });
-            var normalizedGrowth = MicroGrowth.normalizeNotebook(growthPatch);
-            if (normalizedGrowth.selectedId !== next.id) growthPatch.trials = normalizedGrowth.trials;
-            return { label: ht('explain_trial', 'Explain saved trial') + ' ' + next.id, anchor: 'gl-explanation',
-              patch: { growthInvestigation: growthPatch } };
+            return { label: ht('explain_trial', 'Explain saved trial') + ' ' + next.id, anchor: 'gl-explanation' };
           }
           if (id === 'gram') {
             var gram = MicroGram.normalize(d.gramInvestigation, d.gramStep);
@@ -3973,19 +4400,12 @@
           if (id === 'resistance') {
             if (next.kind === 'recovery') return { label: ht('review_removed_evidence', 'Review removed evidence') + ' ' + next.id,
               anchor: work.resistance.records >= MicroResistanceNotebook.maxRecords ? 'micro-resistance-removed-evidence' : 'micro-resistance-restore-removed' };
-            var originalNotebook = objectValue(d.resistanceNotebook);
-            var resistancePatch = Object.assign({}, originalNotebook, { selectedId: next.id });
-            var resistanceUpdates = { resistanceNotebook: resistancePatch };
-            if (MicroResistanceNotebook.normalizeNotebook(resistancePatch).selectedId !== next.id) {
-              resistanceUpdates.resistanceNotebook = Object.assign({}, MicroResistanceNotebook.normalizeNotebook(originalNotebook), { selectedId: next.id });
-              resistanceUpdates.resistanceComparison = MicroResistanceNotebook.normalizeComparison(d.resistanceComparison, originalNotebook);
-            }
             return { label: (next.kind === 'reflection' ? ht('reflect_resistance', 'Reflect on saved evidence') : ht('review_resistance', 'Review saved evidence')) + ' ' + next.id,
-              anchor: 'micro-resistance-reflection-' + next.id, patch: resistanceUpdates };
+              anchor: 'micro-resistance-reflection-' + next.id };
           }
           if (id === 'quiz') return next.kind === 'submit' ? { label: ht('quiz_submission', 'Go to quiz submission'), anchor: 'micro-quiz-submit' }
             : { label: (next.kind === 'practice' ? ht('continue_practice', 'Continue practice') : ht('answer_question', 'Answer next unanswered question')) + ' · Q' + (next.id + 1),
-              anchor: 'micro-quiz-question-' + next.id, patch: next.kind === 'practice' ? { quizMode: 'practice' } : undefined };
+              anchor: 'micro-quiz-question-' + next.id };
           return null;
         }
         var gramNextStep = work.gram.nextStep === 'prediction' ? ht('gram_next_prediction', 'Next: choose a prediction for this investigation.')
@@ -4042,15 +4462,15 @@
           h(MicroEvidencePortfolio, { React: React, data: d }),
           h('div', { className: 'micro-workspace-grid' }, cards.map(function(card) {
             var started = work[card.id].started;
-            var destination = nextDestination(card.id);
+            var destination = guardedDestination(card.id, nextDestination(card.id));
             return h('article', { key: card.id, className: 'micro-workspace-card', 'data-work-card': card.id, 'aria-labelledby': 'micro-work-card-' + card.id },
               h('header', null, h('span', { 'aria-hidden': true }, card.icon), h('h4', { id: 'micro-work-card-' + card.id }, card.title)),
               h('p', { className: 'micro-workspace-status', 'data-started': started }, started ? ht('started', 'Work to revisit') : ht('ready', 'Ready to begin')),
               h('p', { className: 'micro-workspace-metric' }, h('strong', null, card.count), h('span', null, card.metric)),
               h('p', null, card.description), h('p', { className: 'micro-workspace-detail' }, card.detail),
               destination ? h('button', { type: 'button', className: 'micro-workspace-next', 'data-work-next': card.id,
-                onClick: function() { openActivity(card.tab, destination.anchor, destination.patch); } }, destination.label) : null,
-              h('button', { type: 'button', onClick: function() { openActivity(card.tab, card.anchor); } }, card.action));
+                onClick: function() { openActivity(card.tab, destination.anchor, destination, card.id); } }, destination.label) : null,
+              h('button', { type: 'button', onClick: function() { openActivity(card.tab, card.anchor, null, card.id); } }, card.action));
           })),
           h('footer', { className: 'micro-workspace-footer' },
             h('p', null, ht('footer', 'Counts describe the work currently in this lab. Open an activity to review its evidence or download an available notebook.')))
@@ -5333,7 +5753,8 @@
           ),
           h(AntibioticResistanceSim, { d: d, upd: upd, awardXP: awardXP, isDark: microbiologyDark,
             annotate: function(id, value, owner) { updateNotebookAnnotation('resistance', id, value, owner); },
-            selectEvidence: function(id, owner) { updateNotebookSelection('resistance', id, owner); } }),
+            selectEvidence: function(id, owner) { updateNotebookSelection('resistance', id, owner); },
+            selectComparison: updateResistanceComparison }),
           sectionCard('How resistance evolves (in 5 steps)',
             h('ol', { style: { margin: 0, padding: '0 0 0 22px', fontSize: 13, color: 'var(--allo-stem-text, #e2e8f0)', lineHeight: 1.85 } },
               h('li', null, h('strong', { style: { color: microAccentText('#6ee7b7') } }, __alloT('stem.microbiology.random_mutation', 'Random mutation. ')), __alloT('stem.microbiology.a_bacterium_s_dna_copies_with_rare_err', 'A bacterium\'s DNA copies with rare errors. Most are harmful or neutral. Occasionally, one happens to make the bacterium less sensitive to an antibiotic.')),
@@ -7696,37 +8117,94 @@
           ['phage', mt('phage', 'Bacteriophage')], ['unresolved', mt('unresolved', 'Not enough evidence to distinguish bacteria from archaea')]
         ];
         function labelFor(id) { var pair = choices.find(function(pair) { return pair[0] === id; }); return pair ? pair[1] : mt('no_claim', 'No claim yet'); }
-        function save(patch) {
-          var updated = Object.assign({}, state.cases);
-          updated[state.active] = Object.assign({}, draft, patch);
-          upd({ mysteryLab: Object.assign({}, state, { cases: updated, notice: '' }) });
+        // Normalized cases are display projections. Mutations preserve the latest raw notebook.
+        function mysteryObject(value) { return !!value && typeof value === 'object' && !Array.isArray(value); }
+        var rawBook = d.mysteryLab, rawCases = mysteryObject(rawBook) ? rawBook.cases : undefined;
+        var rawCase = mysteryObject(rawCases) ? rawCases[state.active] : undefined;
+        function snapshotFields(owner, keys) {
+          return keys.map(function(key) {
+            var value = mysteryObject(owner) ? owner[key] : undefined;
+            return { key: key, own: mysteryObject(owner) && Object.prototype.hasOwnProperty.call(owner, key), value: value, items: Array.isArray(value) ? value.slice() : null };
+          });
         }
-        function edit(patch) { save(Object.assign({ checked: false }, patch)); }
+        function fieldsMatch(owner, fields) {
+          return fields.every(function(field) {
+            var value = mysteryObject(owner) ? owner[field.key] : undefined;
+            return field.own === (mysteryObject(owner) && Object.prototype.hasOwnProperty.call(owner, field.key)) && Object.is(value, field.value) &&
+              (!field.items || (value.length === field.items.length && field.items.every(function(item, index) { return Object.is(item, value[index]); })));
+          });
+        }
+        var caseSnapshot = snapshotFields(rawCase, ['revealed', 'collapsed', 'claim', 'evidence', 'reasoning', 'limitation', 'checked', 'reportView', 'record', 'previousRecord']);
+        var recordSnapshot = snapshotFields(mysteryObject(rawCase) ? rawCase.record : undefined, ['claim', 'evidence', 'reasoning', 'limitation']);
+        var previousSnapshot = snapshotFields(mysteryObject(rawCase) ? rawCase.previousRecord : undefined, ['claim', 'evidence', 'reasoning', 'limitation']);
+        var activeSnapshot = snapshotFields(rawBook, ['active']);
+        var revisionOwner = nextRevision && mysteryObject(rawCases) ? rawCases[nextRevision.id] : undefined;
+        var revisionSnapshot = snapshotFields(revisionOwner, ['revealed', 'collapsed', 'claim', 'evidence', 'reasoning', 'limitation', 'checked', 'reportView', 'record', 'previousRecord']);
+        var revisionRecordSnapshot = snapshotFields(mysteryObject(revisionOwner) ? revisionOwner.record : undefined, ['claim', 'evidence', 'reasoning', 'limitation']);
+        var revisionPreviousSnapshot = snapshotFields(mysteryObject(revisionOwner) ? revisionOwner.previousRecord : undefined, ['claim', 'evidence', 'reasoning', 'limitation']);
+        function updateMystery(change) {
+          var transition = { books: [] };
+          __alloMBUpdateVersion++;
+          setLabToolData(function(previous) {
+            var latest = previous && previous.microbiology;
+            if (!latest || latest.tab !== 'mystery') return previous;
+            var book = latest.mysteryLab, entries = mysteryObject(book) ? book.cases : undefined;
+            var entry = mysteryObject(entries) ? entries[state.active] : undefined;
+            var projected = M.normalize(book);
+            if (projected.active !== state.active || !fieldsMatch(book, activeSnapshot) || entry !== rawCase ||
+                (!mysteryObject(rawCase) && (book !== rawBook || entries !== rawCases)) || !fieldsMatch(entry, caseSnapshot) ||
+                !fieldsMatch(mysteryObject(entry) ? entry.record : undefined, recordSnapshot) ||
+                !fieldsMatch(mysteryObject(entry) ? entry.previousRecord : undefined, previousSnapshot)) return previous;
+            var action = change(projected, entry, entries);
+            if (!action) return previous;
+            var nextBook = Object.assign({}, mysteryObject(book) ? book : {}, action.book || {});
+            if (action.patch) {
+              var nextCases = Object.assign({}, mysteryObject(entries) ? entries : {}), id = action.id || state.active;
+              nextCases[id] = Object.assign({}, mysteryObject(nextCases[id]) ? nextCases[id] : {}, action.patch);
+              nextBook.cases = nextCases;
+            }
+            transition.books.push(nextBook);
+            return Object.assign({}, previous, { microbiology: Object.assign({}, latest, { mysteryLab: nextBook }) });
+          });
+          return transition;
+        }
+        function save(patch) { return updateMystery(function() { return { patch: patch, book: { notice: '' } }; }); }
+        function edit(patch) {
+          if (typeof patch.reasoning === 'string') patch.reasoning = patch.reasoning.slice(0, 1600);
+          if (Object.keys(patch).every(function(key) { return patch[key] === draft[key]; })) return;
+          save(Object.assign({ checked: false }, patch));
+        }
         function record() {
           if (!draft.checked || !review.canRecord || (draft.record && !pendingRevision)) return;
-          var updated = Object.assign({}, state.cases);
-          updated[state.active] = Object.assign({}, draft, { previousRecord: draft.record, record: { claim: draft.claim, evidence: draft.evidence.slice(), reasoning: draft.reasoning, limitation: draft.limitation } });
-          upd({ mysteryLab: Object.assign({}, state, { cases: updated, notice: 'saved' }) });
-          focusReport('working');
+          var transition = updateMystery(function(projected, entry) {
+            var working = projected.cases[state.active];
+            if (!working.checked || !M.evaluate(state.active, working).canRecord || (working.record && !M.hasPendingRevision(working))) return null;
+            return { patch: { previousRecord: working.record ? entry.record : null,
+              record: { claim: working.claim, evidence: working.evidence.slice(), reasoning: working.reasoning, limitation: working.limitation } }, book: { notice: 'saved' } };
+          });
+          focusReport(draft.reportView, null, transition);
         }
         function restorePreviousReport() {
           if (!draft.record || !draft.previousRecord) return;
-          var updated = Object.assign({}, state.cases);
-          updated[state.active] = Object.assign({}, draft, { record: draft.previousRecord, previousRecord: draft.record });
-          upd({ mysteryLab: Object.assign({}, state, { cases: updated, notice: 'restored' }) });
-          focusReport(draft.reportView);
+          var transition = updateMystery(function(projected, entry) {
+            var working = projected.cases[state.active];
+            return working.record && working.previousRecord ? { patch: { record: entry.previousRecord, previousRecord: entry.record }, book: { notice: 'restored' } } : null;
+          });
+          focusReport(draft.reportView, null, transition);
         }
-        function focusReport(view, caseId) {
+        function focusReport(view, caseId, transition) {
           caseId = caseId || state.active;
-          focusAfterUpdate('micro-mystery-report-heading', caseId, view);
+          focusAfterUpdate('micro-mystery-report-heading', caseId, view, transition);
         }
-        function focusAfterUpdate(id, caseId, view) {
+        function focusAfterUpdate(id, caseId, view, transition) {
           var priorHeading = document.getElementById(id), owner = priorHeading && priorHeading.closest('[data-micro-mystery]');
           var request = {}, updateVersion = __alloMBUpdateVersion;
           if (owner) owner.__microMysteryFocusRequest = request;
           setTimeout(function() {
             var heading = document.getElementById(id), tab = document.getElementById('micro-tab-mystery');
-            if (updateVersion === __alloMBUpdateVersion && owner && owner.isConnected && owner.__microMysteryFocusRequest === request &&
+            var latest = __alloMBCtx && __alloMBCtx.toolData && __alloMBCtx.toolData.microbiology;
+            if ((!transition || (latest && transition.books.indexOf(latest.mysteryLab) >= 0)) &&
+              updateVersion === __alloMBUpdateVersion && owner && owner.isConnected && owner.__microMysteryFocusRequest === request &&
               heading === priorHeading && owner.contains(heading) && heading.getAttribute('data-case') === caseId &&
               (!view || heading.getAttribute('data-report-view') === view) && tab && tab.getAttribute('aria-selected') === 'true') {
               owner.__microMysteryFocusRequest = null;
@@ -7737,18 +8215,25 @@
         function cancelDeferredFocus(event) { event.currentTarget.__microMysteryFocusRequest = null; }
         function chooseReportView(view) {
           if (view === 'recorded' && !draft.record) return;
-          save({ reportView: view });
-          focusReport(view);
+          var transition = save({ reportView: view });
+          focusReport(view, null, transition);
         }
         function chooseCase(id) {
-          upd({ mysteryLab: Object.assign({}, state, { active: id, notice: '' }) });
-          focusAfterUpdate('micro-mystery-observation-heading', id);
+          if (M.ids.indexOf(id) < 0) return;
+          var transition = updateMystery(function() { return { book: { active: id, notice: '' } }; });
+          focusAfterUpdate('micro-mystery-observation-heading', id, null, transition);
         }
         function chooseRevision(id) {
-          var updated = Object.assign({}, state.cases);
-          updated[id] = Object.assign({}, state.cases[id], { reportView: 'working' });
-          upd({ mysteryLab: Object.assign({}, state, { active: id, cases: updated, notice: '' }) });
-          focusReport('working', id);
+          if (!nextRevision || nextRevision.id !== id) return;
+          var transition = updateMystery(function(projected, entry, entries) {
+            var target = mysteryObject(entries) ? entries[id] : undefined;
+            if (target !== revisionOwner || !fieldsMatch(target, revisionSnapshot) ||
+                !fieldsMatch(mysteryObject(target) ? target.record : undefined, revisionRecordSnapshot) ||
+                !fieldsMatch(mysteryObject(target) ? target.previousRecord : undefined, revisionPreviousSnapshot) ||
+                !M.hasPendingRevision(projected.cases[id])) return null;
+            return { id: id, patch: { reportView: 'working' }, book: { active: id, notice: '' } };
+          });
+          focusReport('working', id, transition);
         }
         function toggleObservation(id) {
           if (draft.revealed.indexOf(id) < 0) save({ revealed: draft.revealed.concat([id]), collapsed: draft.collapsed.filter(function(key) { return key !== id; }) });
@@ -7896,6 +8381,11 @@
           h('style', null,
             '.micro-mystery{max-width:1160px;margin:auto;padding:24px;color:var(--allo-stem-text,#e2e8f0);font-size:14px;line-height:1.6}.micro-mystery *{box-sizing:border-box}.micro-mystery h3{font-size:29px;line-height:1.2;margin:4px 0 10px}.micro-mystery h4{font-size:18px;margin:0 0 12px}.micro-mystery p{margin:8px 0 14px}.micro-mystery-kicker{font-size:11px;font-weight:800;letter-spacing:1.4px;color:#7dd3fc}.micro-mystery small{color:var(--allo-stem-text-soft,#94a3b8);font-size:12px}.micro-mystery-header{display:flex;gap:20px;justify-content:space-between;align-items:center}.micro-mystery-header>div{max-width:760px}.micro-mystery-progress{flex-shrink:0;font-size:14px;border:1px solid #0e7490;border-radius:12px;padding:16px;background:#083344;color:#cffafe}.micro-mystery button{min-height:44px;padding:10px 14px;background:var(--allo-stem-button-bg,#0f172a);color:var(--allo-stem-button-text,#e2e8f0);border:1px solid #475569;border-radius:8px;font:inherit;font-size:13px;cursor:pointer}.micro-mystery button:disabled{opacity:.5;cursor:default}.micro-mystery :is(button,input,textarea,summary,a,h4):focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}.micro-mystery-cases{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px;margin:22px 0}.micro-mystery-cases button{display:flex;align-items:center;gap:12px;text-align:left}.micro-mystery-cases button[aria-pressed=true]{background:#083344;border-color:#7dd3fc}.micro-mystery-cases b{font-size:22px;color:#7dd3fc}.micro-mystery-cases span{display:block}.micro-mystery-grid{display:grid;grid-template-columns:minmax(0,1.1fr) minmax(0,1fr);gap:18px;align-items:start}.micro-mystery-card{background:var(--allo-stem-panel,#1e293b);border:1px solid var(--allo-stem-border,#334155);padding:22px;border-radius:14px;min-width:0;margin-bottom:18px}.micro-mystery-figure{background:#071426;border:1px solid #334155;border-radius:12px;margin:0 0 18px;padding:14px}.micro-mystery-figure svg{display:block;width:100%;max-height:230px}.micro-mystery-figure figcaption{font-size:12px;color:#cbd5e1;text-align:center}.micro-mystery-clue{border-top:1px solid #475569;padding:12px 0}.micro-mystery-clue button{width:100%;text-align:left}.micro-mystery-clue p{margin:10px 0 4px;font-size:13px}.micro-mystery fieldset{border:0;padding:0;margin:18px 0}.micro-mystery legend{font-weight:800;font-size:14px;margin-bottom:9px}.micro-mystery label{display:flex;align-items:flex-start;gap:9px;padding:9px 0;font-size:13px;cursor:pointer}.micro-mystery input{margin-top:5px;accent-color:#34d399;flex-shrink:0}.micro-mystery .micro-mystery-choice{padding:9px 12px;border:1px solid #475569;border-radius:8px;margin:7px 0}.micro-mystery-choice:has(input:checked){border-color:#6ee7b7;background:#064e3b}.micro-mystery label:has(input:disabled){opacity:.5;cursor:default}.micro-mystery textarea{width:100%;background:var(--allo-stem-canvas,#0f172a);color:var(--allo-stem-text,#e2e8f0);border:1px solid #64748b;border-radius:8px;padding:12px;font:inherit;resize:vertical;min-height:110px}.micro-mystery .micro-mystery-primary{background:#6ee7b7;color:#052e22;border-color:#6ee7b7;font-weight:800}.micro-mystery-actions{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.micro-mystery-review{padding:14px;border:1px solid #fbbf24;border-radius:9px;margin-top:16px;background:#1c2536}.micro-mystery-review[data-ready=true]{border-color:#6ee7b7}.micro-mystery-record{border-left:3px solid #6ee7b7;padding:14px;margin-top:20px;background:#0f172a}.micro-mystery-record p{white-space:pre-wrap;overflow-wrap:anywhere}.micro-mystery a{color:#7dd3fc;text-underline-offset:3px}.micro-mystery footer{font-size:12px;color:#cbd5e1}.micro-mystery summary{cursor:pointer;padding:7px 0;font-weight:700}.micro-mystery-comparison{margin-top:16px}.micro-mystery-comparison section{border-top:1px solid #64748b;padding:12px 0}.micro-mystery-comparison h5{font-size:14px;margin:0 0 8px}.micro-mystery-comparison h6{font-size:12px;margin:0 0 8px}.micro-mystery-comparison-values{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.micro-mystery-comparison-values>div{min-width:0;background:var(--allo-stem-canvas,#0f172a);padding:10px;border:1px solid var(--allo-stem-border,#334155);border-radius:8px}.micro-mystery-comparison :is(p,li){white-space:pre-wrap;overflow-wrap:anywhere}.micro-mystery-comparison ul{padding-left:18px;margin:8px 0}@media(max-width:760px){.micro-mystery{padding:16px 12px}.micro-mystery-grid,.micro-mystery-comparison-values{grid-template-columns:1fr}.micro-mystery-cases{grid-template-columns:repeat(2,minmax(0,1fr))}.micro-mystery-header{display:block}.micro-mystery-progress{display:inline-block;padding:8px 14px}.micro-mystery-card{padding:16px}.micro-mystery h3{font-size:25px}.micro-mystery-cases button{padding:10px;gap:8px;font-size:12px}}.theme-contrast .micro-mystery :is(p,span,small,b,h3,h4,legend,label,figcaption,a){color:#ffff00}.theme-contrast .micro-mystery :is(button,.micro-mystery-card,.micro-mystery-choice,.micro-mystery-progress,.micro-mystery-record,.micro-mystery-review){background:#000;color:#ffff00;border-color:#ffff00}'
           ),
+          h('style', null,
+            '.micro-mystery{container-name:microMystery;container-type:inline-size;min-width:0;overflow-wrap:anywhere}' +
+            '.micro-mystery :is(button,fieldset,legend){min-width:0;max-width:100%}.micro-mystery button{white-space:normal;overflow-wrap:anywhere}.micro-mystery-cases button span{min-width:0}' +
+            '@container microMystery (max-width:760px){.micro-mystery-grid,.micro-mystery-comparison-values{grid-template-columns:1fr}.micro-mystery-cases{grid-template-columns:repeat(2,minmax(0,1fr))}.micro-mystery-header{display:block}.micro-mystery-progress{display:inline-block;padding:8px 14px}.micro-mystery-card{padding:16px}.micro-mystery-cases button{padding:10px;gap:8px;font-size:12px}}'
+          ),
           h('header', { className: 'micro-mystery-header' }, h('div', null,
             h('p', { className: 'micro-mystery-kicker' }, mt('kicker', 'OBSERVE · COMPARE · EXPLAIN')),
             h('h3', null, mt('title', 'Mystery specimens')),
@@ -7982,8 +8472,28 @@
         var savedSweep = book.sweep ? G.sweep(book.sweep.conditions, book.sweep.variable) : null;
         function gt(key, fallback) { return __alloT('stem.microbiology.investigation_' + key, fallback); }
         function cancelDeferredGrowthFocus(event) { event.currentTarget.__microGrowthFocusRequest = null; }
+        function setGrowthReviewHour(hour) {
+          if (typeof hour !== 'number' || !Number.isInteger(hour) || hour < 0 || hour > 24) return;
+          __alloMBUpdateVersion++;
+          setLabToolData(function(previous) {
+            var current = previous && previous.microbiology;
+            if (!current || current.tab !== 'growthLab') return previous;
+            // Inspection persists one preference in the latest raw state.
+            return Object.assign({}, previous, { microbiology: Object.assign({}, current, { growthReviewHour: hour }) });
+          });
+        }
         function saveBook(patch) { upd({ growthInvestigation: Object.assign({}, book, patch) }); }
-        function setConditions(patch) { upd({ growthLab: Object.assign({}, d.growthLab, conditions, patch) }); }
+        function setConditions(patch) {
+          __alloMBUpdateVersion++;
+          setLabToolData(function(previous) {
+            var current = previous && previous.microbiology;
+            if (!current || current.tab !== 'growthLab') return previous;
+            var raw = current.growthLab && typeof current.growthLab === 'object' && !Array.isArray(current.growthLab) ? current.growthLab : {};
+            var baseline = G.normalizeConditions(Object.assign({}, DEFAULT_MICROBIOLOGY_STATE.growthLab, raw));
+            var next = G.normalizeConditions(Object.assign({}, baseline, patch));
+            return Object.assign({}, previous, { microbiology: Object.assign({}, current, { growthLab: Object.assign({}, raw, next) }) });
+          });
+        }
         function name(c) { return G.profiles[c.profile].short; }
         function summary(c) { return name(c) + ' · ' + c.tempC + ' °C · pH ' + c.pH + ' · ' + gt('oxygen_short', 'Oxygen availability') + ' ' + c.oxygen + '/100'; }
         function num(value) { return Number(value).toFixed(1); }
@@ -8077,44 +8587,59 @@
           }
         }
         function chart(result) {
-          var width = 660, height = 290, left = 50, top = 20, plotW = 586, plotH = 224;
-          function x(hour) { return left + hour / 24 * plotW; }
-          function y(pop) { return top + plotH * (1 - pop / 100); }
-          function line(points) { return points.map(function(p, i) { return (i ? 'L' : 'M') + x(p.hour).toFixed(2) + ',' + y(p.population).toFixed(2); }).join(' '); }
-          return h('figure', { className: 'micro-growth-figure' },
-            h('figcaption', null, gt('curve', 'Growth over 24 model hours'), h('span', { className: 'micro-growth-muted' }, ' · ' + gt('units', 'Population in arbitrary units'))),
-            h('svg', { viewBox: '0 0 ' + width + ' ' + height, role: 'img', 'aria-label': gt('chart_alt', 'Control and trial growth curves. Exact values are available in the data table below.') },
-              [0, 25, 50, 75, 100].map(function(tick) { return h('g', { key: tick }, h('line', { x1: left, y1: y(tick), x2: left + plotW, y2: y(tick), stroke: '#334155' }), h('text', { x: left - 9, y: y(tick) + 4, textAnchor: 'end', fill: '#cbd5e1', fontSize: 12 }, tick)); }),
-              [0, 6, 12, 18, 24].map(function(hour) { return h('text', { key: hour, x: x(hour), y: top + plotH + 20, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, hour); }),
-              h('text', { x: left + plotW / 2, y: height - 3, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, gt('hour', 'Model hour')),
-              h('path', { d: line(result.control.points), fill: 'none', stroke: '#7dd3fc', strokeWidth: 4, strokeDasharray: '9 6' }),
-              h('path', { d: line(result.trial.points), fill: 'none', stroke: '#6ee7b7', strokeWidth: 3 }),
-              [0, 6, 12, 18, 24].map(function(i) { var p = result.trial.points[i]; return h('circle', { key: i, cx: x(p.hour), cy: y(p.population), r: 4, fill: '#6ee7b7' }); })
+          var hour = review.hour, controlValue = result.control.points[hour].population, trialValue = result.trial.points[hour].population;
+          var difference = trialValue - controlValue;
+          function x(atHour) { return atHour / 24 * 100; }
+          function y(population) { return 100 - population; }
+          function line(points) { return points.map(function(point, index) { return (index ? 'L' : 'M') + x(point.hour).toFixed(4) + ',' + y(point.population).toFixed(4); }).join(' '); }
+          function marker(type, value) {
+            return h('span', { 'aria-hidden': true, className: 'micro-growth-point micro-growth-point-' + type, 'data-growth-selected-marker': type,
+              'data-hour': hour, 'data-value': value, style: { left: x(hour) + '%', top: y(value) + '%' } },
+              h('span', { className: type === 'control' ? 'micro-growth-point-circle' : 'micro-growth-point-diamond' }));
+          }
+          return h('figure', { id: 'gl-growth-visual', className: 'micro-growth-figure micro-growth-observation' },
+            h('style', null, '.micro-growth-observation{min-width:0}.micro-growth-observation figcaption{font-size:16px;font-weight:750}.micro-growth-chart-select{max-width:320px;margin-bottom:16px}.micro-growth-observation :is(label,select,p,dt){font-size:14px}.micro-growth-chart-axes{display:grid;grid-template-columns:36px minmax(0,1fr);gap:0 10px;padding:10px 8px 0 0;min-width:0}.micro-growth-chart-y{position:relative;font-size:14px;line-height:20px}.micro-growth-chart-plot{position:relative;height:clamp(170px,24vw,300px);margin:0 9px}.micro-growth-chart-x{grid-column:2;position:relative;height:24px;margin:10px 9px 0;font-size:14px;line-height:20px}.micro-growth-chart-axis-title{grid-column:2;text-align:center;font-size:14px;margin:2px 0 0}.micro-growth-point{position:absolute;transform:translate(-50%,-50%);z-index:2;pointer-events:none}.micro-growth-point-control{width:18px;height:18px}.micro-growth-point-trial{width:11px;height:11px;z-index:3}.micro-growth-point-circle,.micro-growth-point-diamond{display:block;width:100%;height:100%;box-sizing:border-box}.micro-growth-point-circle{border:3px solid #7dd3fc;border-radius:50%;background:transparent}.micro-growth-point-diamond{border:1px solid #ecfdf5;background:#6ee7b7;transform:rotate(45deg)}.micro-growth-hour-values{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,145px),1fr));gap:10px;margin:12px 0}.micro-growth-hour-values>div{min-width:0;border:1px solid #475569;border-top:3px solid #fbbf24;border-radius:8px;background:#0f172a;padding:10px}.micro-growth-hour-values>div:first-child{border-top-color:#7dd3fc}.micro-growth-hour-values>div:nth-child(2){border-top-color:#6ee7b7}.micro-growth-hour-values dt{color:#cbd5e1;font-size:14px;line-height:1.5}.micro-growth-hour-values dd{margin:4px 0 0;font-size:24px;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.2}#gl-growth-selected-hour{font-weight:750}#gl-growth-data-table tr[aria-current=true]{background:#172b44;font-weight:750}#gl-growth-data-table tr[aria-current=true]>*{border-top:1px solid #fbbf24;border-bottom:1px solid #fbbf24}#gl-growth-data-table tr[aria-current=true]>th{border-left:3px solid #fbbf24}.theme-contrast .micro-growth-point-circle{border-color:#ffff00}.theme-contrast .micro-growth-point-diamond{background:#00ff00;border-color:#000}.theme-contrast .micro-growth-hour-values>div,.theme-contrast #gl-growth-data-table tr[aria-current=true]{background:#000;border-color:#ffff00}.theme-contrast .micro-growth-hour-values dt{color:#ffff00}.theme-contrast #gl-growth-chart [data-growth-series=control]{stroke:#ffff00}.theme-contrast #gl-growth-chart [data-growth-series=trial]{stroke:#00ff00}'),
+            h('style', null, '@media(forced-colors:active){#gl-growth-chart [data-growth-series=control],.theme-contrast #gl-growth-chart [data-growth-series=control]{stroke:CanvasText}#gl-growth-chart [data-growth-series=trial],.theme-contrast #gl-growth-chart [data-growth-series=trial]{stroke:LinkText}#gl-growth-chart [data-growth-hour-guide]{stroke:CanvasText}}'),
+            h('figcaption', { id: 'gl-growth-chart-title' }, gt('curve', 'Growth over 24 model hours'), h('span', { className: 'micro-growth-muted' }, ' · ' + gt('units', 'Population in arbitrary units'))),
+            h('p', { id: 'gl-growth-scale', className: 'micro-growth-muted' }, __alloMBT('stem.microbiology.growth_visual_scale', 'Fixed scale: 0–100 arbitrary population units; 0–24 model hours.')),
+            h('div', { className: 'micro-growth-chart-select' },
+              h('label', { htmlFor: 'gl-chart-hour' }, __alloMBT('stem.microbiology.growth_visual_hour', 'Chart model hour')),
+              h('select', { id: 'gl-chart-hour', value: hour, 'aria-controls': 'gl-growth-chart gl-growth-hour-values', 'aria-describedby': 'gl-growth-guide-note', onChange: function(event) { setGrowthReviewHour(Number(event.target.value)); } },
+                Array.from({ length: 25 }, function(_, value) { return h('option', { key: value, value: value }, value); }))
             ),
-            h('div', { className: 'micro-growth-legend' }, h('span', null, '┄ ' + gt('control', 'Control')), h('span', null, '━ ● ' + gt('trial', 'Trial')))
-          );
-        }
-        function sweepChart(result, label) {
-          var left = 50, top = 20, plotW = 586, plotH = 210;
-          var values = G.sweepSteps[result.variable], min = values[0], max = values[values.length - 1];
-          function x(value) { return left + (value - min) / (max - min) * plotW; }
-          function y(population) { return top + plotH * (1 - population / 100); }
-          var path = result.points.map(function(point, index) { return (index ? 'L' : 'M') + x(point.value).toFixed(2) + ',' + y(point.finalPopulation).toFixed(2); }).join(' ');
-          return h('figure', { className: 'micro-growth-figure micro-growth-sweep-figure' },
-            h('figcaption', null, label + ': ' + gt('sweep_response', 'Response to') + ' ' + labels[result.variable] + ' · ' + gt('sweep_final_units', 'Population at hour 24, arbitrary units')),
-            h('svg', { viewBox: '0 0 660 285', role: 'img', 'aria-label': label + '. ' + gt('sweep_chart_alt', 'Sampled growth response across one environmental variable. The table below provides every setting and result.') },
-              [0, 25, 50, 75, 100].map(function(tick) { return h('g', { key: tick }, h('line', { x1: left, y1: y(tick), x2: left + plotW, y2: y(tick), stroke: '#334155' }), h('text', { x: left - 9, y: y(tick) + 4, textAnchor: 'end', fill: '#cbd5e1', fontSize: 12 }, tick)); }),
-              h('path', { d: path, fill: 'none', stroke: '#7dd3fc', strokeWidth: 2, strokeDasharray: '5 4' }),
-              result.points.map(function(point) { return h('g', { key: point.value },
-                point.score === 0 ? h('rect', { x: x(point.value) - 4, y: y(point.finalPopulation) - 4, width: 8, height: 8, fill: '#fbbf24' }) : h('circle', { cx: x(point.value), cy: y(point.finalPopulation), r: 4, fill: '#6ee7b7' }),
-                h('text', { x: x(point.value), y: top + plotH + 20, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, point.value)); }),
-              h('text', { x: left + plotW / 2, y: 281, textAnchor: 'middle', fill: '#cbd5e1', fontSize: 12 }, labels[result.variable] + (result.variable === 'tempC' ? ' (°C)' : result.variable === 'oxygen' ? ' (0–100)' : ''))
+            h('div', { id: 'gl-growth-axes', className: 'micro-growth-chart-axes' },
+              h('div', { className: 'micro-growth-chart-y', 'aria-hidden': true }, [100, 75, 50, 25, 0].map(function(value) {
+                return h('span', { key: value, 'data-growth-y-label': value, style: { position: 'absolute', top: (100 - value) + '%', right: 0, transform: 'translateY(-50%)' } }, value);
+              })),
+              h('div', { id: 'gl-growth-plot', className: 'micro-growth-chart-plot' },
+                h('svg', { id: 'gl-growth-chart', viewBox: '0 0 100 100', preserveAspectRatio: 'none', role: 'img',
+                  'aria-label': gt('chart_alt', 'Control and trial growth curves. Exact values are available in the data table below.'),
+                  'aria-describedby': 'gl-growth-scale gl-growth-selected-hour gl-growth-marker-note', style: { position: 'absolute', inset: 0, width: '100%', height: '100%', overflow: 'visible' } },
+                  [0, 25, 50, 75, 100].map(function(value) { return h('line', { key: value, 'data-growth-level': value, x1: 0, x2: 100, y1: y(value), y2: y(value), stroke: '#64748b', strokeWidth: 1, opacity: value === 0 || value === 100 ? 0.8 : 0.4, vectorEffect: 'non-scaling-stroke' }); }),
+                  h('path', { 'data-growth-series': 'control', d: line(result.control.points), fill: 'none', stroke: '#7dd3fc', strokeWidth: 3, strokeDasharray: '6 5', vectorEffect: 'non-scaling-stroke' }),
+                  h('path', { 'data-growth-series': 'trial', d: line(result.trial.points), fill: 'none', stroke: '#6ee7b7', strokeWidth: 3, vectorEffect: 'non-scaling-stroke' }),
+                  h('line', { 'data-growth-hour-guide': hour, x1: x(hour), x2: x(hour), y1: 0, y2: 100, stroke: '#fbbf24', strokeWidth: 2, strokeDasharray: '4 4', vectorEffect: 'non-scaling-stroke' })
+                ),
+                marker('control', controlValue), marker('trial', trialValue)
+              ),
+              h('div', { className: 'micro-growth-chart-x', 'aria-hidden': true }, [0, 6, 12, 18, 24].map(function(value) {
+                return h('span', { key: value, style: { position: 'absolute', left: x(value) + '%', whiteSpace: 'nowrap', transform: value === 0 ? undefined : value === 24 ? 'translateX(-100%)' : 'translateX(-50%)' } }, value);
+              })),
+              h('div', { className: 'micro-growth-chart-axis-title', 'aria-hidden': true }, gt('hour', 'Model hour'))
             ),
-            h('div', { className: 'micro-growth-legend' }, h('span', null, '● ' + gt('sweep_increase', 'Population increases')), h('span', null, '■ ' + gt('sweep_flat', 'No modeled increase')))
+            h('p', { id: 'gl-growth-marker-note' }, __alloMBT('stem.microbiology.growth_visual_legend', 'Control: dashed line and circle. Trial: solid line and diamond.')),
+            h('p', { id: 'gl-growth-selected-hour', role: 'status', 'aria-live': 'polite', 'aria-atomic': true }, __alloMBT('stem.microbiology.growth_visual_selected', 'Selected model hour') + ': ' + hour),
+            h('dl', { id: 'gl-growth-hour-values', className: 'micro-growth-hour-values' },
+              h('div', null, h('dt', null, __alloMBT('stem.microbiology.growth_visual_control', 'Control at selected hour')), h('dd', { 'data-growth-hour-value': 'control', 'data-value': controlValue }, num(controlValue))),
+              h('div', null, h('dt', null, __alloMBT('stem.microbiology.growth_visual_trial', 'Trial at selected hour')), h('dd', { 'data-growth-hour-value': 'trial', 'data-value': trialValue }, num(trialValue))),
+              h('div', null, h('dt', null, __alloMBT('stem.microbiology.growth_visual_difference', 'Trial minus control at selected hour')), h('dd', { 'data-growth-hour-value': 'difference', 'data-value': difference }, (difference > 0 ? '+' : '') + num(difference)))
+            ),
+            h('p', { id: 'gl-growth-guide-note', className: 'micro-growth-muted' }, __alloMBT('stem.microbiology.growth_visual_note', 'The guide follows the same model hour used for citations and notebook comparisons. Saved predictions and outcomes refer to hour 24.'))
           );
         }
         function sweepEvidence(result, previous) {
           var label = previous ? gt('sweep_previous', 'Previous sweep') : gt('sweep_current', 'Current sweep');
+          var prefix = previous ? 'gl-previous-sweep' : 'gl-current-sweep';
           return h('div', { id: previous ? 'gl-previous-sweep-evidence' : 'gl-current-sweep-evidence',
             'data-micro-growth-sweep': previous ? undefined : result.variable,
             'data-micro-growth-previous-sweep': previous ? result.variable : undefined,
@@ -8123,22 +8648,24 @@
               h('p', { role: previous ? undefined : 'status', 'aria-live': previous ? undefined : 'polite' }, gt('sweep_saved', 'Saved sweep') + ': ' + labels[result.variable] + ' · ' + result.points.length + ' ' + gt('sweep_samples', 'sampled settings')),
               h('p', null, h('strong', null, gt('sweep_held', 'Held constant') + ': '), sweepFixed(result)),
               h('p', { className: 'micro-growth-muted' }, gt('sweep_constants', 'Every sample starts at 5 population units, runs for 24 model hours, and shares capacity 100 and maximum modeled rate 0.4 per hour.')),
-              sweepChart(result, label),
+              h(MicroGrowthSweepVisual, { key: JSON.stringify([result.variable, result.conditions]), React: React, result: result, prefix: prefix,
+                label: label, variableLabel: labels[result.variable], settingText: settingText, translate: gt, afterFigure: function(selectedSetting) { return h('div', null,
               h('p', null, result.maximum - result.minimum < 1e-9 ? gt('sweep_same', 'Every sampled setting gives the same final population. A different fixed condition may limit growth, or this profile may not respond to the variable.') :
                 gt('sweep_highest', 'Highest sampled population') + ': ' + num(result.maximum) + ' ' + gt('sweep_at', 'at') + ' ' + result.bestValues.map(function(value) { return settingText(result.variable, value); }).join(', ') + '. ' + gt('sweep_range', 'Sampled population range') + ': ' + num(result.minimum) + '–' + num(result.maximum) + '.'),
               h('p', { className: 'micro-growth-muted' }, gt('sweep_sample_note', 'These are sampled model responses, not measurements. Connecting lines guide the eye; unsampled settings may differ.')),
               h('p', { className: 'micro-growth-muted' }, gt('sweep_no_death', 'A square marks no modeled increase: the starting population remains 5. It does not establish whether cells survive outside their growth range.')),
-              h('div', { className: 'micro-growth-table-wrap' }, h('table', { className: 'micro-growth-sweep-table' },
+              h('div', { className: 'micro-growth-table-wrap' }, h('table', { id: prefix + '-table', className: 'micro-growth-sweep-table' },
                 h('caption', null, label + ': ' + gt('sweep_table', 'Saved sweep settings and model responses')),
                 h('thead', null, h('tr', null, h('th', { scope: 'col' }, labels[result.variable]), h('th', { scope: 'col' }, gt('sweep_final', 'Population at hour 24')), h('th', { scope: 'col' }, gt('sweep_response_label', 'Modeled response')), !previous ? h('th', { scope: 'col' }, gt('sweep_prepare', 'Prepare next trial')) : null)),
                 h('tbody', null, result.points.map(function(point) {
                   var prepared = ['profile', 'tempC', 'pH', 'oxygen'].every(function(key) { return point.conditions[key] === conditions[key]; });
-                  return h('tr', { key: point.value }, h('th', { scope: 'row' }, settingText(result.variable, point.value)), h('td', null, num(point.finalPopulation)),
+                  return h('tr', { key: point.value, 'data-sweep-setting': point.value, 'aria-current': point.value === selectedSetting ? 'true' : undefined }, h('th', { scope: 'row' }, settingText(result.variable, point.value)), h('td', null, num(point.finalPopulation)),
                     h('td', null, point.score === 0 ? gt('sweep_flat', 'No modeled increase') : gt('sweep_increase', 'Population increases')),
                     !previous ? h('td', null, h('button', { type: 'button', 'aria-pressed': prepared, 'aria-label': gt('sweep_use_setting', 'Use this setting as the next trial') + ': ' + labels[result.variable] + ' ' + settingText(result.variable, point.value), onClick: function() { setConditions(point.conditions); } }, prepared ? gt('sweep_prepared', 'Prepared as next trial') : gt('sweep_use', 'Use as next trial'))) : null);
                 }))
               )),
               !previous ? h('p', { className: 'micro-growth-muted' }, gt('sweep_trial_note', 'Choosing a setting fills the trial controls above. Your saved control, predictions, and previous comparisons stay intact. Review your prediction before running a comparison.')) : null
+              ); } })
           );
         }
         function explanationEditor() {
@@ -8149,7 +8676,7 @@
           return h('div', null,
             selected.hypothesis && h('blockquote', null, h('strong', null, gt('saved_reasoning', 'Your reasoning before this run') + ': '), selected.hypothesis),
             h(MicroGrowthCitations, { key: selected.id, React: React, selected: selected, rawBook: d.growthInvestigation, hour: review.hour,
-              setHour: function(hour) { upd({ growthReviewHour: hour }); }, save: function(notebook) { upd({ growthInvestigation: notebook }); }, translate: gt }),
+              setHour: function(hour) { setGrowthReviewHour(hour); }, save: function(notebook) { upd({ growthInvestigation: notebook }); }, translate: gt }),
             h('label', { htmlFor: 'gl-explanation' }, gt('explanation', 'My evidence and explanation')),
             h('p', { className: 'micro-growth-muted', id: 'gl-explanation-hint' }, gt('explain_prompt', 'Name what changed, cite values or a pattern in the curves, and explain how the organism’s metabolism or environmental limits could account for it.')),
             h('textarea', { id: 'gl-explanation', rows: 3, maxLength: 1200, 'aria-describedby': 'gl-explanation-hint', value: selected.explanation,
@@ -8184,7 +8711,7 @@
             h('style', null, '.micro-growth-review{margin:14px 0}.micro-growth-review-table th,.micro-growth-review-table td{vertical-align:top}.micro-growth-review-table button[aria-pressed=true]{background:#064e3b;border-color:#6ee7b7}.micro-growth-review .micro-growth-table-wrap:focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}.theme-contrast .micro-growth-review-table button[aria-pressed=true]{background:#000;color:#ffff00;border-color:#ffff00}'),
             h('p', { className: 'micro-growth-muted', id: 'gl-review-note' }, gt('review_time_note', 'Each row compares a trial with its original saved control. Inspect an earlier hour to see differences that similar final populations may hide. Values are simulated populations in arbitrary units. Select a trial to review its conditions and explanation above.')),
             h('label', { htmlFor: 'gl-review-hour' }, gt('review_hour', 'Inspect model hour')),
-            h('select', { id: 'gl-review-hour', value: review.hour, 'aria-describedby': 'gl-review-time-status', onChange: function(event) { upd({ growthReviewHour: Number(event.target.value) }); } },
+            h('select', { id: 'gl-review-hour', value: review.hour, 'aria-describedby': 'gl-review-time-status', onChange: function(event) { setGrowthReviewHour(Number(event.target.value)); } },
               Array.from({ length: 25 }, function(_, hour) { return h('option', { key: hour, value: hour }, hour); })),
             h('p', { id: 'gl-review-time-status', className: 'micro-growth-muted', role: 'status', 'aria-live': 'polite' },
               gt('review_showing_hour', 'Showing saved populations at model hour') + ' ' + review.hour + '. ' + gt('review_fixed_outcomes', 'Original predictions and outcome labels always refer to hour 24.')),
@@ -8306,10 +8833,10 @@
               h('p', { className: 'micro-growth-muted' }, gt('similar_rule', '“Similar” means the final populations differ by at most 2 arbitrary units. This is a comparison rule, not a statistical test.')),
               h('details', { className: 'micro-growth-table-details' },
                 h('summary', null, gt('data_table', 'Open the accessible data table')),
-                h('div', { className: 'micro-growth-table-wrap' }, h('table', null,
+                h('div', { className: 'micro-growth-table-wrap' }, h('table', { id: 'gl-growth-data-table' },
                   h('caption', null, gt('table_caption', 'Simulated population at each model hour')),
                   h('thead', null, h('tr', null, h('th', { scope: 'col' }, gt('hour', 'Model hour')), h('th', { scope: 'col' }, gt('control', 'Control')), h('th', { scope: 'col' }, gt('trial', 'Trial')))),
-                  h('tbody', null, comparison.trial.points.map(function(p, i) { return h('tr', { key: p.hour }, h('th', { scope: 'row' }, p.hour), h('td', null, num(comparison.control.points[i].population)), h('td', null, num(p.population))); }))
+                  h('tbody', null, comparison.trial.points.map(function(p, i) { return h('tr', { key: p.hour, 'data-growth-hour': p.hour, 'aria-current': p.hour === review.hour ? 'true' : undefined }, h('th', { scope: 'row' }, p.hour), h('td', null, num(comparison.control.points[i].population)), h('td', null, num(p.population))); }))
                 ))
               ),
               h('p', null, h('strong', null, gt('limiting', 'Environmental fit in this trial') + ': '),

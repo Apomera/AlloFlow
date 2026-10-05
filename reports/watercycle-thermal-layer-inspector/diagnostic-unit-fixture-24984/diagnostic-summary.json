@@ -1,0 +1,56 @@
+{
+  "archivedAt": "2026-10-02T23:26:44.808Z",
+  "reason": "New test fixture incorrectly expected freezing rain from a weak warm nose that the unchanged kernel classifies as sleet.",
+  "files": [
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-results.json",
+      "sha256": "53859fea86bb35881b54dba84960ad72ae5dbdb609a8edc2ec43a30e4ee4565e",
+      "bytes": 41841
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-run.log",
+      "sha256": "c6fe6cda24350f61d7c69ad8773bde556a0f3887d8b87ed15d3b22cd955c5e32",
+      "bytes": 5086
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-before.json",
+      "sha256": "95f14366fd61d850e7313cff576d59fd87a9624abd260b1eb8e766a94fee0712",
+      "bytes": 13384
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+      "sha256": "7e06d8f2528ad3620a4b7fc27f04fcfc900c26c8989938d676eb16ddedb0f6c2",
+      "bytes": 19975
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-loaded-runtime.json",
+      "sha256": "c83a8f4020312d3fe170a103498a0644d690f445e30ac45a86ce051de3068b32",
+      "bytes": 875
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/tested-test-bundle.cjs",
+      "sha256": "06ed5d27cedc3a3382350ab51949c192ec87c11855b1dec9c95b36e54ddd6862",
+      "bytes": 12523
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/tested-read-audit.cjs",
+      "sha256": "4683769f3cff2558bd05ab286c4df0017d70897e59891e8d561c3429a4a05940",
+      "bytes": 1933
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/tested-test.js",
+      "sha256": "eae17e5a1a6576e78c602fea99f06cc1fa8ae782de1089c0364d6c0c18fdf4f7",
+      "bytes": 28386
+    }
+  ],
+  "processChecks": [
+    {
+      "pid": 68432,
+      "running": false
+    },
+    {
+      "pid": 24984,
+      "running": false
+    }
+  ]
+}

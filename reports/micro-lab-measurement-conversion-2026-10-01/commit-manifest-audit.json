@@ -1,0 +1,46 @@
+{
+  "mode": "prepared",
+  "passed": true,
+  "parent": "552e385b736651544933a09db01326084cd559e6",
+  "tree": "f6da4fec3a32dd11e891cd93025088c8046cc708",
+  "changedFiles": 104,
+  "sealedFiles": 102,
+  "sourceSha256": "398c8511351de27b5198faaf6706b86cfe2803a746d4bdaa95515c79ab144434",
+  "unitPassed": 794,
+  "browserPassed": 56,
+  "workingFilesMatchSealedInputs": true,
+  "registries": [
+    {
+      "file": "ui_strings.js",
+      "added": [
+        "measure_conversion_invalid",
+        "measure_conversion_limits",
+        "measure_conversion_preview",
+        "measure_conversion_scope",
+        "measure_conversion_to_nm",
+        "measure_conversion_to_um",
+        "measure_unit_choice_help"
+      ],
+      "removed": 0,
+      "changedExisting": 0,
+      "outsideBytesUnchanged": true,
+      "totalMicroKeys": 2013
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "added": [
+        "measure_conversion_invalid",
+        "measure_conversion_limits",
+        "measure_conversion_preview",
+        "measure_conversion_scope",
+        "measure_conversion_to_nm",
+        "measure_conversion_to_um",
+        "measure_unit_choice_help"
+      ],
+      "removed": 0,
+      "changedExisting": 0,
+      "outsideBytesUnchanged": true,
+      "totalMicroKeys": 2013
+    }
+  ]
+}

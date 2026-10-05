@@ -1,0 +1,83 @@
+Microbial growth discovery
+Illustrative model v1; population is in arbitrary units (5 initially, capacity 100). Values are simulated, not measurements.
+
+Trial 7
+Control: E. coli · 37 °C · pH 7 · Oxygen availability 100/100
+Trial conditions: E. coli · 35 °C · pH 7 · Oxygen availability 100/100
+Prediction: Similar population
+My reasoning before the run: <img src=x onerror="window.__sweepVisualInjected=true"> Keep imported sweep evidence literal.
+Changed variables: Temperature
+At 24 model hours: Control 99.7; Trial 99.4
+My evidence and explanation: =SUM(1,2)
+Keep the original explanation.
+
+Evidence selected for my explanation
+Learner-selected model hours from the original saved conditions. Original predictions and outcome labels still refer to hour 24.
+Cited model hour	Original control population	Trial population	Trial minus control
+0	5	5	0
+6	20.678	16.674	-4.004
+24	99.714	99.391	-0.324
+
+Simulated population at each model hour
+Model hour	Control	Trial
+0	5.0	5.0
+1	5.0	5.0
+2	5.0	5.0
+3	7.3	6.1
+4	10.5	8.7
+5	14.9	12.1
+6	20.7	16.7
+7	28.0	22.5
+8	36.7	29.6
+9	46.4	38.0
+10	56.4	47.0
+11	65.8	56.3
+12	74.2	65.1
+13	81.1	73.1
+14	86.5	79.7
+15	90.5	85.1
+16	93.4	89.2
+17	95.5	92.3
+18	96.9	94.6
+19	97.9	96.2
+20	98.6	97.4
+21	99.1	98.2
+22	99.4	98.7
+23	99.6	99.1
+24	99.7	99.4
+
+Current sweep
+Explore one variable across a range
+Variable to sweep: Temperature
+Held constant: E. coli · pH: 7 · Oxygen availability: 100/100
+Every sample starts at 5 population units, runs for 24 model hours, and shares capacity 100 and maximum modeled rate 0.4 per hour.
+These are sampled model responses, not measurements. Connecting lines guide the eye; unsampled settings may differ.
+Temperature	Population at hour 24	Modeled lag (hours)
+0 °C	5.0	8.0
+10 °C	7.6	7.6
+20 °C	52.9	5.5
+30 °C	96.4	3.4
+37 °C	99.7	2.0
+45 °C	5.0	8.0
+60 °C	5.0	8.0
+70 °C	5.0	8.0
+80 °C	5.0	8.0
+90 °C	5.0	8.0
+
+Previous sweep
+Explore one variable across a range
+Variable to sweep: pH
+Held constant: T. aquaticus · Temperature: 65 °C · Oxygen availability: 100/100
+Every sample starts at 5 population units, runs for 24 model hours, and shares capacity 100 and maximum modeled rate 0.4 per hour.
+These are sampled model responses, not measurements. Connecting lines guide the eye; unsampled settings may differ.
+pH	Population at hour 24	Modeled lag (hours)
+3	5.0	8.0
+4	5.0	8.0
+5	5.0	8.0
+5.5	14.1	7.0
+6	36.7	6.0
+7	91.6	4.0
+7.5	98.3	3.0
+8	79.4	4.7
+9	5.0	8.0
+10	5.0	8.0

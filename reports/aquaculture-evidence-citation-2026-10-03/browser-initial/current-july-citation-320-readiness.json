@@ -1,0 +1,75 @@
+{
+  "note": {
+    "id": "current-july-citation",
+    "capturedAt": 1791045000000,
+    "modelVersion": "2026.10-stock-feedback",
+    "scope": "month",
+    "month": 6,
+    "speciesId": "system",
+    "metricId": "oxygen",
+    "metricLabel": "Dissolved oxygen",
+    "unit": " mg/L",
+    "deltaUnit": " mg/L",
+    "aState": "recorded",
+    "bState": "recorded",
+    "a": 6.97,
+    "b": 8.17,
+    "baselineScenario": {
+      "environmentId": "longline",
+      "organisms": {
+        "oyster": 2,
+        "kelp": 1,
+        "nitrifiers": 1
+      },
+      "water": {
+        "temperature": 14,
+        "salinity": 30,
+        "oxygen": 8,
+        "pH": 8,
+        "ammonia": 0.04,
+        "exchange": 82
+      },
+      "disturbanceId": "heatwave"
+    },
+    "currentScenario": {
+      "environmentId": "longline",
+      "organisms": {
+        "oyster": 2,
+        "kelp": 1,
+        "nitrifiers": 1
+      },
+      "water": {
+        "temperature": 14,
+        "salinity": 30,
+        "oxygen": 9.2,
+        "pH": 8,
+        "ammonia": 0.04,
+        "exchange": 82
+      },
+      "disturbanceId": "heatwave"
+    },
+    "aEvent": "Marine heatwave",
+    "bEvent": "Marine heatwave"
+  },
+  "readiness": {
+    "ok": true,
+    "reason": "added",
+    "evidence": {
+      "claim": "I want to explain the selected reading in its original model context.",
+      "evidence": "  My evidence notes stay in my own words.\n\n  \nJul model · Shared system · Dissolved oxygen: A 6.97 mg/L → B 8.17 mg/L; +1.2 mg/L (B minus A). Model 2026.10-stock-feedback. Captured 2026-10-03T16:30:00.000Z.",
+      "reasoning": "A complete source citation preserves the time, settings and version needed to interpret the number.",
+      "nextTest": "I would change one input and compare a new capture."
+    },
+    "citation": "Jul model · Shared system · Dissolved oxygen: A 6.97 mg/L → B 8.17 mg/L; +1.2 mg/L (B minus A). Model 2026.10-stock-feedback. Captured 2026-10-03T16:30:00.000Z.",
+    "state": "ready",
+    "canAppend": true,
+    "currentLength": 45,
+    "limit": 500,
+    "remaining": 455,
+    "addedLength": 161,
+    "proposedLength": 206,
+    "overflow": 0,
+    "readingText": "Jul model · Shared system · Dissolved oxygen: A 6.97 mg/L → B 8.17 mg/L; +1.2 mg/L (B minus A). Model 2026.10-stock-feedback. Captured 2026-10-03T16:30:00.000Z.",
+    "noteId": "current-july-citation"
+  }
+}

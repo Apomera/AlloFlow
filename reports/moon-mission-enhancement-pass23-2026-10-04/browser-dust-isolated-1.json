@@ -1,0 +1,168 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass23-2026-10-04/browser-dust-isolated-1/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-dust.spec.ts",
+      "file": "moon-mission-descent-dust.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "fallback ballistic surface dust",
+          "file": "moon-mission-descent-dust.spec.ts",
+          "line": 85,
+          "column": 6,
+          "specs": [
+            {
+              "title": "a real burn emits world-fixed grains that coast after cutoff and settle after contact",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 54286,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-dust.spec.ts:99:74",
+                        "location": {
+                          "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-dust.spec.ts",
+                          "column": 74,
+                          "line": 99
+                        },
+                        "snippet": "   97 |     await page.locator('[data-descent-pause]').click(); await expect.poll(async () => (await state(page)).elapsed).toBeGreaterThan(held.elapsed + .45);\n   98 |     await page.locator('[data-descent-pause]').click(); const cutoff = await dust(page), coast = await state(page);\n>  99 |     expect(coast.thrust).toBeLessThan(.02); expect(cutoff.grains.length).toBeGreaterThan(0);\n      |                                                                          ^\n  100 |     const shared = before.grains.filter(p => cutoff.grains.some(q => q.id === p.id)); expect(shared.length).toBeGreaterThan(0);\n  101 |     const trailTime = await page.evaluate(() => (window as any).MoonMissionPure.descentDust.trailTime);\n  102 |     for (const p of shared) {"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-dust.spec.ts",
+                            "column": 74,
+                            "line": 99
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n   97 |     await page.locator('[data-descent-pause]').click(); await expect.poll(async () => (await state(page)).elapsed).toBeGreaterThan(held.elapsed + .45);\n   98 |     await page.locator('[data-descent-pause]').click(); const cutoff = await dust(page), coast = await state(page);\n>  99 |     expect(coast.thrust).toBeLessThan(.02); expect(cutoff.grains.length).toBeGreaterThan(0);\n      |                                                                          ^\n  100 |     const shared = before.grains.filter(p => cutoff.grains.some(q => q.id === p.id)); expect(shared.length).toBeGreaterThan(0);\n  101 |     const trailTime = await page.evaluate(() => (window as any).MoonMissionPure.descentDust.trailTime);\n  102 |     for (const p of shared) {\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-dust.spec.ts:99:74"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T23:51:50.289Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "fallback-burning-dust",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-dust-isolated-1\\results\\moon-mission-descent-dust--b90e3-ff-and-settle-after-contact-chromium\\attachments\\fallback-burning-dust-fd2e2540ffb1599b988d9605e74ef373cf9c5e79.png"
+                        },
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-dust-isolated-1\\results\\moon-mission-descent-dust--b90e3-ff-and-settle-after-contact-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-dust-isolated-1\\results\\moon-mission-descent-dust--b90e3-ff-and-settle-after-contact-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-dust-isolated-1\\results\\moon-mission-descent-dust--b90e3-ff-and-settle-after-contact-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-dust-isolated-1\\results\\moon-mission-descent-dust--b90e3-ff-and-settle-after-contact-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-dust.spec.ts",
+                        "column": 74,
+                        "line": 99
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "98b8a24adc3328688567-e6e2d2f5e116232f7b23",
+              "file": "moon-mission-descent-dust.spec.ts",
+              "line": 92,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T23:51:48.439Z",
+    "duration": 88957.253,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

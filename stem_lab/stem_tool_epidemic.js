@@ -4634,7 +4634,50 @@ window.StemLab = window.StemLab || {
         // ═══ INQUIRY TAB (Cycle 16 — H7b'' validated design pattern) ═══
         tab === 'inquiry' && (function() {
           var iq = d.inquiry || { contact: 50, intervention: 30, transmissibility: 2.5, hypothesis: '', stuckRevealed: false, understood: false, explanation: '', log: [] };
-          function setIQ(patch) { upd('inquiry', Object.assign({}, iq, patch)); }
+          function setIQ(patch) { upd('inquiry', function(current) { return Object.assign({}, current || iq, patch); }); }
+          function focusInquiry(id) { setTimeout(function() { var el = document.getElementById(id); if (el) el.focus(); }, 0); }
+          function resetInquiry() {
+            upd('inquiry', function(current) {
+              var cur = current || iq;
+              if (cur.resetBackup) return cur;
+              return Object.assign({}, cur, { contact: 50, intervention: 30, transmissibility: 2.5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '', removedObservation: null,
+                resetBackup: Object.assign({}, cur), recoveryMessage: 'Investigation reset. Previous observations and explanation drafts remain recoverable.' });
+            });
+            focusInquiry('ep-inquiry-restore');
+          }
+          function restoreInquiry() {
+            upd('inquiry', function(current) {
+              var cur = current || iq;
+              if (!cur.resetBackup) return cur;
+              var backup = Object.assign({}, cur); delete backup.resetBackup;
+              return Object.assign({}, cur.resetBackup, { resetBackup: backup, recoveryMessage: 'Previous investigation restored. Restore again to return to the investigation you just left.' });
+            });
+            focusInquiry('ep-inquiry-restore');
+          }
+          function discardPreviousInvestigation() {
+            setIQ({ resetBackup: null, recoveryMessage: 'Previous investigation discarded, including its observations and drafts. Your current investigation is unchanged. Reset is available again.' });
+            focusInquiry('ep-inquiry-reset');
+          }
+          function removeObservation(index) {
+            upd('inquiry', function(current) {
+              var cur = current || iq, log = (cur.log || []).slice();
+              if (cur.removedObservation) return Object.assign({}, cur, { recoveryMessage: 'Undo or discard the pending removal before removing another observation.' });
+              if (!log[index]) return cur;
+              var removed = log.splice(index, 1)[0];
+              return Object.assign({}, cur, { log: log, removedObservation: { entry: removed, index: index }, recoveryMessage: 'Observation removed. Its original position is reserved until you undo or discard it.' });
+            });
+            focusInquiry('ep-inquiry-undo');
+          }
+          function undoObservation() {
+            upd('inquiry', function(current) {
+              var cur = current || iq, log = (cur.log || []).slice(), removed = cur.removedObservation;
+              if (!removed) return cur;
+              log.splice(Math.min(removed.index, log.length), 0, removed.entry);
+              return Object.assign({}, cur, { log: log, removedObservation: null, recoveryMessage: 'Removed observation restored in its original position.' });
+            });
+            focusInquiry('ep-inquiry-log');
+          }
+          function discardRemoval() { setIQ({ removedObservation: null, recoveryMessage: 'Removed observation discarded. Its reserved place is available.' }); focusInquiry('ep-inquiry-log'); }
           // Effective R = transmissibility * (contact/100) * (1 - intervention/100 * 0.7)
           var contactF = iq.contact / 100;
           var interventionF = iq.intervention / 100;
@@ -4647,8 +4690,13 @@ window.StemLab = window.StemLab || {
             fast_growth: { label: __alloT('stem.epidemic.fast_growth', '\uD83D\uDD34 Faster growth'), desc: __alloT('stem.epidemic.r_eff_at_least_1_5', 'R_eff >= 1.5: infections grow faster in this simplified model. This is not, by itself, a definition of a pandemic.'), color: '#b91c1c', bg: '#fef2f2', border: '#fca5a5' }
           }[regime];
           function logObs() {
-            var obs = { c: iq.contact, i: iq.intervention, t: iq.transmissibility, rE: parseFloat(rEff.toFixed(2)), reg: regime };
-            setIQ({ log: (iq.log || []).concat([obs]).slice(-8) });
+            upd('inquiry', function(current) {
+              var cur = current || iq, log = cur.log || [];
+              if (log.length + (cur.removedObservation ? 1 : 0) >= 8) return Object.assign({}, cur, { recoveryMessage: 'Eight observation places are occupied, including any pending undo. Nothing was removed. Remove and discard an observation before logging these settings.' });
+              var effective = cur.transmissibility * (cur.contact / 100) * (1 - cur.intervention / 100 * 0.7);
+              var obs = { c: cur.contact, i: cur.intervention, t: cur.transmissibility, rE: parseFloat(effective.toFixed(2)), reg: effective <= 1 ? 'declining' : (effective < 1.5 ? 'growing' : 'fast_growth') };
+              return Object.assign({}, cur, { log: log.concat([obs]), recoveryMessage: 'Observation saved. ' + (log.length + 1) + ' of 8 observations.' });
+            });
           }
           return h('div', { className: 'space-y-4' },
             h('div', { className: glassCard },
@@ -4717,18 +4765,25 @@ window.StemLab = window.StemLab || {
               ),
               // Log + reset
               h('div', { className: 'flex gap-2 items-center mb-3 flex-wrap' },
-                h('button', { onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.epidemic.log_observation', '📋 Log observation')),
-                h('button', { onClick: function() { setIQ({ contact: 50, intervention: 30, transmissibility: 2.5, log: [], hypothesis: '', stuckRevealed: false, understood: false, explanation: '' }); },
+                h('button', { id: 'ep-inquiry-log', type: 'button', onClick: logObs, className: 'px-2 py-1 rounded bg-slate-100 hover:bg-slate-200 text-[0.6875rem] font-bold text-slate-700 border border-slate-300' }, __alloT('stem.epidemic.log_observation', '📋 Log observation')),
+                h('button', { id: 'ep-inquiry-reset', type: 'button', onClick: resetInquiry, disabled: !!iq.resetBackup,
                   className: 'px-2 py-1 rounded bg-white hover:bg-slate-50 text-[0.6875rem] font-semibold text-slate-600 border border-slate-500' }, __alloT('stem.epidemic.reset', '↺ Reset')),
                 (iq.log || []).length > 0 && h('span', { className: 'text-[0.625rem] text-slate-500 italic' }, (iq.log || []).length + ' observations logged')
               ),
+              h('p', { className: 'text-xs text-slate-600' }, 'Keep up to eight observations. Undo restores a removed observation; discard frees its place. Reset saves your previous investigation with its drafts. Restore exchanges the two investigations. To reset again, discard the previous investigation first.'),
+              iq.resetBackup && h('button', { id: 'ep-inquiry-restore', type: 'button', onClick: restoreInquiry, className: 'px-3 py-2 rounded border border-slate-500 text-sm font-bold' }, 'Restore previous investigation'),
+              iq.resetBackup && h('button', { type: 'button', onClick: discardPreviousInvestigation, className: 'px-3 py-2 rounded border border-slate-500 text-sm' }, 'Discard previous investigation and its drafts'),
+              iq.removedObservation && h('div', null,
+                h('button', { id: 'ep-inquiry-undo', type: 'button', onClick: undoObservation, className: 'px-3 py-2 rounded border border-slate-500 text-sm font-bold' }, 'Undo last observation removal'),
+                h('button', { type: 'button', onClick: discardRemoval, className: 'px-3 py-2 rounded border border-slate-500 text-sm' }, 'Discard removed observation')),
+              h('div', { role: 'status', 'aria-live': 'polite', 'aria-atomic': 'true', 'data-epidemic-inquiry-recovery': 'true', className: 'text-xs text-slate-700' }, iq.recoveryMessage || ''),
               // Log table
               (iq.log || []).length > 0 && h('div', { className: 'mb-3 overflow-x-auto' },
                 h('table', { className: 'text-[0.625rem] w-full border-collapse text-slate-700' },
                   h('thead', null, h('tr', { className: 'bg-slate-100' },
                     ['contact %', 'intervention %', 'R₀', 'R_eff', 'growth band'].map(function(c, i) {
                       return h('th', { key: 'h' + i, scope: 'col', className: 'px-2 py-1 border border-slate-200 text-left' }, c);
-                    }))),
+                    }), h('th', { scope: 'col', className: 'px-2 py-1 border border-slate-200 text-left' }, 'Observation actions'))),
                   h('tbody', null, iq.log.map(function(o, idx) {
                     var rowBg = (o.reg === 'declining' || o.reg === 'contained') ? 'rgba(16,185,129,0.08)' : ((o.reg === 'growing' || o.reg === 'emerging') ? 'rgba(217,119,6,0.08)' : 'rgba(220,38,38,0.10)');
                     return h('tr', { key: 'lr' + idx, style: { background: rowBg } },
@@ -4736,7 +4791,8 @@ window.StemLab = window.StemLab || {
                       h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.i),
                       h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.t),
                       h('td', { className: 'px-2 py-1 border border-slate-200 font-mono' }, o.rE),
-                      h('td', { className: 'px-2 py-1 border border-slate-200' }, ({ contained: 'declining', emerging: 'growing', pandemic: 'fast growth', fast_growth: 'fast growth' }[o.reg] || o.reg)));
+                      h('td', { className: 'px-2 py-1 border border-slate-200' }, ({ contained: 'declining', emerging: 'growing', pandemic: 'fast growth', fast_growth: 'fast growth' }[o.reg] || o.reg)),
+                      h('td', { className: 'px-2 py-1 border border-slate-200' }, h('button', { type: 'button', disabled: !!iq.removedObservation, onClick: function() { removeObservation(idx); }, style: { position: 'relative' }, className: 'px-3 py-2 rounded border border-slate-500' }, 'Remove', h('span', { className: 'sr-only' }, ' observation ' + (idx + 1)))));
                   })))
               ),
               h('div', { className: 'mb-3' },

@@ -1,0 +1,123 @@
+[
+  {
+    "client": 766,
+    "scroll": 766,
+    "targets": [
+      {
+        "label": "Focus the specimen",
+        "height": 48,
+        "clipped": false
+      },
+      {
+        "label": "Find in directory",
+        "height": 48,
+        "clipped": false
+      }
+    ],
+    "text": [
+      {
+        "text": "Step 4\nof 6",
+        "size": 14,
+        "clipped": false
+      },
+      {
+        "text": "Next best action · Identify",
+        "size": 14,
+        "clipped": false
+      },
+      {
+        "text": "Find and inspect Tympanic Membrane",
+        "size": 16,
+        "clipped": false
+      },
+      {
+        "text": "1 of 4 structures inspected in this layer.",
+        "size": 14,
+        "clipped": false
+      },
+      {
+        "text": "Use the specimen or preview the target in the structure directory. Activate a visible directory result to inspect it.",
+        "size": 14,
+        "clipped": false
+      },
+      {
+        "text": "🐸 Frog (Rana)",
+        "size": 14,
+        "clipped": false
+      },
+      {
+        "text": "🟢 Skin · layer 1/5",
+        "size": 14,
+        "clipped": false
+      },
+      {
+        "text": "Focus the specimen",
+        "size": 15.2,
+        "clipped": false
+      },
+      {
+        "text": "Find in directory",
+        "size": 15.2,
+        "clipped": false
+      }
+    ]
+  },
+  {
+    "client": 734,
+    "scroll": 734,
+    "targets": [
+      {
+        "label": "Find in directory: Tympanic Membrane",
+        "height": 48,
+        "clipped": false
+      },
+      {
+        "label": "Review all observations",
+        "height": 48,
+        "clipped": false
+      }
+    ],
+    "text": [
+      {
+        "text": "Your record",
+        "size": 16,
+        "clipped": false
+      },
+      {
+        "text": "Note and confidence recorded",
+        "size": 14,
+        "clipped": false
+      },
+      {
+        "text": "1 of 1 inspected structures in this layer have a note and confidence rating.",
+        "size": 14,
+        "clipped": false
+      },
+      {
+        "text": "3 more structures need inspection in this layer.",
+        "size": 14,
+        "clipped": false
+      },
+      {
+        "text": "Next inspection: Tympanic Membrane",
+        "size": 15.2,
+        "clipped": false
+      },
+      {
+        "text": "Preview the target in the directory, then activate its result when visible to inspect it.",
+        "size": 14,
+        "clipped": false
+      },
+      {
+        "text": "Find in directory: Tympanic Membrane",
+        "size": 15.2,
+        "clipped": false
+      },
+      {
+        "text": "Review all observations",
+        "size": 15.2,
+        "clipped": false
+      }
+    ]
+  }
+]

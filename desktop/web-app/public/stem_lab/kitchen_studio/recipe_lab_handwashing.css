@@ -1,0 +1,54 @@
+/* A quiet lesson panel keeps the active handwashing movement easy to follow. */
+.handwashing-lesson{margin:14px 0;border:1px solid #93af9c;border-radius:16px;background:#fffdf5;color:#244c3c;overflow:hidden}
+.handwashing-lesson>summary{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:16px 18px;cursor:pointer;background:#edf4e8;list-style:none}
+.handwashing-lesson>summary::-webkit-details-marker{display:none}
+.handwashing-lesson>summary strong{display:block;font-size:1.05rem;line-height:1.3}
+.handwashing-lesson>summary small{display:block;margin-top:4px;font-size:.8rem;line-height:1.4;color:#486c56}
+#washSummary{font-size:.8rem;font-weight:700;text-align:right;max-width:38%;font-variant-numeric:tabular-nums}
+.handwashing-body{padding:16px 18px 20px}
+.handwashing-body p{font-size:.88rem;line-height:1.55;margin:9px 0}
+.handwashing-actions{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}
+.handwashing-lesson button{min-height:44px;max-width:100%;padding:10px 14px;border:1px solid #839e85;border-radius:9px;background:#f5f7ee;color:#234b3b;font:inherit;font-size:.85rem;line-height:1.35;white-space:normal;cursor:pointer}
+.handwashing-lesson button:hover:enabled{background:#e7efd9;border-color:#416e55}
+.handwashing-lesson button:disabled{cursor:default;color:#61705e;background:#eef0e7;border-color:#c8d1bd}
+.handwashing-lesson :focus-visible{outline:3px solid #315c49;outline-offset:3px}
+.handwashing-phases{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:6px;margin:12px 0;padding:0;list-style:none;counter-reset:wash-phase}
+.handwashing-phases>*{counter-increment:wash-phase;display:flex;align-items:center;justify-content:center;min-height:38px;gap:5px;padding:7px 5px;border:1px solid #c2ceb7;border-radius:9px;background:#f4f6ed;text-align:center;font-size:.72rem;line-height:1.35;color:#506852}
+.handwashing-phases>[aria-current=step]{border:2px solid #3b7053;background:#dfeccd;color:#234c36;font-weight:750}
+.handwashing-phases>[data-complete=true]{background:#e9f1df;border-color:#8aaa80}
+#washKeyboardPanel[hidden]{display:none!important}
+#washKeyboardPanel h3{margin:15px 0 6px;font-size:1rem}
+#washKeys{color:#45634b}
+#washControl{display:block;width:100%;max-width:540px;max-height:355px;margin:12px auto;border:1px solid #9dbca8;border-radius:14px;background:#edf5eb;touch-action:none;user-select:none}
+#washControl[aria-disabled=true]{border-color:#c4ccbb}
+.handwashing-progress{display:grid;grid-template-columns:minmax(0,1fr);gap:7px 12px;align-items:center;margin:12px 0}.handwashing-progress>*{grid-column:1/-1;min-width:0}
+#washProgress{display:block;width:100%;height:10px;border:0;border-radius:999px;overflow:hidden;background:#e0e8d6;accent-color:#44764e}
+#washProgress::-webkit-progress-bar{background:#e0e8d6;border-radius:999px}
+#washProgress::-webkit-progress-value{background:#44764e;border-radius:999px}
+#washProgress::-moz-progress-bar{background:#44764e;border-radius:999px}
+#washTimeReading{font-variant-numeric:tabular-nums;font-weight:750;color:#234c36}
+#washPoseReading{font-weight:700;color:#234c36}
+#washCoverage{display:grid;grid-column:1/-1;grid-template-columns:repeat(5,minmax(0,1fr));gap:7px;margin:12px 0;padding:0;list-style:none}
+#washCoverage>*{min-width:0;padding:9px 5px;border:1px solid #b8c9ac;border-radius:9px;background:#f5f7eb;text-align:center;font-size:.73rem;line-height:1.35;color:#425e48}
+#washCoverage>[aria-current=true],#washCoverage>[aria-current=step]{border:2px solid #3c7255;background:#e1edd3;font-weight:750}
+#washCoverage>[data-complete=true]{border-color:#6f946e;background:#e9f3df;color:#2a563c}
+#washRubHold{flex:1 1 100%;min-height:62px;background:#e2edcf;border:2px solid #557e54;font-weight:750;touch-action:none;user-select:none}
+#washRubHold[aria-pressed=true],#washRubHold[data-held=true]{background:#caddb5;border-color:#315c3e;box-shadow:inset 0 0 0 2px #fff7d4}
+#washObservation{padding:11px 13px;border-left:4px solid #568468;border-radius:5px;background:#f0f5e9;min-height:1.3em}
+.handwashing-transfer{margin-top:16px;padding:15px;border:1px solid #b0c6a9;border-radius:12px;background:#f4f5e9}
+.handwashing-transfer strong{font-size:.88rem}
+.handwashing-transfer a{color:#285a47;text-underline-offset:3px}
+.handwashing-transfer button{margin-top:8px}
+.kitchen-gesture-coach[data-tool=wash]{top:auto;bottom:12px;width:310px}
+.kitchen-gesture-coach[data-tool=wash]>strong{font-size:13px}
+.kitchen-gesture-coach[data-tool=wash]>p{margin:5px 0 7px;font-variant-numeric:tabular-nums}
+@media(max-width:500px){.handwashing-lesson>summary{padding:13px;gap:9px}.handwashing-body{padding:13px}.handwashing-phases{grid-template-columns:repeat(3,minmax(0,1fr));gap:5px}.handwashing-phases>*{min-height:34px;font-size:.72rem}.handwashing-actions{gap:7px}.handwashing-actions button{flex:1 1 125px}#washRubHold{flex-basis:100%;min-height:64px}.handwashing-transfer{padding:12px}#washCoverage{gap:4px}#washCoverage>*{font-size:.68rem;padding:8px 3px}.handwashing-progress{grid-template-columns:1fr}.kitchen-gesture-coach[data-tool=wash]{left:10px;bottom:9px;width:calc(100% - 20px);max-width:calc(100% - 20px);padding:9px 11px}.kitchen-gesture-coach[data-tool=wash]>strong{font-size:12px}.kitchen-gesture-coach[data-tool=wash] .gesture-heading{margin-bottom:4px}.kitchen-gesture-coach[data-tool=wash]>p{font-size:10px;line-height:1.35}.kitchen-gesture-coach[data-tool=wash] .gesture-exit{margin-top:5px}}
+@media(prefers-reduced-motion:reduce){.handwashing-lesson *{scroll-behavior:auto}}
+@media(forced-colors:active){.handwashing-lesson,.handwashing-lesson>summary,.handwashing-transfer,#washControl,#washObservation,.handwashing-phases>*,#washCoverage>*{background:Canvas;color:CanvasText;border-color:CanvasText}.handwashing-lesson button,.handwashing-lesson button:disabled{background:ButtonFace;color:ButtonText;border-color:ButtonText}.handwashing-lesson :focus-visible{outline-color:Highlight}.handwashing-lesson>summary small,#washKeys,#washTimeReading,#washPoseReading,.handwashing-transfer a{color:CanvasText}.handwashing-phases>[aria-current=step],#washCoverage>[aria-current=true],#washCoverage>[aria-current=step],#washRubHold[aria-pressed=true],#washRubHold[data-held=true]{border-color:Highlight}.handwashing-phases>[data-complete=true],#washCoverage>[data-complete=true]{border-color:CanvasText;background:Canvas;color:CanvasText}#washProgress{border:1px solid CanvasText}.handwashing-transfer a{color:LinkText}}
+@media print{.handwashing-actions,#washKeyboardPanel,.handwashing-lesson button{display:none!important}.handwashing-lesson,.handwashing-transfer{break-inside:avoid;border-color:#777;background:#fff;color:#222}}
+
+/* Keep the soap, hands and clean paper towel visible at the front of the sink on phones. */
+@media(max-width:640px){
+  .kitchen-gesture-coach[data-tool="wash"]{top:.65rem;bottom:auto;}
+  .kitchen-gesture-coach[data-tool="wash"]:not([data-phase="scrub"]) #gestureDetail{display:none;}
+}

@@ -1,0 +1,44 @@
+{
+  "passed": true,
+  "completedAt": "2026-10-04T18:05:10.654Z",
+  "vaultPin": "808069fd",
+  "environments": [
+    {
+      "desktop": false,
+      "passed": true,
+      "calls": [
+        {
+          "url": "https://alloflow-cdn.pages.dev/allo_crypto_module.js?v=security-v2",
+          "cacheKey": "allo-crypto-security-v2"
+        },
+        {
+          "url": "https://alloflow-cdn.pages.dev/allo_device_vault_module.js?v=808069fd",
+          "cacheKey": "allo-device-vault-v3-session"
+        },
+        {
+          "url": "https://alloflow-cdn.pages.dev/allo_recovery_vault_integration_module.js?v=security-v2",
+          "cacheKey": "allo-recovery-vault-integration-v2"
+        }
+      ]
+    },
+    {
+      "desktop": true,
+      "passed": true,
+      "calls": [
+        {
+          "url": "./allo_crypto_module.js?v=security-v2",
+          "cacheKey": "allo-crypto-security-v2"
+        },
+        {
+          "url": "./allo_device_vault_module.js?v=808069fd",
+          "cacheKey": "allo-device-vault-v3-session"
+        },
+        {
+          "url": "./allo_recovery_vault_integration_module.js?v=security-v2",
+          "cacheKey": "allo-recovery-vault-integration-v2"
+        }
+      ]
+    }
+  ],
+  "scope": "Actual host loader contract with controlled script acquisition; cached legacy API rejection, current API acceptance, desktop and CDN URL/cache checks. No CDN request made."
+}

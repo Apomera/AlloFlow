@@ -1,0 +1,218 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass15-2026-10-02/browser-artifacts-confirmed",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-entry-dynamics.spec.ts",
+      "file": "moon-mission-entry-dynamics.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "nominal playback follows heating and chute events, preserves reviewed results, and pays once",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18946,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T20:13:35.060Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "entry-nominal-heating",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-confirmed\\moon-mission-entry-dynamic-44a76-iewed-results-and-pays-once-chromium\\attachments\\entry-nominal-heating-e72e0b8dab0bd6a5e7e6aca7ec1b07d97eaeb5e6.png"
+                    },
+                    {
+                      "name": "entry-drogue-inflating",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-confirmed\\moon-mission-entry-dynamic-44a76-iewed-results-and-pays-once-chromium\\attachments\\entry-drogue-inflating-930d65e1ed3c75ae7079bc147042022c357a5f0b.png"
+                    },
+                    {
+                      "name": "entry-main-inflating",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-confirmed\\moon-mission-entry-dynamic-44a76-iewed-results-and-pays-once-chromium\\attachments\\entry-main-inflating-c888e64bd6f9fa9464739d8f31d5a2ee208aa2a7.png"
+                    },
+                    {
+                      "name": "entry-splashdown-recovery",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-confirmed\\moon-mission-entry-dynamic-44a76-iewed-results-and-pays-once-chromium\\attachments\\entry-splashdown-recovery-1b09c1842a98702d6b466c8ca813f7f6d990aad7.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49835e173173673d460d-f19e524395cf426fa91e",
+          "file": "moon-mission-entry-dynamics.spec.ts",
+          "line": 107,
+          "column": 5
+        },
+        {
+          "title": "skip-out never unlocks splashdown; retry history survives and improved entry pays only the difference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14233,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T20:13:54.252Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "entry-shallow-skip",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-confirmed\\moon-mission-entry-dynamic-50e89-ry-pays-only-the-difference-chromium\\attachments\\entry-shallow-skip-b7a1c78b2b2b35e9b24cfb314899272f0f40d2f7.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "49835e173173673d460d-9c3cb79aa5e0f3d04ce7",
+          "file": "moon-mission-entry-dynamics.spec.ts",
+          "line": 175,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "moon-mission-entry-thermal.spec.ts",
+      "file": "moon-mission-entry-thermal.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "bounded thermal controls and independent time survive reopen without altering entry data",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17278,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T20:14:08.571Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "thermal-reopened-independent-time",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass15-2026-10-02\\browser-artifacts-confirmed\\moon-mission-entry-thermal-82fda-without-altering-entry-data-chromium\\attachments\\thermal-reopened-independent-time-338f511f65fc216c9305cf8472a9df6d1f06f904.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "9bd6b93c6ac0fb4c70dd-9e2396dbc6f0a4c32ed7",
+          "file": "moon-mission-entry-thermal.spec.ts",
+          "line": 209,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T20:13:33.224Z",
+    "duration": 52909.416,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

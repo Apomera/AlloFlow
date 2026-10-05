@@ -1,0 +1,55 @@
+[
+  {
+    "html": "<button type=\"button\" aria-pressed=\"true\" data-perception-experiment=\"moire\"><strong>Moiré interference</strong><small>Patterns and angles</small></button>",
+    "button": {
+      "tag": "BUTTON",
+      "text": "Moiré interferencePatterns and angles",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(55, 0, 110)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1"
+    },
+    "descendants": [
+      {
+        "tag": "STRONG",
+        "text": "Moiré interference",
+        "color": "rgb(255, 255, 255)",
+        "background": "rgba(255, 255, 255, 0)",
+        "forcedColorAdjust": "auto",
+        "opacity": "1"
+      },
+      {
+        "tag": "SMALL",
+        "text": "Patterns and angles",
+        "color": "rgb(255, 255, 255)",
+        "background": "rgba(255, 255, 255, 0)",
+        "forcedColorAdjust": "auto",
+        "opacity": "0.85"
+      }
+    ]
+  },
+  {
+    "html": "<button type=\"button\" aria-pressed=\"true\" data-perception-choice=\"Fine lines\">Fine lines</button>",
+    "button": {
+      "tag": "BUTTON",
+      "text": "Fine lines",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(55, 0, 110)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1"
+    },
+    "descendants": []
+  },
+  {
+    "html": "<button type=\"button\" aria-pressed=\"true\">Reveal measurements</button>",
+    "button": {
+      "tag": "BUTTON",
+      "text": "Reveal measurements",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(55, 0, 110)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1"
+    },
+    "descendants": []
+  }
+]

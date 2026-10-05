@@ -1,0 +1,992 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/dissection_lab_improvements.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improvement contracts > supports specimen-aware direct forceps lifting with equivalent accessible feedback
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improvement contracts > supports direct pin press-drag-release placement with live stability evidence
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improvement contracts > supports direct probe press-drag-release palpation with live contact evidence
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improvement contracts > supports direct dropper press-drag-release hydration with flow and pooling evidence
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improvement contracts > supports direct wick press-drag-release recovery with pool-edge evidence
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders the catalog-backed species-specific specimen descriptions
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders the catalog-backed species-specific specimen descriptions
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders a normalized, screen-reader-friendly inquiry simulator
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders a normalized, screen-reader-friendly inquiry simulator
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > migrates legacy procedure layers to stable tissue state when progress loads
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > migrates legacy procedure layers to stable tissue state when progress loads
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > migrates legacy procedure layers to stable tissue state when progress loads
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a newer protected save until the learner confirms reset
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a newer protected save until the learner confirms reset
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a newer protected save until the learner confirms reset
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a newer protected save until the learner confirms reset
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a newer protected save until the learner confirms reset
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a newer protected save until the learner confirms reset
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a newer protected save until the learner confirms reset
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a newer protected save until the learner confirms reset
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps malformed saved bytes quarantined instead of overwriting them with defaults
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps malformed saved bytes quarantined instead of overwriting them with defaults
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps malformed saved bytes quarantined instead of overwriting them with defaults
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > quarantines empty and unsafe nested save records byte-for-byte
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a valid save changed in another tab and safely reloads it on retry
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a valid save changed in another tab and safely reloads it on retry
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a valid save changed in another tab and safely reloads it on retry
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a valid save changed in another tab and safely reloads it on retry
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a valid save changed in another tab and safely reloads it on retry
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps an inactive specimen storage conflict out of the active specimen save UI
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps an inactive specimen storage conflict out of the active specimen save UI
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps an inactive specimen storage conflict out of the active specimen save UI
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps an inactive specimen storage conflict out of the active specimen save UI
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps an inactive specimen storage conflict out of the active specimen save UI
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > detects a valid external save change even when no storage event arrives
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > detects a valid external save change even when no storage event arrives
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > detects a valid external save change even when no storage event arrives
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > detects a valid external save change even when no storage event arrives
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps temporary work while protected-save retry remains unreadable
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps temporary work while protected-save retry remains unreadable
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps temporary work while protected-save retry remains unreadable
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps temporary work while protected-save retry remains unreadable
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps temporary work when transient storage failure recovers with no saved record
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps temporary work when transient storage failure recovers with no saved record
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps temporary work when transient storage failure recovers with no saved record
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps temporary work when transient storage failure recovers with no saved record
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > flushes rapid specimen switches and cancels stale pre-reset writes
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > flushes rapid specimen switches and cancels stale pre-reset writes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > flushes rapid specimen switches and cancels stale pre-reset writes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > flushes rapid specimen switches and cancels stale pre-reset writes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > flushes rapid specimen switches and cancels stale pre-reset writes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > flushes rapid specimen switches and cancels stale pre-reset writes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > cancels a delayed layer reveal before switching specimens
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > cancels a delayed layer reveal before switching specimens
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > cancels a delayed layer reveal before switching specimens
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > cancels a delayed layer reveal before switching specimens
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > cancels a delayed layer reveal before switching specimens
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves text when evidence storage is limited, surfaces failures, and reports recovery
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves text when evidence storage is limited, surfaces failures, and reports recovery
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves text when evidence storage is limited, surfaces failures, and reports recovery
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves text when evidence storage is limited, surfaces failures, and reports recovery
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves text when evidence storage is limited, surfaces failures, and reports recovery
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves text when evidence storage is limited, surfaces failures, and reports recovery
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves text when evidence storage is limited, surfaces failures, and reports recovery
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > blocks silent evidence rollover and safely frees notebook storage without losing other progress
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > blocks silent evidence rollover and safely frees notebook storage without losing other progress
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > blocks silent evidence rollover and safely frees notebook storage without losing other progress
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > blocks silent evidence rollover and safely frees notebook storage without losing other progress
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > blocks silent evidence rollover and safely frees notebook storage without losing other progress
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > blocks silent evidence rollover and safely frees notebook storage without losing other progress
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > blocks silent evidence rollover and safely frees notebook storage without losing other progress
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > flushes pending progress on pagehide before the debounce can expire
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > flushes pending progress on pagehide before the debounce can expire
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps a direct scalpel gesture active across a harmless React re-render
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps a direct scalpel gesture active across a harmless React re-render
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps a direct scalpel gesture active across a harmless React re-render
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps a direct scalpel gesture active across a harmless React re-render
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders the evidence workflow and comparative-model notice
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders the evidence workflow and comparative-model notice
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > offers an ungraded evidence review without inferring explanation quality from words
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > offers an ungraded evidence review without inferring explanation quality from words
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > updates labeled confidence choices and appends the optional countercheck once
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > updates labeled confidence choices and appends the optional countercheck once
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > updates labeled confidence choices and appends the optional countercheck once
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > updates labeled confidence choices and appends the optional countercheck once
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > updates labeled confidence choices and appends the optional countercheck once
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > updates labeled confidence choices and appends the optional countercheck once
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps focus continuous while structure-specific references reset only when the structure changes
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps focus continuous while structure-specific references reset only when the structure changes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps focus continuous while structure-specific references reset only when the structure changes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps focus continuous while structure-specific references reset only when the structure changes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps focus continuous while structure-specific references reset only when the structure changes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps focus continuous while structure-specific references reset only when the structure changes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > projects assessment location clues into the displayed anatomical view
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > projects assessment location clues into the displayed anatomical view
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > defaults to an Essentials workspace while preserving an explicit Advanced workspace
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > defaults to an Essentials workspace while preserving an explicit Advanced workspace
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > deactivates hidden challenge state when switching from Advanced to Essentials
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > deactivates hidden challenge state when switching from Advanced to Essentials
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > deactivates hidden challenge state when switching from Advanced to Essentials
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > deactivates hidden challenge state when switching from Advanced to Essentials
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > derives learning objectives from structure evidence instead of manual check-off
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > derives learning objectives from structure evidence instead of manual check-off
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders a finite assessment summary with first-attempt and supported-practice evidence
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders a finite assessment summary with first-attempt and supported-practice evidence
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > offers persisted missed-item review after returning to the lab
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > offers persisted missed-item review after returning to the lab
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders one explicit next action as investigation state advances
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders one explicit next action as investigation state advances
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > requires learner evidence before offering to peel a completed layer
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > requires learner evidence before offering to peel a completed layer
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > offers an explicit chooser when Study tools has no active activity
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > offers an explicit chooser when Study tools has no active activity
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > freezes the practical target pool and locks directory and view changes
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > freezes the practical target pool and locks directory and view changes
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > does not reveal timed-practical correctness through answer explanations
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > does not reveal timed-practical correctness through answer explanations
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > does not reveal timed-practical correctness through answer explanations
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > does not reveal timed-practical correctness through answer explanations
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > does not reveal timed-practical correctness through answer explanations
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > resumes a timed practical from its wall-clock deadline after canvas remount
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > resumes a timed practical from its wall-clock deadline after canvas remount
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > resumes a timed practical from its wall-clock deadline after canvas remount
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > resumes a timed practical from its wall-clock deadline after canvas remount
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > resumes a timed practical from its wall-clock deadline after canvas remount
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > resumes a timed practical from its wall-clock deadline after canvas remount
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > resumes a timed practical from its wall-clock deadline after canvas remount
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps field diagnostics and technique controls progressively disclosed
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps field diagnostics and technique controls progressively disclosed
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > previews a hidden directory structure without awarding exploration progress
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > previews a hidden directory structure without awarding exploration progress
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > previews a hidden directory structure without awarding exploration progress
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > reports clipboard rejection instead of claiming structure information was copied
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > reports clipboard rejection instead of claiming structure information was copied
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > reports clipboard rejection instead of claiming structure information was copied
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > reports clipboard rejection instead of claiming structure information was copied
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > separates first-attempt mastery from a correct supported retry
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > separates first-attempt mastery from a correct supported retry
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > separates first-attempt mastery from a correct supported retry
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > separates first-attempt mastery from a correct supported retry
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > clears the durable missed-item queue after supported review is completed
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > clears the durable missed-item queue after supported review is completed
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > clears the durable missed-item queue after supported review is completed
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > clears the durable missed-item queue after supported review is completed
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > falls back to multiple choice without changing an unanswerable hotspot question
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > falls back to multiple choice without changing an unanswerable hotspot question
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps a restricted tray keyboard-safe even when a hydration tool was persisted as active
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps a restricted tray keyboard-safe even when a hydration tool was persisted as active
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders canvas-answer assessment with a keyboard alternative
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders canvas-answer assessment with a keyboard alternative
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders guided instruments, progress, depth controls, and an equivalent action button
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders guided instruments, progress, depth controls, and an equivalent action button
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders distinct organism-specific access routes and next actions
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders distinct organism-specific access routes and next actions
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders a compressed evidence notebook with live-reference comparison controls
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders a compressed evidence notebook with live-reference comparison controls
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders specimen-aware realism controls and the sheep-eye dropper tray
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > renders specimen-aware realism controls and the sheep-eye dropper tray
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps anatomical orientation and reference scale accurate at every zoom
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > provides constrained precision navigation and discoverable keyboard parity
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > provides constrained precision navigation and discoverable keyboard parity
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > models persistent tissue dynamics and connected procedural consequences
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > models persistent tissue dynamics and connected procedural consequences
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > calibrates every procedural instrument with live readiness and tissue consequences
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > calibrates every procedural instrument with live readiness and tissue consequences
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > derives one responsive observation field for visuals, coaching, evidence, and accessibility
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > derives one responsive observation field for visuals, coaching, evidence, and accessibility
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > models depth-aware optical inspection with visible focus and magnification tradeoffs
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > models depth-aware optical inspection with visible focus and magnification tradeoffs
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > provides persistent WCAG preferences, robust focus, composite keyboard navigation, and drag alternatives
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > provides persistent WCAG preferences, robust focus, composite keyboard navigation, and drag alternatives
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > shows comparison replay statically when OS reduced motion is active without flooding live status
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > shows comparison replay statically when OS reduced motion is active without flooding live status
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > shows comparison replay statically when OS reduced motion is active without flooding live status
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > shows comparison replay statically when OS reduced motion is active without flooding live status
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > protects destructive reset and announces filtered structure results with focus recovery
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > protects destructive reset and announces filtered structure results with focus recovery
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > implements the ARIA radio keyboard pattern for procedural instruments
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > implements the ARIA radio keyboard pattern for procedural instruments
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > adds an explicit specimen-specific living-function model with responsive playback
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > adds an explicit specimen-specific living-function model with responsive playback
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps living-function pause, speed, replay, and control state synchronized
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps living-function pause, speed, replay, and control state synchronized
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps living-function pause, speed, replay, and control state synchronized
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps living-function pause, speed, replay, and control state synchronized
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps living-function pause, speed, replay, and control state synchronized
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps living-function pause, speed, replay, and control state synchronized
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps living-function pause, speed, replay, and control state synchronized
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps living-function pause, speed, replay, and control state synchronized
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps living-function pause, speed, replay, and control state synchronized
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > drives flap physics from tissue state and smoothly frames selected anatomy
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > drives flap physics from tissue state and smoothly frames selected anatomy
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps instrument readiness labels readable at WCAG AA contrast
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > has no axe-detectable WCAG A or AA violations in the rendered lab
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > has no axe-detectable WCAG A or AA violations in the rendered lab
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > adds an absorbent-wick recovery loop for excess saline
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > adds an absorbent-wick recovery loop for excess saline
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > models adjustable specimen-aware illumination and glare
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > models adjustable specimen-aware illumination and glare
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps the fullscreen dock visible and escapable in CSS fallback mode
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > integrates dynamic procedure, exposure, scenario, performance, and fullscreen controls
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > integrates dynamic procedure, exposure, scenario, performance, and fullscreen controls
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > undoes a repeated learning-checked action without losing the earlier state or stale completion evidence
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > undoes a repeated learning-checked action without losing the earlier state or stale completion evidence
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > undoes a repeated learning-checked action without losing the earlier state or stale completion evidence
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > undoes a repeated learning-checked action without losing the earlier state or stale completion evidence
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > undoes a repeated learning-checked action without losing the earlier state or stale completion evidence
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps one persistence owner when the host recreates deferred setter wrappers
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps one persistence owner when the host recreates deferred setter wrappers
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps one persistence owner when the host recreates deferred setter wrappers
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps one persistence owner when the host recreates deferred setter wrappers
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps layer and teaching timers isolated when a sibling lab unmounts
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps layer and teaching timers isolated when a sibling lab unmounts
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps layer and teaching timers isolated when a sibling lab unmounts
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps layer and teaching timers isolated when a sibling lab unmounts
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps layer and teaching timers isolated when a sibling lab unmounts
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps layer and teaching timers isolated when a sibling lab unmounts
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps layer and teaching timers isolated when a sibling lab unmounts
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > retains a transiently failed snapshot and blocks specimen switching until the save succeeds
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > retains a transiently failed snapshot and blocks specimen switching until the save succeeds
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > retains a transiently failed snapshot and blocks specimen switching until the save succeeds
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > retains a transiently failed snapshot and blocks specimen switching until the save succeeds
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > retains a transiently failed snapshot and blocks specimen switching until the save succeeds
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > retains a transiently failed snapshot and blocks specimen switching until the save succeeds
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps review items beyond the five-question batch and rejects phantom verification credit
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps review items beyond the five-question batch and rejects phantom verification credit
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > keeps review items beyond the five-question batch and rejects phantom verification credit
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > ignores retired review IDs and announces reset confirmation only once
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > ignores retired review IDs and announces reset confirmation only once
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > ignores retired review IDs and announces reset confirmation only once
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > ignores retired review IDs and announces reset confirmation only once
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a deliberate zero-caution scenario threshold
+[Dissection Plugin] Registering dissection tool...
+
+stdout | tests/dissection_lab_improvements.test.js > dissection improved UI render > preserves a deliberate zero-caution scenario threshold
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+ ✓ tests/dissection_lab_improvements.test.js (91 tests) 34736ms
+     ✓ keeps comparative anatomy species-specific in source and every runtime catalog  7857ms
+     ✓ models a persistent, accessible procedural instrument workflow  365ms
+     ✓ supports specimen-aware direct forceps lifting with equivalent accessible feedback  630ms
+     ✓ migrates legacy procedure layers to stable tissue state when progress loads  596ms
+     ✓ preserves a newer protected save until the learner confirms reset  832ms
+     ✓ keeps malformed saved bytes quarantined instead of overwriting them with defaults  567ms
+     ✓ quarantines empty and unsafe nested save records byte-for-byte  1815ms
+     ✓ preserves a valid save changed in another tab and safely reloads it on retry  629ms
+     ✓ keeps an inactive specimen storage conflict out of the active specimen save UI  1061ms
+     ✓ detects a valid external save change even when no storage event arrives  456ms
+     ✓ keeps temporary work while protected-save retry remains unreadable  373ms
+     ✓ keeps temporary work when transient storage failure recovers with no saved record  488ms
+     ✓ flushes rapid specimen switches and cancels stale pre-reset writes  616ms
+     ✓ cancels a delayed layer reveal before switching specimens  1253ms
+     ✓ preserves text when evidence storage is limited, surfaces failures, and reports recovery  910ms
+     ✓ blocks silent evidence rollover and safely frees notebook storage without losing other progress  618ms
+     ✓ offers an ungraded evidence review without inferring explanation quality from words  326ms
+     ✓ updates labeled confidence choices and appends the optional countercheck once  396ms
+     ✓ keeps focus continuous while structure-specific references reset only when the structure changes  557ms
+     ✓ defaults to an Essentials workspace while preserving an explicit Advanced workspace  661ms
+     ✓ has no axe-detectable WCAG A or AA violations in the rendered lab  6320ms
+     ✓ keeps one persistence owner when the host recreates deferred setter wrappers  403ms
+     ✓ keeps keyboard, canvas lifecycle, and fullscreen focus scoped to the originating lab root  777ms
+     ✓ keeps layer and teaching timers isolated when a sibling lab unmounts  1034ms
+     ✓ retains a transiently failed snapshot and blocks specimen switching until the save succeeds  470ms
+stdout | tests/dissection_workspace_bands.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > states the workflow position once in the hero in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > states the workflow position once in the hero in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > puts the reasoning checkpoints beside the specimen in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > puts the reasoning checkpoints beside the specimen in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > keeps the flashcard hint and counter above 4.5:1 in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > keeps the flashcard hint and counter above 4.5:1 in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > does not let option length give the checkpoint answer away in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > does not let option length give the checkpoint answer away in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > never prints the same words twice in the stage handoff in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > never prints the same words twice in the stage handoff in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > carries the detail toggle inside the route rail in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > carries the detail toggle inside the route rail in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > does not restate the checkpoint question in the canvas status in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > does not restate the checkpoint question in the canvas status in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > keeps the full next-action title in the status when no checkpoint is shown in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > keeps the full next-action title in the status when no checkpoint is shown in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > says what the secondary control band holds in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > says what the secondary control band holds in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > prints the state of every toggle in the view panel in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > prints the state of every toggle in the view panel in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > keeps the canvas status readable as one line in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > keeps the canvas status readable as one line in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > keeps the on-focus canvas description short in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > keeps the on-focus canvas description short in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > rides the secondary controls along the layer heading in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > rides the secondary controls along the layer heading in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > puts the canvas status before the evidence notebook in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > puts the canvas status before the evidence notebook in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > shows gesture feedback under the canvas in stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+stdout | tests/dissection_workspace_bands.test.js > dissection workspace bands > shows gesture feedback under the canvas in desktop/web-app/public/stem_lab/stem_tool_dissection.js
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+[Dissection Plugin] Registering dissection tool...
+[Dissection Plugin] render() called, has React: true has toolData: true
+
+ ✓ tests/dissection_workspace_bands.test.js (106 tests) 2982ms
+     ✓ states the workflow position once in the hero in stem_lab/stem_tool_dissection.js  606ms
+
+ Test Files  2 passed (2)
+      Tests  197 passed (197)
+   Start at  22:35:02
+   Duration  41.95s (transform 395ms, setup 66ms, import 583ms, tests 37.72s, environment 3.08s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-mission-clarity-2026-10-03/unit-final/results.json

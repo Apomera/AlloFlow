@@ -1,0 +1,78 @@
+{
+  "width": 520,
+  "client": 518,
+  "scroll": 518,
+  "columns": 1,
+  "buttons": [
+    {
+      "text": "📏 Ruler",
+      "font": 14,
+      "height": 48,
+      "clipped": false,
+      "border": 1,
+      "decoration": "none",
+      "opacity": 1,
+      "borderStyle": "solid"
+    },
+    {
+      "text": "✏ Annotate",
+      "font": 14,
+      "height": 48,
+      "clipped": false,
+      "border": 1,
+      "decoration": "none",
+      "opacity": 1,
+      "borderStyle": "solid"
+    },
+    {
+      "text": "📸 Screenshot",
+      "font": 14,
+      "height": 48,
+      "clipped": false,
+      "border": 1,
+      "decoration": "none",
+      "opacity": 1,
+      "borderStyle": "solid"
+    },
+    {
+      "text": "⌫ Clear annotations",
+      "font": 14,
+      "height": 48,
+      "clipped": false,
+      "border": 1,
+      "decoration": "none",
+      "opacity": 1,
+      "borderStyle": "dashed"
+    },
+    {
+      "text": "Capture evidence",
+      "font": 14,
+      "height": 48,
+      "clipped": false,
+      "border": 1,
+      "decoration": "none",
+      "opacity": 1,
+      "borderStyle": "solid"
+    },
+    {
+      "text": "📋 Lab Report",
+      "font": 14,
+      "height": 48,
+      "clipped": false,
+      "border": 1,
+      "decoration": "none",
+      "opacity": 1,
+      "borderStyle": "solid"
+    },
+    {
+      "text": "↺ Reset specimen",
+      "font": 14,
+      "height": 48,
+      "clipped": false,
+      "border": 1,
+      "decoration": "none",
+      "opacity": 1,
+      "borderStyle": "solid"
+    }
+  ]
+}

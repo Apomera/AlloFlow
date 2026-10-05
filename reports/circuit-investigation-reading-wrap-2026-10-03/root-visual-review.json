@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "reviewer": "root",
+  "sourceSha256": "a40fe06d58ce22194cbf575f38f821bf0dbc72aff1555fd17970f51134a119c6",
+  "scriptSha256": "fe9f1be0ee3a7d36b38f4eaa6b2bfcdb3008de2bb3b88b5345ee10288c7c80f1",
+  "method": "All six final PNGs viewed at original resolution.",
+  "reviewed": [
+    "investigation-reading-wrap-1280.png",
+    "investigation-reading-wrap-320.png",
+    "investigation-reading-wrap-390.png",
+    "investigation-reading-wrap-200pct-text-320.png",
+    "forced-colors-investigation-reading-wrap-320.png",
+    "rtl-investigation-reading-wrap-320.png"
+  ],
+  "screenshotSha256": {
+    "investigation-reading-wrap-1280.png": "ccabd9016e2b3e1bcee5a6ba2b40253fc7b8532cb4380119e67f081f5fbb4678",
+    "investigation-reading-wrap-320.png": "4e1db9f4b0a42b9b809bf2aabef999a5dc25fd0e46af96ef6586bc76a170f9fc",
+    "investigation-reading-wrap-390.png": "1d96ba8af055d49a3fe2e568c77e5435cea48fd2cc381e1b20bce38a83d22bca",
+    "investigation-reading-wrap-200pct-text-320.png": "2a459c7fea38cb006c1272240a6a815e1c0a0f801a07e326ae0def9478238563",
+    "forced-colors-investigation-reading-wrap-320.png": "63cfbeb9bfb0d10d7675179d2aef0fa28b1e1553b3c294a0cb6c6bdb3672cdb1",
+    "rtl-investigation-reading-wrap-320.png": "6f03c589a73f1510bb6b9cb721f8d517db5fdf4f6ebe4629a644d3f863389773"
+  },
+  "findings": [
+    "Ordinary phone views retain compact number-heading rows and full-width paragraphs.",
+    "At 200% text the headings use their own row; Compare, readings and component remain intact.",
+    "Forced-color borders and buttons remain clear; RTL retains numbered choose-then-compare order.",
+    "Desktop appears unchanged; screenshot byte identity is not claimed."
+  ],
+  "issues": []
+}

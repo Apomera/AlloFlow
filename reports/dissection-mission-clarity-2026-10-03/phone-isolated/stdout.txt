@@ -1,0 +1,32 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header phone shows complete status and keyboard shortcuts (4ms)
+
+
+  1) [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header phone shows complete status and keyboard shortcuts 
+
+    Error: browserType.launch: Executable doesn't exist at C:\Users\cabba\AppData\Local\Packages\sandbox.{21466bec-4f0f-4d73-aeef-76037242b30a}\AC\ms-playwright\chromium_headless_shell-1223\chrome-headless-shell-win64\chrome-headless-shell.exe
+    ╔════════════════════════════════════════════════════════════╗
+    ║ Looks like Playwright was just installed or updated.       ║
+    ║ Please run the following command to download new browsers: ║
+    ║                                                            ║
+    ║     npx playwright install                                 ║
+    ║                                                            ║
+    ║ <3 Playwright Team                                         ║
+    ╚════════════════════════════════════════════════════════════╝
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\phone-isolated\artifacts\dissection-mission-clarity-6b453-atus-and-keyboard-shortcuts-chromium\error-context.md
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\phone-isolated\artifacts\dissection-mission-clarity-6b453-atus-and-keyboard-shortcuts-chromium\error-context.md
+
+    attachment #3: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\phone-isolated\artifacts\dissection-mission-clarity-6b453-atus-and-keyboard-shortcuts-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\dissection-mission-clarity-2026-10-03\phone-isolated\artifacts\dissection-mission-clarity-6b453-atus-and-keyboard-shortcuts-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header phone shows complete status and keyboard shortcuts 

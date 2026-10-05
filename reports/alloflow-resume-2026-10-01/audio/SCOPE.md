@@ -1,0 +1,1 @@
+Owned: read_aloud_audio_service_source.jsx; dedicated audio retention fixtures; host candidate only. Coordinator owns AlloFlowANTI.txt, all mirrors and registry. No build/tests until slot. Default exec ACL helper failed; authorized local read/edit escalation succeeds. No commit, network or deployment.

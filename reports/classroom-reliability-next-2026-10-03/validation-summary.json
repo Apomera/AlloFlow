@@ -1,0 +1,52 @@
+{
+  "status": "focused-validation-passed",
+  "completedAt": "2026-10-04T02:31:57.551Z",
+  "focusedVitestCases": 52,
+  "currentHandlerFailureChecks": 1,
+  "totalDistinctFocusedChecks": 53,
+  "focusedReceipts": [
+    {
+      "suite": "pending-resource-removal",
+      "report": "validation-forks/0-attempt-1.json",
+      "cases": 11,
+      "stage": "current source"
+    },
+    {
+      "suite": "word-sounds-recovery",
+      "report": "word-sounds-candidate.json",
+      "cases": 17,
+      "stage": "guarded candidate"
+    },
+    {
+      "suite": "studio-submission-readiness",
+      "report": "studio-candidate.json",
+      "cases": 24,
+      "stage": "guarded candidate"
+    }
+  ],
+  "failedFocusedAssertions": 0,
+  "skippedFocusedCases": 0,
+  "currentSourceMatchesTestedCandidateExceptIndependentMainePin": true,
+  "sourceGeneratedParity": true,
+  "mirrorsAndPins": true,
+  "hostHandlersPin": "1576a204",
+  "nativeStudioAcceptance": true,
+  "browserReport": "accessibility/report.json",
+  "broaderUnitMatrix": {
+    "complete": false,
+    "reason": "Vitest thread and process workers repeatedly timed out before test collection",
+    "retained": [
+      "validation-manifest.json",
+      "validation-unsandboxed-manifest.json",
+      "validation-forks-manifest.json",
+      "word-sounds-current.json"
+    ],
+    "countedInFocusedTotal": false
+  },
+  "limitations": [
+    "Actual full App and hosted Canvas not exercised",
+    "Builder/storage and download/mailbox boundaries controlled in failure checks",
+    "No manual assistive technology or physical speaker verification",
+    "No commit, broad build, push or deployment"
+  ]
+}

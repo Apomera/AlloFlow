@@ -1,0 +1,27 @@
+{
+  "kind": "browser",
+  "pid": 4232,
+  "started": "2026-10-03T04:10:36.969Z",
+  "phase": "failed",
+  "sourceSha256": "02560e3ccade76c6ca803b2bd785de774e4f85d3dcc08d0a1a502cc1eb5fe132",
+  "expected": 70,
+  "testInputs": {
+    "tests/e2e/microbiology-annotation-integrity.spec.ts": "18e5274d85b33fd66b5aa71d1f0402b551f4a17360fbf81e110337804ed78f75",
+    "tests/e2e/microbiology-portfolio-selection.spec.ts": "61b2403c4b533c6c345a410a6599476b27834439e3db6b38a0f5feed13049dc8",
+    "tests/e2e/microbiology-growth-citations.spec.ts": "362be56275547026649bea84b5ba7de33d354dc4118cb4259d1f7189a4cdf9d1",
+    "tests/e2e/microbiology-portfolio.spec.ts": "7a93ca443e7a2579c43cbe4fcbb405a5cff5e7a1406e5fef6eb0c36c4139a5af",
+    "tests/e2e/microbiology-experiment-design.spec.ts": "b7b9aa5a3e77a1d09d461c081e3c3008f80b87c7c8c1069fd19d9a44acfe963e",
+    "tests/e2e/microbiology-guided-resume.spec.ts": "7c6d0c203269eb9096e5680ae6cefeddb54972c8957dd0e2a97832d8bb4dca5b",
+    "tests/e2e/microbiology-evidence-review.spec.ts": "8016126d531f49d04b69af18ce07ba356afa2fb5b4f9292c9a272dcc2ffade7f",
+    "tests/e2e/microbiology-evidence-recovery.spec.ts": "7e084c6e37799ee2a2bf66d9159682a1428c335b0e37dfdf3fc29f5f06ee0eb1",
+    "tests/e2e/microbiology-measurement-conversion.spec.ts": "d3d6921923dfce883114e1a2ba77c6055fdc717d4386b5ba690932cd8935df36",
+    "tests/e2e/microbiology-mystery-integrity.spec.ts": "00c179dabaac9f4391cd8cf55ce2c0bf0802e70cf56ca8012a232a745dee5b02",
+    "tests/e2e/microbiology-home-integrity.spec.ts": "6a33df04746b2f2cbc98a3204c650cac20c414fdb0c7b95f745ce97fab7a5a2a"
+  },
+  "exitCode": 1,
+  "signal": null,
+  "finished": "2026-10-03T04:25:01.867Z",
+  "sourceStillMatches": true,
+  "testInputsStillMatch": true,
+  "syntaxChecksPassed": true
+}

@@ -1,0 +1,56 @@
+{
+  "mode": "committed",
+  "passed": true,
+  "parent": "ddd029e58015b14b821ae84bd2cc5467bcbfaeb6",
+  "tree": "529e915221d656fa4afddab02d0770ed96d64df5",
+  "commit": "9a1cabe0654a3b815e6ddda02afb57597fc7ac16",
+  "refUpdated": true,
+  "indexRefreshed": true,
+  "ancestorOfHead": true,
+  "stagedRuntimeMatches": true,
+  "stagedMicroNamespacesMatch": true,
+  "changedFiles": 90,
+  "sealedFiles": 88,
+  "sourceSha256": "468efedbbe19d147c15af70184650fab8db3b90a8103d0c64738eafee2574165",
+  "unitPassed": 723,
+  "browserPassed": 49,
+  "workingFilesMatchSealedInputs": true,
+  "registries": [
+    {
+      "file": "ui_strings.js",
+      "added": [
+        "investigation_selection_unavailable",
+        "resistance_observation_summary",
+        "resistance_observed_decrease",
+        "resistance_observed_extinction",
+        "resistance_observed_increase",
+        "resistance_observed_similar",
+        "resistance_restored_completed_without_prediction",
+        "resistance_restored_without_prediction",
+        "resistance_selection_unavailable"
+      ],
+      "removed": 0,
+      "changedExisting": 0,
+      "outsideBytesUnchanged": true,
+      "totalMicroKeys": 2006
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "added": [
+        "investigation_selection_unavailable",
+        "resistance_observation_summary",
+        "resistance_observed_decrease",
+        "resistance_observed_extinction",
+        "resistance_observed_increase",
+        "resistance_observed_similar",
+        "resistance_restored_completed_without_prediction",
+        "resistance_restored_without_prediction",
+        "resistance_selection_unavailable"
+      ],
+      "removed": 0,
+      "changedExisting": 0,
+      "outsideBytesUnchanged": true,
+      "totalMicroKeys": 2006
+    }
+  ]
+}

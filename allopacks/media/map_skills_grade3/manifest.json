@@ -1,0 +1,467 @@
+{
+  "slug": "map_skills_grade3",
+  "version": 1,
+  "revision": "2026-10-04",
+  "style": "Clear authored map geometry with real Natural Earth coastlines",
+  "provider": "Built-in image generation and authored SVG diagrams",
+  "textPolicy": "Text-free raster artwork; captions and labels stay in native editable fields",
+  "note": "Visual review completed when asset status is visual-review-passed; educator review pending.",
+  "references": [
+    "https://www.naturalearthdata.com/about/terms-of-use/",
+    "https://raw.githubusercontent.com/nvkelso/natural-earth-vector/master/geojson/ne_110m_admin_0_countries.geojson"
+  ],
+  "nativeMappings": {
+    "glossary": {
+      "Map": "mk-term-map",
+      "Symbol": "mk-term-symbol",
+      "Key": "mk-term-key",
+      "Compass": "mk-term-compass",
+      "Scale": "mk-term-scale",
+      "Border": "mk-term-border",
+      "Distance": "mk-term-distance",
+      "Region": "mk-term-region",
+      "Landmark": "mk-term-landmark",
+      "Globe": "mk-term-globe"
+    },
+    "anchor": {
+      "0": "mk-term-key",
+      "1": "mk-term-compass",
+      "2": "mk-term-scale",
+      "3": "mk-context-missing"
+    },
+    "sort": {
+      "mk1": "mk-sort-roads",
+      "mk2": "mk-sort-dog",
+      "mk3": "mk-term-symbol",
+      "mk4": "mk-sort-places",
+      "mk5": "mk-sort-fence",
+      "mk6": "mk-term-border",
+      "mk7": "mk-sort-cars",
+      "mk8": "mk-term-compass",
+      "mk9": "mk-sort-noise"
+    }
+  },
+  "assets": [
+    {
+      "id": "mk-term-map",
+      "kind": "term",
+      "file": "mk-term-map.png",
+      "webpFile": "mk-term-map.webp",
+      "vectorFile": "mk-term-map.svg",
+      "alt": "An overhead room drawing places a bed, desk, rug and doorway inside a square border.",
+      "prompt": "Authored text-free SVG diagram: An overhead room drawing places a bed, desk, rug and doorway inside a square border.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-term-symbol",
+      "kind": "term",
+      "file": "mk-term-symbol.png",
+      "webpFile": "mk-term-symbol.webp",
+      "vectorFile": "mk-term-symbol.svg",
+      "alt": "A small tent, tree and arched bridge sit in a row.",
+      "prompt": "Authored text-free SVG diagram: A small tent, tree and arched bridge sit in a row.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-term-key",
+      "kind": "term",
+      "file": "mk-term-key.png",
+      "webpFile": "mk-term-key.webp",
+      "vectorFile": "mk-term-key.svg",
+      "alt": "A bordered box holds four small shapes in a left-hand column, with blank space on the right.",
+      "prompt": "Authored text-free SVG diagram: A bordered box holds four small shapes in a left-hand column, with blank space on the right.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-term-compass",
+      "kind": "term",
+      "file": "mk-term-compass.png",
+      "webpFile": "mk-term-compass.webp",
+      "vectorFile": "mk-term-compass.svg",
+      "alt": "Four pointed arrows meet at a center; the upper point is longer and darker.",
+      "prompt": "Authored text-free SVG diagram: Four pointed arrows meet at a center; the upper point is longer and darker.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-term-scale",
+      "kind": "term",
+      "file": "mk-term-scale.png",
+      "webpFile": "mk-term-scale.webp",
+      "vectorFile": "mk-term-scale.svg",
+      "alt": "A winding road appears behind a straight bar with five evenly spaced tick marks.",
+      "prompt": "Authored text-free SVG diagram: A winding road appears behind a straight bar with five evenly spaced tick marks.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-term-border",
+      "kind": "term",
+      "file": "mk-term-border.png",
+      "webpFile": "mk-term-border.webp",
+      "vectorFile": "mk-term-border.svg",
+      "alt": "A dashed line divides green and gold areas, with a winding blue line beside it.",
+      "prompt": "Authored text-free SVG diagram: A dashed line divides green and gold areas, with a winding blue line beside it.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-term-distance",
+      "kind": "term",
+      "file": "mk-term-distance.png",
+      "webpFile": "mk-term-distance.webp",
+      "vectorFile": "mk-term-distance.svg",
+      "alt": "Two small houses stand apart, connected by a dotted line.",
+      "prompt": "Authored text-free SVG diagram: Two small houses stand apart, connected by a dotted line.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-term-region",
+      "kind": "term",
+      "file": "mk-term-region.png",
+      "webpFile": "mk-term-region.webp",
+      "vectorFile": "mk-term-region.svg",
+      "alt": "Three bands show repeated trees, parallel field rows and a sandy curve.",
+      "prompt": "Authored text-free SVG diagram: Three bands show repeated trees, parallel field rows and a sandy curve.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-term-landmark",
+      "kind": "term",
+      "file": "mk-term-landmark.png",
+      "webpFile": "mk-term-landmark.webp",
+      "vectorFile": "mk-term-landmark.svg",
+      "alt": "A water tank stands high above the ground on crossed supports.",
+      "prompt": "Authored text-free SVG diagram: A water tank stands high above the ground on crossed supports.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-term-globe",
+      "kind": "term",
+      "file": "mk-term-globe.png",
+      "webpFile": "mk-term-globe.webp",
+      "vectorFile": "mk-term-globe.svg",
+      "alt": "A round blue model on a tilted stand carries green coastlines of Africa and Europe.",
+      "prompt": "Authored text-free SVG diagram: A round blue model on a tilted stand carries green coastlines of Africa and Europe.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-context-missing",
+      "kind": "term",
+      "file": "mk-context-missing.png",
+      "webpFile": "mk-context-missing.webp",
+      "vectorFile": "mk-context-missing.svg",
+      "alt": "A winding road crosses a square sheet with one corner lifted.",
+      "prompt": "Authored text-free SVG diagram: A winding road crosses a square sheet with one corner lifted.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-sort-roads",
+      "kind": "term",
+      "file": "mk-sort-roads.png",
+      "webpFile": "mk-sort-roads.webp",
+      "vectorFile": "mk-sort-roads.svg",
+      "alt": "A broad gold road winds across a plain background.",
+      "prompt": "Authored text-free SVG diagram: A broad gold road winds across a plain background.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-sort-dog",
+      "kind": "term",
+      "file": "mk-sort-dog.png",
+      "webpFile": "mk-sort-dog.webp",
+      "vectorFile": "mk-sort-dog.svg",
+      "alt": "A house with two windows and a doorway has a small animal at its front.",
+      "prompt": "Authored text-free SVG diagram: A house with two windows and a doorway has a small animal at its front.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-sort-places",
+      "kind": "term",
+      "file": "mk-sort-places.png",
+      "webpFile": "mk-sort-places.webp",
+      "vectorFile": "mk-sort-places.svg",
+      "alt": "A columned building has a small blank book at its entrance.",
+      "prompt": "Authored text-free SVG diagram: A columned building has a small blank book at its entrance.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-sort-fence",
+      "kind": "term",
+      "file": "mk-sort-fence.png",
+      "webpFile": "mk-sort-fence.webp",
+      "vectorFile": "mk-sort-fence.svg",
+      "alt": "Five differently colored upright fence boards share two horizontal rails.",
+      "prompt": "Authored text-free SVG diagram: Five differently colored upright fence boards share two horizontal rails.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-sort-cars",
+      "kind": "term",
+      "file": "mk-sort-cars.png",
+      "webpFile": "mk-sort-cars.webp",
+      "vectorFile": "mk-sort-cars.svg",
+      "alt": "Three small vehicles are stacked vertically, each with two visible wheels.",
+      "prompt": "Authored text-free SVG diagram: Three small vehicles are stacked vertically, each with two visible wheels.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-sort-noise",
+      "kind": "term",
+      "file": "mk-sort-noise.png",
+      "webpFile": "mk-sort-noise.webp",
+      "vectorFile": "mk-sort-noise.svg",
+      "alt": "Three small vehicles sit beside two outward-curving sound lines.",
+      "prompt": "Authored text-free SVG diagram: Three small vehicles sit beside two outward-curving sound lines.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "mk-img-classroom-map",
+      "kind": "lesson",
+      "file": "mk-img-classroom-map.png",
+      "webpFile": "mk-img-classroom-map.webp",
+      "vectorFile": "mk-img-classroom-map.svg",
+      "alt": "Two overhead views share the same desks, door and rug. The left adds papers and scattered belongings; the right keeps only large room features.",
+      "prompt": "Authored text-free SVG diagram: Two overhead views share the same desks, door and rug. The left adds papers and scattered belongings; the right keeps only large room features.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending",
+      "title": "The same room, twice",
+      "afterType": "simplified",
+      "caption": "A map keeps features chosen for a purpose. The simplified view keeps desks, the door and the rug while leaving small belongings out.",
+      "labels": [
+        {
+          "text": "Everything",
+          "position": "center",
+          "anchorX": 24,
+          "anchorY": 7
+        },
+        {
+          "text": "What a map keeps",
+          "position": "center",
+          "anchorX": 76,
+          "anchorY": 7
+        }
+      ]
+    },
+    {
+      "id": "mk-img-key-and-map",
+      "kind": "lesson",
+      "file": "mk-img-key-and-map.png",
+      "webpFile": "mk-img-key-and-map.webp",
+      "vectorFile": "mk-img-key-and-map.svg",
+      "alt": "A town drawing uses a tent, winding water line, school, bridge, tree and public-building shapes. A side box repeats the shapes with blank spaces beside them.",
+      "prompt": "Authored text-free SVG diagram: A town drawing uses a tent, winding water line, school, bridge, tree and public-building shapes. A side box repeats the shapes with blank spaces beside them.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending",
+      "title": "Read the key first",
+      "afterType": "simplified",
+      "caption": "Match a shape in the key to the same shape on the map. The words are editable native labels.",
+      "labels": [
+        {
+          "text": "Key",
+          "position": "center",
+          "anchorX": 80,
+          "anchorY": 5
+        },
+        {
+          "text": "Campground",
+          "position": "center",
+          "anchorX": 82,
+          "anchorY": 14
+        },
+        {
+          "text": "River",
+          "position": "center",
+          "anchorX": 82,
+          "anchorY": 28
+        },
+        {
+          "text": "School",
+          "position": "center",
+          "anchorX": 82,
+          "anchorY": 42
+        },
+        {
+          "text": "Bridge",
+          "position": "center",
+          "anchorX": 82,
+          "anchorY": 56
+        },
+        {
+          "text": "Park",
+          "position": "center",
+          "anchorX": 82,
+          "anchorY": 70
+        },
+        {
+          "text": "Hospital",
+          "position": "center",
+          "anchorX": 82,
+          "anchorY": 84
+        }
+      ]
+    },
+    {
+      "id": "mk-img-north-is-a-habit",
+      "kind": "lesson",
+      "file": "mk-img-north-is-a-habit.png",
+      "webpFile": "mk-img-north-is-a-habit.webp",
+      "vectorFile": "mk-img-north-is-a-habit.svg",
+      "alt": "The same Africa coastline appears upright on the left and rotated a quarter turn on the right. Each orientation has a matching direction marker.",
+      "prompt": "Authored text-free SVG diagram: The same Africa coastline appears upright on the left and rotated a quarter turn on the right. Each orientation has a matching direction marker.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending",
+      "title": "A map can turn",
+      "afterType": "simplified",
+      "caption": "The map on the right turns so east is at the top. Its direction marker turns with it. North at the top is a useful convention, not a physical rule.",
+      "labels": [
+        {
+          "text": "North at the top",
+          "position": "center",
+          "anchorX": 22,
+          "anchorY": 7
+        },
+        {
+          "text": "East at the top",
+          "position": "center",
+          "anchorX": 73,
+          "anchorY": 7
+        },
+        {
+          "text": "Both show the same place",
+          "position": "center",
+          "anchorX": 50,
+          "anchorY": 95
+        }
+      ]
+    },
+    {
+      "id": "mk-img-greenland-africa",
+      "kind": "lesson",
+      "file": "mk-img-greenland-africa.png",
+      "webpFile": "mk-img-greenland-africa.webp",
+      "vectorFile": "mk-img-greenland-africa.svg",
+      "alt": "Left: Mercator coastlines make Greenland appear close to Africa in area. Right: equal-area coastlines at one scale show Africa much larger than Greenland.",
+      "prompt": "Authored text-free SVG diagram: Left: Mercator coastlines make Greenland appear close to Africa in area. Right: equal-area coastlines at one scale show Africa much larger than Greenland.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending",
+      "title": "Flattening changes size",
+      "afterType": "anchor-chart",
+      "caption": "Mercator stretches areas far from the equator. In the right panel both shapes use equal-area projections at one common scale: Africa has about fourteen times Greenland’s land area. Coastlines come from Natural Earth.",
+      "labels": [
+        {
+          "text": "Mercator map",
+          "position": "center",
+          "anchorX": 25,
+          "anchorY": 5
+        },
+        {
+          "text": "Equal-area comparison",
+          "position": "center",
+          "anchorX": 75,
+          "anchorY": 5
+        },
+        {
+          "text": "Africa",
+          "position": "center",
+          "anchorX": 13,
+          "anchorY": 94
+        },
+        {
+          "text": "Greenland",
+          "position": "center",
+          "anchorX": 38,
+          "anchorY": 94
+        },
+        {
+          "text": "Africa",
+          "position": "center",
+          "anchorX": 64,
+          "anchorY": 94
+        },
+        {
+          "text": "Greenland",
+          "position": "center",
+          "anchorX": 86,
+          "anchorY": 94
+        }
+      ]
+    },
+    {
+      "id": "mk-img-peel-the-globe",
+      "kind": "lesson",
+      "file": "mk-img-peel-the-globe.png",
+      "webpFile": "mk-img-peel-the-globe.webp",
+      "vectorFile": "mk-img-peel-the-globe.svg",
+      "alt": "A round globe on a stand leads to six narrow, curved peel-like segments laid side by side with gaps between them.",
+      "prompt": "Authored text-free SVG diagram: A round globe on a stand leads to six narrow, curved peel-like segments laid side by side with gaps between them.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending",
+      "title": "A round surface laid flat",
+      "afterType": "anchor-chart",
+      "caption": "The curved segments stand for strips of a round surface. Gaps appear when they lie flat. Closing the gaps requires stretching or changing the representation.",
+      "labels": [
+        {
+          "text": "Round surface",
+          "position": "center",
+          "anchorX": 20,
+          "anchorY": 8
+        },
+        {
+          "text": "Gaps appear",
+          "position": "center",
+          "anchorX": 70,
+          "anchorY": 94
+        }
+      ]
+    },
+    {
+      "id": "mk-img-school-route",
+      "kind": "lesson",
+      "file": "mk-img-school-route.png",
+      "webpFile": "mk-img-school-route.webp",
+      "vectorFile": "mk-img-school-route.svg",
+      "alt": "An overhead school plan fades most rooms to pale gray. A bold red route runs from a green entrance to a gold room.",
+      "prompt": "Authored text-free SVG diagram: An overhead school plan fades most rooms to pale gray. A bold red route runs from a green entrance to a gold room.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending",
+      "title": "A map with one job",
+      "afterType": "faq",
+      "caption": "The bold route connects the front entrance with the cafeteria. Fading other rooms makes this specific route easier to follow.",
+      "labels": [
+        {
+          "text": "Front door",
+          "position": "center",
+          "anchorX": 10,
+          "anchorY": 37
+        },
+        {
+          "text": "Cafeteria",
+          "position": "center",
+          "anchorX": 62,
+          "anchorY": 75
+        },
+        {
+          "text": "Other rooms are faded",
+          "position": "center",
+          "anchorX": 76,
+          "anchorY": 12
+        }
+      ]
+    }
+  ]
+}

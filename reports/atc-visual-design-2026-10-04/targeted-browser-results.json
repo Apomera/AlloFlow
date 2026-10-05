@@ -1,0 +1,36 @@
+{
+  "started": "2026-10-05T02:10:38.354Z",
+  "fixture": "Installed Chrome, actual React host and canonical ATC source. All aircraft, command, exercise, airport-choice, and debrief checks use real product controls. Completion is a real six-second separation exercise.",
+  "checks": [
+    {
+      "name": "Command entry keeps readable previews, cancel behavior, and keyboard focus within the visual layout",
+      "pass": true,
+      "detail": {
+        "dimensions": {
+          "width": 320,
+          "document": 320,
+          "height": 4005,
+          "zoom": "1"
+        },
+        "lockedStripScrolling": {
+          "focused": true,
+          "scroll": 46,
+          "height": 290,
+          "totalHeight": 336,
+          "outline": "solid"
+        },
+        "canceledWithoutChangingUserPause": true,
+        "canceledWithoutChangingInstruction": true
+      }
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-visual-design-2026-10-04\\after-heading-entry-320.png"
+  ],
+  "sourceHash": "b7417987e07ff085d8ab90ed1030a19e7a153a6c637f2b6689f2d56ee42aaf64",
+  "completed": "2026-10-05T02:10:44.188Z",
+  "passed": 1,
+  "failed": 0,
+  "sourceStable": true
+}

@@ -1,0 +1,10 @@
+*.log
+*-exit.json
+.inputs.json
+.reviewed.json
+browser-artifacts/
+regression/
+commit-git/
+commit-message.txt
+geometry-*.json
+diagnostic/

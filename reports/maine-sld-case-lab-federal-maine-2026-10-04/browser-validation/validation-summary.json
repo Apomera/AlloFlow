@@ -1,0 +1,250 @@
+{
+  "status": "PASS",
+  "completedAt": "2026-10-04T17:22:29.372065+00:00",
+  "scenarioCount": 3,
+  "distinctTargetedScenarios": 3,
+  "passed": 3,
+  "moduleScenariosPassed": 2,
+  "hostScenarioPassed": 1,
+  "newScenarios": 1,
+  "retainedScenarios": 2,
+  "retainedOriginalScenarios": 37,
+  "availableScenariosAfterAddition": 38,
+  "original37PrefixBytePreserved": true,
+  "original37Sha256": "25f75f6b96dfdba61036c1267e932cd94d0e4691a9969e80867ebe865afd0771",
+  "original37Bytes": 195578,
+  "workers": 1,
+  "automaticRetries": 0,
+  "timeoutMs": 120000,
+  "normalTracePolicy": "retain-on-failure",
+  "preparedAssetValidation": false,
+  "validationMethod": "Original canonical spec and unchanged synchronous Tailwind setup; actual app preview uses immutable unmodified current-host snapshot.",
+  "sourceSha256": "0ace7842ded217dfc67d240f357acdfbca59a493ae0e7aef709e0dd006b846df",
+  "moduleSha256": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+  "browserTestSha256": "2807144531c423401b691b10ad1c7e1cd6bfb7a6151ea68927a90d7ee4187e28",
+  "testedHostSourceSha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8",
+  "testedHostBundleSha256": "69c86008789f489da23eb74cf3206e1101e48dfd86ef849c43632d466a86024f",
+  "observedCurrentHostHashesBeforeLaunch": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "matchesTestedWholeHost": false,
+      "borrowedRouteReaderMatchesTestedSnapshot": true,
+      "borrowedRouteReaderSha256": "6f0fde160db8476601dbe5a46aa4272c3b7c9d962bc12d905876e2c2c78f9ff9"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "matchesTestedWholeHost": false,
+      "borrowedRouteReaderMatchesTestedSnapshot": true,
+      "borrowedRouteReaderSha256": "6f0fde160db8476601dbe5a46aa4272c3b7c9d962bc12d905876e2c2c78f9ff9"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "matchesTestedWholeHost": false,
+      "borrowedRouteReaderMatchesTestedSnapshot": true,
+      "borrowedRouteReaderSha256": "6f0fde160db8476601dbe5a46aa4272c3b7c9d962bc12d905876e2c2c78f9ff9"
+    }
+  ],
+  "currentHostMatchesTestedSnapshotBeforeLaunch": false,
+  "borrowedRouteReaderBytePreserved": true,
+  "borrowedRouteReaderSha256": "6f0fde160db8476601dbe5a46aa4272c3b7c9d962bc12d905876e2c2c78f9ff9",
+  "immutableSnapshotRetained": true,
+  "rebuildPerformedAfterDrift": false,
+  "prelaunchStoppedGuardWasBrowserAttempt": false,
+  "finalModuleInvocation": {
+    "name": "module-focused-01",
+    "stats": {
+      "startTime": "2026-10-04T17:04:47.504Z",
+      "duration": 26724.466,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "tests": [
+      {
+        "title": "all52 scores, evidence and Q8/Q9 work survive steps, case switches and reload",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 2972,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "title": "federal and Maine jurisdiction disclosures work by keyboard without grading or changing participant worksheet work",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 7781,
+            "retry": 0
+          }
+        ]
+      }
+    ],
+    "exitCode": 0,
+    "resultFile": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/module-focused-01/result.json",
+    "resultSha256": "b6b2853ba184da58d240343f0845ca4deed128ce9d42450f30f69f1378bad375",
+    "rawFileCount": 15,
+    "archiveProofFile": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/module-focused-01/archive-proof.json",
+    "archiveProofSha256": "35194b2b539aef5929349215bd927e3b164cc9c924dd23344a83836522c63eb7"
+  },
+  "finalHostInvocation": {
+    "name": "host-only-02",
+    "stats": {
+      "startTime": "2026-10-04T17:18:51.332Z",
+      "duration": 122790.62299999999,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "tests": [
+      {
+        "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 99252,
+            "retry": 0
+          }
+        ]
+      }
+    ],
+    "exitCode": 0,
+    "resultFile": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/host-only-02/result.json",
+    "resultSha256": "b75dd792c7a371654ea3afc60a035d35370aeaaac028655e85f84c7e7c6b30bb",
+    "rawFileCount": 14,
+    "archiveProofFile": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/host-only-02/archive-proof.json",
+    "archiveProofSha256": "c857dde87c62f2c1d884971c6ebad7f5b718c56bb76d80874b04b85ca995963c"
+  },
+  "axeScans": 2,
+  "accessibilityScans": [
+    {
+      "file": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/module-focused-01/browser/axe-jurisdiction-case-320-dark.json",
+      "sha256": "35a590679ad6f74201341e3b4c75f3b2b6b0b3d1194166415e555be248272c3e",
+      "violations": 0,
+      "state": {
+        "width": 320,
+        "height": 740,
+        "theme": "dark",
+        "state": "Expanded informational federal/Maine guide on Case step",
+        "scope": "Active Maine SLD panel",
+        "violations": []
+      }
+    },
+    {
+      "file": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/module-focused-01/browser/axe-jurisdiction-reasoning-1366-light.json",
+      "sha256": "9638f0ba3a6c3fe36115de521b51a5b33609cbfede30daf833129e836af839b6",
+      "violations": 0,
+      "state": {
+        "width": 1366,
+        "height": 900,
+        "theme": "light",
+        "state": "Expanded informational federal/Maine guide on Reasoning step",
+        "scope": "Active Maine SLD panel",
+        "violations": []
+      }
+    }
+  ],
+  "representativeScreenshots": [
+    {
+      "file": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/module-focused-01/browser/jurisdiction-case-1366-light.png",
+      "sha256": "0cabf6395616c05cd4e81fbfd644a46ed27b6eccb609872c87f1fdd0e94fd567",
+      "bytes": 104933
+    },
+    {
+      "file": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/module-focused-01/browser/jurisdiction-case-320x740-dark.png",
+      "sha256": "8eff705b45b8d18488d7ac8cab7c30d069a4cbfb50dfa08ad90be940764c3eb6",
+      "bytes": 41423
+    },
+    {
+      "file": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/module-focused-01/browser/jurisdiction-case-844x390-dark.png",
+      "sha256": "1034de6d2523f86f3aca3aa236b8426cadea5a4cf455f6cfa42859ffdfe9f8e3",
+      "bytes": 47570
+    },
+    {
+      "file": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/module-focused-01/browser/jurisdiction-reasoning-1366-light.png",
+      "sha256": "bc524cf67dc9fdf3089c4775d9ab80426ed0a3a74ed45cf375a7c268d22aacf9",
+      "bytes": 127801
+    }
+  ],
+  "worksheetSchemaPreserved": true,
+  "full38ScenarioMatrixRun": false,
+  "freshPrintAudit": false,
+  "uncommitted": true,
+  "participantCaseWorkExactlyPreservedAfterGuideUse": true,
+  "actualHostInvocations": 2,
+  "explicitHostRecoveryInvocations": 1,
+  "firstAttemptAllTargetsPassed": false,
+  "hostInvocationHistory": [
+    {
+      "name": "host-only-01",
+      "stats": {
+        "startTime": "2026-10-04T17:10:59.367Z",
+        "duration": 148373.36599999998,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "tests": [
+        {
+          "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+          "status": "unexpected",
+          "results": [
+            {
+              "status": "timedOut",
+              "durationMs": 131007,
+              "retry": 0
+            }
+          ]
+        }
+      ],
+      "exitCode": 1,
+      "resultFile": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/host-only-01/result.json",
+      "resultSha256": "935695d13609580d5b24a3ab1af7b88452f0628bb0647e8d7b81f2205e0e3f89",
+      "rawFileCount": 21,
+      "archiveProofFile": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/host-only-01/archive-proof.json",
+      "archiveProofSha256": "129a31664176e5e33c440771adefe71a3db3d8da1e1e594eace870cd32aee6a3"
+    },
+    {
+      "name": "host-only-02",
+      "stats": {
+        "startTime": "2026-10-04T17:18:51.332Z",
+        "duration": 122790.62299999999,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "tests": [
+        {
+          "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+          "status": "expected",
+          "results": [
+            {
+              "status": "passed",
+              "durationMs": 99252,
+              "retry": 0
+            }
+          ]
+        }
+      ],
+      "exitCode": 0,
+      "resultFile": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/host-only-02/result.json",
+      "resultSha256": "b75dd792c7a371654ea3afc60a035d35370aeaaac028655e85f84c7e7c6b30bb",
+      "rawFileCount": 14,
+      "archiveProofFile": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/host-only-02/archive-proof.json",
+      "archiveProofSha256": "c857dde87c62f2c1d884971c6ebad7f5b718c56bb76d80874b04b85ca995963c"
+    }
+  ],
+  "initialHostTimeoutAnalysisFile": "reports/maine-sld-case-lab-federal-maine-2026-10-04/browser-validation/host-timeout-analysis.json",
+  "initialHostTimeoutAnalysisSha256": "f30c50d1922627e8d8be57aa0a3ffe063854753bdd673014ba40cc4bd3fea4c3"
+}

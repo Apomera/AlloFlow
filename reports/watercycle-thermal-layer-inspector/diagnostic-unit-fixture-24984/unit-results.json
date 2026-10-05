@@ -1,0 +1,980 @@
+{
+  "numTotalTestSuites": 5,
+  "numPassedTestSuites": 3,
+  "numFailedTestSuites": 2,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 34,
+  "numPassedTests": 33,
+  "numFailedTests": 1,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790983333166,
+  "success": false,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence copies actual rain nodes and compares particle cues with the independent public phase kernel",
+          "status": "passed",
+          "title": "copies actual rain nodes and compares particle cues with the independent public phase kernel",
+          "duration": 17.60030000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence copies actual snow nodes and compares particle cues with the independent public phase kernel",
+          "status": "passed",
+          "title": "copies actual snow nodes and compares particle cues with the independent public phase kernel",
+          "duration": 3.4185999999999694,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence copies actual sleet nodes and compares particle cues with the independent public phase kernel",
+          "status": "passed",
+          "title": "copies actual sleet nodes and compares particle cues with the independent public phase kernel",
+          "duration": 3.363900000000285,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence copies actual freezing-rain nodes and compares particle cues with the independent public phase kernel",
+          "status": "passed",
+          "title": "copies actual freezing-rain nodes and compares particle cues with the independent public phase kernel",
+          "duration": 2.397899999999936,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence copies actual hail nodes and compares particle cues with the independent public phase kernel",
+          "status": "passed",
+          "title": "copies actual hail nodes and compares particle cues with the independent public phase kernel",
+          "duration": 2.4720000000002074,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence copies actual mix nodes and compares particle cues with the independent public phase kernel",
+          "status": "passed",
+          "title": "copies actual mix nodes and compares particle cues with the independent public phase kernel",
+          "duration": 2.3161999999997533,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence copies actual virga nodes and compares particle cues with the independent public phase kernel",
+          "status": "passed",
+          "title": "copies actual virga nodes and compares particle cues with the independent public phase kernel",
+          "duration": 2.2325999999998203,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence copies actual clear nodes and compares particle cues with the independent public phase kernel",
+          "status": "passed",
+          "title": "copies actual clear nodes and compares particle cues with the independent public phase kernel",
+          "duration": 2.3730000000000473,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence keeps ice pellets and supercooled liquid distinct at the same below-freezing surface",
+          "status": "passed",
+          "title": "keeps ice pellets and supercooled liquid distinct at the same below-freezing surface",
+          "duration": 2.2959999999998217,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence labels a warm-air freezing-rain transition cue as liquid without claiming supercooling there",
+          "status": "failed",
+          "title": "labels a warm-air freezing-rain transition cue as liquid without claiming supercooling there",
+          "duration": 8.737299999999777,
+          "failureMessages": [
+            "AssertionError: expected 'sleet' to be 'freezing-rain' // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_thermal_layer_inspector.test.js:214:32\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_thermal_layer_inspector.test.js:108:81\n    at Array.forEach (<anonymous>)\n    at eachRuntime (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_thermal_layer_inspector.test.js:108:41)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_thermal_layer_inspector.test.js:211:5\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:302:11\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:26\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2326:20\n    at new Promise (<anonymous>)\n    at runWithCancel (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2323:10)"
+          ],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence preserves the sign and nonzero meaning of raw temperature 0",
+          "status": "passed",
+          "title": "preserves the sign and nonzero meaning of raw temperature 0",
+          "duration": 1.5931000000000495,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence preserves the sign and nonzero meaning of raw temperature 1e-8",
+          "status": "passed",
+          "title": "preserves the sign and nonzero meaning of raw temperature 1e-8",
+          "duration": 2.96979999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence preserves the sign and nonzero meaning of raw temperature -1e-8",
+          "status": "passed",
+          "title": "preserves the sign and nonzero meaning of raw temperature -1e-8",
+          "duration": 1.1035999999999149,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence preserves the sign and nonzero meaning of raw temperature 0.0009998",
+          "status": "passed",
+          "title": "preserves the sign and nonzero meaning of raw temperature 0.0009998",
+          "duration": 2.9119000000000597,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence preserves the sign and nonzero meaning of raw temperature -0.0009998",
+          "status": "passed",
+          "title": "preserves the sign and nonzero meaning of raw temperature -0.0009998",
+          "duration": 0.7658999999998741,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence preserves the sign and nonzero meaning of raw temperature 12.345",
+          "status": "passed",
+          "title": "preserves the sign and nonzero meaning of raw temperature 12.345",
+          "duration": 0.6901000000002568,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence returns deeply frozen copied factory data and detached editable catalogs",
+          "status": "passed",
+          "title": "returns deeply frozen copied factory data and detached editable catalogs",
+          "duration": 2.823399999999765,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: real resolved thermal evidence"
+          ],
+          "fullName": "Thermal layer inspector: real resolved thermal evidence rejects missing, nonfinite, inconsistent and inherited model readings rather than inventing a zero",
+          "status": "passed",
+          "title": "rejects missing, nonfinite, inconsistent and inherited model readings rather than inventing a zero",
+          "duration": 5.442099999999755,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: unscored context and metadata"
+          ],
+          "fullName": "Thermal layer inspector: unscored context and metadata offers only the five authored material or availability descriptions",
+          "status": "passed",
+          "title": "offers only the five authored material or availability descriptions",
+          "duration": 0.3093999999996413,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: unscored context and metadata"
+          ],
+          "fullName": "Thermal layer inspector: unscored context and metadata supports actual cue categories and marks other valid choices for reconsideration",
+          "status": "passed",
+          "title": "supports actual cue categories and marks other valid choices for reconsideration",
+          "duration": 129.51960000000008,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: unscored context and metadata"
+          ],
+          "fullName": "Thermal layer inspector: unscored context and metadata preserves feedback for the same node and clears it for a different node",
+          "status": "passed",
+          "title": "preserves feedback for the same node and clears it for a different node",
+          "duration": 2.7341999999998734,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: unscored context and metadata"
+          ],
+          "fullName": "Thermal layer inspector: unscored context and metadata preserves feedback while the live timeline, view, audio and notes change",
+          "status": "passed",
+          "title": "preserves feedback while the live timeline, view, audio and notes change",
+          "duration": 7.744499999999789,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: unscored context and metadata"
+          ],
+          "fullName": "Thermal layer inspector: unscored context and metadata clears stale feedback for resolved temperature or other model-setting changes while retaining the chosen node",
+          "status": "passed",
+          "title": "clears stale feedback for resolved temperature or other model-setting changes while retaining the chosen node",
+          "duration": 12.25,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: unscored context and metadata"
+          ],
+          "fullName": "Thermal layer inspector: unscored context and metadata binds answers to the full authored node identity rather than trusting a saved result or unknown node",
+          "status": "passed",
+          "title": "binds answers to the full authored node identity rather than trusting a saved result or unknown node",
+          "duration": 5.846700000000055,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: unscored context and metadata"
+          ],
+          "fullName": "Thermal layer inspector: unscored context and metadata rejects invalid or cyclic contexts and never writes model or incoming metadata",
+          "status": "passed",
+          "title": "rejects invalid or cyclic contexts and never writes model or incoming metadata",
+          "duration": 21.015100000000075,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: exact preservation"
+          ],
+          "fullName": "Thermal layer inspector: exact preservation pins the prior uncommitted Storm runtime and exact source/public parity",
+          "status": "passed",
+          "title": "pins the prior uncommitted Storm runtime and exact source/public parity",
+          "duration": 45.20100000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: exact preservation"
+          ],
+          "fullName": "Thermal layer inspector: exact preservation preserves existing calculations, live scenes, handlers, Storm moments, Groundwater and reward declarations exactly",
+          "status": "passed",
+          "title": "preserves existing calculations, live scenes, handlers, Storm moments, Groundwater and reward declarations exactly",
+          "duration": 645.7608999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: exact preservation"
+          ],
+          "fullName": "Thermal layer inspector: exact preservation preserves the complete public scientific kernel export",
+          "status": "passed",
+          "title": "preserves the complete public scientific kernel export",
+          "duration": 802.2587000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: shipped renderer and callbacks"
+          ],
+          "fullName": "Thermal layer inspector: shipped renderer and callbacks inspects every level with only inspector metadata writes and preserves all outer learner state",
+          "status": "passed",
+          "title": "inspects every level with only inspector metadata writes and preserves all outer learner state",
+          "duration": 449.8135999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: shipped renderer and callbacks"
+          ],
+          "fullName": "Thermal layer inspector: shipped renderer and callbacks checks every actual native answer without scoring, notes, experiment or timeline changes",
+          "status": "passed",
+          "title": "checks every actual native answer without scoring, notes, experiment or timeline changes",
+          "duration": 651.8019999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: shipped renderer and callbacks"
+          ],
+          "fullName": "Thermal layer inspector: shipped renderer and callbacks retains actual renderer feedback for the same level and clears it for another level",
+          "status": "passed",
+          "title": "retains actual renderer feedback for the same level and clears it for another level",
+          "duration": 747.0759999999991,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: shipped renderer and callbacks"
+          ],
+          "fullName": "Thermal layer inspector: shipped renderer and callbacks renders changed weather evidence with stale feedback hidden and without rewriting saved metadata",
+          "status": "passed",
+          "title": "renders changed weather evidence with stale feedback hidden and without rewriting saved metadata",
+          "duration": 1068.9704999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: shipped renderer and callbacks"
+          ],
+          "fullName": "Thermal layer inspector: shipped renderer and callbacks keeps accepted renderer feedback while live playback advances through its positions",
+          "status": "passed",
+          "title": "keeps accepted renderer feedback while live playback advances through its positions",
+          "duration": 1141.5002999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Thermal layer inspector: shipped renderer and callbacks"
+          ],
+          "fullName": "Thermal layer inspector: shipped renderer and callbacks shows real cues, raw air readings and a separate surface outcome for all eight current phase types",
+          "status": "passed",
+          "title": "shows real cues, raw air readings and a separate surface outcome for all eight current phase types",
+          "duration": 7468.647800000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790983336870,
+      "endTime": 1790983350139.6477,
+      "status": "failed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_thermal_layer_inspector.test.js"
+    }
+  ],
+  "waterCycleThermalLayerVerification": {
+    "mode": "unit",
+    "runnerPid": 68432,
+    "expectedRuntimeSha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+    "startedAt": "2026-10-02T23:22:11.272Z",
+    "runtimeFiles": [
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+        "bytes": 3119260
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+        "bytes": 3119260
+      }
+    ],
+    "testFiles": [
+      {
+        "path": "tests/watercycle_thermal_layer_inspector.test.js",
+        "sha256": "eae17e5a1a6576e78c602fea99f06cc1fa8ae782de1089c0364d6c0c18fdf4f7",
+        "bytes": 28386
+      }
+    ],
+    "fixtureFiles": [
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/baseline-runtime.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929
+      }
+    ],
+    "recipeFiles": [
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/tested-test-bundle.cjs",
+        "sha256": "06ed5d27cedc3a3382350ab51949c192ec87c11855b1dec9c95b36e54ddd6862",
+        "bytes": 12523,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\thermal-layer-test-bundle.cjs"
+      },
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/tested-read-audit.cjs",
+        "sha256": "4683769f3cff2558bd05ab286c4df0017d70897e59891e8d561c3429a4a05940",
+        "bytes": 1933,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\thermal-layer-read-audit.cjs"
+      }
+    ],
+    "closureEvidence": [
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/baseline-results.json",
+        "sha256": "f31abda9c86daaab2e971138909a100218541c9380005882f77feff07adc31d7",
+        "bytes": 79512,
+        "mode": "baseline",
+        "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "publicSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "frozenRuntime": {
+          "path": "reports/watercycle-thermal-layer-inspector/baseline-tested-runtime.js",
+          "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+          "bytes": 3088929
+        },
+        "browserClosedAt": "2026-10-02T22:56:29.125Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-results.json",
+        "sha256": "53b6cf5382c6b9e4ae4215a4c09c3a69e40c8dd404d2e50a5c2e3d136e1a6fad",
+        "bytes": 329787,
+        "mode": "browser-preflight",
+        "sourceSha256": "129f53f2e028efd743ffcc205ea6d9b44c6c96a4f815f924b9020ab3ef78ae08",
+        "publicSha256": "129f53f2e028efd743ffcc205ea6d9b44c6c96a4f815f924b9020ab3ef78ae08",
+        "frozenRuntime": {
+          "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-tested-runtime.js",
+          "sha256": "129f53f2e028efd743ffcc205ea6d9b44c6c96a4f815f924b9020ab3ef78ae08",
+          "bytes": 3119245
+        },
+        "browserClosedAt": "2026-10-02T23:07:20.112Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/browser-results.json",
+        "sha256": "6baad06ce0fe7218cdc3013cd33c32fa0522a62b9b68107bfcbc94151d20c366",
+        "bytes": 2156647,
+        "mode": "browser",
+        "sourceSha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+        "publicSha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+        "frozenRuntime": {
+          "path": "reports/watercycle-thermal-layer-inspector/browser-tested-runtime.js",
+          "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+          "bytes": 3119260
+        },
+        "browserClosedAt": "2026-10-02T23:14:30.779Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      }
+    ],
+    "preservation": {
+      "baselinePath": "reports/watercycle-thermal-layer-inspector/baseline-runtime.js",
+      "baselineSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "kernelExportSha256": "da24a0e41cc4cdf235271266034829f83497eba9523cbbe9093b6d6a67bbfe6a",
+      "anchors": [
+        {
+          "name": "wcPrecipClamp",
+          "sha256": "3fa034a6f72f30bfd06904397bf0e5b3d592966b43e8026ae40db4824a93db32"
+        },
+        {
+          "name": "advanceWcStormWeather",
+          "sha256": "d5737b72f907e26231dda1382635f6f401a084083dfacc0efc1c1324afed526e"
+        },
+        {
+          "name": "WC_PRECIP_DEFAULTS",
+          "sha256": "e2f88e8943e3fe2b30bbf0ceeb0e86be4b6762511c171757107cdb30ba2a520e"
+        },
+        {
+          "name": "WC_PRECIP_PRESETS",
+          "sha256": "dd8b800709339a35e35ec9d0dd8b00a8bc8b2d39fe0498e50aa994c24adf560a"
+        },
+        {
+          "name": "normalizeWcPrecipConfig",
+          "sha256": "9b968009281e991f870072d14a1b74f7036f08e77966c3c7760b5d990a2637b6"
+        },
+        {
+          "name": "wcPrecipTemperatureAt",
+          "sha256": "087d9089835a39401cb0f2c56d7e5a3302604851c2b26424a52f63eae91afdeb"
+        },
+        {
+          "name": "buildWcPrecipThermalStructure",
+          "sha256": "c876d75d0ec5ca5a63bbabdac15c6dc5b66767b4c603025f6fa47c37fd3cd360"
+        },
+        {
+          "name": "buildWcStormLifecycle",
+          "sha256": "aa96e105fc6311baa58cffd0be4c8fc95080479b8a659a8ae78294a6121b2a62"
+        },
+        {
+          "name": "buildWcThunderModel",
+          "sha256": "bb6f68de2aab6a593f4ff08c3949123f76e22f0e883d5830a6c03b5046465fd5"
+        },
+        {
+          "name": "evaluateWcThunderEstimate",
+          "sha256": "8a787efb80773b2a2be99f70ca6ee5562bebdcca9934f1e9d646465855fae24b"
+        },
+        {
+          "name": "buildWcStormAnatomy",
+          "sha256": "1966b150f8db2d8c9855ea883da8933cd510f93f61ef96e63fea96c59602ffa3"
+        },
+        {
+          "name": "computeWcPrecipitationModel",
+          "sha256": "01d0a78646cafbc11459296425e0674dd308d4201bf4b58ab4324b8f4b4aa88e"
+        },
+        {
+          "name": "wcPrecipPhaseAtTransitions",
+          "sha256": "17ef2e8888a6f211b0172ca9102359551c8f8a0dcca39a86870b0c3efab72da6"
+        },
+        {
+          "name": "wcPrecipPhaseFromModel",
+          "sha256": "b6257da2ad5b0a760cd1e02d57397638091f7c55e144794a850fa39f5032028a"
+        },
+        {
+          "name": "wcPrecipPhaseAt",
+          "sha256": "1accf9572082154abfd983859d5c4cede1e57a257ba9ab2f1cdec6a7f927c67f"
+        },
+        {
+          "name": "WC_PRECIP_EXPERIMENT_INPUTS",
+          "sha256": "d09da164201a05bcdd98f3db44b73798a757ae2148a7c1057132ac79952938be"
+        },
+        {
+          "name": "wcPrecipSetupSnapshot",
+          "sha256": "6db71b7a9a9d4dc40ef9dd2be64b506b2bfc3b4c5204eb3586c72516f70d4e5b"
+        },
+        {
+          "name": "wcPrecipExperimentValue",
+          "sha256": "49c0744b002cf5ab9a52fa056eba0d1729b861d2bf8568cbc6edb6964076920c"
+        },
+        {
+          "name": "wcPrecipExperiment",
+          "sha256": "2ba07171749c8b473dd3c66c2230a0717c6163356aaad9f0f51952f1338004d1"
+        },
+        {
+          "name": "stormStageStops",
+          "sha256": "554c9fcfc2557ff2b133ef2ac032eee75e75afc53f0cff7b28c6ebea1b981b7e"
+        },
+        {
+          "name": "stormAccumulationKeys",
+          "sha256": "f24e9c095f39506ece14307d85a34b0b4da1915dacf3bc06774b3c889415968a"
+        },
+        {
+          "name": "setStormLifecycleTime",
+          "sha256": "7f9de8974b4b48d38d91e471d44110765e1442ec7a3e45bf549f76371841a33d"
+        },
+        {
+          "name": "setIQ",
+          "sha256": "2d81907ea3a5bb59d268c287500fc095954af5bb9dddbca82a37aaf5eee9e28b"
+        },
+        {
+          "name": "setStormExperiment",
+          "sha256": "d0cdd16fd393d780091b07943566be113da047dfd75b52a963dbc2ec42bad8e6"
+        },
+        {
+          "name": "pinStormSetup",
+          "sha256": "44efeb82c91e78608a56d2a84df4b166670a11cfc04951601060f8c5b49b6268"
+        },
+        {
+          "name": "startStormExperiment",
+          "sha256": "d3876fb38ddf4678668de6301eda84f0797d1a6d7245c379394e6496208aed56"
+        },
+        {
+          "name": "restoreStormControls",
+          "sha256": "e03e72dc0a2e47d0f79a638bc0257e3498bf3a00229c24f89a9a2267b44c10b4"
+        },
+        {
+          "name": "saveStormComparison",
+          "sha256": "9199c6dbe9b071c7513f0f36fca6c45319e239e4c5780a9975d774db0ddf560f"
+        },
+        {
+          "name": "downloadStormComparison",
+          "sha256": "23d7685bf653ffd9edbe8acc5d4045bd8adac9bc8adf81aef58d960d5f0312dc"
+        },
+        {
+          "name": "renderStormExperiment",
+          "sha256": "2c53cf500c66f1c472cc40eae68c531f38e84c38a634a2a7579f6e2aa38a9340"
+        },
+        {
+          "name": "setPrecipControl",
+          "sha256": "791c3d4b2640b621e6ec94c166cbbf2076c6737365887b864ec17bf079b7602e"
+        },
+        {
+          "name": "setPrecipViewMode",
+          "sha256": "f5369dc58cef32e629d290b8408f96bca2014551f28150f21bfdcfedb8b7bb28"
+        },
+        {
+          "name": "setPrecipCameraFocus",
+          "sha256": "20917460429982f7288e386921640f16d5214e315061b709c5291b55e5db3c38"
+        },
+        {
+          "name": "applyPrecipPreset",
+          "sha256": "df1794bd36119b29537ddf6be185dccd6deef19799a88555f972bbd2eae84fd4"
+        },
+        {
+          "name": "resetPrecipLab",
+          "sha256": "da110ff15ea45bac2ba2d23e5ba4993e0bc84135ea80fce1a860b31102cd5a13"
+        },
+        {
+          "name": "logPrecipObservation",
+          "sha256": "f2032a3244bd8e8c91267600ab99614eab120591562e3c40fb4f3e7770d33d80"
+        },
+        {
+          "name": "openPrecipitationIn3d",
+          "sha256": "ded3dd6ef0428621427246c3b25e67485b0c93acec325fb06ab5ef4c7ae6cff3"
+        },
+        {
+          "name": "precipCanvasRef",
+          "sha256": "b970e65b975f83503658a4928e9574b92d9b4ecf4132df8129bf65922e0c5d5c"
+        },
+        {
+          "name": "precip3dRef",
+          "sha256": "20c9c11cade3c694fd8ec0c733444e9cb2b4af22be7a3e5f3169e56d97944790"
+        },
+        {
+          "name": "scheduleStormLifecycleTick",
+          "sha256": "f2830efa589db52d63e59925210592f4a9bd824f9d953cc4a5804f748d2d5c8d"
+        },
+        {
+          "name": "canvasRef",
+          "sha256": "aa6dcd61dcff9fdbdedbec6610022cde252ec7a16db6e691aac4b7c1d80bd8e3"
+        },
+        {
+          "name": "journey3dRef",
+          "sha256": "3e0b1948cea51fef6137c1e760cdb286c163b2a17dd70e92ede98af46c7fb4aa"
+        },
+        {
+          "name": "setJourneyReplayProgress",
+          "sha256": "c8a6f135c2911133ef74755baa88b9cf227cf0ddd480e41fce75bd8abb4992e9"
+        },
+        {
+          "name": "resumeLiveJourney",
+          "sha256": "d705797b062824ed70e919159125f00b57ebd43243fee5249b5b3796df94c34e"
+        },
+        {
+          "name": "chooseJourneyPath",
+          "sha256": "4a0f1b0a5eeb129fffc77a35d682a8269f3a17d79a91dd450f6a6939a651bf43"
+        },
+        {
+          "name": "WCStormMoments",
+          "sha256": "db245339e9e85a6b1773ae912e239cf83423615c58231a2eef43787f22850283"
+        },
+        {
+          "name": "WC_STORM_MOMENTS_STYLE",
+          "sha256": "1017e9f1957b9a92c1b57cdd6699c81877c85069a973073d0036f52e2f79e7dc"
+        },
+        {
+          "name": "renderStormMoments",
+          "sha256": "4e2668e714f6aa8c629f8b758516489fc97aadc5f6b2d745c36bd7a2a6f75eb2"
+        },
+        {
+          "name": "WCGroundwaterLens",
+          "sha256": "b06cb09eebe636eaac139009f38977bb036f26dfdbd0ebbd41d5a2b06a578fa9"
+        },
+        {
+          "name": "WC_GROUNDWATER_LENS_STYLE",
+          "sha256": "28fa17d468047b74e9313b44b21165453e49434dbac06d16acc2df3507d606fe"
+        },
+        {
+          "name": "renderWcGroundwaterLens",
+          "sha256": "b94c799fc9ee8c6c29c12be2cd9c7888e60279a21f6569e8d99b864a8439b781"
+        },
+        {
+          "name": "renderWcCheckPores",
+          "sha256": "3a415f015059b42d1471f363e28a4031d820d3c8c86caa99156df3f87a737712"
+        },
+        {
+          "name": "WCJourneyChapters",
+          "sha256": "6b87b9ca6210dfb5ebc710395142956738f30845189020728d96230a5a41866f"
+        },
+        {
+          "name": "renderWcJourneyChapters",
+          "sha256": "90d9fb3ec01e2a0551480f7a0187b61cd36783fda8e0780b6c7bc0b49d9ee0fa"
+        },
+        {
+          "name": "WCCloudEvidence",
+          "sha256": "20e86fe092509382580e29055d0dbf8aa8445a675d6d37601cf0866626d65d42"
+        },
+        {
+          "name": "WCExploreNotebook",
+          "sha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91"
+        },
+        {
+          "name": "WCCheckInvestigation",
+          "sha256": "69e47c9d4d859f88cef5b92b56454caf90738399c91c18f4863dfb0c7a242316"
+        },
+        {
+          "name": "WCProcessCompare",
+          "sha256": "6b2869a0e86c41c8b86fc3c2722200b716210ebeba4e407ffc56a1c1f2051c46"
+        },
+        {
+          "name": "MATTER_ENERGY_TRACE",
+          "sha256": "5b29d16aba2e615e7a40801745c9af2dbc4051fd27d2510360f05568314c96c2"
+        },
+        {
+          "name": "JOURNEY_MATTER_ENERGY_TRACE",
+          "sha256": "b1c153ec3df774de5d9a14c8a57f86c71f5342529d610eb9a49dda51377139cd"
+        },
+        {
+          "name": "wcQuizBank",
+          "sha256": "5f6378b528d90eac9974fb003bedce3f4f9d76981dcca17ddfa7616d281dcf41"
+        },
+        {
+          "name": "wcQuizQuestion",
+          "sha256": "a4b6613b91b16ef64b10104906049fe8fb2cc156ead7e539cf7be0e3c5bee1c5"
+        },
+        {
+          "name": "checkWaterCycleChallenges",
+          "sha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f"
+        }
+      ]
+    },
+    "singleWorker": true,
+    "fileParallelism": false,
+    "completedAt": "2026-10-02T23:22:30.860Z",
+    "processPid": 24984,
+    "processExitCode": 1,
+    "processSignal": null,
+    "processClosed": true,
+    "processClosedAt": "2026-10-02T23:22:30.859Z",
+    "runtimeFilesAfter": [
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+        "bytes": 3119260
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+        "bytes": 3119260
+      }
+    ],
+    "testFilesAfter": [
+      {
+        "path": "tests/watercycle_thermal_layer_inspector.test.js",
+        "sha256": "eae17e5a1a6576e78c602fea99f06cc1fa8ae782de1089c0364d6c0c18fdf4f7",
+        "bytes": 28386
+      }
+    ],
+    "fixtureFilesAfter": [
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/baseline-runtime.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929
+      }
+    ],
+    "loadedFiles": [
+      {
+        "path": "tests/watercycle_thermal_layer_inspector.test.js",
+        "sha256": "eae17e5a1a6576e78c602fea99f06cc1fa8ae782de1089c0364d6c0c18fdf4f7",
+        "bytes": 28386,
+        "loadedAt": "2026-10-02T23:22:30.296Z",
+        "pid": 24984
+      },
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+        "bytes": 3119260,
+        "loadedAt": "2026-10-02T23:22:15.646Z",
+        "pid": 71308
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+        "bytes": 3119260,
+        "loadedAt": "2026-10-02T23:22:15.721Z",
+        "pid": 71308
+      },
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/baseline-runtime.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929,
+        "loadedAt": "2026-10-02T23:22:15.735Z",
+        "pid": 71308
+      },
+      {
+        "path": "tests/watercycle_thermal_layer_inspector.test.js",
+        "sha256": "eae17e5a1a6576e78c602fea99f06cc1fa8ae782de1089c0364d6c0c18fdf4f7",
+        "bytes": 28386,
+        "loadedAt": "2026-10-02T23:22:15.736Z",
+        "pid": 71308
+      }
+    ],
+    "loadedReport": {
+      "loadedAt": "2026-10-02T23:22:15.601Z",
+      "completedAt": "2026-10-02T23:22:30.149Z",
+      "loadedRuntimes": [
+        {
+          "path": "stem_lab/stem_tool_watercycle.js",
+          "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+          "bytes": 3119260
+        },
+        {
+          "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+          "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+          "bytes": 3119260
+        }
+      ],
+      "loadedTest": {
+        "path": "tests/watercycle_thermal_layer_inspector.test.js",
+        "sha256": "eae17e5a1a6576e78c602fea99f06cc1fa8ae782de1089c0364d6c0c18fdf4f7",
+        "bytes": 28386
+      },
+      "loadedBaseline": {
+        "path": "reports/watercycle-thermal-layer-inspector/baseline-runtime.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929
+      }
+    },
+    "closureEvidenceAfter": [
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/baseline-results.json",
+        "sha256": "f31abda9c86daaab2e971138909a100218541c9380005882f77feff07adc31d7",
+        "bytes": 79512,
+        "mode": "baseline",
+        "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "publicSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "frozenRuntime": {
+          "path": "reports/watercycle-thermal-layer-inspector/baseline-tested-runtime.js",
+          "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+          "bytes": 3088929
+        },
+        "browserClosedAt": "2026-10-02T22:56:29.125Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-results.json",
+        "sha256": "53b6cf5382c6b9e4ae4215a4c09c3a69e40c8dd404d2e50a5c2e3d136e1a6fad",
+        "bytes": 329787,
+        "mode": "browser-preflight",
+        "sourceSha256": "129f53f2e028efd743ffcc205ea6d9b44c6c96a4f815f924b9020ab3ef78ae08",
+        "publicSha256": "129f53f2e028efd743ffcc205ea6d9b44c6c96a4f815f924b9020ab3ef78ae08",
+        "frozenRuntime": {
+          "path": "reports/watercycle-thermal-layer-inspector/browser-preflight-tested-runtime.js",
+          "sha256": "129f53f2e028efd743ffcc205ea6d9b44c6c96a4f815f924b9020ab3ef78ae08",
+          "bytes": 3119245
+        },
+        "browserClosedAt": "2026-10-02T23:07:20.112Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/browser-results.json",
+        "sha256": "6baad06ce0fe7218cdc3013cd33c32fa0522a62b9b68107bfcbc94151d20c366",
+        "bytes": 2156647,
+        "mode": "browser",
+        "sourceSha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+        "publicSha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+        "frozenRuntime": {
+          "path": "reports/watercycle-thermal-layer-inspector/browser-tested-runtime.js",
+          "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+          "bytes": 3119260
+        },
+        "browserClosedAt": "2026-10-02T23:14:30.779Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      }
+    ],
+    "recipeFilesAfter": [
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/tested-test-bundle.cjs",
+        "sha256": "06ed5d27cedc3a3382350ab51949c192ec87c11855b1dec9c95b36e54ddd6862",
+        "bytes": 12523,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\thermal-layer-test-bundle.cjs",
+        "executionSha256After": "06ed5d27cedc3a3382350ab51949c192ec87c11855b1dec9c95b36e54ddd6862"
+      },
+      {
+        "path": "reports/watercycle-thermal-layer-inspector/tested-read-audit.cjs",
+        "sha256": "4683769f3cff2558bd05ab286c4df0017d70897e59891e8d561c3429a4a05940",
+        "bytes": 1933,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\thermal-layer-read-audit.cjs",
+        "executionSha256After": "4683769f3cff2558bd05ab286c4df0017d70897e59891e8d561c3429a4a05940"
+      }
+    ]
+  }
+}

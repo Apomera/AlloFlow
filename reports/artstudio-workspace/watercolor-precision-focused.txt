@@ -1,0 +1,246 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/artstudio_watercolor_precision.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > retains brush-relative ordinary movement for a 8px brush without painting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > retains brush-relative ordinary movement for a 28px brush without painting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > retains brush-relative ordinary movement for a 80px brush without painting
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > moves exactly one simulation cell with Alt+ArrowLeft, including when Shift is held
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > moves exactly one simulation cell with Alt+ArrowRight, including when Shift is held
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > moves exactly one simulation cell with Alt+ArrowUp, including when Shift is held
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > moves exactly one simulation cell with Alt+ArrowDown, including when Shift is held
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > moves four ordinary steps with Shift and clamps precision movement to both sheet corners
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > reveals a keyboard-focused brush with only the needed scroll and never scrolls a parent or the page
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > leaves a visible keyboard brush in place and scrolls only the crossed axis by one precision cell
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > returns Home and End to reachable viewport edges and retains the sheet coordinate extremes
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > reveals the center of a brush that is wider than the viewport without oscillating on later dabs
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > reveals the keyboard location for a dab after the view has been panned away
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > keeps the keyboard-owned outline on pointer leave and restores it after a temporary hover
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > hides a hover-owned outline on pointer leave while the canvas is unfocused
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > clips cursor overflow to a separate screen layer while keeping the sheet and canvas focus ring unclipped
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > focuses a mouse painting gesture without jumping to the keyboard location or scrolling the sheet
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > focuses a pen painting gesture without jumping to the keyboard location or scrolling the sheet
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > focuses a touch painting gesture without jumping to the keyboard location or scrolling the sheet
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > ends a pointer stroke on Escape, preserves its single Undo entry, and ignores its late release
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > ends a pointer stroke before keyboard ArrowRight and ignores subsequent captured movement
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > ends a pointer stroke before keyboard Home and ignores subsequent captured movement
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > ends a pointer stroke before keyboard End and ignores subsequent captured movement
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > keeps pointer painting and a keyboard Enter dab as separate Undo operations
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > keeps pointer painting and a keyboard   dab as separate Undo operations
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > cancels a captured pointer stroke on blur and does not let a late release paint in another control
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > refreshes a keyboard-owned outline after state restoration without scrolling the viewport
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor precision keyboard painting > describes precision Paint and Pan keyboard behavior separately and exposes all implemented shortcuts
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor keyboard panning gesture ownership > leaves Alt navigation unconsumed in Pan and preserves the active pointer drag
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor keyboard panning gesture ownership > releases a captured drag before ArrowRight and ignores its late move
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor keyboard panning gesture ownership > releases a captured drag before Home and ignores its late move
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor keyboard panning gesture ownership > releases a captured drag before End and ignores its late move
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor keyboard panning gesture ownership > ends a Pan capture on Escape and allows a new pointer to begin the next drag
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor keyboard panning gesture ownership > ends a captured Pan on blur and leaves the viewport fixed when the old pointer moves again
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_precision.test.js > Watercolor keyboard panning gesture ownership > keeps Enter and Space from painting in Pan mode even during a captured drag
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_watercolor_precision.test.js (35 tests) 82922ms
+     ✓ retains brush-relative ordinary movement for a 8px brush without painting  5130ms
+     ✓ retains brush-relative ordinary movement for a 28px brush without painting  1342ms
+     ✓ retains brush-relative ordinary movement for a 80px brush without painting  1651ms
+     ✓ moves exactly one simulation cell with Alt+ArrowLeft, including when Shift is held  1362ms
+     ✓ moves exactly one simulation cell with Alt+ArrowRight, including when Shift is held  2124ms
+     ✓ moves exactly one simulation cell with Alt+ArrowUp, including when Shift is held  958ms
+     ✓ moves exactly one simulation cell with Alt+ArrowDown, including when Shift is held  1055ms
+     ✓ moves four ordinary steps with Shift and clamps precision movement to both sheet corners  1220ms
+     ✓ reveals a keyboard-focused brush with only the needed scroll and never scrolls a parent or the page  1040ms
+     ✓ leaves a visible keyboard brush in place and scrolls only the crossed axis by one precision cell  1000ms
+     ✓ returns Home and End to reachable viewport edges and retains the sheet coordinate extremes  1039ms
+     ✓ reveals the center of a brush that is wider than the viewport without oscillating on later dabs  1422ms
+     ✓ reveals the keyboard location for a dab after the view has been panned away  2844ms
+     ✓ keeps the keyboard-owned outline on pointer leave and restores it after a temporary hover  1585ms
+     ✓ hides a hover-owned outline on pointer leave while the canvas is unfocused  1071ms
+     ✓ clips cursor overflow to a separate screen layer while keeping the sheet and canvas focus ring unclipped  3453ms
+     ✓ focuses a mouse painting gesture without jumping to the keyboard location or scrolling the sheet  2744ms
+     ✓ focuses a pen painting gesture without jumping to the keyboard location or scrolling the sheet  4199ms
+     ✓ focuses a touch painting gesture without jumping to the keyboard location or scrolling the sheet  1403ms
+     ✓ ends a pointer stroke on Escape, preserves its single Undo entry, and ignores its late release  1698ms
+     ✓ ends a pointer stroke before keyboard ArrowRight and ignores subsequent captured movement  1648ms
+     ✓ ends a pointer stroke before keyboard Home and ignores subsequent captured movement  2569ms
+     ✓ ends a pointer stroke before keyboard End and ignores subsequent captured movement  2847ms
+     ✓ keeps pointer painting and a keyboard Enter dab as separate Undo operations  4438ms
+     ✓ keeps pointer painting and a keyboard   dab as separate Undo operations  5408ms
+     ✓ cancels a captured pointer stroke on blur and does not let a late release paint in another control  2932ms
+     ✓ refreshes a keyboard-owned outline after state restoration without scrolling the viewport  3213ms
+     ✓ describes precision Paint and Pan keyboard behavior separately and exposes all implemented shortcuts  3023ms
+     ✓ leaves Alt navigation unconsumed in Pan and preserves the active pointer drag  2948ms
+     ✓ releases a captured drag before ArrowRight and ignores its late move  2520ms
+     ✓ releases a captured drag before Home and ignores its late move  3920ms
+     ✓ releases a captured drag before End and ignores its late move  1890ms
+     ✓ ends a Pan capture on Escape and allows a new pointer to begin the next drag  1552ms
+     ✓ ends a captured Pan on blur and leaves the viewport fixed when the old pointer moves again  2149ms
+     ✓ keeps Enter and Space from painting in Pan mode even during a captured drag  3505ms
+stdout | tests/artstudio_watercolor_navigation.test.js
+[PureHelpers] 7 helpers registered
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > offers accessible Paint, Pan, zoom, and Fit controls without changing stored painting settings
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > zooms the sheet to 1.5× while retaining the fixed 1024 backing and simulation
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > zooms the sheet to 2× while retaining the fixed 1024 backing and simulation
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > zooms the sheet to 3× while retaining the fixed 1024 backing and simulation
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > pans with a mouse without depositing paint, draining brush loads, or adding history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > pans with a pen without depositing paint, draining brush loads, or adding history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > pans with a touch without depositing paint, draining brush loads, or adding history
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > keeps a pan owned by its original pointer and releases cancelled capture safely
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > pans by keyboard and prevents Enter or Space from making a dab in Pan mode
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > keeps identical sheet coordinates, brush footprint, and deposited parcels at different zoom levels
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > safely ends an active painting stroke when changing mode and ignores its late release
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > safely ends an active painting stroke when changing zoom and ignores its late release
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > safely ends an active painting stroke when changing fit and ignores its late release
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > resumes ordinary keyboard and pointer painting after leaving Pan
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > uses Fit to restore the whole sheet and scroll origin while retaining the chosen mode and paint
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > cancels navigation on clear or state restoration so a late move cannot scroll the new artwork
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stderr | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > cancels navigation on clear or state restoration so a late move cannot scroll the new artwork
+Warning: An update to App inside a test was not wrapped in act(...).
+
+When testing, code that causes React state updates should be wrapped into act(...):
+
+act(() => {
+  /* fire events that update state */
+});
+/* assert on the output */
+
+This ensures that you're testing the behavior the user would see in the browser. Learn more at https://reactjs.org/link/wrap-tests-with-act
+    at App (C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/artstudio_watercolor_navigation.test.js:106:62)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > switches to Paint when finger drawing or scrolling is explicitly chosen and keeps guidance accurate
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > resets view and gesture ownership for a restored study and for a new learner
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+stdout | tests/artstudio_watercolor_navigation.test.js > Watercolor paper navigation > keeps brush guides in sheet coordinates after the viewport has scrolled
+[StemLab] stem_tool_artstudio.js loaded — 1 tool (artStudio)
+
+ ✓ tests/artstudio_watercolor_navigation.test.js (19 tests) 46386ms
+     ✓ offers accessible Paint, Pan, zoom, and Fit controls without changing stored painting settings  19282ms
+     ✓ zooms the sheet to 1.5× while retaining the fixed 1024 backing and simulation  2501ms
+     ✓ zooms the sheet to 2× while retaining the fixed 1024 backing and simulation  1281ms
+     ✓ zooms the sheet to 3× while retaining the fixed 1024 backing and simulation  1678ms
+     ✓ pans with a mouse without depositing paint, draining brush loads, or adding history  731ms
+     ✓ pans with a pen without depositing paint, draining brush loads, or adding history  1468ms
+     ✓ pans with a touch without depositing paint, draining brush loads, or adding history  1247ms
+     ✓ keeps a pan owned by its original pointer and releases cancelled capture safely  1073ms
+     ✓ pans by keyboard and prevents Enter or Space from making a dab in Pan mode  1916ms
+     ✓ keeps identical sheet coordinates, brush footprint, and deposited parcels at different zoom levels  2418ms
+     ✓ safely ends an active painting stroke when changing mode and ignores its late release  2614ms
+     ✓ safely ends an active painting stroke when changing zoom and ignores its late release  1757ms
+     ✓ safely ends an active painting stroke when changing fit and ignores its late release  1785ms
+     ✓ resumes ordinary keyboard and pointer painting after leaving Pan  1288ms
+     ✓ uses Fit to restore the whole sheet and scroll origin while retaining the chosen mode and paint  1580ms
+     ✓ cancels navigation on clear or state restoration so a late move cannot scroll the new artwork  812ms
+     ✓ switches to Paint when finger drawing or scrolling is explicitly chosen and keeps guidance accurate  957ms
+     ✓ resets view and gesture ownership for a restored study and for a new learner  923ms
+     ✓ keeps brush guides in sheet coordinates after the viewport has scrolled  1042ms
+
+ Test Files  2 passed (2)
+      Tests  54 passed (54)
+   Start at  00:14:04
+   Duration  156.88s (transform 1.84s, setup 1.09s, import 2.13s, tests 129.31s, environment 19.12s)
+

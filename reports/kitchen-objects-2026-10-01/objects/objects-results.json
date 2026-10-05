@@ -1,0 +1,35 @@
+{
+  "checks": [
+    "Hover identifies the cloth from a different cooking mode; pickup lifts its folds and Escape restores the same finite cloth without a cooking action.",
+    "Unavailable object pickup explains the prerequisite while preserving tool, camera, time and evidence.",
+    "Explicit camera mode remains available for exploring the bench.",
+    "Object guide routes to measured pours, focused keyboard ladle and drying controls without recording cooking actions.",
+    "Direct phone pickup changes Prep to Ladle without moving the bench; dip, lift and carry stay previews and touch cancellation saves no water.",
+    "Real phone tip and release transfer exactly 50 mL from pot to jug and persist canonical state without persisting a held object.",
+    "Direct jug pickup keeps camera and canvas steady through completed 10 mL doses; level carry pours nothing, and levelling or release stops the flow.",
+    "Direct jug targeting follows the wide four-serving pan to its trivet and cancels a level carry without transferring water.",
+    "Direct cloth pickup requires sustained wet-area contact; completed blotting persists, and release restores the folded cloth and stops further absorption.",
+    "A saturated cloth can still be picked up; it absorbs no more water until held over the wringing bowl, which leaves produce dryness unchanged.",
+    "Blur and an external cooking action cancel cloth contact while completed work remains recorded.",
+    "Resizing interrupts a loaded ladle without committing its preview.",
+    "Objects view and guide fit phone screens with no horizontal overflow and pass accessibility checks in normal and forced colors.",
+    "Finished and replay kitchens keep object navigation available while cooking gestures and equivalent controls remain locked.",
+    "Graphics-context loss stops direct contact and leaves usable keyboard drying controls."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop object pickup",
+      "violations": []
+    },
+    {
+      "name": "390px object guide and hovered launcher",
+      "violations": []
+    },
+    {
+      "name": "320px forced colors",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

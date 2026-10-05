@@ -1,0 +1,14 @@
+const fs = require('node:fs');
+const sourceFile = 'stem_lab/stem_tool_atctower.js';
+const mirrorFile = 'desktop/web-app/public/stem_lab/stem_tool_atctower.js';
+fs.copyFileSync(sourceFile, mirrorFile);
+const registry = JSON.parse(fs.readFileSync('ui_strings.js', 'utf8'));
+const mirrorRegistryFile = 'desktop/web-app/public/ui_strings.js';
+const text = fs.readFileSync(mirrorRegistryFile, 'utf8');
+const start = text.indexOf('    "atctower": {') + '    "atctower": '.length;
+const end = text.indexOf(',\n    "autorepair":', start);
+if (start < 10 || end < start) throw new Error('Mirror namespace markers missing');
+const updated = text.slice(0, start) + JSON.stringify(registry.stem.atctower, null, 2).replace(/\n/g, '\n    ') + text.slice(end);
+JSON.parse(updated);
+if (updated !== text) fs.writeFileSync(mirrorRegistryFile, updated);
+console.log('ATC tool and English namespace synchronized; unrelated mirror content preserved.');

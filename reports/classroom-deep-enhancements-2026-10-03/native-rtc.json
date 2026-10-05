@@ -1,0 +1,30 @@
+{
+  "passed": true,
+  "resources": [
+    {
+      "code": "FIRST",
+      "id": "resource-FIRST",
+      "exactContent": true
+    },
+    {
+      "code": "SECOND",
+      "id": "resource-SECOND",
+      "exactContent": true
+    }
+  ],
+  "nativeChunks": 10,
+  "peerCount": 4,
+  "offerCorrelation": true,
+  "reconnect": true,
+  "staleCallbacksRejected": true,
+  "coalescedWake": true,
+  "studentMaxReceive": 1,
+  "teacherMaxReceive": 1,
+  "closedPeers": true,
+  "warnings": [],
+  "completedAt": "2026-10-04T03:23:29.830Z",
+  "sourceFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\AlloFlowANTI.txt",
+  "sourceSha256": "389c69b2189516849f3dbeeec8623be1f40567bf2543af6ff4186ed73263d019",
+  "pageErrors": [],
+  "scope": "Actual teacher/student effects, production ICE/drain/chunk/codec helpers and native Chromium peer connections; loopback mailbox/image boundary and received-resource recorder. Full app, remote mailbox, WAN/TURN and assistive technology outside scope."
+}

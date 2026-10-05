@@ -1,0 +1,82 @@
+{
+  "verifiedAt": "2026-10-02T11:09:25.842Z",
+  "sourceParses": 4,
+  "aliases": [
+    {
+      "pathname": "/maine-sld-practice",
+      "search": "",
+      "result": "maineSldPractice"
+    },
+    {
+      "pathname": "/app/",
+      "search": "?tool=maineSldPractice",
+      "result": "maineSldPractice"
+    },
+    {
+      "pathname": "/app/",
+      "search": "?tool=maine-sld-practice",
+      "result": "maineSldPractice"
+    },
+    {
+      "pathname": "/app/",
+      "search": "?tool=maine-sld-practice&case=jordan",
+      "result": "maineSldPractice"
+    },
+    {
+      "pathname": "/app/",
+      "search": "?tool=maineSldPractice&case=alex",
+      "result": "maineSldPractice"
+    }
+  ],
+  "redirectMirrorParity": true,
+  "redirect": {
+    "source": "/maine-sld-practice",
+    "destination": "/app/?tool=maineSldPractice",
+    "status": 302,
+    "manualOutsideGeneratedBlock": true
+  },
+  "cdnRouting": [
+    {
+      "file": "functions",
+      "present": false
+    },
+    {
+      "file": "_worker.js",
+      "present": false
+    },
+    {
+      "file": "_routes.json",
+      "present": false
+    },
+    {
+      "file": "desktop/web-app/public/functions",
+      "present": false
+    },
+    {
+      "file": "desktop/web-app/public/_worker.js",
+      "present": false
+    },
+    {
+      "file": "desktop/web-app/public/_routes.json",
+      "present": false
+    }
+  ],
+  "adminHubRuntimeHash": "9e9f9641a17436d9430bc901adecc580f40a92119a1f44f3db862762c4037097",
+  "modulePin": "94bb5197",
+  "hostHashes": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "2866c01a445f4fdb205ba6f3bd100ca3bccba2404cab6146e46de33a5e0728a8"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "2866c01a445f4fdb205ba6f3bd100ca3bccba2404cab6146e46de33a5e0728a8"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "2866c01a445f4fdb205ba6f3bd100ca3bccba2404cab6146e46de33a5e0728a8"
+    }
+  ],
+  "gateLoadedViewHasNoWrapper": true,
+  "scope": "Resume changed only final Maine module URL pin in three hosts; all other current bytes preserved by immediate before/reverse-pin guard. Initial Oct1 baseline is separate historical evidence; later concurrent edits outside owned regions are not overwritten."
+}

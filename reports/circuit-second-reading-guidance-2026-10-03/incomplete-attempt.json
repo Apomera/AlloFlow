@@ -1,0 +1,45 @@
+{
+  "status": "outcome-unknown",
+  "verifiedAssertions": 0,
+  "archive": {
+    "path": "incomplete-attempt",
+    "files": [
+      {
+        "path": "incomplete-attempt/circuit_active_notebook_continuity.test.js",
+        "sha256": "958b845a0abdeaad21da46e84593f2fdc8c557a690df2f4f9104134e03b2e127"
+      },
+      {
+        "path": "incomplete-attempt/circuit_active_observation_comparison.test.js",
+        "sha256": "852d6276a2d0756bfaffe4d9132d1d88ef70778f48f4686db2eb2fa667ed64be"
+      },
+      {
+        "path": "incomplete-attempt/circuit_evidence_writing.test.js",
+        "sha256": "38483ee8769526dbd62ec6efb51be19abd0f50abba5f08d7ae99903fc1b52792"
+      },
+      {
+        "path": "incomplete-attempt/circuit_observation_summary.test.js",
+        "sha256": "fd6a00a93179967eae057f42135ad5640d9e62b6dafd95567063e5fc25fd4302"
+      },
+      {
+        "path": "incomplete-attempt/circuit_second_reading_guidance.test.js",
+        "sha256": "3a30126457c4f4a281cf1e8b65b64fc889cf39af9df1d19d3886873370ed5556"
+      },
+      {
+        "path": "incomplete-attempt/diagnosis.json",
+        "sha256": "eeb8fbc6ffd316db1b1a8fea99ac14390a6780f1f722768743e8daadeacedd03"
+      },
+      {
+        "path": "incomplete-attempt/regression-start.json",
+        "sha256": "e79d6f7dc956a420ba2c08c92e7bd8db74307fb8364e7fd366af02581a14183b"
+      },
+      {
+        "path": "incomplete-attempt/run-regression.cjs",
+        "sha256": "00313fd10ba8cd766cdab8f858e692a0dfa5957465e3e71e3770c577cd0c02cf"
+      }
+    ]
+  },
+  "sourceSha256": "35d953d4e3fb4fb508fce0435a9d8c1df174fdd5653c0111b53c3e789d24247b",
+  "runnerSha256": "00313fd10ba8cd766cdab8f858e692a0dfa5957465e3e71e3770c577cd0c02cf",
+  "testSha256": "3a30126457c4f4a281cf1e8b65b64fc889cf39af9df1d19d3886873370ed5556",
+  "freshRun": "Same frozen source, tests, runner and flags; previous coverage not counted."
+}

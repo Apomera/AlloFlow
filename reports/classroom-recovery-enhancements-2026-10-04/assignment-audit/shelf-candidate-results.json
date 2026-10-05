@@ -1,0 +1,50 @@
+{
+  "sourceFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\assignment-audit\\candidate\\AlloFlowANTI.txt",
+  "handlersFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\assignment-audit\\candidate\\host_handlers_source.jsx",
+  "sourceSha256": "722335ea96a146e5e23943bc9d5b74ba97d064599c4a82938dccf604c7c65d50",
+  "handlersSha256": "7862a63849b8f51942136388c40f6ab0df3388de98850ca08eca4faf6a80f207",
+  "completedAt": "2026-10-04T14:32:43.303Z",
+  "actualHandler": true,
+  "actualQrEffect": true,
+  "actualInvalidate": true,
+  "actualPendingSetter": true,
+  "passed": true,
+  "cases": [
+    {
+      "name": "valid shelf retains exact array and selects Directions first",
+      "passed": true
+    },
+    {
+      "name": "valid shelf without Directions selects first saved resource",
+      "passed": true
+    },
+    {
+      "name": "accepted shelf retires pending, project and file owners before replacement",
+      "passed": true
+    },
+    {
+      "name": "accepted shelf retires pending opener before first role setter",
+      "passed": true
+    },
+    {
+      "name": "shelf opened during earlier QR decode retains accepted shelf after completion",
+      "passed": true
+    },
+    {
+      "name": "shelf opened during earlier QR decode suppresses stale failure feedback",
+      "passed": true
+    },
+    {
+      "name": "missing shelf preserves current workspace and owners",
+      "passed": true
+    },
+    {
+      "name": "malformed resources shelf preserves current workspace and owners",
+      "passed": true
+    },
+    {
+      "name": "empty shelf preserves current workspace and owners",
+      "passed": true
+    }
+  ]
+}

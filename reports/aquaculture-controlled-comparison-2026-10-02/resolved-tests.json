@@ -1,0 +1,20 @@
+{
+  "status": "passed",
+  "uniqueTests": 168,
+  "passed": 168,
+  "failed": 0,
+  "files": 14,
+  "sourceSha256": "832aa4d4f8a1dcebc75c99d4fd1960b23ac697b651aab8e735045de4496446cd",
+  "fullRunPassed": true,
+  "reports": [
+    "focused-tests.json"
+  ],
+  "recoveredCases": [],
+  "unresolved": [],
+  "rawFull": {
+    "passed": 168,
+    "failed": 0,
+    "pending": 0
+  },
+  "note": "Unique-case accounting from the complete native Vitest result; this summary is not a replacement Vitest report."
+}

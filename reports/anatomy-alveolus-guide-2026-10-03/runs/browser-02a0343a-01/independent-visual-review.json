@@ -1,0 +1,108 @@
+{
+  "mirrorsEqual": true,
+  "reviewer": "/root/alveolus_visual_review",
+  "defects": [],
+  "limitations": [
+    "This review covers the six captured guide states, not every Anatomy tool screen.",
+    "The phone layout is long because all steps, illustrations, keys, and explanations remain readable; it has no observed excessive blank diagram space."
+  ],
+  "captures": [
+    {
+      "sha256": "edc54c92e05b43ec5b6ae46798cc2322b8d559a53b8ea3059747c24e6455d61b",
+      "view": "desktop light",
+      "defects": [],
+      "observations": [
+        "Two figures and readable structure keys clearly separate overview from air-blood barrier.",
+        "Overview marker 3 points to the left vessel segment, separately from the red blood cells.",
+        "Step 2 keyboard focus is visibly distinct from selected step 1.",
+        "Barrier leaders align with the air, surfactant, epithelium, interstitium, endothelium, and red blood cell."
+      ],
+      "file": "desktop-light-alveolus-guide.png",
+      "reviewedAtOriginalDetail": true
+    },
+    {
+      "sha256": "4b2578d074ddc5fbf2652ff58721ad8b0e6cfaa5441e77ffee87a4541e449866",
+      "view": "320px phone light",
+      "defects": [],
+      "observations": [
+        "Heading, helper, controls, and long key labels wrap inside their cards.",
+        "Numbered markers remain readable, and the Current step badge wraps onto its own line where needed.",
+        "Illustrations retain enough space to read the gas arrows and leader endpoints.",
+        "The capillary endpoint is separate from the first red blood cell."
+      ],
+      "file": "phone-light-alveolus-guide.png",
+      "reviewedAtOriginalDetail": true
+    },
+    {
+      "sha256": "f3a513b7da3e9f6fd63e54bd5a64fd4687b4e139f8445438af68cc9940dddefd",
+      "view": "320px phone dark",
+      "defects": [],
+      "observations": [
+        "Headings, narrative, keys, status, and handoff are visibly legible.",
+        "The pale illustration surface keeps the thin layers and leader lines clear.",
+        "Focus rings and current step borders remain distinct.",
+        "No clipped text or unnecessary empty diagram area is visible."
+      ],
+      "file": "phone-dark-alveolus-guide.png",
+      "reviewedAtOriginalDetail": true
+    },
+    {
+      "sha256": "205c0bd4e5f6bec335774186151fc82d3152cd6a4160588ebbb1bd77556ba83f",
+      "view": "320px phone Arabic dark larger text with clinical step 2",
+      "defects": [],
+      "observations": [
+        "The formerly overflowing focus heading now wraps onto two lines inside the step detail card.",
+        "RTL labels, key badges, clinical narrative, and handoff remain inside the guide width.",
+        "Diagram direction remains stable and the red oxygen arrow crosses the layered barrier toward the blood cell.",
+        "Long Arabic structure keys wrap without crossing borders or overlapping badges."
+      ],
+      "file": "phone-arabic-dark-larger-alveolus-guide.png",
+      "reviewedAtOriginalDetail": true
+    },
+    {
+      "sha256": "472c3a19bf45166bb981cc6443580c2f262ac97b4308ea58130c679b66eb842f",
+      "view": "320px phone forced colors",
+      "defects": [],
+      "observations": [
+        "Controls, card boundaries, structure keys, and body text remain visible in forced colors.",
+        "Selected step and current structure keys use clear outlines; the keyboard focus ring is distinct.",
+        "Numbered markers retain contrast against the pale diagram surface.",
+        "The visual gas key retains letter symbols and written labels when color is overridden."
+      ],
+      "file": "phone-forced-colors-alveolus-guide.png",
+      "reviewedAtOriginalDetail": true
+    },
+    {
+      "sha256": "a206e07187a4d45e7ddf42448579d86f6f9bf20e331cde41fec9c09d99ec3a10",
+      "view": "desktop clinical step 2",
+      "defects": [],
+      "observations": [
+        "The red oxygen arrow runs from alveolar air across the barrier toward the red blood cell.",
+        "The blue carbon dioxide arrow points in the opposite direction.",
+        "The purple edema overlay is visible between epithelial and endothelial layers, with readable explanation below.",
+        "Current badges identify the capillary and barrier structures.",
+        "The corrected capillary leader points to the vessel segment separately from a blood cell."
+      ],
+      "file": "desktop-alveolus-clinical-step-2.png",
+      "reviewedAtOriginalDetail": true
+    }
+  ],
+  "resolvedDiagnosticIssues": [
+    {
+      "id": "capillary-leader-target",
+      "verification": "All final overview captures show marker 3 landing on the left pulmonary capillary segment instead of the first red blood cell."
+    },
+    {
+      "id": "arabic-focus-heading-overflow",
+      "verification": "The Arabic larger-text focus heading wraps onto two lines within its card, with no visible clipping or overlap."
+    }
+  ],
+  "scope": "Independent static visual review of six captured guide states and read-only source geometry. Numeric contrast and accessibility scan results are maintained in the separate browser validation report.",
+  "reviewedAtUtc": "2026-10-03T16:36:57.7155240Z",
+  "sourcePin": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+  "reviewedCaptureCount": 6,
+  "runtimeSha256": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+  "status": "passed",
+  "mirrorSha256": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+  "baselineComparison": "The prior phone atlas used tiny words inside one shrunken diagram. The final guide separates the overview and barrier, moves labels into readable HTML keys, and gives the current process a clear narrative and navigation."
+}

@@ -1,0 +1,12 @@
+{
+  "pass": true,
+  "files": [
+    "recipe_lab.html",
+    "recipe_lab.js",
+    "recipe_lab_scene.js",
+    "recipe_lab_workspace.css",
+    "recipe_lab_object_tools.js",
+    "recipe_lab_tool_rack.js"
+  ],
+  "cache": "no-store"
+}

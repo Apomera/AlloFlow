@@ -41,6 +41,12 @@ function expectedKeys() {
   for (const match of atlas.matchAll(/\{ id: '([^']+)'/g)) for (const field of ['name', 'tag', 'what', 'tells', 'limit', 'question', 'diagram', 'source']) need.add('stem.dinolab.atlas_' + match[1] + '_' + field);
   for (const match of SRC.matchAll(/\b(?:bt|et)\('([^']+)',/g)) need.add('stem.dinolab.bench_' + match[1]);
   for (const match of SRC.matchAll(/\bdt\('([^']+)',/g)) need.add('stem.dinolab.dig_' + match[1]);
+  for (const match of SRC.matchAll(/\b(?:st|dst)\('([^']+)',/g)) need.add('stem.dinolab.section_' + match[1]);
+  for (const match of SRC.matchAll(/\bpt\('([^']+)',/g)) need.add('stem.dinolab.plan_' + match[1]);
+  for (const match of SRC.matchAll(/\bspt\('([^']+)',/g)) need.add('stem.dinolab.spatial_' + match[1]);
+  for (const match of SRC.matchAll(/\b(?:ft|dft)\('([^']+)',/g)) need.add('stem.dinolab.find_' + match[1]);
+  for (const match of SRC.matchAll(/\bstt\('([^']+)',/g)) need.add('stem.dinolab.stroke_' + match[1]);
+  for (const match of SRC.matchAll(/\bsvt\('([^']+)',/g)) need.add('stem.dinolab.survey_' + match[1]);
   for (const match of SRC.matchAll(/\bclueLabel\('([^']+)',/g)) need.add('stem.dinolab.dig_clue_' + match[1]);
   for (const key of ['nav_discover', 'nav_investigate', 'nav_explain', 'nav_practice']) need.add('stem.dinolab.' + key);
   for (const p of bodyParts()) {

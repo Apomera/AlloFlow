@@ -1,0 +1,115 @@
+{
+  "label": "current",
+  "scope": "Complete source and generated factories with mocked DOM/URL and native Node Blob; candidate is one exact in-memory getter qualification, no production writes",
+  "inputs": {
+    "source": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\host_handlers_source.jsx",
+      "sha256": "24643cd4ecc40fd7e12377ae315559433b2999b78b3da13dc14ff8d4f5c5bdef"
+    },
+    "runtime": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\host_handlers_module.js",
+      "sha256": "1518acf28ff055e3bd5abbd3849b472d1f42075ee7b20a0766f1064c603b719d"
+    }
+  },
+  "total": 24,
+  "passed": 24,
+  "failed": 0,
+  "checks": [
+    {
+      "name": "source success resolves controller through host getter",
+      "passed": true
+    },
+    {
+      "name": "source success invokes actual export method",
+      "passed": true
+    },
+    {
+      "name": "source success emits no error",
+      "passed": true
+    },
+    {
+      "name": "source success downloads encrypted JSON once",
+      "passed": true
+    },
+    {
+      "name": "source success preserves encrypted backup payload",
+      "passed": true
+    },
+    {
+      "name": "source success uses dated JSON filename",
+      "passed": true
+    },
+    {
+      "name": "source success schedules object URL cleanup",
+      "passed": true
+    },
+    {
+      "name": "source success revokes generated URL",
+      "passed": true
+    },
+    {
+      "name": "source failure resolves controller through host getter",
+      "passed": true
+    },
+    {
+      "name": "source failure invokes actual export method",
+      "passed": true
+    },
+    {
+      "name": "source failure surfaces controller failure",
+      "passed": true
+    },
+    {
+      "name": "source failure emits no download",
+      "passed": true
+    },
+    {
+      "name": "runtime success resolves controller through host getter",
+      "passed": true
+    },
+    {
+      "name": "runtime success invokes actual export method",
+      "passed": true
+    },
+    {
+      "name": "runtime success emits no error",
+      "passed": true
+    },
+    {
+      "name": "runtime success downloads encrypted JSON once",
+      "passed": true
+    },
+    {
+      "name": "runtime success preserves encrypted backup payload",
+      "passed": true
+    },
+    {
+      "name": "runtime success uses dated JSON filename",
+      "passed": true
+    },
+    {
+      "name": "runtime success schedules object URL cleanup",
+      "passed": true
+    },
+    {
+      "name": "runtime success revokes generated URL",
+      "passed": true
+    },
+    {
+      "name": "runtime failure resolves controller through host getter",
+      "passed": true
+    },
+    {
+      "name": "runtime failure invokes actual export method",
+      "passed": true
+    },
+    {
+      "name": "runtime failure surfaces controller failure",
+      "passed": true
+    },
+    {
+      "name": "runtime failure emits no download",
+      "passed": true
+    }
+  ]
+}

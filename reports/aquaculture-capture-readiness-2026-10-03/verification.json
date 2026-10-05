@@ -1,0 +1,40 @@
+{
+  "completedAt": "2026-10-03T18:16:48.413Z",
+  "baselineSha256": "59726a88cbff85b7406c026a60c28344f8cdbb43541fc55655f508e21b8b88d6",
+  "runtimeSha256": "47ca92dc6c22f2edce1e45abd7ef8af6d756a3e5e6d69097a525a362b69a1615",
+  "sourcePublicExactLF": true,
+  "modelVersion": "2026.10-stock-feedback",
+  "modelAndMeasurementConstructionUnchanged": true,
+  "modelSectionSha256": "6a50337dd8dff672518756a0246156e79f84cf19327639f25f0525c27a7bad2a",
+  "tests": {
+    "distinctPassed": 223,
+    "files": 17,
+    "regressionPassed": 203,
+    "newPassed": 20,
+    "nativeResults": [
+      "regression-tests.json",
+      "new-tests.json"
+    ],
+    "oneWorker": true,
+    "defaultTimeoutMs": 30000,
+    "automaticRetries": 0
+  },
+  "browser": {
+    "groups": 6,
+    "axeScans": 22,
+    "violations": 0,
+    "incompleteScans": 15,
+    "manualReview": {
+      "rootAccepted": true,
+      "independentSourceAndVisualReviewAccepted": true,
+      "normalAndForcedColorPreviews": true
+    },
+    "scope": "Changed annual/monthly previews and matching live notebook heading; not the complete app"
+  },
+  "git": {
+    "ownScopeStaged": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false
+  }
+}

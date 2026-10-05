@@ -1,0 +1,13 @@
+{
+  "processId": 50876,
+  "sourceSha256": "42eae634d0027b819ac0e5368801447780290c3d70e5da15aa402ff84d94314c",
+  "stage": "browser and server closed",
+  "checks": 28,
+  "failed": 0,
+  "captures": 1,
+  "actions": 4,
+  "audits": 1,
+  "completed": true,
+  "browserClosed": true,
+  "serverClosed": true
+}

@@ -1,0 +1,15 @@
+PASS Shared crossing sequence, readable gaps, timeline alignment, and responsive geometry at 1440px
+PASS Shared crossing sequence, readable gaps, timeline alignment, and responsive geometry at 390px
+PASS Shared crossing sequence, readable gaps, timeline alignment, and responsive geometry at 320px
+PASS Distance and speed determine the initial order, and hold/release moves the same aircraft between estimated and pending lists
+PASS Unassigned and recovering arrivals explain the missing estimate and rejoin the board after real instructions
+PASS Independent parallel runways have separate orders and share the same timeline scale
+PASS Keyboard inspection moves focus to the correct controls without changing time or instructions
+PASS Estimated and pending arrival controls lock together while an instruction draft preserves its recipient
+PASS Real speed changes update estimated order without treating a pending speed target as achieved or forcing priority first
+PASS Occupancy bands and inside-window warnings use flight minutes in a labeled paused presentation fixture
+PASS Arrival selection stays locked during a labeled math-challenge fixture
+PASS Twelve actual guided aircraft remain reachable in the pending list without horizontal overflow
+PASS Arrival controls keep visible boundaries and readable high-contrast states
+PASS Forced colors at 200 percent zoom preserve timeline markers, pending reasons, and keyboard inspection
+{"passed":14,"failed":0,"errors":[],"sourceStable":true}

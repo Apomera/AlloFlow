@@ -1,0 +1,61 @@
+{
+  "sourceSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "baselineSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "syntaxPassed": true,
+  "runtimeMirrorsIdentical": true,
+  "onlyKneeRendererAndScopedCssChanged": true,
+  "authoredAtlasData": {
+    "characters": 309592,
+    "sha256": "a54731f78e7c82243e53fe231eae3548233ab62d66c27a81493251c4f1394b87",
+    "unchanged": true
+  },
+  "originalGeometry": {
+    "literalPaths": 19,
+    "preserved": 19,
+    "routes": 4,
+    "clinicalPaths": 2
+  },
+  "originalNarrativesUnchanged": 10,
+  "originalMechanismCaptionsRetainedInHtml": 4,
+  "catalogs": [
+    {
+      "path": "ui_strings.js",
+      "sha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+      "mirrorSha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+      "fullFilesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 70,
+      "kneeLabelsIdentical": true
+    },
+    {
+      "path": "lang/french.js",
+      "sha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "mirrorSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "fullFilesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 70,
+      "kneeLabelsIdentical": true
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "sha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "mirrorSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "fullFilesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 70,
+      "kneeLabelsIdentical": true
+    },
+    {
+      "path": "lang/arabic.js",
+      "sha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "mirrorSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "fullFilesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 70,
+      "kneeLabelsIdentical": true
+    }
+  ],
+  "englishKeys": 70,
+  "nativeTranslations": 210,
+  "registeredCatalogValues": 560
+}

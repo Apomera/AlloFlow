@@ -1,0 +1,151 @@
+{
+  "date": "2026-10-01",
+  "result": "passed",
+  "baseFirstResponse": "6fda66cb561acd0be602e299da80231e8c19d93c",
+  "unitTests": {
+    "passed": 239,
+    "counting": "Distinct tests passed across the full run and focused geometry recheck",
+    "files": 3,
+    "suites": {
+      "firstresponse_depth_explorer": 106,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    },
+    "fullRun": {
+      "passed": 233,
+      "timedOut": 6,
+      "total": 239,
+      "seconds": 1137.89,
+      "timeoutMs": 60000,
+      "issue": "Six geometry cases exceeded the timeout during a slow host run; no assertion failures"
+    },
+    "correctedGeometryRun": {
+      "passed": 12,
+      "skipped": 94,
+      "seconds": 44.5,
+      "timeoutMs": 120000,
+      "overlapWithFullRun": 6,
+      "coverage": "All six timed-out cases and six overlapping geometry cases",
+      "assertionsChanged": false
+    }
+  },
+  "browserTests": {
+    "distinctScenariosPassed": 27,
+    "counting": "26 passed in the full run plus the corrected CPR coach case",
+    "fullRun": {
+      "passed": 26,
+      "failed": 1,
+      "total": 27,
+      "summary": "26 passed (26.9m)",
+      "issue": "The test sent catch-up compression taps after host delays; the coach correctly ignored taps that were too close together"
+    },
+    "correctedCoachRun": {
+      "passed": 1,
+      "summary": "1 passed (1.2m)",
+      "fix": "Schedule each simulated compression from the previous tap to prevent bursts",
+      "assertionsPreserved": [
+        "30 compressions",
+        "two breaths",
+        "resume compressions",
+        "100–120 median BPM",
+        "single WebGL canvas",
+        "persisted session"
+      ]
+    },
+    "retries": 0,
+    "renderer": "Chromium WebGL with ANGLE SwiftShader",
+    "bodyRegressionScenarios": 8,
+    "chestInspectionScenarios": 5,
+    "legAndPoseReviewScenarios": 4,
+    "manikinAndArmGuideScenarios": 7,
+    "markerVisualScenarios": 3
+  },
+  "guidance": {
+    "source": "https://www.sja.org.uk/first-aid-advice/recovery-position/",
+    "checked": "2026-10-01",
+    "scope": "Existing near-arm cue: elbow bent and palm upwards"
+  },
+  "coverage": [
+    "Curve follows the actual elbow angle and arrow follows the rendered palm normal at all ages and recovery phases 2, 5 and 8",
+    "Guide visibility follows activity, reviewed pose and saved preference without changing mannequin landmarks or completion",
+    "Visible guide mesh bounds and palm-arrow stem length greater than eight CSS pixels",
+    "Single canvas preserved while toggling guides and reviewing poses",
+    "Phone keyboard input, text spacing, fallback text key, forced colors, app contrast and accessibility",
+    "Existing arm lengths, near palm orientation, cheek contact, whole-body framing, legs, chest, CPR, AED and canvas lifecycle"
+  ],
+  "screenshots": {
+    "captured": 14,
+    "reviewed": 14,
+    "reviewedFiles": [
+      "adult-guides-2.png",
+      "adult-guides-5.png",
+      "adult-guides-8.png",
+      "child-guides-2.png",
+      "child-guides-5.png",
+      "child-guides-8.png",
+      "infant-guides-2.png",
+      "infant-guides-5.png",
+      "infant-guides-8.png",
+      "phone-guides-8.png",
+      "phone-guide-key.png",
+      "phone-guides-2.png",
+      "forced-colors-guide-key.png",
+      "contrast-phone-guides.png"
+    ],
+    "reviewedHashes": {
+      "adult-guides-2.png": "a44ceea011b37997b79c68c6c73ebb9bd6993c52d12b0e343f02e8e687bb927a",
+      "adult-guides-5.png": "d34bd3ac0800852bdd4ac525721e582e108df31d768c8ebd99881ed6ca24a4d1",
+      "adult-guides-8.png": "39e2b58ef037dad31defa44a90c3b150ea2b644d1b4567e0a831f2d7335e417f",
+      "child-guides-2.png": "2b2f7b773c2e7f17ad09f05f1f98f462200ed7ff28f2fd0f7975477adab016a2",
+      "child-guides-5.png": "6d20ba56a6256036e95f6d2c72ec4edc3ee1e52528d8d0bcaa9cfda0cf772b65",
+      "child-guides-8.png": "2233838cfb629101722bc2e8921e69aaa6fa84fd513f4be8e981d321e8901c2e",
+      "infant-guides-2.png": "6a0622d1b500afdc70aa15e56c6a59603e65a8d3c11fbba464bca3628e471f91",
+      "infant-guides-5.png": "ecb0f0c4d512796003988d87aaf86e5f758c5533d407d5ab0f2eb7de9aa10c93",
+      "infant-guides-8.png": "01e482689727c66273655e4b703a4f303865af6207bd4fa3262b709e43674df1",
+      "phone-guides-8.png": "df3fffb4aa2d54c45d8eb6e14825a9277e778fa4d69a66e82e5ce2a762183284",
+      "phone-guide-key.png": "42316b9f1ba71dde3850c5604c0eb3f86bd20965b8f1b066139941907ddd3d08",
+      "phone-guides-2.png": "3d6d70aba8d9e61dbedafa3535c7f01b54dd135a6e0544c22e17b54000d8e511",
+      "forced-colors-guide-key.png": "7141b26f8f1919ff1f13cde1dbc4531b0cda154ccc07df3eea7c204f5e486f24",
+      "contrast-phone-guides.png": "1de677df37c864e63d74b84bac5a3e0eb9bfa4650e96db5a46fc024089a1969f"
+    },
+    "note": "All final root captures visually reviewed; earlier arm-posture report retains 16 reviewed captures"
+  },
+  "synchronization": {
+    "moduleCopies": "identical",
+    "firstResponseCatalogs": "identical",
+    "newGuideStrings": 3,
+    "previousArmPostureStrings": 2,
+    "scopedCatalogKeys": {
+      "ui_strings.js": [
+        "recovery_arm_cue",
+        "recovery_arm_source",
+        "recovery_guides_elbow",
+        "recovery_guides_palm",
+        "recovery_guides_toggle"
+      ],
+      "desktop/web-app/public/ui_strings.js": [
+        "recovery_arm_cue",
+        "recovery_arm_source",
+        "recovery_guides_elbow",
+        "recovery_guides_palm",
+        "recovery_guides_toggle"
+      ]
+    }
+  },
+  "commitBranch": "codex/firstresponse-arm-guides",
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "f2217a9fbee1007d06c0170173a0a79f955cb1c67cd28301a7b00daaa3f3ada9",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "f2217a9fbee1007d06c0170173a0a79f955cb1c67cd28301a7b00daaa3f3ada9",
+    "stem_lab/stem_lab_module.js": "91c8476ab5b59cc185b7be75d506040c9b8e0645b22dbaa4719bfb225f1fa933",
+    "tests/firstresponse_depth_explorer.test.js": "06a8922157c1b4a9ea0f73f09d20cb3ea558001ed294ec76a91f5ef151392216",
+    "tests/firstresponse_body_3d.test.js": "fb90737f362657b15e303ce946bda19f84ef9c1a02ac4f57fb6a1338cc403111",
+    "tests/stem_firstresponse_hook_order.test.js": "50bac19e05d1cb634cdbe7e1ef3927ff730bb9838be311cf01feb2bd58373dc0",
+    "tests/e2e/24-firstresponse-body-gl.spec.ts": "feaac0f722726b152d113363fd916ca4ee5a5058286c262c8ec4cedb0886ec9e",
+    "tests/e2e/firstresponse-chest-inspection.spec.ts": "f0aad415cfb363cc266ddd2472c44c28605053cf9233c4794cf5ab092b53f9e3",
+    "tests/e2e/firstresponse-visual-markers.spec.ts": "0e6c5cd0af3073565927ed5521c59559f38c8f960cf21865a5afaa13a407d603",
+    "tests/e2e/firstresponse-manikin-realism.spec.ts": "e9848934508bc6258522b10f271521029b16dd9425ad5de50fc2a1baab38f8e7",
+    "tests/e2e/firstresponse-leg-inspection.spec.ts": "f4a257ed97d571e7bb40b5e31e2dafa2d0a848c06dd54601d5bddcc7fb2b4355",
+    "reports/firstresponse-arm-guides/playwright.config.ts": "5e7821caf96cc1cb367b100e6e5e4c8fbeb043b9b2f183b0d90b6381f7f48510",
+    "reports/firstresponse-depth-comparison/playwright-software.config.ts": "a3ab365e61b809e8d1cde1c47de6d88940be0d902aafc70d56dce7a3bffe01ec"
+  }
+}

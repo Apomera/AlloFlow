@@ -1,0 +1,301 @@
+{
+  "checkedOn": "2026-10-01",
+  "enhancement": "Interactive tidal-forcing explorer in Sky Lab Moon",
+  "changes": [
+    "Linked Earth-Moon-Sun geometry and a 48-hour contribution chart.",
+    "Starting phase and NASA mean lunar distance presets, Moon-only comparison and reset.",
+    "Keyboard, touch and graph time selection with live alignment feedback.",
+    "Published NASA/JPL inputs, NOAA local tide link and explicit model limitations.",
+    "Corrected the existing claim that all coasts have two highs every day.",
+    "Moon GPU drawing pauses when its canvas is hidden or outside the viewport."
+  ],
+  "scope": {
+    "sourceSha256": "41cec14e60d43ce0c9f11e9279605e666342b2ef08123020b39164fbdb5ebb31",
+    "baselineSha256": "184b508f7e68d00464a03ba211065d0afa0844ecf34e872063b4c5b825d00404",
+    "sourceMatchesMirror": true,
+    "scopeReconstructsBaseline": true,
+    "syntaxValid": true,
+    "ownedEnglishLabels": 68,
+    "unrelatedAstronomyLabelsPreserved": true,
+    "existingTableTestsPreserved": true,
+    "committed": false
+  },
+  "data": {
+    "checkedOn": "2026-10-01",
+    "inputs": {
+      "moonGMKm3s2": 4902.800118,
+      "sunGMPublishedM3s2": "1.32712440041279419e20",
+      "sunGMKm3s2": 132712440041.27942,
+      "meanMoonDistanceKm": 384400,
+      "meanPerigeeKm": 363300,
+      "meanApogeeKm": 405500,
+      "sunDistanceKm": 149597870.7,
+      "synodicDays": 29.53059,
+      "solarDayHours": 24
+    },
+    "inputNotes": {
+      "gravitationalParameters": "JPL DE440; SI solar GM divided by 1e9 for km^3/s^2.",
+      "lunarDistances": "NASA named mean perigee and mean apogee, not the full range of observed lunar distances.",
+      "synodicPeriod": "Adopted Sky Lab mean 29.53059 d; NASA Moon Fact Sheet rounds this to 29.53 d."
+    },
+    "equations": {
+      "moonStrength": "(384400 / d_km)^3",
+      "sunStrength": "(GM_sun / GM_moon) * (384400 / AU_km)^3",
+      "moonSunAngle": "2*pi*(phaseStart + hours/(29.53059*24))",
+      "observerAngle": "2*pi*hours/24",
+      "q": "M*cos(2*(observerAngle-moonSunAngle)) + S*cos(2*observerAngle)",
+      "amplitude": "hypot(M*cos(2*moonSunAngle)+S,M*sin(2*moonSunAngle))"
+    },
+    "normalization": "Varying equatorial quadrupole term, relative to the lunar term at its reference mean distance; q is not local water level.",
+    "assumptions": [
+      "Coplanar, equatorial leading tidal term.",
+      "Constant mean lunar and solar rates.",
+      "Earth-Moon distance fixed during each 48-hour experiment; Sun at 1 AU.",
+      "Inclination, eccentricity, ocean dynamics, coast shape, bathymetry, friction, lag, weather and uncertainty omitted.",
+      "Body sizes, orbit spacing and bulges exaggerated in the diagram."
+    ],
+    "snapshots": [
+      {
+        "file": "jpl-parameters.html",
+        "url": "https://ssd.jpl.nasa.gov/astro_par.html",
+        "status": 200,
+        "checkedOn": "2026-10-01",
+        "normalizedSha256": "168f48b94ae3a65f31c96f081d08e7ca91ecc9e65678fdc57353821b492b313e"
+      },
+      {
+        "file": "nasa-moon-facts.html",
+        "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+        "status": 200,
+        "checkedOn": "2026-10-01",
+        "normalizedSha256": "a468979dfb4179e36a3f6579cd2d1d4a475b5c6da29313fd470fa68ca1aa30c1"
+      },
+      {
+        "file": "noaa-spring-neap.html",
+        "url": "https://oceanservice.noaa.gov/facts/springtide.html",
+        "status": 200,
+        "checkedOn": "2026-10-01",
+        "normalizedSha256": "abd6b7c4bbcfd74c03e4f5bac9247aca211fdfb9f1847ca3d83da0d6e0b46a74"
+      },
+      {
+        "file": "noaa-coastal-patterns.html",
+        "url": "https://oceanservice.noaa.gov/education/tutorial_tides/tides07_cycles.html",
+        "status": 200,
+        "checkedOn": "2026-10-01",
+        "normalizedSha256": "eb761ae8c05637536f2cf372b3e59b8494b4ac0126534b080d32988dc891506e"
+      }
+    ],
+    "localObservationsLink": "https://tidesandcurrents.noaa.gov/map/",
+    "runtimeNetworkRequestsRequired": false,
+    "display": {
+      "solarGM": "1.3271244 × 10¹¹ km³/s²",
+      "solarGMConversion": "Published SI solar GM divided by 1e9; display mantissa rounded to eight significant figures.",
+      "modelSolarGMKm3s2": 132712440041.27942,
+      "modelInputsChanged": false
+    }
+  },
+  "units": {
+    "total": 165,
+    "passed": 165,
+    "failed": 0,
+    "files": [
+      {
+        "file": "astronomy_lunar_parallax.test.js",
+        "passed": 24,
+        "failed": 0
+      },
+      {
+        "file": "astronomy_moon_observatory.test.js",
+        "passed": 13,
+        "failed": 0
+      },
+      {
+        "file": "astronomy_tables_a11y.test.js",
+        "passed": 2,
+        "failed": 0
+      },
+      {
+        "file": "astronomy_ui_resilience.test.js",
+        "passed": 80,
+        "failed": 0
+      },
+      {
+        "file": "astronomy_tidal_forcing.test.js",
+        "passed": 46,
+        "failed": 0
+      }
+    ]
+  },
+  "browser": {
+    "scenarios": [
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "published planet presets link energy and orbit figures while preserving independent investigations",
+        "status": "passed",
+        "durationMs": 7330
+      },
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "native keyboard controls keep focus and the climate boundaries remain independent of reflectivity",
+        "status": "passed",
+        "durationMs": 1739
+      },
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "teaching star scenarios retain orbit assumptions and centering respects the selected climate limits",
+        "status": "passed",
+        "durationMs": 1323
+      },
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "touch distance selection and cancellation stay usable at both bounded extremes",
+        "status": "passed",
+        "durationMs": 2188
+      },
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "restored inputs keep exact published distances and reset preserves other simulator state",
+        "status": "passed",
+        "durationMs": 4612
+      },
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "320px contrast layout has legible diagrams, a usable catalogue and clear model limits",
+        "status": "passed",
+        "durationMs": 6776
+      },
+      {
+        "file": "astronomy-tidal-forcing.spec.ts",
+        "title": "phase presets link geometry and forcing while preserving other investigations",
+        "status": "passed",
+        "durationMs": 6306
+      },
+      {
+        "file": "astronomy-tidal-forcing.spec.ts",
+        "title": "keyboard controls keep focus, exact increments and documented bounds",
+        "status": "passed",
+        "durationMs": 7837
+      },
+      {
+        "file": "astronomy-tidal-forcing.spec.ts",
+        "title": "published distance examples and Moon-only mode keep solar contribution independent",
+        "status": "passed",
+        "durationMs": 11394
+      },
+      {
+        "file": "astronomy-tidal-forcing.spec.ts",
+        "title": "touch time selection and pointer cancellation retain usable keyboard controls",
+        "status": "passed",
+        "durationMs": 7963
+      },
+      {
+        "file": "astronomy-tidal-forcing.spec.ts",
+        "title": "restored values recover malformed inputs and reset only the tide experiment",
+        "status": "passed",
+        "durationMs": 21884
+      },
+      {
+        "file": "astronomy-tidal-forcing.spec.ts",
+        "title": "320px contrast layout has legible linked diagrams, source inputs and clear model limits",
+        "status": "passed",
+        "durationMs": 3451
+      },
+      {
+        "file": "astronomy-tidal-forcing.spec.ts",
+        "title": "Moon GPU drawing pauses outside the viewport and resumes with the latest model",
+        "status": "passed",
+        "durationMs": 2910
+      }
+    ],
+    "passed": 13,
+    "failed": 0,
+    "durationMs": 130563.879,
+    "acceptedReports": [
+      "browser-results.json (13 scenarios)",
+      "browser-polish-results.json (final desktop and phone scenarios)"
+    ],
+    "errorsAndRejections": "Each scenario asserted empty browser error and unhandled-rejection logs."
+  },
+  "phone": {
+    "viewportWidth": 320,
+    "contrast": true,
+    "overflow": false,
+    "minimumSvgTextPixels": 12.016666666666666,
+    "minimumControlHeightPixels": 44,
+    "table": {
+      "overflow": false,
+      "columnHeaders": 2,
+      "rowHeaders": 6
+    },
+    "textClippingAndPairwiseOverlap": "All labels checked inside each SVG viewBox, with no intersecting text boxes."
+  },
+  "moonRendering": {
+    "initialOffscreenRenderCount": 10,
+    "visibleRenderCount": 19,
+    "returnedOffscreenRenderCount": 25,
+    "latestAgeDays": 9,
+    "pausedWhileOffscreen": true,
+    "resumedWhenVisible": true
+  },
+  "runner": {
+    "nodeVersion": "v24.11.1",
+    "vitestVersion": "4.1.5",
+    "initialForksRun": "Worker start timeouts; no assertions ran.",
+    "threadRetry": "Worker start timeouts; no assertions ran.",
+    "nextRun": {
+      "pool": "threads",
+      "maxWorkers": 1,
+      "workerStartResponseTimeoutMs": 300000,
+      "overallWorkerStartTimeoutMs": 360000,
+      "loader": "reports/sky-lab-tidal-forcing-2026-10-01/startup-timeout-loader.mjs",
+      "assertionsModified": false,
+      "installedDependenciesModified": false
+    },
+    "basis": [
+      "Installed Vitest cli-api.Cjt90eJu.js START_TIMEOUT=6e4 and WORKER_START_TIMEOUT=9e4.",
+      "https://github.com/vitest-dev/vitest/issues/11363",
+      "https://vitest.dev/config/pool"
+    ],
+    "completedInitialRun": {
+      "total": 164,
+      "passed": 162,
+      "failed": 2,
+      "regressionCasesPassed": 119
+    },
+    "assertionCorrections": [
+      "Compare zero solar forcing without distinguishing signed zero.",
+      "Read the parsed document body text and check all five preserved topic buttons."
+    ],
+    "tideRerun": {
+      "total": 45,
+      "passed": 45,
+      "failed": 0
+    },
+    "pointerCorrection": {
+      "basis": "https://www.w3.org/TR/pointerevents3/#the-button-property",
+      "change": "Primary movement uses buttons=1 with button=-1; the down handler retains the primary-button guard.",
+      "verification": "New focused event check plus an actual browser mouse drag."
+    },
+    "discardedFilterRun": "A split test-name argument selected unrelated movement files; it ran no accepted assertions."
+  },
+  "whitespaceCheckPassed": true,
+  "limitations": [
+    "Idealized coplanar equatorial forcing using published reference inputs; this is not a local water-level prediction.",
+    "Distance and mean angular rates are fixed for each 48-hour experiment.",
+    "Ocean dynamics, local coast and basin geometry, inclination, eccentricity, friction, lag, weather and uncertainty are omitted.",
+    "Automated browser checks use the local React harness; no end-to-end live deployment was performed."
+  ],
+  "artifacts": [
+    "tidal-forcing-desktop.png",
+    "tidal-forcing-phone-contrast.png",
+    "tidal-geometry-phone.png",
+    "tidal-curve-phone.png",
+    "tidal-inputs-phone.png",
+    "unit-results.json",
+    "browser-results.json",
+    "phone-geometry.json",
+    "scope-verification.json",
+    "download-provenance.json"
+  ],
+  "committed": false,
+  "pushed": false
+}

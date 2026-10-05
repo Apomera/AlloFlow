@@ -1,0 +1,28 @@
+{
+  "name": "Live transfer clarity preview",
+  "startedAt": "2026-10-05T01:19:54.599Z",
+  "completedAt": "2026-10-05T01:19:54.735Z",
+  "source": {
+    "path": "stem_lab/stem_tool_watercycle.js",
+    "sha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+    "bytes": 3139939
+  },
+  "public": {
+    "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+    "sha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+    "bytes": 3139939
+  },
+  "page": {
+    "url": "http://127.0.0.1:8770/",
+    "status": 200,
+    "bytes": 2211,
+    "sha256": "927ddade76f5cd62859f11178fca57902256292b75dec1c0daaee023d25a6d4b"
+  },
+  "runtime": {
+    "url": "http://127.0.0.1:8770/stem_lab/stem_tool_watercycle.js",
+    "status": 200,
+    "bytes": 3139939,
+    "sha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230"
+  },
+  "passed": true
+}

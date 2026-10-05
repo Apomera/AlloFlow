@@ -1,0 +1,17 @@
+{
+  "baselineSHA": "ad1970ff112df529cc9115e0fbd69061c80393af9570aba38fa05b1c9cb6b91c",
+  "candidateSHA": "2ec075216538b88288d2e632525913d9ce830d3ff15ffd8e47757b190ea2465c",
+  "guards": [
+    "medium-helpers",
+    "medium-domain",
+    "medium-filter",
+    "medium-fallback",
+    "medium-pigment",
+    "medium-response",
+    "skin-key",
+    "target-presentation-split",
+    "contact-presentation-refresh"
+  ],
+  "fullFileReversalExact": true,
+  "rngCallLinesUnchanged": true
+}

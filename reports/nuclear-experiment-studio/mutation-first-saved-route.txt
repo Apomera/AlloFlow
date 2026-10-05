@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1497:5 › guided first discovery preserves existing experiments, resumes readings, and offers free exploration (18.5s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1497:5 › guided first discovery preserves existing experiments, resumes readings, and offers free exploration 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[data-ns-first-discovery]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" with timeout 15000ms
+      - waiting for locator('[data-ns-first-discovery]')
+        31 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      1499 |   const saved = { mission: 'chain', completed: ['decay'], chain: { prediction: 'steady', setting: 1.2, step: 2 }, distance: { prediction: 'half', setting: 4, runs: [1], reflection: 'Keep this note.' }, investigation: { prediction: 'both', runs: ['closer'] } };
+      1500 |   await mount(page, { nkStudio: saved });
+    > 1501 |   await expect(page.locator('[data-ns-first-discovery]')).toHaveCount(0);
+           |                                                           ^
+      1502 |   await expect(page.locator('[data-ns-intro]')).toHaveAttribute('data-ns-intro', 'chain');
+      1503 |   expect(await page.evaluate(() => (window as any).__toolData._nuclearLab.nkStudio)).toEqual(saved);
+      1504 |   await page.locator('.ns-first-invite > summary').click();
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1501:59
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-first-saved-route\43-nuclearlab-experiment-s-6ba04-and-offers-free-exploration-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-first-saved-route\43-nuclearlab-experiment-s-6ba04-and-offers-free-exploration-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-first-saved-route\43-nuclearlab-experiment-s-6ba04-and-offers-free-exploration-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-first-saved-route\43-nuclearlab-experiment-s-6ba04-and-offers-free-exploration-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-first-saved-route\43-nuclearlab-experiment-s-6ba04-and-offers-free-exploration-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1497:5 › guided first discovery preserves existing experiments, resumes readings, and offers free exploration 
+(node:45472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:45472) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-first-saved-route.js in place of stem_lab/stem_tool_nuclearlab.js

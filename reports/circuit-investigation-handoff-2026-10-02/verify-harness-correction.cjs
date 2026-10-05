@@ -1,0 +1,10 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto');
+const before=fs.readFileSync(path.join(__dirname,'initial-attempt/browser-check.cjs'),'utf8');
+const after=fs.readFileSync(path.join(__dirname,'browser-check.cjs'),'utf8');
+const from="focus:['#circuit-active-notebook > summary']",to="focus:[':scope > summary']";
+assert.equal(before.split(from).length-1,2);
+assert.equal(before.replaceAll(from,to),after);
+const hash=value=>crypto.createHash('sha256').update(value).digest('hex');
+const proof={beforeSha256:hash(before),afterSha256:hash(after),occurrences:2,from,to,unchangedExceptSelectors:true};
+fs.writeFileSync(path.join(__dirname,'harness-correction.json'),JSON.stringify(proof,null,2));
+console.log(JSON.stringify(proof));

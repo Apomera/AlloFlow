@@ -1,0 +1,15 @@
+Index: desktop/web-app/src/App.jsx
+===================================================================
+--- desktop/web-app/src/App.jsx
++++ desktop/web-app/src/App.jsx
+@@ -23762,9 +23762,9 @@
+     return () => {
+         clearTimeout(timeoutId);
+         if (owner.sequence === sequence) owner.sequence += 1;
+     };
+-  }, [history, isHistoryLoaded, isOnline, isTeacherMode, activeSessionCode, lzLoaded, canvasRecoveryRevision]);
++  }, [history, isHistoryLoaded, isOnline, isTeacherMode, activeSessionCode, lzLoaded, canvasRecoveryRevision, isStorageDisabled, isCanvas]);
+   useEffect(() => {
+       const owner = offlineProfileWriteRef.current;
+       if (!lzLoaded || isCanvas) {
+           owner.sequence += 1;

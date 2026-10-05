@@ -1,0 +1,9 @@
+{
+  "phase": "brightness-actual-trials",
+  "message": "Expected values to be strictly equal:\n\n0 !== 1\n",
+  "stack": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n0 !== 1\n\n    at inspect (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\perception_lab_drawing_viewer_qa.cjs:70:14)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\perception_lab_drawing_viewer_qa.cjs:94:98",
+  "checks": [],
+  "errors": [],
+  "loadedSourceSHA256": "4ac069d954cc3bee3c3ce180fc56f755715487b86f2cc2e7c5c8d9f7595f81bb",
+  "finalSourceSHA256": "4ac069d954cc3bee3c3ce180fc56f755715487b86f2cc2e7c5c8d9f7595f81bb"
+}

@@ -1,0 +1,12 @@
+{
+  "sha256": "6c177a8eb2bb75edfdec90e5d8a4e0045cf25e4262ddb028dbf60d1964a7e03d",
+  "paths": [
+    "stem_lab/stem_tool_moonmission.js",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js",
+    "tests/moonmission_entry_thermal_physics.test.js",
+    "tests/moonmission_entry_thermal_visuals.test.js",
+    "tests/moonmission_entry_thermal_saved_state.test.js",
+    "tests/e2e/moon-mission-entry-thermal.spec.ts"
+  ],
+  "sourceBytes": 1247850
+}

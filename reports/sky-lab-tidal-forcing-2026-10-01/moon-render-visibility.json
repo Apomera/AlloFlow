@@ -1,0 +1,8 @@
+{
+  "initialOffscreenRenderCount": 10,
+  "visibleRenderCount": 19,
+  "returnedOffscreenRenderCount": 25,
+  "latestAgeDays": 9,
+  "pausedWhileOffscreen": true,
+  "resumedWhenVisible": true
+}

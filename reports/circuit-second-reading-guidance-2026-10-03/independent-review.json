@@ -1,0 +1,40 @@
+{
+  "passed": true,
+  "reviewer": "circuit_journey",
+  "sourceSha256": "35d953d4e3fb4fb508fce0435a9d8c1df174fdd5653c0111b53c3e789d24247b",
+  "mirrorSha256": "35d953d4e3fb4fb508fce0435a9d8c1df174fdd5653c0111b53c3e789d24247b",
+  "beforeSha256": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+  "sourcePreservationSha256": "ee4557f45960a775407b7ffa915c25e1fbfeb7ed21bfa3f8a36226c387fd68b3",
+  "byteExactReversedSha256": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+  "reversedFragments": 2,
+  "priorValidationSha256": "56bed77308b1e8731dc5be0d199416ecee31eef505f8c46b3c0c5584c7b14230",
+  "priorValidationMatchedFile": "reports/circuit-observation-summary-pairs-2026-10-03/validation.json",
+  "sourceScope": "Notebook derived current/saved comparison and copy 3162-3175, existing cue 3204",
+  "checks": {
+    "sourceAndMirrorIdentical": true,
+    "byteExactReversalWithoutNormalization": true,
+    "priorValidationBytesUnchanged": true,
+    "onlyExactlyOneObservationComparedAndShown": true,
+    "baselineUsesSoleSavedObservationAndLiveUsesCommittedCurrentState": true,
+    "currentCanonicalRecordedIndexCalculationPreserved": true,
+    "existingInactiveControlCircuitTypeAndOrderedProbeSemanticsReused": true,
+    "settingChangesAndProbeChangesHandledIndependently": true,
+    "equalCurrentDoesNotSuppressDistinctSettingComparison": true,
+    "invalidShapedComparisonRetainsGenericFallback": true,
+    "copyDescribesSnapshotRelationsAndPermitsRecordingWithChangedProbes": true,
+    "localizedFallbackCopyAndSemanticDataAttributeOnly": true,
+    "noNewActionsEffectsFocusAnnouncementsOrPersistentState": true,
+    "recordGatingNativeDetailsWritingHistorySchemaModelAndAiUnchanged": true
+  },
+  "issues": [],
+  "findings": [
+    "The sole saved observation is compared with a fresh observation of committed live state. Canonical recordedIndex uses the same current observation and retains existing deduplication behavior.",
+    "The existing comparison kind distinguishes circuit changes, inactive controls and probe-only changes. An additional -probes copy case covers changed ordered probes combined with one or multiple setting edits.",
+    "Classification does not read physical deltas or lamp-current results. Equal-current saturation still permits a distinct second operating point when an effective setting changed.",
+    "The one-setting copy describes differing settings and matching captured/live connections. The one-setting-probes copy distinguishes probe-voltage comparability and explicitly says recording remains possible.",
+    "With no or two-plus observations the new comparison is not calculated and no next-reading cue is shown. Null comparisons retain the existing generic localized fallback.",
+    "The existing cue position, strong/p structure and styles are retained. New copy and data-reading-kind add no recording gate, navigation, focus request, state write or live announcement.",
+    "Both fragments reverse in memory to the exact prior source bytes, preserving native observation disclosures, summary pairs, writing, saved work, callbacks, history, exports, model and AI boundaries. The prior validation file remains byte-identical."
+  ],
+  "scope": "Independent static source review only. No browser or test run; only this assigned review report was updated."
+}

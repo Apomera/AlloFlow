@@ -15,33 +15,10 @@ const sliceBetween = (source, startMarker, endMarker) => {
   return source.slice(start, end);
 };
 
-function loadManipulationFallback() {
-  const normalizeStart = setupSource.indexOf('const normalizePackKey =');
-  const normalizeEnd = setupSource.indexOf('\n', normalizeStart);
-  const flatStart = setupSource.indexOf('const flatPackPhoneme =');
-  const flatEnd = setupSource.indexOf('\n', flatStart);
-  const estimate = sliceBetween(
-    setupSource,
-    'const estimatePackPhonemes =',
-    '// Content language of this pack:',
-  );
-  const fallback = sliceBetween(
-    setupSource,
-    'const makePackManipulationFallback =',
-    'const packTtsSource =',
-  );
-
-  expect(normalizeStart).toBeGreaterThanOrEqual(0);
-  expect(flatStart).toBeGreaterThanOrEqual(0);
-
-  return new Function(`
-    ${setupSource.slice(normalizeStart, normalizeEnd)}
-    ${setupSource.slice(flatStart, flatEnd)}
-    ${estimate}
-    const packIsEnglish = true;
-    ${fallback}
-    return makePackManipulationFallback;
-  `)();
+function loadManipulationFallback(language = 'en') {
+  const fallback = sliceBetween(setupSource, 'const makePackManipulationFallback =', 'const packTtsSource =');
+  const coreSource = read('word_sounds_core.js');
+  return new Function('wordSoundsLanguage', coreSource + '\nconst WS_CORE = createWordSoundsCore();\n' + fallback + '\nreturn makePackManipulationFallback;')(language);
 }
 
 describe('Word Sounds setup session contract', () => {
@@ -100,24 +77,14 @@ describe('Word Sounds setup word handling', () => {
     expect(preview).toContain('seenWords.has(key)');
   });
 
-  it('removes the first grapheme cluster rather than one code unit', () => {
+  it('uses curated Sound Swap tasks and blocks unverified spelling deletions', () => {
     const makeFallback = loadManipulationFallback();
-
-    expect(makeFallback('ship', ['sh', 'i', 'p'])).toMatchObject({
-      type: 'deletion',
-      targetPhoneme: 'sh',
-      answer: 'ip',
-    });
-    expect(makeFallback('chip', [])).toMatchObject({
-      targetPhoneme: 'ch',
-      answer: 'ip',
-    });
-    expect(makeFallback('light', [])).toMatchObject({
-      targetPhoneme: 'l',
-      answer: 'ight',
-    });
-  });
-});
+    expect(makeFallback('cat')).toMatchObject({ type: 'deletion', targetPhoneme: 'k', answer: 'at', contentStatus: 'curated' });
+    for (const word of ['ship', 'chip', 'light']) {
+      expect(makeFallback(word)).toMatchObject({ type: 'review', contentStatus: 'teacher_review_required', answer: '', distractors: [] });
+    }
+    expect(loadManipulationFallback('fr')('cat')).toMatchObject({ type: 'review', contentStatus: 'teacher_review_required' });
+  });});
 
 describe('Word Sounds setup modal lifecycle and controls', () => {
   it('is a named modal dialog with focus containment, Escape close, and focus return', () => {

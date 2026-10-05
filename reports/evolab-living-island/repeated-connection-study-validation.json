@@ -1,0 +1,157 @@
+{
+  "date": "2026-10-02",
+  "feature": "Repeated matched connection studies across founder draws",
+  "sourceSha256": "7b46b5e617c02748cacf57e683c7984110eaad1589b19a2861988d2ada1ae4a7",
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "noCommitByUserRequest": true,
+  "deployed": false,
+  "preview": {
+    "url": "http://127.0.0.1:56559/?preview=archipelago",
+    "assets": [
+      {
+        "path": "/",
+        "status": 200,
+        "bytes": 1129
+      },
+      {
+        "path": "/evolab.js",
+        "status": 200,
+        "bytes": 2002805
+      },
+      {
+        "path": "/app.css",
+        "status": 200,
+        "bytes": 625027
+      },
+      {
+        "path": "/react.js",
+        "status": 200,
+        "bytes": 10751
+      },
+      {
+        "path": "/react-dom.js",
+        "status": 200,
+        "bytes": 131835
+      },
+      {
+        "path": "/three.js",
+        "status": 200,
+        "bytes": 603445
+      }
+    ],
+    "servedSourceMatches": true
+  },
+  "changes": [
+    "Choose 8, 12 or 24 matched draws, make a prediction for mean marker H, and compute one trial per event-loop turn with cancellation.",
+    "Visualize signed connected-minus-closed H differences, their mean, observed range and lower/equal/higher counts; use native controls or keyboard plot points to select any draw.",
+    "Inspect a selected draw using the actual existing copy-count comparison and marker passport, without replacing the founder collection or advancing the expedition.",
+    "Capture the original prediction separately from the next-study prediction. Retain completed-study notes during cancellation and save a separate journal record.",
+    "Download full precision rows and a compact deterministic recipe. Saved studies explicitly replay their outcomes; cached outcomes are discarded.",
+    "New completed studies advance the private founder-draw batch and start a fresh explanation. Changing the current lens keeps previous results labeled with their captured context.",
+    "Improve phone chart labels and preserve no-WebGL, reduced-motion and keyboard paths."
+  ],
+  "validation": {
+    "distinctModelComponentAndRenderChecks": 57,
+    "modelComponent": {
+      "passed": 55,
+      "files": 7,
+      "log": "connection-repeats-units-final.log"
+    },
+    "renderGoldens": {
+      "passed": 2,
+      "log": "connection-repeats-goldens-final.log",
+      "scope": "Only the two EvoLab digest entries were refreshed."
+    },
+    "browser": {
+      "distinctPassedScenarios": 10,
+      "log": "connection-repeats-browser-verified.log",
+      "coverage": [
+        "Real WebGL and one live drawn scene.",
+        "Actual matched comparisons, both signs of H response, inspected inheritance, original predictions and full precision JSON replay.",
+        "Separate founder, single-case and repeated-study journal records.",
+        "Phone keyboard selection, no WebGL, reduced motion, zero WCAG 2 A/AA and 2.1 AA axe violations, readable chart labels and no page overflow.",
+        "Captured context gating, explicit saved-recipe replay, cancellation preserving previous results/notes, and successful 24-draw computation.",
+        "Existing founder voyage/collection, main marker/trait passport and matched single-case connection journeys."
+      ]
+    },
+    "finalScienceClarification": {
+      "modelChecks": 7,
+      "browserJourneys": 3,
+      "logs": [
+        "connection-repeats-science.log",
+        "connection-repeats-science-browser.log"
+      ],
+      "scope": "After clarifying fixed neighboring G0 cohorts, new private breeding seeds and both sources of stochastic variation. These checks are included in the distinct totals."
+    },
+    "visualReview": [
+      "Desktop and phone screenshots inspected after chart font/cascade refinement; subsequent screenshots include the final science explanation."
+    ],
+    "translationKeysPrepared": 1435,
+    "sharedTranslationCatalogApplied": false
+  },
+  "protocol": {
+    "model": "archipelago-founder-voyage-v1",
+    "fixedSourceGenotypesPerSpecies": 48,
+    "initialMistFoundersPerSpecies": [
+      6,
+      24
+    ],
+    "neighborG0Cohorts": "Ember and Tide fixed across draws",
+    "sample": "Mist resampled with replacement in each draw",
+    "paired": "Identical G0 founders and same initial private breeding seed within each closed/open pair",
+    "variation": "New founder sample and private breeding seed across draws; later random reproduction contributes to the spread",
+    "generations": [
+      1,
+      5
+    ],
+    "trials": [
+      8,
+      12,
+      24
+    ],
+    "isolatedDispersalScale": 0,
+    "connectedDispersalScale": 0.3,
+    "selection": false,
+    "mutation": 0,
+    "establishedOffspringPerSpeciesPerIsland": 24,
+    "summary": "Full precision connected-minus-closed H, descriptive mean and observed range"
+  },
+  "scientificBoundaries": [
+    "Fictional two-species illustrative model, not a reconstruction or forecast of the Galapagos.",
+    "Fixed source pool and fixed neighboring starting cohorts; repeated draws do not represent independent source populations or real island samples.",
+    "Founder sampling and later reproduction both contribute to the spread; the study does not isolate a unique causal decomposition.",
+    "Matching the initial private breeding seed does not guarantee matching later draws when dispersal changes decisions.",
+    "H describes one neutral two-letter marker, not observed heterozygosity or genome-wide diversity.",
+    "Means and observed ranges are descriptive, not confidence intervals, significance tests or guaranteed effects.",
+    "Copy contributions come from recorded inheritance; arrival counts and G0 ancestry describe different quantities.",
+    "Model settings, actual outcomes and source population/RNG remain unchanged. No generated scientific rules or fabricated outcomes are used."
+  ],
+  "artifacts": [
+    {
+      "path": "tests/evolab_connection_repeats.test.js",
+      "bytes": 6805,
+      "sha256": "b0d5e64f8dda6d6d9b90a1684d6f0b45b6c0f4b2c226e8a0027ca8713af4179c"
+    },
+    {
+      "path": "tests/e2e/evolab-connection-repeats.spec.ts",
+      "bytes": 13329,
+      "sha256": "5c035dab1115e98a07268c7389c5aaea58309f0758996371d341b09de2cc0679"
+    },
+    {
+      "path": "reports/evolab-living-island/repeated-connection-study-desktop.png",
+      "bytes": 116244,
+      "sha256": "c1a163b030201aad364300e7bc23e1f581f0ed935aafa4809dad26b80ac1629d"
+    },
+    {
+      "path": "reports/evolab-living-island/repeated-connection-study-phone.png",
+      "bytes": 93687,
+      "sha256": "20931188bbfa08a36407048aba197499c5bd2fbe9ea66cdf84f7273d599e7c91"
+    },
+    {
+      "path": "reports/evolab-living-island/ui-strings.delta.json",
+      "bytes": 147590,
+      "sha256": "76daa42812adf8833d42bd56b7590edba89718218c72f62f3512aa67d366d800"
+    }
+  ]
+}

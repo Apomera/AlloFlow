@@ -1,0 +1,518 @@
+{
+  "client": 795,
+  "scroll": 795,
+  "targets": [
+    {
+      "label": "Unfinished observation records · 3",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "label": "Finish record",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "label": "Finish record",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "label": "Finish record",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "label": "What do these measures mean?",
+      "height": 63.375,
+      "clipped": false
+    },
+    {
+      "label": "Replay reviewed action",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "label": "Return to history",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "label": "Review next action",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "label": "About technique feedback",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "label": "Action history6 saved records",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "label": "Read selected response",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "label": "1inspectRECORDEDSupported technique",
+      "height": 100.796875,
+      "clipped": false
+    },
+    {
+      "label": "2scalpelRECORDEDSupported technique",
+      "height": 100.796875,
+      "clipped": false
+    },
+    {
+      "label": "3scissorsRECORDEDSupported technique",
+      "height": 100.796875,
+      "clipped": false
+    },
+    {
+      "label": "4forcepsRECORDEDSupported technique",
+      "height": 100.796875,
+      "clipped": false
+    },
+    {
+      "label": "5pinRECORDEDSupported technique",
+      "height": 100.796875,
+      "clipped": false
+    },
+    {
+      "label": "6probeReviewingLatestRECORDEDSupported technique",
+      "height": 103,
+      "clipped": false
+    }
+  ],
+  "text": [
+    {
+      "text": "Skin",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Layer review",
+      "size": 19.2,
+      "clipped": false
+    },
+    {
+      "text": "Record evidence",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Investigation progress",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Verified technique: 6 of 6",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Actions with a confirmed plan and explanation.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Structures inspected: 4 of 4",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Structures viewed across this layer’s anatomical views.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Evidence recorded: 1 of 4",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Inspected structures with a note and confidence rating.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Unfinished observation records · 3",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "These structures were already inspected. Complete the missing part of each record.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Ventral Skin",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Confidence needed",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Finish record",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Tympanic Membrane",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Note needed",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Finish record",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Nictitating Membrane",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Note and confidence needed",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Finish record",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Latest action: probe",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "What you did",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "6 of 6 protocol actions complete. 6 of 6 actions have verified plans and explanations.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Supported technique",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "The motor-neutral control performed this action.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Recorded action",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Recorded action",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Simulation result:",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "What changed",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Before → After · values out of 100",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Clarity",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "91 → 91",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "0 points",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Unchanged",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Exposure",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "87 → 87",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "0 points",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Unchanged",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Stability",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "84 → 84",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "0 points",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Unchanged",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Risk",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "16 → 16",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "0 points",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Unchanged",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "What do these measures mean?",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "These are simulation values for the saved action. Compare them with the current setup before deciding what to do next.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Replay reviewed action",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Return to history",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Try next",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Current setup",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "The instrument sequence and explanations are complete. Review your observations. The next action shows any evidence still needed before revealing this layer.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Review next action",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "About technique feedback",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "The technique score summarizes protocol progress, stroke values, calibration, tissue condition, and decisions in this simulation. Supported controls can contribute to this score. Verified plans and explanations are listed above.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "No scored stroke saved",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Complete a scalpel or scissors action to generate stroke feedback.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Action history6 saved records",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "6 saved records",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Reviewing record 6 of 6: probe",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Read selected response",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Choose an action to inspect its saved response. Arrow keys browse; Enter or Space selects. The history keeps up to 18 recent records for this layer.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "1inspectRECORDEDSupported technique",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "inspect",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Supported technique",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "2scalpelRECORDEDSupported technique",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "scalpel",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Supported technique",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "3scissorsRECORDEDSupported technique",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "scissors",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Supported technique",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "4forcepsRECORDEDSupported technique",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "forceps",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Supported technique",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "5pinRECORDEDSupported technique",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "pin",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Supported technique",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "6probeReviewingLatestRECORDEDSupported technique",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "probe",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "ReviewingLatest",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Reviewing",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Latest",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Supported technique",
+      "size": 14,
+      "clipped": false
+    }
+  ]
+}

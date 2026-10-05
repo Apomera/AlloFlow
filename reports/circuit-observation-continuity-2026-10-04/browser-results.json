@@ -1,0 +1,536 @@
+{
+  "sourceSha256": "ff1a66032c42e744ed5b8ae7d0ba0f2c324755b7fb4193fa6c1e4eec90156540",
+  "scriptSha256": "68b77a976921a0c8de79a741135a11c2dfb6ed59b2c13170f93886a3467cacc1",
+  "errors": [],
+  "workflows": [
+    {
+      "name": "desktop keyboard removal and recovery preserve the surviving editor",
+      "width": 1280,
+      "before": {
+        "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+        "height": "190px",
+        "start": 80,
+        "end": 120,
+        "direction": "backward",
+        "scrollTop": 50,
+        "pair": [
+          "2:[\"collector\",\"emitter\"]:0:0",
+          "3:[\"collector\",\"emitter\"]:0:0"
+        ]
+      },
+      "removed": {
+        "sameCard": true,
+        "sameNote": true,
+        "laterCard": true,
+        "removedDisconnected": true,
+        "open": [
+          true,
+          false
+        ],
+        "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+        "height": "190px",
+        "start": 80,
+        "end": 120,
+        "direction": "backward",
+        "scrollTop": 50,
+        "pair": [
+          "2:[\"collector\",\"emitter\"]:0:0",
+          "3:[\"collector\",\"emitter\"]:0:0"
+        ],
+        "sameSavedEntries": true,
+        "reflection": "My own explanation.",
+        "undo": [
+          {
+            "project": "manual",
+            "supply": 5,
+            "input": 0.8,
+            "light": 50,
+            "baseResistance": 10000,
+            "loadResistance": 220,
+            "dividerResistance": 10000,
+            "beta": 100
+          }
+        ],
+        "summaryFocused": true
+      },
+      "restored": {
+        "sameCard": true,
+        "sameNote": true,
+        "laterCard": true,
+        "newRestoredCard": true,
+        "open": [
+          false,
+          true,
+          false
+        ],
+        "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+        "height": "190px",
+        "start": 80,
+        "end": 120,
+        "direction": "backward",
+        "scrollTop": 50,
+        "pair": [
+          "2:[\"collector\",\"emitter\"]:0:0",
+          "3:[\"collector\",\"emitter\"]:0:0"
+        ],
+        "savedNotes": [
+          "A: the first reading.",
+          "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+          "C: the later reading."
+        ]
+      }
+    },
+    {
+      "name": "phone keyboard removal and recovery preserve the surviving editor",
+      "width": 390,
+      "before": {
+        "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+        "height": "190px",
+        "start": 80,
+        "end": 120,
+        "direction": "backward",
+        "scrollTop": 50,
+        "pair": [
+          "5:[\"collector\",\"emitter\"]:0:0",
+          "6:[\"collector\",\"emitter\"]:0:0"
+        ]
+      },
+      "removed": {
+        "sameCard": true,
+        "sameNote": true,
+        "laterCard": true,
+        "removedDisconnected": true,
+        "open": [
+          true,
+          false
+        ],
+        "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+        "height": "190px",
+        "start": 80,
+        "end": 120,
+        "direction": "backward",
+        "scrollTop": 50,
+        "pair": [
+          "5:[\"collector\",\"emitter\"]:0:0",
+          "6:[\"collector\",\"emitter\"]:0:0"
+        ],
+        "sameSavedEntries": true,
+        "reflection": "My own explanation.",
+        "undo": [
+          {
+            "project": "manual",
+            "supply": 5,
+            "input": 0.8,
+            "light": 50,
+            "baseResistance": 10000,
+            "loadResistance": 220,
+            "dividerResistance": 10000,
+            "beta": 100
+          }
+        ],
+        "summaryFocused": true
+      },
+      "restored": {
+        "sameCard": true,
+        "sameNote": true,
+        "laterCard": true,
+        "newRestoredCard": true,
+        "open": [
+          false,
+          true,
+          false
+        ],
+        "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+        "height": "190px",
+        "start": 80,
+        "end": 120,
+        "direction": "backward",
+        "scrollTop": 50,
+        "pair": [
+          "5:[\"collector\",\"emitter\"]:0:0",
+          "6:[\"collector\",\"emitter\"]:0:0"
+        ],
+        "savedNotes": [
+          "A: the first reading.",
+          "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+          "C: the later reading."
+        ]
+      }
+    },
+    {
+      "name": "Native file import starts equivalent observations with fresh editors",
+      "cards": [
+        {
+          "fresh": true,
+          "open": false,
+          "height": "",
+          "value": "A: the first reading."
+        },
+        {
+          "fresh": true,
+          "open": false,
+          "height": "",
+          "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed."
+        },
+        {
+          "fresh": true,
+          "open": false,
+          "height": "",
+          "value": "C: the later reading."
+        }
+      ],
+      "pair": [
+        "",
+        ""
+      ]
+    },
+    {
+      "name": "Legacy alias recovery resets ambiguous editors and selection only",
+      "freshAmbiguousEditors": true,
+      "open": [
+        false,
+        false,
+        true
+      ],
+      "heights": [
+        "",
+        "",
+        "180px"
+      ],
+      "sameSeparateCard": true,
+      "notes": [
+        "Historical A",
+        "Historical B",
+        "Separate reading C"
+      ],
+      "pair": [
+        "",
+        "11:[\"collector\",\"emitter\"]:0:0"
+      ]
+    }
+  ],
+  "views": [
+    {
+      "name": "desktop-before-removal",
+      "width": 1280,
+      "axeViolations": [],
+      "viewport": 1280,
+      "pageWidth": 1280,
+      "open": [
+        false,
+        true,
+        false
+      ],
+      "readings": [
+        {
+          "label": "Observation 1 note",
+          "value": "A: the first reading.",
+          "height": "",
+          "selection": [
+            0,
+            0,
+            "forward"
+          ],
+          "scrollTop": 0
+        },
+        {
+          "label": "Observation 2 note",
+          "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+          "height": "190px",
+          "selection": [
+            80,
+            120,
+            "backward"
+          ],
+          "scrollTop": 50
+        },
+        {
+          "label": "Observation 3 note",
+          "value": "C: the later reading.",
+          "height": "",
+          "selection": [
+            0,
+            0,
+            "forward"
+          ],
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "desktop-after-removal",
+      "width": 1280,
+      "axeViolations": [],
+      "viewport": 1280,
+      "pageWidth": 1280,
+      "open": [
+        true,
+        false
+      ],
+      "readings": [
+        {
+          "label": "Observation 1 note",
+          "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+          "height": "190px",
+          "selection": [
+            80,
+            120,
+            "backward"
+          ],
+          "scrollTop": 50
+        },
+        {
+          "label": "Observation 2 note",
+          "value": "C: the later reading.",
+          "height": "",
+          "selection": [
+            0,
+            0,
+            "forward"
+          ],
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "desktop-after-recovery",
+      "width": 1280,
+      "axeViolations": [],
+      "viewport": 1280,
+      "pageWidth": 1280,
+      "open": [
+        false,
+        true,
+        false
+      ],
+      "readings": [
+        {
+          "label": "Observation 1 note",
+          "value": "A: the first reading.",
+          "height": "",
+          "selection": [
+            0,
+            0,
+            "forward"
+          ],
+          "scrollTop": 0
+        },
+        {
+          "label": "Observation 2 note",
+          "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+          "height": "190px",
+          "selection": [
+            80,
+            120,
+            "backward"
+          ],
+          "scrollTop": 50
+        },
+        {
+          "label": "Observation 3 note",
+          "value": "C: the later reading.",
+          "height": "",
+          "selection": [
+            0,
+            0,
+            "forward"
+          ],
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "phone-before-removal",
+      "width": 390,
+      "axeViolations": [],
+      "viewport": 390,
+      "pageWidth": 390,
+      "open": [
+        false,
+        true,
+        false
+      ],
+      "readings": [
+        {
+          "label": "Observation 1 note",
+          "value": "A: the first reading.",
+          "height": "",
+          "selection": [
+            0,
+            0,
+            "forward"
+          ],
+          "scrollTop": 0
+        },
+        {
+          "label": "Observation 2 note",
+          "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+          "height": "190px",
+          "selection": [
+            80,
+            120,
+            "backward"
+          ],
+          "scrollTop": 50
+        },
+        {
+          "label": "Observation 3 note",
+          "value": "C: the later reading.",
+          "height": "",
+          "selection": [
+            0,
+            0,
+            "forward"
+          ],
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "phone-after-removal",
+      "width": 390,
+      "axeViolations": [],
+      "viewport": 390,
+      "pageWidth": 390,
+      "open": [
+        true,
+        false
+      ],
+      "readings": [
+        {
+          "label": "Observation 1 note",
+          "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+          "height": "190px",
+          "selection": [
+            80,
+            120,
+            "backward"
+          ],
+          "scrollTop": 50
+        },
+        {
+          "label": "Observation 2 note",
+          "value": "C: the later reading.",
+          "height": "",
+          "selection": [
+            0,
+            0,
+            "forward"
+          ],
+          "scrollTop": 0
+        }
+      ]
+    },
+    {
+      "name": "phone-after-recovery",
+      "width": 390,
+      "axeViolations": [],
+      "viewport": 390,
+      "pageWidth": 390,
+      "open": [
+        false,
+        true,
+        false
+      ],
+      "readings": [
+        {
+          "label": "Observation 1 note",
+          "value": "A: the first reading.",
+          "height": "",
+          "selection": [
+            0,
+            0,
+            "forward"
+          ],
+          "scrollTop": 0
+        },
+        {
+          "label": "Observation 2 note",
+          "value": "Reading 1: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 2: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 3: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 4: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 5: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 6: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 7: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 8: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 9: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 10: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 11: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.\nReading 12: at 1.5 V the lamp current was 8.00 mA. Both resistors stayed fixed.",
+          "height": "190px",
+          "selection": [
+            80,
+            120,
+            "backward"
+          ],
+          "scrollTop": 50
+        },
+        {
+          "label": "Observation 3 note",
+          "value": "C: the later reading.",
+          "height": "",
+          "selection": [
+            0,
+            0,
+            "forward"
+          ],
+          "scrollTop": 0
+        }
+      ]
+    }
+  ],
+  "screenshots": [
+    {
+      "file": "desktop-before-removal.png",
+      "clip": {
+        "x": 229,
+        "y": 1073,
+        "width": 822,
+        "height": 795
+      },
+      "sha256": "e6b01ca2f82ea8984beffc63f28e2fe55ef129d27d04a8020de7383f4d0ff496"
+    },
+    {
+      "file": "desktop-after-removal.png",
+      "clip": {
+        "x": 229,
+        "y": 1110,
+        "width": 822,
+        "height": 705
+      },
+      "sha256": "38ae740dc554758c6acddce7305bbe860e682f0b8f14550c28e838fcadfd7454"
+    },
+    {
+      "file": "desktop-after-recovery.png",
+      "clip": {
+        "x": 229,
+        "y": 1110,
+        "width": 822,
+        "height": 795
+      },
+      "sha256": "4dfdb9e06cdf26e74f3b780b429a8d02b5ec1ebcc1d5eb63aae7f33989a10ef1"
+    },
+    {
+      "file": "phone-before-removal.png",
+      "clip": {
+        "x": 32,
+        "y": 1443,
+        "width": 326,
+        "height": 1102
+      },
+      "sha256": "f99e503b4396d0b83248a2f39605b91ae8f57b53256da3e78901c39918a4ef6f"
+    },
+    {
+      "file": "phone-after-removal.png",
+      "clip": {
+        "x": 32,
+        "y": 1505,
+        "width": 326,
+        "height": 981
+      },
+      "sha256": "04b14766f4b9b1ceec939b319011ef35f183a2bea263e8e2038a1561b19e1d33"
+    },
+    {
+      "file": "phone-after-recovery.png",
+      "clip": {
+        "x": 32,
+        "y": 1505,
+        "width": 326,
+        "height": 1102
+      },
+      "sha256": "691e9a14cf33421203bf8d202f0fa6b1731829a842bdf795f2eae4bbfcfd88c0"
+    }
+  ],
+  "passed": true,
+  "browserClosed": true
+}

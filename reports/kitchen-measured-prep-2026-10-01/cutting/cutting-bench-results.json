@@ -1,0 +1,36 @@
+{
+  "checks": [
+    "Native cutting explains handwashing and rinsing prerequisites without recording a rejected stroke.",
+    "A complete native knife stroke produces measured pieces, reports their real widths, and preserves cooking time.",
+    "A sideways stroke cuts nothing, and a clean retry succeeds.",
+    "Spacing guides can be hidden and restored without changing food or evidence.",
+    "Picking up the knife handle chooses Cut without shifting the camera; Escape and a tap leave the batch unfinished.",
+    "Returning away from the rest on the actual release cancels a previously ready preview.",
+    "A deliberate knife return finishes the actual uneven cuts exactly once, preserves food and thermal state, and restores after reload.",
+    "The completed batch offers the native board carry without transferring food merely by opening it.",
+    "mushroom can be prepared entirely through ruler-guided native strokes and a knife return at its recipe target.",
+    "tomato can be prepared entirely through ruler-guided native strokes and a knife return at its recipe target.",
+    "The feedback card opens the equivalent keyboard cut controls and finishing retains the same widths.",
+    "Real phone touch strokes and a handle carry prepare a four-serving tomato batch with a stable camera and readable measurements.",
+    "Touch cancellation, blur, external cooking actions and resize stop the knife return without preparing the batch.",
+    "The measured-piece card fits compact screens and passes desktop, phone and forced-color accessibility scans.",
+    "Finished cooks and historical replay keep native preparation locked.",
+    "Graphics-context loss cancels a held knife and leaves keyboard preparation available."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop measured cutting and knife return",
+      "violations": []
+    },
+    {
+      "name": "390px touch cutting",
+      "violations": []
+    },
+    {
+      "name": "320px forced colors",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

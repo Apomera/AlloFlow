@@ -1,0 +1,47 @@
+{
+  "baselineHash": "3f875d72cabfea1a5e6f4fa104504de2540871cde9292af32cc12def598b18de",
+  "sourceSha256": "e9c7d6a86b45def1263ffb3ba4ea98de19078563a471a6b14d95c285299fe030",
+  "changes": [
+    {
+      "name": "Local refs for the original investigation plan",
+      "before": "var reflectionSize=React.useState(false),reflectionId=React.useId();",
+      "after": "var reflectionSize=React.useState(false),reflectionId=React.useId();\n    var questionRef=React.useRef(null),predictionRef=React.useRef(null),planReturn=React.useState(false);"
+    },
+    {
+      "name": "Review authored question and prediction beside the explanation",
+      "before": "    var field=function(label,key,max,rows,placeholder){",
+      "after": "    var planReview=function(){\n      return h('details',{className:'circuit-reflection-plan'},\n        h('summary',null,__alloT('stem.circuit.writing_plan_review','Review my question and prediction')),\n        h('p',{className:'circuit-reflection-plan-help'},__alloT('stem.circuit.writing_plan_help','Use your question to focus the explanation. Do the saved readings support your prediction, or suggest a revision?')),\n        h('div',{className:'circuit-reflection-plan-grid'},[\n          {key:'investigationQuestion',slot:'question',ref:questionRef,title:__alloT('stem.circuit.writing_plan_question','My investigation question'),empty:__alloT('stem.circuit.writing_plan_question_empty','No question yet. Describe what you will change and measure.')},\n          {key:'investigationPrediction',slot:'prediction',ref:predictionRef,title:__alloT('stem.circuit.writing_plan_prediction','My prediction'),empty:__alloT('stem.circuit.writing_plan_prediction_empty','No prediction yet. Describe what you expect and why.')}\n        ].map(function(item){var value=typeof state[item.key]==='string'?state[item.key]:'',hasText=!!value.trim();return h('section',{key:item.key,className:'circuit-reflection-plan-card','aria-labelledby':reflectionId+'-plan-'+item.slot},\n          h('h4',{id:reflectionId+'-plan-'+item.slot},item.title),\n          h('p',{className:hasText?'circuit-reflection-plan-text':'circuit-reflection-plan-empty',dir:'auto'},hasText?value:item.empty),\n          h('button',{type:'button',className:'circuit-reflection-plan-edit','aria-controls':reflectionId+'-'+item.slot,onClick:function(){if(item.ref.current){planReturn[1](true);item.ref.current.focus();}}},__alloT('stem.circuit.writing_plan_'+item.slot+'_'+(hasText?'edit':'add'),item.slot==='question'?(hasText?'Edit question':'Add question'):(hasText?'Edit prediction':'Add prediction'))));})));\n    };\n    var field=function(label,key,max,rows,placeholder){"
+    },
+    {
+      "name": "Attach local navigation to the original plan fields",
+      "before": "      if(key==='reflection'){attributes.ref=reflectionRef;",
+      "after": "      if(key==='investigationQuestion'||key==='investigationPrediction'){attributes.ref=key==='investigationQuestion'?questionRef:predictionRef;attributes.id=reflectionId+'-'+(key==='investigationQuestion'?'question':'prediction');attributes.className='circuit-investigation-plan-input';}\n      if(key==='reflection'){attributes.ref=reflectionRef;"
+    },
+    {
+      "name": "Place the optional plan review above the writing field",
+      "before": "        control,h('p',{id:reflectionId+'-count',className:'circuit-reflection-count'},",
+      "after": "        planReview(),control,h('p',{id:reflectionId+'-count',className:'circuit-reflection-count'},"
+    },
+    {
+      "name": "Return from writing to the current saved comparison",
+      "before": ".replace('{count}',String((state.reflection||'').length))));",
+      "after": ".replace('{count}',String((state.reflection||'').length))),canCompareNotes&&h('button',{type:'button',className:'circuit-reflection-review-readings','aria-controls':reflectionId+'-comparison',onClick:function(){var comparison=comparisonRef.current,summary=comparison&&comparison.querySelector(':scope > summary');if(summary){comparison.open=true;summary.focus();}}},__alloT('stem.circuit.writing_review_readings','Review saved readings')));"
+    },
+    {
+      "name": "Use the same translated labels for plan fields and previews",
+      "before": "h('div',{className:'circuit-notebook-prompts'},field('My investigation question','investigationQuestion',1000,3,'What will you change, measure, and keep the same?'),field('My prediction','investigationPrediction',1000,3,'I predict… because…'))",
+      "after": "h('div',{className:'circuit-notebook-prompts'},field(__alloT('stem.circuit.writing_plan_question','My investigation question'),'investigationQuestion',1000,3,'What will you change, measure, and keep the same?'),field(__alloT('stem.circuit.writing_plan_prediction','My prediction'),'investigationPrediction',1000,3,'I predict… because…'))"
+    },
+    {
+      "name": "Offer a return action when reviewing an original plan field",
+      "before": "        h('div',{className:'circuit-notebook-record-actions'},h('button',{type:'button',disabled:observations.length>=8&&recordedIndex<0",
+      "after": "        planReturn[0]&&h('button',{type:'button',className:'circuit-plan-return-writing','aria-controls':reflectionId+'-field',onClick:function(){if(reflectionRef.current){reflectionRef.current.focus();planReturn[1](false);}}},__alloT('stem.circuit.writing_plan_return','Return to explanation')),\n        h('div',{className:'circuit-notebook-record-actions'},h('button',{type:'button',disabled:observations.length>=8&&recordedIndex<0"
+    },
+    {
+      "name": "Scoped writing-context styles",
+      "before": ".circuit-active-root .circuit-reflection-editor{box-sizing:border-box;",
+      "after": "/* Explanation workspace: review the authored investigation plan. */\n.circuit-active-root .circuit-reflection-plan{min-width:0;margin:16px 0;border:1px solid #728e9d;border-radius:10px;background:#0d2533;color:#e0edf2}\n.circuit-active-root .circuit-reflection-plan>summary{box-sizing:border-box;min-height:44px;padding:11px 13px;font-size:14px;font-weight:650;line-height:1.7;white-space:normal;overflow-wrap:anywhere;cursor:pointer}\n.circuit-active-root .circuit-reflection-plan-help{margin:2px 13px 14px;color:#c6dbe4;font-size:14px;line-height:1.75;overflow-wrap:anywhere}\n.circuit-active-root .circuit-reflection-plan-grid{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;padding:0 12px 12px;min-width:0}\n.circuit-active-root .circuit-reflection-plan-card{display:flex;flex-direction:column;min-width:0;padding:14px;border:1px solid #648591;border-radius:9px;background:#173442}\n.circuit-active-root .circuit-reflection-plan-card h4{margin:0;font-size:14px;line-height:1.7;color:#e5f0f5;overflow-wrap:anywhere}\n.circuit-active-root .circuit-reflection-plan-text,.circuit-active-root .circuit-reflection-plan-empty{flex:1;margin:12px 0 16px;font-size:14px;line-height:1.75;color:#e0edf2;white-space:pre-wrap;overflow-wrap:anywhere}\n.circuit-active-root .circuit-reflection-plan-empty{color:#c4d6df}\n.circuit-active-root .circuit-reflection-plan-edit,.circuit-active-root .circuit-plan-return-writing,.circuit-active-root .circuit-reflection-review-readings{box-sizing:border-box;min-width:44px;min-height:44px;max-width:100%;padding:10px 12px;border:1px solid #a1becf;border-radius:9px;background:#24485b;color:#ebf5fa;font-size:14px;font-weight:650;line-height:1.6;white-space:normal;overflow-wrap:anywhere;cursor:pointer}\n.circuit-active-root .circuit-plan-return-writing{margin:0 0 16px}\n.circuit-active-root .circuit-reflection-review-readings{margin:12px 0 0}\n.circuit-active-root .circuit-reflection-plan-edit:hover,.circuit-active-root .circuit-plan-return-writing:hover,.circuit-active-root .circuit-reflection-review-readings:hover{background:#315d71;border-color:#cce1ec}\n.circuit-active-root .circuit-reflection-plan>summary:focus-visible,.circuit-active-root .circuit-reflection-plan-edit:focus-visible,.circuit-active-root .circuit-plan-return-writing:focus-visible,.circuit-active-root .circuit-reflection-review-readings:focus-visible,.circuit-active-root .circuit-investigation-plan-input:focus{outline:2px solid #ffd780;outline-offset:3px}\n@media(max-width:640px){.circuit-active-root .circuit-reflection-plan-grid{grid-template-columns:minmax(0,1fr)}.circuit-active-root .circuit-plan-return-writing,.circuit-active-root .circuit-reflection-review-readings{width:100%}}\n@media(forced-colors:active){.circuit-active-root .circuit-reflection-plan,.circuit-active-root .circuit-reflection-plan-card{background:Canvas;border-color:CanvasText;color:CanvasText}.circuit-active-root .circuit-reflection-plan-help,.circuit-active-root .circuit-reflection-plan-card h4,.circuit-active-root .circuit-reflection-plan-text,.circuit-active-root .circuit-reflection-plan-empty{color:CanvasText}.circuit-active-root .circuit-reflection-plan-edit,.circuit-active-root .circuit-plan-return-writing,.circuit-active-root .circuit-reflection-review-readings{background:ButtonFace;border-color:ButtonText;color:ButtonText}.circuit-active-root .circuit-reflection-plan>summary:focus-visible,.circuit-active-root .circuit-reflection-plan-edit:focus-visible,.circuit-active-root .circuit-plan-return-writing:focus-visible,.circuit-active-root .circuit-reflection-review-readings:focus-visible,.circuit-active-root .circuit-investigation-plan-input:focus{outline-color:Highlight}}\n.circuit-active-root .circuit-reflection-editor{box-sizing:border-box;"
+    }
+  ],
+  "reversedByteForByte": true
+}

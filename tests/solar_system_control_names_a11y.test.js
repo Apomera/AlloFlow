@@ -321,12 +321,12 @@ describe('Solar System control accessible names', () => {
       },
     });
     expect(document.getElementById('orrery-live-distance')).not.toBeNull();
-    expect(document.body.textContent).toContain('a · orbit size');
-    expect(document.body.textContent).toContain('e · eccentricity');
-    expect(document.body.textContent).toContain('T · period');
-    expect(document.body.textContent).toContain('i · inclination');
-    expect(document.body.textContent).toContain('distance now');
-    expect(document.body.textContent).toContain('speed now');
+    expect(document.body.textContent).toContain('Orbit size (a)');
+    expect(document.body.textContent).toContain('Orbit shape (e)');
+    expect(document.body.textContent).toContain('Orbital period (T)');
+    expect(document.body.textContent).toContain('Orbit tilt (i)');
+    expect(document.body.textContent).toContain('Distance from Sun');
+    expect(document.body.textContent).toContain('Orbital speed');
     expect(document.getElementById('orrery-live-map-scale')?.getAttribute('role')).toBe('status');
     expect(document.getElementById('orrery-live-map-scale')?.textContent).toContain('Ruler:');
     expect(document.getElementById('orrery-live-speed')).not.toBeNull();
@@ -347,6 +347,7 @@ describe('Solar System control accessible names', () => {
         orreryMode: true,
         orr_tab: 0,
         orr_paused: paused,
+        orr_sel: 'earth',
         orr_mission_progress: { earth_distance: { started: true } },
       },
     });
@@ -400,7 +401,7 @@ describe('Solar System control accessible names', () => {
     expect(groups.some((group) => group.getAttribute('aria-label') === 'Orbit view controls')).toBe(true);
     const speed = document.querySelector('#orrery-speed-control');
     expect(speed?.getAttribute('aria-valuetext')).toContain('Earth years per second');
-    expect(document.querySelector('label[for="orrery-speed-control"]')?.textContent).toBe('Speed');
+    expect(document.querySelector('label[for="orrery-speed-control"]')?.textContent).toBe('Orbital clock speed');
     expect(document.querySelector('button[aria-label="Reset orbit time, camera view, and selection"]')).not.toBeNull();
   });
   it('offers an honest three-way orbital speed prediction choice', () => {

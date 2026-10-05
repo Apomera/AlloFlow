@@ -1,0 +1,16 @@
+[
+  {
+    "dark": true,
+    "world": "mercury",
+    "width": 1180,
+    "scrollWidth": 1180,
+    "errors": []
+  },
+  {
+    "dark": false,
+    "world": "mercury",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": []
+  }
+]

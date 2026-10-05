@@ -79,6 +79,666 @@ describe('Bridge Lab immersive earthquake interaction', () => {
     inputs: { archetype: 'balanced', groundFrequencyHz: 1.1, intensityG: 0.12, dampingRatio: 0.05 },
     timeS: 7.217, prediction: '', observation: 'Energy moves into the damper.', scene: scenePose(), ...overrides });
 
+  function openRateHistory(origin='scene') { const detail=host.querySelector('[data-rate-history-disclosure="'+origin+'"]');expect(detail).toBeTruthy();act(()=>{detail.open=true;detail.dispatchEvent(new Event('toggle'));vi.advanceTimersByTime(0);});return detail; }
+  it('rate history opens on demand, pauses motion and swaps endpoint roles without changing chronological evidence',()=>{
+    mount({seismicEnergyInterval:true,seismicTime:7.217,seismicIntervalPinS:12.319,seismicSceneNote:'Keep scene note',seismicObservation:'Keep my explanation',bridgeBankYaw:18});expect(host.querySelector('[data-rate-history]')).toBeNull();patch({seismicPlaying:true,autoDriving:true});openRateHistory();
+    const frame=()=>host.querySelector('[data-rate-history]'),lines=()=>[...frame().querySelectorAll('[data-rate-line]')].map(n=>n.getAttribute('points')),areas=()=>[...frame().querySelectorAll('[data-rate-area] path:first-child')].map(n=>n.getAttribute('d')),totals=()=>[...frame().querySelectorAll('[data-rate-total]')].map(n=>n.dataset.rateTotalValue),markers=()=>[...frame().querySelectorAll('[data-rate-marker]')].map(n=>n.dataset.rateMarkerValue);
+    expect(frame().dataset).toMatchObject({rateHistoryStart:'7.217',rateHistoryEnd:'12.319',rateHistoryTrial:'current'});expect(frame().querySelectorAll('[data-rate-curve]')).toHaveLength(2);expect(state).toMatchObject({seismicPlaying:false,autoDriving:false,seismicTime:7.217,seismicIntervalPinS:12.319,seismicSceneNote:'Keep scene note',seismicObservation:'Keep my explanation',bridgeBankYaw:18});
+    expect(frame().querySelector('[data-rate-pattern="input"]').textContent).toContain('positive and negative parts');expect(frame().querySelector('[data-rate-pattern="input"]').closest('[aria-hidden="true"]')).toBeNull();expect(frame().querySelector('[data-rate-view-help]').textContent).not.toContain('A and B');expect(frame().dataset.rateHistoryView).toBe('interval');const detailLines=lines(),detailTotals=totals();click('Full event');expect(frame().dataset.rateHistoryView).toBe('event');expect(totals()).toEqual(detailTotals);expect(lines()).not.toEqual(detailLines);click('Interval detail');expect(frame().dataset.rateHistoryView).toBe('interval');expect(lines()).toEqual(detailLines);const oldLines=lines(),oldAreas=areas(),oldTotals=totals(),oldMarkers=markers();click('Swap moments');expect(lines()).toEqual(oldLines);expect(areas()).toEqual(oldAreas);expect(totals()).toEqual(oldTotals);expect(markers()).toEqual([oldMarkers[1],oldMarkers[0],oldMarkers[3],oldMarkers[2]]);expect(frame().textContent).toContain('W/kg × s = J/kg');expect(frame().querySelector('[data-rate-history-provenance]').textContent).toContain('accumulated model work and loss');
+  });
+  it('rate history follows scene A/B with a shared range and stays open on current fallback',()=>{
+    mount({seismicEnergyInterval:true,seismicGuideOpen:true,seismicSceneNote:'Keep scene draft',seismicIntervalPinS:7.217});click('Prepare 5% / 20% comparison');patch({seismicTime:12.319});openRateHistory();const frame=()=>host.querySelector('[data-rate-history]'),values=()=>[...frame().querySelectorAll('[data-rate-total]')].map(n=>n.dataset.rateTotalValue),current=values(),range=frame().dataset.rateHistoryRange;
+    expect(frame().querySelector('[data-rate-view-help]').textContent).toContain('A and B also share');click('A · reference');expect(frame().dataset.rateHistoryTrial).toBe('reference');expect(frame().querySelector('[data-rate-history-caption]').textContent).toContain('A · reference');expect(frame().dataset.rateHistoryRange).toBe(range);expect(values()).not.toEqual(current);
+    act(()=>{viewerStatus='failed';viewerListener?.('failed');});expect(frame().dataset.rateHistory).toBe('fallback');expect(frame().dataset.rateHistoryTrial).toBe('current');expect(values()).toEqual(current);expect(host.querySelector('[data-rate-history-disclosure="fallback"]').open).toBe(true);expect(frame().querySelector('[data-rate-history-caption]').textContent).toContain('Current experiment');expect(frame().querySelector('[data-rate-view-help]').textContent).not.toContain('A and B');expect(state).toMatchObject({bridgeView:'2d',seismicSceneTrial:'reference',seismicSceneSource:'guide',seismicTime:12.319,seismicIntervalPinS:7.217,seismicSceneNote:'Keep scene draft'});
+  });
+  it('rate history retains tiny values, coincident rates, nonnegative damping and exact zero',()=>{
+    mount({bridgeView:'2d',seismicEnergyInterval:true,seismicTime:7.217,seismicIntervalPinS:7.217,seismicIntensityG:0.000001});openRateHistory('fallback');const frame=()=>host.querySelector('[data-rate-history]');expect(frame().querySelector('[data-rate-history-coincident]')).toBeTruthy();expect(frame().querySelector('[data-rate-pattern]')).toBeNull();expect(frame().dataset.rateHistoryView).toBe('event');expect(button('Interval detail').disabled).toBe(true);expect(frame().querySelector('[data-rate-area]')).toBeNull();expect([...frame().querySelectorAll('[data-rate-total]')].every(n=>Number(n.dataset.rateTotalValue)===0)).toBe(true);expect([...frame().querySelectorAll('[data-rate-marker]')].some(n=>Number(n.dataset.rateMarkerValue)!==0)).toBe(true);expect(frame().querySelector('[data-rate-history-scientific-help]')).toBeTruthy();
+    patch({seismicIntervalPinS:16,seismicTime:24,seismicDampingRatio:0});expect(frame().querySelector('[data-rate-curve="damping"] [data-rate-area]')).toBeNull();expect(Number(frame().querySelector('[data-rate-total="damping"]').dataset.rateTotalValue)).toBe(0);expect(frame().querySelector('[data-rate-pattern="damping"]').textContent).toContain('stays at zero');patch({seismicIntensityG:0});expect(frame().querySelector('[data-rate-pattern="input"]').textContent).toContain('stays at zero');expect(frame().querySelector('[data-rate-history-zero]')).toBeTruthy();expect(frame().querySelector('[data-rate-history-scale]')).toBeNull();expect(frame().querySelector('[data-rate-history-scientific-help]')).toBeNull();expect(frame().innerHTML).not.toMatch(/NaN|Infinity/);
+  });
+  it('rate history leaves records and printed interval totals independent of its transient disclosure',()=>{
+    mount({bridgeView:'2d',seismicEnergyInterval:true,seismicTime:12.319,seismicIntervalPinS:7.217,seismicTrialName:'Rates evidence',seismicObservation:'I can explain the signed area.'});openRateHistory('fallback');const totals=[...host.querySelectorAll('[data-rate-total]')].map(n=>n.dataset.rateTotalValue);click('Save earthquake trial');const record=state.seismicTrials[0];expect(record.investigation).toEqual({version:'bridge-energy-investigation-v1',pinTimeS:7.217});expect(Object.keys(record)).toEqual(['version','name','inputs','timeS','prediction','observation','investigation']);click('Open earthquake evidence report');expect(host.querySelector('[data-rate-history]')).toBeNull();const saved=host.querySelector('[data-seismic-trial] [data-investigation-evidence]');expect(saved.querySelector('[data-evidence-row="input"] td').dataset.evidenceValue).toBe(totals[0]);expect(saved.querySelector('[data-evidence-row="damping"] td').dataset.evidenceValue).toBe(totals[1]);expect(host.querySelector('[data-bridge-print-seismic]').querySelector('details,button,input,textarea,select')).toBeNull();expect(state.seismicObservation).toBe(record.observation);
+  });
+  it('force motion connects each selected scene trial to displayed velocity and spring/damping contributions',()=>{
+    mount({seismicForceLens:true,seismicGuideOpen:true,seismicTime:7.217,seismicSceneNote:'Keep scene note',seismicEnergyInterval:true,seismicIntervalPinS:12.319});click('Prepare 5% / 20% comparison');patch({seismicTime:7.217});
+    const block=()=>host.querySelector('[data-force-motion="scene"]'),mechanism=()=>host.querySelector('[data-force-motion="mechanism"]'),power=(node,id)=>Number(node.querySelector('[data-force-motion-contribution="'+id+'"]').dataset.forceMotionPower);
+    function check(){const f=lastScene.forceLens;expect(Number(block().querySelector('[data-force-relative-speed]').dataset.forceRelativeSpeed)).toBe(f.velocityMps);expect(power(block(),'spring')).toBe(f.springNPerKg*f.velocityMps);expect(power(block(),'damping')).toBe(-f.dampingNPerKg*f.velocityMps);expect(block().dataset.forceMotionTime).toBe('7.217');expect(mechanism().querySelector('[data-force-motion-caption]').textContent).toContain('Current experiment · 7.217 s');}
+    check();const current=power(mechanism(),'spring'),limit=lastScene.forceLens.limitNPerKg;click('A · reference');check();expect(block().querySelector('[data-force-motion-caption]').textContent).toContain('A · reference');expect(lastScene.forceLens.limitNPerKg).toBe(limit);expect(power(mechanism(),'spring')).toBe(current);expect(power(block(),'spring')).not.toBe(current);click('B · current');check();expect(block().dataset.forceMotionTrial).toBe('current');expect(power(block(),'spring')).toBe(current);expect(state).toMatchObject({seismicTime:7.217,seismicSceneNote:'Keep scene note',seismicIntervalPinS:12.319});
+  });
+  it('force motion distinguishes estimated turning and center moments without erasing tiny response directions',()=>{
+    mount({seismicForceLens:true,seismicEnergyOrbit:true,seismicTime:16.01});const block=()=>host.querySelector('[data-force-motion="scene"]');
+    click('Next turning point');expect(block().dataset.forceMotionKind).toBe('stationary');expect(block().querySelector('[data-force-motion-direction]').dataset.forceMotionDirection).toBe('0');expect(Math.abs(lastScene.forceLens.springNPerKg)).toBeGreaterThan(0);expect(block().textContent).toContain('displaced spring can still exert force');
+    click('Next center crossing');expect(block().dataset.forceMotionKind).toBe('centered');expect(block().querySelector('[data-force-motion-direction]').dataset.forceMotionDirection).not.toBe('0');expect(lastScene.forceLens.dampingPowerWPerKg).toBeGreaterThan(0);expect(block().textContent).toContain('relative motion can continue');
+    patch({seismicIntensityG:0.000001,seismicTime:16.01});click('Next turning point');expect(block().dataset.forceMotionKind).toBe('stationary');click('Next center crossing');expect(block().dataset.forceMotionKind).toBe('centered');expect(block().querySelector('[data-force-motion-direction]').dataset.forceMotionDirection).not.toBe('0');expect(block().querySelector('[data-force-motion-scientific-help]')).toBeTruthy();patch({seismicDampingRatio:0});expect(block().querySelector('[data-force-motion-damping]').dataset.forceMotionDamping).toBe('absent');expect(block().querySelector('[data-force-motion-contribution="damping"]').dataset.forceMotionPower).toBe('0');expect(block().textContent).toContain('damper exerts no force');
+  });
+  it('force motion preserves small signed forces, true chart scales and recalculated evidence in print',()=>{
+    mount({seismicForceLens:true,seismicSceneRecording:true,seismicIntensityG:0.000001,seismicTime:7.217});const block=()=>host.querySelector('[data-force-motion="scene"]');
+    const lines=()=>[...host.querySelectorAll('[data-force-plot] [data-force-arrow]')].map(group=>[...group.querySelectorAll('line')].map(line=>Number(line.getAttribute('x2')))),small=lines(),limit=lastScene.forceLens.limitNPerKg;
+    expect(limit).toBeLessThan(0.001);expect([...host.querySelectorAll('[data-force-reading]')].every(node=>node.textContent.match(/e-\d/))).toBe(true);expect([...host.querySelectorAll('[data-mechanism-force]')].every(node=>node.textContent.match(/e-\d/))).toBe(true);expect(block().querySelector('[data-force-relative-speed]').textContent).toMatch(/e-\d/);const kind=block().dataset.forceMotionKind,direction=block().querySelector('[data-force-motion-direction]').dataset.forceMotionDirection;
+    patch({seismicIntensityG:0.12});expect(lastScene.forceLens.limitNPerKg/limit).toBeCloseTo(120000,7);lines().forEach((row,i)=>row.forEach((x,j)=>expect(x).toBeCloseTo(small[i][j],9)));expect(block().dataset.forceMotionKind).toBe(kind);expect(block().querySelector('[data-force-motion-direction]').dataset.forceMotionDirection).toBe(direction);
+    patch({seismicIntensityG:0.000001});click('Save scene observation');const record=state.seismicTrials[0],saved=host.querySelector('[data-seismic-scene-forces]').textContent;expect(saved).toMatch(/e-\d/);patch({seismicTrials:[{...record,forces:{springNPerKg:999999}}]});click('Open earthquake evidence report');expect(host.querySelector('[data-bridge-print-seismic] [data-seismic-scene-forces]').textContent).toBe(saved);expect(host.querySelector('[data-bridge-print-seismic]').textContent).not.toContain('999999');
+    const zero=sceneTrial({name:'Zero reference',inputs:{archetype:'balanced',groundFrequencyHz:1.1,intensityG:0,dampingRatio:0.05}});
+    patch({tab:'build',seismicTrials:[zero],seismicSceneCompare:true,seismicSceneSource:'saved',seismicSceneTrial:'current'});expect(lastScene.forceLens.limitNPerKg).toBe(limit);lines().forEach((row,i)=>row.forEach((x,j)=>expect(x).toBeCloseTo(small[i][j],9)));expect(block().dataset.forceMotionTrial).toBe('current');
+    click('A · reference');expect(lastScene.forceLens.limitNPerKg).toBe(limit);expect(lastScene.forceLens.springNPerKg===0).toBe(true);expect(lastScene.forceLens.dampingNPerKg===0).toBe(true);expect(block().dataset.forceMotionKind).toBe('rest');
+    click('B · current');expect(lastScene.forceLens.limitNPerKg).toBe(limit);expect(block().dataset.forceMotionKind).toBe(kind);
+    const tiny=sceneTrial({name:'Tiny reference',inputs:{archetype:'balanced',groundFrequencyHz:1.1,intensityG:0.000001,dampingRatio:0.05}});patch({seismicTrials:[tiny],seismicIntensityG:0,seismicSceneTrial:'reference'});expect(lastScene.forceLens.limitNPerKg).toBe(limit);expect(block().dataset.forceMotionKind).toBe(kind);lines().forEach((row,i)=>row.forEach((x,j)=>expect(x).toBeCloseTo(small[i][j],9)));
+    click('B · current');expect(lastScene.forceLens.limitNPerKg).toBe(limit);expect(block().dataset.forceMotionKind).toBe('rest');
+  });
+  it('force motion retains investigation state and uses current contributions after graphics loss and zero input',()=>{
+    media.change(true);mount({bridgeView:'immersive',bridgeObserver:'bank',bridgeBankYaw:18,seismicForceLens:true,seismicTime:7.217,seismicTrialName:'Force reference',seismicSceneNote:'Keep explanation',seismicEnergyInterval:true,seismicIntervalPinS:12.319});click('Save earthquake trial');patch({seismicDampingRatio:0.2,seismicSceneCompare:true,seismicSceneSource:'saved',seismicSceneTrial:'reference'});
+    const scene=host.querySelector('[data-force-motion="scene"]'),a=scene.querySelector('[data-force-motion-contribution="damping"]').dataset.forceMotionPower;act(()=>{viewerStatus='failed';viewerListener?.('failed');});const fallback=()=>host.querySelector('[data-force-motion="fallback"]'),mechanism=()=>host.querySelector('[data-force-motion="mechanism"]');expect(fallback().dataset.forceMotionTrial).toBe('current');expect(fallback().querySelector('[data-force-motion-contribution="damping"]').dataset.forceMotionPower).not.toBe(a);expect(fallback().querySelector('[data-force-motion-contribution="damping"]').dataset.forceMotionPower).toBe(mechanism().querySelector('[data-force-motion-contribution="damping"]').dataset.forceMotionPower);
+    patch({seismicIntensityG:0});for(const block of [fallback(),mechanism()]){expect(block.dataset.forceMotionKind).toBe('rest');expect(block.querySelector('[data-force-motion-direction]').dataset.forceMotionDirection).toBe('0');expect([...block.querySelectorAll('[data-force-motion-contribution]')].every(n=>Number(n.dataset.forceMotionPower)===0)).toBe(true);expect(block.querySelector('[data-force-motion-scientific-help]')).toBeNull();}expect(state).toMatchObject({bridgeView:'2d',seismicSceneTrial:'reference',bridgeBankYaw:18,seismicTime:7.217,seismicSceneNote:'Keep explanation',seismicIntervalPinS:12.319});
+  });
+
+  it('motion coherence keeps tiny signed readings and the normalized rails at the actual event scale',()=>{
+    mount({seismicMotionGuide:true,seismicIntensityG:0.000001,seismicTime:7.217,seismicSceneNote:'Keep writing',seismicEnergyInterval:true,seismicIntervalPinS:12.319});
+    const frame=()=>host.querySelector('[data-motion-frame]'),positions=()=>[...frame().querySelectorAll('[data-motion-segment]')].map(n=>[Number(n.dataset.motionStartPercent),Number(n.dataset.motionEndPercent)]);
+    expect(frame().querySelector('[data-motion-caption]').textContent).toContain('Current experiment · 7.217 s');
+    expect(frame().querySelector('[data-motion-scientific-help]').textContent).toContain('2.5e-6 means 0.0000025');
+    expect(frame().querySelector('[data-motion-range-caption]').textContent).toMatch(/e-\d/);
+    for(const reading of frame().querySelectorAll('[data-motion-reading]')){const value=Number(reading.dataset.motionValueM);expect(reading.querySelector('strong').textContent).toMatch(/e-\d/);expect(reading.querySelector('strong').textContent.startsWith(value<0?'−':'+')).toBe(true);}
+    const range=Number(frame().dataset.motionRangeM),small=positions();expect(range).toBeLessThan(0.001);patch({seismicIntensityG:0.12});
+    expect(Number(frame().dataset.motionRangeM)/range).toBeCloseTo(120000,7);positions().forEach((pair,i)=>pair.forEach((value,j)=>expect(value).toBeCloseTo(small[i][j],9)));
+    const fixed=frame().dataset.motionRangeM;patch({seismicTime:24});expect(frame().dataset.motionRangeM).toBe(fixed);expect(state).toMatchObject({seismicSceneNote:'Keep writing',seismicIntervalPinS:12.319});
+  });
+  it('motion coherence preserves the ground-to-deck gap and sign on a common coordinate axis',()=>{
+    mount({seismicMotionGuide:true});const frame=()=>host.querySelector('[data-motion-frame]');let opposing=0;
+    for(const time of [0,1,3.5,7.217,8,8.633,9.083,10,12.319,16,24]){
+      patch({seismicTime:time});const range=Number(frame().dataset.motionRangeM),ground=Number(frame().querySelector('[data-motion-reading="ground"]').dataset.motionValueM),deck=Number(frame().querySelector('[data-motion-reading="deck"]').dataset.motionValueM),relative=Number(frame().querySelector('[data-motion-reading="relative"]').dataset.motionValueM);
+      const gap=frame().querySelector('[data-motion-segment="relative"]'),start=Number(gap.dataset.motionStartPercent),end=Number(gap.dataset.motionEndPercent);
+      expect(start).toBeCloseTo(50+ground/range*40,12);expect(end).toBeCloseTo(50+deck/range*40,12);expect((end-start)*range/40).toBeCloseTo(relative,12);expect(parseFloat(gap.style.width)).toBeCloseTo(Math.abs(end-start),12);
+      for(const marker of frame().querySelectorAll('[data-motion-marker]')){const percent=Number(marker.dataset.motionPositionPercent);expect(percent).toBeGreaterThanOrEqual(10-1e-9);expect(percent).toBeLessThanOrEqual(90+1e-9);expect(marker.getAttribute('width')).toBe('16');}
+      if(ground*deck<0)opposing++;
+    }
+    expect(opposing).toBeGreaterThan(0);expect(frame().textContent).toContain('Relative = deck from rest − ground from rest.');expect(frame().textContent).toContain('Circle = ground; diamond = deck.');
+  });
+  it('motion coherence uses unequal scene A/B scales and returns to current measurements through zero input and graphics fallback',()=>{
+    mount({bridgeView:'immersive',bridgeObserver:'bank',bridgeBankYaw:18,seismicMotionGuide:true,seismicTime:7.217,seismicTrialName:'Large reference',seismicSceneNote:'Keep scene note',seismicEnergyInterval:true,seismicIntervalPinS:12.319});click('Save earthquake trial');const record=state.seismicTrials[0];
+    patch({seismicIntensityG:0.000001,seismicDampingRatio:0.2,seismicSceneCompare:true,seismicSceneSource:'saved',seismicSceneTrial:'current'});const frame=()=>host.querySelector('[data-motion-frame]'),reading=()=>frame().querySelector('[data-motion-reading="deck"]'),range=frame().dataset.motionRangeM,b=reading().dataset.motionValueM;
+    expect(frame().dataset.motionSource).toBe('saved');expect(frame().querySelector('[data-motion-caption]').textContent).toContain('B · current · 7.217 s');click('A · reference');expect(frame().querySelector('[data-motion-caption]').textContent).toContain('A · reference · 7.217 s');expect(frame().dataset.motionRangeM).toBe(range);expect(reading().dataset.motionValueM).not.toBe(b);const a=reading().dataset.motionValueM;
+    patch({bridgeBankYaw:90});expect(reading().dataset.motionValueM).toBe(a);expect(state.seismicTime).toBe(7.217);
+    act(()=>{viewerStatus='failed';viewerListener?.('failed');});expect(frame().dataset.motionTrial).toBe('current');expect(frame().dataset.motionSource).toBe('current');expect(reading().dataset.motionValueM).toBe(b);expect(Number(frame().dataset.motionRangeM)).toBeLessThan(Number(range));expect(frame().querySelector('[data-motion-caption]').textContent).toContain('Current experiment');
+    patch({seismicIntensityG:0});expect(frame().dataset.motionMaximumM).toBe('0');expect(frame().querySelector('[data-motion-range-caption]')).toBeNull();expect(frame().querySelector('[data-motion-scientific-help]')).toBeNull();expect(frame().querySelector('[data-motion-zero]').textContent).toContain('stay at rest');expect([...frame().querySelectorAll('[data-motion-marker]')].every(n=>n.dataset.motionPositionPercent==='50')).toBe(true);expect([...frame().querySelectorAll('[data-motion-reading]')].every(n=>n.textContent.endsWith('0.00 cm'))).toBe(true);
+    expect(state).toMatchObject({bridgeView:'2d',seismicSceneTrial:'reference',bridgeBankYaw:90,seismicSceneNote:'Keep scene note',seismicIntervalPinS:12.319,seismicTime:7.217});expect(state.seismicTrials[0]).toEqual(record);
+  });
+
+  it('recorded maxima inspect notebook A and current B at exact shared times while preserving the scene and investigation',()=>{
+    mount({bridgeView:'immersive',bridgeObserver:'bank',bridgeBankYaw:18,bridgeBankPitch:-8,seismicDampingRatio:0.1,seismicTrialName:'Notebook A',seismicTime:2,seismicPrediction:'Keep prediction',seismicObservation:'Keep explanation',seismicScenePrediction:'Keep scene prediction',seismicSceneNote:'Keep scene note',seismicEnergyInterval:true,seismicIntervalPinS:12.319,seismicGuideOpen:true});click('Save earthquake trial');const record=state.seismicTrials[0];click('Prepare 5% / 20% comparison');click('A · reference');click('Compare on timeline');
+    const guide=()=>host.querySelector('[data-seismic-recorded-peak-guide]'),frame=()=>host.querySelector('[data-seismic-compare-frame]'),snapshot=()=>({...state,seismicTime:undefined,seismicPlaying:undefined,autoDriving:undefined});const before=snapshot();expect(guide().textContent).toContain('Notebook A');expect(state).toMatchObject({seismicSceneSource:'guide',seismicSceneTrial:'reference'});
+    for(const id of ['reference','current']){const peak=guide().querySelector('[data-recorded-peak-trial="'+id+'"]'),time=Number(peak.dataset.recordedPeakTime),magnitude=Number(peak.dataset.recordedPeakMagnitude);expect(time).not.toBe(record.timeS);patch({seismicPlaying:true,autoDriving:true});act(()=>peak.querySelector('button').click());expect(state.seismicTime).toBe(time);expect(state).toMatchObject({seismicPlaying:false,autoDriving:false});expect(snapshot()).toEqual(before);expect(document.activeElement).toBe(host.querySelector('[data-seismic-chart-slider]'));expect(Math.abs(Number(frame().querySelector('[data-seismic-compare-value="'+id+'"]').dataset.comparisonFrameValue))).toBeCloseTo(magnitude,14);expect(host.querySelector('[data-seismic-chart-slider]').getAttribute('aria-valuetext')).toContain(time.toFixed(3)+' s');}expect(state.seismicTrials[0]).toEqual(record);
+  });
+  it('recorded maxima follow the selected comparison measure and reference while fixed markers survive time inspection',()=>{
+    mount({bridgeView:'2d',seismicTrialName:'First reference'});click('Save earthquake trial');patch({seismicDampingRatio:0.2,seismicTrialName:'Second reference'});click('Save earthquake trial');patch({seismicDampingRatio:0.1});click('Compare on timeline');
+    const guide=()=>host.querySelector('[data-seismic-recorded-peak-guide]'),markers=()=>[...host.querySelectorAll('[data-recorded-peak-marker]')].map(n=>[n.dataset.recordedPeakTime,n.dataset.recordedPeakValue,n.innerHTML]);
+    for(const measure of ['relative','acceleration','stored']){act(()=>Simulate.change(field('Comparison measure'),{target:{value:measure}}));expect(guide().dataset.seismicRecordedPeakGuide).toBe(measure);expect(markers()).toHaveLength(2);const before=markers();patch({seismicTime:21.217});expect(markers()).toEqual(before);for(const id of ['reference','current']){const peak=guide().querySelector('[data-recorded-peak-trial="'+id+'"]');act(()=>peak.querySelector('button').click());const value=Number(host.querySelector('[data-seismic-compare-value="'+id+'"]').dataset.comparisonFrameValue);expect(Math.abs(value)).toBeCloseTo(Number(peak.dataset.recordedPeakMagnitude),14);expect(Number(host.querySelector('[data-recorded-peak-marker="'+id+'"]').dataset.recordedPeakValue)).toBe(value);}}const oldA=guide().querySelector('[data-recorded-peak-trial="reference"]').dataset.recordedPeakMagnitude,oldB=guide().querySelector('[data-recorded-peak-trial="current"]').dataset.recordedPeakMagnitude;patch({seismicReferenceIndex:1});expect(guide().textContent).toContain('Second reference');expect(guide().querySelector('[data-recorded-peak-trial="reference"]').dataset.recordedPeakMagnitude).not.toBe(oldA);expect(guide().querySelector('[data-recorded-peak-trial="current"]').dataset.recordedPeakMagnitude).toBe(oldB);click('Energy over time');expect(guide()).toBeNull();expect(host.querySelector('[data-recorded-peak-marker]')).toBeNull();
+  });
+  it('recorded maxima distinguish zero histories from tiny signed readings and use the actual shared chart scale',()=>{
+    mount({bridgeView:'2d',seismicIntensityG:0});click('Save earthquake trial');click('Compare on timeline');const guide=()=>host.querySelector('[data-seismic-recorded-peak-guide]');expect([...guide().querySelectorAll('button')].every(n=>n.disabled)).toBe(true);expect(guide().querySelectorAll('[data-recorded-peak-time]')).toHaveLength(0);expect(host.querySelector('[data-recorded-peak-marker]')).toBeNull();expect(guide().querySelectorAll('[data-recorded-peak-zero]')).toHaveLength(2);expect(guide().textContent).not.toMatch(/NaN|Infinity/);
+    patch({seismicIntensityG:0.000001});const current=guide().querySelector('[data-recorded-peak-trial="current"]');expect(current.querySelector('button').disabled).toBe(false);expect(guide().querySelector('[data-recorded-peak-trial="reference"] button').disabled).toBe(true);expect(current.textContent).toMatch(/e-\d/);expect(guide().querySelector('[data-recorded-peak-scientific-help]')).toBeTruthy();act(()=>current.querySelector('button').click());expect(host.querySelector('[data-seismic-compare-value="current"]').textContent).toMatch(/e-\d/);expect(host.querySelector('[data-bridge-seismic-timeline]').textContent).toContain('1.00e-6 g');const curve=()=>host.querySelector('[data-seismic-comparison-curves] polyline:last-of-type').getAttribute('points'),small=curve();patch({seismicIntensityG:0.12});expect(curve()).toBe(small);expect(host.querySelector('[data-recorded-peak-marker="current"] path')).toBeTruthy();
+  });
+  it('recorded maxima preserve exact inspection and notebook provenance through graphics fallback',()=>{
+    mount({bridgeView:'immersive',seismicTrialName:'Saved reference',seismicEnergyInterval:true,seismicIntervalPinS:16,seismicTime:2});click('Save earthquake trial');patch({seismicDampingRatio:0.2,seismicSceneCompare:true,seismicSceneSource:'saved',seismicSceneTrial:'reference'});click('Compare on timeline');const guide=()=>host.querySelector('[data-seismic-recorded-peak-guide]'),before=guide().textContent;act(()=>guide().querySelector('[data-recorded-peak-shortcut="reference"]').click());const time=state.seismicTime;act(()=>{viewerStatus='failed';viewerListener?.('failed');});expect(state).toMatchObject({bridgeView:'2d',seismicSceneSource:'saved',seismicSceneTrial:'reference',seismicTime:time,seismicIntervalPinS:16});expect(guide().textContent).toBe(before);act(()=>guide().querySelector('[data-recorded-peak-shortcut="current"]').click());expect(state.bridgeView).toBe('2d');expect(state.seismicSceneTrial).toBe('reference');expect(document.activeElement).toBe(host.querySelector('[data-seismic-chart-slider]'));expect(Number(host.querySelector('[data-seismic-compare-frame]').dataset.seismicCompareFrame)).toBe(state.seismicTime);
+  });
+
+  it('claim interval follows exact current questions and does not inherit a different scene A window', () => {
+    mount({ seismicTime: 7.217, seismicIntervalPinS: 12.319 });
+    expect(host.querySelector('[data-claim-interval-select]')).toBeNull();
+    patch({ seismicEnergyInterval: true });
+    const interval = () => host.querySelector('[data-claim-window="interval"]');
+    const select = () => field('Interval evidence quantity');
+    expect(select()).toBe(interval().querySelector('[data-claim-interval-select]'));
+    expect([...select().options].map(option => option.value)).toEqual(['question', 'input', 'damping', 'stored', 'kinetic', 'elastic']);
+    expect(interval().dataset).toMatchObject({ claimIntervalMeasure: 'damping', claimMeasureSource: 'question' });
+    expect(interval().querySelector('[data-claim-interval-question]')).toBeNull();
+    for (const [label, question, measure] of [
+      ['During shaking', 'shaking', 'input'], ['After shaking', 'settling', 'damping'],
+      ['Elastic → kinetic', 'exchange', 'kinetic'], ['Ground removes energy', 'returning', 'input']
+    ]) {
+      click(label);
+      expect(select().value).toBe('question');
+      expect(interval().dataset).toMatchObject({ claimIntervalMeasure: measure, claimMeasureSource: 'question' });
+      expect(interval().querySelector('[data-claim-interval-question]').dataset.claimIntervalQuestion).toBe(question);
+      expect(interval().querySelector('[data-claim-interval-scope]').textContent).toContain('Current experiment');
+    }
+    patch({ seismicArchetype: 'flexible', seismicTrialName: 'A has a different cycle' });
+    click('Save earthquake trial');
+    patch({ seismicArchetype: 'balanced', seismicSceneCompare: true, seismicSceneSource: 'saved', seismicSceneTrial: 'reference' });
+    click('Elastic → kinetic');
+    expect(host.querySelector('[data-energy-question]').dataset.energyQuestion).toBe('exchange');
+    expect(interval().querySelector('[data-claim-interval-question]')).toBeNull();
+    expect(interval().querySelector('[data-claim-interval-scope]').textContent).toContain('B · current');
+    expect(interval().querySelector('[data-claim-interval-scope]').textContent).toContain('Custom interval');
+    expect(interval().dataset.claimIntervalMeasure).toBe('damping');
+    click('B · current');
+    click('Elastic → kinetic');
+    expect(interval().querySelector('[data-claim-interval-question]').dataset.claimIntervalQuestion).toBe('exchange');
+    expect(interval().dataset.claimIntervalMeasure).toBe('kinetic');
+    patch({ seismicIntervalPinS: 7.217, seismicTime: 12.319 });
+    expect(interval().querySelector('[data-claim-interval-question]')).toBeNull();
+    expect(interval().dataset.claimIntervalMeasure).toBe('damping');
+  });
+
+  it('claim interval matches all five A/B table quantities across reversed, coincident, tiny and zero intervals', () => {
+    mount({ bridgeView: '2d', seismicEnergyInterval: true, seismicTime: 7.217, seismicIntervalPinS: 12.319, seismicTrialName: 'Reference evidence' });
+    click('Save earthquake trial');
+    patch({ seismicDampingRatio: 0.2 });
+    const measures = ['input', 'damping', 'stored', 'kinetic', 'elastic'];
+    const interval = () => host.querySelector('[data-claim-window="interval"]');
+    function check(measure) {
+      act(() => Simulate.change(field('Interval evidence quantity'), { target: { value: measure } }));
+      expect(interval().dataset).toMatchObject({ claimIntervalMeasure: measure, claimMeasureSource: 'manual' });
+      const table = host.querySelector('[data-investigation-evidence="comparison"]');
+      return ['reference', 'current'].map(trial => {
+        const cell = interval().querySelector('[data-claim-trial="' + trial + '"]');
+        const actual = Number(cell.dataset.claimValue), shown = cell.querySelector('strong').textContent;
+        expect(actual).toBe(Number(table.querySelector('[data-evidence-row="' + measure + '"] [data-evidence-trial="' + trial + '"]').dataset.evidenceValue));
+        if (measure === 'damping') {
+          expect(actual).toBeGreaterThanOrEqual(0);
+          expect(shown).not.toMatch(/^[+−-]/);
+        } else if (actual !== 0) {
+          expect(shown).toMatch(actual < 0 ? /^[−-]/ : /^\+/);
+        }
+        if (actual !== 0 && Math.abs(actual) < 0.001) expect(shown).toMatch(/e-\d/);
+        return actual;
+      });
+    }
+    const original = Object.fromEntries(measures.map(measure => [measure, check(measure)]));
+    patch({ seismicTime: 12.319, seismicIntervalPinS: 7.217 });
+    for (const measure of measures) expect(check(measure)).toEqual(original[measure]);
+    patch({ seismicTime: 7.217 });
+    for (const measure of measures) expect(check(measure)).toEqual([0, 0]);
+    expect(interval().textContent).toContain('The two moments coincide');
+    patch({ seismicTime: 12.319, seismicIntensityG: 0.000001,
+      seismicTrials: state.seismicTrials.map(trial => ({ ...trial, inputs: { ...trial.inputs, intensityG: 0.000001 } })) });
+    for (const measure of measures) {
+      const pair = check(measure);
+      expect(pair.every(value => value !== 0 && Math.abs(value) < 0.001)).toBe(true);
+    }
+    patch({ seismicDampingRatio: 0, seismicIntervalPinS: 16, seismicTime: 24 });
+    expect(check('damping')[1]).toBe(0);
+    expect(check('input')[1]).toBe(0);
+    patch({ seismicIntensityG: 0 });
+    for (const measure of measures) expect(check(measure)[1]).toBe(0);
+    expect(interval().innerHTML).not.toMatch(/NaN|Infinity/);
+  });
+
+  it('claim interval selection pauses motion and survives notebook, scene and graphics changes without editing evidence', () => {
+    const writing = { seismicPrediction: 'Keep notebook prediction', seismicObservation: 'Keep notebook explanation',
+      seismicScenePrediction: 'Keep scene prediction', seismicSceneNote: 'Keep scene note', seismicGuidePrediction: 'Keep guide prediction' };
+    mount({ ...writing, bridgeView: 'immersive', span: 42, seismicTime: 7.217, seismicIntervalPinS: 12.319,
+      seismicEnergyInterval: true, seismicTrialName: 'First reference' });
+    click('Save earthquake trial');
+    patch({ seismicDampingRatio: 0.2, seismicTrialName: 'Second reference' });
+    click('Save earthquake trial');
+    patch({ seismicDampingRatio: 0.1, seismicSceneCompare: true, seismicSceneSource: 'saved', seismicSceneTrial: 'current' });
+    click('Run earthquake');
+    const before = JSON.parse(JSON.stringify(state));
+    act(() => Simulate.change(field('Interval evidence quantity'), { target: { value: 'stored' } }));
+    expect(state).toEqual({ ...before, seismicPlaying: false, autoDriving: false });
+    const interval = () => host.querySelector('[data-claim-window="interval"]');
+    const value = trial => interval().querySelector('[data-claim-trial="' + trial + '"]').dataset.claimValue;
+    const a = value('reference'), b = value('current'), records = JSON.parse(JSON.stringify(state.seismicTrials));
+    act(() => Simulate.change(field('Earthquake reference trial'), { target: { value: '1' } }));
+    expect(value('reference')).not.toBe(a);
+    expect(value('current')).toBe(b);
+    click('A · reference');
+    expect(value('current')).toBe(b);
+    click('B · current');
+    expect(value('current')).toBe(b);
+    patch({ autoDriving: true });
+    const driving = JSON.parse(JSON.stringify(state));
+    act(() => Simulate.change(field('Interval evidence quantity'), { target: { value: 'stored' } }));
+    expect(state).toEqual({ ...driving, seismicPlaying: false, autoDriving: false });
+    click('A · reference');
+    act(() => { viewerStatus = 'failed'; viewerListener?.('failed'); });
+    expect(state).toMatchObject({ ...writing, bridgeView: '2d', span: 42, seismicDampingRatio: 0.1,
+      seismicTime: 7.217, seismicIntervalPinS: 12.319, seismicReferenceIndex: 1, seismicSceneTrial: 'reference' });
+    expect(field('Interval evidence quantity').value).toBe('stored');
+    expect(interval().dataset).toMatchObject({ claimIntervalMeasure: 'stored', claimMeasureSource: 'manual' });
+    expect(value('current')).toBe(b);
+    expect(state.seismicTrials).toEqual(records);
+  });
+
+  it('claim interval keeps a manual quantity across questions and resumes automatic choice only when requested', () => {
+    mount({ bridgeView: '2d', seismicEnergyInterval: true, seismicPrediction: 'My own prediction', seismicObservation: 'My own claim' });
+    const interval = () => host.querySelector('[data-claim-window="interval"]');
+    act(() => Simulate.change(field('Interval evidence quantity'), { target: { value: 'elastic' } }));
+    for (const [label, question] of [['During shaking', 'shaking'], ['Ground removes energy', 'returning'], ['After shaking', 'settling'], ['Elastic → kinetic', 'exchange']]) {
+      click(label);
+      expect(field('Interval evidence quantity').value).toBe('elastic');
+      expect(interval().dataset).toMatchObject({ claimIntervalMeasure: 'elastic', claimMeasureSource: 'manual' });
+      expect(interval().querySelector('[data-claim-interval-question]').dataset.claimIntervalQuestion).toBe(question);
+      expect(interval().querySelector('[data-claim-sentence-frame]').textContent).toContain('elastic energy changed by');
+    }
+    act(() => Simulate.change(field('Interval evidence quantity'), { target: { value: 'question' } }));
+    expect(interval().dataset).toMatchObject({ claimIntervalMeasure: 'kinetic', claimMeasureSource: 'question' });
+    expect(interval().querySelector('[data-claim-sentence-frame]').textContent).toContain('kinetic energy changed by');
+    click('After shaking');
+    expect(interval().dataset.claimIntervalMeasure).toBe('damping');
+    patch({ seismicTime: 20 });
+    expect(interval().querySelector('[data-claim-interval-question]')).toBeNull();
+    expect(interval().dataset).toMatchObject({ claimIntervalMeasure: 'damping', claimMeasureSource: 'question' });
+    expect(state).toMatchObject({ seismicPrediction: 'My own prediction', seismicObservation: 'My own claim' });
+    expect(state.seismicTrials).toBeUndefined();
+  });
+
+  it('claim interval prints the local choice while saved records and fresh disabled-model reports remain independent', () => {
+    mount({ bridgeView: '2d', seismicEnergyInterval: true, seismicTrialName: 'Exchange evidence',
+      seismicPrediction: 'Energy may move into motion.', seismicObservation: 'My saved explanation.' });
+    click('Elastic → kinetic');
+    click('Save earthquake trial');
+    const record = JSON.parse(JSON.stringify(state.seismicTrials[0]));
+    expect(Object.keys(record)).toEqual(['version', 'name', 'inputs', 'timeS', 'prediction', 'observation', 'investigation']);
+    expect(record.investigation).toEqual({ version: 'bridge-energy-investigation-v1', pinTimeS: state.seismicIntervalPinS });
+    const table = host.querySelector('[data-investigation-evidence="comparison"]');
+    const expectedKinetic = ['reference', 'current'].map(trial => table.querySelector('[data-evidence-row="kinetic"] [data-evidence-trial="' + trial + '"]').dataset.evidenceValue);
+    act(() => Simulate.change(field('Interval evidence quantity'), { target: { value: 'stored' } }));
+    const values = () => [...host.querySelector('[data-claim-window="interval"]').querySelectorAll('[data-claim-value]')].map(node => node.dataset.claimValue);
+    const selectedValues = values();
+    click('Open earthquake evidence report');
+    let report = host.querySelector('[data-claim-evidence="print"]');
+    expect(report.querySelector('[data-claim-window="interval"]').dataset).toMatchObject({ claimIntervalMeasure: 'stored', claimMeasureSource: 'manual' });
+    expect(values()).toEqual(selectedValues);
+    expect(report.querySelector('details,button,input,textarea,select')).toBeNull();
+    expect(state.seismicTrials[0]).toEqual(record);
+    const savedState = JSON.parse(JSON.stringify(state));
+    act(() => root.unmount()); root = null; host.remove();
+    mount({ ...savedState, tab: 'print', seismicEnabled: false });
+    report = host.querySelector('[data-claim-evidence="print"]');
+    expect(report.querySelector('[data-claim-window="interval"]').dataset).toMatchObject({ claimIntervalMeasure: 'kinetic', claimMeasureSource: 'question' });
+    expect(report.querySelector('[data-claim-interval-question]').dataset.claimIntervalQuestion).toBe('exchange');
+    expect(values()).toEqual(expectedKinetic);
+    expect(report.querySelector('details,button,input,textarea,select')).toBeNull();
+    expect(state.seismicTrials[0]).toEqual(record);
+    expect(state).toMatchObject({ seismicPrediction: record.prediction, seismicObservation: record.observation });
+  });
+
+  it('claim interval keeps saved damping context and tiny source readings independent of the live comparison and print state', () => {
+    const writing = { seismicGuidePrediction: 'Compare the conditions.', seismicGuideClaim: 'My provisional claim.',
+      seismicGuideReasoning: 'The original pair changed shaking too.', seismicPrediction: 'Notebook prediction', seismicObservation: 'Notebook explanation' };
+    mount({ ...writing, seismicGuideOpen: true, seismicIntensityG: 0.000001, seismicFrequencyHz: 1.1 });
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicIntensityG: 0.000002, seismicFrequencyHz: 0.8, seismicTime: 7.217 });
+    const readings = type => host.querySelector('[data-guide-readings="' + type + '"]');
+    const context = type => readings(type).querySelector('[data-guide-comparison-context]').dataset.guideComparisonContext;
+    expect(context('current')).toBe('confounded');
+    expect(readings('current').querySelector('p strong').textContent).toBe('Shared inspection time: 7.217 s');
+    click('Record paired evidence');
+    const record = JSON.parse(JSON.stringify(state.seismicGuideEvidence));
+    expect(Object.keys(record).sort()).toEqual(['currentInputs', 'referenceInputs', 'timeS', 'version']);
+    expect(record).toMatchObject({ version: 'bridge-damping-evidence-v1', timeS: 7.217,
+      referenceInputs: { intensityG: 0.000001, groundFrequencyHz: 1.1, dampingRatio: 0.05 },
+      currentInputs: { intensityG: 0.000002, groundFrequencyHz: 0.8, dampingRatio: 0.2 } });
+    const recordedText = readings('recorded').textContent;
+    const numeric = () => [...readings('recorded').querySelectorAll('[data-guide-number]')].map(node => Number(node.dataset.guideNumber));
+    const originalNumbers = numeric();
+    function expectOriginalEvidence() {
+      expect(context('recorded')).toBe('confounded');
+      expect(readings('recorded').querySelector('p strong').textContent).toBe('Shared inspection time: 7.217 s');
+      expect(readings('recorded').textContent).toBe(recordedText);
+      expect(numeric()).toEqual(originalNumbers);
+      expect(state.seismicGuideEvidence).toEqual(record);
+      expect(state).toMatchObject(writing);
+    }
+    expectOriginalEvidence();
+    expect(originalNumbers).toHaveLength(8);
+    expect(originalNumbers.every(value => value !== 0 && Math.abs(value) < 0.001)).toBe(true);
+    for (const node of readings('recorded').querySelectorAll('[data-guide-number]')) {
+      expect(node.textContent).toMatch(/e-\d/);
+      if (Number(node.dataset.guideNumber) < 0) expect(node.textContent).toMatch(/^[AB]: [−-]/);
+    }
+    expect(recordedText).toContain('1.00e-6 g');
+    expect(recordedText).toContain('2.00e-6 g');
+    expect(recordedText).toContain('0.80 Hz');
+    click('Prepare 5% / 20% comparison');
+    patch({ seismicTime: 7.217 });
+    const controlledBaseline = JSON.parse(JSON.stringify(state.seismicGuideBaseline));
+    expect(context('current')).toBe('controlled');
+    expect(readings('current').querySelector('p strong').textContent).toBe('Shared inspection time: 7.217 s');
+    expectOriginalEvidence();
+    patch({ seismicDampingRatio: 0.05 });
+    expect(context('current')).toBe('identical');
+    expectOriginalEvidence();
+    patch({ seismicIntensityG: 0, seismicArchetype: 'stiff' });
+    expect(state.seismicGuideBaseline.inputs.intensityG).toBeGreaterThan(0);
+    expect(context('current')).toBe('zero');
+    const zeroContext = 'This pair cannot isolate damping because one or both trials have no shaking.';
+    expect(readings('current').querySelector('[data-guide-comparison-context]').textContent).toBe(zeroContext);
+    expectOriginalEvidence();
+    patch({ seismicGuideBaseline: { ...controlledBaseline, inputs: { ...controlledBaseline.inputs, intensityG: 0 } } });
+    expect(state.seismicGuideBaseline.inputs.intensityG).toBe(0);
+    expect(state.seismicIntensityG).toBe(0);
+    expect(context('current')).toBe('zero');
+    expect(readings('current').querySelector('[data-guide-comparison-context]').textContent).toBe(zeroContext);
+    expect([...readings('current').querySelectorAll('[data-guide-number]')].every(node => Number(node.dataset.guideNumber) === 0)).toBe(true);
+    expectOriginalEvidence();
+    patch({ seismicGuideBaseline: { ...controlledBaseline, inputs: { ...controlledBaseline.inputs } },
+      seismicArchetype: controlledBaseline.inputs.archetype, seismicFrequencyHz: controlledBaseline.inputs.groundFrequencyHz,
+      seismicIntensityG: controlledBaseline.inputs.intensityG, seismicDampingRatio: 0.2 });
+    expect(context('current')).toBe('controlled');
+    expectOriginalEvidence();
+    const savedState = JSON.parse(JSON.stringify(state));
+    act(() => root.unmount()); root = null; host.remove();
+    mount({ ...savedState, tab: 'print', seismicEnabled: false });
+    const report = host.querySelector('[data-bridge-damping-guide="print"]');
+    expect(report).toBeTruthy();
+    expectOriginalEvidence();
+    expect(report.querySelector('details,button,input,textarea,select')).toBeNull();
+    expect(state.seismicTrials).toBeUndefined();
+  });
+
+  it('claim evidence separates event, moment and optional interval without changing notebook writing',()=>{
+    mount({bridgeView:'2d',seismicTime:7.217,seismicIntervalPinS:12.319,seismicPrediction:'My prediction',seismicObservation:'My explanation'});
+    const guide=()=>host.querySelector('[data-claim-evidence]'),value=id=>Number(guide().querySelector('[data-claim-window="'+id+'"] [data-claim-value]').dataset.claimValue);
+    expect(host.querySelector('[data-claim-evidence-disclosure]').open).toBe(false);expect(guide().querySelectorAll('[data-claim-window]')).toHaveLength(3);expect(guide().querySelectorAll('[data-claim-trial="reference"]')).toHaveLength(0);expect(guide().querySelector('[data-claim-interval-missing]')).toBeTruthy();expect(guide().querySelector('[data-claim-window="interval"] [data-claim-value]')).toBeNull();expect(guide().querySelector('[data-claim-window="moment"]').dataset).toMatchObject({claimStart:'7.217',claimEnd:'7.217'});
+    expect(value('moment')).toBe(Number(host.querySelector('[data-energy-map-amount="stored"]').dataset.energyValue));const event=value('event'),moment=value('moment');patch({seismicTime:16});expect(value('event')).toBe(event);expect(value('moment')).not.toBe(moment);expect(guide().querySelector('[data-claim-window="moment"] [data-claim-window-time]').textContent).toBe('16.000 s');expect(guide().querySelector('button,input,textarea,select,[role="slider"]')).toBeNull();expect(state).toMatchObject({seismicPrediction:'My prediction',seismicObservation:'My explanation',seismicIntervalPinS:12.319});expect(state.seismicTrials).toBeUndefined();
+  });
+  it('claim evidence uses notebook A and current B at shared moments and chronological interval bounds',()=>{
+    mount({bridgeView:'immersive',seismicTrialName:'First notebook reference',seismicTime:7.217});const expectedReferenceMoment=Number(host.querySelector('[data-energy-map-amount="stored"]').dataset.energyValue);patch({seismicTime:2});click('Save earthquake trial');patch({seismicDampingRatio:0.2,seismicTrialName:'Second notebook reference',seismicTime:5});click('Save earthquake trial');patch({seismicDampingRatio:0.1,seismicEnergyInterval:true,seismicIntervalPinS:12.319,seismicTime:7.217,seismicGuideOpen:true});click('Prepare 5% / 20% comparison');patch({seismicDampingRatio:0.1,seismicTime:7.217,seismicIntervalPinS:12.319});click('A · reference');
+    const guide=()=>host.querySelector('[data-claim-evidence]'),read=(window,trial)=>Number(guide().querySelector('[data-claim-window="'+window+'"] [data-claim-trial="'+trial+'"]').dataset.claimValue),pair=()=>host.querySelector('[data-investigation-evidence="comparison"]');
+    expect(state).toMatchObject({seismicSceneSource:'guide',seismicSceneTrial:'reference'});expect(guide().querySelector('[data-claim-reference]').textContent).toContain('First notebook reference');expect(guide().querySelector('[data-claim-window="interval"]').dataset).toMatchObject({claimStart:'7.217',claimEnd:'12.319'});for(const id of ['reference','current'])expect(read('interval',id)).toBe(Number(pair().querySelector('[data-evidence-row="damping"] [data-evidence-trial="'+id+'"]').dataset.evidenceValue));expect(read('moment','current')).toBe(Number(host.querySelector('[data-energy-map-amount="stored"]').dataset.energyValue));
+    expect(read('moment','reference')).toBe(expectedReferenceMoment);const a=read('moment','reference'),b=read('moment','current'),loss=read('interval','current');patch({seismicReferenceIndex:1});expect(guide().querySelector('[data-claim-reference]').textContent).toContain('Second notebook reference');expect(read('moment','reference')).not.toBe(a);expect(read('moment','current')).toBe(b);patch({seismicTime:12.319,seismicIntervalPinS:7.217});expect(read('interval','current')).toBe(loss);patch({seismicTime:7.217});expect(guide().textContent).toContain('The two moments coincide');expect(read('interval','reference')).toBe(0);expect(read('interval','current')).toBe(0);
+  });
+  it('claim evidence retains tiny nonzero readings and distinguishes zero damping and zero input',()=>{
+    mount({bridgeView:'2d',seismicTime:24,seismicEnergyInterval:true,seismicIntervalPinS:16,seismicDampingRatio:0,seismicIntensityG:0.000001});const guide=()=>host.querySelector('[data-claim-evidence]'),read=id=>guide().querySelector('[data-claim-window="'+id+'"] [data-claim-value]');expect(Number(read('event').dataset.claimValue)).toBeGreaterThan(0);expect(read('event').textContent).toMatch(/e-\d/);expect(Number(read('moment').dataset.claimValue)).toBeGreaterThan(0);expect(read('interval').textContent).toContain('0.000 J/kg');expect(guide().querySelector('[data-claim-scientific-help]').textContent).toContain('2.5e-6 means 0.0000025');expect(guide().textContent).not.toMatch(/NaN|Infinity/);patch({seismicIntensityG:0});expect([...guide().querySelectorAll('[data-claim-value]')].every(n=>Number(n.dataset.claimValue)===0)).toBe(true);expect(guide().querySelector('[data-claim-scientific-help]')).toBeNull();expect(guide().querySelector('[data-claim-interval-missing]')).toBeNull();
+  });
+  it('claim evidence prints recalculated current-draft values with the model disabled and keeps saved notes intact',()=>{
+    mount({bridgeView:'2d',seismicTrialName:'Print notebook reference',seismicEnergyInterval:true,seismicIntervalPinS:16,seismicTime:24,seismicObservation:'My original saved explanation'});click('Save earthquake trial');const record=state.seismicTrials[0];patch({seismicDampingRatio:0.2,seismicObservation:'My current draft explanation'});const values=[...host.querySelector('[data-claim-evidence]').querySelectorAll('[data-claim-value]')].map(n=>n.dataset.claimValue);
+    act(()=>root.unmount());root=null;host.remove();mount({tab:'print',seismicEnabled:false,seismicTrials:[{...record,evidence:{stored:999999}}],seismicDampingRatio:0.2,seismicEnergyInterval:true,seismicIntervalPinS:16,seismicTime:24,seismicObservation:'My current draft explanation'});const guide=host.querySelector('[data-claim-evidence="print"]');expect([...guide.querySelectorAll('[data-claim-value]')].map(n=>n.dataset.claimValue)).toEqual(values);expect(guide.closest('[data-notebook-print-draft]')).toBeTruthy();expect(guide.querySelector('details,button,input,textarea,select')).toBeNull();expect(guide.textContent).not.toContain('999999');expect(host.querySelector('[data-seismic-trial="0"]').textContent).toContain('My original saved explanation');expect(state.seismicObservation).toBe('My current draft explanation');
+  });
+
+  it('energy accounting ties the current input to its stored and dissipated energy on one fixed event scale', () => {
+    mount({bridgeView:'2d',seismicTime:7.217,seismicIntervalPinS:12.319,seismicPrediction:'Keep my prediction',seismicObservation:'Keep my explanation'});
+    const ledger=()=>host.querySelector('[data-seismic-energy-accounting]'),amount=id=>Number(ledger().querySelector('[data-energy-balance-total="'+id+'"]').dataset.energyValue),mapAmount=id=>Number(host.querySelector('[data-energy-map-amount="'+id+'"]').dataset.energyValue);
+    expect(ledger().dataset.seismicEnergyAccounting).toBe('current');expect(ledger().dataset.energyAccountingTime).toBe('7.217');const scale=ledger().dataset.energyBalanceScale;
+    expect(amount('input')).toBe(mapAmount('input'));expect(amount('accounted')).toBeCloseTo(mapAmount('stored')+mapAmount('damping'),14);expect(ledger().querySelector('[data-energy-balance-equation]').textContent).toContain('≈');expect(ledger().querySelector('[data-energy-balance-details] summary').textContent).toBe('Why use ≈?');
+    const parts=[...ledger().querySelectorAll('[data-energy-balance-row="accounted"] [data-energy-balance-part]')];expect(parts.map(p=>p.dataset.energyBalancePart)).toEqual(['kinetic','elastic','damping']);expect(parts.reduce((sum,p)=>sum+Number(p.dataset.energyValue),0)).toBe(amount('accounted'));expect(parts.reduce((sum,p)=>sum+parseFloat(p.style.width),0)).toBeCloseTo(100,12);expect(Number(ledger().querySelector('[data-energy-balance-residual]').dataset.energyBalanceResidual)).toBeCloseTo(amount('input')-amount('accounted'),14);
+    patch({seismicTime:16});const input=amount('input'),stored=mapAmount('stored'),loss=mapAmount('damping');patch({seismicTime:24});expect(ledger().dataset.energyBalanceScale).toBe(scale);expect(amount('input')).toBe(input);expect(mapAmount('stored')).toBeLessThan(stored);expect(mapAmount('damping')).toBeGreaterThan(loss);expect(amount('accounted')).toBeCloseTo(input,7);expect(state).toMatchObject({seismicIntervalPinS:12.319,seismicPrediction:'Keep my prediction',seismicObservation:'Keep my explanation'});
+  });
+  it('energy accounting distinguishes zero input from tiny nonzero energy without hiding its proportions', () => {
+    mount({bridgeView:'2d',seismicTime:7.217,seismicIntensityG:0});const ledger=()=>host.querySelector('[data-seismic-energy-accounting]'),map=()=>host.querySelector('[data-seismic-energy-map]');expect(ledger().dataset.energyBalanceMaximum).toBe('0');expect([...ledger().querySelectorAll('[data-energy-balance-bar]')].every(n=>n.style.width==='0%')).toBe(true);expect([...ledger().querySelectorAll('[data-energy-balance-part]')].every(n=>n.style.width==='0%')).toBe(true);expect(map().querySelector('[data-energy-map-scientific-help]')).toBeNull();expect(ledger().textContent).toContain('All bars are empty');expect(map().textContent).not.toMatch(/NaN|Infinity/);
+    patch({seismicIntensityG:0.12});const ordinaryWidth=ledger().querySelector('[data-energy-balance-bar="input"]').style.width;expect(map().querySelector('[data-energy-map-scientific-help]')).toBeNull();patch({seismicIntensityG:0.000001});expect(Number(ledger().dataset.energyBalanceMaximum)).toBeGreaterThan(0);expect(Number(ledger().dataset.energyBalanceScale)).toBeLessThan(0.001);expect(parseFloat(ledger().querySelector('[data-energy-balance-bar="input"]').style.width)).toBeCloseTo(parseFloat(ordinaryWidth),10);expect(map().querySelector('[data-energy-map-scientific-help]').textContent).toContain('2.5e-6 means 0.0000025');expect(map().textContent.match(/Scientific notation:/g)).toHaveLength(1);expect(ledger().querySelector('[data-energy-balance-total="input"]').textContent).toMatch(/e-\d/);expect(map().textContent).not.toMatch(/NaN|Infinity/);
+  });
+  it('energy accounting remains current when scene A is selected and survives graphics fallback', () => {
+    mount({bridgeView:'immersive',seismicTime:7.217,seismicEnergyInterval:true,seismicIntervalPinS:12.319});click('Save earthquake trial');patch({seismicDampingRatio:0.2,seismicSceneCompare:true,seismicSceneSource:'saved',seismicSceneTrial:'current'});const ledger=()=>host.querySelector('[data-seismic-energy-accounting]'),before=ledger().textContent,scale=ledger().dataset.energyBalanceScale;click('A · reference');expect(ledger().textContent).toBe(before);expect(ledger().dataset.energyBalanceScale).toBe(scale);act(()=>{viewerStatus='failed';viewerListener?.('failed');});expect(state).toMatchObject({bridgeView:'2d',seismicSceneTrial:'reference',seismicTime:7.217,seismicIntervalPinS:12.319});expect(ledger().textContent).toBe(before);expect(ledger().dataset.seismicEnergyAccounting).toBe('current');expect(host.querySelector('[data-energy-map-caption]').textContent).toContain('Current experiment · 7.217 s');
+  });
+
+  it('learning route focuses existing notebook tools and preserves the investigation while pausing motion', () => {
+    mount({ bridgeView:'2d', seismicTime:7.217, seismicIntervalPinS:12.319, seismicEnergyInterval:true, seismicPrediction:'Notebook prediction', seismicObservation:'Notebook explanation', seismicScenePrediction:'Scene prediction', seismicSceneNote:'Scene note', seismicGuidePrediction:'Guide prediction' });
+    const snapshot=()=>({ time:state.seismicTime, pin:state.seismicIntervalPinS, intensity:state.seismicIntensityG, frequency:state.seismicFrequencyHz, damping:state.seismicDampingRatio, mode:state.seismicArchetype, notes:[state.seismicPrediction,state.seismicObservation,state.seismicScenePrediction,state.seismicSceneNote,state.seismicGuidePrediction], records:state.seismicTrials, source:state.seismicSceneSource, selection:state.seismicSceneTrial });
+    const before=snapshot();
+    for(const [step,target] of [['predict','#seismic-prediction'],['inspect','[data-seismic-chart-slider]'],['compare','[data-seismic-save-trial]'],['explain','#seismic-observation']]) {
+      patch({seismicPlaying:true,autoDriving:true});act(()=>host.querySelector('[data-investigation-route-step="'+step+'"]').click());
+      expect(document.activeElement).toBe(host.querySelector(target));expect(state).toMatchObject({seismicPlaying:false,autoDriving:false});expect(snapshot()).toEqual(before);
+    }
+    expect(state.seismicTrials).toBeUndefined();click('Save earthquake trial');const saved=state.seismicTrials[0];patch({seismicDampingRatio:0.2,seismicPlaying:true,autoDriving:true});click('Compare · Go to saved-trial comparison');expect(document.activeElement).toBe(host.querySelector('[data-seismic-trial-comparison]'));expect(state.seismicTrials[0]).toEqual(saved);expect(state).toMatchObject({seismicTime:7.217,seismicIntervalPinS:12.319,seismicDampingRatio:0.2,seismicPlaying:false,autoDriving:false});
+  });
+  it('learning route is optional and keeps notebook writing separate from the guide and scene', () => {
+    mount({seismicEnabled:false});expect(host.querySelector('[data-investigation-route]')).toBeNull();patch({seismicEnabled:true,seismicGuideOpen:true});const route=host.querySelector('[data-investigation-route]');expect(route.querySelectorAll('button')).toHaveLength(4);expect(route.textContent).toContain('Save the current experiment');expect(route.querySelector('[aria-current]')).toBeNull();click('Predict · Go to earthquake prediction');act(()=>Simulate.change(document.activeElement,{target:{value:'One change prediction'}}));expect(state.seismicPrediction).toBe('One change prediction');expect(state.seismicScenePrediction).toBeUndefined();expect(state.seismicGuidePrediction).toBeUndefined();patch({seismicGuideOpen:false});click('Explain · Go to earthquake explanation');expect(document.activeElement.id).toBe('seismic-observation');
+  });
+  it('energy map uses recorded current evidence at the exact inspected time and preserves small readings', () => {
+    mount({bridgeView:'2d',seismicTime:7.217,seismicIntervalPinS:0,seismicEnergyInterval:true,seismicIntensityG:0.000001});const map=host.querySelector('[data-seismic-energy-map]'),draft=host.querySelector('[data-investigation-evidence="draft"]');
+    const value=(scope,selector)=>Number(scope.querySelector(selector).dataset.energyValue||scope.querySelector(selector).dataset.evidenceValue);
+    expect(map.dataset.seismicEnergyMap).toBe('current');expect(map.dataset.energyMapTime).toBe('7.217');expect(map.querySelector('[data-energy-map-caption]').textContent).toContain('Current experiment · 7.217 s · Shaking phase');
+    for(const [amount,row] of [['input','input'],['stored','remaining'],['damping','damping']])expect(value(map,'[data-energy-map-amount="'+amount+'"]')).toBe(value(draft,'[data-evidence-row="'+row+'"] [data-evidence-value]'));
+    const kinetic=value(map,'[data-energy-map-detail="kinetic"]'),elastic=value(map,'[data-energy-map-detail="elastic"]');expect(kinetic+elastic).toBeCloseTo(value(map,'[data-energy-map-amount="stored"]'),14);const fractions=[...map.querySelectorAll('[data-energy-fraction]')].map(n=>Number(n.dataset.energyFraction));expect(fractions[0]+fractions[1]).toBeCloseTo(1,14);expect(fractions[0]).toBeCloseTo(kinetic/(kinetic+elastic),14);expect(map.textContent).toMatch(/e-\d/);expect(map.textContent).not.toMatch(/NaN|Infinity/);expect(value(map,'[data-energy-map-rate="input"]')).toBe(Number(host.querySelector('[data-seismic-input-power]').dataset.seismicInputPower));expect(map.textContent).toContain('W/kg');
+  });
+  it('energy map distinguishes zero transfer, stored vibration and the end of the observation', () => {
+    mount({seismicIntensityG:0,seismicTime:24});const map=()=>host.querySelector('[data-seismic-energy-map]');expect([...map().querySelectorAll('[data-energy-value]')].every(n=>Number(n.dataset.energyValue)===0)).toBe(true);expect([...map().querySelectorAll('[data-energy-fraction]')].every(n=>n.dataset.energyFraction==='0')).toBe(true);expect(map().querySelector('[data-energy-map-connector="input"]').dataset.energyDirection).toBe('idle');expect(map().textContent).toContain('No input transfer now');expect(map().textContent).toContain('No damping transfer now');expect(map().textContent).toContain('Observation ends');
+    patch({seismicIntensityG:0.12,seismicTime:16});expect(map().textContent).toContain('Free vibration');expect(Number(map().querySelector('[data-energy-map-amount="stored"]').dataset.energyValue)).toBeGreaterThan(0);expect(Number(map().querySelector('[data-energy-map-rate="input"]').dataset.energyValue)).toBe(0);expect(Number(map().querySelector('[data-energy-map-rate="damping"]').dataset.energyValue)).toBeGreaterThan(0);expect(map().textContent).toContain('No input transfer now');expect(map().textContent).toContain('Damping removes energy now');patch({seismicDampingRatio:0});expect(map().textContent).toContain('No damping transfer now');
+  });
+  it('energy map follows instantaneous current input power independently of a selected scene reference', () => {
+    mount({seismicEnergyInterval:true,seismicTime:7.217,seismicArchetype:'balanced',seismicFrequencyHz:1.1,seismicIntensityG:0.12,seismicDampingRatio:0.05});click('Save earthquake trial');patch({seismicDampingRatio:0.2,seismicSceneCompare:true,seismicSceneSource:'saved',seismicSceneTrial:'current'});const read=()=>host.querySelector('[data-seismic-energy-map]').textContent,before=read();click('A · reference');expect(state.seismicSceneTrial).toBe('reference');expect(read()).toBe(before);const connector=()=>host.querySelector('[data-energy-map-connector="input"]');patch({seismicTime:0.2});expect(Number(connector().querySelector('[data-energy-map-rate]').dataset.energyValue)).toBeGreaterThan(0);expect(connector().dataset.energyDirection).toBe('in');patch({seismicDampingRatio:0.05,seismicTime:7.283333333333333});expect(Number(connector().querySelector('[data-energy-map-rate]').dataset.energyValue)).toBeLessThan(0);expect(connector().dataset.energyDirection).toBe('out');expect(connector().textContent).toContain('Energy returned now');expect(Number(host.querySelector('[data-energy-map-amount="input"]').dataset.energyValue)).toBeGreaterThan(0);patch({seismicIntensityG:0.000001});expect(connector().dataset.energyDirection).toBe('out');expect(connector().querySelector('[data-energy-map-rate]').textContent).toMatch(/-.*e-\d/);expect(host.querySelector('[data-seismic-energy-map]').textContent).toContain('Current experiment');expect(state.seismicSceneTrial).toBe('reference');
+  });
+
+  it('paired intervals compare shared exact bounds in 2D and update A and B independently',()=>{
+    mount({bridgeView:'2d',seismicTrialName:'Original reference'});click('Save earthquake trial');patch({seismicDampingRatio:0.2,seismicTrialName:'Damped reference'});click('Save earthquake trial');patch({seismicDampingRatio:0.1,seismicEnergyInterval:true,seismicIntervalPinS:12.319,seismicTime:7.217,seismicPrediction:'Keep prediction',seismicObservation:'Keep explanation'});
+    const pair=()=>host.querySelector('[data-seismic-interval-comparison]'),evidence=()=>pair().querySelector('[data-investigation-evidence="comparison"]'),columns=()=>[...evidence().querySelectorAll('[data-evidence-column]')].map(c=>[...evidence().querySelectorAll('[data-evidence-value][data-evidence-trial="'+c.dataset.evidenceColumn+'"]')].map(n=>n.dataset.evidenceValue));
+    expect(evidence().dataset).toMatchObject({evidenceStart:'7.217',evidenceEnd:'12.319'});expect(pair().textContent).toContain('Original reference');expect(evidence().querySelector('table').style.fontSize).toBe('12px');const before=columns();expect(before[0]).toHaveLength(7);expect(before[1]).toHaveLength(7);expect(before[0]).not.toEqual(before[1]);patch({seismicReferenceIndex:1});expect(columns()[0]).not.toEqual(before[0]);expect(columns()[1]).toEqual(before[1]);const switched=columns();patch({seismicDampingRatio:0.3});expect(columns()[0]).toEqual(switched[0]);expect(columns()[1]).not.toEqual(switched[1]);expect(state).toMatchObject({bridgeView:'2d',seismicIntervalPinS:12.319,seismicTime:7.217,seismicPrediction:'Keep prediction',seismicObservation:'Keep explanation'});
+  });
+  it('paired intervals print recalculated A/B evidence before the live model is enabled',()=>{
+    mount({bridgeView:'2d',seismicTrialName:'Print reference',seismicEnergyInterval:true,seismicIntervalPinS:16,seismicTime:24});click('Save earthquake trial');const reference=state.seismicTrials[0];patch({seismicDampingRatio:0.2});const live=host.querySelector('[data-investigation-evidence="comparison"]'),values=[...live.querySelectorAll('[data-evidence-value]')].map(n=>n.dataset.evidenceValue);
+    act(()=>root.unmount());root=null;host.remove();mount({tab:'print',seismicEnabled:false,seismicTrials:[{...reference,answers:{damping:999999}}],seismicDampingRatio:0.2,seismicEnergyInterval:true,seismicIntervalPinS:16,seismicTime:24});const printed=host.querySelector('[data-seismic-interval-comparison]');expect([...printed.querySelectorAll('[data-evidence-value]')].map(n=>n.dataset.evidenceValue)).toEqual(values);expect(printed.textContent).toContain('Print reference');expect(printed.textContent).not.toContain('999999');expect(printed.querySelector('button,input,textarea,select')).toBeNull();expect(printed.querySelector('[data-investigation-evidence]').dataset).toMatchObject({evidenceStart:'16',evidenceEnd:'24'});patch({seismicEnergyInterval:false});expect(host.querySelector('[data-seismic-interval-comparison]')).toBeNull();
+  });
+  it('paired intervals survive graphics loss without selecting a different scene and retain finite zero evidence',()=>{
+    mount({bridgeView:'immersive',seismicTrialName:'Zero reference',seismicIntensityG:0});click('Save earthquake trial');patch({seismicEnergyInterval:true,seismicTime:24,seismicIntervalPinS:16,seismicSceneCompare:true,seismicSceneSource:'saved',seismicSceneTrial:'reference'});const pair=()=>host.querySelector('[data-seismic-interval-comparison]');expect(pair()).toBeTruthy();expect([...pair().querySelectorAll('[data-evidence-value]')].every(n=>Number(n.dataset.evidenceValue)===0)).toBe(true);const before=pair().textContent;act(()=>{viewerStatus='failed';viewerListener?.('failed');});expect(state).toMatchObject({bridgeView:'2d',seismicSceneTrial:'reference',seismicTime:24,seismicIntervalPinS:16});expect(pair().textContent).toBe(before);expect(pair().textContent).not.toContain('Selected');expect(pair().querySelector('[data-evidence-selected]')).toBeNull();expect(pair().querySelector('[data-evidence-question]').textContent).toContain('B · current');patch({seismicIntensityG:0.000001,seismicFrequencyHz:2});expect(pair().textContent).toContain('The ground motion differs');expect(pair().textContent).toContain('1.00e-6 g');expect(pair().textContent).not.toMatch(/NaN|Infinity/);expect(pair().textContent).toMatch(/e-\d/);
+  });
+  it('comparison clarity aligns tiny table readings with bars and preserves signed changes through print',()=>{
+    mount({seismicIntensityG:0.000001});click('Save earthquake trial');patch({seismicDampingRatio:0.2});const comparison=()=>host.querySelector('[data-seismic-trial-comparison]'),rows=[...comparison().querySelectorAll('[data-seismic-trial-table] tbody tr')];rows.forEach((row,index)=>{const pair=comparison().querySelectorAll('[data-response-pair]')[index],actual=[...row.querySelectorAll('[data-comparison-value]')].map(n=>Number(n.dataset.comparisonValue)),bar=[...pair.querySelectorAll('[data-response-reading]')].map(n=>Number(n.dataset.responseValue));expect(actual).toEqual(bar);const change=row.querySelector('[data-comparison-change]');expect(Number(change.dataset.comparisonChange)).toBe(actual[1]-actual[0]);expect(change.textContent).toMatch(/-.*e-\d/);});expect(comparison().querySelector('[data-comparison-precision-help]')).toBeTruthy();const before=rows.map(row=>row.textContent);click('Open earthquake evidence report');expect([...comparison().querySelectorAll('[data-seismic-trial-table] tbody tr')].map(row=>row.textContent)).toEqual(before);
+    patch({tab:'build',seismicIntensityG:0.000001,seismicDampingRatio:0.050000001});const percentages=[...comparison().querySelectorAll('[data-comparison-percent]')];expect(percentages.some(n=>Number(n.dataset.comparisonPercent)!==0 && n.textContent.includes('e-'))).toBe(true);expect(comparison().textContent).not.toMatch(/NaN|Infinity/);
+  });
+  it('comparison clarity retains keyboard focus when the isolation action disappears',()=>{
+    mount();click('Save earthquake trial');patch({seismicArchetype:'stiff',seismicDampingRatio:0.2});const action=button('Isolate damping change');action.focus();expect(document.activeElement).toBe(action);click('Isolate damping change');const comparison=host.querySelector('[data-seismic-trial-comparison]');expect(comparison.querySelector('[data-controlled-comparison]')).toBeNull();expect(document.activeElement).toBe(comparison);expect(comparison.tabIndex).toBe(-1);expect(comparison.textContent).toContain('Changed settings: Damping ratio (%)');
+  });
+  it('paired comparison bars share a scale per measure and remain stable across inspected times and print',()=>{
+    mount({seismicTrialName:'Visual reference'});click('Save earthquake trial');patch({seismicDampingRatio:0.2});const read=()=>[...host.querySelectorAll('[data-response-pair]')].map(pair=>({scale:Number(pair.dataset.responseScale),values:[...pair.querySelectorAll('[data-response-reading]')].map(n=>Number(n.dataset.responseValue)),widths:[...pair.querySelectorAll('[data-response-bar]')].map(n=>parseFloat(n.style.width))})),before=read();expect(before).toHaveLength(4);
+    before.forEach(pair=>{expect(pair.scale).toBe(Math.max(...pair.values) || 1);pair.widths.forEach((width,i)=>expect(width).toBeCloseTo(pair.values[i]/pair.scale*100,10));expect(Math.max(...pair.widths)).toBe(100);});patch({seismicTime:21.217});expect(read()).toEqual(before);click('Open earthquake evidence report');expect(read()).toEqual(before);expect(host.querySelector('[data-seismic-comparison-visual]').textContent).toContain('different measures use different scales');expect(host.querySelector('[data-seismic-comparison-visual]').querySelector('button,input,textarea,select')).toBeNull();
+  });
+  it('paired comparison bars represent true zero and very small results without invalid widths',()=>{
+    mount({seismicIntensityG:0});click('Save earthquake trial');const zero=[...host.querySelectorAll('[data-response-bar]')];expect(zero).toHaveLength(8);expect(zero.every(n=>n.style.width==='0%')).toBe(true);patch({seismicIntensityG:1e-10});for(const pair of host.querySelectorAll('[data-response-pair]')){expect(Number(pair.dataset.responseScale)).toBeGreaterThan(0);expect(Math.max(...[...pair.querySelectorAll('[data-response-bar]')].map(n=>parseFloat(n.style.width)))).toBe(100);for(const bar of pair.querySelectorAll('[data-response-bar]'))expect(Number.isFinite(parseFloat(bar.style.width))).toBe(true);}expect(host.querySelector('[data-seismic-comparison-visual]').textContent).not.toMatch(/NaN|Infinity/);expect(host.querySelector('[data-seismic-comparison-visual]').textContent).toMatch(/e-\d/);
+  });
+  it('controlled comparison isolates damping while preserving inspection, notes and the saved reference',()=>{
+    mount({bridgeView:'2d',seismicTrialName:'Reference'});click('Save earthquake trial');const record=state.seismicTrials[0];patch({seismicArchetype:'stiff',seismicFrequencyHz:2.3,seismicIntensityG:0.3,seismicDampingRatio:0.2,seismicEnergyInterval:true,seismicIntervalPinS:12.319,seismicTime:7.217,seismicPrediction:'Keep prediction',seismicObservation:'Keep observation',seismicScenePrediction:'Keep scene prediction',seismicSceneNote:'Keep scene note',seismicSceneSource:'capture',seismicSceneTrial:'reference',seismicPlaying:true,autoDriving:true});click('Isolate damping change');
+    expect(state).toMatchObject({bridgeView:'2d',seismicArchetype:record.inputs.archetype,seismicFrequencyHz:record.inputs.groundFrequencyHz,seismicIntensityG:record.inputs.intensityG,seismicDampingRatio:0.2,seismicTime:7.217,seismicIntervalPinS:12.319,seismicEnergyInterval:true,seismicPlaying:false,autoDriving:false,seismicSceneSource:'saved',seismicSceneTrial:'current',seismicPrediction:'Keep prediction',seismicObservation:'Keep observation',seismicScenePrediction:'Keep scene prediction',seismicSceneNote:'Keep scene note'});expect(state.seismicTrials[0]).toEqual(record);const comparison=host.querySelector('[data-seismic-trial-comparison]');expect(comparison.textContent).toContain('Changed settings: Damping ratio (%)');expect(comparison.querySelector('[data-controlled-comparison]')).toBeNull();click('Open earthquake evidence report');expect(host.querySelector('[data-bridge-print-seismic]').textContent).toContain('Changed settings: Damping ratio (%)');
+  });
+  it('controlled comparison isolates response mode and disables absent changes without showing actions in print',()=>{
+    mount({seismicTrialName:'Reference'});click('Save earthquake trial');const record=state.seismicTrials[0];patch({seismicArchetype:'stiff',seismicFrequencyHz:2.3,seismicIntensityG:0.3});expect(button('Isolate damping change').disabled).toBe(true);expect(button('Isolate response mode change').disabled).toBe(false);click('Isolate response mode change');expect(state).toMatchObject({seismicArchetype:'stiff',seismicFrequencyHz:record.inputs.groundFrequencyHz,seismicIntensityG:record.inputs.intensityG,seismicDampingRatio:record.inputs.dampingRatio});expect(host.querySelector('[data-seismic-trial-comparison]').textContent).toContain('Changed settings: Response mode');
+    patch({seismicDampingRatio:0.2});expect(host.querySelector('[data-controlled-comparison]')).toBeTruthy();click('Open earthquake evidence report');expect(host.querySelector('[data-bridge-print-seismic] [data-controlled-comparison]')).toBeNull();expect(host.querySelector('[data-bridge-print-seismic]').textContent).toContain('Several settings changed');
+  });
+  it('saved small readouts retain late-stage energy and signed power through fresh print without trusting answers',()=>{
+    mount({seismicSceneRecording:true,seismicDampingRatio:0.2,seismicTime:21.217});click('Save scene observation');const record=state.seismicTrials[0],article=host.querySelector('[data-seismic-trial]'),energy=article.querySelector('[data-seismic-saved-energy]').textContent,power=article.querySelector('[data-seismic-scene-power]').textContent;
+    expect(energy).toMatch(/e-\d/);expect(power).toMatch(/-\d\.\d{2}e-\d/);expect(article.querySelector('[data-seismic-scientific-help]').textContent).toContain('2.5e-6 means 0.0000025');
+    act(()=>root.unmount());root=null;host.remove();mount({tab:'print',seismicEnabled:false,seismicTrials:[{...record,sample:{kineticJPerKg:999999},power:{storedPowerWPerKg:999999}}]});const print=host.querySelector('[data-seismic-trial]');expect(print.querySelector('[data-seismic-saved-energy]').textContent).toBe(energy);expect(print.querySelector('[data-seismic-scene-power]').textContent).toBe(power);expect(print.textContent).not.toContain('999999');expect(print.querySelector('button,input,textarea,select')).toBeNull();
+  });
+  it('saved small readouts keep true-zero and ordinary-scale summaries simple',()=>{
+    mount({seismicIntensityG:0,seismicSceneRecording:true,seismicTime:24});click('Save scene observation');const zero=host.querySelector('[data-seismic-trial]');expect(zero.querySelector('[data-seismic-saved-energy]').textContent).toContain('0.000 / 0.000 / 0.000 / 0.000');expect(zero.querySelector('[data-seismic-scene-power]').textContent).toContain('0.000 / 0.000 / 0.000');expect(zero.querySelector('[data-seismic-scientific-help]')).toBeNull();
+    patch({seismicIntensityG:0.12,seismicDampingRatio:0.05,seismicTime:7.217});click('Save earthquake trial');const ordinary=host.querySelectorAll('[data-seismic-trial]')[1];expect(ordinary.querySelector('[data-seismic-saved-energy]').textContent).not.toMatch(/e-\d/);expect(ordinary.querySelector('[data-seismic-scientific-help]')).toBeNull();
+  });
+  it('interval time controls edit exact endpoints, pause motion and swap without changing energy evidence',()=>{
+    mount({bridgeView:'2d',seismicEnergyInterval:true,seismicTime:7.217,seismicIntervalPinS:12.319});const values=()=>[...host.querySelectorAll('[data-investigation-evidence="draft"] [data-evidence-value]')].map(n=>n.dataset.evidenceValue),before=values();patch({seismicPlaying:true,autoDriving:true});click('Swap moments');expect(state).toMatchObject({seismicTime:12.319,seismicIntervalPinS:7.217,seismicPlaying:false,autoDriving:false});expect(values()).toEqual(before);expect(field('Inspected time (s)').value).toBe('12.319');expect(field('Pinned time (s)').value).toBe('7.217');
+    act(()=>Simulate.change(field('Inspected time (s)'),{target:{value:'5.123'}}));expect(state.seismicTime).toBe(5.123);expect(state.seismicIntervalPinS).toBe(7.217);expect(host.querySelector('[data-interval-window]').dataset).toMatchObject({intervalStart:'5.123',intervalEnd:'7.217'});
+    for(const value of ['', 'not-a-time','Infinity']){act(()=>Simulate.change(field('Inspected time (s)'),{target:{value}}));expect(state.seismicTime).toBe(5.123);}
+    act(()=>Simulate.change(field('Inspected time (s)'),{target:{value:'30'}}));expect(state.seismicTime).toBe(24);act(()=>Simulate.change(field('Inspected time (s)'),{target:{value:'-2'}}));expect(state.seismicTime).toBe(0);patch({seismicIntervalPinS:0});expect(button('Swap moments').disabled).toBe(true);
+  });
+  it('interval time controls preserve selected scene and A/B evidence when moments swap',()=>{
+    mount({bridgeView:'immersive',bridgeObserver:'bank',seismicEnergyInterval:true,seismicGuideOpen:true});click('Prepare 5% / 20% comparison');click('A · reference');click('After shaking');const evidence=()=>[...host.querySelectorAll('[data-investigation-evidence="scene"] [data-evidence-value]')].map(n=>n.dataset.evidenceValue),before=evidence();const settings={frequency:state.seismicFrequencyHz,damping:state.seismicDampingRatio,intensity:state.seismicIntensityG};click('Swap moments');expect(state).toMatchObject({seismicIntervalPinS:24,seismicTime:16,seismicSceneCompare:true,seismicSceneTrial:'reference',bridgeView:'immersive'});expect(evidence()).toEqual(before);expect({frequency:state.seismicFrequencyHz,damping:state.seismicDampingRatio,intensity:state.seismicIntensityG}).toEqual(settings);expect(host.querySelector('[data-energy-window="settling"]').getAttribute('aria-pressed')).toBe('true');
+    act(()=>Simulate.change(field('Inspected time (s)'),{target:{value:'17.137'}}));expect(state.seismicTime).toBe(17.137);expect(state.seismicSceneTrial).toBe('reference');expect(host.querySelector('[data-energy-window="settling"]').getAttribute('aria-pressed')).toBe('false');
+  });
+  it('current draft reports retain unsaved backwards evidence and writing without creating a trial',()=>{
+    mount({bridgeView:'2d',seismicEnergyInterval:true,seismicIntervalPinS:12.319,seismicTime:7.217,seismicPrediction:'<b>Prediction</b>',seismicObservation:'Energy returns to the ground.'});
+    const before=[...host.querySelectorAll('[data-investigation-evidence="draft"] [data-evidence-value]')].map(n=>n.dataset.evidenceValue);
+    click('Open earthquake evidence report');const draft=host.querySelector('[data-notebook-print-draft]'),evidence=draft.querySelector('[data-investigation-evidence="draft"]');
+    expect(evidence.dataset).toMatchObject({evidenceStart:'7.217',evidenceEnd:'12.319'});expect([...evidence.querySelectorAll('[data-evidence-value]')].map(n=>n.dataset.evidenceValue)).toEqual(before);
+    expect(draft.textContent).toContain('Inspected time: 7.217 s');expect(draft.textContent).toContain('Current draft evidence');expect(draft.textContent).toContain('<b>Prediction</b>');expect(draft.querySelector('b,input,textarea,select,button')).toBeNull();expect(state.seismicTrials || []).toHaveLength(0);
+  });
+  it('current draft reports show zero-input evidence without notes and keep saved evidence independent',()=>{
+    mount({seismicEnergyInterval:true,seismicIntensityG:0,seismicIntervalPinS:16,seismicTime:24});click('Save earthquake trial');patch({seismicIntensityG:0.12,seismicIntervalPinS:17.137});click('Open earthquake evidence report');
+    const draft=host.querySelector('[data-notebook-print-draft] [data-investigation-evidence]'),saved=host.querySelector('[data-seismic-trial] [data-investigation-evidence]');expect(draft.dataset.evidenceStart).toBe('17.137');expect(saved.dataset.evidenceStart).toBe('16');expect([...saved.querySelectorAll('[data-evidence-value]')].every(n=>Number(n.dataset.evidenceValue)===0)).toBe(true);
+    patch({seismicTrials:[],seismicIntensityG:0,seismicIntervalPinS:16});const report=host.querySelector('[data-bridge-print-seismic]');expect(report).toBeTruthy();expect(report.querySelector('[data-evidence-question]').dataset.evidenceQuestion).toBe('settling');expect(report.textContent).not.toMatch(/NaN|Infinity/);
+    patch({seismicEnergyInterval:false});expect(host.querySelector('[data-bridge-print-seismic]')).toBeNull();
+  });
+  it('2D notebook investigations save exact pins, pause writing and restore current-experiment evidence',()=>{
+    mount({bridgeView:'2d',seismicEnergyInterval:true,seismicTrialName:'2D interval',seismicScenePrediction:'Keep scene draft',seismicSceneNote:'Keep scene note'});click('After shaking');patch({seismicPlaying:true,autoDriving:true});
+    act(()=>Simulate.change(field('Earthquake prediction'),{target:{value:'Stored energy should become damping loss.'}}));expect(state).toMatchObject({seismicPlaying:false,autoDriving:false});
+    act(()=>Simulate.change(field('Earthquake observation and explanation'),{target:{value:'No input work remains after shaking.'}}));
+    const values=()=>[...host.querySelectorAll('[data-investigation-evidence="draft"] [data-evidence-value]')].map(n=>n.dataset.evidenceValue),before=values();expect(before).toHaveLength(7);click('Save earthquake trial');const record=state.seismicTrials[0];
+    expect(record.investigation).toEqual({version:'bridge-energy-investigation-v1',pinTimeS:16});expect(record).not.toHaveProperty('scene');expect(record.timeS).toBe(24);expect(record.prediction).toContain('Stored energy');
+    patch({seismicEnergyInterval:false,seismicIntervalPinS:9.3,seismicTime:2,seismicDampingRatio:0.4,seismicSceneCompare:true,seismicSceneTrial:'reference',seismicPrediction:'Changed draft',seismicObservation:'Changed observation'});
+    click('Restore earthquake trial 1: 2D interval');expect(state).toMatchObject({bridgeView:'2d',seismicEnergyInterval:true,seismicIntervalPinS:16,seismicTime:24,seismicSceneCompare:false,seismicSceneTrial:'current',seismicScenePrediction:'Keep scene draft',seismicSceneNote:'Keep scene note'});expect(values()).toEqual(before);expect(field('Earthquake prediction').value).toBe(record.prediction);expect(field('Earthquake observation and explanation').value).toBe(record.observation);
+  });
+  it('legacy and damaged notebook inspection metadata resets stale intervals without discarding saved notes',()=>{
+    mount({bridgeView:'2d',seismicTime:7.217,seismicTrialName:'Legacy trial',seismicPrediction:'Original prediction',seismicObservation:'Original observation'});click('Save earthquake trial');const record=state.seismicTrials[0];expect(record).not.toHaveProperty('investigation');
+    for(const investigation of [undefined,null,{version:'future',pinTimeS:16},...['16',-1,25,NaN,Infinity,null].map(pinTimeS=>({version:'bridge-energy-investigation-v1',pinTimeS}))]){
+      patch({seismicTrials:[{...record,investigation}],seismicEnergyInterval:true,seismicIntervalPinS:16});expect(host.querySelector('[data-seismic-trial] [data-investigation-evidence]')).toBeNull();click('Restore earthquake trial 1: Legacy trial');expect(state).toMatchObject({seismicEnergyInterval:false,seismicIntervalPinS:0,seismicTime:7.217});expect(field('Earthquake prediction').value).toBe(record.prediction);expect(field('Earthquake observation and explanation').value).toBe(record.observation);
+    }
+  });
+  it('plain notebook interval reports recompute precise backwards inspection before a live model is enabled',()=>{
+    mount({bridgeView:'2d',seismicEnergyInterval:true,seismicTime:7.217,seismicIntervalPinS:12.319});
+    const before=[...host.querySelectorAll('[data-investigation-evidence="draft"] [data-evidence-value]')].map(n=>n.dataset.evidenceValue);click('Save earthquake trial');const record=state.seismicTrials[0];
+    act(()=>root.unmount());root=null;host.remove();mount({tab:'print',seismicEnabled:false,seismicTrials:[{...record,investigation:{...record.investigation,answers:{input:999999},question:'fake cached question'}}]});
+    const article=host.querySelector('[data-bridge-print-seismic] [data-seismic-trial]'),evidence=article.querySelector('[data-investigation-evidence="saved"]');expect(evidence.dataset).toMatchObject({evidenceStart:'7.217',evidenceEnd:'12.319'});expect([...evidence.querySelectorAll('[data-evidence-value]')].map(n=>n.dataset.evidenceValue)).toEqual(before);expect(article.textContent).toContain('Inspected time: 7.217 s');expect(article.textContent).not.toContain('999999');expect(article.textContent).not.toContain('fake cached question');expect(article.querySelector('[data-seismic-scene-context]')).toBeNull();expect(article.querySelector('button,input,textarea,select')).toBeNull();
+  });
+  it('2D notebook questions retain signed ground-removal evidence and finite zero-shaking intervals',()=>{
+    mount({bridgeView:'2d',seismicEnergyInterval:true});click('Ground removes energy');click('Save earthquake trial');
+    let article=host.querySelector('[data-seismic-trial]');expect(article.querySelector('[data-seismic-investigation-question]').dataset.seismicInvestigationQuestion).toBe('returning');expect(article.querySelector('[data-seismic-scene-question]')).toBeNull();const work=article.querySelector('[data-evidence-row="input"] td');expect(Number(work.dataset.evidenceValue)).toBeLessThan(0);expect(work.textContent).toMatch(/^−/);expect(work.textContent).not.toContain('<0.001');
+    patch({seismicIntensityG:0,seismicTime:24,seismicIntervalPinS:16});click('Save earthquake trial');article=host.querySelector('[data-seismic-trial="1"]');expect(article.querySelector('[data-seismic-investigation-question]').dataset.seismicInvestigationQuestion).toBe('settling');expect([...article.querySelectorAll('[data-evidence-value]')].every(n=>Number(n.dataset.evidenceValue)===0)).toBe(true);expect(article.innerHTML).not.toMatch(/NaN|Infinity/);
+  });
+  it('valid scene display endpoints take precedence over unrelated notebook inspection metadata',()=>{
+    const display={version:'bridge-scene-display-v1',motionGuide:false,energyInFrame:false,energyFlow:false,overlay:false,energyInterval:true,intervalPinS:16};
+    const record=sceneTrial({timeS:24,scene:scenePose({display}),investigation:{version:'bridge-energy-investigation-v1',pinTimeS:0}});mount({seismicTrials:[record]});
+    const evidence=host.querySelector('[data-seismic-trial] [data-investigation-evidence="saved"]');expect(evidence.dataset.evidenceStart).toBe('16');expect(host.querySelector('[data-seismic-scene-question]').dataset.seismicSceneQuestion).toBe('settling');
+    patch({seismicTrials:[{...record,scene:{...record.scene,display:{...display,energyInterval:false}}}]});expect(host.querySelector('[data-seismic-trial] [data-investigation-evidence]')).toBeNull();
+  });
+  it('scene predictions stay separate from notebook drafts and survive saving, revisiting and printing',()=>{
+    mount({seismicSceneRecording:true,seismicPrediction:'Notebook prediction',seismicObservation:'Notebook observation',seismicTime:7.217});
+    act(()=>Simulate.change(field('Scene prediction'),{target:{value:'More damping should reduce stored energy.'}}));
+    act(()=>Simulate.change(field('Scene observation note'),{target:{value:'The damper dissipates the remaining energy.'}}));
+    click('Save scene observation');const record=state.seismicTrials[0];
+    expect(record).toMatchObject({prediction:'More damping should reduce stored energy.',observation:'The damper dissipates the remaining energy.',timeS:7.217});
+    expect(state).toMatchObject({seismicScenePrediction:'',seismicSceneNote:'',seismicPrediction:'Notebook prediction',seismicObservation:'Notebook observation'});
+    patch({seismicScenePrediction:'New unsaved prediction',seismicSceneNote:'New unsaved note',seismicTime:20});
+    click('Revisit scene observation 1: '+record.name);expect(field('Scene prediction').value).toBe(record.prediction);expect(field('Scene observation note').value).toBe(record.observation);
+    click('Open earthquake evidence report');const article=host.querySelector('[data-bridge-print-seismic] [data-seismic-trial]');expect(article.textContent).toContain(record.prediction);expect(article.textContent).toContain(record.observation);
+  });
+  it('writing a scene prediction pauses motion while preserving notes, physical inputs and guided inspection',()=>{
+    mount({seismicSceneRecording:true,seismicEnergyInterval:true,seismicSceneNote:'Keep this note'});click('After shaking');patch({seismicPlaying:true,autoDriving:true});
+    const inputs=[state.seismicArchetype,state.seismicFrequencyHz,state.seismicIntensityG,state.seismicDampingRatio];
+    act(()=>Simulate.change(field('Scene prediction'),{target:{value:'Stored energy will become damping loss.'}}));
+    expect(state).toMatchObject({seismicPlaying:false,autoDriving:false,seismicSceneNote:'Keep this note',seismicIntervalPinS:16,seismicTime:24});
+    expect([state.seismicArchetype,state.seismicFrequencyHz,state.seismicIntensityG,state.seismicDampingRatio]).toEqual(inputs);
+    expect(host.querySelector('[data-investigation-evidence="scene"] [data-evidence-question]').dataset.evidenceQuestion).toBe('settling');
+  });
+  it('writing evidence compares A and B over identical times with stable values when selection changes',()=>{
+    mount({seismicSceneRecording:true,seismicEnergyInterval:true,seismicGuideOpen:true});click('Prepare 5% / 20% comparison');click('After shaking');
+    const evidence=()=>host.querySelector('[data-bridge-scene-recorder] [data-investigation-evidence]');
+    const values=id=>[...evidence().querySelectorAll('[data-evidence-trial="'+id+'"]')].map(n=>Number(n.dataset.evidenceValue));
+    expect(evidence().dataset).toMatchObject({evidenceStart:'16',evidenceEnd:'24',evidenceSelected:'current'});const a=values('reference'),b=values('current');
+    expect(a).toHaveLength(7);expect(b).toHaveLength(7);expect(a).not.toEqual(b);
+    for(const column of [a,b]){expect(column[1]).toBe(0);expect(column[2]).toBeGreaterThan(0);expect(column[5]).toBeCloseTo(-column[2],7);expect(column[0]-column[6]).toBeCloseTo(column[2],7);}
+    click('A · reference');expect(evidence().dataset.evidenceSelected).toBe('reference');expect(values('reference')).toEqual(a);expect(values('current')).toEqual(b);
+    expect([...evidence().querySelectorAll('thead th')].every(n=>n.getAttribute('scope')==='col')).toBe(true);expect([...evidence().querySelectorAll('tbody th')].every(n=>n.getAttribute('scope')==='row')).toBe(true);
+  });
+  it('writing evidence keeps tiny negative work readable and orders backwards or zero-input inspection',()=>{
+    mount({seismicSceneRecording:true,seismicEnergyInterval:true});click('Ground removes energy');
+    const evidence=()=>host.querySelector('[data-bridge-scene-recorder] [data-investigation-evidence]');
+    const work=evidence().querySelector('[data-evidence-row="input"] td'),value=Number(work.dataset.evidenceValue);expect(value).toBeLessThan(0);expect(work.textContent).toMatch(/^−/);expect(work.textContent).not.toContain('<0.001');
+    if(Math.abs(value)<0.001)expect(work.textContent).toContain(Math.abs(value).toExponential(2));
+    const before=evidence().textContent,pin=state.seismicIntervalPinS,time=state.seismicTime;patch({seismicIntervalPinS:time,seismicTime:pin});expect(evidence().textContent).toBe(before);
+    patch({seismicIntensityG:0,seismicIntervalPinS:16,seismicTime:24});expect([...evidence().querySelectorAll('[data-evidence-value]')].every(n=>Number(n.dataset.evidenceValue)===0)).toBe(true);expect(evidence().innerHTML).not.toMatch(/NaN|Infinity/);
+  });
+  it('saved paired writing evidence is recomputed in a fresh disabled-model report and ignores cached answers',()=>{
+    mount({seismicSceneRecording:true,seismicEnergyInterval:true,seismicGuideOpen:true,seismicScenePrediction:'Energy will be dissipated.'});click('Prepare 5% / 20% comparison');click('After shaking');
+    const before=[...host.querySelectorAll('[data-bridge-scene-recorder] [data-evidence-value]')].map(n=>n.dataset.evidenceValue);click('Save scene observation');const record=state.seismicTrials[0];
+    act(()=>root.unmount());root=null;host.remove();mount({tab:'print',seismicEnabled:false,seismicTrials:[{...record,evidence:{input:999999},prediction:'Energy will be dissipated.'}]});
+    const saved=host.querySelector('[data-bridge-print-seismic] [data-investigation-evidence="saved"]');expect([...saved.querySelectorAll('[data-evidence-value]')].map(n=>n.dataset.evidenceValue)).toEqual(before);expect(saved.querySelectorAll('[data-evidence-column]')).toHaveLength(2);expect(saved.textContent).not.toContain('999999');expect(saved.querySelector('button,input,textarea,select')).toBeNull();
+    const tampered={...record,scene:{...record.scene,comparison:{...record.scene.comparison,currentInputs:{...record.scene.comparison.currentInputs,intensityG:0.4}}}};
+    patch({seismicTrials:[tampered]});const solo=host.querySelector('[data-investigation-evidence="saved"]');expect(solo.querySelectorAll('[data-evidence-column]')).toHaveLength(1);expect(solo.textContent).toContain('Saved experiment');
+  });
+  it('legacy scene predictions reset stale drafts, bound text and remain escaped in printed reports',()=>{
+    mount({seismicSceneRecording:true,seismicScenePrediction:'x'.repeat(2100),seismicTrials:[sceneTrial({prediction:undefined})]});expect(field('Scene prediction').value).toHaveLength(2000);
+    click('Revisit scene observation 1: My scene');expect(field('Scene prediction').value).toBe('');
+    act(()=>Simulate.change(field('Scene prediction'),{target:{value:'<script>prediction</script>'+'x'.repeat(2100)}}));click('Save scene observation');const record=state.seismicTrials[1];expect(record.prediction).toHaveLength(2000);
+    click('Open earthquake evidence report');const report=host.querySelector('[data-bridge-print-seismic]');expect(report.textContent).toContain('<script>prediction</script>');expect(report.querySelector('script')).toBeNull();
+  });
+  it('guided energy questions inspect exact windows without changing inputs or learner notes',()=>{
+    mount({seismicEnergyInterval:true,seismicPlaying:true,autoDriving:true,seismicTime:7.217,seismicObservation:'Keep my observation',seismicSceneNote:'Keep my scene note'});
+    const settings=()=>[state.seismicArchetype,state.seismicFrequencyHz,state.seismicIntensityG,state.seismicDampingRatio];const before=settings();
+    click('During shaking');expect(state).toMatchObject({seismicIntervalPinS:0,seismicTime:16,seismicPlaying:false,autoDriving:false});
+    expect(host.querySelector('[data-energy-question]').dataset.energyQuestion).toBe('shaking');expect(button('During shaking').getAttribute('aria-pressed')).toBe('true');
+    click('After shaking');expect(state).toMatchObject({seismicIntervalPinS:16,seismicTime:24});expect(host.querySelector('[data-energy-question]').dataset.energyQuestion).toBe('settling');
+    expect(settings()).toEqual(before);expect(state.seismicObservation).toBe('Keep my observation');expect(state.seismicSceneNote).toBe('Keep my scene note');
+    patch({seismicTime:20});expect(host.querySelector('[data-energy-question]')).toBeNull();expect(button('After shaking').getAttribute('aria-pressed')).toBe('false');
+  });
+  it('guided exchange and ground-removal questions show conserved destinations and signed work',()=>{
+    mount({seismicEnergyInterval:true,seismicEnergyOrbit:true});const value=id=>Number(host.querySelector('[data-budget-part="'+id+'"]').dataset.budgetValue);
+    click('Elastic → kinetic');expect(state.seismicIntervalPinS).toBeGreaterThanOrEqual(16);expect(state.seismicTime).toBeGreaterThan(state.seismicIntervalPinS);
+    expect(host.querySelector('[data-energy-question]').dataset.energyQuestion).toBe('exchange');expect(value('added')).toBe(0);expect(value('returned')).toBe(0);expect(value('damping')).toBeGreaterThan(0);
+    click('Ground removes energy');expect(host.querySelector('[data-energy-question]').dataset.energyQuestion).toBe('returning');expect(value('returned')).toBeGreaterThan(0);expect(value('added')).toBe(0);
+    expect(value('initial')).toBeCloseTo(value('remaining')+value('damping')+value('returned'),7);
+    const returnedLabel=host.querySelector('[data-budget-legend="returned"]').textContent;
+    expect(returnedLabel).toContain('Net removed by ground');expect(returnedLabel).not.toContain('<0.001');
+    if(value('returned') < 0.001) expect(returnedLabel).toContain(value('returned').toExponential(2));
+    expect(Number(host.querySelector('[data-interval-term="input"]').dataset.intervalValue)).toBeLessThan(0);
+    expect(Number(host.querySelector('[data-orbit-pin]').dataset.orbitPin)).toBe(state.seismicIntervalPinS);
+  });
+  it('guided A/B settling shares the interval and budget scale while preserving the replay geometry',()=>{
+    mount({seismicEnergyInterval:true,seismicGuideOpen:true});click('Prepare 5% / 20% comparison');click('After shaking');
+    const scale=host.querySelector('[data-interval-budget]').dataset.budgetScale,values=()=>[...host.querySelectorAll('[data-budget-part]')].map(n=>n.dataset.budgetValue),b=values(),signature=lastScene.sig;
+    click('A · reference');expect(host.querySelector('[data-interval-budget]').dataset.intervalBudget).toBe('reference');expect(host.querySelector('[data-interval-budget]').dataset.budgetScale).toBe(scale);
+    expect(host.querySelector('[data-energy-question]').dataset.energyQuestion).toBe('settling');expect(values()).not.toEqual(b);expect(state).toMatchObject({seismicIntervalPinS:16,seismicTime:24,seismicPlaying:false});
+    expect(lastScene.sig).toBe(signature);
+  });
+  it('saved energy questions are derived from endpoints and print correctly even before a live model is enabled',()=>{
+    mount({seismicEnergyInterval:true,seismicSceneRecording:true});click('Elastic → kinetic');click('Save scene observation');const record=state.seismicTrials[0];
+    expect(host.querySelector('[data-seismic-scene-question]').dataset.seismicSceneQuestion).toBe('exchange');
+    patch({seismicTime:0,seismicIntervalPinS:0,seismicDampingRatio:0.4});click('Revisit scene observation 1: '+record.name);expect(host.querySelector('[data-energy-question]').dataset.energyQuestion).toBe('exchange');
+    act(()=>root.unmount());root=null;host.remove();mount({tab:'print',seismicEnabled:false,seismicTrials:[{...record,energyQuestion:'fake cached answer'}]});
+    const report=host.querySelector('[data-bridge-print-seismic]');expect(report.querySelector('[data-seismic-scene-question]').dataset.seismicSceneQuestion).toBe('exchange');
+    expect(report.textContent).not.toContain('fake cached answer');expect(report.querySelector('button,input,select,textarea')).toBeNull();
+  });
+  it('guided zero-input investigations stay finite and available in graphics fallback',()=>{
+    mount({seismicEnergyInterval:true,seismicIntensityG:0});expect(button('Elastic → kinetic').disabled).toBe(true);expect(button('Ground removes energy').disabled).toBe(true);
+    click('After shaking');expect([...host.querySelectorAll('[data-budget-part]')].every(n=>Number(n.dataset.budgetValue)===0)).toBe(true);
+    expect(host.querySelector('[data-interval-budget]').innerHTML).not.toMatch(/NaN|Infinity/);
+    act(()=>{viewerStatus='failed';viewerListener('failed');});expect(host.querySelector('[data-bridge-energy-interval="fallback"]')).toBeTruthy();expect(host.querySelector('[data-energy-question]').dataset.energyQuestion).toBe('settling');
+  });
+  it('energy interval opens paused, pins exact frames and orders backwards inspection',()=>{
+    mount({seismicTime:7.217,seismicPlaying:true,autoDriving:true});const details=host.querySelector('[data-bridge-energy-interval]');
+    act(()=>{details.open=true;details.dispatchEvent(new Event('toggle'));});
+    expect(state.seismicEnergyInterval).toBe(true);expect(state.seismicPlaying).toBe(false);expect(state.autoDriving).toBe(false);
+    click('Pin this frame');expect(state.seismicIntervalPinS).toBe(7.217);
+    expect(host.querySelector('[data-interval-insight]').textContent).toContain('Move replay time');
+    patch({seismicTime:5.319});const window=host.querySelector('[data-interval-window]');
+    expect(Number(window.dataset.intervalStart)).toBe(5.319);expect(Number(window.dataset.intervalEnd)).toBe(7.217);
+    expect(Number(host.querySelector('[data-interval-term="damping"]').dataset.intervalValue)).toBeGreaterThan(0);
+    act(()=>Simulate.change(field('Pinned time (s)'),{target:{value:'16.137'}}));expect(state.seismicIntervalPinS).toBe(16.137);
+  });
+  it('energy interval shares A/B time and event scale while recalculating the selected response and pin',()=>{
+    mount({seismicEnergyInterval:true,seismicEnergyOrbit:true,seismicGuideOpen:true,seismicTime:21.217,seismicIntervalPinS:16});click('Prepare 5% / 20% comparison');patch({seismicTime:21.217});
+    const terms=()=>[...host.querySelectorAll('[data-interval-term]')].map(n=>n.dataset.intervalValue);
+    const b=terms(),frame=host.querySelector('[data-interval-frame]'),scale=frame.dataset.intervalScale,signature=lastScene.sig;
+    expect(host.querySelector('[data-interval-insight]').textContent).toContain('decrease in stored energy');
+    expect(Number(host.querySelector('[data-interval-term="input"]').dataset.intervalValue)).toBe(0);
+    click('A · reference');expect(terms()).not.toEqual(b);expect(frame.dataset.intervalTrial).toBe('reference');expect(frame.dataset.intervalScale).toBe(scale);
+    expect(state.seismicIntervalPinS).toBe(16);expect(state.seismicTime).toBe(21.217);
+    expect(host.querySelector('[data-orbit-pin]').dataset.orbitPinTrial).toBe('reference');expect(Number(host.querySelector('[data-orbit-pin]').dataset.orbitPin)).toBe(16);
+    patch({seismicTime:20});expect(lastScene.sig).toBe(signature);expect(frame.dataset.intervalScale).toBe(scale);
+  });
+  it('energy interval observations restore exact endpoints and print recomputed totals',()=>{
+    mount({seismicEnergyInterval:true,seismicEnergyOrbit:true,seismicSceneRecording:true,seismicTime:21.217,seismicIntervalPinS:16.137});
+    click('Save scene observation');const record=state.seismicTrials[0],text=host.querySelector('[data-seismic-scene-interval]').textContent;
+    expect(record.scene.display).toMatchObject({energyInterval:true,intervalPinS:16.137});expect(text).toContain('16.137–21.217 s');
+    patch({seismicEnergyInterval:false,seismicIntervalPinS:0,seismicTime:0,seismicDampingRatio:0.4,seismicTrials:[{...record,interval:{inputJPerKg:999999}}]});
+    expect(host.querySelector('[data-seismic-scene-interval]').textContent).toBe(text);
+    click('Revisit scene observation 1: '+record.name);expect(state).toMatchObject({seismicEnergyInterval:true,seismicIntervalPinS:16.137,seismicTime:21.217,seismicPlaying:false});
+    click('Open earthquake evidence report');const report=host.querySelector('[data-bridge-print-seismic]');
+    expect(report.querySelector('[data-seismic-scene-interval]').textContent).toBe(text);expect(report.textContent).not.toContain('999999');expect(report.querySelector('button,input,select,textarea')).toBeNull();
+  });
+  it('energy interval rejects malformed optional saved pins and retains legacy observations',()=>{
+    for(const [enabled,pin] of [[undefined,undefined],['true',16],[1,16],[true,'16'],[true,-1],[true,25],[true,null],[true,NaN]]){
+      mount({seismicEnergyInterval:true,seismicIntervalPinS:16,seismicTrials:[sceneTrial({scene:scenePose({display:{version:'bridge-scene-display-v1',motionGuide:false,energyInFrame:false,energyFlow:false,overlay:false,energyInterval:enabled,intervalPinS:pin}})})]});
+      click('Revisit scene observation 1: My scene');expect(state.seismicEnergyInterval).toBe(false);expect(state.seismicTime).toBe(7.217);expect(host.querySelector('[data-seismic-scene-interval]')).toBeNull();
+      act(()=>root.unmount());root=null;host.remove();
+    }
+  });
+  it('legacy scene observations do not inherit an unrelated live energy interval',()=>{
+    mount({seismicEnergyInterval:true,seismicIntervalPinS:16.137,seismicTrials:[sceneTrial()]});click('Revisit scene observation 1: My scene');
+    expect(state).toMatchObject({seismicEnergyInterval:false,seismicIntervalPinS:0,seismicTime:7.217});expect(host.querySelector('[data-interval-frame]')).toBeNull();
+  });
+  it('energy interval works in labelled 2D and graphics fallback with the current experiment',()=>{
+    mount({bridgeView:'2d',seismicEnergyInterval:true,seismicEnergyOrbit:true,seismicTime:21.217,seismicIntervalPinS:16,seismicDampingRatio:0});
+    expect(host.querySelector('[data-bridge-energy-interval="fallback"]')).toBeTruthy();expect(host.querySelector('[data-interval-insight]').textContent).toContain('stays constant');
+    click('Pin end of shaking');expect(state.seismicIntervalPinS).toBe(16);expect(host.querySelector('[data-orbit-pin]')).toBeTruthy();
+    patch({bridgeView:'3d',seismicDampingRatio:0.2});act(()=>{viewerStatus='failed';viewerListener('failed');});
+    expect(state.seismicEnergyInterval).toBe(true);expect(host.querySelector('[data-interval-frame]').dataset.intervalTrial).toBe('current');expect(host.querySelector('[data-interval-insight]').textContent).toContain('damping loss');
+  });
+  it('energy interval keeps zero-input readouts finite and updates its pin without starting playback',()=>{
+    mount({seismicEnergyInterval:true,seismicEnergyOrbit:true,seismicIntensityG:0,seismicTime:17.217,seismicIntervalPinS:16});
+    expect(host.querySelector('[data-interval-insight]').textContent).toContain('no energy transfer');
+    expect([...host.querySelectorAll('[data-interval-term]')].every(n=>Number(n.dataset.intervalValue)===0)).toBe(true);
+    expect(Number(host.querySelector('[data-interval-balance]').dataset.intervalBalance)).toBe(0);
+    act(()=>Simulate.change(field('Pinned time (s)'),{target:{value:'99'}}));expect(state.seismicIntervalPinS).toBe(24);expect(state.seismicPlaying).toBe(false);
+    expect(host.querySelector('[data-interval-bars]').innerHTML).not.toMatch(/NaN|Infinity/);
+  });
   it('recent orbit follows the shared replay clock and the selected comparison trial', () => {
     mount({seismicEnergyOrbit:true,seismicGuideOpen:true});click('Prepare 5% / 20% comparison');patch({seismicTime:7.217});
     const signature=lastScene.sig, plot=host.querySelector('[data-orbit-frame]');
@@ -1083,7 +1743,10 @@ describe('Bridge Lab immersive earthquake interaction', () => {
       referenceInputs: { dampingRatio: 0.05 }, currentInputs: { dampingRatio: 0.2 } });
     expect(host.querySelector('[data-guide-evidence]').dataset.guideEvidence).toBe('matching');
     const recorded = host.querySelector('[data-guide-readings="recorded"]').textContent;
-    expect(host.querySelector('[data-guide-readings="recorded"] [data-guide-measure="3"] [data-guide-value="b"]').textContent).toContain('<0.001 J/kg');
+    const recordedStored = host.querySelector('[data-guide-readings="recorded"] [data-guide-measure="3"] [data-guide-value="b"]');
+    expect(Number(recordedStored.dataset.guideNumber)).toBeGreaterThan(0);
+    expect(Number(recordedStored.dataset.guideNumber)).toBeLessThan(0.001);
+    expect(recordedStored.textContent).toMatch(/e-\d+ J\/kg/);
     patch({ seismicFrequencyHz: 2, seismicTime: 24, seismicEnabled: false,
       seismicGuideEvidence: { ...state.seismicGuideEvidence, inventedPeak: 999999 } });
     expect(host.querySelector('[data-guide-evidence]').dataset.guideEvidence).toBe('earlier');

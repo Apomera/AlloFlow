@@ -1,0 +1,65 @@
+{
+  "sourceFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\candidate\\AlloFlowANTI.txt",
+  "sourceSha256": "2a292ebfe5aa14356100827608b9079244b6c4d8ff9415715f9b0ddb9086ce51",
+  "actualEffect": true,
+  "completedAt": "2026-10-04T03:11:29.036Z",
+  "passed": true,
+  "cases": [
+    {
+      "name": "matching echoed offer token is accepted by its current peer",
+      "passed": true
+    },
+    {
+      "name": "answer to earlier offer cannot be applied to a new current peer",
+      "passed": true
+    },
+    {
+      "name": "active peer sends offer, presence, resource payload and accepts answer",
+      "passed": true
+    },
+    {
+      "name": "late data channel message after session cleanup cannot reach receiver",
+      "passed": true
+    },
+    {
+      "name": "replaced connection cannot deliver messages into new receiver",
+      "passed": true
+    },
+    {
+      "name": "obsolete channel opening cannot send presence or reset retry state",
+      "passed": true
+    },
+    {
+      "name": "obsolete close cannot schedule replacement of a healthy peer",
+      "passed": true
+    },
+    {
+      "name": "obsolete failed connection cannot schedule a retry",
+      "passed": true
+    },
+    {
+      "name": "obsolete answer callback cannot change remote description",
+      "passed": true
+    },
+    {
+      "name": "ICE completion for replaced peer cannot publish a stale offer",
+      "passed": true
+    },
+    {
+      "name": "offer completion after cleanup cannot call setLocalDescription",
+      "passed": true
+    },
+    {
+      "name": "retired negotiation rejection cannot schedule or surface a current error",
+      "passed": true
+    },
+    {
+      "name": "old effect cleanup preserves a peer owned by newer effect",
+      "passed": true
+    },
+    {
+      "name": "current failed connection still schedules and completes reconnect",
+      "passed": true
+    }
+  ]
+}

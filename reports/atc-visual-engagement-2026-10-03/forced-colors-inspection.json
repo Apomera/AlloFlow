@@ -1,0 +1,357 @@
+{
+  "colors": [
+    {
+      "selector": ".atc-model-notes > summary",
+      "text": "Model notes · 120× teaching time",
+      "color": "rgb(0, 0, 159)",
+      "background": "rgba(255, 255, 255, 0)",
+      "forcedColorAdjust": "auto",
+      "ancestors": [
+        {
+          "tag": "DETAILS",
+          "classes": "atc-model-notes",
+          "background": "rgba(255, 255, 255, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "tag": "SECTION",
+          "classes": "atc-tower",
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "selector": ".atc-objective-meter > span",
+      "text": "0 / 2 landings",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgba(255, 255, 255, 0)",
+      "forcedColorAdjust": "auto",
+      "ancestors": [
+        {
+          "tag": "DIV",
+          "classes": "atc-objective-meter",
+          "background": "rgba(255, 255, 255, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "tag": "SECTION",
+          "classes": "atc-card atc-mission",
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "selector": ".atc-radar-legend > span:nth-child(1)",
+      "text": "Traffic",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgba(255, 255, 255, 0)",
+      "forcedColorAdjust": "auto",
+      "ancestors": [
+        {
+          "tag": "DIV",
+          "classes": "atc-radar-legend",
+          "background": "rgba(255, 255, 255, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "tag": "DIV",
+          "classes": "atc-radar-header",
+          "background": "rgba(255, 255, 255, 0)",
+          "color": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "selector": ".atc-radar-legend > span:nth-child(2)",
+      "text": "Priority",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgba(255, 255, 255, 0)",
+      "forcedColorAdjust": "auto",
+      "ancestors": [
+        {
+          "tag": "DIV",
+          "classes": "atc-radar-legend",
+          "background": "rgba(255, 255, 255, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "tag": "DIV",
+          "classes": "atc-radar-header",
+          "background": "rgba(255, 255, 255, 0)",
+          "color": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "selector": ".atc-radar-legend > span:nth-child(3)",
+      "text": "Conflict",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgba(255, 255, 255, 0)",
+      "forcedColorAdjust": "auto",
+      "ancestors": [
+        {
+          "tag": "DIV",
+          "classes": "atc-radar-legend",
+          "background": "rgba(255, 255, 255, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "tag": "DIV",
+          "classes": "atc-radar-header",
+          "background": "rgba(255, 255, 255, 0)",
+          "color": "rgb(0, 0, 0)"
+        }
+      ]
+    },
+    {
+      "selector": "select",
+      "text": "No runway\nRWY 27\nRWY 18",
+      "color": "rgb(0, 0, 0)",
+      "background": "rgb(255, 255, 255)",
+      "forcedColorAdjust": "auto",
+      "ancestors": [
+        {
+          "tag": "LABEL",
+          "classes": "",
+          "background": "rgba(255, 255, 255, 0)",
+          "color": "rgb(0, 0, 0)"
+        },
+        {
+          "tag": "SECTION",
+          "classes": "atc-card",
+          "background": "rgb(255, 255, 255)",
+          "color": "rgb(0, 0, 0)"
+        }
+      ]
+    }
+  ],
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "tags": [
+        "cat.color",
+        "wcag2aa",
+        "wcag143",
+        "TTv5",
+        "TT13.c",
+        "EN-301-549",
+        "EN-9.1.4.3",
+        "ACT",
+        "RGAAv4",
+        "RGAA-3.2.1"
+      ],
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#cbd5e1",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.48,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "bold",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section class=\"atc-tower\" aria-labelledby=\"atc-shift-title\" id=\"atctower-fs-wrap\" data-atctower-playing=\"true\" data-contrast=\"false\" style=\"\">",
+                  "target": [
+                    "#atctower-fs-wrap"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<summary>Model notes · 120× teaching time</summary>",
+          "target": [
+            ".atc-model-notes > summary"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#d5e5ee",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.29,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section class=\"atc-card atc-mission\" data-atctower-exercise=\"crossing_priority\" data-exercise-status=\"in-progress\" aria-labelledby=\"atc-exercise-title\">",
+                  "target": [
+                    ".atc-mission"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.29 (foreground color: #d5e5ee, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span>0 / 2 landings</span>",
+          "target": [
+            ".atc-objective-meter > span"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.29 (foreground color: #d5e5ee, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#d5e5ee",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.29,
+                "fontSize": "8.3pt (11px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section class=\"atc-tower\" aria-labelledby=\"atc-shift-title\" id=\"atctower-fs-wrap\" data-atctower-playing=\"true\" data-contrast=\"false\" style=\"\">",
+                  "target": [
+                    "#atctower-fs-wrap"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.29 (foreground color: #d5e5ee, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span><i aria-hidden=\"true\"></i>Traffic</span>",
+          "target": [
+            ".atc-radar-legend > span:nth-child(1)"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.29 (foreground color: #d5e5ee, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#d5e5ee",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.29,
+                "fontSize": "8.3pt (11px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section class=\"atc-tower\" aria-labelledby=\"atc-shift-title\" id=\"atctower-fs-wrap\" data-atctower-playing=\"true\" data-contrast=\"false\" style=\"\">",
+                  "target": [
+                    "#atctower-fs-wrap"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.29 (foreground color: #d5e5ee, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span><i aria-hidden=\"true\"></i>Priority</span>",
+          "target": [
+            ".atc-radar-legend > span:nth-child(2)"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.29 (foreground color: #d5e5ee, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#d5e5ee",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.29,
+                "fontSize": "8.3pt (11px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section class=\"atc-tower\" aria-labelledby=\"atc-shift-title\" id=\"atctower-fs-wrap\" data-atctower-playing=\"true\" data-contrast=\"false\" style=\"\">",
+                  "target": [
+                    "#atctower-fs-wrap"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.29 (foreground color: #d5e5ee, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<span><i aria-hidden=\"true\"></i>Conflict</span>",
+          "target": [
+            ".atc-radar-legend > span:nth-child(3)"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.29 (foreground color: #d5e5ee, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#f8fafc",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.04,
+                "fontSize": "10.5pt (14px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<select data-atctower-runway-select=\"true\" style=\"display: block; width: 100%; min-height: 44px; margin-top: 6px; padding: 8px; border-radius: 6px; border: 1px solid rgb(129, 173, 164); color: rgb(248, 250, 252); background: rgb(6, 23, 19);\">",
+                  "target": [
+                    "select"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.04 (foreground color: #f8fafc, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<select data-atctower-runway-select=\"true\" style=\"display: block; width: 100%; min-height: 44px; margin-top: 6px; padding: 8px; border-radius: 6px; border: 1px solid rgb(129, 173, 164); color: rgb(248, 250, 252); background: rgb(6, 23, 19);\">",
+          "target": [
+            "select"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.04 (foreground color: #f8fafc, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    }
+  ]
+}

@@ -5,7 +5,7 @@
   function clamp(n){return Math.max(0,Math.min(1,n));}
   function describe(s){
     var p=s.pot,n=s.pan,portion=R.serving(s),inPan=n.produce&&!s.plated&&(!n.combined||portion.remaining>0);
-    var wet=p.water>0,boil=wet&&p.temp>=96,simmer=wet&&p.temp>=80;
+    var covered=p.lid==='covered',wet=p.water>0,boil=wet&&p.temp>=96,simmer=wet&&p.temp>=80;
     var loose=R.mixing(s).liquidSinceMix>0,type=!n.produce?'empty':n.damage>=1?'scorched':loose?'unmixed':n.moisture<20?'dry':n.moisture>180*s.servings/2?'watery':'coating';
     var cloudy=p.pasta?clamp(p.progress):0,steam=inPan&&n.moisture>12&&n.temp>90;
     var panNote={scorched:'Dark patches remain in the sauce.',unmixed:'Liquid pools around the pieces. Fold it through.',dry:'Little liquid remains between the pieces.',watery:'A loose pool surrounds the pasta and pieces.',coating:'A glossy layer coats the food.'}[type];
@@ -13,7 +13,7 @@
     if(type==='watery'&&!n.combined)panNote='A loose pool surrounds the pieces.';
     if(!n.produce)panNote=n.oil?'A thin film of oil covers the pan.':'The pan surface is bare.';
     else if(!inPan)panNote=s.plated?'On the plates · '+panNote:portion.started?'The pan is empty. All portions are on plates.':panNote;
-    return {pot:{wet:wet,cloudy:cloudy,activity:boil?1:simmer?.25:0,steam:boil?1:simmer?.25:0,note:!wet?'No water in the pot.':(cloudy>.1?'Cloudy cooking water':'Clear water')+' · '+(boil?'rolling bubbles.':simmer?'fine bubbles at the edge.':'still surface.')},
+    return {pot:{wet:wet,cloudy:cloudy,activity:boil?1:simmer?.25:0,steam:(boil?1:simmer?.25:0)*(covered?.12:1),note:!wet?'No water in the pot.':(cloudy>.1?'Cloudy cooking water':'Clear water')+(covered?' under the lid · steam gathers on the glass':'')+' · '+(boil?'rolling bubbles.':simmer?'fine bubbles at the edge.':'still surface.')},
       pan:{visible:inPan,type:type,steam:steam?clamp((n.temp-85)/25):0,shimmer:!n.produce&&n.oil&&n.temp>80&&!s.plated,loose:inPan&&loose,note:panNote}};
   }
   function mount(h){

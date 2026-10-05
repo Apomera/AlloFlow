@@ -1,0 +1,343 @@
+{
+  "label": "combined-baseline",
+  "completedAt": "2026-10-04T15:51:16.793Z",
+  "passed": false,
+  "total": 48,
+  "failed": 22,
+  "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\before\\host_handlers_source.jsx",
+  "modulePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\before\\host_handlers_module.js",
+  "sourceSha256": "40bf89a1fe897d781d14b848f4b1c8f2f47403070103807f896f8dd1904747c2",
+  "moduleSha256": "1576a2042a8ae908e91a0db397976eadf680772d43ec6df72c39607337b042a2",
+  "actualCallerBodies": true,
+  "allSyncCallSitesCovered": [
+    "refreshStorageManagerInventory",
+    "commitCanvasRecoveryVaultEnable",
+    "confirmCanvasRecoveryCode",
+    "recoverCanvasRecoveryVault",
+    "importCanvasRecoveryVaultBackup",
+    "setStorageRetentionPolicy",
+    "setCanvasRecoverySnapshotPinned",
+    "removeCanvasRecoverySnapshotMedia",
+    "retryCanvasRecoveryStorage",
+    "eraseCanvasRecoverySnapshot",
+    "unlockCanvasRecoveryVault",
+    "removeCanvasRecoveryKey"
+  ],
+  "controlledBoundaries": [
+    "sync result or status-time retirement",
+    "controller/storage acknowledgements",
+    "inventory facts"
+  ],
+  "results": [
+    {
+      "mode": "source",
+      "name": "refreshStorageManagerInventory",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "refreshStorageManagerInventory",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "commitCanvasRecoveryVaultEnable",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot publish success\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:225"
+    },
+    {
+      "mode": "source",
+      "name": "commitCanvasRecoveryVaultEnable",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "confirmCanvasRecoveryCode",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot publish success\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:225"
+    },
+    {
+      "mode": "source",
+      "name": "confirmCanvasRecoveryCode",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "recoverCanvasRecoveryVault",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot publish success\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:225"
+    },
+    {
+      "mode": "source",
+      "name": "recoverCanvasRecoveryVault",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "importCanvasRecoveryVaultBackup",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot publish success\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:225"
+    },
+    {
+      "mode": "source",
+      "name": "importCanvasRecoveryVaultBackup",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "setStorageRetentionPolicy",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync preserves current store\n+ actual - expected\n\n+ null\n- {\n-   effectiveRetentionPolicy: 'standard',\n-   legacyMigrationComplete: true,\n-   removedSnapshotIds: {},\n-   retentionPolicy: 'standard',\n-   snapshots: [\n-     {\n-       approximateBytes: 0,\n-       assetPolicy: 'full',\n-       createdAt: '2026-10-04T15:51:16.608Z',\n-       id: 'workspace-private',\n-       omittedAssetManifest: [],\n-       omittedAssets: 0,\n-       pinned: false,\n-       resourceCount: 1,\n-       savedAt: '2026-10-04T15:51:16.608Z',\n-       title: 'initial',\n-       version: 1,\n-       workspace: {\n-         history: [\n-           {\n-             content: 'retained text',\n-             id: 'r',\n-             type: 'leveled-text'\n-           }\n-         ],\n-         sourceTopic: 'initial',\n-         wordSoundsState: {\n-           audioLibrary: {\n-             demo: 'data:audio/wav;base64,QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB'\n-           }\n-         }\n-       }\n-     }\n-   ],\n-   version: 1\n- }\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:23"
+    },
+    {
+      "mode": "source",
+      "name": "setStorageRetentionPolicy",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "setCanvasRecoverySnapshotPinned",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync preserves current store\n+ actual - expected\n\n+ null\n- {\n-   effectiveRetentionPolicy: 'standard',\n-   legacyMigrationComplete: true,\n-   removedSnapshotIds: {},\n-   retentionPolicy: 'standard',\n-   snapshots: [\n-     {\n-       approximateBytes: 0,\n-       assetPolicy: 'full',\n-       createdAt: '2026-10-04T15:51:16.612Z',\n-       id: 'workspace-private',\n-       omittedAssetManifest: [],\n-       omittedAssets: 0,\n-       pinned: false,\n-       resourceCount: 1,\n-       savedAt: '2026-10-04T15:51:16.612Z',\n-       title: 'initial',\n-       version: 1,\n-       workspace: {\n-         history: [\n-           {\n-             content: 'retained text',\n-             id: 'r',\n-             type: 'leveled-text'\n-           }\n-         ],\n-         sourceTopic: 'initial',\n-         wordSoundsState: {\n-           audioLibrary: {\n-             demo: 'data:audio/wav;base64,QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB'\n-           }\n-         }\n-       }\n-     }\n-   ],\n-   version: 1\n- }\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:23"
+    },
+    {
+      "mode": "source",
+      "name": "setCanvasRecoverySnapshotPinned",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "removeCanvasRecoverySnapshotMedia",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync preserves current store\n+ actual - expected\n\n+ null\n- {\n-   effectiveRetentionPolicy: 'standard',\n-   legacyMigrationComplete: true,\n-   removedSnapshotIds: {},\n-   retentionPolicy: 'standard',\n-   snapshots: [\n-     {\n-       approximateBytes: 0,\n-       assetPolicy: 'full',\n-       createdAt: '2026-10-04T15:51:16.614Z',\n-       id: 'workspace-private',\n-       omittedAssetManifest: [],\n-       omittedAssets: 0,\n-       pinned: false,\n-       resourceCount: 1,\n-       savedAt: '2026-10-04T15:51:16.614Z',\n-       title: 'initial',\n-       version: 1,\n-       workspace: {\n-         history: [\n-           {\n-             content: 'retained text',\n-             id: 'r',\n-             type: 'leveled-text'\n-           }\n-         ],\n-         sourceTopic: 'initial',\n-         wordSoundsState: {\n-           audioLibrary: {\n-             demo: 'data:audio/wav;base64,QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB'\n-           }\n-         }\n-       }\n-     }\n-   ],\n-   version: 1\n- }\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:23"
+    },
+    {
+      "mode": "source",
+      "name": "removeCanvasRecoverySnapshotMedia",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "retryCanvasRecoveryStorage",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync does not become a current error\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:124"
+    },
+    {
+      "mode": "source",
+      "name": "retryCanvasRecoveryStorage",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "eraseCanvasRecoverySnapshot",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync preserves current store\n+ actual - expected\n\n+ null\n- {\n-   effectiveRetentionPolicy: 'standard',\n-   legacyMigrationComplete: true,\n-   removedSnapshotIds: {},\n-   retentionPolicy: 'standard',\n-   snapshots: [\n-     {\n-       approximateBytes: 0,\n-       assetPolicy: 'full',\n-       createdAt: '2026-10-04T15:51:16.618Z',\n-       id: 'workspace-private',\n-       omittedAssetManifest: [],\n-       omittedAssets: 0,\n-       pinned: false,\n-       resourceCount: 1,\n-       savedAt: '2026-10-04T15:51:16.618Z',\n-       title: 'initial',\n-       version: 1,\n-       workspace: {\n-         history: [\n-           {\n-             content: 'retained text',\n-             id: 'r',\n-             type: 'leveled-text'\n-           }\n-         ],\n-         sourceTopic: 'initial',\n-         wordSoundsState: {\n-           audioLibrary: {\n-             demo: 'data:audio/wav;base64,QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB'\n-           }\n-         }\n-       }\n-     }\n-   ],\n-   version: 1\n- }\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:23"
+    },
+    {
+      "mode": "source",
+      "name": "eraseCanvasRecoverySnapshot",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "unlockCanvasRecoveryVault",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot reopen a dialog\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:301"
+    },
+    {
+      "mode": "source",
+      "name": "unlockCanvasRecoveryVault",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "removeCanvasRecoveryKey",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot publish success\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:225"
+    },
+    {
+      "mode": "source",
+      "name": "removeCanvasRecoveryKey",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "refreshStorageManagerInventory",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "refreshStorageManagerInventory",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "commitCanvasRecoveryVaultEnable",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot publish success\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:225"
+    },
+    {
+      "mode": "generated",
+      "name": "commitCanvasRecoveryVaultEnable",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "confirmCanvasRecoveryCode",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot publish success\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:225"
+    },
+    {
+      "mode": "generated",
+      "name": "confirmCanvasRecoveryCode",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "recoverCanvasRecoveryVault",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot publish success\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:225"
+    },
+    {
+      "mode": "generated",
+      "name": "recoverCanvasRecoveryVault",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "importCanvasRecoveryVaultBackup",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot publish success\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:225"
+    },
+    {
+      "mode": "generated",
+      "name": "importCanvasRecoveryVaultBackup",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "setStorageRetentionPolicy",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync preserves current store\n+ actual - expected\n\n+ null\n- {\n-   effectiveRetentionPolicy: 'standard',\n-   legacyMigrationComplete: true,\n-   removedSnapshotIds: {},\n-   retentionPolicy: 'standard',\n-   snapshots: [\n-     {\n-       approximateBytes: 0,\n-       assetPolicy: 'full',\n-       createdAt: '2026-10-04T15:51:16.730Z',\n-       id: 'workspace-private',\n-       omittedAssetManifest: [],\n-       omittedAssets: 0,\n-       pinned: false,\n-       resourceCount: 1,\n-       savedAt: '2026-10-04T15:51:16.730Z',\n-       title: 'initial',\n-       version: 1,\n-       workspace: {\n-         history: [\n-           {\n-             content: 'retained text',\n-             id: 'r',\n-             type: 'leveled-text'\n-           }\n-         ],\n-         sourceTopic: 'initial',\n-         wordSoundsState: {\n-           audioLibrary: {\n-             demo: 'data:audio/wav;base64,QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB'\n-           }\n-         }\n-       }\n-     }\n-   ],\n-   version: 1\n- }\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:23"
+    },
+    {
+      "mode": "generated",
+      "name": "setStorageRetentionPolicy",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "setCanvasRecoverySnapshotPinned",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync preserves current store\n+ actual - expected\n\n+ null\n- {\n-   effectiveRetentionPolicy: 'standard',\n-   legacyMigrationComplete: true,\n-   removedSnapshotIds: {},\n-   retentionPolicy: 'standard',\n-   snapshots: [\n-     {\n-       approximateBytes: 0,\n-       assetPolicy: 'full',\n-       createdAt: '2026-10-04T15:51:16.738Z',\n-       id: 'workspace-private',\n-       omittedAssetManifest: [],\n-       omittedAssets: 0,\n-       pinned: false,\n-       resourceCount: 1,\n-       savedAt: '2026-10-04T15:51:16.738Z',\n-       title: 'initial',\n-       version: 1,\n-       workspace: {\n-         history: [\n-           {\n-             content: 'retained text',\n-             id: 'r',\n-             type: 'leveled-text'\n-           }\n-         ],\n-         sourceTopic: 'initial',\n-         wordSoundsState: {\n-           audioLibrary: {\n-             demo: 'data:audio/wav;base64,QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB'\n-           }\n-         }\n-       }\n-     }\n-   ],\n-   version: 1\n- }\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:23"
+    },
+    {
+      "mode": "generated",
+      "name": "setCanvasRecoverySnapshotPinned",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "removeCanvasRecoverySnapshotMedia",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync preserves current store\n+ actual - expected\n\n+ null\n- {\n-   effectiveRetentionPolicy: 'standard',\n-   legacyMigrationComplete: true,\n-   removedSnapshotIds: {},\n-   retentionPolicy: 'standard',\n-   snapshots: [\n-     {\n-       approximateBytes: 0,\n-       assetPolicy: 'full',\n-       createdAt: '2026-10-04T15:51:16.745Z',\n-       id: 'workspace-private',\n-       omittedAssetManifest: [],\n-       omittedAssets: 0,\n-       pinned: false,\n-       resourceCount: 1,\n-       savedAt: '2026-10-04T15:51:16.745Z',\n-       title: 'initial',\n-       version: 1,\n-       workspace: {\n-         history: [\n-           {\n-             content: 'retained text',\n-             id: 'r',\n-             type: 'leveled-text'\n-           }\n-         ],\n-         sourceTopic: 'initial',\n-         wordSoundsState: {\n-           audioLibrary: {\n-             demo: 'data:audio/wav;base64,QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB'\n-           }\n-         }\n-       }\n-     }\n-   ],\n-   version: 1\n- }\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:23"
+    },
+    {
+      "mode": "generated",
+      "name": "removeCanvasRecoverySnapshotMedia",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "retryCanvasRecoveryStorage",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync does not become a current error\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:124"
+    },
+    {
+      "mode": "generated",
+      "name": "retryCanvasRecoveryStorage",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "eraseCanvasRecoverySnapshot",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync preserves current store\n+ actual - expected\n\n+ null\n- {\n-   effectiveRetentionPolicy: 'standard',\n-   legacyMigrationComplete: true,\n-   removedSnapshotIds: {},\n-   retentionPolicy: 'standard',\n-   snapshots: [\n-     {\n-       approximateBytes: 0,\n-       assetPolicy: 'full',\n-       createdAt: '2026-10-04T15:51:16.760Z',\n-       id: 'workspace-private',\n-       omittedAssetManifest: [],\n-       omittedAssets: 0,\n-       pinned: false,\n-       resourceCount: 1,\n-       savedAt: '2026-10-04T15:51:16.761Z',\n-       title: 'initial',\n-       version: 1,\n-       workspace: {\n-         history: [\n-           {\n-             content: 'retained text',\n-             id: 'r',\n-             type: 'leveled-text'\n-           }\n-         ],\n-         sourceTopic: 'initial',\n-         wordSoundsState: {\n-           audioLibrary: {\n-             demo: 'data:audio/wav;base64,QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB'\n-           }\n-         }\n-       }\n-     }\n-   ],\n-   version: 1\n- }\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:23"
+    },
+    {
+      "mode": "generated",
+      "name": "eraseCanvasRecoverySnapshot",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "unlockCanvasRecoveryVault",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync preserves current store\n+ actual - expected\n... Skipped lines\n\n  {\n    effectiveRetentionPolicy: 'standard',\n    legacyMigrationComplete: true,\n    removedSnapshotIds: {},\n    retentionPolicy: 'standard',\n...\n        savedAt: '2026-10-04T15:51:16.788Z',\n+       title: 'current synced',\n-       title: 'initial',\n        version: 1,\n        workspace: {\n          history: [\n            {\n              content: 'retained text',\n...\n          ],\n+         sourceTopic: 'current synced',\n-         sourceTopic: 'initial',\n          wordSoundsState: {\n            audioLibrary: {\n              demo: 'data:audio/wav;base64,QUFBQUFBQUFBQUFBQUFBQUFBQUFBQUFB'\n            }\n          }\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:23"
+    },
+    {
+      "mode": "generated",
+      "name": "unlockCanvasRecoveryVault",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "removeCanvasRecoveryKey",
+      "retired": true,
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: retired sync cannot publish success\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\caller-suite.cjs:73:225"
+    },
+    {
+      "mode": "generated",
+      "name": "removeCanvasRecoveryKey",
+      "retired": false,
+      "passed": true
+    }
+  ]
+}

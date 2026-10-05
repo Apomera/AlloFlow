@@ -1425,7 +1425,7 @@ function MathView(props) {
                                                             {checkResult?.checking ? (
                                                                 <><RefreshCw size={16} className="animate-spin motion-reduce:animate-none" /> {t('math.check.checking') || 'Evaluating your work...'}</>
                                                             ) : (
-                                                                <><Sparkles size={16} /> {t('math.check.button') || 'Check My Work'}</>
+                                                                <><Sparkles size={16} /> {checkResult?.verdict === 'error' ? 'Try checking again' : (t('math.check.button') || 'Check My Work')}</>
                                                             )}
                                                         </button>
                                                     )}
@@ -1463,7 +1463,14 @@ function MathView(props) {
         );
     })()
 }
-                                                    {checkResult?.checked && (
+                                                    {checkResult?.verdict === 'error' && !checkResult.checking && (
+                                                        <div role="alert" className="rounded-xl border-2 border-red-300 bg-red-50 p-4 text-sm text-red-900">
+                                                            <p className="font-bold">Your work has not been graded.</p>
+                                                            <p>{checkResult.feedback}</p>
+                                                            <p>Your answer is saved. Use the check button above to try again.</p>
+                                                        </div>
+                                                    )}
+                                                    {checkResult?.checked && checkResult.verdict !== 'error' && (
                                                         <div role="status" aria-live="polite" className={`rounded-xl border-2 overflow-hidden shadow-sm animate-in fade-in slide-in-from-bottom-2 duration-300 ${
                                                             checkResult.verdict === 'correct' ? 'border-green-300 bg-green-50' :
                                                             checkResult.verdict === 'partial' ? 'border-amber-300 bg-amber-50' :

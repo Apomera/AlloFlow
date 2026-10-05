@@ -1,0 +1,133 @@
+{
+  "validationMethod": "unchanged test bodies with hash-verified prebuilt stylesheet setup",
+  "preparedAssetValidation": true,
+  "files": {
+    "module": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/maine_sld_practice_module.js",
+      "sha256": "8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a"
+    },
+    "adminHub": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/admin_hub_module.js",
+      "sha256": "9e9f9641a17436d9430bc901adecc580f40a92119a1f44f3db862762c4037097"
+    },
+    "appStyles": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/app_styles_module.js",
+      "sha256": "18a7f13e4eb4453badea9db8c7afefba0717f39ccc7c34f6e4fa7cc28acddc8d"
+    },
+    "sourceHost": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/AlloFlowANTI.txt",
+      "sha256": "2d73c4265d0617f815e3bdd2fad9243e94af27034629700a5aa0c00fdc31d442"
+    },
+    "caseData": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/maine_sld_case_data.json",
+      "sha256": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e"
+    },
+    "browserSpec": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e/maine-sld-practice.spec.ts",
+      "sha256": "32341725cd74244a0f50c9fb149b500bea68fcc179f5de41ba4d862e499014b8"
+    },
+    "originalPlaywrightConfig": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/playwright.config.ts",
+      "sha256": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587"
+    },
+    "tailwindCli": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/node_modules/tailwindcss/lib/cli.js",
+      "sha256": "bd94afd40f508342f052c36998f53e1d9f60ec19c18c40d5120eb97d297b88f4"
+    },
+    "tailwindPackage": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/node_modules/tailwindcss/package.json",
+      "sha256": "969a9400c6b59a0c5b3dd8ac7d083613fedf78a258cef37938c36cf452ca9349"
+    },
+    "playwrightPackage": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@playwright/test/package.json",
+      "sha256": "cf92117ef1d8cbf1e4b2dffb63a0da552c0173bd6052f0f45711c0f00b79dc99"
+    },
+    "reactRuntime": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/node_modules/react/umd/react.production.min.js",
+      "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd"
+    },
+    "reactDomRuntime": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d"
+    },
+    "nodeRuntime": {
+      "path": "C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe",
+      "sha256": "3958e4bb3f2d4ef37c938215dfc65a9d3c9d839b5060fec103bd2345fa78e951"
+    },
+    "preparedCss": {
+      "path": "C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/save-and-reflection-validation/preparation-readiness-02/preparation-readiness.css",
+      "sha256": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163"
+    },
+    "producerInput": {
+      "path": "C:/Users/cabba/AppData/Local/Temp/maine-sld-browser-GENvV7/input.css",
+      "sha256": "cc1a7ad0d019ddb1d32d0ecb588ba0ac26ce41d8625dd6c366348b25f83a28ec"
+    },
+    "producerHtml": {
+      "path": "C:/Users/cabba/AppData/Local/Temp/maine-sld-browser-GENvV7/host.html",
+      "sha256": "078937f26696db4b8fa0648f503db50f64a93d400418021b95f9c731c2d17b24"
+    },
+    "package.json": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/package.json",
+      "sha256": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77"
+    },
+    "package-lock.json": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/package-lock.json",
+      "sha256": "8fde867720a10e402bf57ea0bcac4ba68121859a9b50191bfe88cb3663805e94"
+    },
+    "desktop\\web-app\\package.json": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/package.json",
+      "sha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef"
+    },
+    "desktop\\web-app\\package-lock.json": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/package-lock.json",
+      "sha256": "1db071fc944f9314b19598fccb7f391a92b7370b58f2f76ad49672c77760951f"
+    },
+    "desktop\\web-app\\tailwind.config.js": {
+      "path": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/desktop/web-app/tailwind.config.js",
+      "sha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e"
+    }
+  },
+  "trustedProducerHashes": {
+    "module": "8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a",
+    "browserSpec": "32341725cd74244a0f50c9fb149b500bea68fcc179f5de41ba4d862e499014b8",
+    "preparedCss": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163",
+    "producerHtml": "078937f26696db4b8fa0648f503db50f64a93d400418021b95f9c731c2d17b24",
+    "producerInput": "cc1a7ad0d019ddb1d32d0ecb588ba0ac26ce41d8625dd6c366348b25f83a28ec",
+    "adminHub": "9e9f9641a17436d9430bc901adecc580f40a92119a1f44f3db862762c4037097"
+  },
+  "inputCssText": "@tailwind base;\n@tailwind components;\n@tailwind utilities;\n",
+  "generatedHarnessHtmlSha256": "078937f26696db4b8fa0648f503db50f64a93d400418021b95f9c731c2d17b24",
+  "producerReadinessFile": "preparation-readiness-02/preparation-readiness.json",
+  "producerReady": false,
+  "optionalConfigurationAndLockPresence": {
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\package.json": true,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\package-lock.json": true,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\npm-shrinkwrap.json": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\yarn.lock": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\pnpm-lock.yaml": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tailwind.config.js": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tailwind.config.cjs": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tailwind.config.mjs": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tailwind.config.ts": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\postcss.config.js": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\postcss.config.cjs": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\postcss.config.mjs": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\package.json": true,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\package-lock.json": true,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\npm-shrinkwrap.json": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\yarn.lock": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\pnpm-lock.yaml": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\tailwind.config.js": true,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\tailwind.config.cjs": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\tailwind.config.mjs": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\tailwind.config.ts": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\postcss.config.js": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\postcss.config.cjs": false,
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\postcss.config.mjs": false
+  },
+  "knownLimits": [
+    "Stylesheet compilation was not rerun inside this supplemental browser invocation.",
+    "Original 02, 04 and 05 invocations failed in beforeAll before activity bodies.",
+    "Prepared stylesheet was compiled successfully by readiness02, whose readiness timing flag remained false."
+  ]
+}

@@ -108,7 +108,8 @@ describe('Anatomy Lens arrows', () => {
     const lens = render(filePath, { _showAnatomyLens: true }, OLDER);
     const actions = [...lens.querySelectorAll('.anatomy-lens-action')].map((n) => n.textContent);
     expect(actions.length).toBeGreaterThan(0);
-    expect(actions[0]).toBe('Open deep dive →');
-    expect(actions.some((a) => a === 'Open specialist atlas →')).toBe(true);
+    expect(actions[0]).toMatch(/Open guided view\s*→/);
+    expect(actions.some((a) => /Open Brain Atlas\s*→/.test(a))).toBe(true);
+    expect(lens.querySelector('.anatomy-lens-arrow').getAttribute('aria-hidden')).toBe('true');
   }, 60_000);
 });

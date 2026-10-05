@@ -3191,6 +3191,16 @@ const restoreCanvasWorkspaceSnapshot = async (candidate) => {
           return false;
       }
       if (__d.canvasRecoveryMutationInProgressRef.current) return false;
+      __d.setPendingQrAssignmentResource(null);
+      __d.cancelActiveProjectLoad({ notifyLifecycle: false });
+      __d.cancelActiveFileIntakeOperations('canvas-workspace-restore');
+      __d.invalidateLocalDataHydration();
+      const request = {};
+      const generation = __d.workspaceReplacementGenerationRef.current;
+      __d.canvasRecoveryRestoreRequestRef.current = request;
+      const isCurrentWorkspace = () => __d.workspaceReplacementGenerationRef.current === generation
+          && __d.canvasRecoveryCurrentIdRef.current === snapshot.id;
+      const isCurrentRestore = () => __d.canvasRecoveryRestoreRequestRef.current === request && isCurrentWorkspace();
       const snapshotWasStored = __d.canvasRecoveryStoreRef.current.snapshots.some(item => item.id === snapshot.id);
       if (!snapshotWasStored) {
           const stagedStore = __d.ALLO_WORKSPACE_RECOVERY.upsert(__d.canvasRecoveryStoreRef.current, snapshot);
@@ -3280,7 +3290,8 @@ const restoreCanvasWorkspaceSnapshot = async (candidate) => {
           __d.setWordSoundsDailyProgress(wordSounds.dailyProgress && typeof wordSounds.dailyProgress === 'object' ? wordSounds.dailyProgress : { date: new Date().toDateString(), completed: 0, goalMet: false });
           __d.setWordSoundsConfusionPatterns(wordSounds.confusionPatterns && typeof wordSounds.confusionPatterns === 'object' ? wordSounds.confusionPatterns : {});
           __d.setWordSoundsScore(wordSounds.sessionScore && typeof wordSounds.sessionScore === 'object' ? wordSounds.sessionScore : { correct: 0, total: 0, streak: 0 });
-          await _restoreBuilderDraftFromProject(workspace.builderDraft || null, restoredHistory);
+          await _restoreBuilderDraftFromProject(workspace.builderDraft || null, restoredHistory, { isCurrent: isCurrentRestore });
+          if (!isCurrentRestore()) return false;
           __d.setActiveUnitId(workspace.activeUnitId !== undefined ? workspace.activeUnitId : 'all');
           __d.setActiveSidebarTab(typeof workspace.activeSidebarTab === 'string' ? workspace.activeSidebarTab : 'create');
           const activeItem = restoredHistory.find(item => item.id === workspace.activeResourceId)
@@ -3291,8 +3302,9 @@ const restoreCanvasWorkspaceSnapshot = async (candidate) => {
           if (activeItem && workspace.activeView !== 'input') {
               const savedView = typeof workspace.activeView === 'string' ? workspace.activeView : activeItem.type;
               setTimeout(() => {
+                  if (!isCurrentWorkspace()) return;
                   __d.handleRestoreView(activeItem);
-                  if (!['readingBook', 'video-ref', 'video-transcript', 'manipulative-resource'].includes(activeItem.type)) {
+                  if (isCurrentWorkspace() && !['readingBook', 'video-ref', 'video-transcript', 'manipulative-resource'].includes(activeItem.type)) {
                       __d.setActiveView(savedView);
                   }
               }, 0);
@@ -3306,6 +3318,7 @@ const restoreCanvasWorkspaceSnapshot = async (candidate) => {
           __d.addToast('Previous workspace restored from this device.', 'success');
           return true;
       } catch (error) {
+          if (!isCurrentRestore()) return false;
           __d.warnLog('Canvas workspace restore failed:', error);
           __d.setCanvasRecoveryError(String(error?.message || 'The workspace could not be restored.'));
           __d.setCanvasRecoverySaveStatus('error');
@@ -3317,8 +3330,11 @@ const restoreCanvasWorkspaceSnapshot = async (candidate) => {
           }
           return false;
       } finally {
-          __d.canvasRecoveryMutationInProgressRef.current = false;
-          __d.setCanvasRecoveryBusyId(null);
+          if (__d.canvasRecoveryRestoreRequestRef.current === request) {
+              __d.canvasRecoveryRestoreRequestRef.current = null;
+              __d.canvasRecoveryMutationInProgressRef.current = false;
+              __d.setCanvasRecoveryBusyId(null);
+          }
       }
   };
 const refreshStorageManagerInventory = async () => {
@@ -3383,7 +3399,7 @@ const refreshStorageManagerInventory = async () => {
                               __d.publishCanvasRecoveryVaultLockedState(status);
                           } else {
                               const synced = await __d.syncCanvasRecoveryVaultState(controller);
-                              adjustedStore = synced.store;
+                              adjustedStore = synced.stale ? null : synced.store;
                           }
                       } else {
                           const policyResult = await deviceStorage.mutateRecovery(
@@ -3444,7 +3460,8 @@ const commitCanvasRecoveryVaultEnable = async (password, recoveryCode) => {
               recoveryCode: recoveryCode || undefined
           }));
           committed = true;
-          await __d.syncCanvasRecoveryVaultState(controller);
+          const synced = await __d.syncCanvasRecoveryVaultState(controller);
+          if (synced.stale) return;
           __d.canvasRecoveryVaultPendingActionRef.current = null;
           __d.clearCanvasRecoveryVaultSecrets('idle');
           __d.setCanvasRecoveryError('');
@@ -3487,7 +3504,8 @@ const confirmCanvasRecoveryCode = async () => {
           __d.setCanvasRecoveryBusyId('vault-rotate-recovery');
           try {
               await controller.rotateRecoveryKey(__d.canvasRecoveryVaultForm.recoveryCode);
-              await __d.syncCanvasRecoveryVaultState(controller, { loadPlaintext: false });
+              const synced = await __d.syncCanvasRecoveryVaultState(controller, { loadPlaintext: false });
+              if (synced.stale) return;
               __d.canvasRecoveryVaultPendingActionRef.current = null;
               __d.clearCanvasRecoveryVaultSecrets('idle');
               __d.setCanvasRecoveryError('');
@@ -3509,29 +3527,45 @@ const recoverCanvasRecoveryVault = async () => {
           __d.setCanvasRecoveryError('The new passwords do not match.');
           return;
       }
+      const request = {};
+      __d.canvasRecoveryVaultActionRequestRef.current = request;
+      __d.canvasRecoveryVaultSyncRequestRef.current = null;
+      let controller = null;
+      const ownsAction = () => __d.canvasRecoveryVaultActionRequestRef.current === request;
+      const isCurrent = () => ownsAction()
+          && (!controller || __d.canvasRecoveryVaultControllerRef.current === controller);
       __d.setCanvasRecoveryBusyId('vault-recover');
       let committed = false;
       try {
-          const controller = await __d.getCanvasRecoveryVaultController();
+          controller = await __d.getCanvasRecoveryVaultController();
+          if (!isCurrent()) return;
           await controller.recoverWithKey(form.recoveryInput, form.newPassword);
           committed = true;
-          await __d.syncCanvasRecoveryVaultState(controller);
+          if (!isCurrent()) return;
+          const synced = await __d.syncCanvasRecoveryVaultState(controller);
+          if (!isCurrent() || synced.stale) return;
           __d.clearCanvasRecoveryVaultSecrets('idle');
           __d.setCanvasRecoveryError('');
           __d.setCanvasRecoveryDialogMode('manage');
           __d.addToast((__d.t('storage.saved_work_password_replaced_the_existing') || 'Saved-work password replaced. The existing recovery key remains valid.'), 'success');
       } catch (error) {
+          if (!isCurrent()) return;
           __d.clearCanvasRecoveryVaultSecrets(committed ? 'unlock' : 'recover');
           __d.setCanvasRecoveryError(committed
               ? 'The password was replaced, but saved work could not be reopened. Reload and use the new password.'
               : 'The recovery key is incorrect, damaged, or no recovery key was configured.');
       } finally {
-          __d.setCanvasRecoveryBusyId(null);
+          if (ownsAction()) {
+              __d.canvasRecoveryVaultActionRequestRef.current = null;
+              __d.setCanvasRecoveryBusyId(null);
+          }
       }
   };
 const lockCanvasRecoveryVault = async () => {
       const controller = __d.canvasRecoveryVaultControllerRef.current;
       if (!controller || __d.canvasRecoveryMutationInProgressRef.current) return;
+      __d.canvasRecoveryVaultSyncRequestRef.current = null;
+      __d.canvasRecoveryVaultActionRequestRef.current = null;
       __d.canvasRecoveryMutationInProgressRef.current = true;
       __d.canvasRecoverySaveTokenRef.current += 1;
       __d.setCanvasRecoveryBusyId('vault-lock');
@@ -3543,9 +3577,10 @@ const lockCanvasRecoveryVault = async () => {
               || Object.keys(__d.studentResponses || {}).length > 0
               || (typeof __d.inputText === 'string' && Boolean(__d.inputText.trim()))
               || (typeof __d.sourceTopic === 'string' && Boolean(__d.sourceTopic.trim()))
-              || Boolean(__d.guidedPlanBrief);
+              || Boolean(__d.guidedPlanBrief)
+              || __d.hasMeaningfulWordSoundsWorkspace();
           if (__d.canvasRecoveryDecisionMade && hasMeaningfulWorkspace) {
-              let snapshot = await buildCanvasWorkspaceSnapshot(__d.canvasRecoveryCurrentIdRef.current);
+              let snapshot = await __d.buildCanvasWorkspaceSnapshot(__d.canvasRecoveryCurrentIdRef.current);
               let quotaSave = await __d.queueCanvasRecoveryStorage(() => __d.ALLO_WORKSPACE_RECOVERY.saveWithQuotaFallback(
                   snapshot,
                   candidate => controller.upsertSnapshot(candidate)
@@ -3565,7 +3600,7 @@ const lockCanvasRecoveryVault = async () => {
           const status = await controller.getStatus();
           __d.publishCanvasRecoveryVaultLockedState(status);
           __d.canvasRecoveryPendingSaveCountRef.current = 0;
-          clearCanvasWorkspaceState({ archivePlan: false });
+          __d.clearCanvasWorkspaceState({ archivePlan: false });
           __d.setLastSaved(null);
           __d.setPendingSync(false);
           __d.clearCanvasRecoveryVaultSecrets('unlock');
@@ -3640,7 +3675,9 @@ const importCanvasRecoveryVaultBackup = async () => {
               newPassword: form.backupUseRecoveryKey ? form.newPassword : undefined
           }));
           committed = true;
-          const { store } = await __d.syncCanvasRecoveryVaultState(controller);
+          const synced = await __d.syncCanvasRecoveryVaultState(controller);
+          if (synced.stale) return;
+          const { store } = synced;
           __d.canvasRecoveryVaultImportRef.current = null;
           __d.clearCanvasRecoveryVaultSecrets('idle');
           __d.setCanvasRecoveryDecisionMade(false);
@@ -3677,7 +3714,7 @@ const eraseAllCanvasRecoveryVault = async () => {
           __d.setCanvasRecoveryStore(empty);
           __d.setCanvasRecoveryVaultState({ available: true, enabled: false, locked: false, recoveryEnabled: false, snapshotCount: 0 });
           __d.canvasRecoveryCurrentIdRef.current = __d.ALLO_WORKSPACE_RECOVERY.newId();
-          clearCanvasWorkspaceState({ archivePlan: false });
+          __d.clearCanvasWorkspaceState({ archivePlan: false });
           __d.clearCanvasRecoveryVaultSecrets('idle');
           __d.setCanvasRecoveryDecisionMade(true);
           __d.setCanvasRecoveryDialogMode(null);
@@ -3740,7 +3777,8 @@ const setStorageRetentionPolicy = async (policyId) => {
                       if (__d.canvasRecoveryVaultState.locked) throw new Error('Unlock protected recovery workspaces before changing retention.');
                       const controller = await __d.getCanvasRecoveryVaultController();
                       await controller.setPolicy(policy.id, policy.effectiveId);
-                      return (await __d.syncCanvasRecoveryVaultState(controller)).store;
+                      const synced = await __d.syncCanvasRecoveryVaultState(controller);
+                      return synced.stale ? null : synced.store;
                   }
                   const deviceStorage = await __d._alloGetCanvasDeviceStorage();
                   const result = await deviceStorage.mutateRecovery(
@@ -3759,6 +3797,7 @@ const setStorageRetentionPolicy = async (policyId) => {
           } else {
               nextStore = __d.ALLO_WORKSPACE_RECOVERY.setPolicy(__d.canvasRecoveryStoreRef.current, policy.id, estimate);
           }
+          if (!nextStore) return;
           __d.canvasRecoveryStoreRef.current = nextStore;
           __d.setCanvasRecoveryStore(nextStore);
           try { localStorage.setItem(__d.ALLO_STORAGE_RETENTION_POLICY_KEY, policy.id); } catch (_) {}
@@ -3783,7 +3822,8 @@ const setCanvasRecoverySnapshotPinned = async (snapshotId, pinned) => {
                   if (__d.canvasRecoveryVaultState.locked) throw new Error('Unlock protected recovery workspaces before changing a pin.');
                   const controller = await __d.getCanvasRecoveryVaultController();
                   await controller.setPinned(snapshotId, pinned === true);
-                  return (await __d.syncCanvasRecoveryVaultState(controller)).store;
+                  const synced = await __d.syncCanvasRecoveryVaultState(controller);
+                  return synced.stale ? null : synced.store;
               }
               const deviceStorage = await __d._alloGetCanvasDeviceStorage();
               const result = await deviceStorage.mutateRecovery(
@@ -3794,6 +3834,7 @@ const setCanvasRecoverySnapshotPinned = async (snapshotId, pinned) => {
               );
               return __d.ALLO_WORKSPACE_RECOVERY.normalizeStore(result.store);
           });
+          if (!nextStore) return;
           __d.canvasRecoveryStoreRef.current = nextStore;
           __d.setCanvasRecoveryStore(nextStore);
           __d.setCanvasRecoveryError('');
@@ -3833,7 +3874,9 @@ const removeCanvasRecoverySnapshotMedia = async (snapshotId) => {
                   };
                   const saved = await controller.upsertSnapshot(replacement);
                   if (!saved.saved) throw new Error('The protected workspace changed before media could be removed.');
-                  return { store: (await __d.syncCanvasRecoveryVaultState(controller)).store, applied: true, reason: 'media-removed' };
+                  const synced = await __d.syncCanvasRecoveryVaultState(controller);
+                  if (synced.stale) return null;
+                  return { store: synced.store, applied: true, reason: 'media-removed' };
               }
               const deviceStorage = await __d._alloGetCanvasDeviceStorage();
               const result = await deviceStorage.mutateRecovery(
@@ -3844,6 +3887,7 @@ const removeCanvasRecoverySnapshotMedia = async (snapshotId) => {
               );
               return { store: __d.ALLO_WORKSPACE_RECOVERY.normalizeStore(result.store), applied: result.applied === true, reason: String(result.reason || '') };
           });
+          if (!mediaResult) return;
           __d.canvasRecoveryStoreRef.current = mediaResult.store;
           __d.setCanvasRecoveryStore(mediaResult.store);
           __d.setCanvasRecoveryRemoveMediaId(null);
@@ -3936,7 +3980,9 @@ const retryCanvasRecoveryStorage = async () => {
                   __d.setCanvasRecoveryDialogMode('vault-locked');
                   __d.clearCanvasRecoveryVaultSecrets('unlock');
               } else {
-                  const { store } = await __d.syncCanvasRecoveryVaultState(controller);
+                  const synced = await __d.syncCanvasRecoveryVaultState(controller);
+                  if (synced.stale) return;
+                  const { store } = synced;
                   __d.setCanvasRecoverySaveStatus(store.snapshots.length ? 'saved' : 'idle');
                   if (store.snapshots.length && !__d.canvasRecoveryDecisionMade) __d.setCanvasRecoveryDialogMode('choice');
               }
@@ -3992,7 +4038,8 @@ const eraseCanvasRecoverySnapshot = async (snapshotId) => {
                   if (__d.canvasRecoveryVaultState.locked) throw new Error('Unlock protected recovery workspaces before erasing one item.');
                   const controller = await __d.getCanvasRecoveryVaultController();
                   await controller.deleteSnapshot(snapshotId);
-                  next = (await __d.syncCanvasRecoveryVaultState(controller)).store;
+                  const synced = await __d.syncCanvasRecoveryVaultState(controller);
+                  next = synced.stale ? null : synced.store;
               } else {
                   const mutationResult = await deviceStorage.mutateRecovery(
                       __d.ALLO_WORKSPACE_RECOVERY_NAMESPACE,
@@ -4008,13 +4055,14 @@ const eraseCanvasRecoverySnapshot = async (snapshotId) => {
               }
               return next;
           });
+          if (!nextStore) return;
           __d.canvasRecoveryStoreRef.current = nextStore;
           __d.setCanvasRecoveryStore(nextStore);
           __d.setCanvasRecoveryStoreAuthoritative(true);
           __d.setCanvasRecoveryEraseId(null);
           if (__d.canvasRecoveryCurrentIdRef.current === snapshotId) {
               __d.canvasRecoveryCurrentIdRef.current = __d.ALLO_WORKSPACE_RECOVERY.newId();
-              clearCanvasWorkspaceState({ archivePlan: !__d.canvasRecoveryVaultState.enabled });
+              __d.clearCanvasWorkspaceState({ archivePlan: !__d.canvasRecoveryVaultState.enabled });
               __d.setLastSaved(null);
               __d.setCanvasRecoverySaveStatus('idle');
           }
@@ -4033,60 +4081,81 @@ const handleCanvasRecoveryImport = (event) => {
       const input = event?.currentTarget || event?.target;
       const file = input?.files?.[0];
       if (!file) return;
-      __d.setCanvasRecoveryBusyId('import-read');
-      const reader = new FileReader();
-      reader.onload = async (loadEvent) => {
-          try {
-              const parsed = JSON.parse(String(loadEvent?.target?.result || ''));
-              const vaultStack = await __d._alloGetRecoveryVaultStack();
-              if (parsed && parsed.kind === vaultStack.vault.BACKUP_KIND) {
-                  vaultStack.vault.validateVaultStore(parsed.vault);
-                  __d.canvasRecoveryVaultImportRef.current = parsed;
-                  __d.setCanvasRecoveryVaultForm(current => ({
-                      ...current, mode: 'import-backup', password: '', recoveryInput: '',
-                      newPassword: '', confirmNewPassword: '', backupUseRecoveryKey: false
-                  }));
-                  __d.setCanvasRecoveryError('');
-                  __d.setCanvasRecoveryDialogMode(__d.canvasRecoveryVaultState.locked ? 'vault-locked' : 'manage');
-                  return;
-              }
-              if (__d.canvasRecoveryVaultState.enabled && __d.canvasRecoveryVaultState.locked) {
-                  throw new Error('Unlock protected recovery workspaces before importing a readable project file.');
-              }
-              if (parsed && Object.prototype.hasOwnProperty.call(parsed, 'workspaceRecovery')) {
-                  if (!__d.ALLO_WORKSPACE_RECOVERY.isSupportedPayload(parsed.workspaceRecovery)) {
-                      throw new Error('This recovery file was created by a newer AlloFlow version.');
-                  }
-                  const recovered = __d.ALLO_WORKSPACE_RECOVERY.normalizeSnapshot(parsed.workspaceRecovery);
-                  if (!recovered) throw new Error('This recovery file does not contain a valid workspace.');
-                  __d.setCanvasRecoveryBusyId(null);
-                  const imported = {
-                      ...recovered,
-                      id: __d.ALLO_WORKSPACE_RECOVERY.newId(),
-                      title: (recovered.title + ' (imported)').slice(0, 160),
-                      createdAt: new Date().toISOString(),
-                      savedAt: new Date().toISOString()
-                  };
-                  await restoreCanvasWorkspaceSnapshot(imported);
-                  return;
-              }
-              // Older teacher/student project files continue through the established importer.
-              __d.handleLoadProject({ target: { files: [file] } });
-          } catch (error) {
-              __d.setCanvasRecoveryError(String(error?.message || 'The project file could not be imported.'));
-              __d.setCanvasRecoverySaveStatus('error');
-          } finally {
-              __d.setCanvasRecoveryBusyId(null);
-              if (input) input.value = '';
-          }
-      };
-      reader.onerror = () => {
+      const request = { input, file, generation: __d.workspaceReplacementGenerationRef.current };
+      __d.canvasRecoveryImportRequestRef.current = request;
+      const isCurrent = () => __d.canvasRecoveryImportRequestRef.current === request
+          && __d.workspaceReplacementGenerationRef.current === request.generation
+          && input?.files?.[0] === file;
+      const finish = () => {
+          if (!isCurrent()) return;
+          __d.canvasRecoveryImportRequestRef.current = null;
           __d.setCanvasRecoveryBusyId(null);
-          __d.setCanvasRecoveryError('The project file could not be read.');
-          __d.setCanvasRecoverySaveStatus('error');
           if (input) input.value = '';
       };
-      reader.readAsText(file);
+      const fail = (error) => {
+          if (!isCurrent()) return;
+          __d.setCanvasRecoveryError(String(error?.message || 'The project file could not be read.'));
+          __d.setCanvasRecoverySaveStatus('error');
+          finish();
+      };
+      __d.setCanvasRecoveryBusyId('import-read');
+      let reader;
+      try {
+          reader = new FileReader();
+          reader.onload = async (loadEvent) => {
+              if (!isCurrent()) return;
+              try {
+                  const parsed = JSON.parse(String(loadEvent?.target?.result || ''));
+                  const vaultStack = await __d._alloGetRecoveryVaultStack();
+                  if (!isCurrent()) return;
+                  if (parsed && parsed.kind === vaultStack.vault.BACKUP_KIND) {
+                      vaultStack.vault.validateVaultStore(parsed.vault);
+                      __d.canvasRecoveryVaultImportRef.current = parsed;
+                      __d.setCanvasRecoveryVaultForm(current => ({
+                          ...current, mode: 'import-backup', password: '', recoveryInput: '',
+                          newPassword: '', confirmNewPassword: '', backupUseRecoveryKey: false
+                      }));
+                      __d.setCanvasRecoveryError('');
+                      __d.setCanvasRecoveryDialogMode(__d.canvasRecoveryVaultState.locked ? 'vault-locked' : 'manage');
+                      return;
+                  }
+                  if (__d.canvasRecoveryVaultState.enabled && __d.canvasRecoveryVaultState.locked) {
+                      throw new Error('Unlock protected recovery workspaces before importing a readable project file.');
+                  }
+                  if (parsed && Object.prototype.hasOwnProperty.call(parsed, 'workspaceRecovery')) {
+                      if (!__d.ALLO_WORKSPACE_RECOVERY.isSupportedPayload(parsed.workspaceRecovery)) {
+                          throw new Error('This recovery file was created by a newer AlloFlow version.');
+                      }
+                      const recovered = __d.ALLO_WORKSPACE_RECOVERY.normalizeSnapshot(parsed.workspaceRecovery);
+                      if (!recovered) throw new Error('This recovery file does not contain a valid workspace.');
+                      const imported = {
+                          ...recovered,
+                          id: __d.ALLO_WORKSPACE_RECOVERY.newId(),
+                          title: (recovered.title + ' (imported)').slice(0, 160),
+                          createdAt: new Date().toISOString(),
+                          savedAt: new Date().toISOString()
+                      };
+                      // Hand ownership to the restore before it advances the workspace generation.
+                      finish();
+                      await restoreCanvasWorkspaceSnapshot(imported);
+                      return;
+                  }
+                  // Older teacher/student project files use the established importer.
+                  finish();
+                  __d.handleLoadProject({ target: { files: [file] } });
+              } catch (error) {
+                  if (!isCurrent()) return;
+                  __d.setCanvasRecoveryError(String(error?.message || 'The project file could not be imported.'));
+                  __d.setCanvasRecoverySaveStatus('error');
+              } finally {
+                  finish();
+              }
+          };
+          reader.onerror = () => fail(new Error('The project file could not be read.'));
+          reader.readAsText(file);
+      } catch (error) {
+          fail(error);
+      }
   };
 const handleExport = async (mode = 'html', options = {}) => {
     const _m = window.AlloModules && window.AlloModules.ExportHandlers;
@@ -4110,7 +4179,7 @@ const handleExport = async (mode = 'html', options = {}) => {
           getExportableHistory: () => [lessonExport.resource],
           getSkippedResources: () => [],
           studentResponses: {},
-          exportConfig: { ...__d.exportConfig, includeLessonPlan: true, includeTeacherKey: false, assessmentMode: false, includeStudentResponses: false, annotations: [] }
+          exportConfig: { ...__d.exportConfig, audience: 'teacher', includeLessonPlan: true, includeTeacherKey: false, assessmentMode: false, includeStudentResponses: false, annotations: [] }
         } : {})
       });
     }
@@ -4166,6 +4235,11 @@ const handleSubmitAssignment = async (confirmedName, summaryStats) => {
       ];
       const filteredContent = __d.history.filter(item => relevantTypes.includes(item.type));
       const studioApi = window.AlloModules && window.AlloModules.StudioResponse;
+      const needsStudioResponse = filteredContent.some(item => ['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type));
+      if (needsStudioResponse && (!studioApi || ['supports', 'toSubmission', 'toResponseEntries'].some(name => typeof studioApi[name] !== 'function'))) {
+          __d.addToast(__d.t('toasts.export_tools_still_loading_try') || 'Submission tools are still loading. Try Submit again.', 'error');
+          return { ok: false, retryable: true, reason: 'studio-tools-not-ready' };
+      }
       const cleanContent = __d.sanitizeSubmissionData(filteredContent.filter(item => !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(item.type) || studioApi).map(item =>
           studioApi && studioApi.supports(item.type) ? studioApi.toSubmission(item, __d.studentResponses[item.id]?.studio) : item
       ));
@@ -6674,11 +6748,32 @@ const mergeStudentRecords = (fromName, toName) => {
     });
   };
 const requestWordSoundsAudioConfirmation = (resource, onConfirm, actionLabel = 'start', onReview = null) => {
-      const coverage = __d.getWordSoundsPortableAudioCoverage(resource);
-      if (!coverage || coverage.total === 0 || coverage.missing === 0) return false;
-      const missingLabels = Array.isArray(coverage.missingLabels) ? coverage.missingLabels : coverage.missingWords;
-      const missingPreview = missingLabels.slice(0, 5);
-      const remainingMissing = Math.max(0, missingLabels.length - missingPreview.length);
+      if (!resource || resource.type !== 'word-sounds') return false;
+      const readiness = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.WordSoundsReadiness;
+      const route = actionLabel === 'send' ? 'mailbox' : 'student-pack';
+      const coverage = readiness ? readiness.inspect(resource, { route }) : null;
+      if (coverage && coverage.complete) return false;
+      const preflightLabel = (key, fallback, values = {}) => {
+          const fullKey = 'word_sounds.' + key;
+          const translated = typeof __d.t === 'function' ? __d.t(fullKey, values) : '';
+          const text = typeof translated === 'string' && translated && translated !== fullKey ? translated : fallback;
+          return text.replace(/\{(\w+)\}/g, (match, name) => values[name] != null ? String(values[name]) : match);
+      };
+      const categoryNames = {
+          "speech": preflightLabel('readiness_category_speech', 'Words and text'),
+          "phoneme": preflightLabel('readiness_category_phoneme', 'Speech sounds'),
+          "instruction": preflightLabel('readiness_category_instruction', 'Instructions'),
+          "feedback": preflightLabel('readiness_category_feedback', 'Feedback'),
+          "isolation": preflightLabel('readiness_category_isolation', 'Sound position prompts'),
+          "letter-name": preflightLabel('readiness_category_letter_name', 'Letter names'),
+      };
+      const uncheckedLabels = coverage && Array.isArray(coverage.clips)
+          ? coverage.clips.filter(clip => !clip.checked).map(clip => (categoryNames[clip.category] || clip.category) + ': ' + (['instruction', 'feedback'].includes(clip.category) ? clip.label.replace(/^(inst_|fb_)/, '').replace(/_/g, ' ') : clip.label))
+          : [];
+      const missingPreview = uncheckedLabels.slice(0, 5);
+      const remainingMissing = Math.max(0, uncheckedLabels.length - missingPreview.length);
+      const binding = readiness && readiness.identity(resource, { route });
+      let resolved = false;
       const reviewAudio = typeof onReview === 'function' ? onReview : () => {
           const words = Array.isArray(resource.wsPreloadedWords) && resource.wsPreloadedWords.length > 0
               ? resource.wsPreloadedWords
@@ -6697,20 +6792,29 @@ const requestWordSoundsAudioConfirmation = (resource, onConfirm, actionLabel = '
           __d.setIsWordSoundsMode(true);
       };
       __d.setConfirmDialog({
-          title: __d.t('word_sounds.audio_preflight_title') || 'Some activity audio is not ready',
-          message: actionLabel === 'send'
-              ? (__d.t('word_sounds.audio_preflight_message_send', { missing: coverage.missing, total: coverage.total }) || `${coverage.missing} of ${coverage.total} required audio clips are missing. Students with live AI disabled may hear silence. Review and prepare the missing audio, or send anyway.`)
-              : (__d.t('word_sounds.audio_preflight_message_start', { missing: coverage.missing, total: coverage.total }) || `${coverage.missing} of ${coverage.total} required audio clips are missing. Students with live AI disabled may hear silence. Review and prepare the missing audio, or start anyway.`),
-          detail: remainingMissing > 0
-              ? (__d.t('word_sounds.audio_preflight_detail_more', { clips: missingPreview.join(', '), remaining: remainingMissing }) || `Missing audio: ${missingPreview.join(', ')}, plus ${remainingMissing} more.`)
-              : (__d.t('word_sounds.audio_preflight_detail', { clips: missingPreview.join(', ') }) || `Missing audio: ${missingPreview.join(', ')}.`),
+          title: preflightLabel('readiness_preflight_title', 'Audio readiness is not confirmed'),
+          message: preflightLabel(actionLabel === 'send' ? 'readiness_preflight_send' : 'readiness_preflight_start',
+              actionLabel === 'send'
+                  ? 'Required audio has not been verified for student delivery. App audio banks and device cache do not travel with this pack. Review the audio, or send with these limitations.'
+                  : 'Required audio has not been verified for this activity. App audio banks and device cache may be unavailable on another device. Review the audio, or start with these limitations.'),
+          detail: missingPreview.length
+              ? preflightLabel('readiness_preflight_detail', 'Unchecked or unavailable: {clips}{more}', { clips: missingPreview.join(', '), more: remainingMissing > 0 ? preflightLabel('preview_more', ', plus {count} more', { count: remainingMissing }) : '' })
+              : preflightLabel('readiness_preflight_unknown', 'Run Check prepared audio in the lesson preview and review any remaining dependencies before sharing.'),
           confirmText: actionLabel === 'send'
-              ? (__d.t('word_sounds.audio_preflight_send_anyway') || 'Send anyway')
-              : (__d.t('word_sounds.audio_preflight_start_anyway') || 'Start anyway'),
-          cancelText: __d.t('word_sounds.audio_preflight_review') || 'Review audio',
+              ? preflightLabel('audio_preflight_send_anyway', 'Send anyway')
+              : preflightLabel('audio_preflight_start_anyway', 'Start anyway'),
+          cancelText: preflightLabel('audio_preflight_review', 'Review audio'),
           tone: 'warning',
-          onConfirm: () => { if (typeof onConfirm === 'function') onConfirm(); },
-          onCancel: reviewAudio,
+          onConfirm: () => {
+              if (resolved) return;
+              resolved = true;
+              if (readiness && readiness.identity(resource, { route }) !== binding) {
+                  requestWordSoundsAudioConfirmation(resource, onConfirm, actionLabel, onReview);
+                  return;
+              }
+              if (typeof onConfirm === 'function') onConfirm();
+          },
+          onCancel: () => { if (resolved) return; resolved = true; reviewAudio(); },
       });
       return true;
   };
@@ -7240,6 +7344,7 @@ const retryInteractiveOrganizerStudents = async (uids) => {
     }
   };
 const handleNodeClick = (e, nodeId) => {
+      __d.markOrganizerLayoutEdited();
       e.stopPropagation();
       if (__d.connectingSourceId === null) {
           __d.setConnectingSourceId(nodeId);
@@ -7550,6 +7655,10 @@ const duplicateAssignmentCenterShare = async (share) => {
 const openHomeworkShelf = () => {
       const shelf = __d.homeworkShelf;
       if (!shelf || !Array.isArray(shelf.resources) || !shelf.resources.length) return;
+      __d.setPendingQrAssignmentResource(null);
+      __d.cancelActiveProjectLoad({ notifyLifecycle: false });
+      __d.cancelActiveFileIntakeOperations('homework-shelf-open');
+      __d.invalidateLocalDataHydration();
       // Mirror the homework-QR assignment loader's state sets (the proven at-home viewing
       // mode) minus the network fetch — the shelf IS the already-hydrated packet.
       __d.setHasSelectedMode(true);
@@ -8118,31 +8227,6 @@ const openCachedPdfRemediation = (closeStorageManager = false) => {
     };
     __d.setPdfAuditResult(restoredAudit);
     if (closeStorageManager) __d.closeCanvasRecoveryDialog(null);
-    return true;
-  };
-const onUpdateResource = (resourceId, updater, options = {}) => {
-    if (resourceId == null || typeof updater !== 'function') return false;
-    const id = String(resourceId);
-    // Imported packs can repeat a public id; given an instance, only that copy changes.
-    const instanceId = options && typeof options.instanceId === 'string' ? options.instanceId : '';
-    const sameCopy = item => !instanceId || __d._alloArtifactMatchesInstanceId(item, instanceId);
-    const current = __d._resourceMutationStateRef.current;
-    const artifact = (Array.isArray(current.history) ? current.history : []).find(item => item && String(item.id) === id && sameCopy(item))
-      || (current.generatedContent && String(current.generatedContent.id) === id && sameCopy(current.generatedContent) ? current.generatedContent : null);
-    if (!artifact) return false;
-    const candidate = updater(artifact);
-    if (!candidate || candidate === artifact) return false;
-    const preservesOriginal = (before, after) => before?.instructionalText?.form !== 'same-text-supported' || (after?.data === before.data && after?.sourceSnapshot?.text === before.sourceSnapshot?.text && after?.instructionalText?.form === 'same-text-supported');
-    if (!preservesOriginal(artifact, candidate)) return false;
-    const updatedAt = new Date().toISOString();
-    const apply = previous => {
-      if (!previous || String(previous.id) !== id || previous.type !== artifact.type || !sameCopy(previous)) return previous;
-      const next = previous === artifact ? candidate : updater(previous);
-      if (!next || next === previous || !preservesOriginal(previous, next)) return previous;
-      return { ...next, id: previous.id, type: previous.type, updatedAt };
-    };
-    __d.setHistory(previous => previous.map(apply));
-    __d.setGeneratedContent(apply);
     return true;
   };
 function resumeReadThisPage() {
@@ -8789,21 +8873,44 @@ const _decodeBuilderDraftPayload = async (candidate) => {
     } catch (_) { return null; }
   };
 const syncCanvasRecoveryVaultState = async (controller, options = {}) => {
-      const status = await controller.getStatus();
+      const request = {};
+      __d.canvasRecoveryVaultSyncRequestRef.current = request;
+      const sessionGeneration = typeof controller.getSessionGeneration === 'function' ? controller.getSessionGeneration() : null;
+      const isCurrent = () => __d.canvasRecoveryVaultSyncRequestRef.current === request
+          && __d.canvasRecoveryVaultControllerRef.current === controller
+          && (sessionGeneration === null || controller.getSessionGeneration() === sessionGeneration);
+      const stale = () => ({ status: null, store: null, stale: true });
+      let status;
+      try {
+          status = await controller.getStatus();
+      } catch (error) {
+          if (!isCurrent()) return stale();
+          throw error;
+      }
+      if (!isCurrent()) return stale();
       if (status.enabled && !status.locked && options.loadPlaintext !== false) {
           try {
               const store = await __d.readUnlockedCanvasRecoveryVaultStore(controller);
+              if (!isCurrent()) return stale();
+              const latestStatus = await controller.getStatus();
+              if (!isCurrent()) return stale();
+              if (!latestStatus.enabled || latestStatus.locked) {
+                  if (latestStatus.enabled && latestStatus.locked) __d.publishCanvasRecoveryVaultLockedState(latestStatus);
+                  return { status: latestStatus, store: null, stale: true };
+              }
               __d.canvasRecoveryStoreRef.current = store;
               __d.setCanvasRecoveryStore(store);
               __d.setCanvasRecoveryStoreAuthoritative(true);
-              __d.setCanvasRecoveryVaultState({ available: true, ...status });
-              return { status, store };
+              __d.setCanvasRecoveryVaultState({ available: true, ...latestStatus });
+              return { status: latestStatus, store };
           } catch (error) {
+              if (!isCurrent()) return stale();
               controller.lock();
               __d.publishCanvasRecoveryVaultLockedState({ ...status, locked: true });
               throw error;
           }
       }
+      if (!isCurrent()) return stale();
       if (status.enabled && status.locked) __d.publishCanvasRecoveryVaultLockedState(status);
       else __d.setCanvasRecoveryVaultState({ available: true, ...status });
       return { status, store: null };
@@ -8840,22 +8947,38 @@ const enableCanvasRecoveryVault = async () => {
       }
   };
 const unlockCanvasRecoveryVault = async () => {
-      if (!__d.canvasRecoveryVaultForm.password) return;
+      const password = __d.canvasRecoveryVaultForm.password;
+      if (!password) return;
+      const request = {};
+      __d.canvasRecoveryVaultActionRequestRef.current = request;
+      __d.canvasRecoveryVaultSyncRequestRef.current = null;
+      let controller = null;
+      const ownsAction = () => __d.canvasRecoveryVaultActionRequestRef.current === request;
+      const isCurrent = () => ownsAction()
+          && (!controller || __d.canvasRecoveryVaultControllerRef.current === controller);
       __d.setCanvasRecoveryBusyId('vault-unlock');
       try {
-          const controller = await __d.getCanvasRecoveryVaultController();
-          await controller.unlock(__d.canvasRecoveryVaultForm.password);
-          const { store } = await syncCanvasRecoveryVaultState(controller);
+          controller = await __d.getCanvasRecoveryVaultController();
+          if (!isCurrent()) return;
+          await controller.unlock(password);
+          if (!isCurrent()) return;
+          const synced = await syncCanvasRecoveryVaultState(controller);
+          if (!isCurrent() || synced.stale) return;
+          const { store } = synced;
           __d.clearCanvasRecoveryVaultSecrets('idle');
           __d.setCanvasRecoveryError('');
           __d.setCanvasRecoverySaveStatus(store?.snapshots?.length ? 'saved' : 'idle');
           if (!__d.canvasRecoveryDecisionMade && store?.snapshots?.length) __d.setCanvasRecoveryDialogMode('choice');
           else __d.setCanvasRecoveryDialogMode('manage');
       } catch (error) {
+          if (!isCurrent()) return;
           __d.clearCanvasRecoveryVaultSecrets('unlock');
           __d.setCanvasRecoveryError('That password could not unlock the protected recovery workspaces.');
       } finally {
-          __d.setCanvasRecoveryBusyId(null);
+          if (ownsAction()) {
+              __d.canvasRecoveryVaultActionRequestRef.current = null;
+              __d.setCanvasRecoveryBusyId(null);
+          }
       }
   };
 const changeCanvasRecoveryVaultPassword = async () => {
@@ -8919,7 +9042,8 @@ const removeCanvasRecoveryKey = async () => {
       try {
           const controller = await __d.getCanvasRecoveryVaultController();
           await controller.removeRecoveryKey(__d.canvasRecoveryVaultForm.currentPassword);
-          await syncCanvasRecoveryVaultState(controller, { loadPlaintext: false });
+          const synced = await syncCanvasRecoveryVaultState(controller, { loadPlaintext: false });
+          if (synced.stale) return;
           __d.clearCanvasRecoveryVaultSecrets('idle');
           __d.setCanvasRecoveryError('');
           __d.addToast((__d.t('storage.optional_recovery_key_removed') || 'Optional recovery key removed.'), 'info');
@@ -9306,7 +9430,7 @@ const _editMainVoiceEditableField = (fieldId, operation, dictatedValue) => {
         : (operation === 'append' ? 'Text appended to ' + field.label + '.' : field.label + ' updated.')
     };
   };
-const handleReturnToStart = () => {
+const handleReturnToStart = () => __d.requestReadingSupportTransition(() => {
     try {
       const ctx = __d._alloCmdCtxRef.current || __d._alloCmdCtx();
       if (ctx && typeof ctx.stopVoiceLoop === 'function') ctx.stopVoiceLoop();
@@ -9331,7 +9455,7 @@ const handleReturnToStart = () => {
     // asks for Start, retire that one-shot entry so the Start page can render.
     __d.setShellDeepLinkTool(null);
     __d.setHasSelectedMode(false);
-  };
+  });
 const saveFullChat = () => {
       if (__d.udlMessages.length <= 1) {
           __d.addToast(__d.t('toasts.no_conversation_yet'), "info");
@@ -10433,6 +10557,7 @@ const submitExploreScore = () => {
     __d.setExploreScore({ correct: 0, total: 0 });
   };
 const handleAddManualNode = () => {
+      __d.markOrganizerLayoutEdited();
       if (!__d.nodeInputText.trim()) return;
       const newNode = {
           id: `manual-${Date.now()}`,
@@ -10447,6 +10572,7 @@ const handleAddManualNode = () => {
       __d.addToast(__d.t('concept_map.notifications.node_added'), "success");
   };
 const handleResetLayout = () => {
+      __d.markOrganizerLayoutEdited();
       if (__d.conceptMapNodes.length === 0) return;
       const w = __d.mapContainerRef.current ? __d.mapContainerRef.current.offsetWidth : 800;
       const h = __d.mapContainerRef.current ? __d.mapContainerRef.current.offsetHeight : 600;
@@ -10808,6 +10934,7 @@ const _readBuilderDraftStreamBounded = async (stream, maxBytes) => {
     return new TextDecoder().decode(merged);
   };
 const publishCanvasRecoveryVaultLockedState = (status = {}) => {
+      __d.canvasRecoveryVaultSyncRequestRef.current = null;
       const lockedStatus = { available: true, ...status, enabled: true, locked: true };
       const empty = __d.emptyCanvasRecoveryVaultView(lockedStatus);
       __d.canvasRecoveryStoreRef.current = empty;
@@ -10830,7 +10957,7 @@ const downloadCanvasRecoveryCode = () => {
   };
 const exportCanvasRecoveryVaultBackup = async () => {
       try {
-          const controller = await getCanvasRecoveryVaultController();
+          const controller = await __d.getCanvasRecoveryVaultController();
           const backup = await controller.exportEncryptedBackup();
           const blob = new Blob([JSON.stringify(backup, null, 2)], { type: 'application/json;charset=utf-8' });
           const link = document.createElement('a');
@@ -11241,5 +11368,5 @@ const handleScaffoldTextChange = (field, value) => {
      __d.setGeneratedContent(updatedContent);
      __d.setHistory(prev => prev.map(item => item.id === __d.generatedContent.id ? updatedContent : item));
   }
-  return { focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, highlightElement, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, onUpdateResource, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick, _alloUpdateBrainstormActivity, _alloStampBrainstormDerivative, _alloActivityRetryable, _alloCheckpointSupports, handleResetScaffolds, openReadingStudy, ensureReadingLibraryIndex, recordGameCompletion, closeOrganizerPreview, openLiveActivityDashboard, retryLiveSessionResources, handleToggleAllTools, _alloAlignmentExportFromRegistryEntry, toggleOverlay, submitExploreScore, handleAddManualNode, handleResetLayout, handleRetryChallenge, handleWordSoundsPreparedAudioStatus, exportAssignmentCenterCsv, downloadHomeworkShelfJson, getEndSessionSummaryApi, readSavedFollowUpLiveSessionIdentity, sharePortableAacResource, addAssignmentCenterSurveyItem, setRangeRejected, saveExportPreset, deleteExportPreset, applyExportPreset, _beginReadThisPageVoiceSpeech, handleSaveProfile, handleAddStandard, handleOpenWordSounds, evaluateMathExpression, handleGenerateBingo, handleSelectMainSearchOption, ensureTitleHeading, _updatePanelInPlan, handleSetPanelFps, _getContentEngine, handleCreateGroup, handleDeleteGroup, handleToggleInteractive, _readBuilderDraftStreamBounded, publishCanvasRecoveryVaultLockedState, downloadCanvasRecoveryCode, exportCanvasRecoveryVaultBackup, getEducatorAccessCodeApi, refreshEducatorAccessState, requestCanvasRecoveryErase, downloadSubmissionBackup, loadProjectFromJson, handleBotFinishedSpeaking, handleStartSequel, handleRetryAdventureTurn, handleAdventureCrashRecovery, handleRemoveFrayerImage, handleReflectionChange, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, handleRemoveFullPackPlanResource, handleCopyFullPackDiagnostics, handleLockTimelineMode, handleDeleteTimelineStep, handleConceptSpacePersist, launchInteractiveFlashcards, handleGlossaryChange, handleGlossarySelectionChange, handleGlossarySelectAll, handleDeleteGlossaryItem, handleDeleteTermImage, _applySimplifiedTextMutation, handleContentMouseUp, handleCheckAlignment, handleRegenerateWithRigor, _readTextDomain, handleScaffoldChange, handleScaffoldTextChange };
+  return { focusGuidedTarget, handleGenerateGuide, handleGenerateBrainstormRubric, _alloGenerateCheckpoints, _alloRecordCheckpoint, returnToReadingPassage, rehydrateHistoryWithImages, handleLaunchORF, openPersonaTeacherEditor, savePersonaTeacherEditor, _alloAlignmentGraphExportForContext, _alloPersistCurrentAlignmentGraph, handleConfirmAlignmentAttribution, handleExportAlignmentGraph, handleImportAlignmentGraph, handleMathProblemEdit, submitMathSelfGrade, parseFlowChartData, evaluateMapWithAI, handleCheckChallengeRouter, handleCreateChallenge, requestEndLiveSession, sendEndSessionEvidenceCohort, completeLiveSessionEnd, resolveSavedFollowUpLiveDeliverySnapshot, sendSavedFollowUpPlanToLiveSession, startNewPdfAudit, restoreCachedPdfRemediation, commitOrRevertPdfFix, _playReadThisPageText, _runReadThisPage, readAllMediaDescriptions, handlePreviewBlueprintStep, handleLoadProfile, handleSyncRosterToSession, calculateReadability, handleTranslateAction, detectWorkflowIntent, getWorkflowContext, applyWorkflowModification, _ensureVisualGenerationApi, handlePrintGame, handleAiUrlSearch, handleFileUpload, cleanSourceMetaCommentary, handleRegeneratePanelFrame, handleDeletePanelFrame, handleReorderPanelFrame, createTeachingScriptAudio, handleSavePrivatePersonaSession, handleRecognizeStudent, handleRecognizeStudents, handleSubmitLiveAnswer, handleSetGroupResource, handleSetStudentResource, handleSetStudentsResource, handleReleaseStudentResources, handleStartLiveSession, getGroupDifferentiationContext, _invalidateBuilderRemediationVerification, _restoreBuilderDraftFromProject, resetCanvasWorkspaceSettings, restoreCanvasWorkspaceSnapshot, refreshStorageManagerInventory, commitCanvasRecoveryVaultEnable, confirmCanvasRecoveryCode, recoverCanvasRecoveryVault, lockCanvasRecoveryVault, disableCanvasRecoveryVault, importCanvasRecoveryVaultBackup, eraseAllCanvasRecoveryVault, setStorageRetentionPolicy, setCanvasRecoverySnapshotPinned, removeCanvasRecoverySnapshotMedia, approveAndRetryCanvasRecoveryStorage, retryCanvasRecoveryStorage, eraseCanvasRecoverySnapshot, handleCanvasRecoveryImport, handleExport, calculateStudentStats, handleSubmitAssignment, _alloFollowResourceLive, handleOpenLearningWebResource, handleDuplicateResource, handleDeleteHistoryItem, handleGenerateExtensionGuide, handleGenerateProgression, handleActivateNextLesson, handleGenerateLessonIdeas, handleAutoFillToggle, handleBroadcastOptions, handleUseItem, handleRestoreImage, handleGenerateFrayerImage, handleRefineGlossaryImage, handleGenerateWorksheet, handleGenerateWorksheetCover, handleQuizChange, handleQuizQuestionAction, handleFactCheck, restoreIntentSnapshot, performHighlight, enableGlobalVoiceAccess, handleGenerateReflectionPrompt, processPersonaTtsQueue, saveUDLAdvice, applyDetailedAutoConfig, handleRemoveFromMapList, handleOutlineChange, handleGenerateTermImage, _getFreshTextComplexityEvidence, handleContentClick, handleVoiceRecordingStop, handleAnnotationImportFile, onCorrectAnalysisText, handleAiRefineSource, handleSaveGeneratedArtifact, handleGenerateRubric, handleAutoGrade, mergeCloudAndLocal, applyGuidedPlanToRemaining, handleCompleteGuidedMode, _alloRunActivityGeneration, _alloNoteStudentText, _alloCheckpointArtifact, applyAppUpdate, handleStemArtworkUse, saveStemArtworkAsVisualSupport, handleGameCompletion, handleAnnotationUndo, playAacSpeech, handleLaunchMathProbe, deleteStudentRecords, mergeStudentRecords, requestWordSoundsAudioConfirmation, setPersonaAutoReadSafely, launchPreparedLiveInteraction, highlightElement, handleRegisterLearningWebGraph, handleRegisterUnitPathGraph, handleUnregisterUnitPathGraph, openAdventureActionVote, handleImportResearchJSON, handleOpenPrincipalEvaluationFromSettings, handleOpenSchoolRewardsPortal, handleSaveSchoolRewardsPortalUrl, handleToggleShowExportMenu, clearMathResourceState, broadcastInteractiveOrganizer, retryInteractiveOrganizerStudents, handleNodeClick, handleCheckChallenge, handleExitChallenge, downloadKokoroModel, saveFluencyReview, handleWordSoundsPreparedAudioRetry, exportMailboxConfig, suggestPollTimes, extendAssignmentCenterShare, duplicateAssignmentCenterShare, openHomeworkShelf, connectMailbox, rotateMailboxAdmin, closeAllMailboxSessions, startMailboxLiveSession, resumeMailboxLiveSession, describeSavedFollowUpLiveFailure, pushResourceToMailbox, shareFullPackToMailbox, addDirectionsToPack, deriveDirectionsDraft, sendPackHome, savePortableAacResourceToHistory, printQrSheet, revokeHomeworkAssignment, patchAssignmentCenterActivity, patchAssignmentCenterSurveyItem, _ensurePdfLib, openCachedPdfRemediation, resumeReadThisPage, handleApplyLessonTemplate, archiveLivePlan, handleRestoreArchivedPlan, handleApplyRosterGroup, handleImportProfiles, verifyMathProblems, getTeachingScriptController, fetchReplacementSuggestion, generateDynamicBridge, generatePixelArtItem, toggleLetterSelection, handleUrlFetch, applyGlobalCitations, handleAnimatePanel, handleDuplicatePanelFrame, handleUpdateVisualLabel, handleFetchWordImage, _legacyResolveReadAloudAudio, deriveVerificationState, handlePrintResourceSheet, handleUpdateHavenRecognitionConfig, _bumpClassGoalMet, handleAwardClassGoal, openExportPreview, _decodeBuilderDraftPayload, syncCanvasRecoveryVaultState, enableCanvasRecoveryVault, unlockCanvasRecoveryVault, changeCanvasRecoveryVaultPassword, rotateCanvasRecoveryKey, removeCanvasRecoveryKey, saveEducatorAccessCode, removeEducatorAccessCode, exportCanvasRecoverySnapshot, executeExportFromPreview, sanitizeSubmissionData, formatLessonDNA, saveAdventureFluencyResult, handleShopPurchase, toggleDemocracyMode, moveItem, handleQuizBulkOptionChange, handleQuizImageRefine, handleUpdateQuestionRoutingRules, captureIntentSnapshot, _editMainVoiceEditableField, handleReturnToStart, saveFullChat, buildSanitizedBlueprintDiagnostic, _copySanitizedDiagnostic, handleTranscriptSourceAction, handleDownloadFullPackDiagnostics, handleAddToMapList, handleTimelineChange, handleTimelineDragOver, handleTimelineMove, handleAddTimelineStep, handleLessonPlanChange, handleQuizOptionClick, handleGenerateConceptItem, csRegenerateItem, csAddItem, csRegenerateItemImage, csRefineItemImage, csUploadItemImage, handleExplainConceptSortItem, handleNavigateResource, handleAnalysisTextChange, _applyTextDomain, _shiftTextStack, handleBrainstormChange, handleOpenActivityInStudio, handleAnalyzePOS, launchGradingSession, submitGradingSession, handlePresentationOptionClick, _alloUpdateBrainstormActivity, _alloStampBrainstormDerivative, _alloActivityRetryable, _alloCheckpointSupports, handleResetScaffolds, openReadingStudy, ensureReadingLibraryIndex, recordGameCompletion, closeOrganizerPreview, openLiveActivityDashboard, retryLiveSessionResources, handleToggleAllTools, _alloAlignmentExportFromRegistryEntry, toggleOverlay, submitExploreScore, handleAddManualNode, handleResetLayout, handleRetryChallenge, handleWordSoundsPreparedAudioStatus, exportAssignmentCenterCsv, downloadHomeworkShelfJson, getEndSessionSummaryApi, readSavedFollowUpLiveSessionIdentity, sharePortableAacResource, addAssignmentCenterSurveyItem, setRangeRejected, saveExportPreset, deleteExportPreset, applyExportPreset, _beginReadThisPageVoiceSpeech, handleSaveProfile, handleAddStandard, handleOpenWordSounds, evaluateMathExpression, handleGenerateBingo, handleSelectMainSearchOption, ensureTitleHeading, _updatePanelInPlan, handleSetPanelFps, _getContentEngine, handleCreateGroup, handleDeleteGroup, handleToggleInteractive, _readBuilderDraftStreamBounded, publishCanvasRecoveryVaultLockedState, downloadCanvasRecoveryCode, exportCanvasRecoveryVaultBackup, getEducatorAccessCodeApi, refreshEducatorAccessState, requestCanvasRecoveryErase, downloadSubmissionBackup, loadProjectFromJson, handleBotFinishedSpeaking, handleStartSequel, handleRetryAdventureTurn, handleAdventureCrashRecovery, handleRemoveFrayerImage, handleReflectionChange, handleCopyBlueprintDiagnostics, handleDownloadBlueprintDiagnostics, handleRemoveFullPackPlanResource, handleCopyFullPackDiagnostics, handleLockTimelineMode, handleDeleteTimelineStep, handleConceptSpacePersist, launchInteractiveFlashcards, handleGlossaryChange, handleGlossarySelectionChange, handleGlossarySelectAll, handleDeleteGlossaryItem, handleDeleteTermImage, _applySimplifiedTextMutation, handleContentMouseUp, handleCheckAlignment, handleRegenerateWithRigor, _readTextDomain, handleScaffoldChange, handleScaffoldTextChange };
 }

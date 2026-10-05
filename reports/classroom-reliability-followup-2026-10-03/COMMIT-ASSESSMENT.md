@@ -1,0 +1,5 @@
+The tested working candidate includes the prior classroom pass and other owners' pending audio, reader, host and runtime changes. This follow-up preserves those bytes through unique substitutions, exact reverse patches, source hashes and public/source parity guards.
+
+A whole-file commit of the shared hosts would also capture unrelated work. A partial host commit would represent different bytes from this validation and omit the earlier recovery snapshot behavior on which capped-removal preservation depends. The aggregate test configuration also references earlier local regression fixtures. The coordinator therefore keeps the full tested candidate local and uncommitted, with the shared index unchanged, for a coordinated integration commit. No push, deployment, full application build or global CI claim is made.
+
+Own production edits are recorded separately in the applied media-intent, draft-schema, host-integration and cache-coherence manifests. Their frozen before/candidate bytes and exact patches allow a reviewer to reconstruct this follow-up without overwriting later work. This assessment does not authorize committing other owners' files.

@@ -1,0 +1,71 @@
+{
+  "status": "accepted-without-findings",
+  "reviewer": "root",
+  "moduleSha256": "d69ff0908089f9d47dc0a572d676eadbbd846a8cfd5ea170637bd651720eb0f7",
+  "captures": [
+    {
+      "file": "participant-review-before-guide-1366.png",
+      "finding": "Retained Q8/Q9 review hierarchy and own-entry count are readable; participant literal markup remains text.",
+      "sha256": "ca6a8d1d97e5c9a4e8c1cd975299cfbbf043d4991c022e7524277ab378fad860",
+      "artifact": "browser-validation/final-browser/participant-review-before-guide-1366.png",
+      "sourceWorkspaceCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\final-module-five\\final-browser\\participant-review-before-guide-1366.png",
+      "reviewMethod": "Retained direct visual inspection by exact PNG byte identity with the previously viewed capture.",
+      "previouslyViewedCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\final-browser\\participant-review-before-guide-1366.png"
+    },
+    {
+      "file": "full-review-marisol-literal-320-dark.png",
+      "finding": "Long literal and multiline participant notes wrap within the single-column phone card. The image deliberately scrolls to the note; the card header and lower controls are outside portions of this viewport.",
+      "sha256": "65a792490403b5e9795618b220ce3f390a742b877bb207fc267272e02bd44969",
+      "artifact": "browser-validation/final-browser/full-review-marisol-literal-320-dark.png",
+      "sourceWorkspaceCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\final-module-five\\final-browser\\full-review-marisol-literal-320-dark.png",
+      "reviewMethod": "Retained direct visual inspection by exact PNG byte identity with the previously viewed capture.",
+      "previouslyViewedCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\final-browser\\full-review-marisol-literal-320-dark.png"
+    },
+    {
+      "file": "full-review-marisol-expanded-1366-light.png",
+      "finding": "Main reflections and evidence requests remain prominent; the expanded earlier-review disclosure and separate cards fit the desktop width. Visible focus is on the disclosure summary.",
+      "sha256": "1231c1fdde37eb37dc6524b54f1297b2a51ad4da6a5def64e1ef78598edb1190",
+      "artifact": "browser-validation/final-browser/full-review-marisol-expanded-1366-light.png",
+      "sourceWorkspaceCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\final-module-five\\final-browser\\full-review-marisol-expanded-1366-light.png",
+      "reviewMethod": "Retained direct visual inspection by exact PNG byte identity with the previously viewed capture.",
+      "previouslyViewedCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\final-browser\\full-review-marisol-expanded-1366-light.png"
+    },
+    {
+      "file": "full-review-evidence-detour-return-390-light.png",
+      "finding": "The global review-return banner and question-map entry fit the phone width with correct left inset. This remains a top-banner view, separate from the dedicated Q5 action view.",
+      "sha256": "21be1cf5922594ae7d059408d9fe4071b23c4d8cb700b40abc7a5e84aa15e9c2",
+      "artifact": "browser-validation/final-browser/full-review-evidence-detour-return-390-light.png",
+      "sourceWorkspaceCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\final-module-five\\final-browser\\full-review-evidence-detour-return-390-light.png",
+      "reviewMethod": "Directly viewed final capture."
+    },
+    {
+      "file": "full-review-returned-controls-1366-light.png",
+      "finding": "Revised own responses and evidence requests display clearly in distinct desktop cards. Visible focus is on the expanded disclosure summary, rather than an original edit button.",
+      "sha256": "1a3fd39b612d86893c6bb5005b3c06d28fa4e11b3a6946985a7dc626369d6fc3",
+      "artifact": "browser-validation/final-browser/full-review-returned-controls-1366-light.png",
+      "sourceWorkspaceCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\final-module-five\\final-browser\\full-review-returned-controls-1366-light.png",
+      "reviewMethod": "Retained direct visual inspection by exact PNG byte identity with the previously viewed capture.",
+      "previouslyViewedCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\invocation-2\\final-browser\\full-review-returned-controls-1366-light.png"
+    },
+    {
+      "file": "final-q5-inline-return-keyboard-320-dark.png",
+      "artifact": "browser-validation/final-keyboard-captures/final-q5-inline-return-keyboard-320-dark.png",
+      "sha256": "19125f6138fe067d0e55e11335446c0a6cff7400a21a2c7feaff170ba71153cd",
+      "sourceWorkspaceCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\final-q5-keyboard-captures\\final-q5-inline-return-keyboard-320-dark.png",
+      "reviewMethod": "Directly viewed final capture.",
+      "finding": "The Q5 card border, full textarea and consultation/return controls fit the 320px viewport. Visible keyboard focus clearly marks the nearby return action."
+    },
+    {
+      "file": "final-q5-returned-edit-keyboard-320-dark.png",
+      "artifact": "browser-validation/final-keyboard-captures/final-q5-returned-edit-keyboard-320-dark.png",
+      "sha256": "b788cddd9cc83653c3bbab7150c47a2ed7aa28450220578a56e156bcb6e9daf7",
+      "sourceWorkspaceCapture": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\full-reasoning-review-validation\\final-q5-keyboard-captures\\final-q5-returned-edit-keyboard-320-dark.png",
+      "reviewMethod": "Directly viewed final capture.",
+      "finding": "The returned Q5 card and note remain distinct from adjacent cards; visible keyboard focus clearly marks the originating Edit Q5 button."
+    }
+  ],
+  "inspection": "Four final captures retain prior direct visual inspection by exact PNG byte identity; three final captures were directly viewed. Seven final images accepted. Functional keyboard and internal-overflow assertions are separate test evidence. Original cropped images remain archived and are not included in this accepted final set.",
+  "reviewedAt": "2026-10-03T15:15:41.821115+00:00",
+  "resolvedEarlierFinding": "The original cropped Q5 form had a 383px reasoning track and main scrollWidth398 within a 320px viewport; field focus shifted main scrollLeft33. Bounding only the narrow reasoning track fixed the geometry. Final capture metadata shows main clientWidth=scrollWidth320 and scrollLeft0, cardx15/right305 and fieldx33/right287, with actual keyboard focus-visible on both targets.",
+  "captureIdentityEvidence": "capture-identity.json"
+}

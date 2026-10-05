@@ -1,0 +1,29 @@
+{
+  "verifiedAt": "2026-10-02T20:44:22.9044820Z",
+  "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+  "runnerPid": 36208,
+  "runnerStatus": "complete",
+  "runnerCompletedAt": "2026-10-02T20:43:21.87Z",
+  "checkedPids": [
+    2196,
+    8864,
+    11048,
+    21620,
+    32344,
+    36208,
+    62956,
+    71884,
+    73080
+  ],
+  "aliveProcesses": [],
+  "allOwnedTestProcessesClosed": true,
+  "successful": true,
+  "focusedTests": 92,
+  "regressionTests": 122,
+  "totalPassed": 214,
+  "distinctTestNames": 214,
+  "recipePaths": [
+    "reports/watercycle-storm-moments/tested-test-bundle.cjs",
+    "reports/watercycle-storm-moments/tested-read-audit.cjs"
+  ]
+}

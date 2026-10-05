@@ -1,0 +1,21 @@
+{
+  "time": "2026-10-04T23:10:12.212Z",
+  "files": [
+    {
+      "name": "perception_lab_notebook.test.js",
+      "sha256": "8e2ab4d643d481f57f2b15984d9a4004a4e061cdf678dbbbff8b2804f24a8f47"
+    },
+    {
+      "name": "perception_lab_repeat_study.test.js",
+      "sha256": "5b0cfa62ef560b983b7e57c1482948301442942b168d539f3f74d6e5d5bd604a"
+    },
+    {
+      "name": "perception_lab_guided_study.test.js",
+      "sha256": "cb690c3ccdfc01940f817bfb119c06faa7ca7d47dc96207acdc8cb56d6f90620"
+    },
+    {
+      "name": "perception_lab_study_comparison.test.js",
+      "sha256": "db7d985f3454b117671b3627082d05b1b0e60dc3c9523930f08f32d3f7ba7634"
+    }
+  ]
+}

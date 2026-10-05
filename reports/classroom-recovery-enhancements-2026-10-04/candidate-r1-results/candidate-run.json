@@ -1,0 +1,39 @@
+{
+  "label": "candidate",
+  "passed": true,
+  "completedAt": "2026-10-04T14:40:58.872Z",
+  "results": [
+    {
+      "name": "restore",
+      "status": 0,
+      "elapsedMs": 331,
+      "error": null,
+      "stdout": "{\"total\":26,\"passed\":26,\"failed\":0,\"destination\":\"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\classroom-recovery-enhancements-2026-10-04\\\\restore-audit\\\\candidate-results.json\"}\n",
+      "stderr": ""
+    },
+    {
+      "name": "entry",
+      "status": 0,
+      "elapsedMs": 196,
+      "error": null,
+      "stdout": "{\"passed\":true,\"checks\":30,\"failed\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "shelf",
+      "status": 0,
+      "elapsedMs": 168,
+      "error": null,
+      "stdout": "{\"passed\":true,\"checks\":9,\"failed\":[]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "vault",
+      "status": 0,
+      "elapsedMs": 278,
+      "error": null,
+      "stdout": "{\"label\":\"combined-candidate\",\"total\":58,\"failed\":0,\"failedNames\":[]}\n",
+      "stderr": ""
+    }
+  ]
+}

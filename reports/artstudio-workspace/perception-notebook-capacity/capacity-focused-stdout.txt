@@ -1,0 +1,25 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/perception_lab_notebook_capacity.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/perception_lab_notebook_capacity.test.js (111 tests) 12614ms
+     ✓ shows unfiltered capacity at 21 saved observations and separately gates one-place and three-place actions  815ms
+     ✓ saves into the last available place and preserves every earlier study member  305ms
+     ✓ handles two activations of the last-place save under StrictMode without evicting or duplicating  334ms
+     ✓ previews the real retained count and title for a complete group before removing it  335ms
+     ✓ restores a deleted whole study alongside a later saved observation when it still fits  326ms
+     ✓ a stale enabled whole-study Undo clicked in the same batch as a save refuses partial restoration and keeps its buffer  491ms
+     ✓ queued individual Undo cannot cross profiles even when both notebooks have the same empty fingerprint  333ms
+     ✓ the next individual deletion replaces a previous group Undo  321ms
+     ✓ a learner profile change clears whole-study Undo and pending deletion previews  308ms
+     ✓ deleting study applies the correct A/B review cleanup and Undo does not reopen selected views  322ms
+     ✓ deleting other applies the correct A/B review cleanup and Undo does not reopen selected views  374ms
+
+ Test Files  1 passed (1)
+      Tests  111 passed (111)
+   Start at  19:31:03
+   Duration  33.01s (transform 1.16s, setup 675ms, import 888ms, tests 12.61s, environment 16.52s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/artstudio-workspace/perception-notebook-capacity/capacity-focused-results.json

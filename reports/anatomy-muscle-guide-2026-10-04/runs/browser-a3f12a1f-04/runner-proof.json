@@ -1,0 +1,106 @@
+{
+  "kind": "Final localized browser verification",
+  "startedAt": "2026-10-04T22:36:40.280Z",
+  "finishedAt": "2026-10-04T22:37:03.209Z",
+  "expectedSource": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "expectedFixture": "2daa693591a889ce3e7f5c99458c0eab3c2cdf9db4026c864d6c72ffe8309580",
+  "catalogSnapshots": [
+    {
+      "file": "ui_strings.js",
+      "rawSha256": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+      "snapshotPath": "reports/anatomy-muscle-guide-2026-10-04/runs/browser-a3f12a1f-04/catalogs-before/ui_strings.js.gz",
+      "gzipSha256": "0f59325375193abad260253b549aa79232cd0ee55474d2f707f6e4ce19f9e1f0"
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "rawSha256": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+      "snapshotPath": "reports/anatomy-muscle-guide-2026-10-04/runs/browser-a3f12a1f-04/catalogs-before/desktop/web-app/public/ui_strings.js.gz",
+      "gzipSha256": "0f59325375193abad260253b549aa79232cd0ee55474d2f707f6e4ce19f9e1f0"
+    },
+    {
+      "file": "lang/french.js",
+      "rawSha256": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+      "snapshotPath": "reports/anatomy-muscle-guide-2026-10-04/runs/browser-a3f12a1f-04/catalogs-before/lang/french.js.gz",
+      "gzipSha256": "66227c40428f995f379a9a10dc61a0d4f72c2fb055daf6785db53dae6f74de02"
+    },
+    {
+      "file": "desktop/web-app/public/lang/french.js",
+      "rawSha256": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+      "snapshotPath": "reports/anatomy-muscle-guide-2026-10-04/runs/browser-a3f12a1f-04/catalogs-before/desktop/web-app/public/lang/french.js.gz",
+      "gzipSha256": "66227c40428f995f379a9a10dc61a0d4f72c2fb055daf6785db53dae6f74de02"
+    },
+    {
+      "file": "lang/spanish_latin_america.js",
+      "rawSha256": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+      "snapshotPath": "reports/anatomy-muscle-guide-2026-10-04/runs/browser-a3f12a1f-04/catalogs-before/lang/spanish_latin_america.js.gz",
+      "gzipSha256": "1154810243cc3ba6504cf5d1b7b6adec8b10670e0287a62c3bbb0dd2f8d9b065"
+    },
+    {
+      "file": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "rawSha256": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+      "snapshotPath": "reports/anatomy-muscle-guide-2026-10-04/runs/browser-a3f12a1f-04/catalogs-before/desktop/web-app/public/lang/spanish_latin_america.js.gz",
+      "gzipSha256": "1154810243cc3ba6504cf5d1b7b6adec8b10670e0287a62c3bbb0dd2f8d9b065"
+    },
+    {
+      "file": "lang/arabic.js",
+      "rawSha256": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+      "snapshotPath": "reports/anatomy-muscle-guide-2026-10-04/runs/browser-a3f12a1f-04/catalogs-before/lang/arabic.js.gz",
+      "gzipSha256": "ef602a95a8bd02cd205b21cadf07c244a2518a21f74f68ee0eaee0d2c2d9aa50"
+    },
+    {
+      "file": "desktop/web-app/public/lang/arabic.js",
+      "rawSha256": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+      "snapshotPath": "reports/anatomy-muscle-guide-2026-10-04/runs/browser-a3f12a1f-04/catalogs-before/desktop/web-app/public/lang/arabic.js.gz",
+      "gzipSha256": "ef602a95a8bd02cd205b21cadf07c244a2518a21f74f68ee0eaee0d2c2d9aa50"
+    }
+  ],
+  "manifestSnapshot": {
+    "path": "dev-tools/i18n/anatomy_muscle_guide_20261004.json",
+    "snapshot": "manifest-before.json.gz",
+    "sha256": "37a1d5b24602285d6463eada87b7da6291147ff97dde16e199c218a3f158a3ab",
+    "gzipSha256": "db41b8099028a511ae0a790b09f51b79bc7a469810ffed0ae71eafd1d5f61bc9"
+  },
+  "subtitleManifestSnapshot": {
+    "path": "dev-tools/i18n/anatomy_muscle_subtitle_20261004.json",
+    "snapshot": "subtitle-manifest-before.json.gz",
+    "sha256": "193e3f19a53a84deb279c79c8fbb36c039c880faaec26eaac6ffdfa35e84cbef",
+    "gzipSha256": "b1414e09e9c519ee4669c3451d9756ab1d05b2bb8f46c7214fdf02ffa8b59a41"
+  },
+  "configSha256": "c184e87529845e3e62a0d9050f3d1ace9ddf8277b171a4c5c99a30c61f9165c2",
+  "probeFixtureSha256": null,
+  "before": {
+    "stem_lab/stem_tool_anatomy.js": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+    "tests/e2e/anatomy-muscle-guide.spec.ts": "2daa693591a889ce3e7f5c99458c0eab3c2cdf9db4026c864d6c72ffe8309580",
+    "ui_strings.js": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+    "desktop/web-app/public/ui_strings.js": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+    "lang/french.js": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+    "desktop/web-app/public/lang/french.js": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+    "lang/spanish_latin_america.js": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+    "desktop/web-app/public/lang/spanish_latin_america.js": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+    "lang/arabic.js": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+    "desktop/web-app/public/lang/arabic.js": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+    "dev-tools/i18n/anatomy_muscle_guide_20261004.json": "37a1d5b24602285d6463eada87b7da6291147ff97dde16e199c218a3f158a3ab",
+    "dev-tools/i18n/anatomy_muscle_subtitle_20261004.json": "193e3f19a53a84deb279c79c8fbb36c039c880faaec26eaac6ffdfa35e84cbef"
+  },
+  "after": {
+    "stem_lab/stem_tool_anatomy.js": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+    "tests/e2e/anatomy-muscle-guide.spec.ts": "2daa693591a889ce3e7f5c99458c0eab3c2cdf9db4026c864d6c72ffe8309580",
+    "ui_strings.js": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+    "desktop/web-app/public/ui_strings.js": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+    "lang/french.js": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+    "desktop/web-app/public/lang/french.js": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+    "lang/spanish_latin_america.js": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+    "desktop/web-app/public/lang/spanish_latin_america.js": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+    "lang/arabic.js": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+    "desktop/web-app/public/lang/arabic.js": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+    "dev-tools/i18n/anatomy_muscle_guide_20261004.json": "37a1d5b24602285d6463eada87b7da6291147ff97dde16e199c218a3f158a3ab",
+    "dev-tools/i18n/anatomy_muscle_subtitle_20261004.json": "193e3f19a53a84deb279c79c8fbb36c039c880faaec26eaac6ffdfa35e84cbef"
+  },
+  "allPinnedFilesUnchanged": true,
+  "runtimeMirrorsIdentical": true,
+  "exitCode": 0,
+  "signal": null,
+  "error": null
+}

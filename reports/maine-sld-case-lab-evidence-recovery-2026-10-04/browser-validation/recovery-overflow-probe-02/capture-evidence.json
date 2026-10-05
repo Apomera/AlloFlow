@@ -1,0 +1,60 @@
+{
+  "capturedAt": "2026-10-04T14:22:02.600Z",
+  "sourceSha256": "7e1cad36c9f91244dc1a6050d0551fe573d4b467eb428be198c6d9615da64796",
+  "moduleSha256": "6ed63fb29108f77606a56e24dcd2b2b407bd9dca23f52ccb4bcc80e9ed72f721",
+  "producerModuleSha256": "0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+  "producerHtmlSha256": "078937f26696db4b8fa0648f503db50f64a93d400418021b95f9c731c2d17b24",
+  "producerCssSha256": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163",
+  "probeHelperSha256": "262b387ed81f6747fbd2f665b3d6430d86c1a3a99a584c7e9d398ad64c7878df",
+  "captureOnly": true,
+  "noSuiteNoAxeNoCssCompilation": true,
+  "rawProducerJavascriptResponseAbsent": true,
+  "activeRootSourceSha256": "46d1ce09304d70d98b60a4a7a758969b3c5f3eef99a6c5b522113a06e9397437",
+  "activeRootModuleSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+  "literalSha256": "740324beb8202ce81acd8a4ad2d3b82a7ab62dc6af27c8f9e10cca7c5d130ed8",
+  "findingId": "context-0",
+  "geometry": {
+    "viewport": {
+      "width": 320,
+      "height": 740
+    },
+    "main": {
+      "left": 0,
+      "right": 320,
+      "top": 337.5,
+      "bottom": 692,
+      "width": 320,
+      "height": 354.5,
+      "clientWidth": 320,
+      "scrollWidth": 28174,
+      "scrollLeft": 0
+    },
+    "note": {
+      "left": 33,
+      "right": 287,
+      "top": 549.640625,
+      "bottom": 603.640625,
+      "width": 254,
+      "height": 54,
+      "clientWidth": 254,
+      "scrollWidth": 28141,
+      "overflowWrap": "normal",
+      "whiteSpace": "pre-wrap",
+      "textLength": 3965
+    },
+    "card": {
+      "left": 15,
+      "right": 305,
+      "top": -106.453125,
+      "bottom": 693.640625,
+      "width": 290,
+      "height": 800.09375
+    },
+    "noMarkupParsed": true,
+    "errors": []
+  },
+  "undoTestIds": [
+    "undo-finding-removal"
+  ],
+  "horizontalOverflow": true
+}

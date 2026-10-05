@@ -1,0 +1,57 @@
+[
+  {
+    "kind": "tool configuration",
+    "result": "No unit tests executed",
+    "detail": "The first Vitest invocation used unsupported poolOptions flags. The installed Vitest 4.1.5 CLI was inspected; later runs use --pool=threads --maxWorkers=1 --no-file-parallelism with the original time limits."
+  },
+  {
+    "kind": "focused unit run",
+    "report": "unit-focused.json",
+    "result": "30 checks passed on the first candidate",
+    "detail": "This result is retained as development evidence; final unit counts come only from unit-final.json."
+  },
+  {
+    "kind": "superseded browser pass",
+    "report": "browser-shadow-1-initial.json",
+    "result": "Both tilted fallback approaches and contact passed on the first candidate."
+  },
+  {
+    "kind": "production visual failure",
+    "report": "browser-shadow-3-initial.json",
+    "result": "No visible shadow pixels",
+    "detail": "The local tangent-plane shadow was occluded by actual crater relief. Geometry agreement alone did not establish visible output."
+  },
+  {
+    "kind": "diagnostic reproduction",
+    "report": "browser-shadow-3-diagnostic.json",
+    "result": "No visible shadow pixels with normal depth testing; 235 changed pixels when depth testing was temporarily disabled",
+    "detail": "Normal depth testing was restored. The final production implementation uses the actual receiving terrain and one merged caster in a 256 by 256 shadow map."
+  },
+  {
+    "kind": "guarded integration",
+    "result": "Stopped before changing runtime files",
+    "detail": "A replacement for terrain.receiveShadow had a non-unique reverse anchor. Adding the adjacent castShadow line made both directions unique."
+  },
+  {
+    "kind": "intermediate browser passes",
+    "reports": [
+      "browser-shadow-3-merged.json",
+      "browser-shadow-4-final.json"
+    ],
+    "result": "Merged shadow and full-detail workflows passed before final contact-bias and owned-map disposal refinements."
+  },
+  {
+    "kind": "final acceptance",
+    "reports": [
+      "browser-shadow-1-final.json",
+      "browser-shadow-2-final.json",
+      "browser-shadow-3-final.json",
+      "browser-shadow-4-verified.json",
+      "browser-dust-1-final.json",
+      "browser-dust-2-final.json",
+      "browser-dust-3-final.json",
+      "browser-dust-4-final.json"
+    ],
+    "result": "Eight distinct workflows passed against the final candidate with one worker, zero retries, original assertions and 180-second workflow limits."
+  }
+]

@@ -1,0 +1,302 @@
+{
+  "passed": true,
+  "completedAt": "2026-10-04T03:35:19.585Z",
+  "teacherSave": {
+    "status": "saved",
+    "verified": true,
+    "ids": [
+      "delivery-memory",
+      "delivery-applied"
+    ]
+  },
+  "learnerPersistence": {
+    "status": "saved",
+    "strictNativeReadbackMatches": true,
+    "resourceCount": 2,
+    "hydration": "actual production effect, no preload or forced readiness"
+  },
+  "reopened": {
+    "ids": [
+      "delivery-memory",
+      "delivery-applied"
+    ],
+    "hasAudio": true
+  },
+  "delivery": {
+    "first": {
+      "kind": "mailbox",
+      "candidates": 2,
+      "pushed": 1,
+      "failed": 1,
+      "removed": 0,
+      "hosted": false
+    },
+    "recovered": {
+      "kind": "mailbox",
+      "candidates": 2,
+      "pushed": 1,
+      "failed": 0,
+      "removed": 0,
+      "hosted": false
+    },
+    "attempts": 2,
+    "repeat": {
+      "kind": "mailbox",
+      "candidates": 2,
+      "pushed": 0,
+      "failed": 0,
+      "removed": 0,
+      "hosted": false
+    },
+    "chunks": 40,
+    "referenceClips": [
+      9,
+      13
+    ],
+    "teacherUnchanged": true
+  },
+  "receipt": {
+    "resources": 2,
+    "policy": "off",
+    "privateData": false,
+    "same": true
+  },
+  "playback": [
+    {
+      "id": "delivery-memory",
+      "required": 9,
+      "clips": [
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        }
+      ],
+      "synthesisCalls": 0
+    },
+    {
+      "id": "delivery-applied",
+      "required": 13,
+      "clips": [
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        },
+        {
+          "duration": 1,
+          "maxTime": 1,
+          "ended": true,
+          "error": null
+        }
+      ],
+      "synthesisCalls": 0
+    }
+  ],
+  "uiNavigation": [
+    {
+      "resource": "delivery-memory",
+      "control": "Make it mine",
+      "activatedWith": "Enter",
+      "writingPaneVisible": true
+    },
+    {
+      "resource": "delivery-applied",
+      "control": "3. Build",
+      "activatedWith": "Enter",
+      "writingPaneVisible": true
+    },
+    {
+      "resource": "delivery-memory",
+      "control": "Make it mine",
+      "activatedWith": "Enter",
+      "writingPaneVisible": true
+    },
+    {
+      "resource": "delivery-applied",
+      "control": "Read or listen",
+      "activatedWith": "Enter",
+      "readingPaneVisible": true
+    },
+    {
+      "resource": "delivery-applied",
+      "control": "3. Build",
+      "activatedWith": "Enter",
+      "writingPaneVisible": true
+    }
+  ],
+  "keyboardCancellation": {
+    "activatedWith": "Enter",
+    "stoppedWith": "Enter",
+    "returnedToIdle": true
+  },
+  "nativeZoom": {
+    "status": "blocked",
+    "baseline": {
+      "dpr": 1,
+      "width": 1280
+    },
+    "measured": {
+      "dpr": 1,
+      "width": 1280
+    },
+    "limitation": "Chrome shortcuts are browser-dependent in automation; unchanged metrics are blocked, never a native-zoom pass."
+  },
+  "reflow": [
+    {
+      "width": 1280,
+      "scrollWidth": 1280,
+      "passed": true
+    },
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "passed": true
+    }
+  ],
+  "persistence": "Both responses survive reload in learner IndexedDB",
+  "submission": "Both responses reach local teacher mailbox; no reference audio or private source/practice data",
+  "teacherStorageIsolated": true,
+  "teacherStorageIsolation": {
+    "productionReadMiss": null,
+    "nativeStudentWorkRecordCount": 0
+  },
+  "pageErrors": [],
+  "scope": "Real studio views, production UtilsPure writer/read-back, native IndexedDB and media ended events, host autosave/codec/submission helpers. Supplied IDB adapter and loopback mailbox; synthetic non-silent 440Hz WAV clips. Not complete App shell, Canvas bridge, hosted services, semantic narration, physical speaker output, or manual assistive technology.",
+  "inputs": {
+    "dev-tools/studio_delivery_e2e.cjs": "e89cdeca17af483d5707bdc7cda5c53ecf4e190867d558fabfb437c24320fff6",
+    "AlloFlowANTI.txt": "389c69b2189516849f3dbeeec8623be1f40567bf2543af6ff4186ed73263d019",
+    "host_handlers_source.jsx": "40bf89a1fe897d781d14b848f4b1c8f2f47403070103807f896f8dd1904747c2",
+    "utils_pure_module.js": "4c42773ddc303f5f0dea00957261e4ecec6e8e608fb3eae1584a7c60e94049ab",
+    "memory_aid_module.js": "d9faa63408f5fc2bf22c7e57b30da4be52419fdba144aa23224bbfbe982895a4",
+    "applied_challenge_module.js": "6c3bac9a49f8eca101664a36f516ff7f469f2b78278c3ce5f1a5335d144dd536",
+    "studio_response_module.js": "9277bb543b6614e1d819fef6ca0586081f37c75dfc5fcb1d56c746c75f475f23",
+    "resource_read_aloud_module.js": "12b996325cefe3276f7073c351fa0679dc02eb7ea9bc17efe063aeacc0026d91",
+    "karaoke_audio_store_module.js": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df",
+    "read_aloud_audio_service_module.js": "7f606aada8da7e7709dbc73952a13506dba03577b5e885c91abb7932a491f71b",
+    "live_aac_module.js": "0be516840aea0ea0c059e4391e430d50c250c820ca7322181cd35d8a7b539876",
+    "shared_activity_module.js": "95f75b7cc021949d87c191d7e350016ba251c65ddccf0a422b57a4ae57277191",
+    "session_transport_module.js": "ea9ec09e09ee4c00cb16494590b11b8e12ddbbb1e0143335fba1284c691ee795",
+    "desktop/web-app/node_modules/react/umd/react.development.js": "28348fef6cb0ed8b2ceeb22deaf824428fd13875d84c73d38f77dd216fc24e7f",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js": "f9044a5e9c39db8bb1a204dff924e526ec0a621e695bb69de1035811be8709e4",
+    "ui_strings.js": "8af7b197077d424c1c38c0c9bfd6758cfc3778c79ce703581d3b77449b5ea96c",
+    "desktop/web-app/tailwind.config.js": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e",
+    "desktop/web-app/src/index.css": "bfc9ce3c1702d2d22081252c602d3975aecc6dbbdefba7faeb7f094e0ad3e9c9"
+  }
+}

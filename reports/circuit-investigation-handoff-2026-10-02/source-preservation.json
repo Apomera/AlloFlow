@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "sourceSha256": "3424b78369802606dd709faf9c308c1d444b0d18633c69062a7e7486e5614453",
+  "mirrorSha256": "3424b78369802606dd709faf9c308c1d444b0d18633c69062a7e7486e5614453",
+  "beforeSha256": "6478b21accc3061b34a7328507d83bffec5d7de7d4786565e300e1ddb7d7a4ba",
+  "canonicalBeforeSha256": "12c7d24673228e4c3164c68ae9137d712576f8656a9a883c598f8b71c160ca52",
+  "onlyAuthorizedChanges": true,
+  "lineEndings": "Source preservation compares LF-normalized text; apply_patch produced CRLF working bytes.",
+  "changes": [
+    {
+      "before": "    var notebookRef=React.useRef(null),seenFocus=React.useRef(state.notebookFocusToken||0);",
+      "after": "    var ownNotebookRef=React.useRef(null),notebookRef=props.disclosureRef||ownNotebookRef,seenFocus=React.useRef(state.notebookFocusToken||0);"
+    },
+    {
+      "before": "        h('div', { className: 'circuit-continuation-footer' },\n            h('p', { className: 'circuit-continuation-help' }, t('stem.circuit.continuation_open_help', 'Opening an experiment keeps your live circuit and saved work.')),",
+      "after": "        !row && h('ol', { className: 'circuit-continuation-inquiry-steps', role: 'list' }, [\n            {\n                id: 'choose',\n                heading: t('stem.circuit.continuation_inquiry_choose_heading', 'Choose one setting'),\n                prompt: t('stem.circuit.continuation_inquiry_choose', 'Change one input or component setting. Keep the circuit type and the other settings the same.')\n            },\n            {\n                id: 'compare',\n                heading: t('stem.circuit.continuation_inquiry_compare_heading', 'Compare two readings'),\n                prompt: t('stem.circuit.continuation_inquiry_compare', 'Record a starting reading, make the change, then record again. Keep the probe positions the same.')\n            }\n        ].map(function (step, index) {\n            return h('li', { key: step.id, className: 'circuit-continuation-inquiry-step', 'data-inquiry-step': step.id },\n                h('span', { className: 'circuit-continuation-inquiry-number', 'aria-hidden': true }, index + 1),\n                h('div', { className: 'circuit-continuation-inquiry-copy' },\n                    h('strong', { className: 'circuit-continuation-inquiry-heading' }, step.heading),\n                    h('p', { className: 'circuit-continuation-inquiry-prompt' }, step.prompt)));\n        })),\n        h('div', { className: 'circuit-continuation-footer' },\n            h('p', { className: 'circuit-continuation-help' }, row\n                ? t('stem.circuit.continuation_open_help', 'Opening an experiment keeps your live circuit and saved work.')\n                : t('stem.circuit.continuation_inquiry_help', 'Open your existing notebook to plan a question and keep your own readings.')),"
+    },
+    {
+      "before": "                : h('button', { type: 'button', className: 'circuit-continuation-action circuit-continuation-review-map', 'aria-controls': props.mapId, disabled: typeof props.onReviewMap !== 'function', onClick: function () { if (typeof props.onReviewMap === 'function') props.onReviewMap(); } }, t('stem.circuit.continuation_review_map', 'Review experiment map'))));",
+      "after": "                : h('div', { className: 'circuit-continuation-actions' },\n                    h('button', { type: 'button', className: 'circuit-continuation-action circuit-continuation-plan-investigation', disabled: typeof props.onOpenNotebook !== 'function', onClick: function () { if (typeof props.onOpenNotebook === 'function') props.onOpenNotebook(); } }, t('stem.circuit.continuation_inquiry_action', 'Plan my own investigation')),\n                    h('button', { type: 'button', className: 'circuit-continuation-action circuit-continuation-review-map', 'aria-controls': props.mapId, disabled: typeof props.onReviewMap !== 'function', onClick: function () { if (typeof props.onReviewMap === 'function') props.onReviewMap(); } }, t('stem.circuit.continuation_review_map', 'Review experiment map')))));"
+    },
+    {
+      "before": "      tested&&h(CircuitActiveLessonContinuation,{React:React,t:props.t,row:map.find(function(row){return row.id===next;})||null,onSelect:select,mapId:uid+'-map',onReviewMap:function(){var element=mapRef.current;if(element){element.open=true;var summary=element.querySelector('summary');if(summary){summary.focus({preventScroll:true});if(typeof summary.scrollIntoView==='function')summary.scrollIntoView({block:'start',behavior:'instant'});}}}}),",
+      "after": "      tested&&h(CircuitActiveLessonContinuation,{React:React,t:props.t,row:map.find(function(row){return row.id===next;})||null,onSelect:select,onOpenNotebook:props.onOpenNotebook,mapId:uid+'-map',onReviewMap:function(){var element=mapRef.current;if(element){element.open=true;var summary=element.querySelector('summary');if(summary){summary.focus({preventScroll:true});if(typeof summary.scrollIntoView==='function')summary.scrollIntoView({block:'start',behavior:'instant'});}}}}),"
+    },
+    {
+      "before": "    var entryState=React.useState(0),entryVersion=entryState[0];",
+      "after": "    var entryState=React.useState(0),entryVersion=entryState[0],notebookRef=React.useRef(null);"
+    },
+    {
+      "before": "    var openNotebook=function(){patch({notebookOpen:true});requestAnimationFrame(function(){var el=document.getElementById('circuit-active-notebook');if(el){el.scrollIntoView({block:'start'});el.querySelector('summary').focus();}});};",
+      "after": "    var openNotebook=function(){\n      var notebook=notebookRef.current;\n      ctx.setToolData(function(prev){var old=prev._circuitActive||{};return old.notebookOpen===true?prev:Object.assign({},prev,{_circuitActive:Object.assign({},old,{notebookOpen:true})});});\n      var summary=notebook&&notebook.querySelector(':scope > summary');\n      if(summary&&summary.isConnected&&notebookRef.current===notebook){summary.focus({preventScroll:true});if(typeof notebook.scrollIntoView==='function')notebook.scrollIntoView({block:'start',behavior:'instant'});}\n    };"
+    },
+    {
+      "before": "      h(CircuitActiveInvestigationTools,{React:React,t:cktT,state:state,patch:patch,record:record,appendEvidence:function(target){notebookAction('appendEvidence',target);},load:loadInvestigation,restore:restoreInvestigation,",
+      "after": "      h(CircuitActiveInvestigationTools,{React:React,t:cktT,state:state,disclosureRef:notebookRef,patch:patch,record:record,appendEvidence:function(target){notebookAction('appendEvidence',target);},load:loadInvestigation,restore:restoreInvestigation,"
+    },
+    {
+      "before": "        h(CircuitActiveLessonLab,{React:React,t:cktT,state:state,onAction:lessonAction,entryVersion:entryVersion})),",
+      "after": "        h(CircuitActiveLessonLab,{React:React,t:cktT,state:state,onAction:lessonAction,onOpenNotebook:openNotebook,entryVersion:entryVersion})),"
+    },
+    {
+      "before": ".circuit-active-root button.circuit-continuation-action {",
+      "after": ".circuit-active-root .circuit-continuation-inquiry-steps {\n    display: grid;\n    grid-template-columns: repeat(auto-fit, minmax(min(100%, 14em), 1fr));\n    gap: 12px;\n    min-width: 0;\n    margin: 16px 0 0;\n    padding: 0;\n    list-style: none;\n}\n.circuit-active-root .circuit-continuation-inquiry-step {\n    display: flex;\n    align-items: flex-start;\n    gap: 10px;\n    min-width: 0;\n    padding: 13px;\n    border: 1px solid #608d80;\n    border-radius: 10px;\n    background: #0d292b;\n}\n.circuit-active-root .circuit-continuation-inquiry-number {\n    display: inline-flex;\n    flex: 0 0 auto;\n    align-items: center;\n    justify-content: center;\n    min-width: 26px;\n    min-height: 26px;\n    border: 1px solid #7dbca5;\n    border-radius: 50%;\n    color: #e0f5ea;\n    font-size: 13px;\n    font-weight: 700;\n    line-height: 1.6;\n}\n.circuit-active-root .circuit-continuation-inquiry-copy {\n    min-width: 0;\n}\n.circuit-active-root strong.circuit-continuation-inquiry-heading {\n    display: block;\n    color: #edf8f2;\n    font-size: 14px;\n    font-weight: 700;\n    line-height: 1.6;\n    overflow-wrap: anywhere;\n}\n.circuit-active-root p.circuit-continuation-inquiry-prompt {\n    margin: 5px 0 0;\n    color: #c5dfd5;\n    font-size: 13px;\n    line-height: 1.7;\n    overflow-wrap: anywhere;\n}\n.circuit-active-root .circuit-continuation-actions {\n    display: flex;\n    flex-wrap: wrap;\n    gap: 10px;\n    min-width: 0;\n}\n@media (forced-colors: active) {\n    .circuit-active-root .circuit-continuation-inquiry-step,\n    .circuit-active-root .circuit-continuation-inquiry-number {\n        border-color: CanvasText;\n        background: Canvas;\n        color: CanvasText;\n    }\n    .circuit-active-root strong.circuit-continuation-inquiry-heading,\n    .circuit-active-root p.circuit-continuation-inquiry-prompt {\n        color: CanvasText;\n    }\n}\n.circuit-active-root button.circuit-continuation-action {"
+    }
+  ]
+}

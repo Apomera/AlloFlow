@@ -1,0 +1,275 @@
+{
+  "format": "alloflow-maine-sld-practice",
+  "schemaVersion": 1,
+  "moduleVersion": "1.1.0",
+  "reviewed": "2026-10-02",
+  "exportedAt": "2026-10-04T03:08:58.465Z",
+  "activeCase": "alex",
+  "caseWork": {
+    "alex": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "alex-general-ed-adequate": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "jordan": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "marisol": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "taylor": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    }
+  }
+}

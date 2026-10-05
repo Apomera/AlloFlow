@@ -1,0 +1,215 @@
+{
+  "target": ".perception-eyebrow",
+  "axeVersion": "4.12.1",
+  "forcedColors": true,
+  "theme": "contrast",
+  "scrollY": 4161,
+  "viewport": {
+    "width": 1600,
+    "height": 1100
+  },
+  "rootVariables": {
+    "ink": "CanvasText",
+    "soft": "CanvasText",
+    "panel": "Canvas",
+    "ground": "Canvas"
+  },
+  "samples": [
+    {
+      "selector": "button[aria-pressed=true]",
+      "text": "Moiré interferencePatterns and angles",
+      "color": "rgb(255, 255, 255)",
+      "background": "rgb(55, 0, 110)",
+      "forcedColorAdjust": "none"
+    },
+    {
+      "selector": ".perception-reading a",
+      "text": "Scientific reference: Michael Bach",
+      "color": "rgb(0, 0, 159)",
+      "background": "rgba(255, 255, 255, 0)",
+      "forcedColorAdjust": "auto"
+    }
+  ],
+  "ancestors": [
+    {
+      "tag": "DIV",
+      "class": "perception-eyebrow",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1",
+      "rect": {
+        "left": 32,
+        "top": -4129,
+        "width": 525.578125,
+        "height": 18
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1",
+      "rect": {
+        "left": 32,
+        "top": -4129,
+        "width": 525.578125,
+        "height": 106.6875
+      }
+    },
+    {
+      "tag": "HEADER",
+      "class": "perception-heading",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1",
+      "rect": {
+        "left": 32,
+        "top": -4129,
+        "width": 1536,
+        "height": 106.6875
+      }
+    },
+    {
+      "tag": "SECTION",
+      "class": "",
+      "background": "rgb(255, 255, 255)",
+      "color": "rgb(0, 0, 0)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1",
+      "rect": {
+        "left": 8,
+        "top": -4153,
+        "width": 1584,
+        "height": 7003.484375
+      }
+    },
+    {
+      "tag": "DIV",
+      "class": "",
+      "background": "rgb(255, 255, 255)",
+      "color": "rgb(0, 0, 0)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1",
+      "rect": {
+        "left": 0,
+        "top": -4161,
+        "width": 1600,
+        "height": 7019.484375
+      }
+    },
+    {
+      "tag": "MAIN",
+      "class": "theme-contrast",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1",
+      "rect": {
+        "left": 0,
+        "top": -4161,
+        "width": 1600,
+        "height": 7019.484375
+      }
+    },
+    {
+      "tag": "BODY",
+      "class": "",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1",
+      "rect": {
+        "left": 0,
+        "top": -4161,
+        "width": 1600,
+        "height": 7019.484375
+      }
+    },
+    {
+      "tag": "HTML",
+      "class": "",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)",
+      "forcedColorAdjust": "auto",
+      "opacity": "1",
+      "rect": {
+        "left": 0,
+        "top": -4161,
+        "width": 1600,
+        "height": 7019.484375
+      }
+    }
+  ],
+  "hit": [
+    {
+      "tag": "FIGCAPTION",
+      "class": "",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)"
+    },
+    {
+      "tag": "FIGURE",
+      "class": "perception-pair-plot",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)"
+    },
+    {
+      "tag": "DIV",
+      "class": "",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)"
+    },
+    {
+      "tag": "SECTION",
+      "class": "perception-study perception-study-compare",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)"
+    },
+    {
+      "tag": "SECTION",
+      "class": "perception-study perception-review",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)"
+    },
+    {
+      "tag": "SECTION",
+      "class": "perception-card perception-journal",
+      "background": "rgb(255, 255, 255)",
+      "color": "rgb(0, 0, 0)"
+    },
+    {
+      "tag": "SECTION",
+      "class": "",
+      "background": "rgb(255, 255, 255)",
+      "color": "rgb(0, 0, 0)"
+    },
+    {
+      "tag": "DIV",
+      "class": "",
+      "background": "rgb(255, 255, 255)",
+      "color": "rgb(0, 0, 0)"
+    },
+    {
+      "tag": "MAIN",
+      "class": "theme-contrast",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)"
+    },
+    {
+      "tag": "BODY",
+      "class": "",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)"
+    },
+    {
+      "tag": "HTML",
+      "class": "",
+      "background": "rgba(255, 255, 255, 0)",
+      "color": "rgb(0, 0, 0)"
+    }
+  ]
+}

@@ -9,15 +9,15 @@ const begin=source.indexOf('function createCLHuntAnimal('),end=source.indexOf('/
 if(begin<0||end<=begin)throw Error('Cannot find actual production animal factory');
 const build=new Function('T','species','Math',source.slice(begin,end)+';return createCLHuntAnimal(T,species);');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Squid surface consumed dive RNG');}}),allocated=[];
-const key='cl-squid-surface-v27-mottled',state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});
+const key='cl-squid-surface-v34-layered',limbKey='cl-squid-limb-oral-v36',skinKeys=[key,limbKey],state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});
 const webgl2={capabilities:{isWebGL2:true},extensions:{has(){throw Error('WebGL2 must not query derivative extension');}}};
 function rig(id='humboldtSquid'){const a=build(THREE,{id,bodyColor:0xbc6048},noRandom);allocated.push(a);return a;}
 function meshes(a){const out=[];a.root.traverse(o=>{if(o.isMesh)out.push(o);});return out;}
-function skinMaterials(a){return [...new Set(meshes(a).map(o=>o.material).filter(m=>m.customProgramCacheKey()===key))];}
+function skinMaterials(a){return [...new Set(meshes(a).map(o=>o.material).filter(m=>skinKeys.includes(m.customProgramCacheKey())))];}
 function compiled(m,renderer=webgl2){const s={vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader,uniforms:{}};m.onBeforeCompile(s,renderer);return s;}
 function scalarFunctions(shader){
   const defs=Array.from(shader.fragmentShader.matchAll(/float (clSq\w+)\(([^)]*)\)\{([^{}]*)\}/g));
-  if(defs.length!==5)throw Error('Expected five production squid scalar helpers');
+  if(defs.length!==7)throw Error('Expected seven production squid scalar helpers');
   const js=defs.map(([,name,params,body])=>'function '+name+'('+params.replace(/float /g,'')+'){'+body.replace(/\bfloat /g,'let ')+'}').join('\n');
   const clamp=(x,a,b)=>Math.max(a,Math.min(b,x)),mod=(x,n)=>x-n*Math.floor(x/n);
   const smoothstep=(a,b,x)=>{const t=clamp((x-a)/(b-a),0,1);return t*t*(3-2*t);};
@@ -29,33 +29,43 @@ afterEach(()=>{for(const a of allocated.splice(0)){const owned=new Set();meshes(
 
 describe('Humboldt squid stable pigment finish',()=>{
   it('compiles filtered opaque pigment on every existing skin clone while preserving anatomical palette and root coordinates',()=>{
-    const a=rig(),materials=skinMaterials(a);expect(THREE.REVISION).toBe('128');expect(materials).toHaveLength(4);
+    const a=rig(),materials=skinMaterials(a);expect(THREE.REVISION).toBe('128');expect(materials).toHaveLength(4);expect(materials.map(m=>m.customProgramCacheKey()).sort()).toEqual([key,key,key,limbKey].sort());
     const first=compiled(a.mantleMat);
+    const body=meshes(a).filter(mesh=>skinKeys.includes(mesh.material.customProgramCacheKey()));
+    for(const name of ['cl-mantle','cl-head','cl-arm-0','cl-tentacle-0','cl-fin--1','cl-fin-1'])expect(body.some(mesh=>mesh.name===name),name).toBe(true);
+    for(const mesh of body){expect(mesh.material.roughness,mesh.name+' actual skin finish').toBe(mesh.name.startsWith('cl-fin-')?.55:.50);expect(mesh.material.metalness,mesh.name).toBe(0);}
+    for(const [name,roughness]of [['cl-iris',.36],['cl-pupil',.17]]){
+      const pair=meshes(a).filter(mesh=>mesh.name===name);expect(pair,name).toHaveLength(2);
+      for(const mesh of pair){const material=mesh.material;expect(material.roughness,name+' unchanged wet dome').toBe(roughness);expect(material.transparent,name).toBe(false);expect(material.opacity,name).toBe(1);expect(material.emissive.getHex(),name).toBe(0);expect(skinKeys.includes(material.customProgramCacheKey()),name).toBe(false);
+        if(name==='cl-pupil'){expect(material.isMeshPhysicalMaterial).toBe(true);expect(material.clearcoat).toBe(.82);expect(material.clearcoatRoughness).toBe(.12);expect(material.metalness).toBe(0);expect(Math.max(...material.color.toArray())).toBeLessThan(.004);}
+        else{expect(material.vertexColors).toBe(true);expect(material.metalness).toBe(.20);}
+      }
+    }
     for(const m of materials){const s=compiled(m);
       expect(s.vertexShader.match(/uniform mat4 clSurfaceFrame;/g)).toHaveLength(1);
       expect(s.vertexShader).toContain('clSkinPos = (clSurfaceFrame * modelMatrix * vec4(position,1.0)).xyz;');
       expect(s.fragmentShader).toContain('return clSqHash(p.x,p.y,p.z);');expect(s.fragmentShader).not.toContain('43758.5453');expect(s.fragmentShader).not.toContain('\\n');
-      expect(s.fragmentShader.match(/=clNoise\(/g)).toHaveLength(3);expect(s.fragmentShader.match(/fwidth\(clSq/g)).toHaveLength(2);
+      expect(s.fragmentShader.match(/=clNoise\(/g)).toHaveLength(4);expect(s.fragmentShader.match(/fwidth\(clSq/g)).toHaveLength(3);
       expect(s.fragmentShader).toContain('clSkinPos*vec3(4.5,7.0,3.0)');
       expect(s.fragmentShader).toContain('vec3 clPale=diffuseColor.rgb*0.22+vec3(0.29,0.23,0.20);');
       expect(s.fragmentShader).toContain('vec3 clRed=diffuseColor.rgb*(0.91+0.20*clPatch);');
       expect(s.fragmentShader).toContain('clVentral*0.69+(1.0-clDorsal)*(0.06+(1.0-clPatch)*0.08)');
-      expect(s.fragmentShader).toContain('#include <roughnessmap_fragment>\nroughnessFactor=clSqRoughness(roughnessFactor,clFine,clSqFineAA);');
+      expect(s.fragmentShader).toContain('#include <roughnessmap_fragment>\nroughnessFactor=clSqMediumRoughness(clSqRoughness(roughnessFactor,clFine,clSqFineAA),clMacro,clMedium,clSqMediumAA,clVentral);');
       for(const u of ['clSurfaceFrame','clPattern','clDisplay','clPhase'])expect(s.uniforms[u]).toBe(first.uniforms[u]);
       expect(m.transparent).toBe(false);expect(m.opacity).toBe(1);expect(m.emissive.getHex()).toBe(0);expect(m.map).toBe(null);expect(m.normalMap).toBe(null);
     }
     for(const name of ['cl-pupil','cl-iris','cl-suckers','cl-siphon-tube']){
-      const material=a.root.getObjectByName(name).material,s=compiled(material);expect(s.fragmentShader,name).not.toContain('clSqPigmentTone');expect(material.customProgramCacheKey()).not.toBe(key);
+      const material=a.root.getObjectByName(name).material,s=compiled(material);expect(s.fragmentShader,name).not.toContain('clSqPigmentTone');expect(skinKeys.includes(material.customProgramCacheKey())).toBe(false);
     }
   });
 
   it('gates actual derivative support and keeps unsupported renderers free of subpixel grain',()=>{
     const m=rig().mantleMat,requested=[];
     const supported=compiled(m,{capabilities:{isWebGL2:false},extensions:{has(name){requested.push(name);return true;}}});
-    expect(requested).toEqual(['OES_standard_derivatives']);expect(supported.fragmentShader).toContain('fwidth(clSqFinePos)');expect(supported.fragmentShader).toContain('fwidth(clSqGrainPos)');
+    expect(requested).toEqual(['OES_standard_derivatives']);expect(supported.fragmentShader).toContain('fwidth(clSqFinePos)');expect(supported.fragmentShader).toContain('fwidth(clSqGrainPos)');expect(supported.fragmentShader).toContain('fwidth(clSqMediumPos)');
     for(const renderer of [null,{capabilities:{isWebGL2:false},extensions:{has(){return false;}}},{capabilities:{isWebGL2:false}}]){
       const s=compiled(m,renderer);expect(s.fragmentShader).not.toMatch(/fwidth\(clSq/);expect(s.fragmentShader).toContain('float clSqFineAA=0.0; float clSqGrainAA=0.0;');
-      expect(s.fragmentShader).toContain('float clMacro=clNoise(');expect(s.uniforms.clSurfaceFrame).toBe(supported.uniforms.clSurfaceFrame);
+      expect(s.fragmentShader).toContain('float clSqMediumAA=0.35;');expect(s.fragmentShader).toContain('float clMacro=clNoise(');expect(s.uniforms.clSurfaceFrame).toBe(supported.uniforms.clSurfaceFrame);
     }
   });
 
@@ -77,7 +87,7 @@ describe('Humboldt squid stable pigment finish',()=>{
       expect(f.clSqPigmentTone(fine,grain,patch,dorsal,0,0)).toBe(1);
       for(const aa of [0,.25,.5,.75,1]){const tone=f.clSqPigmentTone(fine,grain,patch,dorsal,aa,aa);expect(tone).toBeGreaterThanOrEqual(.812-Number.EPSILON);expect(tone).toBeLessThanOrEqual(1);}
     }
-    for(const base of [.28,.39,.55,.62])for(const fine of [0,.25,.5,.75,1]){
+    for(const base of [.28,.39,.50,.55,.62])for(const fine of [0,.25,.5,.75,1]){
       expect(f.clSqRoughness(base,fine,1)).toBeCloseTo(Math.max(.28,Math.min(.62,base*(.93+fine*.16))),14);
       expect(f.clSqRoughness(base,fine,0)).toBe(f.clSqRoughness(base,.5,0));
       for(const aa of [0,.25,.5,.75,1]){const r=f.clSqRoughness(base,fine,aa);expect(r).toBeGreaterThanOrEqual(.28);expect(r).toBeLessThanOrEqual(.62);}
@@ -110,6 +120,33 @@ describe('Humboldt squid stable pigment finish',()=>{
     expect(f.clSqMottleTone(0,1,0)*f.clSqPigmentTone(1,1,0,1,0,0)).toBeLessThan(.9);
   });
 
+  it('retains readable medium pigment after fine filtering while preserving the pale ventral surface',()=>{
+    const shader=compiled(rig().mantleMat),f=scalarFunctions(shader);
+    expect(shader.fragmentShader).toContain('clSkinPos*vec3(20.0,28.0,18.0)');
+    expect(shader.fragmentShader).toContain('clSqDetailFilter(length(fwidth(clSqMediumPos)))');
+    expect(shader.fragmentShader).toContain('diffuseColor.rgb*=clSqMediumTone(clMedium,clDorsal,clVentral,clSqMediumAA);');
+    expect(shader.fragmentShader).not.toMatch(/clSqMediumPos[^;]*clPhase/);
+    for(const dorsal of [0,.5,1])for(const ventral of [0,.5,1])for(const aa of [0,.25,.5,.75,1]){
+      let previous=Infinity;
+      for(let pigment=0;pigment<=1.00001;pigment+=.025){const tone=f.clSqMediumTone(pigment,dorsal,ventral,aa);expect(Number.isFinite(tone)).toBe(true);expect(tone).toBeGreaterThanOrEqual(.70-1e-12);expect(tone).toBeLessThanOrEqual(1);expect(tone).toBeLessThanOrEqual(previous+1e-12);previous=tone;if(ventral===1||aa===0)expect(tone).toBe(1);}
+    }
+    expect(f.clSqMediumTone(1,1,0,1)).toBeCloseTo(.70,14);expect(f.clSqMediumTone(1,0,0,1)).toBeCloseTo(.85,14);
+    // At this ordinary footprint, medium pigment remains legible while fine cells are fully filtered.
+    expect(f.clSqDetailFilter(.4)).toBeGreaterThan(.95);expect(f.clSqDetailFilter(1.6)).toBe(0);
+    expect(f.clSqMediumTone(1,1,0,f.clSqDetailFilter(.4))).toBeLessThan(.72);
+    for(const medium of [0,.25,.5,.75,1])expect(f.clSqMediumTone(medium,1,0,0)).toBe(1);
+  });
+
+  it('varies bounded surface response at playable scale without changing a fully ventral finish',()=>{
+    const f=scalarFunctions(compiled(rig().mantleMat));
+    for(const base of [.465,.50,.55,.5995])for(const macro of [0,.5,1])for(const medium of [0,.5,1])for(const aa of [0,.5,1])for(const ventral of [0,.5,1]){
+      const r=f.clSqMediumRoughness(base,macro,medium,aa,ventral);expect(Number.isFinite(r)).toBe(true);expect(r).toBeGreaterThanOrEqual(.38);expect(r).toBeLessThanOrEqual(.64);if(ventral===1)expect(r).toBe(base);
+    }
+    expect(f.clSqMediumRoughness(.505,.5,0,1,0)).toBeCloseTo(.435,14);expect(f.clSqMediumRoughness(.505,.5,1,1,0)).toBeCloseTo(.575,14);
+    expect(f.clSqMediumRoughness(.505,0,.5,0,0)).toBeCloseTo(.475,14);expect(f.clSqMediumRoughness(.505,1,.5,0,0)).toBeCloseTo(.535,14);
+    expect(f.clSqMediumRoughness(.505,.5,0,0,0)).toBe(f.clSqMediumRoughness(.505,.5,1,0,0));
+  });
+
   it('reuses the root inverse frame and every geometry/material buffer across motion, strike and frozen updates',()=>{
     const a=rig(),parent=new THREE.Group();parent.position.set(9,-3,11);parent.rotation.set(.2,.5,-.1);parent.scale.set(1.3,.8,1.1);parent.add(a.root);
     const shared=compiled(a.mantleMat).uniforms.clSurfaceFrame,original=shared.value,materials=skinMaterials(a);
@@ -123,6 +160,6 @@ describe('Humboldt squid stable pigment finish',()=>{
     }
     a.update(7,0,state({reducedMotion:true}));const frozen=hash(geometry(a));for(let i=0;i<5;i++)a.update(7,0,state({reducedMotion:true}));expect(hash(geometry(a))).toBe(frozen);
     for(const [o,g,m,arrays,index,instances]of owned){expect(o.geometry).toBe(g);expect(o.material).toBe(m);Object.values(g.attributes).forEach((attr,i)=>expect(attr.array).toBe(arrays[i]));expect(g.index?.array).toBe(index);expect(o.instanceMatrix?.array).toBe(instances);}
-    for(const id of ['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coconutOcto','cuttlefish','bobtailSquid','dumboOcto','vampireSquid','nautilus'])for(const mesh of meshes(rig(id))){const s=compiled(mesh.material);expect(s.fragmentShader,id).not.toContain('clSqDetailFilter');expect(mesh.material.customProgramCacheKey()).not.toBe(key);}
+    for(const id of ['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coconutOcto','cuttlefish','bobtailSquid','dumboOcto','vampireSquid','nautilus'])for(const mesh of meshes(rig(id))){const s=compiled(mesh.material);expect(s.fragmentShader,id).not.toContain('clSqDetailFilter');expect(skinKeys.includes(mesh.material.customProgramCacheKey())).toBe(false);}
   },20000);
 });

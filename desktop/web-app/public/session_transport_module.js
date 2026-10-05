@@ -30,6 +30,25 @@
     return !!(inputs && (inputs.mode === 'study' || inputs.mode === 'family'));
   }
   var GUIDE_CONTENT_FIELDS = ['essentialQuestion', 'objectives', 'materialsNeeded', 'hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'];
+  function projectStudentGuideValue(value) {
+    if (typeof value === 'string' || typeof value === 'number') return value;
+    if (Array.isArray(value)) return value.map(projectStudentGuideValue).filter(function (entry) { return entry != null; });
+    if (!value || typeof value !== 'object') return null;
+    var kept = {};
+    ['en', 'text', 'description', 'title', 'label', 'name', 'item', 'statement', 'instructions', 'studentTask', 'activity', 'steps', 'questions', 'prompt'].forEach(function (key) {
+      if (value[key] != null) { var next = projectStudentGuideValue(value[key]); if (next != null) kept[key] = next; }
+    });
+    return Object.keys(kept).length ? kept : null;
+  }
+  function projectStudentGuideData(data, mode) {
+    var out = {};
+    data = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+    GUIDE_CONTENT_FIELDS.concat(['successCriteria', 'extensions', 'activities']).forEach(function (key) {
+      if (mode !== 'study' && mode !== 'family' && ['hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'].indexOf(key) !== -1 && (typeof data[key] === 'string' || typeof data[key] === 'number')) return;
+      if (data[key] != null) { var next = projectStudentGuideValue(data[key]); if (next != null) out[key] = next; }
+    });
+    return out;
+  }
   // Learner copy of a guide: an allowlist of the guide's own sections. Teaching
   // scripts, extension teacher guides, criterion links and live rollup ids,
   // STEAM station picks, unit-path metadata and the recorded generation inputs
@@ -37,25 +56,7 @@
   function projectStudentGuide(item) {
     if (!item || !item.id || !isStudentDeliverableGuide(item)) return null;
     var data = item.data && typeof item.data === 'object' && !Array.isArray(item.data) ? item.data : {};
-    var out = {};
-    GUIDE_CONTENT_FIELDS.forEach(function (key) { if (data[key] != null) out[key] = data[key]; });
-    if (data.successCriteria != null) {
-      out.successCriteria = (Array.isArray(data.successCriteria) ? data.successCriteria : [data.successCriteria]).map(function (entry) {
-        if (entry && typeof entry === 'object' && !Array.isArray(entry)) return entry.statement != null ? { statement: entry.statement } : null;
-        return entry;
-      }).filter(function (entry) { return entry != null; });
-    }
-    if (data.extensions != null) {
-      out.extensions = (Array.isArray(data.extensions) ? data.extensions : [data.extensions]).map(function (ext) {
-        if (ext && typeof ext === 'object' && !Array.isArray(ext)) {
-          var kept = {};
-          if (ext.title != null) kept.title = ext.title;
-          if (ext.description != null) kept.description = ext.description;
-          return Object.keys(kept).length ? kept : null;
-        }
-        return ext;
-      }).filter(function (ext) { return ext != null; });
-    }
+    var out = projectStudentGuideData(data, item.config.generationInputs.mode);
     var source = item.config;
     var config = { generationInputs: { version: source.generationInputs.version, mode: source.generationInputs.mode } };
     ['grade', 'gradeLevel', 'language', 'sourceTopic', 'topic', 'translationTarget'].forEach(function (key) {
@@ -292,6 +293,7 @@
     studentSafeResources: studentSafeResources,
     isStudentDeliverableGuide: isStudentDeliverableGuide,
     projectStudentGuide: projectStudentGuide,
+    projectStudentGuideData: projectStudentGuideData,
     selectTransportKind: selectTransportKind,
     createFirebaseTransport: createFirebaseTransport,
     createMailboxTransport: createMailboxTransport,

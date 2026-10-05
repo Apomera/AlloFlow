@@ -1,0 +1,333 @@
+{
+  "slug": "american_revolution_causes_grade5",
+  "version": 1,
+  "revision": "2026-10-04",
+  "style": "Warm watercolor historical scenes with clean civics diagrams",
+  "provider": "Built-in image generation and authored SVG diagrams",
+  "textPolicy": "Text-free raster artwork; captions and labels stay in native editable fields",
+  "note": "Visual review completed when asset status is visual-review-passed; educator review pending.",
+  "references": [
+    "https://www.nps.gov/subjects/americanrevolution/timeline.htm"
+  ],
+  "nativeMappings": {
+    "glossary": {
+      "Colony": "ar-term-colony",
+      "Parliament": "ar-term-parliament",
+      "Tax": "ar-term-tax",
+      "Representation": "ar-term-representation",
+      "Boycott": "ar-term-boycott",
+      "Protest": "ar-term-protest",
+      "Militia": "ar-term-militia",
+      "Repeal": "ar-term-repeal",
+      "Congress": "ar-term-congress",
+      "Liberty": "ar-term-liberty",
+      "Loyalist": "ar-term-loyalist",
+      "Patriot": "ar-term-patriot"
+    },
+    "anchor": {
+      "0": "ar-context-stamp",
+      "1": "ar-term-protest",
+      "2": "ar-context-harbor",
+      "3": "ar-term-congress",
+      "4": "ar-context-rope"
+    },
+    "sort": {
+      "a1": "ar-context-stamp",
+      "a2": "ar-term-protest",
+      "a3": "ar-context-harbor",
+      "a4": "ar-context-spinning",
+      "a5": "ar-term-militia",
+      "a6": "ar-context-tea",
+      "a7": "ar-term-tax",
+      "a8": "ar-term-congress",
+      "a9": "ar-context-council",
+      "a10": "ar-term-militia"
+    }
+  },
+  "assets": [
+    {
+      "id": "ar-term-colony",
+      "kind": "term",
+      "file": "ar-term-colony.png",
+      "webpFile": "ar-term-colony.webp",
+      "vectorFile": "ar-term-colony.svg",
+      "alt": "A small house has a steep roof, two windows and a central doorway.",
+      "prompt": "Authored text-free SVG diagram: A small house has a steep roof, two windows and a central doorway.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-parliament",
+      "kind": "term",
+      "file": "ar-term-parliament.png",
+      "webpFile": "ar-term-parliament.webp",
+      "vectorFile": "ar-term-parliament.svg",
+      "alt": "A triangular roof rests above four columns and a broad base.",
+      "prompt": "Authored text-free SVG diagram: A triangular roof rests above four columns and a broad base.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-tax",
+      "kind": "term",
+      "file": "ar-term-tax.png",
+      "webpFile": "ar-term-tax.webp",
+      "vectorFile": "ar-term-tax.svg",
+      "alt": "Three small stacks of plain gold coins sit at different heights.",
+      "prompt": "Authored text-free SVG diagram: Three small stacks of plain gold coins sit at different heights.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-representation",
+      "kind": "term",
+      "file": "ar-term-representation.png",
+      "webpFile": "ar-term-representation.webp",
+      "vectorFile": "ar-term-representation.svg",
+      "alt": "Three people stand together beneath a small columned building.",
+      "prompt": "Authored text-free SVG diagram: Three people stand together beneath a small columned building.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-boycott",
+      "kind": "term",
+      "file": "ar-term-boycott.png",
+      "webpFile": "ar-term-boycott.webp",
+      "vectorFile": "ar-term-boycott.svg",
+      "alt": "An open hand faces a closed package.",
+      "prompt": "Authored text-free SVG diagram: An open hand faces a closed package.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-protest",
+      "kind": "term",
+      "file": "ar-term-protest.png",
+      "webpFile": "ar-term-protest.webp",
+      "vectorFile": "ar-term-protest.svg",
+      "alt": "Three people gather beside a raised blank placard.",
+      "prompt": "Authored text-free SVG diagram: Three people gather beside a raised blank placard.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-militia",
+      "kind": "term",
+      "file": "ar-term-militia.png",
+      "webpFile": "ar-term-militia.webp",
+      "vectorFile": "ar-term-militia.svg",
+      "alt": "Three people stand together with two long weapons held upright at the outer edges.",
+      "prompt": "Authored text-free SVG diagram: Three people stand together with two long weapons held upright at the outer edges.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-repeal",
+      "kind": "term",
+      "file": "ar-term-repeal.png",
+      "webpFile": "ar-term-repeal.webp",
+      "vectorFile": "ar-term-repeal.svg",
+      "alt": "A blank paper has an arrow moving away to the right.",
+      "prompt": "Authored text-free SVG diagram: A blank paper has an arrow moving away to the right.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-congress",
+      "kind": "term",
+      "file": "ar-term-congress.png",
+      "webpFile": "ar-term-congress.webp",
+      "vectorFile": "ar-term-congress.svg",
+      "alt": "Three people gather around a table with blank papers.",
+      "prompt": "Authored text-free SVG diagram: Three people gather around a table with blank papers.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-liberty",
+      "kind": "term",
+      "file": "ar-term-liberty.png",
+      "webpFile": "ar-term-liberty.webp",
+      "vectorFile": "ar-term-liberty.svg",
+      "alt": "A gold padlock has its curved shackle open.",
+      "prompt": "Authored text-free SVG diagram: A gold padlock has its curved shackle open.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-loyalist",
+      "kind": "term",
+      "file": "ar-term-loyalist.png",
+      "webpFile": "ar-term-loyalist.webp",
+      "vectorFile": "ar-term-loyalist.svg",
+      "alt": "A gold crown has three raised points.",
+      "prompt": "Authored text-free SVG diagram: A gold crown has three raised points.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-term-patriot",
+      "kind": "term",
+      "file": "ar-term-patriot.png",
+      "webpFile": "ar-term-patriot.webp",
+      "vectorFile": "ar-term-patriot.svg",
+      "alt": "Three people gather above a curved line connecting the group.",
+      "prompt": "Authored text-free SVG diagram: Three people gather above a curved line connecting the group.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-context-harbor",
+      "kind": "term",
+      "file": "ar-context-harbor.png",
+      "webpFile": "ar-context-harbor.webp",
+      "vectorFile": "ar-context-harbor.svg",
+      "alt": "Two posts hold a barrier across blue water.",
+      "prompt": "Authored text-free SVG diagram: Two posts hold a barrier across blue water.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-context-rope",
+      "kind": "term",
+      "file": "ar-context-rope.png",
+      "webpFile": "ar-context-rope.webp",
+      "vectorFile": "ar-context-rope.svg",
+      "alt": "Two hands face opposite ends of a straight rope.",
+      "prompt": "Authored text-free SVG diagram: Two hands face opposite ends of a straight rope.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-context-stamp",
+      "kind": "term",
+      "file": "ar-context-stamp.png",
+      "webpFile": "ar-context-stamp.webp",
+      "vectorFile": "ar-context-stamp.svg",
+      "alt": "A plain paper sits beneath a handled stamp.",
+      "prompt": "Authored text-free SVG diagram: A plain paper sits beneath a handled stamp.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-context-spinning",
+      "kind": "term",
+      "file": "ar-context-spinning.png",
+      "webpFile": "ar-context-spinning.webp",
+      "vectorFile": "ar-context-spinning.svg",
+      "alt": "A wheel with three spokes stands on legs beside a small bundle.",
+      "prompt": "Authored text-free SVG diagram: A wheel with three spokes stands on legs beside a small bundle.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-context-tea",
+      "kind": "term",
+      "file": "ar-context-tea.png",
+      "webpFile": "ar-context-tea.webp",
+      "vectorFile": "ar-context-tea.svg",
+      "alt": "Two wooden boxes sit above blue waves.",
+      "prompt": "Authored text-free SVG diagram: Two wooden boxes sit above blue waves.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ar-context-council",
+      "kind": "term",
+      "file": "ar-context-council.png",
+      "webpFile": "ar-context-council.webp",
+      "vectorFile": "ar-context-council.svg",
+      "alt": "A small columned building stands beside a barrier.",
+      "prompt": "Authored text-free SVG diagram: A small columned building stands beside a barrier.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "slug": "american_revolution_causes_grade5",
+      "id": "ar-timeline",
+      "file": "ar-timeline.png",
+      "src": "C:/Users/cabba/.codex/generated_images/01a1073a-b80d-79a2-84f7-30ef375fdc22/exec-4994506f-5e09-4893-b080-7af235175345.png",
+      "prompt": "Use case: historical-scene. Asset type: one educational timeline illustration for a Grade 5 American Revolution lesson. Create a wide warm watercolor and ink storybook timeline strip, seven clearly separated miniature vignettes evenly spaced in a single row on ivory paper. Left to right ONLY: a folded treaty document and quill with blank pages; blank paper beside a wax stamp; a snowy colonial Boston street with a calm tense crowd and distant red-coated British troops (no firing or injury); wooden tea chests beside an eighteenth-century sailing ship in Boston harbor at dusk; the same harbor with a wooden barrier closing the dock; adult delegates in eighteenth-century clothing around a wooden table with blank papers; colonial civilian militia gathered on a village green with muskets held down safely. Quiet muted earth colors, readable silhouettes, historically plausible clothing and architecture, no modern objects, no exaggerated caricatures. Connect vignettes with a subtle plain horizontal arrow. Keep generous clean space below each vignette for editable labels that will be added by the app. Absolutely NO words, letters, numerals, readable script, dates, captions, seals with characters, flags with text, logos, or watermark in the raster artwork. There must be exactly seven vignettes and no graphic violence.",
+      "alt": "Seven scenes show a treaty, a paper stamp, a snowy Boston crowd, tea chests beside a ship, a closed harbor, delegates meeting, and militia gathering.",
+      "title": "Selected turning points, 1763–1775",
+      "caption": "Selected events trace an escalating conflict. Use the complete text timeline for the events between these scenes.",
+      "labels": [
+        {
+          "text": "1763: Treaty of Paris",
+          "position": "bottom-center",
+          "anchorX": 7,
+          "anchorY": 90
+        },
+        {
+          "text": "1765: Stamp Act",
+          "position": "bottom-center",
+          "anchorX": 21,
+          "anchorY": 90
+        },
+        {
+          "text": "1770: Boston Massacre",
+          "position": "bottom-center",
+          "anchorX": 35,
+          "anchorY": 90
+        },
+        {
+          "text": "1773: Tea Party",
+          "position": "bottom-center",
+          "anchorX": 50,
+          "anchorY": 90
+        },
+        {
+          "text": "1774: Port closed",
+          "position": "bottom-center",
+          "anchorX": 64,
+          "anchorY": 90
+        },
+        {
+          "text": "1774: Congress meets",
+          "position": "bottom-center",
+          "anchorX": 78,
+          "anchorY": 90
+        },
+        {
+          "text": "1775: Fighting begins",
+          "position": "bottom-center",
+          "anchorX": 92,
+          "anchorY": 90
+        }
+      ],
+      "kind": "lesson",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "afterType": "timeline"
+    },
+    {
+      "slug": "american_revolution_causes_grade5",
+      "id": "ar-perspectives",
+      "file": "ar-perspectives.png",
+      "src": "C:/Users/cabba/.codex/generated_images/01a1073a-b80d-79a2-84f7-30ef375fdc22/exec-df6d0eec-1ae7-42ac-a40f-985ab89e4ff9.png",
+      "prompt": "Use case: historical-scene. Asset: one two-panel educational illustration for Grade 5 explaining different eighteenth-century viewpoints about colonial taxation. Warm watercolor and fine ink storybook style on ivory paper, muted earth colors. Left panel: a serious but humane British official in an eighteenth-century coat, seated at a wooden desk with thick blank ledgers, a quill and a small modest pile of coins; he is considering the cost of war. Right panel: an ordinary colonial family, adults and a school-age child in historically plausible plain clothing, seated together at home reading a blank official sheet by candlelight; their faces show concern and thought, not rage. Balance both viewpoints respectfully, no caricatures or villains. Equal panels separated by clean ivory gutter, generous clean space below for app captions. No modern objects. Absolutely no words, letters, numerals, readable handwriting, thought-bubble text, labels, dates, logos or watermark anywhere. Blank paper only. One combined two-panel image; do not add further scenes.",
+      "alt": "A British official studies blank ledgers and coins; a colonial family studies a blank notice by candlelight.",
+      "title": "Two viewpoints on taxes",
+      "caption": "Britain sought revenue after war. Many colonists objected to taxes imposed without representation. These scenes illustrate viewpoints, not specific people.",
+      "labels": [
+        {
+          "text": "War costs",
+          "position": "top-left",
+          "anchorX": 25,
+          "anchorY": 7
+        },
+        {
+          "text": "Representation",
+          "position": "top-right",
+          "anchorX": 75,
+          "anchorY": 7
+        }
+      ],
+      "kind": "lesson",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "afterType": "simplified"
+    }
+  ]
+}

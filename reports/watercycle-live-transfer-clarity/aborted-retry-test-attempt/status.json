@@ -1,0 +1,10 @@
+{
+  "recordedAt": "2026-10-05T01:55:50.8132670Z",
+  "execSessionId": 48906,
+  "command": "node reports/watercycle-live-transfer-clarity/run-tests.cjs unit 8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+  "outcome": "No completion receipt was written; exec session was lost after interruption.",
+  "logSha256": "1892d80944b3a905bfc84e866fbab9d8f624c3ebc2963b2722e8f55a8ee85a78",
+  "priorReceiptCompletedAt": "2026-10-05T01:25:23.713Z",
+  "liveOwnedProcesses": [],
+  "passClaimed": false
+}

@@ -1,0 +1,1191 @@
+{
+  "numTotalTestSuites": 14,
+  "numPassedTestSuites": 14,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 70,
+  "numPassedTests": 70,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790856031695,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle Check investigation preservation"
+          ],
+          "fullName": "Water Cycle Check investigation preservation preserves model, condition, baseline, notebook, export, stage and existing comparison implementations",
+          "status": "passed",
+          "title": "preserves model, condition, baseline, notebook, export, stage and existing comparison implementations",
+          "duration": 19.865399999995134,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check investigation preservation"
+          ],
+          "fullName": "Water Cycle Check investigation preservation preserves the original first-answer score, attempt, streak and reward statements",
+          "status": "passed",
+          "title": "preserves the original first-answer score, attempt, streak and reward statements",
+          "duration": 1104.8213000000032,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check investigation preservation"
+          ],
+          "fullName": "Water Cycle Check investigation preservation ships identical source and public Check investigation implementations",
+          "status": "passed",
+          "title": "ships identical source and public Check investigation implementations",
+          "duration": 21.47309999999561,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check original first-answer behavior"
+          ],
+          "fullName": "Water Cycle Check original first-answer behavior still scores a first quiz answer once and disables all original answer choices",
+          "status": "passed",
+          "title": "still scores a first quiz answer once and disables all original answer choices",
+          "duration": 552.8073999999979,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check original first-answer behavior"
+          ],
+          "fullName": "Water Cycle Check original first-answer behavior still counts a first myth response once with the original correct-answer reward",
+          "status": "passed",
+          "title": "still counts a first myth response once with the original correct-answer reward",
+          "duration": 123.09740000000602,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth +0 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth +0 without changing its truth or answer",
+          "duration": 1.1971000000048662,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 1 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 1 without changing its truth or answer",
+          "duration": 0.5164000000004307,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 2 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 2 without changing its truth or answer",
+          "duration": 0.3923999999969965,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 3 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 3 without changing its truth or answer",
+          "duration": 0.5611000000062631,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 4 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 4 without changing its truth or answer",
+          "duration": 0.5444999999963329,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 5 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 5 without changing its truth or answer",
+          "duration": 0.6591000000044005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 6 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 6 without changing its truth or answer",
+          "duration": 0.35280000000057044,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 7 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 7 without changing its truth or answer",
+          "duration": 0.30539999999746215,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 8 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 8 without changing its truth or answer",
+          "duration": 0.307200000002922,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 9 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 9 without changing its truth or answer",
+          "duration": 0.30249999999796273,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept evaporation without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept evaporation without accepting arbitrary selectors",
+          "duration": 2.507399999994959,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept condensation without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept condensation without accepting arbitrary selectors",
+          "duration": 1.5804000000061933,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept precipitation without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept precipitation without accepting arbitrary selectors",
+          "duration": 1.5697999999974854,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept collection without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept collection without accepting arbitrary selectors",
+          "duration": 1.077000000004773,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept transpiration without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept transpiration without accepting arbitrary selectors",
+          "duration": 2.2857999999978347,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept infiltration without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept infiltration without accepting arbitrary selectors",
+          "duration": 1.3518999999942025,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept sublimation without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept sublimation without accepting arbitrary selectors",
+          "duration": 1.7203999999983353,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept watershed without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept watershed without accepting arbitrary selectors",
+          "duration": 1.739000000001397,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept Darcy's Law without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept Darcy's Law without accepting arbitrary selectors",
+          "duration": 1.2226000000009662,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept latent heat without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept latent heat without accepting arbitrary selectors",
+          "duration": 1.348599999997532,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept Clausius-Clapeyron without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept Clausius-Clapeyron without accepting arbitrary selectors",
+          "duration": 1.376799999998184,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept Bowen ratio without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept Bowen ratio without accepting arbitrary selectors",
+          "duration": 1.056399999994028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept aquifer without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept aquifer without accepting arbitrary selectors",
+          "duration": 7.227899999998044,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity matches identity using question content, not just the myth index or concept",
+          "status": "passed",
+          "title": "matches identity using question content, not just the myth index or concept",
+          "duration": 6.899199999999837,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity requires an answered supported question and rejects forged destination and answer keys",
+          "status": "passed",
+          "title": "requires an answered supported question and rejects forged destination and answer keys",
+          "duration": 2.200700000001234,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity returns detached destinations and navigation patches that callers cannot rewrite globally",
+          "status": "passed",
+          "title": "returns detached destinations and navigation patches that callers cannot rewrite globally",
+          "duration": 0.4043999999994412,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers quiz preserves every condition, baseline, notebook, paused-parcel and assessment field through navigation",
+          "status": "passed",
+          "title": "quiz preserves every condition, baseline, notebook, paused-parcel and assessment field through navigation",
+          "duration": 669.9578000000038,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers myth preserves every condition, baseline, notebook, paused-parcel and assessment field through navigation",
+          "status": "passed",
+          "title": "myth preserves every condition, baseline, notebook, paused-parcel and assessment field through navigation",
+          "duration": 496.3977999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers opens the actual temperature input with its existing value and baseline intact",
+          "status": "passed",
+          "title": "opens the actual temperature input with its existing value and baseline intact",
+          "duration": 378.58780000000115,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers opens actual wind transport controls rather than falling back to sunlight",
+          "status": "passed",
+          "title": "opens actual wind transport controls rather than falling back to sunlight",
+          "duration": 251.1261999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers renders process evidence without selecting a new journey stage or changing process-comparison writing",
+          "status": "passed",
+          "title": "renders process evidence without selecting a new journey stage or changing process-comparison writing",
+          "duration": 73.96340000000055,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers returns stale contexts to a safe heading without replacing a newer question or its scores",
+          "status": "passed",
+          "title": "returns stale contexts to a safe heading without replacing a newer question or its scores",
+          "duration": 515.3963999999978,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards quiz saves reconsideration separately while all first-attempt scores and rewards remain unchanged",
+          "status": "passed",
+          "title": "quiz saves reconsideration separately while all first-attempt scores and rewards remain unchanged",
+          "duration": 918.252999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards myth saves reconsideration separately while all first-attempt scores and rewards remain unchanged",
+          "status": "passed",
+          "title": "myth saves reconsideration separately while all first-attempt scores and rewards remain unchanged",
+          "duration": 717.2746999999945,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards keeps natural whitespace and invalidates the saved marker when evidence is edited",
+          "status": "passed",
+          "title": "keeps natural whitespace and invalidates the saved marker when evidence is edited",
+          "duration": 826.9931999999972,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards requires meaningful observation text and an offered revised answer",
+          "status": "passed",
+          "title": "requires meaningful observation text and an offered revised answer",
+          "duration": 719.650999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards keeps a bounded, labeled observation field with unique explanatory references",
+          "status": "passed",
+          "title": "keeps a bounded, labeled observation field with unique explanatory references",
+          "duration": 369.2387999999992,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards preserves saved or draft notes when a new question clears the active investigation",
+          "status": "passed",
+          "title": "preserves saved or draft notes when a new question clears the active investigation",
+          "duration": 308.691899999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards retains existing notes when reopening the exact question and creates separate notes for a replacement question",
+          "status": "passed",
+          "title": "retains existing notes when reopening the exact question and creates separate notes for a replacement question",
+          "duration": 797.9374000000025,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state rejects malformed reflection history without crashing and detaches accepted choices",
+          "status": "passed",
+          "title": "rejects malformed reflection history without crashing and detaches accepted choices",
+          "duration": 1.9689999999973224,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state ignores a malformed persisted investigation without changing protected learner state",
+          "status": "passed",
+          "title": "ignores a malformed persisted investigation without changing protected learner state",
+          "duration": 147.9227000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state offers a bounded related overview for unfamiliar AI concept without rendering inherited vocabulary properties",
+          "status": "passed",
+          "title": "offers a bounded related overview for unfamiliar AI concept without rendering inherited vocabulary properties",
+          "duration": 86.41900000000169,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state offers a bounded related overview for __proto__ without rendering inherited vocabulary properties",
+          "status": "passed",
+          "title": "offers a bounded related overview for __proto__ without rendering inherited vocabulary properties",
+          "duration": 154.38420000000042,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state offers a bounded related overview for constructor without rendering inherited vocabulary properties",
+          "status": "passed",
+          "title": "offers a bounded related overview for constructor without rendering inherited vocabulary properties",
+          "duration": 116.041999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state renders empty quiz and myth states as named tasks with native start buttons",
+          "status": "passed",
+          "title": "renders empty quiz and myth states as named tasks with native start buttons",
+          "duration": 54.38829999999871,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: canonical saved question provenance"
+          ],
+          "fullName": "Water Cycle Check: canonical saved question provenance rejects a saved session whose questionText disagrees with its exact question key",
+          "status": "passed",
+          "title": "rejects a saved session whose questionText disagrees with its exact question key",
+          "duration": 0.9679000000032829,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: canonical saved question provenance"
+          ],
+          "fullName": "Water Cycle Check: canonical saved question provenance rejects a saved session whose originalAnswer disagrees with its exact question key",
+          "status": "passed",
+          "title": "rejects a saved session whose originalAnswer disagrees with its exact question key",
+          "duration": 0.3654000000024098,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: canonical saved question provenance"
+          ],
+          "fullName": "Water Cycle Check: canonical saved question provenance rejects a saved session whose choices disagrees with its exact question key",
+          "status": "passed",
+          "title": "rejects a saved session whose choices disagrees with its exact question key",
+          "duration": 0.8153000000020256,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: canonical saved question provenance"
+          ],
+          "fullName": "Water Cycle Check: canonical saved question provenance rejects an answer object and does not grant a saved status to malformed imported reflection data",
+          "status": "passed",
+          "title": "rejects an answer object and does not grant a saved status to malformed imported reflection data",
+          "duration": 0.9939999999987776,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790856068241,
+      "endTime": 1790856077738.994,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_check_investigations.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "waterCycle — quiz bank shape"
+          ],
+          "fullName": "waterCycle — quiz bank shape every grade band has a pool of well-formed questions",
+          "status": "passed",
+          "title": "every grade band has a pool of well-formed questions",
+          "duration": 18.87720000000263,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "waterCycle — quiz bank shape"
+          ],
+          "fullName": "waterCycle — quiz bank shape the correct answer is always present among the options",
+          "status": "passed",
+          "title": "the correct answer is always present among the options",
+          "duration": 17.166799999999057,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "waterCycle — quiz bank shape"
+          ],
+          "fullName": "waterCycle — quiz bank shape wrongFeedback keys name real distractors, never the correct answer",
+          "status": "passed",
+          "title": "wrongFeedback keys name real distractors, never the correct answer",
+          "duration": 614.2197999999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "waterCycle — option shuffle defeats position bias"
+          ],
+          "fullName": "waterCycle — option shuffle defeats position bias preserves the exact option set (answer never lost or duplicated)",
+          "status": "passed",
+          "title": "preserves the exact option set (answer never lost or duplicated)",
+          "duration": 145.09159999999974,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "waterCycle — option shuffle defeats position bias"
+          ],
+          "fullName": "waterCycle — option shuffle defeats position bias lands the correct answer on all four positions over many draws",
+          "status": "passed",
+          "title": "lands the correct answer on all four positions over many draws",
+          "duration": 0.6261999999987893,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "waterCycle — option shuffle defeats position bias"
+          ],
+          "fullName": "waterCycle — option shuffle defeats position bias is deterministic when given a seeded generator",
+          "status": "passed",
+          "title": "is deterministic when given a seeded generator",
+          "duration": 0.1926000000021304,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "waterCycle — data colors are concrete"
+          ],
+          "fullName": "waterCycle — data colors are concrete keeps CSS variables in the stylesheet, outside canvas and data colors",
+          "status": "passed",
+          "title": "keeps CSS variables in the stylesheet, outside canvas and data colors",
+          "duration": 14.961199999997916,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "waterCycle — data colors are concrete"
+          ],
+          "fullName": "waterCycle — data colors are concrete routes every quiz construction site through the shuffle",
+          "status": "passed",
+          "title": "routes every quiz construction site through the shuffle",
+          "duration": 62.49090000000433,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790856140320,
+      "endTime": 1790856141194.491,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_content_invariants.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle control accessibility"
+          ],
+          "fullName": "Water Cycle control accessibility announces meaningful units for climate and land sliders",
+          "status": "passed",
+          "title": "announces meaningful units for climate and land sliders",
+          "duration": 55.590799999999945,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle control accessibility"
+          ],
+          "fullName": "Water Cycle control accessibility provides high-contrast and forced-colors fallbacks for comparison surfaces",
+          "status": "passed",
+          "title": "provides high-contrast and forced-colors fallbacks for comparison surfaces",
+          "duration": 36.67369999999937,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle control accessibility"
+          ],
+          "fullName": "Water Cycle control accessibility makes achievement intent and completion state available to assistive technology",
+          "status": "passed",
+          "title": "makes achievement intent and completion state available to assistive technology",
+          "duration": 73.10210000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle control accessibility"
+          ],
+          "fullName": "Water Cycle control accessibility uses the shared tooltip hook for auxiliary controls",
+          "status": "passed",
+          "title": "uses the shared tooltip hook for auxiliary controls",
+          "duration": 130.59820000000036,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle control accessibility"
+          ],
+          "fullName": "Water Cycle control accessibility labels Hydrologist Tutor prompt and announces dynamic responses",
+          "status": "passed",
+          "title": "labels Hydrologist Tutor prompt and announces dynamic responses",
+          "duration": 44.83479999999963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle control accessibility"
+          ],
+          "fullName": "Water Cycle control accessibility labels quiz choices and hands focus to the submitted-answer feedback",
+          "status": "passed",
+          "title": "labels quiz choices and hands focus to the submitted-answer feedback",
+          "duration": 87.3747999999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle control accessibility"
+          ],
+          "fullName": "Water Cycle control accessibility labels myth answers and hands focus to its explanatory feedback",
+          "status": "passed",
+          "title": "labels myth answers and hands focus to its explanatory feedback",
+          "duration": 96.42360000000008,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle control accessibility"
+          ],
+          "fullName": "Water Cycle control accessibility exposes Tutor busy state while awaiting a response",
+          "status": "passed",
+          "title": "exposes Tutor busy state while awaiting a response",
+          "duration": 101.11090000000058,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790856085196,
+      "endTime": 1790856085823.1108,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_controls_a11y.test.js"
+    }
+  ],
+  "waterCycleCheckVerification": {
+    "sourcePath": "stem_lab/stem_tool_watercycle.js",
+    "sourceSha256Before": "40b74001ec7e762808d891f9b93cb3c1289462a4e06a1f60f2a8f1fd753f88c1",
+    "publicPath": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+    "publicSha256Before": "40b74001ec7e762808d891f9b93cb3c1289462a4e06a1f60f2a8f1fd753f88c1",
+    "testFiles": [
+      {
+        "path": "tests/watercycle_check_investigations.test.js",
+        "sha256": "153d7feb0af4aefb3520e71ffbc254a5c9e0ca68c182be1fceb48aae8ae44eac",
+        "sha256After": "153d7feb0af4aefb3520e71ffbc254a5c9e0ca68c182be1fceb48aae8ae44eac",
+        "unchanged": true
+      },
+      {
+        "path": "tests/watercycle_controls_a11y.test.js",
+        "sha256": "428ea5a1db0b65049077376532f07116be0ecd4a73705d7af19bb04a620215a6",
+        "sha256After": "428ea5a1db0b65049077376532f07116be0ecd4a73705d7af19bb04a620215a6",
+        "unchanged": true
+      },
+      {
+        "path": "tests/watercycle_content_invariants.test.js",
+        "sha256": "1220022fa041c0e1908ca41271aee50b035b30f87565ad7517651ccb1f050c4b",
+        "sha256After": "1220022fa041c0e1908ca41271aee50b035b30f87565ad7517651ccb1f050c4b",
+        "unchanged": true
+      }
+    ],
+    "baselinePath": "reports/watercycle-check-investigations/baseline-runtime.js",
+    "baselineSha256": "384eca9416719d616d50623847aa6fdabec346106967153f678cd76ee508be6c",
+    "sourceSha256After": "40b74001ec7e762808d891f9b93cb3c1289462a4e06a1f60f2a8f1fd753f88c1",
+    "publicSha256": "40b74001ec7e762808d891f9b93cb3c1289462a4e06a1f60f2a8f1fd753f88c1",
+    "loadedSourceSha256": null,
+    "baselinePreservation": [
+      {
+        "name": "WCExploreNotebook",
+        "baselineSha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91",
+        "currentSha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91",
+        "unchanged": true
+      },
+      {
+        "name": "wcLandResponse",
+        "baselineSha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc",
+        "currentSha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc",
+        "unchanged": true
+      },
+      {
+        "name": "estimateWcLandIndices",
+        "baselineSha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb",
+        "currentSha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb",
+        "unchanged": true
+      },
+      {
+        "name": "estimateWcRouteShares",
+        "baselineSha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f",
+        "currentSha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f",
+        "unchanged": true
+      },
+      {
+        "name": "evaporationIndex",
+        "baselineSha256": "97de9da592f2f9b326e42a68ae6267355a4d2bd8593414ddc01317fa3e18e0b4",
+        "currentSha256": "97de9da592f2f9b326e42a68ae6267355a4d2bd8593414ddc01317fa3e18e0b4",
+        "unchanged": true
+      },
+      {
+        "name": "wcBaselineEvaporationIndex",
+        "baselineSha256": "02d5dcbdccd2886fbcc91d986100c85ba90934ebd18684ee715e681f40936304",
+        "currentSha256": "02d5dcbdccd2886fbcc91d986100c85ba90934ebd18684ee715e681f40936304",
+        "unchanged": true
+      },
+      {
+        "name": "wcCurrentSnapshot",
+        "baselineSha256": "884b54d4cfdc1afc11974a06a6e312cbd4b35b1465615154e8acd01e4e02bfb8",
+        "currentSha256": "884b54d4cfdc1afc11974a06a6e312cbd4b35b1465615154e8acd01e4e02bfb8",
+        "unchanged": true
+      },
+      {
+        "name": "wcComparisonDeltas",
+        "baselineSha256": "0105361e54a1fdf0b231690f95546397cde368d4f9ab6508092806a1b9943e68",
+        "currentSha256": "0105361e54a1fdf0b231690f95546397cde368d4f9ab6508092806a1b9943e68",
+        "unchanged": true
+      },
+      {
+        "name": "formatWcDelta",
+        "baselineSha256": "f8a03055b6ea918c98145bac6fadc21de69419385e3098966c7436c9c41e83eb",
+        "currentSha256": "f8a03055b6ea918c98145bac6fadc21de69419385e3098966c7436c9c41e83eb",
+        "unchanged": true
+      },
+      {
+        "name": "WATER_CYCLE_PRESETS",
+        "baselineSha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535",
+        "currentSha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535",
+        "unchanged": true
+      },
+      {
+        "name": "WATER_CYCLE_PREDICTIONS",
+        "baselineSha256": "994f4e302903bba49b0ac7970d7bc45645604e94d26252ac04e44b37c6de2530",
+        "currentSha256": "994f4e302903bba49b0ac7970d7bc45645604e94d26252ac04e44b37c6de2530",
+        "unchanged": true
+      },
+      {
+        "name": "getWcInteractionBaseline",
+        "baselineSha256": "d6eda54f37fe4823eb5437a2fe1f541eb51e6616967dcb03b0351dd7a7d493e5",
+        "currentSha256": "d6eda54f37fe4823eb5437a2fe1f541eb51e6616967dcb03b0351dd7a7d493e5",
+        "unchanged": true
+      },
+      {
+        "name": "adjustClimate",
+        "baselineSha256": "4646adf408658b8184db2479ebe64fd92c0ae9ad7e145335a5d04d8e1fe7bc7a",
+        "currentSha256": "4646adf408658b8184db2479ebe64fd92c0ae9ad7e145335a5d04d8e1fe7bc7a",
+        "unchanged": true
+      },
+      {
+        "name": "adjustLand",
+        "baselineSha256": "883586d669426ad4c1fe711373176b1d02d2c34ce5c006f57e8aec1a879e6ec7",
+        "currentSha256": "883586d669426ad4c1fe711373176b1d02d2c34ce5c006f57e8aec1a879e6ec7",
+        "unchanged": true
+      },
+      {
+        "name": "resetClimate",
+        "baselineSha256": "72b10546d36596bf9e3951c5c69cfc40129e1635154b49ee9800a5211d24c037",
+        "currentSha256": "72b10546d36596bf9e3951c5c69cfc40129e1635154b49ee9800a5211d24c037",
+        "unchanged": true
+      },
+      {
+        "name": "resetLandScenario",
+        "baselineSha256": "c0e2f65dbfa4ba3d8ca39691b0071aee0b108f60ba6c1b8901022056fa11619a",
+        "currentSha256": "c0e2f65dbfa4ba3d8ca39691b0071aee0b108f60ba6c1b8901022056fa11619a",
+        "unchanged": true
+      },
+      {
+        "name": "captureWcScenarioBaseline",
+        "baselineSha256": "9e8d5cd3eee9dd3e0c9c913a0f4a1af91203ad3e9deb39007746f0209b82a141",
+        "currentSha256": "9e8d5cd3eee9dd3e0c9c913a0f4a1af91203ad3e9deb39007746f0209b82a141",
+        "unchanged": true
+      },
+      {
+        "name": "restoreWcScenarioBaseline",
+        "baselineSha256": "89dbb35a678af4e9892fc4b3f2c38d73fc581c1ffe46f90ded82671699c7cc26",
+        "currentSha256": "89dbb35a678af4e9892fc4b3f2c38d73fc581c1ffe46f90ded82671699c7cc26",
+        "unchanged": true
+      },
+      {
+        "name": "clearWcScenarioBaseline",
+        "baselineSha256": "829a5c077c74d885da5aa1ab1b658fdabcd6c0ab7023a401aa5f8e0902bc7c08",
+        "currentSha256": "829a5c077c74d885da5aa1ab1b658fdabcd6c0ab7023a401aa5f8e0902bc7c08",
+        "unchanged": true
+      },
+      {
+        "name": "isolateWcComparisonInput",
+        "baselineSha256": "297c6937b6350532aaab452fd534f13894f65279f28b58c92a8ab72b2ba75d9d",
+        "currentSha256": "297c6937b6350532aaab452fd534f13894f65279f28b58c92a8ab72b2ba75d9d",
+        "unchanged": true
+      },
+      {
+        "name": "saveWcObservation",
+        "baselineSha256": "8c8bdca8e642f6775c8caa370f12b773836499e09a2dae9384a33a8a824b36d2",
+        "currentSha256": "8c8bdca8e642f6775c8caa370f12b773836499e09a2dae9384a33a8a824b36d2",
+        "unchanged": true
+      },
+      {
+        "name": "replayWcObservation",
+        "baselineSha256": "eea48a6a39c2b5f267e178157cccf9436073d9fb60458ca3915ad761285f44c5",
+        "currentSha256": "eea48a6a39c2b5f267e178157cccf9436073d9fb60458ca3915ad761285f44c5",
+        "unchanged": true
+      },
+      {
+        "name": "recordWcPrediction",
+        "baselineSha256": "b31f28cb32ffab8abb7e4bc100d9997ed568760fed5752fff0a9ad5cb06d1621",
+        "currentSha256": "b31f28cb32ffab8abb7e4bc100d9997ed568760fed5752fff0a9ad5cb06d1621",
+        "unchanged": true
+      },
+      {
+        "name": "resetWcPrediction",
+        "baselineSha256": "3cd7a20092c784413b144bc6cfb028cfe9b8ffda15d24afb9753fea04d0d2a23",
+        "currentSha256": "3cd7a20092c784413b144bc6cfb028cfe9b8ffda15d24afb9753fea04d0d2a23",
+        "unchanged": true
+      },
+      {
+        "name": "collectWcRemovedEntries",
+        "baselineSha256": "9c142faa5db52ec4e990ac5b3b6738abc81d139f59645d45108d3163cf95625e",
+        "currentSha256": "9c142faa5db52ec4e990ac5b3b6738abc81d139f59645d45108d3163cf95625e",
+        "unchanged": true
+      },
+      {
+        "name": "focusWcNotebookHeading",
+        "baselineSha256": "680ff3ea43f32f2d9c1983d2dec3a590fef3ae6e5c60b621a03a5ee86f0d4215",
+        "currentSha256": "680ff3ea43f32f2d9c1983d2dec3a590fef3ae6e5c60b621a03a5ee86f0d4215",
+        "unchanged": true
+      },
+      {
+        "name": "clearWcExperimentLog",
+        "baselineSha256": "441c5db731f42675581b05bd21cac9184a1f9affbe6ba548f611917d4c2518ea",
+        "currentSha256": "441c5db731f42675581b05bd21cac9184a1f9affbe6ba548f611917d4c2518ea",
+        "unchanged": true
+      },
+      {
+        "name": "removeWcObservation",
+        "baselineSha256": "67ebf3111fb7cecef59169e128e5f9c3dca6b29d9c2a7edd982b932425f6440c",
+        "currentSha256": "67ebf3111fb7cecef59169e128e5f9c3dca6b29d9c2a7edd982b932425f6440c",
+        "unchanged": true
+      },
+      {
+        "name": "undoWcObservationRemoval",
+        "baselineSha256": "db4fc850b07c511c9f70c98fac3f21ce0267c17cbcd7b33ad111314111b1fe86",
+        "currentSha256": "db4fc850b07c511c9f70c98fac3f21ce0267c17cbcd7b33ad111314111b1fe86",
+        "unchanged": true
+      },
+      {
+        "name": "updateWcObservationNote",
+        "baselineSha256": "9d78e31fab6e9fb487afd9c8e2749ba2c8edced5f4ddf44705cfbf1fb9856de9",
+        "currentSha256": "9d78e31fab6e9fb487afd9c8e2749ba2c8edced5f4ddf44705cfbf1fb9856de9",
+        "unchanged": true
+      },
+      {
+        "name": "downloadWcExperimentLog",
+        "baselineSha256": "3dfca8c6c95665816cf713894e4123eca4da48e78877ebf2b6379825958ea477",
+        "currentSha256": "3dfca8c6c95665816cf713894e4123eca4da48e78877ebf2b6379825958ea477",
+        "unchanged": true
+      },
+      {
+        "name": "WCProcessCompare",
+        "baselineSha256": "6b2869a0e86c41c8b86fc3c2722200b716210ebeba4e407ffc56a1c1f2051c46",
+        "currentSha256": "6b2869a0e86c41c8b86fc3c2722200b716210ebeba4e407ffc56a1c1f2051c46",
+        "unchanged": true
+      },
+      {
+        "name": "WCNextExperiment",
+        "baselineSha256": "29b07f142b61062794810132b8ffb72d818979392cef96a92d35e653cb1cf6e1",
+        "currentSha256": "29b07f142b61062794810132b8ffb72d818979392cef96a92d35e653cb1cf6e1",
+        "unchanged": true
+      },
+      {
+        "name": "wcQuizBank",
+        "baselineSha256": "5f6378b528d90eac9974fb003bedce3f4f9d76981dcca17ddfa7616d281dcf41",
+        "currentSha256": "5f6378b528d90eac9974fb003bedce3f4f9d76981dcca17ddfa7616d281dcf41",
+        "unchanged": true
+      },
+      {
+        "name": "wcQuizQuestion",
+        "baselineSha256": "a4b6613b91b16ef64b10104906049fe8fb2cc156ead7e539cf7be0e3c5bee1c5",
+        "currentSha256": "a4b6613b91b16ef64b10104906049fe8fb2cc156ead7e539cf7be0e3c5bee1c5",
+        "unchanged": true
+      },
+      {
+        "name": "checkWaterCycleChallenges",
+        "baselineSha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f",
+        "currentSha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f",
+        "unchanged": true
+      },
+      {
+        "name": "studyVocab",
+        "baselineSha256": "b0f14f19adf959922940084fa469d5548e2b11146f4953eb234b4574067318fe",
+        "currentSha256": "b0f14f19adf959922940084fa469d5548e2b11146f4953eb234b4574067318fe",
+        "unchanged": true
+      },
+      {
+        "name": "selectStage",
+        "baselineSha256": "e9706956b6549e605f0fcacc0f1788256d6a683a06868d831217857b2ec23fc7",
+        "currentSha256": "e9706956b6549e605f0fcacc0f1788256d6a683a06868d831217857b2ec23fc7",
+        "unchanged": true
+      },
+      {
+        "name": "wcRunoffDelta:assignment",
+        "baselineSha256": "79e25128760f8e6892fefe926ee25fd9e0c8491ef958dcfb6f3d1e1c27a193ae",
+        "currentSha256": "79e25128760f8e6892fefe926ee25fd9e0c8491ef958dcfb6f3d1e1c27a193ae",
+        "unchanged": true
+      },
+      {
+        "name": "wcInfiltrationDelta:assignment",
+        "baselineSha256": "4e8810ff5a7c4d7bfcaecf2fbdba2dab792df33c8cd7a41dd1c0fa2358ef496b",
+        "currentSha256": "4e8810ff5a7c4d7bfcaecf2fbdba2dab792df33c8cd7a41dd1c0fa2358ef496b",
+        "unchanged": true
+      },
+      {
+        "name": "wcEvaporationDelta:assignment",
+        "baselineSha256": "20a82896578af7b47673ef7b794276d423212ca1986406bd554e61768c48a8c0",
+        "currentSha256": "20a82896578af7b47673ef7b794276d423212ca1986406bd554e61768c48a8c0",
+        "unchanged": true
+      }
+    ],
+    "scoredPreservation": [
+      {
+        "name": "quiz",
+        "baselineSha256": "bead9c9e4285cdf1f96692a5bcb695d2554a27b14c8d82948a0e08c46af746fb",
+        "currentSha256": "bead9c9e4285cdf1f96692a5bcb695d2554a27b14c8d82948a0e08c46af746fb",
+        "unchanged": true
+      },
+      {
+        "name": "myth",
+        "baselineSha256": "d62ec9d1e25b1f51a3e3df672121855b3a471f5fce9b421d22666c3340a33aa0",
+        "currentSha256": "d62ec9d1e25b1f51a3e3df672121855b3a471f5fce9b421d22666c3340a33aa0",
+        "unchanged": true
+      }
+    ]
+  }
+}

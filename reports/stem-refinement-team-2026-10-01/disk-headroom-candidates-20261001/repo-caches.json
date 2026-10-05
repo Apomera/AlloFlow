@@ -1,0 +1,399 @@
+{
+  "capturedUtc": "2026-10-01T16:21:15.5168407Z",
+  "scope": [
+    "node_modules/.cache",
+    "node_modules/.vite",
+    "desktop/web-app/node_modules/.cache",
+    "desktop/web-app/node_modules/.vite",
+    "test-results",
+    "playwright-report",
+    "coverage"
+  ],
+  "method": "GetCompressedFileSizeW per regular file; reports compressed/sparse allocated file storage rather than logical lengths, excludes directory metadata and hard-link deduplication",
+  "processSnapshot": "reports/stem-refinement-team-2026-10-01/disk-inventory-processes-20261001.json",
+  "activeOwner": {
+    "id": 61048,
+    "name": "Circuit runner (parent supplied)",
+    "assumedActive": true
+  },
+  "summaries": [
+    {
+      "root": "node_modules/.cache",
+      "exists": true,
+      "fileCount": 2,
+      "logicalBytes": 205.0,
+      "storedBytes": 205.0,
+      "storedMeasuredFiles": 2,
+      "trackedFileCount": 0,
+      "oldestWriteUtc": "2026-07-26T16:52:40.941075Z",
+      "newestWriteUtc": "2026-08-09T18:14:24.1257298Z",
+      "classification": "conditional-regenerable-cache",
+      "regenerationPurposeAndRecovery": "Wrangler local project/tool cache metadata; next Wrangler invocation may recreate/recompute. Only two regular files, no meaningful headroom.",
+      "activeProcessReferences": null
+    },
+    {
+      "root": "node_modules/.vite",
+      "exists": true,
+      "fileCount": 1,
+      "logicalBytes": 4586.0,
+      "storedBytes": 4096.0,
+      "storedMeasuredFiles": 1,
+      "trackedFileCount": 0,
+      "oldestWriteUtc": "2026-10-01T16:19:44.5427562Z",
+      "newestWriteUtc": "2026-10-01T16:19:44.5427562Z",
+      "classification": "protected-active-vitest-owner",
+      "regenerationPurposeAndRecovery": "Vitest cached results metadata; active runner PID 61048 and fresh16:19Z write protect it.",
+      "activeProcessReferences": {
+        "id": 61048,
+        "name": "Circuit runner (parent supplied)"
+      }
+    },
+    {
+      "root": "desktop/web-app/node_modules/.cache",
+      "exists": true,
+      "fileCount": 1,
+      "logicalBytes": 182536.0,
+      "storedBytes": 65536.0,
+      "storedMeasuredFiles": 1,
+      "trackedFileCount": 0,
+      "oldestWriteUtc": "2026-09-20T14:53:26.605339Z",
+      "newestWriteUtc": "2026-09-20T14:53:26.605339Z",
+      "classification": "conditional-regenerable-cache",
+      "regenerationPurposeAndRecovery": "Only .eslintcache remains; next lint recomputes results. Prior removed Babel caches were not recreated or revisited.",
+      "activeProcessReferences": null
+    },
+    {
+      "root": "desktop/web-app/node_modules/.vite",
+      "exists": true,
+      "fileCount": 2,
+      "logicalBytes": 169.0,
+      "storedBytes": 169.0,
+      "storedMeasuredFiles": 2,
+      "trackedFileCount": 0,
+      "oldestWriteUtc": "2026-08-31T23:46:31.5717755Z",
+      "newestWriteUtc": "2026-08-31T23:46:31.5795408Z",
+      "classification": "conditional-regenerable-cache",
+      "regenerationPurposeAndRecovery": "Vite dependency prebundle metadata; next dev start re-evaluates/prebundles dependencies. No permission to start it.",
+      "activeProcessReferences": null
+    },
+    {
+      "root": "test-results",
+      "exists": true,
+      "fileCount": 1,
+      "logicalBytes": 45.0,
+      "storedBytes": 45.0,
+      "storedMeasuredFiles": 1,
+      "trackedFileCount": 0,
+      "oldestWriteUtc": "2026-10-01T15:22:21.8574306Z",
+      "newestWriteUtc": "2026-10-01T15:22:21.8574306Z",
+      "classification": "protected-evidence-or-active-output",
+      "regenerationPurposeAndRecovery": "Current Playwright run status evidence; cannot infer disposability from untracked status.",
+      "activeProcessReferences": null
+    },
+    {
+      "root": "playwright-report",
+      "exists": true,
+      "fileCount": 23,
+      "logicalBytes": 3331688.0,
+      "storedBytes": 3331688.0,
+      "storedMeasuredFiles": 23,
+      "trackedFileCount": 0,
+      "oldestWriteUtc": "2026-07-26T15:34:09.8785383Z",
+      "newestWriteUtc": "2026-10-01T04:47:01.8900027Z",
+      "classification": "protected-evidence-or-active-output",
+      "regenerationPurposeAndRecovery": "Playwright HTML report, traces and attachments; evidence preservation required despite regenerable presentation.",
+      "activeProcessReferences": null
+    },
+    {
+      "root": "coverage",
+      "exists": false
+    }
+  ],
+  "skippedReparsePointCount": 0,
+  "skippedReparsePoints": [],
+  "accessFailureCount": 0,
+  "accessFailures": [],
+  "trackedFileCount": 0,
+  "files": [
+    {
+      "root": "node_modules/.cache",
+      "path": "node_modules/.cache/wrangler/pages.json",
+      "logicalBytes": 88,
+      "storedBytes": 88,
+      "lastWriteUtc": "2026-08-09T18:14:24.1257298Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "node_modules/.cache",
+      "path": "node_modules/.cache/wrangler/wrangler-account.json",
+      "logicalBytes": 117,
+      "storedBytes": 117,
+      "lastWriteUtc": "2026-07-26T16:52:40.941075Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "node_modules/.vite",
+      "path": "node_modules/.vite/vitest/da39a3ee5e6b4b0d3255bfef95601890afd80709/results.json",
+      "logicalBytes": 4586,
+      "storedBytes": 4096,
+      "lastWriteUtc": "2026-10-01T16:19:44.5427562Z",
+      "attributes": "Archive, Compressed",
+      "tracked": false
+    },
+    {
+      "root": "desktop/web-app/node_modules/.cache",
+      "path": "desktop/web-app/node_modules/.cache/.eslintcache",
+      "logicalBytes": 182536,
+      "storedBytes": 65536,
+      "lastWriteUtc": "2026-09-20T14:53:26.605339Z",
+      "attributes": "Archive, Compressed",
+      "tracked": false
+    },
+    {
+      "root": "desktop/web-app/node_modules/.vite",
+      "path": "desktop/web-app/node_modules/.vite/deps/_metadata.json",
+      "logicalBytes": 146,
+      "storedBytes": 146,
+      "lastWriteUtc": "2026-08-31T23:46:31.5795408Z",
+      "attributes": "Archive, Compressed",
+      "tracked": false
+    },
+    {
+      "root": "desktop/web-app/node_modules/.vite",
+      "path": "desktop/web-app/node_modules/.vite/deps/package.json",
+      "logicalBytes": 23,
+      "storedBytes": 23,
+      "lastWriteUtc": "2026-08-31T23:46:31.5717755Z",
+      "attributes": "Archive, Compressed",
+      "tracked": false
+    },
+    {
+      "root": "test-results",
+      "path": "test-results/.last-run.json",
+      "logicalBytes": 45,
+      "storedBytes": 45,
+      "lastWriteUtc": "2026-10-01T15:22:21.8574306Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/index.html",
+      "logicalBytes": 535536,
+      "storedBytes": 535536,
+      "lastWriteUtc": "2026-10-01T04:47:01.8900027Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/codeMirrorModule.DYBRYzYX.css",
+      "logicalBytes": 6421,
+      "storedBytes": 6421,
+      "lastWriteUtc": "2026-07-26T15:34:09.8785383Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/codicon.DCmgc-ay.ttf",
+      "logicalBytes": 80340,
+      "storedBytes": 80340,
+      "lastWriteUtc": "2026-07-26T15:34:13.2951081Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/defaultSettingsView.BDKsFU3c.css",
+      "logicalBytes": 110856,
+      "storedBytes": 110856,
+      "lastWriteUtc": "2026-07-26T15:34:10.1247029Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/index.BCnMPevh.js",
+      "logicalBytes": 6591,
+      "storedBytes": 6591,
+      "lastWriteUtc": "2026-07-26T15:34:11.3628182Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/index.CzXZzn5A.css",
+      "logicalBytes": 2111,
+      "storedBytes": 2111,
+      "lastWriteUtc": "2026-07-26T15:34:10.222408Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/index.html",
+      "logicalBytes": 2363,
+      "storedBytes": 2363,
+      "lastWriteUtc": "2026-07-26T15:34:10.3984192Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/manifest.webmanifest",
+      "logicalBytes": 429,
+      "storedBytes": 429,
+      "lastWriteUtc": "2026-07-26T15:34:13.3068843Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/playwright-logo.svg",
+      "logicalBytes": 5033,
+      "storedBytes": 5033,
+      "lastWriteUtc": "2026-07-26T15:34:13.1119271Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/snapshot.html",
+      "logicalBytes": 389,
+      "storedBytes": 389,
+      "lastWriteUtc": "2026-07-26T15:34:10.409992Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/snapshot.v8KI4P3m.js",
+      "logicalBytes": 660,
+      "storedBytes": 660,
+      "lastWriteUtc": "2026-07-26T15:34:11.8506099Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/sw.bundle.js",
+      "logicalBytes": 95469,
+      "storedBytes": 95469,
+      "lastWriteUtc": "2026-07-26T15:34:11.8681379Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/uiMode.Btcz36p_.css",
+      "logicalBytes": 60239,
+      "storedBytes": 60239,
+      "lastWriteUtc": "2026-07-26T15:34:10.2786029Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/uiMode.C2Efnu2P.js",
+      "logicalBytes": 38201,
+      "storedBytes": 38201,
+      "lastWriteUtc": "2026-07-26T15:34:11.8785138Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/uiMode.html",
+      "logicalBytes": 727,
+      "storedBytes": 727,
+      "lastWriteUtc": "2026-07-26T15:34:10.4413655Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/xtermModule.DYP7pi_n.css",
+      "logicalBytes": 4150,
+      "storedBytes": 4150,
+      "lastWriteUtc": "2026-07-26T15:34:10.2886655Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/assets/codeMirrorModule-Ds_H_9Yq.js",
+      "logicalBytes": 313054,
+      "storedBytes": 313054,
+      "lastWriteUtc": "2026-07-26T15:34:10.7796893Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/assets/defaultSettingsView-D31xz8zv.js",
+      "logicalBytes": 649133,
+      "storedBytes": 649133,
+      "lastWriteUtc": "2026-07-26T15:34:11.1819963Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/trace/assets/urlMatch-BYQrIQwR.js",
+      "logicalBytes": 819,
+      "storedBytes": 819,
+      "lastWriteUtc": "2026-07-26T15:34:11.8900389Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/data/0fc65d790d1bcc2047ee836e756ab6e58b2483e5.md",
+      "logicalBytes": 21049,
+      "storedBytes": 21049,
+      "lastWriteUtc": "2026-10-01T04:47:00.1536358Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/data/1693994dc2ba517cecba6382f48a4fa0616f3aaa.zip",
+      "logicalBytes": 856196,
+      "storedBytes": 856196,
+      "lastWriteUtc": "2026-10-01T04:47:00.211838Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/data/30e673d74a6da6a150c3382a08692034f9193434.webm",
+      "logicalBytes": 470393,
+      "storedBytes": 470393,
+      "lastWriteUtc": "2026-10-01T04:47:00.0973275Z",
+      "attributes": "Archive",
+      "tracked": false
+    },
+    {
+      "root": "playwright-report",
+      "path": "playwright-report/data/807e56ee806c4229419e35b092aebf58259d730f.png",
+      "logicalBytes": 71529,
+      "storedBytes": 71529,
+      "lastWriteUtc": "2026-10-01T04:47:00.0891711Z",
+      "attributes": "Archive",
+      "tracked": false
+    }
+  ],
+  "processReferences": [],
+  "processReferenceLimit": "No command line matched named repository roots/tool runners in supplied snapshot; snapshot command lines may be absent or relative. PID 61048 remains active owner by parent instruction regardless of snapshot absence or age.",
+  "largestVerifiedRegenerableCandidate": {
+    "path": "desktop/web-app/node_modules/.cache/.eslintcache",
+    "logicalBytes": 182536,
+    "storedBytes": 65536,
+    "classification": "conditional",
+    "reason": "ESLint result cache regenerates on next lint; inactive status not established, so not approved for deletion",
+    "recoveryCost": "Next lint recomputes file checks; no packages reinstalled"
+  }
+}

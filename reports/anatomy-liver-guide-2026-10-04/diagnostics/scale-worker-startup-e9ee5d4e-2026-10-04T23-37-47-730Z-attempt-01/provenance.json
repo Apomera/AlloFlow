@@ -1,0 +1,28 @@
+{
+  "runId": "e9ee5d4e-2026-10-04T23-37-47-730Z",
+  "stage": "scale-navigation-regression-units",
+  "reason": "Vitest forks worker did not respond within60seconds; no tests were collected or executed.",
+  "failedAttempt": 1,
+  "passed": 0,
+  "failed": 0,
+  "rawTotalTests": 0,
+  "copies": [
+    {
+      "source": "reports/anatomy-liver-guide-2026-10-04/scale-navigation-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z.log",
+      "target": "reports/anatomy-liver-guide-2026-10-04/diagnostics/scale-worker-startup-e9ee5d4e-2026-10-04T23-37-47-730Z-attempt-01/scale-navigation-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z.log",
+      "sha256": "925a67e0cf27e0096b4d4cd438e1cf14286b4d656646af445c373d3f00f0af71"
+    },
+    {
+      "source": "reports/anatomy-liver-guide-2026-10-04/scale-navigation-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "target": "reports/anatomy-liver-guide-2026-10-04/diagnostics/scale-worker-startup-e9ee5d4e-2026-10-04T23-37-47-730Z-attempt-01/scale-navigation-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z.json",
+      "sha256": "3e8ab0dac7e26320ec207a91be550dda2b2d2cd3a0fb79440c21d43b5f93a8d4"
+    },
+    {
+      "source": "reports/anatomy-liver-guide-2026-10-04/scale-navigation-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "target": "reports/anatomy-liver-guide-2026-10-04/diagnostics/scale-worker-startup-e9ee5d4e-2026-10-04T23-37-47-730Z-attempt-01/scale-navigation-regression-units-e9ee5d4e-2026-10-04T23-37-47-730Z-proof.json",
+      "sha256": "b39c9a3a8e5c43d80893905b13d2e29aa6fc8638edbd4a5f692426735b65048f"
+    }
+  ],
+  "freeMemoryMiB": 1374,
+  "cpuCount": 10
+}

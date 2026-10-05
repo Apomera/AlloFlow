@@ -1,7 +1,7 @@
 {
   "completed": true,
-  "sourceHash": "e644bd8f63703a63fa03414d223094bfbeb2ebe58a0bf3118995c0f4600e7f32",
-  "uiHash": "0779b5441bee28e306f17000366b2cd0d05e942492aa6c10d815103bdc8c9903",
+  "sourceHash": "7765970b7c3bafdc604839d7355e1185bebf92b45ce9bd5c471818e928765a93",
+  "uiHash": "62322d3b8b8630e83ca78c99b289a6683c8ca5467eae6bfd4c14c28c3cd0ac04",
   "checks": [
     "halo exact authored highlights, paused pixels, native focus, backward revisit, resume, natural completion, and snapshot clearing",
     "nebula exact authored highlights, paused pixels, native focus, backward revisit, resume, natural completion, and snapshot clearing",
@@ -656,13 +656,13 @@
         },
         "state": {
           "position": [
-            4384.985668747713,
-            26683.59684758324,
-            -23906.96726429969
+            4120.952994570489,
+            27151.43447953885,
+            -23874.965859987322
           ],
-          "yaw": 1.4476549175981148,
-          "pitch": -0.9345849284257359,
-          "distanceLy": 867.1537500425411,
+          "yaw": 1.4504026787749824,
+          "pitch": -0.936322181193105,
+          "distanceLy": 329.04359868675107,
           "universeYears": 0,
           "travelerYears": 0
         },
@@ -1170,8 +1170,8 @@
             50436.3122834547,
             60272.14160782259
           ],
-          "yaw": 4.039329234418972,
-          "pitch": -0.48226131042438475,
+          "yaw": 4.0388835171655195,
+          "pitch": -0.4822094318570234,
           "distanceLy": 150445.11865647536,
           "universeYears": 0,
           "travelerYears": 0
@@ -1506,13 +1506,13 @@
         },
         "state": {
           "position": [
-            1.1524125407885562,
-            2.9886607195598818,
-            22.85377364046269
+            -12.175684265021514,
+            5.61099541570542,
+            6.026790525707895
           ],
-          "yaw": 0.6252372445475931,
-          "pitch": -0.3371367848948021,
-          "distanceLy": 25.348008333100474,
+          "yaw": 0.6447718854734497,
+          "pitch": -0.21073625988490158,
+          "distanceLy": 3.5557083972208563,
           "universeYears": 0,
           "travelerYears": 0
         },
@@ -2020,8 +2020,8 @@
             29,
             56
           ],
-          "yaw": 0.10857535535152252,
-          "pitch": -0.5841651285746071,
+          "yaw": 0.10746001069840361,
+          "pitch": -0.5836305690361209,
           "distanceLy": 109.12428901563214,
           "universeYears": 0,
           "travelerYears": 0
@@ -2356,13 +2356,13 @@
         },
         "state": {
           "position": [
-            -13.99570572501503,
-            5.99928371150628,
-            3.0071571247764144
+            -13.895574829277058,
+            5.982259015818691,
+            3.174039114090537
           ],
-          "yaw": 0.6383213089736977,
-          "pitch": -0.20435972750010614,
-          "distanceLy": 0.008385137953244354,
+          "yaw": 0.6384878859708696,
+          "pitch": -0.20455477243477477,
+          "distanceLy": 0.20375366098775613,
           "universeYears": 0,
           "travelerYears": 0
         },
@@ -2526,13 +2526,13 @@
         },
         "state": {
           "position": [
-            3957.866483137088,
-            27436.055963537943,
-            -23854.502816590408
+            3958.0497938566004,
+            27435.738052272063,
+            -23854.52612713597
           ],
-          "yaw": 1.4513067058832405,
-          "pitch": -0.9368578462282385,
-          "distanceLy": 0.29745376285677594,
+          "yaw": 1.4513063273914462,
+          "pitch": -0.9368576274797348,
+          "distanceLy": 0.6663731176909873,
           "universeYears": 0,
           "travelerYears": 0
         },
@@ -2696,13 +2696,13 @@
         },
         "state": {
           "position": [
-            -13.398457435963111,
-            5.8891710813944895,
-            4.002044549503423
+            -13.998923209597233,
+            5.999820498703594,
+            3.0017946506681463
           ],
-          "yaw": 0.6408171141981924,
-          "pitch": -0.20711801257561732,
-          "distanceLy": 1.1740131728833534,
+          "yaw": 0.638320935943848,
+          "pitch": -0.20435928714589746,
+          "distanceLy": 0.002102716094952134,
           "universeYears": 0,
           "travelerYears": 0
         },
@@ -2866,13 +2866,13 @@
         },
         "state": {
           "position": [
-            3958.6384554991746,
-            27434.717119497163,
-            -23854.600978987793
+            3960.0668780990927,
+            27432.239566272987,
+            -23854.782581137042
           ],
-          "yaw": 1.4513057556241709,
-          "pitch": -0.936857296985302,
-          "distanceLy": 1.8510383590461155,
+          "yaw": 1.4513024551876148,
+          "pitch": -0.9368553888620209,
+          "distanceLy": 4.725462893948919,
           "universeYears": 0,
           "travelerYears": 0
         },
@@ -3036,13 +3036,13 @@
         },
         "state": {
           "position": [
-            -13.997581227885528,
-            5.999596688537235,
-            3.004031286821974
+            -13.999520386414856,
+            5.999920057214452,
+            3.000799355974966
           ],
-          "yaw": 0.6383218381445461,
-          "pitch": -0.2043603533377479,
-          "distanceLy": 0.004723155852323265,
+          "yaw": 0.6383200077154463,
+          "pitch": -0.2043581900385106,
+          "distanceLy": 0.0009365831530467154,
           "universeYears": 0,
           "travelerYears": 0
         },
@@ -3315,12 +3315,12 @@
     {
       "url": "http://127.0.0.1:3187/stem_lab/stem_tool_universe.js",
       "status": 200,
-      "hash": "0779b5441bee28e306f17000366b2cd0d05e942492aa6c10d815103bdc8c9903"
+      "hash": "62322d3b8b8630e83ca78c99b289a6683c8ca5467eae6bfd4c14c28c3cd0ac04"
     },
     {
       "url": "http://127.0.0.1:3187/stem_lab/universe_flight_scene.js",
       "status": 200,
-      "hash": "e644bd8f63703a63fa03414d223094bfbeb2ebe58a0bf3118995c0f4600e7f32"
+      "hash": "7765970b7c3bafdc604839d7355e1185bebf92b45ce9bd5c471818e928765a93"
     }
   ],
   "catalog": [
@@ -3397,6 +3397,44 @@
           "name": "Violet cloud reveal",
           "seconds": 36,
           "description": "Look toward the violet cloud after the curved passage."
+        }
+      ]
+    },
+    {
+      "id": "group",
+      "name": "Galaxy group flyby",
+      "region": "cosmic",
+      "durationSeconds": 48,
+      "position": [
+        -450000,
+        400000,
+        -1050000
+      ],
+      "aim": [
+        0,
+        0,
+        0
+      ],
+      "fov": 60,
+      "targetId": "near-galaxy",
+      "highlights": [
+        {
+          "id": "spiral",
+          "name": "Spiral skim",
+          "seconds": 12,
+          "description": "Look across the tilted arms of the nearby spiral."
+        },
+        {
+          "id": "elliptical",
+          "name": "Golden elliptical pass",
+          "seconds": 30,
+          "description": "Compare the smooth warm halo with the nearby spiral."
+        },
+        {
+          "id": "panorama",
+          "name": "Galaxy group panorama",
+          "seconds": 44,
+          "description": "Look back across the spiral and elliptical together."
         }
       ]
     }

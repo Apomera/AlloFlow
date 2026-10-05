@@ -1,0 +1,7 @@
+{
+  "passed": 11,
+  "failed": 0,
+  "source": "7a730808a92c07efc777b5aaf19a524a053e1f62f4a2f3f9fa344a666a1e8ff8",
+  "followUp": "First screenshots showed the narrow summary marker wrapping onto a separate row. A two-column header now keeps the title and current view together and the marker beside them.",
+  "captureRefinement": "Moved the pointer outside the guide before initial captures to avoid presenting a hovered card as another selection. Added a narrow-header marker assertion. Existing assertions and deadlines unchanged."
+}

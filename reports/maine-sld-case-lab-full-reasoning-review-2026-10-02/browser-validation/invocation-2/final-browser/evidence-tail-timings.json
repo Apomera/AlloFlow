@@ -1,0 +1,22 @@
+{
+  "scenarioStartedAt": 1790990888697,
+  "bodyCompletedAt": 1790990899182,
+  "bodyDurationMs": 10485,
+  "phases": [
+    {
+      "name": "Download and read evidence-return worksheet",
+      "startedAt": 1790990895469,
+      "durationMs": 2686
+    },
+    {
+      "name": "Cancel then confirm current-case reset",
+      "startedAt": 1790990898156,
+      "durationMs": 554
+    },
+    {
+      "name": "Restore twice while clearing evidence-return context",
+      "startedAt": 1790990898711,
+      "durationMs": 471
+    }
+  ]
+}

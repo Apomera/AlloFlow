@@ -1,0 +1,19 @@
+{
+  "pdf": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\comparison-validation\\final-browser\\five-case-participant-print.pdf",
+  "pdfSha256": "8fd65a71f399b21d5089ef3906bf3387a40cf71abd3c5ac62576c7f9705060a6",
+  "pageCount": 9,
+  "textCharsByPage": [
+    1840,
+    1148,
+    943,
+    1561,
+    2203,
+    1657,
+    2495,
+    1423,
+    328
+  ],
+  "participantOnlyReasoningKeyExcluded": true,
+  "renderDirectory": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\comparison-validation\\final-browser\\rendered-print-qa",
+  "renderDpi": 90
+}

@@ -23,7 +23,7 @@
   var simpleView = false, extraTools = false, presentationDisposed = false, readService = null, readUtterance = null, readScope = null, readText = '', readSerial = 0, readStartTimer = null, readButtonId = null;
   try { simpleView = !!storage && storage.getItem(VIEW_KEY) === 'simple'; } catch (_) {}
   try { if (window.speechSynthesis && typeof window.SpeechSynthesisUtterance === 'function') readService = window.speechSynthesis; } catch (_) {}
-  var plan = null;
+  var plan = null, savedPreview = null;
   var rehearsalPreview = null;
   var exploredDeparture = null;
   var packingSelection = null;
@@ -56,22 +56,116 @@
     byId('languageSelect').value = current.config.language;
     byId('scenarioSelect').value = current.config.variation;
   }
+  function savedDate(run) {
+    var date = new Date(run.createdAt);
+    return isNaN(date.getTime()) ? 'Start date unavailable' : 'Started ' + date.toLocaleString([], { month:'short', day:'numeric', hour:'numeric', minute:'2-digit' });
+  }
+  function savedPlan(run) {
+    if (run.runId === current.runId) return {value:plan,notice:''};
+    try {
+      var local = notes[run.runId], raw = local ? local.plan : storage && storage.getItem(PLAN_PREFIX + run.runId);
+      if (!raw) return {value:null,notice:''};
+      if (typeof raw === 'string') { if (raw.length > 10000) throw new Error('Plan too large'); raw = JSON.parse(raw); }
+      return {value:E.validatePlan(run,raw),notice:''};
+    } catch (_) { return {value:null,notice:'The saved plan could not be read. The practice steps can still be opened.'}; }
+  }
+  function savedSnapshot(key) {
+    var stored = E.readRun(storage,key), run = stored.runId === current.runId ? current : stored;
+    return {key:key,run:run,signature:JSON.stringify(stored),plan:savedPlan(run)};
+  }
+  function renderSavedPreview(snapshot) {
+    savedPreview = snapshot || null;
+    byId('savedPreview').hidden = !snapshot; byId('savedEmpty').hidden = !!snapshot;
+    byId('resumeButton').disabled = !snapshot; byId('readSavedPreview').disabled = !snapshot || !readService;
+    byId('savedChecks').replaceChildren(); byId('savedFacts').replaceChildren();
+    if (!snapshot) {
+      ['savedPreviewTitle','savedPreviewState','savedPreviewMeta','savedPreviewClock','savedProgressLabel','savedPlanNote','savedContinueNote'].forEach(function(id){text(id,'');});
+      text('savedEmpty',storage ? 'Choose a readable saved practice. Unreadable practices are kept on this device.' : 'Saving is unavailable in this browser. Download your practice to keep a copy.');
+      byId('savedProgress').value = 0;
+      text('resumeButton','Continue selected practice'); refreshReading(); return;
+    }
+    var run = snapshot.run, v = E.view(run), checks = v.objectives.filter(function(check){return check.id !== 'depart';});
+    var ready = checks.filter(function(check){return check.complete;}).length;
+    text('savedPreviewTitle',(run.config.context === 'work' ? 'Work' : 'Community') + ' outing');
+    text('savedPreviewState',(run.runId === current.runId ? 'Current practice' : 'Saved practice') + ' · ' + (v.completed ? 'Complete' : run.commands.length ? 'In progress' : 'Ready to begin'));
+    text('savedPreviewClock',v.clock);
+    text('savedPreviewMeta',supportNames[run.config.support] + ' coaching · ' + (run.config.language === 'plain' ? 'Plain' : 'Standard') + ' language · ' + savedDate(run));
+    text('savedProgressLabel',ready + ' of 5 preparation checks ready');
+    byId('savedProgress').value = ready;
+    var labels = {clothing:'Clothes',water:'Water',document:'Outing card',weather:'Weather item',travel:'Travel plan'};
+    checks.forEach(function(check){
+      var item=node('li',check.complete ? 'saved-check saved-check-ready' : 'saved-check');
+      var picture=node('span','saved-check-mark');picture.setAttribute('aria-hidden','true');picture.appendChild(departureMark(check.complete));
+      item.append(picture,node('span','',labels[check.id] + ' · ' + (check.complete ? 'Ready' : 'To check')));byId('savedChecks').appendChild(item);
+    });
+    var packed = v.inventory.map(function(item){return {id:item.id === 'water' ? 'bottle' : item.id === 'document' ? 'card' : item.id,label:item.label};});
+    var last = E.history(run).slice(-1)[0], facts = [
+      {label:'In the bag',value:packed.length ? packed.map(function(item){return item.label;}).join(', ') : 'Empty · nothing packed yet',picture:packingBagPicture(packed)},
+      {label:'Forecast received',value:({cloudy:'Cloudy · update expected',rain:'Rain · update received',warm:'Warm sunshine · update received'})[v.scene.weather],picture:updateWeatherIcon(v.scene.weather)},
+      {label:'Travel plan',value:v.travel ? v.travel.label + ' · ' + (v.completed ? 'arrived ' : 'if you leave now, arrive ') + v.travel.arrival + (v.travel.onTime ? ' · by the 09:35 start' : ' · recheck before the 09:35 start') : 'No route chosen · outing starts 09:35',picture:routeIcon(v.travel ? v.travel.id : 'bus')},
+      {label:'Last choice',value:last ? 'Step ' + last.revision + ' · ' + last.label + ' · ' + last.clock : 'No choices made yet',picture:last && last.actionId !== 'hint' ? reviewOptionPicture(last.actionId,v) : wardrobeIcon(false)}
+    ];
+    facts.forEach(function(fact){
+      var group=node('div'),value=node('dd'),picture=node('span','saved-fact-picture');picture.setAttribute('aria-hidden','true');picture.appendChild(fact.picture);
+      value.append(picture,node('span','',fact.value));group.append(node('dt','',fact.label),value);byId('savedFacts').appendChild(group);
+    });
+    var next = E.planView(run,snapshot.plan.value).next;
+    text('savedPlanNote',snapshot.plan.notice || (next ? 'Your next planned step: ' + next.label + '. ' + (next.available ? 'Open the activity and choose when you are ready.' : next.reason) : ''));
+    byId('savedPlanNote').hidden = !byId('savedPlanNote').textContent;
+    text('savedContinueNote',v.completed ? 'Open the recap to look back at your choices and try another idea.' : next ? 'Continue opens your planned activity. Confirm each choice inside the activity.' : run.config.support === 'guided' ? 'Continue opens your next activity. Confirm each choice inside the activity.' : 'Continue opens your preparation checks so you can choose an activity.');
+    if(run.runId === current.runId && !lastSaveOk)text('savedContinueNote',byId('savedContinueNote').textContent + ' Some changes are kept only in this page. Download a backup to keep them.');
+    text('resumeButton',v.completed ? 'Open this recap' : run.runId === current.runId ? 'Return to this practice' : 'Continue this practice');
+    refreshReading();
+  }
+  function previewSavedSelection() {
+    text('savedPreviewStatus','');
+    try { renderSavedPreview(savedSnapshot(byId('savedRuns').value)); }
+    catch (_) { renderSavedPreview(null);text('savedPreviewStatus','That saved practice could not be read. It has been preserved.'); }
+  }
   function refreshSaved() {
     var select = byId('savedRuns'), entries = savedRuns();
+    var preferred = !byId('settings').hidden && savedPreview ? select.value : E.saveKey(current);
     select.replaceChildren();
-    entries.forEach(function (entry) {
-      var option = node('option');
-      option.value = entry.key;
-      if (entry.error || !entry.run) { option.textContent = 'Unreadable saved practice (preserved)'; option.disabled = true; }
+    entries.forEach(function(entry){
+      var option=node('option');option.value=entry.key;
+      if(entry.error || !entry.run){option.textContent='Unreadable saved practice (preserved)';option.disabled=true;}
       else {
-        var run = entry.run, date = new Date(run.createdAt);
-        option.textContent = (run.config.context === 'work' ? 'Work' : 'Community') + ' · ' + ({rain:'Rain',warm:'Warm','bus-delay':'Bus delay'})[run.config.variation] + ' · ' + run.commands.length + ' steps · ' + (isNaN(date.getTime()) ? run.runId : date.toLocaleString([], { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' }));
-        if (run.runId === current.runId) option.selected = true;
+        var run=entry.run.runId === current.runId ? current : entry.run, completed=run.commands.some(function(command){return command.actionId === 'depart';});
+        option.textContent=(run.config.context === 'work' ? 'Work' : 'Community') + ' · ' + (completed ? 'Complete' : run.commands.length ? 'In progress' : 'Ready to begin') + ' · ' + run.commands.length + ' steps · ' + savedDate(run) + (run.runId === current.runId ? ' · Open here' : '');
+        if(entry.key === preferred)option.selected=true;
       }
       select.appendChild(option);
     });
-    if (!entries.length) { var empty = node('option', '', 'No saved practices yet'); empty.value = ''; select.appendChild(empty); }
-    byId('resumeButton').disabled = !entries.some(function (entry) { return entry.run; });
+    if(!entries.length){var empty=node('option','','No saved practices yet');empty.value='';select.appendChild(empty);}
+    if(byId('settings').hidden){savedPreview=null;byId('savedPreview').hidden=true;byId('readSavedPreview').disabled=true;byId('resumeButton').disabled=!entries.some(function(entry){return !!entry.run;});return;}
+    try{renderSavedPreview(savedSnapshot(select.value));}catch(_){renderSavedPreview(null);}
+  }
+  function savedReadingText() {
+    if (!savedPreview || byId('settings').hidden || byId('savedPreview').hidden || savedPreview.key !== byId('savedRuns').value) return '';
+    var values=[byId('savedPreviewTitle').textContent,byId('savedPreviewState').textContent,'Practice clock ' + byId('savedPreviewClock').textContent,byId('savedPreviewMeta').textContent,byId('savedProgressLabel').textContent];
+    byId('savedChecks').querySelectorAll('li').forEach(function(item){values.push(item.textContent);});
+    byId('savedFacts').querySelectorAll('div').forEach(function(item){values.push(item.querySelector('dt').textContent + '. ' + item.querySelector('dd').textContent);});
+    if(!byId('savedPlanNote').hidden)values.push(byId('savedPlanNote').textContent);
+    values.push(byId('savedContinueNote').textContent);return values.join('. ');
+  }
+  function resumeSavedPractice() {
+    var key=byId('savedRuns').value, snapshot;
+    try { snapshot=savedSnapshot(key); }
+    catch (_) { stopReading();renderSavedPreview(null);text('savedPreviewStatus','That saved practice could not be read. It has been preserved.');text('saveStatus','That saved practice could not be read. It has been preserved.');return; }
+    if(snapshot.run.runId !== current.runId && savedPreview && savedPreview.key === key && savedPreview.signature !== snapshot.signature){
+      stopReading();renderSavedPreview(snapshot);text('savedPreviewStatus','This saved practice changed. Review the updated preview, then choose Continue.');byId('savedPreviewTitle').focus();return;
+    }
+    stopReading();
+    if(snapshot.run.runId !== current.runId)changeRun(snapshot.run);
+    else {
+      clearRoute(true);clearWater(true);clearRehearsal(true);clearPacking(true);clearWardrobe(true);clearUpdate(true);clearDeparture(true);
+      exploredDeparture=null;departureVisited=false;
+    }
+    byId('settings').hidden=true;byId('settingsToggle').setAttribute('aria-expanded','false');
+    if(latestView.completed){byId('debriefTitle').setAttribute('tabindex','-1');byId('debriefTitle').focus();announce('Completed practice opened. ' + latestView.summary);return;}
+    var next=E.planView(current,plan).next;
+    if(next)openGuideAction(next.actionId);else if(guideStep().target === 'explore')openPreparationBoard();else openNextGuide();
+    announce('Practice continued at ' + latestView.clock + '. ' + (next ? 'Your planned activity is open. Choose when you are ready.' : guideStep().target === 'explore' ? 'Choose an activity from your preparation checks.' : 'Your next activity is open. Choose when you are ready.'));
   }
   function persist() {
     var result;
@@ -99,7 +193,7 @@
     busy = false;
   }
   function changeRun(run, extras) {
-    stopReading();
+    stopReading(); savedPreview = null;
     abortStory();
     clearRoute(true);
     clearWater(true);
@@ -516,7 +610,7 @@
     var panel = activeWorkbench(); byId('stationActions').classList.toggle('has-workbench',!!panel);
     byId('stationActions').classList.toggle('simple-raw-actions',!!selectedObject && !panel && !latestView.completed);
     byId('sceneActionButtons').setAttribute('visible',!closeView && !(simpleView && !extraTools));
-    byId('readNextStep').disabled = !readService; byId('readActivity').disabled = !readService; byId('readReceivedChange').disabled = !readService; byId('readOutcome').disabled = !readService; byId('readComparison').disabled = !readService; byId('readReview').disabled = !readService;
+    byId('readNextStep').disabled = !readService; byId('readActivity').disabled = !readService; byId('readReceivedChange').disabled = !readService; byId('readOutcome').disabled = !readService; byId('readComparison').disabled = !readService; byId('readReview').disabled = !readService; byId('readSavedPreview').disabled = !readService || !savedPreview;
     if (!readService) text('readAloudStatus','Read aloud is unavailable in this browser. You can use the pictures and text.');
     renderActivityContinuation(panel);
   }
@@ -526,7 +620,7 @@
     if (byId('receivedChange').hidden || !byId('receivedChange').open || !byId('preparationBoard').open) return '';
     var received = receivedUpdate(); return received ? 'Update received at ' + received.clock + '. ' + receivedChangeText(received) + ' The outing still starts at 09:35.' : '';
   }
-  function readingText(scope) { return scope === 'guide' ? guideReadingText() : scope === 'change' ? receivedReadingText() : scope === 'outcome' ? outcomeReadingText() : scope === 'comparison' ? comparisonReadingText() : scope === 'review' ? reviewReadingText() : activityReadingText(); }
+  function readingText(scope) { return scope === 'guide' ? guideReadingText() : scope === 'change' ? receivedReadingText() : scope === 'outcome' ? outcomeReadingText() : scope === 'comparison' ? comparisonReadingText() : scope === 'review' ? reviewReadingText() : scope === 'saved' ? savedReadingText() : activityReadingText(); }
   function activityReadingText() {
     var panel = activeWorkbench();
     if (!panel) {
@@ -563,6 +657,7 @@
     text('readOutcome',readUtterance && readScope === 'outcome' ? 'Stop reading this recap' : 'Read this recap aloud');
     text('readComparison',readUtterance && readScope === 'comparison' ? 'Stop reading this comparison' : 'Read this comparison aloud');
     text('readReview',readUtterance && readScope === 'review' ? 'Stop reading this starting point' : 'Read this starting point aloud');
+    text('readSavedPreview',readUtterance && readScope === 'saved' ? 'Stop reading this preview' : 'Read this preview aloud');
   }
   function readAloud(scope) {
     if (!readService) return;
@@ -575,10 +670,10 @@
       utterance.lang = 'en'; utterance.rate = .95;
       var voices = readService.getVoices ? readService.getVoices() : [], voice = voices.find(function (item) { return /^en(?:-|$)/i.test(item.lang) && item.localService; });
       if (voice) utterance.voice = voice;
-      readUtterance = utterance; readScope = scope; readText = content; readButtonId = {guide:'readNextStep',activity:'readActivity',change:'readReceivedChange',outcome:'readOutcome',comparison:'readComparison',review:'readReview'}[scope];
+      readUtterance = utterance; readScope = scope; readText = content; readButtonId = {guide:'readNextStep',activity:'readActivity',change:'readReceivedChange',outcome:'readOutcome',comparison:'readComparison',review:'readReview',saved:'readSavedPreview'}[scope];
       renderReadingControls();
       byId('stopReadAloud').hidden = false; text('readAloudStatus','Starting read aloud. You can stop at any time.');
-      utterance.onstart = function () { if (serial !== readSerial) return; window.clearTimeout(readStartTimer); readStartTimer = null; text('readAloudStatus','Reading ' + ({guide:'the next step.',activity:'the activity instructions.',change:'the received update.',outcome:'the completed outing.',comparison:'the practice comparison.',review:'the starting point and preview.'})[scope]); };
+      utterance.onstart = function () { if (serial !== readSerial) return; window.clearTimeout(readStartTimer); readStartTimer = null; text('readAloudStatus','Reading ' + ({guide:'the next step.',activity:'the activity instructions.',change:'the received update.',outcome:'the completed outing.',comparison:'the practice comparison.',review:'the starting point and preview.',saved:'the saved practice preview.'})[scope]); };
       utterance.onend = function () { if (serial === readSerial) stopReading('Reading finished.',true,true); };
       utterance.onerror = function () { if (serial === readSerial) stopReading('Read aloud could not continue. Try again, or use the text.',true,true); };
       readStartTimer = window.setTimeout(function () { if (serial === readSerial) stopReading('Read aloud could not start. Try again, or use the text.',true); },15000);
@@ -2096,18 +2191,21 @@
   workbenchIds.forEach(function(id){byId(id).addEventListener('toggle',function(){if(latestView&&!presentationDisposed){renderPresentation();refreshReading();}});});
   byId('stationActions').addEventListener('click',function(){Promise.resolve().then(function(){if(latestView&&!presentationDisposed){renderPresentation();refreshReading();}});});
   byId('settingsToggle').addEventListener('click',function(){
-    var panel=byId('settings');panel.hidden=!panel.hidden;
+    stopReading();var panel=byId('settings');panel.hidden=!panel.hidden;
     byId('settingsToggle').setAttribute('aria-expanded',String(!panel.hidden));
-    if(!panel.hidden){refreshSaved();byId('contextSelect').focus();}
+    if(!panel.hidden){text('savedPreviewStatus','');refreshSaved();byId('contextSelect').focus();}
   });
   byId('settingsForm').addEventListener('submit',function(event){
     event.preventDefault();
     changeRun(E.createRun({context:byId('contextSelect').value,support:byId('supportSelect').value,language:byId('languageSelect').value,variation:byId('scenarioSelect').value}));
     byId('settings').hidden=true;byId('settingsToggle').setAttribute('aria-expanded','false');byId('stationActions').focus();
   });
-  byId('resumeButton').addEventListener('click',function(){
-    try{changeRun(E.readRun(storage,byId('savedRuns').value));byId('stationActions').focus();}
-    catch(error){text('saveStatus','That saved practice could not be read. It has been preserved.');}
+  byId('savedRuns').addEventListener('change',function(){stopReading();previewSavedSelection();});
+  byId('readSavedPreview').addEventListener('click',function(){readAloud('saved');});
+  byId('resumeButton').addEventListener('click',resumeSavedPractice);
+  window.addEventListener('storage',function(event){
+    if(!current || presentationDisposed || byId('settings').hidden)return;
+    if(event.key === null || typeof event.key === 'string' && (event.key.indexOf(E.PREFIX) === 0 || event.key.indexOf(PLAN_PREFIX) === 0))refreshSaved();
   });
   byId('sceneToggle').addEventListener('click',function(){
     clearWaterMotion();

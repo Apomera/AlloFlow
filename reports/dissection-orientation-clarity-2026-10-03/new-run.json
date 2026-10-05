@@ -1,0 +1,18 @@
+{
+  "start": "2026-10-03T18:09:10.208Z",
+  "status": 0,
+  "sourceSha256": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+  "args": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@playwright\\test\\cli.js",
+    "test",
+    "tests/e2e/dissection-orientation-clarity.spec.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=list,json",
+    "--output=reports/dissection-orientation-clarity-2026-10-03/new-artifacts"
+  ],
+  "video": "off",
+  "sourceAfterSha256": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+  "end": "2026-10-03T18:09:45.579Z"
+}

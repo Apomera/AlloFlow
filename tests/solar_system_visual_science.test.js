@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const COPIES = [
   'stem_lab/stem_tool_solarsystem.js',
@@ -285,12 +286,42 @@ describe('solar system visual science model', () => {
     expect(descentSource).not.toContain('absolute bottom-3 left-3 right-3');
   });
 
-  it('separates Kepler I geometry callouts from live proof measurements', () => {
-    expect(source).toContain('var k1Backdrop = ctx.createRadialGradient');
-    expect(source).toContain('function drawK1Tag(text, x, y, color)');
-    expect(source).toContain('F\\u2082 \\u00b7 empty focus');
-    expect(source).toContain('Dedicated evidence footer');
-    expect(source).toContain('sum " + fmt(r1 + r2, 1) + " = 2a');
+  it('provides a named Kepler I diagram and accessible normalized focal-proof measurements', () => {
+    resetStemLab();
+    loadTool(COPIES[0], 'solarSystem');
+    document.body.innerHTML = renderTool('solarSystem', { solarSystem: {
+      tutorialDismissed: true, orreryMode: true, orr_tab: 1,
+      orr_k1e: 0.5, orr_k1phase: (Math.PI / 2 - 0.5) / (2 * Math.PI), orr_k1playing: false,
+    } });
+    try {
+      const canvas = document.querySelector('#orrery-k1-inspection canvas');
+      expect(canvas?.getAttribute('role')).toBe('img');
+      expect(canvas?.getAttribute('aria-label')).toMatch(/^Kepler I orbit visualization/);
+      expect(canvas?.getAttribute('aria-describedby')).toBe('orrery-k1-evidence');
+      const evidence = document.getElementById('orrery-k1-evidence');
+      expect(evidence?.textContent).toMatch(/center.to.focus/i);
+      expect(evidence?.textContent).not.toContain('Sun-to-focus');
+      const note = document.getElementById('orrery-k1-model-note');
+      expect(note?.textContent).toMatch(/normaliz/i);
+      expect(note?.textContent).toMatch(/r[₁1]\s*\+\s*r[₂2]\s*=\s*2a/);
+      const value = (name) => {
+        const node = document.querySelector(`#orrery-k1-inspection dd[data-k1-metric="${name}"]`);
+        expect(node).not.toBeNull();
+        const raw = node.getAttribute('data-value');
+        expect(raw).not.toBeNull();
+        expect(raw.trim()).not.toBe('');
+        const number = Number(raw);
+        expect(Number.isFinite(number)).toBe(true);
+        return number;
+      };
+      expect(value('focus-one')).toBeCloseTo(1, 8);
+      expect(value('focus-two')).toBeCloseTo(1, 8);
+      expect(value('focal-sum')).toBeCloseTo(2, 8);
+      expect(value('semi-minor')).toBeCloseTo(Math.sqrt(0.75), 10);
+      expect(value('focus-offset')).toBeCloseTo(0.5, 10);
+    } finally {
+      document.body.innerHTML = '';
+    }
   });
 
   it('compares worlds on a disclosed common scale without confusing mass and weight', () => {

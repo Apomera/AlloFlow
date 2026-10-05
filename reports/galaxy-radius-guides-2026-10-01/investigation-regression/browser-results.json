@@ -1,0 +1,38 @@
+{
+  "checks": [
+    "native-chart-collection-sorted-duplicate-protection-and-focus",
+    "persisted-evidence-note",
+    "same-radii-switch-model-values-chart-and-trends",
+    "revisit-preserves-real-star-selection",
+    "undo-preserves-later-radius-and-note",
+    "native-csv-download-all-models-units-and-note",
+    "download-failure-preserves-work",
+    "mode-json-remount-and-other-investigations-preserved",
+    "non-disk-scope-and-return",
+    "core-boundary-explanation",
+    "capacity-and-safe-undo",
+    "desktop-and-phone-layouts",
+    "rtl-layout-and-spatial-radius-keyboard",
+    "native-touch-removal-and-undo",
+    "reduced-motion-collection",
+    "malformed-persisted-state-recovery"
+  ],
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "targets": true
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "targets": true
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "targets": true
+    }
+  ],
+  "errors": []
+}

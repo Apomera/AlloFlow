@@ -1,0 +1,215 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass19-2026-10-03/browser/final-test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-landmarks.spec.ts",
+      "file": "moon-mission-descent-landmarks.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "desktop rulers align with physical grid and endpoint summaries preserve paused flight",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7065,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:24:19.881Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "desktop-coast",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\final-test-results\\moon-mission-descent-landm-d47fb-ries-preserve-paused-flight-chromium\\attachments\\desktop-coast-0dc918953c42e153de09c0628068cd41b4b03ba0.png"
+                    },
+                    {
+                      "name": "desktop-braking",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\final-test-results\\moon-mission-descent-landm-d47fb-ries-preserve-paused-flight-chromium\\attachments\\desktop-braking-9dc6b257a44abe3aad2aafa95523b4fcec6d6225.png"
+                    },
+                    {
+                      "name": "braking-rulers",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\final-test-results\\moon-mission-descent-landm-d47fb-ries-preserve-paused-flight-chromium\\attachments\\braking-rulers-67dd780441794b967c87b6fe50417d74526fe666.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b659e66a9868e1151fa2-67f5e1154e235dc57117",
+          "file": "moon-mission-descent-landmarks.spec.ts",
+          "line": 91,
+          "column": 5
+        },
+        {
+          "title": "recorded inspection restores rulers and compact contact view without rewriting receipts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 47696,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:24:27.596Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "compact-contact",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\final-test-results\\moon-mission-descent-landm-f8935--without-rewriting-receipts-chromium\\attachments\\compact-contact-3352f1efae8241e749eb9914ad5d36f559053bb0.png"
+                    },
+                    {
+                      "name": "recorded-five-seconds",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\final-test-results\\moon-mission-descent-landm-f8935--without-rewriting-receipts-chromium\\attachments\\recorded-five-seconds-87f2655bc88bac1bc31efa92440f02c425ab4e6f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b659e66a9868e1151fa2-504a2c5ee0cc16098dd3",
+          "file": "moon-mission-descent-landmarks.spec.ts",
+          "line": 103,
+          "column": 5
+        },
+        {
+          "title": "320 px rulers and endpoint summaries remain readable with keyboard and forced colors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 146216,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:25:15.309Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\final-test-results\\moon-mission-descent-landm-aa38f--keyboard-and-forced-colors-chromium\\attachments\\phone-320-4301e58c2d5640ffbce177345c558aabddb326bf.png"
+                    },
+                    {
+                      "name": "phone-forced-colors",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\final-test-results\\moon-mission-descent-landm-aa38f--keyboard-and-forced-colors-chromium\\attachments\\phone-forced-colors-ed900ff7f5709154332da5d4e5f7f47523dd8161.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b659e66a9868e1151fa2-d915a0ff13bc763215e4",
+          "file": "moon-mission-descent-landmarks.spec.ts",
+          "line": 130,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T16:23:00.447Z",
+    "duration": 402720.2,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

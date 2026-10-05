@@ -1,0 +1,140 @@
+{
+  "approved": true,
+  "sourceSha256": "3424b78369802606dd709faf9c308c1d444b0d18633c69062a7e7486e5614453",
+  "mirrorSha256": "3424b78369802606dd709faf9c308c1d444b0d18633c69062a7e7486e5614453",
+  "scriptSha256": "3256297e1a9b898e210facc11ec4db2e071513bfa4b95a165660155785d5d56f",
+  "browserResultsSha256": "d6a3dbc89e60dc172111ee7b0ff69608bed9da14d5eda3009dc138c1c4ff4b69",
+  "nativeSession": 86617,
+  "nativeExitCode": 0,
+  "browserClosedByFinally": true,
+  "method": "All 12 final PNGs inspected at original resolution with view_image. No browser rerun was performed for this review.",
+  "screenshots": [
+    {
+      "file": "investigation-handoff-gain-1280.png",
+      "sha256": "d22c2eee8699aca16d2d6aaf3abd4063d2f1957e3c8483bda79ec27716dee150",
+      "reviewed": true,
+      "crop": "Complete all-tested continuation"
+    },
+    {
+      "file": "investigation-handoff-gain-320.png",
+      "sha256": "14ba5c72c7948d2caf41e9ba65b795ef1921cfadead380be5f6f2d943a8cf9d0",
+      "reviewed": true,
+      "crop": "Complete all-tested continuation"
+    },
+    {
+      "file": "investigation-handoff-limit-1280.png",
+      "sha256": "048a915361119bf0d96dabe8b1311d07e270244a7271078d2fd1b87bd473af59",
+      "reviewed": true,
+      "crop": "Complete all-tested continuation"
+    },
+    {
+      "file": "investigation-handoff-limit-320.png",
+      "sha256": "f0c71d6f8bd5f8b1cb1fe1fc1aa32db9412cb69a1e24301e0b1508e1b726c52a",
+      "reviewed": true,
+      "crop": "Complete all-tested continuation"
+    },
+    {
+      "file": "investigation-handoff-sensor-1280.png",
+      "sha256": "048a915361119bf0d96dabe8b1311d07e270244a7271078d2fd1b87bd473af59",
+      "reviewed": true,
+      "crop": "Complete all-tested continuation"
+    },
+    {
+      "file": "investigation-handoff-sensor-320.png",
+      "sha256": "9378c79d640e7c8c04cebda61b21aa32134f7af475794dfb76b0ca1aa3601f04",
+      "reviewed": true,
+      "crop": "Complete all-tested continuation"
+    },
+    {
+      "file": "investigation-handoff-gain-390.png",
+      "sha256": "8aea1722c50fb17e0ab6cedfafe7943144d24d78f26854292f922977b1e11187",
+      "reviewed": true,
+      "crop": "Complete all-tested continuation"
+    },
+    {
+      "file": "investigation-handoff-200pct-text-320.png",
+      "sha256": "3735d408b58ff00c8d003d51d5e912a0d9d90714bb9a495a14f8cdfae38314d3",
+      "reviewed": true,
+      "crop": "Complete all-tested continuation"
+    },
+    {
+      "file": "forced-colors-investigation-handoff-320.png",
+      "sha256": "20e6e253603666ccd9cba7462caf2fda19b9ee0c7d85a159109ea9651501e27d",
+      "reviewed": true,
+      "crop": "Complete all-tested continuation"
+    },
+    {
+      "file": "rtl-investigation-handoff-320.png",
+      "sha256": "92188305e77b91a0ee5ae55110fdbe3e8c0d4e451d6e8ac8f23c3d0df43df7a6",
+      "reviewed": true,
+      "crop": "Complete all-tested continuation"
+    },
+    {
+      "file": "handoff-populated-notebook-390.png",
+      "sha256": "3cbc3909c6d821aca5b793fe613a36e7edd00be8dd4776e46e025b3763541aa6",
+      "reviewed": true,
+      "crop": "Notebook header, planning fields and record controls"
+    },
+    {
+      "file": "handoff-full-notebook-320.png",
+      "sha256": "1764c43e62b503174246bbbb5eea47fc91a996c28d3b2bc69209d9770e4a4c10",
+      "reviewed": true,
+      "crop": "Notebook header, planning fields and record controls"
+    }
+  ],
+  "materialIssues": [],
+  "observations": [
+    "Desktop cards have clear step headings, balanced spacing and distinct notebook/map actions.",
+    "All three selected lessons retain the same complete handoff at 320px; the 390px view and both notebook previews remain readable without clipped text or controls.",
+    "At actual 200% text and 320px, all content and actions remain available. The word component wraps within the word in the narrow numbered text column; this is a minor visual limitation, not lost content.",
+    "Forced-color borders, numbered steps and both actions remain visible. The RTL view retains the intended choose-then-compare order and mirrors the numbered layout.",
+    "The notebook images show the header, planning fields and record controls. They do not claim visual review of the full observation list."
+  ],
+  "verificationSummary": {
+    "screenshots": 12,
+    "axeScans": 12,
+    "focusChecks": 22,
+    "nativeNotebookOpenActions": 6,
+    "lastTestTransition": 1,
+    "lifecycleCases": 2,
+    "localTwoInstanceCases": 1,
+    "doubledFontMeasurements": 21,
+    "forcedColorTextNodes": 9,
+    "forcedColorMinimumRatio": 21,
+    "rtlActualViewportWidth": 320,
+    "errors": 0,
+    "visualIssues": 0
+  },
+  "scopeNote": "The legacy fixed notebook ID is preserved. The two-instance check verifies local focus ownership only, not global ID uniqueness.",
+  "passed": true,
+  "screenshotsReviewedByCircuitUI": 12,
+  "screenshotSha256": {
+    "investigation-handoff-gain-1280.png": "d22c2eee8699aca16d2d6aaf3abd4063d2f1957e3c8483bda79ec27716dee150",
+    "investigation-handoff-gain-320.png": "14ba5c72c7948d2caf41e9ba65b795ef1921cfadead380be5f6f2d943a8cf9d0",
+    "investigation-handoff-limit-1280.png": "048a915361119bf0d96dabe8b1311d07e270244a7271078d2fd1b87bd473af59",
+    "investigation-handoff-limit-320.png": "f0c71d6f8bd5f8b1cb1fe1fc1aa32db9412cb69a1e24301e0b1508e1b726c52a",
+    "investigation-handoff-sensor-1280.png": "048a915361119bf0d96dabe8b1311d07e270244a7271078d2fd1b87bd473af59",
+    "investigation-handoff-sensor-320.png": "9378c79d640e7c8c04cebda61b21aa32134f7af475794dfb76b0ca1aa3601f04",
+    "investigation-handoff-gain-390.png": "8aea1722c50fb17e0ab6cedfafe7943144d24d78f26854292f922977b1e11187",
+    "investigation-handoff-200pct-text-320.png": "3735d408b58ff00c8d003d51d5e912a0d9d90714bb9a495a14f8cdfae38314d3",
+    "forced-colors-investigation-handoff-320.png": "20e6e253603666ccd9cba7462caf2fda19b9ee0c7d85a159109ea9651501e27d",
+    "rtl-investigation-handoff-320.png": "92188305e77b91a0ee5ae55110fdbe3e8c0d4e451d6e8ac8f23c3d0df43df7a6",
+    "handoff-populated-notebook-390.png": "3cbc3909c6d821aca5b793fe613a36e7edd00be8dd4776e46e025b3763541aa6",
+    "handoff-full-notebook-320.png": "1764c43e62b503174246bbbb5eea47fc91a996c28d3b2bc69209d9770e4a4c10"
+  },
+  "rootInspected": [
+    "investigation-handoff-gain-1280.png",
+    "investigation-handoff-sensor-320.png",
+    "investigation-handoff-200pct-text-320.png",
+    "forced-colors-investigation-handoff-320.png",
+    "rtl-investigation-handoff-320.png",
+    "handoff-populated-notebook-390.png",
+    "handoff-full-notebook-320.png"
+  ],
+  "rootObservations": [
+    "Both cards sit together with clear spacing on desktop and stack within phone padding.",
+    "The forced-color and RTL views retain readable numbers, prompts, and controls.",
+    "The populated and full notebook previews retain their saved planning fields and recording state.",
+    "At 200% text, content stays available; the narrow prompt column leaves a minor within-word wrap to refine in a subsequent CSS pass."
+  ]
+}

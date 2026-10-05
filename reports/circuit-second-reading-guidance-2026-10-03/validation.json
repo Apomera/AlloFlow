@@ -1,0 +1,29 @@
+{
+  "passed": true,
+  "sourceSha256": "35d953d4e3fb4fb508fce0435a9d8c1df174fdd5653c0111b53c3e789d24247b",
+  "mirrorSha256": "35d953d4e3fb4fb508fce0435a9d8c1df174fdd5653c0111b53c3e789d24247b",
+  "byteExactPriorSourcePreserved": true,
+  "independentSourceReview": true,
+  "regression": {
+    "tests": 80,
+    "files": 5,
+    "newCases": 18
+  },
+  "browser": {
+    "views": 8
+  },
+  "screenshotsReviewedByRoot": 8,
+  "gitDiffCheck": true,
+  "scopedChangesUnstaged": true,
+  "artifacts": {
+    "source-preservation.json": "ee4557f45960a775407b7ffa915c25e1fbfeb7ed21bfa3f8a36226c387fd68b3",
+    "independent-review.json": "32998b6ff19513b563da9fdd2362d2218cab6d22277605617927d3bfa3672cad",
+    "protected-test-hashes.json": "a9bab40879356c74d2ceea7917361b053d4e718d0136cffb50539530445ac31f",
+    "regression-raw.json": "d521c0f6c9055533cea2ae1d02f677db302bc8ff32d7292d6e4d08afe6d37284",
+    "regression-receipt.json": "832cb27f01216779fca2c642c547b6c0cc3f7d9c02629c940486d370caa44f15",
+    "browser-results.json": "8e529c280caeec7cc3acabcb4047c1e08bf101a6c2035975d0f827e25c22b92e",
+    "visual-review.json": "c566d0fd9e84f18fafaa25f695d5defc41b8baafd42067cfd40f468f0300147d",
+    "root-visual-review.json": "b6a44aa762d48252f9ab04305160fb923b2f934c6119210f8a879c13d3911ada",
+    "validate.cjs": "20700b61c7196afc1dda3a71b92a7ba35059fe358e22c265d6fbc52bcfbc66d5"
+  }
+}

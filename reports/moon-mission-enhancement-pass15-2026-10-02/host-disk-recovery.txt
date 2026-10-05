@@ -1,0 +1,1 @@
+Drive-full source write was interrupted. Validation stopped. The zero-length canonical file was restored from the intact byte-matched public mirror. Only the pass15 private temporary baseline was removed. Disk space recovered to about60MB before mutation; remaining edits use temporary-file writes and replacement. Failed/cancelled browser artifacts retained.

@@ -1,0 +1,240 @@
+
+Running 6 tests using 1 worker
+
+(node:17008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:17008) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  1 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:255:5 › temperature, pH and oxygen sweeps use independent simulated samples on true numeric axes without accepting forged imported populations (3.3s)
+(node:21544) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:21544) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  2 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:273:5 › current and previous sample inspection remain independent and saved response curves stay fixed while next-run drafts change (4.4s)
+(node:22540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22540) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  3 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:296:5 › zero-response sweeps keep square markers and equal-sample guidance while an unsampled saved setting starts at the first best sample (2.6s)
+(node:14028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:14028) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  4 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:316:5 › phone, four-hundred-percent zoom, reduced-motion and forced-colour layouts retain readable axes, distinct response shapes and focused keyboard inspection (2.8s)
+(node:47440) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:47440) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  5 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:340:5 › preparing a current sweep sample changes only normalized next-trial conditions and preserves all original notebook evidence and metadata (3.3s)
+(node:38632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:38632) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+  x  6 [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:359:5 › JSON reload and notebook export retain both saved sweep descriptors and model-exact samples regardless of local inspection (4.6s)
+
+
+  1) [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:255:5 › temperature, pH and oxygen sweeps use independent simulated samples on true numeric axes without accepting forged imported populations 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m1[39m
+    Received:   [31m3.7734375[39m
+
+      164 |     expect(label.fontSize).toBeGreaterThanOrEqual(14); expect(label.height).toBeLessThanOrEqual(label.lineHeight + 1);
+      165 |     if (label.y) expect(Math.abs(label.centerY - (rendered.bounds.y + (100 - label.value) / 100 * rendered.bounds.height))).toBeLessThan(1);
+    > 166 |     else expect(Math.abs(label.centerX - (rendered.bounds.x + x(expected.variable, label.value) / 100 * rendered.bounds.width))).toBeLessThan(1);
+          |                                                                                                                                  ^
+      167 |   }
+      168 |   const values = page.locator('#' + id + '-values'); await expect(values).toHaveJSProperty('tagName', 'DL');
+      169 |   await expect(values.locator('dt')).toHaveCount(3);
+        at assertSweep (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:166:130)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:260:68
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--6b65c-forged-imported-populations-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--6b65c-forged-imported-populations-chromium\error-context.md
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--6b65c-forged-imported-populations-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--6b65c-forged-imported-populations-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--6b65c-forged-imported-populations-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:273:5 › current and previous sample inspection remain independent and saved response curves stay fixed while next-run drafts change 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m1[39m
+    Received:   [31m3.7734375[39m
+
+      164 |     expect(label.fontSize).toBeGreaterThanOrEqual(14); expect(label.height).toBeLessThanOrEqual(label.lineHeight + 1);
+      165 |     if (label.y) expect(Math.abs(label.centerY - (rendered.bounds.y + (100 - label.value) / 100 * rendered.bounds.height))).toBeLessThan(1);
+    > 166 |     else expect(Math.abs(label.centerX - (rendered.bounds.x + x(expected.variable, label.value) / 100 * rendered.bounds.width))).toBeLessThan(1);
+          |                                                                                                                                  ^
+      167 |   }
+      168 |   const values = page.locator('#' + id + '-values'); await expect(values).toHaveJSProperty('tagName', 'DL');
+      169 |   await expect(values.locator('dt')).toHaveCount(3);
+        at assertSweep (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:166:130)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:277:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--78bd8-hile-next-run-drafts-change-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--78bd8-hile-next-run-drafts-change-chromium\error-context.md
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--78bd8-hile-next-run-drafts-change-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--78bd8-hile-next-run-drafts-change-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--78bd8-hile-next-run-drafts-change-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:296:5 › zero-response sweeps keep square markers and equal-sample guidance while an unsampled saved setting starts at the first best sample 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m1[39m
+    Received:   [31m3.7734375[39m
+
+      164 |     expect(label.fontSize).toBeGreaterThanOrEqual(14); expect(label.height).toBeLessThanOrEqual(label.lineHeight + 1);
+      165 |     if (label.y) expect(Math.abs(label.centerY - (rendered.bounds.y + (100 - label.value) / 100 * rendered.bounds.height))).toBeLessThan(1);
+    > 166 |     else expect(Math.abs(label.centerX - (rendered.bounds.x + x(expected.variable, label.value) / 100 * rendered.bounds.width))).toBeLessThan(1);
+          |                                                                                                                                  ^
+      167 |   }
+      168 |   const values = page.locator('#' + id + '-values'); await expect(values).toHaveJSProperty('tagName', 'DL');
+      169 |   await expect(values.locator('dt')).toHaveCount(3);
+        at assertSweep (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:166:130)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:301:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--5bee6-ts-at-the-first-best-sample-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--5bee6-ts-at-the-first-best-sample-chromium\error-context.md
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--5bee6-ts-at-the-first-best-sample-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--5bee6-ts-at-the-first-best-sample-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--5bee6-ts-at-the-first-best-sample-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:316:5 › phone, four-hundred-percent zoom, reduced-motion and forced-colour layouts retain readable axes, distinct response shapes and focused keyboard inspection 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m1[39m
+    Received:   [31m3.7734375[39m
+
+      164 |     expect(label.fontSize).toBeGreaterThanOrEqual(14); expect(label.height).toBeLessThanOrEqual(label.lineHeight + 1);
+      165 |     if (label.y) expect(Math.abs(label.centerY - (rendered.bounds.y + (100 - label.value) / 100 * rendered.bounds.height))).toBeLessThan(1);
+    > 166 |     else expect(Math.abs(label.centerX - (rendered.bounds.x + x(expected.variable, label.value) / 100 * rendered.bounds.width))).toBeLessThan(1);
+          |                                                                                                                                  ^
+      167 |   }
+      168 |   const values = page.locator('#' + id + '-values'); await expect(values).toHaveJSProperty('tagName', 'DL');
+      169 |   await expect(values.locator('dt')).toHaveCount(3);
+        at assertSweep (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:166:130)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:320:86
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--a8282-focused-keyboard-inspection-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--a8282-focused-keyboard-inspection-chromium\error-context.md
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--a8282-focused-keyboard-inspection-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--a8282-focused-keyboard-inspection-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--a8282-focused-keyboard-inspection-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:340:5 › preparing a current sweep sample changes only normalized next-trial conditions and preserves all original notebook evidence and metadata 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m1[39m
+    Received:   [31m3.7734375[39m
+
+      164 |     expect(label.fontSize).toBeGreaterThanOrEqual(14); expect(label.height).toBeLessThanOrEqual(label.lineHeight + 1);
+      165 |     if (label.y) expect(Math.abs(label.centerY - (rendered.bounds.y + (100 - label.value) / 100 * rendered.bounds.height))).toBeLessThan(1);
+    > 166 |     else expect(Math.abs(label.centerX - (rendered.bounds.x + x(expected.variable, label.value) / 100 * rendered.bounds.width))).toBeLessThan(1);
+          |                                                                                                                                  ^
+      167 |   }
+      168 |   const values = page.locator('#' + id + '-values'); await expect(values).toHaveJSProperty('tagName', 'DL');
+      169 |   await expect(values.locator('dt')).toHaveCount(3);
+        at assertSweep (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:166:130)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:353:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--a915c-ebook-evidence-and-metadata-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--a915c-ebook-evidence-and-metadata-chromium\error-context.md
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--a915c-ebook-evidence-and-metadata-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--a915c-ebook-evidence-and-metadata-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--a915c-ebook-evidence-and-metadata-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6) [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:359:5 › JSON reload and notebook export retain both saved sweep descriptors and model-exact samples regardless of local inspection 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThan[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: < [32m1[39m
+    Received:   [31m3.7734375[39m
+
+      164 |     expect(label.fontSize).toBeGreaterThanOrEqual(14); expect(label.height).toBeLessThanOrEqual(label.lineHeight + 1);
+      165 |     if (label.y) expect(Math.abs(label.centerY - (rendered.bounds.y + (100 - label.value) / 100 * rendered.bounds.height))).toBeLessThan(1);
+    > 166 |     else expect(Math.abs(label.centerX - (rendered.bounds.x + x(expected.variable, label.value) / 100 * rendered.bounds.width))).toBeLessThan(1);
+          |                                                                                                                                  ^
+      167 |   }
+      168 |   const values = page.locator('#' + id + '-values'); await expect(values).toHaveJSProperty('tagName', 'DL');
+      169 |   await expect(values.locator('dt')).toHaveCount(3);
+        at assertSweep (C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:166:130)
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\microbiology-sweep-visual-inspection.spec.ts:378:3
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--677e0-ardless-of-local-inspection-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--677e0-ardless-of-local-inspection-chromium\error-context.md
+
+    Error Context: reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--677e0-ardless-of-local-inspection-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--677e0-ardless-of-local-inspection-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\micro-lab-sweep-visuals-2026-10-04\browser-focused-initial-test-output\microbiology-sweep-visual--677e0-ardless-of-local-inspection-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  6 failed
+    [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:255:5 › temperature, pH and oxygen sweeps use independent simulated samples on true numeric axes without accepting forged imported populations 
+    [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:273:5 › current and previous sample inspection remain independent and saved response curves stay fixed while next-run drafts change 
+    [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:296:5 › zero-response sweeps keep square markers and equal-sample guidance while an unsampled saved setting starts at the first best sample 
+    [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:316:5 › phone, four-hundred-percent zoom, reduced-motion and forced-colour layouts retain readable axes, distinct response shapes and focused keyboard inspection 
+    [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:340:5 › preparing a current sweep sample changes only normalized next-trial conditions and preserves all original notebook evidence and metadata 
+    [chromium] › tests\e2e\microbiology-sweep-visual-inspection.spec.ts:359:5 › JSON reload and notebook export retain both saved sweep descriptors and model-exact samples regardless of local inspection 

@@ -1,0 +1,76 @@
+{
+  "verifiedAt": "2026-10-04T17:29:10.777865+00:00",
+  "status": "PASS",
+  "sourceSha256": "0ace7842ded217dfc67d240f357acdfbca59a493ae0e7aef709e0dd006b846df",
+  "moduleSha256": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+  "moduleBytes": 199134,
+  "moduleFourCopyParity": true,
+  "targetedScenariosPassed": 3,
+  "newScenario": 1,
+  "original37PrefixPreserved": true,
+  "availableScenarios": 38,
+  "axeScans": 2,
+  "axeViolations": 0,
+  "rootDirectlyViewedCaptures": 4,
+  "caseDataCoreBuilderPreserved": true,
+  "allOtherJsxCssPrintAndFormLogicPreserved": true,
+  "worksheetSchemaPreserved": true,
+  "caseContentReviewDateUnchanged": "2026-10-02",
+  "jurisdictionReviewDate": "2026-10-04",
+  "scope": "Federal/Maine jurisdiction explanation only; no comprehensive new case-content audit",
+  "testedHostSourceSha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8",
+  "testedHostBundleSha256": "69c86008789f489da23eb74cf3206e1101e48dfd86ef849c43632d466a86024f",
+  "sharedHostsObserved": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "reviewedMainePinRetained": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "reviewedMainePinRetained": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0",
+      "reviewedMainePinRetained": true
+    }
+  ],
+  "currentHostsMatchTestedSnapshot": false,
+  "servedResponses": [
+    {
+      "name": "app",
+      "status": 200,
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+      "bytes": 588
+    },
+    {
+      "name": "host",
+      "status": 200,
+      "sha256": "69c86008789f489da23eb74cf3206e1101e48dfd86ef849c43632d466a86024f",
+      "bytes": 1977975
+    },
+    {
+      "name": "module",
+      "status": 200,
+      "sha256": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+      "bytes": 199134
+    }
+  ],
+  "previewPid": 41164,
+  "scopedIndexEmpty": true,
+  "commitPerformed": false,
+  "deploymentPerformed": false,
+  "actualHostInvocations": 2,
+  "manualHostRecoveryInvocations": 1,
+  "firstAttemptAllTargetsPassed": false,
+  "evidenceHashes": {
+    "browser-validation/validation-summary.json": "ff3239bd633b7b758b731a910bbcca60dfc8a2bd4df70468a57f496b75e5e377",
+    "legal-source-review.md": "67808410ded16fd4fd282c53ac614f9cb1d89e839af0f8b092aea312eb4553af",
+    "independent-review.md": "6165b8a32abcebf3a3beb5d662cae55c219691b279132087dd24aec540b09539",
+    "root-layout-review.json": "3978262c22d45145b54c765c69597b5c41e436104f9be01f2f3928df268e14de",
+    "integration/final-observed-identity.json": "c7904456809e5baf78bae6fd74d1128a6c8b4aaf424c1d6b5acc2f140e163502",
+    "integration/post-host-served-verification.json": "2e3f28790192418ca0b5f140d0959809034f8e0b79167d550b1e82878679d0c8"
+  }
+}

@@ -1,0 +1,13 @@
+{
+  "beforeSha256": "c37fd985765a1129f60fefbc55fd1b2b66989ca2786ed181f3cef82ac1f71250",
+  "sourceSha256": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
+  "mirrorMatches": true,
+  "modelPrefixUnchanged": true,
+  "gradientUsesViewBoxCoordinates": true,
+  "gradientCoordinates": [
+    2,
+    8,
+    54,
+    8
+  ]
+}

@@ -1,0 +1,119 @@
+{
+  "seed": {
+    "wcMode": "explore",
+    "wcSection": "journey",
+    "activeStage": "infiltration",
+    "journeyView": "2d",
+    "journeyActive": true,
+    "journeyState": "aquifer_flow",
+    "journeyLastPath": "infiltrate",
+    "journeyPaused": true,
+    "wc2dPaused": true,
+    "journeySpeed": 1,
+    "journeyLoops": 2,
+    "journeyPaths": {
+      "runoff": 1,
+      "infiltrate": 1,
+      "plant": 0
+    },
+    "climSolar": 1.2,
+    "climTemp": 18,
+    "climWind": 1.4,
+    "landRainIntensity": 60,
+    "landSaturation": 50,
+    "landPermeability": "medium",
+    "landSlope": "moderate",
+    "landCover": "grass",
+    "wcQuiz": {
+      "q": "How does most groundwater move through soil and rock?",
+      "a": "Tiny connected pores and cracks",
+      "opts": [
+        "Tiny connected pores and cracks",
+        "Open underground rivers",
+        "Sealed clouds below the ground",
+        "It cannot move"
+      ],
+      "concept": "infiltration",
+      "wrongFeedback": {
+        "Open underground rivers": "Most groundwater moves through pores and cracks, rather than open rivers."
+      },
+      "answered": true,
+      "chosen": "Open underground rivers",
+      "score": 2
+    },
+    "wcMyth": {
+      "idx": 6,
+      "s": "Groundwater flows in big underground rivers and lakes.",
+      "t": false,
+      "why": "Almost all groundwater seeps through tiny pores in soil and rock, like water held in a sponge.",
+      "tryIt": "In Journey Mode, take the Infiltration path: the aquifer leg is the slowest part of the cycle.",
+      "answered": true,
+      "chosen": true
+    },
+    "wcAttempts": 4,
+    "wcStreak": 0,
+    "quizCorrectCount": 2,
+    "wcMythsDone": 3,
+    "researchPoints": 10,
+    "completedChallenges": [
+      "complete_journey",
+      "explore_all_stages",
+      "adjust_climate",
+      "quiz_pass",
+      "vocabulary_studied",
+      "stewardship_win",
+      "myth_buster",
+      "double_rainbow"
+    ],
+    "wcScenarioBaseline": {
+      "climSolar": 1
+    },
+    "wcProcessCompare": {
+      "notes": {
+        "condensation|precipitation": "Existing learner writing"
+      }
+    },
+    "wcExperimentLog": [
+      {
+        "key": "preserve-evidence",
+        "label": "Existing observation",
+        "notes": {
+          "explanation": "Existing saved explanation"
+        }
+      }
+    ],
+    "precipHunt": {
+      "paused": true,
+      "experiment": {
+        "prediction": "Keep storm prediction",
+        "explanation": "Keep storm explanation"
+      }
+    }
+  },
+  "quiz": {
+    "q": "How does most groundwater move through soil and rock?",
+    "a": "Tiny connected pores and cracks",
+    "opts": [
+      "Tiny connected pores and cracks",
+      "Open underground rivers",
+      "Sealed clouds below the ground",
+      "It cannot move"
+    ],
+    "concept": "infiltration",
+    "wrongFeedback": {
+      "Open underground rivers": "Most groundwater moves through pores and cracks, rather than open rivers."
+    },
+    "answered": true,
+    "chosen": "Open underground rivers",
+    "score": 2
+  },
+  "myth": {
+    "idx": 6,
+    "s": "Groundwater flows in big underground rivers and lakes.",
+    "t": false,
+    "why": "Almost all groundwater seeps through tiny pores in soil and rock, like water held in a sponge.",
+    "tryIt": "In Journey Mode, take the Infiltration path: the aquifer leg is the slowest part of the cycle.",
+    "answered": true,
+    "chosen": true
+  }
+}

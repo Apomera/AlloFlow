@@ -1,0 +1,7 @@
+{
+  "phase": "brightness-workflow",
+  "checks": [],
+  "errors": [],
+  "loadedSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246",
+  "error": "AssertionError [ERR_ASSERTION]: Completed guided study must leave active recording.\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\.cache\\perception_recorded_preview_guided_regression.cjs:101:14"
+}

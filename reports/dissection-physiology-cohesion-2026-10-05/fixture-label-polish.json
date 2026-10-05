@@ -1,0 +1,13 @@
+{
+  "files": [
+    "tests/e2e/dissection-physiology-cohesion.spec.ts"
+  ],
+  "before": "17e813c1c5900468cf834940dae6b771562b49cbc8c2e5f925f48048d722c717",
+  "after": "0f94fefc1ebfcc3bd463ffc403f81e61dbed8d6de498826a6d4c34747a7e7451",
+  "edits": [
+    {
+      "old": "height: n.getBoundingClientRect().height, font: parseFloat(getComputedStyle(n).fontSize), clipped:",
+      "new": "height: n.getBoundingClientRect().height, font: parseFloat(getComputedStyle(n.querySelector('span') || n).fontSize), clipped:"
+    }
+  ]
+}

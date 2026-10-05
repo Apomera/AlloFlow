@@ -1,0 +1,358 @@
+{
+  "checkedAt": "2026-10-05T02:18:47.986Z",
+  "completed": true,
+  "successful": true,
+  "checks": [
+    {
+      "label": "Manifest finalized without commit",
+      "passed": true
+    },
+    {
+      "label": "All pinned evidence files retained",
+      "passed": true
+    },
+    {
+      "label": "Main, public and frozen candidate bytes agree",
+      "passed": true
+    },
+    {
+      "label": "Uncommitted starting baseline exact",
+      "passed": true
+    },
+    {
+      "label": "Entire prior source token sequence preserved outside named presentation boundaries",
+      "passed": true,
+      "details": {
+        "passed": true,
+        "boundaries": {
+          "WCLiveTransferStory": 1,
+          "WC_LIVE_TRANSFER_STYLE": 1,
+          "wcLiveTransfer": 1,
+          "ltWaterSymbol": 1,
+          "renderWcLiveWaterTransfer": 1,
+          "renderWcLiveHeatPath": 1,
+          "scene:drawMatterEnergyEvidence2d": 1,
+          "scene:drawFlowChevrons2d": 1,
+          "scene:drawPhysicalTimeGlyph2d": 1,
+          "focusClass": 1,
+          "processAttribute": 1,
+          "focusLabel": 1,
+          "focusSummary": 1,
+          "waterFigure": 1,
+          "storyAria": 1,
+          "storyHeading": 1,
+          "storyCue": 1,
+          "heatPath": 1,
+          "dataClass": 1,
+          "dataLabel": 1,
+          "dataCue": 1,
+          "dataStatus": 1,
+          "dataStatusPunctuation": 1,
+          "canvasAria": 1,
+          "canvas2dAria": 1
+        },
+        "baselineTokens": 360499,
+        "candidatePriorTokens": 360499,
+        "mismatch": null
+      }
+    },
+    {
+      "label": "reports/watercycle-live-transfer-clarity/baseline-results.json completed and closed",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-live-transfer-clarity/baseline-results.json actual loaded runtime and frozen executable",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-live-transfer-clarity/baseline-results.json retained honest outcome",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-live-transfer-clarity/baseline-results.json exact PNG captures and chronology",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-live-transfer-clarity/browser-results.json completed and closed",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-live-transfer-clarity/browser-results.json actual loaded runtime and frozen executable",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-live-transfer-clarity/browser-results.json retained honest outcome",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-live-transfer-clarity/browser-results.json exact PNG captures and chronology",
+      "passed": true
+    },
+    {
+      "label": "Final browser loaded current candidate",
+      "passed": true
+    },
+    {
+      "label": "Readout and Data measured in all display contexts",
+      "passed": true
+    },
+    {
+      "label": "Clear text, layout and disclosure target: desktop",
+      "passed": true
+    },
+    {
+      "label": "Independent measured contrast: desktop",
+      "passed": true
+    },
+    {
+      "label": "Clear text, layout and disclosure target: phone320",
+      "passed": true
+    },
+    {
+      "label": "Independent measured contrast: phone320",
+      "passed": true
+    },
+    {
+      "label": "Clear text, layout and disclosure target: phone390",
+      "passed": true
+    },
+    {
+      "label": "Independent measured contrast: phone390",
+      "passed": true
+    },
+    {
+      "label": "Clear text, layout and disclosure target: host390",
+      "passed": true
+    },
+    {
+      "label": "Independent measured contrast: host390",
+      "passed": true
+    },
+    {
+      "label": "Clear text, layout and disclosure target: dark",
+      "passed": true
+    },
+    {
+      "label": "Independent measured contrast: dark",
+      "passed": true
+    },
+    {
+      "label": "Clear text, layout and disclosure target: app-contrast",
+      "passed": true
+    },
+    {
+      "label": "Independent measured contrast: app-contrast",
+      "passed": true
+    },
+    {
+      "label": "Clear text, layout and disclosure target: forced-phone",
+      "passed": true
+    },
+    {
+      "label": "Independent measured contrast: forced-phone",
+      "passed": true
+    },
+    {
+      "label": "Decorative symbols and arrows fit their view boxes",
+      "passed": true
+    },
+    {
+      "label": "All 11 active transfers and six previews covered",
+      "passed": true
+    },
+    {
+      "label": "Water nodes and storage/choice arrows match frozen prior science",
+      "passed": true
+    },
+    {
+      "label": "Titles, live cues, Data and canvas descriptions agree",
+      "passed": true
+    },
+    {
+      "label": "Qualitative heat, driver and physical time remain separate",
+      "passed": true
+    },
+    {
+      "label": "Native Data disclosures preserve learner data and paused pixels",
+      "passed": true
+    },
+    {
+      "label": "Existing native controls change only their intended fields",
+      "passed": true
+    },
+    {
+      "label": "Scoped audits have no violations or unresolved findings",
+      "passed": true
+    },
+    {
+      "label": "Final engine and expected-output checks pass",
+      "passed": true
+    },
+    {
+      "label": "Native scene evidence covers storage, land choice and precipitation controls",
+      "passed": true
+    },
+    {
+      "label": "Scene recording forwards and restores native methods without changing learner state",
+      "passed": true
+    },
+    {
+      "label": "Actual storage and choice captions have no transfer arrow or directional lane",
+      "passed": true
+    },
+    {
+      "label": "Land choice fork is anchored at the actual parcel",
+      "passed": true
+    },
+    {
+      "label": "Active and remembered precipitation retain falling and directional evidence",
+      "passed": true
+    },
+    {
+      "label": "Final browser totals match actual receipts",
+      "passed": true
+    },
+    {
+      "label": "unit complete identities and honest test outcome",
+      "passed": true
+    },
+    {
+      "label": "unit native runner receipt and chronology",
+      "passed": true
+    },
+    {
+      "label": "unit exact before/after source and test files",
+      "passed": true
+    },
+    {
+      "label": "unit frozen runner, raw results and log",
+      "passed": true
+    },
+    {
+      "label": "unit explicit sequential single-worker command",
+      "passed": true
+    },
+    {
+      "label": "Focused tests actually loaded the frozen runtime, baseline and test",
+      "passed": true
+    },
+    {
+      "label": "regression complete identities and honest test outcome",
+      "passed": true
+    },
+    {
+      "label": "regression native runner receipt and chronology",
+      "passed": true
+    },
+    {
+      "label": "regression exact before/after source and test files",
+      "passed": true
+    },
+    {
+      "label": "regression frozen runner, raw results and log",
+      "passed": true
+    },
+    {
+      "label": "regression explicit sequential single-worker command",
+      "passed": true
+    },
+    {
+      "label": "matter-energy-recheck complete identities and honest test outcome",
+      "passed": true
+    },
+    {
+      "label": "matter-energy-recheck native runner receipt and chronology",
+      "passed": true
+    },
+    {
+      "label": "matter-energy-recheck exact before/after source and test files",
+      "passed": true
+    },
+    {
+      "label": "matter-energy-recheck frozen runner, raw results and log",
+      "passed": true
+    },
+    {
+      "label": "matter-energy-recheck explicit sequential single-worker command",
+      "passed": true
+    },
+    {
+      "label": "Recheck preserves the unchanged fixture and exact case identities",
+      "passed": true
+    },
+    {
+      "label": "Final test totals match actual assertions",
+      "passed": true
+    },
+    {
+      "label": "Focused, full regression and isolated recheck run sequentially",
+      "passed": true
+    },
+    {
+      "label": "109 distinct unchanged regression identities have passing evidence",
+      "passed": true
+    },
+    {
+      "label": "The isolated recheck resolves the recorded 15 second timeout",
+      "passed": true
+    },
+    {
+      "label": "Preview receipt served current runtime over HTTP",
+      "passed": true
+    },
+    {
+      "label": "All seven owned test processes were absent after closure",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "preservation": {
+    "passed": true,
+    "boundaries": {
+      "WCLiveTransferStory": 1,
+      "WC_LIVE_TRANSFER_STYLE": 1,
+      "wcLiveTransfer": 1,
+      "ltWaterSymbol": 1,
+      "renderWcLiveWaterTransfer": 1,
+      "renderWcLiveHeatPath": 1,
+      "scene:drawMatterEnergyEvidence2d": 1,
+      "scene:drawFlowChevrons2d": 1,
+      "scene:drawPhysicalTimeGlyph2d": 1,
+      "focusClass": 1,
+      "processAttribute": 1,
+      "focusLabel": 1,
+      "focusSummary": 1,
+      "waterFigure": 1,
+      "storyAria": 1,
+      "storyHeading": 1,
+      "storyCue": 1,
+      "heatPath": 1,
+      "dataClass": 1,
+      "dataLabel": 1,
+      "dataCue": 1,
+      "dataStatus": 1,
+      "dataStatusPunctuation": 1,
+      "canvasAria": 1,
+      "canvas2dAria": 1
+    },
+    "baselineTokens": 360499,
+    "candidatePriorTokens": 360499,
+    "mismatch": null
+  },
+  "manifest": {
+    "path": "reports/watercycle-live-transfer-clarity/artifact-summary.json",
+    "sha256": "58ed64d9e6fcaac2ac2e0e12cea193cd5c10fb7208e098e42964abdb85be9383",
+    "bytes": 19117
+  },
+  "counts": {
+    "browserChecks": 557,
+    "captures": 28,
+    "nativeActions": 44,
+    "accessibilityAudits": 19,
+    "focusedTests": 27,
+    "distinctPassingRegressions": 109,
+    "fullRegressionPassed": 108,
+    "fullRegressionTimedOut": 1,
+    "isolatedRecheckPassed": 5
+  }
+}

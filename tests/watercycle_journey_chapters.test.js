@@ -43,6 +43,74 @@ function walkNodes(tree, visit) {
     }
   }
 }
+// Reviewed visual exception: retain every byte of the canvas outside this
+// decorative block, and permit only local calculations and canvas paint calls.
+function reviewedPoreDecoration(block) {
+  const tree = parse(block, { ecmaVersion: 'latest' });
+  const locals = new Set();
+  walkNodes(tree, node => {
+    if (node.type === 'VariableDeclarator') {
+      if (node.id.type !== 'Identifier') throw new Error('Pore decoration has a nonlocal binding');
+      locals.add(node.id.name);
+    }
+  });
+  const reads = new Set(['ctx', 'cW', 'cH', 'soilTop2d', 'waterTable2d', 'isDark', 'dpr', 'Math']);
+  const paints = new Set(['beginPath', 'arc', 'fill', 'save', 'clip', 'fillRect', 'restore']);
+  function visit(node, parent, key) {
+    if (!node || typeof node !== 'object') return;
+    if (node.type === 'Identifier') {
+      const property = parent && parent.type === 'MemberExpression' && key === 'property' && !parent.computed;
+      if (!property && !locals.has(node.name) && !reads.has(node.name)) throw new Error('Pore decoration reads non-drawing state: ' + node.name);
+    }
+    if (['FunctionDeclaration', 'FunctionExpression', 'ArrowFunctionExpression', 'NewExpression', 'AwaitExpression', 'YieldExpression', 'ReturnStatement', 'ThrowStatement', 'WithStatement', 'ImportExpression', 'ThisExpression', 'Super'].includes(node.type) || node.type === 'UnaryExpression' && node.operator === 'delete') throw new Error('Pore decoration contains a non-paint operation');
+    if (node.type === 'MemberExpression' && node.object.type === 'Identifier' && ['ctx', 'Math'].includes(node.object.name)) {
+      if (node.computed || !(node.object.name === 'ctx' ? paints.has(node.property.name) || node.property.name === 'fillStyle' : node.property.name === 'PI')) throw new Error('Pore decoration accesses a non-paint resource');
+    }
+    if (node.type === 'CallExpression') {
+      const call = node.callee;
+      if (call.type !== 'MemberExpression' || call.computed || call.object.type !== 'Identifier' ||
+          !(call.object.name === 'ctx' && paints.has(call.property.name))) throw new Error('Pore decoration calls a non-paint operation');
+    }
+    if (node.type === 'AssignmentExpression' || node.type === 'UpdateExpression') {
+      const target = node.left || node.argument;
+      const local = target.type === 'Identifier' && locals.has(target.name);
+      const paint = target.type === 'MemberExpression' && !target.computed && target.object.type === 'Identifier' &&
+        target.object.name === 'ctx' && ['fillStyle'].includes(target.property.name);
+      if (!local && !paint) throw new Error('Pore decoration writes non-drawing state');
+    }
+    for (const [childKey, value] of Object.entries(node)) {
+      if (Array.isArray(value)) value.forEach(child => visit(child, node, childKey));
+      else if (value && typeof value === 'object') visit(value, node, childKey);
+    }
+  }
+  visit(tree, null, '');
+}
+function normalizeReviewedCanvas(value) {
+  const current = '// Groundwater pore illustration: begin.';
+  const legacy = '// Pore spaces.';
+  const finish = '// Groundwater pore illustration: end.';
+  const parent = '// Parent material:';
+  const marker = value.includes(current) ? current : legacy;
+  const start = value.indexOf(marker), end = value.indexOf(parent, start);
+  if (start < 0 || end <= start || value.indexOf(marker, start + marker.length) !== -1 || value.indexOf(parent, end + parent.length) !== -1) throw new Error('Missing or duplicate reviewed pore boundary');
+  if (marker === current) {
+    const close = value.indexOf(finish, start);
+    if (close <= start || close > end || value.indexOf(finish, close + finish.length) !== -1 || value.slice(close + finish.length, end).trim()) throw new Error('Pore decoration boundary includes other canvas code');
+  }
+  reviewedPoreDecoration(value.slice(start, end));
+  return value.slice(0, start) + '// Reviewed groundwater pore decoration.\n                ' + value.slice(end);
+}
+function normalizeReviewedCheckPores(value) {
+  if (sha(value) === '01c29df93cf3cbccb62e6f3190d079d2fb8b6ecd0697c3b9f84a98360f166fb5') return 'Reviewed groundwater Check adapter';
+  const body = parse(value, { ecmaVersion: 'latest' }).body;
+  const fn = body[0], statement = fn && fn.body && fn.body.body[0];
+  const call = statement && statement.argument;
+  if (body.length !== 1 || fn.type !== 'FunctionDeclaration' || fn.id.name !== 'renderWcCheckPores' || fn.params.length || fn.async || fn.generator ||
+      fn.body.body.length !== 1 || statement.type !== 'ReturnStatement' || !call || call.type !== 'CallExpression' ||
+      call.callee.type !== 'Identifier' || call.callee.name !== 'renderWcGroundwaterLens' || call.arguments.length !== 1 ||
+      call.arguments[0].type !== 'Literal' || call.arguments[0].value !== 'check') throw new Error('Check pores must be only the reviewed unscored adapter');
+  return 'Reviewed groundwater Check adapter';
+}
 function productionNodes(text, extra = []) {
   const normalized = text.replace(/\r\n/g, '\n');
   const names = [...PRESERVED, ...extra];
@@ -52,7 +120,8 @@ function productionNodes(text, extra = []) {
     if (node.type === 'AssignmentExpression' && node.operator === '=' && node.left.type === 'Identifier' && DELTA_ASSIGNMENTS.includes(node.left.name)) name = node.left.name + ':assignment';
     if (names.includes(name) || DELTA_ASSIGNMENTS.some(delta => name === delta + ':assignment')) {
       if (result[name]) throw new Error('Non-unique production anchor: ' + name);
-      result[name] = normalized.slice(node.start, node.end);
+      const value = normalized.slice(node.start, node.end);
+      result[name] = name === 'canvasRef' ? normalizeReviewedCanvas(value) : name === 'renderWcCheckPores' ? normalizeReviewedCheckPores(value) : value;
     }
   });
   return result;

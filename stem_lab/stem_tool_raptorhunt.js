@@ -287,6 +287,8 @@
 .rh-target-tracker[data-offscreen="true"]::after{content:"";position:absolute;left:19px;top:19px;width:10px;height:10px;border-top:3px solid currentColor;border-right:3px solid currentColor;transform:rotate(var(--target-bearing,45deg));}
 .rh-target-label{position:absolute;box-sizing:border-box;padding:6px 9px;border:1px solid #b7ced033;border-left:2px solid currentColor;border-radius:5px;background:rgba(5,17,27,.88);box-shadow:0 3px 12px #02061733;font:600 11px/15px ui-sans-serif,system-ui;text-shadow:0 1px 2px #020617;}
 .rh-target-status{display:block;font-size:9px;line-height:13px;font-weight:800;letter-spacing:.1em;}
+.rh-target-label::after{content:"";position:absolute;left:0;bottom:0;height:2px;width:100%;background:currentColor;transform-origin:left;transform:scaleX(var(--strike-progress,0));opacity:.85;}
+.rh-target-tracker[data-strike-stage="throw"] .rh-target-corner{width:14px;height:14px;}
 .rh-target-name{display:block;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;color:#f1f5f9;}
 [data-raptor-scenic-view="true"] .rh-target-tracker,[data-raptor-flight-trail="true"] .rh-target-tracker{display:none!important;}
 @media(forced-colors:active){.rh-target-tracker{color:CanvasText!important;filter:none;}.rh-target-label{background:Canvas;border-color:CanvasText;}.rh-target-name{color:CanvasText;}}
@@ -825,7 +827,7 @@
     '@media(max-width:760px){.rh-flight-attitude{top:150px;max-width:calc(50% - 12px);}.rh-flight-attitude-value{min-width:68px;}}@media(max-width:430px){.rh-flight-attitude{top:154px;max-width:calc(50% - 10px);font-size:7px;letter-spacing:0;}.rh-flight-attitude::before{font-size:7px;}.rh-flight-attitude-track{flex-basis:38px;width:38px;height:14px;}.rh-flight-attitude-value{min-width:60px;font-size:7px;}}',
     '[data-raptor-sim-shell="true"]{overflow:hidden;}',
     '[data-raptor-flight-stage="true"]{position:relative;isolation:isolate;height:clamp(460px,62vh,760px);min-height:460px;background:linear-gradient(180deg,#0c4a6e,#0f172a);}',
-    '[data-raptor-flight-stage="true"] canvas{touch-action:none;}',
+    '[data-raptor-sim-shell="true"],[data-raptor-flight-stage="true"]{min-width:0;max-width:100%;}[data-raptor-flight-stage="true"] canvas{touch-action:none;max-width:100%;}',
     '[data-raptor-flight-stage="true"] canvas:focus-visible{outline:3px solid #67e8f9!important;outline-offset:-5px!important;box-shadow:inset 0 0 0 6px rgba(8,47,73,.75);}',
     '.rh-flight-controls{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px;padding:10px 12px calc(10px + env(safe-area-inset-bottom));background:rgba(2,6,23,.96);border-top:1px solid #64748b;}',
     '.rh-flight-controls-group{display:flex;flex-wrap:wrap;align-items:center;gap:8px;}',
@@ -916,9 +918,30 @@
     ".rh-flight-pause{z-index:30;align-items:flex-start;padding:16px;box-sizing:border-box;background:rgba(2,6,23,.16);backdrop-filter:none}.rh-flight-pause-card{width:340px;max-width:100%;box-sizing:border-box;border:1px solid #93bcb7;border-radius:14px;padding:16px;background:#0c1d24;pointer-events:auto}.rh-pause-title{display:block;font:700 17px/1.4 system-ui;color:#fff0cf}.rh-flight-pause-card p{margin:7px 0;color:#d4e3e1;font:12px/1.45 system-ui}.rh-flight-pause-card .rh-pause-hint{font-size:11px;color:#b7d2cf}.rh-flight-pause-card button{min-height:42px;border:1px solid #668788;border-radius:8px;padding:8px 12px;font:600 12px/1.35 system-ui;background:#203b43;color:#f0f6f4;cursor:pointer}.rh-flight-pause-card .rh-pause-resume{width:100%;margin-top:6px;background:#f2cd88;color:#182d33;border-color:#f2cd88}.rh-pause-views{display:flex;gap:8px;margin-top:8px}.rh-pause-views button{flex:1}.rh-pause-views button[aria-pressed=true]{border-color:#f2cd88;color:#ffe5af}.rh-flight-pause-card button:focus-visible{outline:3px solid #fff;outline-offset:3px}.rh-flight-pause-card button:hover{filter:brightness(1.1)}@media(forced-colors:active){.rh-flight-pause-card,.rh-flight-pause-card button,.rh-flight-pause-card .rh-pause-resume{background:Canvas;color:CanvasText;border-color:CanvasText}.rh-flight-pause-card p,.rh-pause-title,.rh-flight-pause-card .rh-pause-hint,.rh-pause-views button[aria-pressed=true]{color:CanvasText}.rh-flight-pause-card button:focus-visible{outline-color:Highlight}}",
     '.rh-flight-mission-meter-label{display:flex;align-items:center;justify-content:space-between;gap:8px;margin-top:7px;color:#cbd5e1;font:900 8px/1 ui-sans-serif,system-ui;letter-spacing:.08em;text-transform:uppercase;}.rh-flight-mission-meter-label-value{color:#fef3c7;font-variant-numeric:tabular-nums;letter-spacing:.04em;}.rh-flight-mission-meter-label[data-progress-state="success"] .rh-flight-mission-meter-label-value{color:#6ee7b7;}.rh-flight-mission-meter-label[data-progress-state="failed"] .rh-flight-mission-meter-label-value{color:#fca5a5;}.rh-flight-mission-phase{display:block;margin-top:4px;color:#a5f3fc;font:800 8px/1.15 ui-sans-serif,system-ui;letter-spacing:.06em;text-transform:uppercase;}.rh-flight-mission-phase[data-phase-state="success"]{color:#6ee7b7;}.rh-flight-mission-phase[data-phase-state="failed"]{color:#fca5a5;}.rh-flight-mission-meter{display:block;height:4px;margin-top:4px;border-radius:999px;background:#0f172a;overflow:hidden;box-shadow:inset 0 0 0 1px rgba(148,163,184,.18);}.rh-flight-mission-meter-fill{display:block;width:0;height:100%;border-radius:inherit;background:linear-gradient(90deg,#fbbf24,#34d399);transition:width .22s ease,background-color .22s ease;}.rh-flight-mission-meter[data-progress-state="success"] .rh-flight-mission-meter-fill{background:#34d399;}.rh-flight-mission-meter[data-progress-state="failed"] .rh-flight-mission-meter-fill{background:#f87171;}'
     ,'.rh-flight-btn[data-raptor-cue="primary"]{border-color:#fbbf24;box-shadow:0 0 0 2px rgba(251,191,36,.55);color:#fef3c7;}.rh-flight-btn[data-raptor-cue="secondary"]{border-color:rgba(103,232,249,.85);box-shadow:0 0 0 1px rgba(103,232,249,.3);}@media(forced-colors:active){.rh-flight-btn[data-raptor-cue="primary"],.rh-flight-btn[data-raptor-cue="secondary"]{border-color:Highlight;box-shadow:none;}}'
+    // Keep chrome quiet around the landscape; state colors and keyboard focus remain distinct.
+    ,'@media(forced-colors:none){[data-raptor-sim-shell="true"]{border-color:#526874!important;box-shadow:0 16px 38px #02061730;}[data-raptor-flight-stage] .rh-flight-telemetry-strip{border-color:#718c9b;border-radius:12px;background:linear-gradient(180deg,rgba(15,31,43,.97),rgba(6,17,28,.95));box-shadow:0 5px 18px #02061730,inset 0 1px #d5f3ff12;backdrop-filter:none;}[data-raptor-flight-stage] .rh-flight-metric{border-right-color:#52687480;}[data-raptor-flight-stage] .rh-flight-metric-label{color:#bfd0da;font-weight:650;letter-spacing:.09em;}[data-raptor-flight-stage] .rh-flight-metric-value{color:#f3f8fb;font-variant-numeric:tabular-nums;}[data-raptor-flight-stage] .rh-flight-mission-hud{box-shadow:0 5px 18px #02061730,inset 0 1px #d5f3ff10;}[data-raptor-flight-stage] .rh-flight-key{border-color:#738f9f;background:linear-gradient(180deg,#192c39f5,#0c1b27f5);box-shadow:0 2px 5px #02061725;}[data-raptor-flight-stage] .rh-flight-key kbd{background:#253c4b;color:#f4f8fa;border-color:#849ba8;box-shadow:none;}[data-raptor-flight-stage] .rh-flight-key[data-primary="true"],[data-raptor-flight-stage] .rh-flight-key[data-primary="true"] kbd{border-color:#fbbf24;}[data-raptor-flight-stage] .rh-scenic-toggle,[data-raptor-flight-stage] .rh-practice-toggle{background:#122430ed;border-color:#849ba8;box-shadow:inset 0 1px #d5f3ff12;}[data-raptor-sim-shell] .rh-flight-controls{background:linear-gradient(180deg,#11212e,#0a1723);border-top-color:#526874;}}'
+    ,'@media(max-width:540px){.rh-active-flight-bar{display:grid;grid-template-columns:32px minmax(0,1fr) auto;gap:8px 10px;align-items:center;}.rh-active-flight-copy{grid-column:2/-1;}.rh-active-flight-bar>span{grid-column:2;justify-self:start;}.rh-active-flight-bar>[data-raptor-edit-flight]{grid-column:3;min-height:38px;}.rh-active-flight-copy>div:first-child{line-height:1.4;}.rh-active-flight-copy>div:last-child{white-space:normal;line-height:1.45;}}'
     // Stoop impact scale (visual pass 2026-09-24): text was 6-9 px and the marker line ran through "Current".
     ,'.rh-stoop-impact-panel{gap:12px;padding:14px 16px;}.rh-stoop-impact-kicker{font-size:11px;}.rh-stoop-impact-title{font-size:15px;margin-top:4px;}.rh-stoop-impact-value{font-size:18px;}.rh-stoop-impact-track{height:58px;margin:28px 0 28px;overflow:visible;}.rh-stoop-impact-track::before{inset:0;}.rh-stoop-impact-fill{position:absolute;left:0;top:0;bottom:0;border-radius:8px 0 0 8px;background:linear-gradient(90deg,rgba(251,191,36,.06),rgba(249,115,22,.30) 72%,rgba(239,68,68,.46));pointer-events:none;}.rh-stoop-impact-current{top:-6px;bottom:-6px;}.rh-stoop-impact-current-dot{top:50%;width:14px;height:14px;}.rh-stoop-impact-current-label{top:-26px;padding:3px 9px;border-radius:999px;background:#f97316;color:#1c0a02;font:900 11px/1 ui-sans-serif,system-ui;letter-spacing:.06em;box-shadow:0 2px 8px rgba(0,0,0,.45);}.rh-stoop-impact-marker{bottom:0;height:100%;background:rgba(148,163,184,.75);}.rh-stoop-impact-marker-label,.rh-stoop-impact-marker[data-impact-marker] .rh-stoop-impact-marker-label{bottom:auto;top:calc(100% + 7px);font:800 11px/1.1 ui-sans-serif,system-ui;}.rh-stoop-impact-marker[data-impact-marker="baseball"] .rh-stoop-impact-marker-label{transform:translateX(calc(-100% - 3px));}.rh-stoop-impact-marker[data-impact-marker="bullet"] .rh-stoop-impact-marker-label{transform:translateX(3px);}.rh-stoop-impact-marker[data-impact-marker="harpy"] .rh-stoop-impact-marker-label{transform:translateX(calc(-100% + 1px));}.rh-stoop-impact-axis{font-size:11px;}.rh-stoop-impact-note{font-size:12px;font-weight:600;line-height:1.4;}@media(max-width:430px){.rh-stoop-impact-marker-label,.rh-stoop-impact-marker[data-impact-marker] .rh-stoop-impact-marker-label{font-size:10px;}.rh-stoop-impact-axis{font-size:10px;}.rh-stoop-impact-title{font-size:13px;}.rh-stoop-impact-value{font-size:15px;}}@media(forced-colors:active){.rh-stoop-impact-fill{background:Highlight;opacity:.35;}.rh-stoop-impact-current-label{background:Canvas;color:CanvasText;border:1px solid CanvasText;}}'
   ].join('');
+  st.textContent += `
+/* Keep the aiming cue distinct from the larger frame around the animal. */
+.rh-flight-reticle{width:60px;height:60px;filter:drop-shadow(0 1px 1px #020617);}
+.rh-flight-reticle[data-target-state="ready"]{transform:translate(-50%,-50%) scale(.93);}
+.rh-reticle-ring{inset:11px;border-width:1.5px;box-shadow:none;-webkit-mask-image:repeating-conic-gradient(from 12deg,#000 0deg 66deg,transparent 66deg 90deg);mask-image:repeating-conic-gradient(from 12deg,#000 0deg 66deg,transparent 66deg 90deg);}
+.rh-flight-reticle[data-target-state="ready"] .rh-reticle-ring,.rh-flight-reticle[data-target-state="stoop"] .rh-reticle-ring{box-shadow:none;}
+.rh-reticle-dot{width:3px;height:3px;margin:-1.5px 0 0 -1.5px;box-shadow:none;}
+.rh-reticle-tick{box-shadow:none;}
+.rh-reticle-tick-n,.rh-reticle-tick-s{height:7px;}
+.rh-reticle-tick-e,.rh-reticle-tick-w{width:7px;}
+.rh-flight-reticle[data-strike-stage="window"],.rh-flight-reticle[data-strike-stage="throw"]{opacity:1;}
+.rh-flight-reticle[data-strike-stage="window"] .rh-reticle-ring,.rh-flight-reticle[data-strike-stage="throw"] .rh-reticle-ring{border-color:#86efac;box-shadow:none;}
+.rh-flight-reticle[data-strike-stage="window"] .rh-reticle-tick,.rh-flight-reticle[data-strike-stage="throw"] .rh-reticle-tick,.rh-flight-reticle[data-strike-stage="window"] .rh-reticle-dot,.rh-flight-reticle[data-strike-stage="throw"] .rh-reticle-dot{background:#86efac;}
+.rh-target-corner{border-width:1.5px;border-radius:3px;}
+.rh-target-label{border-radius:8px;background:linear-gradient(150deg,rgba(25,52,62,.94),rgba(7,22,33,.96));box-shadow:0 5px 16px #02061740;font-variant-numeric:tabular-nums;}
+.rh-target-status{letter-spacing:.08em;}
+@media(forced-colors:active){.rh-flight-reticle{filter:none;opacity:1;}.rh-reticle-ring{-webkit-mask-image:none;mask-image:none;border:2px solid CanvasText!important;}.rh-reticle-tick,.rh-reticle-dot{background:CanvasText!important;}.rh-target-corner{border-width:2px;}.rh-target-label{background:Canvas;box-shadow:none;}}
+`;
   if (document.head) document.head.appendChild(st);
 })();
 
@@ -1048,11 +1071,228 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
   // lands when prey comes within reach during it. A strike used to need the key on the
   // exact frames the prey sat inside 5-7 m, about 0.2 s in a stoop.
   var RAPTOR_TALON_THROW_MS = 450;
+  // Intersect relative movement with the same reach and forward cone as READY.
+  // The forward vectors interpolate with the bird's turn; the cone polynomial
+  // is quartic, so isolating its roots also finds brief and tangent contacts.
+  function raptorSweptStrikeContact(from, to, forwardFrom, forwardTo, reach, minTime, maxTime) {
+    var low = Math.max(0, minTime || 0), high = Math.min(1, maxTime == null ? 1 : maxTime);
+    if (high < low || !(reach > 0)) return null;
+    var dx = to.x - from.x, dy = to.y - from.y, dz = to.z - from.z;
+    var fx = forwardTo.x - forwardFrom.x, fy = forwardTo.y - forwardFrom.y, fz = forwardTo.z - forwardFrom.z;
+    var relativeSquare = [from.x * from.x + from.y * from.y + from.z * from.z,
+      2 * (from.x * dx + from.y * dy + from.z * dz), dx * dx + dy * dy + dz * dz];
+    var sphereC = relativeSquare[0] - reach * reach;
+    if (relativeSquare[2] < 1e-12) {
+      if (sphereC > 1e-8) return null;
+    } else {
+      var discriminant = relativeSquare[1] * relativeSquare[1] - 4 * relativeSquare[2] * sphereC;
+      if (discriminant < -1e-8) return null;
+      var root = Math.sqrt(Math.max(0, discriminant));
+      low = Math.max(low, (-relativeSquare[1] - root) / (2 * relativeSquare[2]));
+      high = Math.min(high, (-relativeSquare[1] + root) / (2 * relativeSquare[2]));
+      if (high < low - 1e-10) return null;
+      high = Math.max(low, high);
+    }
+    var forwardSquare = [forwardFrom.x * forwardFrom.x + forwardFrom.y * forwardFrom.y + forwardFrom.z * forwardFrom.z,
+      2 * (forwardFrom.x * fx + forwardFrom.y * fy + forwardFrom.z * fz), fx * fx + fy * fy + fz * fz];
+    var alignment = [from.x * forwardFrom.x + from.y * forwardFrom.y + from.z * forwardFrom.z,
+      from.x * fx + from.y * fy + from.z * fz + dx * forwardFrom.x + dy * forwardFrom.y + dz * forwardFrom.z,
+      dx * fx + dy * fy + dz * fz];
+    var cone = [0, 0, 0, 0, 0];
+    for (var a = 0; a < 3; a++) for (var b = 0; b < 3; b++) {
+      cone[a + b] += alignment[a] * alignment[b] - 0.49 * relativeSquare[a] * forwardSquare[b];
+    }
+    function polynomialValue(coefficients, time) {
+      var value = 0;
+      for (var i = coefficients.length - 1; i >= 0; i--) value = value * time + coefficients[i];
+      return value;
+    }
+    function polynomialRoots(coefficients, start, end) {
+      coefficients = coefficients.slice();
+      while (coefficients.length > 1 && Math.abs(coefficients[coefficients.length - 1]) < 1e-12) coefficients.pop();
+      if (coefficients.length < 2) return [];
+      if (coefficients.length === 2) {
+        var linearRoot = -coefficients[0] / coefficients[1];
+        return linearRoot >= start && linearRoot <= end ? [linearRoot] : [];
+      }
+      var derivative = [];
+      for (var i = 1; i < coefficients.length; i++) derivative.push(i * coefficients[i]);
+      var boundaries = [start].concat(polynomialRoots(derivative, start, end), [end]), roots = [];
+      for (var edge = 0; edge < boundaries.length; edge++) {
+        var point = boundaries[edge], value = polynomialValue(coefficients, point);
+        if (Math.abs(value) <= 1e-8) roots.push(point);
+        if (edge === 0) continue;
+        var left = boundaries[edge - 1], right = point, leftValue = polynomialValue(coefficients, left);
+        if (leftValue * value >= 0) continue;
+        for (var step = 0; step < 48; step++) {
+          var middle = (left + right) * 0.5, middleValue = polynomialValue(coefficients, middle);
+          if (leftValue * middleValue <= 0) right = middle;
+          else { left = middle; leftValue = middleValue; }
+        }
+        roots.push((left + right) * 0.5);
+      }
+      return roots;
+    }
+    var boundaries = [low].concat(polynomialRoots(cone, low, high), [high]);
+    boundaries.sort(function(a, b) { return a - b; });
+    for (var i = 0; i < boundaries.length; i++) {
+      var time = boundaries[i], x = from.x + dx * time, y = from.y + dy * time, z = from.z + dz * time;
+      var forwardX = forwardFrom.x + fx * time, forwardY = forwardFrom.y + fy * time, forwardZ = forwardFrom.z + fz * time;
+      var distance = Math.hypot(x, y, z), forwardLength = Math.hypot(forwardX, forwardY, forwardZ);
+      var dot = distance < 1e-8 ? 1 : (x * forwardX + y * forwardY + z * forwardZ) / (distance * forwardLength);
+      if (distance <= reach + 1e-8 && dot >= 0.7 - 1e-9) return { time: time, distance: distance, dot: dot };
+    }
+    return null;
+  }
   // Focus starts when the bird is heading for prey within 40 m and will close the last
   // gap to reach in under 0.9 s at its closing speed.
   function raptorFocusWanted(target, closingSpeed) {
     if (!target || !(target.dot >= 0.55) || !(target.distance < 40) || !(closingSpeed > 2)) return false;
     return Math.max(0, target.distance - target.reach) / closingSpeed < 0.9;
+  }
+  // A restrained preparation pose grows as an aligned approach enters the throw window.
+  function raptorTalonPreparation(target, closingSpeed) {
+    if (!target || target.dot < 0.7 || !(closingSpeed > 0)) return 0;
+    var amount = Math.max(0, Math.min(1, 1 - Math.max(0, target.distance - target.reach) / Math.max(0.1, closingSpeed * 0.55)));
+    return amount * amount * (3 - 2 * amount) * 0.45;
+  }
+  // Presentation follows the throw window without changing physical catch reach.
+  function raptorStrikeStage(target, throwReach, ready, throwing, airborne, onCourse) {
+    if (!airborne) return 'approach';
+    if (throwing) return 'throw';
+    if (!ready) return 'recovering';
+    return target && target.dot >= 0.7 && target.distance <= throwReach && onCourse !== false ? 'window' : 'approach';
+  }
+  function raptorStrikeRangeFill(distance, reach) {
+    if (!(reach > 0) || !isFinite(distance)) return 0;
+    var fill = Math.round(Math.min(1, reach / Math.max(reach, distance)) * 20) / 20;
+    return Math.min(distance > reach ? 0.95 : 1, fill);
+  }
+  function raptorRelativeClosingSpeed(relative, birdVelocity, preyVelocity) {
+    var distance=Math.hypot(relative.x,relative.y,relative.z);
+    return distance>0.001 ? ((birdVelocity.x-preyVelocity.x)*relative.x+
+      (birdVelocity.y-preyVelocity.y)*relative.y+(birdVelocity.z-preyVelocity.z)*relative.z)/distance : 0;
+  }
+  // Fade each pooled airflow stroke in and out before its position wraps.
+  function raptorAirflowFade(progress) {
+    var enter=Math.max(0,Math.min(1,progress/0.18));
+    var leave=Math.max(0,Math.min(1,(1-progress)/0.32));
+    return enter*enter*(3-2*enter)*leave*leave*(3-2*leave);
+  }
+  // Preserve pigment while lifting dark feathers in dim habitats and defining
+  // white contours over bright, matching ground. Contour shading fades at dusk.
+  function raptorPlumageContrast(lightTerm, bodyLuminance, backgroundLuminance, daylight) {
+    var body=Math.max(0,Math.min(1,bodyLuminance)),background=Math.max(0,Math.min(1,backgroundLuminance));
+    var matching=Math.max(0,1-Math.abs(body-background)/0.25);
+    var brightScene=Math.max(0,Math.min(1,(daylight-0.25)/0.6));
+    return {shadowFill:Math.min(0.20,Math.max(0,lightTerm-0.06)*1.6*(1-body)*(0.55+matching*0.45)),
+      edgeShade:matching*body*0.46*brightScene};
+  }
+  // Write a bounded prey-motion arrow into the existing guide buffer, after its tether.
+  function writeRaptorPreyMotionArrow(points, position, velocity, seconds) {
+    var speed=Math.hypot(velocity.x,velocity.y,velocity.z);
+    if(speed<0.75 || !(seconds>0)) return 2;
+    var length=Math.min(4,speed*seconds),nx=velocity.x/speed,ny=velocity.y/speed,nz=velocity.z/speed;
+    var sideLength=Math.hypot(nx,nz),sx=sideLength>0.001 ? -nz/sideLength : 1,sz=sideLength>0.001 ? nx/sideLength : 0;
+    var x=position.x,y=position.y+0.25,z=position.z,tx=x+nx*length,ty=y+ny*length,tz=z+nz*length;
+    var head=Math.min(0.42,length*0.35),width=head*0.65;
+    points[6]=x;points[7]=y;points[8]=z;points[9]=tx;points[10]=ty;points[11]=tz;
+    points[12]=tx;points[13]=ty;points[14]=tz;
+    points[15]=tx-nx*head+sx*width;points[16]=ty-ny*head;points[17]=tz-nz*head+sz*width;
+    points[18]=tx;points[19]=ty;points[20]=tz;
+    points[21]=tx-nx*head-sx*width;points[22]=ty-ny*head;points[23]=tz-nz*head-sz*width;
+    return 8;
+  }
+  // The first crossing of the existing 1.5 m flight floor bounds a strike sweep.
+  // Split at the rendered grid and triangle edges; terrain is linear on each interval.
+  function raptorTerrainCrossing(from, to, sampleHeight, clearance, cellSize, halfSize) {
+    function gap(time) {
+      return from.y + (to.y - from.y) * time - sampleHeight(
+        from.x + (to.x - from.x) * time, from.z + (to.z - from.z) * time) - clearance;
+    }
+    if (gap(0) < -1e-8) return { time: 0, x: from.x, y: from.y, z: from.z };
+    var cuts = [0,1];
+    if (cellSize > 0 && halfSize > 0) {
+      function gridCuts(a,b,offset,low,high,start,end) {
+        if (Math.abs(b-a)<1e-10) return;
+        var first=Math.max(low,Math.ceil((Math.min(a,b)+offset)/cellSize));
+        var last=Math.min(high,Math.floor((Math.max(a,b)+offset)/cellSize));
+        for(var k=first;k<=last;k++) {
+          var t=start+(end-start)*(k*cellSize-offset-a)/(b-a);
+          if(t>start+1e-10&&t<end-1e-10)cuts.push(t);
+        }
+      }
+      var cells=Math.round(2*halfSize/cellSize);
+      gridCuts(from.x,to.x,halfSize,0,cells,0,1);
+      gridCuts(from.z,to.z,halfSize,0,cells,0,1);
+      cuts.sort(function(a,b){return a-b;});
+      var axisCuts=cuts.slice();
+      function clampedSum(t) {
+        return Math.max(-halfSize,Math.min(halfSize,from.x+(to.x-from.x)*t))+
+          Math.max(-halfSize,Math.min(halfSize,from.z+(to.z-from.z)*t));
+      }
+      for(var edge=1;edge<axisCuts.length;edge++) {
+        var a=axisCuts[edge-1],b=axisCuts[edge];
+        gridCuts(clampedSum(a),clampedSum(b),2*halfSize,0,2*cells,a,b);
+      }
+      cuts.sort(function(a,b){return a-b;});
+    }
+    var left=cuts[0],leftGap=gap(left);
+    for(var i=1;i<cuts.length;i++) {
+      var right=cuts[i],rightGap=gap(right);
+      if(rightGap<0 || (rightGap<=1e-8&&leftGap>1e-8)) {
+        var time=leftGap<=0 ? left : left+(right-left)*leftGap/(leftGap-rightGap);
+        return {time:time,x:from.x+(to.x-from.x)*time,
+          y:from.y+(to.y-from.y)*time,z:from.z+(to.z-from.z)*time};
+      }
+      left=right;leftGap=rightGap;
+    }
+    return null;
+  }
+  // Integrate only the part of a frame after contact, at the catch's reduced speed.
+  // The pullout uses the same G and pitch limits as the normal flight controls.
+  function raptorCatchFlightStep(position, yaw, pitch, speed, maxG, dt, windX, windZ, verticalDrift) {
+    dt = Math.max(0, dt);
+    var rate = Math.min(1.5, Math.max(1.5, Math.min(30, maxG || 5))*9.81/Math.max(8,speed));
+    var turning = Math.min(dt, Math.max(0, (0.15-pitch)/rate));
+    var finalPitch = pitch + rate*turning;
+    var horizontal = speed*(Math.sin(finalPitch)-Math.sin(pitch))/rate + speed*Math.cos(finalPitch)*(dt-turning);
+    var vertical = speed*(Math.cos(pitch)-Math.cos(finalPitch))/rate + speed*Math.sin(finalPitch)*(dt-turning);
+    return { x: position.x + Math.sin(yaw)*horizontal + (windX || 0)*dt,
+      y: position.y + vertical + (verticalDrift || 0)*dt,
+      z: position.z - Math.cos(yaw)*horizontal + (windZ || 0)*dt, pitch: finalPitch };
+  }
+  // Four floats per pooled particle: opacity, size, rotation, and width.
+  // Kind 0 is dust, 1 is a feather, and 2 is a water droplet.
+  function writeRaptorCatchParticleStyle(buffer, offset, age, index, kind) {
+    age = Math.max(0, age);
+    var variation = ((index * 7) % 11) / 10;
+    var lifetime = kind === 1 ? 0.84 + variation * 0.32 : kind === 2 ? 0.60 + variation * 0.30 : 0.66 + variation * 0.36;
+    var enter = Math.min(1, age / 0.045);
+    var leave = Math.max(0, Math.min(1, (lifetime - age) / (lifetime * 0.70)));
+    enter = enter * enter * (3 - 2 * enter);
+    leave = leave * leave * (3 - 2 * leave);
+    buffer[offset] = enter * leave;
+    buffer[offset + 1] = (kind === 2 ? 0.46 + variation * 0.26 : 0.70 + variation * 0.38) * (0.72 + enter * 0.28) * (0.78 + leave * 0.22);
+    buffer[offset + 2] = index * 2.399963 + age * (kind === 1 ? (index % 2 ? -2.2 : 2.2) : 0.35);
+    buffer[offset + 3] = kind === 1 ? 0.28 + variation * 0.08 : kind === 2 ? 0.64 : 1;
+  }
+  // Keep distant prey easy to find, then clear the silhouette near the strike.
+  function raptorTargetHighlightStrength(distance, reach) {
+    var near = Math.max(6, (Number(reach) || 5) * 1.4);
+    var progress = Math.max(0, Math.min(1, (distance - near) / 32));
+    return progress * progress * (3 - 2 * progress);
+  }
+  function raptorCarryOpacity(ageMs, reducedMotion) {
+    if (ageMs >= 1100) return 0;
+    if (reducedMotion) return 1;
+    var progress = Math.max(0, Math.min(1, (ageMs-900)/200));
+    return 1-progress*progress*(3-2*progress);
+  }
+  // Each pooled contact ring fades independently; water ripples last a little longer.
+  function raptorContactPulseOpacity(age, water, reducedMotion) {
+    var remaining = 1 - Math.max(0, Math.min(1, age / (water ? 0.9 : 0.5)));
+    return (reducedMotion ? 0.18 : water ? 0.38 : 0.30) * remaining * remaining * (3 - 2 * remaining);
   }
   // Eases the flight clock toward the wanted rate over about a fifth of a second of real time.
   function raptorEaseTimeScale(current, wanted, realDt) {
@@ -9126,6 +9366,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         tutorialSignals: {},
         targetAnnouncement: '',
         targetState: 'search',
+        strikeStage: 'approach',
         targetHint: 'Scan ahead for prey',
         targetAlign: 0,
         targetRange: 0,
@@ -9241,7 +9482,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         { signal: 'altitude', title: 'Manage altitude', copy: 'Hold ' + controlLabel('dive') + ' to dive or ' + controlLabel('pullUp') + ' to pull up.' + (controlPair('altUp', 'altDown') ? ' ' + controlPair('altUp', 'altDown') + ' trims altitude precisely.' : '') },
         { signal: 'acuity', title: 'Look with raptor eyes', copy: 'Prey are small at 100 m, as they are for a real raptor. Press ' + (controlLabel('zoom') || 'Zoom') + ' for acuity zoom: the view narrows to a raptor\'s central fovea.' },
         { signal: 'target', title: 'Acquire prey', copy: 'Turn until the target assist brackets prey. Follow the text cue above.' },
-        { signal: 'strike', title: 'Commit to the strike', copy: 'Close the distance, then press ' + controlLabel('strike') + ' (Strike) or click the prey when the cue says Strike ready. A moment early still counts: the talons stay out for about half a second.' }
+        { signal: 'strike', title: 'Commit to the strike', copy: 'Close the distance, then press ' + controlLabel('strike') + ' (Strike) or click the prey when the cue says STRIKE WINDOW or READY. A moment early still counts: the talons stay out for about half a second.' }
       ];
       function finishHuntTutorial(message) {
         setTutorialStep(-1);
@@ -11660,7 +11901,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             )
           ) : h('div', { className: 'rh-active-flight-bar', 'data-raptor-active-flight': 'true' },
             h('div', { className: 'text-3xl', 'aria-hidden': 'true' }, flightSpecies.emoji),
-            h('div', { className: 'min-w-0 flex-1' },
+            h('div', { className: 'rh-active-flight-copy min-w-0 flex-1' },
               h('div', { className: 'text-sm font-bold text-white' }, flightSpecies.name + ' · ' + flightMission.name),
               h('div', { className: 'text-xs text-cyan-100 mt-0.5 truncate' }, flightMission.objective)
             ),
@@ -11764,6 +12005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                     h('div', {
                       className: 'rh-flight-reticle',
                       'data-target-state': simUI.targetState || 'search',
+                      'data-strike-stage': simUI.strikeStage || 'approach',
                       'data-raptor-reticle': 'true',
                       'aria-hidden': 'true'
                     },
@@ -12188,6 +12430,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                       !thermalFlight && h('button', {
                         type: 'button',
                         className: 'rh-flight-btn rh-flight-btn-strike',
+                        onPointerDown: function(event) {
+                          if (event.button === 0 && event.isPrimary !== false) event.preventDefault();
+                        },
                         onClick: function(event) { sendHuntCommandFromControl(event, 'strike'); },
                         disabled: !!strikeButtonState,
                         'data-raptor-cue': strikeButtonState ? undefined : (simUI.controlCues || {}).strike || undefined,
@@ -12756,6 +13001,60 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           shader.vertexShader = 'varying vec3 vRhWorld;\n' + shader.vertexShader;
           shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>', '#include <worldpos_vertex>\n vec4 rhSurfacePosition=vec4(transformed,1.0);\n #ifdef USE_INSTANCING\n rhSurfacePosition=instanceMatrix*rhSurfacePosition;\n #endif\n vRhWorld=(modelMatrix*rhSurfacePosition).xyz;');
         }
+        // One shared atmosphere for terrain, rock, snow, and instanced vegetation.
+        // Height changes the middle distance only; the near field stays clear and
+        // the world edge still dissolves completely into the sky. No extra passes.
+        var landscapeAtmosphere = {
+          strength: { value: 1 }, zenith: { value: new THREE.Color() }
+        };
+        var foliageTransmission = { value: 1 };
+        function applyLandscapeAtmosphere(material, hasSurfaceWorld) {
+          var previousCompile = material.onBeforeCompile;
+          var previousKey = material.customProgramCacheKey();
+          material.onBeforeCompile = function(shader) {
+            previousCompile.call(this, shader);
+            shader.uniforms.rhAerialStrength = landscapeAtmosphere.strength;
+            shader.uniforms.rhAerialZenith = landscapeAtmosphere.zenith;
+            // Surface-detail shaders already supply world position; reuse it to
+            // avoid another varying on devices with small WebGL limits.
+            if (!hasSurfaceWorld) {
+              shader.vertexShader = 'varying vec3 vRhAerialWorld;\n' + shader.vertexShader;
+              shader.vertexShader = shader.vertexShader.replace('#include <worldpos_vertex>', [
+                '#include <worldpos_vertex>',
+                'vec4 aerialPosition=vec4(transformed,1.0);',
+                '#ifdef USE_INSTANCING',
+                'aerialPosition=instanceMatrix*aerialPosition;',
+                '#endif',
+                'vRhAerialWorld=(modelMatrix*aerialPosition).xyz;'
+              ].join('\n'));
+            }
+            shader.fragmentShader = (hasSurfaceWorld ? '' : 'varying vec3 vRhAerialWorld;\n') + 'uniform float rhAerialStrength; uniform vec3 rhAerialZenith;\n' + shader.fragmentShader;
+            shader.fragmentShader = shader.fragmentShader.replace('#include <fog_fragment>', [
+              '#ifdef USE_FOG',
+              hasSurfaceWorld ? 'vec3 aerialWorld=vRhWorld;' : 'vec3 aerialWorld=vRhAerialWorld;',
+              '#ifdef FOG_EXP2',
+              'float aerialBase=1.0-exp(-fogDensity*fogDensity*fogDepth*fogDepth);',
+              'float aerialFog=aerialBase;',
+              '#else',
+              'float aerialBase=smoothstep(fogNear,fogFar,fogDepth);',
+              'vec3 aerialRay=aerialWorld-cameraPosition;',
+              // Radial distance keeps haze stable when the player turns the camera.
+              'float aerialRange=smoothstep(fogNear,fogFar,length(aerialRay));',
+              'float aerialHeight=smoothstep(12.0,115.0,(max(aerialWorld.y,0.0)+max(cameraPosition.y,0.0))*0.5);',
+              'float aerialFog=aerialRange+aerialRange*(1.0-aerialRange)*(0.32-0.62*aerialHeight);',
+              '#endif',
+              // Fog runs after r128 output encoding: both colors use that same space.
+              'float aerialElevation=max(0.0,normalize(aerialWorld-cameraPosition).y);',
+              'vec3 aerialColor=mix(rhAerialZenith,fogColor,exp(-aerialElevation*10.0));',
+              'gl_FragColor.rgb=mix(gl_FragColor.rgb,mix(fogColor,aerialColor,rhAerialStrength),mix(aerialBase,aerialFog,rhAerialStrength));',
+              '#endif'
+            ].join('\n'));
+            material.userData.aerialCompiled = true;
+          };
+          material.customProgramCacheKey = function() { return previousKey + '-aerial-v1-' + (hasSurfaceWorld ? 'surface' : 'plant'); };
+          material.userData.aerialStrength = landscapeAtmosphere.strength;
+          material.userData.aerialZenith = landscapeAtmosphere.zenith;
+        }
         function detailLandscapeMaterial(material, rock) {
           material.extensions=Object.assign({},material.extensions,{derivatives:true});
           material.onBeforeCompile = function(shader) {
@@ -12774,8 +13073,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               'float grit=mix(0.5,rhNoise(groundUV*1.7),surfaceDetail);',
               rock
                 ? 'float mineral=rhNoise(groundUV*0.18+vRhWorld.y*0.08); float seam=1.0-smoothstep(0.04,0.18,abs(sin(vRhWorld.y*0.32+macro*5.0))); diffuseColor.rgb*=0.67+macro*0.50+grit*0.10-seam*0.065; diffuseColor.rgb=mix(diffuseColor.rgb,diffuseColor.rgb*vec3(1.10,0.98,0.86),mineral*0.28);'
-                : 'float fine=rhFbm(groundUV*0.45); float slope=1.0-abs(normalize(vRhLandNormal).y); float exposed=smoothstep(0.10,0.42,slope+(macro-0.5)*0.13); diffuseColor.rgb*=0.42+macro*0.32+fine*0.18+grit*0.06; vec3 bedrock=vec3(0.19,0.175,0.15)*(0.72+macro*0.4+grit*0.1); diffuseColor.rgb=mix(diffuseColor.rgb,bedrock,exposed*0.82);'
+                : 'float fine=mix(0.5,rhFbm(groundUV*0.45),surfaceDetail); float slope=1.0-abs(normalize(vRhLandNormal).y); float exposed=smoothstep(0.10,0.42,slope+(macro-0.5)*0.13); diffuseColor.rgb*=0.40+macro*0.42+fine*0.16+grit*0.05; vec3 bedrock=vec3(0.19,0.175,0.15)*(0.72+macro*0.4+grit*0.1); diffuseColor.rgb=mix(diffuseColor.rgb,bedrock,exposed*0.82);'
             ].join('\n'));
+            if(!rock){
+              // Reuse the filtered surface samples for relief, rather than adding geometry.
+              shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',[
+                '#include <normal_fragment_maps>',
+                'float groundRelief=(fine*0.16+grit*0.018)*surfaceDetail*(1.0-exposed*0.6);',
+                'vec3 groundDx=dFdx(-vViewPosition),groundDy=dFdy(-vViewPosition);',
+                'vec3 groundR1=cross(groundDy,normal),groundR2=cross(normal,groundDx);',
+                'float groundDet=dot(groundDx,groundR1);',
+                'normal=normalize(abs(groundDet)*normal-sign(groundDet)*(dFdx(groundRelief)*groundR1+dFdy(groundRelief)*groundR2));'
+              ].join('\n'));
+              if(species.biome!=='tundra') shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',
+                '#include <color_fragment>\nfloat meadowDry=smoothstep(0.40,0.72,macro)*(1.0-exposed);\ndiffuseColor.rgb*=mix(vec3(0.94,1.025,0.93),vec3(1.12,1.025,0.88),meadowDry);');
+            }
             if(!rock && species.biome==='lake'){
               shader.fragmentShader=shader.fragmentShader.replace('#include <color_fragment>',[
                 '#include <color_fragment>',
@@ -12787,14 +13099,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             }
             if(rock) shader.fragmentShader=shader.fragmentShader.replace('#include <normal_fragment_maps>',[
               '#include <normal_fragment_maps>',
-              'float rockRelief=rhFbm((vRhWorld.xz+vRhWorld.y*vec2(0.31,0.19))*0.55)*0.18;',
+              'float rockRelief=rhFbm((vRhWorld.xz+vRhWorld.y*vec2(0.31,0.19))*0.55)*0.18*surfaceDetail;',
               'vec3 rockDx=dFdx(-vViewPosition),rockDy=dFdy(-vViewPosition);',
               'vec3 rockR1=cross(rockDy,normal),rockR2=cross(normal,rockDx);',
               'float rockDet=dot(rockDx,rockR1);',
               'normal=normalize(abs(rockDet)*normal-sign(rockDet)*(dFdx(rockRelief)*rockR1+dFdy(rockRelief)*rockR2));'
             ].join('\n'));
           };
-          material.customProgramCacheKey = function() { return rock ? 'raptor-rock-v3' : species.biome==='lake'?'raptor-ground-wet-bank-v1':'raptor-ground-v2'; };
+          material.customProgramCacheKey = function() { return rock ? 'raptor-rock-v4' : 'raptor-ground-relief-v3-'+species.biome; };
+          applyLandscapeAtmosphere(material, true);
         }
 
         // ─── Terrain: large displaced plane ───
@@ -12994,6 +13307,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             ].join('\n'));
           };
           material.customProgramCacheKey=function(){return 'raptor-snowline-v2';};
+          applyLandscapeAtmosphere(material, true);
         }
         var horizonGroup = new THREE.Group();
         var horizonCount = qualityProfile.clouds >= 1 ? 8 : qualityProfile.clouds >= 0.7 ? 6 : 4;
@@ -13521,11 +13835,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           });
         });
         var trunkCount = treePlacements.reduce(function(total, batch) { return total + batch.length; }, 0);
+        // Bake soft canopy occlusion into the terrain's ambient light once. Sampling
+        // the terrain UVs keeps this contact shading attached even on steep slopes.
+        var forestShadeCanvas=document.createElement('canvas');
+        forestShadeCanvas.width=forestShadeCanvas.height=1024;
+        var forestShadeContext=forestShadeCanvas.getContext('2d');
+        forestShadeContext.fillStyle='#ffffff';forestShadeContext.fillRect(0,0,1024,1024);
+        treePlacements.forEach(function(batch){batch.forEach(function(tree){
+          var px=(tree.x/terrainSize+0.5)*1024,pz=(tree.z/terrainSize+0.5)*1024;
+          var radius=Math.max(2.5,tree.height*0.3)/terrainSize*1024;
+          var shade=forestShadeContext.createRadialGradient(px,pz,0,px,pz,radius);
+          shade.addColorStop(0,'rgba(0,0,0,.58)');shade.addColorStop(0.25,'rgba(0,0,0,.34)');shade.addColorStop(1,'rgba(0,0,0,0)');
+          forestShadeContext.fillStyle=shade;forestShadeContext.fillRect(px-radius,pz-radius,radius*2,radius*2);
+        });});
+        var forestShadeTexture=new THREE.CanvasTexture(forestShadeCanvas);
+        forestShadeTexture.name='raptor-canopy-occlusion';
+        terrainGeo.setAttribute('uv2',terrainGeo.attributes.uv);
+        terrain.material.aoMap=forestShadeTexture;terrain.material.aoMapIntensity=0.85;
         var trunkMaterial = new THREE.MeshStandardMaterial({
           color: species.biome === 'tundra' ? 0x44403c : 0x4a2c1a,
           roughness: 0.95
         });
         trunkMaterial.color.convertSRGBToLinear();
+        applyLandscapeAtmosphere(trunkMaterial);
         var trunkInstances = new THREE.InstancedMesh(
           new THREE.CylinderGeometry(0.7, 1, 1, 6),
           trunkMaterial,
@@ -13587,7 +13919,32 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               kind==='reed'?'transformed*=1.0-smoothstep(190.0,300.0,distance(cameraPosition,plantOrigin));':kind==='grass'?'transformed*=1.0-smoothstep(105.0,180.0,distance(cameraPosition,plantOrigin));':''
             ].join('\n'));
           };
-          material.customProgramCacheKey=function(){return 'raptor-vegetation-wind-v1-'+kind;};
+          if (!material.isMeshDepthMaterial) {
+            var windCompile = material.onBeforeCompile;
+            material.onBeforeCompile = function(shader) {
+              windCompile.call(this, shader);
+              shader.uniforms.rhCanopySun = skyAtmosphere.sun;
+              shader.uniforms.rhCanopyDay = skyAtmosphere.day;
+              shader.uniforms.rhCanopyCloud = skyAtmosphere.cloud;
+              shader.uniforms.rhCanopyTransmission = foliageTransmission;
+              shader.fragmentShader = 'uniform vec3 rhCanopySun; uniform float rhCanopyDay,rhCanopyCloud,rhCanopyTransmission;\n' + shader.fragmentShader;
+              shader.fragmentShader = shader.fragmentShader.replace('#include <emissivemap_fragment>', [
+                '#include <emissivemap_fragment>',
+                // The mapped leaf color keeps branch detail in transmitted light.
+                // View-space sun direction also follows banked and orbiting cameras.
+                'vec3 canopySunView=normalize((viewMatrix*vec4(rhCanopySun,0.0)).xyz);',
+                'float canopyBacklight=pow(max(dot(normalize(-vViewPosition),canopySunView),0.0),4.0);',
+                'float canopyLight=rhCanopyTransmission*rhCanopyDay*(1.0-rhCanopyCloud*0.78)*(0.24+canopyBacklight*0.60);',
+                species.biome === 'tundra'
+                  ? 'totalEmissiveRadiance+=diffuseColor.rgb*canopyLight*vec3(0.86,0.94,1.0);'
+                  : 'totalEmissiveRadiance+=diffuseColor.rgb*canopyLight*vec3(0.70,1.0,0.48);'
+              ].join('\n'));
+              material.userData.transmissionCompiled = true;
+            };
+            material.userData.foliageTransmission = foliageTransmission;
+          }
+          material.customProgramCacheKey=function(){return 'raptor-vegetation-wind-v2-'+kind+'-'+species.biome;};
+          if (!material.isMeshDepthMaterial) applyLandscapeAtmosphere(material);
         }
         function canopyTexture(broadleaf) {
           var canvas=document.createElement('canvas');canvas.width=canvas.height=512;
@@ -15026,6 +15383,34 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           };
           tail.material.customProgramCacheKey=function(){return 'raptor-tail-bands-v1';};
         }
+        // Share visibility support across contour and flight feathers. White birds
+        // need shaded contours over snow; dark birds need a little fill at night.
+        // One lighting adjustment reaches the existing body and batched feathers,
+        // composed after their field-mark shaders without adding scene objects.
+        var plumageContrast={value:new THREE.Vector3(0,0,1)};
+        var plumageContrastMaterials=[];
+        function finishRaptorPlumageContrast(material) {
+          if(!material || plumageContrastMaterials.indexOf(material)!==-1) return;
+          var previousCompile=material.onBeforeCompile,programKey=material.customProgramCacheKey();
+          material.onBeforeCompile=function(shader,renderer) {
+            previousCompile.call(this,shader,renderer);
+            shader.uniforms.rhPlumageContrast=plumageContrast;
+            shader.fragmentShader='uniform vec3 rhPlumageContrast;\n'+shader.fragmentShader;
+            shader.fragmentShader=shader.fragmentShader.replace('#include <emissivemap_fragment>',[
+              '#include <emissivemap_fragment>',
+              'float rhPlumageEdge=pow(1.0-abs(dot(normal,normalize(vViewPosition))),2.0);',
+              'totalEmissiveRadiance+=diffuseColor.rgb*vec3(0.78,0.87,1.0)*rhPlumageContrast.x*rhPlumageContrast.z*(0.72+rhPlumageEdge*0.28);'
+            ].join('\n'));
+            shader.fragmentShader=shader.fragmentShader.replace('gl_FragColor = vec4( outgoingLight, diffuseColor.a );',
+              'outgoingLight*=1.0-rhPlumageContrast.y*rhPlumageContrast.z*(0.35+rhPlumageEdge*0.65);\ngl_FragColor = vec4( outgoingLight, diffuseColor.a );');
+            material.userData.plumageContrastCompiled=true;
+          };
+          material.customProgramCacheKey=function(){return programKey+'-plumage-contrast-v1';};
+          material.userData.plumageContrastUniform=plumageContrast;
+          plumageContrastMaterials.push(material);
+        }
+        [body.material,head.material,wingMat,layeredFeatherMaterial,fingerMat,tail.material,
+          facialDisc&&facialDisc.material,earTufts&&earTufts.material,eyeSurrounds.material].forEach(finishRaptorPlumageContrast);
         // Cornell Bird Academy: most raptors use three forward toes and a hallux;
         // owls and ospreys can adopt two forward/two back. This is one visual
         // arrangement, not an outer-toe articulation or grip-force simulation.
@@ -15246,6 +15631,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var STRIKE_FX_LIFETIME = 1.2;
         var strikeFxPositions = new Float32Array(STRIKE_FX_CAPACITY * 3);
         var strikeFxVelocities = new Float32Array(STRIKE_FX_CAPACITY * 3);
+        var strikeFxColors = new Float32Array(STRIKE_FX_CAPACITY * 3);
+        var strikeFxStyles = new Float32Array(STRIKE_FX_CAPACITY * 4);
+        var strikeFxSlotKinds = new Uint8Array(STRIKE_FX_SLOT_COUNT);
+        var strikeFxTint = new THREE.Color(), strikeFxWarm = new THREE.Color(0xfde68a);
         var strikeFxSlotAges = new Float32Array(STRIKE_FX_SLOT_COUNT);
         var strikeFxSlotCounts = new Uint8Array(STRIKE_FX_SLOT_COUNT);
         var strikeFxSlotActive = new Uint8Array(STRIKE_FX_SLOT_COUNT);
@@ -15255,33 +15644,58 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           strikeFxPositionAttribute.setUsage(THREE.DynamicDrawUsage);
         }
         strikeFxGeometry.setAttribute('position', strikeFxPositionAttribute);
+        var strikeFxColorAttribute = new THREE.BufferAttribute(strikeFxColors,3);
+        if (strikeFxColorAttribute.setUsage && THREE.DynamicDrawUsage) strikeFxColorAttribute.setUsage(THREE.DynamicDrawUsage);
+        strikeFxGeometry.setAttribute('color',strikeFxColorAttribute);
+        var strikeFxStyleAttribute = new THREE.BufferAttribute(strikeFxStyles, 4);
+        if (strikeFxStyleAttribute.setUsage && THREE.DynamicDrawUsage) strikeFxStyleAttribute.setUsage(THREE.DynamicDrawUsage);
+        strikeFxGeometry.setAttribute('catchStyle', strikeFxStyleAttribute);
         strikeFxGeometry.setDrawRange(0, STRIKE_FX_CAPACITY);
         var strikeFxMaterial = new THREE.PointsMaterial({
-          color: 0xfde68a,
-          size: 1.35,
+          color: 0xffffff, vertexColors:true,
+          size: 0.58,
           transparent: true,
-          opacity: 0.92,
-          blending: THREE.AdditiveBlending,
+          opacity: 0.72,
+          blending: THREE.NormalBlending,
           depthWrite: false,
           sizeAttenuation: true
         });
+        strikeFxMaterial.onBeforeCompile = function(shader) {
+          shader.vertexShader = 'attribute vec4 catchStyle; varying vec3 vCatchStyle;\n' + shader.vertexShader;
+          shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvCatchStyle = vec3(catchStyle.x, catchStyle.z, catchStyle.w);');
+          shader.vertexShader = shader.vertexShader.replace('gl_PointSize = size;', 'gl_PointSize = size * catchStyle.y;');
+          shader.fragmentShader = 'varying vec3 vCatchStyle;\n' + shader.fragmentShader;
+          shader.fragmentShader = shader.fragmentShader.replace('#include <map_particle_fragment>', '#include <map_particle_fragment>\nvec2 catchPoint = gl_PointCoord - vec2(0.5);\nfloat catchCos = cos(vCatchStyle.y), catchSin = sin(vCatchStyle.y);\nvec2 catchRotated = vec2(catchCos * catchPoint.x - catchSin * catchPoint.y, catchSin * catchPoint.x + catchCos * catchPoint.y);\nfloat catchRadius = length(vec2(catchRotated.x / max(0.1, vCatchStyle.z), catchRotated.y));\ndiffuseColor.a *= vCatchStyle.x * (1.0 - smoothstep(0.32, 0.5, catchRadius));');
+          strikeFxMaterial.userData.catchStyleCompiled = true;
+        };
+        strikeFxMaterial.customProgramCacheKey = function() { return 'raptor-catch-flecks-v1'; };
         var strikeFxPoints = new THREE.Points(strikeFxGeometry, strikeFxMaterial);
         strikeFxPoints.name = 'raptor-strike-particle-pool';
         strikeFxPoints.frustumCulled = false;
         strikeFxPoints.visible = false;
         scene.add(strikeFxPoints);
 
-        var strikeContactGeometry = new THREE.RingGeometry(0.62, 1, 24);
+        var strikeContactGeometry = new THREE.RingGeometry(0.84, 1, 32);
+        var strikeContactOpacities = new Float32Array(STRIKE_FX_SLOT_COUNT);
+        var strikeContactOpacityAttribute = new THREE.InstancedBufferAttribute(strikeContactOpacities, 1);
+        if (strikeContactOpacityAttribute.setUsage && THREE.DynamicDrawUsage) strikeContactOpacityAttribute.setUsage(THREE.DynamicDrawUsage);
+        strikeContactGeometry.setAttribute('strikeOpacity', strikeContactOpacityAttribute);
         var strikeContactMaterial = new THREE.MeshBasicMaterial({
-          color: 0xfde68a,
+          color: 0xffffff,
           transparent: true,
-          opacity: 0.70,
+          opacity: 1,
           side: THREE.DoubleSide,
           depthWrite: false,
           polygonOffset: true,
           polygonOffsetFactor: -2,
           polygonOffsetUnits: -2
         });
+        strikeContactMaterial.onBeforeCompile = function(shader) {
+          shader.vertexShader = 'attribute float strikeOpacity; varying float vStrikeOpacity;\n' + shader.vertexShader;
+          shader.vertexShader = shader.vertexShader.replace('#include <begin_vertex>', '#include <begin_vertex>\nvStrikeOpacity = strikeOpacity;');
+          shader.fragmentShader = 'varying float vStrikeOpacity;\n' + shader.fragmentShader;
+          shader.fragmentShader = shader.fragmentShader.replace('vec4 diffuseColor = vec4( diffuse, opacity );', 'vec4 diffuseColor = vec4( diffuse, opacity );\ndiffuseColor.a *= vStrikeOpacity;');
+        };
         var strikeContactMesh = new THREE.InstancedMesh(
           strikeContactGeometry,
           strikeContactMaterial,
@@ -15311,6 +15725,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           strikeContactDummy.scale.setScalar(0.0001);
           strikeContactDummy.updateMatrix();
           strikeContactMesh.setMatrixAt(strikeContactInit, strikeContactDummy.matrix);
+          strikeContactMesh.setColorAt(strikeContactInit,strikeFxWarm);
         }
         strikeContactMesh.instanceMatrix.needsUpdate = true;
         function strikeFxRandom() {
@@ -15321,15 +15736,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var start = slotIndex * STRIKE_FX_PER_SLOT;
           for (var localIndex = 0; localIndex < STRIKE_FX_PER_SLOT; localIndex++) {
             strikeFxPositions[(start + localIndex) * 3 + 1] = -10000;
+            strikeFxStyles[(start + localIndex) * 4] = 0;
           }
+          strikeFxStyleAttribute.needsUpdate = true;
           strikeFxSlotActive[slotIndex] = 0;
           strikeFxSlotCounts[slotIndex] = 0;
+          strikeContactOpacities[slotIndex] = 0;
+          strikeContactOpacityAttribute.needsUpdate = true;
           strikeContactDummy.position.set(0, -10000, 0);
           strikeContactDummy.scale.setScalar(0.0001);
           strikeContactDummy.updateMatrix();
           strikeContactMesh.setMatrixAt(slotIndex, strikeContactDummy.matrix);
         }
-        function spawnCatchFx(x, y, z, preyColor, surfaceMode) {
+        function spawnCatchFx(x, y, z, preyColor, surfaceMode, preyKind) {
           var slotIndex = strikeFxNextSlot;
           strikeFxNextSlot = (strikeFxNextSlot + 1) % STRIKE_FX_SLOT_COUNT;
           if (strikeFxSlotActive[slotIndex]) strikeFxRecycleCount++;
@@ -15339,10 +15758,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           );
           strikeFxSlotActive[slotIndex] = 1;
           strikeFxSlotWater[slotIndex] =
-            surfaceMode === 'water-surface' || surfaceMode === 'subsurface' ? 1 : 0;
+            (surfaceMode === 'water-surface' || surfaceMode === 'subsurface') && y < 0.7 ? 1 : 0;
+          strikeFxSlotKinds[slotIndex] = strikeFxSlotWater[slotIndex] ? 2 : preyKind === 'bird' ? 1 : 0;
           strikeFxSlotCounts[slotIndex] = fxCount;
           strikeFxSlotAges[slotIndex] = 0;
+          strikeContactOpacities[slotIndex] = raptorContactPulseOpacity(0, !!strikeFxSlotWater[slotIndex], _rmFX);
+          strikeContactOpacityAttribute.needsUpdate = true;
           strikeFxSpawnCount++;
+          strikeFxTint.setHex(strikeFxSlotWater[slotIndex]?0xb7e7ef:(preyColor||0xfde68a));
+          if (!strikeFxSlotWater[slotIndex]) strikeFxTint.lerp(strikeFxWarm,0.40);
+          strikeContactMesh.setColorAt(slotIndex,strikeFxTint);strikeContactMesh.instanceColor.needsUpdate=true;
           var speedRatio = raptor ? Math.max(0, Math.min(1, raptor.speed / Math.max(1, raptor.stoopMax))) : 0;
           var strikeEnergy = Math.min(1, 0.38 + speedRatio * 0.42 + (raptor && raptor.diving ? 0.20 : 0));
           var forwardX = raptor ? Math.sin(raptor.yaw) * Math.cos(raptor.pitch) : 0;
@@ -15353,9 +15778,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var start = slotIndex * STRIKE_FX_PER_SLOT;
           for (var localIndex = 0; localIndex < STRIKE_FX_PER_SLOT; localIndex++) {
             var base = (start + localIndex) * 3;
+            strikeFxColors[base]=strikeFxTint.r;strikeFxColors[base+1]=strikeFxTint.g;strikeFxColors[base+2]=strikeFxTint.b;
+            writeRaptorCatchParticleStyle(strikeFxStyles, (start + localIndex) * 4, 0, localIndex, strikeFxSlotKinds[slotIndex]);
             if (localIndex < fxCount) {
               var angle = strikeFxRandom() * Math.PI * 2;
-              var radial = 2.4 + strikeFxRandom() * 5.2;
+              var radial = strikeFxSlotKinds[slotIndex] === 1 ? 1.5 + strikeFxRandom() * 3.8 : 1.8 + strikeFxRandom() * 4.0;
               strikeFxPositions[base] = x;
               strikeFxPositions[base + 1] = y;
               strikeFxPositions[base + 2] = z;
@@ -15370,6 +15797,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (strikeFxSlotWater[slotIndex]) {
             contactY = -1.5 + 0.025;
             terrainContactQuaternion.setFromAxisAngle(terrainContactRight.set(1, 0, 0), -Math.PI / 2);
+          } else if (y > terrainHeightAt(x,z)+2.2) {
+            contactY=y;
+            terrainContactQuaternion.copy(camera.quaternion);
           } else {
             contactY = sampleTerrainContactFrame(x, z, raptor ? raptor.yaw : 0) + 0.025;
           }
@@ -15383,13 +15813,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           strikeContactQuaternions[quaternionBase + 2] = terrainContactQuaternion.z;
           strikeContactQuaternions[quaternionBase + 3] = terrainContactQuaternion.w;
           strikeFxPositionAttribute.needsUpdate = true;
+          strikeFxColorAttribute.needsUpdate = true;
+          strikeFxStyleAttribute.needsUpdate = true;
         }
         function updateCatchFx(deltaSeconds) {
           strikeFxActiveCount = 0;
           strikeContactActiveCount = 0;
           var windX = weather ? Math.sin(weather.windDir) * weather.windSpeed : 0;
           var windZ = weather ? -Math.cos(weather.windDir) * weather.windSpeed : 0;
-          var velocityDrag = Math.exp(-1.7 * deltaSeconds);
           for (var slotIndex = 0; slotIndex < STRIKE_FX_SLOT_COUNT; slotIndex++) {
             if (!strikeFxSlotActive[slotIndex]) continue;
             strikeFxSlotAges[slotIndex] += deltaSeconds;
@@ -15398,15 +15829,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               hideStrikeFxSlot(slotIndex);
               continue;
             }
-            strikeContactActiveCount++;
+            var pulseAge = strikeFxSlotAges[slotIndex];
+            var pulseOpacity = raptorContactPulseOpacity(pulseAge, !!strikeFxSlotWater[slotIndex], _rmFX);
+            strikeContactOpacities[slotIndex] = pulseOpacity;
+            if (pulseOpacity > 0) strikeContactActiveCount++;
             var count = strikeFxSlotCounts[slotIndex];
+            var particleKind = strikeFxSlotKinds[slotIndex];
+            var velocityDrag = Math.exp(-(particleKind === 1 ? 2.8 : 1.7) * deltaSeconds);
+            var particleGravity = particleKind === 1 ? 3.8 : 10.5;
             strikeFxActiveCount += count;
             var start = slotIndex * STRIKE_FX_PER_SLOT;
             for (var localIndex = 0; localIndex < count; localIndex++) {
               var base = (start + localIndex) * 3;
               strikeFxVelocities[base] = (strikeFxVelocities[base] + windX * 0.34 * deltaSeconds) * velocityDrag;
-              strikeFxVelocities[base + 1] = (strikeFxVelocities[base + 1] - 10.5 * deltaSeconds) * velocityDrag;
+              strikeFxVelocities[base + 1] = (strikeFxVelocities[base + 1] - particleGravity * deltaSeconds) * velocityDrag;
               strikeFxVelocities[base + 2] = (strikeFxVelocities[base + 2] + windZ * 0.34 * deltaSeconds) * velocityDrag;
+              writeRaptorCatchParticleStyle(strikeFxStyles, (start + localIndex) * 4, pulseAge, localIndex, particleKind);
               strikeFxPositions[base] += strikeFxVelocities[base] * deltaSeconds;
               strikeFxPositions[base + 1] += strikeFxVelocities[base + 1] * deltaSeconds;
               strikeFxPositions[base + 2] += strikeFxVelocities[base + 2] * deltaSeconds;
@@ -15433,16 +15871,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               strikeContactQuaternions[quaternionBase + 2],
               strikeContactQuaternions[quaternionBase + 3]
             );
-            var fade = Math.max(0, 1 - ageRatio);
-            var contactScale = _rmFX ? 1.05 : Math.max(0.08, (0.45 + ageRatio * 2.4) * fade);
+            var pulseRatio = Math.min(1, pulseAge / (strikeFxSlotWater[slotIndex] ? 0.9 : 0.5));
+            var contactScale = _rmFX ? 1.05 : 0.45 + pulseRatio * 0.90;
             strikeContactDummy.scale.setScalar(contactScale);
             strikeContactDummy.updateMatrix();
             strikeContactMesh.setMatrixAt(slotIndex, strikeContactDummy.matrix);
           }
           strikeFxPoints.visible = strikeFxActiveCount > 0;
           strikeContactMesh.visible = strikeContactActiveCount > 0;
-          if (strikeFxActiveCount > 0) strikeFxPositionAttribute.needsUpdate = true;
+          if (strikeFxActiveCount > 0) { strikeFxPositionAttribute.needsUpdate = true; strikeFxStyleAttribute.needsUpdate = true; }
           strikeContactMesh.instanceMatrix.needsUpdate = true;
+          strikeContactOpacityAttribute.needsUpdate = true;
         }
 
         // One terrain-conforming draw grounds all land prey. Instances are
@@ -15532,6 +15971,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         touchdownPuffGradient.addColorStop(0.7,'rgba(255,255,255,0.12)');touchdownPuffGradient.addColorStop(1,'rgba(255,255,255,0)');
         touchdownPuffContext.fillStyle=touchdownPuffGradient;touchdownPuffContext.fillRect(0,0,64,64);
         var touchdownPuffTexture=new THREE.CanvasTexture(touchdownPuffCanvas);
+        strikeFxMaterial.map=touchdownPuffTexture;
         var touchdownDustMaterial = new THREE.PointsMaterial({ color: 0xc9b994, map:touchdownPuffTexture, size: 0.72, transparent: true, opacity: 0, depthWrite: false, sizeAttenuation: true });
         var touchdownDust = new THREE.Points(touchdownDustGeometry, touchdownDustMaterial);
         touchdownDust.visible = false;
@@ -15725,14 +16165,56 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           state.pitch=reduced?0:state.pitch+(-Math.atan(forwardSlope)*state.contact-state.pitch)*alpha;
           state.roll=reduced?0:state.roll+(Math.atan(sideSlope)*state.contact-state.roll)*alpha;
         }
-        function createPreyWingGeometry(size, side) {
+        function preyBirdPalette(id) {
+          // Back, belly, head, neck, flight feathers, wing marking, bill, breast.
+          // Color is baked into the existing surfaces; no texture or extra draw.
+          var rows={
+            pigeon:[0x697885,0xb7bbb7,0x5c6b76,0x53776c,0x39444e,0x29343e,0x51575a,0xa6aaa8],
+            mourningDove:[0x9a8e7e,0xd8c8b1,0xa59a8b,0xb8a38e,0x655e57,0x403c38,0x55504a,0xc9b299],
+            songbird:[0x8b7050,0xe1c894,0x887457,0xe4d3aa,0x5b5146,0xd0be99,0x65523b,0xc4a370],
+            shorebird:[0x827b6b,0xe4e0ce,0x918979,0xe8e2ce,0x555b58,0xd9d5c5,0x48473e,0xd4ccb7],
+            duck:[0x7b7770,0xcac2ad,0x2f6350,0xe3dfc5,0x464b4a,0x47587c,0xb5a24d,0x775344],
+            waterfowl:[0x827b68,0xd3c8aa,0x8b8068,0xb6aa8b,0x555b55,0xc0b394,0x88764c,0xb8a17c],
+            grouse:[0x7d6952,0xc8b598,0x8d7c63,0xbaaa8c,0x5f574c,0xb7a58b,0x575145,0xbca27e],
+            ptarmigan:[0xdde0d8,0xefeee1,0xe6e7dd,0xe8e8dc,0xd8ddd8,0xf0efe5,0x414948,0xe9e7d9],
+            smallOwl:[0x796e5f,0xc4b79d,0x8c8271,0xd5cbb5,0x554f46,0xa79a81,0x9a9478,0xb9a689]
+          };
+          var row=rows[id]||rows.songbird,keys=['back','belly','head','neck','flight','bar','bill','breast'],palette={id:id};
+          keys.forEach(function(key,index){palette[key]=new THREE.Color(row[index]).convertSRGBToLinear();});
+          palette.tail=id==='ptarmigan'?new THREE.Color(0x414947).convertSRGBToLinear():palette.flight;
+          return palette;
+        }
+        function createPreyBirdBodyGeometry(size,palette) {
+          var geometry=new THREE.SphereGeometry(size*0.42,16,12),p=geometry.attributes.position,colors=[],color=new THREE.Color();
+          for(var i=0;i<p.count;i++) {
+            var y=p.getY(i)/(size*0.42),z=p.getZ(i)/(size*0.42);
+            // Narrow the rump, keeping the original belly/contact height exactly.
+            p.setX(i,p.getX(i)*(1-Math.max(0,-z)*0.28));
+            var back=Math.max(0,Math.min(1,(y+0.12)/0.82));back=back*back*(3-2*back);
+            color.copy(palette.belly).lerp(palette.back,back);
+            var breast=Math.max(0,z)*Math.max(0,1-Math.abs(y)*1.5);
+            color.lerp(palette.breast,breast*0.78);
+            var featherShade=1+Math.sin(z*27+Math.abs(p.getX(i)/size)*19)*Math.sin(y*21)*0.025;
+            color.multiplyScalar(featherShade);colors.push(color.r,color.g,color.b);
+          }
+          geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));geometry.computeVertexNormals();return geometry;
+        }
+        function createPreyWingGeometry(size, side, palette) {
           var positions=[],colors=[],indices=[];
           for(var i=0;i<=8;i++)for(var j=0;j<=4;j++) {
             var u=i/8,v=j/4,chord=0.26*Math.pow(1-u,0.65)+0.018;
             var featherEdge=j===4 && i>3 ? (i%2)*0.045 : 0;
             positions.push(side*size*(0.06+u),size*Math.sin(v*Math.PI)*0.045*(1-u),size*(-u*u*0.27+(1-2*v)*chord-featherEdge));
             var tone=(j===4?0.16:0.27)+(i>2 && i<5?0.07:0);
-            colors.push(tone*0.82,tone*0.89,tone);
+            if(palette) {
+              var wingColor=palette.back.clone().lerp(palette.flight,Math.min(1,u*0.55+v*0.48));
+              var marking=palette.id==='pigeon' ? ((i===3||i===5)&&j>0?0.85:0) :
+                palette.id==='duck' ? (i>=3&&i<=5&&j>=2?0.8:0) :
+                (j===2&&i>1&&i<6?0.35:0);
+              wingColor.lerp(palette.bar,marking);
+              if(j===4)wingColor.multiplyScalar(0.82);
+              colors.push(wingColor.r,wingColor.g,wingColor.b);
+            } else colors.push(tone*0.82,tone*0.89,tone);
             if(i<8 && j<4){var a=i*5+j,b=a+5;if(side>0)indices.push(a,b,a+1,b,b+1,a+1);else indices.push(a,a+1,b,b,a+1,b+1);}
           }
           var geometry=new THREE.BufferGeometry();
@@ -15740,7 +16222,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
           geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
         }
-        function createPreyTailGeometry(size) {
+        function createPreyTailGeometry(size, palette) {
           var positions=[0,size*0.025,0],indices=[];
           for(var i=0;i<=8;i++){
             var across=i/4-1;
@@ -15748,6 +16230,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             if(i>0)indices.push(0,i+1,i);
           }
           var geometry=new THREE.BufferGeometry();geometry.setAttribute('position',new THREE.Float32BufferAttribute(positions,3));
+          if(palette){
+            var colors=[palette.back.r,palette.back.g,palette.back.b];
+            for(var feather=0;feather<=8;feather++){
+              var color=palette.tail.clone().multiplyScalar(feather%2?0.84:1);
+              colors.push(color.r,color.g,color.b);
+            }
+            geometry.setAttribute('color',new THREE.Float32BufferAttribute(colors,3));
+          }
           geometry.setIndex(indices);geometry.computeVertexNormals();return geometry;
         }
         function advancePreyVisualPose(pose,vx,vz,height,now,phase,alerted,dt,reduced) {
@@ -15762,8 +16252,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           pose.spread+=(spreadGoal-pose.spread)*(1-Math.exp(-10*dt));
           var bankGoal=reduced?0:Math.max(-0.24,Math.min(0.24,-turn/Math.max(0.001,dt)*0.045))*pose.spread;
           pose.bank=reduced?0:pose.bank+(bankGoal-pose.bank)*(1-Math.exp(-8*dt));
-          var cycle=now*(alerted?0.018:0.008)+phase;
-          pose.wingAngle=reduced?0.08:0.08*(1-pose.spread)+Math.sin(cycle*1.7)*(alerted?0.65:0.3)*pose.spread;
+          if(!Number.isFinite(pose.phase)){pose.phase=phase||0;pose.rate=8;pose.wingAmplitude=0.3;}
+          if(!reduced){
+            // Integrate the changing rate instead of multiplying total elapsed time.
+            // Phase stays continuous when prey startles, settles, pauses, or resumes.
+            var decay=Math.exp(-6*Math.max(0,dt)),rateGoal=alerted?18:8,amplitudeGoal=alerted?0.65:0.3;
+            pose.phase+=rateGoal*dt+(pose.rate-rateGoal)*(1-decay)/6;
+            pose.rate=rateGoal+(pose.rate-rateGoal)*decay;
+            pose.wingAmplitude=amplitudeGoal+(pose.wingAmplitude-amplitudeGoal)*decay;
+          }
+          pose.wingAngle=reduced?0.08:0.08*(1-pose.spread)+Math.sin(pose.phase*1.7)*pose.wingAmplitude*pose.spread;
         }
         function createFishBodyGeometry(size) {
           var geometry=new THREE.SphereGeometry(size*0.38,16,12);geometry.scale(0.65,0.55,1.55);
@@ -15826,16 +16324,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var tail = null;
           var body;
           if (kind === 'bird') {
-            if(preyData.id==='duck' || preyData.id==='waterfowl'){
-              material.color.setHex(0x746e60);material.emissive.setHex(0x514d45);
-            }
-            body = new THREE.Mesh(new THREE.SphereGeometry(size * 0.42, 10, 8), material);
+            var birdPalette=preyBirdPalette(preyData.id);
+            material.color.setHex(0xffffff);material.vertexColors=true;material.roughness=0.86;
+            material.emissive.copy(birdPalette.belly);material.emissiveIntensity=0.06;
+            body = new THREE.Mesh(createPreyBirdBodyGeometry(size,birdPalette), material);
+            body.name='prey-plumage-body';
             body.scale.set(0.78, 0.72, 1.35);
             root.add(body);
             var birdHeadGeometry = new THREE.SphereGeometry(size * 0.24, 14, 10);
             var headPositions=birdHeadGeometry.attributes.position,headColors=[];
-            var headColor=new THREE.Color(preyData.color),beakColor=new THREE.Color(0xc8a36b);
+            var headColor=new THREE.Color(),beakColor=birdPalette.bill;
             for(var headVertex=0;headVertex<headPositions.count;headVertex++){
+              var headY=headPositions.getY(headVertex)/size,headZ=headPositions.getZ(headVertex)/size;
+              var throat=Math.max(0,Math.min(1,(-headY-0.07)/0.10));
+              headColor.copy(birdPalette.head).lerp(birdPalette.neck,throat);
+              if(preyData.id==='smallOwl')headColor.lerp(birdPalette.neck,Math.max(0,headZ/0.24)*0.75);
               headColors.push(headColor.r,headColor.g,headColor.b);
             }
             birdHeadGeometry.setAttribute('color',new THREE.Float32BufferAttribute(headColors,3));birdHeadGeometry.computeVertexNormals();
@@ -15861,25 +16364,36 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 faceNormals.push(eye.attributes.normal.getX(eyeVertex),eye.attributes.normal.getY(eyeVertex),eye.attributes.normal.getZ(eyeVertex));
               }
               eye.dispose();
+              var glintSource=new THREE.SphereGeometry(size*0.009,6,4),glint=glintSource.toNonIndexed();glintSource.dispose();
+              glint.translate(side*size*0.235,size*0.074,size*0.111);
+              for(var glintVertex=0;glintVertex<glint.attributes.position.count;glintVertex++){
+                facePositions.push(glint.attributes.position.getX(glintVertex),glint.attributes.position.getY(glintVertex),glint.attributes.position.getZ(glintVertex));
+                faceNormals.push(glint.attributes.normal.getX(glintVertex),glint.attributes.normal.getY(glintVertex),glint.attributes.normal.getZ(glintVertex));
+                faceColors.push(0.56,0.62,0.60);
+              }
+              glint.dispose();
             });
             expandedHead.dispose();birdHeadGeometry=new THREE.BufferGeometry();
             birdHeadGeometry.setAttribute('position',new THREE.Float32BufferAttribute(facePositions,3));
             birdHeadGeometry.setAttribute('color',new THREE.Float32BufferAttribute(faceColors,3));
             birdHeadGeometry.setAttribute('normal',new THREE.Float32BufferAttribute(faceNormals,3));
             var birdHead = new THREE.Mesh(birdHeadGeometry,new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.78}));
+            birdHead.name='prey-plumage-head';
+            birdHead.scale.setScalar(preyData.id==='smallOwl'?0.96:0.82);
             birdHead.position.set(0, size * 0.10, size * 0.52);
             root.add(birdHead);
             var preyWingMaterial=new THREE.MeshStandardMaterial({vertexColors:true,roughness:0.86,side:THREE.DoubleSide});
             [-1, 1].forEach(function(side) {
-              var wing = new THREE.Mesh(createPreyWingGeometry(size,side),preyWingMaterial);
+              var wing = new THREE.Mesh(createPreyWingGeometry(size,side,birdPalette),preyWingMaterial);
               wing.name='prey-tapered-wing';
               wing.position.set(side * size * 0.18, size * 0.04, 0);
               wing.rotation.y=side*1.15;wing.rotation.z=side*0.08;wing.scale.x=0.3;
               root.add(wing);
               wings.push(wing);
             });
-            var preyTailGeometry=createPreyTailGeometry(size);
+            var preyTailGeometry=createPreyTailGeometry(size,birdPalette);
             var preyTailMaterial=darkMaterial;preyTailMaterial.side=THREE.DoubleSide;
+            preyTailMaterial.color.setHex(0xffffff);preyTailMaterial.vertexColors=true;
             tail = new THREE.Mesh(preyTailGeometry,preyTailMaterial);
             tail.position.z = -size * 0.40;
             root.add(tail);
@@ -15936,7 +16450,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               legs.push(leg);
             });
           }
-          return { root: root, kind: kind, body: body, wings: wings, legs: legs, tail: tail, pose: { heading:null, bank:0, spread:0, wingAngle:0.08 }, float: {height:0,slopeX:0,slopeZ:0,pitch:0,roll:0,offset:0,contact:0}, swim: {phase:null,rate:Math.PI*1.3,amplitude:0,tailYaw:0,bodyYaw:0,roll:0} };
+          return { root: root, kind: kind, body: body, wings: wings, legs: legs, tail: tail, pose: { heading:null, bank:0, spread:0, wingAngle:0.08, phase:null, rate:8, wingAmplitude:0.3 }, float: {height:0,slopeX:0,slopeZ:0,pitch:0,roll:0,offset:0,contact:0}, swim: {phase:null,rate:Math.PI*1.3,amplitude:0,tailYaw:0,bodyYaw:0,roll:0} };
         }
         function nearestPreyCoverTarget(x, z) {
           var best = null;
@@ -16006,7 +16520,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             depthWrite: false
           });
           var beacon = new THREE.Mesh(
-            new THREE.TorusGeometry(Math.max(0.75, size * 0.9), 0.08, 6, 32),
+            new THREE.TorusGeometry(Math.max(0.75, size * 0.9), 0.045, 6, 32),
             beaconMat
           );
           beacon.rotation.x = Math.PI / 2;
@@ -16038,6 +16552,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             surfaceMode: preySurfaceMode,
             waterY: py,
             escapeProfile: preyEscapeProfile(pd),
+            vy: 0,
             vx: (Math.random() - 0.5) * pd.speedMps * 0.3,
             vz: (Math.random() - 0.5) * pd.speedMps * 0.3,
             spawnedAt: motionNow,
@@ -16147,6 +16662,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var precipitationDriftZ = 0;
         // The air mass the bird is flying in, in m/s. One vector feeds the position
         // drift, the ground-speed readout, and the snapshot, so they cannot disagree.
+        var flightVerticalDrift = 0;
         var windDriftX = 0;
         var windDriftZ = 0;        // ─── NEW v0.30: Time-of-day cycle (visual + gameplay) ───
         // dayPhase 0-1: 0 = midnight, 0.25 = dawn, 0.5 = noon, 0.75 = dusk
@@ -16178,9 +16694,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var skyLuminance = 0.6;
         // r128 blends fog AFTER tone mapping and sRGB encoding. Match the sky's
         // horizon in that output space rather than sending a linear biome swatch.
-        function atmosphereFogColor(target,day,twilight,cloud,exposure) {
+        function atmosphereFogColor(target,day,twilight,cloud,exposure,elevation) {
           var r=0.007+(0.48-0.007)*day,g=0.014+(0.64-0.014)*day,b=0.031+(0.73-0.031)*day;
           var dusk=twilight*0.65;r+=(0.68-r)*dusk;g+=(0.22-g)*dusk;b+=(0.07-b)*dusk;
+          // The sky's exponential height gradient, sampled without sun-disc glare.
+          var horizonWeight=Math.exp(-Math.max(0,elevation || 0)*10);
+          r=(0.0015+(0.025-0.0015)*day)*(1-horizonWeight)+r*horizonWeight;
+          g=(0.003+(0.16-0.003)*day)*(1-horizonWeight)+g*horizonWeight;
+          b=(0.009+(0.36-0.009)*day)*(1-horizonWeight)+b*horizonWeight;
           var cover=cloud*0.64;r+=(0.012+(0.24-0.012)*day-r)*cover;g+=(0.018+(0.31-0.018)*day-g)*cover;b+=(0.03+(0.38-0.03)*day-b)*cover;
           var gain=exposure/0.6;r*=gain;g*=gain;b*=gain;
           function fit(v){return (v*(v+0.0245786)-0.000090537)/(v*(0.983729*v+0.432951)+0.238081);}
@@ -16208,6 +16729,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           scene.fog.far = 720 + highStoopFogBoost - visualCloudCover * 150;
           renderer.toneMappingExposure = (0.78 + daylight * 0.28 + twilight * 0.04) * (1 - visualCloudCover * 0.12);
           atmosphereFogColor(scene.fog.color,daylight,twilight,visualCloudCover,renderer.toneMappingExposure);
+          atmosphereFogColor(landscapeAtmosphere.zenith.value,daylight,twilight,visualCloudCover,renderer.toneMappingExposure,1);
           skyAtmosphere.day.value = daylight;
           skyAtmosphere.cloud.value = visualCloudCover;
           skyAtmosphere.twilight.value = twilight;
@@ -16557,18 +17079,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var flightTrailSampleElapsed = 0;
         scene.add(flightTrail);
 
-        var targetGuidePositions = new Float32Array(6);
+        var targetGuidePositions = new Float32Array(24);
+        var targetLeadPrey=null,targetLeadAt=0,targetLeadVelocity={x:0,y:0,z:0};
         var targetGuideGeometry = new THREE.BufferGeometry();
         var targetGuideAttribute = new THREE.BufferAttribute(targetGuidePositions, 3);
         if (targetGuideAttribute.setUsage && THREE.DynamicDrawUsage) targetGuideAttribute.setUsage(THREE.DynamicDrawUsage);
         targetGuideGeometry.setAttribute('position', targetGuideAttribute);
         var targetGuideMaterial = new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0, depthWrite: false });
-        var targetGuide = new THREE.Line(targetGuideGeometry, targetGuideMaterial);
+        var targetGuide = new THREE.LineSegments(targetGuideGeometry, targetGuideMaterial);
         targetGuide.name = 'raptor-target-guide';
         targetGuide.frustumCulled = false;
         targetGuide.visible = false;
         scene.add(targetGuide);
-        var targetFocusHaloGeometry = new THREE.RingGeometry(0.82, 1.0, graphicsQuality === 'high' ? 32 : 24);
+        var targetFocusHaloGeometry = new THREE.RingGeometry(0.91, 1.0, graphicsQuality === 'high' ? 32 : 24);
         var targetFocusHaloMaterial = new THREE.MeshBasicMaterial({
           color: 0xfbbf24,
           transparent: true,
@@ -16628,7 +17151,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
 
         function updateTargetGuide(targetInfo, targetState, now) {
           var targetPrey = targetInfo && targetInfo.prey;
-          if (_rmFX || !targetLockOn || !targetPrey || !targetPrey.mesh) {
+          if (_rmFX || !targetLockOn || !targetPrey || !targetPrey.mesh || carriedPrey || strikeFeedbackActive) {
+            targetLeadPrey=null;targetGuideGeometry.setDrawRange(0,2);
             targetGuide.visible = false;
             return;
           }
@@ -16638,10 +17162,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           targetGuidePositions[3] = targetPrey.mesh.position.x;
           targetGuidePositions[4] = targetPrey.mesh.position.y + 0.25;
           targetGuidePositions[5] = targetPrey.mesh.position.z;
+          var leadAlpha=targetLeadPrey!==targetPrey ? 1 : dampingAlpha(14,Math.max(0,(motionNow-targetLeadAt)/1000));
+          targetLeadPrey=targetPrey;targetLeadAt=motionNow;
+          targetLeadVelocity.x+=((targetPrey.vx||0)-targetLeadVelocity.x)*leadAlpha;
+          targetLeadVelocity.y+=((targetPrey.vy||0)-targetLeadVelocity.y)*leadAlpha;
+          targetLeadVelocity.z+=((targetPrey.vz||0)-targetLeadVelocity.z)*leadAlpha;
+          var leadCount=targetInfo.distance<=45 ? writeRaptorPreyMotionArrow(targetGuidePositions,targetPrey.mesh.position,targetLeadVelocity,RAPTOR_TALON_THROW_MS/1000) : 2;
+          targetGuideGeometry.setDrawRange(0,leadCount);
           targetGuideAttribute.needsUpdate = true;
           var guideColor = targetState === 'ready' ? 0x4ade80 : targetState === 'stoop' ? 0x67e8f9 : targetState === 'close' ? 0xfbbf24 : 0xf87171;
           targetGuideMaterial.color.setHex(guideColor);
-          targetGuideMaterial.opacity = Math.min(0.72, 0.28 + (0.12 * (0.5 + 0.5 * Math.sin(motionNow * 0.006))));
+          targetGuideMaterial.opacity = targetState === 'ready' ? 0.42 : 0.32;
           targetGuide.visible = true;
         }
 
@@ -16665,7 +17196,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             targetState === 'stoop' ? 0x67e8f9 :
             targetState === 'close' ? 0xfbbf24 : 0xf87171;
           targetFocusHaloMaterial.color.setHex(focusColor);
-          targetFocusHaloMaterial.opacity = Math.min(0.52, 0.16 + targetProximity * 0.22 + (targetState === 'ready' ? 0.12 : 0));
+          var highlightStrength = raptorTargetHighlightStrength(targetInfo.distance, targetInfo.reach);
+          targetFocusHaloMaterial.opacity = 0.16 + highlightStrength * 0.20 + (targetState === 'ready' ? 0.04 : 0);
           targetFocusHalo.visible = true;
         }
 
@@ -16677,7 +17209,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var airflowAttribute = new THREE.BufferAttribute(airflowPositions, 3);
         if (airflowAttribute.setUsage && THREE.DynamicDrawUsage) airflowAttribute.setUsage(THREE.DynamicDrawUsage);
         airflowGeometry.setAttribute('position', airflowAttribute);
+        var airflowFades=new Float32Array(airflowLineCount*2);
+        var airflowFadeAttribute=new THREE.BufferAttribute(airflowFades,1);
+        if(airflowFadeAttribute.setUsage && THREE.DynamicDrawUsage)airflowFadeAttribute.setUsage(THREE.DynamicDrawUsage);
+        airflowGeometry.setAttribute('strokeFade',airflowFadeAttribute);
         var airflowMaterial = new THREE.LineBasicMaterial({ color: 0xe0f2fe, transparent: true, opacity: 0, depthWrite: false });
+        airflowMaterial.onBeforeCompile=function(shader) {
+          shader.vertexShader='attribute float strokeFade; varying float vRhAirflowFade;\n'+shader.vertexShader;
+          shader.vertexShader=shader.vertexShader.replace('#include <begin_vertex>','#include <begin_vertex>\nvRhAirflowFade=strokeFade;')
+            .replace('#include <project_vertex>','#include <project_vertex>\nvRhAirflowFade*=smoothstep(0.5,2.0,-mvPosition.z);');
+          shader.fragmentShader='varying float vRhAirflowFade;\n'+shader.fragmentShader;
+          shader.fragmentShader=shader.fragmentShader.replace('#include <premultiplied_alpha_fragment>','gl_FragColor.a*=vRhAirflowFade;\n#include <premultiplied_alpha_fragment>');
+          airflowMaterial.userData.strokeFadeCompiled=true;
+        };
+        airflowMaterial.customProgramCacheKey=function(){return 'raptor-airflow-fade-v1';};
+        var airflowCycle=0,airflowLastAt=null;
         var airflowLines = new THREE.LineSegments(airflowGeometry, airflowMaterial);
         airflowLines.name = 'raptor-airflow-lines';
         airflowLines.frustumCulled = false;
@@ -16837,6 +17383,76 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var strikeReady = true;
         var talonThrow = { active: false, until: 0, preferred: null, closest: null };
         var catchPullOutUntil = 0;
+        var carriedPrey = null;
+        var carriedPreyBounds = new THREE.Box3(), carriedPreySize = new THREE.Vector3(), carriedPreyCenter = new THREE.Vector3();
+        function clearCarriedPrey() {
+          if (!carriedPrey) return;
+          var root = carriedPrey.prey.mesh;
+          if (root.parent) root.parent.remove(root);
+          var resources = new Set();
+          root.traverse(function(object) {
+            if (object.geometry) resources.add(object.geometry);
+            if (Array.isArray(object.material)) object.material.forEach(function(material) { resources.add(material); });
+            else if (object.material) resources.add(object.material);
+          });
+          resources.forEach(function(resource) { resource.dispose(); });
+          carriedPrey = null;
+          studyBoundsDirty = true;
+        }
+        function beginCarriedPrey(prey) {
+          clearCarriedPrey();
+          scene.remove(prey.mesh);
+          if (prey.beacon) prey.beacon.visible = false;
+          if (prey.beaconCap) prey.beaconCap.visible = false;
+          for (var wakeIndex = waterWakeEntries.length - 1; wakeIndex >= 0; wakeIndex--) {
+            var wakeEntry = waterWakeEntries[wakeIndex];
+            if (wakeEntry.prey !== prey) continue;
+            waterWakeGroup.remove(wakeEntry.wake);
+            wakeEntry.wake.material.dispose();
+            waterWakeEntries.splice(wakeIndex, 1);
+          }
+          prey.mesh.name = 'raptor-carried-prey';
+          prey.mesh.position.set(0,0,0); prey.mesh.rotation.set(0,0,0);
+          prey.visual.position.set(0,0,0); prey.visual.rotation.set(0,0,0);
+          // Close the prey's flying pose before measuring it; the carried model keeps its identity.
+          if (prey.animation.kind === 'bird') prey.animation.wings.forEach(function(wing,i) {
+            var side = i === 0 ? -1 : 1;
+            wing.rotation.set(0,side*1.15,side*0.08); wing.scale.x=0.3;
+          });
+          prey.mesh.updateMatrixWorld(true);
+          carriedPreyBounds.setFromObject(prey.visual);
+          carriedPreyBounds.getSize(carriedPreySize); carriedPreyBounds.getCenter(carriedPreyCenter);
+          var carryScale = Math.min(1, 0.68 / Math.max(0.01, carriedPreySize.x, carriedPreySize.y, carriedPreySize.z));
+          var anchor = {x:-carriedPreyCenter.x*carryScale,y:-0.33-carriedPreyBounds.max.y*carryScale,z:0.12-carriedPreyCenter.z*carryScale};
+          prey.mesh.scale.setScalar(carryScale);
+          prey.mesh.position.set(anchor.x,anchor.y-(_rmFX?0:0.06),anchor.z+(_rmFX?0:0.08));
+          talonGroup.add(prey.mesh);
+          strikeFootExtension=1;raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=1;});
+          var carryMaterials = [], seenCarryMaterials = new Set();
+          prey.visual.traverse(function(object) {
+            var materials = Array.isArray(object.material) ? object.material : object.material ? [object.material] : [];
+            materials.forEach(function(material) {
+              if (seenCarryMaterials.has(material)) return;
+              seenCarryMaterials.add(material);
+              carryMaterials.push({material:material,opacity:material.opacity});
+              material.transparent = true; material.depthWrite = false; material.needsUpdate = true;
+            });
+          });
+          carriedPrey = {prey:prey,anchor:anchor,materials:carryMaterials,until:motionNow+1100,startedAt:motionNow};
+          studyBoundsDirty = true;
+        }
+        function updateCarriedPrey(dt) {
+          if (!carriedPrey) return;
+          if (motionNow >= carriedPrey.until) { clearCarriedPrey(); return; }
+          var fade = raptorCarryOpacity(motionNow-carriedPrey.startedAt,_rmFX);
+          carriedPrey.materials.forEach(function(entry) { entry.material.opacity=entry.opacity*fade; });
+          var root=carriedPrey.prey.mesh, anchor=carriedPrey.anchor;
+          var alpha=_rmFX?1:dampingAlpha(24,dt);
+          root.position.x+=(anchor.x-root.position.x)*alpha;
+          root.position.y+=(anchor.y-root.position.y)*alpha;
+          root.position.z+=(anchor.z-root.position.z)*alpha;
+          root.rotation.x=_rmFX?0:Math.sin((motionNow-carriedPrey.startedAt)*0.009)*0.055*Math.exp(-(motionNow-carriedPrey.startedAt)/350);
+        }
         var focusTimeScale = 1, focusEdgeShown = 0, focusFlagShown = '';
         var focusEpisode = { active: false, prey: null, spentMs: 0, explained: false };
         var focusSlowmoEnabled = !(canvasEl.dataset && canvasEl.dataset.raptorFocusSlowmo === 'false');
@@ -16851,7 +17467,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var eventDetail = detail ? String(detail) : '';
           var previous = flightRecorder[flightRecorder.length - 1];
           var eventTime = Math.round(missionElapsed * 10) / 10;
-          if (previous && previous.kind === eventKind && previous.label === eventLabel && eventTime - previous.timeS < 0.8) return;
+          if (eventKind !== 'catch' && eventKind !== 'miss' && previous && previous.kind === eventKind && previous.label === eventLabel && eventTime - previous.timeS < 0.8) return;
           flightRecorder.push({ kind: eventKind, label: eventLabel, detail: eventDetail, timeS: eventTime });
           if (flightRecorder.length > 24) flightRecorder.shift();
         }
@@ -16899,7 +17515,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return {
             title: 'Build the approach first',
             copy: 'The next improvement is to stabilize heading, altitude, and range before committing to a strike.',
-            next: 'Next: keep the target centered, then wait for READY.'
+            next: 'Next: keep the target centered and follow the strike window cue.'
           };
         }
         recordFlightEvent('start', 'Flight started', species.name + ' · ' + mission.name);
@@ -17112,6 +17728,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         var touchPitchSensitivity = 0.003;
         var tutorialSignals = {};
         var lastTargetState = '';
+        var lastStrikeStage = 'approach';
         var lastTrackerTargetInfo = null;
         var lastTargetCorrection = null;
         var lastTargetHint = '';
@@ -17281,6 +17898,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }
           if (landed) { add('pullUp', raptor.crashed ? 'Take off once recovered' : 'Take off', true); addPair('turnLeft', 'turnRight', 'Look around'); addPair('pitchUp','pitchDown','Scan up / down'); add('zoom','Acuity zoom'); return rows; }
           if(practiceTrail && practiceTrail.active){addPair('turnLeft','turnRight','Turn',true);addPair('pitchUp','pitchDown','Pitch');addPair('altUp','altDown','Trim altitude');return rows;}
+          if ((!tutorialSignal || tutorialSignal === 'strike') && lastStrikeStage !== 'approach') {
+            if (lastStrikeStage === 'window') { add('strike', 'Strike now', true); add('pullUp', 'Abort'); }
+            else if (lastStrikeStage === 'throw') { addPair('turnLeft', 'turnRight', 'Hold your line', true); add('pullUp', 'Pull out'); }
+            else { addPair('turnLeft', 'turnRight', 'Hold your heading', true); add('pullUp', 'Pull up if needed'); }
+            add('pause', 'Pause'); return rows.slice(0, 5);
+          }
           // Flight school owns the prompts while it runs: show the keys for the step
           // the learner is on, not the keys for the flight phase they happen to be in.
           if (tutorialSignal && !landed) {
@@ -18200,21 +18823,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           return 'Free flight';
         }
         // Free Hunt repeats after every attempt; it has no terminal exploration phase.
-        function freeHuntStage(targetState, grounded, crashed) {
+        function freeHuntStage(targetState, grounded, crashed, strikeStage) {
           if (crashed) return { phase: 0, title: 'Recover on the ground', tip: 'Wait for recovery, then take off.' };
           if (grounded || targetState === 'watch') return { phase: 0, title: 'Launch to pursue', tip: 'Take off when you are ready to hunt.' };
+          if (strikeStage === 'throw') return { phase: 2, title: 'Talons out', tip: 'Keep prey ahead through contact.' };
+          if (strikeStage === 'window') return { phase: 2, title: 'Strike window open', tip: 'Strike now or tap the prey.' };
           if (targetState === 'hit') return { phase: 3, title: 'Catch secured', tip: 'Glide, then scan for your next target.' };
           if (targetState === 'miss') return { phase: 3, title: 'Reset your approach', tip: 'Use the Last strike coaching, then try again.' };
+          if (strikeStage === 'recovering') return { phase: 3, title: 'Talons recovering', tip: 'Keep flying while the strike resets.' };
           if (targetState === 'recovering') return { phase: 3, title: 'Talons recovering', tip: 'Keep flying while the strike resets.' };
           if (targetState === 'ready') return { phase: 2, title: 'Strike window open', tip: 'Strike while the target is READY.' };
           if (targetState === 'align') return { phase: 1, title: 'Line up your approach', tip: 'Follow the steering cue before closing in.' };
-          if (targetState === 'close') return { phase: 1, title: 'Close the distance', tip: 'Keep prey ahead; wait for READY.' };
+          if (targetState === 'close') return { phase: 1, title: 'Close the distance', tip: 'Keep prey ahead; strike when the window opens.' };
           if (targetState === 'stoop') return { phase: 1, title: 'Control your descent', tip: 'Hold a steady line toward the prey.' };
           if (targetState === 'off') return { phase: 0, title: 'Explore freely', tip: 'Target assist is off. Scan the landscape.' };
           return { phase: 0, title: 'Find your next target', tip: 'Turn slowly and look for prey.' };
         }
         function currentFreeHuntStage() {
-          return freeHuntStage(lastTargetState, raptor.landed, raptor.crashed);
+          return freeHuntStage(lastTargetState, raptor.landed, raptor.crashed, lastStrikeStage);
         }
         function missionPhaseText() {
           if (missionUsesHuntCycle) {
@@ -18361,6 +18987,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         document.addEventListener('visibilitychange', onVisibilityChange);
 
         var targetScreenInset = 34;
+        var targetLabelPlacement = '', targetLabelPrey = null, targetLabelOffscreen = false;
         var targetHudBoundsDirty = true;
         var targetHudInsets = { top: 34, bottom: 80, right: 34, labelRight: 8 };
         var targetHudSelector = '.rh-flight-telemetry-strip,.rh-flight-key-guide,.rh-flight-state,.rh-flight-wind,.rh-flight-heading,.rh-flight-attitude,.rh-flight-target-cue,.rh-flight-lock-meters,.rh-flight-mission-hud,.rh-scenic-toggle,.rh-practice-toggle';
@@ -18408,13 +19035,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         }
         // Fixed label dimensions avoid layout reads in the render loop. Anchor it inside
         // the viewport independently of the target frame, including both lower corners.
-        function layoutTargetLabel(screenX, screenY, screenW, screenH) {
+        function layoutTargetLabel(screenX, screenY, screenW, screenH, previousPlacement) {
           var width = Math.min(176, Math.max(0, screenW - 16));
           var left = Math.max(8, Math.min(screenW - width - 8, screenX - width / 2));
-          var top = screenY + 32;
-          if (top + 44 > screenH - 8) top = screenY - 76;
+          var belowBottom = screenY + 76;
+          // Flip as soon as the caption would clip; return only after 24px of room.
+          // This prevents a one-pixel prey movement from moving the label by 108px.
+          var above = belowBottom > screenH - 8 || (previousPlacement === 'above' && belowBottom + 24 > screenH - 8);
+          var top = above ? screenY - 76 : screenY + 32;
           top = Math.max(8, Math.min(Math.max(8, screenH - 52), top));
-          return { left: left - screenX + 24, top: top - screenY + 24, width: width };
+          return { left: left - screenX + 24, top: top - screenY + 24, width: width, placement: above ? 'above' : 'below' };
         }
         canvasEl._rhCommand = function(action, value) {
           if (action === 'study') { enterStudy(); return; }
@@ -18553,6 +19183,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             talonThrowActive: talonThrow.active,
             talonThrowMs: talonThrow.active ? Math.max(0, talonThrow.until - motionNow) : 0,
             catchPullOutMs: Math.max(0, catchPullOutUntil - motionNow),
+            carriedPreyLabel: carriedPrey ? carriedPrey.prey.data.label : null,
+            carriedPreyMs: carriedPrey ? Math.max(0, carriedPrey.until-motionNow) : 0,
+            talonExtension: strikeFootExtension,
+            strikeWindowOpen: !!(snapshotTarget && strikeReady && !raptor.landed && !raptor.crashed && !activePerch && talonThrowWindow(snapshotTarget)),
             focusTimeScale: Math.round(focusTimeScale * 1000) / 1000,
             focusActive: focusEpisode.active,
             focusSlowmoEnabled: focusSlowmoEnabled,
@@ -18652,10 +19286,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             lakeSheenOpacity: lakeSheen ? lakeSheen.material.opacity : 0,
             assistEnabled: targetLockOn,
             targetGuideVisible: targetGuide.visible,
+            targetMotionArrowVisible: targetGuide.visible && targetGuideGeometry.drawRange.count===8,
             targetHaloVisible: targetFocusHalo.visible,
             preyCount: preyMeshes.length,
             fishSwimPoses: preyMeshes.filter(function(prey){return prey.animation.kind==='fish';}).map(function(prey){var swim=prey.animation.swim;return {phase:swim.phase,amplitude:swim.amplitude,tailYaw:swim.tailYaw,bodyYaw:swim.bodyYaw,roll:swim.roll,visualY:prey.visual.position.y};}),
-            preyVisualPoses: preyMeshes.map(function(prey){return {kind:prey.animation.kind,heading:prey.animation.pose.heading,bank:prey.animation.pose.bank,spread:prey.animation.pose.spread,wingAngle:prey.animation.pose.wingAngle,height:prey.flightHeight};}),
+            preyVisualPoses: preyMeshes.map(function(prey){return {kind:prey.animation.kind,heading:prey.animation.pose.heading,bank:prey.animation.pose.bank,spread:prey.animation.pose.spread,wingAngle:prey.animation.pose.wingAngle,phase:prey.animation.pose.phase,rate:prey.animation.pose.rate,height:prey.flightHeight};}),
             activeTargetIndex: snapshotTarget ? snapshotTarget.index : -1,
             visibleBeaconCount: countVisiblePreyBeacons(),
             precipitationMode: precipitationMode,
@@ -18736,6 +19371,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             raptorNdcX: raptorProjected.x,
             raptorNdcY: raptorProjected.y,
             raptorReadability: Math.round(raptorReadability * 10000) / 10000,
+            plumageShadowFill: plumageContrast.value.x,
+            plumageEdgeShade: plumageContrast.value.y,
+            plumageContrastPrograms: plumageContrastMaterials.filter(function(material){return material.userData.plumageContrastCompiled;}).length,
             raptorBodyLuminance: Math.round(raptorBodyLuminance * 10000) / 10000,
             raptorBackgroundLuminance: Math.round(raptorBackgroundLuminance * 10000) / 10000,
             raptorContrast: Math.round(raptorContrast * 10000) / 10000,
@@ -18801,21 +19439,29 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var airflowActive = !_rmFX && !raptor.landed && !raptor.crashed && raptor.speed > raptor.maxLevel * 0.32;
           if (!airflowActive) {
             airflowLines.visible = false;
+            airflowLastAt=motionNow;
             return;
           }
           flightForwardVector(flightForward);
           airflowRight.set(Math.cos(raptor.yaw), 0, Math.sin(raptor.yaw)).normalize();
           airflowUp.crossVectors(airflowRight, flightForward).normalize();
           var speedRatio = Math.max(0, Math.min(1, raptor.speed / Math.max(1, raptor.stoopMax)));
+          // Integrate travel, so changing speed cannot jump an already visible stroke.
+          var airflowElapsed=airflowLastAt===null?0:Math.max(0,(motionNow-airflowLastAt)/1000);
+          airflowCycle=(airflowCycle+airflowElapsed*(0.45+speedRatio*0.7))%1;
+          airflowLastAt=motionNow;
           for (var airflowIndex = 0; airflowIndex < airflowLineCount; airflowIndex++) {
             var airflowBase = airflowIndex * 6;
             var airflowPhase = airflowPhases[airflowIndex];
             var airflowSide = ((airflowIndex % 5) - 2) * 0.85 + Math.sin(motionNow * 0.0018 + airflowPhase) * 0.32;
             var airflowHeight = ((airflowIndex % 4) - 1.5) * 0.45 + Math.cos(motionNow * 0.0014 + airflowPhase) * 0.18;
-            var airflowLength = 1.3 + speedRatio * 4.4 + (airflowIndex % 3) * 0.35;
-            var airflowStartX = raptor.x + airflowRight.x * airflowSide + airflowUp.x * airflowHeight - flightForward.x * 0.25;
-            var airflowStartY = raptor.y + airflowRight.y * airflowSide + airflowUp.y * airflowHeight - flightForward.y * 0.25;
-            var airflowStartZ = raptor.z + airflowRight.z * airflowSide + airflowUp.z * airflowHeight - flightForward.z * 0.25;
+            var airflowProgress=(airflowCycle+airflowPhase/(Math.PI*2))%1;
+            var airflowAdvance=0.7-airflowProgress*1.8;
+            var airflowLength = 0.7 + speedRatio * 2.6 + (airflowIndex % 3) * 0.2;
+            var airflowStartX = raptor.x + airflowRight.x * airflowSide + airflowUp.x * airflowHeight + flightForward.x * airflowAdvance;
+            var airflowStartY = raptor.y + airflowRight.y * airflowSide + airflowUp.y * airflowHeight + flightForward.y * airflowAdvance;
+            var airflowStartZ = raptor.z + airflowRight.z * airflowSide + airflowUp.z * airflowHeight + flightForward.z * airflowAdvance;
+            airflowFades[airflowIndex*2]=raptorAirflowFade(airflowProgress)*0.85;
             airflowPositions[airflowBase] = airflowStartX;
             airflowPositions[airflowBase + 1] = airflowStartY;
             airflowPositions[airflowBase + 2] = airflowStartZ;
@@ -18824,7 +19470,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             airflowPositions[airflowBase + 5] = airflowStartZ - flightForward.z * airflowLength;
           }
           airflowAttribute.needsUpdate = true;
-          airflowMaterial.opacity = Math.min(0.46, 0.10 + speedRatio * 0.30 + weather.windSpeed * 0.006);
+          airflowFadeAttribute.needsUpdate=true;
+          airflowMaterial.opacity = Math.min(0.30, 0.08 + speedRatio * 0.20 + weather.windSpeed * 0.003);
           airflowMaterial.color.setHex(raptor.diving ? 0xfde68a : 0xe0f2fe);
           airflowLines.visible = true;
         }
@@ -19063,33 +19710,108 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           talonThrow.until = motionNow + RAPTOR_TALON_THROW_MS;
           talonThrow.preferred = preferredPrey || null;
           talonThrow.closest = null;
+          talonThrow.sample = null;
           publishControlState();
           resolveTalonThrow(true);
+          updateTargetFeedback(motionNow, false);
         }
-        // The bird's speed toward the prey, less the prey's speed away from it.
+        function strikeFlightVelocity() {
+          var forward=flightForwardVector(flightForward);
+          var wind=weather.windSpeed*(1+Math.sin(weather.gustPhase*0.4)*0.4);
+          return {x:forward.x*raptor.speed+Math.sin(weather.windDir)*wind,
+            y:forward.y*raptor.speed+flightVerticalDrift,
+            z:forward.z*raptor.speed-Math.cos(weather.windDir)*wind};
+        }
+        // Closing speed uses world motion, including wind and the prey's climb or dive.
         function preyClosingSpeed(target) {
           if (!target || !(target.distance > 0.001)) return 0;
-          var position = target.prey.mesh.position;
-          return raptor.speed * target.dot - ((target.prey.vx || 0) * (position.x - raptor.x) +
-            (target.prey.vz || 0) * (position.z - raptor.z)) / target.distance;
+          var position=target.prey.mesh.position;
+          return raptorRelativeClosingSpeed({x:position.x-raptor.x,y:position.y-raptor.y,z:position.z-raptor.z},
+            strikeFlightVelocity(),{x:target.prey.vx||0,y:target.prey.vy||0,z:target.prey.vz||0});
+        }
+        // Predict the current line for guidance only. An early press may still be steered.
+        function talonThrowWindow(target) {
+          if(!target || target.dot<0.7 || raptor.landed || raptor.crashed || activePerch) return false;
+          if(target.canStrike) return true;
+          if(target.distance>talonThrowReach(target)) return false;
+          var velocity=strikeFlightVelocity(),prey=target.prey,position=prey.mesh.position,seconds=RAPTOR_TALON_THROW_MS/1000;
+          var forward=flightForwardVector(flightForward);
+          var relative={x:position.x-raptor.x,y:position.y-raptor.y,z:position.z-raptor.z};
+          var relativeEnd={x:relative.x+((prey.vx||0)-velocity.x)*seconds,
+            y:relative.y+((prey.vy||0)-velocity.y)*seconds,z:relative.z+((prey.vz||0)-velocity.z)*seconds};
+          var contact=raptorSweptStrikeContact(relative,relativeEnd,forward,forward,target.reach,0,1);
+          if(!contact) return false;
+          var t=seconds*contact.time;
+          var birdAtContact={x:raptor.x+velocity.x*t,y:raptor.y+velocity.y*t,z:raptor.z+velocity.z*t};
+          if(raptorTerrainCrossing(raptor,birdAtContact,terrainHeightAt,1.5,terrainCellSize,terrainHalfSize)) return false;
+          return terrainSightClear(birdAtContact,{x:position.x+(prey.vx||0)*t,
+            y:position.y+(prey.vy||0)*t,z:position.z+(prey.vz||0)*t},terrainHeightAt);
         }
         // How far off prey can be when the talons go out and still be caught during the throw.
         function talonThrowReach(target) {
           return target.reach + Math.max(0, preyClosingSpeed(target)) * RAPTOR_TALON_THROW_MS / 1000;
         }
-        // Each frame the talons are out: take the first prey inside reach (the clicked one
-        // first), or when the throw ends report the miss from the closest approach.
-        function resolveTalonThrow(firstFrame) {
-          if (!talonThrow.active) return;
+        function sampleTalonThrow() {
+          var forward = flightForwardVector(flightForward);
+          return { at: motionNow, bird: { x: raptor.x, y: raptor.y, z: raptor.z },
+            forward: { x: forward.x, y: forward.y, z: forward.z },
+            prey: preyMeshes.map(function(prey) { return { prey: prey,
+              position: { x: prey.mesh.position.x, y: prey.mesh.position.y, z: prey.mesh.position.z } }; }) };
+        }
+        // Sample only during an active throw. Sweeping from the press onwards catches
+        // fast passes between rendered frames without widening reach or the READY cone.
+        function resolveTalonThrow(firstFrame, frame) {
+          if (!talonThrow.active || simPaused) return;
           var now = motionNow, hit = null, preferred = talonThrow.preferred;
+          var previous = firstFrame ? null : talonThrow.sample, current = sampleTalonThrow();
+          var frameDuration = previous ? now - previous.at : 0;
+          var surfaceLimit = frame && frame.surface ? frame.surface.time : 1;
+          var sweepEnd = frameDuration > 0 ? Math.min(surfaceLimit, 1, (talonThrow.until - previous.at) / frameDuration) : -1;
           var preferredIndex = preferred ? preyMeshes.indexOf(preferred) : -1;
           var aimed = preferredIndex !== -1 ? evaluatePreyTarget(preferred, preferredIndex) : acquireTarget();
           if (aimed && (!talonThrow.closest || aimed.distance < talonThrow.closest.distance)) talonThrow.closest = aimed;
           for (var index = 0; index < preyMeshes.length; index++) {
             var candidate = evaluatePreyTarget(preyMeshes[index], index);
-            // Only prey the HUD would call READY; the throw adds time, not a wider angle.
-            if (!candidate.canStrike) continue;
-            if (!hit || candidate.prey === preferred || (hit.prey !== preferred && candidate.distance < hit.distance)) hit = candidate;
+            if (raptor.landed || activePerch || raptor.crashed) continue;
+            var contactTime = Infinity, contactPoint = null, contactBird = null, contactForward = null, contactFraction = 1;
+            if (previous && sweepEnd >= 0) {
+              var oldPrey = previous.prey.find(function(entry) { return entry.prey === candidate.prey; });
+              if (oldPrey) {
+                var position = candidate.prey.mesh.position;
+                var relativeStart = { x: oldPrey.position.x - previous.bird.x, y: oldPrey.position.y - previous.bird.y, z: oldPrey.position.z - previous.bird.z };
+                var relativeEnd = { x: position.x - current.bird.x, y: position.y - current.bird.y, z: position.z - current.bird.z };
+                var contact = raptorSweptStrikeContact(relativeStart, relativeEnd, previous.forward, current.forward, candidate.reach, 0, sweepEnd);
+                if (contact) {
+                  var birdAtContact = { x: previous.bird.x + (current.bird.x - previous.bird.x) * contact.time,
+                    y: previous.bird.y + (current.bird.y - previous.bird.y) * contact.time,
+                    z: previous.bird.z + (current.bird.z - previous.bird.z) * contact.time };
+                  var preyAtContact = { x: oldPrey.position.x + (position.x - oldPrey.position.x) * contact.time,
+                    y: oldPrey.position.y + (position.y - oldPrey.position.y) * contact.time,
+                    z: oldPrey.position.z + (position.z - oldPrey.position.z) * contact.time };
+                  if ((!frame || !frame.surface || contact.time < surfaceLimit-1e-9) && terrainSightClear(birdAtContact, preyAtContact, terrainHeightAt)) {
+                    contactTime = previous.at + frameDuration * contact.time;
+                    contactPoint = preyAtContact;
+                    contactBird = birdAtContact;
+                    contactForward = {x:previous.forward.x+(current.forward.x-previous.forward.x)*contact.time,
+                      y:previous.forward.y+(current.forward.y-previous.forward.y)*contact.time,
+                      z:previous.forward.z+(current.forward.z-previous.forward.z)*contact.time};
+                    contactFraction = contact.time;
+                  }
+                }
+              }
+            }
+            // Endpoint checks still support an immediate press and newly spawned prey.
+            if ((!frame || !frame.surface) && candidate.canStrike && now <= talonThrow.until && terrainSightClear(raptor, candidate.prey.mesh.position, terrainHeightAt)) {
+              contactTime = Math.min(contactTime, now);
+            }
+            if (!isFinite(contactTime)) continue;
+            candidate.contactTime = contactTime;
+            candidate.contactPoint = contactPoint;
+            candidate.contactBird = contactBird;
+            candidate.contactForward = contactForward;
+            candidate.contactFraction = contactFraction;
+            if (!hit || candidate.prey === preferred || (hit.prey !== preferred &&
+                (candidate.contactTime < hit.contactTime || (candidate.contactTime === hit.contactTime && candidate.distance < hit.distance)))) hit = candidate;
           }
           // The throw only waits for prey that is ahead and not yet close enough (a press a
           // moment early). Nothing in view, prey off to the side, or prey beyond what one throw
@@ -19097,12 +19819,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var hopeless = firstFrame && (!aimed || aimed.dot < 0.7 || aimed.distance > talonThrowReach(aimed));
           if (hit) {
             endTalonThrow();
-            catchPrey(hit.index, now);
-          } else if (hopeless || now >= talonThrow.until || raptor.landed || raptor.crashed) {
+            if (frame && hit.contactBird) {
+              raptor.x=hit.contactBird.x; raptor.y=hit.contactBird.y; raptor.z=hit.contactBird.z;
+              raptor.pitch=Math.atan2(hit.contactForward.y,Math.hypot(hit.contactForward.x,hit.contactForward.z));
+            }
+            catchPrey(hit.index, now, hit.contactPoint);
+            if (frame && hit.contactBird && !simPaused) {
+              var remainingStep=raptorCatchFlightStep(raptor,raptor.yaw,raptor.pitch,raptor.speed,raptor.maxG,
+                frameDuration*(1-hit.contactFraction)/1000,frame.windX,frame.windZ,frame.verticalDrift);
+              raptor.x=remainingStep.x;raptor.y=remainingStep.y;raptor.z=remainingStep.z;raptor.pitch=remainingStep.pitch;
+            }
+            return hit;
+          } else if (hopeless || now >= talonThrow.until || raptor.landed || raptor.crashed || (frame && frame.surface)) {
             var closest = talonThrow.closest;
             endTalonThrow();
             missStrike(closest, now);
-          }
+          } else talonThrow.sample = current;
         }
         // Raptor focus: time eases down while the bird closes on prey it is heading for, once
         // per approach and for at most RAPTOR_FOCUS_MAX_MS of real time, so circling cannot
@@ -19147,6 +19879,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         function endTalonThrow() {
           talonThrow.active = false;
           talonThrow.preferred = talonThrow.closest = null;
+          talonThrow.sample = null;
           strikeRecoveryUntil = motionNow + 400;
           queueFlightAction(function() {
             strikeReady = true;
@@ -19154,17 +19887,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           }, 400);
           publishControlState();
         }
-        function catchPrey(hitIdx, now) {
+        function catchPrey(hitIdx, now, contactPoint) {
           var caught = preyMeshes[hitIdx];
-          spawnCatchFx(caught.mesh.position.x, caught.mesh.position.y, caught.mesh.position.z, caught.data.color || 0xfde047, caught.surfaceMode);
-          scene.remove(caught.mesh);
-          caught.mesh.traverse(function(object) {
-            if (object.geometry) object.geometry.dispose();
-            if (object.material) {
-              if (Array.isArray(object.material)) object.material.forEach(function(material) { material.dispose(); });
-              else object.material.dispose();
-            }
-          });
+          var impact = contactPoint || caught.mesh.position;
+          spawnCatchFx(impact.x, impact.y, impact.z, caught.data.color || 0xfde047, caught.surfaceMode, caught.animation.kind);
+          // Publish the fresh pooled slot even when this catch freezes the mission.
+          updateCatchFx(0);
+          beginCarriedPrey(caught);
           preyMeshes.splice(hitIdx, 1);
           runCatches++;
           missionCatches += 1;
@@ -19228,6 +19957,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // above the ground used to fly on at stoop speed into a crash that cleared the run.
           raptor.speed = raptorSpeedAfterCatch(raptor.speed, species.massKg, preyBodyMassKg);
           catchPullOutUntil = now + 900;
+          paintFlightResourceTelemetry();
         }
         function missStrike(targetInfo, now) {
           var missFeedback = strikeMissReason(targetInfo);
@@ -19275,7 +20005,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           if (_rmFX) {
             gazeTarget=null;gazeState.yaw=gazeState.pitch=0;headMesh.rotation.set(0,0,0);
             tail.rotation.y=0;tail.rotation.x=raptor.landed||raptor.crashed?-0.08:0;
-            strikeFootExtension=0;raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=wingPose.fold;});
+            strikeFootExtension=carriedPrey?1:0;raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=carriedPrey?1:wingPose.fold;});
             clearTouchdownFx();
             preyMeshes.forEach(function(prey){if(prey.animation.kind==='fish'){var swim=prey.animation.swim;swim.amplitude=swim.tailYaw=swim.bodyYaw=swim.roll=0;prey.animation.tail.rotation.y=0;prey.visual.rotation.y=prey.animation.pose.heading||0;prey.visual.rotation.z=0;prey.visual.position.y=0;}});
             waterWakeEntries.forEach(function(entry){entry.state.opacity=0;entry.wake.visible=false;entry.wake.material.opacity=0;});
@@ -19318,6 +20048,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             strikeFxPositionAttribute.needsUpdate = true;
             strikeContactMesh.instanceMatrix.needsUpdate = true;
           }
+          updateCarriedPrey(0);
+          updateTargetFeedback(motionNow,false);
           repaintPausedFlight(true);
         }
         if (reducedMotionMedia && reducedMotionMedia.addEventListener) {
@@ -19422,6 +20154,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         telemetryWeather.parentElement.dataset.raptorWeather = 'true';
         var telemetryMission = addTelemetryMetric('Mission', 'mission');
         telemetryMission.parentElement.dataset.raptorMissionMetric = 'true';
+        function paintFlightResourceTelemetry() {
+          var calPct = Math.max(0, Math.min(100, (raptor.calories / raptor.caloriesMax) * 100));
+          var stamPct = Math.max(0, Math.min(100, (raptor.stamina / raptor.staminaMax) * 100));
+          telemetryCalories.value.textContent = Math.round(calPct) + '%';
+          telemetryStamina.value.textContent = Math.round(stamPct) + '%';
+          telemetryCaloriesFill.style.width = Math.round(calPct) + '%';
+          telemetryStaminaFill.style.width = Math.round(stamPct) + '%';
+          telemetryEnergy.parentElement.dataset.energyState = calPct < 20 ? 'critical' : calPct < 40 ? 'low' : stamPct < 20 ? 'fatigued' : 'stable';
+          telemetryEnergy.parentElement.setAttribute('aria-label', 'Energy: calories ' + Math.round(calPct) + ' percent, stamina ' + Math.round(stamPct) + ' percent');
+          telemetryMission.textContent = missionProgressText();
+          telemetryMission.parentElement.dataset.missionState = missionOutcome;
+        }
         hudParent.appendChild(telemetryStrip);
         keyGuide = document.createElement('div');
         keyGuide.className = 'rh-flight-key-guide';
@@ -19885,7 +20629,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
               (lateralGoal - cameraLateralLead) * (snap ? 1 : dampingAlpha(7, dt));
             chaseLookX += Math.cos(raptor.yaw) * cameraLateralLead;
             chaseLookZ += Math.sin(raptor.yaw) * cameraLateralLead;
-            var targetBlendGoal = (!_rmFX && cameraTrackedPrey && targetLockOn && !practiceTrail.active)
+            var targetBlendGoal = (!_rmFX && cameraTrackedPrey && targetLockOn && !practiceTrail.active && !carriedPrey && !strikeFeedbackActive)
               ? Math.min(0.22, targetProximity * 0.22)
               : 0;
             cameraTargetBlend +=
@@ -19972,13 +20716,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
         // Refresh guidance independently of simulation steps, including paused control changes.
         function updateTargetFeedback(now, recordProgress) {
           var feedbackAge = motionNow - strikeFeedback.startedAt;
-          strikeFeedbackActive = strikeFeedback.kind !== 'idle' && feedbackAge >= 0 && feedbackAge < strikeFeedback.duration;
+          var resultFeedbackActive = strikeFeedback.kind !== 'idle' && feedbackAge >= 0 && feedbackAge < strikeFeedback.duration;
           // Stable attention within this species' field of view, released immediately on occlusion.
           var soaring = mission.id === 'thermalKettle';
           var liftNavigation = soaring ? thermalNavigation() : null;
           var targetInfo = targetLockOn && !soaring ? acquireTarget(true) : null;
+          var nextStrikeStage = raptorStrikeStage(targetInfo, targetInfo ? talonThrowReach(targetInfo) : 0, strikeReady, talonThrow.active,
+            !(raptor.landed || raptor.crashed || activePerch || soaring || targetProbe || !targetLockOn), talonThrowWindow(targetInfo));
+          var strikeStageChanged = nextStrikeStage !== lastStrikeStage;
+          // A retry may start while the previous result is still visible. Keep that
+          // result in Last strike while current action guidance follows the new throw.
+          strikeFeedbackActive = resultFeedbackActive && nextStrikeStage !== 'throw' && nextStrikeStage !== 'window';
           var lockTarget = targetInfo ? targetInfo.prey : null;
-          cameraTrackedPrey = lockTarget;
+          cameraTrackedPrey = carriedPrey || strikeFeedbackActive ? null : lockTarget;
           targetProximity = targetInfo
             ? Math.max(0, Math.min(1, 1 - targetInfo.distance / 300))
             : 0;
@@ -20004,14 +20754,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var targetCorrectionChanged = nextTargetCorrection !== lastTargetCorrection;
           lastTargetCorrection = nextTargetCorrection;
           var highlightedPrey = targetInfo ? targetInfo.prey : null;
+          var highlightStrength = targetInfo ? raptorTargetHighlightStrength(targetInfo.distance, targetInfo.reach) : 1;
           var showTargetHighlights = !soaring && !practiceTrail.active && canvasEl.parentElement.dataset.raptorScenicView !== 'true';
           preyMeshes.forEach(function(pm2) {
             var selected = !!(showTargetHighlights && targetLockOn && highlightedPrey === pm2);
             if (pm2.beacon) {
               pm2.beacon.visible = selected;
               if (selected) {
-                pm2.beacon.material.color.setHex(nextTargetState === 'ready' ? 0x22c55e : nextTargetState === 'close' ? 0xfbbf24 : 0xf87171);
-                var beaconPulse = _rmFX ? 1 : 1 + Math.sin(motionNow * 0.006 + pm2.bobPhase) * 0.12;
+                pm2.beacon.material.color.setHex(nextStrikeStage === 'window' || nextStrikeStage === 'throw' || nextTargetState === 'ready' ? 0x22c55e : nextTargetState === 'close' ? 0xfbbf24 : 0xf87171);
+                pm2.beacon.material.opacity = 0.26 + highlightStrength * 0.46;
+                var beaconPulse = _rmFX || nextStrikeStage==='window' || nextStrikeStage==='throw' ? 1 : 1 + Math.sin(motionNow * 0.006 + pm2.bobPhase) * 0.08;
                 pm2.beacon.scale.setScalar(beaconPulse);
               } else {
                 pm2.beacon.scale.setScalar(1);
@@ -20020,8 +20772,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             if (pm2.beaconCap) {
               pm2.beaconCap.visible = selected;
               if (selected) {
-                pm2.beaconCap.material.color.setHex(nextTargetState === 'ready' ? 0x4ade80 : nextTargetState === 'close' ? 0xfde047 : 0xfca5a5);
-                pm2.beaconCap.scale.setScalar(_rmFX ? 1 : 0.6 + Math.sin(motionNow * 0.005 + pm2.bobPhase) * 0.4);
+                pm2.beaconCap.material.color.setHex(nextStrikeStage === 'window' || nextStrikeStage === 'throw' || nextTargetState === 'ready' ? 0x4ade80 : nextTargetState === 'close' ? 0xfde047 : 0xfca5a5);
+                pm2.beaconCap.material.opacity = 0.18 + highlightStrength * 0.72;
+                pm2.beaconCap.scale.setScalar(_rmFX || nextStrikeStage==='window' || nextStrikeStage==='throw' ? 1 : 0.9 + Math.sin(motionNow * 0.005 + pm2.bobPhase) * 0.1);
               } else {
                 pm2.beaconCap.scale.setScalar(1);
               }
@@ -20035,36 +20788,38 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var nextTargetAlign = targetInfo
             ? Math.max(0, Math.min(1, (targetInfo.dot - 0.2) / (_alignGate - 0.2)))
             : 0;
-          var nextTargetRange = targetInfo
-            ? Math.max(0, Math.min(1, targetInfo.reach / Math.max(targetInfo.reach, targetInfo.distance)))
-            : 0;
+          var nextTargetRange = targetInfo ? raptorStrikeRangeFill(targetInfo.distance, targetInfo.reach) : 0;
           // Quantised: the meters must not push a React update every frame.
           nextTargetAlign = Math.round(nextTargetAlign * 20) / 20;
-          nextTargetRange = Math.round(nextTargetRange * 20) / 20;
           var _alignPct = Math.round(nextTargetAlign * 100);
+          var earlyStrikeWindow = nextStrikeStage === 'window';
           var nextTargetHint = soaring ? liftNavigation.hint : nextTargetState === 'hit' || nextTargetState === 'miss' ? strikeFeedback.message :
             nextTargetState === 'watch' ? 'WATCH - prey '+targetDistanceDisplay+' · '+takeoffControlHint() :
             nextTargetState === 'off' ? 'Target assist is off' :
             nextTargetState === 'search' ? 'SEARCH - scan ahead for prey' :
+            talonThrow.active ? 'TALONS OUT - keep prey ahead through the catch' :
             nextTargetState === 'recovering' ? 'RECOVERING - talons resetting' :
             nextTargetState === 'ready' ? 'READY - press Strike' :
+            earlyStrikeWindow ? 'STRIKE WINDOW - strike now or tap prey' :
             nextTargetState === 'stoop' ? 'STOOP - hold ' + (controlKeyLabel('dive') || 'Dive') + ' (' + Math.round(-targetInfo.verticalOffset) + ' m below)' :
-            nextTargetState === 'close' ? 'CLOSE - ' + targetDistanceDisplay + ' (need ' + Math.round(targetInfo.reach) + ' m)' :
+            nextTargetState === 'close' ? 'CLOSE - ' + targetDistanceDisplay + (earlyStrikeWindow ? ' · Strike now or tap prey' : ' (need ' + Math.round(targetInfo.reach) + ' m)') :
             'ALIGN ' + _alignPct + '% - ' + targetCorrectionLabel(nextTargetCorrection) +
               (controlKeyLabel(nextTargetCorrection) ? ' · ' + controlKeyLabel(nextTargetCorrection) : '');
-          updateTargetGuide(targetInfo, nextTargetState, now);
-          updateTargetFocusHalo(targetInfo, nextTargetState, now);
+          var targetVisualState = earlyStrikeWindow || nextStrikeStage === 'throw' ? 'ready' : nextTargetState;
+          updateTargetGuide(targetInfo, targetVisualState, now);
+          updateTargetFocusHalo(targetInfo, targetVisualState, now);
           if (!showTargetHighlights) { targetGuide.visible = false; targetFocusHalo.visible = false; }
           if (nextTargetState !== lastTargetState || nextTargetHint !== lastTargetHint
-              || nextTargetAlign !== lastTargetAlign || nextTargetRange !== lastTargetRange) {
+              || nextTargetAlign !== lastTargetAlign || nextTargetRange !== lastTargetRange || strikeStageChanged) {
             var targetStateChanged = nextTargetState !== lastTargetState;
             lastTargetState = nextTargetState;
+            lastStrikeStage = nextStrikeStage;
             lastTargetHint = nextTargetHint;
             lastTargetAlign = nextTargetAlign;
             lastTargetRange = nextTargetRange;
             var targetPatch = { targetState: nextTargetState, targetHint: nextTargetHint,
-              targetAlign: nextTargetAlign, targetRange: nextTargetRange };
-            if (targetStateChanged || targetCorrectionChanged) refreshKeyGuide();
+              targetAlign: nextTargetAlign, targetRange: nextTargetRange, strikeStage: nextStrikeStage };
+            if (targetStateChanged || targetCorrectionChanged || strikeStageChanged) refreshKeyGuide();
             if (targetStateChanged && recordProgress) {
               if (!soaring && nextTargetState !== 'hit' && nextTargetState !== 'miss') {
                 recordFlightEvent('target', nextTargetState === 'ready' ? 'Target ready' : nextTargetState === 'search' ? 'Scanning for prey' : 'Target ' + nextTargetState, nextTargetHint);
@@ -20081,7 +20836,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
                 : 'Target alignment changed. ' + targetCorrectionLabel(nextTargetCorrection) + '.';
             }
             notifyUI(targetPatch);
-            if (targetStateChanged) updateMissionHud();
+            if (targetStateChanged || strikeStageChanged) updateMissionHud();
           }
           lastTrackerTargetInfo = targetInfo;
           updateTargetTracker(targetInfo, nextTargetState);
@@ -20134,29 +20889,44 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             offscreenIndicatorVisible = projectedTarget.offscreen;
             offscreenIndicatorEdge = projectedTarget.edge;
             targetProjectionState = projectedTarget.offscreen ? 'offscreen' : 'onscreen';
-            reticle.dataset.lockState = nextTargetState;
+             var strikeWindow = lastStrikeStage === 'window' && !targetProbe;
+             reticle.dataset.strikeStage = lastStrikeStage;
+             var strikeProgress = talonThrow.active ? Math.max(0,(talonThrow.until-motionNow)/RAPTOR_TALON_THROW_MS) : !strikeReady ? Math.max(0,1-(strikeRecoveryUntil-motionNow)/400) : strikeWindow ? 1 : 0;
+             reticleLabel.style.setProperty('--strike-progress',String(Math.round(strikeProgress*20)/20));
+             reticle.dataset.lockState = nextTargetState;
             reticle.dataset.offscreen = projectedTarget.offscreen ? 'true' : 'false';
             reticle.dataset.targetEdge = projectedTarget.edge;
             reticle.style.display = 'block';
             reticle.style.left = screenX + 'px';
             reticle.style.top = screenY + 'px';
-            var reticleReadyColor = inStrikeRange ? '#86efac' : nextTargetState === 'close' ? '#fde68a' : '#a5e7ef';
+             var reticleReadyColor = inStrikeRange || strikeWindow || talonThrow.active ? '#86efac' : nextTargetState === 'close' ? '#fde68a' : '#a5e7ef';
             reticle.style.color = reticleReadyColor;
             reticle.style.setProperty('--target-bearing', (Math.atan2(-projectedY * screenH, projectedX * screenW) * 180 / Math.PI + 45) + 'deg');
             // The lower HUD inset includes 80px for the offscreen marker itself.
             // Captions need the control boundary, even when the prey remains onscreen.
             var labelViewportHeight = projectedTarget.offscreen ? screenH : screenH - Math.max(0, targetHudInsets.bottom - 80);
-            var labelLayout = layoutTargetLabel(screenX, screenY, screenW - (projectedTarget.offscreen ? targetHudInsets.labelRight : 0), labelViewportHeight);
+            if (targetLabelPrey !== lockTarget || targetLabelOffscreen !== projectedTarget.offscreen) targetLabelPlacement = '';
+            var labelLayout = layoutTargetLabel(screenX, screenY, screenW - (projectedTarget.offscreen ? targetHudInsets.labelRight : 0), labelViewportHeight, targetLabelPlacement);
+            targetLabelPlacement = labelLayout.placement;
+            targetLabelPrey = lockTarget;
+            targetLabelOffscreen = projectedTarget.offscreen;
+            reticle.dataset.labelPlacement = targetLabelPlacement;
             reticleLabel.style.left = labelLayout.left + 'px';
             reticleLabel.style.top = labelLayout.top + 'px';
             reticleLabel.style.width = labelLayout.width + 'px';
             var targetName = lockTarget && lockTarget.data ? lockTarget.data.label : 'target';
             var reticlePrefix = targetMarkerLabel(nextTargetState, projectedTarget.offscreen ? projectedTarget.edge : '',
               inStrikeRange, !!(targetInfo && targetInfo.canStrike && !strikeReady && !targetProbe));
-            var reticleCaption = targetName + (targetProbe ? '' : ' · ' + targetDistanceDisplay);
+             if (!projectedTarget.offscreen && !targetProbe) {
+               if (talonThrow.active) reticlePrefix='TALONS OUT';
+               else if (strikeWindow && !inStrikeRange) reticlePrefix='STRIKE WINDOW';
+             }
+             var reticleCaption = targetName + (targetProbe ? '' : ' · ' + targetDistanceDisplay);
             if (reticleStatus.textContent !== reticlePrefix) reticleStatus.textContent = reticlePrefix;
             if (reticleName.textContent !== reticleCaption) reticleName.textContent = reticleCaption;
           } else {
+            targetLabelPlacement = ''; targetLabelPrey = null; targetLabelOffscreen = false;
+            reticle.dataset.labelPlacement = '';
             targetProjectionState = targetLockOn && hasTargetProjection ? 'behind' : 'none';
             offscreenIndicatorVisible = false;
             offscreenIndicatorEdge = '';
@@ -20515,6 +21285,194 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             edgeLimited = true;
           }
           if (edgeLimited) worldEdgeState = 'limit';
+          flightVerticalDrift=!wasLanded&&!wasCrashed&&dt>0 ? (raptor.y-frameStartY)/dt-verticalFlightSpeed : 0;
+
+          // Resolve both moving animals before applying a landing or crash. A catch
+          // earlier in this frame gets its momentum change and remaining pullout first.
+          if(wasLanded||wasCrashed) { raptor.x=frameStartX;raptor.y=frameStartY;raptor.z=frameStartZ; }
+          updateCatchFx(dt);
+          // ── Prey AI ──
+          // Prey react to how close the raptor IS, not to its footprint on the map.
+          // Detection used the horizontal distance alone, so a hawk a hundred metres up
+          // alerted the rabbit beneath it exactly as one skimming the grass did: measured
+          // in a browser, the same prey fled at the same instant on the same track at
+          // 15 m altitude (34 m away) and at 99 m altitude (106 m away). That also made
+          // the stoop the tool teaches, height traded for a close approach, unplayable
+          // as stealth. The radius is now a 3-D distance, and its base is anchored so
+          // the low cruise still alerts: 30 m up and 25 m across is 39 m, hence 40.
+          // The owl discount keeps its old ratio (15 of 25 becomes 24 of 40).
+          var detectionR = 40 + (raptor.isOwl ? -16 : 0); // owls are silent, harder to detect
+          for (var pi3 = 0; pi3 < preyMeshes.length; pi3++) {
+            var pm2 = preyMeshes[pi3];
+            var pdx = pm2.mesh.position.x - raptor.x;
+            var pdy = pm2.mesh.position.y - raptor.y;
+            var pdz = pm2.mesh.position.z - raptor.z;
+            var pd3 = Math.sqrt(pdx * pdx + pdy * pdy + pdz * pdz);   // true distance, for detection
+            var preyDetectionRadius = detectionR * pm2.escapeProfile.detectionScale;
+            if (pd3 < preyDetectionRadius && pm2.data.behavior === 'flee-on-sight') {
+              if (!pm2.alerted && pm2.escapeProfile.seekCover) {
+                pm2.coverTarget = nearestPreyCoverTarget(pm2.mesh.position.x, pm2.mesh.position.z);
+              }
+              pm2.alerted = true;
+              pm2.fleeBoost = 2.0;
+            }
+            if (mission.id === 'silentStrike' && pullUpKey && pd3 < SILENT_STRIKE_ALERT_RANGE_M && !pm2.missionAlerted) {
+              pm2.missionAlerted = true;
+              missionAlerts++;
+              energyEventLog.push({ msg: 'Prey alert - glide silently near the target', t: motionNow, color: '#fca5a5' });
+              evaluateMission();
+              if(simPaused) break;
+            }
+            if (pm2.alerted) {
+              var fleeAngle = Math.atan2(pdz, pdx);
+              if (pm2.coverTarget) {
+                var coverDx = pm2.coverTarget.x - pm2.mesh.position.x;
+                var coverDz = pm2.coverTarget.z - pm2.mesh.position.z;
+                var coverDistance = Math.sqrt(coverDx * coverDx + coverDz * coverDz);
+                if (coverDistance > 2) {
+                  var awayX = Math.cos(fleeAngle);
+                  var awayZ = Math.sin(fleeAngle);
+                  fleeAngle = Math.atan2(awayZ * 0.65 + coverDz / coverDistance * 0.35,
+                                         awayX * 0.65 + coverDx / coverDistance * 0.35);
+                }
+              }
+              var jink = _rmFX ? 0 : Math.sin(motionNow * 0.006 + pm2.escapePhase) * pm2.escapeProfile.zigzag;
+              var escapeAngle = fleeAngle + jink;
+              var dashScale = pm2.escapeProfile.mode === 'freeze-dash'
+                ? (Math.sin(motionNow * 0.009 + pm2.escapePhase) > -0.2 ? 1 : 0.08)
+                : 1;
+              pm2.vx = Math.cos(escapeAngle) * pm2.data.speedMps * pm2.fleeBoost * 0.6 * dashScale;
+              pm2.vz = Math.sin(escapeAngle) * pm2.data.speedMps * pm2.fleeBoost * 0.6 * dashScale;
+              pm2.fleeBoost = Math.max(1, pm2.fleeBoost - 0.5 * dt);
+              // Calm down by true distance too, or a bird climbing straight up from a
+              // prey keeps it alerted from half a kilometre overhead.
+              if (pd3 > 80) {
+                pm2.alerted = false;
+                pm2.fleeBoost = 1;
+                pm2.coverTarget = null;
+              }
+            } else if (pm2.data.behavior === 'wander') {
+              if (Math.random() < 1 - Math.exp(-1.2 * dt)) {
+                pm2.vx = (Math.random() - 0.5) * pm2.data.speedMps;
+                pm2.vz = (Math.random() - 0.5) * pm2.data.speedMps;
+              }
+            }
+            var preyPreviousY=pm2.mesh.position.y;
+            pm2.mesh.position.x += pm2.vx * dt;
+            pm2.mesh.position.z += pm2.vz * dt;
+            // Keep hunt objectives inside the bird's reachable, sampled world.
+            // Reflect only an outward component so lock-on prey never teleport.
+            if (pm2.mesh.position.x > preyWorldEdgeHard) {
+              pm2.mesh.position.x = preyWorldEdgeHard;
+              if (pm2.vx > 0) pm2.vx *= -0.65;
+            } else if (pm2.mesh.position.x < -preyWorldEdgeHard) {
+              pm2.mesh.position.x = -preyWorldEdgeHard;
+              if (pm2.vx < 0) pm2.vx *= -0.65;
+            }
+            if (pm2.mesh.position.z > preyWorldEdgeHard) {
+              pm2.mesh.position.z = preyWorldEdgeHard;
+              if (pm2.vz > 0) pm2.vz *= -0.65;
+            } else if (pm2.mesh.position.z < -preyWorldEdgeHard) {
+              pm2.mesh.position.z = -preyWorldEdgeHard;
+              if (pm2.vz < 0) pm2.vz *= -0.65;
+            }
+
+            var flightTarget = pm2.alerted ? Math.max(0, pm2.escapeProfile.climb) : 0;
+            pm2.flightHeight += (flightTarget - pm2.flightHeight) * dampingAlpha(4, dt);
+            var depthTarget = pm2.alerted && pm2.animation.kind === 'fish' ? -2.5 : 0;
+            pm2.depthOffset += (depthTarget - pm2.depthOffset) * dampingAlpha(3, dt);
+            if (pm2.surfaceMode === 'subsurface') {
+              var fishTargetY = pm2.waterY + pm2.depthOffset;
+              pm2.mesh.position.y += (fishTargetY - pm2.mesh.position.y) * dampingAlpha(4, dt);
+            } else if (pm2.surfaceMode === 'water-surface') {
+              pm2.mesh.position.y = -1.5 + pm2.groundClearance + pm2.flightHeight;
+            } else {
+              pm2.mesh.position.y = terrainHeightAt(pm2.mesh.position.x, pm2.mesh.position.z) +
+                pm2.groundClearance + pm2.flightHeight;
+            }
+
+            // Root motion includes terrain height, climbing and diving beneath water.
+            pm2.vy=dt>0 ? Math.max(-40,Math.min(40,(pm2.mesh.position.y-preyPreviousY)/dt)) : 0;
+            if (pm2.visual && pm2.animation) {
+              var preyPose=pm2.animation.pose;
+              advancePreyVisualPose(preyPose,pm2.vx,pm2.vz,pm2.flightHeight,motionNow,pm2.bobPhase,pm2.alerted,dt,_rmFX);
+              var motionPhase = preyPose.phase;
+              var preyBob = 0;
+              if (!_rmFX) {
+                var rawPreyBob = Math.sin(motionPhase);
+                preyBob = pm2.flightHeight > 0 || pm2.surfaceMode === 'subsurface'
+                  ? rawPreyBob * 0.08
+                  : pm2.animation.kind === 'rabbit'
+                    ? Math.abs(rawPreyBob) * 0.22
+                    : Math.max(0, rawPreyBob) * 0.08;
+              }
+              pm2.visual.position.y = preyBob;
+              pm2.visual.rotation.y=preyPose.heading;
+              pm2.visual.rotation.z=pm2.animation.kind==='bird'?preyPose.bank:0;
+              if(pm2.animation.kind==='fish'){
+                var swim=pm2.animation.swim;
+                advanceFishSwim(swim,Math.hypot(pm2.vx,pm2.vz),pm2.data.speedMps,dt,_rmFX,pm2.bobPhase);
+                pm2.visual.position.y=0;pm2.visual.rotation.order='YXZ';
+                pm2.visual.rotation.y=preyPose.heading+swim.bodyYaw;pm2.visual.rotation.z=swim.roll;
+              }
+              if(pm2.surfaceMode==='water-surface'){
+                var floatState=pm2.animation.float;
+                var floatDepth=-1.5-terrainHeightAt(pm2.mesh.position.x,pm2.mesh.position.z);
+                sampleLakeSurface(floatState,pm2.mesh.position.x,pm2.mesh.position.z,floatDepth,_rmFX?0:motionNow*0.001,vegetationWind.value.x,vegetationWind.value.z);
+                advanceWaterBirdFloat(floatState,preyPose.heading,pm2.flightHeight,pm2.groundClearance,dt,_rmFX);
+                pm2.visual.rotation.order='YXZ';
+                pm2.visual.position.y=floatState.offset+preyBob*(1-floatState.contact);
+                pm2.visual.rotation.x=floatState.pitch;
+                pm2.visual.rotation.z=floatState.roll+preyPose.bank*(1-floatState.contact);
+              }
+              pm2.animation.wings.forEach(function(wing, wingIndex) {
+                var wingSide = wingIndex === 0 ? 1 : -1;
+                if(pm2.animation.kind==='bird'){
+                  var side=wingIndex===0?-1:1;
+                  wing.rotation.z=side*preyPose.wingAngle;
+                  wing.rotation.y=side*1.15*(1-preyPose.spread);
+                  wing.scale.x=0.3+0.7*preyPose.spread;
+                } else wing.rotation.z = wingSide * (_rmFX ? 0.08 : Math.sin(motionPhase * 1.7) * (0.24+0.46*(preyPose.rate-8)/10));
+              });
+              pm2.animation.legs.forEach(function(leg, legIndex) {
+                leg.rotation.x = _rmFX ? 0 : Math.sin(motionPhase * 1.4 + legIndex * Math.PI) * 0.55;
+              });
+              if (pm2.animation.tail) {
+                if(pm2.animation.kind==='fish'){pm2.animation.tail.rotation.y=pm2.animation.swim.tailYaw;pm2.animation.tail.rotation.z=0;}
+                else pm2.animation.tail.rotation.z = _rmFX ? 0 : Math.sin(motionPhase * 0.8) * (pm2.animation.kind==='bird'?0.06*preyPose.spread:0.22);
+              }
+            }
+            // Despawn ancient prey
+            if (motionNow - pm2.spawnedAt > 60000) {
+              scene.remove(pm2.mesh);
+              pm2.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); } });
+              preyMeshes.splice(pi3, 1); pi3--;
+            }
+          }
+          updateWaterWakes(now,dt);
+          updatePreyContacts();
+
+          var frameOrigin={x:frameStartX,y:frameStartY,z:frameStartZ};
+          var strikeSurface=!wasLanded&&!wasCrashed ? raptorTerrainCrossing(frameOrigin,raptor,terrainHeightAt,1.5,terrainCellSize,terrainHalfSize) : null;
+          var strikePerch=!wasLanded&&!wasCrashed&&motionNow>perchLaunchUntil
+            ? practicePerchCrossing(frameOrigin,raptor,practicePerch,raptor.speed) : null;
+          if(strikePerch) {
+            var frameDrop=frameStartY-raptor.y;
+            var perchTime=frameDrop>0 ? Math.max(0,Math.min(1,(frameStartY-practicePerch.y-1.5)/frameDrop)) : 1;
+            if(!strikeSurface || perchTime<strikeSurface.time) strikeSurface={time:perchTime};
+          }
+          var catchVerticalDrift=dt>0 ? (raptor.y-frameStartY)/dt-verticalFlightSpeed+
+            ((diveKey||pullUpKey)?0:glideSinkRate)-(pullUpKey?0:glideSinkRate) : 0;
+          var frameCatch=resolveTalonThrow(false,{surface:strikeSurface,windX:windDriftX,windZ:windDriftZ,verticalDrift:catchVerticalDrift});
+          if(frameCatch) { diveKey=false;raptor.diving=false;flightVerticalDrift=catchVerticalDrift; }
+          if(simPaused) {
+            // Mission completion freezes at the contact pose, before any later impact.
+            raptorGroup.position.set(raptor.x,raptor.y,raptor.z);
+            raptorGroup.rotation.set(-raptor.pitch*0.6,modelYawForFlightHeading(raptor.yaw),-raptor.visualBank,'YXZ');
+            updateCarriedPrey(0);updateTargetFeedback(motionNow,false);
+            updateFlightCamera(0,false,0,0,false);repaintPausedFlight(true);
+            return;
+          }
 
           // Hard floor and mission-aware ceiling.
           // Perched birds cannot slide under wind and the cruise accelerator.
@@ -20523,14 +21481,17 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             raptor.y = frameStartY;
             raptor.z = frameStartZ;
           }
+          var surfaceFrom=frameCatch&&frameCatch.contactBird ? frameCatch.contactBird : frameOrigin;
+          var groundContact=!wasLanded&&!wasCrashed ? raptorTerrainCrossing(surfaceFrom,raptor,terrainHeightAt,1.5,terrainCellSize,terrainHalfSize) : null;
+          if(groundContact) { raptor.x=groundContact.x;raptor.y=groundContact.y;raptor.z=groundContact.z; }
           var groundY = terrainHeightAt(raptor.x, raptor.z);
           // Only a slow, downward crossing through the supported top can land here.
           // A launch cooldown prevents the first climbing frame from catching the same perch.
           var perchContact=!wasLanded&&!wasCrashed&&motionNow>perchLaunchUntil
-            ? practicePerchCrossing({x:frameStartX,y:frameStartY,z:frameStartZ},raptor,practicePerch,raptor.speed) : null;
+            ? practicePerchCrossing(surfaceFrom,raptor,practicePerch,raptor.speed) : null;
           if(perchContact){activePerch=practicePerch;raptor.x=perchContact.x;raptor.z=perchContact.z;}
           var minY = (activePerch ? activePerch.y : groundY) + 1.5;
-          if (raptor.y < minY || raptor.landed || raptor.crashed) {
+          if (groundContact || perchContact || raptor.y < minY || raptor.landed || raptor.crashed) {
             // Vertical component of motion — dominates whether it's a soft landing or a crash
             var verticalSpeed = raptor.speed * Math.abs(Math.sin(raptor.pitch));
             if (raptor.landed || raptor.crashed) {
@@ -20630,6 +21591,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           var contrastShortfall = Math.max(0, 1 - (raptorContrast / 0.25));
           raptorReadability = Math.max(0.04, Math.min(0.30,
             readabilityLightTerm + contrastShortfall * 0.12));
+          var plumageSupport=raptorPlumageContrast(readabilityLightTerm,raptorBodyLuminance,raptorBackgroundLuminance,skyAtmosphere.day.value);
+          plumageContrast.value.set(plumageSupport.shadowFill,plumageSupport.edgeShade,1);
           var visualYawDelta = raptor.yaw - raptor.visualYawLast;
           while (visualYawDelta > Math.PI) visualYawDelta -= Math.PI * 2;
           while (visualYawDelta < -Math.PI) visualYawDelta += Math.PI * 2;
@@ -20679,11 +21642,15 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
           // the speed-lines use. Vignette opacity rides the same intensity. Both
           // disabled under prefers-reduced-motion (_rmFX); zoom always wins.
           var strikeAge = motionNow - strikeFeedback.startedAt;
-          strikeFeedbackActive = strikeFeedback.kind !== 'idle' && strikeAge >= 0 && strikeAge < strikeFeedback.duration;
+          strikeFeedbackActive = !talonThrow.active && strikeFeedback.kind !== 'idle' && strikeAge >= 0 && strikeAge < strikeFeedback.duration;
           var strikeEnvelope = strikeFeedbackActive ? Math.sin(Math.min(1, strikeAge / 420) * Math.PI) : 0;
           // The guidance banner presents strike results; retain the shared clock for physical feedback.
           if (!strikeFeedbackActive) strikeFeedback.kind = 'idle';
-          var talonStrikeAmount = _rmFX || raptor.landed || raptor.crashed ? 0 : talonThrow.active ? 1 : strikeFeedbackActive ? Math.max(0, 1 - strikeAge / 360) : 0;
+          var preparationTarget = targetLockOn && !practiceTrail.active && mission.id!=='thermalKettle' && lastTrackerTargetInfo && preyMeshes.indexOf(lastTrackerTargetInfo.prey)!==-1
+            ? evaluatePreyTarget(lastTrackerTargetInfo.prey,preyMeshes.indexOf(lastTrackerTargetInfo.prey)) : null;
+          var talonPreparation = strikeReady ? raptorTalonPreparation(preparationTarget,preyClosingSpeed(preparationTarget)) : 0;
+          var talonStrikeAmount = raptor.landed || raptor.crashed ? 0 : carriedPrey ? 1 : _rmFX ? 0 : talonThrow.active ? 1 : Math.max(talonPreparation,strikeFeedbackActive ? Math.max(0, 1 - strikeAge / 360) : 0);
+          updateCarriedPrey(dt);
           strikeFootExtension+=(talonStrikeAmount-strikeFootExtension)*dampingAlpha(20,dt);
           var footExtension=wingPose.fold+(1-wingPose.fold)*strikeFootExtension;
           raptorFeet.forEach(function(foot){foot.morphTargetInfluences[0]=footExtension;});
@@ -20729,7 +21696,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             fbird.sprite.material.opacity = 0.7 * fbird.fade * flockEdgeFade;
           }
 
-          updateCatchFx(dt);
           updateTouchdownFx(dt);
 
           // Atmospheric visibility stays steady; each star supplies its own gentle twinkle.
@@ -20855,165 +21821,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             speedLineMat.color.copy(scene.fog.color).lerp(speedLineWhite, 0.55);
           }
 
-          // ── Prey AI ──
-          // Prey react to how close the raptor IS, not to its footprint on the map.
-          // Detection used the horizontal distance alone, so a hawk a hundred metres up
-          // alerted the rabbit beneath it exactly as one skimming the grass did: measured
-          // in a browser, the same prey fled at the same instant on the same track at
-          // 15 m altitude (34 m away) and at 99 m altitude (106 m away). That also made
-          // the stoop the tool teaches, height traded for a close approach, unplayable
-          // as stealth. The radius is now a 3-D distance, and its base is anchored so
-          // the low cruise still alerts: 30 m up and 25 m across is 39 m, hence 40.
-          // The owl discount keeps its old ratio (15 of 25 becomes 24 of 40).
-          var detectionR = 40 + (raptor.isOwl ? -16 : 0); // owls are silent, harder to detect
-          for (var pi3 = 0; pi3 < preyMeshes.length; pi3++) {
-            var pm2 = preyMeshes[pi3];
-            var pdx = pm2.mesh.position.x - raptor.x;
-            var pdy = pm2.mesh.position.y - raptor.y;
-            var pdz = pm2.mesh.position.z - raptor.z;
-            var pd3 = Math.sqrt(pdx * pdx + pdy * pdy + pdz * pdz);   // true distance, for detection
-            var preyDetectionRadius = detectionR * pm2.escapeProfile.detectionScale;
-            if (pd3 < preyDetectionRadius && pm2.data.behavior === 'flee-on-sight') {
-              if (!pm2.alerted && pm2.escapeProfile.seekCover) {
-                pm2.coverTarget = nearestPreyCoverTarget(pm2.mesh.position.x, pm2.mesh.position.z);
-              }
-              pm2.alerted = true;
-              pm2.fleeBoost = 2.0;
-            }
-            if (mission.id === 'silentStrike' && pullUpKey && pd3 < SILENT_STRIKE_ALERT_RANGE_M && !pm2.missionAlerted) {
-              pm2.missionAlerted = true;
-              missionAlerts++;
-              energyEventLog.push({ msg: 'Prey alert - glide silently near the target', t: motionNow, color: '#fca5a5' });
-              evaluateMission();
-            }
-            if (pm2.alerted) {
-              var fleeAngle = Math.atan2(pdz, pdx);
-              if (pm2.coverTarget) {
-                var coverDx = pm2.coverTarget.x - pm2.mesh.position.x;
-                var coverDz = pm2.coverTarget.z - pm2.mesh.position.z;
-                var coverDistance = Math.sqrt(coverDx * coverDx + coverDz * coverDz);
-                if (coverDistance > 2) {
-                  var awayX = Math.cos(fleeAngle);
-                  var awayZ = Math.sin(fleeAngle);
-                  fleeAngle = Math.atan2(awayZ * 0.65 + coverDz / coverDistance * 0.35,
-                                         awayX * 0.65 + coverDx / coverDistance * 0.35);
-                }
-              }
-              var jink = _rmFX ? 0 : Math.sin(motionNow * 0.006 + pm2.escapePhase) * pm2.escapeProfile.zigzag;
-              var escapeAngle = fleeAngle + jink;
-              var dashScale = pm2.escapeProfile.mode === 'freeze-dash'
-                ? (Math.sin(motionNow * 0.009 + pm2.escapePhase) > -0.2 ? 1 : 0.08)
-                : 1;
-              pm2.vx = Math.cos(escapeAngle) * pm2.data.speedMps * pm2.fleeBoost * 0.6 * dashScale;
-              pm2.vz = Math.sin(escapeAngle) * pm2.data.speedMps * pm2.fleeBoost * 0.6 * dashScale;
-              pm2.fleeBoost = Math.max(1, pm2.fleeBoost - 0.5 * dt);
-              // Calm down by true distance too, or a bird climbing straight up from a
-              // prey keeps it alerted from half a kilometre overhead.
-              if (pd3 > 80) {
-                pm2.alerted = false;
-                pm2.fleeBoost = 1;
-                pm2.coverTarget = null;
-              }
-            } else if (pm2.data.behavior === 'wander') {
-              if (Math.random() < 1 - Math.exp(-1.2 * dt)) {
-                pm2.vx = (Math.random() - 0.5) * pm2.data.speedMps;
-                pm2.vz = (Math.random() - 0.5) * pm2.data.speedMps;
-              }
-            }
-            pm2.mesh.position.x += pm2.vx * dt;
-            pm2.mesh.position.z += pm2.vz * dt;
-            // Keep hunt objectives inside the bird's reachable, sampled world.
-            // Reflect only an outward component so lock-on prey never teleport.
-            if (pm2.mesh.position.x > preyWorldEdgeHard) {
-              pm2.mesh.position.x = preyWorldEdgeHard;
-              if (pm2.vx > 0) pm2.vx *= -0.65;
-            } else if (pm2.mesh.position.x < -preyWorldEdgeHard) {
-              pm2.mesh.position.x = -preyWorldEdgeHard;
-              if (pm2.vx < 0) pm2.vx *= -0.65;
-            }
-            if (pm2.mesh.position.z > preyWorldEdgeHard) {
-              pm2.mesh.position.z = preyWorldEdgeHard;
-              if (pm2.vz > 0) pm2.vz *= -0.65;
-            } else if (pm2.mesh.position.z < -preyWorldEdgeHard) {
-              pm2.mesh.position.z = -preyWorldEdgeHard;
-              if (pm2.vz < 0) pm2.vz *= -0.65;
-            }
-
-            var flightTarget = pm2.alerted ? Math.max(0, pm2.escapeProfile.climb) : 0;
-            pm2.flightHeight += (flightTarget - pm2.flightHeight) * dampingAlpha(4, dt);
-            var depthTarget = pm2.alerted && pm2.animation.kind === 'fish' ? -2.5 : 0;
-            pm2.depthOffset += (depthTarget - pm2.depthOffset) * dampingAlpha(3, dt);
-            if (pm2.surfaceMode === 'subsurface') {
-              var fishTargetY = pm2.waterY + pm2.depthOffset;
-              pm2.mesh.position.y += (fishTargetY - pm2.mesh.position.y) * dampingAlpha(4, dt);
-            } else if (pm2.surfaceMode === 'water-surface') {
-              pm2.mesh.position.y = -1.5 + pm2.groundClearance + pm2.flightHeight;
-            } else {
-              pm2.mesh.position.y = terrainHeightAt(pm2.mesh.position.x, pm2.mesh.position.z) +
-                pm2.groundClearance + pm2.flightHeight;
-            }
-
-            if (pm2.visual && pm2.animation) {
-              var motionRate = pm2.alerted ? 0.018 : 0.008;
-              var motionPhase = motionNow * motionRate + pm2.bobPhase;
-              var preyBob = 0;
-              if (!_rmFX) {
-                var rawPreyBob = Math.sin(motionPhase);
-                preyBob = pm2.flightHeight > 0 || pm2.surfaceMode === 'subsurface'
-                  ? rawPreyBob * 0.08
-                  : pm2.animation.kind === 'rabbit'
-                    ? Math.abs(rawPreyBob) * 0.22
-                    : Math.max(0, rawPreyBob) * 0.08;
-              }
-              pm2.visual.position.y = preyBob;
-              var preyPose=pm2.animation.pose;
-              advancePreyVisualPose(preyPose,pm2.vx,pm2.vz,pm2.flightHeight,motionNow,pm2.bobPhase,pm2.alerted,dt,_rmFX);
-              pm2.visual.rotation.y=preyPose.heading;
-              pm2.visual.rotation.z=pm2.animation.kind==='bird'?preyPose.bank:0;
-              if(pm2.animation.kind==='fish'){
-                var swim=pm2.animation.swim;
-                advanceFishSwim(swim,Math.hypot(pm2.vx,pm2.vz),pm2.data.speedMps,dt,_rmFX,pm2.bobPhase);
-                pm2.visual.position.y=0;pm2.visual.rotation.order='YXZ';
-                pm2.visual.rotation.y=preyPose.heading+swim.bodyYaw;pm2.visual.rotation.z=swim.roll;
-              }
-              if(pm2.surfaceMode==='water-surface'){
-                var floatState=pm2.animation.float;
-                var floatDepth=-1.5-terrainHeightAt(pm2.mesh.position.x,pm2.mesh.position.z);
-                sampleLakeSurface(floatState,pm2.mesh.position.x,pm2.mesh.position.z,floatDepth,_rmFX?0:motionNow*0.001,vegetationWind.value.x,vegetationWind.value.z);
-                advanceWaterBirdFloat(floatState,preyPose.heading,pm2.flightHeight,pm2.groundClearance,dt,_rmFX);
-                pm2.visual.rotation.order='YXZ';
-                pm2.visual.position.y=floatState.offset+preyBob*(1-floatState.contact);
-                pm2.visual.rotation.x=floatState.pitch;
-                pm2.visual.rotation.z=floatState.roll+preyPose.bank*(1-floatState.contact);
-              }
-              pm2.animation.wings.forEach(function(wing, wingIndex) {
-                var wingSide = wingIndex === 0 ? 1 : -1;
-                if(pm2.animation.kind==='bird'){
-                  var side=wingIndex===0?-1:1;
-                  wing.rotation.z=side*preyPose.wingAngle;
-                  wing.rotation.y=side*1.15*(1-preyPose.spread);
-                  wing.scale.x=0.3+0.7*preyPose.spread;
-                } else wing.rotation.z = wingSide * (_rmFX ? 0.08 : Math.sin(motionPhase * 1.7) * (pm2.alerted ? 0.70 : 0.24));
-              });
-              pm2.animation.legs.forEach(function(leg, legIndex) {
-                leg.rotation.x = _rmFX ? 0 : Math.sin(motionPhase * 1.4 + legIndex * Math.PI) * 0.55;
-              });
-              if (pm2.animation.tail) {
-                if(pm2.animation.kind==='fish'){pm2.animation.tail.rotation.y=pm2.animation.swim.tailYaw;pm2.animation.tail.rotation.z=0;}
-                else pm2.animation.tail.rotation.z = _rmFX ? 0 : Math.sin(motionPhase * 0.8) * (pm2.animation.kind==='bird'?0.06*preyPose.spread:0.22);
-              }
-            }
-            // Despawn ancient prey
-            if (motionNow - pm2.spawnedAt > 60000) {
-              scene.remove(pm2.mesh);
-              pm2.mesh.traverse(function(o) { if (o.geometry) o.geometry.dispose(); if (o.material) { if (Array.isArray(o.material)) o.material.forEach(function(m){m.dispose();}); else o.material.dispose(); } });
-              preyMeshes.splice(pi3, 1); pi3--;
-            }
-          }
-          updateWaterWakes(now,dt);
-          updatePreyContacts();
-          resolveTalonThrow();
-
           // Maintain spawn count
           if (preyMeshes.length < 10 && motionNow - lastSpawn > 2500) {
             lastSpawn = motionNow;
@@ -21085,8 +21892,6 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             flightAltitudeMarker.style.bottom = altitudePercent + '%';
             flightAltitudeValue.textContent = alt + 'm';
             flightAltitudeGauge.dataset.altitudeState = altitudeAboveGround < 12 ? 'low' : altitudeRatio > 0.82 ? 'high' : 'cruise';
-            var calPct = Math.max(0, Math.min(100, (raptor.calories / raptor.caloriesMax) * 100));
-            var stamPct = Math.max(0, Math.min(100, (raptor.stamina / raptor.staminaMax) * 100));
             // Instruments describe the bird, independently of camera mode or motion effects.
             var attitudeGrounded = raptor.landed || raptor.crashed;
             var pitchDegrees = attitudeGrounded ? 0 : Math.max(-89, Math.min(89, Math.round(raptor.pitch * 180 / Math.PI)));
@@ -21111,14 +21916,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             telemetryVerticalSpeed.textContent = (verticalRate > 0 ? '↑ ' : verticalRate < 0 ? '↓ ' : '— ') + verticalValue + ' m/s';
             telemetryVerticalSpeed.dataset.verticalState = verticalState;
             telemetryAltitude.parentElement.setAttribute('aria-label', 'Height above terrain: ' + alt + ' meters. ' + (verticalRate === 0 ? 'Vertical speed: zero meters per second' : (verticalRate > 0 ? 'Climbing at ' : 'Descending at ') + verticalValue + ' meters per second'));
-            telemetryCalories.value.textContent = Math.round(calPct) + '%';
-            telemetryStamina.value.textContent = Math.round(stamPct) + '%';
-            telemetryCaloriesFill.style.width = Math.round(calPct) + '%';
-            telemetryStaminaFill.style.width = Math.round(stamPct) + '%';
-            telemetryEnergy.parentElement.dataset.energyState = calPct < 20 ? 'critical' : calPct < 40 ? 'low' : stamPct < 20 ? 'fatigued' : 'stable';
-            telemetryEnergy.parentElement.setAttribute('aria-label', 'Energy: calories ' + Math.round(calPct) + ' percent, stamina ' + Math.round(stamPct) + ' percent');
-           telemetryMission.textContent = missionProgressText();
-           telemetryMission.parentElement.dataset.missionState = missionOutcome;
+            paintFlightResourceTelemetry();
           var dayLabel = dayPhase < 0.18 ? '🌑 Night' :
                          dayPhase < 0.30 ? '🌅 Dawn' :
                          dayPhase < 0.62 ? '☀ Day' :
@@ -21238,10 +22036,12 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             try {
               visibleRoots.forEach(function(root) { root.object.visible = root.object === raptorGroup || studyStudioLights.indexOf(root.object) !== -1; });
               scene.background = studyStudioBackground; scene.fog = null; renderer.toneMappingExposure = 1;
+              plumageContrast.value.z=0;
               renderer.render(scene, camera);
             } finally {
               visibleRoots.forEach(function(root) { root.object.visible = root.visible; });
               scene.background = habitatBackground; scene.fog = habitatFog; renderer.toneMappingExposure = habitatExposure;
+              plumageContrast.value.z=1;
             }
             return;
           }
@@ -21390,6 +22190,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('raptorHunt')))
             });
             if (material.dispose) material.dispose();
           }
+          clearCarriedPrey();
           scene.remove(strikeFxPoints);
           strikeFxGeometry.dispose();
           strikeFxMaterial.dispose();

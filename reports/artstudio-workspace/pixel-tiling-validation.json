@@ -1,0 +1,52 @@
+{
+  "date": "2026-10-02",
+  "scope": "Seamless Pixel Art editing and half-tile seam shifts",
+  "passed": true,
+  "committed": false,
+  "stagedByThisPass": false,
+  "baselineSha256": "4a738620588ea753d8c9a07b9d35728d3a05e00ce25b9b5eb493c93f46d3fcd7",
+  "sourceSha256": "1762ba9cf18445a03b4740011251456f3322dea0fc83a25fa63e2f259765ddb9",
+  "tests": {
+    "passed": 292,
+    "files": 21,
+    "newTileWorkflowCases": 28,
+    "unresolvedFailures": 0,
+    "log": "pixel-tiling-regression.txt",
+    "initialFocusedLog": "pixel-tiling-focused.txt",
+    "initialHarnessCorrections": "Use the contextual Fork study button label and scroll actual browser drawing targets into view."
+  },
+  "browser": {
+    "passed": true,
+    "results": "pixel-tiling-browser-results.json",
+    "harness": "Standalone Chromium using actual mouse and keyboard controls and real IndexedDB at an intercepted local origin",
+    "packagedDesktopTested": false,
+    "expandedGrid": {
+      "x": 174,
+      "y": 79,
+      "width": 854,
+      "height": 854
+    },
+    "phoneWidths": [
+      390,
+      320
+    ],
+    "minimumButtonHeight": 44,
+    "exactPngDownload": true,
+    "exactTwoShiftRecovery": true,
+    "oneStrokeUndoRedo": true,
+    "saveForkRecovery": true,
+    "visualPreviewsInspected": true
+  },
+  "englishAdditions": [
+    "pixel_tile_tools",
+    "pixel_wrap_edges",
+    "pixel_tile_offset_x",
+    "pixel_tile_offset_y",
+    "pixel_tile_offset_both",
+    "pixel_tile_offset_done",
+    "pixel_tile_help"
+  ],
+  "existingEnglishPreserved": true,
+  "mirrorsMatch": true,
+  "spectralBuildCheckPassed": true
+}

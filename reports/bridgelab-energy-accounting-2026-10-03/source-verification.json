@@ -1,0 +1,11 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sourceSha256": "190332ec7e0b03a0549a3b844cdd22213a85fb7cd23ae0039ae85e233066f992",
+  "matchingEnglishKeys": 1216,
+  "completeInteractionChecksPassed": 155,
+  "browserChecksPassed": 9,
+  "accountingSnapshots": 192,
+  "inputCombinations": 48,
+  "commit": "not created; changes left uncommitted"
+}

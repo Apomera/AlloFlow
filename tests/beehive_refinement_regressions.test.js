@@ -412,7 +412,6 @@ describe('Beehive refinement regressions', () => {
       foragingEfficiency: 0,
       capacity: 800,
     });
-    const emerging = Math.round(base.brood * P.broodEmergeRate);
     const pollenDemand = (base.brood * P.pollenConsumePerBrood
       + base.workers * P.pollenConsumePerWorker) * 0.9;
     const step = (pollen) => BH.bhStepColony(
@@ -422,7 +421,7 @@ describe('Beehive refinement regressions', () => {
     const full = step(pollenDemand + 1);
     const partial = step(pollenDemand / 2);
     const zero = step(0);
-    const newBrood = (next) => next.brood - base.brood + emerging;
+    const newBrood = (next) => next.eggsLaid;
 
     expect(full.pollenLimited).toBe(false);
     expect(full.pollenBroodReduced).toBe(0);
@@ -439,30 +438,34 @@ describe('Beehive refinement regressions', () => {
     expect(newBrood(zero) / newBrood(full)).toBeCloseTo(0.35, 2);
   });
 
-  it('conserves each emerging cohort and classifies drones by the egg-laying season', () => {
+  it('conserves each stored emerging cohort without changing caste at season boundaries', () => {
     const P = BH.SIMULATION_PARAMS;
     const brood = 10_000;
-    const emerging = Math.round(brood * P.broodEmergeRate);
+    const emerging = 500;
+    const storedCohorts = BH.bhNormalizeBroodCohorts(null, 0, P, 60);
+    storedCohorts.workers[0] = 475;
+    storedCohorts.drones[0] = 25;
+    storedCohorts.workers[20] = brood - emerging;
     function adultCohortAt(day) {
       const base = colony({ day, workers: 20_000, brood: 0, drones: 500, capacity: 800 });
       const withoutBrood = BH.bhStepColony(base, noEventConfig(BH)).next;
-      const withBrood = BH.bhStepColony(Object.assign({}, base, { brood }), noEventConfig(BH)).next;
+      const withBrood = BH.bhStepColony(Object.assign({}, base, { brood, broodCohorts: storedCohorts }), noEventConfig(BH)).next;
       return {
         workers: withBrood.workers - withoutBrood.workers,
         drones: withBrood.drones - withoutBrood.drones,
       };
     }
 
-    // Day 60 is autumn, but the emerging cohort was laid 21 days earlier in summer.
+    // Stored caste and maturity determine emergence, even as the calendar turns.
     const enteringAutumn = adultCohortAt(60);
     expect(enteringAutumn.drones).toBe(Math.round(emerging * P.droneBirthRate));
     expect(enteringAutumn.workers + enteringAutumn.drones).toBe(emerging);
 
-    // Day 120 is spring, but this cohort was laid in winter and contains no drones.
     const enteringSpring = adultCohortAt(120);
-    expect(enteringSpring.drones).toBe(0);
+    expect(enteringSpring.drones).toBe(25);
     expect(enteringSpring.workers + enteringSpring.drones).toBe(emerging);
     expect(P.workerDevelopmentDays).toBe(21);
+    expect(P.droneDevelopmentDays).toBe(24);
   });
   it('resets all per-colony management state when starting a new colony', async () => {
     const earnedBadges = { first_day: true, survive_30: true };
@@ -599,6 +602,65 @@ describe('Beehive refinement regressions', () => {
     expect(latest.beehive.honey).toBe(60);
     expect(latest.beehive.totalHarvested).toBe(5);
     expect(latest.beehive.lastManagement.summary).toMatch(/left 60 lb for overwintering/i);
+  });
+
+  it.each([
+    { honey: 90, syrup: 40, surplus: 0 },
+    { honey: 100, syrup: 40, surplus: 0 },
+    { honey: 105, syrup: 40, surplus: 5 },
+    { honey: 105.14, syrup: 40.16, surplus: 5 },
+  ])('shows only the nectar surplus Harvest can collect from $honey lb food with $syrup lb syrup', async ({ honey, syrup, surplus }) => {
+    await mountBee(colony({ day: 60, honey, syrup, beeView: 'lifecycle', motionPaused: true }));
+    const balance = host.querySelector('[data-colony-food-origins]');
+    expect(balance.closest('[data-colony-dashboard]')).toBeTruthy();
+    expect(balance.textContent).toContain('Combined food');
+    expect(balance.textContent).toContain('Fed syrup');
+    const harvest = host.querySelector('[data-management-choice="harvest_honey"]');
+    const badge = host.querySelector('[data-harvest-surplus]');
+    if (!surplus) {
+      expect(badge).toBeNull();
+      expect(harvest.getAttribute('aria-disabled')).toBe('true');
+      expect(balance.textContent).toContain('No harvestable nectar surplus');
+    } else {
+      expect(badge.textContent).toContain(surplus + ' lbs ready');
+      expect(balance.textContent).toContain(surplus + ' lb nectar honey above the reserve');
+      await act(async () => { harvest.click(); await Promise.resolve(); });
+      expect(latest.beehive.totalHarvested).toBe(surplus);
+      expect(latest.beehive.syrup).toBe(syrup);
+      expect(latest.beehive.honey).toBeCloseTo(60 + syrup, 1);
+      expect(latest.beehive.actionPoints).toBe(2);
+      expect(host.querySelector('[data-harvest-surplus]')).toBeNull();
+    }
+  });
+
+  it('explains a strong weighted score while exposing a weak queen and the seasonal food requirement', async () => {
+    await mountBee(colony({ day: 60, workers: 30_000, queenHealth: 20, honey: 40, varroaLevel: 0, morale: 100, beeView: 'lifecycle', motionPaused: true }));
+    const dashboard = host.querySelector('[data-colony-dashboard]');
+    expect(dashboard.textContent).toContain('Model score 84/100');
+    const diagnosis = dashboard.querySelector('[data-colony-diagnosis]');
+    expect(diagnosis.textContent).toContain('queen condition (20 / 100)');
+    expect(diagnosis.textContent).not.toMatch(/every dimension is healthy|mites are climbing/i);
+    const guide = dashboard.querySelector('[data-colony-score-guide]');
+    expect(guide.textContent).toContain('30% weight');
+    expect(guide.textContent).toContain('does not check the seasonal reserve');
+    expect(dashboard.querySelector('[data-colony-harvest-balance]').textContent).toContain('60 lb');
+    expect(host.querySelector('[data-beehive-vital="colony-health"]').textContent).toContain('Model health score');
+  });
+
+  it('links meter controls to complete model bands without spending AP or changing the colony', async () => {
+    await mountBee(colony({ morale: 35, diseaseRisk: 45, foragingEfficiency: 30, beeView: 'lifecycle', motionPaused: true }));
+    const before = structuredClone(latest.beehive);
+    for (const [id, status, band] of [['morale', 'Needs attention', 'Below 40 points'], ['foraging', 'Needs attention', 'Below 40%'], ['disease', 'Watch', '25–45 points']]) {
+      const button = host.querySelector('[data-colony-stat-toggle="' + id + '"]');
+      expect(button.textContent).toContain(status);
+      await act(async () => { button.click(); await Promise.resolve(); });
+      const explanation = document.getElementById(button.getAttribute('aria-controls'));
+      expect(explanation.textContent).toContain(band);
+      expect(button.getAttribute('aria-expanded')).toBe('true');
+    }
+    const after = { ...latest.beehive }; delete after.statExpand;
+    const original = { ...before }; delete original.statExpand;
+    expect(after).toEqual(original);
   });
 
   it('invokes fresh shortcut callbacks after each render instead of replaying the first-day closure', async () => {

@@ -5,19 +5,20 @@ import { readFileSync } from 'node:fs';
 const english=JSON.parse(readFileSync('ui_strings.js','utf8')).word_sounds;
 import { setupWordSounds } from './helpers/word_sounds_harness.js';
 import { studentProps, installCanvasStub } from './helpers/word_sounds_pack_fixture.js';
-import { compileWords } from './helpers/word_sounds_core.js';
+import { compileWords, core } from './helpers/word_sounds_core.js';
 const require=createRequire(import.meta.url), modules=resolve('desktop/web-app/node_modules');
 let React,client,act,Modal; const mounted=[];
 beforeAll(()=>{React=require(resolve(modules,'react'));client=require(resolve(modules,'react-dom/client'));({act}=require(resolve(modules,'react-dom/test-utils')));installCanvasStub();Modal=setupWordSounds().WordSoundsModal;});
 afterEach(()=>{for(const {root,host} of mounted.splice(0)){act(()=>root.unmount());host.remove();}});
 async function mount(activity,image=true,extra={}){
  const calls=[],props=studentProps(activity,calls),base=props.wsPreloadedWords[0];
- const word=compileWords([{...base,image:image?base.image:null}])[0];
+ const word=compileWords([{...base, sentence: 'I can see the cat.', story: ['I can see the cat.', 'Here is the cat.', 'Look at the cat.'], manipulationTask: core.resolveManipulationTask('cat', null, 'en'), ...(extra.wordData || {}),image:image?base.image:null}], {}, 'en', null, { SIGHT_WORD_PRESETS: { fixture: ['can', 'see', 'the', 'here', 'is', 'look', 'at'] } })[0];
+ word._ttsAssets = { ...word._ttsAssets, [word.targetWord || word.word]: base._ttsAssets.cat };
  if(!image){word.image=null;word._decodingAssets={};word._aacAssets={};}
  if(extra.preparedActivities)word._preparedActivities=extra.preparedActivities;
  props.sessionConfig=extra.sessionConfig;
  if(extra.preparedActivities || extra.sessionConfig)props.getWordSoundsString=(_t,key)=>english[key.replace('word_sounds.','')] || key;
- props.wsPreloadedWords=[word];props.wordSoundsPhonemes=word;
+ props.wsPreloadedWords=[word];props.wordSoundsPhonemes=word;props.currentWordSoundsWord=word.targetWord || word.word;
  const rows=[];props.setWordSoundsHistory=u=>rows.splice(0,rows.length,...(typeof u==='function'?u(rows):u));
  const host=document.createElement('div');document.body.appendChild(host);const root=client.createRoot(host);mounted.push({host,root});
  await act(async()=>{root.render(React.createElement(Modal,props));await new Promise(r=>setTimeout(r,30));});
@@ -99,5 +100,23 @@ describe('Word Families prepared choices',()=>{
   const board=word.activityItems.word_families;
   expect(labels.sort()).toEqual([...board.options,...board.distractors].sort());
   expect(calls).toEqual([]);
+ });
+});
+
+
+describe('Sound Swap curated content guard in the mounted player', () => {
+ it('plays a real curated one-sound deletion', async () => {
+  const { host, word } = await mount('manipulation');
+  expect(word.activityItems.manipulation.task).toMatchObject({ targetWord: 'cat', type: 'deletion', answer: 'at', contentStatus: 'curated' });
+  const reveal = host.querySelector('button[title="Switch to Letter Mode (Show Letters)"]');
+  expect(reveal).toBeTruthy(); await act(async () => reveal.click());
+  expect([...host.querySelectorAll('button')].some(button => button.textContent.trim() === 'at')).toBe(true);
+ });
+ it('keeps an unverified spelling deletion unscored and offers another activity', async () => {
+  const { host, word, rows } = await mount('manipulation', true, { wordData: { word: 'ship', targetWord: 'ship', phonemes: ['sh', 'i', 'p'], manipulationTask: { type: 'deletion', targetPhoneme: 'sh', answer: 'ip', distractors: ['it', 'in'] } } });
+  expect(word.activityItems.manipulation).toMatchObject({ task: { contentStatus: 'teacher_review_required', answer: '' }, options: [] });
+  expect(host.textContent).toContain('This item will not be scored.');
+  expect([...host.querySelectorAll('button')].some(button => button.textContent.trim() === 'ip')).toBe(false);
+  expect(rows).toEqual([]);
  });
 });

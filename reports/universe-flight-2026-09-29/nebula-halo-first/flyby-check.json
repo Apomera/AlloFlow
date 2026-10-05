@@ -1,0 +1,1764 @@
+{
+  "sourceHash": "8318a5ade9020931b091cf8fd2489cf516a7c0212e2b66949af5fe45b7d33c7a",
+  "uiHash": "0bec0dfc54616640063b85b290458837e1ad1d3d7f62dfc0c5007cd7c8475c0c",
+  "completed": false,
+  "checks": [
+    "Halo route metadata and all six generated star clusters are selectable",
+    "normal keyboard launch starts Free exploration, resets the journey, and keeps physics and quality preferences",
+    "the real curved flyby visibly traverses the galaxy and the paused cluster pass freezes both pixels and elapsed travel",
+    "native free look keeps the authored route moving with independent gaze, and Follow flyby view restores the camera aim",
+    "native Slow and Fast pacing controls change the real flyby rate without changing physics",
+    "the renderer completes once, pauses at the final galaxy reveal, and presents a real journey checkpoint",
+    "completed controls expose a native Replay flyby action that begins at the exact authored route start with zero elapsed travel",
+    "fullscreen keyboard launch explicitly switches Einstein’s light chase to Free exploration",
+    "ending the flyby from its native controls pauses the real camera and clears the route",
+    "restoring an ordinary saved view clears the flyby and always returns paused"
+  ],
+  "captures": [
+    {
+      "name": "start",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "9f088f0b96b76200ab79726bbce9860a4e47de4fd4672aaa8ea3bb2cff51b602",
+      "stats": {
+        "mean": 8.281540771334797,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.2560411897306353,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3961.3765324556225,
+            27429.967765321086,
+            -23854.94904597215
+          ],
+          "yaw": 1.4513024363695308,
+          "pitch": -0.9368553773775992,
+          "distanceLy": 7.360595247836449,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.002311277777777782,
+        "elapsedSeconds": 0.08320600000000014,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "arm",
+        "rate": 1
+      }
+    },
+    {
+      "name": "arm-skim",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "5190f2dff4c6e09478febb99694e0a13dafca34cdd79e0c801cc6f6f6266bbe9",
+      "stats": {
+        "mean": 32.7759170767146,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.9383469726074257,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            23702.855420962256,
+            616.3122834547021,
+            -22786.143979878347
+          ],
+          "yaw": 0.05361539043821928,
+          "pitch": -0.1296968764401317,
+          "distanceLy": 34616.588764652995,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.4023057222222222,
+        "elapsedSeconds": 14.483006,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "cluster",
+        "rate": 2
+      }
+    },
+    {
+      "name": "cluster-approach",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "5190f2dff4c6e09478febb99694e0a13dafca34cdd79e0c801cc6f6f6266bbe9",
+      "stats": {
+        "mean": 32.7759170767146,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.9383469726074257,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            23702.855420962256,
+            616.3122834547021,
+            -22786.143979878347
+          ],
+          "yaw": 0.05361539043821928,
+          "pitch": -0.1296968764401317,
+          "distanceLy": 34616.588764652995,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.4023057222222222,
+        "elapsedSeconds": 14.483006,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "cluster",
+        "rate": 2
+      }
+    },
+    {
+      "name": "cluster-pass",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "8b1489e5157d7d5111d282b63197a2cad1e8d2e13b5984f1357a876c08f9b40d",
+      "stats": {
+        "mean": 33.30199007972377,
+        "clippedWhiteFraction": 0.0003069933075458955,
+        "luminousFraction": 0.5303879518283644,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            24445.34354176749,
+            616.3122834547021,
+            -21968.423686730937
+          ],
+          "yaw": 5.351553084948073,
+          "pitch": -0.19439793854314277,
+          "distanceLy": 35721.10453518865,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.534700166666667,
+        "elapsedSeconds": 19.24920600000001,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "cluster",
+        "rate": 2
+      }
+    },
+    {
+      "name": "cluster-paused",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "8b1489e5157d7d5111d282b63197a2cad1e8d2e13b5984f1357a876c08f9b40d",
+      "stats": {
+        "mean": 33.30199007972377,
+        "clippedWhiteFraction": 0.0003069933075458955,
+        "luminousFraction": 0.5303879518283644,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            24445.34354176749,
+            616.3122834547021,
+            -21968.423686730937
+          ],
+          "yaw": 5.351553084948073,
+          "pitch": -0.19439793854314277,
+          "distanceLy": 35721.10453518865,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.534700166666667,
+        "elapsedSeconds": 19.24920600000001,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "cluster",
+        "rate": 2
+      }
+    },
+    {
+      "name": "manual-look",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "4d8de60f98b4c1174bc26d16e8ef96235abaf4ad7f44cc66f6a586fe01067e7e",
+      "stats": {
+        "mean": 34.275343011510714,
+        "clippedWhiteFraction": 0.0003508494943381663,
+        "luminousFraction": 0.652439719671254,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            25009.61841138251,
+            616.3122834547021,
+            -21346.9739976815
+          ],
+          "yaw": 5.460304091807096,
+          "pitch": -0.08564693168412005,
+          "distanceLy": 36560.51256737484,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.6078445,
+        "elapsedSeconds": 21.882402,
+        "durationSeconds": 36,
+        "autoLook": false,
+        "phase": "cluster",
+        "rate": 2
+      }
+    },
+    {
+      "name": "follow-restored",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "3d6714df941940133419441c33cef2047812f8ef04b8141c2cfc6f757f6e8c71",
+      "stats": {
+        "mean": 12.150772677585376,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.15819803699707918,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            25009.61841138251,
+            616.3122834547021,
+            -21346.9739976815
+          ],
+          "yaw": -1.6755837053084044,
+          "pitch": -0.13241454297487892,
+          "distanceLy": 36560.51256737484,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.6078445,
+        "elapsedSeconds": 21.882402,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "cluster",
+        "rate": 2
+      }
+    },
+    {
+      "name": "galaxy-reveal",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "41da5b984f112482adbc6947bb7954a8ee8462aa91d5c99a3e00d0532c146f40",
+      "stats": {
+        "mean": 16.75097685269901,
+        "clippedWhiteFraction": 0.0004911892920734328,
+        "luminousFraction": 0.4938118920436106,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            42960.56254044641,
+            11365.090745422443,
+            -11651.191106478846
+          ],
+          "yaw": 5.038048413918819,
+          "pitch": -0.22016799728731637,
+          "distanceLy": 62491.4036209976,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.8208056111111108,
+        "elapsedSeconds": 29.54900199999999,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "reveal",
+        "rate": 2
+      }
+    },
+    {
+      "name": "completed",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "8c5de1607fa71bd30ff842c38ac7960c9285ba8e1d60b0c5970246c878dd157b",
+      "stats": {
+        "mean": 9.432144258781845,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.22597338806585446,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            74941.59615155982,
+            50436.3122834547,
+            60272.14160782259
+          ],
+          "yaw": 4.038236124530526,
+          "pitch": -0.4824444981493322,
+          "distanceLy": 150445.11865647536,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "galactic-center"
+      },
+      "flyby": {
+        "active": false,
+        "completed": true,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 1,
+        "elapsedSeconds": 36,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "complete",
+        "rate": 2
+      }
+    },
+    {
+      "name": "cancel-before",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "a4c239de7f23251d827e0d3ba9fe67819a2bba2f7de40d6eacb45606ab7d51d3",
+      "stats": {
+        "mean": 7.850171354883205,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.18816058381355857,
+        "max": 240
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            10364.8288391387,
+            15280.633852987994,
+            -24365.08869339653
+          ],
+          "yaw": 1.3706527692208725,
+          "pitch": -0.8463159221571441,
+          "distanceLy": 13752.223294656573,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.12128922222222253,
+        "elapsedSeconds": 4.366412000000011,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "arm",
+        "rate": 2
+      }
+    }
+  ],
+  "errors": [],
+  "graphics": [
+    {
+      "name": "start",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "arm-skim",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cluster-approach",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cluster-pass",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cluster-paused",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "manual-look",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "follow-restored",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "galaxy-reveal",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "completed",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cancel-before",
+      "errors": [
+        0
+      ]
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-paused-controls",
+      "violations": []
+    },
+    {
+      "name": "desktop-completion",
+      "violations": []
+    }
+  ],
+  "layouts": [],
+  "progressSamples": [
+    {
+      "name": "arm-skim",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.4023057222222222,
+        "elapsedSeconds": 14.483006,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "cluster",
+        "rate": 2
+      },
+      "position": [
+        23702.855420962256,
+        616.3122834547021,
+        -22786.143979878347
+      ],
+      "distanceLy": 34616.588764652995
+    },
+    {
+      "name": "cluster-approach",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.4023057222222222,
+        "elapsedSeconds": 14.483006,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "cluster",
+        "rate": 2
+      },
+      "position": [
+        23702.855420962256,
+        616.3122834547021,
+        -22786.143979878347
+      ],
+      "distanceLy": 34616.588764652995
+    },
+    {
+      "name": "cluster-pass",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.534700166666667,
+        "elapsedSeconds": 19.24920600000001,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "cluster",
+        "rate": 2
+      },
+      "position": [
+        24445.34354176749,
+        616.3122834547021,
+        -21968.423686730937
+      ],
+      "distanceLy": 35721.10453518865
+    },
+    {
+      "name": "galaxy-reveal",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.8208056111111108,
+        "elapsedSeconds": 29.54900199999999,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "reveal",
+        "rate": 2
+      },
+      "position": [
+        42960.56254044641,
+        11365.090745422443,
+        -11651.191106478846
+      ],
+      "distanceLy": 62491.4036209976
+    },
+    {
+      "name": "cancel-before",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0.12128922222222253,
+        "elapsedSeconds": 4.366412000000011,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "arm",
+        "rate": 2
+      },
+      "position": [
+        10364.8288391387,
+        15280.633852987994,
+        -24365.08869339653
+      ],
+      "distanceLy": 13752.223294656573
+    }
+  ],
+  "served": [
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/stem_tool_universe.js",
+      "status": 200,
+      "hash": "0bec0dfc54616640063b85b290458837e1ad1d3d7f62dfc0c5007cd7c8475c0c"
+    },
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/universe_flight_scene.js",
+      "status": 200,
+      "hash": "8318a5ade9020931b091cf8fd2489cf516a7c0212e2b66949af5fe45b7d33c7a"
+    }
+  ],
+  "catalog": {
+    "flybys": [
+      {
+        "id": "halo",
+        "name": "Halo flyby",
+        "region": "galaxy",
+        "durationSeconds": 36,
+        "position": [
+          3957.7186846376026,
+          27436.312283454703,
+          -23854.48402140951
+        ],
+        "aim": [
+          23665.618022678005,
+          436.3122834547021,
+          -21488.326021261044
+        ],
+        "fov": 60,
+        "targetId": "halo-cluster-2"
+      },
+      {
+        "id": "nebula",
+        "name": "Nebula passage",
+        "region": "neighborhood",
+        "durationSeconds": 40,
+        "position": [
+          -14,
+          6,
+          3
+        ],
+        "aim": [
+          9,
+          -2,
+          34
+        ],
+        "fov": 64,
+        "targetId": "blue-nebula"
+      }
+    ],
+    "landmarks": [
+      {
+        "id": "amber-star",
+        "name": "Amber star",
+        "kind": "Generated star",
+        "description": "A warm-colored model star close enough to show clear parallax as you move.",
+        "position": [
+          -3.1,
+          1,
+          8.5
+        ],
+        "arrivalRadiusLy": 0.6
+      },
+      {
+        "id": "blue-star",
+        "name": "Blue star",
+        "kind": "Generated star",
+        "description": "A blue-white model star. Compare its apparent direction and frequency shift at different traveler speeds.",
+        "position": [
+          4.3,
+          -2.2,
+          16
+        ],
+        "arrivalRadiusLy": 0.8
+      },
+      {
+        "id": "pale-star",
+        "name": "Pale star",
+        "kind": "Generated star",
+        "description": "A more distant model star for comparing perspective and changing lines of sight.",
+        "position": [
+          0.65,
+          2.4,
+          24
+        ],
+        "arrivalRadiusLy": 1
+      },
+      {
+        "id": "blue-nebula",
+        "name": "Blue emission region",
+        "kind": "Generated emission region",
+        "description": "A nearby model of layered glowing filaments. Its colors and brightness are illustrative; the gaps represent reduced emission, not measured dust extinction.",
+        "position": [
+          9,
+          -2,
+          34
+        ],
+        "arrivalRadiusLy": 20
+      },
+      {
+        "id": "violet-nebula",
+        "name": "Violet emission region",
+        "kind": "Generated emission region",
+        "description": "A larger generated cloud beyond the blue region. Move sideways to compare foreground filaments with the distant stellar background.",
+        "position": [
+          -22,
+          11,
+          83
+        ],
+        "arrivalRadiusLy": 32
+      },
+      {
+        "id": "galactic-center",
+        "name": "Galactic center",
+        "kind": "Generated galactic region",
+        "description": "The central bulge of this spiral model. The approach stops outside the bright central region.",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "arrivalRadiusLy": 18000
+      },
+      {
+        "id": "inner-arm",
+        "name": "Inner spiral arm",
+        "kind": "Generated galactic region",
+        "description": "A survey point within a spiral arm, where the disk has visible thickness and depth.",
+        "position": [
+          -20170,
+          10020,
+          -4410
+        ],
+        "arrivalRadiusLy": 3500
+      },
+      {
+        "id": "disk-edge",
+        "name": "Outer disk",
+        "kind": "Generated galactic region",
+        "description": "A survey point near the outer edge of the tilted disk. Look back toward the central bulge.",
+        "position": [
+          48795,
+          -10911,
+          0
+        ],
+        "arrivalRadiusLy": 5500
+      },
+      {
+        "id": "halo-cluster-1",
+        "name": "Halo cluster 1",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -17660.331241842043,
+          3506.9839554694113,
+          12033.859063679367
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-2",
+        "name": "Halo cluster 2",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          23665.618022678005,
+          436.3122834547021,
+          -21488.326021261044
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-3",
+        "name": "Halo cluster 3",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -29510.866276313078,
+          14665.382399636474,
+          -15589.59045947007
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-4",
+        "name": "Halo cluster 4",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          11661.460338228979,
+          -2839.259820481433,
+          24838.4570062577
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-5",
+        "name": "Halo cluster 5",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          23702.930351504907,
+          -17726.14860298719,
+          22999.01624975562
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-6",
+        "name": "Halo cluster 6",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -15336.802827919615,
+          -18178.77291197568,
+          -9814.005014892553
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "near-galaxy",
+        "name": "Nearby spiral",
+        "kind": "Generated galaxy",
+        "description": "The foreground spiral in this generated galaxy group. Its luminous points represent collective starlight.",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "arrivalRadiusLy": 360000
+      },
+      {
+        "id": "companion-galaxy",
+        "name": "Companion spiral",
+        "kind": "Generated galaxy",
+        "description": "A second spiral beyond the foreground galaxy. These positions form a teaching model, not a mapped catalog.",
+        "position": [
+          -480000,
+          190000,
+          1300000
+        ],
+        "arrivalRadiusLy": 330000
+      },
+      {
+        "id": "distant-galaxy",
+        "name": "Distant spiral",
+        "kind": "Generated galaxy",
+        "description": "A more distant spiral among the model filaments. Watch the nearer galaxies separate as you approach.",
+        "position": [
+          2100000,
+          -800000,
+          4200000
+        ],
+        "arrivalRadiusLy": 300000
+      },
+      {
+        "id": "golden-elliptical",
+        "name": "Golden elliptical",
+        "kind": "Generated galaxy",
+        "description": "A smooth, warm-colored galaxy model with a broad stellar halo. Compare its shape with the neighboring spirals.",
+        "position": [
+          800000,
+          550000,
+          850000
+        ],
+        "arrivalRadiusLy": 250000
+      }
+    ],
+    "galaxy": [
+      {
+        "id": "galactic-center",
+        "name": "Galactic center",
+        "kind": "Generated galactic region",
+        "description": "The central bulge of this spiral model. The approach stops outside the bright central region.",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "arrivalRadiusLy": 18000
+      },
+      {
+        "id": "inner-arm",
+        "name": "Inner spiral arm",
+        "kind": "Generated galactic region",
+        "description": "A survey point within a spiral arm, where the disk has visible thickness and depth.",
+        "position": [
+          -20170,
+          10020,
+          -4410
+        ],
+        "arrivalRadiusLy": 3500
+      },
+      {
+        "id": "disk-edge",
+        "name": "Outer disk",
+        "kind": "Generated galactic region",
+        "description": "A survey point near the outer edge of the tilted disk. Look back toward the central bulge.",
+        "position": [
+          48795,
+          -10911,
+          0
+        ],
+        "arrivalRadiusLy": 5500
+      },
+      {
+        "id": "halo-cluster-1",
+        "name": "Halo cluster 1",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -17660.331241842043,
+          3506.9839554694113,
+          12033.859063679367
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-2",
+        "name": "Halo cluster 2",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          23665.618022678005,
+          436.3122834547021,
+          -21488.326021261044
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-3",
+        "name": "Halo cluster 3",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -29510.866276313078,
+          14665.382399636474,
+          -15589.59045947007
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-4",
+        "name": "Halo cluster 4",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          11661.460338228979,
+          -2839.259820481433,
+          24838.4570062577
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-5",
+        "name": "Halo cluster 5",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          23702.930351504907,
+          -17726.14860298719,
+          22999.01624975562
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-6",
+        "name": "Halo cluster 6",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -15336.802827919615,
+          -18178.77291197568,
+          -9814.005014892553
+        ],
+        "arrivalRadiusLy": 600
+      }
+    ]
+  },
+  "launches": [
+    {
+      "args": [
+        "halo"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3957.7186846376026,
+            27436.312283454703,
+            -23854.48402140951
+          ],
+          "yaw": 1.4513068720965991,
+          "pitch": -0.936857942285207,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3957.7186846376026,
+            27436.312283454703,
+            -23854.48402140951
+          ],
+          "yaw": 1.451306872096599,
+          "pitch": -0.9368579422852071,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "arm",
+        "rate": 1
+      }
+    },
+    {
+      "args": [
+        "halo"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3957.7186846376026,
+            27436.312283454703,
+            -23854.48402140951
+          ],
+          "yaw": 1.4513068720965991,
+          "pitch": -0.936857942285207,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3957.7186846376026,
+            27436.312283454703,
+            -23854.48402140951
+          ],
+          "yaw": 1.451306872096599,
+          "pitch": -0.9368579422852071,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "arm",
+        "rate": 2
+      }
+    },
+    {
+      "args": [
+        "halo"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3957.7186846376026,
+            27436.312283454703,
+            -23854.48402140951
+          ],
+          "yaw": 1.4513068720965991,
+          "pitch": -0.936857942285207,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "galaxy",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            3957.7186846376026,
+            27436.312283454703,
+            -23854.48402140951
+          ],
+          "yaw": 1.451306872096599,
+          "pitch": -0.9368579422852071,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "halo-cluster-2"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "arm",
+        "rate": 2
+      }
+    }
+  ],
+  "clusterPass": {
+    "separationLy": 933.2018289250217,
+    "progress": 0.534700166666667
+  },
+  "travelDifference": {
+    "meanAbsolute": 35.51911691182098,
+    "changedFraction": 0.7411081581278671
+  },
+  "revealDifference": {
+    "meanAbsolute": 44.16779377066397,
+    "changedFraction": 0.9881588295660869
+  },
+  "completion": {
+    "snapshot": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "galaxy",
+        "beta": 0.9,
+        "compareRest": false,
+        "fov": 60,
+        "exposure": 1,
+        "quality": "auto"
+      },
+      "state": {
+        "position": [
+          74941.59615155982,
+          50436.3122834547,
+          60272.14160782259
+        ],
+        "yaw": 4.038236124530526,
+        "pitch": -0.4824444981493322,
+        "distanceLy": 150445.11865647536,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": "galactic-center"
+    },
+    "info": {
+      "distanceLy": 150445.11865647536,
+      "universeYears": 0,
+      "travelerYears": 0,
+      "position": [
+        74941.59615155982,
+        50436.3122834547,
+        60272.14160782259
+      ],
+      "yaw": 4.038236124530526,
+      "pitch": -0.4824444981493322,
+      "running": false,
+      "target": {
+        "id": "galactic-center",
+        "name": "Galactic center",
+        "distanceLy": 108594.63837819558,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            0.49847705527632163,
+            0.5004903247758004
+          ],
+          "inView": true,
+          "angleDeg": 0.16444251623701123,
+          "behind": false,
+          "sector": "left",
+          "arrowDeg": 168.62265229911284,
+          "edge": [
+            0.09999999999999998,
+            0.6287833414245183
+          ]
+        },
+        "screen": [
+          0.49847705527632163,
+          0.5004903247758004
+        ],
+        "inView": true,
+        "doppler": 1,
+        "restAngleDeg": 123.71205772098008,
+        "apparentAngleDeg": 123.71205772098008
+      },
+      "navigation": {
+        "active": false,
+        "targetId": null,
+        "completed": false,
+        "alreadyWithin": false,
+        "remainingLy": 0,
+        "arrivalRadiusLy": 0,
+        "estimatedSeconds": 0,
+        "progress": 0
+      },
+      "flyby": {
+        "active": false,
+        "completed": true,
+        "id": "halo",
+        "name": "Halo flyby",
+        "progress": 1,
+        "elapsedSeconds": 36,
+        "durationSeconds": 36,
+        "autoLook": true,
+        "phase": "complete",
+        "rate": 2
+      },
+      "orbit": {
+        "active": false,
+        "targetId": null
+      },
+      "motion": {
+        "smoothTravel": true,
+        "paceLyPerSecond": 0,
+        "targetLyPerSecond": 290.0124819770266,
+        "kind": "free"
+      },
+      "framing": {
+        "canLeft": true,
+        "canCenter": true,
+        "canRight": true,
+        "canUndo": false,
+        "placement": null
+      },
+      "trail": [
+        [
+          3957.7186846376026,
+          27436.312283454703,
+          -23854.48402140951
+        ],
+        [
+          3961.3765324556225,
+          27429.967765321086,
+          -23854.94904597215
+        ],
+        [
+          4150.1013565727135,
+          27100.20011467063,
+          -23878.56604401344
+        ],
+        [
+          4662.163486174548,
+          26184.16618099637,
+          -23939.1463528872
+        ],
+        [
+          5285.645862471529,
+          25035.32520892864,
+          -24006.667436905343
+        ],
+        [
+          6106.42023428633,
+          23483.60011696361,
+          -24086.345512669708
+        ],
+        [
+          9369.832924755097,
+          17173.088606768026,
+          -24318.225829234907
+        ],
+        [
+          11307.583688480589,
+          13529.95859793451,
+          -24399.64368460406
+        ],
+        [
+          12453.82945022062,
+          11479.596727840322,
+          -24428.47678219159
+        ],
+        [
+          17790.574015589704,
+          4184.112655142846,
+          -24328.47501006429
+        ],
+        [
+          19271.52224049389,
+          3188.7344198756437,
+          -24218.41122879427
+        ],
+        [
+          19945.63937608415,
+          2730.198774662925,
+          -24168.735395146836
+        ],
+        [
+          21191.270789368686,
+          1848.9581414212792,
+          -24066.93915459635
+        ],
+        [
+          22031.91070736329,
+          1231.6982121246986,
+          -23957.138536554507
+        ],
+        [
+          22782.363514440978,
+          734.3878031299222,
+          -23697.421497914773
+        ],
+        [
+          23444.0787189704,
+          616.3122834547021,
+          -23071.14107906831
+        ],
+        [
+          23702.855420962256,
+          616.3122834547021,
+          -22786.143979878347
+        ],
+        [
+          23822.43151550884,
+          616.3122834547021,
+          -22654.451907848947
+        ],
+        [
+          23966.148497659444,
+          616.3122834547021,
+          -22496.172886971144
+        ],
+        [
+          24158.143660070193,
+          616.3122834547021,
+          -22284.723927600404
+        ],
+        [
+          24248.200685857013,
+          616.3122834547021,
+          -22185.541926619004
+        ],
+        [
+          24338.241147036093,
+          616.3122834547021,
+          -22086.37816864449
+        ],
+        [
+          24445.34354176749,
+          616.3122834547021,
+          -21968.423686730937
+        ],
+        [
+          24529.935119654743,
+          616.3122834547021,
+          -21875.260916944466
+        ],
+        [
+          24626.507152369122,
+          616.3122834547021,
+          -21768.903779788656
+        ],
+        [
+          24730.722866703163,
+          616.3122834547021,
+          -21654.12846946668
+        ],
+        [
+          24761.112285400322,
+          616.3122834547021,
+          -21620.65986078555
+        ],
+        [
+          25009.61841138251,
+          616.3122834547021,
+          -21346.9739976815
+        ],
+        [
+          25207.968035621463,
+          616.3122834547021,
+          -21128.52671437352
+        ],
+        [
+          25732.25668236405,
+          651.5235794161215,
+          -20705.85404135995
+        ],
+        [
+          25763.513048515335,
+          656.9988236353139,
+          -20694.70286448904
+        ],
+        [
+          27152.603545607686,
+          1023.6078747231483,
+          -20557.159494634958
+        ],
+        [
+          29134.23693492164,
+          1731.871380973893,
+          -20673.873470123483
+        ],
+        [
+          30410.298383766607,
+          2252.1904469184146,
+          -20787.17961909964
+        ],
+        [
+          31730.16669802978,
+          2829.9700613975583,
+          -20908.144188466496
+        ],
+        [
+          33160.89653777021,
+          3494.759112209078,
+          -21033.19743912469
+        ],
+        [
+          36330.57505399651,
+          5098.347638532408,
+          -21220.98392606102
+        ],
+        [
+          39217.57263526891,
+          7458.706882346061,
+          -18350.399429813835
+        ],
+        [
+          42960.56254044641,
+          11365.090745422443,
+          -11651.191106478846
+        ],
+        [
+          44391.77911798258,
+          12976.435541723436,
+          -8687.629070936684
+        ],
+        [
+          52037.61743096744,
+          22120.01563299382,
+          8845.987327629264
+        ],
+        [
+          56596.491789191765,
+          27798.14427051089,
+          19900.288731252655
+        ],
+        [
+          59487.18363052698,
+          31434.747322150513,
+          26934.889736904137
+        ],
+        [
+          68263.379157272,
+          42447.41662714038,
+          47464.53483175069
+        ],
+        [
+          70801.05479143985,
+          45560.359188059585,
+          52830.578579637404
+        ],
+        [
+          73531.7381865211,
+          48817.193414495625,
+          57995.732608551785
+        ],
+        [
+          74936.29368971709,
+          50430.33476768744,
+          60264.26662397301
+        ],
+        [
+          74941.59615155982,
+          50436.3122834547,
+          60272.14160782259
+        ]
+      ],
+      "cameraMoves": 0
+    },
+    "event": {
+      "message": "Halo flyby complete. Travel is paused beside the spiral; look around or explore another destination.",
+      "detail": {
+        "kind": "flyby",
+        "region": "galaxy",
+        "mode": "explore",
+        "position": [
+          74941.59615155982,
+          50436.3122834547,
+          60272.14160782259
+        ],
+        "targetId": "galactic-center",
+        "targetName": "Galactic center",
+        "routeId": "halo",
+        "routeName": "Halo flyby"
+      }
+    }
+  },
+  "replayLaunch": {
+    "args": [
+      "halo"
+    ],
+    "before": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "galaxy",
+        "beta": 0.9,
+        "compareRest": false,
+        "fov": 60,
+        "exposure": 1,
+        "quality": "auto"
+      },
+      "state": {
+        "position": [
+          3957.7186846376026,
+          27436.312283454703,
+          -23854.48402140951
+        ],
+        "yaw": 1.4513068720965991,
+        "pitch": -0.936857942285207,
+        "distanceLy": 0,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": "halo-cluster-2"
+    },
+    "accepted": true,
+    "after": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "galaxy",
+        "beta": 0.9,
+        "compareRest": false,
+        "fov": 60,
+        "exposure": 1,
+        "quality": "auto"
+      },
+      "state": {
+        "position": [
+          3957.7186846376026,
+          27436.312283454703,
+          -23854.48402140951
+        ],
+        "yaw": 1.451306872096599,
+        "pitch": -0.9368579422852071,
+        "distanceLy": 0,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": "halo-cluster-2"
+    },
+    "flyby": {
+      "active": true,
+      "completed": false,
+      "id": "halo",
+      "name": "Halo flyby",
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "durationSeconds": 36,
+      "autoLook": true,
+      "phase": "arm",
+      "rate": 2
+    }
+  },
+  "canceled": {
+    "snapshot": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "galaxy",
+        "beta": 0.9,
+        "compareRest": false,
+        "fov": 60,
+        "exposure": 1,
+        "quality": "auto"
+      },
+      "state": {
+        "position": [
+          10364.8288391387,
+          15280.633852987994,
+          -24365.08869339653
+        ],
+        "yaw": 1.3706527692208725,
+        "pitch": -0.8463159221571441,
+        "distanceLy": 13752.223294656573,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": "halo-cluster-2"
+    },
+    "flyby": {
+      "active": false,
+      "completed": false,
+      "id": null,
+      "name": null,
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "durationSeconds": 0,
+      "autoLook": false,
+      "phase": null,
+      "rate": 2
+    }
+  },
+  "failure": "TimeoutError: page.waitForFunction: Timeout 30000ms exceeded."
+}

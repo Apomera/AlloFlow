@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1387:5 › guided first discovery records two readings on one scale and keeps keyboard progress (22.3s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1387:5 › guided first discovery records two readings on one scale and keeps keyboard progress 
+
+    Error: expect(locator).toHaveCount(expected) failed
+
+    Locator:  locator('[data-ns-first-chart]')
+    Expected: 0
+    Received: 1
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveCount" with timeout 15000ms
+      - waiting for locator('[data-ns-first-chart]')
+        31 × locator resolved to 1 element
+           - unexpected value "1"
+
+
+      1407 |   await expect(guide).toHaveAttribute('data-ns-first-discovery', 'far');
+      1408 |   await expect(heading).toBeFocused();
+    > 1409 |   await expect(page.locator('[data-ns-first-chart]')).toHaveCount(0);
+           |                                                       ^
+      1410 |   await expect(page.locator('[data-ns-reading]')).toHaveText('100%');
+      1411 |   await expect(page.locator('[data-ns-explain]')).toHaveCount(0);
+      1412 |   expect(await page.evaluate(() => (window as any).__toolData._nuclearLab.nkStudio.distance.runs)).toEqual([1]);
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1409:55
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-first-evidence\43-nuclearlab-experiment-s-0f0db-and-keeps-keyboard-progress-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-first-evidence\43-nuclearlab-experiment-s-0f0db-and-keeps-keyboard-progress-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-first-evidence\43-nuclearlab-experiment-s-0f0db-and-keeps-keyboard-progress-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-first-evidence\43-nuclearlab-experiment-s-0f0db-and-keeps-keyboard-progress-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-first-evidence\43-nuclearlab-experiment-s-0f0db-and-keeps-keyboard-progress-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1387:5 › guided first discovery records two readings on one scale and keeps keyboard progress 
+(node:43156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:43156) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-first-evidence.js in place of stem_lab/stem_tool_nuclearlab.js

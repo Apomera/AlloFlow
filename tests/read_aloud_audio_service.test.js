@@ -792,9 +792,9 @@ describe('ReadAloudAudioService legacy compatibility bridge', () => {
     });
     expect(harness.notify).toHaveBeenCalledWith(
       'Played sentence.',
-      'saved',
+      'attached',
       'simple-played-capture',
-      expect.any(Object),
+      expect.objectContaining({ verified: false }),
     );
   });
 

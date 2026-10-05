@@ -20,6 +20,77 @@ function WordSoundsPreviewView(props) {
   // Treat an omitted role as the educator view so older call sites retain the
   // review path. Learner call sites pass false explicitly.
   var isTeacherMode = props.isTeacherMode !== false;
+  var readinessApi = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.WordSoundsReadiness;
+  var readinessResource = React.useMemo(function () {
+    return generatedContent && Object.assign({}, generatedContent, {
+      lessonPlanSequence: Array.isArray(wsActivitySequence) && wsActivitySequence.length ? wsActivitySequence : generatedContent.lessonPlanSequence,
+    });
+  }, [generatedContent, wsActivitySequence]);
+  var readinessBinding = readinessApi ? readinessApi.identity(readinessResource, { route: 'student-pack' }) : null;
+  var readinessRunRef = React.useRef({ binding: readinessBinding, controller: null, mounted: true, epoch: 0 });
+  var readinessCheckButtonRef = React.useRef(null);
+  var readinessCancelButtonRef = React.useRef(null);
+  var readinessPanelRef = React.useRef(null);
+  var readinessState = React.useState({ busy: false, notice: '' });
+  var readinessStateValue = readinessState[0], setReadinessState = readinessState[1];
+  var readinessMatches = readinessRunRef.current.binding === readinessBinding;
+  var readinessBusy = readinessMatches && readinessStateValue.busy;
+  var readinessNotice = readinessMatches ? readinessStateValue.notice : '';
+  React.useEffect(function () {
+    var current = readinessRunRef.current;
+    if (current.controller) current.controller.abort();
+    current.binding = readinessBinding; current.controller = null; current.mounted = true; current.epoch += 1;
+    setReadinessState({ busy: false, notice: '' });
+    return function () { current.mounted = false; current.epoch += 1; if (current.controller) current.controller.abort(); };
+  }, [readinessBinding]);
+  React.useEffect(function () {
+    if (typeof document === 'undefined') return;
+    var active = document.activeElement;
+    if (active && active !== document.body && !(readinessPanelRef.current && readinessPanelRef.current.contains(active))) return;
+    var target = readinessBusy ? readinessCancelButtonRef.current : readinessNotice && readinessCheckButtonRef.current;
+    if (target) target.focus();
+  }, [readinessBusy, readinessNotice]);
+  wordSoundsAudioCoverage = readinessApi ? readinessApi.inspect(readinessResource, { route: 'student-pack' }) : {
+    ready: 0, total: wordSoundsAudioCoverage && wordSoundsAudioCoverage.total || 0,
+    missing: 0, embedded: 0, online: 0, deviceOnly: 0, unverified: 1, complete: false, dependencies: [], missingLabels: [],
+  };
+  missingAudioLabels = wordSoundsAudioCoverage && wordSoundsAudioCoverage.missingLabels || [];
+  var readinessCategoryNames = {
+    "speech": label('readiness_category_speech', 'Words and text'),
+    "phoneme": label('readiness_category_phoneme', 'Speech sounds'),
+    "instruction": label('readiness_category_instruction', 'Instructions'),
+    "feedback": label('readiness_category_feedback', 'Feedback'),
+    "isolation": label('readiness_category_isolation', 'Sound position prompts'),
+    "letter-name": label('readiness_category_letter_name', 'Letter names'),
+  };
+  var readableAudioLabel = function (value) {
+    var parts = String(value || '').split(': '), category = parts.shift(), name = parts.join(': ');
+    if (category === 'instruction' || category === 'feedback') name = name.replace(/^(inst_|fb_)/, '').replace(/_/g, ' ');
+    return (readinessCategoryNames[category] || category) + ': ' + name;
+  };
+  var checkReadiness = function () {
+    var current = readinessRunRef.current;
+    if (!readinessApi || !readinessResource || current.controller || !current.mounted) return;
+    var controller = new AbortController(), epoch = ++current.epoch, binding = readinessBinding;
+    current.controller = controller;
+    setReadinessState({ busy: true, notice: '' });
+    readinessApi.check(readinessResource, { route: 'student-pack', signal: controller.signal }).then(function (report) {
+      if (!current.mounted || current.epoch !== epoch || current.binding !== binding) return;
+      current.controller = null;
+      setReadinessState({ busy: false, notice: report && !report.cancelled && !report.stale ? 'checked' : 'cancelled' });
+    }).catch(function () {
+      if (!current.mounted || current.epoch !== epoch || current.binding !== binding) return;
+      current.controller = null;
+      setReadinessState({ busy: false, notice: 'failed' });
+    });
+  };
+  var cancelReadiness = function () {
+    var current = readinessRunRef.current;
+    current.epoch += 1;
+    if (current.controller) current.controller.abort();
+    current.controller = null;
+    setReadinessState({ busy: false, notice: 'cancelled' });
+  };
   // A missing-audio confirmation can outlive the resource that opened it.
   // Keep its callback tied to the exact prepared lesson and allow one launch.
   var launchContext = JSON.stringify([generatedContent && generatedContent.id, generatedContent && generatedContent.sessionConfig, generatedContent && generatedContent.data, generatedContent && generatedContent.wsPreloadedWords, wsActivitySequence, isTeacherMode]);
@@ -63,22 +134,26 @@ function WordSoundsPreviewView(props) {
                       <div className="text-4xl mb-3">🎵</div>
                       <h3 className="text-lg font-bold text-slate-800 mb-2">{generatedContent?.title || label('preview_title', 'Word Sounds Studio')}</h3>
                       <p className="text-sm text-slate-600 mb-1">{generatedContent?.configSummary || label('preview_ready', 'Ready to practice')}</p>
-                      {generatedContent?.data && <p className="text-xs text-violet-500 font-medium">{label('preview_word_count', '{count} words loaded', { count: generatedContent.data.length })}</p>}
-                      {isTeacherMode && wordSoundsAudioCoverage && wordSoundsAudioCoverage.total > 0 && (
-                        <p
-                          role="status"
-                          aria-live="polite"
-                          className={`mt-2 text-xs font-bold ${wordSoundsAudioCoverage.complete ? 'text-emerald-700' : 'text-amber-700'}`}
-                        >
-                          {label('preview_audio_ready', 'Audio ready: {ready}/{total} required clips', wordSoundsAudioCoverage)}
-                          {!wordSoundsAudioCoverage.complete && (' — ' + label('preview_review_missing', 'Review missing audio before sending to students'))}
-                          {!wordSoundsAudioCoverage.complete && missingAudioLabels.length > 0 && (
-                            <span className="mt-1 block font-medium text-amber-800">
-                              {label('preview_missing', 'Missing: {labels}', { labels: missingAudioLabels.slice(0, 5).join(', ') })}
-                              {missingAudioLabels.length > 5 && label('preview_more', ', plus {count} more', { count: missingAudioLabels.length - 5 })}
-                            </span>
-                          )}
-                        </p>
+                      {generatedContent?.data && <p className="text-xs text-violet-700 font-medium">{label('preview_word_count', '{count} words loaded', { count: generatedContent.data.length })}</p>}
+                      {isTeacherMode && wordSoundsAudioCoverage && (
+                        <section ref={readinessPanelRef} className="mt-4 rounded-xl border border-violet-200 bg-white p-4 text-start" aria-label={label('readiness_panel', 'Ready for students: audio check')} aria-busy={readinessBusy} onKeyDown={event => { if (event.key === 'Escape' && readinessBusy) { event.preventDefault(); cancelReadiness(); } }}>
+                          <h4 className="font-bold text-slate-800">{label('readiness_heading', 'Ready for students')} <span className="text-sm font-medium">{label('readiness_audio_qualifier', 'Audio check')}</span></h4>
+                          <p role="status" aria-live="polite" aria-atomic="true" className={`mt-2 text-sm font-bold ${wordSoundsAudioCoverage.complete ? 'text-emerald-700' : 'text-amber-800'}`}>
+                            {readinessBusy ? label('readiness_checking', 'Checking local clips. This may take up to 30 seconds.') : (wordSoundsAudioCoverage.complete ? label('readiness_ready', 'Audio verified for this student pack') : label('readiness_review', 'Audio needs checking or review'))}
+                            {!readinessBusy && readinessNotice === 'cancelled' && <span className="block">{label('readiness_cancelled', 'Audio check cancelled. Readiness is unconfirmed.')}</span>}
+                            {!readinessBusy && readinessNotice === 'failed' && <span className="block">{label('readiness_failed', 'Audio could not be checked. Review the lesson and try again.')}</span>}
+                          </p>
+                          <p className="mt-2 text-sm text-slate-700">{label('readiness_counts', '{ready}/{total} required clips verified; {embedded} embedded, {online} online dependencies, {deviceOnly} available only on this device.', wordSoundsAudioCoverage)}</p>
+                          <p className="mt-2 text-xs text-slate-600">{label('readiness_limits', 'This checks audio only. Review the lesson content before sharing. Online app banks and device cache are not embedded in the student pack; this check cannot confirm them on another device.')}</p>
+                          {missingAudioLabels.length > 0 && <p className="mt-2 text-sm text-amber-900">{label('preview_missing', 'Missing: {labels}', { labels: missingAudioLabels.slice(0, 5).map(readableAudioLabel).join(', ') })}{missingAudioLabels.length > 5 && label('preview_more', ', plus {count} more', { count: missingAudioLabels.length - 5 })}</p>}
+                          {wordSoundsAudioCoverage.dependencies && wordSoundsAudioCoverage.dependencies.length > 0 && <p className="mt-2 text-sm text-slate-700">{label('readiness_dependencies', 'App or device audio to review: {labels}', { labels: wordSoundsAudioCoverage.dependencies.slice(0, 5).map(readableAudioLabel).join(', ') })}{wordSoundsAudioCoverage.dependencies.length > 5 && label('preview_more', ', plus {count} more', { count: wordSoundsAudioCoverage.dependencies.length - 5 })}</p>}
+                          {wordSoundsAudioCoverage.omittedLabels && wordSoundsAudioCoverage.omittedLabels.length > 0 && <p className="mt-2 text-sm text-amber-900">{label('readiness_omitted', 'Prepared clips omitted from delivery: {labels}', { labels: wordSoundsAudioCoverage.omittedLabels.slice(0, 5).join(', ') })}{wordSoundsAudioCoverage.omittedLabels.length > 5 && label('preview_more', ', plus {count} more', { count: wordSoundsAudioCoverage.omittedLabels.length - 5 })}</p>}
+                          <div className="mt-3 flex flex-wrap gap-2">
+                            <button ref={readinessCheckButtonRef} type="button" onClick={checkReadiness} disabled={readinessBusy || !readinessApi} className="min-h-11 rounded-lg border border-violet-300 px-4 py-2 text-sm font-bold text-violet-800 hover:bg-violet-50 disabled:opacity-60 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{label('readiness_check', 'Check prepared audio')}</button>
+                            {readinessBusy && <button ref={readinessCancelButtonRef} type="button" onClick={cancelReadiness} className="min-h-11 rounded-lg border border-slate-300 px-4 py-2 text-sm font-bold text-slate-700 focus:outline-none focus:ring-2 focus:ring-violet-600 focus:ring-offset-2">{label('readiness_cancel', 'Cancel check')}</button>}
+                          </div>
+                          <p className="mt-2 text-xs text-slate-600">{label('readiness_recovery', 'For missing embedded clips, use Teacher: Review Words & Audio, then re-prepare the pack in setup. Starting or reviewing a session follows the existing session controls.')}</p>
+                        </section>
                       )}
                       <div className={`grid grid-cols-1 ${isTeacherMode ? 'sm:grid-cols-2' : ''} gap-3 mt-5`}>
                         {isTeacherMode && (
@@ -112,7 +187,6 @@ function WordSoundsPreviewView(props) {
                           onClick={() => {
                             if (isTeacherMode
                                 && wordSoundsAudioCoverage
-                                && wordSoundsAudioCoverage.total > 0
                                 && !wordSoundsAudioCoverage.complete
                                 && typeof requestIncompleteAudioConfirmation === 'function') {
                               requestIncompleteAudioConfirmation(wordSoundsAudioCoverage, launchPreparedActivity);

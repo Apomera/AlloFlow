@@ -1,0 +1,243 @@
+{
+  "overflow": false,
+  "background": "rgb(0, 0, 0)",
+  "svgs": [
+    {
+      "id": "astronomy-hz-orbit",
+      "text": [
+        {
+          "label": "Closer",
+          "font": 12.588888888888889,
+          "left": 44.00000381469728,
+          "top": 20.533308029174577,
+          "right": 105.3819923400879,
+          "bottom": 50.242866516113054,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "Farther",
+          "font": 12.588888888888889,
+          "left": 252.14315795898438,
+          "top": 20.533308029174577,
+          "right": 321.08251190185547,
+          "bottom": 50.242866516113054,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "0.03",
+          "font": 12.588888888888889,
+          "left": 23.83408927917482,
+          "top": 239.5333099365232,
+          "right": 64.53635978698732,
+          "bottom": 269.2428684234617,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "0.1",
+          "font": 12.588888888888889,
+          "left": 80.86415100097658,
+          "top": 239.5333099365232,
+          "right": 109.34491348266603,
+          "bottom": 269.2428684234617,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "1",
+          "font": 12.588888888888889,
+          "left": 186.9022216796875,
+          "top": 239.5333099365232,
+          "right": 198.78058338165283,
+          "bottom": 269.2428684234617,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "10",
+          "font": 12.588888888888889,
+          "left": 266.848876953125,
+          "top": 239.5333099365232,
+          "right": 290.9335460662842,
+          "bottom": 269.2428684234617,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "20",
+          "font": 12.588888888888889,
+          "left": 320,
+          "top": 239.5333099365232,
+          "right": 344.0846691131592,
+          "bottom": 269.2428684234617,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "Distance in AU",
+          "font": 12.588888888888889,
+          "left": 109.26231384277345,
+          "top": 284.53329467773415,
+          "right": 251.3512420654297,
+          "bottom": 314.2428531646726,
+          "width": 360,
+          "height": 330
+        }
+      ]
+    },
+    {
+      "id": "astronomy-hz-energy",
+      "text": [
+        {
+          "label": "Incoming",
+          "font": 12.588888888888889,
+          "left": 32.000000000000014,
+          "top": 17.53330802917469,
+          "right": 122.9855194091797,
+          "bottom": 47.24286651611317,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "100%",
+          "font": 12.588888888888889,
+          "left": 274.4518127441406,
+          "top": 17.53330802917469,
+          "right": 329.22961044311523,
+          "bottom": 47.24286651611317,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "Reflected",
+          "font": 12.588888888888889,
+          "left": 32.000000000000014,
+          "top": 118.53330993652332,
+          "right": 121.75672912597658,
+          "bottom": 148.2428684234618,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "29.4%",
+          "font": 12.588888888888889,
+          "left": 269.67315673828125,
+          "top": 118.53330993652332,
+          "right": 329.2172317504883,
+          "bottom": 148.2428684234618,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "Absorbed",
+          "font": 12.588888888888889,
+          "left": 30.252380371093764,
+          "top": 219.5333251953124,
+          "right": 126.34423065185548,
+          "bottom": 249.24288368225086,
+          "width": 360,
+          "height": 330
+        },
+        {
+          "label": "70.6%",
+          "font": 12.588888888888889,
+          "left": 269.67315673828125,
+          "top": 219.5333251953124,
+          "right": 329.2172317504883,
+          "bottom": 249.24288368225086,
+          "width": 360,
+          "height": 330
+        }
+      ]
+    }
+  ],
+  "targets": [
+    {
+      "label": "Venus reference",
+      "height": 44
+    },
+    {
+      "label": "Earth reference",
+      "height": 44
+    },
+    {
+      "label": "Mars reference",
+      "height": 44
+    },
+    {
+      "label": "Sun",
+      "height": 44
+    },
+    {
+      "label": "Cool star scenario",
+      "height": 44
+    },
+    {
+      "label": "Hot star scenario",
+      "height": 44
+    },
+    {
+      "label": "",
+      "height": 44
+    },
+    {
+      "label": "",
+      "height": 44
+    },
+    {
+      "label": "",
+      "height": 44
+    },
+    {
+      "label": "",
+      "height": 44
+    },
+    {
+      "label": "Move between the boundaries",
+      "height": 44
+    },
+    {
+      "label": "Reset habitable-zone explorer",
+      "height": 44
+    },
+    {
+      "label": "Published inputs and model limits",
+      "height": 44
+    },
+    {
+      "label": "Kopparapu 2014 · Climate boundaries",
+      "height": 44
+    },
+    {
+      "label": "Author calculator and coefficients",
+      "height": 44
+    },
+    {
+      "label": "IAU 2015 · Solar references",
+      "height": 44
+    },
+    {
+      "label": "NASA · Planetary energy balance",
+      "height": 44
+    },
+    {
+      "label": "NASA · Venus fact sheet",
+      "height": 44
+    },
+    {
+      "label": "NASA · Earth fact sheet",
+      "height": 44
+    },
+    {
+      "label": "NASA · Mars fact sheet",
+      "height": 44
+    }
+  ],
+  "table": {
+    "overflow": false,
+    "columnHeaders": 4,
+    "rowHeaders": 3
+  }
+}

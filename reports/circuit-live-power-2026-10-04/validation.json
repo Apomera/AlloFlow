@@ -1,0 +1,27 @@
+{
+  "passed": true,
+  "sourceSha256": "851778e7df6f8ff8ddba0e4c69670d8332933bad4a2d95c3a6ed8f38f21a8056",
+  "sourceMirrorEqual": true,
+  "priorSourcePreserved": true,
+  "tests": 67,
+  "newTests": 12,
+  "testFiles": 4,
+  "browserViews": 8,
+  "browserWorkflows": 2,
+  "scopedDiffCheck": true,
+  "scopedIndexEmpty": true,
+  "visualReview": {
+    "reviewedBy": "Root agent",
+    "finalDirectlyReviewed": [
+      "desktop-closed.png",
+      "desktop-active.png",
+      "small-phone-active.png",
+      "phone-cutoff.png",
+      "desktop-saturated.png",
+      "phone-sensor.png",
+      "forced-colors.png",
+      "rtl-readings.png"
+    ],
+    "notes": "Reviewed four live quantities, voltage × current calculation, operating-region explanations, disclosure focus, 320 px layout, sensor path wording, system colors and numeric direction."
+  }
+}

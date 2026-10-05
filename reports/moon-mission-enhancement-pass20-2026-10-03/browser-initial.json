@@ -1,0 +1,531 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass20-2026-10-03/browser/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-predictions.spec.ts",
+      "file": "moon-mission-descent-predictions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "paused control comparisons are numerical, update immediately, and persist only the panel preference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10909,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T18:09:25.963Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-paused-controls",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-predi-7b73a-t-only-the-panel-preference-chromium\\attachments\\prediction-paused-controls-02b34cfd4a82af22a9d1c600d4f485a9965cbe34.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-c931efc69d7ce2376cff",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "active prediction clocks follow the flight and leave the original impact and once-only outcome intact",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 32904,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T18:09:37.035Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-actual-contact",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-predi-00341-nd-once-only-outcome-intact-chromium\\attachments\\prediction-actual-contact-4ba71937be026abd8e9283300ba9a40a77a53fd4.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-7cabc1b79f7145c1b87d",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 116,
+          "column": 5
+        },
+        {
+          "title": "recorded sample projections preserve the landing receipt and omit missing legacy measurements",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3167,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T18:10:09.950Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-recorded-sample",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-predi-f73f5-missing-legacy-measurements-chromium\\attachments\\prediction-recorded-sample-9b28285800873be3a1d36b9ec39b9c3a3ece8e2a.png"
+                    },
+                    {
+                      "name": "prediction-legacy-measurements",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-predi-f73f5-missing-legacy-measurements-chromium\\attachments\\prediction-legacy-measurements-944359d4a672ca62b53661c85148fd6a6b260bbe.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-d3b15c5cf186749021db",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 135,
+          "column": 5
+        },
+        {
+          "title": "320 px keyboard controls and equal-axis paths remain accessible in the fallback view",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2731,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T18:10:13.130Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-predi-89658-ssible-in-the-fallback-view-chromium\\attachments\\prediction-phone-320-2e320c2edf25579ba11cd228dccd9f0c02b8952a.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-975bdd21d6fc950fd36c",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 167,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "moon-mission-descent-vectors.spec.ts",
+      "file": "moon-mission-descent-vectors.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "WebGL flight vectors follow engine and attitude response while physical time stays independent",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 42501,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 30000ms exceeded while waiting on the predicate",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 30000ms exceeded while waiting on the predicate\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts:141:117",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts",
+                      "column": 117,
+                      "line": 141
+                    },
+                    "snippet": "  139 | test('WebGL flight vectors follow engine and attitude response while physical time stays independent', async ({ page }, info) => {\n  140 |   await mount(page); await open(page); const before = await flight(page), receipt = await evidence(page);\n> 141 |   await expect.poll(async () => (await harness.glScene(page, '[data-descent-gl]'))?.draws || 0, { timeout: 30000 }).toBeGreaterThan(0);\n      |                                                                                                                     ^\n  142 |   const contexts = await harness.glContexts(page); expect(contexts.some(c => c.createdBy === 'page' && !c.lost && c.draws > 0)).toBe(true);\n  143 |   await page.locator('[data-descent-throttle]').fill('65'); await page.locator('[data-descent-pause]').click();\n  144 |   const cv = page.locator('[data-descent-canvas]'); await cv.focus(); await page.keyboard.down('d');"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts",
+                        "column": 117,
+                        "line": 141
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\nCall Log:\n- Timeout 30000ms exceeded while waiting on the predicate\n\n  139 | test('WebGL flight vectors follow engine and attitude response while physical time stays independent', async ({ page }, info) => {\n  140 |   await mount(page); await open(page); const before = await flight(page), receipt = await evidence(page);\n> 141 |   await expect.poll(async () => (await harness.glScene(page, '[data-descent-gl]'))?.draws || 0, { timeout: 30000 }).toBeGreaterThan(0);\n      |                                                                                                                     ^\n  142 |   const contexts = await harness.glContexts(page); expect(contexts.some(c => c.createdBy === 'page' && !c.lost && c.draws > 0)).toBe(true);\n  143 |   await page.locator('[data-descent-throttle]').fill('65'); await page.locator('[data-descent-pause]').click();\n  144 |   const cv = page.locator('[data-descent-canvas]'); await cv.focus(); await page.keyboard.down('d');\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts:141:117"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T18:10:29.099Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-5e796-ical-time-stays-independent-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts",
+                    "column": 117,
+                    "line": 141
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "3b0a921ff8586640a139-675870bbf9986511fa3d",
+          "file": "moon-mission-descent-vectors.spec.ts",
+          "line": 139,
+          "column": 5
+        }
+      ],
+      "suites": [
+        {
+          "title": "fallback flight vector instruments",
+          "file": "moon-mission-descent-vectors.spec.ts",
+          "line": 70,
+          "column": 6,
+          "specs": [
+            {
+              "title": "paused desktop vectors show actual measurements and do not operate the lander",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4545,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-03T18:10:15.892Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "desktop-coast",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-4d172-d-do-not-operate-the-lander-chromium\\attachments\\desktop-coast-23a5304fd7353ed1c0f4138404d9b7943b5b313b.png"
+                        },
+                        {
+                          "name": "coast-vector-diagrams",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-4d172-d-do-not-operate-the-lander-chromium\\attachments\\coast-vector-diagrams-a78a8e04134aa0dd9d8588495cff3adf930468e1.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b0a921ff8586640a139-561acaca434fd0a12a98",
+              "file": "moon-mission-descent-vectors.spec.ts",
+              "line": 78,
+              "column": 7
+            },
+            {
+              "title": "recorded tilted burn and contact preserve receipts and omit missing legacy vectors",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 4357,
+                      "error": {
+                        "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-descent-vector-source]')\nExpected substring: \u001b[32m\"no recorded state\"\u001b[39m\nError: strict mode violation: locator('[data-descent-vector-source]') resolved to 2 elements:\n    1) <details open=\"\" data-descent-vectors=\"true\" data-descent-vector-time=\"\" data-descent-vector-tilt=\"\" data-descent-vector-contact=\"\" data-descent-vector-available=\"false\" data-descent-vector-actual-throttle=\"\" data-descent-vector-source=\"unavailable\" data-descent-vector-forces-available=\"false\">…</details> aka getByText('Explore flight vectorsThis')\n    2) <p data-descent-vector-source=\"true\">This saved landing has no recorded state for flig…</p> aka getByText('This saved landing has no')\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-descent-vector-source]')\u001b[22m\n",
+                        "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-descent-vector-source]')\nExpected substring: \u001b[32m\"no recorded state\"\u001b[39m\nError: strict mode violation: locator('[data-descent-vector-source]') resolved to 2 elements:\n    1) <details open=\"\" data-descent-vectors=\"true\" data-descent-vector-time=\"\" data-descent-vector-tilt=\"\" data-descent-vector-contact=\"\" data-descent-vector-available=\"false\" data-descent-vector-actual-throttle=\"\" data-descent-vector-source=\"unavailable\" data-descent-vector-forces-available=\"false\">…</details> aka getByText('Explore flight vectorsThis')\n    2) <p data-descent-vector-source=\"true\">This saved landing has no recorded state for flig…</p> aka getByText('This saved landing has no')\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-descent-vector-source]')\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts:115:138",
+                        "location": {
+                          "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts",
+                          "column": 138,
+                          "line": 115
+                        },
+                        "snippet": "  113 |     const legacy = await evidence(page); await page.locator('[data-descent-vectors] > summary').click();\n  114 |     await expect(page.locator('[data-descent-vectors]')).toHaveAttribute('data-descent-vector-available', 'false');\n> 115 |     await expect(page.locator('[data-descent-vector-content]')).toBeHidden(); await expect(page.locator('[data-descent-vector-source]')).toContainText('no recorded state');\n      |                                                                                                                                          ^\n  116 |     expect(await evidence(page)).toEqual(legacy); await capture(page, info, 'legacy-no-vectors');\n  117 |   });\n  118 |"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts",
+                            "column": 138,
+                            "line": 115
+                          },
+                          "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoContainText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator: locator('[data-descent-vector-source]')\nExpected substring: \u001b[32m\"no recorded state\"\u001b[39m\nError: strict mode violation: locator('[data-descent-vector-source]') resolved to 2 elements:\n    1) <details open=\"\" data-descent-vectors=\"true\" data-descent-vector-time=\"\" data-descent-vector-tilt=\"\" data-descent-vector-contact=\"\" data-descent-vector-available=\"false\" data-descent-vector-actual-throttle=\"\" data-descent-vector-source=\"unavailable\" data-descent-vector-forces-available=\"false\">…</details> aka getByText('Explore flight vectorsThis')\n    2) <p data-descent-vector-source=\"true\">This saved landing has no recorded state for flig…</p> aka getByText('This saved landing has no')\n\nCall log:\n\u001b[2m  - Expect \"toContainText\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-descent-vector-source]')\u001b[22m\n\n\n  113 |     const legacy = await evidence(page); await page.locator('[data-descent-vectors] > summary').click();\n  114 |     await expect(page.locator('[data-descent-vectors]')).toHaveAttribute('data-descent-vector-available', 'false');\n> 115 |     await expect(page.locator('[data-descent-vector-content]')).toBeHidden(); await expect(page.locator('[data-descent-vector-source]')).toContainText('no recorded state');\n      |                                                                                                                                          ^\n  116 |     expect(await evidence(page)).toEqual(legacy); await capture(page, info, 'legacy-no-vectors');\n  117 |   });\n  118 |\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts:115:138"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-03T18:10:20.462Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "contact-velocity",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\attachments\\contact-velocity-c8c8e0daec9dc24f670778c41c91ab143b68a76a.png"
+                        },
+                        {
+                          "name": "recorded-tilted-burn",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\attachments\\recorded-tilted-burn-6db45eb77d4e9f68699c650dd658a79d3e1934a9.png"
+                        },
+                        {
+                          "name": "tilted-vector-diagrams",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\attachments\\tilted-vector-diagrams-528d5ba76cc90a472e7ca6c685d1f9a44fa6a574.png"
+                        },
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-02b2e-omit-missing-legacy-vectors-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-vectors.spec.ts",
+                        "column": 138,
+                        "line": 115
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "3b0a921ff8586640a139-f05699c9985575143c60",
+              "file": "moon-mission-descent-vectors.spec.ts",
+              "line": 89,
+              "column": 7
+            },
+            {
+              "title": "320 px flight vectors support keyboard, reduced motion and forced colors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 3050,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-03T18:10:25.867Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "phone-320",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-5ffb6-ed-motion-and-forced-colors-chromium\\attachments\\phone-320-c30509dfe3a0cdaf96e1f6e6aaa8af81714506e7.png"
+                        },
+                        {
+                          "name": "phone-forced-colors",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass20-2026-10-03\\browser\\test-results\\moon-mission-descent-vecto-5ffb6-ed-motion-and-forced-colors-chromium\\attachments\\phone-forced-colors-2d5cf29db86f113bd92a56ad42f5be00b340f547.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "3b0a921ff8586640a139-446f5b8f9746e066f854",
+              "file": "moon-mission-descent-vectors.spec.ts",
+              "line": 119,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T18:09:25.078Z",
+    "duration": 106856.491,
+    "expected": 6,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

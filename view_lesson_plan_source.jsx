@@ -1,7 +1,27 @@
+function projectStudentGuideValue(value) {
+    if (typeof value === 'string' || typeof value === 'number') return value;
+    if (Array.isArray(value)) return value.map(projectStudentGuideValue).filter(function (entry) { return entry != null; });
+    if (!value || typeof value !== 'object') return null;
+    var kept = {};
+    ['en', 'text', 'description', 'title', 'label', 'name', 'item', 'statement', 'instructions', 'studentTask', 'activity', 'steps', 'questions', 'prompt'].forEach(function (key) {
+      if (value[key] != null) { var next = projectStudentGuideValue(value[key]); if (next != null) kept[key] = next; }
+    });
+    return Object.keys(kept).length ? kept : null;
+  }
+function projectStudentGuideData(data, mode) {
+    var out = {};
+    data = data && typeof data === 'object' && !Array.isArray(data) ? data : {};
+    ["essentialQuestion","objectives","materialsNeeded","hook","directInstruction","guidedPractice","independentPractice","closure"].concat(['successCriteria', 'extensions', 'activities']).forEach(function (key) {
+      if (mode !== 'study' && mode !== 'family' && ['hook', 'directInstruction', 'guidedPractice', 'independentPractice', 'closure'].indexOf(key) !== -1 && (typeof data[key] === 'string' || typeof data[key] === 'number')) return;
+      if (data[key] != null) { var next = projectStudentGuideValue(data[key]); if (next != null) out[key] = next; }
+    });
+    return out;
+  }
+
 // Older saved plans may contain scalar lists or structured language/text fields.
 // Select by presence, not truthiness: an intentionally cleared field or zero is meaningful.
 function _lessonPlanTextKey(value) {
-  return ['en', 'text', 'description', 'title', 'label', 'name', 'item'].find(key =>
+  return ['en', 'text', 'studentTask', 'activity', 'instructions', 'steps', 'description', 'title', 'label', 'name', 'item'].find(key =>
     typeof value[key] === 'string' || typeof value[key] === 'number'
     || (value[key] && typeof value[key] === 'object'));
 }
@@ -198,6 +218,11 @@ function LessonPlanOverview({ plan, t }) {
 function LessonPlanView(props) {
   var t = key => { const value = typeof props.t === 'function' ? props.t(key) : ''; return typeof value === 'string' && value !== key ? value : ''; };
   var generatedContent = { ...props.generatedContent, data: props.generatedContent?.data && typeof props.generatedContent.data === 'object' ? props.generatedContent.data : {} };
+  if (!props.isTeacherMode || props.isParentMode || props.isIndependentMode || generatedContent.studentProjection === true) {
+    const transport = typeof window !== 'undefined' && window.AlloModules && window.AlloModules.SessionTransport;
+    generatedContent.data = transport && typeof transport.projectStudentGuideData === 'function'
+      ? transport.projectStudentGuideData(generatedContent.data, generatedContent.config?.generationInputs?.mode) : projectStudentGuideData(generatedContent.data, generatedContent.config?.generationInputs?.mode);
+  }
   var lessonList = value => Array.isArray(value) ? value : (value == null ? [] : [value]);
   var successCriteria = lessonList(generatedContent.data.successCriteria);
   var materialsNeeded = lessonList(generatedContent.data.materialsNeeded);
@@ -252,6 +277,8 @@ function LessonPlanView(props) {
   var BilingualFieldRenderer = fieldProps => props.BilingualFieldRenderer ? React.createElement(props.BilingualFieldRenderer, { ...fieldProps, text: _lessonPlanText(fieldProps.text) }) : <div className={fieldProps.className}>{_lessonPlanText(fieldProps.text)}</div>;
   return (
                     <div className="min-w-0 space-y-6 max-w-4xl mx-auto h-full overflow-y-auto pr-0 sm:pr-2 pb-10">
+                        {audienceView && !['study', 'family'].includes(generatedContent.config?.generationInputs?.mode) && <p role="status" className="rounded-lg border border-slate-300 p-3 text-sm">This learner view includes structured tasks and learning goals. Teacher narrative sections are omitted because this saved plan does not identify separate learner text.</p>}
+                        {audienceView && lessonList(generatedContent.data.activities).length > 0 && <section className="rounded-lg border border-slate-300 p-3"><h3 className="font-bold">Activities</h3><ul className="list-disc pl-5">{lessonList(generatedContent.data.activities).map((activity, index) => <li key={index}>{_lessonPlanText(activity)}</li>)}</ul></section>}
                         <div className="bg-indigo-50 p-4 sm:p-6 rounded-xl border border-indigo-100 shadow-sm">
                              <div className="flex flex-wrap justify-between items-start gap-3 mb-4">
                                  <div>

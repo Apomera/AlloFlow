@@ -1,0 +1,363 @@
+{
+  "scope": "canonical standalone Water Worlds view; WaterCycle global baseline unmodified",
+  "beforeCount": 35,
+  "currentCount": 34,
+  "delta": -1,
+  "syntaxExit": 0,
+  "syntaxOutput": "",
+  "sourceSha256": "6d2b6b0881b58a81dc11682f62c86216c60158bb1a3cd5218508361745f2636a",
+  "tests": {
+    "total": 2,
+    "passed": 2,
+    "failed": 0
+  },
+  "beforeFindings": [
+    {
+      "line": 474,
+      "attr": "aria-label",
+      "text": "Outlet flow over time. Solid teal is this run; dashed purple is the pinned baseline. The data table provides exact readings."
+    },
+    {
+      "line": 552,
+      "attr": "aria-label",
+      "text": "Choose a store to account for"
+    },
+    {
+      "line": 574,
+      "attr": "aria-label",
+      "text": "Follow a water pathway"
+    },
+    {
+      "line": 576,
+      "attr": "aria-label",
+      "text": "Cell water now and after the next model step"
+    },
+    {
+      "line": 584,
+      "attr": "aria-label",
+      "text": "Surface water connections"
+    },
+    {
+      "line": 584,
+      "attr": "aria-label",
+      "text": "Follow water from "
+    },
+    {
+      "line": 584,
+      "attr": "aria-label",
+      "text": "Follow water to "
+    },
+    {
+      "line": 615,
+      "attr": "aria-label",
+      "text": "Cell water differences"
+    },
+    {
+      "line": 619,
+      "attr": "aria-label",
+      "text": "Current-run readings"
+    },
+    {
+      "line": 626,
+      "attr": "aria-label",
+      "text": "Learning lens"
+    },
+    {
+      "line": 629,
+      "attr": "aria-label",
+      "text": "Choose an investigation"
+    },
+    {
+      "line": 630,
+      "attr": "aria-label",
+      "text": "My prediction"
+    },
+    {
+      "line": 632,
+      "attr": "aria-label",
+      "text": "Investigation pathway"
+    },
+    {
+      "line": 633,
+      "attr": "aria-label",
+      "text": "Investigation sections"
+    },
+    {
+      "line": 633,
+      "attr": "aria-label",
+      "text": "Go to "
+    },
+    {
+      "line": 635,
+      "attr": "aria-label",
+      "text": "Storm playback"
+    },
+    {
+      "line": 641,
+      "attr": "aria-label",
+      "text": "Storm observation progress"
+    },
+    {
+      "line": 641,
+      "attr": "aria-valuetext",
+      "text": " of "
+    },
+    {
+      "line": 641,
+      "attr": "aria-valuetext",
+      "text": " model minutes. "
+    },
+    {
+      "line": 646,
+      "attr": "aria-label",
+      "text": "Interactive valley. Click a ground cell or use arrow keys to select. Ground-cell selector below offers the same control. Readings are shown beneath the scene."
+    },
+    {
+      "line": 652,
+      "attr": "aria-label",
+      "text": "Compare water store"
+    },
+    {
+      "line": 664,
+      "attr": "aria-label",
+      "text": "Inspection minute"
+    },
+    {
+      "line": 671,
+      "attr": "aria-label",
+      "text": "Observation note"
+    },
+    {
+      "line": 677,
+      "attr": "aria-label",
+      "text": "Watershed controls"
+    },
+    {
+      "line": 679,
+      "attr": "aria-label",
+      "text": "Rainfall pattern"
+    },
+    {
+      "line": 683,
+      "attr": "aria-label",
+      "text": "Ground cell"
+    },
+    {
+      "line": 692,
+      "attr": "aria-label",
+      "text": "Water stores in the selected cell"
+    },
+    {
+      "line": 698,
+      "attr": "aria-label",
+      "text": "Choose ground cover"
+    },
+    {
+      "line": 698,
+      "attr": "aria-label",
+      "text": "Choose "
+    },
+    {
+      "line": 699,
+      "attr": "aria-label",
+      "text": "Edit area"
+    },
+    {
+      "line": 722,
+      "attr": "aria-label",
+      "text": "Note for observation "
+    },
+    {
+      "line": 723,
+      "attr": "aria-label",
+      "text": "Compare observation "
+    },
+    {
+      "line": 724,
+      "attr": "aria-label",
+      "text": "Revisit observation "
+    },
+    {
+      "line": 725,
+      "attr": "aria-label",
+      "text": "Remove observation "
+    },
+    {
+      "line": 739,
+      "attr": "aria-label",
+      "text": "My explanation"
+    }
+  ],
+  "currentFindings": [
+    {
+      "line": 474,
+      "attr": "aria-label",
+      "text": "Outlet flow over time. Solid teal is this run; dashed purple is the pinned baseline. The data table provides exact readings."
+    },
+    {
+      "line": 552,
+      "attr": "aria-label",
+      "text": "Choose a store to account for"
+    },
+    {
+      "line": 574,
+      "attr": "aria-label",
+      "text": "Follow a water pathway"
+    },
+    {
+      "line": 576,
+      "attr": "aria-label",
+      "text": "Cell water now and after the next model step"
+    },
+    {
+      "line": 584,
+      "attr": "aria-label",
+      "text": "Surface water connections"
+    },
+    {
+      "line": 584,
+      "attr": "aria-label",
+      "text": "Follow water from "
+    },
+    {
+      "line": 584,
+      "attr": "aria-label",
+      "text": "Follow water to "
+    },
+    {
+      "line": 615,
+      "attr": "aria-label",
+      "text": "Cell water differences"
+    },
+    {
+      "line": 619,
+      "attr": "aria-label",
+      "text": "Current-run readings"
+    },
+    {
+      "line": 626,
+      "attr": "aria-label",
+      "text": "Learning lens"
+    },
+    {
+      "line": 629,
+      "attr": "aria-label",
+      "text": "Choose an investigation"
+    },
+    {
+      "line": 630,
+      "attr": "aria-label",
+      "text": "My prediction"
+    },
+    {
+      "line": 632,
+      "attr": "aria-label",
+      "text": "Investigation pathway"
+    },
+    {
+      "line": 633,
+      "attr": "aria-label",
+      "text": "Investigation sections"
+    },
+    {
+      "line": 633,
+      "attr": "aria-label",
+      "text": "Go to "
+    },
+    {
+      "line": 635,
+      "attr": "aria-label",
+      "text": "Storm playback"
+    },
+    {
+      "line": 641,
+      "attr": "aria-label",
+      "text": "Storm observation progress"
+    },
+    {
+      "line": 641,
+      "attr": "aria-valuetext",
+      "text": " of "
+    },
+    {
+      "line": 641,
+      "attr": "aria-valuetext",
+      "text": " model minutes. "
+    },
+    {
+      "line": 646,
+      "attr": "aria-label",
+      "text": "Interactive valley. Click a ground cell or use arrow keys to select. Ground-cell selector below offers the same control. Readings are shown beneath the scene."
+    },
+    {
+      "line": 652,
+      "attr": "aria-label",
+      "text": "Compare water store"
+    },
+    {
+      "line": 664,
+      "attr": "aria-label",
+      "text": "Inspection minute"
+    },
+    {
+      "line": 671,
+      "attr": "aria-label",
+      "text": "Observation note"
+    },
+    {
+      "line": 677,
+      "attr": "aria-label",
+      "text": "Watershed controls"
+    },
+    {
+      "line": 679,
+      "attr": "aria-label",
+      "text": "Rainfall pattern"
+    },
+    {
+      "line": 683,
+      "attr": "aria-label",
+      "text": "Ground cell"
+    },
+    {
+      "line": 692,
+      "attr": "aria-label",
+      "text": "Water stores in the selected cell"
+    },
+    {
+      "line": 698,
+      "attr": "aria-label",
+      "text": "Choose ground cover"
+    },
+    {
+      "line": 698,
+      "attr": "aria-label",
+      "text": "Choose "
+    },
+    {
+      "line": 699,
+      "attr": "aria-label",
+      "text": "Edit area"
+    },
+    {
+      "line": 722,
+      "attr": "aria-label",
+      "text": "Note for observation "
+    },
+    {
+      "line": 724,
+      "attr": "aria-label",
+      "text": "Revisit observation "
+    },
+    {
+      "line": 725,
+      "attr": "aria-label",
+      "text": "Remove observation "
+    },
+    {
+      "line": 739,
+      "attr": "aria-label",
+      "text": "My explanation"
+    }
+  ]
+}

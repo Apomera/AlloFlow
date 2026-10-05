@@ -1,0 +1,314 @@
+{
+  "label": "combined-candidate",
+  "completedAt": "2026-10-04T15:01:58.209Z",
+  "passed": false,
+  "total": 58,
+  "failed": 2,
+  "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\candidate\\host_handlers_source.jsx",
+  "modulePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\candidate\\host_handlers_module.js",
+  "sourceSha256": "91d5320f2e53388173688ad04a7d984faea330aca3cd95695708d34c2041c685",
+  "moduleSha256": "30e7ada1f228fe06aa6864a9c00e13bcb3c7af302c525216df81b582831868f3",
+  "actualCryptoAndVaultValidation": true,
+  "sourceMode": "actual selected handler sections",
+  "generatedMode": "complete generated factory",
+  "controlledBoundaries": [
+    "FileReader callbacks",
+    "module-loader reply order",
+    "status/read completion order",
+    "one actual record decrypt"
+  ],
+  "results": [
+    {
+      "mode": "source",
+      "name": "current unlocked synchronization publishes actual plaintext",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "locked synchronization keeps recovery content empty",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "metadata-only synchronization does not decrypt",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "actual record decrypt cannot expose contents after explicit lock",
+      "passed": false,
+      "error": "TypeError: Cannot set properties of undefined (setting 'current')\n    at Object.lockCanvasRecoveryVault (eval at make (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\ownership-suite.cjs:46:30), <anonymous>:48:55)\n    at Object.run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\ownership-suite.cjs:63:107)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\ownership-suite.cjs:96:69"
+    },
+    {
+      "mode": "source",
+      "name": "latest sync preserves its store when earlier decrypt finishes",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "retired decrypt failure cannot lock the current sync",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "controller replacement retires an initial status result",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "controller replacement retires plaintext already decrypting",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "retired initial status failure does not reject newer work",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "current initial status failure remains visible",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "current decrypt failure locks and preserves its error",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "latest native lock status prevents plaintext publication",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "disabled vault status after decrypt prevents obsolete store publication",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "latest valid encrypted selection keeps actual validated backup",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "earlier loader completion cannot replace latest selected backup",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "earlier onload is retired before starting its loader",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "same input file replacement retires old read without clearing newer input",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "workspace replacement retires a file loader before apply",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "closing import selection retires a file loader before apply",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "retired reader error preserves newer busy and input",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "retired loader failure preserves newer backup and status",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "current reader error clears only its current selection",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "current malformed JSON preserves its error and permits retry",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "current loader failure releases busy selection",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "invalid encrypted backup is rejected by real validation",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "synchronous FileReader construction failure releases selection",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "synchronous FileReader read failure releases selection",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "latest legacy project is handed to existing importer once",
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "empty file selection creates no read or state update",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "current unlocked synchronization publishes actual plaintext",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "locked synchronization keeps recovery content empty",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "metadata-only synchronization does not decrypt",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "actual record decrypt cannot expose contents after explicit lock",
+      "passed": false,
+      "error": "TypeError: Cannot set properties of undefined (setting 'current')\n    at Object.lockCanvasRecoveryVault (evalmachine.<anonymous>:242:8826)\n    at Object.run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\ownership-suite.cjs:63:107)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\ownership-suite.cjs:96:69"
+    },
+    {
+      "mode": "generated",
+      "name": "latest sync preserves its store when earlier decrypt finishes",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "retired decrypt failure cannot lock the current sync",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "controller replacement retires an initial status result",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "controller replacement retires plaintext already decrypting",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "retired initial status failure does not reject newer work",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "current initial status failure remains visible",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "current decrypt failure locks and preserves its error",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "latest native lock status prevents plaintext publication",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "disabled vault status after decrypt prevents obsolete store publication",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "latest valid encrypted selection keeps actual validated backup",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "earlier loader completion cannot replace latest selected backup",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "earlier onload is retired before starting its loader",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "same input file replacement retires old read without clearing newer input",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "workspace replacement retires a file loader before apply",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "closing import selection retires a file loader before apply",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "retired reader error preserves newer busy and input",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "retired loader failure preserves newer backup and status",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "current reader error clears only its current selection",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "current malformed JSON preserves its error and permits retry",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "current loader failure releases busy selection",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "invalid encrypted backup is rejected by real validation",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "synchronous FileReader construction failure releases selection",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "synchronous FileReader read failure releases selection",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "latest legacy project is handed to existing importer once",
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "empty file selection creates no read or state update",
+      "passed": true
+    }
+  ]
+}

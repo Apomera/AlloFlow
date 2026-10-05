@@ -1,0 +1,49 @@
+{
+  "sourceSha256": "5074437464753808786898645761149063f96f7a2d4bb610cad8f0a09c3bb7c4",
+  "scriptSha256": "f9085cebfa93bb4f17c6b9bf5700a05e71df4666683b43072d3248134a193421",
+  "freeBytes": 524120064,
+  "minimumFreeBytes": 209715200,
+  "priorArtifactsBytes": 548861,
+  "priorFiles": [
+    {
+      "file": "browser-results.json",
+      "bytes": 261019
+    },
+    {
+      "file": "different-circuit-second-reading-320.png",
+      "bytes": 26264
+    },
+    {
+      "file": "forced-colors-second-reading-320.png",
+      "bytes": 12061
+    },
+    {
+      "file": "longest-cue-200pct-text-320.png",
+      "bytes": 90394
+    },
+    {
+      "file": "multiple-settings-changed-probes-320.png",
+      "bytes": 27662
+    },
+    {
+      "file": "ready-changed-probes-320.png",
+      "bytes": 29178
+    },
+    {
+      "file": "ready-second-reading-390.png",
+      "bytes": 30442
+    },
+    {
+      "file": "rtl-localized-second-reading-320.png",
+      "bytes": 31970
+    },
+    {
+      "file": "unchanged-second-reading-1280.png",
+      "bytes": 39871
+    }
+  ],
+  "scope": "Eight local fixture views using installed React, CircuitTool, axe and Chromium. No downloads or cleanup.",
+  "expectedArtifactAndProfileBudgetBytes": 52428800,
+  "cleanupPerformed": false,
+  "passed": true
+}

@@ -1,0 +1,12 @@
+{
+  "passed": true,
+  "beforeSha256": "3424b78369802606dd709faf9c308c1d444b0d18633c69062a7e7486e5614453",
+  "sourceSha256": "e81cf1cb831d3754b208ed31d6467b14cb6fa140c5b6c299855ce671c5c12257",
+  "mirrorSha256": "e81cf1cb831d3754b208ed31d6467b14cb6fa140c5b6c299855ce671c5c12257",
+  "baselineValidationSha256": "badd78b156c74fb7d7e582532404bc5761fed8f65a86bcbb0b8ce59970cad9c0",
+  "cssOnly": true,
+  "scope": "Existing max-width:480px media query",
+  "before": "    .circuit-active-root .circuit-continuation-content {\n        grid-template-columns: 1fr;\n    }",
+  "after": "    .circuit-active-root .circuit-continuation-content {\n        grid-template-columns: 1fr;\n    }\n    .circuit-active-root .circuit-continuation-inquiry-step {\n        display: grid;\n        grid-template-columns: max-content minmax(0, 1fr);\n        gap: 8px 10px;\n    }\n    .circuit-active-root .circuit-continuation-inquiry-number {\n        min-width: 2em;\n        min-height: 2em;\n    }\n    .circuit-active-root .circuit-continuation-inquiry-copy {\n        display: contents;\n    }\n    .circuit-active-root strong.circuit-continuation-inquiry-heading {\n        grid-column: 2;\n    }\n    .circuit-active-root p.circuit-continuation-inquiry-prompt {\n        grid-column: 1 / -1;\n        margin: 0;\n    }",
+  "byteExactReversal": true
+}

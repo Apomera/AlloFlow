@@ -15,7 +15,7 @@ const missionFunction = region('function clHuntInputCue(', "touchPanel=document.
 const run = new Function('THREE', 'document', 'options', `
   var now=options.now==null?1000:options.now,gameNow=now,announcements=[],gathered=false;
   var octopus=new THREE.Group();octopus.position.set(0,.55,0);
-  var target=new THREE.Group();target.userData={alive:true,cfg:{},type:'rock'};target.position.set(0,.18,options.eligible?1.4:6);
+  var target=new THREE.Group();target.userData={alive:true,type:'rock'};if(options.kind!=='fish')target.userData.cfg={};target.position.set(0,options.targetY==null?.18:options.targetY,options.targetZ==null?(options.eligible?1.4:6):options.targetZ);
   var clam=new THREE.Group();clam.userData={alive:true};clam.position.set(.5,.1,0);
   var clams=options.clam===false?[]:[clam],keys={KeyE:!!options.heldE},capabilities={diet:options.diet||'carnivore'},isMoving=!!options.moving;
   var gameState={forageTarget:options.latched?clam:null,tookHitAt:1000-(options.hitAge==null?1000:options.hitAge),pendingStrike:{target:options.noTarget?null:target,at:1000},strikeReadyAt:1450,strikeMessage:'',strikeMessageUntil:0,runStats:{crabs:0,clams:0},camoEff:0,targetText:'OUT OF REACH · move closer',targetDetail:'Rock crab · 6.0 m · ahead',announcedStep:-1};
@@ -37,8 +37,13 @@ function fixture(options = {}) { const dom = new JSDOM('<!doctype html><body></b
 describe('Cephalopod Hunter failed strike feedback beside clams', () => {
   it('shows the same real miss in the free-mode mission brief with or without an untouched reachable clam', () => {
     const noClam = fixture({ clam: false }), nearby = fixture();
-    for (const row of [noClam, nearby]) { assert.equal(row.gathered, false); assert.equal(row.gameState.pendingStrike, null); assert.equal(row.gameState.strikeReadyAt, 1450); assert.equal(row.brief.hidden, false); assert.match(row.brief.textContent, /Missed\. Move closer and match the target depth\./); assert.deepEqual(row.announcements, [row.gameState.strikeMessage]); }
+    for (const row of [noClam, nearby]) { assert.equal(row.gathered, false); assert.equal(row.gameState.pendingStrike, null); assert.equal(row.gameState.strikeReadyAt, 1450); assert.equal(row.brief.hidden, false); assert.match(row.brief.textContent, /Missed\. Move closer to the target\./); assert.deepEqual(row.announcements, [row.gameState.strikeMessage]); }
     assert.equal(nearby.brief.textContent, noClam.brief.textContent); assert.equal(nearby.gameState.strikeMessageUntil, 2800);
+  });
+  it('distinguishes rise and dive misses for real fish and crab readiness without gathering the nearby clam', () => {
+    for (const [kind, targetY, direction] of [['crab',1.651,'Rise'],['crab',-.551,'Dive'],['fish',10,'Rise'],['fish',-10,'Dive']]) {
+      const row=fixture({kind,targetY,targetZ:.1});assert.equal(row.gathered,false);assert.equal(row.capturable,false);assert.equal(row.gameState.pendingStrike,null);assert.equal(row.gameState.strikeReadyAt,1450);assert.equal(row.gameState.strikeMessageUntil,2800);assert.equal(row.brief.textContent.trim(),'Missed. '+direction+' to match the target depth.');assert.deepEqual(row.announcements,[row.gameState.strikeMessage]);
+    }
   });
   it('reports actual cover-blocked and uncommitted strikes beside an untouched clam', () => {
     const covered = fixture({ eligible: true, preyCover: true }), none = fixture({ noTarget: true });

@@ -1,0 +1,275 @@
+{
+  "format": "alloflow-maine-sld-practice",
+  "schemaVersion": 1,
+  "moduleVersion": "1.1.0",
+  "reviewed": "2026-10-02",
+  "exportedAt": "2026-10-02T21:26:03.769Z",
+  "activeCase": "marisol",
+  "caseWork": {
+    "alex": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "alex-general-ed-adequate": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "jordan": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "general-ed",
+          "note": "Jordan participant Q9 revision."
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "Jordan evidence request from comparison.",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "marisol": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "Marisol Q8 remains unresolved."
+        },
+        "Q9": {
+          "answer": "more",
+          "note": "Marisol participant Q9: clarify language and instruction evidence. <b>literal note</b>"
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "Marisol revised evidence request.",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "taylor": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    }
+  }
+}

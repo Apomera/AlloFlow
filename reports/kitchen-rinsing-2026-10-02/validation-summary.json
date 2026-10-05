@@ -1,0 +1,116 @@
+{
+  "pass": true,
+  "feature": "Interactive produce rinsing station",
+  "date": "2026-10-02",
+  "preview": "http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html?v=20261002-rinsing",
+  "previewProcessId": 20992,
+  "commitCreated": false,
+  "stagedKitchenFiles": [],
+  "unitTests": {
+    "passed": 659,
+    "total": 659,
+    "files": 53,
+    "report": "unit-results-visual-final.json"
+  },
+  "browserChecks": 42,
+  "accessibilityScans": 12,
+  "accessibilityViolations": 0,
+  "pageErrors": 0,
+  "browsers": [
+    {
+      "report": "browser/rinsing-results.json",
+      "pass": true,
+      "checks": 14,
+      "pageErrors": 0,
+      "accessibility": [
+        {
+          "name": "Desktop rinsing",
+          "violations": 0
+        },
+        {
+          "name": "Phone rinsing",
+          "violations": 0
+        },
+        {
+          "name": "320px forced-colors text rinsing",
+          "violations": 0
+        }
+      ]
+    },
+    {
+      "report": "visual-final/rinsing-results.json",
+      "pass": true,
+      "checks": 4,
+      "pageErrors": 0,
+      "accessibility": [
+        {
+          "name": "Visual smoke desktop rinsing",
+          "violations": 0
+        },
+        {
+          "name": "Visual smoke phone mushroom rinsing",
+          "violations": 0
+        },
+        {
+          "name": "Visual smoke phone tomato rinsing",
+          "violations": 0
+        }
+      ]
+    },
+    {
+      "report": "cutting-final/cutting-bench-results.json",
+      "pass": true,
+      "checks": 16,
+      "pageErrors": 0,
+      "accessibility": [
+        {
+          "name": "Desktop measured cutting and knife return",
+          "violations": 0
+        },
+        {
+          "name": "390px touch cutting",
+          "violations": 0
+        },
+        {
+          "name": "320px forced colors",
+          "violations": 0
+        }
+      ]
+    },
+    {
+      "report": "drying-final/browser-results.json",
+      "pass": true,
+      "checks": 8,
+      "pageErrors": 0,
+      "accessibility": [
+        {
+          "name": "Desktop drying board",
+          "violations": 0
+        },
+        {
+          "name": "320px drying board",
+          "violations": 0
+        },
+        {
+          "name": "Forced colors",
+          "violations": 0
+        }
+      ]
+    }
+  ],
+  "runtime": {
+    "files": 63,
+    "javascript": 49,
+    "sourceMirrorExact": true,
+    "previewAssetsExact": true,
+    "report": "runtime-inventory-final.json"
+  },
+  "scopedDiffCheck": true,
+  "sourceGuidance": "https://www.fda.gov/consumers/consumer-updates/7-tips-cleaning-fruits-vegetables",
+  "notes": [
+    "Rinsing commits the existing canonical action once at completed release.",
+    "Carry, turning and drainage previews do not advance time or modify recipe state.",
+    "The final source basket clusters whole produce and stays at its sink rest after cooking begins.",
+    "The older drying harness now uses the same navigation timeout as the other kitchen browser checks."
+  ]
+}

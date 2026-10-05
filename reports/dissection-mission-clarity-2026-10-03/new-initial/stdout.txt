@@ -1,0 +1,182 @@
+
+Running 10 tests using 1 worker
+
+  x   1 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header phone shows complete status and keyboard shortcuts (3.3s)
+  x   2 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header tablet shows complete status and keyboard shortcuts (2.7s)
+  x   3 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header desktop shows complete status and keyboard shortcuts (4.1s)
+  x   4 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header embedded-medium shows complete status and keyboard shortcuts (15.5s)
+  ok  5 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header embedded-large shows complete status and keyboard shortcuts (6.0s)
+  ok  6 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header forced-colors shows complete status and keyboard shortcuts (4.3s)
+  x   7 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:76:5 › mission header reflows in place without changing keyboard focus or saved evidence (3.0s)
+  ok  8 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:82:5 › mission workflow preserves the Guided investigation position (10.8s)
+  ok  9 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:89:5 › mission assessment shortcut focuses its summary while preserving assessment evidence (12.3s)
+  ok 10 [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:96:5 › mission continue shortcut focuses the planning checkpoint without performing a technique action (21.6s)
+
+
+  1) [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header phone shows complete status and keyboard shortcuts 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m319[39m
+    Received:    [31m398[39m
+
+      52 |   await p.screenshot({ path: `${out}/${prefix}-${c.name}.png`, style: '.diss-next-action {position:static!important;}' });
+      53 |   if (baseline) return;
+    > 54 |   expect(m.width).toBeLessThanOrEqual(c.available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);
+         |                                                                          ^
+      55 |   expect(m.statColumns).toBe(c.available <= 440 ? 1 : c.available <= 700 ? 2 : 3);
+      56 |   expect(m.workflowColumns).toBe(c.available <= 520 ? 2 : c.available <= 980 ? 3 : 6);
+      57 |   for (const n of m.text) { expect(n.font, n.text || '').toBeGreaterThanOrEqual(c.large ? 15.9 : 13.9); expect(n.clipped, n.text || '').toBe(false); expect(n.nowrap, n.text || '').toBe(false); }
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-mission-clarity.spec.ts:54:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-6b453-atus-and-keyboard-shortcuts-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-6b453-atus-and-keyboard-shortcuts-chromium\error-context.md
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-6b453-atus-and-keyboard-shortcuts-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-6b453-atus-and-keyboard-shortcuts-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-6b453-atus-and-keyboard-shortcuts-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  2) [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header tablet shows complete status and keyboard shortcuts 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m767[39m
+    Received:    [31m846[39m
+
+      52 |   await p.screenshot({ path: `${out}/${prefix}-${c.name}.png`, style: '.diss-next-action {position:static!important;}' });
+      53 |   if (baseline) return;
+    > 54 |   expect(m.width).toBeLessThanOrEqual(c.available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);
+         |                                                                          ^
+      55 |   expect(m.statColumns).toBe(c.available <= 440 ? 1 : c.available <= 700 ? 2 : 3);
+      56 |   expect(m.workflowColumns).toBe(c.available <= 520 ? 2 : c.available <= 980 ? 3 : 6);
+      57 |   for (const n of m.text) { expect(n.font, n.text || '').toBeGreaterThanOrEqual(c.large ? 15.9 : 13.9); expect(n.clipped, n.text || '').toBe(false); expect(n.nowrap, n.text || '').toBe(false); }
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-mission-clarity.spec.ts:54:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-a34e1-atus-and-keyboard-shortcuts-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-a34e1-atus-and-keyboard-shortcuts-chromium\error-context.md
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-a34e1-atus-and-keyboard-shortcuts-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-a34e1-atus-and-keyboard-shortcuts-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-a34e1-atus-and-keyboard-shortcuts-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  3) [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header desktop shows complete status and keyboard shortcuts 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m1179[39m
+    Received:    [31m1258[39m
+
+      52 |   await p.screenshot({ path: `${out}/${prefix}-${c.name}.png`, style: '.diss-next-action {position:static!important;}' });
+      53 |   if (baseline) return;
+    > 54 |   expect(m.width).toBeLessThanOrEqual(c.available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);
+         |                                                                          ^
+      55 |   expect(m.statColumns).toBe(c.available <= 440 ? 1 : c.available <= 700 ? 2 : 3);
+      56 |   expect(m.workflowColumns).toBe(c.available <= 520 ? 2 : c.available <= 980 ? 3 : 6);
+      57 |   for (const n of m.text) { expect(n.font, n.text || '').toBeGreaterThanOrEqual(c.large ? 15.9 : 13.9); expect(n.clipped, n.text || '').toBe(false); expect(n.nowrap, n.text || '').toBe(false); }
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-mission-clarity.spec.ts:54:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-f01cd-atus-and-keyboard-shortcuts-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-f01cd-atus-and-keyboard-shortcuts-chromium\error-context.md
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-f01cd-atus-and-keyboard-shortcuts-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-f01cd-atus-and-keyboard-shortcuts-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-f01cd-atus-and-keyboard-shortcuts-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  4) [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header embedded-medium shows complete status and keyboard shortcuts 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m519[39m
+    Received:    [31m598[39m
+
+      52 |   await p.screenshot({ path: `${out}/${prefix}-${c.name}.png`, style: '.diss-next-action {position:static!important;}' });
+      53 |   if (baseline) return;
+    > 54 |   expect(m.width).toBeLessThanOrEqual(c.available + 1); expect(m.scroll).toBeLessThanOrEqual(m.client + 1);
+         |                                                                          ^
+      55 |   expect(m.statColumns).toBe(c.available <= 440 ? 1 : c.available <= 700 ? 2 : 3);
+      56 |   expect(m.workflowColumns).toBe(c.available <= 520 ? 2 : c.available <= 980 ? 3 : 6);
+      57 |   for (const n of m.text) { expect(n.font, n.text || '').toBeGreaterThanOrEqual(c.large ? 15.9 : 13.9); expect(n.clipped, n.text || '').toBe(false); expect(n.nowrap, n.text || '').toBe(false); }
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-mission-clarity.spec.ts:54:74
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-41e2c-atus-and-keyboard-shortcuts-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-41e2c-atus-and-keyboard-shortcuts-chromium\error-context.md
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-41e2c-atus-and-keyboard-shortcuts-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-41e2c-atus-and-keyboard-shortcuts-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-41e2c-atus-and-keyboard-shortcuts-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5) [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:76:5 › mission header reflows in place without changing keyboard focus or saved evidence 
+
+    Error: [2mexpect([22m[31mreceived[39m[2m).[22mtoBeLessThanOrEqual[2m([22m[32mexpected[39m[2m)[22m
+
+    Expected: <= [32m319[39m
+    Received:    [31m398[39m
+
+      77 |   await mount(page, { largeText: true }, 1440, 1180); const p = mission(page), before = await proof(page), items = await inventory(p), target = p.getByRole('button', { name: 'Structures and notes', exact: true });
+      78 |   await target.focus(); await page.addStyleTag({ content: '#wrap {max-width:320px!important;}' }); await expect(target).toBeFocused();
+    > 79 |   const m = await metrics(p); expect(m.statColumns).toBe(1); expect(m.workflowColumns).toBe(2); expect(m.scroll).toBeLessThanOrEqual(m.client + 1); expect(m.text.every(n => !n.clipped)).toBe(true); expect(await inventory(p)).toEqual(items); expect(await proof(page)).toEqual(before);
+         |                                                                                                                  ^
+      80 | });
+      81 |
+      82 | test('mission workflow preserves the Guided investigation position', async ({ page }) => {
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\dissection-mission-clarity.spec.ts:79:114
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-a8171-ard-focus-or-saved-evidence-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-a8171-ard-focus-or-saved-evidence-chromium\error-context.md
+
+    Error Context: reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-a8171-ard-focus-or-saved-evidence-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-a8171-ard-focus-or-saved-evidence-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\dissection-mission-clarity-2026-10-03\new-initial\artifacts\dissection-mission-clarity-a8171-ard-focus-or-saved-evidence-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  5 failed
+    [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header phone shows complete status and keyboard shortcuts 
+    [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header tablet shows complete status and keyboard shortcuts 
+    [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header desktop shows complete status and keyboard shortcuts 
+    [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:43:8 › mission header embedded-medium shows complete status and keyboard shortcuts 
+    [chromium] › tests\e2e\dissection-mission-clarity.spec.ts:76:5 › mission header reflows in place without changing keyboard focus or saved evidence 
+  5 passed (4.9m)

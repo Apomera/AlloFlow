@@ -1,0 +1,345 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass21-2026-10-03/browser/history-initial-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-history.spec.ts",
+      "file": "moon-mission-descent-history.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "live WebGL history samples actual motion and engine response, then holds during inspection",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "timedOut",
+                  "duration": 272439,
+                  "error": {
+                    "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 180000ms.\u001b[39m",
+                    "stack": "\u001b[31mTearing down \"context\" exceeded the test timeout of 180000ms.\u001b[39m"
+                  },
+                  "errors": [
+                    {
+                      "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 180000ms.\u001b[39m"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T01:31:50.949Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "live-webgl-history",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-d6497-hen-holds-during-inspection-chromium\\attachments\\live-webgl-history-b946bd1a19b71a33134aa7de9b505ac2f8b08c71.png"
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-d6497-hen-holds-during-inspection-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-d6497-hen-holds-during-inspection-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-d6497-hen-holds-during-inspection-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-d6497-hen-holds-during-inspection-chromium\\trace.zip"
+                    }
+                  ]
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "a996eec5107c41f95976-b2e9844bf9ce0cbe6069",
+          "file": "moon-mission-descent-history.spec.ts",
+          "line": 174,
+          "column": 5
+        }
+      ],
+      "suites": [
+        {
+          "title": "fallback measured flight history",
+          "file": "moon-mission-descent-history.spec.ts",
+          "line": 109,
+          "column": 6,
+          "specs": [
+            {
+              "title": "paused startup waits for measured history and does not operate or save controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 129833,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T01:10:12.515Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "paused-start",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-008ca-ot-operate-or-save-controls-chromium\\attachments\\paused-start-60b2eb676599599b46300460c8627f4500055b19.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "a996eec5107c41f95976-9e4fc4594dce64acda87",
+              "file": "moon-mission-descent-history.spec.ts",
+              "line": 117,
+              "column": 7
+            },
+            {
+              "title": "signed recorded history ends at inspection, follows scrubbing and preserves contact and legacy receipts",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 360236,
+                      "error": {
+                        "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m",
+                        "stack": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTest timeout of 180000ms exceeded.\u001b[39m"
+                        },
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-history.spec.ts",
+                            "column": 48,
+                            "line": 31
+                          },
+                          "message": "Error: locator.screenshot: Element is not attached to the DOM\nCall log:\n\u001b[2m  - taking element screenshot\u001b[22m\n\u001b[2m    - disabled all CSS animations\u001b[22m\n\u001b[2m  - waiting for fonts to load...\u001b[22m\n\u001b[2m  - fonts loaded\u001b[22m\n\u001b[2m  - attempting scroll into view action\u001b[22m\n\u001b[2m    - waiting for element to be stable\u001b[22m\n\n\n  29 | async function capture(page: Page, info: TestInfo, name: string) {\n  30 |   await mkdir(REPORT, { recursive: true }); const path = join(REPORT, name + '.png');\n> 31 |   await page.locator('[data-descent-history]').screenshot({ path, animations: 'disabled' }); await info.attach(name, { path, contentType: 'image/png' });\n     |                                                ^\n  32 | }\n  33 | async function axe(page: Page, name: string) {\n  34 |   await page.addScriptTag({ path: resolve('node_modules/axe-core/axe.min.js') });\n    at capture (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-history.spec.ts:31:48)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\moon-mission-descent-history.spec.ts:138:5"
+                        },
+                        {
+                          "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 180000ms.\u001b[39m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T01:12:42.361Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "recorded-contact",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-a832c-contact-and-legacy-receipts-chromium\\attachments\\recorded-contact-1e92207b1914af55b20c1892bb5f4c37bc257b7b.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-a832c-contact-and-legacy-receipts-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-a832c-contact-and-legacy-receipts-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-a832c-contact-and-legacy-receipts-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a996eec5107c41f95976-8ce25d07ef88f8a151da",
+              "file": "moon-mission-descent-history.spec.ts",
+              "line": 128,
+              "column": 7
+            },
+            {
+              "title": "320 px history keeps HTML rulers aligned with keyboard, reduced motion and forced colors",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "timedOut",
+                      "duration": 232131,
+                      "error": {
+                        "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 180000ms.\u001b[39m",
+                        "stack": "\u001b[31mTearing down \"context\" exceeded the test timeout of 180000ms.\u001b[39m"
+                      },
+                      "errors": [
+                        {
+                          "message": "\u001b[31mTearing down \"context\" exceeded the test timeout of 180000ms.\u001b[39m"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T01:23:19.108Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "phone-320",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-ee4fa-ed-motion-and-forced-colors-chromium\\attachments\\phone-320-564dc34b8e240b99713c4acf910b172fefbaca03.png"
+                        },
+                        {
+                          "name": "phone-forced-colors",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-ee4fa-ed-motion-and-forced-colors-chromium\\attachments\\phone-forced-colors-960cd584ae1092c1e0d1afaf4986e2c50676d415.png"
+                        },
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-ee4fa-ed-motion-and-forced-colors-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-ee4fa-ed-motion-and-forced-colors-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-ee4fa-ed-motion-and-forced-colors-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass21-2026-10-03\\browser\\history-initial-results\\moon-mission-descent-histo-ee4fa-ed-motion-and-forced-colors-chromium\\trace.zip"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "a996eec5107c41f95976-1ed4cf52ed0df238bc42",
+              "file": "moon-mission-descent-history.spec.ts",
+              "line": 154,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mWorker teardown timeout of 120000ms exceeded.\u001b[39m\n\n\u001b[31mFailed worker ran 1 test:\u001b[39m\n[chromium] › tests\\e2e\\moon-mission-descent-history.spec.ts:174:5 › live WebGL history samples actual motion and engine response, then holds during inspection",
+      "stack": "\u001b[31mWorker teardown timeout of 120000ms exceeded.\u001b[39m\n\n\u001b[31mFailed worker ran 1 test:\u001b[39m\n[chromium] › tests\\e2e\\moon-mission-descent-history.spec.ts:174:5 › live WebGL history samples actual motion and engine response, then holds during inspection"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-04T01:09:14.554Z",
+    "duration": 1875483.65,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

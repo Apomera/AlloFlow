@@ -1,0 +1,429 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/physics-point-clarity-2026-10-02/point-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "physics-velocity-clarity.spec.ts",
+      "file": "physics-velocity-clarity.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "selected launch, rising, apex, near-apex, falling, and impact cards match original points and preserve velocity direction",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 6925,
+                  "error": {
+                    "message": "Error: actual selected-panel paint reflects the original point\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    \"Launch point\",\u001b[22m\n\u001b[31m+   \"15\",\u001b[39m\n\u001b[2m    \"y = 10.00 m · t = 0.000 s\",\u001b[22m\n\u001b[2m  ]\u001b[22m",
+                    "stack": "Error: actual selected-panel paint reflects the original point\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    \"Launch point\",\u001b[22m\n\u001b[31m+   \"15\",\u001b[39m\n\u001b[2m    \"y = 10.00 m · t = 0.000 s\",\u001b[22m\n\u001b[2m  ]\u001b[22m\n    at expectSelectedCard (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:280:93)\n    at expectAnnotationClearance (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:341:5)\n    at expectReadable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:244:3)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:416:123",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts",
+                      "column": 93,
+                      "line": 280
+                    },
+                    "snippet": "  278 | function expectSelectedCard(draw: Awaited<ReturnType<typeof readDraw>>) {\n  279 |   const expected = expectedSelectedCard(draw);\n> 280 |   expect(selectedCardText(draw), 'actual selected-panel paint reflects the original point').toEqual([expected.title, expected.reading]);\n      |                                                                                             ^\n  281 |   expect(header(draw), 'HUD retains recorded identity alongside the phase card').toContain('Recorded point');\n  282 |   const original = draw.selectedOriginal!;\n  283 |   if (original.index === 0) expect(draw.layout.labels.some((label: any) => label.id === 'height'), 'release card replaces separate height card').toBe(false);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts",
+                        "column": 93,
+                        "line": 280
+                      },
+                      "message": "Error: actual selected-panel paint reflects the original point\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    \"Launch point\",\u001b[22m\n\u001b[31m+   \"15\",\u001b[39m\n\u001b[2m    \"y = 10.00 m · t = 0.000 s\",\u001b[22m\n\u001b[2m  ]\u001b[22m\n\n  278 | function expectSelectedCard(draw: Awaited<ReturnType<typeof readDraw>>) {\n  279 |   const expected = expectedSelectedCard(draw);\n> 280 |   expect(selectedCardText(draw), 'actual selected-panel paint reflects the original point').toEqual([expected.title, expected.reading]);\n      |                                                                                             ^\n  281 |   expect(header(draw), 'HUD retains recorded identity alongside the phase card').toContain('Recorded point');\n  282 |   const original = draw.selectedOriginal!;\n  283 |   if (original.index === 0) expect(draw.layout.labels.some((label: any) => label.id === 'height'), 'release card replaces separate height card').toBe(false);\n    at expectSelectedCard (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:280:93)\n    at expectAnnotationClearance (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:341:5)\n    at expectReadable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:244:3)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:416:123"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:13:00.919Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-s-f447a-preserve-velocity-direction-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-s-f447a-preserve-velocity-direction-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-s-f447a-preserve-velocity-direction-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-s-f447a-preserve-velocity-direction-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-s-f447a-preserve-velocity-direction-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts",
+                    "column": 93,
+                    "line": 280
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "cfa3389ceb0a8a034185-aa9f19069ad8ca87b1cf",
+          "file": "physics-velocity-clarity.spec.ts",
+          "line": 412,
+          "column": 5
+        },
+        {
+          "title": "actual speed stays tied to the selected record after controls change and uses current live components after a new launch",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 89263,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:13:11.216Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "cfa3389ceb0a8a034185-6c6a48fe00bcc2d40555",
+          "file": "physics-velocity-clarity.spec.ts",
+          "line": 445,
+          "column": 5
+        },
+        {
+          "title": "live near-apex vertical velocity retains its small negative value and painted downward component",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2405,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:14:41.012Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "cfa3389ceb0a8a034185-b834537d85e530d29058",
+          "file": "physics-velocity-clarity.spec.ts",
+          "line": 475,
+          "column": 5
+        },
+        {
+          "title": "horizontal release card distinguishes an unresolved launch point from the canonical highest point at release",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4601,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:14:43.428Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "cfa3389ceb0a8a034185-4287ce30d85840266ed3",
+          "file": "physics-velocity-clarity.spec.ts",
+          "line": 496,
+          "column": 5
+        },
+        {
+          "title": "the highest recorded sample in unfinished ascent remains Rising with its original height and time",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3971,
+                  "error": {
+                    "message": "Error: actual selected-panel paint reflects the original point\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    \"Rising\",\u001b[22m\n\u001b[31m+   \"20\",\u001b[39m\n\u001b[2m    \"y = 11.39 m · t = 0.140 s\",\u001b[22m\n\u001b[2m  ]\u001b[22m",
+                    "stack": "Error: actual selected-panel paint reflects the original point\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    \"Rising\",\u001b[22m\n\u001b[31m+   \"20\",\u001b[39m\n\u001b[2m    \"y = 11.39 m · t = 0.140 s\",\u001b[22m\n\u001b[2m  ]\u001b[22m\n    at expectSelectedCard (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:280:93)\n    at expectAnnotationClearance (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:341:5)\n    at expectReadable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:244:3)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:533:3",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts",
+                      "column": 93,
+                      "line": 280
+                    },
+                    "snippet": "  278 | function expectSelectedCard(draw: Awaited<ReturnType<typeof readDraw>>) {\n  279 |   const expected = expectedSelectedCard(draw);\n> 280 |   expect(selectedCardText(draw), 'actual selected-panel paint reflects the original point').toEqual([expected.title, expected.reading]);\n      |                                                                                             ^\n  281 |   expect(header(draw), 'HUD retains recorded identity alongside the phase card').toContain('Recorded point');\n  282 |   const original = draw.selectedOriginal!;\n  283 |   if (original.index === 0) expect(draw.layout.labels.some((label: any) => label.id === 'height'), 'release card replaces separate height card').toBe(false);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts",
+                        "column": 93,
+                        "line": 280
+                      },
+                      "message": "Error: actual selected-panel paint reflects the original point\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 0\u001b[39m\n\u001b[31m+ Received  + 1\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[2m    \"Rising\",\u001b[22m\n\u001b[31m+   \"20\",\u001b[39m\n\u001b[2m    \"y = 11.39 m · t = 0.140 s\",\u001b[22m\n\u001b[2m  ]\u001b[22m\n\n  278 | function expectSelectedCard(draw: Awaited<ReturnType<typeof readDraw>>) {\n  279 |   const expected = expectedSelectedCard(draw);\n> 280 |   expect(selectedCardText(draw), 'actual selected-panel paint reflects the original point').toEqual([expected.title, expected.reading]);\n      |                                                                                             ^\n  281 |   expect(header(draw), 'HUD retains recorded identity alongside the phase card').toContain('Recorded point');\n  282 |   const original = draw.selectedOriginal!;\n  283 |   if (original.index === 0) expect(draw.layout.labels.some((label: any) => label.id === 'height'), 'release card replaces separate height card').toBe(false);\n    at expectSelectedCard (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:280:93)\n    at expectAnnotationClearance (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:341:5)\n    at expectReadable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:244:3)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:533:3"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:14:48.039Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-t-60f78-ts-original-height-and-time-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-t-60f78-ts-original-height-and-time-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-t-60f78-ts-original-height-and-time-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-t-60f78-ts-original-height-and-time-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-t-60f78-ts-original-height-and-time-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts",
+                    "column": 93,
+                    "line": 280
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "cfa3389ceb0a8a034185-7a52f9dda614678e6997",
+          "file": "physics-velocity-clarity.spec.ts",
+          "line": 518,
+          "column": 5
+        },
+        {
+          "title": "velocity symbols and actual speed remain readable at 1100, 375, and 320 pixels in every theme",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4981,
+                  "error": {
+                    "message": "Error: selected recorded point keeps its annotation\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mundefined\u001b[39m",
+                    "stack": "Error: selected recorded point keeps its annotation\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mundefined\u001b[39m\n    at expectAnnotationClearance (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:337:72)\n    at expectReadable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:244:3)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:561:47",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts",
+                      "column": 72,
+                      "line": 337
+                    },
+                    "snippet": "  335 |   const inspection = draw.layout.labels.find((label: any) => label.id === 'inspection');\n  336 |   if (draw.selected) {\n> 337 |     expect(inspection, 'selected recorded point keeps its annotation').toBeTruthy();\n      |                                                                        ^\n  338 |     expect(draw.visualInspection, 'selected point remains plotted').toBeTruthy();\n  339 |     expect(draw.visualInspection).toMatchObject({ index: draw.selected.index, run: draw.selected.run, t: draw.selected.t });\n  340 |     pointEqual(inspection.anchor, draw.visualInspection);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts",
+                        "column": 72,
+                        "line": 337
+                      },
+                      "message": "Error: selected recorded point keeps its annotation\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeTruthy\u001b[2m()\u001b[22m\n\nReceived: \u001b[31mundefined\u001b[39m\n\n  335 |   const inspection = draw.layout.labels.find((label: any) => label.id === 'inspection');\n  336 |   if (draw.selected) {\n> 337 |     expect(inspection, 'selected recorded point keeps its annotation').toBeTruthy();\n      |                                                                        ^\n  338 |     expect(draw.visualInspection, 'selected point remains plotted').toBeTruthy();\n  339 |     expect(draw.visualInspection).toMatchObject({ index: draw.selected.index, run: draw.selected.run, t: draw.selected.t });\n  340 |     pointEqual(inspection.anchor, draw.visualInspection);\n    at expectAnnotationClearance (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:337:72)\n    at expectReadable (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:244:3)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts:561:47"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:14:53.030Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-v-e17eb-d-320-pixels-in-every-theme-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-v-e17eb-d-320-pixels-in-every-theme-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-v-e17eb-d-320-pixels-in-every-theme-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-v-e17eb-d-320-pixels-in-every-theme-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-point-clarity-2026-10-02\\point-artifacts\\physics-velocity-clarity-v-e17eb-d-320-pixels-in-every-theme-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-velocity-clarity.spec.ts",
+                    "column": 72,
+                    "line": 337
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "cfa3389ceb0a8a034185-b7bca42ab07ace080a70",
+          "file": "physics-velocity-clarity.spec.ts",
+          "line": 540,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T23:12:58.515Z",
+    "duration": 120091.86,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 3,
+    "flaky": 0
+  }
+}

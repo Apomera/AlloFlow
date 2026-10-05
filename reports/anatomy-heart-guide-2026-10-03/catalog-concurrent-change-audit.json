@@ -1,0 +1,4392 @@
+{
+  "date": "2026-10-03",
+  "auditedAtUtc": "2026-10-03T18:43:08.816Z",
+  "readOnlyAudit": true,
+  "catalogMutations": false,
+  "sourceMutations": false,
+  "gitMutations": false,
+  "browserTestedSourceSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "currentSourceSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "runtimeMirrorsIdentical": true,
+  "exactTestedCatalogReconstructionVerified": true,
+  "proofInputs": [
+    {
+      "path": "catalog-validation.json",
+      "sha256": "d5a49ab18890819b3103f219aec68f410cc1230edbf8f76903572e8466e14273"
+    },
+    {
+      "path": "runs/browser-9e383a14-01/runner-proof.json",
+      "sha256": "2b584eb727501e6eb4460571e7d59442ce2ca272302712682e782e8659d60755",
+      "startedAt": "2026-10-03T18:18:15.915Z",
+      "finishedAt": "2026-10-03T18:18:36.217Z"
+    },
+    {
+      "path": "source-scope-proof.json",
+      "sha256": "622405d0ac73bef22c98d169b4ba4e18244e824f268d65cd686117c1084f0e0e"
+    },
+    {
+      "path": "dev-tools/i18n/anatomy_heart_guide_20261003.json",
+      "sha256": "9de92c7925c920529dc64a5fa3d14cf91b91988f9bc0cf2023e1c2357160dc70"
+    }
+  ],
+  "keysPerCatalog": 69,
+  "catalogCopies": 8,
+  "verifiedHeartValues": 552,
+  "allHeartValuesAndPlaceholdersPreserved": true,
+  "entireAnatomyNamespacePreserved": true,
+  "allCurrentDeltasOutsideAnatomy": true,
+  "changedCatalogs": [
+    "ui_strings.js",
+    "desktop/web-app/public/ui_strings.js"
+  ],
+  "totalJsonDifferences": 53,
+  "changedNamespaces": [
+    "stem.bridgelab",
+    "stem.dinolab",
+    "stem.perception"
+  ],
+  "files": [
+    {
+      "path": "ui_strings.js",
+      "snapshot": "locale-before/ui_strings.js.before.gz",
+      "originalSha256": "21d1f0caafd136fe0f6e7f66a28ca4fea898f8e3a6f184f7d58094464418dce8",
+      "reconstructionSha256": "baca3a35fe9421bd7d4666280be1062118e616a32b7b0ef6bae70262066e6038",
+      "testedSha256": "baca3a35fe9421bd7d4666280be1062118e616a32b7b0ef6bae70262066e6038",
+      "sourceProofSha256": "baca3a35fe9421bd7d4666280be1062118e616a32b7b0ef6bae70262066e6038",
+      "currentSha256": "48d09b0027786260f682e546916430ae4c5a12a9b887ac112feb36c4470bd70f",
+      "byteEqualToTested": false,
+      "reconstructedExactTestedBytes": true,
+      "stableReadAttempts": 1,
+      "testedAnatomySha256": "50c04d63bc3563c5d966248d871108cca35fe0b4d462efad0bb71f8ab85a0e98",
+      "currentAnatomySha256": "50c04d63bc3563c5d966248d871108cca35fe0b4d462efad0bb71f8ab85a0e98",
+      "entireAnatomyNamespaceUnchanged": true,
+      "heartKeyCount": 69,
+      "allHeartValuesMatch": true,
+      "allPlaceholdersMatch": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "differenceCount": 7,
+      "differences": [
+        {
+          "path": "stem.bridgelab.paired_interval_scope",
+          "jsonPointer": "/stem/bridgelab/paired_interval_scope",
+          "type": "added",
+          "namespace": "stem.bridgelab",
+          "currentValue": "A is the selected notebook reference; B is the current experiment. Both use the pinned and inspected times shown here."
+        },
+        {
+          "path": "stem.bridgelab.paired_interval_title",
+          "jsonPointer": "/stem/bridgelab/paired_interval_title",
+          "type": "added",
+          "namespace": "stem.bridgelab",
+          "currentValue": "Compare energy between these moments"
+        },
+        {
+          "path": "stem.dinolab.find_plate_group",
+          "jsonPointer": "/stem/dinolab/find_plate_group",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Three reference views of the exposed fragment"
+        },
+        {
+          "path": "stem.dinolab.find_plate_preview_label",
+          "jsonPointer": "/stem/dinolab/find_plate_preview_label",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "{view} reference preview."
+        },
+        {
+          "path": "stem.dinolab.find_plate_caption",
+          "jsonPointer": "/stem/dinolab/find_plate_caption",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "The three previews show {coord} with {look}, using the same framing."
+        },
+        {
+          "path": "stem.dinolab.find_plate_hint",
+          "jsonPointer": "/stem/dinolab/find_plate_hint",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Compare how one fragment’s outline changes with viewpoint. Looking from another direction can reveal features hidden by the first view."
+        },
+        {
+          "path": "stem.dinolab.find_plate_fallback",
+          "jsonPointer": "/stem/dinolab/find_plate_fallback",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Use the view buttons to inspect the fragment in 3D when previews are unavailable."
+        }
+      ],
+      "allDifferencesOutsideAnatomy": true,
+      "changedNamespaces": [
+        "stem.bridgelab",
+        "stem.dinolab"
+      ],
+      "heartValuesUnchanged": true,
+      "anatomyNamespaceUnchanged": true,
+      "offScopeDifferences": [
+        {
+          "path": "stem.bridgelab.paired_interval_scope",
+          "jsonPointer": "/stem/bridgelab/paired_interval_scope",
+          "type": "added",
+          "namespace": "stem.bridgelab",
+          "currentValue": "A is the selected notebook reference; B is the current experiment. Both use the pinned and inspected times shown here."
+        },
+        {
+          "path": "stem.bridgelab.paired_interval_title",
+          "jsonPointer": "/stem/bridgelab/paired_interval_title",
+          "type": "added",
+          "namespace": "stem.bridgelab",
+          "currentValue": "Compare energy between these moments"
+        },
+        {
+          "path": "stem.dinolab.find_plate_group",
+          "jsonPointer": "/stem/dinolab/find_plate_group",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Three reference views of the exposed fragment"
+        },
+        {
+          "path": "stem.dinolab.find_plate_preview_label",
+          "jsonPointer": "/stem/dinolab/find_plate_preview_label",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "{view} reference preview."
+        },
+        {
+          "path": "stem.dinolab.find_plate_caption",
+          "jsonPointer": "/stem/dinolab/find_plate_caption",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "The three previews show {coord} with {look}, using the same framing."
+        },
+        {
+          "path": "stem.dinolab.find_plate_hint",
+          "jsonPointer": "/stem/dinolab/find_plate_hint",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Compare how one fragment’s outline changes with viewpoint. Looking from another direction can reveal features hidden by the first view."
+        },
+        {
+          "path": "stem.dinolab.find_plate_fallback",
+          "jsonPointer": "/stem/dinolab/find_plate_fallback",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Use the view buttons to inspect the fragment in 3D when previews are unavailable."
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "snapshot": "locale-before/desktop__web-app__public__ui_strings.js.before.gz",
+      "originalSha256": "d0dca8ddd233f6609b57cb7be7b8e6168ce85df5ec968c382e90a8220d618a87",
+      "reconstructionSha256": "63e5663b394fd458b2af8630e3e2e104a65f389055c7646fba50ecb7f22228b2",
+      "testedSha256": "63e5663b394fd458b2af8630e3e2e104a65f389055c7646fba50ecb7f22228b2",
+      "sourceProofSha256": "baca3a35fe9421bd7d4666280be1062118e616a32b7b0ef6bae70262066e6038",
+      "currentSha256": "48d09b0027786260f682e546916430ae4c5a12a9b887ac112feb36c4470bd70f",
+      "byteEqualToTested": false,
+      "reconstructedExactTestedBytes": true,
+      "stableReadAttempts": 1,
+      "testedAnatomySha256": "50c04d63bc3563c5d966248d871108cca35fe0b4d462efad0bb71f8ab85a0e98",
+      "currentAnatomySha256": "50c04d63bc3563c5d966248d871108cca35fe0b4d462efad0bb71f8ab85a0e98",
+      "entireAnatomyNamespaceUnchanged": true,
+      "heartKeyCount": 69,
+      "allHeartValuesMatch": true,
+      "allPlaceholdersMatch": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "differenceCount": 46,
+      "differences": [
+        {
+          "path": "stem.perception.close_study_review",
+          "jsonPointer": "/stem/perception/close_study_review",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Close study review"
+        },
+        {
+          "path": "stem.perception.difference_from_reference",
+          "jsonPointer": "/stem/perception/difference_from_reference",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Difference from reference"
+        },
+        {
+          "path": "stem.perception.end_repeated_study",
+          "jsonPointer": "/stem/perception/end_repeated_study",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "End repeated study"
+        },
+        {
+          "path": "stem.perception.match_range",
+          "jsonPointer": "/stem/perception/match_range",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Match range"
+        },
+        {
+          "path": "stem.perception.median_difference",
+          "jsonPointer": "/stem/perception/median_difference",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Median difference"
+        },
+        {
+          "path": "stem.perception.median_match",
+          "jsonPointer": "/stem/perception/median_match",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Median match"
+        },
+        {
+          "path": "stem.perception.record_match",
+          "jsonPointer": "/stem/perception/record_match",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Record match"
+        },
+        {
+          "path": "stem.perception.recorded_match",
+          "jsonPointer": "/stem/perception/recorded_match",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Recorded match"
+        },
+        {
+          "path": "stem.perception.repeat_saved_settings",
+          "jsonPointer": "/stem/perception/repeat_saved_settings",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Repeat these settings"
+        },
+        {
+          "path": "stem.perception.repeated_study",
+          "jsonPointer": "/stem/perception/repeated_study",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Repeated matching study"
+        },
+        {
+          "path": "stem.perception.reveal_saved_study",
+          "jsonPointer": "/stem/perception/reveal_saved_study",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Reveal saved study"
+        },
+        {
+          "path": "stem.perception.reveal_study_results",
+          "jsonPointer": "/stem/perception/reveal_study_results",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Reveal study results"
+        },
+        {
+          "path": "stem.perception.review_study",
+          "jsonPointer": "/stem/perception/review_study",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Review study"
+        },
+        {
+          "path": "stem.perception.rgb_steps",
+          "jsonPointer": "/stem/perception/rgb_steps",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "RGB-code steps"
+        },
+        {
+          "path": "stem.perception.saved_study_hidden",
+          "jsonPointer": "/stem/perception/saved_study_hidden",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Three matches are saved. Reveal this study to review its drawing values together."
+        },
+        {
+          "path": "stem.perception.saved_study_revealed",
+          "jsonPointer": "/stem/perception/saved_study_revealed",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Saved study drawing values revealed."
+        },
+        {
+          "path": "stem.perception.saved_study_review",
+          "jsonPointer": "/stem/perception/saved_study_review",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Saved study review"
+        },
+        {
+          "path": "stem.perception.saved_trial_number",
+          "jsonPointer": "/stem/perception/saved_trial_number",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Repeated study · trial {trial} of 3"
+        },
+        {
+          "path": "stem.perception.start_three_matches",
+          "jsonPointer": "/stem/perception/start_three_matches",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Start three matches"
+        },
+        {
+          "path": "stem.perception.starting_value",
+          "jsonPointer": "/stem/perception/starting_value",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Starting value"
+        },
+        {
+          "path": "stem.perception.study_all_recorded",
+          "jsonPointer": "/stem/perception/study_all_recorded",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "All three matches are recorded. Reveal the results, or end the study to return to free matching."
+        },
+        {
+          "path": "stem.perception.study_complete",
+          "jsonPointer": "/stem/perception/study_complete",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Three matches recorded. Reveal the study results when you are ready."
+        },
+        {
+          "path": "stem.perception.study_ended",
+          "jsonPointer": "/stem/perception/study_ended",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Repeated study ended. Recorded matches remain in your notebook."
+        },
+        {
+          "path": "stem.perception.study_expired",
+          "jsonPointer": "/stem/perception/study_expired",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "The experiment or notebook changed. The repeated study ended; recorded matches remain in the notebook."
+        },
+        {
+          "path": "stem.perception.study_frozen_hint",
+          "jsonPointer": "/stem/perception/study_frozen_hint",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Surrounding settings stay fixed during this study. The notebook and pinned view return after recording or ending the study."
+        },
+        {
+          "path": "stem.perception.study_group_conflict",
+          "jsonPointer": "/stem/perception/study_group_conflict",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "These matches have different settings or duplicate trial numbers. Review them individually or repeat the settings; they cannot form one study summary."
+        },
+        {
+          "path": "stem.perception.study_incomplete_group",
+          "jsonPointer": "/stem/perception/study_incomplete_group",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "{count} of 3 matches remain in this notebook. Review individual observations or repeat their settings to make a new study."
+        },
+        {
+          "path": "stem.perception.study_next_match",
+          "jsonPointer": "/stem/perception/study_next_match",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Match {trial} of 3. Adjust the comparison, choose your impression, then record it."
+        },
+        {
+          "path": "stem.perception.study_notebook_paused",
+          "jsonPointer": "/stem/perception/study_notebook_paused",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Notebook observations are hidden while you make these matches. They return after recording all three matches or ending the study."
+        },
+        {
+          "path": "stem.perception.study_reference_value",
+          "jsonPointer": "/stem/perception/study_reference_value",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Fixed reference: {value} {unit}."
+        },
+        {
+          "path": "stem.perception.study_results_hidden",
+          "jsonPointer": "/stem/perception/study_results_hidden",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Three matches recorded. Use Reveal study results in the controls to see their drawing values, median, and range."
+        },
+        {
+          "path": "stem.perception.study_results_revealed",
+          "jsonPointer": "/stem/perception/study_results_revealed",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "All three study matches are revealed."
+        },
+        {
+          "path": "stem.perception.study_review_opened",
+          "jsonPointer": "/stem/perception/study_review_opened",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Saved study opened for review."
+        },
+        {
+          "path": "stem.perception.study_scene_progress",
+          "jsonPointer": "/stem/perception/study_scene_progress",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "{count} of 3 matches recorded. Make each match by eye with the same surroundings."
+        },
+        {
+          "path": "stem.perception.study_start_hint",
+          "jsonPointer": "/stem/perception/study_start_hint",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Try three separate matches with the reference and surroundings held fixed. Starting positions vary; numbers stay hidden until all three are recorded."
+        },
+        {
+          "path": "stem.perception.study_summary_hint",
+          "jsonPointer": "/stem/perception/study_summary_hint",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "The median is the middle of your three matches; the range spans their lowest and highest values. These describe this small set of drawing matches, not a score. Try another study with different surroundings to compare your impressions."
+        },
+        {
+          "path": "stem.perception.study_trial_progress",
+          "jsonPointer": "/stem/perception/study_trial_progress",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Match {trial} of 3. Adjust the comparison and choose an impression below. Your note is saved with this match; the next match starts with a blank note."
+        },
+        {
+          "path": "stem.perception.three_recorded_matches",
+          "jsonPointer": "/stem/perception/three_recorded_matches",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Three recorded matches"
+        },
+        {
+          "path": "stem.perception.trial_label",
+          "jsonPointer": "/stem/perception/trial_label",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Trial"
+        },
+        {
+          "path": "stem.bridgelab.paired_interval_scope",
+          "jsonPointer": "/stem/bridgelab/paired_interval_scope",
+          "type": "added",
+          "namespace": "stem.bridgelab",
+          "currentValue": "A is the selected notebook reference; B is the current experiment. Both use the pinned and inspected times shown here."
+        },
+        {
+          "path": "stem.bridgelab.paired_interval_title",
+          "jsonPointer": "/stem/bridgelab/paired_interval_title",
+          "type": "added",
+          "namespace": "stem.bridgelab",
+          "currentValue": "Compare energy between these moments"
+        },
+        {
+          "path": "stem.dinolab.find_plate_group",
+          "jsonPointer": "/stem/dinolab/find_plate_group",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Three reference views of the exposed fragment"
+        },
+        {
+          "path": "stem.dinolab.find_plate_preview_label",
+          "jsonPointer": "/stem/dinolab/find_plate_preview_label",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "{view} reference preview."
+        },
+        {
+          "path": "stem.dinolab.find_plate_caption",
+          "jsonPointer": "/stem/dinolab/find_plate_caption",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "The three previews show {coord} with {look}, using the same framing."
+        },
+        {
+          "path": "stem.dinolab.find_plate_hint",
+          "jsonPointer": "/stem/dinolab/find_plate_hint",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Compare how one fragment’s outline changes with viewpoint. Looking from another direction can reveal features hidden by the first view."
+        },
+        {
+          "path": "stem.dinolab.find_plate_fallback",
+          "jsonPointer": "/stem/dinolab/find_plate_fallback",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Use the view buttons to inspect the fragment in 3D when previews are unavailable."
+        }
+      ],
+      "allDifferencesOutsideAnatomy": true,
+      "changedNamespaces": [
+        "stem.perception",
+        "stem.bridgelab",
+        "stem.dinolab"
+      ],
+      "heartValuesUnchanged": true,
+      "anatomyNamespaceUnchanged": true,
+      "offScopeDifferences": [
+        {
+          "path": "stem.perception.close_study_review",
+          "jsonPointer": "/stem/perception/close_study_review",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Close study review"
+        },
+        {
+          "path": "stem.perception.difference_from_reference",
+          "jsonPointer": "/stem/perception/difference_from_reference",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Difference from reference"
+        },
+        {
+          "path": "stem.perception.end_repeated_study",
+          "jsonPointer": "/stem/perception/end_repeated_study",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "End repeated study"
+        },
+        {
+          "path": "stem.perception.match_range",
+          "jsonPointer": "/stem/perception/match_range",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Match range"
+        },
+        {
+          "path": "stem.perception.median_difference",
+          "jsonPointer": "/stem/perception/median_difference",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Median difference"
+        },
+        {
+          "path": "stem.perception.median_match",
+          "jsonPointer": "/stem/perception/median_match",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Median match"
+        },
+        {
+          "path": "stem.perception.record_match",
+          "jsonPointer": "/stem/perception/record_match",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Record match"
+        },
+        {
+          "path": "stem.perception.recorded_match",
+          "jsonPointer": "/stem/perception/recorded_match",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Recorded match"
+        },
+        {
+          "path": "stem.perception.repeat_saved_settings",
+          "jsonPointer": "/stem/perception/repeat_saved_settings",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Repeat these settings"
+        },
+        {
+          "path": "stem.perception.repeated_study",
+          "jsonPointer": "/stem/perception/repeated_study",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Repeated matching study"
+        },
+        {
+          "path": "stem.perception.reveal_saved_study",
+          "jsonPointer": "/stem/perception/reveal_saved_study",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Reveal saved study"
+        },
+        {
+          "path": "stem.perception.reveal_study_results",
+          "jsonPointer": "/stem/perception/reveal_study_results",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Reveal study results"
+        },
+        {
+          "path": "stem.perception.review_study",
+          "jsonPointer": "/stem/perception/review_study",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Review study"
+        },
+        {
+          "path": "stem.perception.rgb_steps",
+          "jsonPointer": "/stem/perception/rgb_steps",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "RGB-code steps"
+        },
+        {
+          "path": "stem.perception.saved_study_hidden",
+          "jsonPointer": "/stem/perception/saved_study_hidden",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Three matches are saved. Reveal this study to review its drawing values together."
+        },
+        {
+          "path": "stem.perception.saved_study_revealed",
+          "jsonPointer": "/stem/perception/saved_study_revealed",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Saved study drawing values revealed."
+        },
+        {
+          "path": "stem.perception.saved_study_review",
+          "jsonPointer": "/stem/perception/saved_study_review",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Saved study review"
+        },
+        {
+          "path": "stem.perception.saved_trial_number",
+          "jsonPointer": "/stem/perception/saved_trial_number",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Repeated study · trial {trial} of 3"
+        },
+        {
+          "path": "stem.perception.start_three_matches",
+          "jsonPointer": "/stem/perception/start_three_matches",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Start three matches"
+        },
+        {
+          "path": "stem.perception.starting_value",
+          "jsonPointer": "/stem/perception/starting_value",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Starting value"
+        },
+        {
+          "path": "stem.perception.study_all_recorded",
+          "jsonPointer": "/stem/perception/study_all_recorded",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "All three matches are recorded. Reveal the results, or end the study to return to free matching."
+        },
+        {
+          "path": "stem.perception.study_complete",
+          "jsonPointer": "/stem/perception/study_complete",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Three matches recorded. Reveal the study results when you are ready."
+        },
+        {
+          "path": "stem.perception.study_ended",
+          "jsonPointer": "/stem/perception/study_ended",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Repeated study ended. Recorded matches remain in your notebook."
+        },
+        {
+          "path": "stem.perception.study_expired",
+          "jsonPointer": "/stem/perception/study_expired",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "The experiment or notebook changed. The repeated study ended; recorded matches remain in the notebook."
+        },
+        {
+          "path": "stem.perception.study_frozen_hint",
+          "jsonPointer": "/stem/perception/study_frozen_hint",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Surrounding settings stay fixed during this study. The notebook and pinned view return after recording or ending the study."
+        },
+        {
+          "path": "stem.perception.study_group_conflict",
+          "jsonPointer": "/stem/perception/study_group_conflict",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "These matches have different settings or duplicate trial numbers. Review them individually or repeat the settings; they cannot form one study summary."
+        },
+        {
+          "path": "stem.perception.study_incomplete_group",
+          "jsonPointer": "/stem/perception/study_incomplete_group",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "{count} of 3 matches remain in this notebook. Review individual observations or repeat their settings to make a new study."
+        },
+        {
+          "path": "stem.perception.study_next_match",
+          "jsonPointer": "/stem/perception/study_next_match",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Match {trial} of 3. Adjust the comparison, choose your impression, then record it."
+        },
+        {
+          "path": "stem.perception.study_notebook_paused",
+          "jsonPointer": "/stem/perception/study_notebook_paused",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Notebook observations are hidden while you make these matches. They return after recording all three matches or ending the study."
+        },
+        {
+          "path": "stem.perception.study_reference_value",
+          "jsonPointer": "/stem/perception/study_reference_value",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Fixed reference: {value} {unit}."
+        },
+        {
+          "path": "stem.perception.study_results_hidden",
+          "jsonPointer": "/stem/perception/study_results_hidden",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Three matches recorded. Use Reveal study results in the controls to see their drawing values, median, and range."
+        },
+        {
+          "path": "stem.perception.study_results_revealed",
+          "jsonPointer": "/stem/perception/study_results_revealed",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "All three study matches are revealed."
+        },
+        {
+          "path": "stem.perception.study_review_opened",
+          "jsonPointer": "/stem/perception/study_review_opened",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Saved study opened for review."
+        },
+        {
+          "path": "stem.perception.study_scene_progress",
+          "jsonPointer": "/stem/perception/study_scene_progress",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "{count} of 3 matches recorded. Make each match by eye with the same surroundings."
+        },
+        {
+          "path": "stem.perception.study_start_hint",
+          "jsonPointer": "/stem/perception/study_start_hint",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Try three separate matches with the reference and surroundings held fixed. Starting positions vary; numbers stay hidden until all three are recorded."
+        },
+        {
+          "path": "stem.perception.study_summary_hint",
+          "jsonPointer": "/stem/perception/study_summary_hint",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "The median is the middle of your three matches; the range spans their lowest and highest values. These describe this small set of drawing matches, not a score. Try another study with different surroundings to compare your impressions."
+        },
+        {
+          "path": "stem.perception.study_trial_progress",
+          "jsonPointer": "/stem/perception/study_trial_progress",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Match {trial} of 3. Adjust the comparison and choose an impression below. Your note is saved with this match; the next match starts with a blank note."
+        },
+        {
+          "path": "stem.perception.three_recorded_matches",
+          "jsonPointer": "/stem/perception/three_recorded_matches",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Three recorded matches"
+        },
+        {
+          "path": "stem.perception.trial_label",
+          "jsonPointer": "/stem/perception/trial_label",
+          "type": "added",
+          "namespace": "stem.perception",
+          "currentValue": "Trial"
+        },
+        {
+          "path": "stem.bridgelab.paired_interval_scope",
+          "jsonPointer": "/stem/bridgelab/paired_interval_scope",
+          "type": "added",
+          "namespace": "stem.bridgelab",
+          "currentValue": "A is the selected notebook reference; B is the current experiment. Both use the pinned and inspected times shown here."
+        },
+        {
+          "path": "stem.bridgelab.paired_interval_title",
+          "jsonPointer": "/stem/bridgelab/paired_interval_title",
+          "type": "added",
+          "namespace": "stem.bridgelab",
+          "currentValue": "Compare energy between these moments"
+        },
+        {
+          "path": "stem.dinolab.find_plate_group",
+          "jsonPointer": "/stem/dinolab/find_plate_group",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Three reference views of the exposed fragment"
+        },
+        {
+          "path": "stem.dinolab.find_plate_preview_label",
+          "jsonPointer": "/stem/dinolab/find_plate_preview_label",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "{view} reference preview."
+        },
+        {
+          "path": "stem.dinolab.find_plate_caption",
+          "jsonPointer": "/stem/dinolab/find_plate_caption",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "The three previews show {coord} with {look}, using the same framing."
+        },
+        {
+          "path": "stem.dinolab.find_plate_hint",
+          "jsonPointer": "/stem/dinolab/find_plate_hint",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Compare how one fragment’s outline changes with viewpoint. Looking from another direction can reveal features hidden by the first view."
+        },
+        {
+          "path": "stem.dinolab.find_plate_fallback",
+          "jsonPointer": "/stem/dinolab/find_plate_fallback",
+          "type": "added",
+          "namespace": "stem.dinolab",
+          "currentValue": "Use the view buttons to inspect the fragment in 3D when previews are unavailable."
+        }
+      ]
+    },
+    {
+      "path": "lang/french.js",
+      "snapshot": "locale-before/lang__french.js.before.gz",
+      "originalSha256": "f80b8b5bbedab7821a4abae75fc316eeb3a24281a174cf9b81cb0e82bc6fe7fe",
+      "reconstructionSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "testedSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "sourceProofSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "currentSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "byteEqualToTested": true,
+      "reconstructedExactTestedBytes": true,
+      "stableReadAttempts": 1,
+      "testedAnatomySha256": "989b3eef57d1d8fd3855e2890d79f00a98b6cda62c29623e914370acfae263e5",
+      "currentAnatomySha256": "989b3eef57d1d8fd3855e2890d79f00a98b6cda62c29623e914370acfae263e5",
+      "entireAnatomyNamespaceUnchanged": true,
+      "heartKeyCount": 69,
+      "allHeartValuesMatch": true,
+      "allPlaceholdersMatch": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "differenceCount": 0,
+      "differences": [],
+      "allDifferencesOutsideAnatomy": true,
+      "changedNamespaces": [],
+      "heartValuesUnchanged": true,
+      "anatomyNamespaceUnchanged": true,
+      "offScopeDifferences": []
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__french.js.before.gz",
+      "originalSha256": "f80b8b5bbedab7821a4abae75fc316eeb3a24281a174cf9b81cb0e82bc6fe7fe",
+      "reconstructionSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "testedSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "sourceProofSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "currentSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "byteEqualToTested": true,
+      "reconstructedExactTestedBytes": true,
+      "stableReadAttempts": 1,
+      "testedAnatomySha256": "989b3eef57d1d8fd3855e2890d79f00a98b6cda62c29623e914370acfae263e5",
+      "currentAnatomySha256": "989b3eef57d1d8fd3855e2890d79f00a98b6cda62c29623e914370acfae263e5",
+      "entireAnatomyNamespaceUnchanged": true,
+      "heartKeyCount": 69,
+      "allHeartValuesMatch": true,
+      "allPlaceholdersMatch": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "differenceCount": 0,
+      "differences": [],
+      "allDifferencesOutsideAnatomy": true,
+      "changedNamespaces": [],
+      "heartValuesUnchanged": true,
+      "anatomyNamespaceUnchanged": true,
+      "offScopeDifferences": []
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "snapshot": "locale-before/lang__spanish_latin_america.js.before.gz",
+      "originalSha256": "e238448642fd81f3f697e8c19de5695fe003487222d0d93486b729ab9fc5eee0",
+      "reconstructionSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "testedSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "sourceProofSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "currentSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "byteEqualToTested": true,
+      "reconstructedExactTestedBytes": true,
+      "stableReadAttempts": 1,
+      "testedAnatomySha256": "468e1f63bc12ab15161e39794177db6615ad2d680dd0d777d355d20dd5c61506",
+      "currentAnatomySha256": "468e1f63bc12ab15161e39794177db6615ad2d680dd0d777d355d20dd5c61506",
+      "entireAnatomyNamespaceUnchanged": true,
+      "heartKeyCount": 69,
+      "allHeartValuesMatch": true,
+      "allPlaceholdersMatch": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "differenceCount": 0,
+      "differences": [],
+      "allDifferencesOutsideAnatomy": true,
+      "changedNamespaces": [],
+      "heartValuesUnchanged": true,
+      "anatomyNamespaceUnchanged": true,
+      "offScopeDifferences": []
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__spanish_latin_america.js.before.gz",
+      "originalSha256": "e238448642fd81f3f697e8c19de5695fe003487222d0d93486b729ab9fc5eee0",
+      "reconstructionSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "testedSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "sourceProofSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "currentSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "byteEqualToTested": true,
+      "reconstructedExactTestedBytes": true,
+      "stableReadAttempts": 1,
+      "testedAnatomySha256": "468e1f63bc12ab15161e39794177db6615ad2d680dd0d777d355d20dd5c61506",
+      "currentAnatomySha256": "468e1f63bc12ab15161e39794177db6615ad2d680dd0d777d355d20dd5c61506",
+      "entireAnatomyNamespaceUnchanged": true,
+      "heartKeyCount": 69,
+      "allHeartValuesMatch": true,
+      "allPlaceholdersMatch": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "differenceCount": 0,
+      "differences": [],
+      "allDifferencesOutsideAnatomy": true,
+      "changedNamespaces": [],
+      "heartValuesUnchanged": true,
+      "anatomyNamespaceUnchanged": true,
+      "offScopeDifferences": []
+    },
+    {
+      "path": "lang/arabic.js",
+      "snapshot": "locale-before/lang__arabic.js.before.gz",
+      "originalSha256": "05e37c3044895ef1d7b8d272fae44aeca83a2fd37d6544e562284b9963f2af12",
+      "reconstructionSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "testedSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "sourceProofSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "currentSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "byteEqualToTested": true,
+      "reconstructedExactTestedBytes": true,
+      "stableReadAttempts": 1,
+      "testedAnatomySha256": "f5fa7ac01f74529120b2f1a83bcf0c991a433ad3b2c3e7b325465e5fadb14191",
+      "currentAnatomySha256": "f5fa7ac01f74529120b2f1a83bcf0c991a433ad3b2c3e7b325465e5fadb14191",
+      "entireAnatomyNamespaceUnchanged": true,
+      "heartKeyCount": 69,
+      "allHeartValuesMatch": true,
+      "allPlaceholdersMatch": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "differenceCount": 0,
+      "differences": [],
+      "allDifferencesOutsideAnatomy": true,
+      "changedNamespaces": [],
+      "heartValuesUnchanged": true,
+      "anatomyNamespaceUnchanged": true,
+      "offScopeDifferences": []
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__arabic.js.before.gz",
+      "originalSha256": "05e37c3044895ef1d7b8d272fae44aeca83a2fd37d6544e562284b9963f2af12",
+      "reconstructionSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "testedSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "sourceProofSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "currentSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "byteEqualToTested": true,
+      "reconstructedExactTestedBytes": true,
+      "stableReadAttempts": 1,
+      "testedAnatomySha256": "f5fa7ac01f74529120b2f1a83bcf0c991a433ad3b2c3e7b325465e5fadb14191",
+      "currentAnatomySha256": "f5fa7ac01f74529120b2f1a83bcf0c991a433ad3b2c3e7b325465e5fadb14191",
+      "entireAnatomyNamespaceUnchanged": true,
+      "heartKeyCount": 69,
+      "allHeartValuesMatch": true,
+      "allPlaceholdersMatch": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "matchesTested": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "differenceCount": 0,
+      "differences": [],
+      "allDifferencesOutsideAnatomy": true,
+      "changedNamespaces": [],
+      "heartValuesUnchanged": true,
+      "anatomyNamespaceUnchanged": true,
+      "offScopeDifferences": []
+    }
+  ],
+  "mirrors": [
+    {
+      "canonical": "ui_strings.js",
+      "mirror": "desktop/web-app/public/ui_strings.js",
+      "canonicalSha256": "48d09b0027786260f682e546916430ae4c5a12a9b887ac112feb36c4470bd70f",
+      "mirrorSha256": "48d09b0027786260f682e546916430ae4c5a12a9b887ac112feb36c4470bd70f",
+      "fullFileByteEqual": true,
+      "entireAnatomyNamespaceEqual": true,
+      "heartValuesEqual": true,
+      "matchedHeartKeys": 69,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "canonical": "lang/french.js",
+      "mirror": "desktop/web-app/public/lang/french.js",
+      "canonicalSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "mirrorSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "fullFileByteEqual": true,
+      "entireAnatomyNamespaceEqual": true,
+      "heartValuesEqual": true,
+      "matchedHeartKeys": 69,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "canonical": "lang/spanish_latin_america.js",
+      "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "canonicalSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "mirrorSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "fullFileByteEqual": true,
+      "entireAnatomyNamespaceEqual": true,
+      "heartValuesEqual": true,
+      "matchedHeartKeys": 69,
+      "differenceCount": 0,
+      "differences": []
+    },
+    {
+      "canonical": "lang/arabic.js",
+      "mirror": "desktop/web-app/public/lang/arabic.js",
+      "canonicalSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "mirrorSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "fullFileByteEqual": true,
+      "entireAnatomyNamespaceEqual": true,
+      "heartValuesEqual": true,
+      "matchedHeartKeys": 69,
+      "differenceCount": 0,
+      "differences": []
+    }
+  ],
+  "failures": [],
+  "complete": true,
+  "success": true,
+  "onlyOffScopeChanges": true,
+  "concurrentScopePolicy": "Compare each current snapshot with exact reconstructed browser-tested bytes; permit only JSON deltas outside the entire stem.anatomy namespace. Whole-catalog raw hashes identify evidence snapshots and are not used to reject later unrelated namespace changes.",
+  "lateOffScopeChanges": [],
+  "reusableScriptPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\audit_anatomy_heart_concurrent_catalogs.cjs",
+  "previousAuditSnapshot": {
+    "path": "catalog-concurrent-change-audit.c74272b17cafed69.snapshot.json.gz",
+    "sha256": "c74272b17cafed695e1768e302b63b1bc73771f78799f15ad81536f15e1667cd"
+  }
+}

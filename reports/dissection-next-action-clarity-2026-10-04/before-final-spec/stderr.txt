@@ -1,0 +1,5 @@
+(node:66724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:66724) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\Documents\Codex\2026-09-29\please-keep-improving-interactivity-engagement-and\dissection-next-action-2026-10-04/baseline.js in place of stem_lab/stem_tool_dissection.js

@@ -1,0 +1,88 @@
+{
+  "passed": false,
+  "checks": [
+    {
+      "expandedPaper": {
+        "x": 159,
+        "y": 104,
+        "width": 810,
+        "height": 810
+      },
+      "detailPaper": {
+        "x": -651,
+        "y": -710,
+        "width": 2430,
+        "height": 2430
+      },
+      "fixedBacking": [
+        1024,
+        1024
+      ],
+      "zoomDoesNotPaint": true
+    },
+    {
+      "precision": {
+        "fineStepCells": 1,
+        "normalStepCells": 3.7125000000000057,
+        "acceleratedStepCells": 14.849999999999994
+      },
+      "cornerReveal": {
+        "home": {
+          "x": 22,
+          "y": 104
+        },
+        "end": {
+          "x": 1093.34375,
+          "y": 905.34375
+        }
+      },
+      "minimalRevealDoesNotScrollVisibleBrush": true,
+      "outerScrollUnchanged": true,
+      "noPaintOrUndoEntry": true
+    },
+    {
+      "maximumBrushNavigation": [
+        {
+          "brush": "Mop",
+          "size": 80,
+          "oversizedInteriorCenterVisible": true,
+          "cornerScrollExtentStable": true,
+          "outlineDimensions": [
+            1177.25,
+            1177.25
+          ]
+        },
+        {
+          "brush": "Wash",
+          "size": 80,
+          "oversizedInteriorCenterVisible": true,
+          "cornerScrollExtentStable": true,
+          "outlineDimensions": [
+            1200.484375,
+            1200.484375
+          ]
+        }
+      ],
+      "cursorLayerClippedToSheet": true,
+      "canvasFocusRingUnclipped": true,
+      "noPaintFromBrushViewChanges": true
+    },
+    {
+      "keyboardOutlinePersistsAfterHoverLeave": true,
+      "blurHidesOutline": true,
+      "paintHelpAndShortcutsDescribePrecision": true
+    },
+    {
+      "pointerFocusDoesNotJumpToKeyboardCursor": true,
+      "keyboardDabEndsPointerStroke": true,
+      "latePointerDoesNotPaint": true,
+      "separateUndoEntries": {
+        "strokeError": 0.000019073486328125,
+        "baselineError": 0.000019073486328125,
+        "redoError": 0.000019073486328125
+      }
+    }
+  ],
+  "errors": [],
+  "failure": "AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /Alt\\+ArrowRight/. Input:\n\n'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home End Enter Space Escape P Control+Z Control+Shift+Z Control+Y Meta+Z Meta+Shift+Z Meta+Y'\n"
+}

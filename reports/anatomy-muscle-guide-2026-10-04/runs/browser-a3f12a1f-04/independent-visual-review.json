@@ -1,0 +1,159 @@
+{
+  "reviewedAt": "2026-10-04T22:39:08.328Z",
+  "reviewer": "/root/knee_review",
+  "method": "Independent source/state review and direct view_image inspection of all six final screenshots at original detail. No browser test rerun.",
+  "sourcePin": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "runtimeSha256": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "mirrorSha256": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "runtimeMirrorsIdentical": true,
+  "baselineSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "sourceReview": {
+    "status": "passed",
+    "syntaxPassed": true,
+    "scopeReversalExact": true,
+    "originalLiteralPathsPreserved": 7,
+    "originalRoutesPreserved": [
+      {
+        "step": 0,
+        "path": "M22 72 C94 72 160 69 218 101 C239 111 264 111 292 102",
+        "color": "#7c3aed",
+        "marker": "anatomy-arrow-neuron"
+      },
+      {
+        "step": 1,
+        "path": "M242 108 C242 132 242 149 242 174 M280 112 C280 139 280 153 280 178",
+        "color": "#d97706",
+        "marker": "anatomy-arrow-ach"
+      },
+      {
+        "step": 2,
+        "path": "M304 181 C334 181 362 195 375 225 L375 272 C375 289 390 297 407 300",
+        "color": "#0284c7",
+        "marker": "anatomy-arrow-calcium"
+      },
+      {
+        "step": 3,
+        "path": "M468 258 L523 258 M595 291 L540 291",
+        "color": "#dc2626",
+        "marker": "anatomy-arrow-contraction"
+      }
+    ],
+    "originalMechanismsPreserved": [
+      {
+        "step": 0,
+        "id": "terminal-calcium-entry"
+      },
+      {
+        "step": 1,
+        "id": "end-plate-depolarization"
+      },
+      {
+        "step": 2,
+        "id": "calcium-release-to-troponin"
+      },
+      {
+        "step": 3,
+        "id": "cross-bridge-power-stroke"
+      }
+    ],
+    "originalClinicalPathNodesPreserved": 3,
+    "clinicalShapeExpressionsPreserved": true,
+    "clinicalOverlayPaintsAboveRoutes": true,
+    "singlePairOfActinFilaments": true,
+    "quadricepsAliasDataUnchanged": true,
+    "findings": [
+      "Biceps and quadriceps share guarded controls using their selected atlas identity.",
+      "Functional state updates merge the latest anatomy state, preserving unrelated learning work and tutor profile.",
+      "Navigation, atlas, step, playback, clinical, model-focus, study-sheet, and gallery context guard against stale control actions.",
+      "Step changes retain paused activation and narrate through the single polite atomic detail.",
+      "Muscle-to-knee handoff preserves latest work and playback, opens canonical knee extension with clinical reset, and uses the existing guarded destination focus helper.",
+      "Separate activation and sarcomere SVGs retain original signal routes, cellular structures, calcium/sodium highlights, filament lengths, and moving Z discs.",
+      "Numbered marker targets match the HTML structure keys and preserved schematic orientation.",
+      "Ca2+ and Na+ text remains unchanged inside explicitly isolated LTR bdi nodes in structure keys and mechanism captions."
+    ]
+  },
+  "browserRunnerReview": {
+    "runnerProofSha256": "703177f2b65e0ec6c7a71509fd121c6ae701da2df02cd494a8de76387a5f39fe",
+    "expectedSource": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+    "expectedFixture": "2daa693591a889ce3e7f5c99458c0eab3c2cdf9db4026c864d6c72ffe8309580",
+    "exitCode": 0,
+    "allPinnedFilesUnchanged": true,
+    "runtimeMirrorsIdentical": true,
+    "status": "passed"
+  },
+  "screenshots": [
+    {
+      "filename": "desktop-light-muscle-guide.png",
+      "viewed": true,
+      "detail": "original",
+      "review": "The enlarged activation illustration has eight clearly separated numbered circles and traceable leaders. The close-up separately identifies actin, myosin and both Z discs. Keys, captions, orientation cue, controls and keyboard focus are clear, with no clipping.",
+      "defects": [],
+      "sha256": "7fa75e8b7667b8e207119379e7048e3fb1cab4e81efa72b02cb5c9bc8a803a35"
+    },
+    {
+      "filename": "desktop-muscle-clinical-step-4.png",
+      "viewed": true,
+      "detail": "original",
+      "review": "The two clinical receptor crosses and dashed comparison line remain visible above signal routes. The sarcomere drawing clearly shows closer Z discs, actin and myosin. Active key outlines, clinical text and controls are readable.",
+      "defects": [],
+      "sha256": "4af74e749c44e22d23221cc4c5d14029f2982e32e03ce54aac4f87fe864674bf"
+    },
+    {
+      "filename": "phone-light-muscle-guide.png",
+      "viewed": true,
+      "detail": "original",
+      "review": "At 320px, eight activation markers and three sarcomere markers stay inside their crops and match their readable keys. Long receptor and reticulum labels wrap within cards. Ca2+ remains intact; controls and current-state text are visible without overlap.",
+      "defects": [],
+      "sha256": "2c3159c4929007d4e717fad08cca0c5ec77e264020b2dbed7f425230bed804ef"
+    },
+    {
+      "filename": "phone-dark-muscle-guide.png",
+      "viewed": true,
+      "detail": "original",
+      "review": "Dark HTML panels preserve text contrast and cyan selected/focus cues. The light diagram surfaces preserve cell and filament contrast. Marker circles, keys, orientation note and wrapped ion label remain clear.",
+      "defects": [],
+      "sha256": "f7c1aeb4741e151c36d08688c872cefdff2b504010f152e606ef4a6b99b70873"
+    },
+    {
+      "filename": "phone-arabic-dark-larger-muscle-guide.png",
+      "viewed": true,
+      "detail": "original",
+      "review": "The header motor-neuron introduction is now native Arabic and wraps clearly below the title, resolving MUSCLE-VIS-01. Native RTL labels, larger text, clinical explanation, controls and structure keys remain readable. The eight activation leaders and three close-up markers remain traceable; schematic orientation stays stable and Ca2+ reads correctly in its isolated LTR token.",
+      "defects": [],
+      "sha256": "cb633e6cc39bdd5e5af428fc2b2016f2cc35201f0224549f9405e05b8b9ea3c9"
+    },
+    {
+      "filename": "phone-forced-colors-muscle-guide.png",
+      "viewed": true,
+      "detail": "original",
+      "review": "Selected steps and structure keys retain visible system-color outlines. Keyboard focus is distinct. Monochrome legend symbols and labels remain readable, while numbered marker current states remain distinguishable.",
+      "defects": [],
+      "sha256": "2492b990eb094669f8547fdb6dc61b7821e74d34d5d5f50f61c500b00e075be4"
+    }
+  ],
+  "defects": [],
+  "overallStatus": "passed",
+  "translationSemanticsReview": {
+    "path": "../../translation-semantics-review.json",
+    "sha256": "f4199ac7c8bbfc799a184749892b5e188af2d4e76d3d896d322a01d2a67f98eb",
+    "status": "passed",
+    "englishKeys": 74,
+    "nativeValues": 222,
+    "defects": []
+  },
+  "priorEvidence": {
+    "path": "../browser-a3f12a1f-03/independent-visual-review.json",
+    "sha256": "28109fe5dabcb9e4861b84c98870b81e89cc135f9ad585bffdf6dbe368208be8"
+  },
+  "resolvedDefects": [
+    {
+      "id": "MUSCLE-VIS-01",
+      "priority": 2,
+      "title": "Muscle introduction remains English in native catalogs",
+      "detail": "The Arabic capture displays the complete English motor-neuron introduction below its native title. Source/catalog inspection confirms trace_muscle_activation is English in French, Spanish Latin America and Arabic catalogs; quadriceps scope text is already native.",
+      "suggestedFix": "Replace only the existing trace_muscle_activation native values with exact-meaning French, Spanish Latin America and Arabic translations, keeping runtime and English wording unchanged.",
+      "status": "resolved",
+      "resolution": "The existing trace_muscle_activation native values were corrected in French, Spanish Latin America and Arabic while runtime and English wording remained unchanged. The final Arabic larger-text capture shows the native motor-neuron introduction."
+    }
+  ]
+}

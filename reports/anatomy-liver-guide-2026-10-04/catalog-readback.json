@@ -1,0 +1,32 @@
+{
+  "sourceSha256": "e13900bcf029704f9f480f9e23a930297e3c527726ee41591619b79e02012f31",
+  "registeredValues": 648,
+  "pairs": [
+    {
+      "path": "ui_strings.js",
+      "fullFilesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 81
+    },
+    {
+      "path": "lang/french.js",
+      "fullFilesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 81
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "fullFilesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 81
+    },
+    {
+      "path": "lang/arabic.js",
+      "fullFilesIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 81
+    }
+  ],
+  "placeholdersMatch": true,
+  "allValuesMatch": true
+}

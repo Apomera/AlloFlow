@@ -144,6 +144,60 @@ describe('Microbiology growth investigation workflow', { timeout: 20000 }, () =>
     expect(text()).toContain('Old organism · 20 · 6 · 10 · Old observation');
   });
 
+  it('keeps untouched displayed conditions and raw evidence when editing incomplete or malformed imported setups', () => {
+    const notes = {
+      hypothesis: '<img src=x onerror="alert(1)"> Keep this earlier hypothesis.',
+      explanation: '=SUM(1,2)\nKeep this earlier explanation.', understood: true,
+      log: [{ profile: 'Imported organism', t: 18, p: 6, o: 20, state: 'Keep this observation.' }],
+      importedMetadata: { keep: true, nested: { source: 'Earlier Growth Lab' } }
+    };
+    const defaults = { profile: 'ecoli', tempC: 30, pH: 7, oxygen: 50 };
+    const setups = [
+      { name: 'absent', expected: defaults, key: 'oxygen', value: 0 },
+      { name: 'null', growthLab: null, expected: defaults, key: 'pH', value: 6.5 },
+      { name: 'notes only', growthLab: notes, expected: defaults, key: 'oxygen', value: 0 },
+      { name: 'partial Thermus', growthLab: { ...notes, profile: 'thermus', pH: 7.5, oxygen: 100 }, expected: { ...defaults, profile: 'thermus', pH: 7.5, oxygen: 100 }, key: 'pH', value: 8 },
+      { name: 'partial methanogen', growthLab: { ...notes, profile: 'methanogen', tempC: 37, pH: 7 }, expected: { ...defaults, profile: 'methanogen', tempC: 37 }, key: 'pH', value: 6.5 },
+      { name: 'malformed Thermus fields', growthLab: { ...notes, profile: 'thermus', tempC: Infinity, pH: {}, oxygen: '100' }, expected: { profile: 'thermus', tempC: 70, pH: 7.5, oxygen: 50 }, key: 'oxygen', value: 35 },
+      { name: 'malformed profile and fields', growthLab: { ...notes, profile: '__proto__', tempC: Infinity, pH: {}, oxygen: '100' }, expected: { profile: 'ecoli', tempC: 37, pH: 7, oxygen: 50 }, key: 'oxygen', value: 0 }
+    ];
+    function displayedConditions() {
+      return {
+        profile: mounted.container.querySelector('#gl-profile').value,
+        tempC: Number(mounted.container.querySelector('#gl-tempC').value),
+        pH: Number(mounted.container.querySelector('#gl-pH').value),
+        oxygen: Number(mounted.container.querySelector('#gl-oxygen').value)
+      };
+    }
+    for (const setup of setups) {
+      const awardXP = vi.fn();
+      const rawBook = {
+        control: { ...baseConditions, importedControl: { keep: true } },
+        trials: [{ id: 7, control: baseConditions, conditions: { ...baseConditions, oxygen: 0 }, prediction: 'lower', explanation: notes.explanation, importedTrial: { keep: true } }],
+        selectedId: 7, nextId: 80, prediction: 'unsure', hypothesis: notes.hypothesis,
+        sweepVariable: 'pH', sweep: { variable: 'pH', conditions: baseConditions, points: [{ finalPopulation: 123456 }], importedSweep: { keep: true } },
+        importedNotebook: { keep: true, nested: ['Original evidence'] }
+      };
+      const seed = { growthInvestigation: rawBook, importedMetadata: { keep: true, source: setup.name }, growthReviewHour: 6 };
+      if (Object.prototype.hasOwnProperty.call(setup, 'growthLab')) seed.growthLab = setup.growthLab;
+      mount(seed, { awardXP });
+      const before = mounted.state, displayed = displayedConditions();
+      expect(displayed, setup.name).toEqual(setup.expected);
+      expect(mounted.state.growthInvestigation, setup.name).toBe(rawBook);
+      write('#gl-' + setup.key, String(setup.value));
+      const canonical = { ...displayed, [setup.key]: setup.value };
+      const preservedRaw = setup.growthLab && typeof setup.growthLab === 'object' ? setup.growthLab : {};
+      expect(displayedConditions(), setup.name).toEqual(canonical);
+      expect(mounted.state, setup.name).toEqual({ ...before, growthLab: { ...preservedRaw, ...canonical } });
+      expect(mounted.state.growthInvestigation, setup.name).toBe(rawBook);
+      expect(mounted.state.importedMetadata, setup.name).toBe(before.importedMetadata);
+      expect(awardXP, setup.name).not.toHaveBeenCalled();
+      act(() => mounted.root.unmount());
+      mounted.container.remove();
+      mounted = null;
+    }
+  });
+
   it('recovers malformed restored growth data without rendering nonfinite values or object text', () => {
     mount({
       growthLab: { profile: '__proto__', tempC: Infinity, pH: {}, oxygen: '100', hypothesis: {}, explanation: [], log: [null, {}, { profile: { wrong: true }, t: 20 }] },
@@ -345,7 +399,9 @@ describe('Microbiology growth investigation workflow', { timeout: 20000 }, () =>
     click('Run variable sweep');
     expect(text()).toContain('Every sampled setting gives the same final population.');
     expect([...mounted.container.querySelectorAll('.micro-growth-sweep-table tbody tr')].every(row => row.cells[1].textContent === '5.0' && row.cells[2].textContent === 'No modeled increase')).toBe(true);
-    expect(mounted.container.querySelectorAll('.micro-growth-sweep-figure svg rect')).toHaveLength(10);
+    const flatMarkers = [...mounted.container.querySelectorAll('.micro-growth-sweep-figure [data-sweep-point][data-response="flat"]')];
+    expect(flatMarkers).toHaveLength(10);
+    expect(flatMarkers.every(marker => Number(marker.getAttribute('data-population')) === 5 && parseFloat(marker.style.borderRadius) === 0)).toBe(true);
     const state = JSON.parse(JSON.stringify(mounted.state));
     const saved = book();
     act(() => mounted.root.unmount());
@@ -891,11 +947,13 @@ describe('Microbiology previous sweep review and guarded navigation', { timeout:
     expect(previous.querySelector('svg[role="img"]')).not.toBeNull();
     expect(previous.querySelectorAll('tbody tr')).toHaveLength(10);
     expect(previous.querySelectorAll('thead th')).toHaveLength(3);
-    expect(previous.querySelectorAll('button,input,select,textarea')).toHaveLength(0);
+    expect(previous.querySelectorAll('button,input,textarea')).toHaveLength(0);
+    expect(previous.querySelectorAll('select')).toHaveLength(1);
+    expect(previous.querySelector('select').id).toBe('gl-previous-sweep-setting');
     expect(previous.querySelector('figcaption').textContent).toMatch(/^Previous sweep: Response to pH/);
     expect(previous.querySelector('svg').getAttribute('aria-label')).toMatch(/^Previous sweep\. /);
     expect(previous.querySelector('caption').textContent).toBe('Previous sweep: Saved sweep settings and model responses');
-    expect(previous.querySelector('[role="status"], [aria-live]')).toBeNull();
+    expect(previous.querySelector('#gl-previous-sweep-selected').getAttribute('aria-live')).toBe('polite');
     expect(current().querySelector('figcaption').textContent).toMatch(/^Current sweep: Response to Oxygen availability/);
     expect(current().querySelector('svg').getAttribute('aria-label')).toMatch(/^Current sweep\. /);
     expect(current().querySelector('caption').textContent).toBe('Current sweep: Saved sweep settings and model responses');
@@ -903,6 +961,13 @@ describe('Microbiology previous sweep review and guarded navigation', { timeout:
     expect([...previous.querySelectorAll('tbody tr')].map(row => row.cells[1].textContent)).toEqual(model.points.map(point => point.finalPopulation.toFixed(1)));
     expect(current().querySelectorAll('tbody tr')).toHaveLength(9);
     expect(current().querySelectorAll('tbody button')).toHaveLength(9);
+    const currentCurve = current().querySelector('path').getAttribute('d');
+    const previousCurve = previous.querySelector('path').getAttribute('d');
+    write('#gl-previous-sweep-setting', '5.5');
+    expect(previous.querySelector('tr[aria-current="true"]').getAttribute('data-sweep-setting')).toBe('5.5');
+    expect(previous.querySelector('[data-sweep-readout="population"]').textContent).toBe(model.points.find(point => point.value === 5.5).finalPopulation.toFixed(1));
+    expect(current().querySelector('path').getAttribute('d')).toBe(currentCurve);
+    expect(previous.querySelector('path').getAttribute('d')).toBe(previousCurve);
     expect(JSON.stringify(mounted.state)).toBe(before);
   });
 

@@ -1,0 +1,5 @@
+{
+  "tests/moonmission_descent_energy.test.js": "e21c1f78350c7468db6c902c6af65ae50c9935d089e7ca361f04914e19ff2cdf",
+  "tests/e2e/moon-mission-descent-energy.spec.ts": "e86927bf2f001308c39dca0d2154f67ae60a725aae865fe01aa539c612ec3e90",
+  "reports/moon-mission-enhancement-pass22-2026-10-04/playwright.config.ts": "52cd5e62bebeb2e7fc2dfe061c22497a7b554ea7d910ed1acadc1c5519403ee4"
+}

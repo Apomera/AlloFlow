@@ -863,13 +863,13 @@ const createReadAloudAudioService = (dependencies = {}) => {
     return { forResource };
 };
 
-// Resolution→capture provenance (2026-07-19). Hosts recreate the legacy
+// Resolutionâ†’capture provenance (2026-07-19). Hosts recreate the legacy
 // bridge for every global call, so this registry lives at module scope. It
 // maps a resolved playback URL to the exact synthesis profile and segment
 // identity that produced it; capturePlayed prefers it over the live profile,
 // so a voice change while generation/startup is pending can never persist
 // one voice's audio under another voice's metadata. Bounded FIFO: an evicted
-// entry only means capture falls back to the live profile — never a wrong
+// entry only means capture falls back to the live profile â€” never a wrong
 // match, because cached URLs are keyed by text+voice+speed+language.
 const READ_ALOUD_PROVENANCE_LIMIT = 64;
 const readAloudUrlProvenance = new Map();
@@ -887,7 +887,7 @@ const readAloudProvenanceForUrl = (url) => (
 
 // Diagnostics: bridge resolution events land in the same window.__alloTtsTrace
 // ring the TTS module and karaoke overlay write, so one snapshot shows where a
-// stuck read-aloud actually stalled (overlay → bridge → provider).
+// stuck read-aloud actually stalled (overlay â†’ bridge â†’ provider).
 const READ_ALOUD_TRACE_MAX = 150;
 const readAloudTrace = (event, detail) => {
     try {
@@ -1049,7 +1049,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
     function canonicalResourceSegments(resource, resourceType, context) {
         if (enumerateResourceSegments) {
             const enumerated = safeCall(enumerateResourceSegments, null, [resource, context]);
-            if (Array.isArray(enumerated) && enumerated.length) {
+            if (Array.isArray(enumerated) && (enumerated.length || dependencies.enumerationAuthoritative === true)) {
                 return descriptorsFromList(enumerated, context);
             }
         }
@@ -1175,7 +1175,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             },
         };
         const serviceDependencies = {
-            getStoreModule: (context) => safeCall(getStore, null, [context.lane, context]),
+            getStoreModule: (context) => safeCall(getStore, null, [context.lane, Object.assign({}, context, { resource })]),
             getResource: () => resource,
             getSynthesisProfile: (context) => safeCall(getProfile, {}, [context]),
             synthesize,
@@ -1190,8 +1190,19 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
             adapter,
             lane: lane || 'reference',
             persistencePolicy: 'durable',
-            reconciliationKeys: () => resourceSegments(resource, resourceType, null)
-                .map((segment) => identityFor(resourceType, segment)),
+            reconciliationKeys: () => {
+                // A selected inline support is an accepted worklist entry even
+                // when the legacy host cannot enumerate it in its main text.
+                // Retain it alongside the complete resource inventory.
+                const inventory = resourceSegments(resource, resourceType, null).concat(rawSegments);
+                const identities = new Map();
+                inventory.forEach((segment) => {
+                    const identity = identityFor(resourceType, segment);
+                    const key = JSON.stringify([identity.scopeId, identity.segmentId, identity.spokenFingerprint]);
+                    if (!identities.has(key)) identities.set(key, identity);
+                });
+                return Array.from(identities.values());
+            },
         });
         return { controller, resource, resourceId, resourceType, rawSegments };
     }
@@ -1222,7 +1233,7 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         const binding = bindingFor([sentence], options.lane || 'reference', options.occurrence);
         const segment = firstSegment(binding);
         if (!segment) return null;
-        // Snapshot {url → profile, segment} at the moment of resolution: the
+        // Snapshot {url â†’ profile, segment} at the moment of resolution: the
         // controller's 'resolved' event carries the exact merged profile it
         // matched or synthesized with, so a later capture persists the clip
         // under the voice the learner actually heard even if the settings
@@ -1432,6 +1443,11 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
         try {
             if (binding.controller.inspect(segment).status === 'ready') return false;
             notifyStatus(binding, segment.spokenText, 'saving');
+            let durable = false;
+            const unsubscribe = binding.controller.subscribe((event) => {
+                if (event && event.type === 'persisted' && event.receipt?.status === 'saved' && event.receipt?.verified === true) durable = true;
+            });
+            try {
             await binding.controller.capturePlayed(segment, url, {
                 // The resolution-time profile travels with the URL; without it
                 // a mid-flight settings change relabels the clip (Puck audio
@@ -1443,8 +1459,9 @@ const createReadAloudLegacyBridge = (dependencies = {}) => {
                 source: options.source || 'ai-played',
             });
             const summary = binding.controller.summary();
-            notifyStatus(binding, segment.spokenText, 'saved', { storedBytes: summary.estimatedBytes || 0 });
+            notifyStatus(binding, segment.spokenText, durable ? 'saved' : 'attached', { storedBytes: summary.estimatedBytes || 0, verified: durable });
             return true;
+            } finally { unsubscribe(); }
         } catch (error) {
             notifyStatus(binding, segment.spokenText, 'error', failureDetail(error));
             return false;
@@ -1614,7 +1631,7 @@ const formatGlossaryDefinitionSpeech = (termValue, definitionValue) => {
     const definition = String(definitionValue == null ? '' : definitionValue).replace(/\s+/g, ' ').trim();
     if (!term || !definition) return definition;
     const prefix = definition.slice(0, term.length).toLocaleLowerCase();
-    if (prefix === term.toLocaleLowerCase() && (definition.length === term.length || /^[\s:：,.!?…;—–-]/.test(definition.slice(term.length)))) return definition;
+    if (prefix === term.toLocaleLowerCase() && (definition.length === term.length || /^[\s:ï¼š,.!?â€¦;â€”â€“-]/.test(definition.slice(term.length)))) return definition;
     return term + ': ' + definition;
 };
 

@@ -9,6 +9,9 @@ const source = readFileSync('stem_lab/stem_tool_cephalopodlab.js', 'utf8').repla
 function region(start, end) { const a = source.indexOf(start), b = source.indexOf(end, a);if (a < 0 || b <= a) throw new Error('Missing coral region: ' + start);return source.slice(a, b); }
 const helper = region('function shadeCLHuntCoralSurface(', 'function shadeCLHuntPlantFlex(');
 const factory = region('function createReefCoralGeometry(height,index){', 'var coralColors =');
+const {restorePass37CoralSource}=require('./helpers/cephalopod_reef_form_reference.cjs');
+const {restorePass38CoralSource}=require('./helpers/cephalopod_coral_organic_reference.cjs');
+const restoredBuild = new Function('THREE','Math',restorePass37CoralSource(restorePass38CoralSource(factory))+';return createReefCoralGeometry;')(THREE,Object.assign(Object.create(Math),{random(){throw Error('Original coral used RNG');}}));
 const noRandom = Object.assign(Object.create(Math), { random() { throw new Error('Coral geometry consumed dive RNG'); } });
 const build = new Function('THREE', 'Math', factory + ';return createReefCoralGeometry;')(THREE, noRandom);
 const shade = new Function(helper + ';return shadeCLHuntCoralSurface;')();
@@ -34,7 +37,7 @@ describe('Cephalopod Hunter coral surface', () => {
   // This exhaustive fixture validates every ring/vertex across 54 geometries;
   // allow CPU headroom while retaining all geometry and preservation assertions.
   // Strict native assertions avoid matcher allocation in its dense vertex loops.
-  it('preserves all original geometry and colors while adding finite branch coordinates with sealed cap detail', () => {
+  it('retains frozen original geometry and colors while validating live branch coordinates with sealed cap detail', () => {
     const protectedData = [];let memory = 0, tips = 0;
     for (const height of [1, 1.75, 2.5]) for (let index = 0; index < 18; index++) {
       const geometry = build(height, index);
@@ -61,7 +64,8 @@ describe('Cephalopod Hunter coral surface', () => {
         }
         assert.equal(a.getZ(0), 0);
         if (height === 1) memory += a.array.byteLength;
-        protectedData.push({ height, index, position: Array.from(p.array), normal: Array.from(geometry.attributes.normal.array), color: Array.from(geometry.attributes.color.array), indices: Array.from(geometry.index.array) });
+        const originalColors=restoredBuild(height,index);
+        try { protectedData.push({ height, index, position: Array.from(originalColors.attributes.position.array), normal: Array.from(originalColors.attributes.normal.array), color: Array.from(originalColors.attributes.color.array), indices: Array.from(geometry.index.array) }); } finally { originalColors.dispose(); }
       } finally { geometry.dispose(); }
     }
     assert.ok(tips > 500);assert.equal(memory, 226368);

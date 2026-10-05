@@ -1,0 +1,5 @@
+{
+  "tests/moonmission_descent_shadow.test.js": "e66334a4b74299d607b2a98f1297228c61a0ba3c31f43082138330ba77492829",
+  "tests/e2e/moon-mission-descent-shadow.spec.ts": "b6c58f8254f26f91093c70002eebb54ecbfd4d6654b029d34248df2a4a3952ee",
+  "reports/moon-mission-enhancement-pass24-2026-10-04/playwright.config.ts": "c23381f13f6aa9ba0425799a38b948006063d9ff00cef2597a39a6bd744fad22"
+}

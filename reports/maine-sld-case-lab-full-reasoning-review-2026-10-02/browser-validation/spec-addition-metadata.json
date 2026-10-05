@@ -1,0 +1,9 @@
+{
+  "baselineSha256": "1114b15f54da14f6c18cc028d04a2b95a5ea972c83f5ed124e47e009e0e42331",
+  "candidateSha256": "e72f3b778a5f672447d95339ab49606e910633ed7b567c6d5c70628efae435d4",
+  "originalBytes": 97089,
+  "candidateBytes": 114219,
+  "originalBytesPreserved": true,
+  "newScenarios": 2,
+  "runPendingFinalFreezeAndHttpReady": true
+}

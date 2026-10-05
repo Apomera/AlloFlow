@@ -1,0 +1,13 @@
+{
+  "initialReport": "targeted-tests.json",
+  "initialPassed": 13,
+  "initialFailed": 2,
+  "nativeExitCode": 1,
+  "nativeToolChunk": "1a0574",
+  "reason": "Two new test assertions assumed a voltage text format that differs from the existing circuitVoltageText formatter. Corrected the assertions without changing product formatting.",
+  "corrections": [
+    { "before": "+1.10 V", "after": "+1.10V" },
+    { "before": "0 V", "after": "0.00V", "occurrences": 2 }
+  ],
+  "finalReport": "regression-raw.json"
+}

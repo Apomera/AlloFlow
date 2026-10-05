@@ -1,0 +1,18 @@
+{
+  "anchoredAim": true,
+  "comparisonPreserved": true,
+  "restoreSettings": true,
+  "starCameraReset": true,
+  "layouts": [
+    {
+      "width": 390,
+      "overflow": false,
+      "releaseFromScene": true
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "releaseFromScene": true
+    }
+  ]
+}

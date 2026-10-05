@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
+import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const SOLAR_SYSTEM_PATHS = [
   'stem_lab/stem_tool_solarsystem.js',
@@ -103,9 +104,9 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('selectedOrbitScreenRadius >= Math.min(90, viewW * 0.18)');
       expect(source).toContain('labelBoxes.push({ x: anchorLabelX - 3');
       expect(source).toContain('var hideCompactPlanetLabel = zoomMode === "full" && viewW < 480');
-      expect(source).toContain('b.type !== "planet" && selBody !== b.id && !isHoveredBody');
+      expect(source).toContain('b.type !== "planet" && selBody !== b.id && !isCompareOrbit && !isHoveredBody');
       expect(source).toContain('var relativeDotR =');
-      expect(source).toContain('Marker size:');
+      expect(source).toContain('Marker sizes');
       expect(source).toContain('Use radius-informed marker sizes, compressed and clamped for visibility');
       expect(source).toContain('Comparative marker sizes');
       expect(source).toContain('Math.sqrt(Math.max(b.R, 1) / 6371) * 3.5');
@@ -115,14 +116,39 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).not.toContain('All 8 planets to scale (size + orbit)');
     });
   });
-  it('keeps both Kepler II evidence lines inside the canvas and names specific angular momentum accurately', () => {
+  it('provides readable Kepler II conservation evidence and semantic normalized measurements', () => {
     SOLAR_SYSTEM_PATHS.forEach((filePath) => {
-      const source = readFileSync(filePath, 'utf8');
-
-      expect(source).toContain('ctx.fillText("Kepler II:  A line from the Sun to a planet sweeps equal areas in equal times.", 20, H - 26);');
-      expect(source).toContain('ctx.fillText("h = r \\u00d7 v\\u22a5 = constant  (specific angular momentum)", 20, H - 10);');
-      expect(source).toContain('r \\u00d7 v\\u22a5 (specific angular momentum)');
-      expect(source).not.toContain('angular momentum)", 20, H + 4');
+      resetStemLab();
+      loadTool(filePath, 'solarSystem');
+      document.body.innerHTML = renderTool('solarSystem', { solarSystem: {
+        tutorialDismissed: true, orreryMode: true, orr_tab: 2,
+        orr_k2e: 0.6, orr_k2s: 6, orr_k2phase: 0.25, orr_k2playing: false,
+      } });
+      try {
+        const note = document.getElementById('orrery-k2-model-note');
+        expect(note?.textContent).toMatch(/Transverse speed .*perpendicular/);
+        expect(note?.textContent).toContain('h = r × v⊥ stays constant.');
+        const value = (name) => {
+          const node = document.querySelector(`#orrery-k2-readings dd[data-k2-metric="${name}"]`);
+          expect(node).not.toBeNull();
+          const raw = node.getAttribute('data-value');
+          expect(raw).not.toBeNull();
+          expect(raw.trim()).not.toBe('');
+          const number = Number(raw);
+          expect(Number.isFinite(number)).toBe(true);
+          return number;
+        };
+        const distance = value('distance');
+        const speed = value('speed');
+        const transverse = value('transverse-speed');
+        const momentum = value('angular-momentum');
+        expect(momentum).toBeCloseTo(0.8, 10);
+        expect(distance * transverse).toBeCloseTo(momentum, 8);
+        expect(speed).toBeGreaterThan(transverse);
+        expect(document.getElementById('orrery-k2-readings')?.textContent).toContain('Specific angular momentum');
+      } finally {
+        document.body.innerHTML = '';
+      }
     });
   });
   it('adds labeled orbit timeline landmarks and a live phase context', () => {
@@ -191,7 +217,7 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('value1: mark.label.toLowerCase(), value2: scrubBody.name');
       expect(source).toContain('var timelineMarkIsActive = function(mark)');
       expect(source).toContain('timelineMarkIsActive(mark), function()');
-      expect(source).toContain('btn("Reset view"');
+      expect(source).toContain('btn("Reset orbit time"');
       expect(source).toContain('orr_follow: null, orr_compare: null');
     });
   });  it('adds A/B orbital evidence snapshots and a live speed gauge', () => {
@@ -200,16 +226,16 @@ describe('solar system main 3D canvas loop', () => {
 
       expect(source).toContain('var snapshotStore = d.orr_snapshots || {};');
       expect(source).toContain('var captureTime = timeRef.current;');
-      expect(source).toContain('Save A');
-      expect(source).toContain('Save B');
+      expect(source).toContain('Save orbital snapshot A');
+      expect(source).toContain('Save orbital snapshot B');
       expect(source).toContain('B minus A');
       expect(source).toContain('var snapshotEntries =');
       expect(source).toContain('live speed gauge');
       expect(source).toContain('var orbitalSpeedLabel =');
-      expect(source).toContain('if (slot === "b" && !snapshotA) return;');
+      expect(source).toContain('if (slot === "b" && (!snapshotAComplete || !predictionChoice)) return;');
       expect(source).toContain('disabled: !snapshotA');
       expect(source).toContain('after saving snapshot A');
-      expect(source).toContain('var evidenceStepLabel = !snapshotA');
+      expect(source).toContain('var evidenceStepLabel = snapshotA && !snapshotAComplete');
       expect(source).toContain('Next: predict B');
       expect(source).toContain('Ready to record');
       expect(source).toContain('.orr-btn:disabled{cursor:not-allowed');
@@ -221,15 +247,15 @@ describe('solar system main 3D canvas loop', () => {
 
       expect(source).toContain('var predictionChoice = bodySnapshotState.prediction || "";');
 
-      expect(source).toContain('var saveBDisabled = !snapshotA || !predictionChoice;');
-      expect(source).toContain('snapshotA && (!snapshotB || !predictionChoice)');
+      expect(source).toContain('var saveBDisabled = !snapshotAComplete || !predictionChoice;');
+      expect(source).toContain('snapshotAComplete && !snapshotBComplete');
       expect(source).toContain('after choosing a prediction');      expect(source).toContain('var buildPredictionResult = function(state)');
       expect(source).toContain('Predict B: will orbital speed be faster, slower, or about the same as A?');
       expect(source).toContain('value: "about the same"');
       expect(source).toContain('nearly the same distance can mean about the same speed');
       expect(source).toContain('Prediction supported');
       expect(source).toContain('Prediction revised');
-      expect(source).toContain('Record observation');
+      expect(source).toContain('Record orbital speed observation');
       expect(source).toContain('addMissionEntry("🔮 Orrery observation: " + sb.name');
     });
   });  it('exports readable A/B orbital evidence for review', () => {
@@ -237,7 +263,7 @@ describe('solar system main 3D canvas loop', () => {
       const source = readFileSync(filePath, 'utf8');
 
       expect(source).toContain('var exportEvidence = function()');
-      expect(source).toContain('Export evidence');
+      expect(source).toContain('Export orbital evidence');
       expect(source).toContain('evidenceLines.join("\\n")');
       expect(source).toContain('orbital_evidence.txt');
       expect(source).toContain('Exported orbital evidence for');
@@ -321,7 +347,10 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('function keplerLawIdForTab(index)');
       expect(source).toContain('function mergeKeplerLawSeen(current, lawId)');
       expect(source).toContain('"data-kepler-visited": lawVisited ? "true" : "false"');
-      expect(source).toContain('var _challengeScore = Object.keys(d.orr_chc || {})');
+      expect(source).toContain('var _challengeScore = Array.from({ length: 10 }');
+      expect(source).toContain('!Array.isArray(d.orr_chc) ? d.orr_chc : {}');
+      expect(source).toContain('Object.prototype.hasOwnProperty.call(_challengeCompletions, index)');
+      expect(source).toContain('_challengeCompletions[index] === true');
       expect(source).toContain('var _liveSolvedKeys = Object.keys(d.orr_clc || {})');
       expect(source).toContain('upd("_chalScore", _challengeScore)');
       expect(source).toContain('upd("_liveSolved", solved)');
@@ -363,11 +392,11 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('d.orrery_explored_once === true');
       expect(source).toContain('id: "orrery-challenge-feedback"');
       expect(source).toContain('id: "orrery-live-challenge-feedback"');
-      expect(source).toContain('"aria-invalid": !!ch_feedback[idx]');
+      expect(source).toContain('"aria-invalid": !!feedback');
       expect(source).toContain('"aria-invalid": !!liveFeedback[liveIdx]');
       expect(source).toContain('Choose faster, slower, or about the same...');
       expect(source).toContain('if (!paused) { if (addToast) addToast("Pause the clock before predicting."); return; }');
-      expect(source).toContain('"aria-disabled": !paused, disabled: !paused');
+      expect(source).toContain('"aria-disabled": guidedPredictionDisabled, disabled: guidedPredictionDisabled');
       expect(source).toContain('id: "orrery-guided-objective"');
       expect(source).toContain('id: "orrery-guided-feedback"');
       expect(source).toContain('orrery-guided-objective" + (guidedRecord.correct === false ? " orrery-guided-feedback" : "")');
@@ -419,7 +448,7 @@ describe('solar system main 3D canvas loop', () => {
       expect(source).toContain('key: "toggle-follow"');
       expect(source).toContain('"aria-pressed": followBodyId === sb.id');
       expect(source).toContain('"Follow " + sb.name + " with the camera"');
-      expect(source).toContain('use the Follow camera toggle in the selected-world card');
+      expect(source).toContain('use the Follow camera toggle in the world navigator');
       expect(source).toContain('use Follow camera to keep it centered');
       expect(source).toContain('select a world, then use Follow camera');
       expect(source).toContain('Enter or Space selects the next world');

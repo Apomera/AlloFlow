@@ -13,10 +13,12 @@
 import { describe, it, expect } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { resolve } from 'node:path';
+import { compileWords } from './helpers/word_sounds_core.js';
 
 const read = (p) => readFileSync(resolve(process.cwd(), p), 'utf8');
 const SOURCE = read('word_sounds_setup_source.jsx');
 const MODULE = read('word_sounds_module.js');
+const compileReviewed = words => compileWords(words, {}, 'en', null, { SIGHT_WORD_PRESETS: { fixture: ['can', 'see', 'the', 'and'] } });
 
 /** Execute the real pair-frame join. */
 function loadFrames() {
@@ -51,15 +53,18 @@ describe('the pair frames', () => {
 });
 
 describe('the compiled board', () => {
-  it('two tiers from one shape, only for packs with a partner word', () => {
-    expect(SOURCE).toMatch(/const smOthers = itemWords\.filter\(\(v\) => v !== word\);/);
-    expect(SOURCE).toMatch(/sequence: \[first, second\],/);
-    expect(SOURCE).toMatch(/sequence: \[word\],/);
+  it('uses the authored reviewed sentence and requires another picture choice', () => {
+    const words = [{ word: 'cat', phonemes: ['k', 'a', 't'], sentence: 'I can see the cat.' }, { word: 'dog', phonemes: ['d', 'o', 'g'] }];
+    const board = compileReviewed(words)[0].activityItems.sentence_match;
+    expect(board).toEqual({ sentence: 'I can see the cat.', sequence: ['cat'], extras: ['dog'] });
+    expect(compileReviewed(words.map(item => ({ ...item, sentence: '' })))[0].activityItems.sentence_match).toBeUndefined();
     expect(SOURCE).toMatch(/sentence_match: sentenceMatch/);
   });
 
-  it('never ships fewer than two pictures', () => {
-    expect(SOURCE).toMatch(/if \(sentenceMatch\.sequence\.length \+ sentenceMatch\.extras\.length < 2\) sentenceMatch = null;/);
+  it('never ships fewer than two pictures or a second answer already named in the sentence', () => {
+    expect(compileReviewed([{ word: 'cat', phonemes: ['k', 'a', 't'], sentence: 'I can see the cat.' }])[0].activityItems.sentence_match).toBeUndefined();
+    const words = [{ word: 'cat', phonemes: ['k', 'a', 't'], sentence: 'I can see the cat and dog.' }, { word: 'dog', phonemes: ['d', 'o', 'g'] }];
+    expect(compileReviewed(words)[0].activityItems.sentence_match).toBeUndefined();
   });
 
   it('a distractor picture never names a word already in the sentence', () => {

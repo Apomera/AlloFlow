@@ -1,0 +1,119 @@
+{
+  "sourceSha256": "9e2a212cadaa2f1f4f8494d8654e9f46f783eec4c7182374f3c84641f9737eb7",
+  "prePassSourceSha256": "729418d54d2d93973e8bc3adcf48ef43273d46098a003970aa3a868416f17c87",
+  "mirrorByteIdentical": true,
+  "lineEndings": "LF",
+  "syntax": "valid",
+  "browser": {
+    "startTime": "2026-10-01T22:55:19.256Z",
+    "duration": 166314.643,
+    "expected": 28,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "copyFollowup": {
+    "startTime": "2026-10-01T23:27:31.841Z",
+    "duration": 23207.855,
+    "expected": 2,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "earlierSpecFollowup": {
+    "startTime": "2026-10-02T00:05:23.292Z",
+    "duration": 87942.36600000001,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "unit": {
+    "passed": 349,
+    "total": 349,
+    "failed": 0,
+    "suites": [
+      {
+        "name": "dissection_canvas_loop.test.js",
+        "passed": 3,
+        "failed": 0
+      },
+      {
+        "name": "dissection_reference_workbench.test.js",
+        "passed": 149,
+        "failed": 0
+      },
+      {
+        "name": "dissection_workspace_bands.test.js",
+        "passed": 106,
+        "failed": 0
+      },
+      {
+        "name": "dissection_lab_improvements.test.js",
+        "passed": 91,
+        "failed": 0
+      }
+    ],
+    "finalRuns": [
+      "unit-results.json",
+      "unit-broad-results.json"
+    ],
+    "initialRun": {
+      "passed": 348,
+      "total": 349,
+      "failed": 1
+    }
+  },
+  "layouts": [
+    {
+      "name": "phone",
+      "width": 300.40625,
+      "clientWidth": 298,
+      "scrollWidth": 298,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "tablet",
+      "width": 737.21875,
+      "clientWidth": 735,
+      "scrollWidth": 735,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "embedded-large",
+      "width": 300.40625,
+      "clientWidth": 298,
+      "scrollWidth": 298,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 16,
+      "clippedText": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "desktop",
+      "width": 797.21875,
+      "clientWidth": 795,
+      "scrollWidth": 795,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "forced-colors",
+      "width": 370.40625,
+      "clientWidth": 368,
+      "scrollWidth": 368,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "axeViolations": 0
+    }
+  ]
+}

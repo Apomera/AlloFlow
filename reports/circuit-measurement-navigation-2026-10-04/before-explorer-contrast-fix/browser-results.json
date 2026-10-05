@@ -1,0 +1,320 @@
+{
+  "sourceSha256": "13ff414f9f26387af69f60f9c705b94abedd29c6b034096edbdcacb324f130f1",
+  "scriptSha256": "8eb5000aa1793080e82f298e73a0ca0dd37053d118ad54e48237e7e0e1de20d5",
+  "errors": [],
+  "workflows": [
+    {
+      "name": "Keyboard measurement focuses the updated visible reading; returning restores the exact control; repeat requests work; reversing probes keeps focus on the probe control",
+      "settingsAndSavedWorkPreserved": true
+    }
+  ],
+  "views": [
+    {
+      "name": "desktop-explorer",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 844,
+        "scrollWidth": 844,
+        "values": [
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          },
+          {
+            "text": "3.00 mA",
+            "direction": "ltr"
+          },
+          {
+            "text": "660.00 mV",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": null
+      },
+      "axeViolations": [],
+      "file": "desktop-explorer.png",
+      "sha256": "0e02562504b2d2ecbc1909bda2fb2b8b0b992d4792416bed408433f51895bd3f"
+    },
+    {
+      "name": "desktop-lamp-meter",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 776,
+        "scrollWidth": 776,
+        "values": [
+          {
+            "text": "660.00 mV",
+            "direction": "ltr"
+          },
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r8:-heading"
+      },
+      "axeViolations": [],
+      "file": "desktop-lamp-meter.png",
+      "sha256": "1ecb73563cce5dad088b25a6a6121e590d03b9eb904979a6295fe19fc165274d"
+    },
+    {
+      "name": "small-phone-meter",
+      "width": 320,
+      "geometry": {
+        "viewport": 320,
+        "pageWidth": 320,
+        "width": 212,
+        "scrollWidth": 212,
+        "values": [
+          {
+            "text": "660.00 mV",
+            "direction": "ltr"
+          },
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r8:-heading"
+      },
+      "axeViolations": [],
+      "file": "small-phone-meter.png",
+      "sha256": "1fde8249788c4880d842b56b47df0b594770aadedff3943e2a8b97d5f9903a6b"
+    },
+    {
+      "name": "phone-return-explorer",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 338,
+        "scrollWidth": 338,
+        "values": [
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          },
+          {
+            "text": "3.00 mA",
+            "direction": "ltr"
+          },
+          {
+            "text": "660.00 mV",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.34V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r0:-voltage-drops-measure-lamp"
+      },
+      "axeViolations": [],
+      "file": "phone-return-explorer.png",
+      "sha256": "74e935c9fe72d444acb0c3f91dc2193d978fe2b4b9af129a57beb6e7022dc3ef"
+    },
+    {
+      "name": "phone-sensor-meter",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 282,
+        "scrollWidth": 282,
+        "values": [
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          },
+          {
+            "text": "0.00V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r8:-heading"
+      },
+      "axeViolations": [],
+      "file": "phone-sensor-meter.png",
+      "sha256": "9e919022350039a9b8cd3b9cfd107bc79e1a7dec8c8f92ce3a5ba77bc33d5fd2"
+    },
+    {
+      "name": "forced-colors-meter",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 282,
+        "scrollWidth": 282,
+        "values": [
+          {
+            "text": "2.64V",
+            "direction": "ltr"
+          },
+          {
+            "text": "5.00V",
+            "direction": "ltr"
+          },
+          {
+            "text": "2.36V",
+            "direction": "ltr"
+          }
+        ],
+        "focusedId": ":r8:-heading"
+      },
+      "axeViolations": [],
+      "file": "forced-colors-meter.png",
+      "sha256": "a023b4b140dc2f9ae990b0ec03f4115ef8dd2080147b0b50e971c3defdb4f94f"
+    }
+  ],
+  "focusChecks": [
+    {
+      "direction": "meter",
+      "part": "lamp",
+      "reading": "660.00 mV",
+      "headingTop": 17.90625,
+      "headingBottom": 40.40625,
+      "readingTop": 73.40625,
+      "readingBottom": 118.40625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "lamp",
+      "top": 17.765625,
+      "bottom": 61.765625,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "transistor",
+      "reading": "4.34V",
+      "headingTop": 17.90625,
+      "headingBottom": 40.40625,
+      "readingTop": 73.40625,
+      "readingBottom": 118.40625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "transistor",
+      "top": 17.765625,
+      "bottom": 61.765625,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "transistor",
+      "reading": "4.34V",
+      "headingTop": 17.90625,
+      "headingBottom": 40.40625,
+      "readingTop": 73.40625,
+      "readingBottom": 118.40625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "transistor",
+      "top": 17.765625,
+      "bottom": 61.765625,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "lamp",
+      "reading": "660.00 mV",
+      "headingTop": 18.296875,
+      "headingBottom": 40.796875,
+      "readingTop": 108.296875,
+      "readingBottom": 141.296875,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "lamp",
+      "top": 17.546875,
+      "bottom": 61.546875,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "lamp",
+      "reading": "660.00 mV",
+      "headingTop": 18.453125,
+      "headingBottom": 40.953125,
+      "readingTop": 73.953125,
+      "readingBottom": 106.953125,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "lamp",
+      "top": 18.421875,
+      "bottom": 62.421875,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "transistor",
+      "reading": "2.36V",
+      "headingTop": 18.265625,
+      "headingBottom": 40.765625,
+      "readingTop": 73.765625,
+      "readingBottom": 106.765625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "transistor",
+      "top": 18.328125,
+      "bottom": 62.328125,
+      "height": 1000
+    },
+    {
+      "direction": "meter",
+      "part": "lamp",
+      "reading": "2.64V",
+      "headingTop": 18.265625,
+      "headingBottom": 40.765625,
+      "readingTop": 73.765625,
+      "readingBottom": 106.765625,
+      "height": 1000
+    },
+    {
+      "direction": "explorer",
+      "part": "lamp",
+      "top": 18.234375,
+      "bottom": 62.234375,
+      "height": 1000
+    }
+  ],
+  "failure": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   {\n+     id: 'color-contrast',\n+     nodes: [\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.49 (foreground color: #95e1d6, background color: #ffffff, font size: 7.5pt (10px), font weight: bold). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.15 (foreground color: #e3f2e9, background color: #ffffff, font size: 15.8pt (21px), font weight: bold). Expected contrast ratio of 3:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.41 (foreground color: #c7deda, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.41 (foreground color: #c7deda, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.39 (foreground color: #cededc, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.39 (foreground color: #cededc, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.28 (foreground color: #ece3be, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.39 (foreground color: #cededc, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.39 (foreground color: #cededc, background color: #ffffff, font size: 8.3pt (11px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.47 (foreground color: #c3d9d7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.17 (foreground color: #e0f1e8, background color: #ffffff, font size: 15.0pt (20px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.47 (foreground color: #c3d9d7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.17 (foreground color: #e0f1e8, background color: #ffffff, font size: 15.0pt (20px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.47 (foreground color: #c3d9d7, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.17 (foreground color: #e0f1e8, background color: #ffffff, font size: 15.0pt (20px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.2 (foreground color: #e0ede6, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.12 (foreground color: #e7f5eb, background color: #ffffff, font size: 19.5pt (26px), font weight: normal). Expected contrast ratio of 3:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.47 (foreground color: #c3d9d9, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.2 (foreground color: #e0ede6, background color: #ffffff, font size: 10.5pt (14px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.12 (foreground color: #e7f5eb, background color: #ffffff, font size: 19.5pt (26px), font weight: normal). Expected contrast ratio of 3:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.47 (foreground color: #c3d9d9, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.48 (foreground color: #c4d8d6, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.16 (foreground color: #e4f1e9, background color: #ffffff, font size: 10.5pt (14px), font weight: bold). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.35 (foreground color: #cfe2da, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1',\n+       'Fix any of the following:\\n' +\n+         '  Element has insufficient color contrast of 1.48 (foreground color: #c4d8d6, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1'\n+     ]\n+   }\n+ ]\n- []\n\n    at capture (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\circuit-measurement-navigation-2026-10-04\\browser-check.cjs:43:216)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\circuit-measurement-navigation-2026-10-04\\browser-check.cjs:54:154",
+  "browserClosed": true
+}

@@ -1,0 +1,16 @@
+{
+  "mode": "matter-energy-recheck",
+  "checkedAt": "2026-10-05T02:09:48.8776322Z",
+  "ownedProcessIds": [
+    5152,
+    43680
+  ],
+  "observedPresent": [],
+  "reusedProcessIds": [],
+  "survivingOwnedProcesses": [],
+  "allOwnedClosed": true,
+  "allPidsAbsent": true,
+  "childCloseAt": "2026-10-05T02:08:30.137Z",
+  "childExitCode": 0,
+  "sourcePreserved": true
+}

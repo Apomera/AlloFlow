@@ -1,0 +1,24 @@
+{
+  "canonicalBrowserTestSha256": "32341725cd74244a0f50c9fb149b500bea68fcc179f5de41ba4d862e499014b8",
+  "supplementalSpecSha256": "18b8f762188431ebecee59e57bee88db6161365c9c0fc5e5440aedce8c5f776b",
+  "originalBodiesBytePreserved": true,
+  "originalDefinitionsHelpersAssertionsBytePreserved": true,
+  "original31PrefixBytePreservedInCanonicalSpec": true,
+  "onlyChangedSetupNeedle": " execFileSync(process.execPath,[join(WEB,'node_modules','tailwindcss','lib','cli.js'),'-i',input,'-o',output,'--content',[join(ROOT,'admin_hub_module.js'),join(ROOT,'maine_sld_practice_module.js'),html].join(',')],{cwd:WEB,stdio:'pipe'});",
+  "originalNeedleSha256": "42cba742cf422091f7a01a1ea5262e17892fb86f81b97c3d1150f5c3654cc49c",
+  "replacementSha256": "f2ecceda7aa76aa6979972352680b5de9da2cb042e2ac2525789a0f64c6c4a40",
+  "unchangedPrefixBytes": 3413,
+  "unchangedPrefixSha256": "1a819cdcdb8bd2c1a45644e0688a733b418bd379996c6761058e874c922f0130",
+  "unchangedSuffixBytes": 151536,
+  "unchangedSuffixSha256": "6ce6bf86edf734ab0523f88b097d5ed6d35bdb834e4aebb77bfce9513066ff5f",
+  "roundTripToOriginalSha256": "32341725cd74244a0f50c9fb149b500bea68fcc179f5de41ba4d862e499014b8",
+  "originalConfigSha256": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587",
+  "supplementalConfigOnlyChanges": [
+    "testDir",
+    "testMatch"
+  ],
+  "noLibraryMonkeypatch": true,
+  "workers": 1,
+  "automaticRetries": 0,
+  "timeoutMs": 120000
+}

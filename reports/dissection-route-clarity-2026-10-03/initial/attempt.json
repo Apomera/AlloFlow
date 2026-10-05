@@ -1,0 +1,25 @@
+{
+  "mode": "new",
+  "attempt": "initial",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@playwright/test/cli.js",
+    "test",
+    "dissection-route-clarity.spec.ts",
+    "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\route-clarity.config.cjs"
+  ],
+  "browserCachePath": "C:/Users/cabba/AppData/Local/ms-playwright",
+  "startedAt": "2026-10-04T03:08:17.748Z",
+  "finishedAt": "2026-10-04T03:10:45.102Z",
+  "exitCode": 1,
+  "before": {
+    "stem_lab/stem_tool_dissection.js": "b1146b11f3199cf97611281ea4e555ad21e723ad9950f0061f43effd9a8bd02e",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "b1146b11f3199cf97611281ea4e555ad21e723ad9950f0061f43effd9a8bd02e",
+    "tests/e2e/dissection-route-clarity.spec.ts": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8"
+  },
+  "after": {
+    "stem_lab/stem_tool_dissection.js": "b1146b11f3199cf97611281ea4e555ad21e723ad9950f0061f43effd9a8bd02e",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "b1146b11f3199cf97611281ea4e555ad21e723ad9950f0061f43effd9a8bd02e",
+    "tests/e2e/dissection-route-clarity.spec.ts": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8"
+  }
+}

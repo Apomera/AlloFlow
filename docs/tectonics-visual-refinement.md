@@ -396,3 +396,128 @@ Selection tracks the actual observation object. Coincident observations remain d
 Browser coordinate assertions allow less than 0.001 CSS pixel of rounding and less than 0.0001 degree of angular rounding; direct geometry tests use the unrounded source attributes. Browser reports identify the exact source and scoped dictionary hashes where the dictionary is used. Unit coverage is consolidated by file and full test name. The affected file rerun updates the former 18-unit SVG-label contract to the responsive 14-pixel labels and adds an explicit geometric angle assertion.
 
 The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-earthquake-refinement/verification.json) links the test reports, final browser results and asset integrity proof. Captures are stored beside those reports.
+
+
+## Reading earthquake evidence beside its graph
+
+The earthquake panel now places its graph and angle controls beside the event inspector and coordinate table when the panel has enough room. Narrow panels stack the same sections, even inside a wide desktop viewport. The layout responds to available panel space, and the inspector’s value columns respond to their own available width. Reading and keyboard order follow the graph, angle controls, event list and coordinates. Closing the outer panel preserves angle entry and local inspection.
+
+Students can choose an observation directly from the graph. A click or tap selects the nearest event within 22 screen pixels; a distant empty click keeps the selection. The hit calculation uses the actual SVG transform, including translation, rotation and scaling. Tied coincident positions consistently select the first displayed event; the native event list and coordinate buttons still distinguish each observation from the keyboard. The existing exact values, ring and axis guides update together. Selection retains the actual observation identity and adds no writes, sounds, rewards or announcements.
+
+A stronger vertical dashed line marks the boundary reference at 0 km. A nearby explanation connects that reference to each event’s distance. Equal kilometre scales, 14-pixel axis labels, depth bands and the distinction between live and checked samples are retained. Checking an angle remains an explicit action; tapping an event does not check or change the estimate.
+
+### Verification of responsive layout and graph selection
+
+- 763 distinct focused checks passed across 45 files. Eight added cases cover direct point selection at several sizes, transformed coordinates, empty clicks, coincident positions, section order and closing/reopening the panel.
+- 140 distinct checks passed against the installed source. The inspector contributes 66 checks and 15 captures. Real touch input, measured column positions, a narrow host in a desktop viewport, phone themes and high-contrast views pass the affected accessibility and overflow checks. SVG transforms still preserve the graph’s scales and estimated angles.
+- The 1,200-frame idle audit remains quiet through redraws, drift, stationary input and restored work. Each inspected layout also remains unchanged through 1,200 paused frames. Saved investigation and application checks preserve fixed samples and printed evidence.
+- All three source copies match SHA-256 cd7cc36bafb96f4f385a4021df3fa2427f0d39c731df0a52bacd8cfbcde635cd. Both English tectonic namespaces match their scoped hash and contain two new explanations. Existing values and source fallbacks are preserved. Syntax and JSON checks pass; the full 3D renderer declaration is unchanged.
+
+This pass leaves the edits uncommitted and unstaged as requested. The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-workbench-refinement/verification.json) links the unit reports, final browser results, asset checks and delivery state. Captures are stored beside those reports.
+
+
+## Understanding earthquake sample readiness
+
+The quake panel starts with a compact summary of the displayed sample. Shallow, intermediate and deep tiles show actual counts beside the existing depth ranges; text labels and colored edges match the graph bands. Tiles respond to available panel width and keep their counts beside their labels on small screens. A restored or newly checked summary stays fixed while the live log grows. Revise returns the summary to the latest plotted observations.
+
+For convergent boundaries, a quiet progress bar shows how many earthquakes meet the activity’s minimum of eight events at 70 km or deeper. Its visual value stops at eight; its description and sample counts retain the actual number. Paused guidance points to Play and Advance 60,000 years in the model controls. Running guidance encourages observing and estimating; ready guidance asks students to compare several points before explicitly checking. Checked guidance directs comparison of the estimate and fit. Other boundary types retain depth counts without a slab-angle target.
+
+The Check button keeps the same action label while disabled and enabled. Its description explains the target and next step. Reaching the target does not check an angle, pause the model, reveal the fitted line, save work, award points, play a sound or announce each changing count. Explicit Check retains the existing single saved sample and keyboard focus on Revise. The former long disabled-button instruction remains available as an older translation value.
+
+### Verification of counts, readiness and explicit checks
+
+- 769 distinct focused checks passed across 45 files. Six added cases cover empty paused guidance, exact depth boundaries, shallow versus qualifying observations, seven-to-eight readiness, actual counts above eight, frozen checked summaries and both other boundary types.
+- 157 checks passed against the installed source. The inspector contributes 79 checks and 19 captures, including phone light/dark readiness, keyboard Check and Revise, high contrast, desktop and narrow-host layouts. Four further checks verify that a full 200-event intermediate sample has no overlapping counts or tile overflow at 320, 390, 430 and 1100 pixels. The affected panels pass their recorded accessibility and overflow checks.
+- The idle audit covers 1,200 actual draw frames, automatic drift, stationary input and restored work without repeated rewards, sounds or notices. Paused empty and checked guides also remain unchanged through 1,200 frames. Saved investigation, application and printed-evidence checks retain fixed records.
+- Source, public asset and local build match SHA-256 83bb7e1a81737283a73a7875c9691f29f59edc851d6a855f5e0cfc839762a41e. Both English tectonic namespaces match and include seven new labels; existing values are preserved. Syntax, JSON and mirror checks pass. Code outside the earthquake panel and the full TectGL renderer are unchanged from the preceding uncommitted pass.
+
+The initial broad test worker failed with a memory allocation error while the drive had no free space. Temporary asset backup snapshots were compressed and verified losslessly, preserving the source and review evidence. Final tests ran in eight bounded groups. This pass leaves the edits uncommitted and unstaged. The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-readiness-refinement/verification.json) links final test, browser, asset and delivery checks.
+
+
+## Revealing selected features and reading model evidence
+
+The 3D inspector offers a nearby view action when its explanation identifies a hidden feature. A slab selected from above offers Show the cut face; matching fault markers selected in the section offer Show from above. Each selected volcanic-arc process also offers its cut-face view when the current camera hides that face. Selecting a feature keeps the learner's chosen view until they activate the action. These actions reuse the existing camera and slice presets. Physical measurements, playback state, inspected feature, saved evidence and depth-scale preference are retained.
+
+After activation, keyboard focus moves to the updated local explanation with preventScroll. The disappearing action does not leave focus on the document body. The explanation has a visible focus ring; native scroll anchoring can adjust the page as the button and text reflow. Reveal controls have 44-pixel minimum targets, descriptive translated labels and quiet status text.
+
+Boundary evidence and the two learning cards now use 14-pixel text with relaxed spacing. The existing rate-and-time explanation sits immediately beside the model readings and updates from the same exact calculations. The math and Try this have translated semantic headings; decorative icons are hidden from assistive technology. Evidence columns and learning cards respond to their own available panel width. A narrow desktop host uses two evidence columns and stacked learning cards; phones use one evidence column; full desktop retains four evidence columns and two learning cards.
+
+### Verification of view actions and readable evidence
+
+- 778 distinct focused checks passed across 45 files. Nine new interaction cases cover hidden and exposed views, all three arc processes, matching markers, keyboard focus, running state, fixed checked samples, depth-scale preferences and silent idle behavior.
+- 134 checks passed against the final installed source. The reveal review contributes 45 checks and 10 captures using actual WebGL, React development StrictMode, phone and desktop layouts in light, dark and high contrast. Learning review contributes 47 checks and 36 captures across nine layouts, including 430-pixel hosts inside a desktop viewport. Measured column widths, actual 14-pixel text, affected accessibility checks and overflow checks pass.
+- The idle audit again covers 1,200 draw frames, automatic drift, stationary input and restored progress without repeated rewards, sounds or notices. The learning panels remain quiet through 1,200 paused frames before and after explicit playback. Reveal actions preserve checked samples, model time and rate. Saved investigation, application and printed-evidence checks retain fixed records.
+- All three source copies match SHA-256 db6cfe3f4695df33a1e450aadedb67be8d767dc215fdd39bc4625318358c2cbf. Both English tectonic namespaces match and include five new labels while preserving retained values. Syntax, JSON and mirror checks pass. The full TectGL renderer and the rate-and-time calculation block are byte-identical to the preceding pass. This pass changes the boundary simulator's presentation and view controls.
+
+Initial test runs returned incomplete file coverage and were repeated in bounded groups. Their reports are retained separately; final runs cover every focused test file and full test name. The visual review also caught cramped viewport-based columns in a narrow host, leading to the panel-responsive grids before final verification.
+
+Edits remain uncommitted and unstaged as requested. The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-reveal-refinement/verification.json) links unit reports, final browser results, asset checks and delivery state. Captures are stored beside the browser reports.
+
+
+## Touch zoom and clearer overhead framing
+
+The 3D View card now has visible Zoom out and Zoom in actions, a quiet percentage readout and visible drag/keyboard guidance. Targets are at least 44 pixels tall and use the existing 0.15 step and 40–260% limits. The keyboard and wheel handlers retain their earlier behavior. Camera angle, cut, depth scale preference, physical measurements, playback and checked evidence are retained through zoom. Existing presets, Reset view and the block's Home key return zoom to 100%.
+
+Native keyboard review found that disabling the pressed action at a zoom limit sent focus to the document body. At either limit, focus now moves to the opposite enabled zoom action with preventScroll. The View and zoom groups respond to their own available width and stack when their buttons cannot fit side by side. This also fixes the existing 2D/3D toggle's measured overflow of 8 pixels in a host 430 pixels wide. Seven added interface labels, including the View heading, are registered for translation.
+
+The model and controls now respond to the workbench's available width. A flexible row gives the model twice the extra width of the controls. When the model's preferred width of 540 pixels and the controls' preferred width of 270 pixels cannot fit together, the controls move below the model. The model then spans the panel. This removes the thin, excessively tall control column in narrow desktop panels. The arrangement also updates when a mounted tool's host is resized, preserving its model state and camera.
+
+The live overhead frame uses a wider aspect ratio and a minimum height of 200 pixels. On phones 320 or 390 pixels wide, this removes 100 pixels of empty vertical space; normal desktop framing also becomes shorter. In a narrow desktop host, the minimum height gives surface labels more room. The physical model retains its proportions. Native resize fitting keeps the block and labels within the viewport; side, cut face and oblique views retain their earlier sizes. Returning to 2D restores the cross-section and its phone swipe helper.
+
+### Verification of navigation, framing and quiet idle
+
+- 784 distinct focused checks passed across 45 files. Six added cases cover accessible controls, current zoom, both bounds, keyboard focus, presets/reset, fixed checked evidence, running state and quiet callbacks.
+- 163 checks passed against the final installed source. Navigation review includes nine phone, desktop and narrow-host layouts, touch/keyboard/wheel input, measured control wrapping and native focus at both bounds. Layout review measures the model and controls in 2D and 3D, including transitions around the wrapping threshold. The affected controls pass their recorded accessibility and overflow checks.
+- Frame lifecycle review covers all three boundary types across five layouts, with seeded active earthquakes. Checks exercise native resizing, actual mesh and label containment, overhead-to-side/cut/oblique/2D transitions, geometry reuse and quiet settled frames. Reviewed captures keep the earthquake focus labels, surface guides, matching markers and arrows readable.
+- The idle audit again covers 1,200 draw frames, automatic drift, stationary input and restored progress without repeated rewards, sounds or notices. Navigation checks also cover 1,200 paused frames. Saved investigation, application and printed-evidence checks retain fixed records.
+- All three source copies match SHA-256 d0ea5be2d6eaf65ea0342dc84f19141afd4e6d6ab3b24f23643ac631a462f7af. Both English tectonic namespaces match and include seven new labels while preserving retained values. Syntax, JSON and mirror checks pass. The full TectGL renderer and rate-and-time calculation block are unchanged from the preceding pass.
+
+Initial reports are retained separately. Native Chromium exposed the zoom-limit focus issue, and narrow-host measurements identified the overflowing existing View toggle. A frame-fixture assertion was corrected to distinguish the 2D swipe helper from the actual canvas footprint. The responsive-canvas test now checks the intentional conditional aspect ratio, retaining the original cross-section ratio for loading and the 2D fallback. The phone-legibility test retains its frame and swipe-hint checks while dropping the obsolete viewport-grid span class. A mounted-resize fixture now waits for the expected host and workbench width before checking the layout. Final-source reports cover the corrected behavior. Browser runs were serialized after a screenshot timed out during concurrent WebGL reviews; the preceding idle assertions had passed. A blank first-layout capture is preserved as a diagnostic, with a guarded supplemental painted capture referenced by the final receipt. WebGL checks also inspect rendered pixels so a blank capture cannot count as model evidence.
+
+Edits remain uncommitted and unstaged. The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-navigation-refinement/verification.json) links final unit, browser, asset and delivery results. Captures are stored beside their browser reports.
+
+
+## Inspecting features beside the model
+
+The 2D/3D choice now sits above the model. The feature inspector and arc formation panel sit directly below it in the same column, so a learner can compare the selected shape with its explanation. Wide panels place the camera tools beside this column; narrow panels put them below it. The arc panel starts closed and expands when the learner chooses it. The camera tools have the clearer heading “Turn, zoom and slice.” Both view choices have targets at least 44 pixels tall.
+
+A selected feature in the cross-section offers “Inspect this feature in 3D.” Activating it uses the same view transition as the primary selector, recenters a section that was scrolled sideways, and focuses the local explanation with preventScroll. The retained camera is used when returning to the block. If that angle hides a selected slab or matching markers, the existing explicit reveal action remains available beside the explanation. Loading and failure retain an accessible cross-section and a focusable local status.
+
+The inspector stays within the model column, outside the canvas frame. This keeps the section's phone scrolling and the block's absolute canvas bounds confined to the drawing. Opening the arc explanation grows the column without stretching the model. The source and DOM follow the same reading order: view choice, model, feature inspector, arc details, then camera and simulation controls.
+
+### Verification of inspection and view entry
+
+- 789 distinct focused checks passed across 45 files. Five added behavior cases cover explicit activation, quiet 2D selection, horizontal recentering, local keyboard focus, retained camera and checked eight-point sample, playback, delayed readiness and failed 3D loading.
+- 97 checks passed against the final installed source. The inspection audit covers nine phone, desktop and narrow-panel layouts in light, dark and high contrast, with measured model and inspector positions, actual WebGL dimensions, accessible controls, open and closed arc explanations, view switching and retained evidence.
+- Rendered screenshots were inspected. The final capture helper settles visibility and paints before capture, then checks the saved PNG's model region for actual rendered colors. The initial blank desktop capture is retained as a diagnostic. Prototype source overlays and fallback allowances are excluded from final browser provenance.
+- Resizing the same mounted lab from 1,100 pixels to a 430-pixel panel, then a 320-pixel phone and back to desktop preserves the selected slab, open water trace, cut-face camera, model readings and checked eight-point sample. Renderer dimensions and camera aspect follow each settled frame without overflow.
+- The original idle audit again covers 1,200 draw frames, stationary input, drift, rerenders and restored challenges without repeated rewards or pings. Inspection selection and settled views remain quiet. Saved investigation, application and printed-evidence checks pass.
+- All three source copies match SHA-256 185636bbae594100f2f4508bd76bdffd0b487d95975793a791e20686cd1f74af. The two English tectonic namespaces match and include two added labels; retained values and unrelated namespaces are preserved. Syntax, renderer, calculation, asset and Git whitespace checks pass.
+
+Native view switching adds the existing block key above the model and changes frame height. Browser scroll anchoring can therefore change the absolute page offset. The final focus check verifies the local status is focused and visible; it records the natural layout movement. The behavior tests verify the exact preventScroll request.
+
+Changes remain uncommitted and unstaged. The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-inspection-workspace/verification.json) links the final test, browser and asset results. Captures are stored beside their browser reports.
+
+
+## Connecting the whole arc process
+
+The arc panel now offers Whole process beside the three isolated stages. It shows water release, partial melting above the sinking slab and magma ascent together in the cross-section and on exposed 3D cut faces. The existing dashed water route, speckled melt patch and solid magma route remain distinct. Matching patterned swatches in the numbered step buttons make the visual key available beside the explanation without adding another panel.
+
+The combined cross-section has three separate numbered callouts with leaders to the water route, melt patch and magma route. Their spacing follows the readable font size when a host scales the canvas. The 3D numbers follow the upward spatial order, with 1 below 2 and 3, avoiding the crossing leaders that the earlier isolated-label positions would produce when combined. The existing label placement logic handles collisions with other model labels.
+
+The explanation connects the causes while keeping water and magma distinct: water released from the slab helps mantle above it melt, and the magma formed there can rise. The slab and surrounding mantle stay mostly solid in this model. This remains consistent with the panel's linked [USGS explanation of the mostly solid mantle and local melting](https://www.usgs.gov/faqs/are-tectonic-plates-floating-magma), checked during this pass. The displayed routes and melt-patch size remain schematic.
+
+Hide trace remains the default. Choosing Whole process preserves camera angle, cut, depth-scale preference, model time, playback and checked evidence. It uses the retained annotation geometry. Hidden cut faces keep the same explicit reveal action. Closing the arc panel or leaving convergence clears the trace. Selection and idle rendering do not save records, earn rewards or ping.
+
+### Verification of the combined arc view
+
+- 797 distinct focused tests passed across 45 files. Eight added cases cover all three traces and numbers, pattern distinctions, geometry reuse, view exposure, scaled callout spacing, retained checked evidence, quiet idle, closing, mode changes and explicit reveal.
+- 96 checks passed against the final installed source. Native browser captures and measurements cover the combined view and individual stages, readable controls and labels, cut-face visibility and retained model state. The reports record the tested phone, desktop and narrow-host layouts and their themes.
+- The idle regression audit again passed its 1,200 drawing frames and deliberate-input checks. Saved investigation and application checks also passed.
+- All three source copies match SHA-256 e0b933082ee88ae094b4c11131ce08c6375393fae798eca2fd3229a71c256488. Both English tectonic namespaces match, with three added labels and retained values preserved. Syntax and Git whitespace checks pass. The rate-and-time calculation is unchanged. Renderer changes are confined to arc visibility and numbered annotation labels; the rest of the renderer is identical to the preceding pass.
+
+The initial candidate's 2D number boxes overlapped when scaled to a 280-pixel host. That failing result and candidate are retained beside the corrected passing reports. The final spacing uses the actual label height plus clearance.
+
+The first controlled-RAF browser run also sampled labels during an overhead-to-cut-face resize. The final harness explicitly waits for the renderer dimensions and camera aspect to match the canvas, then repaints before testing label collisions. The earlier failure receipts are preserved. Settled captures and assertions cover the actual installed source and registries, with no candidate overlay or fallback-key allowance.
+
+Changes remain uncommitted and unstaged. The consolidated [verification.json](C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-6/tectonics-arc-overview/verification.json) links the final test, browser and asset results.

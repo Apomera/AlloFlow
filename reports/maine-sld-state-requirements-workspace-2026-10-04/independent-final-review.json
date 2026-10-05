@@ -1,0 +1,119 @@
+{
+  "reviewedAt": "2026-10-04T22:53:15.067316+00:00",
+  "status": "ACCEPTED_IN_REVIEWED_SCOPE",
+  "blockingFindings": [],
+  "sourceHashes": {
+    "_build_maine_sld_practice_module.js": "368b16765e9f54da9f2d5dfccc91e6402bdb3c3abc9fc9ac92355c1afcb976f8",
+    "maine_sld_practice_source.jsx": "243623bbe94aca528c0693e63327640c86d71f8cd892d4578def0019b848e766",
+    "maine_sld_practice_core.js": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926",
+    "maine_sld_case_data.json": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e",
+    "maine_sld_state_reference_core.js": "447983ea23c58415f57dd2bf7cd6578c3ab079a4c9f2b76b4f20b5a76cafa96c",
+    "maine_sld_state_documents.js": "6b3e22c0ccc9fa55d61d2719d6bbb62da4984c27b2a48c2fc24ec489f8462129",
+    "maine_sld_state_workspace_source.jsx": "8fe6a868b7fb3c6e119e6fc9cd1ddd1daaecf8bde66af715703d6829a567ee9d"
+  },
+  "moduleFourCopyHashes": {
+    "maine_sld_practice_module.js": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21",
+    "desktop/web-app/public/maine_sld_practice_module.js": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21",
+    "desktop/app-build/maine_sld_practice_module.js": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21",
+    "desktop/web-app/build/maine_sld_practice_module.js": "664c72da73a75b1e9fe2763d6913ff216c88a5d3886701f8a2da7e443f032b21"
+  },
+  "sourceChecks": {
+    "frozenSourcesExact": true,
+    "fourRuntimeMirrorsExact": true,
+    "caseCorePreserved": true,
+    "caseDataPreserved": true,
+    "existingMainStylesPreserved": true,
+    "participantPrintRegionPreserved": true,
+    "referenceStorageFormatSeparate": true,
+    "workspaceAlwaysMountedOnceAndHiddenOutsideCase": true,
+    "onlyFixedPublicQueryPassedToSearch": true,
+    "explicitManualSourceSelectionAndSave": true,
+    "fullDocumentTextAndFingerprintRetained": true,
+    "manualReviewRequiresTitleExcerptCheckedDate": true,
+    "nativeConfirmationsProtectReplacementRestoreAndRemoval": true,
+    "lateResultGuardIncludesAliveTokenVisibilityOpenAndState": true,
+    "waitingBudget20SecondsWithoutAbortClaim": true,
+    "deferredFocusGuardIncludesContextAndUserFocus": true,
+    "savedScrollingExcerptAndNotesKeyboardNamed": true,
+    "literalRenderingWithoutHTMLInjection": true,
+    "safeExternalLinksHaveNewTabProtection": true,
+    "fingerprintAndMetadataWrap": true,
+    "forcedColorFocusUsesSystemColors": true,
+    "markdownMatchesDocumentAdapterAccept": true,
+    "actualAppHeaderLandmarkCorrectionPresent": true
+  },
+  "sourceCheckCount": 23,
+  "captures": [
+    {
+      "file": "reports/maine-sld-state-requirements-workspace-2026-10-04/browser-01/workspace-320-dark.png",
+      "sha256": "96e9890e9584bfb1c3c5c4bd764971d47e336bfd3367bab9fb227aae5eec3a5c",
+      "bytes": 42726,
+      "directlyViewedOriginalResolution": true,
+      "visualFinding": "No blocking visual issue in the captured expanded summary/introduction region. Lower editor and fingerprint are outside these captures."
+    },
+    {
+      "file": "reports/maine-sld-state-requirements-workspace-2026-10-04/browser-01/workspace-320-forced.png",
+      "sha256": "df0882eb9b639c8a4a6a5d401f22618478cf129edc53e5131a1ae6dd383fa802",
+      "bytes": 31976,
+      "directlyViewedOriginalResolution": true,
+      "visualFinding": "No blocking visual issue in the captured expanded summary/introduction region. Lower editor and fingerprint are outside these captures."
+    },
+    {
+      "file": "reports/maine-sld-state-requirements-workspace-2026-10-04/browser-01/workspace-800-dark.png",
+      "sha256": "7ed6b16161f13fd24068e03a2e91f816916f934c4516f6247b40d8f719d402a6",
+      "bytes": 36507,
+      "directlyViewedOriginalResolution": true,
+      "visualFinding": "No blocking visual issue in the captured expanded summary/introduction region. Lower editor and fingerprint are outside these captures."
+    },
+    {
+      "file": "reports/maine-sld-state-requirements-workspace-2026-10-04/browser-01/workspace-800-forced.png",
+      "sha256": "75a5eb07015f0254eb43eac38a05a44d92f759912463f4c5bbeb7b657f8fa063",
+      "bytes": 27876,
+      "directlyViewedOriginalResolution": true,
+      "visualFinding": "No blocking visual issue in the captured expanded summary/introduction region. Lower editor and fingerprint are outside these captures."
+    }
+  ],
+  "captureAssociation": {
+    "stage": "staged-build-02",
+    "sameUiAsFinal": true,
+    "sameReferenceCoreAsFinal": true,
+    "pixelEvidencePrecedesMainHeaderLandmarkCorrection": true,
+    "associationBasis": "Archived component hashes and parent-provided run sequence; browser-01 is not claimed to render the complete final main/module."
+  },
+  "observedPriorBrowserInvocation": {
+    "file": "reports/maine-sld-state-requirements-workspace-2026-10-04/browser-01-results.json",
+    "sha256": "62840cd962e4798d0712335ff5da6c23c7ff8ba1f3c7c1d46585003936f73461",
+    "stats": {
+      "startTime": "2026-10-04T22:39:54.958Z",
+      "duration": 12182.243,
+      "expected": 6,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "scope": "Six focused module scenarios before the later main-header landmark correction."
+  },
+  "priorScopedAccessibilityScans": [
+    {
+      "file": "reports/maine-sld-state-requirements-workspace-2026-10-04/browser-01/layout-320.axe.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "violations": 0
+    },
+    {
+      "file": "reports/maine-sld-state-requirements-workspace-2026-10-04/browser-01/layout-800.axe.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "violations": 0
+    },
+    {
+      "file": "reports/maine-sld-state-requirements-workspace-2026-10-04/browser-01/lifecycle.axe.json",
+      "sha256": "4f53cda18c2baa0c0354bb5f9a3ecbe5ed12ab4d8e11ba873c2f11161202b945",
+      "violations": 0
+    }
+  ],
+  "limits": [
+    "Four pixels show expanded summary/introduction and the first state control, not the lower editor/fingerprint.",
+    "The actual-app-01 invocation failed and is not treated as acceptance; root corrected the main-header landmark and is running final acceptance separately.",
+    "No test jobs, builds, live search, live AI, legal-rule determinations or product mutations were performed by this independent review.",
+    "This review confirms source isolation and observed layouts; it does not establish that any participant source is current law."
+  ]
+}

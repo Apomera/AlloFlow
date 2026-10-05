@@ -1,0 +1,264 @@
+{
+  "observedAt": "2026-10-02T23:29:22.839Z",
+  "observerPid": 34692,
+  "allClosed": true,
+  "processes": [
+    {
+      "pid": 3376,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/unit-verification-after.json",
+          "role": "runner"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "runner"
+        }
+      ]
+    },
+    {
+      "pid": 34428,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/unit-verification-after.json",
+          "role": "vitest"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/unit-verification-after.json",
+          "role": "actual-read-process"
+        }
+      ]
+    },
+    {
+      "pid": 66696,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/unit-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/unit-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/unit-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/unit-verification-after.json",
+          "role": "actual-read-process"
+        }
+      ]
+    },
+    {
+      "pid": 31608,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "vitest"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        }
+      ]
+    },
+    {
+      "pid": 54384,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        }
+      ]
+    },
+    {
+      "pid": 58260,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        }
+      ]
+    },
+    {
+      "pid": 62048,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        }
+      ]
+    },
+    {
+      "pid": 63716,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        }
+      ]
+    },
+    {
+      "pid": 7068,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+          "role": "actual-read-process"
+        }
+      ]
+    },
+    {
+      "pid": 68432,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+          "role": "runner"
+        }
+      ]
+    },
+    {
+      "pid": 24984,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+          "role": "vitest"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+          "role": "actual-read-process"
+        }
+      ]
+    },
+    {
+      "pid": 71308,
+      "running": false,
+      "errorCode": "ESRCH",
+      "origins": [
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+          "role": "actual-read-process"
+        },
+        {
+          "receipt": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+          "role": "actual-read-process"
+        }
+      ]
+    }
+  ],
+  "receiptFiles": [
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/unit-verification-after.json",
+      "sha256": "5d7ab85c3f93d6c6af467dc504dadd4df5cd6a8549866a3771c60c3902e7ccba",
+      "bytes": 19974
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/regression-verification-after.json",
+      "sha256": "9694202ec62d5f4a7062590b453214b796202f934c82447e0db41292c2176e26",
+      "bytes": 23540
+    },
+    {
+      "path": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984/unit-verification-after.json",
+      "sha256": "7e06d8f2528ad3620a4b7fc27f04fcfc900c26c8989938d676eb16ddedb0f6c2",
+      "bytes": 19975
+    }
+  ],
+  "runtimeFiles": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+      "bytes": 3119260
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+      "bytes": 3119260
+    }
+  ],
+  "testCounts": [
+    {
+      "mode": "unit",
+      "total": 34,
+      "passed": 34,
+      "failed": 0,
+      "pending": 0,
+      "todo": 0
+    },
+    {
+      "mode": "regression",
+      "total": 146,
+      "passed": 146,
+      "failed": 0,
+      "pending": 0,
+      "todo": 0
+    }
+  ],
+  "distinctFinalTests": 180,
+  "diagnosticArchive": "reports/watercycle-thermal-layer-inspector/diagnostic-unit-fixture-24984"
+}

@@ -1,0 +1,14 @@
+{
+  "sha256": "5c46e7f3fa84e76dcff2581de75f3230554df851f11afab5a22f99ccafaf7727",
+  "sourceBytes": 1287380,
+  "paths": [
+    "stem_lab/stem_tool_moonmission.js",
+    "desktop/web-app/public/stem_lab/stem_tool_moonmission.js",
+    "tests/moonmission_descent_model.test.js",
+    "tests/moonmission_physics_realism.test.js",
+    "tests/moonmission_descent_clock.test.js",
+    "tests/moonmission_descent_handover.test.js",
+    "tests/moonmission_flight_recorder.test.js",
+    "tests/moonmission_landing_restore.test.js"
+  ]
+}

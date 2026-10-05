@@ -1,0 +1,326 @@
+{
+  "state": {
+    "region": "maine",
+    "completedMissions": {},
+    "harvests": [],
+    "droppersDeployed": 0,
+    "probeReadings": [],
+    "lastTopic": "home",
+    "lastContentTopic": "ecosystem",
+    "visitedTopics": {
+      "ecosystem": 1791162066367
+    },
+    "recentTopics": [
+      "ecosystem"
+    ],
+    "bookmarkedTopics": [],
+    "completedTopics": {},
+    "topicNotes": {},
+    "quizCheckpointResults": {},
+    "learnerProfile": {
+      "role": "learner",
+      "goal": "experiment",
+      "session": "30",
+      "configured": false
+    },
+    "ecosystemWorkspace": {
+      "environmentId": "longline",
+      "organisms": {
+        "oyster": 2,
+        "kelp": 1,
+        "nitrifiers": 1
+      },
+      "water": {
+        "temperature": 14,
+        "salinity": 30,
+        "oxygen": 7.1,
+        "pH": 8,
+        "ammonia": 0.04,
+        "exchange": 82
+      },
+      "disturbanceId": "heatwave",
+      "observation": "Current reflection with enough writing for a snapshot.",
+      "prediction": "Current prediction stays with my parked draft.",
+      "investigationId": "",
+      "parkedDraft": null,
+      "evidence": {
+        "claim": "Current claim differs from archive.",
+        "evidence": "  My exact source evidence stays here.\n\n  ",
+        "reasoning": "Inspect the frozen A and B values and retain their original settings.",
+        "nextTest": "Change one input and inspect the seasonal result."
+      },
+      "measurements": [],
+      "experiments": [
+        {
+          "id": "shared-original-id",
+          "title": "First saved original",
+          "snapshotFields": [
+            "carryingPressure",
+            "oxygen",
+            "ammonia",
+            "resilience"
+          ],
+          "baselineScenarioRecorded": true,
+          "currentScenarioRecorded": true,
+          "statusRecorded": true,
+          "savedAt": 1791129600000,
+          "environmentId": "longline",
+          "organisms": {
+            "oyster": 2,
+            "kelp": 1,
+            "nitrifiers": 1
+          },
+          "status": "Critical",
+          "carryingPressure": 24,
+          "oxygen": 6.98,
+          "ammonia": 0,
+          "resilience": 28,
+          "observation": "First saved original original reflection with complete evidence.",
+          "prediction": "First saved original original prediction",
+          "investigationId": "",
+          "baselineScenario": {
+            "environmentId": "longline",
+            "organisms": {
+              "oyster": 2,
+              "kelp": 1,
+              "nitrifiers": 1
+            },
+            "water": {
+              "temperature": 14,
+              "salinity": 30,
+              "oxygen": 8,
+              "pH": 8,
+              "ammonia": 0.04,
+              "exchange": 82
+            },
+            "disturbanceId": "heatwave"
+          },
+          "currentScenario": {
+            "environmentId": "longline",
+            "organisms": {
+              "oyster": 2,
+              "kelp": 1,
+              "nitrifiers": 1
+            },
+            "water": {
+              "temperature": 14,
+              "salinity": 30,
+              "oxygen": 8,
+              "pH": 8,
+              "ammonia": 0.04,
+              "exchange": 82
+            },
+            "disturbanceId": "heatwave"
+          },
+          "evidence": {
+            "claim": "The captured original is relevant to my oxygen claim.",
+            "evidence": "  My exact source evidence stays here.\n\n  ",
+            "reasoning": "Inspect the frozen A and B values and retain their original settings.",
+            "nextTest": "Change one input and inspect the seasonal result."
+          },
+          "measurements": [
+            {
+              "id": "first-original-reading",
+              "capturedAt": 1791129540000,
+              "modelVersion": "2026.10-stock-feedback",
+              "scope": "annual",
+              "month": null,
+              "speciesId": "system",
+              "metricId": "minOxygen",
+              "metricLabel": "Annual lowest oxygen",
+              "unit": " mg/L",
+              "deltaUnit": " mg/L",
+              "aState": "recorded",
+              "bState": "recorded",
+              "a": 6.97,
+              "b": 6.97,
+              "baselineScenario": {
+                "environmentId": "longline",
+                "organisms": {
+                  "oyster": 2,
+                  "kelp": 1,
+                  "nitrifiers": 1
+                },
+                "water": {
+                  "temperature": 14,
+                  "salinity": 30,
+                  "oxygen": 8,
+                  "pH": 8,
+                  "ammonia": 0.04,
+                  "exchange": 82
+                },
+                "disturbanceId": "heatwave"
+              },
+              "currentScenario": {
+                "environmentId": "longline",
+                "organisms": {
+                  "oyster": 2,
+                  "kelp": 1,
+                  "nitrifiers": 1
+                },
+                "water": {
+                  "temperature": 14,
+                  "salinity": 30,
+                  "oxygen": 8,
+                  "pH": 8,
+                  "ammonia": 0.04,
+                  "exchange": 82
+                },
+                "disturbanceId": "heatwave"
+              },
+              "aEvent": "",
+              "bEvent": ""
+            }
+          ],
+          "kind": "comparison",
+          "modelVersion": "2026.10-stock-feedback",
+          "baselineSummary": {
+            "endingBiomass": 4,
+            "survival": 96,
+            "minOxygen": 6.97,
+            "peakAmmonia": 0.01,
+            "averageResilience": 30,
+            "riskMonths": 12,
+            "harvestUnits": 1,
+            "operatingEffort": 30,
+            "hasCrop": true,
+            "species": [
+              {
+                "id": "oyster",
+                "name": "Eastern oyster",
+                "initialBiomass": 2,
+                "endingBiomass": 3.545,
+                "survival": 96.46,
+                "warningMonths": 0,
+                "progress": 66.7,
+                "ready": false,
+                "fixedSupport": false
+              },
+              {
+                "id": "kelp",
+                "name": "Sugar kelp",
+                "initialBiomass": 0.25,
+                "endingBiomass": 0.473,
+                "survival": 96.46,
+                "warningMonths": 4,
+                "progress": 100,
+                "ready": true,
+                "fixedSupport": false
+              },
+              {
+                "id": "nitrifiers",
+                "name": "Nitrifying biofilter",
+                "initialBiomass": 0,
+                "endingBiomass": 0,
+                "survival": null,
+                "warningMonths": 12,
+                "progress": null,
+                "ready": false,
+                "fixedSupport": true
+              }
+            ]
+          },
+          "currentSummary": {
+            "endingBiomass": 4,
+            "survival": 96,
+            "minOxygen": 6.97,
+            "peakAmmonia": 0.01,
+            "averageResilience": 30,
+            "riskMonths": 12,
+            "harvestUnits": 1,
+            "operatingEffort": 30,
+            "hasCrop": true,
+            "species": [
+              {
+                "id": "oyster",
+                "name": "Eastern oyster",
+                "initialBiomass": 2,
+                "endingBiomass": 3.545,
+                "survival": 96.46,
+                "warningMonths": 0,
+                "progress": 66.7,
+                "ready": false,
+                "fixedSupport": false
+              },
+              {
+                "id": "kelp",
+                "name": "Sugar kelp",
+                "initialBiomass": 0.25,
+                "endingBiomass": 0.473,
+                "survival": 96.46,
+                "warningMonths": 4,
+                "progress": 100,
+                "ready": true,
+                "fixedSupport": false
+              },
+              {
+                "id": "nitrifiers",
+                "name": "Nitrifying biofilter",
+                "initialBiomass": 0,
+                "endingBiomass": 0,
+                "survival": null,
+                "warningMonths": 12,
+                "progress": null,
+                "ready": false,
+                "fixedSupport": true
+              }
+            ]
+          }
+        }
+      ],
+      "baselineScenario": {
+        "environmentId": "longline",
+        "organisms": {
+          "oyster": 2,
+          "kelp": 1,
+          "nitrifiers": 1
+        },
+        "water": {
+          "temperature": 14,
+          "salinity": 30,
+          "oxygen": 8,
+          "pH": 8,
+          "ammonia": 0.04,
+          "exchange": 82
+        },
+        "disturbanceId": "heatwave"
+      }
+    },
+    "musselHealthWorkspace": {
+      "temperature": 14,
+      "salinity": 28,
+      "oxygen": 8.1,
+      "pH": 8.05,
+      "chlorophyll": 7,
+      "fouling": 12,
+      "attachment": 92,
+      "scenarioId": "balanced",
+      "prediction": "",
+      "observation": "",
+      "evidenceSource": "",
+      "evidenceMissionCompletedAt": 0,
+      "checks": []
+    },
+    "teacherPlan": {
+      "templateId": "ecosystem",
+      "duration": "45",
+      "audience": "high",
+      "includeReflection": true,
+      "includeCheckpoint": true,
+      "teacherNote": ""
+    },
+    "a11y": {
+      "staticCamera": false
+    },
+    "comfortableReading": false
+  },
+  "archive": {
+    "added": 0,
+    "alreadyPresent": 1,
+    "variantAdded": 0,
+    "before": 1,
+    "total": 1,
+    "limit": 12
+  },
+  "draftRestored": false
+}

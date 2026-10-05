@@ -1,0 +1,10 @@
+
+Running 5 tests using 1 worker
+
+  ok 1 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:30:324 › learning objectives phone remain readable with distinct evidence states (5.4s)
+  ok 2 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:30:324 › learning objectives tablet remain readable with distinct evidence states (3.2s)
+  ok 3 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:30:324 › learning objectives desktop remain readable with distinct evidence states (3.6s)
+  ok 4 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:30:324 › learning objectives embedded-large remain readable with distinct evidence states (3.9s)
+  ok 5 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:30:324 › learning objectives forced-colors remain readable with distinct evidence states (3.7s)
+
+  5 passed (59.4s)

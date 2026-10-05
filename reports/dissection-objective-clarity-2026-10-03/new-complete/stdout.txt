@@ -1,0 +1,15 @@
+
+Running 10 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:30:324 › learning objectives phone remain readable with distinct evidence states (4.4s)
+  ok  2 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:30:324 › learning objectives tablet remain readable with distinct evidence states (3.6s)
+  ok  3 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:30:324 › learning objectives desktop remain readable with distinct evidence states (3.8s)
+  ok  4 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:30:324 › learning objectives embedded-large remain readable with distinct evidence states (3.6s)
+  ok  5 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:30:324 › learning objectives forced-colors remain readable with distinct evidence states (3.7s)
+  ok  6 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:45:5 › learning objectives reflow in an embedded lab while preserving focus and saved evidence (2.3s)
+  ok  7 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:49:5 › learning objective percentages follow inspected, recorded and verified evidence (2.5s)
+  ok  8 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:56:63 › pig objective text fits a narrow lab with large text (2.2s)
+  ok  9 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:56:63 › sheepEye objective text fits a narrow lab with large text (2.2s)
+  ok 10 [chromium] › tests\e2e\dissection-objective-clarity.spec.ts:56:63 › sheepHeart objective text fits a narrow lab with large text (2.3s)
+
+  10 passed (33.5s)

@@ -1,0 +1,536 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass19-2026-10-03/browser/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-landmarks.spec.ts",
+      "file": "moon-mission-descent-landmarks.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "desktop rulers align with physical grid and endpoint summaries preserve paused flight",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5053,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:05:07.739Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "desktop-coast",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-landm-d47fb-ries-preserve-paused-flight-chromium\\attachments\\desktop-coast-7be80701969b3c587aef06432f03e9b30cff876f.png"
+                    },
+                    {
+                      "name": "desktop-braking",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-landm-d47fb-ries-preserve-paused-flight-chromium\\attachments\\desktop-braking-aa39bd97ec669515cf8465095876709ab04fad3d.png"
+                    },
+                    {
+                      "name": "braking-rulers",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-landm-d47fb-ries-preserve-paused-flight-chromium\\attachments\\braking-rulers-fdd0a6854cd082279bfe821777fb476775060e8c.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b659e66a9868e1151fa2-67f5e1154e235dc57117",
+          "file": "moon-mission-descent-landmarks.spec.ts",
+          "line": 91,
+          "column": 5
+        },
+        {
+          "title": "recorded inspection restores rulers and compact contact view without rewriting receipts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2888,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:05:12.990Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "compact-contact",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-landm-f8935--without-rewriting-receipts-chromium\\attachments\\compact-contact-d7678f6b5cf34fae5f980fe30e8f181b242fd7e6.png"
+                    },
+                    {
+                      "name": "recorded-five-seconds",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-landm-f8935--without-rewriting-receipts-chromium\\attachments\\recorded-five-seconds-bd83f76381f6bd0f73662870d6aa912eb1c66792.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b659e66a9868e1151fa2-504a2c5ee0cc16098dd3",
+          "file": "moon-mission-descent-landmarks.spec.ts",
+          "line": 103,
+          "column": 5
+        },
+        {
+          "title": "320 px rulers and endpoint summaries remain readable with keyboard and forced colors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3959,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:05:15.891Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-landm-aa38f--keyboard-and-forced-colors-chromium\\attachments\\phone-320-f3740f658cbe031d1cefb894ac33413cba351a80.png"
+                    },
+                    {
+                      "name": "phone-forced-colors",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-landm-aa38f--keyboard-and-forced-colors-chromium\\attachments\\phone-forced-colors-d6baa49c1ced0f561faf8fa3e315e202680a1c35.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "b659e66a9868e1151fa2-d915a0ff13bc763215e4",
+          "file": "moon-mission-descent-landmarks.spec.ts",
+          "line": 129,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "moon-mission-descent-predictions.spec.ts",
+      "file": "moon-mission-descent-predictions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "paused control comparisons are numerical, update immediately, and persist only the panel preference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12925,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:05:19.882Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-paused-controls",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-predi-7b73a-t-only-the-panel-preference-chromium\\attachments\\prediction-paused-controls-d90e2c9ccf4b90ca9dfea662613bb2d38c3e4f7f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-c931efc69d7ce2376cff",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "active prediction clocks follow the flight and leave the original impact and once-only outcome intact",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 84217,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:05:32.832Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-actual-contact",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-predi-00341-nd-once-only-outcome-intact-chromium\\attachments\\prediction-actual-contact-df8ea4a6d2ff045013a9434872b338210348695f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-7cabc1b79f7145c1b87d",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 116,
+          "column": 5
+        },
+        {
+          "title": "recorded sample projections preserve the landing receipt and omit missing legacy measurements",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 17025,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:06:57.064Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-recorded-sample",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-predi-f73f5-missing-legacy-measurements-chromium\\attachments\\prediction-recorded-sample-9952f7cd5f10bc567404d3fdee26f29ce98f3958.png"
+                    },
+                    {
+                      "name": "prediction-legacy-measurements",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-predi-f73f5-missing-legacy-measurements-chromium\\attachments\\prediction-legacy-measurements-1cccb9251fd0c22dd85967f28fa7601fe81f7800.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-d3b15c5cf186749021db",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 135,
+          "column": 5
+        },
+        {
+          "title": "320 px keyboard controls and equal-axis paths remain accessible in the fallback view",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22866,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:07:14.122Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-predi-89658-ssible-in-the-fallback-view-chromium\\attachments\\prediction-phone-320-875f8c08ffdcd429b0717d551969075dbeef183e.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-975bdd21d6fc950fd36c",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 167,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "moon-mission-descent-visuals.spec.ts",
+      "file": "moon-mission-descent-visuals.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "desktop surface and braking close views keep exact geometry, timing and paused controls",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 193204,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:07:37.044Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "coast-comparison",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-visua-c61c7--timing-and-paused-controls-chromium\\attachments\\coast-comparison-c0fd35e51e678e38f953b76778b87e9ee7d9bd15.png"
+                    },
+                    {
+                      "name": "braking-close-view",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-visua-c61c7--timing-and-paused-controls-chromium\\attachments\\braking-close-view-55c5bcb31b2642694dd167242cbb11846e3be2e8.png"
+                    },
+                    {
+                      "name": "braking-charts",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-visua-c61c7--timing-and-paused-controls-chromium\\attachments\\braking-charts-de8199b428d9692288acde4e2f0a9ee8e4c9cc92.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0adb4ba8e33470cbe38a-094c2017290be3fba139",
+          "file": "moon-mission-descent-visuals.spec.ts",
+          "line": 90,
+          "column": 5
+        },
+        {
+          "title": "recorded close view preserves receipts and clears cropped markers at terminal contact",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 136817,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:10:50.290Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "recorded-braking",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-visua-c43f5-markers-at-terminal-contact-chromium\\attachments\\recorded-braking-27c79ddcf8ae5efd5a11cd301eb11467b7ffb0bf.png"
+                    },
+                    {
+                      "name": "contact-markers",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-visua-c43f5-markers-at-terminal-contact-chromium\\attachments\\contact-markers-fb72368accdaa50b79c57bfec5fcd80dcc60b32f.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0adb4ba8e33470cbe38a-cd705dba10cccc3b8460",
+          "file": "moon-mission-descent-visuals.spec.ts",
+          "line": 104,
+          "column": 5
+        },
+        {
+          "title": "320 px stacked charts stay readable with keyboard, reduced motion and forced colors",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 7052,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T16:13:07.121Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-visua-e965b-ed-motion-and-forced-colors-chromium\\attachments\\phone-320-4d34a128305a06ca8890c6c811b1cc71c525bc6e.png"
+                    },
+                    {
+                      "name": "phone-forced-colors",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass19-2026-10-03\\browser\\test-results\\moon-mission-descent-visua-e965b-ed-motion-and-forced-colors-chromium\\attachments\\phone-forced-colors-43265a5889a785de9fa3c352ee50fd776b87e35e.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0adb4ba8e33470cbe38a-1a00d42121f4110825d9",
+          "file": "moon-mission-descent-visuals.spec.ts",
+          "line": 125,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T16:05:06.735Z",
+    "duration": 488183.13,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

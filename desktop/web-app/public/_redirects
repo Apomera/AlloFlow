@@ -103,6 +103,7 @@
 /paper-trail /app/?tool=paperTrail 302
 /parenting-lab /app/?tool=parentingLab 302
 /particle-lab3d /app/?tool=particleLab3d 302
+/perception-lab /app/?tool=perceptionLab 302
 /pets-lab /app/?tool=petsLab 302
 /physics /app/?tool=physics 302
 /plate-tectonics /app/?tool=plateTectonics 302
@@ -150,3 +151,4 @@
 /world-builder /app/?tool=worldBuilder 302
 /zoom-gallery /app/?tool=zoomGallery 302
 # __ALLO_STEM_DEEP_LINKS_END__
+/maine-sld-practice /app/?tool=maineSldPractice 302

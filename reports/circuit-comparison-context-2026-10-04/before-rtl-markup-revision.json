@@ -1,0 +1,82 @@
+{
+  "status": "passed-before-rtl-markup-revision",
+  "nativeSessionId": 49175,
+  "nativeExitCode": 0,
+  "passedAssertions": 104,
+  "failedAssertions": 0,
+  "testFiles": 7,
+  "durationMs": 25329,
+  "sourceSha256": "f007cc1844729655033fd2810fa01b74b51b28fa55cd94cda24d8ad5616ba6dc",
+  "mirrorSha256": "f007cc1844729655033fd2810fa01b74b51b28fa55cd94cda24d8ad5616ba6dc",
+  "runnerSha256": "a0ed0bcce45de3ddb47f8cd0b53f1ca64cc7ea1605b61a93bf835973ae4bba65",
+  "sourceChangedDuringRun": false,
+  "testsChangedDuringRun": false,
+  "nativeExit": "before-rtl-markup-revision/native-exit.json",
+  "nativeExitSha256": "e134d0f60e386aeb12d563fb9f26656a99202b13e43fe7523e64a86e2b805666",
+  "archive": {
+    "path": "before-rtl-markup-revision",
+    "files": [
+      {
+        "path": "before-rtl-markup-revision/circuit_active_notebook_continuity.test.js",
+        "sha256": "958b845a0abdeaad21da46e84593f2fdc8c557a690df2f4f9104134e03b2e127"
+      },
+      {
+        "path": "before-rtl-markup-revision/circuit_active_observation_comparison.test.js",
+        "sha256": "852d6276a2d0756bfaffe4d9132d1d88ef70778f48f4686db2eb2fa667ed64be"
+      },
+      {
+        "path": "before-rtl-markup-revision/circuit_comparison_context.test.js",
+        "sha256": "5b3724404357383a5712a79a4c139545a9cde46df6d98b428ff591094238bcde"
+      },
+      {
+        "path": "before-rtl-markup-revision/circuit_evidence_writing.test.js",
+        "sha256": "38483ee8769526dbd62ec6efb51be19abd0f50abba5f08d7ae99903fc1b52792"
+      },
+      {
+        "path": "before-rtl-markup-revision/circuit_explanation_navigation.test.js",
+        "sha256": "65474673a95f56e03977ad78c1eff00321f89a49abdbc9aebe845a070b7fe77a"
+      },
+      {
+        "path": "before-rtl-markup-revision/circuit_observation_summary.test.js",
+        "sha256": "fd6a00a93179967eae057f42135ad5640d9e62b6dafd95567063e5fc25fd4302"
+      },
+      {
+        "path": "before-rtl-markup-revision/circuit_second_reading_guidance.test.js",
+        "sha256": "3a30126457c4f4a281cf1e8b65b64fc889cf39af9df1d19d3886873370ed5556"
+      },
+      {
+        "path": "before-rtl-markup-revision/native-exit.json",
+        "sha256": "e134d0f60e386aeb12d563fb9f26656a99202b13e43fe7523e64a86e2b805666"
+      },
+      {
+        "path": "before-rtl-markup-revision/regression-raw.json",
+        "sha256": "4a33f6ce605bb5c08cef421239640d554318b38c54ba3773efe580ec58aaff55"
+      },
+      {
+        "path": "before-rtl-markup-revision/regression-receipt.json",
+        "sha256": "29605ca36cbc1286078fd4e9c10fa5208804214670edda446a1177a501993e39"
+      },
+      {
+        "path": "before-rtl-markup-revision/regression-start.json",
+        "sha256": "5cd5f5dad06760050fb7c09a0162957fba44fe88d2ffaa305c4ec6faf3ec996e"
+      },
+      {
+        "path": "before-rtl-markup-revision/regression-stderr.log",
+        "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+      },
+      {
+        "path": "before-rtl-markup-revision/regression-stdout.log",
+        "sha256": "beb443258f03d24662deb8ff7c3d6edd16a791febfa425ef6368bd50aba46c58"
+      },
+      {
+        "path": "before-rtl-markup-revision/regression.json",
+        "sha256": "4a33f6ce605bb5c08cef421239640d554318b38c54ba3773efe580ec58aaff55"
+      },
+      {
+        "path": "before-rtl-markup-revision/run-regression.cjs",
+        "sha256": "a0ed0bcce45de3ddb47f8cd0b53f1ca64cc7ea1605b61a93bf835973ae4bba65"
+      }
+    ]
+  },
+  "reason": "Retain the successful prior source verification before a product RTL markup revision. Tests, assertions, worker flags and timeouts remain unchanged."
+}

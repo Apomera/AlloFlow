@@ -1,0 +1,1046 @@
+[
+  {
+    "dark": true,
+    "state": "departure",
+    "from": "earth",
+    "to": "mars",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 513,
+        "height": 403,
+        "scale": 89.56692913385827,
+        "center": {
+          "x": 256.5,
+          "y": 213.5
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 346.06692913385825,
+          "screenY": 213.5
+        },
+        "origin": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 346.06692913385825,
+          "screenY": 213.5
+        },
+        "destination": {
+          "x": 1.0895790504182319,
+          "y": 1.0655484469932395,
+          "r": 1.524,
+          "screenX": 354.0902495945464,
+          "screenY": 118.06209775946378
+        },
+        "rawRadius": 1,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 314.50784710260825,
+            "y": 173.5,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Mars",
+            "x": 321.4457183445464,
+            "y": 138.06209775946377,
+            "width": 65.2890625,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 311.98147991510825,
+            "y": 233.5,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 513,
+      "rectWidth": 513.15625,
+      "progress": 0
+    },
+    "minimumContrast": 5.649977383933002,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": false,
+    "state": "departure",
+    "from": "earth",
+    "to": "mars",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 513,
+        "height": 403,
+        "scale": 89.56692913385827,
+        "center": {
+          "x": 256.5,
+          "y": 213.5
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 346.06692913385825,
+          "screenY": 213.5
+        },
+        "origin": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 346.06692913385825,
+          "screenY": 213.5
+        },
+        "destination": {
+          "x": 1.0895790504182319,
+          "y": 1.0655484469932395,
+          "r": 1.524,
+          "screenX": 354.0902495945464,
+          "screenY": 118.06209775946378
+        },
+        "rawRadius": 1,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 314.50784710260825,
+            "y": 173.5,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Mars",
+            "x": 321.4457183445464,
+            "y": 138.06209775946377,
+            "width": 65.2890625,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 311.98147991510825,
+            "y": 233.5,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 513,
+      "rectWidth": 513.15625,
+      "progress": 0
+    },
+    "minimumContrast": 5.74183648145415,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": true,
+    "state": "arrival",
+    "from": "mars",
+    "to": "earth",
+    "width": 736,
+    "scrollWidth": 736,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 672,
+        "height": 440,
+        "scale": 101.70603674540682,
+        "center": {
+          "x": 336,
+          "y": 232
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": -1,
+          "y": 0,
+          "r": 1,
+          "screenX": 234.29396325459317,
+          "screenY": 232
+        },
+        "origin": {
+          "x": -1.0895790504182317,
+          "y": 1.0655484469932395,
+          "r": 1.524,
+          "screenX": 225.18323306113786,
+          "screenY": 123.62729049609442
+        },
+        "destination": {
+          "x": -1,
+          "y": 1.2246467991473532e-16,
+          "r": 1,
+          "screenX": 234.29396325459317,
+          "screenY": 232
+        },
+        "rawRadius": 1,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 202.73488122334317,
+            "y": 192,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Earth",
+            "x": 200.20851403584317,
+            "y": 252,
+            "width": 68.1708984375,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Mars",
+            "x": 192.53870181113786,
+            "y": 83.62729049609442,
+            "width": 65.2890625,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 672,
+      "rectWidth": 672,
+      "progress": 1
+    },
+    "minimumContrast": 5.649977383933002,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": false,
+    "state": "departure",
+    "from": "earth",
+    "to": "venus",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 276,
+        "height": 320,
+        "scale": 93,
+        "center": {
+          "x": 138,
+          "y": 172
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": 0.9999999999999999,
+          "y": 0,
+          "r": 0.9999999999999999,
+          "screenX": 231,
+          "screenY": 172
+        },
+        "origin": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 231,
+          "screenY": 172
+        },
+        "destination": {
+          "x": 0.4236905758106861,
+          "y": -0.5858457953840833,
+          "r": 0.723,
+          "screenX": 177.40322355039382,
+          "screenY": 226.48365897071974
+        },
+        "rawRadius": 0.9999999999999999,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 199.44091796875,
+            "y": 132,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Venus",
+            "x": 140.78505948789382,
+            "y": 246.48365897071974,
+            "width": 73.236328125,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 196.91455078125,
+            "y": 104,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 276,
+      "rectWidth": 276,
+      "progress": 0
+    },
+    "minimumContrast": 5.74183648145415,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": true,
+    "state": "extreme",
+    "from": "mercury",
+    "to": "neptune",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 276,
+        "height": 320,
+        "scale": 3.0927835051546393,
+        "center": {
+          "x": 138,
+          "y": 172
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": -7.0911977915494635,
+          "y": 2.936481277613033,
+          "r": 7.675155269611675,
+          "screenX": 116.06846043850682,
+          "screenY": 162.918099141403
+        },
+        "origin": {
+          "x": 0.06180392741626129,
+          "y": -0.3820330804471329,
+          "r": 0.387,
+          "screenX": 138.1911461672668,
+          "screenY": 173.18154560963032
+        },
+        "destination": {
+          "x": -14.676732868741164,
+          "y": 26.24496927602722,
+          "r": 30.07,
+          "screenX": 92.60804267399641,
+          "screenY": 90.82999192981272
+        },
+        "rawRadius": 7.675155269611675,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 84.50937840725682,
+            "y": 122.91809914140299,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Neptune",
+            "x": 112.60804267399641,
+            "y": 72,
+            "width": 86.94091796875,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Mercury",
+            "x": 95.4316246828918,
+            "y": 193.18154560963032,
+            "width": 85.51904296875,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 276,
+      "rectWidth": 276,
+      "progress": 0.063
+    },
+    "minimumContrast": 5.649977383933002,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": true,
+    "state": "arrival",
+    "from": "neptune",
+    "to": "mercury",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 513,
+        "height": 403,
+        "scale": 4.53940804788826,
+        "center": {
+          "x": 256.5,
+          "y": 213.5
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": -0.3870000000000012,
+          "y": 0,
+          "r": 0.3870000000000012,
+          "screenX": 254.74324908546723,
+          "screenY": 213.5
+        },
+        "origin": {
+          "x": 12.768927989963482,
+          "y": 27.22424246856333,
+          "r": 30.07,
+          "screenX": 314.4633744805459,
+          "screenY": 89.91805464054227
+        },
+        "destination": {
+          "x": -0.387,
+          "y": 1.8580777256848605e-14,
+          "r": 0.387,
+          "screenX": 254.74324908546726,
+          "screenY": 213.49999999999991
+        },
+        "rawRadius": 0.3870000000000012,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 223.18416705421723,
+            "y": 173.5,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Mercury",
+            "x": 211.98372760109226,
+            "y": 233.49999999999991,
+            "width": 85.51904296875,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Neptune",
+            "x": 270.9929154961709,
+            "y": 109.91805464054227,
+            "width": 86.94091796875,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 513,
+      "rectWidth": 513.15625,
+      "progress": 1
+    },
+    "minimumContrast": 5.649977383933002,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": false,
+    "state": "same",
+    "from": "earth",
+    "to": "earth",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 276,
+        "height": 320,
+        "scale": 93,
+        "center": {
+          "x": 138,
+          "y": 172
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 231,
+          "screenY": 172
+        },
+        "origin": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 231,
+          "screenY": 172
+        },
+        "destination": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 231,
+          "screenY": 172
+        },
+        "rawRadius": 1,
+        "markerLabels": [
+          {
+            "id": "destination",
+            "text": "B · Earth",
+            "x": 196.91455078125,
+            "y": 132,
+            "width": 68.1708984375,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 196.91455078125,
+            "y": 192,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 276,
+      "rectWidth": 276,
+      "progress": 0
+    },
+    "minimumContrast": 5.74183648145415,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": true,
+    "state": "invalid",
+    "from": "bad",
+    "to": "sun",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 276,
+        "height": 320,
+        "scale": 61.023622047244096,
+        "center": {
+          "x": 138,
+          "y": 172
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 199.0236220472441,
+          "screenY": 172
+        },
+        "origin": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 199.0236220472441,
+          "screenY": 172
+        },
+        "destination": {
+          "x": 1.0895790504182319,
+          "y": 1.0655484469932395,
+          "r": 1.524,
+          "screenX": 204.4900601633173,
+          "screenY": 106.97637429765665
+        },
+        "rawRadius": 1,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 167.4645400159941,
+            "y": 132,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Mars",
+            "x": 119.20099766331731,
+            "y": 80.97637429765665,
+            "width": 65.2890625,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 164.9381728284941,
+            "y": 192,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 276,
+      "rectWidth": 276,
+      "progress": 0
+    },
+    "minimumContrast": 5.649977383933002,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": false,
+    "state": "table",
+    "from": "earth",
+    "to": "mars",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 513,
+        "height": 403,
+        "scale": 89.56692913385827,
+        "center": {
+          "x": 256.5,
+          "y": 213.5
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 346.06692913385825,
+          "screenY": 213.5
+        },
+        "origin": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 346.06692913385825,
+          "screenY": 213.5
+        },
+        "destination": {
+          "x": 1.0895790504182319,
+          "y": 1.0655484469932395,
+          "r": 1.524,
+          "screenX": 354.0902495945464,
+          "screenY": 118.06209775946378
+        },
+        "rawRadius": 1,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 314.50784710260825,
+            "y": 173.5,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Mars",
+            "x": 321.4457183445464,
+            "y": 138.06209775946377,
+            "width": 65.2890625,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 311.98147991510825,
+            "y": 233.5,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 513,
+      "rectWidth": 513.15625,
+      "progress": 0
+    },
+    "minimumContrast": 5.74183648145415,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": false,
+    "state": "table",
+    "from": "earth",
+    "to": "mars",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 276,
+        "height": 320,
+        "scale": 61.023622047244096,
+        "center": {
+          "x": 138,
+          "y": 172
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 199.0236220472441,
+          "screenY": 172
+        },
+        "origin": {
+          "x": 1,
+          "y": 0,
+          "r": 1,
+          "screenX": 199.0236220472441,
+          "screenY": 172
+        },
+        "destination": {
+          "x": 1.0895790504182319,
+          "y": 1.0655484469932395,
+          "r": 1.524,
+          "screenX": 204.4900601633173,
+          "screenY": 106.97637429765665
+        },
+        "rawRadius": 1,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 167.4645400159941,
+            "y": 132,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Mars",
+            "x": 119.20099766331731,
+            "y": 80.97637429765665,
+            "width": 65.2890625,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 164.9381728284941,
+            "y": 192,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 276,
+      "rectWidth": 276,
+      "progress": 0
+    },
+    "minimumContrast": 5.74183648145415,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": true,
+    "state": "arrival",
+    "from": "earth",
+    "to": "mars",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 276,
+        "height": 320,
+        "scale": 61.023622047244096,
+        "center": {
+          "x": 138,
+          "y": 172
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": -1.524,
+          "y": 0,
+          "r": 1.524,
+          "screenX": 45,
+          "screenY": 172
+        },
+        "origin": {
+          "x": -0.2556354607039759,
+          "y": -0.9667732470598605,
+          "r": 1,
+          "screenX": 122.40019826412745,
+          "screenY": 230.99600523396788
+        },
+        "destination": {
+          "x": -1.524,
+          "y": 1.8663617219005663e-16,
+          "r": 1.524,
+          "screenX": 45,
+          "screenY": 172
+        },
+        "rawRadius": 1.524,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 13.44091796875,
+            "y": 132,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Mars",
+            "x": 12.35546875,
+            "y": 192,
+            "width": 65.2890625,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 88.31474904537745,
+            "y": 190.99600523396788,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 276,
+      "rectWidth": 276,
+      "progress": 1
+    },
+    "minimumContrast": 5.649977383933002,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": true,
+    "state": "comparison",
+    "from": "earth",
+    "to": "mars",
+    "width": 1060,
+    "scrollWidth": 1060,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 513,
+        "height": 403,
+        "scale": 89.56692913385827,
+        "center": {
+          "x": 256.5,
+          "y": 213.5
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": -1.524,
+          "y": 0,
+          "r": 1.524,
+          "screenX": 120,
+          "screenY": 213.5
+        },
+        "origin": {
+          "x": -0.2556354607039759,
+          "y": -0.9667732470598605,
+          "r": 1,
+          "screenX": 233.60351680702578,
+          "screenY": 300.0909109079206
+        },
+        "destination": {
+          "x": -1.3198227153674849,
+          "y": -0.7619999999999996,
+          "r": 1.524,
+          "screenX": 138.2875323834241,
+          "screenY": 281.74999999999994
+        },
+        "rawRadius": 1.524,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 88.44091796875,
+            "y": 173.5,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "reference",
+            "text": "R · aligned",
+            "x": 79.7763671875,
+            "y": 233.49999999999997,
+            "width": 80.447265625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Mars",
+            "x": 105.6430011334241,
+            "y": 301.74999999999994,
+            "width": 65.2890625,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 199.51806758827578,
+            "y": 260.0909109079206,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 513,
+      "rectWidth": 513.15625,
+      "progress": 1
+    },
+    "minimumContrast": 4.689164144345579,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": false,
+    "state": "comparison",
+    "from": "earth",
+    "to": "mars",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 276,
+        "height": 320,
+        "scale": 61.023622047244096,
+        "center": {
+          "x": 138,
+          "y": 172
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": -1.524,
+          "y": 0,
+          "r": 1.524,
+          "screenX": 45,
+          "screenY": 172
+        },
+        "origin": {
+          "x": -0.2556354607039759,
+          "y": -0.9667732470598605,
+          "r": 1,
+          "screenX": 122.40019826412745,
+          "screenY": 230.99600523396788
+        },
+        "destination": {
+          "x": -1.3198227153674849,
+          "y": -0.7619999999999996,
+          "r": 1.524,
+          "screenX": 57.459637448047175,
+          "screenY": 218.49999999999997
+        },
+        "rawRadius": 1.524,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 13.44091796875,
+            "y": 132,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "reference",
+            "text": "R · aligned",
+            "x": 8,
+            "y": 104,
+            "width": 80.447265625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Mars",
+            "x": 24.815106198047175,
+            "y": 238.49999999999997,
+            "width": 65.2890625,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 88.31474904537745,
+            "y": 190.99600523396788,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 276,
+      "rectWidth": 276,
+      "progress": 1
+    },
+    "minimumContrast": 5.395307517155336,
+    "minimumTargetHeight": 44
+  },
+  {
+    "dark": true,
+    "state": "missed",
+    "from": "earth",
+    "to": "mars",
+    "width": 320,
+    "scrollWidth": 320,
+    "errors": [],
+    "canvas": {
+      "inspection": {
+        "width": 276,
+        "height": 320,
+        "scale": 61.023622047244096,
+        "center": {
+          "x": 138,
+          "y": 172
+        },
+        "fontSize": 13,
+        "ship": {
+          "x": -1.524,
+          "y": 0,
+          "r": 1.524,
+          "screenX": 45,
+          "screenY": 172
+        },
+        "origin": {
+          "x": -0.2556354607039759,
+          "y": -0.9667732470598605,
+          "r": 1,
+          "screenX": 122.40019826412745,
+          "screenY": 230.99600523396788
+        },
+        "destination": {
+          "x": -1.3198227153674849,
+          "y": -0.7619999999999996,
+          "r": 1.524,
+          "screenX": 57.459637448047175,
+          "screenY": 218.49999999999997
+        },
+        "rawRadius": 1.524,
+        "markerLabels": [
+          {
+            "id": "craft",
+            "text": "C · craft",
+            "x": 13.44091796875,
+            "y": 132,
+            "width": 63.1181640625,
+            "height": 20
+          },
+          {
+            "id": "destination",
+            "text": "B · Mars",
+            "x": 24.815106198047175,
+            "y": 238.49999999999997,
+            "width": 65.2890625,
+            "height": 20
+          },
+          {
+            "id": "origin",
+            "text": "A · Earth",
+            "x": 88.31474904537745,
+            "y": 190.99600523396788,
+            "width": 68.1708984375,
+            "height": 20
+          }
+        ]
+      },
+      "contentWidth": 276,
+      "rectWidth": 276,
+      "progress": 1
+    },
+    "minimumContrast": 5.649977383933002,
+    "minimumTargetHeight": 44
+  }
+]

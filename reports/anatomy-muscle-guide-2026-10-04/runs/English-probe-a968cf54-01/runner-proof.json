@@ -1,0 +1,25 @@
+{
+  "kind": "English visual probe",
+  "startedAt": "2026-10-04T15:58:59.363Z",
+  "finishedAt": "2026-10-04T15:59:43.790Z",
+  "expectedSource": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+  "expectedFixture": "07263bead8b61e0b0e577e13d42f01ddba1bd8985b45f343fbd9d8d96bc1e04e",
+  "catalogSnapshots": [],
+  "configSha256": "36f1a1774d1047e03e9a8bcb0daea06598282fd835ea41297fe28daf85d53de2",
+  "probeFixtureSha256": "a7e9120d5ac0d096953f8f3804e1972784be6ec3eff8159df566a16defcdaf32",
+  "before": {
+    "stem_lab/stem_tool_anatomy.js": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+    "tests/e2e/anatomy-muscle-guide.spec.ts": "07263bead8b61e0b0e577e13d42f01ddba1bd8985b45f343fbd9d8d96bc1e04e"
+  },
+  "after": {
+    "stem_lab/stem_tool_anatomy.js": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+    "tests/e2e/anatomy-muscle-guide.spec.ts": "07263bead8b61e0b0e577e13d42f01ddba1bd8985b45f343fbd9d8d96bc1e04e"
+  },
+  "allPinnedFilesUnchanged": true,
+  "runtimeMirrorsIdentical": true,
+  "exitCode": 1,
+  "signal": null,
+  "error": null
+}

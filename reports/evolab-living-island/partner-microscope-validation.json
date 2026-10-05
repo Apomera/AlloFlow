@@ -1,0 +1,148 @@
+{
+  "date": "2026-10-04",
+  "feature": "Recorded two-species partner selection microscope",
+  "sourceSha256": "684098b50253d33eaecfa4cce0978151a24a2985c28f11b1ff264688ffead273",
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "noCommitByUserRequest": true,
+  "deployed": false,
+  "preview": {
+    "url": "http://127.0.0.1:56559/?preview=archipelago",
+    "sourceSha256": "684098b50253d33eaecfa4cce0978151a24a2985c28f11b1ff264688ffead273",
+    "sourceMirrorsIdentical": true,
+    "sourceLineEndings": "LF",
+    "servedSourceMatches": true,
+    "assets": [
+      {
+        "path": "/",
+        "status": 200,
+        "bytes": 1129
+      },
+      {
+        "path": "/evolab.js",
+        "status": 200,
+        "bytes": 2059520
+      },
+      {
+        "path": "/app.css",
+        "status": 200,
+        "bytes": 625027
+      },
+      {
+        "path": "/react.js",
+        "status": 200,
+        "bytes": 10751
+      },
+      {
+        "path": "/react-dom.js",
+        "status": 200,
+        "bytes": 131835
+      },
+      {
+        "path": "/three.js",
+        "status": 200,
+        "bytes": 603445
+      }
+    ]
+  },
+  "changes": [
+    "A folded investigation shows both species’ actual post-dispersal breeding pools and the previous island of each potential parent.",
+    "Switch between the recorded partner rule and a same-pool calculation with reciprocal effects off; compare exact expected trait means and individual copy shares.",
+    "Show the recorded newborn mean separately from the actual inherited mean before mutation and the expectation under recorded weights.",
+    "Select actual parents from keyboard-accessible trait plots or native selectors, then inspect their main-expedition ancestry and offspring.",
+    "Reuse the same microscope within a selected controlled field-study future and private generation; export its exact source checkpoint and research replay recipe.",
+    "Retain bounded notes, selected parents and calculation choices for up to 12 captured round/island/private-condition views without trusting cached scientific outcomes.",
+    "Separate microscope journal entries and full precision reproducible exports include both species, settings, origins, conditional expectations, realized outcomes and the explanation.",
+    "Lazy evidence calculation, responsive paired cards, 44px rule controls and phone/no-WebGL support keep the default experience compact."
+  ],
+  "validation": {
+    "distinctModelComponentAndRenderChecks": 71,
+    "modelComponent": {
+      "passed": 69,
+      "files": 8,
+      "log": "partner-units-final.log",
+      "coverage": [
+        "Eight new exact reconstruction and invariant tests cover both species across islands/generations and varied captured conditions.",
+        "Correct normalized shares for the two-distinct-parent lottery; exact zero partner effect when reciprocity or selection is inactive.",
+        "Separate conditional partner contrast, realized sampling deviation and mutation difference; actual parent copy counts.",
+        "Simultaneous dispersal origins, source cohort identity, singleton/empty pools and undefined expectations.",
+        "Captured conditions remain distinct from upcoming settings; malformed contexts rejected; no changes to history or next random future.",
+        "Existing archipelago, field-study, generation-story, gene-flow, founder-timeline, claim-caseboard and science regressions."
+      ]
+    },
+    "renderGoldens": {
+      "passed": 2,
+      "log": "partner-goldens-final.log",
+      "scope": "Only the two EvoLab default digest entries changed."
+    },
+    "browser": {
+      "distinctPassedScenarios": 7,
+      "logs": [
+        "partner-browser-final.log",
+        "partner-browser-focused.log"
+      ],
+      "coverage": [
+        "Exact main and private partner evidence, expected shares, actual chart coordinates, parent origin/offspring inspection and one live drawn WebGL scene.",
+        "Separate journal records and complete main/private JSON replay, including the source checkpoint and selected research trial/condition.",
+        "Scoped draft restoration on remount, island/generation changes and private condition changes; historical G0 has no invented round.",
+        "Queued conditions do not rewrite captured evidence; actual next generation still matches the unchanged engine.",
+        "Keyboard SVG points, native selectors and rule buttons; reduced-motion/no-WebGL phone; zero WCAG 2 A/AA and 2.1 AA axe violations and no page overflow.",
+        "Five existing advanced-island and controlled-field-study journeys, including actual ancestry, cancellation, replay and null-selection controls."
+      ],
+      "initialFailureResolved": "The new desktop test initially selected one-based label 2 when intending zero-based trial index 2. It now explicitly selects {value:2}; both focused journeys passed without relaxing any numerical assertion."
+    },
+    "visualReview": [
+      "Desktop and phone screenshots inspected: both reciprocal influence directions, readable expected/recorded outcomes and native parent controls; cards stack on phone."
+    ],
+    "translationKeysPrepared": 1549,
+    "sharedTranslationCatalogApplied": false
+  },
+  "scientificBoundaries": [
+    "Both species changing through time alone does not establish coevolution. The microscope exposes the existing reciprocal weighting mechanism, rather than claiming empirical proof.",
+    "The comparison is conditional on actual post-dispersal pools. It holds organisms, rainfall, habitat effects and construction costs fixed, and changes only partner weighting in the expected-share calculation.",
+    "No alternative offspring cohort is generated and no biological random stream is consumed. Use the repeated 2-by-2 study for longer possible futures and geography comparisons.",
+    "Expected copy shares and expected trait means are calculated before trait mutation and account for two distinct parents. They are neither survival probabilities nor realized transmission counts.",
+    "Realized parent and allele sampling can deviate from expectation, after which actual recorded mutations can shift the newborn mean. This is conditional bookkeeping, not a universal decomposition of causation.",
+    "The two species are evaluated against their recorded partner pools before either reproduces; there is no same-round look-ahead.",
+    "When all selection is off, every parent has equal weight; the UI attributes remaining change to dispersal, sampling and mutation without invoking inactive habitat selection.",
+    "G0 has no recorded reproductive round; pools with fewer than two potential parents have undefined inheritance expectations and no newborn cohort.",
+    "The traits and coefficients belong to fictional organisms in a simplified finite-population genetics model, not real Galapagos measurements or an ecological population forecast."
+  ],
+  "scienceReferences": [
+    {
+      "title": "UC Berkeley Understanding Evolution: Coevolution",
+      "url": "https://evolution.berkeley.edu/evolution-101/mechanisms-the-processes-of-evolution/coevolution/"
+    },
+    {
+      "title": "UC Berkeley Understanding Evolution: Genetic drift",
+      "url": "https://evolution.berkeley.edu/evolution-101/mechanisms-the-processes-of-evolution/genetic-drift/"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "tests/evolab_partner_evidence.test.js",
+      "bytes": 12329,
+      "sha256": "9e9c814c6997edbff85cca660ce5fd1c091be3363f69d4ec2f3c0d27c2260209"
+    },
+    {
+      "path": "tests/e2e/evolab-partner-evidence.spec.ts",
+      "bytes": 19903,
+      "sha256": "4f0a68e54855f76ee4fa93574910211459f5573af60b2e944426e9570a599b65"
+    },
+    {
+      "path": "reports/evolab-living-island/partner-microscope-desktop.png",
+      "bytes": 142938,
+      "sha256": "e56931b89b5bc1911a0ac7babb6181f712139262340da1c8e8d1e5d3ae58e21f"
+    },
+    {
+      "path": "reports/evolab-living-island/partner-microscope-phone.png",
+      "bytes": 154719,
+      "sha256": "9ed6f21440f91ce96e40854cc8ddca3660468435dc0c79b8523b7de3ef0973e3"
+    },
+    {
+      "path": "reports/evolab-living-island/ui-strings.delta.json",
+      "bytes": 161037,
+      "sha256": "ff179f88bc5a57b1c264a043f9f82b1d979a1a4362168a9b0d27f0776cff278f"
+    }
+  ]
+}

@@ -296,6 +296,7 @@
     this.maxCasRetries = Math.max(1, Math.floor(Number(options.maxCasRetries) || DEFAULT_MAX_CAS_RETRIES));
     this.now = typeof options.now === 'function' ? options.now : function () { return new Date(); };
     this._dek = null;
+    this._keyGeneration = 0;
   }
 
   RecoveryVaultController.prototype._crypto = function () {
@@ -322,13 +323,40 @@
     }
   };
 
-  RecoveryVaultController.prototype._requireUnlockedKey = async function (store) {
-    if (!this._dek) fail('VAULT_LOCKED', 'Unlock the recovery vault before reading or saving workspace contents.');
+  RecoveryVaultController.prototype._beginKeyOperation = function () {
+    this._keyGeneration += 1;
+    return this._keyGeneration;
+  };
+
+  RecoveryVaultController.prototype._setKeyIfCurrent = function (dek, generation) {
+    if (generation !== this._keyGeneration) return false;
+    this._dek = dek;
+    return true;
+  };
+
+  RecoveryVaultController.prototype._clearKeyIfCurrent = function (generation) {
+    if (generation === this._keyGeneration) this._dek = null;
+  };
+
+  RecoveryVaultController.prototype.getSessionGeneration = function () {
+    return this._keyGeneration;
+  };
+
+  RecoveryVaultController.prototype._requireUnlockedKey = async function (store, generation) {
+    if (generation === undefined) generation = this._keyGeneration;
+    if (generation !== this._keyGeneration) {
+      fail('VAULT_LOCKED', 'The recovery-vault session changed while its saved work was being read.');
+    }
+    var dek = this._dek;
+    if (!dek) fail('VAULT_LOCKED', 'Unlock the recovery vault before reading or saving workspace contents.');
     try {
-      await this._verifyKey(store, this._dek);
-      return this._dek;
+      await this._verifyKey(store, dek);
+      if (generation !== this._keyGeneration || this._dek !== dek) {
+        fail('VAULT_LOCKED', 'The recovery-vault session changed while its key was being verified.');
+      }
+      return dek;
     } catch (error) {
-      this._dek = null;
+      if (this._dek === dek) this._clearKeyIfCurrent(generation);
       throw error;
     }
   };
@@ -428,17 +456,21 @@
   };
 
   RecoveryVaultController.prototype.enableProtection = async function (password, options) {
+    var generation = this._beginKeyOperation();
     if (!password) fail('VAULT_PASSWORD_REQUIRED', 'A non-empty password is required.');
     options = options || {};
     for (var attempt = 0; attempt < this.maxCasRetries; attempt += 1) {
       var head = await this._read();
       if (isVaultStore(head.store)) {
+        if (generation !== this._keyGeneration) {
+          fail('VAULT_LOCKED', 'The recovery-vault session changed before protection could be reopened.');
+        }
         await this.unlock(password);
         return { enabled: true, alreadyEnabled: true };
       }
       var built = await this._buildVault(normalizePlainStore(head.store), password, options);
       if (await this._cas(head.revision, built.vault)) {
-        this._dek = built.dek;
+        this._setKeyIfCurrent(built.dek, generation);
         return {
           enabled: true,
           migratedSnapshots: built.vault.records.length,
@@ -451,6 +483,7 @@
   };
 
   RecoveryVaultController.prototype.unlock = async function (password) {
+    var generation = this._beginKeyOperation();
     if (!password) fail('VAULT_PASSWORD_REQUIRED', 'A non-empty password is required.');
     var head = await this._read();
     if (!isVaultStore(head.store)) fail('VAULT_NOT_ENABLED', 'Password protection is not enabled for saved work.');
@@ -460,15 +493,18 @@
       dek = await this._crypto().unwrapVaultKey(store.wrappedKey, password);
       await this._verifyKey(store, dek);
     } catch (error) {
-      this._dek = null;
+      this._clearKeyIfCurrent(generation);
       if (error && error.code === 'VAULT_PASSWORD_OR_CORRUPT') throw error;
       fail('VAULT_PASSWORD_OR_CORRUPT', 'The password is incorrect or the recovery vault is damaged.', error);
     }
-    this._dek = dek;
+    if (!this._setKeyIfCurrent(dek, generation)) {
+      fail('VAULT_LOCKED', 'The vault was locked or another credential attempt started before unlock completed.');
+    }
     return { unlocked: true, snapshotCount: store.records.length };
   };
 
   RecoveryVaultController.prototype.lock = function () {
+    this._beginKeyOperation();
     this._dek = null;
     return { locked: true };
   };
@@ -483,6 +519,7 @@
   };
 
   RecoveryVaultController.prototype.recoverWithKey = async function (recoveryCode, newPassword) {
+    var generation = this._beginKeyOperation();
     if (!recoveryCode) fail('VAULT_RECOVERY_KEY_REQUIRED', 'A recovery key is required.');
     if (!newPassword) fail('VAULT_PASSWORD_REQUIRED', 'A non-empty new password is required.');
     var cryptoApi = requireRecoveryCryptoApi(this._crypto());
@@ -505,7 +542,7 @@
         dek = await cryptoApi.unwrapVaultKey(store.recoveryWrappedKey, normalizedCode);
         await this._verifyKey(store, dek);
       } catch (error) {
-        this._dek = null;
+        this._clearKeyIfCurrent(generation);
         fail('VAULT_RECOVERY_KEY_OR_CORRUPT', 'The recovery key is incorrect or the recovery vault is damaged.', error);
       }
       var wrappedKey = await cryptoApi.wrapVaultKey(dek, newPassword, this.cryptoOptions);
@@ -518,21 +555,22 @@
       }
       var next = Object.assign({}, store, { wrappedKey: wrappedKey });
       if (await this._cas(head.revision, next)) {
-        this._dek = verifiedDek;
+        this._setKeyIfCurrent(verifiedDek, generation);
         return { recovered: true, recoveryKeyRotated: false };
       }
     }
-    this._dek = null;
+    this._clearKeyIfCurrent(generation);
     fail('VAULT_CONFLICT', 'The recovery store changed repeatedly while the password was being recovered.');
   };
 
   RecoveryVaultController.prototype.rotateRecoveryKey = async function (confirmedRecoveryCode) {
+    var generation = this._beginKeyOperation();
     var cryptoApi = requireRecoveryCryptoApi(this._crypto());
     for (var attempt = 0; attempt < this.maxCasRetries; attempt += 1) {
       var head = await this._read();
       if (!isVaultStore(head.store)) fail('VAULT_NOT_ENABLED', 'Password protection is not enabled for saved work.');
       var store = validateVaultStore(head.store);
-      var dek = await this._requireUnlockedKey(store);
+      var dek = await this._requireUnlockedKey(store, generation);
       var recoveryCode = confirmedRecoveryCode
         ? cryptoApi.normalizeRecoveryCode(confirmedRecoveryCode)
         : cryptoApi.generateRecoveryCode();
@@ -545,7 +583,7 @@
       }
       var next = Object.assign({}, store, { recoveryWrappedKey: recoveryWrappedKey });
       if (await this._cas(head.revision, next)) {
-        this._dek = dek;
+        this._setKeyIfCurrent(dek, generation);
         return { rotated: true, recoveryCode: recoveryCode };
       }
     }
@@ -553,6 +591,7 @@
   };
 
   RecoveryVaultController.prototype.removeRecoveryKey = async function (password) {
+    var generation = this._beginKeyOperation();
     if (!password) fail('VAULT_PASSWORD_REQUIRED', 'Enter the saved-work password before removing the recovery key.');
     for (var attempt = 0; attempt < this.maxCasRetries; attempt += 1) {
       var head = await this._read();
@@ -566,13 +605,13 @@
         fail('VAULT_PASSWORD_OR_CORRUPT', 'The password is incorrect or the recovery vault is damaged.', error);
       }
       if (!store.recoveryWrappedKey) {
-        this._dek = dek;
+        this._setKeyIfCurrent(dek, generation);
         return { removed: false, alreadyDisabled: true };
       }
       var next = Object.assign({}, store);
       delete next.recoveryWrappedKey;
       if (await this._cas(head.revision, next)) {
-        this._dek = dek;
+        this._setKeyIfCurrent(dek, generation);
         return { removed: true };
       }
     }
@@ -580,6 +619,7 @@
   };
 
   RecoveryVaultController.prototype.listSnapshots = async function (options) {
+    var generation = this._keyGeneration;
     options = options || {};
     var head = await this._read();
     if (!isVaultStore(head.store)) {
@@ -603,7 +643,7 @@
       };
     }, this);
     if (!this._dek || options.decryptTitles !== true) return base;
-    var dek = await this._requireUnlockedKey(store);
+    var dek = await this._requireUnlockedKey(store, generation);
     for (var i = 0; i < store.records.length; i += 1) {
       var snapshot = await this._decryptRecord(store, store.records[i], dek);
       base[i].title = typeof snapshot.title === 'string' && snapshot.title ? snapshot.title : 'Untitled workspace';
@@ -613,10 +653,11 @@
   };
 
   RecoveryVaultController.prototype.readPlainStore = async function () {
+    var generation = this._keyGeneration;
     var head = await this._read();
     if (!isVaultStore(head.store)) return normalizePlainStore(head.store);
     var store = validateVaultStore(head.store);
-    var dek = await this._requireUnlockedKey(store);
+    var dek = await this._requireUnlockedKey(store, generation);
     var snapshots = [];
     for (var i = 0; i < store.records.length; i += 1) {
       snapshots.push(await this._decryptRecord(store, store.records[i], dek));
@@ -632,6 +673,7 @@
   };
 
   RecoveryVaultController.prototype.restoreSnapshot = async function (id) {
+    var generation = this._keyGeneration;
     var normalizedId = safeId(id);
     if (!normalizedId) fail('VAULT_SNAPSHOT_INVALID', 'A workspace identifier is required.');
     var head = await this._read();
@@ -642,13 +684,14 @@
       return clone(foundPlain);
     }
     var store = validateVaultStore(head.store);
-    var dek = await this._requireUnlockedKey(store);
+    var dek = await this._requireUnlockedKey(store, generation);
     var record = store.records.find(function (item) { return item.id === normalizedId; });
     if (!record) fail('VAULT_SNAPSHOT_NOT_FOUND', 'The saved workspace no longer exists.');
     return this._decryptRecord(store, record, dek);
   };
 
   RecoveryVaultController.prototype.upsertSnapshot = async function (snapshot) {
+    var generation = this._keyGeneration;
     var initial = clone(snapshot);
     var metadata = snapshotMetadata(initial);
     for (var attempt = 0; attempt < this.maxCasRetries; attempt += 1) {
@@ -657,7 +700,7 @@
         fail('VAULT_NOT_ENABLED', 'Encrypted workspace saving requires an enabled recovery vault.');
       }
       var store = validateVaultStore(head.store);
-      var dek = await this._requireUnlockedKey(store);
+      var dek = await this._requireUnlockedKey(store, generation);
       if (own(store.removedSnapshotIds || {}, metadata.id)) {
         return { saved: false, reason: 'removed', store: clone(store) };
       }
@@ -766,6 +809,7 @@
   };
 
   RecoveryVaultController.prototype.changePassword = async function (oldPassword, newPassword) {
+    var generation = this._beginKeyOperation();
     if (!oldPassword || !newPassword) fail('VAULT_PASSWORD_REQUIRED', 'Both the current and new passwords are required.');
     for (var attempt = 0; attempt < this.maxCasRetries; attempt += 1) {
       var head = await this._read();
@@ -787,7 +831,7 @@
         fail('VAULT_REKEY_VERIFY_FAILED', 'The new password wrapper failed verification; no change was saved.', error);
       }
       if (await this._cas(head.revision, next)) {
-        this._dek = nextDek;
+        this._setKeyIfCurrent(nextDek, generation);
         return { changed: true };
       }
     }
@@ -795,10 +839,11 @@
   };
 
   RecoveryVaultController.prototype.disableProtection = async function (password) {
+    var generation = this._beginKeyOperation();
     for (var attempt = 0; attempt < this.maxCasRetries; attempt += 1) {
       var head = await this._read();
       if (!isVaultStore(head.store)) {
-        this._dek = null;
+        this._clearKeyIfCurrent(generation);
         return { disabled: true, alreadyDisabled: true };
       }
       var store = validateVaultStore(head.store);
@@ -824,7 +869,7 @@
         snapshots: snapshots
       };
       if (await this._cas(head.revision, plain)) {
-        this._dek = null;
+        this._clearKeyIfCurrent(generation);
         return { disabled: true, restoredSnapshots: snapshots.length };
       }
     }
@@ -846,6 +891,7 @@
   };
 
   RecoveryVaultController.prototype.importEncryptedBackup = async function (backup, password, options) {
+    var generation = this._beginKeyOperation();
     options = options || {};
     if (!backup || backup.kind !== BACKUP_KIND || backup.version !== BACKUP_VERSION || !backup.vault) {
       fail('VAULT_BACKUP_INVALID', 'This is not a supported AlloFlow encrypted recovery backup.');
@@ -888,15 +934,16 @@
     if (!(await this._cas(head.revision, imported))) {
       fail('VAULT_CONFLICT', 'Saved work changed before the encrypted backup could be imported.');
     }
-    this._dek = dek;
+    this._setKeyIfCurrent(dek, generation);
     return { imported: true, snapshotCount: imported.records.length };
   };
 
   RecoveryVaultController.prototype.eraseAll = async function () {
+    var generation = this._beginKeyOperation();
     for (var attempt = 0; attempt < this.maxCasRetries; attempt += 1) {
       var head = await this._read();
       if (await this._cas(head.revision, emptyPlainStore())) {
-        this._dek = null;
+        this._clearKeyIfCurrent(generation);
         return { erased: true };
       }
     }
@@ -908,6 +955,7 @@
   }
 
   var AlloDeviceVault = {
+    SESSION_OWNERSHIP_VERSION: 1,
     createRecoveryVaultController: createRecoveryVaultController,
     RecoveryVaultController: RecoveryVaultController,
     VaultError: VaultError,

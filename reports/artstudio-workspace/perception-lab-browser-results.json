@@ -1,0 +1,118 @@
+{
+  "checks": [
+    {
+      "firstOpen": "static six-experiment lab with measurement reveal hidden"
+    },
+    {
+      "experiment": "brightness",
+      "prediction": true,
+      "reveal": true,
+      "contextRemovalPreservesTargets": true,
+      "sliderExtremes": true,
+      "lightAxe": []
+    },
+    {
+      "experiment": "ebbinghaus",
+      "prediction": true,
+      "reveal": true,
+      "contextRemovalPreservesTargets": true,
+      "sliderExtremes": true,
+      "lightAxe": []
+    },
+    {
+      "experiment": "mullerLyer",
+      "prediction": true,
+      "reveal": true,
+      "contextRemovalPreservesTargets": true,
+      "sliderExtremes": true,
+      "lightAxe": []
+    },
+    {
+      "experiment": "cafeWall",
+      "prediction": true,
+      "reveal": true,
+      "contextRemovalPreservesTargets": true,
+      "sliderExtremes": true,
+      "lightAxe": []
+    },
+    {
+      "experiment": "necker",
+      "prediction": true,
+      "reveal": true,
+      "contextRemovalPreservesTargets": true,
+      "sliderExtremes": true,
+      "lightAxe": []
+    },
+    {
+      "experiment": "moire",
+      "prediction": true,
+      "reveal": true,
+      "contextRemovalPreservesTargets": true,
+      "sliderExtremes": true,
+      "lightAxe": []
+    },
+    {
+      "keyboardSlider": true,
+      "pinnedSettingsIndependent": true,
+      "saveRestoreRemount": true,
+      "standaloneSVG": "perception-brightness.svg",
+      "visibleSVGBytes": 1463
+    },
+    {
+      "compactStage": {
+        "x": 365,
+        "y": -219.3125,
+        "width": 1026,
+        "height": 615.59375
+      },
+      "expandedStage": {
+        "x": 49,
+        "y": 347.6875,
+        "width": 1342,
+        "height": 760
+      },
+      "escapeRestoresLayout": true
+    },
+    {
+      "animationOptIn": true,
+      "exactPause": true,
+      "reducedMotionChangeStops": true,
+      "profileChangeStops": true
+    },
+    {
+      "artHandoff": true,
+      "opticsNavigationRegistered": true
+    },
+    {
+      "darkAxe": []
+    },
+    {
+      "phone": 320,
+      "dimensions": {
+        "viewport": 320,
+        "page": 320,
+        "stage": 254
+      },
+      "targets44": true,
+      "expandedNoOverflow": true
+    },
+    {
+      "phone": 390,
+      "dimensions": {
+        "viewport": 390,
+        "page": 390,
+        "stage": 324
+      },
+      "targets44": true,
+      "expandedNoOverflow": true
+    },
+    {
+      "forcedColorsStimulusPreserved": true
+    },
+    {
+      "largeText200PercentNoOverflow": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "ad40b26227bb46c5d49b3072cdc59c9f875249d8592c6d5c819be6ee665b89f7"
+}

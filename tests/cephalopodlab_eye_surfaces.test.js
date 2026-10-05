@@ -2,14 +2,20 @@ import { afterEach, describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { restoreCLSquidFinReference } from './helpers/cephalopod_squid_fin_reference.js';
 
 const require = createRequire(import.meta.url);
 const THREE = require('../vendor/three-r128/three.min.js');
-const source = readFileSync('stem_lab/stem_tool_cephalopodlab.js', 'utf8');
+const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', 'utf8').replace(/\r\n/g, '\n');
 const start = source.indexOf('function createCLHuntAnimal(');
 const end = source.indexOf('// Compact, individually owned prey rig.', start);
 if (start < 0 || end <= start) throw new Error('Cannot find the actual animal rig');
 const build = new Function('T', 'species', 'Math', source.slice(start, end) + ';return createCLHuntAnimal(T,species);');
+// Pass30 reverses only the exact accepted Humboldt fin roll for this older protected fingerprint.
+// All live geometry/material/motion assertions still use the actual production build.
+const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+const protectedBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(source.slice(start,end)))+';return createCLHuntAnimal(T,species);');
+
 const noRandom = Object.assign(Object.create(Math), { random() { throw new Error('Eye construction consumed dive RNG'); } });
 const ids = ['cuttlefish', 'bobtailSquid', 'dumboOcto', 'vampireSquid'];
 const eyeNames = new Set(['cl-eye-rim', 'cl-iris', 'cl-pupil', 'cl-eye-highlight', 'cl-eye-lid']);
@@ -223,6 +229,6 @@ describe('Cephalopod curved swimmer eyes', () => {
       commonOcto: '9f67f8a43befbca0672310972a170a6c0b8e374fbb73062affe72b56e3bdbbfb',
       nautilus: 'b368c9aaf0111fbe689dd64288b7dae52bd626866626e3334291ade22685b086',
     };
-    for (const [id, expected] of Object.entries(before)) expect(hash(rig(id), ids.includes(id)||id==='commonOcto'), id).toBe(expected);
+    for (const [id, expected] of Object.entries(before)) {const animal=protectedBuild(THREE,{id,bodyColor:0xbc6048},noRandom);allocated.push(animal);expect(hash(animal,ids.includes(id)||id==='commonOcto'),id).toBe(expected);}
   });
 });

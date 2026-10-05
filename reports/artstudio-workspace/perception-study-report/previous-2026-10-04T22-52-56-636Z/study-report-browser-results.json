@@ -1,0 +1,234 @@
+{
+  "checks": [
+    {
+      "experiment": "brightness",
+      "singleAllThreeActualDrawings": true,
+      "fullGuidesDespiteLocalPreviewSelection": true,
+      "all500CharacterNotesImpressionsDatesSettingsAndStats": true,
+      "XMLRoundTrip": true,
+      "readOnlyExport": true,
+      "axe": []
+    },
+    {
+      "experiment": "brightness",
+      "comparisonAllSixActualDrawings": true,
+      "ABMedianShift": 9,
+      "changedSettingsAndOriginalWarnings": true,
+      "previewDrawingPinNotebookOtherToolsPreserved": true,
+      "standaloneNoExternalRequestsOrExecutableAuthorContent": true,
+      "axe": []
+    },
+    {
+      "experiment": "ebbinghaus",
+      "singleAllThreeActualDrawings": true,
+      "fullGuidesDespiteLocalPreviewSelection": true,
+      "all500CharacterNotesImpressionsDatesSettingsAndStats": true,
+      "XMLRoundTrip": true,
+      "readOnlyExport": true,
+      "axe": []
+    },
+    {
+      "experiment": "ebbinghaus",
+      "comparisonAllSixActualDrawings": true,
+      "ABMedianShift": 3,
+      "changedSettingsAndOriginalWarnings": true,
+      "previewDrawingPinNotebookOtherToolsPreserved": true,
+      "standaloneNoExternalRequestsOrExecutableAuthorContent": true,
+      "axe": []
+    },
+    {
+      "experiment": "mullerLyer",
+      "singleAllThreeActualDrawings": true,
+      "fullGuidesDespiteLocalPreviewSelection": true,
+      "all500CharacterNotesImpressionsDatesSettingsAndStats": true,
+      "XMLRoundTrip": true,
+      "readOnlyExport": true,
+      "axe": []
+    },
+    {
+      "experiment": "mullerLyer",
+      "comparisonAllSixActualDrawings": true,
+      "ABMedianShift": 29,
+      "changedSettingsAndOriginalWarnings": true,
+      "previewDrawingPinNotebookOtherToolsPreserved": true,
+      "standaloneNoExternalRequestsOrExecutableAuthorContent": true,
+      "axe": []
+    },
+    {
+      "reportPlannerReturnsDetachedReadyPayloads": true,
+      "correctSingleAndPairMembers": true,
+      "noStateMutation": true
+    },
+    {
+      "reportGate": "missing",
+      "unavailablePlannerNeverExposesReportModels": true
+    },
+    {
+      "reportGate": "partial",
+      "unavailablePlannerNeverExposesReportModels": true
+    },
+    {
+      "reportGate": "conflict",
+      "unavailablePlannerNeverExposesReportModels": true
+    },
+    {
+      "reportGate": "hidden",
+      "unavailablePlannerNeverExposesReportModels": true
+    },
+    {
+      "reportGate": "same",
+      "unavailablePlannerNeverExposesReportModels": true
+    },
+    {
+      "reportGate": "experiment",
+      "unavailablePlannerNeverExposesReportModels": true
+    },
+    {
+      "reportGate": "reference",
+      "unavailablePlannerNeverExposesReportModels": true
+    },
+    {
+      "hiddenStudiesHaveNoReportAction": true,
+      "singleRevealedAExportAvailableWhileBHidden": true,
+      "comparisonRequiresBothRevealed": true
+    },
+    {
+      "UIUnavailableGroup": "partial",
+      "reportActionsAbsent": true
+    },
+    {
+      "UIUnavailableGroup": "conflict",
+      "reportActionsAbsent": true
+    },
+    {
+      "reportIgnoresNotebookFilters": true,
+      "exportPreservesLocalFilters": true,
+      "profileResetRemovesStaleActions": true
+    },
+    {
+      "translatedTitleAndAuthorNoteInsertedAsPlainText": true,
+      "unsafeTextCreatesNoHTMLNodesScriptsOrRequests": true
+    },
+    {
+      "invalidDatesOmitted": true,
+      "inactiveSurroundingChangesAndDifferentStartsWarned": true
+    },
+    {
+      "maskedCollectionAndUnrevealedCompletionCannotExport": true,
+      "revealedActiveStudyExportsAllThreeActualMembers": true,
+      "activePreviewChoicesDoNotAffectReport": true
+    },
+    {
+      "exportFailure": "URL",
+      "usefulAnnouncement": true,
+      "anchorAndURLCleanup": true,
+      "statePreservedAndRetryWorks": true
+    },
+    {
+      "exportFailure": "Click",
+      "usefulAnnouncement": true,
+      "anchorAndURLCleanup": true,
+      "statePreservedAndRetryWorks": true
+    },
+    {
+      "viewport": 320,
+      "appReportControls44px": true,
+      "reportArtifactAndControlsNoOverflow": true,
+      "axe": []
+    },
+    {
+      "viewport": 390,
+      "appReportControls44px": true,
+      "reportArtifactAndControlsNoOverflow": true,
+      "axe": []
+    },
+    {
+      "viewport": 768,
+      "appReportControls44px": true,
+      "reportArtifactAndControlsNoOverflow": true,
+      "axe": []
+    },
+    {
+      "viewport": 1280,
+      "appReportControls44px": true,
+      "reportArtifactAndControlsNoOverflow": true,
+      "axe": []
+    },
+    {
+      "viewport": 1600,
+      "appReportControls44px": true,
+      "reportArtifactAndControlsNoOverflow": true,
+      "axe": []
+    },
+    {
+      "sourceTheme": "dark",
+      "exportedReportDeliberateWhiteDocument": true,
+      "artifactSystemPaletteAndWhiteOriginalSVGVerified": true,
+      "appControls44px": true,
+      "axe": []
+    },
+    {
+      "sourceTheme": "contrast",
+      "exportedReportDeliberateWhiteDocument": true,
+      "artifactSystemPaletteAndWhiteOriginalSVGVerified": true,
+      "appControls44px": true,
+      "axe": []
+    },
+    {
+      "sourceTheme": "forced-light",
+      "exportedReportDeliberateWhiteDocument": true,
+      "artifactSystemPaletteAndWhiteOriginalSVGVerified": true,
+      "appControls44px": true,
+      "axe": []
+    },
+    {
+      "sourceTheme": "forced-dark",
+      "exportedReportDeliberateWhiteDocument": true,
+      "artifactSystemPaletteAndWhiteOriginalSVGVerified": true,
+      "appControls44px": true,
+      "axe": []
+    },
+    {
+      "sourceTheme": "forced-contrast",
+      "exportedReportDeliberateWhiteDocument": true,
+      "artifactSystemPaletteAndWhiteOriginalSVGVerified": true,
+      "appControls44px": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "controlsAndArtifactNoOverflow": true,
+      "appControls44px": true,
+      "axe": []
+    },
+    {
+      "printMediaPreservesAllSixDrawingsAndFullNotes": true,
+      "printWhitePaperBlackText": true,
+      "noOverflow": true,
+      "axe": []
+    },
+    {
+      "printPDFFixtures": 2,
+      "actualSerializedHTMLSources": true,
+      "full500CharacterNotes": true,
+      "PDFfiles": [
+        {
+          "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\artstudio-workspace\\perception-study-report\\print\\brightness-single-500-character-notes.pdf",
+          "bytes": 42246,
+          "sourceHTML": "print/brightness-single-500-character-notes.html"
+        },
+        {
+          "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\artstudio-workspace\\perception-study-report\\print\\muller-lyer-comparison-500-character-notes.pdf",
+          "bytes": 54026,
+          "sourceHTML": "print/muller-lyer-comparison-500-character-notes.html"
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "artifactErrors": [],
+  "externalRequests": [],
+  "loadedSourceSHA256": "5d13df2ff4e47f226103c80c4637282194342517aac2f80b56e9570c05635965",
+  "finalSourceSHA256": "5d13df2ff4e47f226103c80c4637282194342517aac2f80b56e9570c05635965",
+  "sourceSHA256": "5d13df2ff4e47f226103c80c4637282194342517aac2f80b56e9570c05635965"
+}

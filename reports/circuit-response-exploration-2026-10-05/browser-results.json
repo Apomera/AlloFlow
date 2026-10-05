@@ -1,0 +1,247 @@
+{
+  "sourceSha256": "9d7fa5476e14ea5c167f8916831aa15da4a06085b91d4fbe89e8cde40968cc91",
+  "scriptSha256": "6684985c4ef097a58387b76997353fafdbfefccd6ddbd6949083dee84ed433b2",
+  "errors": [],
+  "workflows": [
+    {
+      "name": "Mouse selection, keyboard slider, exact entry and Undo/Redo update one synchronized operating point; reference and authored work are preserved",
+      "passed": true
+    },
+    {
+      "name": "Real touch taps select points before and after a horizontal swipe; the swipe leaves settings and history untouched at phone widths",
+      "passed": true
+    },
+    {
+      "name": "Dark sensor input, incompatible reference axis, high contrast and right-to-left presentation",
+      "passed": true
+    }
+  ],
+  "views": [
+    {
+      "name": "desktop-active",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 808,
+        "scrollWidth": 808,
+        "values": [
+          {
+            "text": "1.50 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "0–5",
+            "direction": "ltr"
+          },
+          {
+            "text": "1.5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "8.00 mA",
+            "direction": "ltr"
+          }
+        ],
+        "svgDirection": "ltr"
+      },
+      "axeViolations": [],
+      "file": "desktop-active.png",
+      "sha256": "eb4e0f6a7c11dce600591b78c059126090acee97cfc1675d66d564516dc4d5f0"
+    },
+    {
+      "name": "desktop-reference",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 808,
+        "scrollWidth": 808,
+        "values": [
+          {
+            "text": "4.50 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "0–5",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "21.82 mA",
+            "direction": "ltr"
+          }
+        ],
+        "svgDirection": "ltr"
+      },
+      "axeViolations": [],
+      "file": "desktop-reference.png",
+      "sha256": "188905ee51646c706910cd8a5d21b15a40bf5c0392947720eb8e165e0522b254"
+    },
+    {
+      "name": "phone-saturation",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 314,
+        "scrollWidth": 314,
+        "values": [
+          {
+            "text": "4.50 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "0–5",
+            "direction": "ltr"
+          },
+          {
+            "text": "4.5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "21.82 mA",
+            "direction": "ltr"
+          }
+        ],
+        "svgDirection": "ltr"
+      },
+      "axeViolations": [],
+      "file": "phone-saturation.png",
+      "sha256": "00af4989829c20425eaec1f35f70c580d2c8f04efe1578df2bf8efad11bd2b3b"
+    },
+    {
+      "name": "small-phone-cutoff",
+      "width": 320,
+      "geometry": {
+        "viewport": 320,
+        "pageWidth": 320,
+        "width": 244,
+        "scrollWidth": 244,
+        "values": [
+          {
+            "text": "0.30 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "0–5",
+            "direction": "ltr"
+          },
+          {
+            "text": "0.3 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "0 A",
+            "direction": "ltr"
+          }
+        ],
+        "svgDirection": "ltr"
+      },
+      "axeViolations": [],
+      "file": "small-phone-cutoff.png",
+      "sha256": "14ce99545f27eb0adfd7ef1ea9a3e843f25ff170c7fe58333e7cef0ab09ae336"
+    },
+    {
+      "name": "phone-dark-sensor",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 314,
+        "scrollWidth": 314,
+        "values": [
+          {
+            "text": "20 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "0–100",
+            "direction": "ltr"
+          },
+          {
+            "text": "20 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "18.32 mA",
+            "direction": "ltr"
+          }
+        ],
+        "svgDirection": "ltr"
+      },
+      "axeViolations": [],
+      "file": "phone-dark-sensor.png",
+      "sha256": "6b81b9e0edd8f62ae83f4aed6379bb9572f25e0686e3a8d14788dd8181b7ae33"
+    },
+    {
+      "name": "forced-colors",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 808,
+        "scrollWidth": 808,
+        "values": [
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "0–100",
+            "direction": "ltr"
+          },
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "12.00 mA",
+            "direction": "ltr"
+          }
+        ],
+        "svgDirection": "ltr"
+      },
+      "axeViolations": [],
+      "file": "forced-colors.png",
+      "sha256": "7d86b240c241f952826abb71e8936c25eb25588a56ad83d67988be28168083f9"
+    },
+    {
+      "name": "rtl-phone",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 314,
+        "scrollWidth": 314,
+        "values": [
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "0–100",
+            "direction": "ltr"
+          },
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "12.00 mA",
+            "direction": "ltr"
+          }
+        ],
+        "svgDirection": "ltr"
+      },
+      "axeViolations": [],
+      "file": "rtl-phone.png",
+      "sha256": "0c0922ad908bd6b629581bf7302165edc765d3d714e124094648034b45bba4ff"
+    }
+  ],
+  "passed": true,
+  "browserClosed": true
+}

@@ -1,0 +1,9 @@
+[
+  {
+    "id": "landmark-no-duplicate-banner",
+    "impact": "moderate",
+    "nodes": [
+      "<header class=\"msld-head\">"
+    ]
+  }
+]

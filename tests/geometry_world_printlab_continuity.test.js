@@ -54,7 +54,7 @@ function engineFor(blocks, lesson = builder.FREE_BUILD_LESSON) {
     mesh.updateMatrixWorld(true); en.blocks[[x, y, z].join(',')] = mesh;
     en.placements.push({ suppressed: !!en._batchSuppressEvents });
   };
-  en.loadLesson = (next) => { en.blocks = {}; en._currentLesson = next; en._undoStack = []; en._redoStack = []; en._workshopProjectId = null; en._workshopProjectVersion = null; en._workshopSavedSignature = null; };
+  en.loadLesson = (next) => { en.blocks = {}; en._currentLesson = next; en._undoStack = []; en._redoStack = []; en._workshopProjectId = null; en._workshopProjectVersion = null; en._workshopSavedSignature = null; return true; };
   en.measureStructure = (_x, _y, _z, retained) => ({ blocks: retained || [], count: (retained || []).length, isComplete: true });
   blocks.forEach((b) => en.placeBlock(b.x, b.y, b.z, b.type, b.shape, b.rotation));
   en.placements = [];
@@ -102,7 +102,8 @@ describe('coming back to Geometry World through the app', () => {
     // this pins that the effect uses it rather than loading an empty sandbox.
     const source = readFileSync('stem_lab/stem_tool_geometryworld_builder.js', 'utf8');
     const effect = source.slice(source.indexOf('if (restorePendingEditableBuild(ctx, engine)) return;'), source.indexOf('attempts += 1;', source.indexOf('if (restorePendingEditableBuild(ctx, engine)) return;')));
-    expect(effect).toContain('if (!resumeSandboxWorkspace(ctx, engine)) engine.loadLesson(FREE_BUILD_LESSON);');
+    expect(effect).toContain('var resumed=resumeSandboxWorkspace(ctx, engine);');
+    expect(effect).toContain('if (resumed===false) engine.loadLesson(FREE_BUILD_LESSON);');
     expect(effect).toContain("engine._currentLesson.sandbox !== true");
   });
 
@@ -176,6 +177,87 @@ describe('coming back to Geometry World through the app', () => {
     expect(ctx.toolData.geometryWorld).toMatchObject({ showGeometryHome: false, activeLesson: 'builderSandbox', worldActive: true });
     expect(ctx.toasts.join(' ')).not.toMatch(/invalid/i);
     expect(window.__alloGeometryWorldPendingBuild).toBeUndefined();
+  });
+});
+
+describe('blocked builder replacements keep their memory recovery', () => {
+  function blockedEngine(blocks = HOUSE) {
+    const engine = engineFor(blocks);
+    engine.transitionWorld = vi.fn(() => false);
+    engine.loadLesson = vi.fn(engine.loadLesson);
+    return engine;
+  }
+
+  it('distinguishes a blocked return project from a missing one', () => {
+    const ctx = stateCtx({ activeLesson: 'builderSandbox', showGeometryHome: true, score: 7 });
+    const engine = blockedEngine();
+    const project = builder.captureProject(ctx, engine, 'gw-protected');
+    window.__alloGeometryWorldReturnProject = project;
+    const before = engine.blocks;
+    expect(builder.restoreProject(ctx, engine, { projectId: project.id })).toBeNull();
+    expect(builder.resumeSandboxWorkspace(ctx, engine)).toBeNull();
+    expect(engine.blocks).toBe(before);
+    expect(engine.loadLesson).not.toHaveBeenCalled();
+    expect(window.__alloGeometryWorldReturnProject).toBe(project);
+    expect(ctx.toolData.geometryWorld).toMatchObject({ score: 7, showGeometryHome: true });
+    expect(ctx.toasts).toEqual([]);
+  });
+
+  it('keeps a Free Build handoff pending without patching or loading', () => {
+    const engine = blockedEngine();
+    const ctx = stateCtx({ showGeometryHome: true, measureHistory: [{ volume: 3 }] });
+    const pending = { intent: 'freeBuild' };
+    window.__alloGeometryWorldPendingBuild = pending;
+    expect(builder.restorePendingEditableBuild(ctx, engine)).toBe(true);
+    expect(window.__alloGeometryWorldPendingBuild).toBe(pending);
+    expect(engine.loadLesson).not.toHaveBeenCalled();
+    expect(ctx.toolData.geometryWorld).toEqual({ showGeometryHome: true, measureHistory: [{ volume: 3 }] });
+    expect(ctx.toasts).toEqual([]);
+  });
+
+  it('keeps a returning source model pending rather than replaying into old blocks', () => {
+    const engine = blockedEngine();
+    const ctx = stateCtx({ score: 4 });
+    const pending = { sourceModel: { schema: 'alloflow-geometry-world-build/1', blocks: HOUSE }, printContext: { unitMm: 10 } };
+    window.__alloGeometryWorldPendingBuild = pending;
+    const before = engine.blocks;
+    expect(builder.restorePendingEditableBuild(ctx, engine)).toBe(true);
+    expect(window.__alloGeometryWorldPendingBuild).toBe(pending);
+    expect(engine.blocks).toBe(before);
+    expect(engine.placements).toEqual([]);
+    expect(engine.loadLesson).not.toHaveBeenCalled();
+    expect(ctx.toasts).toEqual([]);
+  });
+
+  it('rejects editable replacement before ending Showcase or taking a recovery snapshot', () => {
+    const engine = blockedEngine();
+    engine._showcase = { collapsed: true };
+    engine.endShowcase = vi.fn();
+    engine.flushWorkshopDraft = vi.fn();
+    const before = engine.blocks;
+    expect(builder.restoreEditableWorld(engine, builder.editableWorld(engine), stateCtx({}))).toMatchObject({ ok: false, blocked: true });
+    expect(engine.endShowcase).not.toHaveBeenCalled();
+    expect(engine.flushWorkshopDraft).not.toHaveBeenCalled();
+    expect(engine.loadLesson).not.toHaveBeenCalled();
+    expect(engine.blocks).toBe(before);
+    expect(engine._workshopRestoreInProgress).toBeUndefined();
+  });
+
+  it('captures the complete memory project when the storage flush throws', () => {
+    const engine = engineFor(HOUSE);
+    engine._builderSelection = { blocks: [{ x: 0, y: 1, z: 0 }] };
+    engine._undoStack = [{ action: 'place' }];
+    engine._workshopProjectId = 'world-current';
+    engine.flushWorkshopDraft = vi.fn(() => { throw new Error('Storage is unavailable'); });
+    const saved = builder.captureProject(stateCtx({ score: 5 }), engine, 'gw-memory');
+    expect(saved.blocks).toHaveLength(3);
+    expect(saved.selection).toEqual(engine._builderSelection);
+    expect(saved.undo).toEqual(engine._undoStack);
+    expect(saved.workshopDraft.id).toBe('world-current');
+    expect(saved.state.score).toBe(5);
+    engine._worldTransitionDepth = 1;
+    builder.captureProject(stateCtx({}), engine, 'gw-nested');
+    expect(engine.flushWorkshopDraft).toHaveBeenCalledTimes(1);
   });
 });
 

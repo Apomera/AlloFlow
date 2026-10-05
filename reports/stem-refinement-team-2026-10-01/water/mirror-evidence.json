@@ -1,0 +1,12 @@
+{
+  "destinationBeforeSha256": "d66e05da9a86add79090d354a1b5aa0dedad452b0b99810b59aac6f5cb4e6f4c",
+  "result": "exact-byte copies verified",
+  "capturedUtc": "2026-10-01T13:57:53.9143067Z",
+  "source": "stem_lab/water_worlds_view.js",
+  "destinations": [
+    "desktop/web-app/public/stem_lab/water_worlds_view.js",
+    "desktop/web-app/build/stem_lab/water_worlds_view.js",
+    "desktop/app-build/stem_lab/water_worlds_view.js"
+  ],
+  "sourceSha256": "04f090b7311addd0062d0389e7168637ff634d841f76daed5fc5d360cbacee9d"
+}

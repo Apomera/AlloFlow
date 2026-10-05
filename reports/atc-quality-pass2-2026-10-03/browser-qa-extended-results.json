@@ -1,0 +1,106 @@
+{
+  "started": "2026-10-03T19:23:54.159Z",
+  "fixture": "Real Chrome with canonical ATC source, React host contract, and test-only gameRef access.",
+  "checks": [
+    {
+      "name": "Guided practice starts paused and only adds arrivals when requested",
+      "pass": true,
+      "detail": {
+        "mode": "guided",
+        "paused": true,
+        "traffic": 1
+      }
+    },
+    {
+      "name": "Speed form freezes all flight state and validates the full teaching range",
+      "pass": true,
+      "detail": {
+        "invalidValues": [
+          59,
+          251,
+          120.5,
+          ""
+        ],
+        "assigned": 145
+      }
+    },
+    {
+      "name": "Heading 360 normalizes to north and restores focus after the form closes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Manual climb cancels automatic descent and then stacks manual altitude steps",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Manual go-around is counted and discards the old touchdown flag",
+      "pass": true,
+      "detail": {
+        "state": "goAround",
+        "stage": null,
+        "touchdown": false,
+        "altitude": 3000,
+        "heading": 270,
+        "count": 1
+      }
+    },
+    {
+      "name": "Holding aircraft continue moving and a manual heading releases the hold",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Controls help freezes the running shift and resumes it when closed",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Movement and fuel consumption share the same accelerated flight-time units",
+      "pass": true,
+      "detail": {
+        "elapsedSeconds": 0.7501000000000002,
+        "worldDistance": 6.750899999998637,
+        "fuelMinutes": 1.5001999999999995
+      }
+    },
+    {
+      "name": "Radar shortcuts respect browser modifier keys",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Radar click selection remains correct after desktop and narrow-screen resizing",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Priority and ETA order, projected spacing, and tight runway gaps render together",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "A pending math challenge freezes aircraft and stays readable during resize",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Go-around count persists into the shift review",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Flight strips and instructions continue when no 2D rendering context is available",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "No uncaught browser errors or native prompt dialogs",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "errors": [],
+  "finished": "2026-10-03T19:24:07.629Z"
+}

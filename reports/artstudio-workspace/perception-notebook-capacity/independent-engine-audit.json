@@ -1,0 +1,8 @@
+{
+  "assertions": 2510,
+  "groupSizes": "1..8",
+  "interleavedOrder": true,
+  "mixedExperimentsAndConflictMetadataPreserved": true,
+  "mutation": false,
+  "malformedIndicesRejected": true
+}

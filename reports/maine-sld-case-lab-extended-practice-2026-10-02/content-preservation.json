@@ -1,0 +1,18 @@
+{
+  "originalThreeCasesExactlyPreserved": true,
+  "all52AlexRowsExactlyPreserved": true,
+  "originalSourceEntriesPreserved": true,
+  "reviewedFormAndMultilingualGuidancePreserved": true,
+  "moduleVersion": "1.1.0",
+  "compatibleWorksheetVersions": [
+    "1.0.0"
+  ],
+  "caseIds": [
+    "alex",
+    "alex-general-ed-adequate",
+    "jordan",
+    "marisol",
+    "taylor"
+  ],
+  "reviewedDraftSha256": "803f4296fed7e07df32932b77eaa94924de0c5ba2f96f6c493415b110c281886"
+}

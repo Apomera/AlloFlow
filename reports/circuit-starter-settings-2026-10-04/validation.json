@@ -1,0 +1,26 @@
+{
+  "passed": true,
+  "sourceSha256": "50486bc06bafbf6be919fd868d303f41a6f1f8f71a617ca2eec12fae51ddd6a7",
+  "sourceMirrorEqual": true,
+  "priorSourcePreserved": true,
+  "tests": 68,
+  "newTests": 14,
+  "testFiles": 4,
+  "browserViews": 7,
+  "browserWorkflows": 2,
+  "scopedDiffCheck": true,
+  "scopedIndexEmpty": true,
+  "visualReview": {
+    "reviewedBy": "Root agent",
+    "finalDirectlyReviewed": [
+      "desktop-custom.png",
+      "desktop-preview.png",
+      "small-phone-preview.png",
+      "phone-restored.png",
+      "phone-sensor-preview.png",
+      "forced-colors.png",
+      "rtl-preview.png"
+    ],
+    "notes": "Reviewed starter values, changed-value counts, preview disclosure, enabled and disabled reset, phone wrapping, keyboard focus, system colors and numeric order."
+  }
+}

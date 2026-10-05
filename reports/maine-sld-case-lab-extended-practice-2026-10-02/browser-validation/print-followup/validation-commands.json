@@ -1,0 +1,53 @@
+{
+  "workingDirectory": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "invocations": [
+    {
+      "grep": "all five cases preserve participant family and language reflections through export reset restore and print|public deep link opens the case directly and configured educator access protects Leadership return",
+      "exitCode": 1,
+      "result": "final-browser-result.json",
+      "log": "final-browser-run.log",
+      "environment": {
+        "SLD_HOST_BASE_URL": "http://127.0.0.1:65061/app",
+        "SLD_REPORT_DIR": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\extended-validation\\print-followup\\final-browser",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\extended-validation\\print-followup\\final-browser-result.json"
+      },
+      "executable": "C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe",
+      "arguments": [
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "tests/e2e/maine-sld-practice.spec.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--grep=all five cases preserve participant family and language reflections through export reset restore and print|public deep link opens the case directly and configured educator access protects Leadership return",
+        "--reporter=list,json",
+        "--output=C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/extended-validation/print-followup/final-browser-artifacts"
+      ]
+    },
+    {
+      "grep": "public deep link opens the case directly and configured educator access protects Leadership return",
+      "exitCode": 0,
+      "result": "host-rerun/result.json",
+      "log": "host-rerun/run.log",
+      "environment": {
+        "SLD_HOST_BASE_URL": "http://127.0.0.1:65061/app",
+        "SLD_REPORT_DIR": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\extended-validation\\print-followup\\host-rerun\\final-browser",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\extended-validation\\print-followup\\host-rerun\\result.json"
+      },
+      "executable": "C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe",
+      "arguments": [
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "tests/e2e/maine-sld-practice.spec.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--grep=public deep link opens the case directly and configured educator access protects Leadership return",
+        "--reporter=list,json",
+        "--output=C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/extended-validation/print-followup/host-rerun/artifacts"
+      ]
+    }
+  ],
+  "sharedCommand": "node_modules/@playwright/test/cli.js test tests/e2e/maine-sld-practice.spec.ts --project=chromium --workers=1 --retries=0 --grep=<invocation grep> --reporter=list,json --output=<separate invocation artifacts>",
+  "node": "C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe"
+}

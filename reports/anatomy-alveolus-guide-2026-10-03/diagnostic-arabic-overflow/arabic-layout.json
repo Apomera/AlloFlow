@@ -1,0 +1,77 @@
+{
+  "outer": {
+    "left": 26,
+    "right": 292,
+    "width": 266
+  },
+  "elements": [
+    {
+      "tag": "SECTION",
+      "cls": "anatomy-atlas anatomy-alveolus-guide is-paused is-clinical",
+      "text": "تبادل الغازات في الحويصلات الهوائيةاستكشف الحويصلة الهوائية والشعيرة الدموية، ثم ألقِ نظرة أقرب على ",
+      "left": 26,
+      "right": 292,
+      "width": 266,
+      "client": 264,
+      "scroll": 276,
+      "marginLeft": "0px",
+      "marginRight": "0px",
+      "paddingLeft": "12px",
+      "paddingRight": "12px",
+      "direction": "rtl",
+      "whiteSpace": "normal",
+      "position": "static"
+    },
+    {
+      "tag": "DIV",
+      "cls": "anatomy-atlas-step-detail",
+      "text": "الخطوة 2 من 42. انتشار الأكسجينينتشر الأكسجين مع تدرج ضغطه الجزئي عبر الظهارة السنخية من النوع الأول",
+      "left": 39,
+      "right": 279,
+      "width": 240,
+      "client": 236,
+      "scroll": 260,
+      "marginLeft": "0px",
+      "marginRight": "0px",
+      "paddingLeft": "12px",
+      "paddingRight": "12px",
+      "direction": "rtl",
+      "whiteSpace": "normal",
+      "position": "static"
+    },
+    {
+      "tag": "DIV",
+      "cls": "anatomy-alveolus-step-focus",
+      "text": "ما يجب التركيز عليه في هذه الخطوةخلية من النوع الأول · الحاجز بين الهواء والدم · الهيموغلوبين",
+      "left": 51,
+      "right": 263,
+      "width": 212,
+      "client": 212,
+      "scroll": 248,
+      "marginLeft": "0px",
+      "marginRight": "0px",
+      "paddingLeft": "0px",
+      "paddingRight": "0px",
+      "direction": "rtl",
+      "whiteSpace": "normal",
+      "position": "static"
+    },
+    {
+      "tag": "STRONG",
+      "cls": "",
+      "text": "ما يجب التركيز عليه في هذه الخطوة",
+      "left": 51,
+      "right": 263,
+      "width": 212,
+      "client": 212,
+      "scroll": 248,
+      "marginLeft": "0px",
+      "marginRight": "0px",
+      "paddingLeft": "0px",
+      "paddingRight": "0px",
+      "direction": "rtl",
+      "whiteSpace": "nowrap",
+      "position": "static"
+    }
+  ]
+}

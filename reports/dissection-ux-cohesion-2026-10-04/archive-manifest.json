@@ -1,0 +1,666 @@
+[
+  {
+    "file": "after-desktop-camera.png",
+    "sha256": "930a1e2256e7e40faa0afa5bb790d4c91551f31017d98d4afcf666d20f7cb0f0"
+  },
+  {
+    "file": "after-desktop-context.png",
+    "sha256": "57722fc935cb7f666ea209764467ff94ef23261c0ee676fc72abe5fc8b55ac25"
+  },
+  {
+    "file": "after-desktop-handoff.png",
+    "sha256": "e538cc9c8035cdf91d55b5306f50cc18e76bc14981b2afc6914786f1a3051fa1"
+  },
+  {
+    "file": "after-desktop-metrics.json",
+    "sha256": "edaee997c8d367f7cbb46fd23c1a9e995ae49d51c85a5ee714622eaddeed4106"
+  },
+  {
+    "file": "after-embedded-large-camera.png",
+    "sha256": "baf46a730b2991efef5406391af175f13b57ee2ce4b3371a2a52b56988bdb7cd"
+  },
+  {
+    "file": "after-embedded-large-context.png",
+    "sha256": "46dabe23478b4a2e37d10afb414671d4c82a2413e8762fac259ab2c1e510e3b3"
+  },
+  {
+    "file": "after-embedded-large-handoff.png",
+    "sha256": "7886beb77e2348a15a0c0e52758715798fe6309c7f9a2020b8d7bb13c659a974"
+  },
+  {
+    "file": "after-embedded-large-metrics.json",
+    "sha256": "7c5dda581be3bcad847145e69a811b237adac5eb143adeb93bc7ab0ed3799b62"
+  },
+  {
+    "file": "after-embedded-medium-camera.png",
+    "sha256": "bca1f9bb685e871aac4b95583305bf59d911518932bfa1f6c504f571dcee9b68"
+  },
+  {
+    "file": "after-embedded-medium-context.png",
+    "sha256": "0a495e6fb253d9c08bddb8eb8227642b64bcd21006758a4da03cf8889ed1a715"
+  },
+  {
+    "file": "after-embedded-medium-handoff.png",
+    "sha256": "d6a6ce0374a2b510e0716a5a9f15d38c3d59e026722f37de8f8461db4f5ba2a6"
+  },
+  {
+    "file": "after-embedded-medium-metrics.json",
+    "sha256": "45ab11366c4002c005220f0662aaa3b7569db370e827a4fbd7f714ac234a1a07"
+  },
+  {
+    "file": "after-forced-colors-camera.png",
+    "sha256": "f15ccd4d78d3a004d5e359882d8500cc9bb3a862f181728ef7759dc4c86902f2"
+  },
+  {
+    "file": "after-forced-colors-context.png",
+    "sha256": "31e743579ec22df2c587c739d740f9d26c73960c14cf5bf3a4de7761ce80afe8"
+  },
+  {
+    "file": "after-forced-colors-handoff.png",
+    "sha256": "3ef7d599751b8aab5457c2a64fbf4b940144fdbd692f7716380f13f113f47743"
+  },
+  {
+    "file": "after-forced-colors-metrics.json",
+    "sha256": "73c586e7f5cc6834819854407dd9feda8d1ecbcf0780e0a1668fa9f3c02ff312"
+  },
+  {
+    "file": "after-phone-camera.png",
+    "sha256": "cadbd36fb25429239589b3107cb5d1cec2417e8e8d535137a6832f74001dec79"
+  },
+  {
+    "file": "after-phone-context.png",
+    "sha256": "fccc04f7d4823d6fca920f6de8d2e5609c990fef6faad1fe05fe86b19970aa6b"
+  },
+  {
+    "file": "after-phone-handoff.png",
+    "sha256": "cf794c81441457c7cff3c59bafdd8b74d5d4d2bfd93f48e02e5823fdd7b4ee36"
+  },
+  {
+    "file": "after-phone-metrics.json",
+    "sha256": "7c5dda581be3bcad847145e69a811b237adac5eb143adeb93bc7ab0ed3799b62"
+  },
+  {
+    "file": "after-tablet-camera.png",
+    "sha256": "95c2cdf41f67a9b79bead0684377543fc35b5a26b557766659a8490197f8542c"
+  },
+  {
+    "file": "after-tablet-context.png",
+    "sha256": "a0158b36fd2956aaf49e0bf2c5b59e5ac591db06ce382ab53953ca43f65826fd"
+  },
+  {
+    "file": "after-tablet-handoff.png",
+    "sha256": "5208da537b7e46b6e140e0b1e007dc8ba30a5220586a81085c5fbd18e7739673"
+  },
+  {
+    "file": "after-tablet-metrics.json",
+    "sha256": "08381375d3480baf4a465091701c973860251fa06eb34fe6a4937b2be475ea23"
+  },
+  {
+    "file": "before/attempt.json",
+    "sha256": "8e29cb1078ae1ea16f34aabb89417a69b1b8b5722e60d0bf78d59c793d35f8ba"
+  },
+  {
+    "file": "before/results.json",
+    "sha256": "2774714e971fe1c0aab2f29f4092192ec9cf10910255e9d9dc656a97d577f540"
+  },
+  {
+    "file": "before/stderr.txt",
+    "sha256": "364d9700cc3c3b8f17b4ba81355f789df9658b5b868d87922651cd3fb79da743"
+  },
+  {
+    "file": "before/stdout.txt",
+    "sha256": "0387c082a8e9412f5dd1a8b61511f652fd90eb5eda6b262d915b3582bc6a5f89"
+  },
+  {
+    "file": "before/test-results/.last-run.json",
+    "sha256": "ff5769a92d98716e9735731d95abe0f485f39111325f735b55777d548d1c3b36"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-ass-00176-and-teaching-handoff-hidden-chromium/error-context.md",
+    "sha256": "fa79ec42017262ee28020f0197536f4544c8da44dbfa64f05ec3213ff978db4e"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-ass-00176-and-teaching-handoff-hidden-chromium/test-failed-1.png",
+    "sha256": "3878570f4a62a0d65f57cf1754e0269e56ec797f4e36e26b44c172eb6e800401"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-ass-00176-and-teaching-handoff-hidden-chromium/trace.zip",
+    "sha256": "7268bf2293618f46a1732daf38e800f84f593a3027dd5d42246b44f2275d2bdd"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-def-5b893-l-and-stable-keyboard-focus-chromium/error-context.md",
+    "sha256": "fedb28246792da0a177aa1bdcb73454a3779239a84abdf190c26c20d80031cc0"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-def-5b893-l-and-stable-keyboard-focus-chromium/test-failed-1.png",
+    "sha256": "3878570f4a62a0d65f57cf1754e0269e56ec797f4e36e26b44c172eb6e800401"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-def-5b893-l-and-stable-keyboard-focus-chromium/trace.zip",
+    "sha256": "a902e3c04e1f376e611f38b2c8fa9b23e124f55841ec0c2de8e41958631fc07c"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-emb-3b6e2-ocus-and-full-camera-labels-chromium/error-context.md",
+    "sha256": "d6ed51dcfd885405228431e8fbd8a7bea89ebbecfdfa532fc446c383e4d00074"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-emb-3b6e2-ocus-and-full-camera-labels-chromium/test-failed-1.png",
+    "sha256": "3878570f4a62a0d65f57cf1754e0269e56ec797f4e36e26b44c172eb6e800401"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-emb-3b6e2-ocus-and-full-camera-labels-chromium/trace.zip",
+    "sha256": "affa52e68bb51323786f893b0903d58e8b42104ed40b39bcd37889fe4348e4d6"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-fre-6f1f0-y-completed-learning-phases-chromium/error-context.md",
+    "sha256": "264d78eee6f93979cb06c6d0b8374ecf91072ed052c29a835ade5b1f4a270363"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-fre-6f1f0-y-completed-learning-phases-chromium/test-failed-1.png",
+    "sha256": "3878570f4a62a0d65f57cf1754e0269e56ec797f4e36e26b44c172eb6e800401"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-fre-6f1f0-y-completed-learning-phases-chromium/trace.zip",
+    "sha256": "b7ade3f06688a1db01fe356e224face44b5c12aff38696c9b66027f48660ad63"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-Gui-8d641--preserves-the-current-view-chromium/error-context.md",
+    "sha256": "18dab8493ada56dee0437241880b13242b027011a4f461585ef8d25f536590fd"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-Gui-8d641--preserves-the-current-view-chromium/test-failed-1.png",
+    "sha256": "3878570f4a62a0d65f57cf1754e0269e56ec797f4e36e26b44c172eb6e800401"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-Gui-8d641--preserves-the-current-view-chromium/trace.zip",
+    "sha256": "db063558b81cf8d813cd1d7b83a2c324ffb4e29381d4bc266b583b4841dbe9ec"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-Ide-a6e85--preserves-the-current-view-chromium/error-context.md",
+    "sha256": "cd6d8a1a5c1a8f0ced76b0833e46eed9eebf30858dfb98e9b2075bf8d56ae012"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-Ide-a6e85--preserves-the-current-view-chromium/test-failed-1.png",
+    "sha256": "3878570f4a62a0d65f57cf1754e0269e56ec797f4e36e26b44c172eb6e800401"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-Ide-a6e85--preserves-the-current-view-chromium/trace.zip",
+    "sha256": "ad680ad91be8e3748ddee81ace1e49fcc81ae3fc6117cc3e0bf70f44e14f6b1c"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-ret-30fcd-preserves-recorded-evidence-chromium/error-context.md",
+    "sha256": "dfd7742b1c744c1ddd2a530ce96adb3f96284705ebdffd500cf72509252bd078"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-ret-30fcd-preserves-recorded-evidence-chromium/test-failed-1.png",
+    "sha256": "3878570f4a62a0d65f57cf1754e0269e56ec797f4e36e26b44c172eb6e800401"
+  },
+  {
+    "file": "before/test-results/dissection-ux-cohesion-ret-30fcd-preserves-recorded-evidence-chromium/trace.zip",
+    "sha256": "4be91b82d4af560712d715aa9a891de2a1e88409476c0d13f51c9730ab7ebb1f"
+  },
+  {
+    "file": "before-desktop-camera.png",
+    "sha256": "f06b689d019027a01371f27038557a95e19edeff5302fe841e2ff20a547eaafe"
+  },
+  {
+    "file": "before-desktop-context.png",
+    "sha256": "4310e019c08635603c65811f1fa3871a07f88caa99e85cddc0b7e03dbdf0d5ec"
+  },
+  {
+    "file": "before-desktop-handoff.png",
+    "sha256": "7798db4d542baa30155b016fc21c43a0f3fdc97591fae2af59305adcbf75ca3c"
+  },
+  {
+    "file": "before-desktop-metrics.json",
+    "sha256": "c27d2cc8ba663521f1c63c82a2d61c5359d6690d8e0c6dcfb56817930f9e914d"
+  },
+  {
+    "file": "before-embedded-large-camera.png",
+    "sha256": "4644af588819a5a86d1a16991fc8848e9a69875239183b3298b54a6b2945537a"
+  },
+  {
+    "file": "before-embedded-large-context.png",
+    "sha256": "b5be1afd890e6c404c474a21e40c03987493db741e450da4216acf4974c8d82a"
+  },
+  {
+    "file": "before-embedded-large-handoff.png",
+    "sha256": "be6d51999a2da11da5a6d4f826bf44ae2a6f187d1ad587bbf3fb83e63e09b59d"
+  },
+  {
+    "file": "before-embedded-large-metrics.json",
+    "sha256": "5eb858dfab97e09e0f41cf47803f1eeaf395293bfbf04db9b44cc51f330b608f"
+  },
+  {
+    "file": "before-embedded-medium-camera.png",
+    "sha256": "615e6a77a50ce116b3e2a11846c445a316b2d6a7a4b51e46d146aa6d5938059a"
+  },
+  {
+    "file": "before-embedded-medium-context.png",
+    "sha256": "10f61b61089355b22b2bd7b8e0da0b0f5662c2c6b1116f00bc1ddc07479255ae"
+  },
+  {
+    "file": "before-embedded-medium-handoff.png",
+    "sha256": "4413c3991fa25874ad719eff34fad32981d6732b0eaf3d546c1f80a31b99c8a9"
+  },
+  {
+    "file": "before-embedded-medium-metrics.json",
+    "sha256": "30a4b21b1163f46e869a31117631e09789f8306c7c552e11dce05a6b580ad74f"
+  },
+  {
+    "file": "before-forced-colors-camera.png",
+    "sha256": "b3d0be0cc09350298506a88483585619c351cad8f86c8d2e363d3964950c2c2e"
+  },
+  {
+    "file": "before-forced-colors-context.png",
+    "sha256": "bbc7bcdf11b3b92293565f914e15dfa42567ecc2275d6200bdfdf8c541117d7c"
+  },
+  {
+    "file": "before-forced-colors-handoff.png",
+    "sha256": "bd03ce42bf31be43a6a80fafc35fafa9070871bd16d04acd81c4e89d4441cbf5"
+  },
+  {
+    "file": "before-forced-colors-metrics.json",
+    "sha256": "b373ded77863cafecc519f8f361d706855ef2bbded674639efa9f2ca1be07928"
+  },
+  {
+    "file": "before-phone-camera.png",
+    "sha256": "2d88b8a83363d58132d2023918532f71e74d94fdba34cdada5f9010f7c808c4d"
+  },
+  {
+    "file": "before-phone-context.png",
+    "sha256": "c2df904a8fb0584b7c0776ac1cc3a68b52f168bee2974a20351240bc5bf4756b"
+  },
+  {
+    "file": "before-phone-handoff.png",
+    "sha256": "d2602a0f8e79000a4110555992cfbf9e6e4c167978812b0e66a32fe1773aeec7"
+  },
+  {
+    "file": "before-phone-metrics.json",
+    "sha256": "60cb9655a72ebab61d8c6f8b2aefa75cd6c9bfb61c8e5a522039d9eadc2610fe"
+  },
+  {
+    "file": "before-tablet-camera.png",
+    "sha256": "ec2160468fddf729e3cdcb0e7ca7467c11aab421a3cde68938201a282f05ee17"
+  },
+  {
+    "file": "before-tablet-context.png",
+    "sha256": "02aa62093c24e23deb7d5c4c1da031358a492ac35aaea0ca63fe3de2b2c8698c"
+  },
+  {
+    "file": "before-tablet-handoff.png",
+    "sha256": "ed4ac24e6f1795d5304c17605ab116da34ff637b0cb7d6ee090c9f771113eb59"
+  },
+  {
+    "file": "before-tablet-metrics.json",
+    "sha256": "6756e0956e29cf10674961a5f9d435b2c2bb2d41e89c96e38db117d7a2231c46"
+  },
+  {
+    "file": "camera-text-spacing.png",
+    "sha256": "48fce36dc6a403ad4107f91dd6a255a8e7b7e7c239f2fa05bdef761767e619dc"
+  },
+  {
+    "file": "choose-guided-view.png",
+    "sha256": "3df30e1a8f8de2ef3aba17b3ebd65aa6d1781b0254851605fe4480e5a44297fc"
+  },
+  {
+    "file": "choose-identify-view.png",
+    "sha256": "a8b732da44334598f80de5890f8f18919937772b6ef8d553a2e6b115084bf3c8"
+  },
+  {
+    "file": "desktop-axe.json",
+    "sha256": "a07f9a38da0c51a3cf020c4c8e492b28e36d8acacf7815c96bd819c77d57db16"
+  },
+  {
+    "file": "desktop-focus.json",
+    "sha256": "84b174eb29fa22d9729f843883371f7a18217a450e844f5a02c0d3cfc550e5d5"
+  },
+  {
+    "file": "desktop-icon-contrast.json",
+    "sha256": "3c49307cb01538304b1a90ae8b5876cd0d9da58a143c37bec1a8b08b2ec8cf3d"
+  },
+  {
+    "file": "embedded-large-axe.json",
+    "sha256": "97a0289c2a34ab7478269f3286340c712048aca1e5a9a6c415a8af511767b94b"
+  },
+  {
+    "file": "embedded-large-focus.json",
+    "sha256": "8ca57fbecf65263a2785c582aa1d864d9fe1dbbf0015f207c7544898139dc398"
+  },
+  {
+    "file": "embedded-large-icon-contrast.json",
+    "sha256": "06efbfc7cd159a6ab13ab96150c8adf8ac420f37d3d5ed2d67ecc2bc1f294697"
+  },
+  {
+    "file": "embedded-medium-axe.json",
+    "sha256": "cebf9ef4a91eaf7a623891601682d1d01d90418bb69ebefcfd820637ca0ba758"
+  },
+  {
+    "file": "embedded-medium-focus.json",
+    "sha256": "84b174eb29fa22d9729f843883371f7a18217a450e844f5a02c0d3cfc550e5d5"
+  },
+  {
+    "file": "embedded-medium-icon-contrast.json",
+    "sha256": "044faedaf4fad5ec1ca8f42242abf682e0366229eabd2631227ec38a4a96509d"
+  },
+  {
+    "file": "final/attempt.json",
+    "sha256": "bf9e1f3ae8ce4206f9e6b9640b0136da4ebd24a94e0da6c814c1dd0601f63148"
+  },
+  {
+    "file": "final/results.json",
+    "sha256": "f3bc67e687b80a148eb08d0c917f0d1f0c374d637971e4b519133dea781a03c1"
+  },
+  {
+    "file": "final/stderr.txt",
+    "sha256": "4d4abf09029c341a998f49f080851963ea75bc94c5c7a42a3091571ab694fb06"
+  },
+  {
+    "file": "final/stdout.txt",
+    "sha256": "28e56483b88ce083db9fb2db7b25f18a6614cbfb4004395cb471fcc92ebe886a"
+  },
+  {
+    "file": "final/test-results/.last-run.json",
+    "sha256": "f25580f232b4a3cc7ce5494b0ad308ce95f1fb66e5d39cccde4123270c0f0c81"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-100d3--coherent-on-embedded-large-chromium/error-context.md",
+    "sha256": "0adfa4d57292e3824e9b28e0885fac4726170040db98d0986f4067ad674320ce"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-100d3--coherent-on-embedded-large-chromium/test-failed-1.png",
+    "sha256": "5c58ea5a952881b10d43b008a4c65f4751e28452e431b3d85637752478603b41"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-100d3--coherent-on-embedded-large-chromium/trace.zip",
+    "sha256": "665511892274e2694d096b727e88e9736e39a3d9661e93f374711d53281ceda5"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-13dc3-ext-stay-coherent-on-tablet-chromium/error-context.md",
+    "sha256": "c1f7df05bf57ef823ff77720e9754402094e6f058f7b9740fab73d8ef7959c39"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-13dc3-ext-stay-coherent-on-tablet-chromium/test-failed-1.png",
+    "sha256": "5400a02ee6bf5023a3a1a74103853b80099948f20ee71239290897325041b632"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-13dc3-ext-stay-coherent-on-tablet-chromium/trace.zip",
+    "sha256": "1b265eb3e7aa7e1c2134210e852aa4f5bd25f47c292460a27f165e7bc11254fa"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-23764-coherent-on-embedded-medium-chromium/error-context.md",
+    "sha256": "69a711e40f4fd6cc2126f501d3dfb7b6b6b28633ef9c70f7799a31afd641b454"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-23764-coherent-on-embedded-medium-chromium/test-failed-1.png",
+    "sha256": "4ca2a5d92404ff13cde54aeb08b50fbaf0396fda5d2e2d6d7aa84bd5534c5263"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-23764-coherent-on-embedded-medium-chromium/trace.zip",
+    "sha256": "3429f7b1eaeb9086227f4fbcefbfa66242e149f77a20381c133664114efd6eb1"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-5dc35-xt-stay-coherent-on-desktop-chromium/error-context.md",
+    "sha256": "8f2eb24522ab9ebee4f5c52f51ded6540e4352bc5bb26df04037c909764b4d74"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-5dc35-xt-stay-coherent-on-desktop-chromium/test-failed-1.png",
+    "sha256": "41402f7fc21243f4cfe0743a6eebe407c5fcacccae8a20ed6c795901f1c123ef"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-5dc35-xt-stay-coherent-on-desktop-chromium/trace.zip",
+    "sha256": "8d555de61ccb9b9688c7bc68f029d98f269d4a09031ef0411b599e876ecc808c"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-74bfe-y-coherent-on-forced-colors-chromium/error-context.md",
+    "sha256": "788b7fa76a144d6203767b33ec98a702936491294c40da8a0019da4593e9f7ec"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-74bfe-y-coherent-on-forced-colors-chromium/test-failed-1.png",
+    "sha256": "4a35d60a339b980a23ecc447fffe96256807c794001ea3e184e63a8a7812c4eb"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-74bfe-y-coherent-on-forced-colors-chromium/trace.zip",
+    "sha256": "ebb94c33622259163afe47051bd5716a658166942635ebef8f78ef343ac317c9"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-d0ca6-text-stay-coherent-on-phone-chromium/error-context.md",
+    "sha256": "0714b36d936dffe6b3a265a343c9f988dc39b3d8e6b6c1b4aaaf7670d30089f4"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-d0ca6-text-stay-coherent-on-phone-chromium/test-failed-1.png",
+    "sha256": "51a7a8b036c614936d926a49dd23c7207b38991ee7ff5dc54acb298c31374a62"
+  },
+  {
+    "file": "final/test-results/dissection-ux-cohesion-spe-d0ca6-text-stay-coherent-on-phone-chromium/trace.zip",
+    "sha256": "25f8c53ad1e99947002b0f79b9bf7e12dcc85f6366abc9eef258780765df0ed6"
+  },
+  {
+    "file": "final-audit/attempt.json",
+    "sha256": "820da13b49ef5faee982b98a09e7271c79cbf36f85f0f1aee51407f105c6c46b"
+  },
+  {
+    "file": "final-audit/results.json",
+    "sha256": "64b95ee1c163a2940219ae677e9e8c0e577c8d21592a3c9011e02d748e51f14f"
+  },
+  {
+    "file": "final-audit/stderr.txt",
+    "sha256": "311a2affb59cd13dd8fc5d515b3d706a8d5307d1ae1fd8da74900fd15cdc0cdb"
+  },
+  {
+    "file": "final-audit/stdout.txt",
+    "sha256": "1f2b91ecf1328805b25df4ef56c12ed626ca25b75e68548d0f80dca0be6aa657"
+  },
+  {
+    "file": "final-audit/test-results/.last-run.json",
+    "sha256": "f25580f232b4a3cc7ce5494b0ad308ce95f1fb66e5d39cccde4123270c0f0c81"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-100d3--coherent-on-embedded-large-chromium/error-context.md",
+    "sha256": "0adfa4d57292e3824e9b28e0885fac4726170040db98d0986f4067ad674320ce"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-100d3--coherent-on-embedded-large-chromium/test-failed-1.png",
+    "sha256": "5c58ea5a952881b10d43b008a4c65f4751e28452e431b3d85637752478603b41"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-100d3--coherent-on-embedded-large-chromium/trace.zip",
+    "sha256": "c1feb7d00c4d1f3ecc7a3aaca6cc31845f2d03d349b14bc9c6e5fd3d2a7f716d"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-13dc3-ext-stay-coherent-on-tablet-chromium/error-context.md",
+    "sha256": "463ff054fdb1a40adac4927f50c3057068ef2e66399f51585cfe69b4c8c5c606"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-13dc3-ext-stay-coherent-on-tablet-chromium/test-failed-1.png",
+    "sha256": "5400a02ee6bf5023a3a1a74103853b80099948f20ee71239290897325041b632"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-13dc3-ext-stay-coherent-on-tablet-chromium/trace.zip",
+    "sha256": "c2be60f0b409b2f9326a97897085f3cae73a8a8430befbf0a6202d2d8ba1f8d9"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-23764-coherent-on-embedded-medium-chromium/error-context.md",
+    "sha256": "84f034f88f9d336492487a7bd664c640cb2ce6630c2e1b534aea62d9451a0e01"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-23764-coherent-on-embedded-medium-chromium/test-failed-1.png",
+    "sha256": "4ca2a5d92404ff13cde54aeb08b50fbaf0396fda5d2e2d6d7aa84bd5534c5263"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-23764-coherent-on-embedded-medium-chromium/trace.zip",
+    "sha256": "5c40dba18d43120bddfe46a47d1c74922244ad0b249bd68ca0eb7a0ee81ec1fd"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-5dc35-xt-stay-coherent-on-desktop-chromium/error-context.md",
+    "sha256": "52499263ad016bac7a50ec98544e0bf9c96c1b9173d25a8d3ef31c5e138a6a6f"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-5dc35-xt-stay-coherent-on-desktop-chromium/test-failed-1.png",
+    "sha256": "41402f7fc21243f4cfe0743a6eebe407c5fcacccae8a20ed6c795901f1c123ef"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-5dc35-xt-stay-coherent-on-desktop-chromium/trace.zip",
+    "sha256": "b03ac9308c56c7ad0872efac2deaedc43ed8d4c58aae8fbbee83840178e728cd"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-74bfe-y-coherent-on-forced-colors-chromium/error-context.md",
+    "sha256": "788b7fa76a144d6203767b33ec98a702936491294c40da8a0019da4593e9f7ec"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-74bfe-y-coherent-on-forced-colors-chromium/test-failed-1.png",
+    "sha256": "4a35d60a339b980a23ecc447fffe96256807c794001ea3e184e63a8a7812c4eb"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-74bfe-y-coherent-on-forced-colors-chromium/trace.zip",
+    "sha256": "b366428ca35671122c3f1508b877898ba43d53391c1807a7d3b99155d3371f77"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-d0ca6-text-stay-coherent-on-phone-chromium/error-context.md",
+    "sha256": "3d2eb70112a406ef88d3f5026bef361f77b6ffd302fdef730fb53bddd5bd44a9"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-d0ca6-text-stay-coherent-on-phone-chromium/test-failed-1.png",
+    "sha256": "51a7a8b036c614936d926a49dd23c7207b38991ee7ff5dc54acb298c31374a62"
+  },
+  {
+    "file": "final-audit/test-results/dissection-ux-cohesion-spe-d0ca6-text-stay-coherent-on-phone-chromium/trace.zip",
+    "sha256": "a4f6fe1f3de3991ee9641a3aacb675b4c3bd068ef0b991e135dae85f8073afc0"
+  },
+  {
+    "file": "final-reviewed/attempt.json",
+    "sha256": "1a0f815398f63c781f364cff5e1b48c750f3562f771ecda421db94e54af202c3"
+  },
+  {
+    "file": "final-reviewed/results.json",
+    "sha256": "3b5d04531307b1ef4132131797d262077626f2ee7ecabe877a5de87d6e1ee3fd"
+  },
+  {
+    "file": "final-reviewed/stderr.txt",
+    "sha256": "4189d900c6a20151de76feb65078e5f2a19222b2cb14c910c4809722033ecd6a"
+  },
+  {
+    "file": "final-reviewed/stdout.txt",
+    "sha256": "ce6fd67232c5c7b54af0e9fa6af61d08b9f45ccfdd0c0ce07792352e47caa538"
+  },
+  {
+    "file": "final-reviewed/test-results/.last-run.json",
+    "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+  },
+  {
+    "file": "focus-desktop.png",
+    "sha256": "0c7160013658f0b93d33fdea1b04979e1a7b054a180afcac11de7a122a60093e"
+  },
+  {
+    "file": "focus-embedded-large.png",
+    "sha256": "49a5c937a94e860700e5accaa5f7e9640fe699ad0a89a578a00b79d862464021"
+  },
+  {
+    "file": "focus-embedded-medium.png",
+    "sha256": "6c28d75bc1d4f5af5066155e688b48dd5de69269647baa4c31f198fa00ce243b"
+  },
+  {
+    "file": "focus-forced-colors.png",
+    "sha256": "3e1d63ebc6e9ca27681157b6cc15bf703c3c80434fad10446efa084cdc40e412"
+  },
+  {
+    "file": "focus-phone.png",
+    "sha256": "a92e78d298fae90ac4e8ed20eb9a80819dbf92e454f3e1af457592996ff73733"
+  },
+  {
+    "file": "focus-tablet.png",
+    "sha256": "419b171509594a54f9bf482a6b4595bc7a916e3d0cc06d5a5784ebbd4c6b532b"
+  },
+  {
+    "file": "forced-colors-axe.json",
+    "sha256": "0c040b2cb598dcf36ecf8fced24316a050673e1dfef948e6d3096db58c2d3b36"
+  },
+  {
+    "file": "forced-colors-focus.json",
+    "sha256": "0b0f4eed80fa3f3af1214264817dfda8539e95c8fb913d4ff7b8f7954befbd9a"
+  },
+  {
+    "file": "forced-colors-icon-contrast.json",
+    "sha256": "34b4e522a6d7f2ce7f306c13701356a3f2d3196a9123c52a2fd1eb5ae49342c9"
+  },
+  {
+    "file": "fresh-study-phases.png",
+    "sha256": "8f9470ff54ffb8f8bb68f8ea2d77323c964c29b7be46c781b72c9fb242cf7b2d"
+  },
+  {
+    "file": "layer-timer-edit.json",
+    "sha256": "635680671e28c2afc64ed8bf798512d9f7307850e9d8b345e1e062146f9de027"
+  },
+  {
+    "file": "layer-timer-strengthen.json",
+    "sha256": "81abb74e319529286d5f3292fe0c8dca1d71cdbcafb119d1959cb1f4e815e626"
+  },
+  {
+    "file": "phone-axe.json",
+    "sha256": "199da095e4aaf0ba7b2edea4f070f1764f69aaf887748f8f60f7003a266a9e92"
+  },
+  {
+    "file": "phone-focus.json",
+    "sha256": "84b174eb29fa22d9729f843883371f7a18217a450e844f5a02c0d3cfc550e5d5"
+  },
+  {
+    "file": "phone-icon-contrast.json",
+    "sha256": "e995a40bf319fabb7e5d7d275c431632d7da33d31964d4972efc9f2371b14434"
+  },
+  {
+    "file": "README.md",
+    "sha256": "7877f4c04ea315974f308e4e26697cb9a253b6c429fc3004d08596795eed2892"
+  },
+  {
+    "file": "return-phases.png",
+    "sha256": "013ca9d32cdefa95cbb38be1d1ba4e50752784f4e3bd4f642168fe48ac66f9d5"
+  },
+  {
+    "file": "source-edit-pre-audit.json",
+    "sha256": "1570cb60fca03c94aa3db89ad3bc72049447a795f5895368f914820d8cf64cda"
+  },
+  {
+    "file": "source-edit-pre-busy.json",
+    "sha256": "2de16e410e5ace55715171ffb132c2e8022de63cb86a38c5bdb2e4116b1492b3"
+  },
+  {
+    "file": "source-edit.json",
+    "sha256": "3e534c35908aa830b9d70b49f0da95ef338d515d246b271ab78f514609c66478"
+  },
+  {
+    "file": "tablet-axe.json",
+    "sha256": "108b3d2f0641c5f00de6aeeb4b26bac4ba1215f217eba829702fd06b6b06e17b"
+  },
+  {
+    "file": "tablet-focus.json",
+    "sha256": "84b174eb29fa22d9729f843883371f7a18217a450e844f5a02c0d3cfc550e5d5"
+  },
+  {
+    "file": "tablet-icon-contrast.json",
+    "sha256": "16403e42e1d9f45ada5dfc61efc448335570dcd2c6fbfae95fbc8d90f6081ee7"
+  },
+  {
+    "file": "unit/attempt.json",
+    "sha256": "7479bd5739bc176cdfe7285a15617e4d7a69bdca9ecf6f90cf47a4179def5594"
+  },
+  {
+    "file": "unit/results.json",
+    "sha256": "b8518180ecb715d452775c7f9f59de772ee5d9916300635e5bcd8df2260ab614"
+  },
+  {
+    "file": "unit/stderr.txt",
+    "sha256": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+  },
+  {
+    "file": "unit/stdout.txt",
+    "sha256": "db836826a8ecb79626772affcd987225c6885a5a5c4f122c6d295eb9dd10d5b6"
+  },
+  {
+    "file": "unit-edit.json",
+    "sha256": "61070f3a2d4f48f0427b94194f357020684330ca399f4f86bd1301439e62033e"
+  },
+  {
+    "file": "verification.json",
+    "sha256": "add5b4d184e0c286815e531b2970609004a66e2fb0cad1da4f275158db9adde3"
+  }
+]

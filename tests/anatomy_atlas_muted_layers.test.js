@@ -44,16 +44,18 @@ describe('Anatomy regional atlas step layers', () => {
   it.each(ANATOMY_PATHS)('marks exactly one layer active and hides them all from the reader in %s', (filePath) => {
     for (const step of [0, 1, 2, 3]) {
       const root = renderAtlas(filePath, step);
-      const layers = [...root.querySelectorAll('.anatomy-mechanism-layer')];
-      expect(layers.length, 'step ' + step).toBeGreaterThan(1);
-
-      const active = layers.filter((n) => n.classList.contains('is-active'));
-      const muted = layers.filter((n) => n.classList.contains('is-muted'));
-      expect(active.length, 'step ' + step).toBe(1);
-      expect(muted.length, 'step ' + step).toBe(layers.length - 1);
-
-      // Decorative: the step narration below the diagram carries the words for the reader.
-      for (const layer of layers) expect(layer.getAttribute('aria-hidden'), 'step ' + step).toBe('true');
+      const figures = [...root.querySelectorAll('figure[data-anatomy-knee-scale]')];
+      expect(figures.map(figure => figure.getAttribute('data-anatomy-knee-scale'))).toEqual(['overview', 'support']);
+      for (const figure of figures) {
+        const layers = [...figure.querySelectorAll('.anatomy-mechanism-layer')];
+        expect(layers.length, 'step ' + step).toBe(4);
+        const active = layers.filter((n) => n.classList.contains('is-active'));
+        const muted = layers.filter((n) => n.classList.contains('is-muted'));
+        expect(active.length, 'step ' + step).toBe(1);
+        expect(muted.length, 'step ' + step).toBe(3);
+        // Decorative: the readable step narration carries the words for the reader.
+        for (const layer of layers) expect(layer.getAttribute('aria-hidden'), 'step ' + step).toBe('true');
+      }
     }
   }, 60_000);
 });

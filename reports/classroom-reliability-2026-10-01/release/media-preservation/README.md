@@ -1,0 +1,11 @@
+# Second-save media preservation candidate
+
+Preparation succeeded without changing production files or running tests. `prepared.json` records all four frozen before/after hashes. `before/` and `candidate/` contain exact source copies; `0.patch` through `2.patch` cover the three hosts and `3.patch` covers the production regression suite. Candidates passed syntax parsing only.
+
+A first save removes session-only blob URLs and records the snapshot as `text-only`. The current workspace builder mistakes that historical label for a persistent instruction to strip valid images/audio on subsequent saves. The candidate applies the existing narrow proposal: repeat stripping only when a recorded `user-remove-media` reason establishes explicit teacher intent. Actual quota reduction remains in `saveWithQuotaFallback` after a rejected write. Snapshot labels, omission counts/manifests, quota classification and schemas are unchanged.
+
+The test candidate reads current `AlloFlowANTI.txt` by default, with an optional `ALLO_ANTI_CANDIDATE` path for a frozen baseline. It removes report-only proposal injection and the passing bug-characterization assertion, and runs the media-preservation assertion unconditionally. Existing explicit teacher-removal, actual quota-rejection and non-quota failure checks remain. One additional case checks that current valid media is attempted after an older quota omission when the new write succeeds without rejection.
+
+The integration owner can apply with `node reports/classroom-reliability-2026-10-01/release/prepare_media_preservation.cjs --apply`. The script rejects any changed production or candidate fingerprint and writes `applied.json` after replacement. No staging/index operation, generated build, deployment or data deletion occurs. Re-run the focused production suites and reader consistency verifier after application; a prepared candidate is not a passing application result.
+
+Historical omission metadata stays historical. This change does not reconstruct media already absent from saved records or change the existing 500-entry omission-manifest cap. Explicit policy recognition continues to use recorded `user-remove-media` reasons; broader retention-label/schema work is outside this correction.

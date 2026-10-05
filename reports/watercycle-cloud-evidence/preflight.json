@@ -1,0 +1,1125 @@
+{
+  "kind": "preflight",
+  "sourceSha256": "ff8f7f81d26b638486f50e0da1619cd5ca28e80c66b39726332dd71c52ab38b1",
+  "publicSha256": "ff8f7f81d26b638486f50e0da1619cd5ca28e80c66b39726332dd71c52ab38b1",
+  "checks": [
+    {
+      "label": "phone320 no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "phone320 guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "phone320 controls at least 44 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone320 cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone320 explanatory text at least 12 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone320 cloud names remain whole words",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone320 direct text contrast",
+      "passed": true,
+      "details": {
+        "measured": 68,
+        "minimum": 5,
+        "failures": []
+      }
+    },
+    {
+      "label": "phone320 scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone390 no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "phone390 guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "phone390 controls at least 44 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone390 cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone390 explanatory text at least 12 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone390 cloud names remain whole words",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone390 direct text contrast",
+      "passed": true,
+      "details": {
+        "measured": 68,
+        "minimum": 5,
+        "failures": []
+      }
+    },
+    {
+      "label": "phone390 scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "desktop no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "desktop guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "desktop controls at least 44 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "desktop cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "desktop explanatory text at least 12 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "desktop cloud names remain whole words",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "desktop direct text contrast",
+      "passed": true,
+      "details": {
+        "measured": 68,
+        "minimum": 5,
+        "failures": []
+      }
+    },
+    {
+      "label": "desktop scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "host390 no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "host390 guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "host390 controls at least 44 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "host390 cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "host390 explanatory text at least 12 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "host390 cloud names remain whole words",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "host390 direct text contrast",
+      "passed": true,
+      "details": {
+        "measured": 68,
+        "minimum": 5,
+        "failures": []
+      }
+    },
+    {
+      "label": "host390 scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "dark no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "dark guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "dark controls at least 44 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "dark cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "dark explanatory text at least 12 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "dark cloud names remain whole words",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "dark direct text contrast",
+      "passed": true,
+      "details": {
+        "measured": 68,
+        "minimum": 8.02,
+        "failures": []
+      }
+    },
+    {
+      "label": "dark scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-phone no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "forced-phone guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "forced-phone controls at least 44 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-phone cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-phone explanatory text at least 12 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-phone cloud names remain whole words",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-phone direct text contrast",
+      "passed": true,
+      "details": {
+        "measured": 68,
+        "minimum": 13.99,
+        "failures": []
+      }
+    },
+    {
+      "label": "forced-phone scoped axe",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-dark no horizontal page overflow",
+      "passed": true
+    },
+    {
+      "label": "forced-dark guide has no clipped width",
+      "passed": true
+    },
+    {
+      "label": "forced-dark controls at least 44 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-dark cloud names fit without clipping",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-dark explanatory text at least 12 px",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-dark cloud names remain whole words",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-dark direct text contrast",
+      "passed": false,
+      "details": {
+        "measured": 68,
+        "minimum": 1.13,
+        "failures": [
+          {
+            "id": "",
+            "text": "Show an observation hint",
+            "ratio": 1.13,
+            "required": 4.5
+          }
+        ]
+      }
+    },
+    {
+      "label": "forced-dark scoped axe",
+      "passed": false,
+      "details": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "html": "<summary>Show an observation hint</summary>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #e6f4f8, background color: #ffffff, font size: 12.8pt (17px), font weight: bold). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "label": "Frozen source unchanged throughout QA",
+      "passed": true
+    },
+    {
+      "label": "No browser runtime errors",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "failures": [
+    {
+      "label": "forced-dark direct text contrast",
+      "passed": false,
+      "details": {
+        "measured": 68,
+        "minimum": 1.13,
+        "failures": [
+          {
+            "id": "",
+            "text": "Show an observation hint",
+            "ratio": 1.13,
+            "required": 4.5
+          }
+        ]
+      }
+    },
+    {
+      "label": "forced-dark scoped axe",
+      "passed": false,
+      "details": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "html": "<summary>Show an observation hint</summary>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #e6f4f8, background color: #ffffff, font size: 12.8pt (17px), font weight: bold). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "cases": [
+    {
+      "label": "phone320 measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [],
+      "wordClipping": [],
+      "smallText": []
+    },
+    {
+      "label": "phone320 cloud layout",
+      "guideWidth": 262,
+      "galleryColumns": "224px",
+      "tileWidths": [
+        224,
+        224,
+        224,
+        224,
+        224,
+        224,
+        224,
+        224,
+        224,
+        224
+      ],
+      "detailWidth": 224,
+      "pairColumns": "194px",
+      "names": [
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Stratus",
+          "lines": 1
+        },
+        {
+          "text": "Stratocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Nimbostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrostratus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        }
+      ],
+      "broken": []
+    },
+    {
+      "label": "phone320 contrast",
+      "measured": 68,
+      "minimum": 5,
+      "failures": []
+    },
+    {
+      "label": "phone390 measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [],
+      "wordClipping": [],
+      "smallText": []
+    },
+    {
+      "label": "phone390 cloud layout",
+      "guideWidth": 332,
+      "galleryColumns": "294px",
+      "tileWidths": [
+        294,
+        294,
+        294,
+        294,
+        294,
+        294,
+        294,
+        294,
+        294,
+        294
+      ],
+      "detailWidth": 294,
+      "pairColumns": "264px",
+      "names": [
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Stratus",
+          "lines": 1
+        },
+        {
+          "text": "Stratocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Nimbostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrostratus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        }
+      ],
+      "broken": []
+    },
+    {
+      "label": "phone390 contrast",
+      "measured": 68,
+      "minimum": 5,
+      "failures": []
+    },
+    {
+      "label": "desktop measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [],
+      "wordClipping": [],
+      "smallText": []
+    },
+    {
+      "label": "desktop cloud layout",
+      "guideWidth": 715.4,
+      "galleryColumns": "217.812px 217.812px 217.812px",
+      "tileWidths": [
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8
+      ],
+      "detailWidth": 677.4,
+      "pairColumns": "309.719px 309.719px",
+      "names": [
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Stratus",
+          "lines": 1
+        },
+        {
+          "text": "Stratocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Nimbostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrostratus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        }
+      ],
+      "broken": []
+    },
+    {
+      "label": "desktop contrast",
+      "measured": 68,
+      "minimum": 5,
+      "failures": []
+    },
+    {
+      "label": "host390 measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [],
+      "wordClipping": [],
+      "smallText": []
+    },
+    {
+      "label": "host390 cloud layout",
+      "guideWidth": 390,
+      "galleryColumns": "352px",
+      "tileWidths": [
+        352,
+        352,
+        352,
+        352,
+        352,
+        352,
+        352,
+        352,
+        352,
+        352
+      ],
+      "detailWidth": 352,
+      "pairColumns": "322px",
+      "names": [
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Stratus",
+          "lines": 1
+        },
+        {
+          "text": "Stratocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Nimbostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrostratus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        }
+      ],
+      "broken": []
+    },
+    {
+      "label": "host390 contrast",
+      "measured": 68,
+      "minimum": 5,
+      "failures": []
+    },
+    {
+      "label": "dark measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [],
+      "wordClipping": [],
+      "smallText": []
+    },
+    {
+      "label": "dark cloud layout",
+      "guideWidth": 715.4,
+      "galleryColumns": "217.812px 217.812px 217.812px",
+      "tileWidths": [
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8
+      ],
+      "detailWidth": 677.4,
+      "pairColumns": "309.719px 309.719px",
+      "names": [
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Stratus",
+          "lines": 1
+        },
+        {
+          "text": "Stratocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Nimbostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrostratus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        }
+      ],
+      "broken": []
+    },
+    {
+      "label": "dark contrast",
+      "measured": 68,
+      "minimum": 8.02,
+      "failures": []
+    },
+    {
+      "label": "forced-phone measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [],
+      "wordClipping": [],
+      "smallText": []
+    },
+    {
+      "label": "forced-phone cloud layout",
+      "guideWidth": 262,
+      "galleryColumns": "224px",
+      "tileWidths": [
+        224,
+        224,
+        224,
+        224,
+        224,
+        224,
+        224,
+        224,
+        224,
+        224
+      ],
+      "detailWidth": 224,
+      "pairColumns": "194px",
+      "names": [
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Stratus",
+          "lines": 1
+        },
+        {
+          "text": "Stratocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Nimbostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrostratus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        }
+      ],
+      "broken": []
+    },
+    {
+      "label": "forced-phone contrast",
+      "measured": 68,
+      "minimum": 13.99,
+      "failures": []
+    },
+    {
+      "label": "forced-dark measurements",
+      "pageOverflow": false,
+      "scopeOverflow": false,
+      "smallTargets": [],
+      "wordClipping": [],
+      "smallText": []
+    },
+    {
+      "label": "forced-dark cloud layout",
+      "guideWidth": 715.4,
+      "galleryColumns": "217.812px 217.812px 217.812px",
+      "tileWidths": [
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8,
+        217.8
+      ],
+      "detailWidth": 677.4,
+      "pairColumns": "309.719px 309.719px",
+      "names": [
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Stratus",
+          "lines": 1
+        },
+        {
+          "text": "Stratocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Nimbostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altostratus",
+          "lines": 1
+        },
+        {
+          "text": "Altocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrostratus",
+          "lines": 1
+        },
+        {
+          "text": "Cirrocumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulus",
+          "lines": 1
+        },
+        {
+          "text": "Cumulonimbus",
+          "lines": 1
+        }
+      ],
+      "broken": []
+    },
+    {
+      "label": "forced-dark contrast",
+      "measured": 68,
+      "minimum": 1.13,
+      "failures": [
+        {
+          "id": "",
+          "text": "Show an observation hint",
+          "ratio": 1.13,
+          "required": 4.5
+        }
+      ]
+    }
+  ],
+  "actions": [],
+  "audits": [
+    {
+      "name": "phone320",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        },
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ],
+      "passes": 20
+    },
+    {
+      "name": "phone390",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 20
+    },
+    {
+      "name": "desktop",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 20
+    },
+    {
+      "name": "host390",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 20
+    },
+    {
+      "name": "dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 20
+    },
+    {
+      "name": "forced-phone",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        },
+        {
+          "id": "color-contrast",
+          "nodes": 1
+        }
+      ],
+      "passes": 20
+    },
+    {
+      "name": "forced-dark",
+      "violations": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "html": "<summary>Show an observation hint</summary>",
+              "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.12 (foreground color: #e6f4f8, background color: #ffffff, font size: 12.8pt (17px), font weight: bold). Expected contrast ratio of 4.5:1"
+            }
+          ]
+        }
+      ],
+      "incomplete": [
+        {
+          "id": "aria-prohibited-attr",
+          "nodes": 1
+        }
+      ],
+      "passes": 20
+    }
+  ],
+  "captures": [
+    {
+      "file": "preflight-phone320.png",
+      "sha256": "c11a62e708790687b8336ee9225cf1523785ee1002d383b1ad33352f4130dff2"
+    },
+    {
+      "file": "preflight-phone390.png",
+      "sha256": "f42b2823050162ee828559d78184fcfe09bcfdbf2d627d31e1c99de51b2f10c4"
+    },
+    {
+      "file": "preflight-desktop.png",
+      "sha256": "779ea16221c96fcaceba796dc6eddfd4a98ddaab7e0996cef35d3ee2eedf5be0"
+    },
+    {
+      "file": "preflight-host390.png",
+      "sha256": "0ab34911e79b5e127d2bbec52c1192297f5b505fdbc1efbc337a46b7171bb75f"
+    },
+    {
+      "file": "preflight-dark.png",
+      "sha256": "41b9997e3960a5c347c396a6451e9d30b7367ec07714ea45e5abf785ad9d393a"
+    },
+    {
+      "file": "preflight-forced-phone.png",
+      "sha256": "33598b29d21074856f9ef364dde39a43e0c520223b1e52baa55d5a2fa23d5569"
+    },
+    {
+      "file": "preflight-forced-dark.png",
+      "sha256": "31eb832a7dee19b8d7730c0194a03b5db54fbb3421ed8c3864a1099ec736e32b"
+    }
+  ],
+  "errors": [],
+  "completed": true,
+  "browserClosed": true,
+  "serverClosed": true,
+  "finalSourceSha256": "ff8f7f81d26b638486f50e0da1619cd5ca28e80c66b39726332dd71c52ab38b1",
+  "finalPublicSha256": "ff8f7f81d26b638486f50e0da1619cd5ca28e80c66b39726332dd71c52ab38b1",
+  "passed": 56,
+  "failed": 2,
+  "successful": false
+}

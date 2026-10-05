@@ -1,0 +1,174 @@
+{
+  "format": "alloflow-maine-sld-practice",
+  "schemaVersion": 1,
+  "moduleVersion": "1.0.0",
+  "reviewed": "2026-10-02",
+  "exportedAt": "2026-10-02T11:58:32.962Z",
+  "activeCase": "alex",
+  "caseWork": {
+    "alex": {
+      "findings": {
+        "wisc_indexes-full-scale-iq-fsiq": {
+          "purpose": "review",
+          "note": "<img src=x onerror=alert(1)> Keep as reflection text."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": "Classroom observation links slow independent reading with task demands."
+        },
+        "Q6": {
+          "answer": "",
+          "note": "No relevant medical finding reported; verify the record."
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "alex-general-ed-adequate": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "jordan": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    }
+  }
+}

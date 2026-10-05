@@ -1,0 +1,144 @@
+{
+  "checks": [
+    {
+      "localFiltersPreserveEveryToolState": true,
+      "wholeGroupRetainedInObservationView": true,
+      "originalObservationOrdinal": 6,
+      "clearResetsFilters": true
+    },
+    {
+      "newestGroupOrdering": true,
+      "validPartialAndConflictingStates": true,
+      "revealBadgesReflectActualRecords": true,
+      "noteMatchRetainsWholeStudy": true,
+      "retainedPartialTrialsTwoAndThree": true
+    },
+    {
+      "statusFiltersSeparateCompletePartialAndConflict": true,
+      "experimentFilterCombinesWithStatus": true,
+      "conflictingGroupCannotRevealAggregate": true
+    },
+    {
+      "searchExcludesMatchingValuesStartsReferenceIDsAndDates": true,
+      "hiddenMetricsNeverUsedToFindGroups": true
+    },
+    {
+      "bounded120CharacterQuery": true
+    },
+    {
+      "localizedVisibleImpressionsSearchable": true,
+      "localizedTitlesSearchable": true,
+      "localizedGroupSearchRetainsAllMembers": true
+    },
+    {
+      "deletingOnlyQueryMatchHidesGroup": true,
+      "undoRestoresMatchingGroupAndAllMembers": true
+    },
+    {
+      "savedReviewAndSelectedPairSurviveFilteredOutCards": true,
+      "revealPreservesDrawingAndPin": true,
+      "closingMissingOpenerReturnsNotebookFocus": true
+    },
+    {
+      "exportContainsAll24StoredObservationsUnderFilters": true,
+      "exportInspectedInMemoryWithoutNativeDownload": true
+    },
+    {
+      "importAndUndoWorkWithFilteredView": true,
+      "filtersRemainLocalAndSelected": true
+    },
+    {
+      "profileResetsLocalFinder": true,
+      "hostNotebookAndOtherToolsUnchanged": true
+    },
+    {
+      "activeCollectionMasksFinderRowsAndReview": true,
+      "finderSelectionReturnsAfterEnd": true
+    },
+    {
+      "viewport": 320,
+      "studyDetailsAndFilteredObservations": true,
+      "clearKeepsChosenView": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 390,
+      "studyDetailsAndFilteredObservations": true,
+      "clearKeepsChosenView": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 768,
+      "studyDetailsAndFilteredObservations": true,
+      "clearKeepsChosenView": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 1280,
+      "studyDetailsAndFilteredObservations": true,
+      "clearKeepsChosenView": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "viewport": 1600,
+      "studyDetailsAndFilteredObservations": true,
+      "clearKeepsChosenView": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "finderStudyDetailsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "finderStudyDetailsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "finderStudyDetailsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "finderStudyDetailsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-contrast",
+      "finderStudyDetailsPresent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "noOverflow": true,
+      "controls44px": true,
+      "axe": []
+    }
+  ],
+  "errors": [],
+  "loadedSourceSHA256": "6e1ad6f936e0a78cd293a7c029f90db1e22c235dc44500a54ad9531b7477c331",
+  "finalSourceSHA256": "6e1ad6f936e0a78cd293a7c029f90db1e22c235dc44500a54ad9531b7477c331",
+  "sourceSHA256": "6e1ad6f936e0a78cd293a7c029f90db1e22c235dc44500a54ad9531b7477c331"
+}

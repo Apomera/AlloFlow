@@ -1,0 +1,300 @@
+{
+  "format": "alloflow-maine-sld-practice",
+  "schemaVersion": 1,
+  "moduleVersion": "1.1.0",
+  "reviewed": "2026-10-02",
+  "exportedAt": "2026-10-04T03:45:18.439Z",
+  "activeCase": "marisol",
+  "caseWork": {
+    "alex": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Participant alex selected evidence."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": " \n\t "
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "Participant alex isolated Q8 note."
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "alex-general-ed-adequate": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Participant alex-general-ed-adequate selected evidence."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": "\t \n"
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "Participant alex-general-ed-adequate isolated Q8 note."
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "jordan": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Participant jordan selected evidence."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": " \n\t "
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "Participant jordan isolated Q8 note."
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "marisol": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Participant marisol selected evidence."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": " \n\t "
+        },
+        "Q6": {
+          "answer": "",
+          "note": "\t \n"
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "Participant Marisol guide Q8 persists as an ordinary note.\nOne uncertainty remains."
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "taylor": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Participant taylor selected evidence."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": " \n\t "
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "Participant taylor isolated Q8 note."
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    }
+  }
+}

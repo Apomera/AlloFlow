@@ -1,0 +1,22 @@
+{
+  "sourceSHA256Before": "c3c77364224123de15ebc82a733a7467f314eb31f46759dd7e4ef6ba53c7597a",
+  "sourceSHA256After": "c3c77364224123de15ebc82a733a7467f314eb31f46759dd7e4ef6ba53c7597a",
+  "capturedBeforeUTC": "2026-10-03T18:47:31.0657874Z",
+  "capturedAfterUTC": "2026-10-03T18:49:36.765Z",
+  "sourceUnchanged": true,
+  "matching": {
+    "groups": 14,
+    "errors": [],
+    "exitCode": 0,
+    "reportedSourceSHA256": "c3c77364224123de15ebc82a733a7467f314eb31f46759dd7e4ef6ba53c7597a",
+    "result": "reports/artstudio-workspace/perception-repeat/matching-regression/matching-browser-results.json"
+  },
+  "observe": {
+    "groups": 16,
+    "errors": [],
+    "exitCode": 0,
+    "reportedSourceSHA256": "c3c77364224123de15ebc82a733a7467f314eb31f46759dd7e4ef6ba53c7597a",
+    "result": "reports/artstudio-workspace/perception-repeat/observe-regression/perception-lab-browser-results.json"
+  },
+  "totalGroups": 30
+}

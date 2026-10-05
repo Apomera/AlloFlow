@@ -1,0 +1,83 @@
+{
+  "verifiedAt": "2026-10-04T03:05:23.141Z",
+  "baseUrl": "http://127.0.0.1:65063",
+  "runtimePid": 9532,
+  "managedSessionId": 34496,
+  "method": "curl.exe --noproxy * --max-time15; response file SHA256 compared with immutable snapshot",
+  "checks": [
+    {
+      "path": "/app/?tool=maine-sld-practice",
+      "url": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+      "curlArguments": [
+        "--silent",
+        "--show-error",
+        "--noproxy",
+        "*",
+        "--max-time",
+        "15",
+        "--output",
+        "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-http\\index.html",
+        "--write-out",
+        "%{http_code} %{size_download} %{time_total}",
+        "http://127.0.0.1:65063/app/?tool=maine-sld-practice"
+      ],
+      "status": 200,
+      "downloadedBytes": 588,
+      "seconds": 0.198931,
+      "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-http\\index.html",
+      "servedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+      "expectedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+      "failure": null
+    },
+    {
+      "path": "/__sld_preview/host.bundle.js",
+      "url": "http://127.0.0.1:65063/__sld_preview/host.bundle.js",
+      "curlArguments": [
+        "--silent",
+        "--show-error",
+        "--noproxy",
+        "*",
+        "--max-time",
+        "15",
+        "--output",
+        "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-http\\host.bundle.js",
+        "--write-out",
+        "%{http_code} %{size_download} %{time_total}",
+        "http://127.0.0.1:65063/__sld_preview/host.bundle.js"
+      ],
+      "status": 200,
+      "downloadedBytes": 1975883,
+      "seconds": 0.21955,
+      "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-http\\host.bundle.js",
+      "servedSha256": "962a7c4b6c9241f80f2785fb76aeed9aa1e4e7a7cd4dd657a98a4ea99d1d9961",
+      "expectedSha256": "962a7c4b6c9241f80f2785fb76aeed9aa1e4e7a7cd4dd657a98a4ea99d1d9961",
+      "failure": null
+    },
+    {
+      "path": "/app/maine_sld_practice_module.js?v=0ceb5207",
+      "url": "http://127.0.0.1:65063/app/maine_sld_practice_module.js?v=0ceb5207",
+      "curlArguments": [
+        "--silent",
+        "--show-error",
+        "--noproxy",
+        "*",
+        "--max-time",
+        "15",
+        "--output",
+        "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-http\\maine_sld_practice_module.js",
+        "--write-out",
+        "%{http_code} %{size_download} %{time_total}",
+        "http://127.0.0.1:65063/app/maine_sld_practice_module.js?v=0ceb5207"
+      ],
+      "status": 200,
+      "downloadedBytes": 188490,
+      "seconds": 0.078225,
+      "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-http\\maine_sld_practice_module.js",
+      "servedSha256": "0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+      "expectedSha256": "0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+      "failure": null
+    }
+  ],
+  "exactFrozenModuleServed": true,
+  "reachableAfterLaunchToolReturned": true
+}

@@ -1,0 +1,14 @@
+Independent pass32 habitat image review: accepted, with no new visible blocker.
+
+All16 PNGs were opened with view_image: eight under `reports/cephalopod-hunter-enhancement/pass-thirty-two/baseline-views` (sourcef2ef9cbc…) and the eight corresponding files under `current-views` (source7c37f74f…). The two manifests identify the same four profile sizes and list empty error/leak arrays. Root owns the final numeric fixture/parity proof; this review establishes appearance only at these captured poses.
+
+| Profile | Exact DOM filename, viewed in both sets | Exact native GL filename, viewed in both sets | Finding |
+| --- | --- | --- | --- |
+|1280×1000 desktop|squid-approach-desktop.png|squid-approach-desktop-gl.png|Grass beside the left rocks and kelp roots looks modestly fuller in its upper body. The large central sand route, red squid, target ring and fish remain clear. Existing HUD/action placement reads the same. No visible displaced root, stray edge, tear or pinned-extrema spike.|
+|390×844 portrait|squid-approach-phone.png|squid-approach-phone-gl.png|The background grass gain is subtle. Squid wings, selected silverside and ring remain readable; the sand approach stays open. The hint panel still meets the squid's lower tip closely, as in the baseline. No additional grass obstruction or UI shift.|
+|320×568 portrait|squid-narrow-phone.png|squid-narrow-phone-gl.png|Distant grass has a small fuller silhouette, with no new solid wall across the open sand. Squid, rock crab and Rise/Dive depth guidance stay legible. The original thin dark fin endpoints are visible in both native images; no new fin or grass artifact is introduced.|
+|844×390 landscape|squid-landscape-phone.png|squid-landscape-phone-gl.png|The left and right grove clumps gain some body while retaining open gaps. Squid and crab remain clear in the broad sand route. Controls continue to cover part of the right foreground reef. The squid's right fin tip remains close to the right dock's left edge, a baseline clearance limit.|
+
+The change is a small silhouette refinement. It is most apparent in the desktop foreground clumps and landscape groves; it is not a dramatic scene redesign and is harder to distinguish in the distant phone grass. Opaque coverage increases locally, but none of these four matched views shows a newly obstructed route, lost target, enlarged grass footprint or visibly stiff/clamped edge. Individual leaf details are too small in several views to establish close-up anatomy quality.
+
+Acceptance is limited to the reviewed current source and poses. These still images do not establish animation smoothness, close-up behavior, arbitrary camera clearance, gameplay completion, native buffer counts or performance. No new screenshots, model edits, browser/GPU work, tests, production writes or Git actions were performed for this review.

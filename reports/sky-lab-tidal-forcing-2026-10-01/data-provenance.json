@@ -1,0 +1,73 @@
+{
+  "checkedOn": "2026-10-01",
+  "inputs": {
+    "moonGMKm3s2": 4902.800118,
+    "sunGMPublishedM3s2": "1.32712440041279419e20",
+    "sunGMKm3s2": 132712440041.27942,
+    "meanMoonDistanceKm": 384400,
+    "meanPerigeeKm": 363300,
+    "meanApogeeKm": 405500,
+    "sunDistanceKm": 149597870.7,
+    "synodicDays": 29.53059,
+    "solarDayHours": 24
+  },
+  "inputNotes": {
+    "gravitationalParameters": "JPL DE440; SI solar GM divided by 1e9 for km^3/s^2.",
+    "lunarDistances": "NASA named mean perigee and mean apogee, not the full range of observed lunar distances.",
+    "synodicPeriod": "Adopted Sky Lab mean 29.53059 d; NASA Moon Fact Sheet rounds this to 29.53 d."
+  },
+  "equations": {
+    "moonStrength": "(384400 / d_km)^3",
+    "sunStrength": "(GM_sun / GM_moon) * (384400 / AU_km)^3",
+    "moonSunAngle": "2*pi*(phaseStart + hours/(29.53059*24))",
+    "observerAngle": "2*pi*hours/24",
+    "q": "M*cos(2*(observerAngle-moonSunAngle)) + S*cos(2*observerAngle)",
+    "amplitude": "hypot(M*cos(2*moonSunAngle)+S,M*sin(2*moonSunAngle))"
+  },
+  "normalization": "Varying equatorial quadrupole term, relative to the lunar term at its reference mean distance; q is not local water level.",
+  "assumptions": [
+    "Coplanar, equatorial leading tidal term.",
+    "Constant mean lunar and solar rates.",
+    "Earth-Moon distance fixed during each 48-hour experiment; Sun at 1 AU.",
+    "Inclination, eccentricity, ocean dynamics, coast shape, bathymetry, friction, lag, weather and uncertainty omitted.",
+    "Body sizes, orbit spacing and bulges exaggerated in the diagram."
+  ],
+  "snapshots": [
+    {
+      "file": "jpl-parameters.html",
+      "url": "https://ssd.jpl.nasa.gov/astro_par.html",
+      "status": 200,
+      "checkedOn": "2026-10-01",
+      "normalizedSha256": "168f48b94ae3a65f31c96f081d08e7ca91ecc9e65678fdc57353821b492b313e"
+    },
+    {
+      "file": "nasa-moon-facts.html",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+      "status": 200,
+      "checkedOn": "2026-10-01",
+      "normalizedSha256": "a468979dfb4179e36a3f6579cd2d1d4a475b5c6da29313fd470fa68ca1aa30c1"
+    },
+    {
+      "file": "noaa-spring-neap.html",
+      "url": "https://oceanservice.noaa.gov/facts/springtide.html",
+      "status": 200,
+      "checkedOn": "2026-10-01",
+      "normalizedSha256": "abd6b7c4bbcfd74c03e4f5bac9247aca211fdfb9f1847ca3d83da0d6e0b46a74"
+    },
+    {
+      "file": "noaa-coastal-patterns.html",
+      "url": "https://oceanservice.noaa.gov/education/tutorial_tides/tides07_cycles.html",
+      "status": 200,
+      "checkedOn": "2026-10-01",
+      "normalizedSha256": "eb761ae8c05637536f2cf372b3e59b8494b4ac0126534b080d32988dc891506e"
+    }
+  ],
+  "localObservationsLink": "https://tidesandcurrents.noaa.gov/map/",
+  "runtimeNetworkRequestsRequired": false,
+  "display": {
+    "solarGM": "1.3271244 × 10¹¹ km³/s²",
+    "solarGMConversion": "Published SI solar GM divided by 1e9; display mantissa rounded to eight significant figures.",
+    "modelSolarGMKm3s2": 132712440041.27942,
+    "modelInputsChanged": false
+  }
+}

@@ -1,0 +1,109 @@
+{
+  "client": 766,
+  "scroll": 766,
+  "rows": [
+    {
+      "height": 106.1875,
+      "clipped": false
+    },
+    {
+      "height": 106.1875,
+      "clipped": false
+    },
+    {
+      "height": 106.1875,
+      "clipped": false
+    },
+    {
+      "height": 106.1875,
+      "clipped": false
+    }
+  ],
+  "text": [
+    {
+      "text": "Filters apply to this layer. Finish records shows missing notes or confidence ratings. Recorded tracks completed notes and confidence; understanding is checked separately.",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Dorsal Skin",
+      "font": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Not yet inspected",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Not visible",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Show recovery guidance →",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Ventral Skin",
+      "font": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Add a confidence rating",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Visible",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Choose confidence →",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Tympanic Membrane",
+      "font": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Note and confidence recorded",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Visible",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Review saved record →",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Nictitating Membrane",
+      "font": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Note and confidence needed",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Visible",
+      "font": 14,
+      "clipped": false
+    },
+    {
+      "text": "Open observation record →",
+      "font": 14,
+      "clipped": false
+    }
+  ]
+}

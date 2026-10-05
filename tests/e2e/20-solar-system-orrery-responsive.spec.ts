@@ -290,9 +290,9 @@ test('keeps mobile stage guidance readable instead of squeezing it into a corner
   await expect(page.locator('#orrery-stage-readout')).toHaveAttribute('role', 'status');
   await expect(page.locator('#orrery-stage-readout')).toHaveAttribute('aria-live', 'polite');
   await expect(page.locator('#orrery-guided-progress')).toHaveText('0 / 3 guided missions complete');
-  await expect(page.locator('body')).toContainText('a · orbit size');
-  await expect(page.locator('body')).toContainText('e · eccentricity');
-  await expect(page.locator('body')).toContainText('distance now');
+  await expect(page.locator('#orrery-world-detail')).toContainText('Orbit size (a)');
+  await expect(page.locator('#orrery-world-detail')).toContainText('Orbit shape (e)');
+  await expect(page.locator('#orrery-world-detail')).toContainText('Distance from Sun');
   await expect(page.locator('body')).toContainText('Kepler III check');
   const selectedMobileWidth = await page.evaluate(() => document.documentElement.scrollWidth);
   expect(selectedMobileWidth).toBeLessThanOrEqual(321);
@@ -453,6 +453,7 @@ test('remeasures the Orrery canvas and preserves its normalized camera across co
       orr_tab: 0,
       orr_zoom: 'full',
       orr_sel: 'earth',
+      orr_compare: 'mars',
       orr_paused: true,
     },
   }, undefined, { expectCanvas: false });
@@ -467,6 +468,7 @@ test('remeasures the Orrery canvas and preserves its normalized camera across co
     if (!state || !layout) return null;
     const rendered = layout.rendered || [];
     let maxOverlapArea = 0;
+    let maxReservedOverlapArea = 0;
     for (let first = 0; first < rendered.length; first += 1) {
       for (let second = first + 1; second < rendered.length; second += 1) {
         const a = rendered[first];
@@ -475,13 +477,22 @@ test('remeasures the Orrery canvas and preserves its normalized camera across co
         const overlapHeight = Math.min(a.y + a.h, b.y + b.h) - Math.max(a.y, b.y);
         if (overlapWidth > 0 && overlapHeight > 0) maxOverlapArea = Math.max(maxOverlapArea, overlapWidth * overlapHeight);
       }
+      for (const reserved of layout.reserved || []) {
+        const a = rendered[first];
+        const overlapWidth = Math.min(a.x + a.w, reserved.x + reserved.w) - Math.max(a.x, reserved.x);
+        const overlapHeight = Math.min(a.y + a.h, reserved.y + reserved.h) - Math.max(a.y, reserved.y);
+        if (overlapWidth > 0 && overlapHeight > 0) maxReservedOverlapArea = Math.max(maxReservedOverlapArea, overlapWidth * overlapHeight);
+      }
     }
     return {
       selectedRendered: rendered.some((item: any) => item.id === 'earth' && item.selected),
+      comparedRendered: rendered.some((item: any) => item.id === 'mars' && item.compared),
+      reservedIds: (layout.reserved || []).map((item: any) => item.id),
       renderedCount: rendered.length,
       suppressedCount: (layout.suppressed || []).length,
       contained: rendered.every((item: any) => item.x >= 3 && item.y >= 3 && item.x + item.w <= state.viewportWidth - 3 && item.y + item.h <= state.viewportHeight - 3),
       maxOverlapArea,
+      maxReservedOverlapArea,
     };
   });
   const readResponsiveCamera = () => canvas.evaluate((element) => {
@@ -519,14 +530,17 @@ test('remeasures the Orrery canvas and preserves its normalized camera across co
     };
   });
   expect(wideKeyLayout.display).toBe('grid');
-  expect(wideKeyLayout.itemCount).toBe(7);
+  expect(wideKeyLayout.itemCount).toBe(8);
   expect(wideKeyLayout.cueDisplay).toBe('none');
-  expect(wideKeyLayout.rows).toEqual([4, 3]);
+  expect(wideKeyLayout.rows).toEqual([4, 4]);
   await expect.poll(async () => (await readLabelAudit())?.selectedRendered || false).toBe(true);
+  await expect.poll(async () => (await readLabelAudit())?.comparedRendered || false).toBe(true);
   const wideLabelAudit = await readLabelAudit();
   if (!wideLabelAudit) throw new Error('Wide Orrery label diagnostics were unavailable');
   expect(wideLabelAudit.contained).toBe(true);
   expect(wideLabelAudit.maxOverlapArea).toBeLessThanOrEqual(1);
+  expect(wideLabelAudit.maxReservedOverlapArea).toBeLessThanOrEqual(1);
+  expect(wideLabelAudit.reservedIds).toEqual(expect.arrayContaining(['sun-core', 'scale-ruler', 'inner-system-inset']));
   await canvas.focus();
   await canvas.press('ArrowRight');
   await canvas.press('ArrowDown');
@@ -549,10 +563,13 @@ test('remeasures the Orrery canvas and preserves its normalized camera across co
   expect(after.backingHeight / after.viewportHeight).toBeCloseTo(after.dpr, 1);
   expect(after.dpr).toBeLessThanOrEqual(2);
   await expect.poll(async () => (await readLabelAudit())?.selectedRendered || false).toBe(true);
+  await expect.poll(async () => (await readLabelAudit())?.comparedRendered || false).toBe(true);
   const compactLabelAudit = await readLabelAudit();
   if (!compactLabelAudit) throw new Error('Compact Orrery label diagnostics were unavailable');
   expect(compactLabelAudit.contained).toBe(true);
   expect(compactLabelAudit.maxOverlapArea).toBeLessThanOrEqual(1);
+  expect(compactLabelAudit.maxReservedOverlapArea).toBeLessThanOrEqual(1);
+  expect(compactLabelAudit.reservedIds).toEqual(expect.arrayContaining(['sun-core', 'scale-ruler']));
   expect(compactLabelAudit.renderedCount).toBeLessThanOrEqual(wideLabelAudit.renderedCount);
 
   await canvas.press('Home');
@@ -965,6 +982,7 @@ test('aligns Hohmann geometry evidence with outward and inward transfers', async
   await expect(evidence).toContainText('arrive at Mars at aphelion');
   await expect(evidence).toContainText('speed up at departure, then speed up again');
   await expect(canvas).toHaveAttribute('aria-describedby', 'orrery-transfer-evidence');
+  await page.locator('summary').filter({ hasText: /^Exact transfer values$/ }).click();
   await expect(page.locator('th').filter({ hasText: '(km/s)' })).toHaveCount(3);
   await expect(page.getByRole('columnheader', { name: 'Transit time (days / yr)', exact: true })).toBeVisible();
 
@@ -1007,7 +1025,7 @@ test('exposes selected states for transfer and challenge navigators', async ({ p
   }, undefined, { expectCanvas: false });
   const challengeNav = page.getByRole('group', { name: 'Challenge question navigator' });
   await expect(challengeNav.locator('button[aria-pressed="true"]')).toHaveText('1');
-  await challengeNav.getByRole('button', { name: '2', exact: true }).click();
+  await challengeNav.getByRole('button', { name: /^Question 2:/ }).click();
   await expect(challengeNav.locator('button[aria-pressed="true"]')).toHaveText('2');
   await harness.destroy(page);
 });
@@ -1309,6 +1327,9 @@ test('keeps selected-world DOM readouts moving with the orbit clock', async ({ p
   await expect(page.locator('#orrery-live-timeline-value')).toContainText('Earth year 2 · day 1');
   await page.locator('#orrery-timeline-jump-0').click();
   await expect(page.locator('#orrery-live-timeline-value')).toContainText('Earth year 1 · day 1');
+  const orbitCanvas = page.locator('canvas[role="application"]').first();
+  await orbitCanvas.scrollIntoViewIfNeeded();
+  await expect(orbitCanvas).toBeInViewport();
   const before = await page.locator('#orrery-live-timeline-value').textContent();
   const retainedMetricNodes = await page.evaluateHandle(() =>
     ['orrery-stage-distance-value', 'orrery-stage-speed-value', 'orrery-stage-phase-value']
@@ -1317,10 +1338,8 @@ test('keeps selected-world DOM readouts moving with the orbit clock', async ({ p
     const ctx = (window as any).__ctx;
     ctx.updateMulti('solarSystem', { orr_speed: 1, orr_paused: false });
   });
-  await page.waitForTimeout(350);
-
-  const after = await page.locator('#orrery-live-timeline-value').textContent();
-  expect(after).not.toBe(before);
+  await expect(page.locator('#orrery-stage-readout')).toHaveAttribute('aria-live', 'off');
+  await expect.poll(() => page.locator('#orrery-live-timeline-value').textContent(), { timeout: 10000 }).not.toBe(before);
   await expectStageMetricSync();
   expect(await page.evaluate((nodes) => nodes.every((node) =>
     !!node && document.getElementById(node.id) === node && node.children.length === 0), retainedMetricNodes)).toBe(true);
@@ -1351,6 +1370,7 @@ test('gates guided predictions until the orbital clock is paused', async ({ page
       orr_tab: 0,
       orr_paused: false,
       orr_mission_progress: { earth_distance: { started: true } },
+      orr_sel: 'earth',
     },
   }, undefined, { expectCanvas: false });
 

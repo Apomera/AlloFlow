@@ -1,0 +1,18 @@
+{
+  "start": "2026-10-03T18:11:33.055Z",
+  "status": 1,
+  "sourceSha256": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+  "args": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+    "run",
+    "tests/dissection_reference_workbench.test.js",
+    "tests/dissection_lab_improvements.test.js",
+    "tests/dissection_canvas_loop.test.js",
+    "--maxWorkers=1",
+    "--reporter=json",
+    "--outputFile=reports/dissection-orientation-clarity-2026-10-03/unit-results.json"
+  ],
+  "video": "off",
+  "sourceAfterSha256": "e1ed893a422ed3deeb0c001cb9e639ee75df5593f21f695d66b61a3a74fd0500",
+  "end": "2026-10-03T18:12:11.424Z"
+}

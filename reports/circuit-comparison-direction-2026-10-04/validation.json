@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "sourceSha256": "3f875d72cabfea1a5e6f4fa104504de2540871cde9292af32cc12def598b18de",
+  "mirrorSha256": "3f875d72cabfea1a5e6f4fa104504de2540871cde9292af32cc12def598b18de",
+  "baselineSha256": "0593f445c3f2f3ce9f34e94f9d96a661d4235ee2963dcc84c3bfb9253d7f5f86",
+  "previousSourcePreserved": true,
+  "existingTestsPreserved": 8,
+  "reversedFragments": 7,
+  "tests": 132,
+  "testFiles": 9,
+  "newTests": 15,
+  "browserViews": 6,
+  "nativeWorkflows": 3,
+  "screenshotsReviewed": 7,
+  "scopedChangesUnstaged": true,
+  "gitDiffCheck": true,
+  "scopedGitStatus": "M desktop/web-app/public/stem_lab/stem_tool_circuit.js\n M stem_lab/stem_tool_circuit.js\n?? reports/circuit-comparison-direction-2026-10-04/\n?? tests/circuit_comparison_direction.test.js",
+  "artifacts": {
+    "source-preservation.json": "1071eb7862c6e90b88dc45d93d07637aca1a4f98fb0055a14836fdbdad5feec9",
+    "regression-receipt.json": "1ea17e87a83740e01139a66c29457022ce2c9d0dca26a9ee4a728d627b94339b",
+    "regression-native-exit.json": "630da3ddca73299582b5691afa190ec568b6901cdde814578e273c7d5762b762",
+    "browser-results.json": "560d6278d1c91e10a5ccebd926a1403316cd1636ca12237188d9a58835a6dc93",
+    "browser-native-exit.json": "2e91ed28ad5501ca3b42678746e174d4eb56b744b176fb9952e79e603e810421",
+    "visual-review.json": "9c15f6314b7fb755e36ec912bbbf03ad4b5ca7e4611705610f2512f5c1273e04",
+    "test-fixture-correction.json": "40ff54cf448305ec6ee6a5ba5fefb497a2619ce69a31bca4642f91d17a367a69",
+    "validate.cjs": "b0c367d1408c024010cb0e3eec7db13509c81be46fa195c2ae950779b5135f31"
+  }
+}

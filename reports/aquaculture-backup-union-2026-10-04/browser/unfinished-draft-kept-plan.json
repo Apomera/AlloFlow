@@ -1,0 +1,147 @@
+{
+  "state": {
+    "region": "maine",
+    "completedMissions": {},
+    "harvests": [],
+    "droppersDeployed": 0,
+    "probeReadings": [],
+    "lastTopic": "home",
+    "lastContentTopic": "ecosystem",
+    "visitedTopics": {
+      "ecosystem": 1791162058601
+    },
+    "recentTopics": [
+      "ecosystem"
+    ],
+    "bookmarkedTopics": [],
+    "completedTopics": {},
+    "topicNotes": {},
+    "quizCheckpointResults": {},
+    "learnerProfile": {
+      "role": "learner",
+      "goal": "experiment",
+      "session": "30",
+      "configured": false
+    },
+    "ecosystemWorkspace": {
+      "environmentId": "longline",
+      "organisms": {
+        "oyster": 2,
+        "mussel": 2,
+        "kelp": 2,
+        "phytoplankton": 1
+      },
+      "water": {
+        "temperature": 13,
+        "salinity": 30,
+        "oxygen": 8.8,
+        "pH": 8,
+        "ammonia": 0.04,
+        "exchange": 82
+      },
+      "disturbanceId": "none",
+      "observation": "",
+      "prediction": " ",
+      "investigationId": "",
+      "parkedDraft": null,
+      "evidence": {
+        "claim": "",
+        "evidence": "",
+        "reasoning": "",
+        "nextTest": "  My unfinished current next test stays exact.  "
+      },
+      "measurements": [
+        {
+          "id": "current-draft-reading",
+          "capturedAt": 1791129480000,
+          "modelVersion": "2026.10-stock-feedback",
+          "scope": "month",
+          "month": 6,
+          "speciesId": "system",
+          "metricId": "oxygen",
+          "metricLabel": "Dissolved oxygen",
+          "unit": " mg/L",
+          "deltaUnit": " mg/L",
+          "aState": "recorded",
+          "bState": "recorded",
+          "a": 6.97,
+          "b": 6.07,
+          "baselineScenario": {
+            "environmentId": "longline",
+            "organisms": {
+              "oyster": 2,
+              "kelp": 1,
+              "nitrifiers": 1
+            },
+            "water": {
+              "temperature": 14,
+              "salinity": 30,
+              "oxygen": 8,
+              "pH": 8,
+              "ammonia": 0.04,
+              "exchange": 82
+            },
+            "disturbanceId": "heatwave"
+          },
+          "currentScenario": {
+            "environmentId": "longline",
+            "organisms": {
+              "oyster": 2,
+              "kelp": 1,
+              "nitrifiers": 1
+            },
+            "water": {
+              "temperature": 14,
+              "salinity": 30,
+              "oxygen": 7.1,
+              "pH": 8,
+              "ammonia": 0.04,
+              "exchange": 82
+            },
+            "disturbanceId": "heatwave"
+          },
+          "aEvent": "Marine heatwave",
+          "bEvent": "Marine heatwave"
+        }
+      ],
+      "experiments": [],
+      "baselineScenario": null
+    },
+    "musselHealthWorkspace": {
+      "temperature": 14,
+      "salinity": 28,
+      "oxygen": 8.1,
+      "pH": 8.05,
+      "chlorophyll": 7,
+      "fouling": 12,
+      "attachment": 92,
+      "scenarioId": "balanced",
+      "prediction": "",
+      "observation": "",
+      "evidenceSource": "",
+      "evidenceMissionCompletedAt": 0,
+      "checks": []
+    },
+    "teacherPlan": {
+      "templateId": "ecosystem",
+      "duration": "45",
+      "audience": "high",
+      "includeReflection": true,
+      "includeCheckpoint": true,
+      "teacherNote": ""
+    },
+    "a11y": {
+      "staticCamera": false
+    },
+    "comfortableReading": false
+  },
+  "archive": {
+    "added": 0,
+    "alreadyPresent": 0,
+    "variantAdded": 0,
+    "before": 0,
+    "total": 0,
+    "limit": 12
+  },
+  "draftRestored": false
+}

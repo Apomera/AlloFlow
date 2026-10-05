@@ -226,3 +226,239 @@ describe('Arc process controls explain distinct processes without changing an in
     expect(host.querySelector('[data-pt-arc-step="none"]').getAttribute('aria-pressed')).toBe('true');
   });
 });
+
+
+describe('Nearby arc reveal actions expose the chosen process without changing evidence', () => {
+  const saved = { version: 1, angle: 42, points: Array.from({ length: 8 }, (_, index) => ({ x: 100 + index * 45, z: 100 + index * 40, m: 4 })) };
+  function effects() { return Object.fromEntries(['onRecordSlab', 'onRecordDepths', 'onRecordBoundaryInquiry', 'onRecordBoundaryDraft', 'awardXP', 'beep', 'announceToSR'].map(key => [key, vi.fn()])); }
+  async function ready(host) {
+    const log = host.querySelector('[data-pt-quake-log]'); log.open = true; log.dispatchEvent(new Event('toggle', { bubbles: true }));
+    host.querySelector('[data-tect-view="3d"]').click(); const block = host.querySelector('[data-tect-gl]');
+    Object.defineProperty(block, 'clientWidth', { value: 366 }); Object.defineProperty(block, 'clientHeight', { value: 300 });
+    await Promise.resolve(); await Promise.resolve(); frame(); expect(gl.debug().state).toBe('ready');
+  }
+  function state(host) { return {
+    time: host.querySelector('[data-pt-model-reading="time"]').textContent, movement: host.querySelector('[data-pt-model-reading="movement"]').textContent,
+    rate: host.querySelector('input[aria-label="Plate movement rate in centimeters per year"]').value,
+    paused: !host.querySelector('[data-pt-model-step]').disabled, checked: host.querySelector('[data-pt-quake-fit]')?.textContent,
+    feature: host.querySelector('[data-pt-boundary-feature-select][aria-pressed="true"]').dataset.ptBoundaryFeatureSelect,
+    process: host.querySelector('[data-pt-arc-step][aria-pressed="true"]').dataset.ptArcStep
+  }; }
+  function clear(callbacks) { for (const callback of Object.values(callbacks)) callback.mockClear(); }
+  function quiet(callbacks) { for (const callback of Object.values(callbacks)) expect(callback).not.toHaveBeenCalled(); }
+
+  it('offers no view action for 2D, no process or an already exposed cut face', async () => {
+    const host = await mountUI(); host.querySelector('[data-pt-arc-step="water"]').click(); expect(host.querySelector('[data-pt-arc-reveal]')).toBeNull();
+    await ready(host); expect(host.querySelector('[data-pt-arc-reveal="section"]')).not.toBeNull();
+    host.querySelector('[data-pt-arc-step="none"]').click(); expect(host.querySelector('[data-pt-arc-reveal]')).toBeNull();
+    host.querySelector('[data-tect-preset="section"]').click(); host.querySelector('[data-pt-arc-step="melt"]').click(); frame();
+    expect(gl.debug().arcProcess.visible).toBe(true); expect(host.querySelector('[data-pt-arc-reveal]')).toBeNull();
+  });
+
+  it.each(['water', 'melt', 'magma'])('reveals %s from an overhead view and preserves focus, scale preference and checked sample', async id => {
+    const callbacks = effects(), host = await mountUI({ ...callbacks, savedSlab: saved }); await ready(host);
+    const panel = host.querySelector('[data-pt-arc-process-panel]'); panel.open = true;
+    host.querySelector('[data-pt-boundary-feature-select="slab"]').click(); host.querySelector('[data-tect-scale-toggle]').click();
+    host.querySelector('[data-tect-preset="surface"]').click(); host.querySelector('[data-pt-arc-step="' + id + '"]').click(); frame(); clear(callbacks);
+    const before = state(host), builds = gl.debug().geometryBuilds, action = host.querySelector('[data-pt-arc-reveal="section"]');
+    expect(before.checked).toBeTruthy();
+    expect(action.type).toBe('button'); expect(action.style.minHeight).toBe('44px'); expect(action.getAttribute('aria-describedby')).toBe('pt-arc-process-status');
+    const cameraBefore = gl.debug().camera; frame(1200); expect(gl.debug().camera).toEqual(cameraBefore); expect(gl.debug().arcProcess.visible).toBe(false); quiet(callbacks);
+    action.focus(); action.click(); await new Promise(resolve => setTimeout(resolve, 0)); frame();
+    expect(host.querySelector('[data-tect-gl]').dataset.tectView).toBe('0,0,1.00'); expect(gl.debug().clipConstant).toBe(0);
+    expect(gl.debug().arcProcess.step).toBe(id); expect(gl.debug().arcProcess.visible).toBe(true); expect(gl.debug().arcProcess.cut).toBe(0);
+    expect(gl.debug().inspection.id).toBe('slab'); expect(host.querySelector('[data-tect-scale-toggle]').getAttribute('aria-pressed')).toBe('false');
+    expect(host.querySelector('[data-pt-arc-reveal]')).toBeNull(); expect(panel.contains(document.activeElement)).toBe(true);
+    expect(state(host)).toEqual(before); expect(gl.debug().geometryBuilds).toBe(builds); quiet(callbacks);
+    const rendersBefore = renders; frame(1200); expect(renders).toBe(rendersBefore); expect(state(host)).toEqual(before); quiet(callbacks);
+  });
+
+  it('recovers a selected trace from a rear cut face without automatic camera movement', async () => {
+    const callbacks = effects(), host = await mountUI(callbacks); await ready(host);
+    host.querySelector('[data-tect-preset="section"]').click(); host.querySelector('[data-pt-arc-step="water"]').click();
+    const block = host.querySelector('[data-tect-gl]');
+    for (let index = 0; index < 6; index++) block.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', shiftKey: true, bubbles: true }));
+    frame(); clear(callbacks); const before = state(host), viewBefore = block.dataset.tectView;
+    expect(gl.debug().arcProcess.visible).toBe(false); expect(host.querySelector('[data-pt-arc-reveal="section"]')).not.toBeNull();
+    frame(1200); expect(block.dataset.tectView).toBe(viewBefore); expect(state(host)).toEqual(before); quiet(callbacks);
+    host.querySelector('[data-pt-arc-reveal="section"]').click(); frame(); expect(block.dataset.tectView).toBe('0,0,1.00'); expect(gl.debug().arcProcess.visible).toBe(true);
+    expect(state(host)).toEqual(before); quiet(callbacks);
+  });
+});
+
+describe('Whole arc process connects three distinct annotations in one optional view', () => {
+  const ids = ['water', 'melt', 'magma'];
+  const saved = { version: 1, angle: 42, points: Array.from({ length: 8 }, (_, index) => ({ x: 100 + index * 45, z: 100 + index * 40, m: 4 })) };
+  function effects() { return Object.fromEntries(['onRecordSlab', 'onRecordDepths', 'onRecordBoundaryInquiry', 'onRecordBoundaryDraft', 'awardXP', 'beep', 'announceToSR'].map(key => [key, vi.fn()])); }
+  function clear(callbacks) { for (const callback of Object.values(callbacks)) callback.mockClear(); }
+  function quiet(callbacks) { for (const callback of Object.values(callbacks)) expect(callback).not.toHaveBeenCalled(); }
+  function choose(host, id) { const button = host.querySelector('[data-pt-arc-step="' + id + '"]'); expect(button).not.toBeNull(); button.click(); return button; }
+  function state(host) { return {
+    time: host.querySelector('[data-pt-model-reading="time"]').textContent,
+    movement: host.querySelector('[data-pt-model-reading="movement"]').textContent,
+    rate: host.querySelector('input[aria-label="Plate movement rate in centimeters per year"]').value,
+    paused: !host.querySelector('[data-pt-model-step]').disabled,
+    checked: host.querySelector('[data-pt-quake-fit]')?.textContent,
+    feature: host.querySelector('[data-pt-boundary-feature-select][aria-pressed="true"]').dataset.ptBoundaryFeatureSelect
+  }; }
+  async function ready(host) {
+    host.querySelector('[data-tect-view="3d"]').click(); const block = host.querySelector('[data-tect-gl]');
+    Object.defineProperty(block, 'clientWidth', { value: 366 }); Object.defineProperty(block, 'clientHeight', { value: 300 });
+    await Promise.resolve(); await Promise.resolve(); frame(); expect(gl.debug().state).toBe('ready');
+    return block;
+  }
+  function numberLabels() { return gl.debug().labelRects.filter(label => ['1', '2', '3'].includes(label.text)); }
+  function expectSeparate(rects) {
+    for (let a = 0; a < rects.length; a++) for (let b = a + 1; b < rects.length; b++) {
+      const x = Math.min(rects[a].x + rects[a].width, rects[b].x + rects[b].width) - Math.max(rects[a].x, rects[b].x);
+      const y = Math.min(rects[a].y + rects[a].height, rects[b].y + rects[b].height) - Math.max(rects[a].y, rects[b].y);
+      expect(x > 0.01 && y > 0.01, 'numbered labels overlap').toBe(false);
+    }
+  }
+
+  it('shows all three retained process geometries together, then isolates each single step without changing the rock or camera', async () => {
+    const update = await mountModel({ arcProcessStep: 'all' }), group = scene.getObjectByName('arc-process-annotation');
+    const beforeCamera = gl.debug().camera, builds = gl.debug().geometryBuilds;
+    const retained = ids.map(id => ({ id, object: part(id), meshes: descendants(part(id), object => !!object.geometry).map(object => ({ object, geometry: object.geometry })) }));
+    const rock = descendants(scene, object => object.isMesh && object.rotation.z < -0.5)[0], rockGeometry = rock.geometry;
+    expect(gl.debug().arcProcess).toEqual({ step: 'all', visible: true, reason: 'exposed', cut: 0 });
+    for (const id of ids) expect(part(id).visible).toBe(true);
+    expect(numberLabels().map(label => label.text).sort()).toEqual(['1', '2', '3']);
+    for (const step of ['water', 'all', 'melt', 'all', 'magma', null, 'all']) {
+      update({ arcProcessStep: step });
+      expect(scene.getObjectByName('arc-process-annotation')).toBe(group);
+      expect(group.visible).toBe(!!step); expect(gl.debug().arcProcess.step).toBe(step);
+      for (const item of retained) {
+        expect(part(item.id)).toBe(item.object); expect(item.object.visible).toBe(step === 'all' || step === item.id);
+        for (const mesh of item.meshes) expect(mesh.object.geometry).toBe(mesh.geometry);
+      }
+      expect(numberLabels().map(label => label.text).sort()).toEqual(step === 'all' ? ['1', '2', '3'] : step ? [String(ids.indexOf(step) + 1)] : []);
+      expect(rock.geometry).toBe(rockGeometry); expect(gl.debug().geometryBuilds).toBe(builds); expect(gl.debug().camera).toEqual(beforeCamera);
+    }
+    const beforeRenders = renders; frame(80); expect(renders).toBe(beforeRenders);
+  });
+
+  it('clips all three traces to an exposed slice and hides the whole process on covered, discarded, rear and non-convergent faces', async () => {
+    const update = await mountModel({ arcProcessStep: 'all' });
+    for (const cut of [-14, 0, 11]) {
+      update({ cut }); expect(gl.debug().arcProcess.visible).toBe(true);
+      for (const id of ids) {
+        expect(part(id).visible).toBe(true);
+        for (const mesh of descendants(part(id), child => child.userData.arcPipe)) {
+          expect(mesh.getWorldPosition(new THREE.Vector3()).z).toBeCloseTo(cut - 0.02);
+          expect(mesh.material.clippingPlanes[0].constant).toBe(cut);
+        }
+      }
+      expect(numberLabels()).toHaveLength(3);
+    }
+    for (const patch of [{ cut: null }, { cut: 25 }, { cut: -25 }, { cut: 0, rotY: 130 }, { rotY: 0, rotX: -88 }]) {
+      update(patch); expect(gl.debug().arcProcess.step).toBe('all'); expect(gl.debug().arcProcess.visible).toBe(false);
+      expect(scene.getObjectByName('arc-process-annotation').visible).toBe(false);
+      for (const id of ids) expect(part(id).visible).toBe(false);
+      expect(numberLabels()).toHaveLength(0);
+    }
+    update({ cut: 0, rotX: 0, rotY: 0 }); expect(gl.debug().arcProcess.visible).toBe(true);
+    for (const mode of ['divergent', 'transform']) {
+      update({ mode }); expect(gl.debug().arcProcess.step).toBeNull(); expect(gl.debug().arcProcess.visible).toBe(false); expect(numberLabels()).toHaveLength(0);
+    }
+  });
+
+  it('keeps all three 3D numbers readable and separated as the exposed cut face turns', async () => {
+    const update = await mountModel({ arcProcessStep: 'all' }, 300, 300);
+    const front = numberLabels().sort((a, b) => Number(a.text) - Number(b.text));
+    expect(front).toHaveLength(3); expect(front[0].y).toBeGreaterThan(front[1].y); expect(front[1].y).toBeGreaterThan(front[2].y);
+    for (const [rotX, rotY] of [[0, 0], [-22, -38], [-37, -58], [-50, 50]]) {
+      update({ rotX, rotY }); const allLabels = gl.debug().labelRects, numbers = numberLabels();
+      expect(numbers.map(label => label.text).sort()).toEqual(['1', '2', '3']); expectSeparate(numbers);
+      for (const number of numbers) {
+        expect(number.height).toBeGreaterThanOrEqual(20); expect(number.x).toBeGreaterThanOrEqual(0); expect(number.y).toBeGreaterThanOrEqual(0);
+        expect(number.x + number.width).toBeLessThanOrEqual(300); expect(number.y + number.height).toBeLessThanOrEqual(300);
+        for (const other of allLabels.filter(label => label !== number)) expectSeparate([number, other]);
+      }
+    }
+  });
+
+  it('offers an explicit whole-process button and distinguishes each process with an accessible button and decorative visual key', async () => {
+    const host = await mountUI(), panel = host.querySelector('[data-pt-arc-process-panel]');
+    expect(panel.open).toBe(false); expect(panel.querySelector('[data-pt-arc-step="none"]').getAttribute('aria-pressed')).toBe('true');
+    const all = panel.querySelector('[data-pt-arc-step="all"]'); expect(all).not.toBeNull(); expect(all.type).toBe('button');
+    expect(all.textContent).toContain('Whole process'); expect(all.getAttribute('aria-pressed')).toBe('false'); expect(all.style.minHeight).toBe('44px');
+    expect(all.getAttribute('aria-controls')).toBe('pt-boundary-section');
+    for (const id of all.getAttribute('aria-describedby').split(' ')) expect(host.querySelector('#' + id)).not.toBeNull();
+    expect([...panel.querySelectorAll('[data-pt-arc-step]')].map(button => button.dataset.ptArcStep)).toEqual(['none', 'all', ...ids]);
+    const keys = panel.querySelectorAll('[data-pt-arc-key]'); expect(keys).toHaveLength(3);
+    for (const id of ids) {
+      const button = panel.querySelector('[data-pt-arc-step="' + id + '"]'), key = button.querySelector('[data-pt-arc-key="' + id + '"]');
+      expect(key).not.toBeNull(); expect(key.tagName.toLowerCase()).toBe('svg'); expect(key.getAttribute('aria-hidden')).toBe('true'); expect(key.getAttribute('focusable')).toBe('false');
+      expect(button.textContent).toContain(String(ids.indexOf(id) + 1));
+    }
+    const water = panel.querySelector('[data-pt-arc-key="water"]'), melt = panel.querySelector('[data-pt-arc-key="melt"]'), magma = panel.querySelector('[data-pt-arc-key="magma"]');
+    expect(water.querySelector('[stroke-dasharray]')).not.toBeNull(); expect(melt.querySelectorAll('circle').length).toBeGreaterThanOrEqual(2);
+    expect(magma.querySelector('path, line, polyline')).not.toBeNull(); expect(magma.querySelector('[stroke-dasharray]')).toBeNull();
+    choose(host, 'all');
+    expect(all.getAttribute('aria-pressed')).toBe('true'); expect(panel.querySelectorAll('[data-pt-arc-step][aria-pressed="true"]')).toHaveLength(1);
+    const explanation = panel.querySelector('[data-pt-arc-process-explanation="all"]'); expect(explanation).not.toBeNull();
+    expect(explanation.textContent.toLowerCase()).toMatch(/water/); expect(explanation.textContent.toLowerCase()).toMatch(/melt/); expect(explanation.textContent.toLowerCase()).toMatch(/magma/);
+  });
+
+  it('draws dashed water, speckled melt and solid magma together with three separate readable 2D numbers', async () => {
+    const host = await mountUI(), section = host.querySelector('[data-tect-section]'), context = contexts.get(section);
+    for (const width of [540, 280]) {
+      Object.defineProperty(section, 'clientWidth', { configurable: true, value: width }); choose(host, 'all'); context.commands.length = 0; frame();
+      const numbers = context.commands.filter(command => command.kind === 'text' && ['1', '2', '3'].includes(command.text));
+      expect(numbers.map(command => command.text).sort()).toEqual(['1', '2', '3']);
+      for (const number of numbers) expect(parseFloat(number.font.match(/([\d.]+)px/)[1]) * width / 540).toBeGreaterThanOrEqual(14);
+      const chips = context.commands.filter(command => command.kind === 'rect' && command.style === 'rgba(12,10,9,0.94)');
+      expect(chips).toHaveLength(3); expectSeparate(chips);
+      expect(context.commands.some(command => command.kind === 'stroke' && command.style === '#7dd3fc' && command.dash.length)).toBe(true);
+      expect(context.commands.some(command => command.kind === 'fill' && command.style === 'rgba(251,146,60,0.25)' && command.path.some(point => point.kind === 'ellipse'))).toBe(true);
+      expect(context.commands.filter(command => command.kind === 'fill' && command.style === '#ffd0a8' && command.path.some(point => point.kind === 'arc' && point.radius === 1)).length).toBeGreaterThanOrEqual(3);
+      expect(context.commands.some(command => command.kind === 'stroke' && command.style === '#ffd0a8' && command.dash.length === 0 && command.path.some(point => point.kind === 'quadratic'))).toBe(true);
+    }
+    choose(host, 'water'); context.commands.length = 0; frame();
+    expect(context.commands.filter(command => command.kind === 'text' && ['1', '2', '3'].includes(command.text)).map(command => command.text)).toEqual(['1']);
+    choose(host, 'none'); context.commands.length = 0; frame();
+    expect(context.commands.filter(command => command.kind === 'text' && ['1', '2', '3'].includes(command.text))).toHaveLength(0);
+  });
+
+  it('keeps time, rate, highlighted feature and saved sample unchanged during quiet whole/single selection in both views', async () => {
+    const callbacks = effects(), host = await mountUI({ ...callbacks, savedSlab: saved }), originalSaved = JSON.stringify(saved);
+    const log = host.querySelector('[data-pt-quake-log]'); log.open = true; log.dispatchEvent(new Event('toggle', { bubbles: true }));
+    host.querySelector('[data-pt-arc-process-panel]').open = true; host.querySelector('[data-pt-boundary-feature-select="slab"]').click();
+    const before = state(host); expect(before.checked).toBeTruthy(); clear(callbacks);
+    for (const id of ['all', 'melt', 'all', 'none']) { choose(host, id); frame(20); expect(state(host)).toEqual(before); }
+    quiet(callbacks); expect(host.querySelector('[data-tect-view="2d"]').getAttribute('aria-pressed')).toBe('true');
+    const block = await ready(host); host.querySelector('[data-tect-preset="section"]').click(); frame(); clear(callbacks);
+    const cameraBefore = gl.debug().camera, viewBefore = block.dataset.tectView, cutBefore = gl.debug().clipConstant;
+    for (const id of ['all', 'water', 'all', 'magma', 'all']) { choose(host, id); frame(20); expect(state(host)).toEqual(before); }
+    expect(block.dataset.tectView).toBe(viewBefore); expect(gl.debug().camera).toEqual(cameraBefore); expect(gl.debug().clipConstant).toBe(cutBefore);
+    expect(JSON.stringify(saved)).toBe(originalSaved); quiet(callbacks);
+    const beforeRenders = renders; frame(80); expect(renders).toBe(beforeRenders); expect(state(host)).toEqual(before); quiet(callbacks);
+  });
+
+  it('keeps a whole-process selection behind an occluded view until the learner explicitly reveals the cut face', async () => {
+    const callbacks = effects(), host = await mountUI(callbacks), block = await ready(host);
+    const panel = host.querySelector('[data-pt-arc-process-panel]'); panel.open = true;
+    host.querySelector('[data-tect-preset="surface"]').click(); frame(); clear(callbacks);
+    const before = state(host), viewBefore = block.dataset.tectView, cameraBefore = gl.debug().camera;
+    const all = host.querySelector('[data-pt-arc-step="all"]'); expect(all).not.toBeNull(); all.focus(); all.click(); frame(80);
+    expect(document.activeElement).toBe(all); expect(block.dataset.tectView).toBe(viewBefore); expect(gl.debug().camera).toEqual(cameraBefore);
+    expect(gl.debug().arcProcess.step).toBe('all'); expect(gl.debug().arcProcess.visible).toBe(false); expect(numberLabels()).toHaveLength(0);
+    expect(state(host)).toEqual(before); quiet(callbacks);
+    const reveal = host.querySelector('[data-pt-arc-reveal="section"]'); expect(reveal).not.toBeNull(); reveal.focus(); reveal.click();
+    await new Promise(resolve => setTimeout(resolve, 0)); frame();
+    expect(block.dataset.tectView).toBe('0,0,1.00'); expect(gl.debug().arcProcess).toEqual({ step: 'all', visible: true, reason: 'exposed', cut: 0 });
+    for (const id of ids) expect(part(id).visible).toBe(true); expect(numberLabels()).toHaveLength(3);
+    expect(document.activeElement).toBe(host.querySelector('#pt-arc-process-status')); expect(host.querySelector('[data-pt-arc-reveal]')).toBeNull();
+    expect(host.querySelector('[data-pt-arc-step="all"]').getAttribute('aria-pressed')).toBe('true'); expect(state(host)).toEqual(before); quiet(callbacks);
+  });
+
+  it('clears the whole-process trace when its disclosure closes or the boundary changes', async () => {
+    const host = await mountUI(), panel = host.querySelector('[data-pt-arc-process-panel]'); panel.open = true;
+    choose(host, 'all'); panel.open = false; panel.dispatchEvent(new Event('toggle')); await Promise.resolve(); frame();
+    expect(host.querySelector('[data-pt-arc-step="none"]').getAttribute('aria-pressed')).toBe('true'); expect(host.querySelector('[data-pt-arc-process-explanation="all"]')).toBeNull();
+    panel.open = true; choose(host, 'all'); host.querySelector('[data-tect-mode="transform"]').click(); await Promise.resolve();
+    expect(host.querySelector('[data-pt-arc-process-panel]')).toBeNull(); host.querySelector('[data-tect-mode="convergent"]').click(); await Promise.resolve();
+    expect(host.querySelector('[data-pt-arc-step="none"]').getAttribute('aria-pressed')).toBe('true'); expect(host.querySelector('[data-pt-arc-step="all"]').getAttribute('aria-pressed')).toBe('false');
+  });
+});

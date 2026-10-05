@@ -23,7 +23,7 @@ describe('Lesson continuation and deliberate retry', () => {
   let host, root, latest, update, setLocale, frames, scrollOriginal, writes, awards;
   const lab = () => host.querySelector('.circuit-active-lesson-lab');
   const continuation = () => lab().querySelector('.circuit-active-lesson-continuation');
-  const nextButton = () => continuation().querySelector('.circuit-continuation-action:not(.circuit-continuation-review-map)');
+  const nextButton = () => continuation().querySelector('.circuit-continuation-action:not(.circuit-continuation-review-map):not(.circuit-continuation-plan-investigation)');
   const reviewMap = () => continuation().querySelector('.circuit-continuation-review-map');
   const map = () => lab().querySelector('details.circuit-active-lesson-map');
   const retry = () => lab().querySelector('details.circuit-active-lesson-retry');

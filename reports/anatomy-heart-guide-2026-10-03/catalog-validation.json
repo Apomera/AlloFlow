@@ -1,0 +1,4027 @@
+{
+  "date": "2026-10-03",
+  "namespace": "stem.anatomy",
+  "englishKeys": 69,
+  "nativeTranslations": 207,
+  "source": {
+    "englishSha256": "2d34b10de924e588a7c35f598892e445a06a06900b19abeb5b540e1f0e670d24",
+    "translationsSha256": "e28ca721b9c5ade9f13bd0471e47307ae25fec86ec6fa1058591b94a7c3cf7bc"
+  },
+  "scientificNarratives": {
+    "baselinePath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\anatomy-heart-source-before.js",
+    "baselineSha256": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+    "checks": [
+      {
+        "key": "heart_guide_return_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "heart_guide_outflow_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "heart_guide_inflow_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "heart_guide_systemic_detail",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "heart_guide_clinical_title",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "heart_guide_clinical_change",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "heart_guide_clinical_effect",
+        "verbatimBaselineMatch": true
+      },
+      {
+        "key": "heart_guide_clinical_note",
+        "verbatimBaselineMatch": true
+      }
+    ]
+  },
+  "files": [
+    {
+      "path": "ui_strings.js",
+      "snapshot": "locale-before/ui_strings.js.before.gz",
+      "beforeSha256": "21d1f0caafd136fe0f6e7f66a28ca4fea898f8e3a6f184f7d58094464418dce8",
+      "beforeBytes": 11101094,
+      "afterSha256": "baca3a35fe9421bd7d4666280be1062118e616a32b7b0ef6bae70262066e6038",
+      "afterBytes": 11106158,
+      "addedKeys": [
+        "heart_guide_title",
+        "heart_guide_help",
+        "heart_guide_circuit_title",
+        "heart_guide_chambers_title",
+        "heart_guide_marker_help",
+        "heart_guide_orientation",
+        "heart_guide_circuit_svg_title",
+        "heart_guide_circuit_svg_description",
+        "heart_guide_chambers_svg_title",
+        "heart_guide_chambers_svg_description",
+        "heart_guide_structure_key",
+        "heart_guide_key_lungs",
+        "heart_guide_key_heart",
+        "heart_guide_key_body",
+        "heart_guide_key_right_atrium",
+        "heart_guide_key_right_ventricle",
+        "heart_guide_key_left_atrium",
+        "heart_guide_key_left_ventricle",
+        "heart_guide_current_step",
+        "heart_guide_valve_key",
+        "heart_guide_valve_help",
+        "heart_guide_tricuspid",
+        "heart_guide_mitral",
+        "heart_guide_pulmonary",
+        "heart_guide_aortic",
+        "heart_guide_open",
+        "heart_guide_closed",
+        "heart_guide_not_highlighted",
+        "heart_guide_flow_key",
+        "heart_guide_oxygen_poor",
+        "heart_guide_oxygen_rich",
+        "heart_guide_pause_flow",
+        "heart_guide_play_flow",
+        "heart_guide_flow_paused",
+        "heart_guide_flow_playing",
+        "heart_guide_previous",
+        "heart_guide_next",
+        "heart_guide_step_position",
+        "heart_guide_focus_heading",
+        "heart_guide_focus_return",
+        "heart_guide_focus_outflow",
+        "heart_guide_focus_inflow",
+        "heart_guide_focus_systemic",
+        "heart_guide_return_label",
+        "heart_guide_return_short",
+        "heart_guide_return_detail",
+        "heart_guide_outflow_label",
+        "heart_guide_outflow_short",
+        "heart_guide_outflow_detail",
+        "heart_guide_inflow_label",
+        "heart_guide_inflow_short",
+        "heart_guide_inflow_detail",
+        "heart_guide_systemic_label",
+        "heart_guide_systemic_short",
+        "heart_guide_systemic_detail",
+        "heart_guide_show_clinical",
+        "heart_guide_hide_clinical",
+        "heart_guide_clinical_shown",
+        "heart_guide_clinical_hidden",
+        "heart_guide_clinical_title",
+        "heart_guide_clinical_change",
+        "heart_guide_clinical_effect_heading",
+        "heart_guide_clinical_effect",
+        "heart_guide_clinical_note",
+        "heart_guide_handoff_label",
+        "heart_guide_handoff_lead",
+        "heart_guide_handoff_context",
+        "heart_guide_handoff_button",
+        "heart_guide_handoff_announcement"
+      ],
+      "insertionCharacterOffset": 1253528,
+      "insertionByteOffset": 1258026,
+      "insertionAnchor": "alveolus_guide_handoff_announcement",
+      "addedText": ",\n      \"heart_guide_title\": \"Heart circulation\",\n      \"heart_guide_help\": \"Follow the circuit between the body, heart, and lungs, then explore the chambers and valves.\",\n      \"heart_guide_circuit_title\": \"1. Double circulation\",\n      \"heart_guide_chambers_title\": \"2. Chambers and valves\",\n      \"heart_guide_marker_help\": \"Match the numbered markers to the structure key.\",\n      \"heart_guide_orientation\": \"In this schematic, the right heart appears on the left side of the illustration.\",\n      \"heart_guide_circuit_svg_title\": \"Heart, lungs, and body circulation\",\n      \"heart_guide_circuit_svg_description\": \"The circuit traces oxygen-poor blood from the body through the right heart to the lungs, then oxygen-rich blood through the left heart and aorta back to the body.\",\n      \"heart_guide_chambers_svg_title\": \"Four heart chambers and valves\",\n      \"heart_guide_chambers_svg_description\": \"A magnified schematic shows the right atrium, right ventricle, left atrium, and left ventricle. Chamber shape and valve highlights follow the selected circulation step.\",\n      \"heart_guide_structure_key\": \"Structure key\",\n      \"heart_guide_key_lungs\": \"Lungs\",\n      \"heart_guide_key_heart\": \"Heart\",\n      \"heart_guide_key_body\": \"Body\",\n      \"heart_guide_key_right_atrium\": \"Right atrium\",\n      \"heart_guide_key_right_ventricle\": \"Right ventricle\",\n      \"heart_guide_key_left_atrium\": \"Left atrium\",\n      \"heart_guide_key_left_ventricle\": \"Left ventricle\",\n      \"heart_guide_current_step\": \"Current step\",\n      \"heart_guide_valve_key\": \"Valves in this schematic\",\n      \"heart_guide_valve_help\": \"Valve highlights follow the selected circulation step.\",\n      \"heart_guide_tricuspid\": \"Tricuspid valve\",\n      \"heart_guide_mitral\": \"Mitral valve\",\n      \"heart_guide_pulmonary\": \"Pulmonary valve\",\n      \"heart_guide_aortic\": \"Aortic valve\",\n      \"heart_guide_open\": \"Open\",\n      \"heart_guide_closed\": \"Closed\",\n      \"heart_guide_not_highlighted\": \"Not highlighted in this step\",\n      \"heart_guide_flow_key\": \"Blood oxygenation key\",\n      \"heart_guide_oxygen_poor\": \"Oxygen-poor blood\",\n      \"heart_guide_oxygen_rich\": \"Oxygen-rich blood\",\n      \"heart_guide_pause_flow\": \"Pause flow\",\n      \"heart_guide_play_flow\": \"Play flow\",\n      \"heart_guide_flow_paused\": \"Flow paused\",\n      \"heart_guide_flow_playing\": \"Flow playing\",\n      \"heart_guide_previous\": \"Previous step\",\n      \"heart_guide_next\": \"Next step\",\n      \"heart_guide_step_position\": \"Step {current} of {total}\",\n      \"heart_guide_focus_heading\": \"Focus in this step\",\n      \"heart_guide_focus_return\": \"Right atrium · Tricuspid valve · Venae cavae\",\n      \"heart_guide_focus_outflow\": \"Right ventricle · Pulmonary valve · Pulmonary arteries\",\n      \"heart_guide_focus_inflow\": \"Pulmonary veins · Left atrium · Mitral valve\",\n      \"heart_guide_focus_systemic\": \"Left ventricle · Aortic valve · Aorta\",\n      \"heart_guide_return_label\": \"1. Venous return\",\n      \"heart_guide_return_short\": \"Body to right atrium\",\n      \"heart_guide_return_detail\": \"Oxygen-poor blood returns from the body through the superior and inferior venae cavae and enters the right atrium.\",\n      \"heart_guide_outflow_label\": \"2. To the lungs\",\n      \"heart_guide_outflow_short\": \"Right ventricle to lungs\",\n      \"heart_guide_outflow_detail\": \"Blood crosses the tricuspid valve into the right ventricle, then passes through the pulmonary valve and pulmonary arteries to the lungs.\",\n      \"heart_guide_inflow_label\": \"3. Oxygenated return\",\n      \"heart_guide_inflow_short\": \"Lungs to left atrium\",\n      \"heart_guide_inflow_detail\": \"After gas exchange, oxygen-rich blood returns through the pulmonary veins and enters the left atrium.\",\n      \"heart_guide_systemic_label\": \"4. To the body\",\n      \"heart_guide_systemic_short\": \"Left ventricle to aorta\",\n      \"heart_guide_systemic_detail\": \"Blood crosses the mitral valve into the left ventricle, then passes through the aortic valve and aorta to supply the body.\",\n      \"heart_guide_show_clinical\": \"Clinical lens\",\n      \"heart_guide_hide_clinical\": \"Hide clinical lens\",\n      \"heart_guide_clinical_shown\": \"Clinical lens shown.\",\n      \"heart_guide_clinical_hidden\": \"Clinical lens hidden.\",\n      \"heart_guide_clinical_title\": \"Aortic stenosis\",\n      \"heart_guide_clinical_change\": \"The aortic valve opening narrows, increasing resistance to left-ventricular outflow.\",\n      \"heart_guide_clinical_effect_heading\": \"Functional consequence\",\n      \"heart_guide_clinical_effect\": \"The left ventricle must generate higher pressure and may thicken over time.\",\n      \"heart_guide_clinical_note\": \"Educational comparison only — not a diagnostic view.\",\n      \"heart_guide_handoff_label\": \"Heart to alveoli\",\n      \"heart_guide_handoff_lead\": \"Follow the circuit: \",\n      \"heart_guide_handoff_context\": \"move into the air-blood barrier where pulmonary capillary blood gains oxygen.\",\n      \"heart_guide_handoff_button\": \"Follow gas exchange\",\n      \"heart_guide_handoff_announcement\": \"Opening alveolar oxygen diffusion, step 2 of 4.\"",
+      "addedBytes": 5064,
+      "attempts": 3,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "snapshot": "locale-before/desktop__web-app__public__ui_strings.js.before.gz",
+      "beforeSha256": "d0dca8ddd233f6609b57cb7be7b8e6168ce85df5ec968c382e90a8220d618a87",
+      "beforeBytes": 11097653,
+      "afterSha256": "63e5663b394fd458b2af8630e3e2e104a65f389055c7646fba50ecb7f22228b2",
+      "afterBytes": 11102717,
+      "addedKeys": [
+        "heart_guide_title",
+        "heart_guide_help",
+        "heart_guide_circuit_title",
+        "heart_guide_chambers_title",
+        "heart_guide_marker_help",
+        "heart_guide_orientation",
+        "heart_guide_circuit_svg_title",
+        "heart_guide_circuit_svg_description",
+        "heart_guide_chambers_svg_title",
+        "heart_guide_chambers_svg_description",
+        "heart_guide_structure_key",
+        "heart_guide_key_lungs",
+        "heart_guide_key_heart",
+        "heart_guide_key_body",
+        "heart_guide_key_right_atrium",
+        "heart_guide_key_right_ventricle",
+        "heart_guide_key_left_atrium",
+        "heart_guide_key_left_ventricle",
+        "heart_guide_current_step",
+        "heart_guide_valve_key",
+        "heart_guide_valve_help",
+        "heart_guide_tricuspid",
+        "heart_guide_mitral",
+        "heart_guide_pulmonary",
+        "heart_guide_aortic",
+        "heart_guide_open",
+        "heart_guide_closed",
+        "heart_guide_not_highlighted",
+        "heart_guide_flow_key",
+        "heart_guide_oxygen_poor",
+        "heart_guide_oxygen_rich",
+        "heart_guide_pause_flow",
+        "heart_guide_play_flow",
+        "heart_guide_flow_paused",
+        "heart_guide_flow_playing",
+        "heart_guide_previous",
+        "heart_guide_next",
+        "heart_guide_step_position",
+        "heart_guide_focus_heading",
+        "heart_guide_focus_return",
+        "heart_guide_focus_outflow",
+        "heart_guide_focus_inflow",
+        "heart_guide_focus_systemic",
+        "heart_guide_return_label",
+        "heart_guide_return_short",
+        "heart_guide_return_detail",
+        "heart_guide_outflow_label",
+        "heart_guide_outflow_short",
+        "heart_guide_outflow_detail",
+        "heart_guide_inflow_label",
+        "heart_guide_inflow_short",
+        "heart_guide_inflow_detail",
+        "heart_guide_systemic_label",
+        "heart_guide_systemic_short",
+        "heart_guide_systemic_detail",
+        "heart_guide_show_clinical",
+        "heart_guide_hide_clinical",
+        "heart_guide_clinical_shown",
+        "heart_guide_clinical_hidden",
+        "heart_guide_clinical_title",
+        "heart_guide_clinical_change",
+        "heart_guide_clinical_effect_heading",
+        "heart_guide_clinical_effect",
+        "heart_guide_clinical_note",
+        "heart_guide_handoff_label",
+        "heart_guide_handoff_lead",
+        "heart_guide_handoff_context",
+        "heart_guide_handoff_button",
+        "heart_guide_handoff_announcement"
+      ],
+      "insertionCharacterOffset": 1250088,
+      "insertionByteOffset": 1254585,
+      "insertionAnchor": "alveolus_guide_handoff_announcement",
+      "addedText": ",\n      \"heart_guide_title\": \"Heart circulation\",\n      \"heart_guide_help\": \"Follow the circuit between the body, heart, and lungs, then explore the chambers and valves.\",\n      \"heart_guide_circuit_title\": \"1. Double circulation\",\n      \"heart_guide_chambers_title\": \"2. Chambers and valves\",\n      \"heart_guide_marker_help\": \"Match the numbered markers to the structure key.\",\n      \"heart_guide_orientation\": \"In this schematic, the right heart appears on the left side of the illustration.\",\n      \"heart_guide_circuit_svg_title\": \"Heart, lungs, and body circulation\",\n      \"heart_guide_circuit_svg_description\": \"The circuit traces oxygen-poor blood from the body through the right heart to the lungs, then oxygen-rich blood through the left heart and aorta back to the body.\",\n      \"heart_guide_chambers_svg_title\": \"Four heart chambers and valves\",\n      \"heart_guide_chambers_svg_description\": \"A magnified schematic shows the right atrium, right ventricle, left atrium, and left ventricle. Chamber shape and valve highlights follow the selected circulation step.\",\n      \"heart_guide_structure_key\": \"Structure key\",\n      \"heart_guide_key_lungs\": \"Lungs\",\n      \"heart_guide_key_heart\": \"Heart\",\n      \"heart_guide_key_body\": \"Body\",\n      \"heart_guide_key_right_atrium\": \"Right atrium\",\n      \"heart_guide_key_right_ventricle\": \"Right ventricle\",\n      \"heart_guide_key_left_atrium\": \"Left atrium\",\n      \"heart_guide_key_left_ventricle\": \"Left ventricle\",\n      \"heart_guide_current_step\": \"Current step\",\n      \"heart_guide_valve_key\": \"Valves in this schematic\",\n      \"heart_guide_valve_help\": \"Valve highlights follow the selected circulation step.\",\n      \"heart_guide_tricuspid\": \"Tricuspid valve\",\n      \"heart_guide_mitral\": \"Mitral valve\",\n      \"heart_guide_pulmonary\": \"Pulmonary valve\",\n      \"heart_guide_aortic\": \"Aortic valve\",\n      \"heart_guide_open\": \"Open\",\n      \"heart_guide_closed\": \"Closed\",\n      \"heart_guide_not_highlighted\": \"Not highlighted in this step\",\n      \"heart_guide_flow_key\": \"Blood oxygenation key\",\n      \"heart_guide_oxygen_poor\": \"Oxygen-poor blood\",\n      \"heart_guide_oxygen_rich\": \"Oxygen-rich blood\",\n      \"heart_guide_pause_flow\": \"Pause flow\",\n      \"heart_guide_play_flow\": \"Play flow\",\n      \"heart_guide_flow_paused\": \"Flow paused\",\n      \"heart_guide_flow_playing\": \"Flow playing\",\n      \"heart_guide_previous\": \"Previous step\",\n      \"heart_guide_next\": \"Next step\",\n      \"heart_guide_step_position\": \"Step {current} of {total}\",\n      \"heart_guide_focus_heading\": \"Focus in this step\",\n      \"heart_guide_focus_return\": \"Right atrium · Tricuspid valve · Venae cavae\",\n      \"heart_guide_focus_outflow\": \"Right ventricle · Pulmonary valve · Pulmonary arteries\",\n      \"heart_guide_focus_inflow\": \"Pulmonary veins · Left atrium · Mitral valve\",\n      \"heart_guide_focus_systemic\": \"Left ventricle · Aortic valve · Aorta\",\n      \"heart_guide_return_label\": \"1. Venous return\",\n      \"heart_guide_return_short\": \"Body to right atrium\",\n      \"heart_guide_return_detail\": \"Oxygen-poor blood returns from the body through the superior and inferior venae cavae and enters the right atrium.\",\n      \"heart_guide_outflow_label\": \"2. To the lungs\",\n      \"heart_guide_outflow_short\": \"Right ventricle to lungs\",\n      \"heart_guide_outflow_detail\": \"Blood crosses the tricuspid valve into the right ventricle, then passes through the pulmonary valve and pulmonary arteries to the lungs.\",\n      \"heart_guide_inflow_label\": \"3. Oxygenated return\",\n      \"heart_guide_inflow_short\": \"Lungs to left atrium\",\n      \"heart_guide_inflow_detail\": \"After gas exchange, oxygen-rich blood returns through the pulmonary veins and enters the left atrium.\",\n      \"heart_guide_systemic_label\": \"4. To the body\",\n      \"heart_guide_systemic_short\": \"Left ventricle to aorta\",\n      \"heart_guide_systemic_detail\": \"Blood crosses the mitral valve into the left ventricle, then passes through the aortic valve and aorta to supply the body.\",\n      \"heart_guide_show_clinical\": \"Clinical lens\",\n      \"heart_guide_hide_clinical\": \"Hide clinical lens\",\n      \"heart_guide_clinical_shown\": \"Clinical lens shown.\",\n      \"heart_guide_clinical_hidden\": \"Clinical lens hidden.\",\n      \"heart_guide_clinical_title\": \"Aortic stenosis\",\n      \"heart_guide_clinical_change\": \"The aortic valve opening narrows, increasing resistance to left-ventricular outflow.\",\n      \"heart_guide_clinical_effect_heading\": \"Functional consequence\",\n      \"heart_guide_clinical_effect\": \"The left ventricle must generate higher pressure and may thicken over time.\",\n      \"heart_guide_clinical_note\": \"Educational comparison only — not a diagnostic view.\",\n      \"heart_guide_handoff_label\": \"Heart to alveoli\",\n      \"heart_guide_handoff_lead\": \"Follow the circuit: \",\n      \"heart_guide_handoff_context\": \"move into the air-blood barrier where pulmonary capillary blood gains oxygen.\",\n      \"heart_guide_handoff_button\": \"Follow gas exchange\",\n      \"heart_guide_handoff_announcement\": \"Opening alveolar oxygen diffusion, step 2 of 4.\"",
+      "addedBytes": 5064,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/french.js",
+      "snapshot": "locale-before/lang__french.js.before.gz",
+      "beforeSha256": "f80b8b5bbedab7821a4abae75fc316eeb3a24281a174cf9b81cb0e82bc6fe7fe",
+      "beforeBytes": 8446705,
+      "afterSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "afterBytes": 8452386,
+      "addedKeys": [
+        "heart_guide_title",
+        "heart_guide_help",
+        "heart_guide_circuit_title",
+        "heart_guide_chambers_title",
+        "heart_guide_marker_help",
+        "heart_guide_orientation",
+        "heart_guide_circuit_svg_title",
+        "heart_guide_circuit_svg_description",
+        "heart_guide_chambers_svg_title",
+        "heart_guide_chambers_svg_description",
+        "heart_guide_structure_key",
+        "heart_guide_key_lungs",
+        "heart_guide_key_heart",
+        "heart_guide_key_body",
+        "heart_guide_key_right_atrium",
+        "heart_guide_key_right_ventricle",
+        "heart_guide_key_left_atrium",
+        "heart_guide_key_left_ventricle",
+        "heart_guide_current_step",
+        "heart_guide_valve_key",
+        "heart_guide_valve_help",
+        "heart_guide_tricuspid",
+        "heart_guide_mitral",
+        "heart_guide_pulmonary",
+        "heart_guide_aortic",
+        "heart_guide_open",
+        "heart_guide_closed",
+        "heart_guide_not_highlighted",
+        "heart_guide_flow_key",
+        "heart_guide_oxygen_poor",
+        "heart_guide_oxygen_rich",
+        "heart_guide_pause_flow",
+        "heart_guide_play_flow",
+        "heart_guide_flow_paused",
+        "heart_guide_flow_playing",
+        "heart_guide_previous",
+        "heart_guide_next",
+        "heart_guide_step_position",
+        "heart_guide_focus_heading",
+        "heart_guide_focus_return",
+        "heart_guide_focus_outflow",
+        "heart_guide_focus_inflow",
+        "heart_guide_focus_systemic",
+        "heart_guide_return_label",
+        "heart_guide_return_short",
+        "heart_guide_return_detail",
+        "heart_guide_outflow_label",
+        "heart_guide_outflow_short",
+        "heart_guide_outflow_detail",
+        "heart_guide_inflow_label",
+        "heart_guide_inflow_short",
+        "heart_guide_inflow_detail",
+        "heart_guide_systemic_label",
+        "heart_guide_systemic_short",
+        "heart_guide_systemic_detail",
+        "heart_guide_show_clinical",
+        "heart_guide_hide_clinical",
+        "heart_guide_clinical_shown",
+        "heart_guide_clinical_hidden",
+        "heart_guide_clinical_title",
+        "heart_guide_clinical_change",
+        "heart_guide_clinical_effect_heading",
+        "heart_guide_clinical_effect",
+        "heart_guide_clinical_note",
+        "heart_guide_handoff_label",
+        "heart_guide_handoff_lead",
+        "heart_guide_handoff_context",
+        "heart_guide_handoff_button",
+        "heart_guide_handoff_announcement"
+      ],
+      "insertionCharacterOffset": 3101849,
+      "insertionByteOffset": 3171193,
+      "insertionAnchor": "alveolus_guide_handoff_announcement",
+      "addedText": ",\n      \"heart_guide_title\": \"Circulation cardiaque\",\n      \"heart_guide_help\": \"Suivez le circuit entre le corps, le cœur et les poumons, puis explorez les cavités et les valves.\",\n      \"heart_guide_circuit_title\": \"1. Double circulation\",\n      \"heart_guide_chambers_title\": \"2. Cavités et valves\",\n      \"heart_guide_marker_help\": \"Associez les repères numérotés à la légende des structures.\",\n      \"heart_guide_orientation\": \"Sur ce schéma, le cœur droit apparaît à gauche de l’illustration.\",\n      \"heart_guide_circuit_svg_title\": \"Circulation entre le cœur, les poumons et le corps\",\n      \"heart_guide_circuit_svg_description\": \"Le circuit suit le sang pauvre en oxygène du corps vers le cœur droit puis les poumons, et le sang riche en oxygène vers le cœur gauche et l’aorte pour rejoindre le corps.\",\n      \"heart_guide_chambers_svg_title\": \"Les quatre cavités du cœur et leurs valves\",\n      \"heart_guide_chambers_svg_description\": \"Un schéma agrandi montre l’oreillette droite, le ventricule droit, l’oreillette gauche et le ventricule gauche. La forme des cavités et la mise en évidence des valves suivent l’étape de circulation sélectionnée.\",\n      \"heart_guide_structure_key\": \"Légende des structures\",\n      \"heart_guide_key_lungs\": \"Poumons\",\n      \"heart_guide_key_heart\": \"Cœur\",\n      \"heart_guide_key_body\": \"Corps\",\n      \"heart_guide_key_right_atrium\": \"Oreillette droite\",\n      \"heart_guide_key_right_ventricle\": \"Ventricule droit\",\n      \"heart_guide_key_left_atrium\": \"Oreillette gauche\",\n      \"heart_guide_key_left_ventricle\": \"Ventricule gauche\",\n      \"heart_guide_current_step\": \"Étape actuelle\",\n      \"heart_guide_valve_key\": \"Valves sur ce schéma\",\n      \"heart_guide_valve_help\": \"La mise en évidence des valves suit l’étape de circulation sélectionnée.\",\n      \"heart_guide_tricuspid\": \"Valve tricuspide\",\n      \"heart_guide_mitral\": \"Valve mitrale\",\n      \"heart_guide_pulmonary\": \"Valve pulmonaire\",\n      \"heart_guide_aortic\": \"Valve aortique\",\n      \"heart_guide_open\": \"Ouverte\",\n      \"heart_guide_closed\": \"Fermée\",\n      \"heart_guide_not_highlighted\": \"Non mise en évidence à cette étape\",\n      \"heart_guide_flow_key\": \"Légende de l’oxygénation du sang\",\n      \"heart_guide_oxygen_poor\": \"Sang pauvre en oxygène\",\n      \"heart_guide_oxygen_rich\": \"Sang riche en oxygène\",\n      \"heart_guide_pause_flow\": \"Mettre le flux en pause\",\n      \"heart_guide_play_flow\": \"Animer le flux\",\n      \"heart_guide_flow_paused\": \"Flux en pause\",\n      \"heart_guide_flow_playing\": \"Flux animé\",\n      \"heart_guide_previous\": \"Étape précédente\",\n      \"heart_guide_next\": \"Étape suivante\",\n      \"heart_guide_step_position\": \"Étape {current} sur {total}\",\n      \"heart_guide_focus_heading\": \"Structures à observer à cette étape\",\n      \"heart_guide_focus_return\": \"Oreillette droite · Valve tricuspide · Veines caves\",\n      \"heart_guide_focus_outflow\": \"Ventricule droit · Valve pulmonaire · Artères pulmonaires\",\n      \"heart_guide_focus_inflow\": \"Veines pulmonaires · Oreillette gauche · Valve mitrale\",\n      \"heart_guide_focus_systemic\": \"Ventricule gauche · Valve aortique · Aorte\",\n      \"heart_guide_return_label\": \"1. Retour veineux\",\n      \"heart_guide_return_short\": \"Du corps à l’oreillette droite\",\n      \"heart_guide_return_detail\": \"Le sang pauvre en oxygène revient du corps par les veines caves supérieure et inférieure et entre dans l’oreillette droite.\",\n      \"heart_guide_outflow_label\": \"2. Vers les poumons\",\n      \"heart_guide_outflow_short\": \"Du ventricule droit aux poumons\",\n      \"heart_guide_outflow_detail\": \"Le sang traverse la valve tricuspide pour entrer dans le ventricule droit, puis passe par la valve pulmonaire et les artères pulmonaires pour rejoindre les poumons.\",\n      \"heart_guide_inflow_label\": \"3. Retour du sang oxygéné\",\n      \"heart_guide_inflow_short\": \"Des poumons à l’oreillette gauche\",\n      \"heart_guide_inflow_detail\": \"Après les échanges gazeux, le sang riche en oxygène revient par les veines pulmonaires et entre dans l’oreillette gauche.\",\n      \"heart_guide_systemic_label\": \"4. Vers le corps\",\n      \"heart_guide_systemic_short\": \"Du ventricule gauche à l’aorte\",\n      \"heart_guide_systemic_detail\": \"Le sang traverse la valve mitrale pour entrer dans le ventricule gauche, puis passe par la valve aortique et l’aorte pour irriguer le corps.\",\n      \"heart_guide_show_clinical\": \"Vue clinique\",\n      \"heart_guide_hide_clinical\": \"Masquer la vue clinique\",\n      \"heart_guide_clinical_shown\": \"Vue clinique affichée.\",\n      \"heart_guide_clinical_hidden\": \"Vue clinique masquée.\",\n      \"heart_guide_clinical_title\": \"Sténose aortique\",\n      \"heart_guide_clinical_change\": \"L’orifice de la valve aortique se rétrécit, augmentant la résistance à l’éjection du sang par le ventricule gauche.\",\n      \"heart_guide_clinical_effect_heading\": \"Conséquence fonctionnelle\",\n      \"heart_guide_clinical_effect\": \"Le ventricule gauche doit produire une pression plus élevée et peut s’épaissir avec le temps.\",\n      \"heart_guide_clinical_note\": \"Comparaison pédagogique uniquement — cette vue ne permet pas de poser un diagnostic.\",\n      \"heart_guide_handoff_label\": \"Du cœur aux alvéoles\",\n      \"heart_guide_handoff_lead\": \"Suivez le circuit : \",\n      \"heart_guide_handoff_context\": \"explorez la barrière alvéolocapillaire, où le sang des capillaires pulmonaires se charge en oxygène.\",\n      \"heart_guide_handoff_button\": \"Suivre les échanges gazeux\",\n      \"heart_guide_handoff_announcement\": \"Ouverture de la diffusion alvéolaire de l’oxygène, étape 2 sur 4.\"",
+      "addedBytes": 5681,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__french.js.before.gz",
+      "beforeSha256": "f80b8b5bbedab7821a4abae75fc316eeb3a24281a174cf9b81cb0e82bc6fe7fe",
+      "beforeBytes": 8446705,
+      "afterSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "afterBytes": 8452386,
+      "addedKeys": [
+        "heart_guide_title",
+        "heart_guide_help",
+        "heart_guide_circuit_title",
+        "heart_guide_chambers_title",
+        "heart_guide_marker_help",
+        "heart_guide_orientation",
+        "heart_guide_circuit_svg_title",
+        "heart_guide_circuit_svg_description",
+        "heart_guide_chambers_svg_title",
+        "heart_guide_chambers_svg_description",
+        "heart_guide_structure_key",
+        "heart_guide_key_lungs",
+        "heart_guide_key_heart",
+        "heart_guide_key_body",
+        "heart_guide_key_right_atrium",
+        "heart_guide_key_right_ventricle",
+        "heart_guide_key_left_atrium",
+        "heart_guide_key_left_ventricle",
+        "heart_guide_current_step",
+        "heart_guide_valve_key",
+        "heart_guide_valve_help",
+        "heart_guide_tricuspid",
+        "heart_guide_mitral",
+        "heart_guide_pulmonary",
+        "heart_guide_aortic",
+        "heart_guide_open",
+        "heart_guide_closed",
+        "heart_guide_not_highlighted",
+        "heart_guide_flow_key",
+        "heart_guide_oxygen_poor",
+        "heart_guide_oxygen_rich",
+        "heart_guide_pause_flow",
+        "heart_guide_play_flow",
+        "heart_guide_flow_paused",
+        "heart_guide_flow_playing",
+        "heart_guide_previous",
+        "heart_guide_next",
+        "heart_guide_step_position",
+        "heart_guide_focus_heading",
+        "heart_guide_focus_return",
+        "heart_guide_focus_outflow",
+        "heart_guide_focus_inflow",
+        "heart_guide_focus_systemic",
+        "heart_guide_return_label",
+        "heart_guide_return_short",
+        "heart_guide_return_detail",
+        "heart_guide_outflow_label",
+        "heart_guide_outflow_short",
+        "heart_guide_outflow_detail",
+        "heart_guide_inflow_label",
+        "heart_guide_inflow_short",
+        "heart_guide_inflow_detail",
+        "heart_guide_systemic_label",
+        "heart_guide_systemic_short",
+        "heart_guide_systemic_detail",
+        "heart_guide_show_clinical",
+        "heart_guide_hide_clinical",
+        "heart_guide_clinical_shown",
+        "heart_guide_clinical_hidden",
+        "heart_guide_clinical_title",
+        "heart_guide_clinical_change",
+        "heart_guide_clinical_effect_heading",
+        "heart_guide_clinical_effect",
+        "heart_guide_clinical_note",
+        "heart_guide_handoff_label",
+        "heart_guide_handoff_lead",
+        "heart_guide_handoff_context",
+        "heart_guide_handoff_button",
+        "heart_guide_handoff_announcement"
+      ],
+      "insertionCharacterOffset": 3101849,
+      "insertionByteOffset": 3171193,
+      "insertionAnchor": "alveolus_guide_handoff_announcement",
+      "addedText": ",\n      \"heart_guide_title\": \"Circulation cardiaque\",\n      \"heart_guide_help\": \"Suivez le circuit entre le corps, le cœur et les poumons, puis explorez les cavités et les valves.\",\n      \"heart_guide_circuit_title\": \"1. Double circulation\",\n      \"heart_guide_chambers_title\": \"2. Cavités et valves\",\n      \"heart_guide_marker_help\": \"Associez les repères numérotés à la légende des structures.\",\n      \"heart_guide_orientation\": \"Sur ce schéma, le cœur droit apparaît à gauche de l’illustration.\",\n      \"heart_guide_circuit_svg_title\": \"Circulation entre le cœur, les poumons et le corps\",\n      \"heart_guide_circuit_svg_description\": \"Le circuit suit le sang pauvre en oxygène du corps vers le cœur droit puis les poumons, et le sang riche en oxygène vers le cœur gauche et l’aorte pour rejoindre le corps.\",\n      \"heart_guide_chambers_svg_title\": \"Les quatre cavités du cœur et leurs valves\",\n      \"heart_guide_chambers_svg_description\": \"Un schéma agrandi montre l’oreillette droite, le ventricule droit, l’oreillette gauche et le ventricule gauche. La forme des cavités et la mise en évidence des valves suivent l’étape de circulation sélectionnée.\",\n      \"heart_guide_structure_key\": \"Légende des structures\",\n      \"heart_guide_key_lungs\": \"Poumons\",\n      \"heart_guide_key_heart\": \"Cœur\",\n      \"heart_guide_key_body\": \"Corps\",\n      \"heart_guide_key_right_atrium\": \"Oreillette droite\",\n      \"heart_guide_key_right_ventricle\": \"Ventricule droit\",\n      \"heart_guide_key_left_atrium\": \"Oreillette gauche\",\n      \"heart_guide_key_left_ventricle\": \"Ventricule gauche\",\n      \"heart_guide_current_step\": \"Étape actuelle\",\n      \"heart_guide_valve_key\": \"Valves sur ce schéma\",\n      \"heart_guide_valve_help\": \"La mise en évidence des valves suit l’étape de circulation sélectionnée.\",\n      \"heart_guide_tricuspid\": \"Valve tricuspide\",\n      \"heart_guide_mitral\": \"Valve mitrale\",\n      \"heart_guide_pulmonary\": \"Valve pulmonaire\",\n      \"heart_guide_aortic\": \"Valve aortique\",\n      \"heart_guide_open\": \"Ouverte\",\n      \"heart_guide_closed\": \"Fermée\",\n      \"heart_guide_not_highlighted\": \"Non mise en évidence à cette étape\",\n      \"heart_guide_flow_key\": \"Légende de l’oxygénation du sang\",\n      \"heart_guide_oxygen_poor\": \"Sang pauvre en oxygène\",\n      \"heart_guide_oxygen_rich\": \"Sang riche en oxygène\",\n      \"heart_guide_pause_flow\": \"Mettre le flux en pause\",\n      \"heart_guide_play_flow\": \"Animer le flux\",\n      \"heart_guide_flow_paused\": \"Flux en pause\",\n      \"heart_guide_flow_playing\": \"Flux animé\",\n      \"heart_guide_previous\": \"Étape précédente\",\n      \"heart_guide_next\": \"Étape suivante\",\n      \"heart_guide_step_position\": \"Étape {current} sur {total}\",\n      \"heart_guide_focus_heading\": \"Structures à observer à cette étape\",\n      \"heart_guide_focus_return\": \"Oreillette droite · Valve tricuspide · Veines caves\",\n      \"heart_guide_focus_outflow\": \"Ventricule droit · Valve pulmonaire · Artères pulmonaires\",\n      \"heart_guide_focus_inflow\": \"Veines pulmonaires · Oreillette gauche · Valve mitrale\",\n      \"heart_guide_focus_systemic\": \"Ventricule gauche · Valve aortique · Aorte\",\n      \"heart_guide_return_label\": \"1. Retour veineux\",\n      \"heart_guide_return_short\": \"Du corps à l’oreillette droite\",\n      \"heart_guide_return_detail\": \"Le sang pauvre en oxygène revient du corps par les veines caves supérieure et inférieure et entre dans l’oreillette droite.\",\n      \"heart_guide_outflow_label\": \"2. Vers les poumons\",\n      \"heart_guide_outflow_short\": \"Du ventricule droit aux poumons\",\n      \"heart_guide_outflow_detail\": \"Le sang traverse la valve tricuspide pour entrer dans le ventricule droit, puis passe par la valve pulmonaire et les artères pulmonaires pour rejoindre les poumons.\",\n      \"heart_guide_inflow_label\": \"3. Retour du sang oxygéné\",\n      \"heart_guide_inflow_short\": \"Des poumons à l’oreillette gauche\",\n      \"heart_guide_inflow_detail\": \"Après les échanges gazeux, le sang riche en oxygène revient par les veines pulmonaires et entre dans l’oreillette gauche.\",\n      \"heart_guide_systemic_label\": \"4. Vers le corps\",\n      \"heart_guide_systemic_short\": \"Du ventricule gauche à l’aorte\",\n      \"heart_guide_systemic_detail\": \"Le sang traverse la valve mitrale pour entrer dans le ventricule gauche, puis passe par la valve aortique et l’aorte pour irriguer le corps.\",\n      \"heart_guide_show_clinical\": \"Vue clinique\",\n      \"heart_guide_hide_clinical\": \"Masquer la vue clinique\",\n      \"heart_guide_clinical_shown\": \"Vue clinique affichée.\",\n      \"heart_guide_clinical_hidden\": \"Vue clinique masquée.\",\n      \"heart_guide_clinical_title\": \"Sténose aortique\",\n      \"heart_guide_clinical_change\": \"L’orifice de la valve aortique se rétrécit, augmentant la résistance à l’éjection du sang par le ventricule gauche.\",\n      \"heart_guide_clinical_effect_heading\": \"Conséquence fonctionnelle\",\n      \"heart_guide_clinical_effect\": \"Le ventricule gauche doit produire une pression plus élevée et peut s’épaissir avec le temps.\",\n      \"heart_guide_clinical_note\": \"Comparaison pédagogique uniquement — cette vue ne permet pas de poser un diagnostic.\",\n      \"heart_guide_handoff_label\": \"Du cœur aux alvéoles\",\n      \"heart_guide_handoff_lead\": \"Suivez le circuit : \",\n      \"heart_guide_handoff_context\": \"explorez la barrière alvéolocapillaire, où le sang des capillaires pulmonaires se charge en oxygène.\",\n      \"heart_guide_handoff_button\": \"Suivre les échanges gazeux\",\n      \"heart_guide_handoff_announcement\": \"Ouverture de la diffusion alvéolaire de l’oxygène, étape 2 sur 4.\"",
+      "addedBytes": 5681,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "snapshot": "locale-before/lang__spanish_latin_america.js.before.gz",
+      "beforeSha256": "e238448642fd81f3f697e8c19de5695fe003487222d0d93486b729ab9fc5eee0",
+      "beforeBytes": 8867440,
+      "afterSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "afterBytes": 8873203,
+      "addedKeys": [
+        "heart_guide_title",
+        "heart_guide_help",
+        "heart_guide_circuit_title",
+        "heart_guide_chambers_title",
+        "heart_guide_marker_help",
+        "heart_guide_orientation",
+        "heart_guide_circuit_svg_title",
+        "heart_guide_circuit_svg_description",
+        "heart_guide_chambers_svg_title",
+        "heart_guide_chambers_svg_description",
+        "heart_guide_structure_key",
+        "heart_guide_key_lungs",
+        "heart_guide_key_heart",
+        "heart_guide_key_body",
+        "heart_guide_key_right_atrium",
+        "heart_guide_key_right_ventricle",
+        "heart_guide_key_left_atrium",
+        "heart_guide_key_left_ventricle",
+        "heart_guide_current_step",
+        "heart_guide_valve_key",
+        "heart_guide_valve_help",
+        "heart_guide_tricuspid",
+        "heart_guide_mitral",
+        "heart_guide_pulmonary",
+        "heart_guide_aortic",
+        "heart_guide_open",
+        "heart_guide_closed",
+        "heart_guide_not_highlighted",
+        "heart_guide_flow_key",
+        "heart_guide_oxygen_poor",
+        "heart_guide_oxygen_rich",
+        "heart_guide_pause_flow",
+        "heart_guide_play_flow",
+        "heart_guide_flow_paused",
+        "heart_guide_flow_playing",
+        "heart_guide_previous",
+        "heart_guide_next",
+        "heart_guide_step_position",
+        "heart_guide_focus_heading",
+        "heart_guide_focus_return",
+        "heart_guide_focus_outflow",
+        "heart_guide_focus_inflow",
+        "heart_guide_focus_systemic",
+        "heart_guide_return_label",
+        "heart_guide_return_short",
+        "heart_guide_return_detail",
+        "heart_guide_outflow_label",
+        "heart_guide_outflow_short",
+        "heart_guide_outflow_detail",
+        "heart_guide_inflow_label",
+        "heart_guide_inflow_short",
+        "heart_guide_inflow_detail",
+        "heart_guide_systemic_label",
+        "heart_guide_systemic_short",
+        "heart_guide_systemic_detail",
+        "heart_guide_show_clinical",
+        "heart_guide_hide_clinical",
+        "heart_guide_clinical_shown",
+        "heart_guide_clinical_hidden",
+        "heart_guide_clinical_title",
+        "heart_guide_clinical_change",
+        "heart_guide_clinical_effect_heading",
+        "heart_guide_clinical_effect",
+        "heart_guide_clinical_note",
+        "heart_guide_handoff_label",
+        "heart_guide_handoff_lead",
+        "heart_guide_handoff_context",
+        "heart_guide_handoff_button",
+        "heart_guide_handoff_announcement"
+      ],
+      "insertionCharacterOffset": 3037581,
+      "insertionByteOffset": 3081085,
+      "insertionAnchor": "alveolus_guide_handoff_announcement",
+      "addedText": ",\n      \"heart_guide_title\": \"Circulación cardíaca\",\n      \"heart_guide_help\": \"Sigue el circuito entre el cuerpo, el corazón y los pulmones; luego explora las cavidades y las válvulas.\",\n      \"heart_guide_circuit_title\": \"1. Doble circulación\",\n      \"heart_guide_chambers_title\": \"2. Cavidades y válvulas\",\n      \"heart_guide_marker_help\": \"Relaciona los marcadores numerados con la leyenda de estructuras.\",\n      \"heart_guide_orientation\": \"En este esquema, el lado derecho del corazón aparece a la izquierda de la ilustración.\",\n      \"heart_guide_circuit_svg_title\": \"Circulación entre el corazón, los pulmones y el cuerpo\",\n      \"heart_guide_circuit_svg_description\": \"El circuito sigue la sangre con poco oxígeno desde el cuerpo hasta el lado derecho del corazón y los pulmones; luego sigue la sangre rica en oxígeno por el lado izquierdo del corazón y la aorta de regreso al cuerpo.\",\n      \"heart_guide_chambers_svg_title\": \"Las cuatro cavidades del corazón y sus válvulas\",\n      \"heart_guide_chambers_svg_description\": \"Un esquema ampliado muestra la aurícula derecha, el ventrículo derecho, la aurícula izquierda y el ventrículo izquierdo. La forma de las cavidades y las válvulas resaltadas corresponden al paso de circulación seleccionado.\",\n      \"heart_guide_structure_key\": \"Leyenda de estructuras\",\n      \"heart_guide_key_lungs\": \"Pulmones\",\n      \"heart_guide_key_heart\": \"Corazón\",\n      \"heart_guide_key_body\": \"Cuerpo\",\n      \"heart_guide_key_right_atrium\": \"Aurícula derecha\",\n      \"heart_guide_key_right_ventricle\": \"Ventrículo derecho\",\n      \"heart_guide_key_left_atrium\": \"Aurícula izquierda\",\n      \"heart_guide_key_left_ventricle\": \"Ventrículo izquierdo\",\n      \"heart_guide_current_step\": \"Paso actual\",\n      \"heart_guide_valve_key\": \"Válvulas de este esquema\",\n      \"heart_guide_valve_help\": \"Las válvulas resaltadas corresponden al paso de circulación seleccionado.\",\n      \"heart_guide_tricuspid\": \"Válvula tricúspide\",\n      \"heart_guide_mitral\": \"Válvula mitral\",\n      \"heart_guide_pulmonary\": \"Válvula pulmonar\",\n      \"heart_guide_aortic\": \"Válvula aórtica\",\n      \"heart_guide_open\": \"Abierta\",\n      \"heart_guide_closed\": \"Cerrada\",\n      \"heart_guide_not_highlighted\": \"Sin resaltar en este paso\",\n      \"heart_guide_flow_key\": \"Leyenda de oxigenación de la sangre\",\n      \"heart_guide_oxygen_poor\": \"Sangre con poco oxígeno\",\n      \"heart_guide_oxygen_rich\": \"Sangre rica en oxígeno\",\n      \"heart_guide_pause_flow\": \"Pausar el flujo\",\n      \"heart_guide_play_flow\": \"Animar el flujo\",\n      \"heart_guide_flow_paused\": \"Flujo en pausa\",\n      \"heart_guide_flow_playing\": \"Flujo en movimiento\",\n      \"heart_guide_previous\": \"Paso anterior\",\n      \"heart_guide_next\": \"Paso siguiente\",\n      \"heart_guide_step_position\": \"Paso {current} de {total}\",\n      \"heart_guide_focus_heading\": \"Estructuras que observar en este paso\",\n      \"heart_guide_focus_return\": \"Aurícula derecha · Válvula tricúspide · Venas cavas\",\n      \"heart_guide_focus_outflow\": \"Ventrículo derecho · Válvula pulmonar · Arterias pulmonares\",\n      \"heart_guide_focus_inflow\": \"Venas pulmonares · Aurícula izquierda · Válvula mitral\",\n      \"heart_guide_focus_systemic\": \"Ventrículo izquierdo · Válvula aórtica · Aorta\",\n      \"heart_guide_return_label\": \"1. Retorno venoso\",\n      \"heart_guide_return_short\": \"Del cuerpo a la aurícula derecha\",\n      \"heart_guide_return_detail\": \"La sangre con poco oxígeno regresa del cuerpo por las venas cavas superior e inferior y entra en la aurícula derecha.\",\n      \"heart_guide_outflow_label\": \"2. Hacia los pulmones\",\n      \"heart_guide_outflow_short\": \"Del ventrículo derecho a los pulmones\",\n      \"heart_guide_outflow_detail\": \"La sangre cruza la válvula tricúspide hacia el ventrículo derecho; luego pasa por la válvula pulmonar y las arterias pulmonares hasta los pulmones.\",\n      \"heart_guide_inflow_label\": \"3. Retorno de sangre oxigenada\",\n      \"heart_guide_inflow_short\": \"De los pulmones a la aurícula izquierda\",\n      \"heart_guide_inflow_detail\": \"Después del intercambio gaseoso, la sangre rica en oxígeno regresa por las venas pulmonares y entra en la aurícula izquierda.\",\n      \"heart_guide_systemic_label\": \"4. Hacia el cuerpo\",\n      \"heart_guide_systemic_short\": \"Del ventrículo izquierdo a la aorta\",\n      \"heart_guide_systemic_detail\": \"La sangre cruza la válvula mitral hacia el ventrículo izquierdo; luego pasa por la válvula aórtica y la aorta para abastecer al cuerpo.\",\n      \"heart_guide_show_clinical\": \"Vista clínica\",\n      \"heart_guide_hide_clinical\": \"Ocultar la vista clínica\",\n      \"heart_guide_clinical_shown\": \"Vista clínica visible.\",\n      \"heart_guide_clinical_hidden\": \"Vista clínica oculta.\",\n      \"heart_guide_clinical_title\": \"Estenosis aórtica\",\n      \"heart_guide_clinical_change\": \"La abertura de la válvula aórtica se estrecha, lo que aumenta la resistencia a la salida de sangre del ventrículo izquierdo.\",\n      \"heart_guide_clinical_effect_heading\": \"Consecuencia funcional\",\n      \"heart_guide_clinical_effect\": \"El ventrículo izquierdo debe generar una presión mayor y puede engrosarse con el tiempo.\",\n      \"heart_guide_clinical_note\": \"Comparación solo con fines educativos — esta vista no permite realizar un diagnóstico.\",\n      \"heart_guide_handoff_label\": \"Del corazón a los alvéolos\",\n      \"heart_guide_handoff_lead\": \"Sigue el circuito: \",\n      \"heart_guide_handoff_context\": \"explora la barrera alveolocapilar, donde la sangre de los capilares pulmonares recibe oxígeno.\",\n      \"heart_guide_handoff_button\": \"Seguir el intercambio gaseoso\",\n      \"heart_guide_handoff_announcement\": \"Abriendo la difusión alveolar de oxígeno, paso 2 de 4.\"",
+      "addedBytes": 5763,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__spanish_latin_america.js.before.gz",
+      "beforeSha256": "e238448642fd81f3f697e8c19de5695fe003487222d0d93486b729ab9fc5eee0",
+      "beforeBytes": 8867440,
+      "afterSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "afterBytes": 8873203,
+      "addedKeys": [
+        "heart_guide_title",
+        "heart_guide_help",
+        "heart_guide_circuit_title",
+        "heart_guide_chambers_title",
+        "heart_guide_marker_help",
+        "heart_guide_orientation",
+        "heart_guide_circuit_svg_title",
+        "heart_guide_circuit_svg_description",
+        "heart_guide_chambers_svg_title",
+        "heart_guide_chambers_svg_description",
+        "heart_guide_structure_key",
+        "heart_guide_key_lungs",
+        "heart_guide_key_heart",
+        "heart_guide_key_body",
+        "heart_guide_key_right_atrium",
+        "heart_guide_key_right_ventricle",
+        "heart_guide_key_left_atrium",
+        "heart_guide_key_left_ventricle",
+        "heart_guide_current_step",
+        "heart_guide_valve_key",
+        "heart_guide_valve_help",
+        "heart_guide_tricuspid",
+        "heart_guide_mitral",
+        "heart_guide_pulmonary",
+        "heart_guide_aortic",
+        "heart_guide_open",
+        "heart_guide_closed",
+        "heart_guide_not_highlighted",
+        "heart_guide_flow_key",
+        "heart_guide_oxygen_poor",
+        "heart_guide_oxygen_rich",
+        "heart_guide_pause_flow",
+        "heart_guide_play_flow",
+        "heart_guide_flow_paused",
+        "heart_guide_flow_playing",
+        "heart_guide_previous",
+        "heart_guide_next",
+        "heart_guide_step_position",
+        "heart_guide_focus_heading",
+        "heart_guide_focus_return",
+        "heart_guide_focus_outflow",
+        "heart_guide_focus_inflow",
+        "heart_guide_focus_systemic",
+        "heart_guide_return_label",
+        "heart_guide_return_short",
+        "heart_guide_return_detail",
+        "heart_guide_outflow_label",
+        "heart_guide_outflow_short",
+        "heart_guide_outflow_detail",
+        "heart_guide_inflow_label",
+        "heart_guide_inflow_short",
+        "heart_guide_inflow_detail",
+        "heart_guide_systemic_label",
+        "heart_guide_systemic_short",
+        "heart_guide_systemic_detail",
+        "heart_guide_show_clinical",
+        "heart_guide_hide_clinical",
+        "heart_guide_clinical_shown",
+        "heart_guide_clinical_hidden",
+        "heart_guide_clinical_title",
+        "heart_guide_clinical_change",
+        "heart_guide_clinical_effect_heading",
+        "heart_guide_clinical_effect",
+        "heart_guide_clinical_note",
+        "heart_guide_handoff_label",
+        "heart_guide_handoff_lead",
+        "heart_guide_handoff_context",
+        "heart_guide_handoff_button",
+        "heart_guide_handoff_announcement"
+      ],
+      "insertionCharacterOffset": 3037581,
+      "insertionByteOffset": 3081085,
+      "insertionAnchor": "alveolus_guide_handoff_announcement",
+      "addedText": ",\n      \"heart_guide_title\": \"Circulación cardíaca\",\n      \"heart_guide_help\": \"Sigue el circuito entre el cuerpo, el corazón y los pulmones; luego explora las cavidades y las válvulas.\",\n      \"heart_guide_circuit_title\": \"1. Doble circulación\",\n      \"heart_guide_chambers_title\": \"2. Cavidades y válvulas\",\n      \"heart_guide_marker_help\": \"Relaciona los marcadores numerados con la leyenda de estructuras.\",\n      \"heart_guide_orientation\": \"En este esquema, el lado derecho del corazón aparece a la izquierda de la ilustración.\",\n      \"heart_guide_circuit_svg_title\": \"Circulación entre el corazón, los pulmones y el cuerpo\",\n      \"heart_guide_circuit_svg_description\": \"El circuito sigue la sangre con poco oxígeno desde el cuerpo hasta el lado derecho del corazón y los pulmones; luego sigue la sangre rica en oxígeno por el lado izquierdo del corazón y la aorta de regreso al cuerpo.\",\n      \"heart_guide_chambers_svg_title\": \"Las cuatro cavidades del corazón y sus válvulas\",\n      \"heart_guide_chambers_svg_description\": \"Un esquema ampliado muestra la aurícula derecha, el ventrículo derecho, la aurícula izquierda y el ventrículo izquierdo. La forma de las cavidades y las válvulas resaltadas corresponden al paso de circulación seleccionado.\",\n      \"heart_guide_structure_key\": \"Leyenda de estructuras\",\n      \"heart_guide_key_lungs\": \"Pulmones\",\n      \"heart_guide_key_heart\": \"Corazón\",\n      \"heart_guide_key_body\": \"Cuerpo\",\n      \"heart_guide_key_right_atrium\": \"Aurícula derecha\",\n      \"heart_guide_key_right_ventricle\": \"Ventrículo derecho\",\n      \"heart_guide_key_left_atrium\": \"Aurícula izquierda\",\n      \"heart_guide_key_left_ventricle\": \"Ventrículo izquierdo\",\n      \"heart_guide_current_step\": \"Paso actual\",\n      \"heart_guide_valve_key\": \"Válvulas de este esquema\",\n      \"heart_guide_valve_help\": \"Las válvulas resaltadas corresponden al paso de circulación seleccionado.\",\n      \"heart_guide_tricuspid\": \"Válvula tricúspide\",\n      \"heart_guide_mitral\": \"Válvula mitral\",\n      \"heart_guide_pulmonary\": \"Válvula pulmonar\",\n      \"heart_guide_aortic\": \"Válvula aórtica\",\n      \"heart_guide_open\": \"Abierta\",\n      \"heart_guide_closed\": \"Cerrada\",\n      \"heart_guide_not_highlighted\": \"Sin resaltar en este paso\",\n      \"heart_guide_flow_key\": \"Leyenda de oxigenación de la sangre\",\n      \"heart_guide_oxygen_poor\": \"Sangre con poco oxígeno\",\n      \"heart_guide_oxygen_rich\": \"Sangre rica en oxígeno\",\n      \"heart_guide_pause_flow\": \"Pausar el flujo\",\n      \"heart_guide_play_flow\": \"Animar el flujo\",\n      \"heart_guide_flow_paused\": \"Flujo en pausa\",\n      \"heart_guide_flow_playing\": \"Flujo en movimiento\",\n      \"heart_guide_previous\": \"Paso anterior\",\n      \"heart_guide_next\": \"Paso siguiente\",\n      \"heart_guide_step_position\": \"Paso {current} de {total}\",\n      \"heart_guide_focus_heading\": \"Estructuras que observar en este paso\",\n      \"heart_guide_focus_return\": \"Aurícula derecha · Válvula tricúspide · Venas cavas\",\n      \"heart_guide_focus_outflow\": \"Ventrículo derecho · Válvula pulmonar · Arterias pulmonares\",\n      \"heart_guide_focus_inflow\": \"Venas pulmonares · Aurícula izquierda · Válvula mitral\",\n      \"heart_guide_focus_systemic\": \"Ventrículo izquierdo · Válvula aórtica · Aorta\",\n      \"heart_guide_return_label\": \"1. Retorno venoso\",\n      \"heart_guide_return_short\": \"Del cuerpo a la aurícula derecha\",\n      \"heart_guide_return_detail\": \"La sangre con poco oxígeno regresa del cuerpo por las venas cavas superior e inferior y entra en la aurícula derecha.\",\n      \"heart_guide_outflow_label\": \"2. Hacia los pulmones\",\n      \"heart_guide_outflow_short\": \"Del ventrículo derecho a los pulmones\",\n      \"heart_guide_outflow_detail\": \"La sangre cruza la válvula tricúspide hacia el ventrículo derecho; luego pasa por la válvula pulmonar y las arterias pulmonares hasta los pulmones.\",\n      \"heart_guide_inflow_label\": \"3. Retorno de sangre oxigenada\",\n      \"heart_guide_inflow_short\": \"De los pulmones a la aurícula izquierda\",\n      \"heart_guide_inflow_detail\": \"Después del intercambio gaseoso, la sangre rica en oxígeno regresa por las venas pulmonares y entra en la aurícula izquierda.\",\n      \"heart_guide_systemic_label\": \"4. Hacia el cuerpo\",\n      \"heart_guide_systemic_short\": \"Del ventrículo izquierdo a la aorta\",\n      \"heart_guide_systemic_detail\": \"La sangre cruza la válvula mitral hacia el ventrículo izquierdo; luego pasa por la válvula aórtica y la aorta para abastecer al cuerpo.\",\n      \"heart_guide_show_clinical\": \"Vista clínica\",\n      \"heart_guide_hide_clinical\": \"Ocultar la vista clínica\",\n      \"heart_guide_clinical_shown\": \"Vista clínica visible.\",\n      \"heart_guide_clinical_hidden\": \"Vista clínica oculta.\",\n      \"heart_guide_clinical_title\": \"Estenosis aórtica\",\n      \"heart_guide_clinical_change\": \"La abertura de la válvula aórtica se estrecha, lo que aumenta la resistencia a la salida de sangre del ventrículo izquierdo.\",\n      \"heart_guide_clinical_effect_heading\": \"Consecuencia funcional\",\n      \"heart_guide_clinical_effect\": \"El ventrículo izquierdo debe generar una presión mayor y puede engrosarse con el tiempo.\",\n      \"heart_guide_clinical_note\": \"Comparación solo con fines educativos — esta vista no permite realizar un diagnóstico.\",\n      \"heart_guide_handoff_label\": \"Del corazón a los alvéolos\",\n      \"heart_guide_handoff_lead\": \"Sigue el circuito: \",\n      \"heart_guide_handoff_context\": \"explora la barrera alveolocapilar, donde la sangre de los capilares pulmonares recibe oxígeno.\",\n      \"heart_guide_handoff_button\": \"Seguir el intercambio gaseoso\",\n      \"heart_guide_handoff_announcement\": \"Abriendo la difusión alveolar de oxígeno, paso 2 de 4.\"",
+      "addedBytes": 5763,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/arabic.js",
+      "snapshot": "locale-before/lang__arabic.js.before.gz",
+      "beforeSha256": "05e37c3044895ef1d7b8d272fae44aeca83a2fd37d6544e562284b9963f2af12",
+      "beforeBytes": 8981579,
+      "afterSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "afterBytes": 8988735,
+      "addedKeys": [
+        "heart_guide_title",
+        "heart_guide_help",
+        "heart_guide_circuit_title",
+        "heart_guide_chambers_title",
+        "heart_guide_marker_help",
+        "heart_guide_orientation",
+        "heart_guide_circuit_svg_title",
+        "heart_guide_circuit_svg_description",
+        "heart_guide_chambers_svg_title",
+        "heart_guide_chambers_svg_description",
+        "heart_guide_structure_key",
+        "heart_guide_key_lungs",
+        "heart_guide_key_heart",
+        "heart_guide_key_body",
+        "heart_guide_key_right_atrium",
+        "heart_guide_key_right_ventricle",
+        "heart_guide_key_left_atrium",
+        "heart_guide_key_left_ventricle",
+        "heart_guide_current_step",
+        "heart_guide_valve_key",
+        "heart_guide_valve_help",
+        "heart_guide_tricuspid",
+        "heart_guide_mitral",
+        "heart_guide_pulmonary",
+        "heart_guide_aortic",
+        "heart_guide_open",
+        "heart_guide_closed",
+        "heart_guide_not_highlighted",
+        "heart_guide_flow_key",
+        "heart_guide_oxygen_poor",
+        "heart_guide_oxygen_rich",
+        "heart_guide_pause_flow",
+        "heart_guide_play_flow",
+        "heart_guide_flow_paused",
+        "heart_guide_flow_playing",
+        "heart_guide_previous",
+        "heart_guide_next",
+        "heart_guide_step_position",
+        "heart_guide_focus_heading",
+        "heart_guide_focus_return",
+        "heart_guide_focus_outflow",
+        "heart_guide_focus_inflow",
+        "heart_guide_focus_systemic",
+        "heart_guide_return_label",
+        "heart_guide_return_short",
+        "heart_guide_return_detail",
+        "heart_guide_outflow_label",
+        "heart_guide_outflow_short",
+        "heart_guide_outflow_detail",
+        "heart_guide_inflow_label",
+        "heart_guide_inflow_short",
+        "heart_guide_inflow_detail",
+        "heart_guide_systemic_label",
+        "heart_guide_systemic_short",
+        "heart_guide_systemic_detail",
+        "heart_guide_show_clinical",
+        "heart_guide_hide_clinical",
+        "heart_guide_clinical_shown",
+        "heart_guide_clinical_hidden",
+        "heart_guide_clinical_title",
+        "heart_guide_clinical_change",
+        "heart_guide_clinical_effect_heading",
+        "heart_guide_clinical_effect",
+        "heart_guide_clinical_note",
+        "heart_guide_handoff_label",
+        "heart_guide_handoff_lead",
+        "heart_guide_handoff_context",
+        "heart_guide_handoff_button",
+        "heart_guide_handoff_announcement"
+      ],
+      "insertionCharacterOffset": 2456209,
+      "insertionByteOffset": 3401652,
+      "insertionAnchor": "alveolus_guide_handoff_announcement",
+      "addedText": ",\n      \"heart_guide_title\": \"الدورة الدموية عبر القلب\",\n      \"heart_guide_help\": \"تتبّع مسار الدم بين الجسم والقلب والرئتين، ثم استكشف حجرات القلب وصماماته.\",\n      \"heart_guide_circuit_title\": \"1. الدورة الدموية المزدوجة\",\n      \"heart_guide_chambers_title\": \"2. الحجرات والصمامات\",\n      \"heart_guide_marker_help\": \"طابق العلامات المرقّمة مع دليل البنى التشريحية.\",\n      \"heart_guide_orientation\": \"في هذا الرسم التخطيطي، يظهر الجانب الأيمن من القلب على يسار الصورة.\",\n      \"heart_guide_circuit_svg_title\": \"الدورة الدموية بين القلب والرئتين والجسم\",\n      \"heart_guide_circuit_svg_description\": \"يتتبّع المسار الدم الفقير بالأكسجين من الجسم عبر الجانب الأيمن من القلب إلى الرئتين، ثم الدم الغني بالأكسجين عبر الجانب الأيسر من القلب والشريان الأبهر عائدًا إلى الجسم.\",\n      \"heart_guide_chambers_svg_title\": \"حجرات القلب الأربع وصماماته\",\n      \"heart_guide_chambers_svg_description\": \"يُظهر رسم تخطيطي مكبّر الأذين الأيمن والبطين الأيمن والأذين الأيسر والبطين الأيسر. تتوافق أشكال الحجرات وإبراز الصمامات مع الخطوة المحدّدة من الدورة الدموية.\",\n      \"heart_guide_structure_key\": \"دليل البنى التشريحية\",\n      \"heart_guide_key_lungs\": \"الرئتان\",\n      \"heart_guide_key_heart\": \"القلب\",\n      \"heart_guide_key_body\": \"الجسم\",\n      \"heart_guide_key_right_atrium\": \"الأذين الأيمن\",\n      \"heart_guide_key_right_ventricle\": \"البطين الأيمن\",\n      \"heart_guide_key_left_atrium\": \"الأذين الأيسر\",\n      \"heart_guide_key_left_ventricle\": \"البطين الأيسر\",\n      \"heart_guide_current_step\": \"الخطوة الحالية\",\n      \"heart_guide_valve_key\": \"الصمامات في هذا الرسم\",\n      \"heart_guide_valve_help\": \"يتوافق إبراز الصمامات مع الخطوة المحدّدة من الدورة الدموية.\",\n      \"heart_guide_tricuspid\": \"الصمام ثلاثي الشرفات\",\n      \"heart_guide_mitral\": \"الصمام التاجي\",\n      \"heart_guide_pulmonary\": \"الصمام الرئوي\",\n      \"heart_guide_aortic\": \"الصمام الأبهري\",\n      \"heart_guide_open\": \"مفتوح\",\n      \"heart_guide_closed\": \"مغلق\",\n      \"heart_guide_not_highlighted\": \"غير مبرز في هذه الخطوة\",\n      \"heart_guide_flow_key\": \"دليل مستويات الأكسجين في الدم\",\n      \"heart_guide_oxygen_poor\": \"دم فقير بالأكسجين\",\n      \"heart_guide_oxygen_rich\": \"دم غني بالأكسجين\",\n      \"heart_guide_pause_flow\": \"إيقاف حركة التدفق مؤقتًا\",\n      \"heart_guide_play_flow\": \"تشغيل حركة التدفق\",\n      \"heart_guide_flow_paused\": \"حركة التدفق متوقفة مؤقتًا\",\n      \"heart_guide_flow_playing\": \"حركة التدفق قيد التشغيل\",\n      \"heart_guide_previous\": \"الخطوة السابقة\",\n      \"heart_guide_next\": \"الخطوة التالية\",\n      \"heart_guide_step_position\": \"الخطوة {current} من {total}\",\n      \"heart_guide_focus_heading\": \"البنى التي تستكشفها في هذه الخطوة\",\n      \"heart_guide_focus_return\": \"الأذين الأيمن · الصمام ثلاثي الشرفات · الوريدان الأجوفان\",\n      \"heart_guide_focus_outflow\": \"البطين الأيمن · الصمام الرئوي · الشرايين الرئوية\",\n      \"heart_guide_focus_inflow\": \"الأوردة الرئوية · الأذين الأيسر · الصمام التاجي\",\n      \"heart_guide_focus_systemic\": \"البطين الأيسر · الصمام الأبهري · الشريان الأبهر\",\n      \"heart_guide_return_label\": \"1. العَوْد الوريدي\",\n      \"heart_guide_return_short\": \"من الجسم إلى الأذين الأيمن\",\n      \"heart_guide_return_detail\": \"يعود الدم الفقير بالأكسجين من الجسم عبر الوريدين الأجوفين العلوي والسفلي ويدخل الأذين الأيمن.\",\n      \"heart_guide_outflow_label\": \"2. إلى الرئتين\",\n      \"heart_guide_outflow_short\": \"من البطين الأيمن إلى الرئتين\",\n      \"heart_guide_outflow_detail\": \"يعبر الدم الصمام ثلاثي الشرفات إلى البطين الأيمن، ثم يمر عبر الصمام الرئوي والشرايين الرئوية إلى الرئتين.\",\n      \"heart_guide_inflow_label\": \"3. عودة الدم المؤكسج\",\n      \"heart_guide_inflow_short\": \"من الرئتين إلى الأذين الأيسر\",\n      \"heart_guide_inflow_detail\": \"بعد تبادل الغازات، يعود الدم الغني بالأكسجين عبر الأوردة الرئوية ويدخل الأذين الأيسر.\",\n      \"heart_guide_systemic_label\": \"4. إلى الجسم\",\n      \"heart_guide_systemic_short\": \"من البطين الأيسر إلى الشريان الأبهر\",\n      \"heart_guide_systemic_detail\": \"يعبر الدم الصمام التاجي إلى البطين الأيسر، ثم يمر عبر الصمام الأبهري والشريان الأبهر لتزويد الجسم بالدم.\",\n      \"heart_guide_show_clinical\": \"المنظور السريري\",\n      \"heart_guide_hide_clinical\": \"إخفاء المنظور السريري\",\n      \"heart_guide_clinical_shown\": \"تم إظهار المنظور السريري.\",\n      \"heart_guide_clinical_hidden\": \"تم إخفاء المنظور السريري.\",\n      \"heart_guide_clinical_title\": \"تضيّق الصمام الأبهري\",\n      \"heart_guide_clinical_change\": \"تضيق فتحة الصمام الأبهري، فتزداد مقاومة خروج الدم من البطين الأيسر.\",\n      \"heart_guide_clinical_effect_heading\": \"النتيجة الوظيفية\",\n      \"heart_guide_clinical_effect\": \"يحتاج البطين الأيسر إلى توليد ضغط أعلى، وقد يزداد سمك جداره مع مرور الوقت.\",\n      \"heart_guide_clinical_note\": \"مقارنة تعليمية فقط — هذا المنظور ليس وسيلة للتشخيص.\",\n      \"heart_guide_handoff_label\": \"من القلب إلى الحويصلات الهوائية\",\n      \"heart_guide_handoff_lead\": \"تتبّع المسار: \",\n      \"heart_guide_handoff_context\": \"استكشف الحاجز بين الهواء والدم، حيث يكتسب دم الشعيرات الرئوية الأكسجين.\",\n      \"heart_guide_handoff_button\": \"تتبّع تبادل الغازات\",\n      \"heart_guide_handoff_announcement\": \"جارٍ فتح انتشار الأكسجين في الحويصلات الهوائية، الخطوة 2 من 4.\"",
+      "addedBytes": 7156,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "snapshot": "locale-before/desktop__web-app__public__lang__arabic.js.before.gz",
+      "beforeSha256": "05e37c3044895ef1d7b8d272fae44aeca83a2fd37d6544e562284b9963f2af12",
+      "beforeBytes": 8981579,
+      "afterSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "afterBytes": 8988735,
+      "addedKeys": [
+        "heart_guide_title",
+        "heart_guide_help",
+        "heart_guide_circuit_title",
+        "heart_guide_chambers_title",
+        "heart_guide_marker_help",
+        "heart_guide_orientation",
+        "heart_guide_circuit_svg_title",
+        "heart_guide_circuit_svg_description",
+        "heart_guide_chambers_svg_title",
+        "heart_guide_chambers_svg_description",
+        "heart_guide_structure_key",
+        "heart_guide_key_lungs",
+        "heart_guide_key_heart",
+        "heart_guide_key_body",
+        "heart_guide_key_right_atrium",
+        "heart_guide_key_right_ventricle",
+        "heart_guide_key_left_atrium",
+        "heart_guide_key_left_ventricle",
+        "heart_guide_current_step",
+        "heart_guide_valve_key",
+        "heart_guide_valve_help",
+        "heart_guide_tricuspid",
+        "heart_guide_mitral",
+        "heart_guide_pulmonary",
+        "heart_guide_aortic",
+        "heart_guide_open",
+        "heart_guide_closed",
+        "heart_guide_not_highlighted",
+        "heart_guide_flow_key",
+        "heart_guide_oxygen_poor",
+        "heart_guide_oxygen_rich",
+        "heart_guide_pause_flow",
+        "heart_guide_play_flow",
+        "heart_guide_flow_paused",
+        "heart_guide_flow_playing",
+        "heart_guide_previous",
+        "heart_guide_next",
+        "heart_guide_step_position",
+        "heart_guide_focus_heading",
+        "heart_guide_focus_return",
+        "heart_guide_focus_outflow",
+        "heart_guide_focus_inflow",
+        "heart_guide_focus_systemic",
+        "heart_guide_return_label",
+        "heart_guide_return_short",
+        "heart_guide_return_detail",
+        "heart_guide_outflow_label",
+        "heart_guide_outflow_short",
+        "heart_guide_outflow_detail",
+        "heart_guide_inflow_label",
+        "heart_guide_inflow_short",
+        "heart_guide_inflow_detail",
+        "heart_guide_systemic_label",
+        "heart_guide_systemic_short",
+        "heart_guide_systemic_detail",
+        "heart_guide_show_clinical",
+        "heart_guide_hide_clinical",
+        "heart_guide_clinical_shown",
+        "heart_guide_clinical_hidden",
+        "heart_guide_clinical_title",
+        "heart_guide_clinical_change",
+        "heart_guide_clinical_effect_heading",
+        "heart_guide_clinical_effect",
+        "heart_guide_clinical_note",
+        "heart_guide_handoff_label",
+        "heart_guide_handoff_lead",
+        "heart_guide_handoff_context",
+        "heart_guide_handoff_button",
+        "heart_guide_handoff_announcement"
+      ],
+      "insertionCharacterOffset": 2456209,
+      "insertionByteOffset": 3401652,
+      "insertionAnchor": "alveolus_guide_handoff_announcement",
+      "addedText": ",\n      \"heart_guide_title\": \"الدورة الدموية عبر القلب\",\n      \"heart_guide_help\": \"تتبّع مسار الدم بين الجسم والقلب والرئتين، ثم استكشف حجرات القلب وصماماته.\",\n      \"heart_guide_circuit_title\": \"1. الدورة الدموية المزدوجة\",\n      \"heart_guide_chambers_title\": \"2. الحجرات والصمامات\",\n      \"heart_guide_marker_help\": \"طابق العلامات المرقّمة مع دليل البنى التشريحية.\",\n      \"heart_guide_orientation\": \"في هذا الرسم التخطيطي، يظهر الجانب الأيمن من القلب على يسار الصورة.\",\n      \"heart_guide_circuit_svg_title\": \"الدورة الدموية بين القلب والرئتين والجسم\",\n      \"heart_guide_circuit_svg_description\": \"يتتبّع المسار الدم الفقير بالأكسجين من الجسم عبر الجانب الأيمن من القلب إلى الرئتين، ثم الدم الغني بالأكسجين عبر الجانب الأيسر من القلب والشريان الأبهر عائدًا إلى الجسم.\",\n      \"heart_guide_chambers_svg_title\": \"حجرات القلب الأربع وصماماته\",\n      \"heart_guide_chambers_svg_description\": \"يُظهر رسم تخطيطي مكبّر الأذين الأيمن والبطين الأيمن والأذين الأيسر والبطين الأيسر. تتوافق أشكال الحجرات وإبراز الصمامات مع الخطوة المحدّدة من الدورة الدموية.\",\n      \"heart_guide_structure_key\": \"دليل البنى التشريحية\",\n      \"heart_guide_key_lungs\": \"الرئتان\",\n      \"heart_guide_key_heart\": \"القلب\",\n      \"heart_guide_key_body\": \"الجسم\",\n      \"heart_guide_key_right_atrium\": \"الأذين الأيمن\",\n      \"heart_guide_key_right_ventricle\": \"البطين الأيمن\",\n      \"heart_guide_key_left_atrium\": \"الأذين الأيسر\",\n      \"heart_guide_key_left_ventricle\": \"البطين الأيسر\",\n      \"heart_guide_current_step\": \"الخطوة الحالية\",\n      \"heart_guide_valve_key\": \"الصمامات في هذا الرسم\",\n      \"heart_guide_valve_help\": \"يتوافق إبراز الصمامات مع الخطوة المحدّدة من الدورة الدموية.\",\n      \"heart_guide_tricuspid\": \"الصمام ثلاثي الشرفات\",\n      \"heart_guide_mitral\": \"الصمام التاجي\",\n      \"heart_guide_pulmonary\": \"الصمام الرئوي\",\n      \"heart_guide_aortic\": \"الصمام الأبهري\",\n      \"heart_guide_open\": \"مفتوح\",\n      \"heart_guide_closed\": \"مغلق\",\n      \"heart_guide_not_highlighted\": \"غير مبرز في هذه الخطوة\",\n      \"heart_guide_flow_key\": \"دليل مستويات الأكسجين في الدم\",\n      \"heart_guide_oxygen_poor\": \"دم فقير بالأكسجين\",\n      \"heart_guide_oxygen_rich\": \"دم غني بالأكسجين\",\n      \"heart_guide_pause_flow\": \"إيقاف حركة التدفق مؤقتًا\",\n      \"heart_guide_play_flow\": \"تشغيل حركة التدفق\",\n      \"heart_guide_flow_paused\": \"حركة التدفق متوقفة مؤقتًا\",\n      \"heart_guide_flow_playing\": \"حركة التدفق قيد التشغيل\",\n      \"heart_guide_previous\": \"الخطوة السابقة\",\n      \"heart_guide_next\": \"الخطوة التالية\",\n      \"heart_guide_step_position\": \"الخطوة {current} من {total}\",\n      \"heart_guide_focus_heading\": \"البنى التي تستكشفها في هذه الخطوة\",\n      \"heart_guide_focus_return\": \"الأذين الأيمن · الصمام ثلاثي الشرفات · الوريدان الأجوفان\",\n      \"heart_guide_focus_outflow\": \"البطين الأيمن · الصمام الرئوي · الشرايين الرئوية\",\n      \"heart_guide_focus_inflow\": \"الأوردة الرئوية · الأذين الأيسر · الصمام التاجي\",\n      \"heart_guide_focus_systemic\": \"البطين الأيسر · الصمام الأبهري · الشريان الأبهر\",\n      \"heart_guide_return_label\": \"1. العَوْد الوريدي\",\n      \"heart_guide_return_short\": \"من الجسم إلى الأذين الأيمن\",\n      \"heart_guide_return_detail\": \"يعود الدم الفقير بالأكسجين من الجسم عبر الوريدين الأجوفين العلوي والسفلي ويدخل الأذين الأيمن.\",\n      \"heart_guide_outflow_label\": \"2. إلى الرئتين\",\n      \"heart_guide_outflow_short\": \"من البطين الأيمن إلى الرئتين\",\n      \"heart_guide_outflow_detail\": \"يعبر الدم الصمام ثلاثي الشرفات إلى البطين الأيمن، ثم يمر عبر الصمام الرئوي والشرايين الرئوية إلى الرئتين.\",\n      \"heart_guide_inflow_label\": \"3. عودة الدم المؤكسج\",\n      \"heart_guide_inflow_short\": \"من الرئتين إلى الأذين الأيسر\",\n      \"heart_guide_inflow_detail\": \"بعد تبادل الغازات، يعود الدم الغني بالأكسجين عبر الأوردة الرئوية ويدخل الأذين الأيسر.\",\n      \"heart_guide_systemic_label\": \"4. إلى الجسم\",\n      \"heart_guide_systemic_short\": \"من البطين الأيسر إلى الشريان الأبهر\",\n      \"heart_guide_systemic_detail\": \"يعبر الدم الصمام التاجي إلى البطين الأيسر، ثم يمر عبر الصمام الأبهري والشريان الأبهر لتزويد الجسم بالدم.\",\n      \"heart_guide_show_clinical\": \"المنظور السريري\",\n      \"heart_guide_hide_clinical\": \"إخفاء المنظور السريري\",\n      \"heart_guide_clinical_shown\": \"تم إظهار المنظور السريري.\",\n      \"heart_guide_clinical_hidden\": \"تم إخفاء المنظور السريري.\",\n      \"heart_guide_clinical_title\": \"تضيّق الصمام الأبهري\",\n      \"heart_guide_clinical_change\": \"تضيق فتحة الصمام الأبهري، فتزداد مقاومة خروج الدم من البطين الأيسر.\",\n      \"heart_guide_clinical_effect_heading\": \"النتيجة الوظيفية\",\n      \"heart_guide_clinical_effect\": \"يحتاج البطين الأيسر إلى توليد ضغط أعلى، وقد يزداد سمك جداره مع مرور الوقت.\",\n      \"heart_guide_clinical_note\": \"مقارنة تعليمية فقط — هذا المنظور ليس وسيلة للتشخيص.\",\n      \"heart_guide_handoff_label\": \"من القلب إلى الحويصلات الهوائية\",\n      \"heart_guide_handoff_lead\": \"تتبّع المسار: \",\n      \"heart_guide_handoff_context\": \"استكشف الحاجز بين الهواء والدم، حيث يكتسب دم الشعيرات الرئوية الأكسجين.\",\n      \"heart_guide_handoff_button\": \"تتبّع تبادل الغازات\",\n      \"heart_guide_handoff_announcement\": \"جارٍ فتح انتشار الأكسجين في الحويصلات الهوائية، الخطوة 2 من 4.\"",
+      "addedBytes": 7156,
+      "attempts": 1,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "byteReversalRestoresBefore": true,
+      "unrelatedDictionaryValuesUnchanged": true,
+      "checks": [
+        {
+          "key": "heart_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_circuit_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_chambers_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_lungs",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_heart",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_body",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_right_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_atrium",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_key_left_ventricle",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_valve_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_tricuspid",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_mitral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pulmonary",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_aortic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_closed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_not_highlighted",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_poor",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_oxygen_rich",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_return",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_outflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_inflow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_focus_systemic",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_return_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_outflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_inflow_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_systemic_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "heart_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    }
+  ],
+  "mirrors": [
+    {
+      "canonical": "ui_strings.js",
+      "mirror": "desktop/web-app/public/ui_strings.js",
+      "byteEqualBefore": false,
+      "byteEqual": false,
+      "sha256": "baca3a35fe9421bd7d4666280be1062118e616a32b7b0ef6bae70262066e6038",
+      "mirrorSha256": "63e5663b394fd458b2af8630e3e2e104a65f389055c7646fba50ecb7f22228b2",
+      "heartValuesEqual": true,
+      "matchedHeartKeys": 69,
+      "offScopeDifferences": [
+        {
+          "key": "stem.perception.close_study_review",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.difference_from_reference",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.end_repeated_study",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.match_range",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.median_difference",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.median_match",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.record_match",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.recorded_match",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.repeat_saved_settings",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.repeated_study",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.reveal_saved_study",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.reveal_study_results",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.review_study",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.rgb_steps",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.saved_study_hidden",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.saved_study_revealed",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.saved_study_review",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.saved_trial_number",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.start_three_matches",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.starting_value",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_all_recorded",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_complete",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_ended",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_expired",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_frozen_hint",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_group_conflict",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_incomplete_group",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_next_match",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_notebook_paused",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_reference_value",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_results_hidden",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_results_revealed",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_review_opened",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_scene_progress",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_start_hint",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_summary_hint",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_trial_progress",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.three_recorded_matches",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.trial_label",
+          "canonicalHas": true,
+          "mirrorHas": false
+        }
+      ],
+      "stableReadAttempts": 1
+    },
+    {
+      "canonical": "lang/french.js",
+      "mirror": "desktop/web-app/public/lang/french.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "mirrorSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+      "heartValuesEqual": true,
+      "matchedHeartKeys": 69,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    },
+    {
+      "canonical": "lang/spanish_latin_america.js",
+      "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "mirrorSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+      "heartValuesEqual": true,
+      "matchedHeartKeys": 69,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    },
+    {
+      "canonical": "lang/arabic.js",
+      "mirror": "desktop/web-app/public/lang/arabic.js",
+      "byteEqualBefore": true,
+      "byteEqual": true,
+      "sha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "mirrorSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+      "heartValuesEqual": true,
+      "matchedHeartKeys": 69,
+      "offScopeDifferences": [],
+      "stableReadAttempts": 1
+    }
+  ],
+  "failures": [],
+  "gitMutations": false,
+  "pairPolicy": "Preserve independent catalog bytes; require stable rereads and matching scoped Heart values; record unrelated mirror differences.",
+  "gitIndexSha256Before": "14e6135b48a0a1e913d802c63ebe481e6e2912c8ca5e4f12267f09b0ea87191d",
+  "sharedNativeWords": {
+    "french": [
+      "heart_guide_circuit_title"
+    ]
+  },
+  "complete": true,
+  "instructionsRead": [],
+  "preExistingMirrorDifferences": [
+    {
+      "canonical": "ui_strings.js",
+      "mirror": "desktop/web-app/public/ui_strings.js",
+      "fullFileByteEqual": false,
+      "canonicalSha256": "21d1f0caafd136fe0f6e7f66a28ca4fea898f8e3a6f184f7d58094464418dce8",
+      "mirrorSha256": "d0dca8ddd233f6609b57cb7be7b8e6168ce85df5ec968c382e90a8220d618a87",
+      "offScopeDifferences": [
+        {
+          "key": "stem.perception.close_study_review",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.difference_from_reference",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.end_repeated_study",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.match_range",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.median_difference",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.median_match",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.record_match",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.recorded_match",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.repeat_saved_settings",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.repeated_study",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.reveal_saved_study",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.reveal_study_results",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.review_study",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.rgb_steps",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.saved_study_hidden",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.saved_study_revealed",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.saved_study_review",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.saved_trial_number",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.start_three_matches",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.starting_value",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_all_recorded",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_complete",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_ended",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_expired",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_frozen_hint",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_group_conflict",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_incomplete_group",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_next_match",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_notebook_paused",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_reference_value",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_results_hidden",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_results_revealed",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_review_opened",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_scene_progress",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_start_hint",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_summary_hint",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.study_trial_progress",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.three_recorded_matches",
+          "canonicalHas": true,
+          "mirrorHas": false
+        },
+        {
+          "key": "stem.perception.trial_label",
+          "canonicalHas": true,
+          "mirrorHas": false
+        }
+      ],
+      "scopeValuesEqual": true
+    },
+    {
+      "canonical": "lang/french.js",
+      "mirror": "desktop/web-app/public/lang/french.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "f80b8b5bbedab7821a4abae75fc316eeb3a24281a174cf9b81cb0e82bc6fe7fe",
+      "mirrorSha256": "f80b8b5bbedab7821a4abae75fc316eeb3a24281a174cf9b81cb0e82bc6fe7fe",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true
+    },
+    {
+      "canonical": "lang/spanish_latin_america.js",
+      "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "e238448642fd81f3f697e8c19de5695fe003487222d0d93486b729ab9fc5eee0",
+      "mirrorSha256": "e238448642fd81f3f697e8c19de5695fe003487222d0d93486b729ab9fc5eee0",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true
+    },
+    {
+      "canonical": "lang/arabic.js",
+      "mirror": "desktop/web-app/public/lang/arabic.js",
+      "fullFileByteEqual": true,
+      "canonicalSha256": "05e37c3044895ef1d7b8d272fae44aeca83a2fd37d6544e562284b9963f2af12",
+      "mirrorSha256": "05e37c3044895ef1d7b8d272fae44aeca83a2fd37d6544e562284b9963f2af12",
+      "offScopeDifferences": [],
+      "scopeValuesEqual": true
+    }
+  ],
+  "manifest": {
+    "path": "dev-tools/i18n/anatomy_heart_guide_20261003.json",
+    "sha256": "9de92c7925c920529dc64a5fa3d14cf91b91988f9bc0cf2023e1c2357160dc70"
+  },
+  "gitIndexSha256After": "14e6135b48a0a1e913d802c63ebe481e6e2912c8ca5e4f12267f09b0ea87191d",
+  "gitIndexUnchanged": true
+}

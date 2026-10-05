@@ -1,7 +1,7 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it, vi } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { parse } from 'acorn';
-import { loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
+import { React, loadTool, renderTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 /**
  * Optics Lab authored content that had no route to it.
@@ -73,5 +73,35 @@ describe('Optics Lab content wiring', () => {
       const html = render({ mode: 'deep', deepDiveTopic: topic });
       expect(html, `${topic} deep dive should render`).toContain(label);
     }
+  });
+});
+
+
+describe('Optics Lab Perception link', () => {
+  it.each([null, 'Explore perception in this language'])('renders the link and retains its own navigation callback (%s)', translation => {
+    resetStemLab();
+    loadTool(SOURCE, 'opticsLab');
+    const navigate = vi.fn();
+    const otherNavigate = vi.fn();
+    const label = translation || 'Explore interactive illusions in Perception Lab';
+    let open;
+    const html = renderTool('opticsLab', { opticsLab: { mode: 'viz' } }, {
+      React: {
+        ...React,
+        createElement(type, props, ...children) {
+          if (type === 'button' && children.includes(label)) open = props.onClick;
+          return React.createElement(type, props, ...children);
+        }
+      },
+      t: key => key === 'stem.perception.open_lab' ? translation : null,
+      setStemLabTool: navigate
+    });
+    expect(html).toContain(label);
+    expect(open).toBeTypeOf('function');
+    // A later tool render must not redirect this button to another context.
+    renderTool('opticsLab', { opticsLab: { mode: 'home' } }, { setStemLabTool: otherNavigate });
+    open();
+    expect(navigate).toHaveBeenCalledExactlyOnceWith('perceptionLab');
+    expect(otherNavigate).not.toHaveBeenCalled();
   });
 });

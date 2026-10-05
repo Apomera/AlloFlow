@@ -1,0 +1,15 @@
+Index: desktop/web-app/public/view_persona_chat_module.js
+===================================================================
+--- desktop/web-app/public/view_persona_chat_module.js
++++ desktop/web-app/public/view_persona_chat_module.js
+@@ -761,9 +761,9 @@
+   var _ensureDeviceStorage = function () {
+     if (!window.__alloDeviceStoragePromise) {
+       window.__alloDeviceStoragePromise = window.alloDeviceStorage ? Promise.resolve(window.alloDeviceStorage) : new Promise(function (resolve, reject) {
+         var s = document.createElement('script');
+-        s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent';
++        s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent';
+         s.onload = function () {
+           if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);else reject(new Error('device storage module missing after load'));
+         };
+         s.onerror = function () {

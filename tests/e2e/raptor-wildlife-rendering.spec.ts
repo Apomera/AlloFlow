@@ -3,7 +3,7 @@ import {readFileSync} from 'node:fs';
 import {GlHarness} from './helpers/stem_gl_harness';
 const source=readFileSync('stem_lab/stem_tool_raptorhunt.js','utf8');
 function body(name:string){const start=source.indexOf('function '+name+'(');let end=source.indexOf('{',start),depth=1;while(depth){end++;if(source[end]==='{')depth++;if(source[end]==='}')depth--;}return source.slice(start,end+1);}
-const probes='window.AlloPostFXEnabled=false;'+['createPreyWingGeometry','advancePreyVisualPose','preyKindFor','createPreyTailGeometry','buildPreyVisual'].map(body).join('\n')+';window.wildlifeReview={build:buildPreyVisual,advance:advancePreyVisualPose};';
+const probes='window.AlloPostFXEnabled=false;'+['preyBirdPalette','createPreyBirdBodyGeometry','createPreyWingGeometry','advancePreyVisualPose','preyKindFor','createPreyTailGeometry','buildPreyVisual'].map(body).join('\n')+';window.wildlifeReview={build:buildPreyVisual,advance:advancePreyVisualPose};';
 test.use({video:'off'});
 test.describe('Raptor wildlife rendering',()=>{
   test.describe.configure({timeout:300000});
@@ -21,6 +21,7 @@ test.describe('Raptor wildlife rendering',()=>{
     for(const p of result.before.preyVisualPoses){expect(Number.isFinite(p.heading)).toBe(true);expect(Math.abs(p.bank)).toBeLessThanOrEqual(0.24);if(p.height===0)expect(p.spread).toBe(0);}
     expect(result.before.drawCalls).toBeLessThan(150);expect(result.paused.preyVisualPoses).toEqual(result.before.preyVisualPoses);
     await page.emulateMedia({reducedMotion:'reduce'});
+    await expect.poll(()=>page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhSnapshot().reducedMotion)).toBe(true);
     const reduced=await page.locator('[data-raptor-canvas]').evaluate((c:any)=>{c._rhCommand('pause');(window as any).advanceWildlife(25);return c._rhSnapshot();});
     for(const p of reduced.preyVisualPoses){expect(p.bank).toBe(0);expect(p.wingAngle).toBe(0.08);}
     await page.locator('[data-raptor-canvas]').evaluate((c:any)=>c._rhCommand('pause'));

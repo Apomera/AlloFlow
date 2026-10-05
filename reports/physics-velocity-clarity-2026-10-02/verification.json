@@ -1,0 +1,47 @@
+{
+  "passed": true,
+  "sourceSha256": "596e6ca995da835bc29767b4671d491be3af1e535131c3abed0a65c5e6f6b4e9",
+  "mirrorMatches": true,
+  "numericalHelpersUnchanged": true,
+  "baselineCommit": "54d638b3213b0fbd484305feff43b769da8902f7",
+  "unitTests": 356,
+  "unitFiles": 21,
+  "browserTests": 52,
+  "browserFiles": [
+    "physics-analysis-workspace.spec.ts",
+    "physics-apex-inspection.spec.ts",
+    "physics-clarity.spec.ts",
+    "physics-energy-visuals.spec.ts",
+    "physics-force-clarity.spec.ts",
+    "physics-recorded-context.spec.ts",
+    "physics-recorded-flights.spec.ts",
+    "physics-sample-inspection.spec.ts",
+    "physics-velocity-clarity.spec.ts",
+    "physics-visual-layout.spec.ts"
+  ],
+  "velocityConfigurations": 9,
+  "contextConfigurations": 9,
+  "recordingConfigurations": 9,
+  "screenshots": 28,
+  "historicalFilesPreserved": 21,
+  "newEnglishLabels": [
+    "plot_velocity_key",
+    "plot_vx_key",
+    "plot_vy_key",
+    "plot_g_key",
+    "plot_vector_speed_help",
+    "plot_vector_scale_help"
+  ],
+  "minFont": 12,
+  "minTextContrast": 8.785602671809508,
+  "minSVGContrast": 7.318928113412897,
+  "minHeaderGap": 110.3828125,
+  "dependencies": {
+    "stem_lab/stem_tool_physics.js": "596e6ca995da835bc29767b4671d491be3af1e535131c3abed0a65c5e6f6b4e9",
+    "desktop/web-app/public/stem_lab/stem_tool_physics.js": "596e6ca995da835bc29767b4671d491be3af1e535131c3abed0a65c5e6f6b4e9",
+    "tests/e2e/physics-velocity-clarity.spec.ts": "b78d7f3a57dd86c9ca149f481fa2f5407a7c5a4bc3c9a879297526a237a3a072",
+    ".github/workflows/physics.yml": "cf2d35eaacdcdd828e8d3c1c8effd4e256d1567a754d24ff3cadbc22959b2fba",
+    "reports/physics-velocity-clarity-2026-10-02/run-checks.cjs": "6261f6f2d6c37b3a4043f7638ee2bbcd19c2e78ee36ed354974694eddb7cb68a",
+    "reports/physics-velocity-clarity-2026-10-02/verify.cjs": "95b58c0966498a1ff56c76276b43be37cea37720004cd052270743a5232d9620"
+  }
+}

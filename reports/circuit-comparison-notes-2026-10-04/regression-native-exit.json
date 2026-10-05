@@ -1,0 +1,10 @@
+{
+  "session": 96385,
+  "exitCode": 0,
+  "closed": true,
+  "toolChunkId": "1e1218",
+  "sourceSha256": "0593f445c3f2f3ce9f34e94f9d96a661d4235ee2963dcc84c3bfb9253d7f5f86",
+  "receiptSha256": "8fdc088e6e0d761a9e6a0ee800192c451c1c2bb3467a87fb09ec23c26f906cf9",
+  "passedTests": 117,
+  "testFiles": 8
+}

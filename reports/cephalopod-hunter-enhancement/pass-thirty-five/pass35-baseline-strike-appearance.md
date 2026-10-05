@@ -1,0 +1,7 @@
+# Baseline native strike appearance
+
+Reviewed root-supplied actual native stills `reports/cephalopod-hunter-enhancement/pass-thirty-five/baseline-strike/strike-000.png`, `040`, `100`, `200`, `260`, and `400` from source `2ec075216538b88288d2e632525913d9ce830d3ff15ffd8e47757b190ea2465c`. Root reports living original school AI, real T/E input, 200 ms capture, 20 ms simulation ticks, and ordinary Escape freezes between captures.
+
+The model reads as a squid: mantle, fins, lateral eye, short arm crown, and folded feeding structures are recognizable. In this close encounter the strike itself reads weakly. The crown silhouette barely changes. At 100 ms the feeding structure blends among the short arms; at 200/260 ms the visible club near the eye resembles a short upright flap, while the paired reaching tentacles are difficult to distinguish. At 400 ms it is blending back among the crown. The prey disappearance establishes a visible outcome, but the spatial club silhouette alone does not clearly communicate preparation/contact/recovery to a casual viewer.
+
+These are appearance observations from still images, not conclusions about snapping, speed, orientation continuity, or motion quality. The candidate comparison should reuse this exact close encounter and add a farther valid prey where the feeding pair is visible beyond the crown. A wider crown might improve separation; the small mantle/fin brace alone cannot establish a readable strike. Native normal-speed motion and the dense geometry tests are still needed.

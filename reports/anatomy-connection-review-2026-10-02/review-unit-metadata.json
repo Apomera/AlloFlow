@@ -1,0 +1,42 @@
+{
+  "sourceFiles": [
+    "stem_lab/stem_tool_anatomy.js",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js"
+  ],
+  "sourceLfSha256": "5835e6a9e7ccaa741824cc7a9ad4cc81c6d2ee63935c2fc1d23cfa1ed758a53c",
+  "byteIdentical": true,
+  "capturedBeforeRun": true,
+  "testFiles": [
+    "tests/anatomy_connection_review.test.js",
+    "tests/anatomy_mobile_a11y_polish.test.js"
+  ],
+  "preservedPriorReportsPrefix": "pre-target-fix-",
+  "preservedDiagnostic": "reports/anatomy-connection-review-2026-10-02/support-unit-results-complete.json",
+  "preservedDiagnosticSha256": "e6280e6f287843639f5bb887fa3313a705e069234ce80a597181a0b36672c5b9",
+  "cssOnlyProvenance": "reports/anatomy-connection-review-2026-10-02/target-size-fix-proof.json",
+  "cssOnlyProvenanceSha256": "3bdc1eb4928f4ed0fbbbc5b26b2d70667f56943824696746977ad411103466f4",
+  "capturedAfterRun": true,
+  "sourceUnchanged": true,
+  "preservedDiagnosticUnchanged": true,
+  "cssOnlyProvenanceUnchanged": true,
+  "tests": 138,
+  "passed": 138,
+  "failed": 0,
+  "success": true,
+  "fixtures": [
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/anatomy_connection_review.test.js",
+      "status": "passed",
+      "tests": 124,
+      "passed": 124,
+      "failed": 0
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/anatomy_mobile_a11y_polish.test.js",
+      "status": "passed",
+      "tests": 14,
+      "passed": 14,
+      "failed": 0
+    }
+  ]
+}

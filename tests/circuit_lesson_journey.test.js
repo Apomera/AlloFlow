@@ -65,7 +65,7 @@ describe('Visible journey and explanation focus continuity', () => {
   const lab = () => host.querySelector('.circuit-active-lesson-lab');
   const journey = () => lab().querySelector('.circuit-active-lesson-journey');
   const jump = () => lab().querySelector('.circuit-lesson-explanation-jump');
-  const field = () => lab().querySelector('textarea[aria-label="Transistor experiment explanation"]');
+  const field = () => lab().querySelector('.circuit-lesson-writing-field');
   const button = text => [...host.querySelectorAll('button')].find(el => el.textContent === text);
   async function flush() { for (let i = 0; i < 5 && frames.length; i++) await act(async () => frames.splice(0).forEach(fn => fn(0))); }
   async function click(el) { expect(el).toBeTruthy(); await act(async () => el.click()); await flush(); }

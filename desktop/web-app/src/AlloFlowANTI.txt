@@ -1816,8 +1816,26 @@ function _alloPruneResChunks(store, now = Date.now()) {
     }
     if (store.applied) while (store.applied.size > 256) store.applied.delete(store.applied.values().next().value);
 }
-function _alloFinishResChunk(store, rid, success) {
+function _alloMarkRemovedResChunks(store, ids) {
+    if (!store) return;
+    for (const group of ['parts', 'pending', 'failures']) {
+        for (const record of Object.values(store[group] || {})) {
+            if (record.removalOverflow) continue;
+            const removedIds = record.removedIds || (record.removedIds = new Set());
+            for (const id of ids) {
+                if (removedIds.has(id)) continue;
+                // Keep only transfer-local markers. On overflow, retire this old
+                // transfer conservatively; future RIDs have no removal markers.
+                if (removedIds.size >= 256) { record.removalOverflow = true; removedIds.clear(); break; }
+                removedIds.add(id);
+            }
+        }
+    }
+}
+function _alloFinishResChunk(store, rid, success, expectedPending) {
     if (!store || !store.pending || !Object.prototype.hasOwnProperty.call(store.pending, rid)) return;
+    const pending = store.pending[rid];
+    if (expectedPending && pending !== expectedPending) return;
     delete store.pending[rid];
     if (success) {
         (store.applied || (store.applied = new Set())).add(rid);
@@ -1825,7 +1843,7 @@ function _alloFinishResChunk(store, rid, success) {
     } else {
         const failures = store.failures || (store.failures = Object.create(null));
         const previous = Object.prototype.hasOwnProperty.call(failures, rid) ? failures[rid].count : 0;
-        Object.defineProperty(failures, rid, { value: { count: previous + 1, at: Date.now() }, enumerable: true, configurable: true });
+        Object.defineProperty(failures, rid, { value: { count: previous + 1, at: Date.now(), removedIds: pending.removedIds, removalOverflow: pending.removalOverflow }, enumerable: true, configurable: true });
     }
     _alloPruneResChunks(store);
 }
@@ -1853,7 +1871,8 @@ function _alloCollectResChunk(store, v) {
     const slots = store.parts || (store.parts = Object.create(null));
     if (!own(slots, v.rid)) {
         if (Object.keys(slots).length >= 16) delete slots[Object.keys(slots)[0]];
-        Object.defineProperty(slots, v.rid, { value: { of: v.of, got: Object.create(null), chars: 0, at: Date.now() }, enumerable: true, configurable: true });
+        const failure = store.failures && own(store.failures, v.rid) ? store.failures[v.rid] : null;
+        Object.defineProperty(slots, v.rid, { value: { of: v.of, got: Object.create(null), chars: 0, at: Date.now(), removedIds: failure?.removedIds, removalOverflow: failure?.removalOverflow }, enumerable: true, configurable: true });
     }
     const slot = slots[v.rid];
     if (slot.of !== v.of || (own(slot.got, v.part) && slot.got[v.part] !== v.data)) return null;
@@ -1871,7 +1890,7 @@ function _alloCollectResChunk(store, v) {
     }
     delete slots[v.rid];
     const pending = store.pending || (store.pending = Object.create(null));
-    Object.defineProperty(pending, v.rid, { value: { at: Date.now() }, enumerable: true, configurable: true });
+    Object.defineProperty(pending, v.rid, { value: { at: Date.now(), removedIds: slot.removedIds, removalOverflow: slot.removalOverflow }, enumerable: true, configurable: true });
     return parts.join('');
 }
 // Non-trickle ICE: over slow mailbox signaling, one complete SDP each way
@@ -1903,11 +1922,13 @@ function _alloMailboxRtcConfig() {
 // Send over a data channel without overrunning its buffer (chunked resource
 // pushes can be several MB). 60KB chunks stay under the common 64KB
 // per-message interop ceiling.
-async function _alloDcSendDrained(dc, text, highWaterMark = 4 * 1024 * 1024) {
-    while (dc.readyState === 'open' && dc.bufferedAmount > highWaterMark) {
+async function _alloDcSendDrained(dc, text, highWaterMark = 4 * 1024 * 1024, isCurrent = () => true) {
+    while (isCurrent() && dc.readyState === 'open' && dc.bufferedAmount > highWaterMark) {
         await new Promise(resolve => setTimeout(resolve, 100));
     }
+    if (!isCurrent()) return false;
     if (dc.readyState !== 'open') throw new Error('channel closed');
+    if (!isCurrent()) return false;
     dc.send(text);
 }
 function _alloValidFirebaseConfig(config) {
@@ -3094,18 +3115,18 @@ const _ALLO_STEM_DEEP_LINK_MAP = {
   'multtable': 'multtable', 'musicsynth': 'musicSynth', 'nuclearlab': 'nuclearLab', 'numberline': 'numberline',
   'nutritionlab': 'nutritionLab', 'openbim': 'openBim', 'opticslab': 'opticsLab', 'oratory': 'oratory',
   'organismid': 'organismId', 'papertrail': 'paperTrail', 'parentinglab': 'parentingLab', 'particlelab3d': 'particleLab3d',
-  'petslab': 'petsLab', 'physics': 'physics', 'platetectonics': 'plateTectonics', 'playlab': 'playlab',
-  'printlab': 'printLab', 'printingpress': 'printingPress', 'probability': 'probability', 'protractor': 'protractor',
-  'punnett': 'punnett', 'raptorhunt': 'raptorHunt', 'ratiolab': 'ratioLab', 'renewableslab': 'renewablesLab',
-  'roadready': 'roadReady', 'rockcycle': 'rockCycle', 'rocks': 'rocks', 'scaleexplorer': 'scaleExplorer',
-  'schoolbehaviortoolkit': 'schoolBehaviorToolkit', 'semiconductor': 'semiconductor', 'simshelf': 'simShelf', 'singing': 'singing',
-  'skatelab': 'skatelab', 'solarsystem': 'solarSystem', 'sourcebook': 'sourcebook', 'spacecolony': 'spaceColony',
-  'spaceexplorer': 'spaceExplorer', 'spacestation': 'spaceStation', 'statslab': 'statsLab', 'stewardshiphub': 'stewardshipHub',
-  'swimlab': 'swimLab', 'throwlab': 'throwlab', 'timeschedule': 'timeSchedule', 'timelinestudio': 'timelineStudio',
-  'titrationlab': 'titrationLab', 'trajectorycomputing': 'trajectoryComputing', 'treelab': 'treeLab', 'typingpractice': 'typingPractice',
-  'unitconvert': 'unitConvert', 'universe': 'universe', 'volume': 'volume', 'watercycle': 'waterCycle',
-  'wave': 'wave', 'weathersystems': 'weatherSystems', 'weldlab': 'weldLab', 'wheelandfire': 'wheelAndFire',
-  'worldbuilder': 'worldBuilder', 'zoomgallery': 'zoomGallery'
+  'perceptionlab': 'perceptionLab', 'petslab': 'petsLab', 'physics': 'physics', 'platetectonics': 'plateTectonics',
+  'playlab': 'playlab', 'printlab': 'printLab', 'printingpress': 'printingPress', 'probability': 'probability',
+  'protractor': 'protractor', 'punnett': 'punnett', 'raptorhunt': 'raptorHunt', 'ratiolab': 'ratioLab',
+  'renewableslab': 'renewablesLab', 'roadready': 'roadReady', 'rockcycle': 'rockCycle', 'rocks': 'rocks',
+  'scaleexplorer': 'scaleExplorer', 'schoolbehaviortoolkit': 'schoolBehaviorToolkit', 'semiconductor': 'semiconductor', 'simshelf': 'simShelf',
+  'singing': 'singing', 'skatelab': 'skatelab', 'solarsystem': 'solarSystem', 'sourcebook': 'sourcebook',
+  'spacecolony': 'spaceColony', 'spaceexplorer': 'spaceExplorer', 'spacestation': 'spaceStation', 'statslab': 'statsLab',
+  'stewardshiphub': 'stewardshipHub', 'swimlab': 'swimLab', 'throwlab': 'throwlab', 'timeschedule': 'timeSchedule',
+  'timelinestudio': 'timelineStudio', 'titrationlab': 'titrationLab', 'trajectorycomputing': 'trajectoryComputing', 'treelab': 'treeLab',
+  'typingpractice': 'typingPractice', 'unitconvert': 'unitConvert', 'universe': 'universe', 'volume': 'volume',
+  'watercycle': 'waterCycle', 'wave': 'wave', 'weathersystems': 'weatherSystems', 'weldlab': 'weldLab',
+  'wheelandfire': 'wheelAndFire', 'worldbuilder': 'worldBuilder', 'zoomgallery': 'zoomGallery'
 };
 // __ALLO_STEM_DEEP_LINKS_END__
 // Cloudflare shell deep links (2026-08-15, generalized 2026-08-16): the static
@@ -3122,6 +3143,7 @@ const _alloReadShellDeepLinkTool = () => {
     const requested = params.get('tool') || params.get('stem_tool') || lastSegment;
     const normalized = String(requested || '').trim().toLowerCase().replace(/[\s_-]+/g, '');
     if (!normalized) return null;
+    if (normalized === 'mainesldpractice') return 'maineSldPractice';
     const map = (typeof _ALLO_STEM_DEEP_LINK_MAP === 'object' && _ALLO_STEM_DEEP_LINK_MAP) || {};
     // waterCycle stays resolvable even if the generated map is ever absent,
     // because the original public link predates the map.
@@ -7391,6 +7413,15 @@ const ALLO_WORKSPACE_RECOVERY = (() => {
       return hasMeaningfulDraftValue(value[key], depth + 1);
     });
   };
+  const normalizeOmissionManifest = (value) => {
+    const source = Array.isArray(value) ? value : [];
+    const manifest = source.slice(0, 500);
+    if (!manifest.some(entry => entry?.reason === 'user-remove-media')) {
+      const explicitRemoval = source.find(entry => entry?.reason === 'user-remove-media');
+      if (explicitRemoval) manifest[499] = explicitRemoval;
+    }
+    return manifest;
+  };
   const normalizeSnapshot = (candidate) => {
     if (!candidate || typeof candidate !== 'object' || Array.isArray(candidate) || !isSupportedPayload(candidate)) return null;
     const workspace = candidate.workspace && typeof candidate.workspace === 'object' ? candidate.workspace : null;
@@ -7417,7 +7448,7 @@ const ALLO_WORKSPACE_RECOVERY = (() => {
       pinned: candidate.pinned === true,
       assetPolicy: candidate.assetPolicy === 'text-only' ? 'text-only' : 'full',
       omittedAssets: Math.max(0, Number(candidate.omittedAssets) || 0),
-      omittedAssetManifest: Array.isArray(candidate.omittedAssetManifest) ? candidate.omittedAssetManifest.slice(0, 500) : [],
+      omittedAssetManifest: normalizeOmissionManifest(candidate.omittedAssetManifest),
       // Stamped once at upsert (see measureBytes) and carried thereafter, so
       // the eviction pass never re-serializes the whole store to weigh it.
       approximateBytes: Math.max(0, Number(candidate.approximateBytes) || 0),
@@ -7558,9 +7589,7 @@ const ALLO_WORKSPACE_RECOVERY = (() => {
     });
   };
   const createOmissionTracker = (snapshot) => {
-    const omittedAssetManifest = Array.isArray(snapshot?.omittedAssetManifest)
-      ? snapshot.omittedAssetManifest.slice(0, 500)
-      : [];
+    const omittedAssetManifest = normalizeOmissionManifest(snapshot?.omittedAssetManifest);
     const omissionKey = (entry) => String(entry?.path || '') + '\u0000' + String(entry?.kind || '') + '\u0000' + String(entry?.reason || '');
     const knownOmissions = new Set(omittedAssetManifest.map(omissionKey));
     let omittedAssets = Math.max(omittedAssetManifest.length, Number(snapshot?.omittedAssets) || 0);
@@ -7570,6 +7599,10 @@ const ALLO_WORKSPACE_RECOVERY = (() => {
       knownOmissions.add(key);
       omittedAssets += 1;
       if (omittedAssetManifest.length < 500) omittedAssetManifest.push(entry);
+      else if (entry.reason === 'user-remove-media'
+          && !omittedAssetManifest.some(item => item?.reason === 'user-remove-media')) {
+        omittedAssetManifest[499] = entry;
+      }
     };
     return { omittedAssetManifest, get omittedAssets() { return omittedAssets; }, record };
   };
@@ -8237,7 +8270,7 @@ const _alloGetCanvasDeviceStorage = async () => {
     window.__alloDeviceStoragePromise = window.alloDeviceStorage
       ? Promise.resolve(window.alloDeviceStorage)
       : _alloLoadScriptGlobal(
-          'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent',
+          'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent',
           () => window.alloDeviceStorage,
           { label: 'Device storage module', timeoutMs: ALLO_STORAGE_SCRIPT_TIMEOUT_MS }
         );
@@ -8271,9 +8304,9 @@ const _alloGetCanvasDeviceStorage = async () => {
 
 const _alloGetRecoveryVaultStack = async () => {
   if (typeof window === 'undefined') throw new Error('Recovery-workspace protection is unavailable outside the browser.');
-  const securityModuleUrl = (fileName) => _isDesktopBundledApp
-    ? `./${fileName}?v=security-v2`
-    : `https://alloflow-cdn.pages.dev/${fileName}?v=security-v2`;
+  const securityModuleUrl = (fileName, version = 'security-v2') => _isDesktopBundledApp
+    ? `./${fileName}?v=${version}`
+    : `https://alloflow-cdn.pages.dev/${fileName}?v=${version}`;
   const [crypto, vault, integration] = await Promise.all([
     _alloLoadScriptGlobal(
       securityModuleUrl('allo_crypto_module.js'),
@@ -8284,12 +8317,12 @@ const _alloGetRecoveryVaultStack = async () => {
       { cacheKey: 'allo-crypto-security-v2', label: 'Encryption module' }
     ),
     _alloLoadScriptGlobal(
-      securityModuleUrl('allo_device_vault_module.js'),
+      securityModuleUrl('allo_device_vault_module.js', '808069fd'),
       () => {
         const api = window.AlloModules?.AlloDeviceVault;
-        return api && typeof api.createRecoveryVaultController === 'function' && typeof api.validateVaultStore === 'function' && typeof api.isVaultStore === 'function' ? api : null;
+        return api && api.SESSION_OWNERSHIP_VERSION === 1 && typeof api.createRecoveryVaultController === 'function' && typeof api.validateVaultStore === 'function' && typeof api.isVaultStore === 'function' ? api : null;
       },
-      { cacheKey: 'allo-device-vault-v2', label: 'Recovery vault module' }
+      { cacheKey: 'allo-device-vault-v3-session', label: 'Recovery vault module' }
     ),
     _alloLoadScriptGlobal(
       securityModuleUrl('allo_recovery_vault_integration_module.js'),
@@ -11558,6 +11591,7 @@ const AlloFlowContent = () => {
   // module sees live values (later-declared consts included) exactly like the original
   // closures. Built once per render; the handler set is created lazily per render.
   const __alloHostDeps = {
+    get buildCanvasWorkspaceSnapshot() { return buildCanvasWorkspaceSnapshot; }, get clearCanvasWorkspaceState() { return clearCanvasWorkspaceState; }, get hasMeaningfulWordSoundsWorkspace() { return hasMeaningfulWordSoundsWorkspace; },
     get ALLOHAVEN_CLASSROOM_REWARD_REASONS() { return ALLOHAVEN_CLASSROOM_REWARD_REASONS; }, get ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS() { return ALLOHAVEN_CLASSROOM_REWARD_REASON_IDS; }, get ALLOHAVEN_RECOGNITION_CAPS() { return ALLOHAVEN_RECOGNITION_CAPS; }, get ALLO_AAC_PACK_AUDIO_CHARS() { return ALLO_AAC_PACK_AUDIO_CHARS; },
     get ALLO_AAC_PACK_AUDIO_ITEM_CHARS() { return ALLO_AAC_PACK_AUDIO_ITEM_CHARS; }, get ALLO_AAC_PACK_IMAGE_CHARS() { return ALLO_AAC_PACK_IMAGE_CHARS; }, get ALLO_AAC_PACK_IMAGE_ITEM_CHARS() { return ALLO_AAC_PACK_IMAGE_ITEM_CHARS; }, get ALLO_ARTIFACT_INSTANCE_ID_FIELD() { return ALLO_ARTIFACT_INSTANCE_ID_FIELD; },
     get ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT() { return ALLO_BLUEPRINT_CAPABILITY_FINGERPRINT; }, get ALLO_GENERATION_METRICS() { return ALLO_GENERATION_METRICS; }, get ALLO_MB_ADMIN_KEY() { return ALLO_MB_ADMIN_KEY; }, get ALLO_MB_LIVE_KEY() { return ALLO_MB_LIVE_KEY; },
@@ -11610,6 +11644,12 @@ const AlloFlowContent = () => {
     get canWriteLiveActivityProgress() { return canWriteLiveActivityProgress; }, get cancelActiveFileIntakeOperations() { return cancelActiveFileIntakeOperations; }, get cancelActiveProjectLoad() { return cancelActiveProjectLoad; }, get cancelAnnotationImports() { return cancelAnnotationImports; },
     get canvasRecoveryCurrentIdRef() { return canvasRecoveryCurrentIdRef; }, get canvasRecoveryDecisionMade() { return canvasRecoveryDecisionMade; }, get canvasRecoveryDialogRef() { return canvasRecoveryDialogRef; }, get canvasRecoveryImmediateSaveRef() { return canvasRecoveryImmediateSaveRef; },
     get canvasRecoveryMutationInProgressRef() { return canvasRecoveryMutationInProgressRef; }, get canvasRecoveryPendingSaveCountRef() { return canvasRecoveryPendingSaveCountRef; }, get canvasRecoverySaveTokenRef() { return canvasRecoverySaveTokenRef; }, get canvasRecoveryStoreRef() { return canvasRecoveryStoreRef; },
+    get workspaceReplacementGenerationRef() { return workspaceReplacementGenerationRef; },
+    get canvasRecoveryRestoreRequestRef() { return canvasRecoveryRestoreRequestRef; },
+    get canvasRecoveryVaultSyncRequestRef() { return canvasRecoveryVaultSyncRequestRef; },
+    get canvasRecoveryVaultActionRequestRef() { return canvasRecoveryVaultActionRequestRef; },
+    get canvasRecoveryImportRequestRef() { return canvasRecoveryImportRequestRef; },
+    get requestReadingSupportTransition() { return requestReadingSupportTransition; },
     get canvasRecoveryVaultControllerRef() { return canvasRecoveryVaultControllerRef; }, get canvasRecoveryVaultForm() { return canvasRecoveryVaultForm; }, get canvasRecoveryVaultImportRef() { return canvasRecoveryVaultImportRef; }, get canvasRecoveryVaultPendingActionRef() { return canvasRecoveryVaultPendingActionRef; },
     get canvasRecoveryVaultState() { return canvasRecoveryVaultState; }, get canvasRecoveryWriteQueueRef() { return canvasRecoveryWriteQueueRef; }, get capturePdfDocumentIntakeEpoch() { return capturePdfDocumentIntakeEpoch; }, get challengeFeedback() { return challengeFeedback; },
     get challengeModeType() { return challengeModeType; }, get challengeTarget() { return challengeTarget; }, get checkpointState() { return checkpointState; }, get cleanJson() { return cleanJson; },
@@ -11639,11 +11679,11 @@ const AlloFlowContent = () => {
     get getExportableHistory() { return getExportableHistory; }, get getFilteredHistory() { return getFilteredHistory; }, get getLiveOrganizerReadiness() { return getLiveOrganizerReadiness; }, get getLiveOrganizerResourceRevision() { return getLiveOrganizerResourceRevision; },
     get getMathResourceStateKey() { return getMathResourceStateKey; }, get getMathStoredProblemKeys() { return getMathStoredProblemKeys; }, get getPersonaVoiceOptions() { return getPersonaVoiceOptions; }, get getReadableContent() { return getReadableContent; },
     get getSavedLessonProgressionContext() { return getSavedLessonProgressionContext; }, get getSimplifiedRigorApi() { return getSimplifiedRigorApi; }, get getSkippedResources() { return getSkippedResources; }, get getSpeechLangCode() { return getSpeechLangCode; },
-    get getWordSoundsPortableAudioCoverage() { return getWordSoundsPortableAudioCoverage; }, get globalPoints() { return globalPoints; }, get glossaryImageStyle() { return glossaryImageStyle; }, get glossaryRefinementInputs() { return glossaryRefinementInputs; },
+    get globalPoints() { return globalPoints; }, get glossaryImageStyle() { return glossaryImageStyle; }, get glossaryRefinementInputs() { return glossaryRefinementInputs; },
     get gradeLevel() { return gradeLevel; }, get gradingSession() { return gradingSession; }, get guidedActiveSteps() { return guidedActiveSteps; }, get guidedCompletedIds() { return guidedCompletedIds; },
     get guidedCreatedHistoryIds() { return guidedCreatedHistoryIds; }, get guidedDeliveryEvidence() { return guidedDeliveryEvidence; }, get guidedMode() { return guidedMode; }, get guidedPlanBrief() { return guidedPlanBrief; },
     get guidedSelectedIds() { return guidedSelectedIds; }, get guidedSkippedIds() { return guidedSkippedIds; }, get guidedStep() { return guidedStep; }, get handleAdventureChoice() { return handleAdventureChoice; },
-    get handleAdventureTextSubmit() { return handleAdventureTextSubmit; }, get handleAnalysisTextChange() { return handleAnalysisTextChange; }, get handleAudio() { return handleAudio; }, get handleCheckChallenge() { return handleCheckChallenge; },
+    get handleAdventureTextSubmit() { return handleAdventureTextSubmit; }, get handleAudio() { return handleAudio; }, get handleCheckChallenge() { return handleCheckChallenge; },
     get handleExportSlides() { return handleExportSlides; }, get handleGenerate() { return handleGenerate; }, get handleGenerateConceptItem() { return handleGenerateConceptItem; }, get handleGuidingHand() { return handleGuidingHand; },
     get handleLoadProject() { return handleLoadProject; }, get handleMasteryGrading() { return handleMasteryGrading; }, get handleRecognizeStudents() { return handleRecognizeStudents; }, get handleRestoreView() { return handleRestoreView; },
     get handleScoreUpdate() { return handleScoreUpdate; }, get handleSpeak() { return handleSpeak; }, get handleStartLiveSession() { return handleStartLiveSession; }, get handleUrlFetch() { return handleUrlFetch; },
@@ -11662,6 +11702,7 @@ const AlloFlowContent = () => {
     get learningWebOpenTimerRef() { return learningWebOpenTimerRef; }, get learningWebRestoreViewRef() { return learningWebRestoreViewRef; }, get lessonHandoffRequestRef() { return lessonHandoffRequestRef; }, get lessonProgressionContextRef() { return lessonProgressionContextRef; },
     get lessonProgressionRequestRef() { return lessonProgressionRequestRef; }, get leveledTextCustomInstructions() { return leveledTextCustomInstructions; }, get leveledTextLanguage() { return leveledTextLanguage; }, get liveActivitySnapshots() { return liveActivitySnapshots; },
     get liveQuizResponseCountsByUid() { return liveQuizResponseCountsByUid; }, get liveResourceHydrationAttemptsRef() { return liveResourceHydrationAttemptsRef; }, get liveResourceHydrationRetryTimerRef() { return liveResourceHydrationRetryTimerRef; }, get liveSessionCommandStateRef() { return liveSessionCommandStateRef; },
+    get markOrganizerLayoutEdited() { return markOrganizerLayoutEdited; },
     get mapContainerRef() { return mapContainerRef; }, get markGuidedDeliveryEvidence() { return markGuidedDeliveryEvidence; }, get markGuidedStepDone() { return markGuidedStepDone; }, get mathActiveResourceKeyRef() { return mathActiveResourceKeyRef; },
     get mathSelfGradeContextKey() { return mathSelfGradeContextKey; }, get mathSelfGradeSubmissionRef() { return mathSelfGradeSubmissionRef; }, get mathStudentAnswers() { return mathStudentAnswers; }, get mbAdminInput() { return mbAdminInput; },
     get mbConfig() { return mbConfig; }, get mbDirectionsDraft() { return mbDirectionsDraft; }, get mbHostedAssignment() { return mbHostedAssignment; }, get mbLive() { return mbLive; },
@@ -13219,36 +13260,54 @@ const AlloFlowContent = () => {
       });
     }
   }, []);
+  const [activeSessionCode, setActiveSessionCode] = useState(null);
   const [studentResponses, setStudentResponses] = useState({});
   const [studentWorkStatus, setStudentWorkStatus] = useState('idle');
   const [studentWorkSaveAttempt, setStudentWorkSaveAttempt] = useState(0);
+  // Completing an empty restore must reschedule edits skipped while unloaded.
+  const [studentWorkLoadRevision, setStudentWorkLoadRevision] = useState(0);
+  const studentWorkHydrationGenerationRef = useRef(0);
   const studentWorkSaveQueue = useRef(Promise.resolve());
   const retryStudentWorkSave = useCallback(() => setStudentWorkSaveAttempt(value => value + 1), []);
   const isStudentWorkLoaded = useRef(false);
   useEffect(() => {
-      if (!isStudentWorkLoaded.current || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, null)) {
+      const eligible = () => lzLoaded && !isStorageDisabled
+          && !_alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode);
+      if (!eligible()) {
+          isStudentWorkLoaded.current = false;
           setStudentWorkStatus('idle');
           return;
       }
-      setStudentWorkStatus('saving');
+      if (!isStudentWorkLoaded.current) {
+          setStudentWorkStatus(status => status === 'error' ? 'error' : 'idle');
+          return;
+      }
+      // Only explicit workspace resets retire learner ownership. History
+      // hydration setup/cleanup must not strand this learner save.
+      const hydrationGeneration = studentWorkHydrationGenerationRef.current;
       let active = true;
+      const isCurrent = () => active && isStudentWorkLoaded.current && eligible()
+          && studentWorkHydrationGenerationRef.current === hydrationGeneration;
+      setStudentWorkStatus('saving');
       const handler = setTimeout(async () => {
           try {
               const write = async () => {
-                  if (!active) return;
-                  const result = await storageDB.set('allo_student_work', studentResponses);
-                  if (result === false) throw new Error('Device storage refused the write');
+                  if (!isCurrent()) return { status: 'superseded', verified: false };
+                  const persist = window.AlloModules?.UtilsPure?.writeVerifiedStorageSnapshot;
+                  if (typeof persist !== 'function') throw new Error('Verified device storage is not ready yet.');
+                  return persist(storageDB, 'allo_student_work', studentResponses, isCurrent);
               };
-              studentWorkSaveQueue.current = studentWorkSaveQueue.current.catch(() => {}).then(write);
-              await studentWorkSaveQueue.current;
-              if (active) setStudentWorkStatus('saved');
+              const queued = studentWorkSaveQueue.current.catch(() => {}).then(write);
+              studentWorkSaveQueue.current = queued;
+              const receipt = await queued;
+              if (isCurrent() && receipt?.status === 'saved' && receipt.verified === true) setStudentWorkStatus('saved');
           } catch (e) {
-              if (active) setStudentWorkStatus('error');
+              if (isCurrent()) setStudentWorkStatus('error');
               warnLog("Student work save failed", e);
           }
       }, 1000);
       return () => { active = false; clearTimeout(handler); };
-  }, [studentResponses, isTeacherMode, showStudentEntry, studentWorkSaveAttempt]);
+  }, [studentResponses, isTeacherMode, showStudentEntry, activeSessionCode, lzLoaded, isStorageDisabled, studentWorkSaveAttempt, studentWorkLoadRevision]);
   const generationViewOwnerRef = useRef(null);
   const [generatedContent, _setGeneratedContent] = useState(null);
   const generationDisplayStateRef = useRef({ resource: null, view: 'input' });
@@ -14341,7 +14400,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         existing.addEventListener('load', () => _upgradeAIBackend(), { once: true });
         return;
       }
-      const url = pluginCdnBase + 'ai_backend_module.js?v=' + pluginCdnVersion;
+      const url = pluginCdnBase + 'ai_backend_module.js?v=cd1a5a87';
       const s = document.createElement('script');
       s.src = url;
       s.crossOrigin = 'anonymous';
@@ -14372,7 +14431,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('Fluency', 'https://alloflow-cdn.pages.dev/fluency_module.js?v=6770c29ca');
     loadModule('LargeFileModule', 'https://alloflow-cdn.pages.dev/large_file_module.js?v=6770c29ca');
     loadModule('KeyConceptMapModule', 'https://alloflow-cdn.pages.dev/key_concept_map_module.js?v=6770c29ca');
-    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=6770c29ca');
+    loadModule('UtilsPure', 'https://alloflow-cdn.pages.dev/utils_pure_module.js?v=4c42773d');
     loadModule('GeminiAPI', 'https://alloflow-cdn.pages.dev/gemini_api_module.js?v=6770c29ca');
     loadModule('TTS', 'https://alloflow-cdn.pages.dev/tts_module.js?v=3be70c0e');
     loadModule('Personas', 'https://alloflow-cdn.pages.dev/personas_module.js?v=f31f5130');
@@ -14439,7 +14498,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyDisproAnalyzer = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DisproAnalyzer', 'https://alloflow-cdn.pages.dev/dispro_analyzer_module.js?v=da080303'); }; })();
     // Leadership Hub (Aug 3 2026) — container shell for the admin suite;
     // Meeting Documentation is its third tool (needs callGemini).
-    window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=29e9a817'); }; })();
+    window.__alloLazyAdminHub = (function() { var L=false; return function() { if(L)return; L=true; loadModule('AdminHub', 'https://alloflow-cdn.pages.dev/admin_hub_module.js?v=9e9f9641'); }; })();
     // Educator Growth & Evaluation (Aug 13 2026) — Act 13 workflow prototype.
     window.__alloLazyEducatorEvaluation = (function() { var L=false; return function() { if(L)return; L=true; loadModule('EducatorEvaluation', 'https://alloflow-cdn.pages.dev/educator_evaluation_module.js?v=6770c29ca'); }; })();
     window.__alloLazySchoolRewards = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SchoolRewards', 'https://alloflow-cdn.pages.dev/school_rewards_module.js?v=6770c29ca'); }; })();
@@ -14448,6 +14507,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     window.__alloLazyMeetingDocs = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MeetingDocs', 'https://alloflow-cdn.pages.dev/meeting_docs_module.js?v=md080302'); }; })();
     window.__alloLazySpedTimelines = (function() { var L=false; return function() { if(L)return; L=true; loadModule('SpedTimelines', 'https://alloflow-cdn.pages.dev/sped_timelines_module.js?v=st080301'); }; })();
     window.__alloLazyDiagnosisEligibility = (function() { var L=false; return function() { if(L)return; L=true; loadModule('DiagnosisEligibility', 'https://alloflow-cdn.pages.dev/stem_lab/stem_tool_eligibility.js?v=6770c29ca'); }; })();
+    window.__alloLazyMaineSldPractice = () => { loadModule('MaineSldPractice', 'https://alloflow-cdn.pages.dev/maine_sld_practice_module.js?v=36955de0'); };
     window.__alloLazyFamilyAnnouncements = (function() { var L=false; return function() { if(L)return; L=true; loadModule('FamilyAnnouncements', 'https://alloflow-cdn.pages.dev/family_announcements_module.js?v=fa080301'); }; })();
     window.__alloLazyMtssTriage = (function() { var L=false; return function() { if(L)return; L=true; loadModule('MtssTriage', 'https://alloflow-cdn.pages.dev/mtss_triage_module.js?v=mt080301'); }; })();
     // Voice infrastructure (Phase 3v) — shared dictation + audio surface.
@@ -14510,7 +14570,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (window.AlloModules && typeof window.AlloModules.createDocPipeline === 'function') return true;
       var entry = window.__alloModuleRegistry && window.__alloModuleRegistry.DocPipelineModule;
       if (entry && entry.status === 'failed' && typeof window.__alloRetryModule === 'function') return window.__alloRetryModule('DocPipelineModule');
-      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=6770c29ca');
+      loadModule('DocPipelineModule', 'https://alloflow-cdn.pages.dev/doc_pipeline_module.js?v=b774ddf6');
       return true;
     };
     var __alloLazyEnsurePromises = window.__alloLazyEnsurePromises || (window.__alloLazyEnsurePromises = {});
@@ -14776,7 +14836,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('WordTimingModule', 'https://alloflow-cdn.pages.dev/word_timing_module.js?v=df764e1d');
     // Unified live-session content channel (SessionTransport stage 1).
     loadModule('SessionTransportModule', 'https://alloflow-cdn.pages.dev/session_transport_module.js?v=049947de');
-    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=961229e6');
+    loadModule('ReadAloudAudioServiceModule', 'https://alloflow-cdn.pages.dev/read_aloud_audio_service_module.js?v=7f606aad');
     loadModule('ReadAloudArtifactContractModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_contract_module.js?v=9a934766');
     loadModule('ReadAloudArtifactAudioModule', 'https://alloflow-cdn.pages.dev/read_aloud_artifact_audio_module.js?v=dda3cff2');
     loadModule('PersonaSessionArtifactModule', 'https://alloflow-cdn.pages.dev/persona_session_artifact_module.js?v=02102365');
@@ -14803,7 +14863,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewImageModule', 'https://alloflow-cdn.pages.dev/view_image_module.js?v=6770c29ca');
     loadModule('ViewAnalysisModule', 'https://alloflow-cdn.pages.dev/view_analysis_module.js?v=6770c29ca');
     loadModule('ViewQuizModule', 'https://alloflow-cdn.pages.dev/view_quiz_module.js?v=6770c29ca');
-    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=d42810ca'); }; })();
+    window.__alloLazySimplifiedView = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewSimplifiedModule', 'https://alloflow-cdn.pages.dev/view_simplified_module.js?v=6ba838c8'); }; })();
     if (window.__alloSimplifiedViewRequested) window.__alloLazySimplifiedView();
     loadModule('ViewMathModule', 'https://alloflow-cdn.pages.dev/view_math_module.js?v=6770c29ca');
     loadModule('ViewLessonPlanModule', 'https://alloflow-cdn.pages.dev/view_lesson_plan_module.js?v=6770c29ca');
@@ -14811,7 +14871,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('ViewWordSoundsPreviewModule', 'https://alloflow-cdn.pages.dev/view_word_sounds_preview_module.js?v=6770c29ca');
     loadModule('ViewGeminiBridgeModule', 'https://alloflow-cdn.pages.dev/view_gemini_bridge_module.js?v=6770c29ca');
     loadModule('ViewConceptSortModule', 'https://alloflow-cdn.pages.dev/view_concept_sort_module.js?v=6770c29ca');
-    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=8178e750'); }; })();
+    window.__alloLazyPersonaChat = (function() { var L=false; return function() { if(L)return; L=true; loadModule('ViewPersonaChatModule', 'https://alloflow-cdn.pages.dev/view_persona_chat_module.js?v=3e93b1d3'); }; })();
     if (window.__alloPersonaChatRequested) window.__alloLazyPersonaChat();
     loadModule('ViewSpotlightTourModule', 'https://alloflow-cdn.pages.dev/view_spotlight_tour_module.js?v=6770c29ca');
     loadModule('ViewProjectSettingsModule', 'https://alloflow-cdn.pages.dev/view_project_settings_module.js?v=6770c29ca');
@@ -14819,19 +14879,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     loadModule('OnboardingCoach', 'https://alloflow-cdn.pages.dev/onboarding_coach_module.js');
     loadModule('AlloCommands', 'https://alloflow-cdn.pages.dev/allo_commands_module.js?v=a012c2fd');
     loadModule('AlloCommandContext', 'https://alloflow-cdn.pages.dev/allo_command_context_module.js?v=d9950c8d');
-    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=d2ca5eb2');
+    loadModule('HostHandlers', 'https://alloflow-cdn.pages.dev/host_handlers_module.js?v=1518acf2');
     loadModule('OnboardingHelpers', 'https://alloflow-cdn.pages.dev/onboarding_helpers_module.js');
     loadModule('ViewAdventureModule', 'https://alloflow-cdn.pages.dev/view_adventure_module.js?v=6770c29ca');
     loadModule('PhaseNHelpersModule', 'https://alloflow-cdn.pages.dev/phase_n_misc_helpers_module.js?v=6770c29ca');
     loadModule('PhaseOHandlersModule', 'https://alloflow-cdn.pages.dev/phase_o_misc_handlers_module.js?v=6770c29ca');
-    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=6770c29ca');
+    loadModule('ExportHandlersModule', 'https://alloflow-cdn.pages.dev/export_handlers_module.js?v=1104203b');
     loadModule('AnnotationSuiteModule', 'https://alloflow-cdn.pages.dev/annotation_suite_module.js?v=6770c29ca');
     loadModule('NoteTakingTemplatesModule', 'https://alloflow-cdn.pages.dev/note_taking_templates_module.js?v=6770c29ca');
     loadModule('AnchorChartsModule', 'https://alloflow-cdn.pages.dev/anchor_charts_module.js?v=6770c29ca');
     loadModule('ImageAssetEditorModule', 'https://alloflow-cdn.pages.dev/image_asset_editor_module.js?v=6770c29ca');
     loadModule('AltTextModule', 'https://alloflow-cdn.pages.dev/alt_text_module.js?v=6770c29ca');
     loadModule('ResourceReadAloudModule', 'https://alloflow-cdn.pages.dev/resource_read_aloud_module.js?v=6770c29ca');
-    loadModule('StudioResponseModule', 'https://alloflow-cdn.pages.dev/studio_response_module.js?v=6770c29ca');
+    loadModule('StudioResponseModule', 'https://alloflow-cdn.pages.dev/studio_response_module.js?v=9277bb54');
     loadModule('MemoryAidModule', 'https://alloflow-cdn.pages.dev/memory_aid_module.js?v=6770c29ca');
     loadModule('AppliedChallengeModule', 'https://alloflow-cdn.pages.dev/applied_challenge_module.js?v=6770c29ca');
     window.__alloLazyLivePolling = () => { loadModule('LivePolling', 'https://alloflow-cdn.pages.dev/live_polling_module.js?v=6770c29ca'); };
@@ -15042,6 +15102,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         'stem_lab/stem_tool_skatelab.js',
         'stem_lab/stem_tool_statslab.js',
         'stem_lab/stem_tool_optics.js',
+        'stem_lab/stem_tool_perception.js',
         'stem_lab/stem_tool_typingpractice.js',
         'stem_lab/stem_tool_llm_literacy.js',
         'stem_lab/stem_tool_assessmentliteracy.js',
@@ -15303,6 +15364,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           moneyMath: 'stem_lab/stem_tool_money.js',
           musicSynth: 'stem_lab/stem_tool_music.js',
           opticsLab: 'stem_lab/stem_tool_optics.js',
+          perceptionLab: 'stem_lab/stem_tool_perception.js',
           petsLab: 'stem_lab/stem_tool_pets.js',
           protractor: 'stem_lab/stem_tool_angles.js',
           ratioLab: 'stem_lab/stem_tool_ratios.js',
@@ -16705,7 +16767,6 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // callback below reads it during hook registration. Keeping these declarations
   // later in the component placed both bindings in the temporal dead zone and
   // crashed the app before the workspace could render.
-  const [activeSessionCode, setActiveSessionCode] = useState(null);
   const [activeSessionAppId, setActiveSessionAppId] = useState(appId);
   const [sessionData, setSessionData] = useState(null);
   useEffect(() => { const r = typeof window !== 'undefined' ? window.__alloCriterionRollup : null; if (!r || (activeSessionCode && r.sessionCode === String(activeSessionCode))) return; window.__alloCriterionRollup = null; try { window.dispatchEvent(new CustomEvent('alloflow:criterion-rollup')); } catch (_) {} }, [activeSessionCode]);
@@ -17053,6 +17114,17 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [evaluationPortalUrl, setEvaluationPortalUrl] = useState(() => normalizeAlloEvaluationPortalUrl(safeGetItem(ALLO_EVALUATION_PORTAL_URL_KEY, '')));
   const [isDiagnosisEligibilityOpen, setIsDiagnosisEligibilityOpen] = useState(false);
   const [diagnosisEligibilityFocusSection, setDiagnosisEligibilityFocusSection] = useState(null);
+  const [isMaineSldPracticeOpen, setIsMaineSldPracticeOpen] = useState(false);
+  const [maineSldPracticeFromLeadership, setMaineSldPracticeFromLeadership] = useState(false);
+  useEffect(() => {
+    window.__alloOpenMaineSldPractice = () => {
+      if (typeof window.__alloLazyMaineSldPractice === 'function') window.__alloLazyMaineSldPractice();
+      setIsAdminHubOpen(false);
+      setMaineSldPracticeFromLeadership(false);
+      setIsMaineSldPracticeOpen(true);
+    };
+    return () => { try { delete window.__alloOpenMaineSldPractice; } catch (_) {} };
+  }, []);
   const [isMeetingDocsOpen, setIsMeetingDocsOpen] = useState(false);
   const [isSpedTimelinesOpen, setIsSpedTimelinesOpen] = useState(false);
   const [isFamilyAnnouncementsOpen, setIsFamilyAnnouncementsOpen] = useState(false);
@@ -19166,6 +19238,10 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     } else if (pendingRole === 'educator_hub') {
         setIsTeacherMode(true);
         setShowEducatorHub(true);
+    } else if (pendingRole === 'maine_sld_leadership') {
+        setIsTeacherMode(true);
+        if (typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} }
+        setIsAdminHubOpen(true);
     } else if (pendingRole) {
         executeRoleSelect(pendingRole);
     }
@@ -21178,7 +21254,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       }
       setDraggedNodeId(null);
   }, [draggedNodeId]);
-  const handleNodeClick = (...__a) => { markOrganizerLayoutEdited(); return _alloHostHandlers().handleNodeClick(...__a); };
+  const handleNodeClick = (...__a) => _alloHostHandlers().handleNodeClick(...__a);
   const handleDeleteNode = (nodeId) => {
       setConfirmDialog({ message: t('concept_map.confirm_delete_node') || 'Delete this node?', onConfirm: () => {
           markOrganizerLayoutEdited();
@@ -21189,7 +21265,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       } });
   };
   const [nodeInputText, setNodeInputText] = useState('');
-  const handleAddManualNode = (...__a) => { markOrganizerLayoutEdited(); return _alloHostHandlers().handleAddManualNode(...__a); };
+  const handleAddManualNode = (...__a) => _alloHostHandlers().handleAddManualNode(...__a);
   const handleDeleteEdge = (edgeId) => {
       markOrganizerLayoutEdited();
       setConceptMapEdges(prev => prev.filter(e => e.id !== edgeId));
@@ -21238,7 +21314,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           [category]: prev[category].filter((_, i) => i !== index)
       }));
   };
-  const handleResetLayout = (...__a) => { markOrganizerLayoutEdited(); return _alloHostHandlers().handleResetLayout(...__a); };
+  const handleResetLayout = (...__a) => _alloHostHandlers().handleResetLayout(...__a);
   const parseFlowChartData = (...__a) => _alloHostHandlers().parseFlowChartData(...__a);
 
 
@@ -21464,10 +21540,18 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       setGuidedMode(false);
       setShowWizard(false);
       setShowStudentWelcome(false);
-      _alloRequestStemPlugin(shellDeepLinkTool);
-      setStemLabTool(shellDeepLinkTool);
-      setStemLabTab('explore');
-      setShowStemLab(true);
+      if (shellDeepLinkTool === 'maineSldPractice') {
+          setIsTeacherMode(false);
+          setMaineSldPracticeFromLeadership(false);
+          setShowStemLab(false);
+          if (typeof window.__alloLazyMaineSldPractice === 'function') { try { window.__alloLazyMaineSldPractice(); } catch (_) {} }
+          setIsMaineSldPracticeOpen(true);
+      } else {
+          _alloRequestStemPlugin(shellDeepLinkTool);
+          setStemLabTool(shellDeepLinkTool);
+          setStemLabTab('explore');
+          setShowStemLab(true);
+      }
       setShellDeepLinkApplied(true);
   }, [shellDeepLinkTool, shellDeepLinkApplied, isAppReady, isHistoryLoaded, canvasRecoveryDecisionMade]);
   useEffect(() => {
@@ -21512,7 +21596,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           safeSetItem(ALLO_LIVE_LESSON_PREP_KEY, serializedSafe);
       } catch (_) {}
   }, [isTeacherMode, isStudentLinkMode, isHistoryLoaded, canvasRecoveryDecisionMade, history, livePresenterCuesByResourceId]);
-  const [canvasRecoveryDialogMode, setCanvasRecoveryDialogMode] = useState(() => isCanvas ? 'checking' : null);
+  const [canvasRecoveryDialogMode, _setCanvasRecoveryDialogMode] = useState(() => isCanvas ? 'checking' : null);
   const [canvasRecoveryStore, setCanvasRecoveryStore] = useState(() => {
       const empty = ALLO_WORKSPACE_RECOVERY.emptyStore();
       if (isCanvas) return empty;
@@ -21609,6 +21693,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   }));
   const canvasRecoveryStoreRef = useRef(canvasRecoveryStore);
   const canvasRecoveryVaultControllerRef = useRef(null);
+  const canvasRecoveryVaultControllerInitRef = useRef(null);
+  const canvasRecoveryRestoreRequestRef = useRef(null);
+  const canvasRecoveryVaultSyncRequestRef = useRef(null);
+  const canvasRecoveryVaultActionRequestRef = useRef(null);
+  const canvasRecoveryImportRequestRef = useRef(null);
+  const setCanvasRecoveryDialogMode = (mode) => {
+      if (mode === null && canvasRecoveryImportRequestRef.current) {
+          const request = canvasRecoveryImportRequestRef.current;
+          canvasRecoveryImportRequestRef.current = null;
+          if (request.input?.files?.[0] === request.file) request.input.value = '';
+          setCanvasRecoveryBusyId(current => current === 'import-read' ? null : current);
+      }
+      _setCanvasRecoveryDialogMode(mode);
+  };
   const canvasRecoveryVaultPendingActionRef = useRef(null);
   const canvasRecoveryVaultImportRef = useRef(null);
   const storageManagerRefreshTokenRef = useRef(0);
@@ -21661,8 +21759,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
   }, [history, activeBlueprint, isHistoryLoaded, isCanvas, canvasRecoveryDecisionMade]);
   const localDataHydrationGenerationRef = useRef(0);
-  const invalidateLocalDataHydration = () => {
+  const workspaceReplacementGenerationRef = useRef(0);
+  const invalidateLocalDataHydration = (options = {}) => {
       localDataHydrationGenerationRef.current += 1;
+      studentWorkHydrationGenerationRef.current += 1;
+      if (!options.preserveStudentEntryLoad) workspaceReplacementGenerationRef.current += 1;
+      canvasRecoveryVaultSyncRequestRef.current = null;
+      const pendingVaultAction = canvasRecoveryVaultActionRequestRef.current;
+      canvasRecoveryVaultActionRequestRef.current = null;
+      if (pendingVaultAction && options.notifyLifecycle !== false) {
+          setCanvasRecoveryBusyId(current => ['vault-unlock', 'vault-recover'].includes(current) ? null : current);
+      }
+      // An explicit replacement owns the workspace; ordinary boot hydration
+      // advances only its own read generation and remains available.
+      const pendingImport = canvasRecoveryImportRequestRef.current;
+      canvasRecoveryImportRequestRef.current = null;
+      if (pendingImport && options.notifyLifecycle !== false) {
+          if (pendingImport.input?.files?.[0] === pendingImport.file) pendingImport.input.value = '';
+          setCanvasRecoveryBusyId(current => current === 'import-read' ? null : current);
+      }
+      if (canvasRecoveryRestoreRequestRef.current) {
+          canvasRecoveryRestoreRequestRef.current = null;
+          canvasRecoveryMutationInProgressRef.current = false;
+          if (options.notifyLifecycle !== false) setCanvasRecoveryBusyId(null);
+      }
+      isStudentWorkLoaded.current = true;
       return localDataHydrationGenerationRef.current;
   };
   const cancelActiveProjectLoad = (options) => {
@@ -23278,7 +23399,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         canvasRecoveryPendingSaveCountRef.current = 0;
         canvasRecoveryStoreRef.current = ALLO_WORKSPACE_RECOVERY.emptyStore();
         canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
-        if (!Array.isArray(receivedDeliveryResources) || !receivedDeliveryResources.length) clearCanvasWorkspaceState();
+        if (!Array.isArray(receivedDeliveryResources) || !receivedDeliveryResources.length) clearCanvasWorkspaceState({ preserveStudentEntryLoad: true });
         setCanvasRecoveryStore(ALLO_WORKSPACE_RECOVERY.emptyStore());
         setCanvasRecoveryStoreAuthoritative(false);
         setCanvasRecoveryDecisionMade(true);
@@ -23418,9 +23539,9 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                         }
                     }
                 }
-                canvasRecoveryStoreRef.current = store;
                 if (cancelled) return;
                 if (isCanvasStudentEntry()) { protectCanvasStudentEntry(); return; }
+                canvasRecoveryStoreRef.current = store;
                 setCanvasRecoveryStoreAuthoritative(true);
                 setCanvasRecoveryStore(store);
                 const latest = store.snapshots[0] || null;
@@ -23738,7 +23859,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
         clearTimeout(timeoutId);
         if (owner.sequence === sequence) owner.sequence += 1;
     };
-  }, [history, isHistoryLoaded, isOnline, isTeacherMode, activeSessionCode, lzLoaded, canvasRecoveryRevision]);
+  }, [history, isHistoryLoaded, isOnline, isTeacherMode, activeSessionCode, lzLoaded, canvasRecoveryRevision, isStorageDisabled, isCanvas]);
   useEffect(() => {
       const owner = offlineProfileWriteRef.current;
       if (!lzLoaded || isCanvas) {
@@ -24216,7 +24337,20 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   const [qrShareSvg, setQrShareSvg] = useState('');
   const [qrShareError, setQrShareError] = useState(false);
   const homeworkQrDialogRef = useRef(null);
-  const [pendingQrAssignmentResource, setPendingQrAssignmentResource] = useState(null);
+  const [pendingQrAssignmentOpenRequest, setPendingQrAssignmentOpenRequest] = useState(null);
+  const pendingQrAssignmentResource = pendingQrAssignmentOpenRequest?.resource || null;
+  const pendingQrAssignmentOpenRequestRef = useRef(null);
+  const setPendingQrAssignmentResource = useCallback(value => {
+      const current = pendingQrAssignmentOpenRequestRef.current;
+      const resource = typeof value === 'function' ? value(current?.resource || null) : value;
+      if (typeof value === 'function' && resource === (current?.resource || null)) return;
+      if (!resource && !current) return;
+      // Retire ownership immediately, including before React commits cleanup.
+      // A fresh token also distinguishes an exact-object A -> null -> A batch.
+      const next = resource ? { resource } : null;
+      pendingQrAssignmentOpenRequestRef.current = next;
+      setPendingQrAssignmentOpenRequest(next);
+  }, []);
   const buildAlloShareUrl = useCallback((params = {}) => {
       try {
           return _buildAlloShareUrl(params);
@@ -24825,11 +24959,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       return () => { cancelled = true; };
   }, [mbLive, mbConfig, isTeacherMode, activeSessionCode, activeSessionAppId]);
   const _mbCloseTeacherPeers = useCallback(() => {
-      Object.values(mbPeersRef.current || {}).forEach(peer => {
+      const peers = mbPeersRef.current || {};
+      mbPeersRef.current = {};
+      Object.values(peers).forEach(peer => {
           try { peer.dc?.close(); } catch (_) {}
           try { peer.pc?.close(); } catch (_) {}
       });
-      mbPeersRef.current = {};
   }, []);
   const endMailboxLiveSession = useCallback(async () => {
       const live = mbLive;
@@ -25065,17 +25200,19 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       if (!mbLive || !mbConfig?.url) return undefined;
       let cancelled = false;
       let timer = null;
+      let polling = false;
+      let pollAgain = false;
       let errorCount = 0;
       let lastActivity = Date.now();
       const applyStudentUpdate = (v, at) => {
-          if (!v || v.kind !== 'student' || !v.uid) return;
+          if (cancelled || !v || v.kind !== 'student' || !v.uid) return;
           setMbRoster(prev => ({ ...prev, [v.uid]: { ...(prev[v.uid] || {}), name: String(v.name || 'Student').slice(0, 40), hand: !!v.hand, at: at || Date.now(), rtc: (mbPeersRef.current[v.uid]?.dc?.readyState === 'open') } }));
       };
       // Phase 2 return path: homework evidence reported by the student's DEVICE (formative,
       // never a grade). Keyed uid+directionsId so a re-send with more goals done replaces
       // the earlier snapshot instead of duplicating it.
       const applyHwEvidence = (v) => {
-          if (!v || v.kind !== 'hw-evidence' || !v.uid || !v.directionsId) return;
+          if (cancelled || !v || v.kind !== 'hw-evidence' || !v.uid || !v.directionsId) return;
           setMbHwEvidence(prev => ({
               ...prev,
               [v.uid + '|' + v.directionsId]: {
@@ -25097,17 +25234,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       const answerRtcOffer = async (v) => {
           const uid = String(v.uid || '');
-          if (!uid || !v.sdp || v.sdp.type !== 'offer' || typeof RTCPeerConnection !== 'function') return;
+          if (cancelled || !uid || !v.sdp || v.sdp.type !== 'offer' || typeof RTCPeerConnection !== 'function') return;
           const existing = mbPeersRef.current[uid];
           // Re-offer replaces the old peer (student reconnected/refreshed).
+          if (mbPeersRef.current[uid] === existing) delete mbPeersRef.current[uid];
           if (existing) { try { existing.dc?.close(); } catch (_) {} try { existing.pc?.close(); } catch (_) {} }
+          let peer = null;
           try {
               const pc = new RTCPeerConnection(_alloMailboxRtcConfig());
-              const peer = { pc, dc: null };
+              peer = { pc, dc: null };
+              const isCurrentPeer = () => !cancelled && mbPeersRef.current[uid] === peer;
               mbPeersRef.current[uid] = peer;
               pc.ondatachannel = (ev) => {
+                  if (!isCurrentPeer()) { try { ev.channel?.close(); } catch (_) {} return; }
                   peer.dc = ev.channel;
+                  const channel = peer.dc;
+                  const isCurrentChannel = () => isCurrentPeer() && peer.dc === channel;
                   peer.dc.onmessage = (msgEv) => {
+                      if (!isCurrentChannel()) return;
                       try {
                           const parsed = JSON.parse(msgEv.data);
                           // Bridge nudge: a student just wrote to the session
@@ -25118,6 +25262,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       } catch (_) {}
                   };
                   peer.dc.onopen = () => {
+                      if (!isCurrentChannel()) return;
                       setMbRoster(prev => (prev[uid] ? { ...prev, [uid]: { ...prev[uid], rtc: true, at: Date.now() } } : prev));
                       // Late-joiner welcome: hand this student the current
                       // pack directly over their own channel — covers joins
@@ -25126,31 +25271,48 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                       (async () => {
                           try {
                               for (const item of (mbPackItemsRef.current || [])) {
+                                  if (!isCurrentChannel()) return;
                                   const packItem = await prepareMailboxResourceImages(item);
+                                  if (!isCurrentChannel()) return;
                                   if (!packItem) continue;
                                   const encoded = await _alloEncodeAlloPack(JSON.stringify(packItem));
+                                  if (!isCurrentChannel()) return;
                                   const parts = _alloSplitPackChunks(encoded);
                                   const rid = 'W' + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
                                   for (let i = 0; i < parts.length; i += 1) {
-                                      await _alloDcSendDrained(peer.dc, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: false, quiet: true }));
+                                      if (!isCurrentChannel()) return;
+                                      await _alloDcSendDrained(channel, JSON.stringify({ kind: 'res', rid, part: i + 1, of: parts.length, data: parts[i], open: false, quiet: true }), 4 * 1024 * 1024, isCurrentChannel);
                                   }
                               }
                           } catch (welcomeErr) {
+                              if (!isCurrentChannel()) return;
                               warnLog('Welcome pack send failed (mailbox replay still covers them):', welcomeErr?.message);
                           }
                       })();
                   };
-                  peer.dc.onclose = () => setMbRoster(prev => (prev[uid] ? { ...prev, [uid]: { ...prev[uid], rtc: false } } : prev));
+                  peer.dc.onclose = () => {
+                      if (!isCurrentChannel()) return;
+                      setMbRoster(prev => (prev[uid] ? { ...prev, [uid]: { ...prev[uid], rtc: false } } : prev));
+                  };
               };
               await pc.setRemoteDescription(v.sdp);
-              await pc.setLocalDescription(await pc.createAnswer());
+              if (!isCurrentPeer()) return;
+              const answer = await pc.createAnswer();
+              if (!isCurrentPeer()) return;
+              await pc.setLocalDescription(answer);
+              if (!isCurrentPeer()) return;
               await _alloWaitIceComplete(pc);
-              await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'rtc', to: uid, sdp: pc.localDescription } });
+              if (!isCurrentPeer()) return;
+              await _alloMailboxCallWithRetry(mbConfig.url, { a: 'send', admin: mbConfig.admin, c: mbLive.code, from: 'teacher', box: 'down', v: { kind: 'rtc', to: uid, ...(typeof v.offerId === 'string' ? { offerId: v.offerId.slice(0, 120) } : {}), sdp: pc.localDescription } });
           } catch (rtcErr) {
+              if (cancelled || (peer && mbPeersRef.current[uid] !== peer)) return;
               warnLog('RTC answer failed (student stays on mailbox polling):', rtcErr?.message);
           }
       };
       const poll = async () => {
+          if (cancelled) return;
+          if (polling) { pollAgain = true; return; }
+          polling = true;
           try {
               // Fold the session-doc watch list into the poll we already make
               // (one request, not two); the bridge pump idles while this feeds.
@@ -25173,6 +25335,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
                   if (Array.isArray(box.m) && box.m.length) {
                       lastActivity = Date.now();
                       for (const entry of box.m) {
+                          if (cancelled) return;
                           const msg = entry && entry[1];
                           const v = msg && msg.v;
                           if (!v) continue;
@@ -25185,33 +25348,44 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           } catch (e) {
               if (cancelled) return;
               if (String(e?.code || '').includes('no-session')) {
+                  cancelled = true;
                   setMbLive(null);
                   try { localStorage.removeItem(ALLO_MB_LIVE_KEY); } catch (_) {}
                   setMbStatus('The live session expired or was ended.');
                   return;
               }
               errorCount = Math.min(errorCount + 1, 3);
+          } finally {
+              polling = false;
           }
           if (!cancelled) {
               const hidden = typeof document !== 'undefined' && document.hidden;
-              timer = setTimeout(poll, _alloNextPollDelay({ idleMs: Date.now() - lastActivity, errorCount, hidden }));
+              if (timer) clearTimeout(timer);
+              timer = setTimeout(poll, pollAgain ? 50 : _alloNextPollDelay({ idleMs: Date.now() - lastActivity, errorCount, hidden }));
+              pollAgain = false;
           }
+      };
+      const requestPoll = (delay) => {
+          if (cancelled) return;
+          if (polling) { pollAgain = true; return; }
+          if (timer) clearTimeout(timer);
+          timer = setTimeout(poll, delay);
       };
       const onVisible = () => {
           if (typeof document !== 'undefined' && !document.hidden && !cancelled) {
-              if (timer) clearTimeout(timer);
-              timer = setTimeout(poll, 100);
+              requestPoll(100);
           }
       };
       try { document.addEventListener('visibilitychange', onVisible); } catch (_) {}
       // Network return / bfcache restore: same instant re-poll as a wake, so
       // the roster and student signals recover without waiting out backoff.
-      const onNetBack = () => { if (!cancelled) { if (timer) clearTimeout(timer); timer = setTimeout(poll, 300); } };
+      const onNetBack = () => requestPoll(300);
       const onPageShow = (event) => { if (event && event.persisted) onNetBack(); };
       try { window.addEventListener('online', onNetBack); window.addEventListener('pageshow', onPageShow); } catch (_) {}
       // Bridge nudge fan-out: the teacher's own session-doc writes ping every
       // connected student's channel so their pumps pull immediately.
       _alloMbSetNudgeSender(() => {
+          if (cancelled) return;
           Object.values(mbPeersRef.current || {}).forEach(peer => {
               if (peer.dc && peer.dc.readyState === 'open') {
                   try { peer.dc.send(JSON.stringify({ kind: 'sdocv' })); } catch (_) {}
@@ -25571,6 +25745,8 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           return;
       }
       if (v.kind === 'res-remove' && Array.isArray(v.ids)) {
+          setPendingQrAssignmentResource(current => current && v.ids.includes(current.id) ? null : current);
+          _alloMarkRemovedResChunks(mbChunkStoreRef.current, v.ids);
           setReceivedDeliveryResources(prev => prev.filter(item => !v.ids.includes(item.id)));
           setHistory(prev => {
               const next = (Array.isArray(prev) ? prev : []).filter(item => item && !v.ids.includes(item.id));
@@ -25583,6 +25759,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
           const store = mbChunkStoreRef.current || (mbChunkStoreRef.current = { parts: {}, applied: new Set() });
           const assembled = _alloCollectResChunk(store, v);
           if (!assembled) return;
+          const pending = store.pending[v.rid];
           try {
               let resource = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
               const receivedResourceId = resource && resource.id;
@@ -25590,7 +25767,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               // that this message actually delivered and requested to open.
               resource = _alloStudentSafeResources([resource]).find(item => item.id === receivedResourceId);
               if (!resource) throw new Error('The transferred resource is not a valid student resource');
-              if (mbChunkStoreRef.current !== store) return;
+              if (mbChunkStoreRef.current !== store || store.pending?.[v.rid] !== pending) return;
+              if (pending.removalOverflow || pending.removedIds?.has(resource.id)) {
+                  _alloFinishResChunk(store, v.rid, true, pending);
+                  setMbResourceReceiveError(Object.keys(store.failures || {}).length > 0);
+                  return;
+              }
               setReceivedDeliveryResources(prev => [...prev.filter(item => item.id !== resource.id), resource]);
               setHistory(prev => {
                   const rest = (Array.isArray(prev) ? prev : []).filter(item => item && item.id !== resource.id);
@@ -25604,12 +25786,12 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               // open=false delivers quietly into the pack (async-mode share);
               // open=true (default) follows the teacher like sync mode.
               if (v.open !== false) setPendingQrAssignmentResource(resource);
-              _alloFinishResChunk(store, v.rid, true);
+              _alloFinishResChunk(store, v.rid, true, pending);
               setMbResourceReceiveError(Object.keys(store.failures || {}).length > 0);
               if (!v.quiet) addToast('Your teacher shared: ' + (resource.title || resource.type), 'success');
           } catch (decodeErr) {
-              if (mbChunkStoreRef.current !== store) return;
-              _alloFinishResChunk(store, v.rid, false);
+              if (mbChunkStoreRef.current !== store || store.pending?.[v.rid] !== pending) return;
+              _alloFinishResChunk(store, v.rid, false, pending);
               setMbResourceReceiveError(true);
               if ((store.failures?.[v.rid]?.count || 0) < 3) mbStudentCursorRef.current = 0;
               warnLog('Mailbox resource decode failed', decodeErr);
@@ -27674,7 +27856,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
     // lifecycle state updates against an unmounting component.
     cancelActiveProjectLoad({ notifyLifecycle: false });
     cancelActiveFileIntakeOperations('host-unmount');
-    invalidateLocalDataHydration();
+    invalidateLocalDataHydration({ notifyLifecycle: false });
   }, []);
   const [outlineType, setOutlineType] = useState('Venn Diagram');
   const [outlineCustomInstructions, setOutlineCustomInstructions] = useState('');
@@ -27734,7 +27916,31 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
   // when an asynchronous operation finishes. Updaters must be pure.
   const _resourceMutationStateRef = useRef({});
   _resourceMutationStateRef.current = { history, generatedContent, inputText, isTeacherMode };
-  const onUpdateResource = useCallback((...__a) => _alloHostHandlers().onUpdateResource(...__a), [setHistory, setGeneratedContent]);
+  const onUpdateResource = useCallback((resourceId, updater, options = {}) => {
+    if (resourceId == null || typeof updater !== 'function') return false;
+    const id = String(resourceId);
+    // Imported packs can repeat a public id; given an instance, only that copy changes.
+    const instanceId = options && typeof options.instanceId === 'string' ? options.instanceId : '';
+    const sameCopy = item => !instanceId || _alloArtifactMatchesInstanceId(item, instanceId);
+    const current = _resourceMutationStateRef.current;
+    const artifact = (Array.isArray(current.history) ? current.history : []).find(item => item && String(item.id) === id && sameCopy(item))
+      || (current.generatedContent && String(current.generatedContent.id) === id && sameCopy(current.generatedContent) ? current.generatedContent : null);
+    if (!artifact) return false;
+    const candidate = updater(artifact);
+    if (!candidate || candidate === artifact) return false;
+    const preservesOriginal = (before, after) => before?.instructionalText?.form !== 'same-text-supported' || (after?.data === before.data && after?.sourceSnapshot?.text === before.sourceSnapshot?.text && after?.instructionalText?.form === 'same-text-supported');
+    if (!preservesOriginal(artifact, candidate)) return false;
+    const updatedAt = new Date().toISOString();
+    const apply = previous => {
+      if (!previous || String(previous.id) !== id || previous.type !== artifact.type || !sameCopy(previous)) return previous;
+      const next = previous === artifact ? candidate : updater(previous);
+      if (!next || next === previous || !preservesOriginal(previous, next)) return previous;
+      return { ...next, id: previous.id, type: previous.type, updatedAt };
+    };
+    setHistory(previous => previous.map(apply));
+    setGeneratedContent(apply);
+    return true;
+  }, [setHistory, setGeneratedContent]);
   const handleNoteUpdate = useCallback((key, value) => {
     if (!generatedContent || !['note-taking', 'anchor-chart', 'memory-aid', 'applied-challenge'].includes(generatedContent.type)) return;
     const resourceId = generatedContent.id;
@@ -28402,9 +28608,11 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       activeSessionCode
   ]);
   useEffect(() => {
-      if (!lzLoaded || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode)) return;
+      if (!lzLoaded || isStorageDisabled || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode)) return;
       let cancelled = false;
-      const shouldStop = () => cancelled || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode);
+      const hydrationGeneration = studentWorkHydrationGenerationRef.current;
+      const shouldStop = () => cancelled || studentWorkHydrationGenerationRef.current !== hydrationGeneration
+          || !lzLoaded || isStorageDisabled || _alloShouldSuppressLearnerDeviceStorage(isTeacherMode, showStudentEntry, activeSessionCode);
       const initLocalData = async () => {
           try {
               const savedPoints = await storageDB.get('allo_global_points');
@@ -28415,11 +28623,24 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
               if (savedHistory && Array.isArray(savedHistory)) setPointHistory(savedHistory);
           } catch (e) { warnLog("Points Load Error", e); }
           try {
-              const savedWork = await storageDB.get('allo_student_work');
+              // A save retry needs a fresh restore only when the prior read failed
+              // or the role/session/storage context retired its loaded ownership.
+              if (!isStudentWorkLoaded.current) {
+                  const savedWork = await storageDB.get('allo_student_work', { throwOnError: true, localOnly: true });
+                  if (shouldStop()) return;
+                  if (savedWork !== null && (typeof savedWork !== 'object' || Array.isArray(savedWork))) {
+                      throw new Error('Saved student work is not a response map.');
+                  }
+                  setStudentResponses(current => shouldStop() ? current : { ...(savedWork || {}), ...current });
+                  isStudentWorkLoaded.current = true;
+                  setStudentWorkLoadRevision(value => value + 1);
+              }
+          } catch (e) {
               if (shouldStop()) return;
-              if (savedWork) setStudentResponses(savedWork);
-              isStudentWorkLoaded.current = true;
-          } catch (e) { warnLog("Student Work Load Error", e); }
+              isStudentWorkLoaded.current = false;
+              setStudentWorkStatus('error');
+              warnLog("Student Work Load Error", e);
+          }
           try {
               const advSave = await storageDB.get('allo_adventure_save');
               if (shouldStop()) return;
@@ -28452,7 +28673,7 @@ const handleGetMathHint = async (resourceId, problemIdx, question, correctAnswer
       };
       initLocalData();
       return () => { cancelled = true; };
-  }, [lzLoaded, isTeacherMode, showStudentEntry, activeSessionCode]);
+  }, [lzLoaded, isStorageDisabled, isTeacherMode, showStudentEntry, activeSessionCode, studentWorkSaveAttempt]);
   // Reading Ruler input lifecycle: pointer, touch and keyboard focus share one position.
   useEffect(() => {
     if (!readingRuler) { setRulerSuspended(false); return; }
@@ -32254,6 +32475,10 @@ const parseTaggedContent = (text) => {
       if (incomingSignature === KS[pendingPayloadSignatureSlot]) {
         KS[payloadSignatureSlot] = incomingSignature;
         KS[pendingPayloadSignatureSlot] = null;
+        KS[slot + 'AttachedPayloadSignatures'] = new Set();
+      } else if (KS[pendingPayloadSignatureSlot] != null && (incomingSignature === KS[payloadSignatureSlot] || KS[slot + 'AttachedPayloadSignatures']?.has(incomingSignature))) {
+        // Intermediate React attachments are older than the in-memory store.
+        payloadChanged = false;
       } else {
         payloadChanged = KS[payloadSignatureSlot] !== incomingSignature;
       }
@@ -32268,6 +32493,7 @@ const parseTaggedContent = (text) => {
         try { st.hydrate(payload); } catch (_) {}
       }
       KS[slot] = st;
+      KS[slot + 'AttachedPayloadSignatures'] = new Set();
       KS[idSlot] = resourceId;
       KS[payloadSignatureSlot] = incomingSignature;
       KS[pendingPayloadSignatureSlot] = null;
@@ -32399,7 +32625,11 @@ const parseTaggedContent = (text) => {
       const KS = window.AlloModules && window.AlloModules.KaraokeAudioStore;
       if (KS) {
         const slot = field === 'karaokeStudentAudio' ? 'studentCurrent' : 'current';
-        KS[slot + 'PendingPayloadSignature'] = _karaokePayloadSignature(payload);
+        const signature = _karaokePayloadSignature(payload);
+        const signatures = KS[slot + 'AttachedPayloadSignatures'] instanceof Set
+          ? KS[slot + 'AttachedPayloadSignatures'] : (KS[slot + 'AttachedPayloadSignatures'] = new Set());
+        signatures.add(signature);
+        KS[slot + 'PendingPayloadSignature'] = signature;
       }
     } catch (_) {}
 
@@ -32732,7 +32962,11 @@ const parseTaggedContent = (text) => {
   window.__alloEnsureGlossaryEntryIds = _ensureGlossaryReadAloudEntryIds;
   const _enumerateReadAloudResourceSegments = (resource) => {
     const adapters = window.AlloModules?.ResourceReadAloud;
-    if (adapters?.supports(resource?.type)) return adapters.enumerate(resource);
+    const reader = window.AlloModules?.SimplifiedView;
+    const supportSegments = resource?.type === 'simplified' && typeof reader?.enumerateNarrationSupportSegments === 'function'
+      ? reader.enumerateNarrationSupportSegments(resource, { history, language: resource.config?.language || resource.instructionalText?.complexity?.language || leveledTextLanguage || currentUiLanguage || 'English' })
+      : [];
+    if (adapters?.supports(resource?.type)) return adapters.enumerate(resource).concat(supportSegments);
     if (!resource) return [];
     if (String(resource.type || '').toLowerCase() === 'glossary') {
       const activeResource = _ensureGlossaryReadAloudEntryIds() || resource;
@@ -32776,7 +33010,7 @@ const parseTaggedContent = (text) => {
     } else {
       raw.split(/\n{2,}/).forEach((part, paragraphIndex) => addPart(part, 'body/' + paragraphIndex, resourceLanguage));
     }
-    return segments;
+    return segments.concat(supportSegments);
   };
   const _encodeReadAloudBridgeAudio = async (audio, encodeContext) => {
     if (audio && typeof audio === 'object') {
@@ -32819,20 +33053,9 @@ const parseTaggedContent = (text) => {
     return { b64: await _blobToBase64(blob), mime: blob.type };
   };
   window.__alloReadAloudProfileRevision = JSON.stringify([_aiConfig.ttsProvider, _aiConfig.backend, _aiConfig.models?.tts, GEMINI_MODELS.tts]);
-  const _getReadAloudBridge = () => {
-    const createBridge = window.AlloModules && window.AlloModules.createReadAloudLegacyBridge;
-    if (typeof createBridge !== 'function') return null;
-    _ensureKaraokeStore('reference');
-    _ensureKaraokeStore('student');
-    return createBridge({
-      getResource: () => {
-        const resource = generatedContent;
-        return resource && String(resource.type || '').toLowerCase() === 'glossary'
-          ? _ensureGlossaryReadAloudEntryIds()
-          : resource;
-      },
-      getStore: (lane) => _ensureKaraokeStore(lane === 'student' ? 'student' : 'reference'),
-      getProfile: () => {
+  window.__alloReadAloudLiveHost = {
+    resource: generatedContent,
+    getProfile: () => {
         const rate = (typeof voiceSpeed === 'number' && voiceSpeed > 0) ? voiceSpeed : 1;
         const profile = {
           voice: selectedVoice || window.__alloSelectedVoice || 'Kore',
@@ -32848,7 +33071,7 @@ const parseTaggedContent = (text) => {
         }
         return profile;
       },
-      synthesize: async ({ text, profile, signal, reason, operation, priority, maxRetries, force }) => {
+    synthesize: async ({ text, profile, signal, reason, operation, priority, maxRetries, force }) => {
         if (operation === 'resolve') {
           const liveProfile = profile || {};
           const voice = liveProfile.voice || selectedVoice || window.__alloSelectedVoice || 'Kore';
@@ -32871,14 +33094,89 @@ const parseTaggedContent = (text) => {
         }
         return _synthSentenceForStore(text, { profile, signal, reason, operation, priority, maxRetries, force });
       },
-      encode: _encodeReadAloudBridgeAudio,
-      persist: ({ lane, payload, resourceId }) => {
+    encode: _encodeReadAloudBridgeAudio,
+    notify: _notifyKaraokeAudioCapture,
+    enumerate: _enumerateReadAloudResourceSegments,
+    ensureStore: _ensureKaraokeStore,
+    persistField: _persistKaraokeAudioField,
+    ensureGlossary: _ensureGlossaryReadAloudEntryIds,
+    canSaveDevice: isHistoryLoaded && !isStorageDisabled && !isCanvas && (isTeacherMode || !activeSessionCode),
+    offlineOwner: offlineHistoryWriteRef.current,
+  };
+  const _readAloudResourceRevision = (resource) => JSON.stringify([
+    resource && (resource.id || resource.resourceId || resource.__alloUnsavedTtsToken),
+    resource && resource.type, resource && resource.data,
+    resource && resource.readingSupports, resource && resource.adaptedReadingSupports,
+  ]);
+  const _getReadAloudBridge = () => {
+    const createBridge = window.AlloModules && window.AlloModules.createReadAloudLegacyBridge;
+    if (typeof createBridge !== 'function') return null;
+    _ensureKaraokeStore('reference');
+    _ensureKaraokeStore('student');
+    return createBridge({
+      getResource: () => {
+        const host = window.__alloReadAloudLiveHost;
+        const resource = host && host.resource;
+        return resource && String(resource.type || '').toLowerCase() === 'glossary'
+          ? host.ensureGlossary()
+          : resource;
+      },
+      getStore: (lane, context) => {
+        const host = window.__alloReadAloudLiveHost;
+        if (!host || (context && context.resource &&
+            _readAloudResourceRevision(context.resource) !== _readAloudResourceRevision(host.resource))) {
+          throw new Error('Read-aloud resource changed before audio could be attached.');
+        }
+        return host.ensureStore(lane === 'student' ? 'student' : 'reference');
+      },
+      getProfile: (context) => window.__alloReadAloudLiveHost?.getProfile(context),
+      synthesize: (request) => window.__alloReadAloudLiveHost?.synthesize(request),
+      encode: (audio, context) => window.__alloReadAloudLiveHost?.encode(audio, context),
+      persist: async ({ lane, payload, resourceId, resource, signal, reason }) => {
+        const host = window.__alloReadAloudLiveHost;
+        if (signal && signal.aborted) throw signal.reason || new Error('Read-aloud save cancelled.');
+        if (!host || _readAloudResourceRevision(resource) !== _readAloudResourceRevision(host.resource)) {
+          return { status: 'failed', verified: false, code: 'resource-changed' };
+        }
         const field = lane === 'student' ? 'karaokeStudentAudio' : 'karaokeAudio';
-        _persistKaraokeAudioField(field, payload, resourceId);
+        host.persistField(field, payload, resourceId);
+        // React attachment does not prove a verified device write. Readiness
+        // independently reads the exact saved resource/lane from device storage.
+        const attached = { status: 'attached', verified: false, resourceId, lane };
+        if (reason !== 'retry-save' || !host.canSaveDevice) return attached;
+        const write = window.AlloModules?.UtilsPure?.writeVerifiedStorageSnapshot;
+        if (typeof write !== 'function') return attached;
+        const owner = host.offlineOwner;
+        const sequence = ++owner.sequence;
+        const revision = _readAloudResourceRevision(resource);
+        const isCurrent = () => !(signal && signal.aborted) && owner.sequence === sequence &&
+          _readAloudResourceRevision(window.__alloReadAloudLiveHost?.resource) === revision &&
+          window.__alloReadAloudLiveHost?.canSaveDevice === true;
+        const running = Promise.resolve(owner.chain).catch(() => {}).then(async () => {
+          if (!isCurrent()) return attached;
+          const snapshot = await storageDB.get('allo_offline_history', { throwOnError: true, localOnly: true });
+          if (!isCurrent() || !Array.isArray(snapshot?.items)) return attached;
+          const index = snapshot.items.findIndex(item => String(item?.id || item?.resourceId || '') === String(resourceId));
+          if (index < 0) return attached;
+          const saved = snapshot.items[index];
+          let savedData = saved.data;
+          if (saved.type !== 'simplified' && saved.dataEncoding !== 'text/v1' || saved.dataEncoding === 'json-text/v1') { try { savedData = JSON.parse(savedData); } catch (_) {} }
+          if (JSON.stringify(savedData) !== JSON.stringify(resource.data) ||
+              JSON.stringify(saved.readingSupports || null) !== JSON.stringify(resource.readingSupports || null) ||
+              JSON.stringify(saved.adaptedReadingSupports || null) !== JSON.stringify(resource.adaptedReadingSupports || null)) return attached;
+          const items = snapshot.items.slice();
+          items[index] = Object.assign({}, saved, { [field]: payload });
+          const receipt = await write(storageDB, 'allo_offline_history', Object.assign({}, snapshot, { items }), isCurrent);
+          if (receipt?.status !== 'saved' || receipt?.verified !== true || !isCurrent()) return attached;
+          return { status: 'saved', verified: true, verifiedAt: receipt.verifiedAt, resourceId, lane };
+        });
+        owner.chain = running.catch(() => {});
+        return running;
       },
       normalize: _normalizeReadAloudBridgeText,
-      notify: _notifyKaraokeAudioCapture,
-      enumerateResourceSegments: _enumerateReadAloudResourceSegments,
+      notify: (...args) => window.__alloReadAloudLiveHost?.notify(...args),
+      enumerateResourceSegments: (...args) => window.__alloReadAloudLiveHost?.enumerate(...args),
+      enumerationAuthoritative: true,
       isCancelled: () => window.__alloPrepareReadAloudCancel === true,
     });
   };
@@ -33516,8 +33814,8 @@ const parseTaggedContent = (text) => {
       const bridge = _getReadAloudBridge();
       if (bridge && typeof bridge.reconcile === 'function') {
         Promise.all([
-          bridge.reconcile('reference', { signal: reconcileController && reconcileController.signal, reason: 'resource-hydrate' }),
-          bridge.reconcile('student', { signal: reconcileController && reconcileController.signal, reason: 'resource-hydrate' }),
+          bridge.reconcile('reference', { signal: reconcileController && reconcileController.signal, reason: 'resource-hydrate', pruneAi: !(generatedContent && (generatedContent.readingSupports || generatedContent.adaptedReadingSupports)) }),
+          bridge.reconcile('student', { signal: reconcileController && reconcileController.signal, reason: 'resource-hydrate', pruneAi: !(generatedContent && (generatedContent.readingSupports || generatedContent.adaptedReadingSupports)) }),
         ]).then(([reference, student]) => {
           if (cancelled) return;
           const report = { reference, student };
@@ -35059,9 +35357,10 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
 };
 
   const clearCanvasWorkspaceState = (options = {}) => {
+      setPendingQrAssignmentResource(null);
       cancelActiveProjectLoad();
       cancelActiveFileIntakeOperations('canvas-workspace-clear');
-      invalidateLocalDataHydration();
+      invalidateLocalDataHydration({ preserveStudentEntryLoad: options.preserveStudentEntryLoad === true });
       resetAllMathRuntimeState();
       try { window.__alloBuilderEditedPack = null; } catch (_) {}
       setHistory([]);
@@ -35091,6 +35390,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       setFullPackRun(null); // the pack's status board belongs to this workspace too; null drops its saved envelope
 
       resetCanvasWorkspaceSettings();
+      setStudentResponses({});
       setStudentProgressLog([]);
       setStickers([]);
       setGuidedMode(false);
@@ -35104,6 +35404,13 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       setWordSoundsDailyProgress({ date: new Date().toDateString(), completed: 0, goalMet: false });
       setWordSoundsConfusionPatterns({});
   };
+
+  const hasMeaningfulWordSoundsWorkspace = () =>
+      [wordSoundsHistory, wordSoundsFamilies, wordSoundsAudioLibrary, wordSoundsBadges, phonemeMastery, wordSoundsConfusionPatterns]
+          .some(value => value && typeof value === 'object' && Object.keys(value).length > 0)
+      || Number(wordSoundsDailyProgress?.completed) > 0
+      || wordSoundsDailyProgress?.goalMet === true
+      || Object.values(wordSoundsScore || {}).some(value => typeof value === 'number' && Number.isFinite(value) && value > 0);
 
   const buildCanvasWorkspaceSnapshot = async (workspaceId = canvasRecoveryCurrentIdRef.current) => {
 
@@ -35195,10 +35502,9 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
           }
       };
       const sessionSafeSnapshot = ALLO_WORKSPACE_RECOVERY.stripSessionOnlyAssets(snapshot);
-      if (existing?.assetPolicy === 'text-only') {
-          const explicitRemoval = existing.omittedAssetManifest?.some(item => item?.reason === 'user-remove-media');
-          return ALLO_WORKSPACE_RECOVERY.stripLargeAssets(
-              sessionSafeSnapshot, explicitRemoval ? 'user-remove-media' : 'device-quota');
+      if (existing?.assetPolicy === 'text-only'
+          && existing.omittedAssetManifest?.some(item => item?.reason === 'user-remove-media')) {
+          return ALLO_WORKSPACE_RECOVERY.stripLargeAssets(sessionSafeSnapshot, 'user-remove-media');
       }
       return sessionSafeSnapshot;
   };
@@ -35241,14 +35547,25 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
 
   const getCanvasRecoveryVaultController = async () => {
       if (canvasRecoveryVaultControllerRef.current) return canvasRecoveryVaultControllerRef.current;
-      const deviceStorage = await _alloGetCanvasDeviceStorage();
-      const stack = await _alloGetRecoveryVaultStack();
-      const controller = stack.integration.createController(deviceStorage, {
-          vaultModule: stack.vault,
-          crypto: stack.crypto
-      });
-      canvasRecoveryVaultControllerRef.current = controller;
-      return controller;
+      if (canvasRecoveryVaultControllerInitRef.current) return canvasRecoveryVaultControllerInitRef.current.promise;
+      const request = {};
+      request.promise = (async () => {
+          const deviceStorage = await _alloGetCanvasDeviceStorage();
+          const stack = await _alloGetRecoveryVaultStack();
+          if (canvasRecoveryVaultControllerRef.current) return canvasRecoveryVaultControllerRef.current;
+          const controller = stack.integration.createController(deviceStorage, {
+              vaultModule: stack.vault,
+              crypto: stack.crypto
+          });
+          canvasRecoveryVaultControllerRef.current = controller;
+          return controller;
+      })();
+      canvasRecoveryVaultControllerInitRef.current = request;
+      try {
+          return await request.promise;
+      } finally {
+          if (canvasRecoveryVaultControllerInitRef.current === request) canvasRecoveryVaultControllerInitRef.current = null;
+      }
   };
 
   const emptyCanvasRecoveryVaultView = (status = {}) => ALLO_WORKSPACE_RECOVERY.normalizeStore({
@@ -35746,7 +36063,8 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
           || Object.keys(studentResponses || {}).length > 0
           || (typeof inputText === 'string' && Boolean(inputText.trim()))
           || (typeof sourceTopic === 'string' && Boolean(sourceTopic.trim()))
-          || Boolean(guidedPlanBrief);
+          || Boolean(guidedPlanBrief)
+          || hasMeaningfulWordSoundsWorkspace();
       if (liveStudentEntry || !hasMeaningfulWorkspace) return undefined;
       const saveToken = ++canvasRecoverySaveTokenRef.current;
       const workspaceId = canvasRecoveryCurrentIdRef.current;
@@ -36061,6 +36379,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
     addToast(t('export_status.html_success'), 'success');
   };
   const handleClearHistory = () => {
+    setPendingQrAssignmentResource(null);
     cancelActiveProjectLoad();
     cancelActiveFileIntakeOperations('workspace-clear');
     invalidateLocalDataHydration();
@@ -36363,10 +36682,11 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
             setImportedConceptMastery(prev => ({ ...prev, [key]: { attempts: m.attempts, nickname: m.nickname || null, savedAt: m.savedAt || null } }));
         },
         onProjectLoadStart: () => {
-            invalidateLocalDataHydration();
             if (isCanvas && canvasRecoveryMutationInProgressRef.current) {
                 throw new Error('Another saved-work operation is still running.');
             }
+            setPendingQrAssignmentResource(null);
+            invalidateLocalDataHydration();
             canvasRecoveryImportPreviousIdRef.current = canvasRecoveryCurrentIdRef.current;
             canvasRecoveryCurrentIdRef.current = ALLO_WORKSPACE_RECOVERY.newId();
             if (!isCanvas) {
@@ -36565,14 +36885,20 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   useEffect(() => {
       if (!pendingQrAssignmentResource || isTeacherMode) return;
       const resource = pendingQrAssignmentResource;
+      const openRequest = pendingQrAssignmentOpenRequest;
       const openContext = historyOpenContextRef.current;
       let cancelled = false;
       const openGeneration = pendingQrAssignmentOpenGenerationRef.current;
-      const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current;
+      const isCurrent = () => !cancelled && openGeneration === pendingQrAssignmentOpenGenerationRef.current
+          && pendingQrAssignmentOpenRequestRef.current === openRequest;
       const isContextCurrent = () => {
           if (!isCurrent()) return false;
           const current = historyOpenContextRef.current;
           if (openContext === current) return true;
+          // Removing an unrelated history item leaves this exact pending artifact valid.
+          if (openContext?.values && current?.values
+              && openContext.values.every((value, index) => index === 1 || value === current.values[index])
+              && Array.isArray(current.values[1]) && current.values[1].includes(resource)) return true;
           const hydration = bootHistoryHydrationRef.current;
           return !!hydration && openContext?.values?.[1] === hydration.previous
               && current?.values?.[1] === hydration.current
@@ -36608,7 +36934,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
               const result = handleRestoreView(target, { suppressLiveFollow: true, preservePendingAssignment: true });
               if (result === false) throw new Error('Homework resource was rejected by the opener');
               opened = true;
-              setPendingQrAssignmentResource(current => current === resource ? null : current);
+              setPendingQrAssignmentResource(current => pendingQrAssignmentOpenRequestRef.current === openRequest && current === resource ? null : current);
               return true;
           } catch (error) {
               restoreFailed = true;
@@ -36646,9 +36972,11 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
           cancelled = true;
           window.removeEventListener('alloflow:module-registry-changed', onModuleChange);
       };
-  }, [pendingQrAssignmentResource, isTeacherMode]);
+  }, [pendingQrAssignmentOpenRequest, isTeacherMode]);
   useEffect(() => {
       let cancelled = false;
+      const workspaceGeneration = workspaceReplacementGenerationRef.current;
+      const isCurrentEntry = () => !cancelled && workspaceReplacementGenerationRef.current === workspaceGeneration;
       try {
           const params = new URLSearchParams(window.location.search);
           const assignmentId = _alloCleanQrAssignmentId(params.get('allo_assignment') || '');
@@ -36674,9 +37002,11 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
           const loadAssignment = async () => {
               try {
                   const assignmentUser = await _alloEnsureAuthenticatedUser();
+                  if (!isCurrentEntry()) return;
                   setUser(assignmentUser);
                   const assignmentRef = doc(db, 'artifacts', hostId, 'public', 'data', 'sessions', assignmentId);
                   const snap = await getDoc(assignmentRef);
+                  if (!isCurrentEntry()) return;
                   if (!snap.exists()) throw new Error('Assignment not found');
                   const packet = snap.data() || {};
                   _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment', assignmentId, hostAppId: hostId, workStory: packet && packet.workStory === true });
@@ -36684,10 +37014,11 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
                   const rawResources = Array.isArray(packet.resources) ? packet.resources : [];
                   if (!rawResources.length) throw new Error('Assignment has no resources');
                   const restoredResources = await hydrateSessionAssets(hostId, rawResources);
+                  if (!isCurrentEntry()) return;
                   if (!Array.isArray(restoredResources) || restoredResources.some(item => !item || item.__alloResourceRef || item.__alloResourcesManifestRef)) {
                       throw new Error('Assignment resource assets are unavailable');
                   }
-                  if (cancelled) return;
+                  if (!isCurrentEntry()) return;
                   setHistory(restoredResources);
                   setReceivedDeliveryResources(restoredResources);
                   const firstId = packet.currentResourceId || restoredResources[0]?.id;
@@ -36700,8 +37031,9 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
                   setPendingQrAssignmentResource(firstResource);
                   addToast('Homework loaded: ' + (packet.title || firstResource.title || 'AlloFlow assignment'), 'success');
               } catch (e) {
+                  if (!isCurrentEntry()) return;
                   warnLog('Homework QR load failed:', e);
-                  if (!cancelled) {
+                  if (isCurrentEntry()) {
                       const message = String(e?.message || '').toLowerCase();
                       const code = String(e?.code || '').toLowerCase();
                       const recovery = message.includes('expired')
@@ -36729,6 +37061,8 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   // anonymous devices (e.g. Gemini Canvas-managed Firestore).
   useEffect(() => {
       let cancelled = false;
+      const workspaceGeneration = workspaceReplacementGenerationRef.current;
+      const isCurrentEntry = () => !cancelled && workspaceReplacementGenerationRef.current === workspaceGeneration;
       const encodedPack = _alloReadAlloPackParam();
       if (!encodedPack) return undefined;
       _alloSetQrStudentAiPolicy('pending', { type: 'assignment-pack' }, { clearCredentials: true });
@@ -36744,6 +37078,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       const loadPack = async () => {
           try {
               const text = await _alloDecodeAlloPack(encodedPack);
+              if (!isCurrentEntry()) return;
               const packet = JSON.parse(text || 'null');
               _alloApplyAuthoritativeStudentAiPolicy(packet, { type: 'assignment-pack', workStory: packet && packet.workStory === true });
               if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
@@ -36751,7 +37086,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
                   ? _alloStudentSafeResources(packet.resources)
                   : [];
               if (!rawResources.length) throw new Error('Pack has no resources');
-              if (cancelled) return;
+              if (!isCurrentEntry()) return;
               setHistory(rawResources);
               setReceivedDeliveryResources(rawResources);
               const firstId = packet.currentResourceId || rawResources[0]?.id;
@@ -36759,8 +37094,9 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
               setPendingQrAssignmentResource(firstResource);
               addToast('Homework loaded: ' + (packet.title || firstResource.title || 'AlloFlow assignment'), 'success');
           } catch (e) {
+              if (!isCurrentEntry()) return;
               warnLog('Self-contained homework load failed:', e);
-              if (!cancelled) {
+              if (isCurrentEntry()) {
                   const errorMessage = String(e?.message || '').toLowerCase();
                   const message = e?.code === 'allo/pack-unsupported-browser'
                       ? 'This browser is too old to open compressed homework links. Try another device or browser.'
@@ -36899,12 +37235,15 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       if (!mbStudent) return undefined;
       let cancelled = false;
       let timer = null;
+      let polling = false;
+      let pollAgain = false;
       let errorCount = 0;
       let lastActivity = Date.now();
       let lastAnnounce = 0;
       const stall = _alloMbStallTracker();
       const noteStall = (next) => { if (next !== null) setMbStudentStalled(next); };
       const announce = async () => {
+          if (cancelled) return;
           lastAnnounce = Date.now();
           const presence = { kind: 'student', uid: mbStudent.uid, name: mbNicknameRef.current, hand: mbHandRef.current };
           const dc = mbRtcRef.current?.dc;
@@ -36917,12 +37256,16 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       // Bridge nudge: our own session-doc writes (poll answers, hand signals,
       // roster updates) ping the teacher's channel so their pump pulls now.
       _alloMbSetNudgeSender(() => {
+          if (cancelled) return;
           const dc = mbRtcRef.current?.dc;
           if (dc && dc.readyState === 'open') {
               try { dc.send(JSON.stringify({ kind: 'sdocv' })); } catch (_) {}
           }
       });
       const poll = async () => {
+          if (cancelled) return;
+          if (polling) { pollAgain = true; return; }
+          polling = true;
           try {
               // Fold the session-doc watch list into the poll we already make
               // (one request, not two); the bridge pump idles while this feeds.
@@ -36958,11 +37301,13 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
                       }
                   }
               }
+              if (cancelled) return;
               if (Date.now() - lastAnnounce > 60000) announce().catch(e => warnLog('Mailbox heartbeat failed', e));
           } catch (e) {
               if (cancelled) return;
               const code = String(e?.code || '');
               if (code.includes('no-session') || code.includes('denied')) {
+                  cancelled = true;
                   addToast(mbStudentConnectedRef.current ? 'This live session has ended.' : 'Could not find this live session — it may have ended. Ask your teacher for a new QR code.', 'error');
                   setMbStudent(null);
               setMbJoinError(true);
@@ -36971,14 +37316,24 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
               }
               errorCount = Math.min(errorCount + 1, 3);
               noteStall(stall.fail(mbRtcRef.current?.dc?.readyState === 'open'));
+          } finally {
+              polling = false;
           }
           if (!cancelled) {
               const rtcOpen = mbRtcRef.current?.dc?.readyState === 'open';
               const hidden = typeof document !== 'undefined' && document.hidden;
-              timer = setTimeout(poll, _alloNextPollDelay({ baseMs: rtcOpen ? 8000 : ALLO_MB_POLL_MS, idleMs: Date.now() - lastActivity, errorCount, hidden }));
+              if (timer) clearTimeout(timer);
+              timer = setTimeout(poll, pollAgain ? 50 : _alloNextPollDelay({ baseMs: rtcOpen ? 8000 : ALLO_MB_POLL_MS, idleMs: Date.now() - lastActivity, errorCount, hidden }));
+              pollAgain = false;
           }
       };
-      mbPollNowRef.current = () => { if (!cancelled) { if (timer) clearTimeout(timer); timer = setTimeout(poll, 50); } };
+      const requestPoll = (delay) => {
+          if (cancelled) return;
+          if (polling) { pollAgain = true; return; }
+          if (timer) clearTimeout(timer);
+          timer = setTimeout(poll, delay);
+      };
+      mbPollNowRef.current = () => requestPoll(50);
       const onVisible = () => {
           if (typeof document !== 'undefined' && !document.hidden) mbPollNowRef.current?.();
       };
@@ -37011,13 +37366,15 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       let cancelled = false;
       let retryTimer = null;
       let tries = 0;
+      let activeHolder = null;
       const cleanupPeer = () => {
-          const current = mbRtcRef.current;
+          const current = activeHolder;
+          activeHolder = null;
+          if (mbRtcRef.current === current) mbRtcRef.current = null;
           if (current) {
               try { current.dc?.close(); } catch (_) {}
               try { current.pc?.close(); } catch (_) {}
           }
-          mbRtcRef.current = null;
       };
       // Retry forever with capped backoff (15s → 30s → 60s): a teacher
       // refresh or a phone sleeping through several windows must not strand
@@ -37055,38 +37412,49 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
           if (cancelled) return;
           tries += 1;
           cleanupPeer();
+          let holder = null;
+          const isCurrentPeer = () => !cancelled && activeHolder === holder && mbRtcRef.current === holder;
           try {
               const pc = new RTCPeerConnection(_alloMailboxRtcConfig());
               const dc = pc.createDataChannel('allo');
-              const holder = {
+              holder = {
                   pc,
                   dc,
+                  offerId: Date.now().toString(36) + Math.random().toString(36).slice(2),
                   onSignal: (v) => {
-                      if (!v || v.to !== mbStudent.uid || !v.sdp || v.sdp.type !== 'answer') return;
+                      if (!isCurrentPeer() || !v || v.to !== mbStudent.uid || !v.sdp || v.sdp.type !== 'answer') return;
+                      if (v.offerId != null && v.offerId !== holder.offerId) return;
                       if (pc.signalingState !== 'have-local-offer') return;
                       pc.setRemoteDescription(v.sdp).catch(err => warnLog('RTC answer apply failed', err?.message));
                   },
               };
+              activeHolder = holder;
               mbRtcRef.current = holder;
               dc.onopen = () => {
+                  if (!isCurrentPeer()) return;
                   tries = 0;
                   try { dc.send(JSON.stringify({ kind: 'student', uid: mbStudent.uid, name: mbNicknameRef.current, hand: mbHandRef.current })); } catch (_) {}
               };
               dc.onmessage = (ev) => {
+                  if (!isCurrentPeer()) return;
                   try {
                       const v = JSON.parse(ev.data);
                       applyMbDownPayload(v);
                   } catch (_) {}
               };
-              dc.onclose = () => { if (!cancelled) scheduleRetry(); };
+              dc.onclose = () => { if (isCurrentPeer()) scheduleRetry(); };
               pc.onconnectionstatechange = () => {
-                  if (pc.connectionState === 'failed' && !cancelled) scheduleRetry();
+                  if (pc.connectionState === 'failed' && isCurrentPeer()) scheduleRetry();
               };
-              await pc.setLocalDescription(await pc.createOffer());
+              const offer = await pc.createOffer();
+              if (!isCurrentPeer()) return;
+              await pc.setLocalDescription(offer);
+              if (!isCurrentPeer()) return;
               await _alloWaitIceComplete(pc);
-              if (cancelled) return;
-              await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', uid: mbStudent.uid, pt: mbStudent.participant, c: mbStudent.code, from: mbStudent.uid, box: 'up', v: { kind: 'rtc', uid: mbStudent.uid, sdp: pc.localDescription } });
+              if (!isCurrentPeer()) return;
+              await _alloMailboxCallWithRetry(mbStudent.url, { a: 'send', uid: mbStudent.uid, pt: mbStudent.participant, c: mbStudent.code, from: mbStudent.uid, box: 'up', v: { kind: 'rtc', uid: mbStudent.uid, offerId: holder.offerId, sdp: pc.localDescription } });
           } catch (rtcErr) {
+              if (cancelled || (holder && !isCurrentPeer())) return;
               warnLog('RTC upgrade attempt failed (staying on mailbox polling):', rtcErr?.message);
               scheduleRetry();
           }
@@ -37108,6 +37476,8 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
       setMbHostedAssignment({ url: entry.u, id: entry.id, secret: String(entry.k) });
       setSharedHostedActivity(null);
       let cancelled = false;
+      const workspaceGeneration = workspaceReplacementGenerationRef.current;
+      const isCurrentEntry = () => !cancelled && workspaceReplacementGenerationRef.current === workspaceGeneration;
       _alloSetQrStudentAiPolicy('pending', { type: 'assignment-pack-hosted' }, { clearCredentials: true });
       setHasSelectedMode(true);
       setHasSelectedRole(true);
@@ -37127,13 +37497,13 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
                   {
                       // The effect hook's `cancelled` flag is the unmount signal; throwing
                       // here lands in the existing catch, which already no-ops when cancelled.
-                      assertOk: () => { if (cancelled) throw new Error('cancelled'); },
+                      assertOk: () => { if (!isCurrentEntry()) throw new Error('cancelled'); },
                       onMeta: res => { hostedTitle = res.title || hostedTitle; }
                   }
               );
-              if (cancelled) return;
+              if (!isCurrentEntry()) return;
               const packet = JSON.parse(await _alloDecodeAlloPack(assembled) || 'null');
-              if (cancelled) return;
+              if (!isCurrentEntry()) return;
               if (_alloAssignmentIsExpired(packet)) throw new Error('Assignment expired');
               const sharedActivity = (Array.isArray(packet?.sharedActivities) ? packet.sharedActivities : []).find(candidate => (
                   candidate
@@ -37166,9 +37536,10 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
               if (!rawResources.length) setShowSharedHostedActivity(true);
               addToast('Homework loaded: ' + (packet.title || hostedTitle || 'AlloFlow assignment'), 'success');
           } catch (e) {
+              if (!isCurrentEntry()) return;
               warnLog('Hosted homework load failed:', e);
-              if (!cancelled) setSharedHostedActivity(null);
-              if (!cancelled) addToast('Could not load this homework from the class mailbox. Ask your teacher for a new QR.', 'error');
+              if (isCurrentEntry()) setSharedHostedActivity(null);
+              if (isCurrentEntry()) addToast('Could not load this homework from the class mailbox. Ask your teacher for a new QR.', 'error');
           }
       };
       load();
@@ -38393,7 +38764,7 @@ const _alloNormalizeResearchSettings = function normalizeResearchSettings(value)
   // shared microphone owner first (including dictation/persona voice surfaces),
   // stop spoken output, close tutorial chrome, and request a fresh Canvas
   // checkpoint. The workspace and selected role stay mounted behind LaunchPad.
-  const handleReturnToStart = (...__a) => requestReadingSupportTransition(() => _alloHostHandlers().handleReturnToStart(...__a));
+  const handleReturnToStart = (...__a) => _alloHostHandlers().handleReturnToStart(...__a);
   // The chat's delivery path to the conversational UdlChat module. Split out so
   // handleSendUDLMessage (below) can reach it after the command preview/confirm
   // step, and so a "just chat" reply can re-send the original text as normal chat.
@@ -43943,6 +44314,7 @@ const handleSubmitOrganizerReflection = async (reflection) => {
             else if (toolId === 'announcements') { if (typeof window.__alloLazyFamilyAnnouncements === 'function') { try { window.__alloLazyFamilyAnnouncements(); } catch (_) {} } setIsFamilyAnnouncementsOpen(true); }
             else if (toolId === 'mtss') { if (typeof window.__alloLazyMtssTriage === 'function') { try { window.__alloLazyMtssTriage(); } catch (_) {} } setIsMtssTriageOpen(true); }
             else if (toolId === 'diagnosisEligibility') { if (typeof window.__alloLazyDiagnosisEligibility === 'function') { try { window.__alloLazyDiagnosisEligibility(); } catch (_) {} } setDiagnosisEligibilityFocusSection(null); setIsDiagnosisEligibilityOpen(true); }
+            else if (toolId === 'maineSldPractice') { if (typeof window.__alloLazyMaineSldPractice === 'function') { try { window.__alloLazyMaineSldPractice(); } catch (_) {} } setMaineSldPracticeFromLeadership(true); setIsMaineSldPracticeOpen(true); }
           },
         })}
       </CDNModuleGate>
@@ -43952,6 +44324,28 @@ const handleSubmitOrganizerReflection = async (reflection) => {
           onClose: () => { setIsEducatorEvaluationOpen(false); _alloHubToolClosed(); },
           t,
           addToast,
+        })}
+      </CDNModuleGate>
+      <CDNModuleGate moduleKey="MaineSldPractice.MaineSldPracticePanel" loaderName="__alloLazyMaineSldPractice" modalZIndex={270} isOpen={isMaineSldPracticeOpen} onClose={() => setIsMaineSldPracticeOpen(false)} icon="📚" displayName="Maine SLD Case Lab" t={t}>
+        {(MaineSldPracticePanel) => React.createElement(MaineSldPracticePanel, {
+          isOpen: true,
+          onClose: () => setIsMaineSldPracticeOpen(false),
+          onBack: () => {
+            setIsMaineSldPracticeOpen(false);
+            _alloEducatorAccessCodeSettled().then(() => {
+              if (!maineSldPracticeFromLeadership && _alloEducatorAccessCodeRequired()) {
+                setPendingRole('maine_sld_leadership');
+                setIsGateOpen(true);
+              } else {
+                setIsTeacherMode(true);
+                if (typeof window.__alloLazyAdminHub === 'function') { try { window.__alloLazyAdminHub(); } catch (_) {} }
+                setIsAdminHubOpen(true);
+              }
+            });
+          },
+          theme,
+          t,
+          deepLinkBase: 'https://alloflow-cdn.pages.dev/app/?tool=maine-sld-practice',
         })}
       </CDNModuleGate>
       <CDNModuleGate moduleKey="DiagnosisEligibility.DiagnosisEligibilityPanel" isOpen={isDiagnosisEligibilityOpen} onClose={() => { setIsDiagnosisEligibilityOpen(false); setDiagnosisEligibilityFocusSection(null); }} icon={'\uD83E\uDDE9'} displayName="Diagnosis, Evaluation & School Eligibility" t={t}>

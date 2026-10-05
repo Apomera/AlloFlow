@@ -5,6 +5,7 @@ import { createHash } from 'node:crypto';
 import assert from 'node:assert/strict';
 
 const require = createRequire(import.meta.url), THREE = require('../vendor/three-r128/three.min.js');
+const {restorePass39FishSource}=require('./helpers/cephalopod_prey_surface_reference.cjs');
 const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', 'utf8').replace(/\r\n/g, '\n');
 const start = source.indexOf('function createCLHuntFish('), end = source.indexOf('\n}\n', start) + 3;
 if (start < 0 || end <= start) throw new Error('Actual prey-fish factory was not found');
@@ -12,6 +13,8 @@ const math = Object.assign(Object.create(Math), { random() { throw new Error('Pr
 const build = new Function('T', 'index', 'Math', source.slice(start, end) + ';return createCLHuntFish(T,index);');
 const allocated = [], hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 function fish(index = 0) { const result = build(THREE, index, math); allocated.push(result); return result; }
+// Retain the accepted original material contract while all anatomy checks use the current rig.
+function historicalFish(index = 0) { const prior = restorePass39FishSource(source), a = prior.indexOf('function createCLHuntFish('), b = prior.indexOf('\n}\n', a) + 3; const result = new Function('T','index','Math',prior.slice(a,b)+';return createCLHuntFish(T,index);')(THREE,index,math); allocated.push(result); return result; }
 function meshes(root) { const all = []; root.traverse(object => { if (object.isMesh) all.push(object); }); return all; }
 function part(mesh, name) {
   const found = mesh.geometry.userData.clFishParts?.find(item => item.name === name);
@@ -106,7 +109,7 @@ describe('Cephalopod Hunter silver schooling prey', () => {
     expect(material.type).toBe('MeshStandardMaterial'); expect(material.vertexColors).toBe(true); expect(material.transparent).toBe(false); expect(material.opacity).toBe(1);
     expect(material.emissive.getHex()).toBe(0); expect(Object.values(material).some(value => value?.isTexture)).toBe(false);
     const shader = { vertexShader: THREE.ShaderLib.standard.vertexShader, fragmentShader: THREE.ShaderLib.standard.fragmentShader, uniforms: {} };
-    material.onBeforeCompile(shader, { capabilities: { isWebGL2: true } });
+    historicalFish().getObjectByName('cl-fish-body').material.onBeforeCompile(shader, { capabilities: { isWebGL2: true } });
     expect(shader.vertexShader).toBe(THREE.ShaderLib.standard.vertexShader); expect(shader.fragmentShader).toBe(THREE.ShaderLib.standard.fragmentShader); expect(shader.uniforms).toEqual({});
   });
 

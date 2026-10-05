@@ -1,0 +1,41 @@
+{
+  "nodeVersion": "v24.11.1",
+  "vitestVersion": "4.1.5",
+  "initialForksRun": "Worker start timeouts; no assertions ran.",
+  "threadRetry": "Worker start timeouts; no assertions ran.",
+  "nextRun": {
+    "pool": "threads",
+    "maxWorkers": 1,
+    "workerStartResponseTimeoutMs": 300000,
+    "overallWorkerStartTimeoutMs": 360000,
+    "loader": "reports/sky-lab-tidal-forcing-2026-10-01/startup-timeout-loader.mjs",
+    "assertionsModified": false,
+    "installedDependenciesModified": false
+  },
+  "basis": [
+    "Installed Vitest cli-api.Cjt90eJu.js START_TIMEOUT=6e4 and WORKER_START_TIMEOUT=9e4.",
+    "https://github.com/vitest-dev/vitest/issues/11363",
+    "https://vitest.dev/config/pool"
+  ],
+  "completedInitialRun": {
+    "total": 164,
+    "passed": 162,
+    "failed": 2,
+    "regressionCasesPassed": 119
+  },
+  "assertionCorrections": [
+    "Compare zero solar forcing without distinguishing signed zero.",
+    "Read the parsed document body text and check all five preserved topic buttons."
+  ],
+  "tideRerun": {
+    "total": 45,
+    "passed": 45,
+    "failed": 0
+  },
+  "pointerCorrection": {
+    "basis": "https://www.w3.org/TR/pointerevents3/#the-button-property",
+    "change": "Primary movement uses buttons=1 with button=-1; the down handler retains the primary-button guard.",
+    "verification": "New focused event check plus an actual browser mouse drag."
+  },
+  "discardedFilterRun": "A split test-name argument selected unrelated movement files; it ran no accepted assertions."
+}

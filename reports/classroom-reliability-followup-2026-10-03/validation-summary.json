@@ -1,0 +1,197 @@
+{
+  "passed": true,
+  "completedAt": "2026-10-03T17:10:30.766Z",
+  "passedUnitCases": 352,
+  "configuredTestFiles": 21,
+  "caseIdentity": "Distinct source test task by file and ordinal; repeated parameterized display titles are allowed; no rerun counted twice.",
+  "runs": [
+    {
+      "file": "isolated/0-attempt-1.json",
+      "passed": 14,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/1-attempt-1.json",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/2-attempt-1.json",
+      "passed": 16,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/3-attempt-1.json",
+      "passed": 20,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/4-attempt-1.json",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/5-attempt-1.json",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/6-attempt-1.json",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/7-attempt-1.json",
+      "passed": 18,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/8-attempt-1.json",
+      "passed": 4,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/9-attempt-1.json",
+      "passed": 36,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/10-attempt-1.json",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/11-attempt-1.json",
+      "passed": 2,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/12-attempt-1.json",
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/13-attempt-1.json",
+      "passed": 5,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/14-attempt-1.json",
+      "passed": 7,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/15-attempt-1.json",
+      "passed": 31,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/16-attempt-1.json",
+      "passed": 46,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/17-attempt-1.json",
+      "passed": 38,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "isolated/18-attempt-1.json",
+      "passed": 45,
+      "failed": 0,
+      "skipped": 0
+    },
+    {
+      "file": "ack-final-unit.json",
+      "passed": 24,
+      "failed": 0,
+      "skipped": 0
+    }
+  ],
+  "candidateSha256": "582da40a6d95faa96dcf90ee63c5ce0466e58a1ea71e37549a6253ec76de0fc5",
+  "head": "55787e4fba8779c0e35968453626a67de3ec51c8",
+  "selectedInputs": 124,
+  "parityPairs": 17,
+  "unchanged": true,
+  "browserSourceMatches": [
+    "dev-tools/studio_delivery_e2e.cjs",
+    "AlloFlowANTI.txt",
+    "host_handlers_source.jsx",
+    "utils_pure_module.js",
+    "memory_aid_module.js",
+    "applied_challenge_module.js",
+    "studio_response_module.js",
+    "resource_read_aloud_module.js",
+    "karaoke_audio_store_module.js",
+    "read_aloud_audio_service_module.js",
+    "live_aac_module.js",
+    "shared_activity_module.js",
+    "session_transport_module.js",
+    "desktop/web-app/node_modules/react/umd/react.development.js",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js",
+    "ui_strings.js",
+    "desktop/web-app/tailwind.config.js",
+    "desktop/web-app/src/index.css",
+    "allo_device_storage_module.js",
+    "storage_bridge.html",
+    "reports/classroom-reliability-followup-2026-10-03/accessibility/bridge-acceptance.cjs",
+    "desktop/web-app/src/AlloFlowANTI.txt",
+    "desktop/web-app/src/App.jsx"
+  ],
+  "supplementalTestedSources": [
+    {
+      "file": "ui_strings.js",
+      "sha256": "234c07173fb67ebfdeaa4d2cb168ce89e4128c6b03fd31ddf22004ec9309737c",
+      "proof": "Native runner before/after guard plus current byte match"
+    }
+  ],
+  "nativeLearner": {
+    "strictVerifiedReadback": true,
+    "resourceCount": 2,
+    "actualHydration": true,
+    "endedClips": 22,
+    "learnerSynthesisCalls": 0
+  },
+  "nativeBridge": {
+    "draftOnlyWorkspaces": 5,
+    "cappedMediaIntentRetained": true,
+    "freshClientExactRestore": true,
+    "recoverySnapshots": 8
+  },
+  "nativeZoom": {
+    "status": "blocked",
+    "baseline": {
+      "dpr": 1,
+      "width": 1280
+    },
+    "measured": {
+      "dpr": 1,
+      "width": 1280
+    },
+    "limitation": "Chrome shortcuts are browser-dependent in automation; unchanged metrics are blocked, never a native-zoom pass."
+  },
+  "manualAssistiveTechnology": "not run",
+  "currentCI": "unverified",
+  "fullAppBuild": "not run",
+  "deployed": false,
+  "committed": false,
+  "scope": "Selected current local bytes, actual-source units, isolated native Chromium/IDB/iframe workflows. Does not establish hosted Google Canvas, physical device restart, semantic narration or manual accessibility certification."
+}

@@ -1,0 +1,50 @@
+{
+  "pass": true,
+  "feature": "Manual carry, lower, lift and release water thermometer with two-check comparison and keyboard equivalent",
+  "unit": {
+    "files": 47,
+    "passed": 543,
+    "failed": 0
+  },
+  "browserScenarios": 39,
+  "accessibilityScans": 9,
+  "accessibilityViolations": 0,
+  "suites": [
+    {
+      "name": "Thermometer",
+      "report": "browser/thermometer-results.json",
+      "browserScenarios": 11,
+      "accessibilityScans": 3,
+      "violations": 0
+    },
+    {
+      "name": "Dry pasta regression",
+      "report": "pasta-regression/pasta-entry-results.json",
+      "browserScenarios": 17,
+      "accessibilityScans": 3,
+      "violations": 0
+    },
+    {
+      "name": "Pot experiment regression",
+      "report": "pot-regression/pot-lab-results.json",
+      "browserScenarios": 11,
+      "accessibilityScans": 3,
+      "violations": 0
+    }
+  ],
+  "runtimeFiles": 59,
+  "parsedJavaScriptFiles": 47,
+  "exactMirrors": true,
+  "servedSourceExact": true,
+  "kitchenStagedFiles": [],
+  "commitCreated": false,
+  "preview": "http://127.0.0.1:53061/stem_lab/kitchen_studio/recipe_lab.html?v=20261002-thermometer",
+  "screenshots": [
+    "browser/desktop-thermometer-rest.png",
+    "browser/desktop-thermometer-immersed.png",
+    "browser/desktop-thermometer-comparison.png",
+    "browser/phone-thermometer-immersed.png",
+    "browser/phone-thermometer-reading.png",
+    "browser/compact-keyboard-thermometer.png"
+  ]
+}

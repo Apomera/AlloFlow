@@ -1,0 +1,14 @@
+# Independent pass 35 candidate review
+
+Reviewed candidate SHA256 `5c12f16227e6e002486a9cd9f801729636664bca0b64e08a5e286c55b65ef58c` against source `2ec075216538b88288d2e632525913d9ce830d3ff15ffd8e47757b190ea2465c`. Each of the eight guard replacements has exactly one original occurrence, and reconstructing only those replacements produces the candidate exactly. No repository changes or candidate/test execution performed.
+
+No must-fix found in the eight patches by inspection. Accepted-strike contact at 200 ms, max reach through 260 ms, recovery/readiness at 650 ms, capture predicates, root movement, and other species remain owned by their existing code. The new 40 ms preparation and its release are smooth at phase boundaries. Crown gathering/opening, mantle cross-section brace, and free fin roll receive finite clamped envelopes only with a finite aim and normal motion; nonfinite fields independently become zero. Missing envelopes preserve the legacy direct reach. At 650 ms all added signals are zero and visual aim is cleared. The added code updates existing geometry and introduces no random calls or resources.
+
+Remaining visual question: 40 ms preparation occupies roughly two or three ordinary 60 Hz frames, so its readability must be judged from actual normal-speed native motion. The proposal is modest coordination, with contraction rather than axial recoil; do not describe it as a dramatic body lunge or an established visual improvement before candidate captures are reviewed. The full spatial curve/cup motion still needs dense geometry coverage and native comparison.
+
+Proposed tests:
+
+- `pass35-squid-strike-coordination.test.js.proposal` -> `tests/cephalopodlab_squid_strike_coordination.test.js`. Bounded production clock+rig tests verify preparation/opening by measured geometry, transformed distal contact and actual terminal tip, 131-sample launch/recovery continuity, cup orientation, exact 650 ms equality with a same-time/no-strike swim control, resource reuse, actual fin seam width ratio and preserved span length, and absent/malformed/partial envelopes, invalid/missing aim, reduced motion, and representative other species.
+- `pass35-squid-strike-clock-additions.js.proposal` contains two additions for the existing clock suite. Also switch its source read to honor `CEPHALOPOD_MODEL_SOURCE`, matching existing geometry suites. These assert the product's fixed contact/recovery boundaries and meal isolation without copying envelope equations.
+
+These proposals have not been executed or calibrated against measured candidate results. Root should run them against both the candidate and relevant controlled faults. Failures in temporal or orientation criteria require investigation; geometric acceptance bounds should change only with recorded measurements and a clear reason. Existing native directed-strike tests still establish real capture/selection/pause behavior; CPU rendered contact alone does not prove gameplay capture.

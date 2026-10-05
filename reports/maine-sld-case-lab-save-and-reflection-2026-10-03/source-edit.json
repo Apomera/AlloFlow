@@ -1,0 +1,25 @@
+{
+  "editedAt": "2026-10-03T18:44:00.907549+00:00",
+  "beforeSha256": "0977f3f47dbc6a9f0de837eca298a1ecfcea201a852d3a39e93d3acf9ef59329",
+  "afterSha256": "6c59be34f6c400164b12093f8c5b54380c97212c3356f0e61cdf36891488f741",
+  "worksheetSchemaPreserved": true,
+  "printFunctionPrintCssSharedResponseLabelPreserved": true,
+  "caseDataCoreBuilderPreserved": true,
+  "availabilityRefIsTransient": true,
+  "singleAnnouncementOwner": true,
+  "noHostSourceWritesYet": true,
+  "moduleInstallBaselineSha256": "338944e463ff7f0cd48a4c5e83188ba8f2537af467adbd0a8c38d3ce0afec863",
+  "semanticReviewCorrection": {
+    "changedAt": "2026-10-03T18:49:43.781089+00:00",
+    "groupRoleAdded": true,
+    "announcementOrStorageBehaviorChanged": false,
+    "priorCandidatePreserved": true
+  },
+  "layoutReviewCorrection": {
+    "changedAt": "2026-10-03T19:43:54.702925+00:00",
+    "reason": "An actual late-quota landscape capture clipped 9.969px from the active textarea bottom after warning insertion.",
+    "behavior": "On failed-saving transition only, minimally scroll the content area to keep its active writing control and focus ring visible, without changing focus or selection.",
+    "priorPassedCandidatePreserved": true,
+    "focusMarginPx": 7
+  }
+}

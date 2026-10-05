@@ -1,0 +1,41 @@
+{
+  "startedAt": "2026-10-04T02:25:56.381Z",
+  "checks": [
+    {
+      "name": "desktop: empty world has explicit unavailable print action and native Enter stays",
+      "status": "pass",
+      "evidence": {
+        "finderStayedOpen": true,
+        "blocksUnchanged": true
+      }
+    },
+    {
+      "name": "desktop: placing a block enables the live action and Enter focuses it without launching",
+      "status": "pass",
+      "evidence": {
+        "focus": "Send to Print Lab",
+        "worldRetained": true,
+        "runtimeErrors": 0
+      }
+    },
+    {
+      "name": "phone: empty world has explicit unavailable print action and native Enter stays",
+      "status": "pass",
+      "evidence": {
+        "finderStayedOpen": true,
+        "blocksUnchanged": true
+      }
+    },
+    {
+      "name": "phone: placing a block enables the live action and Enter focuses it without launching",
+      "status": "pass",
+      "evidence": {
+        "focus": "Send to Print Lab",
+        "worldRetained": true,
+        "runtimeErrors": 0
+      }
+    }
+  ],
+  "failures": [],
+  "completedAt": "2026-10-04T02:26:57.315Z"
+}

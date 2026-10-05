@@ -1,0 +1,31 @@
+{
+  "checks": [
+    "The thermometer requires water; opening its notebook and close view creates no cooking action or reading.",
+    "Carry-only, incomplete immersion and sideways probe movements leave no thermometer reading and no cooking changes.",
+    "Actual release coordinates and Escape are checked, so a preview or previously completed lift cannot create a stale reading.",
+    "A full native lower-lift-release keeps one exact modeled reading; direct pickup from another tool preserves camera, layout and cooking state.",
+    "Two exact manual checks show that a dial change alone leaves water temperature fixed, while an actual shared-clock step changes it.",
+    "Equivalent arrow-key immersion requires the complete cycle, prevents duplicate capture and resets checks in a fresh cook.",
+    "A real phone carry, immersion, lift and release reads the hot four-serving pot without advancing either vessel.",
+    "Touch cancellation, blur, state changes and resize return the probe without leaving stray readings.",
+    "The probe remains interactive in compact text view with arrow keys, readable comparison cards and forced-color accessibility.",
+    "Finished and replay cooks keep existing observation UI available while new manual temperature checks are locked.",
+    "Graphics loss cancels the held probe and preserves the full keyboard observation cycle."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop thermometer",
+      "violations": []
+    },
+    {
+      "name": "Phone thermometer",
+      "violations": []
+    },
+    {
+      "name": "320px forced-colors text thermometer",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

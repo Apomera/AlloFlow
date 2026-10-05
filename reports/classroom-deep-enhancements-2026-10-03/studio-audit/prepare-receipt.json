@@ -1,0 +1,17 @@
+{
+  "mode": "report-local-prepare-only",
+  "preparedAt": "2026-10-04T03:15:07.264Z",
+  "canonicalPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\studio_response_module.js",
+  "mirrorPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\public\\studio_response_module.js",
+  "originalSha256": "3e9f72bf73832605fc68993f7eb5be663b14a0a696240ec39950bba1b66c7cb5",
+  "candidateSha256": "9277bb543b6614e1d819fef6ca0586081f37c75dfc5fcb1d56c746c75f475f23",
+  "sourceEol": "LF",
+  "canonicalPublicExact": true,
+  "substitutions": 2,
+  "uniqueBeforeAfterAnchors": true,
+  "reverseExact": true,
+  "syntaxParsedWithoutExecution": true,
+  "beforePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\source-before\\studio_response_module.js",
+  "candidatePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\candidate\\studio_response_module.js",
+  "operationsPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\restore-operations.json"
+}

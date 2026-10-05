@@ -10,7 +10,7 @@ beforeEach(() => {
 });
 
 describe('Beehive Beekeeper event impact forecast', () => {
-  it('renders applied event changes as an accessible visual prediction check', () => {
+  it('distinguishes preset effects from unavailable daily readings in an older event', () => {
     const html = renderTool('beehive', { beehive: {
       viewMode: 'beekeeper',
       activeEvent: {
@@ -24,19 +24,20 @@ describe('Beehive Beekeeper event impact forecast', () => {
     } });
 
     expect(html).toContain('data-beehive-event-forecast="true"');
-    expect(html).toContain('Observed event impact');
-    expect(html).toContain('These modeled changes were applied when the event fired');
+    expect(html).toContain('Recorded day change');
+    expect(html).toContain('Daily readings were not recorded for this event');
+    expect(html).toContain('These are model inputs, not measured changes');
     expect(html).toContain('data-event-impact="workers"');
     expect(html).toContain('data-event-impact="honey"');
     expect(html).toContain('data-event-impact="morale"');
-    expect(html).toContain('Risk / cost');
-    expect(html).toContain('Prediction check: what mechanism explains the largest worker force change?');
+    expect(html).toContain('Evidence check:');
+    expect(html).not.toContain('largest worker force change');
   });
 
   it('keeps the impact metrics labelled for screen readers', () => {
-    expect(source).toContain(`'aria-label': __alloT('stem.beehive.a11y_observed_event_impact_metrics', 'Observed event impact metrics')`);
-    expect(source).toContain("'aria-labelledby': 'beehive-event-forecast-title'");
-    expect(source).toContain("'aria-describedby': 'beehive-event-forecast-prompt'");
+    expect(source).toContain("'aria-label': 'Preset event effects'");
+    expect(source).toContain("'aria-labelledby': titleId");
+    expect(source).toContain("'aria-describedby': promptId");
     expect(source).toContain("'data-beehive-event-prompt': 'true'");
   });
 });

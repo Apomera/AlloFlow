@@ -1,0 +1,132 @@
+{
+  "status": "passed",
+  "completedAt": "2026-10-04T03:39:32.022Z",
+  "focusedChecks": 64,
+  "existingRegressionChecks": 111,
+  "totalDistinctChecks": 175,
+  "failedFinalChecks": 0,
+  "skippedFinalChecks": 0,
+  "focused": [
+    {
+      "name": "Student RTC ownership and offer correlation",
+      "file": "student-current.json",
+      "checks": 14,
+      "passed": 14
+    },
+    {
+      "name": "Teacher RTC lifecycle and welcome delivery",
+      "file": "connection-audit/current-final.json",
+      "checks": 25,
+      "passed": 25
+    },
+    {
+      "name": "Student polling, terminal retirement and drain cancellation",
+      "file": "student-poll-current.json",
+      "checks": 13,
+      "passed": 13
+    },
+    {
+      "name": "Fresh workspace response isolation",
+      "file": "responses-current.json",
+      "checks": 3,
+      "passed": 3
+    },
+    {
+      "name": "Studio restore attempt ownership",
+      "file": "studio-audit/current-results.json",
+      "checks": 9,
+      "passed": 9
+    }
+  ],
+  "existingFiles": [
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/class_mailbox.test.js",
+      "checks": 46,
+      "passed": true
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/fix0928_studio_feedback_kept.test.js",
+      "checks": 7,
+      "passed": true
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/session_transport.test.js",
+      "checks": 45,
+      "passed": true
+    },
+    {
+      "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/studio_response_boundary.test.js",
+      "checks": 13,
+      "passed": true
+    }
+  ],
+  "baseline": [
+    {
+      "file": "student-baseline.json",
+      "total": 14,
+      "passed": 2,
+      "failed": 12
+    },
+    {
+      "file": "connection-audit/baseline-final.json",
+      "total": 25,
+      "passed": 5,
+      "failed": 20
+    },
+    {
+      "file": "student-poll-baseline.json",
+      "total": 13,
+      "passed": 6,
+      "failed": 7
+    },
+    {
+      "file": "responses-baseline.json",
+      "total": 3,
+      "passed": 1,
+      "failed": 2
+    },
+    {
+      "file": "studio-audit/baseline-results.json",
+      "total": 9,
+      "passed": 5,
+      "failed": 4
+    }
+  ],
+  "browserWorkflows": [
+    {
+      "name": "Native WebRTC reconnect and wake coalescing",
+      "file": "native-rtc.json",
+      "passed": true
+    },
+    {
+      "name": "Studio save, delivery, reload, media and submission",
+      "file": "studio-workflow/report.json",
+      "passed": true
+    }
+  ],
+  "studioBrowserInputs": 18,
+  "studioBrowserCurrentMatchingInputs": 17,
+  "externalInputDrift": [
+    {
+      "file": "ui_strings.js",
+      "testedSha256": "8af7b197077d424c1c38c0c9bfd6758cfc3778c79ce703581d3b77449b5ea96c",
+      "currentSha256": "9a6cef904b47294fbb2be8413b62bb05d4f3e8514ed20700175b1068227d1f7a",
+      "scope": "Outside this pass; browser results retain the tested locale snapshot. Later locale bytes were not browser tested."
+    }
+  ],
+  "frozenFocusedInputs": 12,
+  "consistencyFile": "consistency.json",
+  "studioPin": "9277bb54",
+  "sourceMirrors": true,
+  "runtimeMirrors": true,
+  "exactReversePreservation": true,
+  "limitations": {
+    "fullAppShell": false,
+    "remoteMailboxOrWAN": false,
+    "nativeZoom": "blocked",
+    "manualAssistiveTechnology": false,
+    "fullRepositorySuite": false
+  },
+  "deployment": false,
+  "committed": false
+}

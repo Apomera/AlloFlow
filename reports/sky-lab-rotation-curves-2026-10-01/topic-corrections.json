@@ -1,0 +1,20 @@
+{
+  "old": {
+    "vera_rubin_kent_ford_1970s_measured_ho": "Vera Rubin + Kent Ford (1970s) measured how fast stars orbit at different distances from the centers of spiral galaxies. Newtonian gravity predicts: the further out, the slower the orbit (like outer planets in the Solar System). Instead they found: orbital speeds stay flat or rise even at huge radii. The only explanations are (a) there is far more mass than we can see, distributed in a roughly spherical \"halo\" extending well beyond the visible disk, or (b) gravity itself behaves differently on galactic scales. The first option, dark matter, fits more data with fewer ad-hoc fixes.",
+    "about_5_of_the_universe_is_ordinary_ma": "About 5% of the universe is ordinary matter (atoms, including everything we have ever directly studied — stars, planets, you). About 27% is \"dark matter,\" some unknown particle that gravitates but does not emit, absorb, or scatter light at any wavelength we can detect. About 68% is \"dark energy,\" whatever is causing space itself to expand faster + faster. The names are placeholders for our ignorance.",
+    "the_cosmic_microwave_background_has_ti": "The cosmic microwave background has tiny temperature fluctuations (~1 part in 100,000) — and their statistical pattern (the angular power spectrum, mapped by WMAP + Planck) shows a series of peaks. The relative heights of those peaks encode the recipe of the early universe. The fit gives: ~5% ordinary (baryonic) matter, ~27% dark matter, ~68% dark energy. This is independent of the galaxy + cluster evidence and agrees almost exactly. Three completely different observations (rotation, lensing, CMB) converge on the same answer."
+  },
+  "new": {
+    "vera_rubin_kent_ford_1970s_measured_ho": "Rubin, Ford and other observers established extended rotation curves for spiral galaxies. A compact central mass gives circular speed proportional to r⁻¹ᐟ² far outside it. A galaxy has distributed stars and gas, so its expected curve must use their spatial mass profiles. Many measured outer speeds exceed the Newtonian stars-and-gas contribution for plausible stellar masses. Rotation curves constrain the gravitational field; interpreting the difference as a dark halo depends on the mass model and gravity assumptions.",
+    "about_5_of_the_universe_is_ordinary_ma": "In the Planck 2018 base ΛCDM interpretation, the present-day cosmic energy budget is approximately 5% ordinary matter, 27% dark matter and 68% dark energy. These are inferred cosmological density fractions. They describe today’s universe; they are not the mixture at recombination or the mass fractions of an individual galaxy.",
+    "the_cosmic_microwave_background_has_ti": "The CMB temperature and polarization patterns contain acoustic peaks. Cosmological models connect those patterns to baryon density, dark-matter density, geometry and other parameters. Planck’s base ΛCDM analysis infers a present-day budget of roughly 5% ordinary matter, 27% dark matter and 68% dark energy. The inference uses a model of cosmic evolution; the CMB does not directly observe that present-day mixture."
+  },
+  "caveat": {
+    "old": "caveat: 'The CMB recipe is for the early universe (380,000 years after the Big Bang). It does not directly tell us what dark matter IS — only that something gravitating but not radiating must be there. The particle nature is still unknown.'",
+    "new": "caveat: 'The quoted density fractions refer to the present epoch under base ΛCDM. Earlier fractions differ because matter, radiation and dark energy evolve differently with expansion. CMB constraints do not identify the microscopic nature of dark matter.'"
+  },
+  "bar": {
+    "old": "width: '5%', minWidth: 10, background: '#38bdf8'",
+    "new": "width: '5%', background: '#38bdf8'"
+  }
+}

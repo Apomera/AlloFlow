@@ -1,0 +1,64 @@
+{
+  "selection": {
+    "metricId": "progress",
+    "speciesId": "oyster"
+  },
+  "helper": {
+    "metric": {
+      "id": "progress",
+      "label": "Suitable-growth progress",
+      "unit": "%",
+      "deltaUnit": " percentage points",
+      "max": 100,
+      "speciesOnly": true,
+      "speciesId": "oyster",
+      "organism": {
+        "id": "oyster",
+        "name": "Eastern oyster",
+        "sci": "Crassostrea virginica",
+        "icon": "🦪",
+        "group": "Filter feeder",
+        "role": "filter",
+        "systems": [
+          "longline",
+          "bottom"
+        ],
+        "temp": [
+          5,
+          25
+        ],
+        "salinity": [
+          8,
+          35
+        ],
+        "minDO": 5,
+        "load": 1,
+        "waste": 0.25,
+        "uptake": 0,
+        "filter": 1.4,
+        "habitat": 0.8,
+        "detail": "Filters particles; clustered shells add habitat complexity."
+      }
+    },
+    "state": "unavailable",
+    "validMonths": 0,
+    "low": null,
+    "high": null,
+    "comparison": {
+      "state": "unavailable",
+      "validMonths": 0,
+      "magnitude": null,
+      "months": []
+    }
+  },
+  "independent": {
+    "validMonths": 0,
+    "low": null,
+    "high": null,
+    "comparison": {
+      "validMonths": 0,
+      "magnitude": null,
+      "months": []
+    }
+  }
+}

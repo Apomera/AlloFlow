@@ -1,0 +1,16 @@
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict'),crypto=require('node:crypto'),vm=require('node:vm'),{execFileSync}=require('node:child_process');
+const root=path.resolve(__dirname,'../..'),hash=value=>crypto.createHash('sha256').update(value).digest('hex'),read=file=>JSON.parse(fs.readFileSync(path.join(__dirname,file)));
+const proof=read('source-changes.json'),source=fs.readFileSync(path.join(root,'stem_lab/stem_tool_circuit.js'),'utf8');
+assert.equal(hash(source),'4228b377ea77e58ab31f06e562196a523c802f829ebb7b2e7f381b618b1d6583');assert.equal(hash(source),proof.sourceSha256);assert.equal(fs.readFileSync(path.join(root,'desktop/web-app/public/stem_lab/stem_tool_circuit.js'),'utf8'),source);new vm.Script(source);
+let before=source;for(const edit of proof.edits.slice().reverse()){assert.equal(before.split(edit.after).length,2);before=before.replace(edit.after,edit.before);}assert.equal(hash(before),proof.baselineSha256);assert.equal(proof.baselineSha256,'9b43c0d42971a646ec379e2faca8a4eeb57584fdbe289ebd6cdd079f623f9862');
+const regression=read('regression.json'),browser=read('browser-results.json');
+assert.equal(regression.success,true);assert.equal(regression.numPassedTests,114);assert.equal(regression.numFailedTests,0);assert.equal(regression.numPendingTests,0);assert.equal(regression.testResults.length,5);
+assert.equal(regression.testResults.find(file=>file.name.endsWith('circuit_value_entry.test.js')).assertionResults.length,17);
+assert.equal(browser.sourceSha256,hash(source));assert.equal(browser.scriptSha256,hash(fs.readFileSync(path.join(__dirname,'browser-check.cjs'))));assert.equal(browser.passed,true);assert.equal(browser.browserClosed,true);assert.deepEqual(browser.errors,[]);assert.equal(browser.views.length,7);assert.equal(browser.workflows.length,2);
+for(const view of browser.views){assert.deepEqual(view.axeViolations,[]);assert.equal(hash(fs.readFileSync(path.join(__dirname,view.file))),view.sha256);}
+const reviewedBefore=['desktop-draft.png','phone-invalid.png','forced-colors.png','network-log-invalid.png','network-updated-bound.png'];
+for(const file of reviewedBefore)assert.equal(hash(fs.readFileSync(path.join(__dirname,file))),hash(fs.readFileSync(path.join(__dirname,'before-numeric-direction-fix',file))));
+const paths=['stem_lab/stem_tool_circuit.js','desktop/web-app/public/stem_lab/stem_tool_circuit.js','tests/circuit_value_entry.test.js','reports/circuit-value-entry-2026-10-04'];
+const git=args=>execFileSync('git',args,{cwd:root,env:{...process.env,GIT_OPTIONAL_LOCKS:'0'},encoding:'utf8'});git(['diff','--check','--',...paths]);assert.equal(git(['diff','--cached','--name-only','--',...paths]).trim(),'');
+const result={passed:true,sourceSha256:hash(source),sourceMirrorEqual:true,priorSourcePreserved:true,tests:114,newTests:17,testFiles:5,browserViews:7,browserWorkflows:2,scopedDiffCheck:true,scopedIndexEmpty:true,visualReview:{reviewedBy:'Root agent',finalDirectlyReviewed:['desktop-invalid.png','rtl-invalid.png'],unchangedFromReviewedCaptures:reviewedBefore,notes:'Reviewed pending and rejected-value feedback, recovery buttons, numeric order, keyboard focus, phone wrapping and forced colors.'}};
+fs.writeFileSync(path.join(__dirname,'validation.json'),JSON.stringify(result,null,2)+'\n');console.log(JSON.stringify(result));

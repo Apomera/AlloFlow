@@ -1,0 +1,5 @@
+{
+  "status": "failed",
+  "error": "browserType.launch: Executable doesn't exist at C:\\Users\\cabba\\AppData\\Local\\Packages\\sandbox.{b18be636-83a7-4f2f-97be-2d3edae77d79}\\AC\\ms-playwright\\chromium_headless_shell-1223\\chrome-headless-shell-win64\\chrome-headless-shell.exe\n╔════════════════════════════════════════════════════════════╗\n║ Looks like Playwright was just installed or updated.       ║\n║ Please run the following command to download new browsers: ║\n║                                                            ║\n║     npx playwright install                                 ║\n║                                                            ║\n║ <3 Playwright Team                                         ║\n╚════════════════════════════════════════════════════════════╝\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_archive_integrity_browser.cjs:97:30",
+  "results": []
+}

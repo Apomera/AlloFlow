@@ -1029,5 +1029,13 @@
   "rotation_book_note": "Evidence note: what changes as you move outward?",
   "rotation_book_note_placeholder": "At the same radii, I notice… This model needs… because…",
   "rotation_book_download": "Download CSV",
-  "rotation_book_remove": "Remove"
+  "rotation_book_remove": "Remove",
+  "radius_guides_probe": "Probe ring",
+  "radius_guides_saved": "{count} saved radii",
+  "radius_guides_toggle": "Show radius guides",
+  "radius_guides_face": "View disk from above",
+  "radius_guides_help": "Solid cyan ring: probe. Dashed white rings: saved radii. Guides mark distance from the center in the disk plane; they are not individual star orbits.",
+  "radius_guides_loading": "Radius guides will be ready when the 3D scene loads.",
+  "radius_guides_visible": "Radius guides appear while Motion is open. Focus view temporarily hides them.",
+  "radius_guides_hidden": "Radius guides are hidden. Your probe and saved radii are kept."
 }

@@ -1,0 +1,124 @@
+{
+  "started": "2026-10-03T19:33:55.472Z",
+  "fixture": "Real headless Chrome and unchanged React host contract. A test-only initial-state substitution exercises actual component mounts with saved data.",
+  "checks": [
+    {
+      "name": "Checkpoint records a JSON-safe draft with canonical IDs and decision evidence",
+      "pass": true,
+      "detail": {
+        "version": 1,
+        "draftBytes": 1260,
+        "recordedInstructions": 2
+      }
+    },
+    {
+      "name": "An actual component remount restores the same aircraft paused without advancing time or fuel",
+      "pass": true,
+      "detail": {
+        "shiftId": "atc-mussir6s-n1nwntc9",
+        "restoredShiftSeconds": 73,
+        "aircraft": 1
+      }
+    },
+    {
+      "name": "Menu Resume restores the saved shift paused and keeps its career totals uncommitted",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Discard removes an unfinished draft without committing its score, landings, or history",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Unsupported and invalid drafts safely return to the menu and can be discarded",
+      "pass": true,
+      "detail": {
+        "malformedDraftsTested": 3
+      }
+    },
+    {
+      "name": "Completed and skipped math restore to their worked example without awarding points twice",
+      "pass": true,
+      "detail": {
+        "restoredStates": [
+          "correct answer",
+          "skipped worked example"
+        ],
+        "duplicatePoints": 0
+      }
+    },
+    {
+      "name": "Ending a restored shift commits once, clears the draft, and retains its decision evidence",
+      "pass": true,
+      "detail": {
+        "careerScore": 1027,
+        "totalLanded": 23,
+        "recordedShifts": 1
+      }
+    },
+    {
+      "name": "History reopens either debrief and restores a separate saved reflection for each shift",
+      "pass": true,
+      "detail": {
+        "separateReflectionIds": [
+          "atc-mussir6s-n1nwntc9",
+          "atc-mussiywn-n1nwntc9"
+        ],
+        "historyDoesNotRecommitTotals": true
+      }
+    },
+    {
+      "name": "Viewing an earlier debrief cannot replace an unfinished active shift",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Flight-strip priority order stays stable while focused, then updates after leaving the list",
+      "pass": true,
+      "detail": {
+        "focusedOrder": [
+          "901",
+          "902",
+          "903"
+        ],
+        "updatedPriorityOrder": [
+          "903",
+          "901",
+          "902"
+        ],
+        "leftFromNoSelection": 902
+      }
+    },
+    {
+      "name": "Math, strips, and command controls precede forecasts in both DOM and visible layout",
+      "pass": true,
+      "detail": {
+        "verifiedWidths": [
+          1440,
+          320
+        ],
+        "order": [
+          "math",
+          "flight strips",
+          "commands",
+          "separation watch",
+          "runway plan"
+        ]
+      }
+    },
+    {
+      "name": "No uncaught browser errors or native prompt dialogs during recovery and history",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-quality-pass2-2026-10-03\\recovery-debrief-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-quality-pass2-2026-10-03\\recovery-menu-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-quality-pass2-2026-10-03\\recovery-control-order-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-quality-pass2-2026-10-03\\recovery-control-order-320.png"
+  ],
+  "finished": "2026-10-03T19:34:13.855Z"
+}

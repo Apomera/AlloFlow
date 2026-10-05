@@ -270,7 +270,7 @@ describe('Art Studio watercolor simulation engine', () => {
     for(const label of ['Water','Pigment'])expect(container.querySelector('input[aria-label="'+label+'"]').disabled).toBe(true);
     expect(strength.getAttribute('aria-describedby')).toBe('artstudio-watercolor-blot-help');expect(container.querySelector('#artstudio-watercolor-blot-help').textContent).toContain('Dry paint and masking stay intact');
     const lift=[...container.querySelectorAll('button')].find(b=>b.textContent.endsWith(' Lift'));await React.act(async()=>lift.click());
-    expect(container.querySelector('input[aria-label="Blot strength"]')).toBeNull();for(const label of ['Water','Pigment'])expect(container.querySelector('input[aria-label="'+label+'"]').disabled).toBe(false);
+    expect(container.querySelector('input[aria-label="Blot strength"]')).toBeNull();expect(container.querySelector('input[aria-label="Water"]').disabled).toBe(false);expect(container.querySelector('input[aria-label="Pigment"]').disabled).toBe(true);
   },WATERCOLOR_SIM_TIMEOUT_MS);
 
   it('keeps a late pointer release from redrawing after Clear and recovers the interrupted mark',async()=>{
@@ -542,7 +542,8 @@ describe('Art Studio watercolor simulation engine', () => {
     canvasContexts.get(canvas).stroke.mockClear();engine.captureExport();
     expect(strokesAtCapture).toBe(0);
     expect(engine.captureState().pigmentDensity.some(v=>v>0)).toBe(false);
-    canvas.onpointerleave();expect(cursor.style.display).toBe('none');
+    canvas.onpointerleave();expect(cursor.style.display).toBe('block');
+    canvas.blur();expect(cursor.style.display).toBe('none');
   }, WATERCOLOR_SIM_TIMEOUT_MS);
 
   it('places crisp marks on dry paper and softer marks on a prewetted sheet', async () => {

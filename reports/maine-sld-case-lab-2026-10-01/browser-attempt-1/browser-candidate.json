@@ -1,0 +1,7 @@
+{
+  "startedAt": "2026-10-02T10:59:59.295Z",
+  "moduleSha256": "a6339b83738188c93ae00387e84427081ef5ca156b15b6486c3c3ba1a32e92bb",
+  "reviewDate": "2026-10-02",
+  "sourceHost": "http://127.0.0.1:65058/app",
+  "scope": "Working-tree module and host reader; optional actual source-app boot"
+}

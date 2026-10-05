@@ -1,0 +1,76 @@
+{
+  "verifiedAt": "2026-10-02T23:08:09.8384280Z",
+  "readOnlyChecks": true,
+  "canonicalSourceSha256": "722856e56a699c26fda41078cadf6eabff23cbf9f06530bc0f216045d0afdf86",
+  "moduleCopies": [
+    {
+      "file": "maine_sld_practice_module.js",
+      "bytes": 172509,
+      "sha256": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25"
+    },
+    {
+      "file": "desktop/web-app/public/maine_sld_practice_module.js",
+      "bytes": 172509,
+      "sha256": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25"
+    },
+    {
+      "file": "desktop/app-build/maine_sld_practice_module.js",
+      "bytes": 172509,
+      "sha256": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25"
+    },
+    {
+      "file": "desktop/web-app/build/maine_sld_practice_module.js",
+      "bytes": 172509,
+      "sha256": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25"
+    }
+  ],
+  "hostSources": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "5aca767b8f1e6466afaf2a4ed366b06d465f6ee90cc76600c4017d3bbe8466ef",
+      "maineLoaderMatches": 1,
+      "pin": "18908160"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "5aca767b8f1e6466afaf2a4ed366b06d465f6ee90cc76600c4017d3bbe8466ef",
+      "maineLoaderMatches": 1,
+      "pin": "18908160"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "5aca767b8f1e6466afaf2a4ed366b06d465f6ee90cc76600c4017d3bbe8466ef",
+      "maineLoaderMatches": 1,
+      "pin": "18908160"
+    }
+  ],
+  "testedHostSourceSha256": "5aca767b8f1e6466afaf2a4ed366b06d465f6ee90cc76600c4017d3bbe8466ef",
+  "hostBundleSha256": "ff636aa9912c61d45c30f4fcfdb608e30586c743dbdd0bc52f1e995561f01b61",
+  "currentSourcesMatchTestedSnapshot": true,
+  "http": [
+    {
+      "path": "/app/?tool=maine-sld-practice",
+      "status": 200,
+      "bytes": 588,
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5"
+    },
+    {
+      "path": "/__sld_preview/host.bundle.js",
+      "status": 200,
+      "bytes": 1973360,
+      "sha256": "ff636aa9912c61d45c30f4fcfdb608e30586c743dbdd0bc52f1e995561f01b61"
+    },
+    {
+      "path": "/app/maine_sld_practice_module.js?v=18908160",
+      "status": 200,
+      "bytes": 172509,
+      "sha256": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25"
+    }
+  ],
+  "helperPid": 44448,
+  "helperStartedAt": "2026-10-02T23:00:59.288Z",
+  "helperAlive": true,
+  "helperStderrBytes": 0,
+  "checksChangedProductFiles": false,
+  "checksRebuiltOrRestartedHelper": false
+}

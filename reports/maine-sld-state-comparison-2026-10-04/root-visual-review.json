@@ -1,0 +1,51 @@
+{
+  "reviewedAt": "2026-10-05T00:44:54.677Z",
+  "reviewer": "Root direct view_image review",
+  "moduleSha256": "36955de0aef08c88a6ac2cae501019f34ad22558d2e5daeccc79e3ee46a90520",
+  "sourceSha256": "278543b8cbf467457a38d52034ffffa08918f4f12bceab5e1876e22e813f804f",
+  "captures": [
+    {
+      "file": "actual-1280-excerpt.png",
+      "sha256": "d80d0cc512a5f6541b90a24f94db91261e2cd7e230fa9870c5b3376ccd2e159c"
+    },
+    {
+      "file": "actual-1280-forced.png",
+      "sha256": "0477d1b86ba835bb892c4cc8de9aa2a95ffdaa64e30b37829e5f59ed5e790e66"
+    },
+    {
+      "file": "actual-1280-topic.png",
+      "sha256": "c54e7e734bc731399dd36d6d377d0cfa62ae1826780510f9d17d4adf2e65360e"
+    },
+    {
+      "file": "actual-1280-writing.png",
+      "sha256": "6b1e7f7c48521082e82ab71fe499c24f315277d3212ed8dda3cc031a4eff172f"
+    },
+    {
+      "file": "actual-320-excerpt.png",
+      "sha256": "255b16437369857678d050bcadcdf85687d783f31346e8b85ec18a1a2b4ac650"
+    },
+    {
+      "file": "actual-320-forced.png",
+      "sha256": "6f3b50b9c3c3bf7644fe9bd335c0931f556041e8c094f0b7c5b4771977c37f88"
+    },
+    {
+      "file": "actual-320-topic.png",
+      "sha256": "34cb4442017991296778ac87ac5a62b014d583c429920183522bdae5a1863cb4"
+    },
+    {
+      "file": "actual-320-writing.png",
+      "sha256": "dd97ad7a0fd578e849d6be43429c017c6df2383723e80e8efec9fbccfb69163f"
+    }
+  ],
+  "accepted": true,
+  "observations": [
+    "Desktop comparison introduction, topic status and source selector fit within the pane.",
+    "At 320 px topic headings, metadata, fields and actions wrap without page overflow.",
+    "Writing fields use regular weight and retain visible focus in normal and forced colors.",
+    "Expanded linked excerpts retain literal text, named keyboard-scrollable previews and readable wrapping."
+  ],
+  "limits": [
+    "Screenshots show selected scroll positions; long text remains internally scrollable.",
+    "Automated Chromium and direct visual review do not establish physical assistive-technology or other browser acceptance."
+  ]
+}

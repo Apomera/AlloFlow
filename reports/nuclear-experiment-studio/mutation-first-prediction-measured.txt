@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1629:5 › guided prediction review compares the original guess with measured evidence without changing saved work (16.9s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1629:5 › guided prediction review compares the original guess with measured evidence without changing saved work 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('[data-ns-prediction-bar="measured"] > strong')
+    Expected: "25%"
+    Received: "100%"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" with timeout 15000ms
+      - waiting for locator('[data-ns-prediction-bar="measured"] > strong')
+        33 × locator resolved to <strong>100%</strong>
+           - unexpected value "100%"
+
+
+      1636 |   await expect(prediction).toBeFocused(); await expect(prediction).toHaveAttribute('aria-pressed', 'true');
+      1637 |   await expect(page.locator('[data-ns-prediction-bar="predicted"] > strong')).toHaveText('50%');
+    > 1638 |   await expect(page.locator('[data-ns-prediction-bar="measured"] > strong')).toHaveText('25%');
+           |                                                                              ^
+      1639 |   await expect(page.locator('[data-ns-prediction-bar="predicted"] .ns-case-fill')).toHaveAttribute('style', 'width: 50%;');
+      1640 |   await expect(page.locator('[data-ns-first-chart]')).toHaveAttribute('aria-label', /At 2 m: your prediction, 50%; saved reading, 25%/);
+      1641 |   await expect(page.locator('[data-ns-first-prediction-result]')).toHaveAttribute('data-ns-first-prediction-result', 'different');
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1638:78
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-first-prediction-measured\43-nuclearlab-experiment-s-20626-without-changing-saved-work-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-first-prediction-measured\43-nuclearlab-experiment-s-20626-without-changing-saved-work-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-first-prediction-measured\43-nuclearlab-experiment-s-20626-without-changing-saved-work-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-first-prediction-measured\43-nuclearlab-experiment-s-20626-without-changing-saved-work-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-first-prediction-measured\43-nuclearlab-experiment-s-20626-without-changing-saved-work-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1629:5 › guided prediction review compares the original guess with measured evidence without changing saved work 
+(node:22180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:22180) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-first-prediction-measured.js in place of stem_lab/stem_tool_nuclearlab.js

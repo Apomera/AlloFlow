@@ -1,0 +1,18 @@
+{
+  "source": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\AlloFlowANTI.txt",
+  "sourceHash": "b5fb9c913c1fa3884d2fe0190a10401179cb5e362a48856d01a47db7a53f7fe7",
+  "patchHash": "eea496161048021c2676370c74909f714ef13172bf8b0574ae684a0067df188f",
+  "candidate": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-reliability-followup-2026-10-03\\student-response-v2.candidate.txt",
+  "candidateHash": "a288f936a93b336d69fc24093b2462c68e3cde2f4ce1abd7fc0c97551781693b",
+  "replacements": [
+    "Relocate standalone session state: remove old declaration",
+    "Relocate standalone session state: insert before learner state",
+    "Owned eligible verified learner autosave and render-visible readiness",
+    "Hydration suppression and explicit reset ownership",
+    "Strict retryable hydration preserving current response entries",
+    "Retry failed hydration with actual eligibility dependencies",
+    "Explicit reset retires pending reads without state updates during unmount"
+  ],
+  "productionChanged": false,
+  "testsExecuted": false
+}

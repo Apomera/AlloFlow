@@ -1,0 +1,13 @@
+const fs = require('node:fs');
+const vm = require('node:vm');
+const path = require('node:path');
+const folder = path.join(process.cwd(), 'reports/micro-lab-selected-portfolio-2026-10-01/drafts');
+const source = fs.readFileSync('stem_lab/stem_tool_microbiology.js', 'utf8');
+const fragment = fs.readFileSync(path.join(folder, 'portfolio-selection-core-fragment.js'), 'utf8').replace(/\r\n/g, '\n').trimEnd();
+const old = '    return { summarize: summarize, nextActions: nextActions, portfolio: portfolio };';
+const replacement = fragment + '\n    return { summarize: summarize, nextActions: nextActions, portfolio: portfolio, selectPortfolio: selectPortfolio };';
+const edit = { old, new: source.includes('\r\n') ? replacement.replace(/\n/g, '\r\n') : replacement };
+if (source.split(old).length !== 2) throw new Error('Source anchor must be exact and unique');
+new vm.Script(source.replace(edit.old, edit.new), { filename: 'portfolio-selection-preview.js' });
+fs.writeFileSync(path.join(folder, 'portfolio-selection-core-edits.json'), JSON.stringify([edit], null, 2) + '\n');
+console.log('1 exact source edit; integrated preview syntax valid.');

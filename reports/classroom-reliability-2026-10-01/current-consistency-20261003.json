@@ -1,0 +1,37 @@
+{
+  "passed": true,
+  "completedAt": "2026-10-03T13:41:33.622Z",
+  "scope": "Three host syntax checks, exact audio generation/public parity, loader pins and integrated policy dependencies; no full application build or CI claim.",
+  "hosts": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "55ec122ff1687858830fd7949039ce1d3c9799ee0a3f7a70bf63f61816b4633c",
+      "syntax": "pass",
+      "audioPins": {
+        "read_aloud_audio_service_module": "7f606aad",
+        "view_simplified_module": "6ba838c8"
+      },
+      "savePolicyDependencies": "pass"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "55ec122ff1687858830fd7949039ce1d3c9799ee0a3f7a70bf63f61816b4633c",
+      "syntax": "pass",
+      "audioPins": {
+        "read_aloud_audio_service_module": "7f606aad",
+        "view_simplified_module": "6ba838c8"
+      },
+      "savePolicyDependencies": "pass"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "55ec122ff1687858830fd7949039ce1d3c9799ee0a3f7a70bf63f61816b4633c",
+      "syntax": "pass",
+      "audioPins": {
+        "read_aloud_audio_service_module": "7f606aad",
+        "view_simplified_module": "6ba838c8"
+      },
+      "savePolicyDependencies": "pass"
+    }
+  ]
+}

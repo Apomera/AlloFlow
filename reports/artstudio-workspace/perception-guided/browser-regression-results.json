@@ -1,0 +1,72 @@
+{
+  "sourceSHA256": "20c48dc85c5a3c31bc2649704c0423140c2fa6c6cceb4812c9933d844f31b401",
+  "adaptationsChangeOnlyReportDirectories": true,
+  "comparison": {
+    "passed": true,
+    "groups": 23,
+    "errors": [],
+    "loadedSourceSHA256": "20c48dc85c5a3c31bc2649704c0423140c2fa6c6cceb4812c9933d844f31b401",
+    "finalSourceSHA256": "20c48dc85c5a3c31bc2649704c0423140c2fa6c6cceb4812c9933d844f31b401"
+  },
+  "repeat": {
+    "completed": false,
+    "attempts": 2,
+    "error": "download.saveAs: canceled",
+    "location": "perception_guided_repeat_regression.cjs:68:27",
+    "assertionFailureReported": false,
+    "ordinaryRerunWithWorkspaceDownloadFolder": false
+  },
+  "standaloneDownloadProbe": [
+    {
+      "mode": "default-temp",
+      "suggestedFilename": "probe.svg",
+      "failure": "canceled"
+    },
+    {
+      "mode": "workspace-downloads",
+      "suggestedFilename": "probe.svg",
+      "failure": "canceled"
+    }
+  ],
+  "limitation": "Both default-temp and explicitly writable workspace-downloads canceled a tiny SVG Blob without product code. Repeated-study regression stopped at exported SVG artifact transfer; no final repeat-suite success is claimed.",
+  "pluginMirrorSHA256": "20c48dc85c5a3c31bc2649704c0423140c2fa6c6cceb4812c9933d844f31b401",
+  "pluginMirrorIdentical": true,
+  "assertionPreservation": [
+    {
+      "original": "dev-tools/perception_lab_study_compare_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_guided_comparison_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-compare",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-guided/comparison-regression",
+      "codeExactlyEqualAfterReversingOnlyOutputDirectoryReplacement": true,
+      "originalSHA256": "3c130e4942a3fa21be0b7e26ec12008300f7199eb9cecc77f93cf9795e8aca0e",
+      "adaptedSHA256": "d7d33ea6c449a5b7e9acf8ddaef63020c3c030e6a56980cc179c3de9c144c7ba",
+      "assertionsRemovedOrAltered": 0
+    },
+    {
+      "original": "dev-tools/perception_lab_repeat_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_guided_repeat_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-repeat",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-guided/repeat-regression",
+      "codeExactlyEqualAfterReversingOnlyOutputDirectoryReplacement": true,
+      "originalSHA256": "c1a03473b788f612e6432bbacfae7f76d19cf8366c4c225de33d3b4fd373e5bc",
+      "adaptedSHA256": "241a31a35a4892a40fabbc641a2d3b65365769b724396eb92a2662114516ed53",
+      "assertionsRemovedOrAltered": 0
+    }
+  ],
+  "evidence": {
+    "comparison": "comparison-regression/comparison-browser-results.json",
+    "repeatAttempt1": "repeat-regression/repeat-browser-attempt1-failure.json",
+    "repeatAttempt2": "repeat-regression/repeat-browser-attempt2-failure.json",
+    "independentDownloadProbe": "repeat-regression/download-probe-results.json"
+  },
+  "execution": {
+    "permissions": "default sandbox",
+    "installedBrowserCache": "C:/Users/cabba/AppData/Local/ms-playwright",
+    "comparisonAndFirstRepeat": "Independent parallel browser jobs with isolated output directories",
+    "repeatRetry": "One isolated retry with the same assertions",
+    "standaloneProbe": "Tiny SVG Blob without product code, default temp then explicit writable workspace downloadsPath",
+    "sourceChanged": false,
+    "priorQASourceChanged": false,
+    "priorReportsOverwritten": false
+  }
+}

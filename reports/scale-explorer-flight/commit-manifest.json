@@ -1,0 +1,72 @@
+{
+  "head": "a6f19fce17d7b883d69e2301bec667b05f3b5c32",
+  "entries": [
+    {
+      "path": "stem_lab/stem_tool_scaleexplorer.js",
+      "candidate": "reports/scale-explorer-flight/commit-source.js"
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_scaleexplorer.js",
+      "candidate": "reports/scale-explorer-flight/commit-source.js"
+    },
+    {
+      "path": "ui_strings.js",
+      "candidate": "reports/scale-explorer-flight/commit-ui-0.json"
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "candidate": "reports/scale-explorer-flight/commit-ui-1.json"
+    },
+    {
+      "path": "tests/scale_explorer_terrain.test.js",
+      "candidate": "reports/scale-explorer-flight/commit-terrain.test.js"
+    },
+    {
+      "path": "tests/scale_explorer_flight.test.js",
+      "candidate": "reports/scale-explorer-flight/commit-scale_explorer_flight.test.js"
+    },
+    {
+      "path": "tests/e2e/scale-explorer-flight.spec.ts",
+      "candidate": "reports/scale-explorer-flight/commit-scale-explorer-flight.spec.ts"
+    }
+  ],
+  "text": {
+    "atlas_air_title": "Fly through Everest",
+    "atlas_air_body": "Glide through the mountain landscape. Drag to look, then use the flight controls to move, climb and descend. The camera keeps at least 150 m above the sampled terrain. The compass and height readouts describe your position in this elevation model.",
+    "atlas_air_export": "Flight viewpoint: {east} m east, {north} m north of grid centre; altitude {altitude} m above sea level; heading {heading} degrees; viewing pitch {pitch} degrees. Terrain uses a 75 m grid.",
+    "atlas_air_forward": "Fly forward",
+    "atlas_air_left": "Move left",
+    "atlas_air_back": "Fly backward",
+    "atlas_air_right": "Move right",
+    "atlas_air_climb": "Climb",
+    "atlas_air_descend": "Descend",
+    "atlas_air_controls": "Terrain flight controls",
+    "atlas_air_moving": "Flying",
+    "atlas_air_ready": "Ready to fly",
+    "atlas_air_edge": "Edge of mapped terrain",
+    "atlas_air_n": "N",
+    "atlas_air_ne": "NE",
+    "atlas_air_e": "E",
+    "atlas_air_se": "SE",
+    "atlas_air_s": "S",
+    "atlas_air_sw": "SW",
+    "atlas_air_w": "W",
+    "atlas_air_nw": "NW",
+    "atlas_air_map": "Your flight position and heading on the terrain map",
+    "atlas_air_heading": "Heading",
+    "atlas_air_clearance": "Above terrain",
+    "atlas_air_altitude": "Above sea level",
+    "atlas_air_speed": "Travel speed",
+    "atlas_air_speed_value": "{n} metres per second",
+    "atlas_air_movement": "Flight movement",
+    "atlas_air_turn_left": "Turn left",
+    "atlas_air_turn_right": "Turn right",
+    "atlas_air_brake": "Brake",
+    "atlas_air_reset": "Reset flight",
+    "atlas_air_leave": "Return to map",
+    "atlas_air_help": "Drag to look. Hold W/A/S/D or arrows to move; Q/E descend or climb. Shift boosts speed. Space brakes; R resets; Escape returns to the map. Tap a movement button for 100 m, or hold it to fly.",
+    "atlas_air_scope": "Clearance ≥ 150 m · sampled terrain · illustrated surfaces",
+    "atlas_air_start": "Start flight",
+    "atlas_air_canvas": "Flight through Everest. Drag to look. W A S D or arrows move. Q and E change height. Space brakes. R resets. Escape returns to the terrain map."
+  }
+}

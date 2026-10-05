@@ -1,0 +1,15 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sourceSha256": "62828e8e09386a6c6c92bfae19dfc1300d1006fbf1f8b54ecc42a3ff06162c30",
+  "matchingEnglishKeys": 1240,
+  "unitAndModelChecksPassed": 222,
+  "completeInteractionChecksPassed": 166,
+  "finalMotionInteractionsPassed": 6,
+  "browserWorkflowsPassed": 9,
+  "inputCombinations": 144,
+  "recordedFramesChecked": 207504,
+  "unequalPairFramesChecked": 4392,
+  "captures": 9,
+  "commit": "not created; changes remain uncommitted"
+}

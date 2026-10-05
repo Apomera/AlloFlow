@@ -1,0 +1,48 @@
+{
+  "measured": {
+    "vertices": 5610,
+    "shadowMeshes": 1,
+    "casters": 1,
+    "visible": true,
+    "maximumLightProjectionError": 3.885780586188048e-16,
+    "maximumResidual": 0,
+    "inspected": 81,
+    "plane": {
+      "x": 0,
+      "y": 1,
+      "z": 0,
+      "constant": 13.383150130660166
+    },
+    "sun": [
+      -700,
+      260,
+      360
+    ],
+    "shadowMap": true,
+    "shadowMapSize": [
+      256,
+      256
+    ],
+    "shadowType": 0,
+    "colorWrite": false,
+    "lander": [
+      0,
+      -5.43205584535034,
+      0
+    ],
+    "camera": [
+      14.580705996711695,
+      -0.1528159358641643,
+      19.067077072622983
+    ],
+    "target": false
+  },
+  "pixels": {
+    "width": 1014,
+    "height": 420,
+    "changed": 483,
+    "delta": 97283,
+    "glError": 0
+  },
+  "shaderErrors": []
+}

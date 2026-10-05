@@ -1,0 +1,569 @@
+{
+  "width": 797.21875,
+  "client": 795,
+  "scroll": 795,
+  "targets": [
+    {
+      "height": 63.375,
+      "scroll": 210,
+      "client": 210
+    },
+    {
+      "height": 48,
+      "scroll": 208,
+      "client": 208
+    },
+    {
+      "height": 48,
+      "scroll": 208,
+      "client": 208
+    },
+    {
+      "height": 48,
+      "scroll": 163,
+      "client": 163
+    },
+    {
+      "height": 48,
+      "scroll": 755,
+      "client": 755
+    },
+    {
+      "height": 48,
+      "scroll": 178,
+      "client": 178
+    },
+    {
+      "height": 48,
+      "scroll": 755,
+      "client": 755
+    },
+    {
+      "height": 48,
+      "scroll": 194,
+      "client": 194
+    },
+    {
+      "height": 100.796875,
+      "scroll": 753,
+      "client": 753
+    },
+    {
+      "height": 100.796875,
+      "scroll": 753,
+      "client": 753
+    },
+    {
+      "height": 100.796875,
+      "scroll": 753,
+      "client": 753
+    },
+    {
+      "height": 100.796875,
+      "scroll": 753,
+      "client": 753
+    },
+    {
+      "height": 100.796875,
+      "scroll": 753,
+      "client": 753
+    },
+    {
+      "height": 100.796875,
+      "scroll": 753,
+      "client": 753
+    },
+    {
+      "height": 103,
+      "scroll": 751,
+      "client": 751
+    }
+  ],
+  "text": [
+    {
+      "text": "Skin",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Layer review",
+      "size": 19.2,
+      "clipped": false
+    },
+    {
+      "text": "Inspect structures",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Investigation progress",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Verified technique: 6 of 6",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Actions with a confirmed plan and explanation.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Structures inspected: 0 of 4",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Structures viewed across this layer’s anatomical views.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Evidence recorded: 0 of 4",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Inspected structures with a note and confidence rating.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Latest action: Probed",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "What you did",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "6 of 6 protocol actions complete. 6 of 6 actions have verified plans and explanations.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Mouse input",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "RECORDED",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "RECORDED",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Simulation result:",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Full instrument sequence completed",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Cautions within the chosen limit",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Recorded path near the access corridor",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Steady recorded stroke control",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "High modeled tissue preservation",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "What changed",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Before → After · values out of 100",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Clarity",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "86 → 88",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "+2 points",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "More clear",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Exposure",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "87 → 87",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "0 points",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Unchanged",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Stability",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "84 → 84",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "0 points",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Unchanged",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Risk",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "16 → 16",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "0 points",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Unchanged",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "What do these measures mean?",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "These are simulation values for the saved action. Compare them with the current setup before deciding what to do next.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Replay reviewed action",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Return to history",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Try next",
+      "size": 16,
+      "clipped": false
+    },
+    {
+      "text": "Current setup",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "The instrument sequence and explanations are complete. Review your observations. The next action shows any evidence still needed before revealing this layer.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Review next action",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "About technique feedback",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "The technique score summarizes protocol progress, stroke values, calibration, tissue condition, and decisions in this simulation. Supported controls can contribute to this score. Verified plans and explanations are listed above.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Stroke feedback: Scissors",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Supported technique",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "The supported control supplied this path. Stroke values describe the simulated path.",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Review scored stroke",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Action history7 saved records",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "7 saved records",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Reviewing record 7 of 7: Probed",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Read selected response",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Choose an action to inspect its saved response. Arrow keys browse; Enter or Space selects. The history keeps up to 18 recent records for this layer.",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "1InspectedRECORDEDMouse input",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "1",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Inspected",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "RECORDED",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Mouse input",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "2IncisedRECORDEDMouse input",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "2",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Incised",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "RECORDED",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Mouse input",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "3ExtendedRECORDEDSupported technique",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "3",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Extended",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "RECORDED",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Supported technique",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "4RetractedRECORDEDMouse input",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "4",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Retracted",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "RECORDED",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Mouse input",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "5First stabilizerRECORDEDMouse input",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "5",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "First stabilizer",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "RECORDED",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Mouse input",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "6Second stabilizerRECORDEDMouse input",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "6",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Second stabilizer",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "RECORDED",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Mouse input",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "7ProbedReviewingLatestRECORDEDMouse input",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "7",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Probed",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "ReviewingLatest",
+      "size": 15.2,
+      "clipped": false
+    },
+    {
+      "text": "Reviewing",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Latest",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "RECORDED",
+      "size": 14,
+      "clipped": false
+    },
+    {
+      "text": "Mouse input",
+      "size": 14,
+      "clipped": false
+    }
+  ]
+}

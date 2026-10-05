@@ -1,0 +1,1239 @@
+{
+  "startedAt": "2026-10-03T04:03:27.721Z",
+  "base": "http://127.0.0.1:52061",
+  "checks": [
+    {
+      "name": "desktop: topic filter, row selection, and jump stay synchronized",
+      "status": "pass",
+      "evidence": {
+        "topics": [
+          {
+            "topic": "Volume",
+            "count": 7,
+            "id": "fluencyMaze",
+            "title": "Volume Fluency Maze — Measure to Navigate"
+          },
+          {
+            "topic": "Surface area",
+            "count": 1,
+            "id": "areaSurface",
+            "title": "Area & Surface Area"
+          },
+          {
+            "topic": "Fractions",
+            "count": 2,
+            "id": "fractionBuilder",
+            "title": "Fraction Builder — Parts of a Whole"
+          },
+          {
+            "topic": "Other geometry",
+            "count": 1,
+            "id": "geometryHarbor",
+            "title": "Geometry Harbor - An Area and Volume Expedition"
+          },
+          {
+            "topic": "Scale",
+            "count": 1,
+            "id": "scaleUp",
+            "title": "Scale Up: Double Every Edge"
+          }
+        ]
+      }
+    },
+    {
+      "name": "desktop: lesson browser viewport",
+      "status": "pass",
+      "evidence": {
+        "width": 1280,
+        "height": 800,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gwe-home",
+            "box": {
+              "x": 0,
+              "y": 0,
+              "right": 1280,
+              "bottom": 800,
+              "width": 1280,
+              "height": 800
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "desktop: launch precedes map with usable target",
+      "status": "pass",
+      "evidence": {
+        "beforeMap": true,
+        "button": {
+          "width": 160,
+          "height": 44,
+          "top": 512.171875,
+          "bottom": 556.171875
+        },
+        "mapTop": 578.171875
+      }
+    },
+    {
+      "name": "desktop: selected preview link moves focus to lesson",
+      "status": "pass",
+      "evidence": {
+        "href": "#gwe-home-selected-lesson",
+        "focus": "gwe-home-selected-lesson"
+      }
+    },
+    {
+      "name": "desktop: lesson browser accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gwe-home",
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: lesson browser text spacing",
+      "status": "pass",
+      "evidence": {
+        "width": 1280,
+        "height": 800,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gwe-home",
+            "box": {
+              "x": 0,
+              "y": 0,
+              "right": 1280,
+              "bottom": 800,
+              "width": 1280,
+              "height": 800
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "desktop: real WebGL and camera movement",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonBlack": 1024,
+        "colors": 402,
+        "canvasCount": 1,
+        "width": 1280,
+        "height": 739,
+        "fits": true,
+        "delta": 0.7242684244776938
+      }
+    },
+    {
+      "name": "desktop: optional reflection before questions, skip, retained draft, and save",
+      "status": "pass",
+      "evidence": {
+        "draft": "I connected equal layers to multiplication: each layer has the same number of cubes, and height tells how many layers.",
+        "event": {
+          "timestamp": 53469,
+          "elapsed": "53.5s",
+          "type": "reflection",
+          "data": {
+            "text": "I connected equal layers to multiplication: each layer has the same number of cubes, and height tells how many layers.",
+            "lesson": "Volume Explorer — Rectangular Prisms",
+            "concept": "volume",
+            "measuredVolume": null,
+            "prediction": null,
+            "revisedPrediction": null,
+            "strategy": "",
+            "misconception": ""
+          }
+        },
+        "metrics": {
+          "width": 1280,
+          "height": 800,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-reflection-dialog",
+              "box": {
+                "x": 390,
+                "y": 123.15625,
+                "right": 890,
+                "bottom": 676.828125,
+                "width": 500,
+                "height": 553.671875
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        }
+      }
+    },
+    {
+      "name": "desktop: measurement inspector viewport",
+      "status": "pass",
+      "evidence": {
+        "width": 1280,
+        "height": 800,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gw-measure-card",
+            "box": {
+              "x": 840,
+              "y": 75,
+              "right": 1270,
+              "bottom": 739,
+              "width": 430,
+              "height": 664
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "desktop: measurement inspector accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gw-measure-card",
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: reflection accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gw-reflection-dialog",
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: evidence reflection, modal keyboard loop, and opener return",
+      "status": "pass",
+      "evidence": {
+        "prompt": "You measured 60 cubic units. Complete: \"I first thought... I noticed... Next time I will...\"",
+        "measuredVolume": 60,
+        "event": {
+          "timestamp": 99019,
+          "elapsed": "99.0s",
+          "type": "reflection",
+          "data": {
+            "text": "I counted 60 occupied unit cubes by multiplying the cubes in an equal layer by the number of layers. The result is in cubic units.",
+            "lesson": "Volume Explorer — Rectangular Prisms",
+            "concept": "volume",
+            "measuredVolume": 60,
+            "prediction": null,
+            "revisedPrediction": null,
+            "strategy": "",
+            "misconception": ""
+          }
+        },
+        "metrics": {
+          "width": 1280,
+          "height": 800,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-reflection-dialog",
+              "box": {
+                "x": 390,
+                "y": 93,
+                "right": 890,
+                "bottom": 707,
+                "width": 500,
+                "height": 614
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        },
+        "focus": "measurement"
+      }
+    },
+    {
+      "name": "desktop: measurement text spacing",
+      "status": "pass",
+      "evidence": {
+        "width": 1280,
+        "height": 800,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gw-measure-card",
+            "box": {
+              "x": 840,
+              "y": 75,
+              "right": 1270,
+              "bottom": 739,
+              "width": 430,
+              "height": 664
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "desktop: measurement close returns world focus",
+      "status": "pass",
+      "evidence": {
+        "focus": "geoworld-fs-wrap"
+      }
+    },
+    {
+      "name": "desktop: estimate drawer below adaptive toolbar",
+      "status": "pass",
+      "evidence": {
+        "toolbarBottom": 61,
+        "panelTop": 75,
+        "metrics": {
+          "width": 1280,
+          "height": 800,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-prediction-panel",
+              "box": {
+                "x": 300,
+                "y": 75,
+                "right": 980,
+                "bottom": 307.390625,
+                "width": 680,
+                "height": 232.390625
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        }
+      }
+    },
+    {
+      "name": "desktop: estimate drawer clears text-spaced toolbar",
+      "status": "pass",
+      "evidence": {
+        "toolbarBottom": 61,
+        "toolbarOverflow": 0,
+        "panelTop": 75,
+        "metrics": {
+          "width": 1280,
+          "height": 800,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-prediction-panel",
+              "box": {
+                "x": 300,
+                "y": 75,
+                "right": 980,
+                "bottom": 365,
+                "width": 680,
+                "height": 290
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        }
+      }
+    },
+    {
+      "name": "desktop: estimate drawer accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gw-prediction-panel",
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "pageErrors": [],
+        "errors": []
+      }
+    },
+    {
+      "name": "phone: topic filter, row selection, and jump stay synchronized",
+      "status": "pass",
+      "evidence": {
+        "topics": [
+          {
+            "topic": "Volume",
+            "count": 7,
+            "id": "fluencyMaze",
+            "title": "Volume Fluency Maze — Measure to Navigate"
+          },
+          {
+            "topic": "Surface area",
+            "count": 1,
+            "id": "areaSurface",
+            "title": "Area & Surface Area"
+          },
+          {
+            "topic": "Fractions",
+            "count": 2,
+            "id": "fractionBuilder",
+            "title": "Fraction Builder — Parts of a Whole"
+          },
+          {
+            "topic": "Other geometry",
+            "count": 1,
+            "id": "geometryHarbor",
+            "title": "Geometry Harbor - An Area and Volume Expedition"
+          },
+          {
+            "topic": "Scale",
+            "count": 1,
+            "id": "scaleUp",
+            "title": "Scale Up: Double Every Edge"
+          }
+        ]
+      }
+    },
+    {
+      "name": "phone: lesson browser viewport",
+      "status": "pass",
+      "evidence": {
+        "width": 390,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gwe-home",
+            "box": {
+              "x": 0,
+              "y": 0,
+              "right": 390,
+              "bottom": 844,
+              "width": 390,
+              "height": 844
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "phone: launch precedes map with usable target",
+      "status": "pass",
+      "evidence": {
+        "beforeMap": true,
+        "button": {
+          "width": 358,
+          "height": 44,
+          "top": 1179.25,
+          "bottom": 1223.25
+        },
+        "mapTop": 1243.25
+      }
+    },
+    {
+      "name": "phone: selected preview link moves focus to lesson",
+      "status": "pass",
+      "evidence": {
+        "href": "#gwe-home-selected-lesson",
+        "focus": "gwe-home-selected-lesson"
+      }
+    },
+    {
+      "name": "phone: lesson browser accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gwe-home",
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: lesson browser text spacing",
+      "status": "pass",
+      "evidence": {
+        "width": 390,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gwe-home",
+            "box": {
+              "x": 0,
+              "y": 0,
+              "right": 390,
+              "bottom": 844,
+              "width": 390,
+              "height": 844
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "phone: real WebGL and camera movement",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonBlack": 1024,
+        "colors": 434,
+        "canvasCount": 1,
+        "width": 390,
+        "height": 785,
+        "fits": true,
+        "delta": 0.7051170129462462
+      }
+    },
+    {
+      "name": "phone: optional reflection before questions, skip, retained draft, and save",
+      "status": "pass",
+      "evidence": {
+        "draft": "I connected equal layers to multiplication: each layer has the same number of cubes, and height tells how many layers.",
+        "event": {
+          "timestamp": 62458,
+          "elapsed": "62.5s",
+          "type": "reflection",
+          "data": {
+            "text": "I connected equal layers to multiplication: each layer has the same number of cubes, and height tells how many layers.",
+            "lesson": "Volume Explorer — Rectangular Prisms",
+            "concept": "volume",
+            "measuredVolume": null,
+            "prediction": null,
+            "revisedPrediction": null,
+            "strategy": "",
+            "misconception": ""
+          }
+        },
+        "metrics": {
+          "width": 390,
+          "height": 844,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-reflection-dialog",
+              "box": {
+                "x": 8,
+                "y": 104.765625,
+                "right": 382,
+                "bottom": 739.21875,
+                "width": 374,
+                "height": 634.453125
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        }
+      }
+    },
+    {
+      "name": "phone: measurement inspector viewport",
+      "status": "pass",
+      "evidence": {
+        "width": 390,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gw-measure-card",
+            "box": {
+              "x": 6,
+              "y": 73,
+              "right": 384,
+              "bottom": 781,
+              "width": 378,
+              "height": 708
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "phone: measurement inspector accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gw-measure-card",
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: reflection accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gw-reflection-dialog",
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: evidence reflection, modal keyboard loop, and opener return",
+      "status": "pass",
+      "evidence": {
+        "prompt": "You measured 60 cubic units. Complete: \"I first thought... I noticed... Next time I will...\"",
+        "measuredVolume": 60,
+        "event": {
+          "timestamp": 111202,
+          "elapsed": "111.2s",
+          "type": "reflection",
+          "data": {
+            "text": "I counted 60 occupied unit cubes by multiplying the cubes in an equal layer by the number of layers. The result is in cubic units.",
+            "lesson": "Volume Explorer — Rectangular Prisms",
+            "concept": "volume",
+            "measuredVolume": 60,
+            "prediction": null,
+            "revisedPrediction": null,
+            "strategy": "",
+            "misconception": ""
+          }
+        },
+        "metrics": {
+          "width": 390,
+          "height": 844,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-reflection-dialog",
+              "box": {
+                "x": 8,
+                "y": 73,
+                "right": 382,
+                "bottom": 771,
+                "width": 374,
+                "height": 698
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        },
+        "focus": "measurement"
+      }
+    },
+    {
+      "name": "phone: measurement text spacing",
+      "status": "pass",
+      "evidence": {
+        "width": 390,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gw-measure-card",
+            "box": {
+              "x": 6,
+              "y": 73,
+              "right": 384,
+              "bottom": 781,
+              "width": 378,
+              "height": 708
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "phone: measurement close returns world focus",
+      "status": "pass",
+      "evidence": {
+        "focus": "geoworld-fs-wrap"
+      }
+    },
+    {
+      "name": "phone: estimate drawer below adaptive toolbar",
+      "status": "pass",
+      "evidence": {
+        "toolbarBottom": 59,
+        "panelTop": 73,
+        "metrics": {
+          "width": 390,
+          "height": 844,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-prediction-panel",
+              "box": {
+                "x": 6,
+                "y": 73,
+                "right": 384,
+                "bottom": 352.78125,
+                "width": 378,
+                "height": 279.78125
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        }
+      }
+    },
+    {
+      "name": "phone: estimate drawer clears text-spaced toolbar",
+      "status": "pass",
+      "evidence": {
+        "toolbarBottom": 59,
+        "toolbarOverflow": 0,
+        "panelTop": 73,
+        "metrics": {
+          "width": 390,
+          "height": 844,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-prediction-panel",
+              "box": {
+                "x": 6,
+                "y": 73,
+                "right": 384,
+                "bottom": 430.5,
+                "width": 378,
+                "height": 357.5
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        }
+      }
+    },
+    {
+      "name": "phone: estimate drawer accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gw-prediction-panel",
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "pageErrors": [],
+        "errors": []
+      }
+    },
+    {
+      "name": "small-phone: topic filter, row selection, and jump stay synchronized",
+      "status": "pass",
+      "evidence": {
+        "topics": [
+          {
+            "topic": "Volume",
+            "count": 7,
+            "id": "fluencyMaze",
+            "title": "Volume Fluency Maze — Measure to Navigate"
+          },
+          {
+            "topic": "Surface area",
+            "count": 1,
+            "id": "areaSurface",
+            "title": "Area & Surface Area"
+          },
+          {
+            "topic": "Fractions",
+            "count": 2,
+            "id": "fractionBuilder",
+            "title": "Fraction Builder — Parts of a Whole"
+          },
+          {
+            "topic": "Other geometry",
+            "count": 1,
+            "id": "geometryHarbor",
+            "title": "Geometry Harbor - An Area and Volume Expedition"
+          },
+          {
+            "topic": "Scale",
+            "count": 1,
+            "id": "scaleUp",
+            "title": "Scale Up: Double Every Edge"
+          }
+        ]
+      }
+    },
+    {
+      "name": "small-phone: lesson browser viewport",
+      "status": "pass",
+      "evidence": {
+        "width": 320,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gwe-home",
+            "box": {
+              "x": 0,
+              "y": 0,
+              "right": 320,
+              "bottom": 844,
+              "width": 320,
+              "height": 844
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "small-phone: launch precedes map with usable target",
+      "status": "pass",
+      "evidence": {
+        "beforeMap": true,
+        "button": {
+          "width": 288,
+          "height": 44,
+          "top": 1221.6875,
+          "bottom": 1265.6875
+        },
+        "mapTop": 1285.6875
+      }
+    },
+    {
+      "name": "small-phone: selected preview link moves focus to lesson",
+      "status": "pass",
+      "evidence": {
+        "href": "#gwe-home-selected-lesson",
+        "focus": "gwe-home-selected-lesson"
+      }
+    },
+    {
+      "name": "small-phone: lesson browser accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gwe-home",
+        "violations": []
+      }
+    },
+    {
+      "name": "small-phone: lesson browser text spacing",
+      "status": "pass",
+      "evidence": {
+        "width": 320,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gwe-home",
+            "box": {
+              "x": 0,
+              "y": 0,
+              "right": 320,
+              "bottom": 844,
+              "width": 320,
+              "height": 844
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "small-phone: real WebGL and camera movement",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonBlack": 1024,
+        "colors": 485,
+        "canvasCount": 1,
+        "width": 320,
+        "height": 781,
+        "fits": true,
+        "delta": 1.5011454234381951
+      }
+    },
+    {
+      "name": "small-phone: optional reflection before questions, skip, retained draft, and save",
+      "status": "pass",
+      "evidence": {
+        "draft": "I connected equal layers to multiplication: each layer has the same number of cubes, and height tells how many layers.",
+        "event": {
+          "timestamp": 20149,
+          "elapsed": "20.1s",
+          "type": "reflection",
+          "data": {
+            "text": "I connected equal layers to multiplication: each layer has the same number of cubes, and height tells how many layers.",
+            "lesson": "Volume Explorer — Rectangular Prisms",
+            "concept": "volume",
+            "measuredVolume": null,
+            "prediction": null,
+            "revisedPrediction": null,
+            "strategy": "",
+            "misconception": ""
+          }
+        },
+        "metrics": {
+          "width": 320,
+          "height": 844,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-reflection-dialog",
+              "box": {
+                "x": 8,
+                "y": 84.625,
+                "right": 312,
+                "bottom": 759.375,
+                "width": 304,
+                "height": 674.75
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        }
+      }
+    },
+    {
+      "name": "small-phone: measurement inspector viewport",
+      "status": "pass",
+      "evidence": {
+        "width": 320,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gw-measure-card",
+            "box": {
+              "x": 6,
+              "y": 78,
+              "right": 314,
+              "bottom": 786,
+              "width": 308,
+              "height": 708
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "small-phone: measurement inspector accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gw-measure-card",
+        "violations": []
+      }
+    },
+    {
+      "name": "small-phone: reflection accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gw-reflection-dialog",
+        "violations": []
+      }
+    },
+    {
+      "name": "small-phone: evidence reflection, modal keyboard loop, and opener return",
+      "status": "pass",
+      "evidence": {
+        "prompt": "You measured 60 cubic units. Complete: \"I first thought... I noticed... Next time I will...\"",
+        "measuredVolume": 60,
+        "event": {
+          "timestamp": 46885,
+          "elapsed": "46.9s",
+          "type": "reflection",
+          "data": {
+            "text": "I counted 60 occupied unit cubes by multiplying the cubes in an equal layer by the number of layers. The result is in cubic units.",
+            "lesson": "Volume Explorer — Rectangular Prisms",
+            "concept": "volume",
+            "measuredVolume": 60,
+            "prediction": null,
+            "revisedPrediction": null,
+            "strategy": "",
+            "misconception": ""
+          }
+        },
+        "metrics": {
+          "width": 320,
+          "height": 844,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-reflection-dialog",
+              "box": {
+                "x": 8,
+                "y": 47,
+                "right": 312,
+                "bottom": 797,
+                "width": 304,
+                "height": 750
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        },
+        "focus": "measurement"
+      }
+    },
+    {
+      "name": "small-phone: measurement text spacing",
+      "status": "pass",
+      "evidence": {
+        "width": 320,
+        "height": 844,
+        "overflowX": 0,
+        "overflowY": 0,
+        "surfaces": [
+          {
+            "selector": ".gw-measure-card",
+            "box": {
+              "x": 6,
+              "y": 78,
+              "right": 314,
+              "bottom": 786,
+              "width": 308,
+              "height": 708
+            },
+            "overflowX": 0
+          }
+        ],
+        "textOverflow": []
+      }
+    },
+    {
+      "name": "small-phone: measurement close returns world focus",
+      "status": "pass",
+      "evidence": {
+        "focus": "geoworld-fs-wrap"
+      }
+    },
+    {
+      "name": "small-phone: estimate drawer below adaptive toolbar",
+      "status": "pass",
+      "evidence": {
+        "toolbarBottom": 63.484375,
+        "panelTop": 78,
+        "metrics": {
+          "width": 320,
+          "height": 844,
+          "overflowX": 0,
+          "overflowY": 0,
+          "surfaces": [
+            {
+              "selector": ".gw-prediction-panel",
+              "box": {
+                "x": 6,
+                "y": 78,
+                "right": 314,
+                "bottom": 505.171875,
+                "width": 308,
+                "height": 427.171875
+              },
+              "overflowX": 0
+            }
+          ],
+          "textOverflow": []
+        }
+      }
+    },
+    {
+      "name": "small-phone: estimate drawer clears text-spaced toolbar",
+      "status": "fail",
+      "message": "The expression evaluated to a falsy value:\n\n  assert.ok(positions.panelTop >= positions.toolbarBottom + 6)\n"
+    },
+    {
+      "name": "small-phone: estimate drawer accessibility",
+      "status": "pass",
+      "evidence": {
+        "surface": ".gw-prediction-panel",
+        "violations": []
+      }
+    },
+    {
+      "name": "small-phone: no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "pageErrors": [],
+        "errors": []
+      }
+    }
+  ],
+  "failures": [
+    {
+      "name": "small-phone: estimate drawer clears text-spaced toolbar",
+      "status": "fail",
+      "message": "The expression evaluated to a falsy value:\n\n  assert.ok(positions.panelTop >= positions.toolbarBottom + 6)\n"
+    }
+  ],
+  "screenshots": [
+    {
+      "name": "desktop-home",
+      "file": "desktop-home.png"
+    },
+    {
+      "name": "desktop-lesson-browser",
+      "file": "desktop-lesson-browser.png"
+    },
+    {
+      "name": "desktop-selected-lesson",
+      "file": "desktop-selected-lesson.png"
+    },
+    {
+      "name": "desktop-lesson-browser-text-spacing",
+      "file": "desktop-lesson-browser-text-spacing.png"
+    },
+    {
+      "name": "desktop-reflection-before-questions",
+      "file": "desktop-reflection-before-questions.png"
+    },
+    {
+      "name": "desktop-measurement",
+      "file": "desktop-measurement.png"
+    },
+    {
+      "name": "desktop-measurement-details",
+      "file": "desktop-measurement-details.png"
+    },
+    {
+      "name": "desktop-measurement-reflection",
+      "file": "desktop-measurement-reflection.png"
+    },
+    {
+      "name": "desktop-reflection-text-spacing",
+      "file": "desktop-reflection-text-spacing.png"
+    },
+    {
+      "name": "desktop-measurement-text-spacing",
+      "file": "desktop-measurement-text-spacing.png"
+    },
+    {
+      "name": "desktop-estimate-drawer",
+      "file": "desktop-estimate-drawer.png"
+    },
+    {
+      "name": "desktop-estimate-text-spacing",
+      "file": "desktop-estimate-text-spacing.png"
+    },
+    {
+      "name": "phone-home",
+      "file": "phone-home.png"
+    },
+    {
+      "name": "phone-lesson-browser",
+      "file": "phone-lesson-browser.png"
+    },
+    {
+      "name": "phone-selected-lesson",
+      "file": "phone-selected-lesson.png"
+    },
+    {
+      "name": "phone-lesson-browser-text-spacing",
+      "file": "phone-lesson-browser-text-spacing.png"
+    },
+    {
+      "name": "phone-reflection-before-questions",
+      "file": "phone-reflection-before-questions.png"
+    },
+    {
+      "name": "phone-measurement",
+      "file": "phone-measurement.png"
+    },
+    {
+      "name": "phone-measurement-details",
+      "file": "phone-measurement-details.png"
+    },
+    {
+      "name": "phone-measurement-reflection",
+      "file": "phone-measurement-reflection.png"
+    },
+    {
+      "name": "phone-reflection-text-spacing",
+      "file": "phone-reflection-text-spacing.png"
+    },
+    {
+      "name": "phone-measurement-text-spacing",
+      "file": "phone-measurement-text-spacing.png"
+    },
+    {
+      "name": "phone-estimate-drawer",
+      "file": "phone-estimate-drawer.png"
+    },
+    {
+      "name": "phone-estimate-text-spacing",
+      "file": "phone-estimate-text-spacing.png"
+    },
+    {
+      "name": "small-phone-home",
+      "file": "small-phone-home.png"
+    },
+    {
+      "name": "small-phone-lesson-browser",
+      "file": "small-phone-lesson-browser.png"
+    },
+    {
+      "name": "small-phone-selected-lesson",
+      "file": "small-phone-selected-lesson.png"
+    },
+    {
+      "name": "small-phone-lesson-browser-text-spacing",
+      "file": "small-phone-lesson-browser-text-spacing.png"
+    },
+    {
+      "name": "small-phone-reflection-before-questions",
+      "file": "small-phone-reflection-before-questions.png"
+    },
+    {
+      "name": "small-phone-measurement",
+      "file": "small-phone-measurement.png"
+    },
+    {
+      "name": "small-phone-measurement-details",
+      "file": "small-phone-measurement-details.png"
+    },
+    {
+      "name": "small-phone-measurement-reflection",
+      "file": "small-phone-measurement-reflection.png"
+    },
+    {
+      "name": "small-phone-reflection-text-spacing",
+      "file": "small-phone-reflection-text-spacing.png"
+    },
+    {
+      "name": "small-phone-measurement-text-spacing",
+      "file": "small-phone-measurement-text-spacing.png"
+    },
+    {
+      "name": "small-phone-estimate-drawer",
+      "file": "small-phone-estimate-drawer.png"
+    },
+    {
+      "name": "small-phone-estimate-text-spacing",
+      "file": "small-phone-estimate-text-spacing.png"
+    }
+  ],
+  "finishedAt": "2026-10-03T04:10:17.745Z"
+}

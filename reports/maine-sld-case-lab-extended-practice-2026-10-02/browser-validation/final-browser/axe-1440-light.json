@@ -1,0 +1,28 @@
+{
+  "width": 1440,
+  "theme": "light",
+  "steps": 5,
+  "scans": [
+    {
+      "step": "case",
+      "violations": []
+    },
+    {
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "step": "debrief",
+      "violations": []
+    }
+  ],
+  "failures": []
+}

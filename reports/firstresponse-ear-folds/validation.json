@@ -1,0 +1,810 @@
+{
+  "date": "2026-10-05",
+  "result": "passed",
+  "parent": "7a776b356df7b03c05dde299ac0a67c46bb7d63f",
+  "commitBranch": "codex/firstresponse-ear-folds",
+  "production": {
+    "sourceSha256": "0bcf8caf723e4cd96d444a3712f28b290b103fa8f5c30b28763e2554856d7065",
+    "mirrorsMatch": true,
+    "changedRegion": "inner ear fold construction block",
+    "uiCopyChanges": 0,
+    "catalogChanges": 0,
+    "namesRetained": true,
+    "identityOrigins": true,
+    "earAndHeadPivotAttachment": true,
+    "answerTargetsRetained": true
+  },
+  "unitTests": {
+    "passed": 353,
+    "files": 8,
+    "fullRunPassed": 353,
+    "fullRunFailed": 0,
+    "cleanFirstRun": false,
+    "exit": {
+      "exitCode": 0,
+      "changedInputs": [],
+      "inputHashesVerified": 40,
+      "seconds": 70.897
+    },
+    "initialRun": {
+      "status": "runtime-out-of-memory",
+      "exit": {
+        "exitCode": 3221226505,
+        "changedInputs": [],
+        "inputHashesVerified": 40,
+        "seconds": 121.029
+      },
+      "completedTestSummary": false,
+      "inputManifestSha256": "89bc84b346abecffea2b97e4dd9d9768e85e09acd77b87da15f4fd0fcd724c52",
+      "logSha256": "61f7bf3908da0beff59aea801decb9ad4fe4f941494deb700f6609451b4da82e"
+    },
+    "assertionsChanged": false,
+    "suites": {
+      "firstresponse_ear_folds": 21,
+      "firstresponse_brow_surfaces": 21,
+      "firstresponse_nose_surfaces": 21,
+      "firstresponse_eyelid_surfaces": 21,
+      "firstresponse_lip_surfaces": 21,
+      "firstresponse_depth_explorer": 115,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    }
+  },
+  "browserTests": {
+    "passed": 2,
+    "files": 1,
+    "workers": 1,
+    "retries": 0,
+    "cleanFirstRun": true,
+    "exit": {
+      "exitCode": 0,
+      "changedInputs": [],
+      "inputHashesVerified": 40,
+      "seconds": 151.477
+    },
+    "renderer": "Chromium WebGL with ANGLE SwiftShader",
+    "nativeGeometrySamples": 8,
+    "desktopAges": [
+      "adult",
+      "child",
+      "infant"
+    ],
+    "desktopRecoveryPhases": [
+      0,
+      8
+    ],
+    "phoneWidth": 320,
+    "coverage": [
+      "successful native scene/camera rendering",
+      "all17 facial features framed",
+      "ear-relative and head-relative geometry/material retention through recovery",
+      "age scaling and real world movement",
+      "keyboard camera controls and learner state",
+      "text spacing, forced colors and app contrast",
+      "axe accessibility, runtime errors, canvas/context count and unmount cleanup"
+    ]
+  },
+  "geometry": {
+    "sampling": {
+      "widthSegments": 64,
+      "heightSegments": 32,
+      "vertices": 2145,
+      "outwardTriangles": 3968
+    },
+    "earFoldCount": 2,
+    "closedVolumes": true,
+    "buriedPerimeter": true,
+    "mirroredGeometryAndNormals": true,
+    "retainedOriginalCurves": true,
+    "nativeAgePosePairs": [
+      {
+        "age": "adult",
+        "earFoldParts": [
+          {
+            "name": "fr-manikin-ear-left-antihelix",
+            "geometryFingerprint": "cd5ec261",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":12620920,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":12,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedEarAttachment": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          },
+          {
+            "name": "fr-manikin-ear-right-antihelix",
+            "geometryFingerprint": "3efb3741",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":12620920,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":12,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedEarAttachment": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          }
+        ]
+      },
+      {
+        "age": "child",
+        "earFoldParts": [
+          {
+            "name": "fr-manikin-ear-left-antihelix",
+            "geometryFingerprint": "cd5ec261",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":12620920,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":12,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedEarAttachment": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          },
+          {
+            "name": "fr-manikin-ear-right-antihelix",
+            "geometryFingerprint": "3efb3741",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":12620920,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":12,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedEarAttachment": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          }
+        ]
+      },
+      {
+        "age": "infant",
+        "earFoldParts": [
+          {
+            "name": "fr-manikin-ear-left-antihelix",
+            "geometryFingerprint": "cd5ec261",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":12620920,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":12,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedEarAttachment": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          },
+          {
+            "name": "fr-manikin-ear-right-antihelix",
+            "geometryFingerprint": "3efb3741",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":12620920,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":12,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedEarAttachment": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          }
+        ]
+      }
+    ],
+    "minimumFaceFacing": 0.9276936431439765,
+    "maximumProjectedFeatureExtent": 0.7533617852456925
+  },
+  "skullAndRigAudit": {
+    "status": "passed",
+    "reference": "7a776b356df7b03c05dde299ac0a67c46bb7d63f",
+    "sourceSha256": "0bcf8caf723e4cd96d444a3712f28b290b103fa8f5c30b28763e2554856d7065",
+    "desktopMirrorSha256": "0bcf8caf723e4cd96d444a3712f28b290b103fa8f5c30b28763e2554856d7065",
+    "baselineSourceSha256": "36cfc8be912c3baca4c6d6a6d60cc8dc8b2a059e884e59bd6358bacbae1f87d2",
+    "threeSha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "counts": {
+      "poses": 6,
+      "skullGeometryMatches": 6,
+      "worldMatrixMatches": 30,
+      "closedOutwardEarFoldShells": 12,
+      "retainedEarFoldPaths": 12,
+      "unchangedFacialDetailMeshes": 132,
+      "earBasePerimeterRays": 768
+    },
+    "outsideEarFoldBlock": {
+      "unchanged": true,
+      "markersUnique": true,
+      "prefixSha256": "47a8bec3a1a00c740c058560e1a67046f30cdbb4a7242609462d64dff2b0a38d",
+      "suffixSha256": "b6b741c142b7cb1f4c0e188ecb14f2be5b7ad3be28ca3be72b13d884c35a961c",
+      "oldBlockBytes": 293,
+      "newBlockBytes": 1890
+    },
+    "auditManifestSha256": "17f5dea24df4ce5aef5addf0810719d6b2333d6b5435796c70e4ef22f59d2794",
+    "snapshots": [
+      {
+        "age": "adult",
+        "phase": 0,
+        "skullGeometrySha256": "9b432d18c7d19611f7490f34fe9f2a0cdc283deadbe9bcbcab64f49529ddb609",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "4786f10e98128a289ab71bd9ecd617c33a50e32af639830b30bd39b0b163ae41",
+          "fr-training-manikin": "95cf4a299745566f174041e14e892efcfc00a36eb18586d9100dee1019137bbf",
+          "fr-manikin-head-pivot": "e3403747c2b78d45394b0d89d3c2f813e9556d2cb86b01320da582f4afad8abc",
+          "fr-manikin-ear-left": "663bf4a9dbf4eb0af312892fb68d88e3faaf3afc610bc29d66a34b8a29df49ac",
+          "fr-manikin-ear-right": "8ad74beed115094bde85cd84de9f96971f064b9d5209f858af94dc6d9c828f59"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999253731104
+        },
+        "earFolds": {
+          "fr-manikin-ear-left-antihelix": {
+            "geometrySha256": "23d53b9fb9de2b8fae2030288342bfaeb2bb825ae2d8fe70d528adb31e0b71b9",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.001773927151044269,
+              "maximumSignedGap": -0.0013435073962278221,
+              "front": 0.004517021385997494,
+              "back": -0.0026829775590002936
+            },
+            "retainedPath": {
+              "sha256": "02d82e2a43921d0448df4fd9fd6f5ee9cac041a6830d85ba645194521fd7ffa1",
+              "controlPointsSha256": "9da01de07b2f0fa4805d8e5af9e4a3310ccbe5194687755faf7cabfb25330a0a",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          },
+          "fr-manikin-ear-right-antihelix": {
+            "geometrySha256": "a48d6a30c30e1dce4d8bf28910488ad9ec292827cfed6ba96327fb08486a56b5",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.0017739271157916903,
+              "maximumSignedGap": -0.0013435061525952918,
+              "front": 0.004517021196563581,
+              "back": -0.0026829777484342066
+            },
+            "retainedPath": {
+              "sha256": "0e0842cb39ac6aeab4a5f78af205f0164a27ee2a61d622b9d69e249a8f0c637e",
+              "controlPointsSha256": "d1a221dd5a3d9bd2a46a87d780825f934a4d3a5cea26865b82422dbf83af65dc",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          }
+        }
+      },
+      {
+        "age": "adult",
+        "phase": 8,
+        "skullGeometrySha256": "9b432d18c7d19611f7490f34fe9f2a0cdc283deadbe9bcbcab64f49529ddb609",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "b457d71699c74820fa8e4b161a8c3c500fea6bb7c1573b062c9bd9fe54191275",
+          "fr-training-manikin": "a6bc2cc43d0689f46b112e317f115e7ff271ccf5378e0cda909f6487aa2b011a",
+          "fr-manikin-head-pivot": "b44a2099257a15bc41e3c2f48fc9d32d9191f1025a1f65bdb565ac0373fc72da",
+          "fr-manikin-ear-left": "fb4b8717280a88e426d59395effd40330701636531194a985056f36064dd31c2",
+          "fr-manikin-ear-right": "cb66d521ce80ba7a960770d61dc5fe91aa3fcfee5d981623b6b09b2b104f4678"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999253731104
+        },
+        "earFolds": {
+          "fr-manikin-ear-left-antihelix": {
+            "geometrySha256": "23d53b9fb9de2b8fae2030288342bfaeb2bb825ae2d8fe70d528adb31e0b71b9",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.0017739271510443524,
+              "maximumSignedGap": -0.001343507396227864,
+              "front": 0.004517021385997481,
+              "back": -0.0026829775590003217
+            },
+            "retainedPath": {
+              "sha256": "02d82e2a43921d0448df4fd9fd6f5ee9cac041a6830d85ba645194521fd7ffa1",
+              "controlPointsSha256": "9da01de07b2f0fa4805d8e5af9e4a3310ccbe5194687755faf7cabfb25330a0a",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          },
+          "fr-manikin-ear-right-antihelix": {
+            "geometrySha256": "a48d6a30c30e1dce4d8bf28910488ad9ec292827cfed6ba96327fb08486a56b5",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.001773927115791635,
+              "maximumSignedGap": -0.0013435061525954725,
+              "front": 0.004517021196563707,
+              "back": -0.002682977748434096
+            },
+            "retainedPath": {
+              "sha256": "0e0842cb39ac6aeab4a5f78af205f0164a27ee2a61d622b9d69e249a8f0c637e",
+              "controlPointsSha256": "d1a221dd5a3d9bd2a46a87d780825f934a4d3a5cea26865b82422dbf83af65dc",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          }
+        }
+      },
+      {
+        "age": "child",
+        "phase": 0,
+        "skullGeometrySha256": "b47683f451b7ea57a5055bef74a557f2bbef6a47e6b2b1d9273dfdca0a73ec86",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "a5862d7199e4999f48f95d7bb9fff777003888c2c280abeba8e9119d08d7df66",
+          "fr-training-manikin": "952e738fef01288a35c31cbf3d60643fa9b67330abe82fb2c7cf804bab297a10",
+          "fr-manikin-head-pivot": "88317a8975d977ee34c48bafb61e485cbe789c04357bc019be80db9813da92ab",
+          "fr-manikin-ear-left": "1db9171dd2f5762f8d35f754caae11751512bb81d9db3357893702f4b3b51fd2",
+          "fr-manikin-ear-right": "183b6f971e0071054df00a76ea1f65bc14ed439bb6d6bb1de9df530b685f08d9"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999253731104
+        },
+        "earFolds": {
+          "fr-manikin-ear-left-antihelix": {
+            "geometrySha256": "23d53b9fb9de2b8fae2030288342bfaeb2bb825ae2d8fe70d528adb31e0b71b9",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.0017739271510442964,
+              "maximumSignedGap": -0.0013435073962277742,
+              "front": 0.00451702138599747,
+              "back": -0.0026829775590003777
+            },
+            "retainedPath": {
+              "sha256": "02d82e2a43921d0448df4fd9fd6f5ee9cac041a6830d85ba645194521fd7ffa1",
+              "controlPointsSha256": "9da01de07b2f0fa4805d8e5af9e4a3310ccbe5194687755faf7cabfb25330a0a",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          },
+          "fr-manikin-ear-right-antihelix": {
+            "geometrySha256": "a48d6a30c30e1dce4d8bf28910488ad9ec292827cfed6ba96327fb08486a56b5",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.0017739271157916985,
+              "maximumSignedGap": -0.001343506152595296,
+              "front": 0.00451702119656352,
+              "back": -0.0026829777484342595
+            },
+            "retainedPath": {
+              "sha256": "0e0842cb39ac6aeab4a5f78af205f0164a27ee2a61d622b9d69e249a8f0c637e",
+              "controlPointsSha256": "d1a221dd5a3d9bd2a46a87d780825f934a4d3a5cea26865b82422dbf83af65dc",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          }
+        }
+      },
+      {
+        "age": "child",
+        "phase": 8,
+        "skullGeometrySha256": "b47683f451b7ea57a5055bef74a557f2bbef6a47e6b2b1d9273dfdca0a73ec86",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "1690079f0823bc63b56595af80998163641643cd0c0c646001bdf891e42d9745",
+          "fr-training-manikin": "24b06d22628a7eeb38f3a9059d4f98b41ae87e47e9ba0e00e59429195aa275fb",
+          "fr-manikin-head-pivot": "f447692cd68bb9ede540ca4cff7dfadfb851970eff48237b38069891633a5f16",
+          "fr-manikin-ear-left": "67a1901a6c9ff662c584c4ef99b8a8072662ea33ca76c5a2895bcec54226fcc1",
+          "fr-manikin-ear-right": "25aafc78ee862b0a362fed8a8609283b7f9dae1a22620a18d0b2ec8763e2655e"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999253731104
+        },
+        "earFolds": {
+          "fr-manikin-ear-left-antihelix": {
+            "geometrySha256": "23d53b9fb9de2b8fae2030288342bfaeb2bb825ae2d8fe70d528adb31e0b71b9",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.0017739271510443634,
+              "maximumSignedGap": -0.0013435073962277909,
+              "front": 0.004517021385997452,
+              "back": -0.0026829775590003443
+            },
+            "retainedPath": {
+              "sha256": "02d82e2a43921d0448df4fd9fd6f5ee9cac041a6830d85ba645194521fd7ffa1",
+              "controlPointsSha256": "9da01de07b2f0fa4805d8e5af9e4a3310ccbe5194687755faf7cabfb25330a0a",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          },
+          "fr-manikin-ear-right-antihelix": {
+            "geometrySha256": "a48d6a30c30e1dce4d8bf28910488ad9ec292827cfed6ba96327fb08486a56b5",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.001773927115791665,
+              "maximumSignedGap": -0.0013435061525954469,
+              "front": 0.004517021196563688,
+              "back": -0.0026829777484342426
+            },
+            "retainedPath": {
+              "sha256": "0e0842cb39ac6aeab4a5f78af205f0164a27ee2a61d622b9d69e249a8f0c637e",
+              "controlPointsSha256": "d1a221dd5a3d9bd2a46a87d780825f934a4d3a5cea26865b82422dbf83af65dc",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          }
+        }
+      },
+      {
+        "age": "infant",
+        "phase": 0,
+        "skullGeometrySha256": "efc3a1cce5ff0d9182313066830d1289d3379e103d19710425afcdec7d0a8b6f",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "682ff72e9b2d083c7778b3e318125674a7d799eba3ff52985ae3d6becb6205cd",
+          "fr-training-manikin": "ec9b999a3a24472fdc02a115898ddaf27dda759bf1748a787b14f0dac0c3f9be",
+          "fr-manikin-head-pivot": "98600975dbf59e437aeaa45e037d86eb5f6fdd36ad0053aa58dc4dcde0c6b3a3",
+          "fr-manikin-ear-left": "d6bb8ce6a056e9383af7a4482dda891615abc094ae82bda81b0fdafebcd4e414",
+          "fr-manikin-ear-right": "770befbc899143f0428c7971332babb967b352d37590162ba77e99a9eb1174a9"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999253731104
+        },
+        "earFolds": {
+          "fr-manikin-ear-left-antihelix": {
+            "geometrySha256": "23d53b9fb9de2b8fae2030288342bfaeb2bb825ae2d8fe70d528adb31e0b71b9",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.0017739271510443105,
+              "maximumSignedGap": -0.0013435073962278076,
+              "front": 0.004517021385997497,
+              "back": -0.0026829775590003105
+            },
+            "retainedPath": {
+              "sha256": "02d82e2a43921d0448df4fd9fd6f5ee9cac041a6830d85ba645194521fd7ffa1",
+              "controlPointsSha256": "9da01de07b2f0fa4805d8e5af9e4a3310ccbe5194687755faf7cabfb25330a0a",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          },
+          "fr-manikin-ear-right-antihelix": {
+            "geometrySha256": "a48d6a30c30e1dce4d8bf28910488ad9ec292827cfed6ba96327fb08486a56b5",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.0017739271157917126,
+              "maximumSignedGap": -0.0013435061525953246,
+              "front": 0.004517021196563539,
+              "back": -0.002682977748434269
+            },
+            "retainedPath": {
+              "sha256": "0e0842cb39ac6aeab4a5f78af205f0164a27ee2a61d622b9d69e249a8f0c637e",
+              "controlPointsSha256": "d1a221dd5a3d9bd2a46a87d780825f934a4d3a5cea26865b82422dbf83af65dc",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          }
+        }
+      },
+      {
+        "age": "infant",
+        "phase": 8,
+        "skullGeometrySha256": "efc3a1cce5ff0d9182313066830d1289d3379e103d19710425afcdec7d0a8b6f",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "5cf23525e9c3bc9c51a8c674c91157c52344eb9e1e6aa27c720e5412f34e5fc9",
+          "fr-training-manikin": "70c42ce14f147f574e53684f4d32ba2e9e7b6dfb0aa871f54ab4bd96a02b49ee",
+          "fr-manikin-head-pivot": "5cb5fb035f53f6093e145e71bc5843360937fdde4c07ea35944f07adc9fa93eb",
+          "fr-manikin-ear-left": "ce2dda15b1e98e4f9eeecffb4ad38125e88bb1de132fcbacc241d80baa4ebc64",
+          "fr-manikin-ear-right": "6510df5e934d08032a5bc4579907b633a82ee273da3b10677bd8882ed7e0b301"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999253731104
+        },
+        "earFolds": {
+          "fr-manikin-ear-left-antihelix": {
+            "geometrySha256": "23d53b9fb9de2b8fae2030288342bfaeb2bb825ae2d8fe70d528adb31e0b71b9",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.001773927151044397,
+              "maximumSignedGap": -0.0013435073962278724,
+              "front": 0.004517021385997498,
+              "back": -0.002682977559000311
+            },
+            "retainedPath": {
+              "sha256": "02d82e2a43921d0448df4fd9fd6f5ee9cac041a6830d85ba645194521fd7ffa1",
+              "controlPointsSha256": "9da01de07b2f0fa4805d8e5af9e4a3310ccbe5194687755faf7cabfb25330a0a",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          },
+          "fr-manikin-ear-right-antihelix": {
+            "geometrySha256": "a48d6a30c30e1dce4d8bf28910488ad9ec292827cfed6ba96327fb08486a56b5",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "euler": 2,
+            "signedVolume": 0.0000034220440919004883,
+            "minimumFaceNormalDot": 0.8659592565051668,
+            "minimumCoincidentNormalDot": 0.9999999528465864,
+            "earBaseFit": {
+              "samples": 64,
+              "minimumSignedGap": -0.0017739271157916267,
+              "maximumSignedGap": -0.001343506152595217,
+              "front": 0.004517021196563626,
+              "back": -0.002682977748434226
+            },
+            "retainedPath": {
+              "sha256": "0e0842cb39ac6aeab4a5f78af205f0164a27ee2a61d622b9d69e249a8f0c637e",
+              "controlPointsSha256": "d1a221dd5a3d9bd2a46a87d780825f934a4d3a5cea26865b82422dbf83af65dc",
+              "controlPointCount": 4,
+              "curveType": "centripetal",
+              "closed": false,
+              "sampleCount": 101,
+              "radius": 1
+            }
+          }
+        }
+      }
+    ]
+  },
+  "constructionOptimization": {
+    "status": "passed",
+    "uncachedSourceSha256": "656b701385be5cb3de65f59e1d3fe6c1391b72d862f6b506840d291bd57ef8bd",
+    "sourceSha256": "0bcf8caf723e4cd96d444a3712f28b290b103fa8f5c30b28763e2554856d7065",
+    "counts": {
+      "poses": 6,
+      "byteIdenticalNativeScenes": 6,
+      "uncachedPointCallsPerBuild": 12870,
+      "cachedPointCallsPerBuild": 198,
+      "uncachedTangentCallsPerBuild": 4290,
+      "cachedTangentCallsPerBuild": 66
+    },
+    "frameAddsCurveCalls": false,
+    "byteIdenticalNativeScenes": true,
+    "auditManifestSha256": "537faea188450c8a7905cb766d0a601147f314339d0405617188b36d4dbbd1cb"
+  },
+  "constructionDiagnostics": {
+    "description": "Initial longitudinal mapping crossed distinct curve frames around a tight bend. Width probes retained negative triangle/normal agreement. Aligning native sphere latitude rings to the curve corrected the strips; the chosen 64 by 32 mesh passed the native ear-surface audit.",
+    "sourceSha256": "f83d6d06fae2cf7db234a50202324b036aa7b1b591655dcd7ac8321824e0f0d0",
+    "shapeProbeManifestSha256": "e8081afaf4763d503b9c6e9e178b82b8123d171ff43487fc74aa7b49d8e5d565",
+    "loftProbeManifestSha256": "ba29290bcfd6214aac372006210a674100ebecefe2062b45a19212d0039f414f",
+    "chosen": {
+      "width": 64,
+      "height": 32,
+      "vertices": 2145,
+      "triangles": 3968,
+      "minimumFaceNormalDot": 0.8659592565051668,
+      "minimumCoincidentDot": 0.9999999528465864,
+      "fit": {
+        "samples": 64,
+        "perimeter": [
+          -0.001773927151044269,
+          -0.0013435073962278221
+        ],
+        "front": 0.004517021385997494,
+        "back": -0.0026829775590002936
+      },
+      "error": null
+    }
+  },
+  "screenshots": {
+    "reviewed": 8,
+    "reviewedFiles": [
+      "adult-ear-folds-before-recovery.png",
+      "adult-ear-folds-after-recovery.png",
+      "child-ear-folds-before-recovery.png",
+      "child-ear-folds-after-recovery.png",
+      "infant-ear-folds-before-recovery.png",
+      "infant-ear-folds-after-recovery.png",
+      "phone-ear-folds.png",
+      "phone-ear-folds-app-contrast.png"
+    ],
+    "reviewedHashes": {
+      "adult-ear-folds-before-recovery.png": "e14ecdaae5e8357b922f6d4e8e015a4ac2c8ec422f58982d1826c9a582815764",
+      "adult-ear-folds-after-recovery.png": "c5cbb79715ff73370ad61e8881671bd893b8a3fcc53ac3a1a78adf31407b0c7d",
+      "child-ear-folds-before-recovery.png": "ccbc45dc326d9398e4bc4a53b79daf80a941d6d06223dac758ecddda5c6ed45b",
+      "child-ear-folds-after-recovery.png": "664f99bf0e3cb1c67d0785d4d4d1c3c4275a508dbccf634896b17c52d756f689",
+      "infant-ear-folds-before-recovery.png": "2aaf68b3cdfa9d1427386de8f6070774c5c0c94a83abda069e1ae0979fedd2f1",
+      "infant-ear-folds-after-recovery.png": "d040625496f49fd58976381640704b931f0e974270e902ee940a5929d13bdac7",
+      "phone-ear-folds.png": "2eb83cf8597c936f1a2882cd927bc6b2552a45961a4cc63c4ef29a74926fcd9c",
+      "phone-ear-folds-app-contrast.png": "b01c76c0b89f344d651a5a2d017201e447d9c044eed448253a550f0ba1b40fb8"
+    }
+  },
+  "sharedViewer": {
+    "baseline": "committed parent",
+    "sha256": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+    "modified": false,
+    "liveAudit": {
+      "result": "passed",
+      "reference": "7a776b356df7b03c05dde299ac0a67c46bb7d63f",
+      "testedBaselineSha256": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+      "testedWorktreeModuleSha256": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+      "currentLiveRootSha256": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1",
+      "currentLiveMirrorSha256": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1",
+      "bayViewerBytes": 51249,
+      "bayViewerSha256": "22fc37f217d4302a362ae51f4f961957d410999e1abc5b4396d36df35158a92d",
+      "bayViewerMatchesTested": true,
+      "completeCanonicalRemainderMatches": true,
+      "canonicalSha256": "32d9d3e760741c31619d46cdbe90566513f8c33bc3b6a59b29ae63c68cc7ef05",
+      "excludedPeerRegions": 5,
+      "peerRegionsReferenceFirstResponse": false,
+      "note": "Only the explicit Beehive persistence helper and four exact Perception catalog/allowlist entries are excluded. The complete remaining shared module is byte-identical to the tested committed parent."
+    }
+  },
+  "inputCount": 40,
+  "inputManifestsMatch": true,
+  "inputManifestHashes": {
+    "units": "fb1ce0604045b431940d16d24b05f4e294cc3745d210c90144dd0bc13bb32d49",
+    "browser": "fb1ce0604045b431940d16d24b05f4e294cc3745d210c90144dd0bc13bb32d49"
+  },
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "0bcf8caf723e4cd96d444a3712f28b290b103fa8f5c30b28763e2554856d7065",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "0bcf8caf723e4cd96d444a3712f28b290b103fa8f5c30b28763e2554856d7065",
+    "stem_lab/stem_lab_module.js": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+    "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "tests/helpers/firstresponse_pose_probe.js": "2faafa6bc208b440f23ea9680351d65c43ad2a5b5e962e597a48157bef4ac672",
+    "tests/helpers/stem_widgets_smoke_harness.js": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+    "tests/e2e/firstresponse-ear-folds.spec.ts": "0ea6b2817c1c7494a5e94b6ee6204e18e1a51a2b2ad02b92eb0706cfe923b6cb",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "tests/e2e/helpers/png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "playwright.config.ts": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587",
+    "reports/firstresponse-depth-comparison/playwright-software.config.ts": "a3ab365e61b809e8d1cde1c47de6d88940be0d902aafc70d56dce7a3bffe01ec",
+    "reports/firstresponse-ear-folds/playwright.config.ts": "0ced684a1223d02108439f6310e7c13e4b59ac3cb374f0c29fb2795c51a976fb",
+    "vendor/three-r128/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "desktop/web-app/node_modules/react/umd/react.production.min.js": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+    "node_modules/axe-core/axe.min.js": "66a8aaa95a8b044a7fd74a5435873bf04ff65a1ca75567c921b7509742085a14",
+    "app/static/css/main.11e7c75d.css": "800ee18e70d600ea7202d64b0f2a04fa6dc88bbee8fa739c69585d7e79b825df",
+    "ui_strings.js": "8d5c08ca80b6c9b6b10b4e920c2115363c25e0ea5f308740950ca3aef90531dd",
+    "desktop/web-app/public/ui_strings.js": "8d5c08ca80b6c9b6b10b4e920c2115363c25e0ea5f308740950ca3aef90531dd",
+    "tests/firstresponse_ear_folds.test.js": "135d73e4bcca8709fe2205bfd3c5403125db86424347dd7ef0f6ea19bbadbea2",
+    "tests/firstresponse_brow_surfaces.test.js": "1aaabe39645c5fac8e06093139c97b0b8e1ef84b87f46a1e0070a64af53dbe6e",
+    "tests/firstresponse_nose_surfaces.test.js": "28ca8cdc32e6392dc0c5ded81074113ec0a8d810eb6999423644163740e45c3e",
+    "tests/firstresponse_eyelid_surfaces.test.js": "bba7ae631c812326a4ff3e1fca324443907f03cadb4471179558e9e58ec6f97a",
+    "tests/firstresponse_lip_surfaces.test.js": "4ab8f4721608f846df69c1ae1b18b612fcf84c2ae995b8fbdf16f10fdc9fa883",
+    "tests/firstresponse_depth_explorer.test.js": "8d95fe9bf754bf6029adb91a4f7b2339700cfa315144a77b90123018244132b0",
+    "tests/firstresponse_body_3d.test.js": "fb90737f362657b15e303ce946bda19f84ef9c1a02ac4f57fb6a1338cc403111",
+    "tests/stem_firstresponse_hook_order.test.js": "50bac19e05d1cb634cdbe7e1ef3927ff730bb9838be311cf01feb2bd58373dc0",
+    "reports/firstresponse-3d-explorer/ui-strings.delta.json": "af5167a3b763ad757171ddb6cfc28ed2fc92a9c53c0c73da074e0f010fac76d1",
+    "reports/firstresponse-cycle-inspector/ui-strings.delta.json": "044a8abf77bdc33033e15e8c7cafcb6838fde3974d484586578fe3126aee0194",
+    "reports/firstresponse-depth-comparison/ui-strings.delta.json": "b84768a2cf0a492aa0a56487348ea8f861c20b11a1c213660a815ec39d32de8f",
+    "reports/firstresponse-prediction-activity/ui-strings.delta.json": "4aad90de61b0ea7c428dd44963c100c9d2bae44831749b078fc2535f0d5dc8dc",
+    "reports/firstresponse-chest-inspection/ui-strings.delta.json": "0d7d4e881cc81f5c8b7874a6257d1f648393db5bcd9b9562843199a4f90e86ac",
+    "reports/firstresponse-child-hands/ui-strings.delta.json": "2811f733315fa320b704f3bec452b87d330271925f782ff84526c182c4881b78",
+    "reports/firstresponse-visual-markers/ui-strings.delta.json": "4051afa01b271edbdbc74c1c1067c9b30c9f1c433a31cae5d2f0efa8a8d9e264",
+    "reports/firstresponse-manikin-realism/ui-strings.delta.json": "ec587b40a466283602e1f26f022657a47e6716f5ba98be591d878eee3a05fdac",
+    "reports/firstresponse-recovery-review/ui-strings.delta.json": "4b815a66fee3b3707f8b6c1e8a80924c909afc3cbab556d200762f6ac2228d57",
+    "reports/firstresponse-arm-posture/ui-strings.delta.json": "b9afca037d5c0fa14bfddbe1aa010145f48e4f05d1e8934b8030915f089d9b62",
+    "reports/firstresponse-arm-guides/ui-strings.delta.json": "680b3e875103441ea87e88756b0e90f89a141a452c12361e38e4aaf5d1637abd"
+  },
+  "limits": "Browser evidence covers software rendering and interaction. Hardware performance remains unmeasured. Reduced construction query counts do not establish the cause of the initial memory failure.",
+  "retainedLocalEvidence": [
+    "units-first.log",
+    "units-first-exit.json",
+    ".units-first-inputs.json",
+    ".skull-and-rig-before-cache-inputs.json",
+    ".cache-baseline-source-inputs.json",
+    ".cache-reuse-audit-inputs.json",
+    ".shape-probe-inputs.json",
+    ".loft-probe-inputs.json",
+    "units.log",
+    "units-exit.json",
+    "browser.log",
+    "browser-exit.json",
+    ".units-inputs.json",
+    ".browser-inputs.json",
+    ".reviewed.json",
+    ".skull-and-rig-audit-inputs.json",
+    ".live-viewer-audit-inputs.json",
+    "geometry-metrics.json"
+  ]
+}

@@ -1,0 +1,480 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-coherence-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/bridgelab-motion-coherence-2026-10-04/browser-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "line"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "26-bridgelab-gl.spec.ts",
+      "file": "26-bridgelab-gl.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "Bridge Lab — real WebGL",
+          "file": "26-bridgelab-gl.spec.ts",
+          "line": 215,
+          "column": 6,
+          "specs": [
+            {
+              "title": "motion guide: fixed references, A/B scale, fullscreen and fallback at 1000px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 14007,
+                      "error": {
+                        "message": "Error: all three measurements fit the compact scene panel\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m-2\u001b[39m\nReceived:    \u001b[31m15.5\u001b[39m",
+                        "stack": "Error: all three measurements fit the compact scene panel\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m-2\u001b[39m\nReceived:    \u001b[31m15.5\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:1158:63",
+                        "location": {
+                          "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                          "column": 63,
+                          "line": 1158
+                        },
+                        "snippet": "  1156 |       expect(await lastReading.evaluate(element => element.getBoundingClientRect().bottom\n  1157 |         - element.closest('[data-bridge-scene-readout]')!.getBoundingClientRect().bottom),\n> 1158 |         'all three measurements fit the compact scene panel').toBeLessThanOrEqual(-2);\n       |                                                               ^\n  1159 |       await captureImmersiveRegion(page, stage, 'bridge-' + width + '-motion-guide.png');\n  1160 |       await page.getByRole('button', { name: 'Prepare 5% / 20% comparison', exact: true }).click();\n  1161 |       await page.getByRole('button', { name: 'Inspect both at 16 s', exact: true }).click();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                            "column": 63,
+                            "line": 1158
+                          },
+                          "message": "Error: all three measurements fit the compact scene panel\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m-2\u001b[39m\nReceived:    \u001b[31m15.5\u001b[39m\n\n  1156 |       expect(await lastReading.evaluate(element => element.getBoundingClientRect().bottom\n  1157 |         - element.closest('[data-bridge-scene-readout]')!.getBoundingClientRect().bottom),\n> 1158 |         'all three measurements fit the compact scene panel').toBeLessThanOrEqual(-2);\n       |                                                               ^\n  1159 |       await captureImmersiveRegion(page, stage, 'bridge-' + width + '-motion-guide.png');\n  1160 |       await page.getByRole('button', { name: 'Prepare 5% / 20% comparison', exact: true }).click();\n  1161 |       await page.getByRole('button', { name: 'Inspect both at 16 s', exact: true }).click();\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:1158:63"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:06:48.503Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-coherence-2026-10-04\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-61f5b-reen-and-fallback-at-1000px-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-coherence-2026-10-04\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-61f5b-reen-and-fallback-at-1000px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-coherence-2026-10-04\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-61f5b-reen-and-fallback-at-1000px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-coherence-2026-10-04\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-61f5b-reen-and-fallback-at-1000px-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                        "column": 63,
+                        "line": 1158
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-09c058ccb3d0e29b4f43",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1132,
+              "column": 9
+            },
+            {
+              "title": "motion guide: fixed references, A/B scale, fullscreen and fallback at 320px",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 1,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 10907,
+                      "error": {
+                        "message": "Error: all three measurements fit the compact scene panel\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m-2\u001b[39m\nReceived:    \u001b[31m32\u001b[39m",
+                        "stack": "Error: all three measurements fit the compact scene panel\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m-2\u001b[39m\nReceived:    \u001b[31m32\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:1158:63",
+                        "location": {
+                          "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                          "column": 63,
+                          "line": 1158
+                        },
+                        "snippet": "  1156 |       expect(await lastReading.evaluate(element => element.getBoundingClientRect().bottom\n  1157 |         - element.closest('[data-bridge-scene-readout]')!.getBoundingClientRect().bottom),\n> 1158 |         'all three measurements fit the compact scene panel').toBeLessThanOrEqual(-2);\n       |                                                               ^\n  1159 |       await captureImmersiveRegion(page, stage, 'bridge-' + width + '-motion-guide.png');\n  1160 |       await page.getByRole('button', { name: 'Prepare 5% / 20% comparison', exact: true }).click();\n  1161 |       await page.getByRole('button', { name: 'Inspect both at 16 s', exact: true }).click();"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                            "column": 63,
+                            "line": 1158
+                          },
+                          "message": "Error: all three measurements fit the compact scene panel\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeLessThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: <= \u001b[32m-2\u001b[39m\nReceived:    \u001b[31m32\u001b[39m\n\n  1156 |       expect(await lastReading.evaluate(element => element.getBoundingClientRect().bottom\n  1157 |         - element.closest('[data-bridge-scene-readout]')!.getBoundingClientRect().bottom),\n> 1158 |         'all three measurements fit the compact scene panel').toBeLessThanOrEqual(-2);\n       |                                                               ^\n  1159 |       await captureImmersiveRegion(page, stage, 'bridge-' + width + '-motion-guide.png');\n  1160 |       await page.getByRole('button', { name: 'Prepare 5% / 20% comparison', exact: true }).click();\n  1161 |       await page.getByRole('button', { name: 'Inspect both at 16 s', exact: true }).click();\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts:1158:63"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:07:07.283Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-coherence-2026-10-04\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-feb11-creen-and-fallback-at-320px-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-coherence-2026-10-04\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-feb11-creen-and-fallback-at-320px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-coherence-2026-10-04\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-feb11-creen-and-fallback-at-320px-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\bridgelab-motion-coherence-2026-10-04\\browser-artifacts\\26-bridgelab-gl-Bridge-Lab-feb11-creen-and-fallback-at-320px-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\26-bridgelab-gl.spec.ts",
+                        "column": 63,
+                        "line": 1158
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-fdb861f3714b2d99f6f9",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1132,
+              "column": 9
+            },
+            {
+              "title": "motion coherence: readable fixed markers, precise values and unequal scene trials at 1000px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 6948,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:07:28.026Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-e751097be40a2b548d62",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1300,
+              "column": 9
+            },
+            {
+              "title": "motion coherence: readable fixed markers, precise values and unequal scene trials at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5426,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:07:35.288Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-54ed4162674943923551",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1300,
+              "column": 9
+            },
+            {
+              "title": "motion coherence: selected scene A falls back to current motion and recovers without changing the investigation",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4079,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:07:40.725Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-1d125b5d29e5218c44e6",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1311,
+              "column": 7
+            },
+            {
+              "title": "recorded maxima: shared peak inspection, signed markers and small curves at 1000px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7391,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:07:44.813Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-23510468e401a4885f87",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1316,
+              "column": 9
+            },
+            {
+              "title": "recorded maxima: shared peak inspection, signed markers and small curves at 320px",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7512,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:07:52.216Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-89eb26700eae6e923252",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1316,
+              "column": 9
+            },
+            {
+              "title": "recorded maxima: guided scene A stays selected through peak inspection and graphics recovery",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5467,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:07:59.738Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-3c59a63b3988e892ac59",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 1328,
+              "column": 7
+            },
+            {
+              "title": "motion guide: WebGL loss retains current measurements and recovery restores resting rails",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 2,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 5082,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:08:05.216Z",
+                      "annotations": [],
+                      "attachments": []
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0f4949b97cc65d74f1aa-904e615534ef55f59d3b",
+              "file": "26-bridgelab-gl.spec.ts",
+              "line": 2285,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T17:06:44.466Z",
+    "duration": 105667.425,
+    "expected": 7,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

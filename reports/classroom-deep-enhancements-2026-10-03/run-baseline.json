@@ -1,0 +1,31 @@
+{
+  "label": "baseline",
+  "source": "reports/classroom-deep-enhancements-2026-10-03/source-before-r2/AlloFlowANTI.txt",
+  "beforeSha256": "f4afc02f33f87f613f9939ac6b8e71e3eac961a850ccdd4a45c639880d4852cf",
+  "afterSha256": "f4afc02f33f87f613f9939ac6b8e71e3eac961a850ccdd4a45c639880d4852cf",
+  "stable": true,
+  "passed": false,
+  "completedAt": "2026-10-04T03:24:52.075Z",
+  "jobs": [
+    {
+      "name": "student-rtc",
+      "exitCode": 1,
+      "error": null
+    },
+    {
+      "name": "teacher",
+      "exitCode": 1,
+      "error": null
+    },
+    {
+      "name": "student-poll-drain",
+      "exitCode": 1,
+      "error": null
+    },
+    {
+      "name": "response-isolation",
+      "exitCode": 1,
+      "error": null
+    }
+  ]
+}

@@ -1,0 +1,148 @@
+{
+  "date": "2026-10-01",
+  "pass": "Sky Lab galaxy rotation measurements and mass explorer",
+  "committed": false,
+  "changes": [
+    "Two published SPARC examples: all 43 radial samples for NGC 3198 and all 31 for NGC 6503, including speed errors, gas and stellar model terms.",
+    "Linked measured-speed and difference diagrams on fixed speed scales, selected-radius readouts and adjustable stellar mass-to-light ratio.",
+    "Discrete sample selection through a native slider, keyboard or touch; controls retain investigation notes and normalize malformed saved inputs.",
+    "Signed gas contributions and negative differences remain visible; quoted random errors are separated from model uncertainty.",
+    "Explorer appears inside the rotation-curve topic; other dark-matter topics keep their existing compact panels.",
+    "Corrected compact-mass rotation explanation and present-day versus early-universe energy-budget claims; preserved percentage-bar proportions."
+  ],
+  "checks": {
+    "unit": {
+      "passed": 192,
+      "total": 192,
+      "failed": 0
+    },
+    "browser": {
+      "passed": 12,
+      "failed": 0,
+      "flaky": 0,
+      "skipped": 0
+    },
+    "phone": {
+      "viewportWidth": 320,
+      "horizontalOverflow": false,
+      "minDiagramGlyphPixels": 11.866666666666667,
+      "minControlHeightPixels": 44,
+      "allDiagramTextWithinViewBox": true,
+      "completeErrorBarsWithinPlot": true
+    },
+    "source": {
+      "sourceScopeReconstruction": true,
+      "syntaxValid": true,
+      "mirrorEqual": true,
+      "englishLabelsAddedOrCorrected": 45,
+      "sourceSHA256": "6ad1ea8c99c288c049c61a19783a303ab61d7251f4c9d89ea6a06bc2c5542d91",
+      "baselineSHA256": "a0bc04aeb21f70ff779d095537dec16c968fde3af18d060f4512b237ae69a82b"
+    },
+    "gitDiffCheckPassed": true,
+    "screenshotsVisuallyInspected": [
+      "rotation-desktop.png",
+      "rotation-overprediction.png",
+      "rotation-chart-phone.png",
+      "rotation-difference-phone.png"
+    ]
+  },
+  "scientificScope": {
+    "equation": "v_bar² = Vgas|Vgas| + Υ_disk Vdisk|Vdisk| + Υ_bulge Vbulge|Vbulge|",
+    "massToLightRange": [
+      0.1,
+      1
+    ],
+    "step": 0.05,
+    "default": 0.5,
+    "wavelengthMicrometers": 3.6,
+    "selectedExamplesHaveZeroBulgeTerms": true,
+    "speedAxisKms": [
+      -50,
+      200
+    ],
+    "differenceAxisKms": [
+      -150,
+      150
+    ],
+    "difference": "v_obs - v_bar",
+    "uncertainty": "Quoted random speed errors only; no inclination systematic or model uncertainty is added.",
+    "assumptions": "Gas, light profiles, adopted distances and inclinations remain fixed. No dark halo or modified-gravity model is fitted.",
+    "inference": "The explorer compares a mass assumption with measurements; it does not establish a particle identity or compute a joint likelihood."
+  },
+  "provenance": {
+    "retrieved": "2026-10-01",
+    "catalog": "SPARC 2016",
+    "primaryCatalogURL": "https://astroweb.cwru.edu/SPARC/",
+    "files": {
+      "SPARC_Lelli2016c.mrt": {
+        "downloadSHA256": "5aa0501f6b0d881fa579030e315e7b5b6ef561a5bd3a07472f9929c7e5728243",
+        "normalizedTextSHA256": "5aa0501f6b0d881fa579030e315e7b5b6ef561a5bd3a07472f9929c7e5728243"
+      },
+      "MassModels_Lelli2016c.mrt": {
+        "downloadSHA256": "9108994b12cc401b94a1768beca61c53ec354779385c9c9cc571049f3043244c",
+        "normalizedTextSHA256": "fd56b08f93ee6be38bb5b2305a16a2dc57d98ee29034223c5d14ecf8f50759d0"
+      }
+    },
+    "subset": [
+      {
+        "galaxy": "NGC3198",
+        "samples": 43
+      },
+      {
+        "galaxy": "NGC6503",
+        "samples": 31
+      }
+    ],
+    "columns": [
+      "R (kpc)",
+      "Vobs (km/s)",
+      "e_Vobs (km/s)",
+      "Vgas (km/s)",
+      "Vdisk at M/L=1 (km/s)",
+      "Vbulge at M/L=1 (km/s)"
+    ],
+    "verification": "Every included value is checked against the published fixed-width table columns. Content hashes normalize CRLF to LF for portable verification; original download hashes are also retained."
+  },
+  "sources": [
+    {
+      "title": "SPARC catalog and source references",
+      "url": "https://astroweb.cwru.edu/SPARC/"
+    },
+    {
+      "title": "SPARC 2016 mass-model table",
+      "url": "https://astroweb.cwru.edu/SPARC/MassModels_Lelli2016c.mrt"
+    },
+    {
+      "title": "SPARC 2016 galaxy properties and original rotation references",
+      "url": "https://astroweb.cwru.edu/SPARC/SPARC_Lelli2016c.mrt"
+    },
+    {
+      "title": "Lelli, McGaugh & Schombert 2016: SPARC mass models",
+      "url": "https://arxiv.org/abs/1606.09251",
+      "use": "Equation 2, signed gas contributions and reference M/L"
+    },
+    {
+      "title": "Planck 2018 VI: Cosmological parameters",
+      "url": "https://arxiv.org/abs/1807.06209",
+      "use": "Base ΛCDM interpretation and present-epoch density budget"
+    }
+  ],
+  "limits": [
+    "This is an inspection of two bundled historical SPARC examples, rather than a live catalog query.",
+    "Model segments join published radii; selection snaps to actual samples.",
+    "The scalar status compares one model value with a quoted error bar and has no formal detection significance.",
+    "Remaining particle-candidate and dark-energy topic claims were not comprehensively re-audited in this pass."
+  ],
+  "artifacts": [
+    "rotation-desktop.png",
+    "rotation-overprediction.png",
+    "rotation-phone-contrast.png",
+    "rotation-chart-phone.png",
+    "rotation-difference-phone.png",
+    "unit-tests.json",
+    "browser-tests.json",
+    "phone-geometry.json",
+    "data-provenance.json",
+    "build-verification.json"
+  ]
+}

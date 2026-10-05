@@ -1,0 +1,19 @@
+{
+  "version": 1,
+  "baselineSHA": "794ff1f18ecc2dd2fc966a204f088a3b0e4fb708f7f6595f1a84a5f3af49911b",
+  "candidateSHA": "ce0c01a8fc85d002bc970c5103fec84be77ff9d2fd42a295fbe629219c9e2182",
+  "guardCount": 2,
+  "reverseByteExact": true,
+  "guards": [
+    {
+      "id": "humboldt-fin-span-roll",
+      "beforeSHA": "cc737dd36a8efb3c3665bfe9df668525b5edceb9657618c50cef0c76522283cb",
+      "afterSHA": "20ef159bc38f151453cd5be7cfe8a261fe8c37d46777f23471878679c5c58d4d"
+    },
+    {
+      "id": "squid-satin-skin-keeps-glossy-eyes-and-existing-fin-finish",
+      "beforeSHA": "7e2b87e976e1391a8916d4c9c410058d113c7c129ed2748eab584dcc7adb0765",
+      "afterSHA": "8f40e04f24e040e509536d1151a416c9bc4dc53034543e3b6f8753670207670d"
+    }
+  ]
+}

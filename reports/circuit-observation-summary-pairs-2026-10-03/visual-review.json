@@ -1,0 +1,82 @@
+{
+  "approved": true,
+  "sourceSha256": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+  "mirrorSha256": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+  "scriptSha256": "0ad50b7b8618c245d779980cc58a251bfe1ec5bda768517810eb3e2f4d0c9901",
+  "browserResultsSha256": "91c202b86beb1337a81382b3f9ee4d782075385448e1d8c0ae643ebed0ac0fa6",
+  "harnessCorrectionSha256": "5749248f92d7585f23ded6149c974135b707b8c012115f8e82e57093c6ad0578",
+  "accessibleDiagnosticSha256": "3e5302eedb9f80be53078a01a641f118382a4d3ef5b6e1689946a87865a0acf6",
+  "boundedPreflightSha256": "0f12fe7f26e09d1f484acba69ecae08150fe1c346ce9a7ebd46c23ef5e965595",
+  "nativeSession": 69497,
+  "nativeExitCode": 0,
+  "browserClosedByFinally": true,
+  "method": "All eight final PNGs inspected at original resolution with view_image.",
+  "screenshots": [
+    {
+      "file": "same-current-summaries-1280.png",
+      "sha256": "98877330e0955f711f4a5b1324a2e9b7c69be9d40c473b1aba9ec8dfed7bb965",
+      "reviewed": true
+    },
+    {
+      "file": "same-current-summaries-390.png",
+      "sha256": "75f3f9e42e350d1821a7b0cd42f6a861de6b94e894a6c096dbabc33d304aa619",
+      "reviewed": true
+    },
+    {
+      "file": "same-current-summaries-320.png",
+      "sha256": "0fa7060a2a31b947c4d227f94931fdd852a5bab6674a91d1abc2ecce420f6fb6",
+      "reviewed": true
+    },
+    {
+      "file": "sensor-probe-summaries-320.png",
+      "sha256": "77dd3acdca80f190eeadcc70c3c7e629ad208aff63eaf7b05cf9190cdcde5040",
+      "reviewed": true
+    },
+    {
+      "file": "saved-summaries-200pct-text-320.png",
+      "sha256": "8c56254b3f22f65c95b07eac162e8b883b4fc9dce00435d2776ab1f4d4461cb3",
+      "reviewed": true
+    },
+    {
+      "file": "forced-colors-saved-summaries-320.png",
+      "sha256": "7430ffd6aa0ac0443b0aba453eae4f2308ec4d58a26af890b90d45781b04dfb8",
+      "reviewed": true
+    },
+    {
+      "file": "rtl-saved-summaries-320.png",
+      "sha256": "61f0efe820549066db5f7593a85371fccc233ac56b0ba61cb2d1ad6ae0626710",
+      "reviewed": true
+    },
+    {
+      "file": "localized-saved-summaries-320.png",
+      "sha256": "4e6fdc1810fa87cbf417b4333cb1c978b3652aebb6555a5b324a8c47e11dacd4",
+      "reviewed": true
+    }
+  ],
+  "materialIssues": [],
+  "observations": [
+    "Equal 21.82 mA saved points are distinguishable by captured 3.30V and 5.00V inputs without expanding the cards.",
+    "At 320px and actual 200% text, current magnitudes, captured light/input and whole probe pairs remain readable without clipped content.",
+    "RTL now keeps each Red or Black label with its node name; the groups follow RTL order while each node and numeric reading remains left-to-right.",
+    "Desktop,390px,forced-color and translated-label views remain clear.",
+    "Screenshots review collapsed summaries. Native disclosure and Record-to-note workflows verify the preserved body and actions separately."
+  ],
+  "verificationSummary": {
+    "screenshots": 8,
+    "axeScans": 8,
+    "focusChecks": 16,
+    "summaryMeasurements": 26,
+    "completeProbePairs": 52,
+    "nativeAccessibleNames": 26,
+    "isolatedQuantityOrNodeRuns": 104,
+    "doubledFontMeasurements": 91,
+    "forcedColorTextNodes": 48,
+    "forcedColorMinimumRatio": 13.994023083921398,
+    "nativeDisclosureActions": 2,
+    "recordFocusTransitions": 1,
+    "lifecycleCases": 2,
+    "rtlActualViewportWidth": 320,
+    "errors": 0,
+    "visualIssues": 0
+  }
+}

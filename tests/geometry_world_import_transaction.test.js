@@ -177,3 +177,36 @@ describe('Editable Geometry World import transactions',()=>{
     expect(result).toMatchObject({ok:false,restored:false});expect(result.recovery.editableWorld).toBeNull();expect(result.recovery.blocks).toHaveLength(2);
   });
 });
+
+describe('queued editable import caller transaction',()=>{
+  function caller(app){
+    const source=readFileSync('stem_lab/stem_tool_geometryworld_builder.js','utf8');
+    const start=source.indexOf('      function confirmEditableRestore() {'),end=source.indexOf('      function downloadEditableRecovery()',start);
+    const token={current:4},preview={value:incoming},clear=vi.fn(),error=vi.fn(),focus=vi.fn(),announce=vi.fn(),applyFailed={current:false};
+    let queued;
+    app.engine.transitionWorld=vi.fn((_target,action)=>{if(app.engine._worldTransitionDepth)return action();queued=action;return false;});
+    app.engine.logEvent=vi.fn();
+    const deps={editablePreview:preview,ENGINE_KEY:'__geoWorldEngine',editableReadTokenRef:token,
+      transitionBuilderWorld:(engine,target,action)=>engine.transitionWorld(target,action),restoreEditableWorld:api.restoreEditableWorld,ctx:app.ctx,
+      editableApplyFailedRef:applyFailed,setEditablePreview:clear,setEditableError:error,
+      patchGeometryState:(ctx,patch)=>ctx.updateMulti('geometryWorld',patch),announce,
+      cancelEditablePreview:clear,focusWorldSurface:focus,EDITABLE_WORLD_SCHEMA:api.EDITABLE_WORLD_SCHEMA};
+    const confirm=new Function(...Object.keys(deps),source.slice(start,end)+'\nreturn confirmEditableRestore;')(...Object.values(deps));
+    return {confirm,token,clear,error,focus,announce,applyFailed,retry(){app.engine._worldTransitionDepth=1;try{return queued();}finally{delete app.engine._worldTransitionDepth;}}};
+  }
+  it('keeps the preview and current HUD on rejection, then retries the full success flow',()=>{
+    const app=fixture(),before=frozen(app),run=caller(app);
+    expect(run.confirm()).toBe(false);
+    expect(frozen(app)).toEqual(before);expect(run.clear).not.toHaveBeenCalled();expect(run.error).not.toHaveBeenCalled();expect(run.announce).not.toHaveBeenCalled();expect(run.focus).not.toHaveBeenCalled();
+    expect(run.applyFailed.current).toBe(false);expect(app.engine.loadLesson).not.toHaveBeenCalled();
+    expect(run.retry()).toBe(true);
+    expect(app.state()).toMatchObject({activeLesson:'builderSandbox',hudPreset:'builder',hudPanel:'inventory',showGeometryHome:false,measureHistory:[],builderPrintContext:null,blocksPlaced:3});
+    expect(app.engine.logEvent).toHaveBeenCalledWith('editable_world_open',{blocks:3,schema:api.EDITABLE_WORLD_SCHEMA});
+    expect(run.clear).toHaveBeenCalledTimes(1);expect(run.focus).toHaveBeenCalledTimes(1);expect(run.announce).toHaveBeenCalledWith(app.ctx,expect.stringContaining('Opened New tower'),'success');
+  });
+  it('invalidates the queued import after its preview was canceled or replaced',()=>{
+    const app=fixture(),before=frozen(app),run=caller(app);
+    expect(run.confirm()).toBe(false);run.token.current++;
+    expect(run.retry()).toBe(false);expect(frozen(app)).toEqual(before);expect(app.engine.loadLesson).not.toHaveBeenCalled();expect(run.clear).not.toHaveBeenCalled();expect(run.focus).not.toHaveBeenCalled();
+  });
+});

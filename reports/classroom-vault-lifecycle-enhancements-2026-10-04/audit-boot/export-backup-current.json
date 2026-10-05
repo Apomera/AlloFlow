@@ -1,0 +1,215 @@
+{
+  "label": "current",
+  "scope": "Complete source and generated factories with mocked DOM/URL and native Node Blob; candidate is one exact in-memory getter qualification, no production writes",
+  "inputs": {
+    "source": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\host_handlers_source.jsx",
+      "sha256": "ef290e2068207169ca205c0329a0b2c5260deb6a9943f2d4173cd65ec0907bba"
+    },
+    "runtime": {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\host_handlers_module.js",
+      "sha256": "b6aa6e66b3e151019db7c4830e36de5305deea23bf80e9113d334a0cea4271eb"
+    }
+  },
+  "total": 24,
+  "passed": 2,
+  "failed": 22,
+  "checks": [
+    {
+      "name": "source success resolves controller through host getter",
+      "passed": false,
+      "actual": 0,
+      "expected": 1,
+      "error": "Expected values to be strictly deep-equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "source success invokes actual export method",
+      "passed": false,
+      "actual": 0,
+      "expected": 1,
+      "error": "Expected values to be strictly deep-equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "source success emits no error",
+      "passed": false,
+      "actual": [
+        "getCanvasRecoveryVaultController is not defined"
+      ],
+      "expected": [],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   'getCanvasRecoveryVaultController is not defined'\n+ ]\n- []\n"
+    },
+    {
+      "name": "source success downloads encrypted JSON once",
+      "passed": false,
+      "actual": 0,
+      "expected": 1,
+      "error": "Expected values to be strictly deep-equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "source success preserves encrypted backup payload",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "kind": "allo-protected-recovery-backup",
+        "vault": {
+          "encrypted": true,
+          "records": [
+            "opaque"
+          ]
+        }
+      },
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ null\n- {\n-   kind: 'allo-protected-recovery-backup',\n-   vault: {\n-     encrypted: true,\n-     records: [\n-       'opaque'\n-     ]\n-   }\n- }\n"
+    },
+    {
+      "name": "source success uses dated JSON filename",
+      "passed": false,
+      "expected": "AlloFlow-Protected-Recovery-2026-10-04.json",
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ undefined\n- 'AlloFlow-Protected-Recovery-2026-10-04.json'\n"
+    },
+    {
+      "name": "source success schedules object URL cleanup",
+      "passed": false,
+      "actual": [],
+      "expected": [
+        5000
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   5000\n- ]\n"
+    },
+    {
+      "name": "source success revokes generated URL",
+      "passed": false,
+      "actual": [],
+      "expected": [
+        "blob:export-control"
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   'blob:export-control'\n- ]\n"
+    },
+    {
+      "name": "source failure resolves controller through host getter",
+      "passed": false,
+      "actual": 0,
+      "expected": 1,
+      "error": "Expected values to be strictly deep-equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "source failure invokes actual export method",
+      "passed": false,
+      "actual": 0,
+      "expected": 1,
+      "error": "Expected values to be strictly deep-equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "source failure surfaces controller failure",
+      "passed": false,
+      "actual": [
+        "getCanvasRecoveryVaultController is not defined"
+      ],
+      "expected": [
+        "Device backup read failed"
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   'getCanvasRecoveryVaultController is not defined'\n-   'Device backup read failed'\n  ]\n"
+    },
+    {
+      "name": "source failure emits no download",
+      "passed": true
+    },
+    {
+      "name": "runtime success resolves controller through host getter",
+      "passed": false,
+      "actual": 0,
+      "expected": 1,
+      "error": "Expected values to be strictly deep-equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "runtime success invokes actual export method",
+      "passed": false,
+      "actual": 0,
+      "expected": 1,
+      "error": "Expected values to be strictly deep-equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "runtime success emits no error",
+      "passed": false,
+      "actual": [
+        "getCanvasRecoveryVaultController is not defined"
+      ],
+      "expected": [],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ [\n+   'getCanvasRecoveryVaultController is not defined'\n+ ]\n- []\n"
+    },
+    {
+      "name": "runtime success downloads encrypted JSON once",
+      "passed": false,
+      "actual": 0,
+      "expected": 1,
+      "error": "Expected values to be strictly deep-equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "runtime success preserves encrypted backup payload",
+      "passed": false,
+      "actual": null,
+      "expected": {
+        "kind": "allo-protected-recovery-backup",
+        "vault": {
+          "encrypted": true,
+          "records": [
+            "opaque"
+          ]
+        }
+      },
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ null\n- {\n-   kind: 'allo-protected-recovery-backup',\n-   vault: {\n-     encrypted: true,\n-     records: [\n-       'opaque'\n-     ]\n-   }\n- }\n"
+    },
+    {
+      "name": "runtime success uses dated JSON filename",
+      "passed": false,
+      "expected": "AlloFlow-Protected-Recovery-2026-10-04.json",
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ undefined\n- 'AlloFlow-Protected-Recovery-2026-10-04.json'\n"
+    },
+    {
+      "name": "runtime success schedules object URL cleanup",
+      "passed": false,
+      "actual": [],
+      "expected": [
+        5000
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   5000\n- ]\n"
+    },
+    {
+      "name": "runtime success revokes generated URL",
+      "passed": false,
+      "actual": [],
+      "expected": [
+        "blob:export-control"
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n+ []\n- [\n-   'blob:export-control'\n- ]\n"
+    },
+    {
+      "name": "runtime failure resolves controller through host getter",
+      "passed": false,
+      "actual": 0,
+      "expected": 1,
+      "error": "Expected values to be strictly deep-equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "runtime failure invokes actual export method",
+      "passed": false,
+      "actual": 0,
+      "expected": 1,
+      "error": "Expected values to be strictly deep-equal:\n\n0 !== 1\n"
+    },
+    {
+      "name": "runtime failure surfaces controller failure",
+      "passed": false,
+      "actual": [
+        "getCanvasRecoveryVaultController is not defined"
+      ],
+      "expected": [
+        "Device backup read failed"
+      ],
+      "error": "Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n+   'getCanvasRecoveryVaultController is not defined'\n-   'Device backup read failed'\n  ]\n"
+    },
+    {
+      "name": "runtime failure emits no download",
+      "passed": true
+    }
+  ]
+}

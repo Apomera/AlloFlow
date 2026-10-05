@@ -1,0 +1,30 @@
+[
+  {
+    "file": "jpl-parameters.html",
+    "url": "https://ssd.jpl.nasa.gov/astro_par.html",
+    "status": 200,
+    "checkedOn": "2026-10-01",
+    "normalizedSha256": "168f48b94ae3a65f31c96f081d08e7ca91ecc9e65678fdc57353821b492b313e"
+  },
+  {
+    "file": "nasa-moon-facts.html",
+    "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/moonfact.html",
+    "status": 200,
+    "checkedOn": "2026-10-01",
+    "normalizedSha256": "a468979dfb4179e36a3f6579cd2d1d4a475b5c6da29313fd470fa68ca1aa30c1"
+  },
+  {
+    "file": "noaa-spring-neap.html",
+    "url": "https://oceanservice.noaa.gov/facts/springtide.html",
+    "status": 200,
+    "checkedOn": "2026-10-01",
+    "normalizedSha256": "abd6b7c4bbcfd74c03e4f5bac9247aca211fdfb9f1847ca3d83da0d6e0b46a74"
+  },
+  {
+    "file": "noaa-coastal-patterns.html",
+    "url": "https://oceanservice.noaa.gov/education/tutorial_tides/tides07_cycles.html",
+    "status": 200,
+    "checkedOn": "2026-10-01",
+    "normalizedSha256": "eb761ae8c05637536f2cf372b3e59b8494b4ac0126534b080d32988dc891506e"
+  }
+]

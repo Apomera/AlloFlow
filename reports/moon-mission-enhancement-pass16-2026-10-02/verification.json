@@ -1,0 +1,106 @@
+{
+  "sourceSha256": "5c46e7f3fa84e76dcff2581de75f3230554df851f11afab5a22f99ccafaf7727",
+  "sourceBytes": 1287380,
+  "canonicalPublicIdentical": true,
+  "baselineSha256": "6c177a8eb2bb75edfdec90e5d8a4e0045cf25e4262ddb028dbf60d1964a7e03d",
+  "exactBaselineRecoveredByReversingIntegration": true,
+  "scopedIndexUnchanged": true,
+  "integrationOperations": 9,
+  "unitPassed": 138,
+  "unitFiles": [
+    {
+      "file": "tests\\moonmission_completion_announcements.test.js",
+      "passed": 4,
+      "latestRun": "unit-remaining.json"
+    },
+    {
+      "file": "tests\\moonmission_debrief_flights.test.js",
+      "passed": 13,
+      "latestRun": "unit-final.json"
+    },
+    {
+      "file": "tests\\moonmission_entry_dynamics_diagnostics.test.js",
+      "passed": 21,
+      "latestRun": "unit-initial.json"
+    },
+    {
+      "file": "tests\\moonmission_entry_dynamics_saved_state.test.js",
+      "passed": 13,
+      "latestRun": "unit-final.json"
+    },
+    {
+      "file": "tests\\moonmission_entry_dynamics_visuals.test.js",
+      "passed": 10,
+      "latestRun": "unit-final.json"
+    },
+    {
+      "file": "tests\\moonmission_entry_guidance.test.js",
+      "passed": 21,
+      "latestRun": "unit-initial.json"
+    },
+    {
+      "file": "tests\\moonmission_entry_guidance_evidence.test.js",
+      "passed": 14,
+      "latestRun": "unit-remaining.json"
+    },
+    {
+      "file": "tests\\moonmission_entry_saved_state.test.js",
+      "passed": 7,
+      "latestRun": "unit-remaining.json"
+    },
+    {
+      "file": "tests\\moonmission_entry_thermal_saved_state.test.js",
+      "passed": 17,
+      "latestRun": "unit-initial.json"
+    },
+    {
+      "file": "tests\\moonmission_entry_thermal_visuals.test.js",
+      "passed": 5,
+      "latestRun": "unit-initial.json"
+    },
+    {
+      "file": "tests\\moonmission_proceed_gates.test.js",
+      "passed": 13,
+      "latestRun": "unit-initial.json"
+    }
+  ],
+  "newTestsUnstaged": true,
+  "finalBrowserStats": {
+    "startTime": "2026-10-03T03:24:11.312Z",
+    "duration": 232581.668,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "scopedAxeViolations": 0,
+  "syntaxCheckPassed": true,
+  "scopedDiffCheckPassed": true,
+  "freeDiskBytes": 3518087168,
+  "captures": [
+    "browser\\dynamics-final\\dynamics-completed-precontact-chromium.png",
+    "browser\\dynamics-final\\dynamics-energy-shared-clock-chromium.png",
+    "browser\\dynamics-final\\dynamics-forces-ballistic-chromium.png",
+    "browser\\dynamics-final\\dynamics-forces-bank180-chromium.png",
+    "browser\\dynamics-final\\dynamics-forces-bank90-chromium.png",
+    "browser\\dynamics-final\\dynamics-phone-energy-320-chromium.png",
+    "browser\\dynamics-final\\dynamics-phone-forces-320-chromium.png",
+    "browser\\dynamics-final\\dynamics-v1-energy-chromium.png",
+    "browser\\dynamics-initial\\dynamics-completed-precontact-chromium.png",
+    "browser\\dynamics-initial\\dynamics-energy-shared-clock-chromium.png",
+    "browser\\dynamics-initial\\dynamics-forces-ballistic-chromium.png",
+    "browser\\dynamics-initial\\dynamics-forces-bank180-chromium.png",
+    "browser\\dynamics-initial\\dynamics-forces-bank90-chromium.png",
+    "browser\\dynamics-initial\\dynamics-v1-energy-chromium.png"
+  ],
+  "ownedTemporaryArtifactsRemoved": [
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass16-baseline.js",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\integrate-moon-dynamics.py",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\refine-moon-pass16.py",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\verify-moon-pass16.py",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11\\moon-pass16-compare.cjs",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\dynamics-physics-fragment.txt",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\dynamics-evidence-fragment.txt",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass16-2026-10-02\\dynamics-view-fragment.txt"
+  ]
+}

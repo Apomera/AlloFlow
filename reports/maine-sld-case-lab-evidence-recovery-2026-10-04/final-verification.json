@@ -1,0 +1,75 @@
+{
+  "verifiedAt": "2026-10-04T15:10:09.990811+00:00",
+  "status": "PASS",
+  "sourceSha256": "85b21dd96f2476e383beef207177736d859170244c35c6705d422e89771f41cb",
+  "moduleSha256": "c5af6b18d2a3a02d1fe99f885b874ea0bae04c1fa74b283a6bda7d69a2bdf87f",
+  "moduleBytes": 194284,
+  "fourModuleCopiesMatch": true,
+  "targetedBrowserScenariosPassed": 6,
+  "newScenarios": 2,
+  "originalBrowserDefinitionsPreserved": 35,
+  "availableScenarios": 37,
+  "axeScans": 5,
+  "axeViolations": 0,
+  "rootAcceptedCaptures": 4,
+  "singleRemovalPerCase": true,
+  "recoveryIsTransient": true,
+  "worksheetSchemaPreserved": true,
+  "coreDataBuilderPreserved": true,
+  "globalActivityCssPrintFunctionSharedResponseLabelPreserved": true,
+  "retainedPrintPageCount": 9,
+  "retainedPrintPdfSha256": "8fd65a71f399b21d5089ef3906bf3387a40cf71abd3c5ac62576c7f9705060a6",
+  "printRerun": false,
+  "preparedAssetValidation": false,
+  "testedHostSourceSha256": "ad2c36aae1c0b92b8e36ba77ead6fa7dba295305ef571e5e19e70900791bd261",
+  "testedHostBundleSha256": "c0036a0c17ca624a0424a45bc7178bd71d0055baced0a6ec2d6d4b38e9c025ad",
+  "sharedSourcesObserved": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "bf04ef84511debcce64d084cc539e2e09619b3e0fa11de2cb70beb8e29d5bd7a",
+      "finalMainePinRetained": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "bf04ef84511debcce64d084cc539e2e09619b3e0fa11de2cb70beb8e29d5bd7a",
+      "finalMainePinRetained": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "bf04ef84511debcce64d084cc539e2e09619b3e0fa11de2cb70beb8e29d5bd7a",
+      "finalMainePinRetained": true
+    }
+  ],
+  "currentSourcesMatchTestedSnapshot": false,
+  "finalServedBytes": [
+    {
+      "name": "app",
+      "httpStatus": 200,
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+      "bytes": 588
+    },
+    {
+      "name": "hostBundle",
+      "httpStatus": 200,
+      "sha256": "c0036a0c17ca624a0424a45bc7178bd71d0055baced0a6ec2d6d4b38e9c025ad",
+      "bytes": 1976991
+    },
+    {
+      "name": "activityModule",
+      "httpStatus": 200,
+      "sha256": "c5af6b18d2a3a02d1fe99f885b874ea0bae04c1fa74b283a6bda7d69a2bdf87f",
+      "bytes": 194284
+    }
+  ],
+  "previewPid": 26596,
+  "scopedIndexEmpty": true,
+  "commitPerformed": false,
+  "deploymentPerformed": false,
+  "evidenceHashes": {
+    "validationSummary": "d3ebb0ae4d52ef6db60e14ad234d9c8d795119e4474e3f4944b654073534f304",
+    "rootLayoutReview": "924f1eb00bd91dc809c1704dbd5d0a48563bc4ecc3874bda4e3444200cb5e6d8",
+    "independentReview": "77e44135c4e6b9f17f81fd062629703b486e5dddeee05c9d60e39f44ab608028",
+    "postHostObservation": "8bd05ba20ab66e1094ee8a569d69f72897937fd7931d0f8a2c73b54777ad02bb",
+    "postHostHttpVerification": "d1ef04b713a412671b25a14c267674e1ac95de8ac5b07fb452fe3041b697ffb3"
+  }
+}

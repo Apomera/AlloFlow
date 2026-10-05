@@ -1,0 +1,20 @@
+{
+  "source": "stem_lab/stem_tool_perception.js",
+  "sourceSha256": "f6cbfc10754e41c9f28c0d681f551275a9fa88efe6d4618348e1607ead18d39c",
+  "command": "node node_modules/vitest/vitest.mjs run tests/perception_lab_study_comparison.test.js --maxWorkers=1 --pool=threads --reporter=json --outputFile=reports/artstudio-workspace/perception-guided/runtime-comparison-results.json",
+  "pool": "threads",
+  "defaultPermissions": true,
+  "startupSucceeded": true,
+  "total": 42,
+  "passed": 41,
+  "failed": 1,
+  "failures": [
+    {
+      "name": "Saved matching-study comparison learner workflow rejects a deferred reveal after the learner selects a different comparison group",
+      "messages": [
+        "AssertionError: expected last \"vi.fn()\" call to have been called with [ Array(1) ]\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/perception_lab_study_comparison.test.js:458:22\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+      ]
+    }
+  ],
+  "diagnosis": "The state and privacy assertions pass. Only the final announcement expectation is obsolete after selectComparedStudy intentionally cancels pendingSavedReveal and announces the current selection. The new Delete/Undo feedback regression passes."
+}

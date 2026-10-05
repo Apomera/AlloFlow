@@ -1,0 +1,54 @@
+{
+  "expectedSourceLfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+  "before": {
+    "sources": [
+      {
+        "file": "stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+        "bytes": 2077705
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+        "bytes": 2077705
+      }
+    ],
+    "byteIdentical": true
+  },
+  "fixture": {
+    "file": "tests/anatomy_spotter_study_journey.test.js",
+    "sha256": "c5061b864e7969305fdb6e893619cb6f72f34c5cd1d6b130aee012f1bc544b49"
+  },
+  "startedAt": "2026-10-02T23:45:09.234Z",
+  "priorEvidence": {
+    "report": "d62-spotter-unit-results.json",
+    "metadata": "d62-spotter-unit-metadata.json",
+    "tests": 232,
+    "pass": 232
+  },
+  "startupDiagnostic": {
+    "report": "3b45-startup-spotter-unit-results.json",
+    "metadata": "3b45-startup-spotter-unit-metadata.json",
+    "reason": "Exited1 before collection; no cases, assertions, suites or error text."
+  },
+  "command": "node node_modules/vitest/vitest.mjs run tests/anatomy_spotter_study_journey.test.js --pool=forks --maxWorkers=1 --no-isolate --testTimeout=120000 --hookTimeout=120000 --reporter=json --outputFile=reports\\anatomy-spotter-study-2026-10-02\\spotter-unit-results.json",
+  "after": {
+    "sources": [
+      {
+        "file": "stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+        "bytes": 2077705
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+        "bytes": 2077705
+      }
+    ],
+    "byteIdentical": true
+  },
+  "finishedAt": "2026-10-02T23:57:40.585Z",
+  "exitCode": 1,
+  "signal": null,
+  "runtimeError": null
+}

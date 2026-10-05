@@ -1,0 +1,41 @@
+{
+  "status": "failed",
+  "error": "locator.waitFor: Error: strict mode violation: getByText('That saved investigation changed or moved. Review its current card and try again. Your records and draft were kept.', { exact: true }) resolved to 3 elements:\n    1) <div>That saved investigation changed or moved. Review…</div> aka getByText('That saved investigation').first()\n    2) <p role=\"status\" class=\"aq-save-status\" id=\"aq-eco-save-status\">That saved investigation changed or moved. Review…</p> aka getByLabel('Experiment log').getByText('That saved investigation')\n    3) <div role=\"status\" class=\"sr-only\" id=\"allo-live-aq\" aria-live=\"polite\" aria-atomic=\"true\">That saved investigation changed or moved. Review…</div> aka locator('#allo-live-aq')\n\nCall log:\n\u001b[2m  - waiting for getByText('That saved investigation changed or moved. Review its current card and try again. Your records and draft were kept.', { exact: true }) to be visible\u001b[22m\n\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_archive_integrity_browser.cjs:143:253",
+  "results": [
+    {
+      "case": "Duplicate cards act on their own original",
+      "checks": [
+        "real second-card download equals canonical report",
+        "literal title remains inert and escaped",
+        "only selected title renamed",
+        "input identity/focus/caret stable with Unicode and trailing whitespace",
+        "one selected original removed and exact Undo",
+        "1280/390 reflow/44px/scoped axe and forced colors"
+      ],
+      "errors": []
+    },
+    {
+      "case": "Identical sibling multiplicity and reading recovery",
+      "checks": [
+        "two canonical identical occurrences retained",
+        "selected one-row removal",
+        "one occurrence restored beside exact sibling",
+        "archive actions preserve live-reading recovery",
+        "320px/scoped axe/forced-color Undo"
+      ],
+      "errors": []
+    },
+    {
+      "case": "Duplicate second-card replay and branch",
+      "checks": [
+        "exact second scenario and originals used",
+        "replay preserves second prediction/captured sources",
+        "branch uses second B as A with fresh notebook",
+        "current draft parked exact",
+        "nested replay disabled",
+        "Return exact and successful transitions expire live recovery"
+      ],
+      "errors": []
+    }
+  ]
+}

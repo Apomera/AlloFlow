@@ -1,0 +1,32 @@
+{
+  "format": "alloflow-sld-state-references",
+  "version": 1,
+  "activeState": "Maine",
+  "byState": {
+    "Maine": {
+      "sources": [
+        {
+          "id": "73a65ec7-9db0-421d-9bd6-2ac0e017f6b9",
+          "title": "state-requirements.txt",
+          "url": "",
+          "fileName": "state-requirements.txt",
+          "pageSection": "",
+          "excerpt": "Evidence and instruction.",
+          "transferNotes": "",
+          "content": "Official state rule sample for local extraction.\nSection 2\n<em>literal markup</em> language: 文本\nEvidence and instruction.",
+          "fileFormat": "txt",
+          "extractionMethod": "browser-text",
+          "fileContentHash": "kh3t2w",
+          "effectiveDate": "",
+          "checkedDate": "2026-10-04",
+          "reviewedAt": "2026-10-04",
+          "importMethod": "local-file",
+          "documentPartCount": 1,
+          "fileSize": 125,
+          "fileLastModified": 1791153600054,
+          "reviewed": true
+        }
+      ]
+    }
+  }
+}

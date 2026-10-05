@@ -1,0 +1,168 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-watercolor-precision.js" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+index fa406f475..ecce2f4b5 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-watercolor-precision.js"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+@@ -5332,6 +5332,7 @@ const d = labToolData.artStudio || {};
+             var lastBrushAngle = 0;
+             var keyboardX = SIM_W / 2, keyboardY = SIM_H / 2;
+             var brushCursor = null;
++            var keyboardCursorActive = false;
+             var reservoirWater = 1;
+             var reservoirPigment = 1;
+             var strokeSeed = 1;
+@@ -5369,7 +5370,8 @@ const d = labToolData.artStudio || {};
+                 Math.round(params.bloomSensitivity * 100) + ' percent. ' +
+                 (params.showWetness ? 'Wetness map visible. ' : '') +
+                 (params.showFlow ? 'Flow vectors visible. ' : '') +
+-                (paused ? 'Drying is paused.' : 'Drying is active.'));
++                (paused ? 'Drying is paused.' : 'Drying is active.') + ' ' +
++                formatArtStudioLearningText(__alloT('stem.artstudio.watercolor_cursor_position','Keyboard brush at column {column}, row {row}.'),{column:Math.round(keyboardX+1),row:Math.round(keyboardY+1)}));
+             }
+ 
+             function loadSnapshot(url) {
+@@ -5606,6 +5608,7 @@ const d = labToolData.artStudio || {};
+               strokeSeed = isFinite(Number(state.strokeSeed)) ? Number(state.strokeSeed) : 1;
+               keyboardX = clamp(isFinite(Number(state.keyboardX)) ? Number(state.keyboardX) : SIM_W / 2, 0, SIM_W - 1);
+               keyboardY = clamp(isFinite(Number(state.keyboardY)) ? Number(state.keyboardY) : SIM_H / 2, 0, SIM_H - 1);
++              if(keyboardCursorActive && brushCursor && brushCursor.keyboard && !params.panMode && document.activeElement===canvas)showKeyboardBrush(false);
+               lastStatusKey = '';
+               render();
+               updateHistoryControls();
+@@ -6123,6 +6126,35 @@ const d = labToolData.artStudio || {};
+               else if (params.brush === 'rigger') { major = radius * (1.86 + tilt * 0.32); minor = Math.max(0.9, radius * (0.34 - tilt * 0.06)); }
+               return {major:major,minor:minor,angle:angle};
+             }
++            function revealKeyboardBrush(x,y,dynamics) {
++              var paper=watercolorPaperRef.current;if(!paper || !paper.clientWidth || !paper.clientHeight)return;
++              var view=paper.getBoundingClientRect(),rect=canvas.getBoundingClientRect();if(!rect.width || !rect.height)return;
++              var shape=brushFootprint(dynamics.pressure,dynamics.tilt,dynamics.angle),cos=Math.abs(Math.cos(shape.angle)),sin=Math.abs(Math.sin(shape.angle));
++              var centerX=rect.left+x*rect.width/SIM_W,centerY=rect.top+y*rect.height/SIM_H;
++              // Conservative rotated bounds also cover flat and rigger tips.
++              var radiusX=cos*shape.major*rect.width/SIM_W+sin*shape.minor*rect.height/SIM_H;
++              var radiusY=sin*shape.major*rect.width/SIM_W+cos*shape.minor*rect.height/SIM_H;
++              var left=view.left+(paper.clientLeft||0),top=view.top+(paper.clientTop||0),margin=12;
++              function revealAxis(scroll,extent,visible,start,center,radius,sheetStart,sheetSize) {
++                var first=Math.max(sheetStart,center-radius-margin),last=Math.min(sheetStart+sheetSize,center+radius+margin);
++                // A brush larger than the viewport cannot fit; retain its center.
++                if(last-first>visible){var padding=Math.min(margin,visible/4);first=center-padding;last=center+padding;}
++                var delta=first<start?first-start:last>start+visible?last-start-visible:0;
++                return clamp(scroll+delta,0,Math.max(0,extent-visible));
++              }
++              paper.scrollLeft=revealAxis(paper.scrollLeft,paper.scrollWidth,paper.clientWidth,left,centerX,radiusX,rect.left,rect.width);
++              paper.scrollTop=revealAxis(paper.scrollTop,paper.scrollHeight,paper.clientHeight,top,centerY,radiusY,rect.top,rect.height);
++            }
++            function showKeyboardBrush(reveal) {
++              keyboardCursorActive=true;
++              var dynamics={pressure:0.7,tilt:0,angle:0};
++              if(reveal)revealKeyboardBrush(keyboardX,keyboardY,dynamics);
++              showBrushCursor(keyboardX,keyboardY,dynamics,true);updateA11y();
++            }
++            function focusWatercolorPointer() {
++              keyboardCursorActive=false;
++              try{canvas.focus({preventScroll:true});}catch(_){canvas.focus();}
++            }
+             function hideBrushCursor() {
+               brushCursor = null;
+               var cursor = document.getElementById('artstudio-watercolor-cursor');
+@@ -6487,7 +6519,7 @@ const d = labToolData.artStudio || {};
+                 scheduleDurablePersistence(300);
+                 return paused;
+               },
+-              cancelPointer: function(){finishWatercolorPointer(null,true);hideBrushCursor();},
++              cancelPointer: function(){finishWatercolorPointer(null,true);keyboardCursorActive=false;hideBrushCursor();},
+               dabAt: function (x, y, pressure) { localRevision += 1; pushHistory(); strokeSeed += 1; addDab(x, y, { pressure: pressure || 0.7, speed: 0.12, tilt: 0, angle: 0 }); ensureLoop(); scheduleDurablePersistence(650); },
+               undo: undoState,
+               redo: redoState,
+@@ -6602,11 +6634,11 @@ const d = labToolData.artStudio || {};
+                 var paper=watercolorPaperRef.current;if(!paper || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY))return;
+                 event.preventDefault();hideBrushCursor();
+                 panning={id:event.pointerId,x:event.clientX,y:event.clientY,left:paper.scrollLeft,top:paper.scrollTop};
+-                canvas._watercolorPointerId=event.pointerId;canvas.style.cursor='grabbing';
++                canvas._watercolorPointerId=event.pointerId;canvas.style.cursor='grabbing';focusWatercolorPointer();
+                 try{canvas.setPointerCapture(event.pointerId);}catch(_){}return;
+               }
+               if (event.pointerType === 'touch' && params.touchMode !== 'draw') return;
+-              event.preventDefault(); drawing = true; lastX = null; lastY = null;
++              event.preventDefault(); drawing = true; lastX = null; lastY = null;focusWatercolorPointer();
+               canvas._watercolorPointerId = event.pointerId;
+               lastStrokeTime = 0; lastPressure = 0.7; lastTilt = 0; lastBrushAngle = 0;
+               localRevision += 1;
+@@ -6657,9 +6689,12 @@ const d = labToolData.artStudio || {};
+             canvas.onpointercancel = function (event) { finishWatercolorPointer(event, true); };
+             canvas.onlostpointercapture = function (event) { finishWatercolorPointer(event, true); };
+             canvas.onpointerenter = function (event) { if (!drawing && event.pointerType !== 'touch') canvas.onpointermove(event); };
+-            canvas.onpointerleave = function () { if (!drawing) hideBrushCursor(); };
+-            canvas.onfocus = function () { if(params.panMode)hideBrushCursor();else showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true); };
+-            canvas.onblur = hideBrushCursor;
++            canvas.onpointerleave = function () {
++              if(drawing)return;
++              if(keyboardCursorActive && document.activeElement===canvas && !params.panMode)showKeyboardBrush(false);else hideBrushCursor();
++            };
++            canvas.onfocus = function () {if(params.panMode || drawing || panning)hideBrushCursor();else showKeyboardBrush(true);};
++            canvas.onblur = function(){keyboardCursorActive=false;finishWatercolorPointer(null,true);hideBrushCursor();};
+             canvas.onkeydown = function (event) {
+               var historyKey = String(event.key || '').toLowerCase();
+               if (!event.ctrlKey && !event.metaKey && !event.altKey && historyKey === 'p') {
+@@ -6680,14 +6715,23 @@ const d = labToolData.artStudio || {};
+                 if (typeof announceToSR === 'function') announceToSR(didRedo ? __alloT('stem.artstudio.sr_watercolor_redone', 'Watercolor redone.') : __alloT('stem.artstudio.sr_nothing_to_redo', 'Nothing to redo.'));
+                 return;
+               }
++              if(event.ctrlKey || event.metaKey)return;
++              if(event.key==='Escape'){
++                if(drawing || panning){event.preventDefault();finishWatercolorPointer(null,true);}
++                keyboardCursorActive=false;hideBrushCursor();return;
++              }
+               if(params.panMode) {
++                if(event.altKey)return;
+                 if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Enter',' '].indexOf(event.key)<0)return;
++                finishWatercolorPointer(null,true);
+                 event.preventDefault();var paper=watercolorPaperRef.current;if(!paper)return;var distance=event.shiftKey?160:48;
+                 if(event.key==='ArrowLeft')paper.scrollLeft-=distance;if(event.key==='ArrowRight')paper.scrollLeft+=distance;
+                 if(event.key==='ArrowUp')paper.scrollTop-=distance;if(event.key==='ArrowDown')paper.scrollTop+=distance;
+                 if(event.key==='Home'){paper.scrollLeft=0;paper.scrollTop=0;}if(event.key==='End'){paper.scrollLeft=paper.scrollWidth;paper.scrollTop=paper.scrollHeight;}return;
+               }
+-              var move = Math.max(2, params.size * (SIM_W / Math.max(1, LOGICAL_W)) * 0.55);
++              if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Enter',' '].indexOf(event.key)<0)return;
++              finishWatercolorPointer(null,true);
++              var move = event.altKey?1:Math.max(2, params.size * (SIM_W / Math.max(1, LOGICAL_W)) * 0.55)*(event.shiftKey?4:1);
+               var moved = false;
+               if (event.key === 'ArrowLeft') { keyboardX = clamp(keyboardX - move, 0, SIM_W - 1); moved = true; }
+               else if (event.key === 'ArrowRight') { keyboardX = clamp(keyboardX + move, 0, SIM_W - 1); moved = true; }
+@@ -6697,14 +6741,15 @@ const d = labToolData.artStudio || {};
+               else if (event.key === 'End') { keyboardX = SIM_W - 1; keyboardY = SIM_H - 1; moved = true; }
+               if (moved) {
+                 event.preventDefault();
+-                showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true);
++                if(event.key==='Home' || event.key==='End'){var paper=watercolorPaperRef.current;if(paper){paper.scrollLeft=event.key==='Home'?0:Math.max(0,paper.scrollWidth-paper.clientWidth);paper.scrollTop=event.key==='Home'?0:Math.max(0,paper.scrollHeight-paper.clientHeight);}}
++                showKeyboardBrush(true);
+                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_watercolor_cursor_at_column_row', 'Watercolor cursor at column {value1}, row {value2}.'), { value1: Math.round(keyboardX + 1), value2: Math.round(keyboardY + 1) }));
+                 return;
+               }
+               if (event.key === 'Enter' || event.key === ' ') {
+                 event.preventDefault();
++                showKeyboardBrush(true);
+                 engine.dabAt(keyboardX, keyboardY, 0.7);
+-                showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true);
+                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_watercolor_dab_placed_at_column_row', 'Watercolor dab placed at column {value1}, row {value2}.'), { value1: Math.round(keyboardX + 1), value2: Math.round(keyboardY + 1) }));
+               }
+             };
+@@ -10427,8 +10472,8 @@ const d = labToolData.artStudio || {};
+               React.createElement("section", { 'aria-label': __alloT('stem.artstudio.a11y_watercolor_canvas_workspace', 'Watercolor canvas workspace'), className: "artstudio-watercolor-canvas-workspace space-y-2" },
+                 React.createElement("div", { ref:watercolorPaperRef,className: "artstudio-watercolor-paper rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg", style:{position:'relative',overflow:'auto','--watercolor-fit-side':watercolorFit+'px'} },
+                   React.createElement('div',{className:'artstudio-watercolor-sheet',style:{width:Math.round(watercolorFit*watercolorZoom),height:Math.round(watercolorFit*watercolorZoom)}},
+-                  React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 1024, height: 1024, role: "img", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_painting_canvas_focus_and_use_arrow', 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.'), 'aria-describedby': "artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status artstudio-watercolor-navigation-help", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { '--watercolor-side':Math.round(watercolorFit*watercolorZoom)+'px', maxWidth:'none', aspectRatio: '1 / 1', touchAction: watercolorNavigation==='pan' || d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y' } }),
+-                  React.createElement('div',{id:'artstudio-watercolor-cursor','aria-hidden':true,style:{display:'none',position:'absolute',pointerEvents:'none',zIndex:2,boxSizing:'border-box',border:'1px solid #0f172a',boxShadow:'0 0 0 1px rgba(255,255,255,0.95)'}},React.createElement('span',{style:{position:'absolute',left:'50%',top:'50%',width:3,height:3,borderRadius:'50%',background:'#0f172a',boxShadow:'0 0 0 1px white',transform:'translate(-50%,-50%)'}}))
++                  React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 1024, height: 1024, role: "img", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_painting_canvas_focus_and_use_arrow', 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.'), 'aria-describedby': "artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status artstudio-watercolor-navigation-help", 'aria-keyshortcuts': watercolorNavigation==='pan'?"ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Escape P Control+Z Control+Shift+Z Control+Y Meta+Z Meta+Shift+Z Meta+Y":"ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home End Enter Space Escape P Control+Z Control+Shift+Z Control+Y Meta+Z Meta+Shift+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { '--watercolor-side':Math.round(watercolorFit*watercolorZoom)+'px', maxWidth:'none', aspectRatio: '1 / 1', touchAction: watercolorNavigation==='pan' || d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y' } }),
++                  React.createElement('div',{'data-watercolor-cursor-layer':true,'aria-hidden':true,style:{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none',zIndex:2}},React.createElement('div',{id:'artstudio-watercolor-cursor','aria-hidden':true,style:{display:'none',position:'absolute',pointerEvents:'none',zIndex:2,boxSizing:'border-box',border:'1px solid #0f172a',boxShadow:'0 0 0 1px rgba(255,255,255,0.95)'}},React.createElement('span',{style:{position:'absolute',left:'50%',top:'50%',width:3,height:3,borderRadius:'50%',background:'#0f172a',boxShadow:'0 0 0 1px white',transform:'translate(-50%,-50%)'}})))
+                   )
+                 ),
+                 React.createElement("div", { className: "artstudio-watercolor-actions flex gap-2 flex-wrap items-center" },
+@@ -10644,7 +10689,7 @@ const d = labToolData.artStudio || {};
+                   React.createElement('span',{className:'text-xs text-sky-950'},__alloT('stem.artstudio.wet_paper_help','Prepare a wet sheet for soft washes. Dry paint before adding a crisp glaze.'))
+                 ),
+                 React.createElement('p', { className: 'rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-950', role: 'note' }, __alloT('stem.artstudio.watercolor_backrun_hint', 'Try a backrun: paint a wash, let it become damp, then add clean water with the Clear water brush. Watch mobile color move from the wetter center toward a darker rim.')),
+-                React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
++                React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, watercolorNavigation==='pan'?__alloT('stem.artstudio.watercolor_pan_keyboard',"Pan mode: drag to move the paper. Arrow keys pan; Shift moves farther. Home and End reach the viewport edges. Enter and Space do not paint. Escape ends an active pan. P pauses or resumes drying. Ctrl or Command+Z undoes artwork; Shift+Ctrl or Command+Z redoes."):__alloT('stem.artstudio.watercolor_precision_keyboard',"Paint mode: Arrow keys move the brush; Alt makes fine moves and Shift moves farther. Home and End reach opposite paper corners. The view follows the brush. Enter or Space places one dab. Escape ends an active stroke. P pauses or resumes drying. Ctrl or Command+Z undoes; Shift+Ctrl or Command+Z redoes.")),
+                 React.createElement("div", { id: "artstudio-watercolor-status", className: "text-[0.6875rem] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on."),
+               ),
+ 

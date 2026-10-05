@@ -1,0 +1,13 @@
+{
+  "baselineSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "sourceSha256": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+  "runtimeMirrorsIdentical": true,
+  "syntaxPassed": true,
+  "onlyMuscleRendererAndScopedCssChanged": true,
+  "authoredAtlasData": {
+    "characters": 309592,
+    "sha256": "a54731f78e7c82243e53fe231eae3548233ab62d66c27a81493251c4f1394b87",
+    "unchanged": true
+  },
+  "englishKeys": 74
+}

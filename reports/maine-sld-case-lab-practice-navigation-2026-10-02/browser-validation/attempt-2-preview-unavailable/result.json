@@ -1,0 +1,168 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/practice-navigation-validation/host-rerun/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "maine-sld-practice.spec.ts",
+      "file": "maine-sld-practice.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [],
+      "suites": [
+        {
+          "title": "full source application host",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 429,
+          "column": 6,
+          "specs": [
+            {
+              "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+              "ok": false,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 120000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "failed",
+                      "duration": 3508,
+                      "error": {
+                        "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:65063/app/?tool=maine-sld-practice&case=jordan\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:65063/app/?tool=maine-sld-practice&case=jordan\", waiting until \"domcontentloaded\"\u001b[22m\n",
+                        "stack": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:65063/app/?tool=maine-sld-practice&case=jordan\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:65063/app/?tool=maine-sld-practice&case=jordan\", waiting until \"domcontentloaded\"\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:437:14",
+                        "location": {
+                          "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                          "column": 14,
+                          "line": 437
+                        },
+                        "snippet": "  435 |    await route.fulfill({status:200,contentType:'text/javascript',headers:{'access-control-allow-origin':'*'},body:await readFile(join(ROOT,name))});\n  436 |   });\n> 437 |   await page.goto(FULL_HOST_BASE+'/?tool=maine-sld-practice&case=jordan',{waitUntil:'domcontentloaded'});\n      |              ^\n  438 |   await expect(page.getByTestId('maine-sld-panel')).toBeVisible({timeout:90000});\n  439 |   await expect(page.getByTestId('case-select')).toHaveValue('jordan');\n  440 |   await step(page,'scores');await expect(page.locator('[data-testid^=\"score-row-\"]')).toHaveCount(1);await expect(page.getByTestId('maine-sld-panel')).toContainText('78');"
+                      },
+                      "errors": [
+                        {
+                          "location": {
+                            "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                            "column": 14,
+                            "line": 437
+                          },
+                          "message": "Error: page.goto: net::ERR_CONNECTION_REFUSED at http://127.0.0.1:65063/app/?tool=maine-sld-practice&case=jordan\nCall log:\n\u001b[2m  - navigating to \"http://127.0.0.1:65063/app/?tool=maine-sld-practice&case=jordan\", waiting until \"domcontentloaded\"\u001b[22m\n\n\n  435 |    await route.fulfill({status:200,contentType:'text/javascript',headers:{'access-control-allow-origin':'*'},body:await readFile(join(ROOT,name))});\n  436 |   });\n> 437 |   await page.goto(FULL_HOST_BASE+'/?tool=maine-sld-practice&case=jordan',{waitUntil:'domcontentloaded'});\n      |              ^\n  438 |   await expect(page.getByTestId('maine-sld-panel')).toBeVisible({timeout:90000});\n  439 |   await expect(page.getByTestId('case-select')).toHaveValue('jordan');\n  440 |   await step(page,'scores');await expect(page.locator('[data-testid^=\"score-row-\"]')).toHaveCount(1);await expect(page.getByTestId('maine-sld-panel')).toContainText('78');\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:437:14"
+                        }
+                      ],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-02T22:58:48.974Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "screenshot",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\practice-navigation-validation\\host-rerun\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\test-failed-1.png"
+                        },
+                        {
+                          "name": "video",
+                          "contentType": "video/webm",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\practice-navigation-validation\\host-rerun\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\video.webm"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\practice-navigation-validation\\host-rerun\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "error-context",
+                          "contentType": "text/markdown",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\practice-navigation-validation\\host-rerun\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\error-context.md"
+                        },
+                        {
+                          "name": "trace",
+                          "contentType": "application/zip",
+                          "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\practice-navigation-validation\\host-rerun\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\trace.zip"
+                        }
+                      ],
+                      "errorLocation": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                        "column": 14,
+                        "line": 437
+                      }
+                    }
+                  ],
+                  "status": "unexpected"
+                }
+              ],
+              "id": "6cd521108d1d04c8dc57-f1b08b29a499007159d2",
+              "file": "maine-sld-practice.spec.ts",
+              "line": 431,
+              "column": 6
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T22:58:34.732Z",
+    "duration": 30299.689000000002,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

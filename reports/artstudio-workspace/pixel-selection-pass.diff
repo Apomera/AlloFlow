@@ -1,0 +1,118 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-pixel-selection.js" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+index b2fc4072f..e6a19837a 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-pixel-selection.js"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+@@ -1079,6 +1079,24 @@ window.StemLab = window.StemLab || {
+   }
+   // END ART STUDIO PIXEL LAYER HELPERS
+ 
++  // BEGIN ART STUDIO PIXEL SELECTION HELPERS
++  function artStudioPixelResizeSelection(pixels,width,height,scale) {
++    if(!pixels || typeof pixels!=='object' || Array.isArray(pixels) ||
++      !Number.isInteger(width) || !Number.isInteger(height) || width<1 || height<1 || width>64 || height>64 ||
++      (scale!==2 && scale!==0.5))return null;
++    var w=scale===2?width*2:Math.ceil(width/2),h=scale===2?height*2:Math.ceil(height/2);
++    if(w>64 || h>64)return null;
++    var result={};
++    for(var y=0;y<h;y++)for(var x=0;x<w;x++) {
++      var sx=Math.min(width-1,Math.floor((x+0.5)*width/w));
++      var sy=Math.min(height-1,Math.floor((y+0.5)*height/h));
++      var key=sx+','+sy;
++      if(Object.prototype.hasOwnProperty.call(pixels,key))result[x+','+y]=pixels[key];
++    }
++    return {w:w,h:h,pixels:result};
++  }
++  // END ART STUDIO PIXEL SELECTION HELPERS
++
+   // BEGIN ART STUDIO PIXEL IMPORT HELPERS
+   function artStudioPixelImportPalette(samples,limit) {
+     var colors=new Map();
+@@ -6566,6 +6584,13 @@ const d = labToolData.artStudio || {};
+             canvas._pixelGridSize = gridSize;
+             canvas._pixelLayerId = pixelLayerModel.activeId;
+             canvas._pixelLayerEditable = pixelLayerEditable;
++            var pendingSelection=canvas._pixelPendingLayerSelection;
++            if(pendingSelection) {
++              canvas._pixelPendingLayerSelection=null;
++              if(!newArtwork && d.pixelTool==='select' && pendingSelection.owner===pixelArtworkOwner &&
++                pendingSelection.layer===pixelLayerModel.activeId && pendingSelection.size===gridSize && pendingSelection.history===pixelHistoryRef.current)
++                canvas._pixelSelection=pendingSelection.bounds;
++            }
+             if (d.pixelTool !== 'select') canvas._pixelSelection = canvas._pixelSelectionDrag = canvas._pixelSelectionAnchor = canvas._pixelSelectionPreview = null;
+             if (d.pixelTool !== 'pan' && canvas._pixelPan) {
+               canvas._pixelPan = null;
+@@ -6652,7 +6677,13 @@ const d = labToolData.artStudio || {};
+               var selection=canvas._pixelSelection, clipboard=canvas._pixelClipboard;
+               var hasPixels=selection && Object.keys(selectionPixels(selection,grid)).length>0;
+               var busy=!!(canvas._pixelSelectionDrag || canvas._pixelSelectionAnchor);
+-              ['copy','cut','delete','rotate','flip-x','flip-y'].forEach(function(action){var button=document.getElementById('artstudio-pixel-selection-'+action);if(button)button.disabled=!hasPixels || busy || (action!=='copy' && !pixelLayerEditable);});
++              ['copy','cut','delete','rotate','flip-x','flip-y','grow','shrink','copy-layer','cut-layer'].forEach(function(action){
++                var button=document.getElementById('artstudio-pixel-selection-'+action);if(!button)return;
++                button.disabled=!hasPixels || busy || (['copy','copy-layer'].indexOf(action)<0 && !pixelLayerEditable);
++                if(action==='grow' && selection && (selection.w*2>gridSize || selection.h*2>gridSize))button.disabled=true;
++                if(action==='shrink' && selection && selection.w===1 && selection.h===1)button.disabled=true;
++                if((action==='copy-layer' || action==='cut-layer') && pixelLayerModel.layers.length>=ART_STUDIO_PIXEL_MAX_LAYERS)button.disabled=true;
++              });
+               var selectAll=document.getElementById('artstudio-pixel-selection-all');
+               if(selectAll)selectAll.disabled=busy;
+               var paste=document.getElementById('artstudio-pixel-selection-paste');
+@@ -6706,8 +6737,27 @@ const d = labToolData.artStudio || {};
+               if(target.x===bounds.x && target.y===bounds.y)return;
+               commitSelectionGrid(placeSelection(grid,bounds,target,selectionPixels(bounds,grid),true),target);
+             }
++            function selectionToLayer(pixels,bounds,move) {
++              if(pixelLayerModel.layers.length>=ART_STUDIO_PIXEL_MAX_LAYERS || (move && !pixelLayerEditable))return false;
++              var before=pixelCheckpoint(grid,gridSize),model=artStudioPixelLayerModel(before,pixelLayerDefaultName);
++              var source=model.layers.find(function(layer){return layer.id===model.activeId;}),index=model.layers.indexOf(source),number=1;
++              while(model.layers.some(function(layer){return layer.id==='layer-'+number;}))number++;
++              var next={id:'layer-'+number,name:formatArtStudioLearningText(__alloT('stem.artstudio.pixel_selection_layer_name','{name} selection'),{name:source.name}).slice(0,60),visible:source.visible,locked:false,
++                pixels:placeSelection({},null,bounds,pixels,false)};
++              if(source.opacity!==undefined)next.opacity=source.opacity;
++              if(source.blend!==undefined)next.blend=source.blend;
++              if(move)source.pixels=placeSelection(source.pixels,bounds,bounds,{},true);
++              model.layers.splice(index+1,0,next);model.activeId=next.id;
++              endPixelLayerOpacityGesture();rememberPixelArtwork(before);
++              canvas._pixelPendingLayerSelection={owner:pixelArtworkOwner,layer:next.id,size:gridSize,history:pixelHistoryRef.current,bounds:Object.assign({},bounds)};
++              updMany(artStudioPixelLayerSnapshot(model));
++              if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(move?
++                __alloT('stem.artstudio.pixel_selection_layer_moved','Moved selected pixels to {name}. Undo restores the original layer.'):
++                __alloT('stem.artstudio.pixel_selection_layer_copied','Copied selected pixels to {name}. Undo removes the new layer.'),{name:next.name}));
++              return true;
++            }
+             canvas._pixelSelectionAction=function(action) {
+-              if(!pixelLayerEditable && ['deselect','all','copy'].indexOf(action)<0){announcePixelLayerProtection();return false;}
++              if(!pixelLayerEditable && ['deselect','all','copy','copy-layer'].indexOf(action)<0){announcePixelLayerProtection();return false;}
+               if(action==='deselect') {canvas._pixelSelection=canvas._pixelSelectionAnchor=canvas._pixelSelectionDrag=canvas._pixelSelectionPreview=null;drawPixelGrid();return true;}
+               if(canvas._pixelSelectionDrag || canvas._pixelSelectionAnchor)return false;
+               var bounds=canvas._pixelSelection;
+@@ -6721,6 +6771,15 @@ const d = labToolData.artStudio || {};
+               }
+               var pixels=selectionPixels(bounds,grid);
+               if(!bounds || !Object.keys(pixels).length)return false;
++              if(action==='copy-layer' || action==='cut-layer')return selectionToLayer(pixels,bounds,action==='cut-layer');
++              if(action==='grow' || action==='shrink') {
++                if(action==='shrink' && bounds.w===1 && bounds.h===1)return false;
++                var resized=artStudioPixelResizeSelection(pixels,bounds.w,bounds.h,action==='grow'?2:0.5);
++                if(!resized || resized.w>gridSize || resized.h>gridSize)return false;
++                var resizedBounds=selectionPlacement({x:bounds.x,y:bounds.y,w:resized.w,h:resized.h},0,0);
++                commitSelectionGrid(placeSelection(grid,bounds,resizedBounds,resized.pixels,true),resizedBounds);
++                return true;
++              }
+               if(action==='rotate' || action==='flip-x' || action==='flip-y') {
+                 var rotating=action==='rotate', transformed={};
+                 var target=selectionPlacement({x:bounds.x,y:bounds.y,w:rotating?bounds.h:bounds.w,h:rotating?bounds.w:bounds.h},0,0);
+@@ -10549,10 +10608,12 @@ const d = labToolData.artStudio || {};
+                 ),
+                 d.pixelTool==='select' && React.createElement('div',{className:'my-2 rounded-lg border border-pink-300 bg-pink-50 p-2',role:'group','aria-label':__alloT('stem.artstudio.pixel_selection_actions','Selected pixels')},
+                   React.createElement('div',{className:'flex flex-wrap gap-1'},[
+-                    ['all',__alloT('stem.artstudio.pixel_select_all','Select all')],['copy',__alloT('stem.artstudio.pixel_copy','Copy pixels')],['cut',__alloT('stem.artstudio.pixel_cut','Cut pixels')],['paste',__alloT('stem.artstudio.pixel_paste','Paste pixels')],['rotate',__alloT('stem.artstudio.pixel_rotate_selection','Rotate selection ↻')],['flip-x',__alloT('stem.artstudio.pixel_flip_selection_x','Flip selection ↔')],['flip-y',__alloT('stem.artstudio.pixel_flip_selection_y','Flip selection ↕')],['delete',__alloT('stem.artstudio.pixel_delete_selection','Delete pixels')],['deselect',__alloT('stem.artstudio.pixel_deselect','Deselect')]
+-                  ].map(function(action){return React.createElement('button',{id:'artstudio-pixel-selection-'+action[0],key:action[0],type:'button',ref:function(button){if(!button)return;var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelRefreshSelectionControls)canvas._pixelRefreshSelectionControls();else button.disabled=action[0]!=='all';},onClick:function(){var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelSelectionAction)canvas._pixelSelectionAction(action[0]);},className:'min-h-[44px] rounded-lg border border-pink-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},action[1]);})),
++                    ['all',__alloT('stem.artstudio.pixel_select_all','Select all')],['copy',__alloT('stem.artstudio.pixel_copy','Copy pixels')],['cut',__alloT('stem.artstudio.pixel_cut','Cut pixels')],['paste',__alloT('stem.artstudio.pixel_paste','Paste pixels')],['copy-layer',__alloT('stem.artstudio.pixel_copy_selection_layer','Copy to new layer')],['cut-layer',__alloT('stem.artstudio.pixel_move_selection_layer','Move to new layer')],['grow',__alloT('stem.artstudio.pixel_grow_selection','Grow selection ×2')],['shrink',__alloT('stem.artstudio.pixel_shrink_selection','Shrink selection ÷2')],['rotate',__alloT('stem.artstudio.pixel_rotate_selection','Rotate selection ↻')],['flip-x',__alloT('stem.artstudio.pixel_flip_selection_x','Flip selection ↔')],['flip-y',__alloT('stem.artstudio.pixel_flip_selection_y','Flip selection ↕')],['delete',__alloT('stem.artstudio.pixel_delete_selection','Delete pixels')],['deselect',__alloT('stem.artstudio.pixel_deselect','Deselect')]
++                  ].map(function(action){return React.createElement('button',{id:'artstudio-pixel-selection-'+action[0],key:action[0],type:'button','aria-describedby':['grow','shrink'].indexOf(action[0])>=0?'artstudio-pixel-selection-resize-help':(['copy-layer','cut-layer'].indexOf(action[0])>=0?'artstudio-pixel-selection-layer-help':undefined),ref:function(button){if(!button)return;var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelRefreshSelectionControls)canvas._pixelRefreshSelectionControls();else button.disabled=action[0]!=='all';},onClick:function(){var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelSelectionAction)canvas._pixelSelectionAction(action[0]);},className:'min-h-[44px] rounded-lg border border-pink-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},action[1]);})),
+                   React.createElement('p',{id:'artstudio-pixel-selection-status','aria-live':'polite',className:'mt-2 text-xs text-slate-800'},__alloT('stem.artstudio.pixel_selection_empty','Drag to select a region. Keyboard: Enter, move to the opposite corner, then Enter again.')),
+                   React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_help','Drag inside to move. Arrow keys nudge; Shift moves 4 cells. Escape deselects. Ctrl/Cmd+C, X, V copy, cut, paste within this canvas. Delete clears selected pixels.')),
++                  React.createElement('p',{id:'artstudio-pixel-selection-resize-help',className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_resize_help','Grow doubles each cell without smoothing. Shrink samples nearest cells and can remove fine detail. The resized region shifts inward to fit; selections larger than the grid cannot grow. Each action is one Undo step.')),
++                  React.createElement('p',{id:'artstudio-pixel-selection-layer-help',className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_layer_help','Copy keeps the original pixels. Move puts them on a new layer at the same position. Both keep layer opacity and blending; the new layer is unlocked.')),
+                   React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_transform_help','Rotate turns the selection 90° clockwise. Flips affect selected pixels. A rotated region shifts inward if needed to stay on the grid.'))
+                 ),
+ 

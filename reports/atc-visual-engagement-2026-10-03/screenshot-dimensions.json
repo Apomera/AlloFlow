@@ -1,0 +1,130 @@
+{
+  "finished": "2026-10-04T03:41:31.483Z",
+  "passed": 23,
+  "total": 23,
+  "errors": [],
+  "screenshots": [
+    {
+      "file": "menu-1440.png",
+      "width": 1440,
+      "height": 1100
+    },
+    {
+      "file": "playing-1440.png",
+      "width": 1440,
+      "height": 1978
+    },
+    {
+      "file": "debrief-1440.png",
+      "width": 1440,
+      "height": 1100
+    },
+    {
+      "file": "menu-390.png",
+      "width": 390,
+      "height": 1678
+    },
+    {
+      "file": "playing-390.png",
+      "width": 390,
+      "height": 2899
+    },
+    {
+      "file": "debrief-390.png",
+      "width": 390,
+      "height": 1100
+    },
+    {
+      "file": "menu-320.png",
+      "width": 320,
+      "height": 1923
+    },
+    {
+      "file": "playing-320.png",
+      "width": 320,
+      "height": 3204
+    },
+    {
+      "file": "debrief-320.png",
+      "width": 320,
+      "height": 1188
+    },
+    {
+      "file": "radar-edge-320.png",
+      "width": 320,
+      "height": 2423
+    },
+    {
+      "file": "high-dpi-390.png",
+      "width": 780,
+      "height": 5798
+    },
+    {
+      "file": "playing-200percent-zoom.png",
+      "width": 1440,
+      "height": 3149
+    },
+    {
+      "file": "reduced-motion-390.png",
+      "width": 390,
+      "height": 2269
+    },
+    {
+      "file": "forced-colors-390.png",
+      "width": 390,
+      "height": 2905
+    },
+    {
+      "file": "pathway-320.png",
+      "width": 320,
+      "height": 2105
+    },
+    {
+      "file": "measured-completion-desktop.png",
+      "width": 1440,
+      "height": 1440
+    },
+    {
+      "file": "completed-debrief-desktop.png",
+      "width": 1440,
+      "height": 1100
+    },
+    {
+      "file": "earned-pathway-390.png",
+      "width": 390,
+      "height": 2026
+    }
+  ],
+  "radar": [
+    {
+      "check": "Playing fits 1440 pixels with readable labels and radar before controls",
+      "radarCssWidth": 638,
+      "selectedLabelCssPixels": 12,
+      "radarDocumentTop": 569
+    },
+    {
+      "check": "Playing fits 390 pixels with readable labels and radar before controls",
+      "radarCssWidth": 330,
+      "selectedLabelCssPixels": 12,
+      "radarDocumentTop": 650.890625
+    },
+    {
+      "check": "Playing fits 320 pixels with readable labels and radar before controls",
+      "radarCssWidth": 260,
+      "selectedLabelCssPixels": 12,
+      "radarDocumentTop": 758.390625
+    }
+  ],
+  "measured": {
+    "measuredOutcome": {
+      "landed": 1,
+      "landedIds": [
+        101
+      ],
+      "conflictEpisodes": 0,
+      "paused": true,
+      "shiftSeconds": 11.349900000000003
+    },
+    "nextExercise": "arrival_sequence"
+  }
+}

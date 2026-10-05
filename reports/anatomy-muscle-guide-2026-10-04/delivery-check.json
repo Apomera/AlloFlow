@@ -1,0 +1,2138 @@
+{
+  "date": "2026-10-04",
+  "sourceSha256": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "runtimeMirrorsIdentical": true,
+  "syntaxPassed": true,
+  "onlyMuscleRendererAndScopedCssChanged": true,
+  "authoredAtlasData": {
+    "characters": 309592,
+    "sha256": "a54731f78e7c82243e53fe231eae3548233ab62d66c27a81493251c4f1394b87",
+    "unchanged": true
+  },
+  "originalGeometry": {
+    "literalPaths": 7,
+    "preserved": 7,
+    "routes": 4,
+    "clinicalPaths": 3,
+    "sarcomereBlockByteIdentical": true
+  },
+  "originalNarrativesUnchanged": 10,
+  "originalMechanismCaptionsRetainedInHtml": 4,
+  "quadricepsAliasScopeUnchanged": true,
+  "catalogs": {
+    "pairs": 4,
+    "englishKeys": 74,
+    "nativeTranslations": 222,
+    "registeredValues": 592,
+    "muscleValuesAndAnatomyNamespaceIdentical": true,
+    "unrelatedBytesPreservedByInsertionReversal": true,
+    "currentScopedCheck": {
+      "checkedAt": "2026-10-04T22:40:29.999Z",
+      "success": true,
+      "onlyDeclaredAndOffScopeChanges": true,
+      "registeredValues": 592,
+      "subtitleRefinement": {
+        "key": "trace_muscle_activation",
+        "englishValue": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening.",
+        "translations": {
+          "french": {
+            "trace_muscle_activation": "Suivez le signal d’un neurone moteur depuis la terminaison axonale jusqu’à la libération de calcium et au raccourcissement du sarcomère."
+          },
+          "spanish_latin_america": {
+            "trace_muscle_activation": "Sigue la señal de una neurona motora desde la terminal axónica hasta la liberación de calcio y el acortamiento del sarcómero."
+          },
+          "arabic": {
+            "trace_muscle_activation": "تتبّع إشارة العصبون الحركي من النهاية المحورية إلى إطلاق الكالسيوم وتقصّر القُسيم العضلي."
+          }
+        },
+        "nativeTranslations": 3,
+        "updatedCatalogValues": 6,
+        "manifestPath": "dev-tools/i18n/anatomy_muscle_subtitle_20261004.json",
+        "manifestSha256": "193e3f19a53a84deb279c79c8fbb36c039c880faaec26eaac6ffdfa35e84cbef",
+        "semanticReviewPassed": true,
+        "exactScopeAndReversalPassed": true
+      },
+      "files": [
+        {
+          "path": "ui_strings.js",
+          "installedSha256": "c8219a8de218ca3e0a19d1407f48c759bea6314b128827b928d51b608e1d087a",
+          "testedSha256": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+          "currentSha256": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+          "anatomyNamespaceSha256": "a1147df01af83881894e7128059073d5940f3d4b5c1da80a267ca0be9030b95d",
+          "anatomyNamespaceUnchanged": true,
+          "muscleValuesUnchanged": true,
+          "registeredKeys": 74,
+          "preTestSubtitleRefinement": [],
+          "preTestOffScopeDifferences": [
+            {
+              "path": "stem.perception.all_experiments",
+              "after": "All experiments"
+            },
+            {
+              "path": "stem.perception.all_observations",
+              "after": "All observations"
+            },
+            {
+              "path": "stem.perception.all_study_statuses",
+              "after": "All study statuses"
+            },
+            {
+              "path": "stem.perception.clear_notebook_filters",
+              "after": "Clear notebook filters"
+            },
+            {
+              "path": "stem.perception.complete_study",
+              "after": "Complete"
+            },
+            {
+              "path": "stem.perception.conflicting_study",
+              "after": "Conflicting"
+            },
+            {
+              "path": "stem.perception.find_observations",
+              "after": "Find saved observations"
+            },
+            {
+              "path": "stem.perception.latest_retained_observation",
+              "after": "Latest retained observation"
+            },
+            {
+              "path": "stem.perception.mixed_experiments",
+              "after": "Mixed experiments"
+            },
+            {
+              "path": "stem.perception.notebook_experiment_label",
+              "after": "Filter by experiment"
+            },
+            {
+              "path": "stem.perception.notebook_filters_cleared",
+              "after": "Notebook filters cleared."
+            },
+            {
+              "path": "stem.perception.notebook_group_counts",
+              "after": "Studies shown: {shown} of {total}. Retained observations shown: {records}."
+            },
+            {
+              "path": "stem.perception.notebook_no_matches",
+              "after": "No saved observations match these filters. Clear or change the filters to see your notebook."
+            },
+            {
+              "path": "stem.perception.notebook_no_studies",
+              "after": "No repeated studies are saved yet. Use All observations to review individual observations, or start three matches in a matching experiment."
+            },
+            {
+              "path": "stem.perception.notebook_no_study_matches",
+              "after": "No saved studies match these filters. Clear or change the filters to see your studies."
+            },
+            {
+              "path": "stem.perception.notebook_record_counts",
+              "after": "Observations shown: {shown} of {total}."
+            },
+            {
+              "path": "stem.perception.notebook_search_hint",
+              "after": "Search visible experiment titles, impressions, and notes. Repeated-study observations stay together when any retained match fits the filters. Hidden drawing values are not searched."
+            },
+            {
+              "path": "stem.perception.notebook_search_label",
+              "after": "Search notes or impressions"
+            },
+            {
+              "path": "stem.perception.notebook_status_label",
+              "after": "Study status"
+            },
+            {
+              "path": "stem.perception.notebook_study_number",
+              "after": "Study {number}"
+            },
+            {
+              "path": "stem.perception.notebook_view_label",
+              "after": "Notebook view"
+            },
+            {
+              "path": "stem.perception.partial_study",
+              "after": "Partial"
+            },
+            {
+              "path": "stem.perception.partly_revealed",
+              "after": "Partly revealed"
+            },
+            {
+              "path": "stem.perception.recorded_drawing",
+              "after": "Recorded drawing"
+            },
+            {
+              "path": "stem.perception.recorded_drawing_hint",
+              "after": "Inspect an actual saved match. Trial selections and guides apply only to these previews."
+            },
+            {
+              "path": "stem.perception.recorded_observations",
+              "after": "Recorded observations"
+            },
+            {
+              "path": "stem.perception.recorded_pair_hint",
+              "after": "Inspect trials from each study independently. Both drawings use the same scale; each preview shows its selected recorded match."
+            },
+            {
+              "path": "stem.perception.recorded_trial_label",
+              "after": "Recorded trial"
+            },
+            {
+              "path": "stem.perception.recorded_trial_option",
+              "after": "Trial {trial}"
+            },
+            {
+              "path": "stem.perception.recorded_trial_title",
+              "after": "Recorded trial {trial} · {title}"
+            },
+            {
+              "path": "stem.perception.retained_match_count",
+              "after": "Retained matches: {count} of 3."
+            },
+            {
+              "path": "stem.perception.retained_observation_count",
+              "after": "Retained observations: {count}."
+            },
+            {
+              "path": "stem.perception.saved_studies_view",
+              "after": "Saved studies"
+            },
+            {
+              "path": "stem.perception.show_measurement_guides",
+              "after": "Show measurement guides"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_note",
+              "before": "A cutaway reveals the folds of the inner membrane, called cristae. Shape and colors illustrate its structure; this is not a microscopy reconstruction.",
+              "after": "A cutaway reveals the two enclosing membranes, the matrix and connected cristae. Shapes, protein sizes and motion are illustrated for exploration; cristae vary between cells."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_cristae_body",
+              "after": "Cristae are folds of the inner membrane. The rounded pouches remain connected to its boundary through narrow junctions. Their membranes hold much of the machinery for ATP production. Trace the cristae to approach each example fold."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_envelope_body",
+              "after": "The outer membrane encloses the organelle. A second membrane lies beneath it. Open the cutaway to see the gap between them and the folds extending into the matrix."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_inter",
+              "after": "Intermembrane space"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_inter_body",
+              "after": "A narrow compartment separates the two enclosing membranes. It connects with the spaces inside the cristae. Hydrogen ions pumped across the inner membrane help establish the electrochemical gradient used by ATP synthase."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_matrix",
+              "after": "Matrix"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_matrix_body",
+              "after": "The matrix occupies the space around the inner membrane folds. It contains enzymes involved in metabolism, mitochondrial ribosomes and DNA packaged with proteins. The small shapes here are illustrative representatives."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_synthase",
+              "after": "ATP synthase"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_synthase_body",
+              "after": "The illustrated paired protein heads sit on the matrix side of a curved crista rim. Hydrogen ions passing through the membrane part drive a rotor. That motion supports ATP production in the projecting head. The protein shapes and size are enlarged for inspection."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_genome",
+              "after": "Mitochondrial DNA"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_genome_body",
+              "after": "Compact nucleoids package mitochondrial DNA with proteins in the matrix. The blue bundles mark examples of these DNA–protein structures. Continue inward to explore the double helix in the molecular atlas."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_label",
+              "after": "Crista {n} · inner membrane"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_body",
+              "after": "Explore this rounded inner-membrane pouch and the narrow junction joining it to the boundary membrane. Its interior connects to the intermembrane space; the matrix surrounds it. The paired protein shapes illustrate ATP synthase near curved rims. Seven folds form this composed example; crista structure varies between cells."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_navigation",
+              "after": "Crista navigation"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_navigation",
+              "after": "Energy pathway navigation"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_kicker",
+              "after": "Inside the inner membrane"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_kicker",
+              "after": "Energy pathway · {n} of 4"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_whole",
+              "after": "Whole mitochondrion"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_previous",
+              "after": "Previous fold"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_caption",
+              "after": "Rounded membrane pouch"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_slider",
+              "after": "Crista"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_next",
+              "after": "Next fold"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_previous",
+              "after": "Previous energy step"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_next",
+              "after": "Next energy step"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_study",
+              "after": "Mitochondrial observatory"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_study_kicker",
+              "after": "Cellular worlds · membrane architecture"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_science",
+              "after": "Explore the biology ↗"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_intro",
+              "after": "Move between the enclosing membranes and their folded interior. Follow a crista, inspect the matrix, then trace how a proton gradient helps the molecular machinery produce ATP."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_trace",
+              "after": "Trace the cristae"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow",
+              "after": "Show energy flow"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_map",
+              "after": "Choose a membrane fold"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_button",
+              "after": "Crista {n}"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy",
+              "after": "Energy pathway"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow_off",
+              "after": "Select a step to explore"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow_closed",
+              "after": "Open the cutaway to see the flow"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow_reduced",
+              "after": "Static view · reduced motion"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow_paused",
+              "after": "Flow paused · resume ambience to animate"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow_active",
+              "after": "Illustrative motion · slowed for inspection"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_compartments",
+              "after": "Compartments and flow key"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_model_note",
+              "after": "An illustrated lamellar mitochondrion, fitted to the atlas’s 1 μm length reference. Membrane shapes, seven example folds, protein sizes and particle counts are composed for exploration. Cristae vary between cells; the motion explains direction rather than a measured reaction rate."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_badge",
+              "after": "Double membranes · a folded interior"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_stage_note",
+              "after": "Illustrated compartments / 1 μm length reference"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_label_1",
+              "after": "Electron transport"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_caption_1",
+              "after": "Respiratory complexes use energy from electron transfer to move hydrogen ions toward the crista space."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_body_1",
+              "after": "Respiratory complexes use energy from electron transfer to move hydrogen ions toward the crista space. The colored particles illustrate direction and are enlarged for visibility. Their count and speed are not measurements."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_label_2",
+              "after": "Proton gradient"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_caption_2",
+              "after": "The inner membrane separates the matrix from the intermembrane and crista spaces."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_body_2",
+              "after": "The inner membrane separates the matrix from the intermembrane and crista spaces. The colored particles illustrate direction and are enlarged for visibility. Their count and speed are not measurements."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_label_3",
+              "after": "ATP synthase"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_caption_3",
+              "after": "Hydrogen ions return toward the matrix through ATP synthase, driving its molecular rotor."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_body_3",
+              "after": "Hydrogen ions return toward the matrix through ATP synthase, driving its molecular rotor. The colored particles illustrate direction and are enlarged for visibility. Their count and speed are not measurements."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_label_4",
+              "after": "ATP release"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_caption_4",
+              "after": "ATP synthase joins ADP and phosphate. ATP is released on the matrix side."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_body_4",
+              "after": "ATP synthase joins ADP and phosphate. ATP is released on the matrix side. The colored particles illustrate direction and are enlarged for visibility. Their count and speed are not measurements."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_0",
+              "after": "Outer membrane"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_1",
+              "after": "Inner membrane"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_2",
+              "after": "Matrix"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_3",
+              "after": "ATP synthase"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_4",
+              "after": "Hydrogen ions"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_5",
+              "after": "ATP markers"
+            },
+            {
+              "path": "stem.atctower.show_evidence",
+              "after": "Show evidence"
+            },
+            {
+              "path": "stem.atctower.evidence_all",
+              "after": "All events"
+            },
+            {
+              "path": "stem.atctower.evidence_instructions",
+              "after": "Instructions and go-arounds"
+            },
+            {
+              "path": "stem.atctower.evidence_outcomes",
+              "after": "Aircraft outcomes and alerts"
+            },
+            {
+              "path": "stem.atctower.evidence_math",
+              "after": "Math decisions"
+            },
+            {
+              "path": "stem.atctower.evidence_events",
+              "after": "events"
+            },
+            {
+              "path": "stem.atctower.no_matching_evidence",
+              "after": "No events match this view. Try All events."
+            },
+            {
+              "path": "stem.atctower.guided_target",
+              "after": "Guided"
+            },
+            {
+              "path": "stem.atctower.maintain_current",
+              "after": "Maintain"
+            },
+            {
+              "path": "stem.atctower.automatic_target",
+              "after": "Auto"
+            },
+            {
+              "path": "stem.atctower.preview_valid_value",
+              "after": "Enter a whole value in the range above to preview this instruction."
+            },
+            {
+              "path": "stem.atctower.preview_same_heading",
+              "after": "Same current heading"
+            },
+            {
+              "path": "stem.atctower.preview_turn_left",
+              "after": "Turn left"
+            },
+            {
+              "path": "stem.atctower.preview_turn_right",
+              "after": "Turn right"
+            },
+            {
+              "path": "stem.atctower.preview_reduce_speed",
+              "after": "Reduce speed progressively"
+            },
+            {
+              "path": "stem.atctower.preview_increase_speed",
+              "after": "Increase speed progressively"
+            },
+            {
+              "path": "stem.atctower.preview_same_speed",
+              "after": "Maintain current speed"
+            },
+            {
+              "path": "stem.atctower.preview_cancel_approach",
+              "after": "Sending this cancels approach guidance and maintains the current altitude:"
+            },
+            {
+              "path": "stem.atctower.preview_release_hold",
+              "after": "Sending this releases the teaching hold and returns the aircraft inbound."
+            },
+            {
+              "path": "stem.atctower.preview_speed_mode",
+              "after": "Speed changes keep the current flight phase. A new approach clearance sets the aircraft’s approach speed."
+            },
+            {
+              "path": "stem.atctower.preview_eta_deferred",
+              "after": "Direct arrival comparison is deferred during a hold, go-around, or without runway geometry."
+            },
+            {
+              "path": "stem.atctower.direct_speed_comparison",
+              "after": "Direct constant-speed comparison"
+            },
+            {
+              "path": "stem.atctower.preview_eta_assumptions",
+              "after": "Distance ÷ speed to the runway threshold. Acceleration, turns and sequencing change the actual arrival."
+            },
+            {
+              "path": "stem.atctower.no_aircraft_selected",
+              "after": "No aircraft selected"
+            },
+            {
+              "path": "stem.atctower.back_to_radar",
+              "after": "Radar"
+            },
+            {
+              "path": "stem.atctower.mode_approach",
+              "after": "Approach guidance · heading and descent update automatically"
+            },
+            {
+              "path": "stem.atctower.mode_hold",
+              "after": "Teaching hold · heading updates automatically"
+            },
+            {
+              "path": "stem.atctower.mode_go_around",
+              "after": "Go-around · following recovery instructions"
+            },
+            {
+              "path": "stem.atctower.mode_manual",
+              "after": "Inbound · following your instructions"
+            },
+            {
+              "path": "stem.atctower.flight_value",
+              "after": "Flight value"
+            },
+            {
+              "path": "stem.atctower.current_value",
+              "after": "Current"
+            },
+            {
+              "path": "stem.atctower.active_instruction",
+              "after": "Instruction"
+            },
+            {
+              "path": "stem.atctower.altitude",
+              "after": "Altitude"
+            },
+            {
+              "path": "stem.atctower.speed",
+              "after": "Speed"
+            },
+            {
+              "path": "stem.atctower.command_needs_action",
+              "after": "Action needed"
+            },
+            {
+              "path": "stem.atctower.command_unchanged",
+              "after": "Instruction unchanged"
+            },
+            {
+              "path": "stem.atctower.command_sent",
+              "after": "Instruction sent"
+            },
+            {
+              "path": "stem.atctower.preview_paused",
+              "after": "Traffic pauses while you preview. Send applies this instruction."
+            },
+            {
+              "path": "stem.atctower.heading_presets",
+              "after": "Heading presets"
+            },
+            {
+              "path": "stem.atctower.speed_presets",
+              "after": "Speed presets"
+            },
+            {
+              "path": "stem.atctower.north_heading",
+              "after": "North · 000°"
+            },
+            {
+              "path": "stem.atctower.east_heading",
+              "after": "East · 090°"
+            },
+            {
+              "path": "stem.atctower.south_heading",
+              "after": "South · 180°"
+            },
+            {
+              "path": "stem.atctower.west_heading",
+              "after": "West · 270°"
+            },
+            {
+              "path": "stem.atctower.mode_approach_v2",
+              "after": "Approach guidance · targets update as traffic moves"
+            },
+            {
+              "path": "stem.atctower.mode_hold_v2",
+              "after": "Teaching hold · heading updates as traffic moves"
+            },
+            {
+              "path": "stem.atctower.preview_align_heading",
+              "after": "Align to this heading"
+            },
+            {
+              "path": "stem.atctower.latest_attempt",
+              "after": "Last attempt"
+            },
+            {
+              "path": "stem.atctower.earlier_completion_kept",
+              "after": "Your earlier completion is still recorded."
+            },
+            {
+              "path": "stem.atctower.attempt_note_saved",
+              "after": "Reflection note saved"
+            },
+            {
+              "path": "stem.atctower.review_last_attempt",
+              "after": "Review last attempt"
+            },
+            {
+              "path": "stem.atctower.attempt_objectives_met",
+              "after": "Objectives met"
+            },
+            {
+              "path": "stem.atctower.attempt_review_needed",
+              "after": "Review needed"
+            },
+            {
+              "path": "stem.atctower.attempt_unfinished",
+              "after": "Unfinished"
+            },
+            {
+              "path": "stem.atctower.review_one_decision",
+              "after": "Review one decision"
+            },
+            {
+              "path": "stem.atctower.choose_reflection_moment",
+              "after": "Choose a moment (optional)"
+            },
+            {
+              "path": "stem.atctower.reflect_without_event",
+              "after": "Reflect on the whole attempt"
+            },
+            {
+              "path": "stem.atctower.selected_moment",
+              "after": "Selected moment"
+            },
+            {
+              "path": "stem.atctower.reflection_intention",
+              "after": "What did you intend?"
+            },
+            {
+              "path": "stem.atctower.reflection_effect",
+              "after": "What changed in the aircraft or traffic?"
+            },
+            {
+              "path": "stem.atctower.reflection_next_change",
+              "after": "What will you keep or change next time?"
+            },
+            {
+              "path": "stem.atctower.shift_reflection_copy_v2",
+              "after": "Optional: explain a decision and one change to try. Your saved note can remind you on a matching retry."
+            },
+            {
+              "path": "stem.atctower.your_previous_reflection",
+              "after": "Your previous reflection"
+            },
+            {
+              "path": "stem.atctower.previous_reflection_copy",
+              "after": "Your note from the last matching attempt. Read it if helpful, then decide what to try now."
+            },
+            {
+              "path": "stem.atctower.dismiss_attempt_note",
+              "after": "Dismiss for this attempt"
+            },
+            {
+              "path": "stem.bridgelab.seismic_force_legend",
+              "before": "Gold arrow: spring force. Violet arrow: damping force. A dot means zero force.",
+              "after": "Gold arrow: spring force. Violet arrow: damping force. A dot marks zero or a force too small to display; read the numbers below."
+            },
+            {
+              "path": "stem.bridgelab.force_lens_fallback",
+              "before": "Right is positive across the deck in this diagram. Forces are for one teaching mode, per unit modal mass.",
+              "after": "Right is positive across the deck in this diagram. A dot marks each origin; very short force arrows may be too small to see. Read the numbers for small nonzero forces. Forces are for one teaching mode, per unit modal mass."
+            },
+            {
+              "path": "stem.bridgelab.force_lens_scope",
+              "before": "3D arrows show forces on one modal deck mass across the bridge: gold spring, violet damping, white net. A dot marks each origin; arrows disappear at zero force. Arrow length uses its own force scale. The direction stays fixed across the bridge when you turn.",
+              "after": "3D arrows show forces on one modal deck mass across the bridge: gold spring, violet damping, white net. A dot marks each origin; very short arrows may be too small to see. Arrow length uses its own force scale. The direction stays fixed across the bridge when you turn."
+            },
+            {
+              "path": "stem.bridgelab.motion_axis_scope",
+              "after": "Right is positive across the bridge in these rails. Turning the camera does not change this direction."
+            },
+            {
+              "path": "stem.bridgelab.motion_scene_prefix",
+              "after": "Scene: "
+            },
+            {
+              "path": "stem.bridgelab.motion_shapes",
+              "after": "Circle = ground; diamond = deck. The last rail joins their positions to show the relative gap."
+            },
+            {
+              "path": "stem.bridgelab.motion_zero",
+              "after": "No shaking was applied to this trial. Ground and deck stay at rest throughout the event."
+            },
+            {
+              "path": "stem.bridgelab.motion_rounding",
+              "after": "Readings are rounded; the rails use the unrounded positions."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_away",
+              "after": "Moving away from zero relative displacement. Spring opposes relative motion: kinetic energy is transferred into elastic energy."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_centered",
+              "after": "Relative displacement is nearly zero. Spring force is nearly zero, although relative motion can continue."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_damping",
+              "after": "Damping opposes relative motion and removes mechanical energy."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_damping_still",
+              "after": "Damping force and its loss rate are nearly zero."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_direction_scope",
+              "after": "Direction only; right is positive in this diagram."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_dissipation",
+              "after": "Motion → dissipated energy"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_dot",
+              "after": "The velocity arrow has fixed length. A dot means zero or nearly zero relative velocity; numbers preserve small nonzero readings."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_loss",
+              "after": "Damping loss"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_no_exchange",
+              "after": "No spring exchange now"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_no_loss",
+              "after": "No damping loss now"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_rate_reason",
+              "after": "These rates are recomputed from displayed motion. The history interpolates rates recorded at fixed sample times; between samples, its values can differ."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_rate_why",
+              "after": "Why can these rates differ from the energy history?"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_release",
+              "after": "Elastic → Kinetic"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_rest",
+              "after": "At rest relative to the ground: spring and viscous damping forces are zero."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_scope",
+              "after": "These are each force’s contributions to relative motion, per kg of modal mass. During shaking, ground input also changes relative kinetic energy."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_small_exchange",
+              "after": "Spring exchange nearly zero"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_spring",
+              "after": "Spring exchange"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_stationary",
+              "after": "Relative velocity is nearly zero. A displaced spring can still exert force with almost no energy transfer."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_store",
+              "after": "Kinetic → Elastic"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_title",
+              "after": "Connect force, motion and energy"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_toward",
+              "after": "Moving toward zero relative displacement. Spring acts with relative motion: elastic energy is transferred into kinetic energy."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_undamped",
+              "after": "Damping is set to zero, so the damper exerts no force."
+            },
+            {
+              "path": "stem.dinolab.terrain_title",
+              "after": "Read the excavation surfaces"
+            },
+            {
+              "path": "stem.dinolab.terrain_controls",
+              "after": "Excavation lighting"
+            },
+            {
+              "path": "stem.dinolab.terrain_daylight",
+              "after": "Daylight"
+            },
+            {
+              "path": "stem.dinolab.terrain_raking",
+              "after": "Raking light"
+            },
+            {
+              "path": "stem.dinolab.terrain_hint",
+              "after": "Compare visible relief and shadows. Lighting leaves sediment, contacts and clues unchanged."
+            },
+            {
+              "path": "stem.dinolab.terrain_faces",
+              "after": "Speckled tops and lightly textured walls distinguish horizontal and vertical faces."
+            },
+            {
+              "path": "stem.dinolab.terrain_model_note",
+              "after": "Surface detail is a visual aid, not evidence of rock type, age or buried finds."
+            },
+            {
+              "path": "stem.dinolab.terrain_section_note",
+              "after": "Other rows are hidden for inspection. Displayed side faces are a viewing aid, not newly excavated walls."
+            },
+            {
+              "path": "stem.firstresponse.hand_landmark_prompt",
+              "after": "Follow one finger from its tip toward the wrist. Use the folds and nails to follow the same hand before and after the turn. Which side faces upward?"
+            },
+            {
+              "path": "stem.firstresponse.hand_landmark_check",
+              "after": "Check your observation"
+            },
+            {
+              "path": "stem.firstresponse.hand_landmark_answer",
+              "after": "The palm side faces upward in both poses. The folds help you follow its surface; the nails mark the back of the hand."
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_population_title",
+              "after": "Population counts"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_capacity_help",
+              "after": "The bar uses all 80 model positions. Resistant share uses living cells only."
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_sensitive",
+              "after": "Sensitive"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_resistant",
+              "after": "Resistant"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_unoccupied",
+              "after": "Unoccupied"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_trend_title",
+              "after": "Resistant share over exposure rounds"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_current_round",
+              "after": "Current round"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_empty_ring",
+              "after": "unoccupied rings"
+            }
+          ],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/ui_strings.js",
+          "installedSha256": "c8219a8de218ca3e0a19d1407f48c759bea6314b128827b928d51b608e1d087a",
+          "testedSha256": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+          "currentSha256": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+          "anatomyNamespaceSha256": "a1147df01af83881894e7128059073d5940f3d4b5c1da80a267ca0be9030b95d",
+          "anatomyNamespaceUnchanged": true,
+          "muscleValuesUnchanged": true,
+          "registeredKeys": 74,
+          "preTestSubtitleRefinement": [],
+          "preTestOffScopeDifferences": [
+            {
+              "path": "stem.perception.all_experiments",
+              "after": "All experiments"
+            },
+            {
+              "path": "stem.perception.all_observations",
+              "after": "All observations"
+            },
+            {
+              "path": "stem.perception.all_study_statuses",
+              "after": "All study statuses"
+            },
+            {
+              "path": "stem.perception.clear_notebook_filters",
+              "after": "Clear notebook filters"
+            },
+            {
+              "path": "stem.perception.complete_study",
+              "after": "Complete"
+            },
+            {
+              "path": "stem.perception.conflicting_study",
+              "after": "Conflicting"
+            },
+            {
+              "path": "stem.perception.find_observations",
+              "after": "Find saved observations"
+            },
+            {
+              "path": "stem.perception.latest_retained_observation",
+              "after": "Latest retained observation"
+            },
+            {
+              "path": "stem.perception.mixed_experiments",
+              "after": "Mixed experiments"
+            },
+            {
+              "path": "stem.perception.notebook_experiment_label",
+              "after": "Filter by experiment"
+            },
+            {
+              "path": "stem.perception.notebook_filters_cleared",
+              "after": "Notebook filters cleared."
+            },
+            {
+              "path": "stem.perception.notebook_group_counts",
+              "after": "Studies shown: {shown} of {total}. Retained observations shown: {records}."
+            },
+            {
+              "path": "stem.perception.notebook_no_matches",
+              "after": "No saved observations match these filters. Clear or change the filters to see your notebook."
+            },
+            {
+              "path": "stem.perception.notebook_no_studies",
+              "after": "No repeated studies are saved yet. Use All observations to review individual observations, or start three matches in a matching experiment."
+            },
+            {
+              "path": "stem.perception.notebook_no_study_matches",
+              "after": "No saved studies match these filters. Clear or change the filters to see your studies."
+            },
+            {
+              "path": "stem.perception.notebook_record_counts",
+              "after": "Observations shown: {shown} of {total}."
+            },
+            {
+              "path": "stem.perception.notebook_search_hint",
+              "after": "Search visible experiment titles, impressions, and notes. Repeated-study observations stay together when any retained match fits the filters. Hidden drawing values are not searched."
+            },
+            {
+              "path": "stem.perception.notebook_search_label",
+              "after": "Search notes or impressions"
+            },
+            {
+              "path": "stem.perception.notebook_status_label",
+              "after": "Study status"
+            },
+            {
+              "path": "stem.perception.notebook_study_number",
+              "after": "Study {number}"
+            },
+            {
+              "path": "stem.perception.notebook_view_label",
+              "after": "Notebook view"
+            },
+            {
+              "path": "stem.perception.partial_study",
+              "after": "Partial"
+            },
+            {
+              "path": "stem.perception.partly_revealed",
+              "after": "Partly revealed"
+            },
+            {
+              "path": "stem.perception.recorded_drawing",
+              "after": "Recorded drawing"
+            },
+            {
+              "path": "stem.perception.recorded_drawing_hint",
+              "after": "Inspect an actual saved match. Trial selections and guides apply only to these previews."
+            },
+            {
+              "path": "stem.perception.recorded_observations",
+              "after": "Recorded observations"
+            },
+            {
+              "path": "stem.perception.recorded_pair_hint",
+              "after": "Inspect trials from each study independently. Both drawings use the same scale; each preview shows its selected recorded match."
+            },
+            {
+              "path": "stem.perception.recorded_trial_label",
+              "after": "Recorded trial"
+            },
+            {
+              "path": "stem.perception.recorded_trial_option",
+              "after": "Trial {trial}"
+            },
+            {
+              "path": "stem.perception.recorded_trial_title",
+              "after": "Recorded trial {trial} · {title}"
+            },
+            {
+              "path": "stem.perception.retained_match_count",
+              "after": "Retained matches: {count} of 3."
+            },
+            {
+              "path": "stem.perception.retained_observation_count",
+              "after": "Retained observations: {count}."
+            },
+            {
+              "path": "stem.perception.saved_studies_view",
+              "after": "Saved studies"
+            },
+            {
+              "path": "stem.perception.show_measurement_guides",
+              "after": "Show measurement guides"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_note",
+              "before": "A cutaway reveals the folds of the inner membrane, called cristae. Shape and colors illustrate its structure; this is not a microscopy reconstruction.",
+              "after": "A cutaway reveals the two enclosing membranes, the matrix and connected cristae. Shapes, protein sizes and motion are illustrated for exploration; cristae vary between cells."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_cristae_body",
+              "after": "Cristae are folds of the inner membrane. The rounded pouches remain connected to its boundary through narrow junctions. Their membranes hold much of the machinery for ATP production. Trace the cristae to approach each example fold."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_envelope_body",
+              "after": "The outer membrane encloses the organelle. A second membrane lies beneath it. Open the cutaway to see the gap between them and the folds extending into the matrix."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_inter",
+              "after": "Intermembrane space"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_inter_body",
+              "after": "A narrow compartment separates the two enclosing membranes. It connects with the spaces inside the cristae. Hydrogen ions pumped across the inner membrane help establish the electrochemical gradient used by ATP synthase."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_matrix",
+              "after": "Matrix"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_matrix_body",
+              "after": "The matrix occupies the space around the inner membrane folds. It contains enzymes involved in metabolism, mitochondrial ribosomes and DNA packaged with proteins. The small shapes here are illustrative representatives."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_synthase",
+              "after": "ATP synthase"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_synthase_body",
+              "after": "The illustrated paired protein heads sit on the matrix side of a curved crista rim. Hydrogen ions passing through the membrane part drive a rotor. That motion supports ATP production in the projecting head. The protein shapes and size are enlarged for inspection."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_genome",
+              "after": "Mitochondrial DNA"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_genome_body",
+              "after": "Compact nucleoids package mitochondrial DNA with proteins in the matrix. The blue bundles mark examples of these DNA–protein structures. Continue inward to explore the double helix in the molecular atlas."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_label",
+              "after": "Crista {n} · inner membrane"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_body",
+              "after": "Explore this rounded inner-membrane pouch and the narrow junction joining it to the boundary membrane. Its interior connects to the intermembrane space; the matrix surrounds it. The paired protein shapes illustrate ATP synthase near curved rims. Seven folds form this composed example; crista structure varies between cells."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_navigation",
+              "after": "Crista navigation"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_navigation",
+              "after": "Energy pathway navigation"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_kicker",
+              "after": "Inside the inner membrane"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_kicker",
+              "after": "Energy pathway · {n} of 4"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_whole",
+              "after": "Whole mitochondrion"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_previous",
+              "after": "Previous fold"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_caption",
+              "after": "Rounded membrane pouch"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_slider",
+              "after": "Crista"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_next",
+              "after": "Next fold"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_previous",
+              "after": "Previous energy step"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_next",
+              "after": "Next energy step"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_study",
+              "after": "Mitochondrial observatory"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_study_kicker",
+              "after": "Cellular worlds · membrane architecture"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_science",
+              "after": "Explore the biology ↗"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_intro",
+              "after": "Move between the enclosing membranes and their folded interior. Follow a crista, inspect the matrix, then trace how a proton gradient helps the molecular machinery produce ATP."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_trace",
+              "after": "Trace the cristae"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow",
+              "after": "Show energy flow"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_map",
+              "after": "Choose a membrane fold"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_fold_button",
+              "after": "Crista {n}"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy",
+              "after": "Energy pathway"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow_off",
+              "after": "Select a step to explore"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow_closed",
+              "after": "Open the cutaway to see the flow"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow_reduced",
+              "after": "Static view · reduced motion"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow_paused",
+              "after": "Flow paused · resume ambience to animate"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_flow_active",
+              "after": "Illustrative motion · slowed for inspection"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_compartments",
+              "after": "Compartments and flow key"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_model_note",
+              "after": "An illustrated lamellar mitochondrion, fitted to the atlas’s 1 μm length reference. Membrane shapes, seven example folds, protein sizes and particle counts are composed for exploration. Cristae vary between cells; the motion explains direction rather than a measured reaction rate."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_badge",
+              "after": "Double membranes · a folded interior"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_stage_note",
+              "after": "Illustrated compartments / 1 μm length reference"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_label_1",
+              "after": "Electron transport"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_caption_1",
+              "after": "Respiratory complexes use energy from electron transfer to move hydrogen ions toward the crista space."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_body_1",
+              "after": "Respiratory complexes use energy from electron transfer to move hydrogen ions toward the crista space. The colored particles illustrate direction and are enlarged for visibility. Their count and speed are not measurements."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_label_2",
+              "after": "Proton gradient"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_caption_2",
+              "after": "The inner membrane separates the matrix from the intermembrane and crista spaces."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_body_2",
+              "after": "The inner membrane separates the matrix from the intermembrane and crista spaces. The colored particles illustrate direction and are enlarged for visibility. Their count and speed are not measurements."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_label_3",
+              "after": "ATP synthase"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_caption_3",
+              "after": "Hydrogen ions return toward the matrix through ATP synthase, driving its molecular rotor."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_body_3",
+              "after": "Hydrogen ions return toward the matrix through ATP synthase, driving its molecular rotor. The colored particles illustrate direction and are enlarged for visibility. Their count and speed are not measurements."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_label_4",
+              "after": "ATP release"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_caption_4",
+              "after": "ATP synthase joins ADP and phosphate. ATP is released on the matrix side."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_energy_body_4",
+              "after": "ATP synthase joins ADP and phosphate. ATP is released on the matrix side. The colored particles illustrate direction and are enlarged for visibility. Their count and speed are not measurements."
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_0",
+              "after": "Outer membrane"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_1",
+              "after": "Inner membrane"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_2",
+              "after": "Matrix"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_3",
+              "after": "ATP synthase"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_4",
+              "after": "Hydrogen ions"
+            },
+            {
+              "path": "stem.scaleExplorer.atlas_mito_key_5",
+              "after": "ATP markers"
+            },
+            {
+              "path": "stem.atctower.show_evidence",
+              "after": "Show evidence"
+            },
+            {
+              "path": "stem.atctower.evidence_all",
+              "after": "All events"
+            },
+            {
+              "path": "stem.atctower.evidence_instructions",
+              "after": "Instructions and go-arounds"
+            },
+            {
+              "path": "stem.atctower.evidence_outcomes",
+              "after": "Aircraft outcomes and alerts"
+            },
+            {
+              "path": "stem.atctower.evidence_math",
+              "after": "Math decisions"
+            },
+            {
+              "path": "stem.atctower.evidence_events",
+              "after": "events"
+            },
+            {
+              "path": "stem.atctower.no_matching_evidence",
+              "after": "No events match this view. Try All events."
+            },
+            {
+              "path": "stem.atctower.guided_target",
+              "after": "Guided"
+            },
+            {
+              "path": "stem.atctower.maintain_current",
+              "after": "Maintain"
+            },
+            {
+              "path": "stem.atctower.automatic_target",
+              "after": "Auto"
+            },
+            {
+              "path": "stem.atctower.preview_valid_value",
+              "after": "Enter a whole value in the range above to preview this instruction."
+            },
+            {
+              "path": "stem.atctower.preview_same_heading",
+              "after": "Same current heading"
+            },
+            {
+              "path": "stem.atctower.preview_turn_left",
+              "after": "Turn left"
+            },
+            {
+              "path": "stem.atctower.preview_turn_right",
+              "after": "Turn right"
+            },
+            {
+              "path": "stem.atctower.preview_reduce_speed",
+              "after": "Reduce speed progressively"
+            },
+            {
+              "path": "stem.atctower.preview_increase_speed",
+              "after": "Increase speed progressively"
+            },
+            {
+              "path": "stem.atctower.preview_same_speed",
+              "after": "Maintain current speed"
+            },
+            {
+              "path": "stem.atctower.preview_cancel_approach",
+              "after": "Sending this cancels approach guidance and maintains the current altitude:"
+            },
+            {
+              "path": "stem.atctower.preview_release_hold",
+              "after": "Sending this releases the teaching hold and returns the aircraft inbound."
+            },
+            {
+              "path": "stem.atctower.preview_speed_mode",
+              "after": "Speed changes keep the current flight phase. A new approach clearance sets the aircraft’s approach speed."
+            },
+            {
+              "path": "stem.atctower.preview_eta_deferred",
+              "after": "Direct arrival comparison is deferred during a hold, go-around, or without runway geometry."
+            },
+            {
+              "path": "stem.atctower.direct_speed_comparison",
+              "after": "Direct constant-speed comparison"
+            },
+            {
+              "path": "stem.atctower.preview_eta_assumptions",
+              "after": "Distance ÷ speed to the runway threshold. Acceleration, turns and sequencing change the actual arrival."
+            },
+            {
+              "path": "stem.atctower.no_aircraft_selected",
+              "after": "No aircraft selected"
+            },
+            {
+              "path": "stem.atctower.back_to_radar",
+              "after": "Radar"
+            },
+            {
+              "path": "stem.atctower.mode_approach",
+              "after": "Approach guidance · heading and descent update automatically"
+            },
+            {
+              "path": "stem.atctower.mode_hold",
+              "after": "Teaching hold · heading updates automatically"
+            },
+            {
+              "path": "stem.atctower.mode_go_around",
+              "after": "Go-around · following recovery instructions"
+            },
+            {
+              "path": "stem.atctower.mode_manual",
+              "after": "Inbound · following your instructions"
+            },
+            {
+              "path": "stem.atctower.flight_value",
+              "after": "Flight value"
+            },
+            {
+              "path": "stem.atctower.current_value",
+              "after": "Current"
+            },
+            {
+              "path": "stem.atctower.active_instruction",
+              "after": "Instruction"
+            },
+            {
+              "path": "stem.atctower.altitude",
+              "after": "Altitude"
+            },
+            {
+              "path": "stem.atctower.speed",
+              "after": "Speed"
+            },
+            {
+              "path": "stem.atctower.command_needs_action",
+              "after": "Action needed"
+            },
+            {
+              "path": "stem.atctower.command_unchanged",
+              "after": "Instruction unchanged"
+            },
+            {
+              "path": "stem.atctower.command_sent",
+              "after": "Instruction sent"
+            },
+            {
+              "path": "stem.atctower.preview_paused",
+              "after": "Traffic pauses while you preview. Send applies this instruction."
+            },
+            {
+              "path": "stem.atctower.heading_presets",
+              "after": "Heading presets"
+            },
+            {
+              "path": "stem.atctower.speed_presets",
+              "after": "Speed presets"
+            },
+            {
+              "path": "stem.atctower.north_heading",
+              "after": "North · 000°"
+            },
+            {
+              "path": "stem.atctower.east_heading",
+              "after": "East · 090°"
+            },
+            {
+              "path": "stem.atctower.south_heading",
+              "after": "South · 180°"
+            },
+            {
+              "path": "stem.atctower.west_heading",
+              "after": "West · 270°"
+            },
+            {
+              "path": "stem.atctower.mode_approach_v2",
+              "after": "Approach guidance · targets update as traffic moves"
+            },
+            {
+              "path": "stem.atctower.mode_hold_v2",
+              "after": "Teaching hold · heading updates as traffic moves"
+            },
+            {
+              "path": "stem.atctower.preview_align_heading",
+              "after": "Align to this heading"
+            },
+            {
+              "path": "stem.atctower.latest_attempt",
+              "after": "Last attempt"
+            },
+            {
+              "path": "stem.atctower.earlier_completion_kept",
+              "after": "Your earlier completion is still recorded."
+            },
+            {
+              "path": "stem.atctower.attempt_note_saved",
+              "after": "Reflection note saved"
+            },
+            {
+              "path": "stem.atctower.review_last_attempt",
+              "after": "Review last attempt"
+            },
+            {
+              "path": "stem.atctower.attempt_objectives_met",
+              "after": "Objectives met"
+            },
+            {
+              "path": "stem.atctower.attempt_review_needed",
+              "after": "Review needed"
+            },
+            {
+              "path": "stem.atctower.attempt_unfinished",
+              "after": "Unfinished"
+            },
+            {
+              "path": "stem.atctower.review_one_decision",
+              "after": "Review one decision"
+            },
+            {
+              "path": "stem.atctower.choose_reflection_moment",
+              "after": "Choose a moment (optional)"
+            },
+            {
+              "path": "stem.atctower.reflect_without_event",
+              "after": "Reflect on the whole attempt"
+            },
+            {
+              "path": "stem.atctower.selected_moment",
+              "after": "Selected moment"
+            },
+            {
+              "path": "stem.atctower.reflection_intention",
+              "after": "What did you intend?"
+            },
+            {
+              "path": "stem.atctower.reflection_effect",
+              "after": "What changed in the aircraft or traffic?"
+            },
+            {
+              "path": "stem.atctower.reflection_next_change",
+              "after": "What will you keep or change next time?"
+            },
+            {
+              "path": "stem.atctower.shift_reflection_copy_v2",
+              "after": "Optional: explain a decision and one change to try. Your saved note can remind you on a matching retry."
+            },
+            {
+              "path": "stem.atctower.your_previous_reflection",
+              "after": "Your previous reflection"
+            },
+            {
+              "path": "stem.atctower.previous_reflection_copy",
+              "after": "Your note from the last matching attempt. Read it if helpful, then decide what to try now."
+            },
+            {
+              "path": "stem.atctower.dismiss_attempt_note",
+              "after": "Dismiss for this attempt"
+            },
+            {
+              "path": "stem.bridgelab.seismic_force_legend",
+              "before": "Gold arrow: spring force. Violet arrow: damping force. A dot means zero force.",
+              "after": "Gold arrow: spring force. Violet arrow: damping force. A dot marks zero or a force too small to display; read the numbers below."
+            },
+            {
+              "path": "stem.bridgelab.force_lens_fallback",
+              "before": "Right is positive across the deck in this diagram. Forces are for one teaching mode, per unit modal mass.",
+              "after": "Right is positive across the deck in this diagram. A dot marks each origin; very short force arrows may be too small to see. Read the numbers for small nonzero forces. Forces are for one teaching mode, per unit modal mass."
+            },
+            {
+              "path": "stem.bridgelab.force_lens_scope",
+              "before": "3D arrows show forces on one modal deck mass across the bridge: gold spring, violet damping, white net. A dot marks each origin; arrows disappear at zero force. Arrow length uses its own force scale. The direction stays fixed across the bridge when you turn.",
+              "after": "3D arrows show forces on one modal deck mass across the bridge: gold spring, violet damping, white net. A dot marks each origin; very short arrows may be too small to see. Arrow length uses its own force scale. The direction stays fixed across the bridge when you turn."
+            },
+            {
+              "path": "stem.bridgelab.motion_axis_scope",
+              "after": "Right is positive across the bridge in these rails. Turning the camera does not change this direction."
+            },
+            {
+              "path": "stem.bridgelab.motion_scene_prefix",
+              "after": "Scene: "
+            },
+            {
+              "path": "stem.bridgelab.motion_shapes",
+              "after": "Circle = ground; diamond = deck. The last rail joins their positions to show the relative gap."
+            },
+            {
+              "path": "stem.bridgelab.motion_zero",
+              "after": "No shaking was applied to this trial. Ground and deck stay at rest throughout the event."
+            },
+            {
+              "path": "stem.bridgelab.motion_rounding",
+              "after": "Readings are rounded; the rails use the unrounded positions."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_away",
+              "after": "Moving away from zero relative displacement. Spring opposes relative motion: kinetic energy is transferred into elastic energy."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_centered",
+              "after": "Relative displacement is nearly zero. Spring force is nearly zero, although relative motion can continue."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_damping",
+              "after": "Damping opposes relative motion and removes mechanical energy."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_damping_still",
+              "after": "Damping force and its loss rate are nearly zero."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_direction_scope",
+              "after": "Direction only; right is positive in this diagram."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_dissipation",
+              "after": "Motion → dissipated energy"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_dot",
+              "after": "The velocity arrow has fixed length. A dot means zero or nearly zero relative velocity; numbers preserve small nonzero readings."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_loss",
+              "after": "Damping loss"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_no_exchange",
+              "after": "No spring exchange now"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_no_loss",
+              "after": "No damping loss now"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_rate_reason",
+              "after": "These rates are recomputed from displayed motion. The history interpolates rates recorded at fixed sample times; between samples, its values can differ."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_rate_why",
+              "after": "Why can these rates differ from the energy history?"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_release",
+              "after": "Elastic → Kinetic"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_rest",
+              "after": "At rest relative to the ground: spring and viscous damping forces are zero."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_scope",
+              "after": "These are each force’s contributions to relative motion, per kg of modal mass. During shaking, ground input also changes relative kinetic energy."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_small_exchange",
+              "after": "Spring exchange nearly zero"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_spring",
+              "after": "Spring exchange"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_stationary",
+              "after": "Relative velocity is nearly zero. A displaced spring can still exert force with almost no energy transfer."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_store",
+              "after": "Kinetic → Elastic"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_title",
+              "after": "Connect force, motion and energy"
+            },
+            {
+              "path": "stem.bridgelab.force_motion_toward",
+              "after": "Moving toward zero relative displacement. Spring acts with relative motion: elastic energy is transferred into kinetic energy."
+            },
+            {
+              "path": "stem.bridgelab.force_motion_undamped",
+              "after": "Damping is set to zero, so the damper exerts no force."
+            },
+            {
+              "path": "stem.dinolab.terrain_title",
+              "after": "Read the excavation surfaces"
+            },
+            {
+              "path": "stem.dinolab.terrain_controls",
+              "after": "Excavation lighting"
+            },
+            {
+              "path": "stem.dinolab.terrain_daylight",
+              "after": "Daylight"
+            },
+            {
+              "path": "stem.dinolab.terrain_raking",
+              "after": "Raking light"
+            },
+            {
+              "path": "stem.dinolab.terrain_hint",
+              "after": "Compare visible relief and shadows. Lighting leaves sediment, contacts and clues unchanged."
+            },
+            {
+              "path": "stem.dinolab.terrain_faces",
+              "after": "Speckled tops and lightly textured walls distinguish horizontal and vertical faces."
+            },
+            {
+              "path": "stem.dinolab.terrain_model_note",
+              "after": "Surface detail is a visual aid, not evidence of rock type, age or buried finds."
+            },
+            {
+              "path": "stem.dinolab.terrain_section_note",
+              "after": "Other rows are hidden for inspection. Displayed side faces are a viewing aid, not newly excavated walls."
+            },
+            {
+              "path": "stem.firstresponse.hand_landmark_prompt",
+              "after": "Follow one finger from its tip toward the wrist. Use the folds and nails to follow the same hand before and after the turn. Which side faces upward?"
+            },
+            {
+              "path": "stem.firstresponse.hand_landmark_check",
+              "after": "Check your observation"
+            },
+            {
+              "path": "stem.firstresponse.hand_landmark_answer",
+              "after": "The palm side faces upward in both poses. The folds help you follow its surface; the nails mark the back of the hand."
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_population_title",
+              "after": "Population counts"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_capacity_help",
+              "after": "The bar uses all 80 model positions. Resistant share uses living cells only."
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_sensitive",
+              "after": "Sensitive"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_resistant",
+              "after": "Resistant"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_unoccupied",
+              "after": "Unoccupied"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_trend_title",
+              "after": "Resistant share over exposure rounds"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_current_round",
+              "after": "Current round"
+            },
+            {
+              "path": "stem.microbiology.resistance_visual_empty_ring",
+              "after": "unoccupied rings"
+            }
+          ],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "lang/french.js",
+          "installedSha256": "61ff7b2ba2d72a8ca89e9321e2650b2341f91007c44e7443e8a9f9648ea2c75e",
+          "testedSha256": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+          "currentSha256": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+          "anatomyNamespaceSha256": "cfe460063d63427c462c54e377126b6320d546b6b1a6be7e6c89525ac57c43b5",
+          "anatomyNamespaceUnchanged": true,
+          "muscleValuesUnchanged": true,
+          "registeredKeys": 74,
+          "preTestSubtitleRefinement": [
+            {
+              "path": "stem.anatomy.trace_muscle_activation",
+              "before": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening.",
+              "after": "Suivez le signal d’un neurone moteur depuis la terminaison axonale jusqu’à la libération de calcium et au raccourcissement du sarcomère."
+            }
+          ],
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/lang/french.js",
+          "installedSha256": "61ff7b2ba2d72a8ca89e9321e2650b2341f91007c44e7443e8a9f9648ea2c75e",
+          "testedSha256": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+          "currentSha256": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+          "anatomyNamespaceSha256": "cfe460063d63427c462c54e377126b6320d546b6b1a6be7e6c89525ac57c43b5",
+          "anatomyNamespaceUnchanged": true,
+          "muscleValuesUnchanged": true,
+          "registeredKeys": 74,
+          "preTestSubtitleRefinement": [
+            {
+              "path": "stem.anatomy.trace_muscle_activation",
+              "before": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening.",
+              "after": "Suivez le signal d’un neurone moteur depuis la terminaison axonale jusqu’à la libération de calcium et au raccourcissement du sarcomère."
+            }
+          ],
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "lang/spanish_latin_america.js",
+          "installedSha256": "51db391fcafe43211ae3b99147a7cdc7619c3899c306c29ea684c87d73b1b447",
+          "testedSha256": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+          "currentSha256": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+          "anatomyNamespaceSha256": "eff01f5c66069a2f996ac74bfc9d254e5bd5d9be39c80bc736508fc71bca2894",
+          "anatomyNamespaceUnchanged": true,
+          "muscleValuesUnchanged": true,
+          "registeredKeys": 74,
+          "preTestSubtitleRefinement": [
+            {
+              "path": "stem.anatomy.trace_muscle_activation",
+              "before": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening.",
+              "after": "Sigue la señal de una neurona motora desde la terminal axónica hasta la liberación de calcio y el acortamiento del sarcómero."
+            }
+          ],
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+          "installedSha256": "51db391fcafe43211ae3b99147a7cdc7619c3899c306c29ea684c87d73b1b447",
+          "testedSha256": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+          "currentSha256": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+          "anatomyNamespaceSha256": "eff01f5c66069a2f996ac74bfc9d254e5bd5d9be39c80bc736508fc71bca2894",
+          "anatomyNamespaceUnchanged": true,
+          "muscleValuesUnchanged": true,
+          "registeredKeys": 74,
+          "preTestSubtitleRefinement": [
+            {
+              "path": "stem.anatomy.trace_muscle_activation",
+              "before": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening.",
+              "after": "Sigue la señal de una neurona motora desde la terminal axónica hasta la liberación de calcio y el acortamiento del sarcómero."
+            }
+          ],
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "lang/arabic.js",
+          "installedSha256": "9ef82c45d632abbc832c6606e0bb831705c788e3c375124ea67d73160408609f",
+          "testedSha256": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+          "currentSha256": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+          "anatomyNamespaceSha256": "8a5e48c001ec7edeff9c08b90e4352d24da4b41299c276c85989834ca2fa3558",
+          "anatomyNamespaceUnchanged": true,
+          "muscleValuesUnchanged": true,
+          "registeredKeys": 74,
+          "preTestSubtitleRefinement": [
+            {
+              "path": "stem.anatomy.trace_muscle_activation",
+              "before": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening.",
+              "after": "تتبّع إشارة العصبون الحركي من النهاية المحورية إلى إطلاق الكالسيوم وتقصّر القُسيم العضلي."
+            }
+          ],
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/lang/arabic.js",
+          "installedSha256": "9ef82c45d632abbc832c6606e0bb831705c788e3c375124ea67d73160408609f",
+          "testedSha256": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+          "currentSha256": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+          "anatomyNamespaceSha256": "8a5e48c001ec7edeff9c08b90e4352d24da4b41299c276c85989834ca2fa3558",
+          "anatomyNamespaceUnchanged": true,
+          "muscleValuesUnchanged": true,
+          "registeredKeys": 74,
+          "preTestSubtitleRefinement": [
+            {
+              "path": "stem.anatomy.trace_muscle_activation",
+              "before": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening.",
+              "after": "تتبّع إشارة العصبون الحركي من النهاية المحورية إلى إطلاق الكالسيوم وتقصّر القُسيم العضلي."
+            }
+          ],
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        }
+      ],
+      "pairs": [
+        {
+          "path": "ui_strings.js",
+          "muscleValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        },
+        {
+          "path": "lang/french.js",
+          "muscleValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        },
+        {
+          "path": "lang/spanish_latin_america.js",
+          "muscleValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        },
+        {
+          "path": "lang/arabic.js",
+          "muscleValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        }
+      ]
+    },
+    "currentFullFilePairsIdentical": true
+  },
+  "focusedTests": {
+    "passed": 806,
+    "muscle": 248,
+    "continuity": 30,
+    "knee": 114,
+    "mutedLayers": 4,
+    "heart": 114,
+    "alveolus": 108,
+    "kidney": 74,
+    "gallery": 64,
+    "scale": 28,
+    "selectedScience": 22,
+    "unselectedScienceSkipped": 133
+  },
+  "browser": {
+    "run": "runs/browser-a3f12a1f-04",
+    "journeys": 2,
+    "accessibilityScans": 5,
+    "violations": 0,
+    "pageErrors": 0,
+    "horizontalOverflow": false,
+    "markerIntersections": 0,
+    "minTextContrast": 5.698586217871195,
+    "minNumericMarkerContrast": 7.562998081458594,
+    "minControlHeight": 48.390625,
+    "minControlWidth": 106.640625,
+    "minNumericMarkerSize": 15.077964743589744,
+    "normalHtmlText": 16,
+    "largerHtmlText": 17,
+    "visualKeySymbolsLtrIsolated": true,
+    "chargedIonsLtrIsolated": true,
+    "independentlyReviewedCaptures": [
+      {
+        "name": "desktop-muscle-clinical-step-4.png",
+        "sha256": "4af74e749c44e22d23221cc4c5d14029f2982e32e03ce54aac4f87fe864674bf"
+      },
+      {
+        "name": "desktop-light-muscle-guide.png",
+        "sha256": "7fa75e8b7667b8e207119379e7048e3fb1cab4e81efa72b02cb5c9bc8a803a35"
+      },
+      {
+        "name": "phone-light-muscle-guide.png",
+        "sha256": "2c3159c4929007d4e717fad08cca0c5ec77e264020b2dbed7f425230bed804ef"
+      },
+      {
+        "name": "phone-dark-muscle-guide.png",
+        "sha256": "f7c1aeb4741e151c36d08688c872cefdff2b504010f152e606ef4a6b99b70873"
+      },
+      {
+        "name": "phone-arabic-dark-larger-muscle-guide.png",
+        "sha256": "cb633e6cc39bdd5e5af428fc2b2016f2cc35201f0224549f9405e05b8b9ea3c9"
+      },
+      {
+        "name": "phone-forced-colors-muscle-guide.png",
+        "sha256": "2492b990eb094669f8547fdb6dc61b7821e74d34d5d5f50f61c500b00e075be4"
+      }
+    ]
+  },
+  "git": {
+    "readOnlyChecksPassed": true,
+    "indexUnchanged": true,
+    "scopedStagedPaths": []
+  },
+  "evidence": [
+    {
+      "name": "muscle-guide-units-a3f12a1f-2026-10-04T16-04-55-750Z-proof.json",
+      "sha256": "ef12b8451c31e9d22d322d0a20d6e08c13176a142c1ddfd1801b284bfd0fa2e2"
+    },
+    {
+      "name": "muscle-guide-units-a3f12a1f-2026-10-04T16-04-55-750Z.json",
+      "sha256": "86683effb17e878c9e10b1b11e62503be9120674264e4b48f7fc625284f56804"
+    },
+    {
+      "name": "learning-continuity-regression-units-a3f12a1f-2026-10-04T16-04-55-750Z-proof.json",
+      "sha256": "0373a856fcb42b1516788aa631820c37f1b3e2125013ddb7a4c6b19206deea29"
+    },
+    {
+      "name": "learning-continuity-regression-units-a3f12a1f-2026-10-04T16-04-55-750Z.json",
+      "sha256": "d63fe9cb163c537ceaaf06efaac1af3efeb5aeaed3a36c63560f1334f2849e29"
+    },
+    {
+      "name": "knee-guide-units-a3f12a1f-2026-10-04T16-04-55-750Z-proof.json",
+      "sha256": "f5fb243d312078c2b284fb027f58d008971e6224fd29a1fc8e4a626c26af187b"
+    },
+    {
+      "name": "knee-guide-units-a3f12a1f-2026-10-04T16-04-55-750Z.json",
+      "sha256": "85bc4a593fd017cbfd852f8e86275f5c81038dc59004d30268d4e5cc37c783e0"
+    },
+    {
+      "name": "knee-muted-layer-regression-units-a3f12a1f-2026-10-04T16-04-55-750Z-proof.json",
+      "sha256": "a66f7e5c75f5d7faca65081ed6dbee1241a12fb412cb99dec1836ac511149cc2"
+    },
+    {
+      "name": "knee-muted-layer-regression-units-a3f12a1f-2026-10-04T16-04-55-750Z.json",
+      "sha256": "782236d13955365873dfe9d0aa11f4fcbf840b0a3531f2e8040a9b0bfed7157b"
+    },
+    {
+      "name": "heart-guide-units-a3f12a1f-2026-10-04T16-04-55-750Z-proof.json",
+      "sha256": "7670e9bf24da65ba6e84bb439eff8a57b8f45ef351ac48af93e3cedb66d77921"
+    },
+    {
+      "name": "heart-guide-units-a3f12a1f-2026-10-04T16-04-55-750Z.json",
+      "sha256": "f0741f5514e6a48d42c42598a63bdca40f9758ae62847be9c1ae36e9f8001ed0"
+    },
+    {
+      "name": "alveolus-guide-units-a3f12a1f-2026-10-04T16-04-55-750Z-proof.json",
+      "sha256": "bba6e64d98c693aed3379d4ee3f31f46f1954efd84b44cf4a6bf40ad5370a062"
+    },
+    {
+      "name": "alveolus-guide-units-a3f12a1f-2026-10-04T16-04-55-750Z.json",
+      "sha256": "a18850b79801e455c1a126887d17156719d95812f12250a1af1823ab23000b3d"
+    },
+    {
+      "name": "kidney-guide-regression-units-a3f12a1f-2026-10-04T16-04-55-750Z-proof.json",
+      "sha256": "880bdb4cd379380c4851fa0c427741f669c4f3f99b7d4d3746af2fb71a406b6a"
+    },
+    {
+      "name": "kidney-guide-regression-units-a3f12a1f-2026-10-04T16-04-55-750Z.json",
+      "sha256": "223e2386825f541aba77e0d47f63ca81bdf94bfd9d8b81973c6d36216b4ab7fa"
+    },
+    {
+      "name": "lens-gallery-regression-units-a3f12a1f-2026-10-04T16-04-55-750Z-proof.json",
+      "sha256": "b3601f527a60389549c3acc5e87959135e60ead2ff0cc4419e93a90b6e6c865b"
+    },
+    {
+      "name": "lens-gallery-regression-units-a3f12a1f-2026-10-04T16-04-55-750Z.json",
+      "sha256": "02794b0247dcb9c04d524f2cbf87cde5d0e00ce6861a6f0a1176757f5a3e0766"
+    },
+    {
+      "name": "scale-navigation-regression-units-a3f12a1f-2026-10-04T16-04-55-750Z-proof.json",
+      "sha256": "e47d613a754f4c96506cd688dfb7e2fd34e9ef9114b2c273c20a7389b12ad0c9"
+    },
+    {
+      "name": "scale-navigation-regression-units-a3f12a1f-2026-10-04T16-04-55-750Z.json",
+      "sha256": "69ae7f135c642794e20083c67a6cdaeeee6402ad47cedf4f014da29c2e709649"
+    },
+    {
+      "name": "muscle-existing-science-units-a3f12a1f-2026-10-04T16-04-55-750Z-proof.json",
+      "sha256": "fa1ed5857251c4932087a15573d592e83c0141f85afc8055599c3a85e4e777c3"
+    },
+    {
+      "name": "muscle-existing-science-units-a3f12a1f-2026-10-04T16-04-55-750Z.json",
+      "sha256": "8577e9358f272ffeb8e7fe140f9e8ea303a64a23ffb53d0a3524d2d353b9178e"
+    },
+    {
+      "name": "units-a3f12a1f-2026-10-04T16-04-55-750Z-summary.json",
+      "sha256": "c108b756385f21ad2ac8f507ec7d621adc13187229d4bf1c34ebfdcfbc6747cc"
+    },
+    {
+      "name": "unit-report-validation.json",
+      "sha256": "c15b2e375528709d4a7de4698e6ca94a4ecf173097e0e71ce5ab56ea22ee8f69"
+    },
+    {
+      "name": "regression-plan.json",
+      "sha256": "c5a2911df033a000d9b0d07d860d7b5f3d3e1fdf6739311bda58afc38694f576"
+    },
+    {
+      "name": "source-scope-proof.json",
+      "sha256": "c897b8fc089f5a99b48447ec509d1d28e01cf92fdae548f7080a373391df4532"
+    },
+    {
+      "name": "source-integration-proof.json",
+      "sha256": "ac993427c99ae5b1475ed855c459d2eeade0731bdb5bca843c6fa235647ec0d4"
+    },
+    {
+      "name": "catalog-validation.json",
+      "sha256": "ea161d9b4bb426bd40c0b98edf16e197782ebdbfcc229bcf899100f690d4bd6c"
+    },
+    {
+      "name": "catalog-readback.json",
+      "sha256": "4e483a5303404a4f942e64890b417e7ee80f0127377f48d5904ac4a81ffb18ad"
+    },
+    {
+      "name": "catalog-concurrent-change-audit.json",
+      "sha256": "eb08593f96fb616f15c3e5023b8e16f5fec107b0356135d80e5d726ad4b45f6f"
+    },
+    {
+      "name": "legacy-assertion-patches.json",
+      "sha256": "1ac82990202fbf2fa74a301028b54a5cf5a8acd6bbcb030d62d341c4ea3e2c0f"
+    },
+    {
+      "name": "ion-direction-refinement.json",
+      "sha256": "5c94728205533be2ebb7e00be50bd145cb3620c0b7990703b65b01aae192f103"
+    },
+    {
+      "name": "ion-fixture-refinement.json",
+      "sha256": "78aece1580b04ecd13c01411a19d483eefc4038d5bc2d976189cb529c764798b"
+    },
+    {
+      "name": "subtitle-localization-refinement.json",
+      "sha256": "dc0f13b42d4bd3d2a8de59d3e18787e4a57c743b5b794bae3d05aaad4539b23d"
+    },
+    {
+      "name": "translation-semantics-review.json",
+      "sha256": "f4199ac7c8bbfc799a184749892b5e188af2d4e76d3d896d322a01d2a67f98eb"
+    },
+    {
+      "name": "native-fixture-refinement.json",
+      "sha256": "15193041157f8f486909a31b6fe8d3550617ed4538aa0cd475850b22c598fa08"
+    },
+    {
+      "name": "git-read-only-check.json",
+      "sha256": "56edb853601efbdb9cbd33b4fd7133f6df769c73202ff13649d4218aa12df1dc"
+    },
+    {
+      "name": "README.md",
+      "sha256": "52a9f9918bea1509ef920da8f7b26aa4207635e22a0eb3ff9c03bb0dcae315a7"
+    },
+    {
+      "name": "runs/browser-a3f12a1f-04/runner-proof.json",
+      "sha256": "703177f2b65e0ec6c7a71509fd121c6ae701da2df02cd494a8de76387a5f39fe"
+    },
+    {
+      "name": "runs/browser-a3f12a1f-04/browser-validation.json",
+      "sha256": "2b284840e2a1f8dbfa936937c23bc0c9e70b9886d9fb2f4ad0e62396214c6f7b"
+    },
+    {
+      "name": "runs/browser-a3f12a1f-04/playwright-results.json",
+      "sha256": "9d85ae97ae55e09f0447b0208ec5dee7f36bb7341135e27f4a4882e44c5d3d58"
+    },
+    {
+      "name": "runs/browser-a3f12a1f-04/browser-review-summary.json",
+      "sha256": "f73fbf947c33c49c602dd4fa245874cedf28fef242f308fe9b0985740052fc63"
+    },
+    {
+      "name": "runs/browser-a3f12a1f-04/independent-visual-review.json",
+      "sha256": "0ffe9edfdc5933debd7c3556e5f8c1cf548bd0b567e3bd44f98a3fc5967fad12"
+    },
+    {
+      "name": "runs/browser-a3f12a1f-04/catalog-snapshots.json",
+      "sha256": "01f99985d062242eabc32a7e7cae289c9242c0762021c7406563c7c2f16a7a1b"
+    },
+    {
+      "name": "runs/browser-a3f12a1f-04/ar-ion-step-validation.json",
+      "sha256": "e23f921b0a93eab96bbf50d1e5d99f62f2c8bded096cc0931acadf5cb32405cf"
+    }
+  ],
+  "completed": true
+}

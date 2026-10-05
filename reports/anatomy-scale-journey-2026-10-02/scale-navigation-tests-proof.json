@@ -1,0 +1,35 @@
+{
+  "startedAt": "2026-10-03T03:25:07.541Z",
+  "finishedAt": "2026-10-03T03:25:33.024Z",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/anatomy_scale_navigation.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--no-isolate",
+    "--testTimeout=300000",
+    "--hookTimeout=300000",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=reports/anatomy-scale-journey-2026-10-02/scale-navigation-tests.json"
+  ],
+  "before": {
+    "stem_lab/stem_tool_anatomy.js": "db7345d688021c195b6e03674ac69ea291469bb00030ba57dc7dbe3d3520862e",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "db7345d688021c195b6e03674ac69ea291469bb00030ba57dc7dbe3d3520862e",
+    "tests/anatomy_scale_navigation.test.js": "f10c5e7f93aaa6b3f05e6f61202c194cdd08bb19450bad7fe1b26bb107d0fc7f"
+  },
+  "after": {
+    "stem_lab/stem_tool_anatomy.js": "db7345d688021c195b6e03674ac69ea291469bb00030ba57dc7dbe3d3520862e",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "db7345d688021c195b6e03674ac69ea291469bb00030ba57dc7dbe3d3520862e",
+    "tests/anatomy_scale_navigation.test.js": "f10c5e7f93aaa6b3f05e6f61202c194cdd08bb19450bad7fe1b26bb107d0fc7f"
+  },
+  "sourceUnchanged": true,
+  "mirrorsIdentical": true,
+  "exitCode": 0,
+  "error": null,
+  "total": 28,
+  "passed": 28,
+  "success": true
+}

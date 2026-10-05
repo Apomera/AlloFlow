@@ -60,7 +60,7 @@ describe('saved lesson plan export actions',()=>{
     const p=plan(), other={id:'other',type:'quiz',data:{questions:[]}}, h=printHost([other,p]);
     await h.run('print',{lessonPlanId:p.id}); const [mode,options]=h.moduleExport.mock.calls[0];
     expect(mode).toBe('print');expect(options.getExportableHistory().map(item=>item.id)).toEqual([p.id]);expect(options.history).toHaveLength(1);
-    expect(options.sourceTopic).toBe('Saved fractions');expect(options.exportConfig).toMatchObject({includeLessonPlan:true,includeTeacherKey:false,assessmentMode:false,includeStudentResponses:false,annotations:[]});expect(options.studentResponses).toEqual({});expect(options.getSkippedResources()).toEqual([]);
+    expect(options.sourceTopic).toBe('Saved fractions');expect(options.exportConfig).toMatchObject({audience:'teacher',includeLessonPlan:true,includeTeacherKey:false,assessmentMode:false,includeStudentResponses:false,annotations:[]});expect(options.studentResponses).toEqual({});expect(options.getSkippedResources()).toEqual([]);
     expect(h.scope.exportConfig.includeLessonPlan).toBe(false);expect(p).toEqual(plan());
   });
   it('normalizes legacy scalar lists for the actual print renderer without mutating the plan',async()=>{

@@ -77,7 +77,9 @@ describe('Aquaculture guided questions and backup integrity', () => {
     expect(() => h.mergeLearningPortfolio(current, payload, [])).toThrow('experiment-capacity');
     expect(current.ecosystemWorkspace.experiments).toHaveLength(12);
     const duplicate = h.buildLearningPortfolio({ ecosystemWorkspace: { experiments: [record('original-0', 100, 'Incoming copy must not replace the original')] } }, [], []);
-    const merged = h.mergeLearningPortfolio(current, duplicate, []);
+    expect(() => h.mergeLearningPortfolio(current, duplicate, [])).toThrow('experiment-capacity');
+    const identical = h.buildLearningPortfolio({ ecosystemWorkspace: { experiments: [record('original-0', 1)] } }, [], []);
+    const merged = h.mergeLearningPortfolio(current, identical, []);
     expect(merged.ecosystemWorkspace.experiments).toHaveLength(12);
     expect(merged.ecosystemWorkspace.experiments.find(item => item.id === 'original-0').observation).toBe('Original recorded evidence stays intact');
     const withDraft = { ecosystemWorkspace: { prediction: 'My unfinished prediction', observation: 'A draft already in progress', water: { oxygen: 4 } } };

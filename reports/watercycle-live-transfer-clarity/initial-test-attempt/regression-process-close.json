@@ -1,0 +1,13 @@
+{
+  "mode": "regression",
+  "checkedAt": "2026-10-05T01:11:53.3124057Z",
+  "ownedProcessIds": [
+    22480,
+    34592
+  ],
+  "observedPresent": [],
+  "allAbsent": true,
+  "childCloseAt": "2026-10-05T01:10:41.828Z",
+  "childExitCode": 1,
+  "sourcePreserved": true
+}

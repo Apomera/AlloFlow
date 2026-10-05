@@ -6,6 +6,9 @@ import { resolve } from 'node:path';
 import { createHash } from 'node:crypto';
 
 const require=createRequire(import.meta.url),THREE=require(resolve('vendor/three-r128/three.min.js'));
+const {restoreOriginalSeagrassSource}=require('./helpers/cephalopod_seagrass_reference.cjs');
+const {restorePass37ReefSource,restorePass37RockSource,restorePass37CoralSource}=require('./helpers/cephalopod_reef_form_reference.cjs');
+const {restorePass38CoralSource}=require('./helpers/cephalopod_coral_organic_reference.cjs');
 const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8').replace(/\r\n/g,'\n');
 const original=JSON.parse(readFileSync(process.env.CEPHALOPOD_HABITAT_FIXTURE||'tests/fixtures/cephalopod_habitat_original.json','utf8'));
 const sha=value=>createHash('sha256').update(value).digest('hex');
@@ -102,7 +105,7 @@ describe('Cephalopod Hunter deterministic habitat composition',()=>{
     assert.deepEqual(randomLines(source),original.randomLines);
     const protectedRegions=[['plantFactoryAndFlex','      function shadeCLHuntPlantFlex(','      function createCLHuntMarineSnowGeometry('],['grassSpawn','        var grass = [];','        // Terrain-conforming caustics:'],['kelpSpawn','        var kelpStrands = [];','        // ─── Hydrothermal vent'],['rockSpawn','        var rocks = [];','        // ─── Curved branching coral colonies'],['coralFactoryAndSpawn','        // ─── Curved branching coral colonies','        // ─── Sea grass']];
     assert.deepEqual(original.protectedRegions.map(entry=>entry.name),protectedRegions.map(entry=>entry[0]));
-    for(const [name,start,end] of protectedRegions){const live=region(start,end),restored=name==='plantFactoryAndFlex'?reverseApprovedPlantFlow(live):name==='rockSpawn'?reverseApprovedRockShadowPolicy(live):live;assert.equal(sha(restored),original.protectedRegions.find(entry=>entry.name===name).sha256,'Baseline owned region drifted: '+name);}
+    for(const [name,start,end] of protectedRegions){const live=region(start,end),restored=name==='plantFactoryAndFlex'?reverseApprovedPlantFlow(restoreOriginalSeagrassSource(live)):name==='rockSpawn'?reverseApprovedRockShadowPolicy(restorePass37RockSource(live)):name==='coralFactoryAndSpawn'?restorePass37CoralSource(restorePass38CoralSource(live)):live;assert.equal(sha(restored),original.protectedRegions.find(entry=>entry.name===name).sha256,'Baseline owned region drifted: '+name);}
   });
 
   it('casts solid reef rocks from both faces while keeping opaque receivers and other habitat material policies',()=>{

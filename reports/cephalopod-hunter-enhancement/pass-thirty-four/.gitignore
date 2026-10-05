@@ -1,0 +1,13 @@
+*.log
+*.json
+!baseline-integrity.json
+!baseline-reversal.json
+!resource-integrity.json
+!validation-summary.json
+!capture-manifest.json
+!capture-comparison.json
+!visual-review.json
+*.generated.cjs
+*-artifacts/
+probe-views/
+probe-detail-fixed/

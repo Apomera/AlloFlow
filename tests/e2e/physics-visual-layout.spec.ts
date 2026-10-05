@@ -290,16 +290,24 @@ test('changing a landed flight previews the next launch and hides annotations fo
   await page.evaluate(() => {
     const w = window as any, cv = document.getElementById('physicsCanvas') as HTMLCanvasElement;
     const ctx = cv.getContext('2d')!;
-    const nativeRect = ctx.rect, nativeClip = ctx.clip;
-    let rect: number[] | null = null;
+    const nativeBeginPath = ctx.beginPath, nativeRect = ctx.rect, nativeClip = ctx.clip;
+    let rects: number[][] = [];
     w.__physicsPlotClips = [];
+    ctx.beginPath = function () {
+      rects = [];
+      nativeBeginPath.call(this);
+    };
     ctx.rect = function (x, y, width, height) {
       const dpr = cv.width / cv.offsetWidth;
-      rect = [x, y, width, height].map(value => value / dpr);
+      rects.push([x, y, width, height].map(value => value / dpr));
       nativeRect.call(this, x, y, width, height);
     };
     ctx.clip = function (...args: any[]) {
-      w.__physicsPlotClips.push(rect && [...rect]);
+      w.__physicsPlotClips.push({
+        fillRule: typeof args[0] === 'string' ? args[0] : 'nonzero',
+        externalPath: typeof args[0] === 'object',
+        rects: rects.map(rect => [...rect]),
+      });
       (nativeClip as any).apply(this, args);
     };
   });
@@ -317,17 +325,37 @@ test('changing a landed flight previews the next launch and hides annotations fo
     return {
       samples: [...cv._trails.at(-1)], records: w.__toolData.physics.runLog,
       oldLandingX: cv._launchView.x + cv._ball.mX * cv._launchView.scale,
-      clips: w.__physicsPlotClips as number[][],
+      clips: w.__physicsPlotClips as { fillRule: string; externalPath: boolean; rects: number[][] }[],
+      canvasBounds: [0, 0, cv.width, cv.height].map(value => value / (cv.width / cv.offsetWidth)),
     };
   });
   expect(after.oldLandingX).toBeGreaterThan(next.layout.width);
   expect({ samples: after.samples, records: after.records }).toEqual(before);
-  expect(after.clips.length).toBeGreaterThan(0);
+  expect(after.clips.filter(clip => clip.fillRule === 'nonzero').length).toBeGreaterThan(0);
+  expect(after.clips.filter(clip => clip.fillRule === 'evenodd').length).toBeGreaterThan(0);
   for (const clip of after.clips) {
-    expect(clip).toEqual([
-      next.view.x, next.layout.plotTop,
-      next.layout.width - next.view.x - 20, next.layout.groundY - next.layout.plotTop,
-    ]);
+    expect(clip.externalPath).toBe(false);
+    expect(['nonzero', 'evenodd']).toContain(clip.fillRule);
+    if (clip.fillRule === 'nonzero') {
+      // Every trajectory/point clip retains its exact original plot boundary.
+      expect(clip.rects).toEqual([[
+        next.view.x, next.layout.plotTop,
+        next.layout.width - next.view.x - 20, next.layout.groundY - next.layout.plotTop,
+      ]]);
+    } else {
+      // The barrel uses a separate full-canvas path with holes for ruler text.
+      expect(clip.rects[0]).toEqual(after.canvasBounds);
+      expect(clip.rects.length).toBeGreaterThan(1);
+      for (const [x, y, width, height] of clip.rects.slice(1)) {
+        expect([x, y, width, height].every(Number.isFinite)).toBe(true);
+        expect(x).toBeGreaterThanOrEqual(0);
+        expect(y).toBeGreaterThanOrEqual(0);
+        expect(width).toBeGreaterThan(0);
+        expect(height).toBeGreaterThan(0);
+        expect(x + width).toBeLessThanOrEqual(after.canvasBounds[2]);
+        expect(y + height).toBeLessThanOrEqual(after.canvasBounds[3]);
+      }
+    }
   }
 });
 

@@ -1,0 +1,163 @@
+{
+  "baselineSourceSHA256": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963",
+  "currentSourceSHA256": "ad1970ff112df529cc9115e0fbd69061c80393af9570aba38fa05b1c9cb6b91c",
+  "scope": "Two same-seed whole-scene profiles: normal keyboard approach, desktop1280x1000 balanced and touch390x844 low. Original accepted pass32 baseline snapshots/images retained. No actor or camera writes. Native page/draw validity asserted; wall-clock-dependent raw render/draw counters are recorded separately rather than compared as simulation state.",
+  "pairs": [
+    {
+      "profile": "squid-approach-desktop",
+      "protectedWorldPlayerPreyCameraPlantUIAndTicksExact": true,
+      "baselineNative": [
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 13644,
+          "renders": 47,
+          "observedDraws": {
+            "fish": 352,
+            "kelp": 533,
+            "grass": 3440
+          }
+        },
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 20282,
+          "renders": 67,
+          "observedDraws": {
+            "fish": 672,
+            "kelp": 803,
+            "grass": 5040
+          }
+        },
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 22594,
+          "renders": 75,
+          "observedDraws": {
+            "fish": 791,
+            "kelp": 892,
+            "grass": 5680
+          }
+        }
+      ],
+      "currentNative": [
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 13498,
+          "renders": 46,
+          "observedDraws": {
+            "fish": 352,
+            "kelp": 533,
+            "grass": 3440
+          }
+        },
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 20156,
+          "renders": 66,
+          "observedDraws": {
+            "fish": 672,
+            "kelp": 803,
+            "grass": 5040
+          }
+        },
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 22476,
+          "renders": 74,
+          "observedDraws": {
+            "fish": 791,
+            "kelp": 892,
+            "grass": 5680
+          }
+        }
+      ],
+      "images": [
+        "squid-approach-desktop.png",
+        "squid-approach-desktop-gl.png"
+      ]
+    },
+    {
+      "profile": "squid-approach-phone",
+      "protectedWorldPlayerPreyCameraPlantUIAndTicksExact": true,
+      "baselineNative": [
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 8069,
+          "renders": 47,
+          "observedDraws": {
+            "fish": 352,
+            "kelp": 338,
+            "grass": 3440
+          }
+        },
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 11431,
+          "renders": 67,
+          "observedDraws": {
+            "fish": 618,
+            "kelp": 518,
+            "grass": 5040
+          }
+        },
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 12607,
+          "renders": 75,
+          "observedDraws": {
+            "fish": 658,
+            "kelp": 590,
+            "grass": 5680
+          }
+        }
+      ],
+      "currentNative": [
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 8139,
+          "renders": 47,
+          "observedDraws": {
+            "fish": 352,
+            "kelp": 338,
+            "grass": 3440
+          }
+        },
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 11521,
+          "renders": 67,
+          "observedDraws": {
+            "fish": 618,
+            "kelp": 518,
+            "grass": 5040
+          }
+        },
+        {
+          "pageCreated": true,
+          "lost": false,
+          "draws": 12705,
+          "renders": 75,
+          "observedDraws": {
+            "fish": 658,
+            "kelp": 590,
+            "grass": 5680
+          }
+        }
+      ],
+      "images": [
+        "squid-approach-phone.png",
+        "squid-approach-phone-gl.png"
+      ]
+    }
+  ]
+}

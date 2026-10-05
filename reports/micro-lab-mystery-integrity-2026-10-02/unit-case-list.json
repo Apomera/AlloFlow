@@ -1,0 +1,246 @@
+[
+  {
+    "name": "Mystery raw state integrity > changes only active and notice during ordinary case navigation",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > changes only the selected report view and notice while preserving raw reports and long drafts",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > changes only the learner explanation, checked flag, and notice through the real textarea",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > changes only the owned 'classification' fields and leaves imported evidence intact",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > changes only the owned 'evidence citation' fields and leaves imported evidence intact",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > changes only the owned 'conclusion about limits' fields and leaves imported evidence intact",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > changes only the owned 'observation visibility' fields and leaves imported evidence intact",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > changes only the owned 'check status' fields and leaves imported evidence intact",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > reveals one previously hidden observation without repairing unrelated imported fields",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > opens the next unrecorded case without materializing its defaults",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > opens the next pending revision by changing only its view and the active case",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > retains the exact raw current report as previous history on explicit recording",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > swaps exact raw report objects on restore without rewriting working notes",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > retains an overlong active explanation on visibility, view, and check changes",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > preserves frozen imported data and survives a JSON reload after editing",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > creates only the edited branch for an absent or malformed notebook undefined",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > creates only the edited branch for an absent or malformed notebook null",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > creates only the edited branch for an absent or malformed notebook undefined",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > creates only the edited branch for an absent or malformed notebook \"malformed notebook\"",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > creates only an edited selected case while preserving the rest of the raw notebook undefined",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > creates only an edited selected case while preserving the rest of the raw notebook null",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > creates only an edited selected case while preserving the rest of the raw notebook undefined",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery raw state integrity > creates only an edited selected case while preserving the rest of the raw notebook \"malformed case\"",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > keeps intervening unrelated notebook, case, tool and root edits for queued 'case navigation'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > keeps intervening unrelated notebook, case, tool and root edits for queued 'recorded report view'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > keeps intervening unrelated notebook, case, tool and root edits for queued 'draft annotation'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > keeps intervening unrelated notebook, case, tool and root edits for queued 'record replacement'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > keeps intervening unrelated notebook, case, tool and root edits for queued 'previous report restore'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'case navigation' after 'tab change'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'case navigation' after 'active case change'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'case navigation' after 'replacement source case'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'case navigation' after 'JSON import'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'case navigation' after 'changed reasoning'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'recorded report view' after 'tab change'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'recorded report view' after 'active case change'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'recorded report view' after 'replacement source case'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'recorded report view' after 'JSON import'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'recorded report view' after 'changed reasoning'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'draft annotation' after 'tab change'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'draft annotation' after 'active case change'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'draft annotation' after 'replacement source case'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'draft annotation' after 'JSON import'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'draft annotation' after 'changed reasoning'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'record replacement' after 'tab change'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'record replacement' after 'active case change'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'record replacement' after 'replacement source case'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'record replacement' after 'JSON import'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'record replacement' after 'changed reasoning'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'previous report restore' after 'tab change'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'previous report restore' after 'active case change'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'previous report restore' after 'replacement source case'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'previous report restore' after 'JSON import'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued 'previous report restore' after 'changed reasoning'",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued annotation after an in-place 'evidence array' change",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued annotation after an in-place 'revealed array' change",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued annotation after an in-place 'collapsed array' change",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued annotation after an in-place 'record fields' change",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued annotation after an in-place 'previous record evidence' change",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued annotation after an in-place 'check status' change",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > rejects queued annotation after an in-place 'report view' change",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  },
+  {
+    "name": "Mystery actions applied to latest state > retains later unknown metadata on the same original target case",
+    "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/microbiology_mystery_integrity.test.js"
+  }
+]

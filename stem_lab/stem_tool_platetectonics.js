@@ -1512,11 +1512,11 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       });
     }
     function updateArcProcess(m) {
-      var step = ['water', 'melt', 'magma'].indexOf(m.arcProcessStep) >= 0 && m.mode === 'convergent' ? m.arcProcessStep : null;
+      var step = ['all', 'water', 'melt', 'magma'].indexOf(m.arcProcessStep) >= 0 && m.mode === 'convergent' ? m.arcProcessStep : null;
       var reason = step ? tectArcProcessFace(m) : 'none', visible = !!step && reason === 'exposed';
       arcProcessGroup.visible = visible;
       arcProcessGroup.position.z = visible ? m.cut - 0.02 : 0;
-      arcProcessGroup.children.forEach(function (part) { part.visible = visible && part.name === 'arc-process-' + step; });
+      arcProcessGroup.children.forEach(function (part) { part.visible = visible && (step === 'all' || part.name === 'arc-process-' + step); });
       arcProcessState = { step: step, visible: visible, reason: reason, cut: visible ? m.cut : null };
     }
 
@@ -1958,14 +1958,16 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       });
 
       if (m.arcProcessStep && tectArcProcessFace(m) === 'exposed') {
-        var processShape = tectArcProcessShape(), processIndex = ['water', 'melt', 'magma'].indexOf(m.arcProcessStep);
-        if (processIndex >= 0) {
-          var processTarget = m.arcProcessStep === 'water' ? [20, -19] : m.arcProcessStep === 'melt' ? [20, -17] : [16, -8];
-          var processLabel = makeLabel(String(processIndex + 1), m.arcProcessStep === 'water' ? '#7dd3fc' : '#ffd0a8', 5.5);
+        ['water', 'melt', 'magma'].forEach(function (step, processIndex) {
+          if (m.arcProcessStep !== 'all' && m.arcProcessStep !== step) return;
+          var processTarget = step === 'water' ? [20, -19] : step === 'melt' ? [20, -17] : [16, -8];
+          var processLabel = makeLabel(String(processIndex + 1), step === 'water' ? '#7dd3fc' : '#ffd0a8', 5.5);
           processLabel.userData.feature = 'arc-process-number';
-          processLabel.position.set(32, -8 - processIndex * 9, faceZ + 4); scaleGroup.add(processLabel);
+          // In the combined view the labels follow the upward process order,
+          // keeping the water and magma leaders from crossing each other.
+          processLabel.position.set(32, m.arcProcessStep === 'all' ? -26 + processIndex * 9 : -8 - processIndex * 9, faceZ + 4); scaleGroup.add(processLabel);
           trackScaleLabel(processLabel, new T.Vector3(processTarget[0], processTarget[1], faceZ - 0.02), false);
-        }
+        });
       }
 
       // Trench marker: the origin every horizontal distance is measured from.
@@ -4711,6 +4713,16 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     var view3d = v3[0];
     var setView3d = v3[1];
     var updView = function(patch) { setView3d(function(prev) { return Object.assign({}, prev, patch); }); };
+    var simulatorRef = useRef(null), inspectionFocusPending = useRef(null);
+    // A view action can remove or disable its own button. Keep focus on
+    // the local explanation or enabled control without scrolling.
+    useEffect(function () {
+      var selector = inspectionFocusPending.current;
+      if (!selector) return;
+      inspectionFocusPending.current = null;
+      var target = simulatorRef.current && simulatorRef.current.querySelector(selector);
+      if (target) target.focus({ preventScroll: true });
+    }, [view3d.on, view3d.rotX, view3d.rotY, view3d.scale, view3d.cut]);
     var featureSelection = useState({ convergent: null, divergent: null, transform: null });
     var selectedFeature = featureSelection[0][s.mode];
     var setFeatureSelection = featureSelection[1];
@@ -4719,6 +4731,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
     var arcProcessRef = useRef(null); arcProcessRef.current = s.mode === 'convergent' ? selectedArcProcess : null;
     useEffect(function () { if (s.mode !== 'convergent') setArcProcess(null); }, [s.mode]);
     var arcProcessChoices = [
+      { id: 'all', label: __alloT('stem.platetectonics.arc_process_all', 'Whole process'), why: __alloT('stem.platetectonics.arc_process_all_why', 'Follow 1 → 2 → 3: water leaves the sinking slab and helps some mantle above it melt; magma formed there rises toward the volcanic arc. The three patterns distinguish water, partial melt and rising magma. The slab and surrounding mantle remain mostly solid.') },
       { id: 'water', label: __alloT('stem.platetectonics.arc_process_water', '1. Water released'), why: __alloT('stem.platetectonics.arc_process_water_why', 'As the sinking plate heats, water is released from its minerals into mantle above it. The dashed cyan route represents this water; it is separate from rising magma.') },
       { id: 'melt', label: __alloT('stem.platetectonics.arc_process_melt', '2. Some mantle melts'), why: __alloT('stem.platetectonics.arc_process_melt_why', 'Water helps some of the hot mantle above the slab melt at a lower temperature. The small orange patch and specks represent partial melting. The surrounding mantle and the sinking slab remain mostly solid in this teaching model.') },
       { id: 'magma', label: __alloT('stem.platetectonics.arc_process_magma', '3. Magma rises'), why: __alloT('stem.platetectonics.arc_process_magma_why', 'Magma formed above the slab can rise through the overriding plate toward the volcanic arc. The narrow solid orange route represents that ascent. Water released by the slab and rising magma are different parts of the process.') }
@@ -4752,6 +4765,23 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
       { id: 'section', label: __alloT('stem.platetectonics.block_preset_section', 'Cut face'), view: { rotX: 0, rotY: 0, scale: 1, cut: 0 } },
       { id: 'surface', label: __alloT('stem.platetectonics.block_preset_surface', 'From above'), view: { rotX: -88, rotY: 0, scale: 1, cut: null } }
     ];
+    function revealInspectionView(id, statusSelector) {
+      var preset = tectPresetChoices.find(function (choice) { return choice.id === id; });
+      if (!preset) return;
+      inspectionFocusPending.current = statusSelector;
+      updView(Object.assign({}, preset.view));
+    }
+    function chooseBoundaryView(want, focusSelector) {
+      if (want === view3d.on) return;
+      // The 2D section can be scrolled on a phone. Recenter its frame when
+      // switching to the block, while keeping the learner's camera settings.
+      if (want && canvasRef.current && canvasRef.current.parentElement) canvasRef.current.parentElement.scrollLeft = 0;
+      if (focusSelector) inspectionFocusPending.current = focusSelector;
+      updView({ on: want });
+      if (typeof announceToSR === 'function') {
+        announceToSR(want ? __alloT('stem.platetectonics.sim_switched_3d', 'Switched to the 3D block view.') : __alloT('stem.platetectonics.sim_switched_2d', 'Switched to the 2D cross-section.'));
+      }
+    }
     var tectPreset = tectPresetChoices.find(function (preset) {
       return Math.abs(view3d.rotX - preset.view.rotX) < 0.1 && Math.abs(view3d.rotY - preset.view.rotY) < 0.1 && view3d.cut === preset.view.cut;
     });
@@ -5358,33 +5388,43 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
 
         var processStep = arcProcessRef.current;
         if (processStep) {
-          function processChip(number, x, y, ink) {
+          var processChipGap = Math.max(28, Math.max(14, 14 * W / (ctx.canvas.clientWidth || W)) + 11);
+          function processChip(number, x, y, ink, targetX, targetY) {
             ctx.save();
             // Keep this new step number readable at a minimum of 14 CSS pixels.
             // The section normally scrolls at 540px on phones; this also covers
             // a host that scales the canvas to fit its available width.
             var fontSize = Math.max(14, 14 * W / (ctx.canvas.clientWidth || W));
             ctx.font = 'bold ' + fontSize + 'px sans-serif'; ctx.textAlign = 'center';
+            if (isFinite(targetX) && isFinite(targetY)) {
+              ctx.strokeStyle = ink; ctx.lineWidth = 1.2; ctx.setLineDash([]);
+              ctx.beginPath(); ctx.moveTo(x - 8, y - fontSize / 2); ctx.lineTo(targetX, targetY); ctx.stroke();
+            }
             var width = ctx.measureText(number).width;
             ctx.fillStyle = 'rgba(12,10,9,0.94)';
             ctx.fillRect(x - width / 2 - 5, y - fontSize, width + 10, fontSize + 7);
             ctx.fillStyle = ink; ctx.fillText(number, x, y + 1); ctx.restore();
           }
           ctx.save(); ctx.globalAlpha = 1; ctx.shadowBlur = 0;
-          if (processStep === 'water') {
+          if (processStep === 'all' || processStep === 'water') {
             ctx.strokeStyle = '#7dd3fc'; ctx.lineWidth = 3; ctx.setLineDash([4, 3]);
             ctx.beginPath(); ctx.moveTo(slabEdgeX, meltY + 2); ctx.lineTo(meltX - 6, meltY); ctx.stroke(); ctx.setLineDash([]);
-            processChip('1', meltX + 28, meltY + 14, '#7dd3fc');
-          } else if (processStep === 'melt') {
+            if (processStep === 'all') processChip('1', meltX + 50, meltY + 6 + processChipGap, '#7dd3fc', (slabEdgeX + meltX - 6) / 2, meltY + 1);
+            else processChip('1', meltX + 28, meltY + 14, '#7dd3fc');
+          }
+          if (processStep === 'all' || processStep === 'melt') {
             ctx.strokeStyle = '#ffd0a8'; ctx.fillStyle = 'rgba(251,146,60,0.25)'; ctx.lineWidth = 1.8;
             ctx.beginPath(); ctx.ellipse(meltX, meltY, 7, 4, 0, 0, Math.PI * 2); ctx.fill(); ctx.stroke();
             ctx.fillStyle = '#ffd0a8';
             [-3, 0, 3].forEach(function (dx) { ctx.beginPath(); ctx.arc(meltX + dx, meltY, 1, 0, Math.PI * 2); ctx.fill(); });
-            processChip('2', meltX + 28, meltY + 14, '#ffd0a8');
-          } else if (processStep === 'magma') {
+            if (processStep === 'all') processChip('2', meltX + 50, meltY + 6, '#ffd0a8', meltX + 7, meltY);
+            else processChip('2', meltX + 28, meltY + 14, '#ffd0a8');
+          }
+          if (processStep === 'all' || processStep === 'magma') {
             ctx.strokeStyle = '#ffd0a8'; ctx.lineWidth = 2;
             ctx.beginPath(); ctx.moveTo(meltX, meltY); ctx.quadraticCurveTo(meltX + 10, (meltY + rTop) / 2, arcX, rTop - 2); ctx.stroke();
-            processChip('3', meltX + 28, meltY + 14, '#ffd0a8');
+            if (processStep === 'all') processChip('3', meltX + 50, meltY + 6 - processChipGap, '#ffd0a8', (meltX + 2 * (meltX + 10) + arcX) / 4, (meltY + 2 * ((meltY + rTop) / 2) + rTop - 2) / 4);
+            else processChip('3', meltX + 28, meltY + 14, '#ffd0a8');
           }
           ctx.restore();
         }
@@ -5844,6 +5884,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
   };
   if (view3d.on) TectGL.submit(tectGlModel);
   var tectGlLive = view3d.on && TectGL.isReady();
+  var featureRevealView = tectGlLive && selectedFeature === 'slab' && tectSurfaceView ? 'section'
+    : tectGlLive && selectedFeature === 'markers' && tectPreset && tectPreset.id === 'section' ? 'surface' : null;
   var featureStatus = !selectedFeature
     ? __alloT('stem.platetectonics.block_inspect_choose', 'Choose a feature to connect its shape with its role at this boundary.')
     : view3d.on && !tectGlLive
@@ -5868,7 +5910,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
   // This widget is the one place in the tool that takes the three boundary types
   // one at a time with the evidence for each, and it sits below the fold on every
   // screen — the best explainer here was also the least discoverable thing in it.
-  return h('div', { id: 'pt-boundary-simulator', tabIndex: -1, className: containerClass, style: containerStyle, 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
+  return h('div', { ref: simulatorRef, id: 'pt-boundary-simulator', tabIndex: -1, className: containerClass, style: containerStyle, 'data-plate-theme': isContrast ? 'contrast' : (isDark ? 'dark' : 'light') },
     h('div', { className: headerBorderClass, style: Object.assign({}, headerStyle, { flexWrap: 'wrap', alignItems: 'center', gap: 8 }) },
       h('span', { className: badgeClass, style: Object.assign({}, badgeStyle, { fontSize: 12, lineHeight: 1.4 }) }, '🎮 INTERACTIVE'),
       h('h3', { className: titleClass, style: { fontSize: 18, lineHeight: 1.4, flex: '1 1 170px', margin: 0 } }, __alloT('stem.platetectonics.sim_title', 'Plate Boundary Simulator')),
@@ -5890,108 +5932,18 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           h('dt', { className: 'text-sm ' + (isDark ? 'text-slate-300' : 'text-slate-600') }, reading[0]),
           h('dd', { 'data-pt-model-reading': reading[2], className: 'text-sm font-bold tabular-nums', style: reading[2] === 'movement' && s.mode === 'transform' ? { overflowWrap: 'anywhere' } : undefined }, reading[1]));
       })),
+    h('p', { 'data-pt-sim-check': s.mode, 'aria-live': 'off', className: 'mx-3 mt-2 text-sm leading-relaxed font-semibold rounded-lg px-3 py-2 border ' + (isDark ? 'bg-slate-950 border-slate-700 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900') }, checkText),
     s.mode === 'transform' && h('p', { 'data-pt-transform-extent': transformDisplay.atLimit ? 'limited' : 'growing',
       'data-pt-transform-limit-km': String(transformDisplay.limitKm), 'aria-live': 'off',
       className: 'mx-3 mt-2 rounded-lg border px-3 py-2 text-sm leading-relaxed ' + (isDark ? 'border-amber-500 bg-slate-900 text-amber-100' : 'border-amber-500 bg-amber-50 text-amber-950') },
       (transformDisplay.atLimit
         ? __alloT('stem.platetectonics.sim_transform_extent_limited', 'Picture limit reached at {limit} km of cumulative slip. The stream and matching markers stay at the drawing limit. The cumulative slip reading continues to increase when you advance the model. Reset starts a new comparison.')
         : __alloT('stem.platetectonics.sim_transform_extent_growing', 'The stream and matching markers move in opposite directions as slip increases. Their separation is schematic; both pictures reach their display limit at {limit} km. Read cumulative fault slip above for distance.')).replace('{limit}', String(transformDisplay.limitKm))),
-    h('div', { className: 'p-3 grid grid-cols-1 md:grid-cols-3 items-start gap-3' },
-      // `pt-tect-frame`: below 560 px the 540-unit drawing keeps its size and the
-      // frame scrolls sideways instead of shrinking its 10 px HUD to 6 px.
-      h('div', { className: 'pt-tect-frame md:col-span-2 rounded-xl overflow-hidden border relative ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
-        // 2D cross-section — always rendered, and the guaranteed floor. Hidden
-        // (not unmounted) while the block view is live so its rAF loop, HUD and
-        // aria-label stay intact and one toggle brings it straight back.
-        h('canvas', {
-          ref: canvasRef,
-          role: 'img',
-          tabIndex: tectGlLive ? -1 : 0,
-          'aria-hidden': tectGlLive,
-          'data-tect-section': 'true',
-          id: 'pt-boundary-section',
-          'data-pt-boundary-feature': selectedFeature || 'none',
-          'aria-label': info.name + ' boundary cross-section. ' + evidence.motion + '. ' + sectionScene + ' ' + depthSummary + '.',
-          style: {
-            width: '100%', height: 'auto', aspectRatio: '540 / 300', display: 'block',
-            visibility: tectGlLive ? 'hidden' : 'visible'
-          }
-        }),
-        view3d.on && h('canvas', {
-          role: 'img',
-          'aria-label': tectGlAlt,
-          'aria-hidden': !tectGlLive,
-          'aria-describedby': 'tect-gl-description',
-          ref: tectGlRef,
-          'data-tect-gl': 'true',
-          id: 'pt-boundary-3d',
-          'data-pt-boundary-feature': selectedFeature || 'none',
-          // The block's orientation lives in WebGL, so nothing about it is
-          // observable from the DOM. Published here so the keyboard promise in
-          // the help text ("arrow keys to turn it, Shift for bigger steps,
-          // Home to reset") can be DRIVEN rather than read off the handler.
-          'data-tect-view': view3d.rotX + ',' + view3d.rotY + ',' + view3d.scale.toFixed(2),
-          'data-a11y-static': 'true',
-          // Same gap as the volcano cutaway: the label calls this a "Rotatable 3D
-          // block" and only a mouse could rotate it. The whole point of this view
-          // is turning the block until the deep quakes line up on one plane, which
-          // is not something to leave to a pointer.
-          tabIndex: tectGlLive ? 0 : -1,
-          onKeyDown: function (ev) {
-            var k = ev.key, step = ev.shiftKey ? 24 : 8;
-            var patch = null;
-            if (k === 'ArrowLeft') patch = { rotY: view3d.rotY - step };
-            else if (k === 'ArrowRight') patch = { rotY: view3d.rotY + step };
-            else if (k === 'ArrowUp') patch = { rotX: Math.max(-88, view3d.rotX - step) };
-            else if (k === 'ArrowDown') patch = { rotX: Math.min(88, view3d.rotX + step) };
-            else if (k === '+' || k === '=') patch = { scale: Math.min(2.6, view3d.scale + 0.15) };
-            else if (k === '-' || k === '_') patch = { scale: Math.max(0.4, view3d.scale - 0.15) };
-            else if (k === 'Home') patch = Object.assign({}, TECT_VIEW_HOME);
-            if (!patch) return;
-            ev.preventDefault();
-            updView(patch);
-            if (typeof announceToSR === 'function' && k === 'Home') {
-              announceToSR(__alloT('stem.platetectonics.sim_block_reset_sr', 'Block view reset.'));
-            }
-          },
-          style: {
-            position: 'absolute', inset: '0', width: '100%', height: '100%',
-            visibility: tectGlLive ? 'visible' : 'hidden'
-          },
-          onPointerDown: function(e) {
-            dragRef.current = { x: e.clientX, y: e.clientY, rx: view3d.rotX, ry: view3d.rotY };
-            try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
-          },
-          onPointerMove: function(e) {
-            if (!dragRef.current) return;
-            updView({
-              rotX: Math.max(-88, Math.min(88, dragRef.current.rx + (e.clientY - dragRef.current.y) * 0.4)),
-              rotY: dragRef.current.ry + (e.clientX - dragRef.current.x) * 0.4
-            });
-          },
-          onPointerUp: function(e) {
-            dragRef.current = null;
-            try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
-          },
-          onPointerCancel: function() { dragRef.current = null; },
-          onWheel: function(e) { updView({ scale: Math.max(0.4, Math.min(2.6, view3d.scale + (e.deltaY > 0 ? -0.1 : 0.1))) }); }
-        }),
-        view3d.on && !tectGlLive && h('div', {
-          className: 'pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-bold text-orange-200/80'
-        }, __alloT('stem.platetectonics.sim_loading_block', 'Loading 3D block…')),
-        !tectGlLive && h('div', { className: 'pt-tect-swipe text-sm font-bold px-2 py-1 ' + (isDark ? 'text-orange-200 bg-slate-900' : 'text-orange-900 bg-orange-50'), style: { position: 'sticky', left: 0 }, 'aria-hidden': 'true' },
-          '\u2194 Swipe the section sideways to see all of it'),
-        h('p', { id: 'tect-gl-description', className: 'sr-only' },
-          __alloT('stem.platetectonics.sim_block_focus_keys_help', 'Focus this block and use the arrow keys to turn it, plus and minus to zoom, and Home to reset the view; hold Shift for bigger steps. The labeled focus and dashed guide connect its depth to a surface projection. Use Cut face to compare with the 2D cross-section.'), ' ',
-          s.mode === 'convergent'
-            ? __alloT('stem.platetectonics.sim_block_slab_focus_band', 'Deep earthquakes form a dipping band within the sinking slab.')
-            : __alloT('stem.platetectonics.sim_block_shallow_focus_band', 'Here, earthquakes remain shallow near the boundary. No sinking slab is present.'))
-      ),
-      h('div', { className: 'flex flex-col gap-2' },
-        // ── View: 2D section vs 3D block ──
-        h('div', { className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
-          h('div', { className: 'text-sm font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, 'View'),
-          h('div', { className: 'flex gap-1', role: 'group', 'aria-label': __alloT('stem.platetectonics.sim_view_group_label', 'Choose the cross-section or the 3D block view') },
+    h('div', { 'data-pt-model-workbench': 'true', className: 'p-3 flex flex-wrap items-start gap-3' },
+      h('div', { 'data-pt-model-column': 'true', style: { flex: '2 1 540px', minWidth: 0 }, className: 'flex flex-col gap-3' },
+        h('div', { 'data-pt-view-switch': 'true', className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
+          h('div', { className: 'text-sm font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, __alloT('stem.platetectonics.sim_view_heading', 'View')),
+          h('div', { className: 'grid gap-1', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 80px), 1fr))' }, role: 'group', 'aria-label': __alloT('stem.platetectonics.sim_view_group_label', 'Choose the cross-section or the 3D block view') },
             [['2d', __alloT('stem.platetectonics.sim_view_cross_section', 'Cross-section')], ['3d', __alloT('stem.platetectonics.sim_view_block', '3D block')]].map(function(o) {
               var active = (o[0] === '3d') === view3d.on;
               return h('button', {
@@ -6000,21 +5952,172 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                 'data-tect-view': o[0],
                 'aria-pressed': active,
                 onClick: function() {
-                  var want = o[0] === '3d';
-                  if (want === view3d.on) return;
-                  // The 2D drawing scrolls sideways on a phone. Bring the 3D
-                  // canvas back into its frame when the student changes views.
-                  if (want && canvasRef.current && canvasRef.current.parentElement) canvasRef.current.parentElement.scrollLeft = 0;
-                  updView({ on: want });
-                  if (typeof announceToSR === 'function') {
-                    announceToSR(want ? __alloT('stem.platetectonics.sim_switched_3d', 'Switched to the 3D block view.') : __alloT('stem.platetectonics.sim_switched_2d', 'Switched to the 2D cross-section.'));
-                  }
+                  chooseBoundaryView(o[0] === '3d');
                 },
-                className: 'flex-1 min-h-10 px-2 py-1.5 text-sm rounded transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-orange-700 text-white font-bold' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 text-orange-800 hover:bg-orange-100'))
+                style: { minHeight: 44 }, className: 'flex-1 min-h-10 px-2 py-1.5 text-sm rounded transition-colors focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-orange-700 text-white font-bold' : (isDark ? 'bg-slate-800 text-slate-300 hover:bg-slate-700' : 'bg-orange-50 text-orange-800 hover:bg-orange-100'))
               }, o[1]);
             })
           ),
-          view3d.on && h('div', { className: 'mt-2' },
+        ),
+        // `pt-tect-frame`: below 560 px the 540-unit drawing keeps its size and the
+        // frame scrolls sideways instead of shrinking its 10 px HUD to 6 px.
+        h('div', { style: { minWidth: 0 }, className: 'pt-tect-frame rounded-xl overflow-hidden border relative ' + (isDark ? 'border-slate-800 bg-slate-950' : 'border-orange-400 bg-white') },
+          // 2D cross-section — always rendered, and the guaranteed floor. Hidden
+          // (not unmounted) while the block view is live so its rAF loop, HUD and
+          // aria-label stay intact and one toggle brings it straight back.
+          h('canvas', {
+            ref: canvasRef,
+            role: 'img',
+            tabIndex: tectGlLive ? -1 : 0,
+            'aria-hidden': tectGlLive,
+            'data-tect-section': 'true',
+            id: 'pt-boundary-section',
+            'data-pt-boundary-feature': selectedFeature || 'none',
+            'aria-label': info.name + ' boundary cross-section. ' + evidence.motion + '. ' + sectionScene + ' ' + depthSummary + '.',
+            style: {
+              width: '100%', height: 'auto', aspectRatio: tectGlLive && tectSurfaceView ? '3 / 1' : '540 / 300', display: 'block',
+              minWidth: tectGlLive && tectSurfaceView ? 0 : undefined,
+              minHeight: tectGlLive && tectSurfaceView ? 200 : undefined,
+              visibility: tectGlLive ? 'hidden' : 'visible'
+            }
+          }),
+          view3d.on && h('canvas', {
+            role: 'img',
+            'aria-label': tectGlAlt,
+            'aria-hidden': !tectGlLive,
+            'aria-describedby': 'tect-gl-description tect-navigation-help',
+            ref: tectGlRef,
+            'data-tect-gl': 'true',
+            id: 'pt-boundary-3d',
+            'data-pt-boundary-feature': selectedFeature || 'none',
+            // The block's orientation lives in WebGL, so nothing about it is
+            // observable from the DOM. Published here so the keyboard promise in
+            // the help text ("arrow keys to turn it, Shift for bigger steps,
+            // Home to reset") can be DRIVEN rather than read off the handler.
+            'data-tect-view': view3d.rotX + ',' + view3d.rotY + ',' + view3d.scale.toFixed(2),
+            'data-a11y-static': 'true',
+            // Same gap as the volcano cutaway: the label calls this a "Rotatable 3D
+            // block" and only a mouse could rotate it. The whole point of this view
+            // is turning the block until the deep quakes line up on one plane, which
+            // is not something to leave to a pointer.
+            tabIndex: tectGlLive ? 0 : -1,
+            onKeyDown: function (ev) {
+              var k = ev.key, step = ev.shiftKey ? 24 : 8;
+              var patch = null;
+              if (k === 'ArrowLeft') patch = { rotY: view3d.rotY - step };
+              else if (k === 'ArrowRight') patch = { rotY: view3d.rotY + step };
+              else if (k === 'ArrowUp') patch = { rotX: Math.max(-88, view3d.rotX - step) };
+              else if (k === 'ArrowDown') patch = { rotX: Math.min(88, view3d.rotX + step) };
+              else if (k === '+' || k === '=') patch = { scale: Math.min(2.6, view3d.scale + 0.15) };
+              else if (k === '-' || k === '_') patch = { scale: Math.max(0.4, view3d.scale - 0.15) };
+              else if (k === 'Home') patch = Object.assign({}, TECT_VIEW_HOME);
+              if (!patch) return;
+              ev.preventDefault();
+              updView(patch);
+              if (typeof announceToSR === 'function' && k === 'Home') {
+                announceToSR(__alloT('stem.platetectonics.sim_block_reset_sr', 'Block view reset.'));
+              }
+            },
+            style: {
+              position: 'absolute', inset: '0', width: '100%', height: '100%',
+              visibility: tectGlLive ? 'visible' : 'hidden'
+            },
+            onPointerDown: function(e) {
+              dragRef.current = { x: e.clientX, y: e.clientY, rx: view3d.rotX, ry: view3d.rotY };
+              try { e.currentTarget.setPointerCapture(e.pointerId); } catch (_) {}
+            },
+            onPointerMove: function(e) {
+              if (!dragRef.current) return;
+              updView({
+                rotX: Math.max(-88, Math.min(88, dragRef.current.rx + (e.clientY - dragRef.current.y) * 0.4)),
+                rotY: dragRef.current.ry + (e.clientX - dragRef.current.x) * 0.4
+              });
+            },
+            onPointerUp: function(e) {
+              dragRef.current = null;
+              try { e.currentTarget.releasePointerCapture(e.pointerId); } catch (_) {}
+            },
+            onPointerCancel: function() { dragRef.current = null; },
+            onWheel: function(e) { updView({ scale: Math.max(0.4, Math.min(2.6, view3d.scale + (e.deltaY > 0 ? -0.1 : 0.1))) }); }
+          }),
+          view3d.on && !tectGlLive && h('div', {
+            className: 'pointer-events-none absolute inset-0 flex items-center justify-center text-sm font-bold text-orange-200/80'
+          }, __alloT('stem.platetectonics.sim_loading_block', 'Loading 3D block…')),
+          !tectGlLive && h('div', { className: 'pt-tect-swipe text-sm font-bold px-2 py-1 ' + (isDark ? 'text-orange-200 bg-slate-900' : 'text-orange-900 bg-orange-50'), style: { position: 'sticky', left: 0 }, 'aria-hidden': 'true' },
+            '\u2194 Swipe the section sideways to see all of it'),
+          h('p', { id: 'tect-gl-description', className: 'sr-only' },
+            __alloT('stem.platetectonics.sim_block_focus_keys_help', 'Focus this block and use the arrow keys to turn it, plus and minus to zoom, and Home to reset the view; hold Shift for bigger steps. The labeled focus and dashed guide connect its depth to a surface projection. Use Cut face to compare with the 2D cross-section.'), ' ',
+            s.mode === 'convergent'
+              ? __alloT('stem.platetectonics.sim_block_slab_focus_band', 'Deep earthquakes form a dipping band within the sinking slab.')
+              : __alloT('stem.platetectonics.sim_block_shallow_focus_band', 'Here, earthquakes remain shallow near the boundary. No sinking slab is present.'))
+        ),
+        h('section', { 'data-pt-boundary-inspector': s.mode, 'aria-labelledby': 'pt-boundary-inspector-heading',
+          className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-900') },
+          h('h4', { id: 'pt-boundary-inspector-heading', className: 'text-sm font-bold' }, __alloT('stem.platetectonics.block_inspect_heading', 'Inspect a boundary feature')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.platetectonics.block_inspect_group', 'Choose a geological feature to highlight'), className: 'flex flex-wrap gap-2 mt-2' },
+            [{ id: null, label: __alloT('stem.platetectonics.block_inspect_all', 'All features') }].concat(featureChoices).map(function (feature) {
+              var on = selectedFeature === feature.id;
+              return h('button', { key: feature.id || 'all', type: 'button', 'data-pt-boundary-feature-select': feature.id || 'all',
+                'aria-pressed': on, 'aria-controls': tectGlLive ? 'pt-boundary-3d' : 'pt-boundary-section', 'aria-describedby': feature.id ? 'pt-boundary-feature-help-' + feature.id + (on ? ' pt-boundary-inspector-status' : '') : on ? 'pt-boundary-inspector-detail pt-boundary-inspector-status' : undefined,
+                onClick: function () { if (on) return; setFeatureSelection(function (previous) { var next = Object.assign({}, previous); next[s.mode] = feature.id; return next; }); },
+                style: { minHeight: 44 }, className: 'min-h-11 px-3 py-2 text-sm font-semibold rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (on ? 'bg-cyan-800 border-cyan-900 text-white' : isDark ? 'bg-slate-950 border-slate-500 text-slate-100 hover:bg-slate-800' : 'bg-slate-50 border-slate-400 text-slate-800 hover:bg-cyan-50') }, feature.label);
+            })),
+          featureChoices.map(function (feature) { return h('span', { key: 'help-' + feature.id, id: 'pt-boundary-feature-help-' + feature.id, hidden: true }, feature.why); }),
+          h('p', { id: 'pt-boundary-inspector-detail', className: 'text-sm leading-relaxed mt-3' }, selectedFeatureChoice ? selectedFeatureChoice.why : __alloT('stem.platetectonics.block_inspect_overview', 'Connect the surface landforms with the rock beneath them. Select a feature, turn the block and compare the same feature in the cross-section. Your view and model time stay in place.')),
+          h('p', { id: 'pt-boundary-inspector-status', tabIndex: -1, 'data-pt-boundary-inspection-status': selectedFeature || 'none', 'aria-live': 'off', className: 'text-sm font-semibold leading-relaxed mt-2 rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'text-yellow-100' : 'text-slate-700') }, featureStatus),
+          selectedFeatureChoice && !view3d.on && h('button', { type: 'button', 'data-pt-inspect-in-3d': 'true',
+            'aria-controls': 'pt-boundary-inspector-status', 'aria-describedby': 'pt-boundary-inspector-detail pt-boundary-inspector-status',
+            onClick: function () { chooseBoundaryView(true, '#pt-boundary-inspector-status'); },
+            style: { minHeight: 44 }, className: 'mt-2 px-3 py-2 text-sm font-semibold rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800') },
+            __alloT('stem.platetectonics.block_inspect_in_3d', 'Inspect this feature in 3D')),
+          featureRevealView && h('button', { type: 'button', 'data-pt-boundary-reveal': featureRevealView, 'aria-describedby': 'pt-boundary-inspector-status',
+            onClick: function () { revealInspectionView(featureRevealView, '#pt-boundary-inspector-status'); },
+            style: { minHeight: 44 }, className: 'mt-2 px-3 py-2 text-sm font-semibold rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800') },
+            featureRevealView === 'section' ? __alloT('stem.platetectonics.block_inspect_reveal_section', 'Show the cut face') : __alloT('stem.platetectonics.block_inspect_reveal_surface', 'Show from above'))
+        ),
+        s.mode === 'convergent' && h('details', { 'data-pt-arc-process-panel': 'true',
+          onToggle: function (event) { if (!event.currentTarget.open && arcProcessRef.current) setArcProcess(null); },
+          className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-900') },
+          h('summary', { className: 'min-h-11 py-2 text-sm font-bold cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none' }, __alloT('stem.platetectonics.arc_process_title', 'Trace arc formation')),
+          h('p', { className: 'text-sm leading-relaxed mt-2' }, __alloT('stem.platetectonics.arc_process_intro', 'Follow water, partial melting and rising magma as three different parts of arc formation. Choose one step to match its numbered trace with the explanation. These routes and the size of the melt patch are schematic.')),
+          h('div', { role: 'group', 'aria-label': __alloT('stem.platetectonics.arc_process_group', 'Choose a step in volcanic arc formation'), className: 'flex flex-wrap gap-2 mt-3' },
+            [{ id: null, label: __alloT('stem.platetectonics.arc_process_hide', 'Hide trace') }].concat(arcProcessChoices).map(function (choice) {
+              var active = selectedArcProcess === choice.id;
+              return h('button', { key: choice.id || 'none', type: 'button', 'data-pt-arc-step': choice.id || 'none', 'aria-pressed': active,
+                'aria-controls': tectGlLive ? 'pt-boundary-3d' : 'pt-boundary-section',
+                'aria-describedby': choice.id ? 'pt-arc-process-help-' + choice.id + (active ? ' pt-arc-process-status' : '') : undefined,
+                onClick: function () { if (!active) setArcProcess(choice.id); }, style: { minHeight: 44 },
+                className: 'px-3 py-2 text-sm font-semibold rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-cyan-800 border-cyan-900 text-white' : isDark ? 'bg-slate-950 border-slate-500 text-slate-100' : 'bg-slate-50 border-slate-400 text-slate-800') },
+                h('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 8, textAlign: 'left' } },
+                  choice.id && choice.id !== 'all' && h('svg', { 'data-pt-arc-key': choice.id, 'aria-hidden': 'true', focusable: 'false', width: 32, height: 20, viewBox: '0 0 32 20', style: { flexShrink: 0, borderRadius: 4 } },
+                    h('rect', { width: 32, height: 20, rx: 4, fill: '#0f172a' }),
+                    choice.id === 'melt'
+                      ? h('g', null, h('ellipse', { cx: 16, cy: 10, rx: 12, ry: 6, fill: '#fb923c', fillOpacity: 0.25, stroke: '#ffd0a8' }),
+                          [10, 16, 22].map(function (x) { return h('circle', { key: x, cx: x, cy: 10, r: 1.5, fill: '#ffd0a8' }); }))
+                      : h('path', { d: 'M 4 10 H 28', fill: 'none', stroke: choice.id === 'water' ? '#7dd3fc' : '#ffd0a8', strokeWidth: 3, strokeDasharray: choice.id === 'water' ? '5 4' : undefined })),
+                  choice.label));
+            })),
+          arcProcessChoices.map(function (choice) { return h('span', { key: choice.id, id: 'pt-arc-process-help-' + choice.id, hidden: true }, choice.why); }),
+          selectedArcChoice && h('p', { 'data-pt-arc-process-explanation': selectedArcProcess, className: 'text-sm leading-relaxed mt-3' }, selectedArcChoice.why),
+          h('p', { id: 'pt-arc-process-status', tabIndex: -1, 'data-pt-arc-process-status': selectedArcProcess || 'none', 'aria-live': 'off', className: 'text-sm font-semibold leading-relaxed mt-2 rounded focus:ring-2 focus:ring-yellow-500 focus:outline-none' },
+            !selectedArcProcess ? __alloT('stem.platetectonics.arc_process_choose', 'Choose a step. Reading and changing the trace keeps your model time and saved investigations in place.')
+              : tectGlLive && tectArcProcessFace(tectGlModel) !== 'exposed' ? __alloT('stem.platetectonics.arc_process_need_face', 'This underground trace is shown only on an exposed cut face. Choose Cut face to reveal it; your current camera and model time stay in place until you choose a view.')
+                : tectGlLive ? __alloT('stem.platetectonics.arc_process_face', 'The numbered trace is a teaching annotation on this cut face. Move the cut to inspect another slice. Its routes do not measure the location, depth or amount of melting.')
+                  : selectedArcProcess === 'all'
+                    ? __alloT('stem.platetectonics.arc_process_all_section', 'Match numbers 1, 2 and 3 with the patterned step buttons. The dashed route is water, the speckled patch is partial melt, and the solid route is rising magma.')
+                    : __alloT('stem.platetectonics.arc_process_section', 'Match the number in the cross-section with your selected step. The dashed route is water; the speckled patch is partial melt; the solid route is rising magma.')),
+          selectedArcChoice && tectGlLive && tectArcProcessFace(tectGlModel) !== 'exposed' && h('button', { type: 'button', 'data-pt-arc-reveal': 'section', 'aria-describedby': 'pt-arc-process-status',
+            onClick: function () { revealInspectionView('section', '#pt-arc-process-status'); },
+            style: { minHeight: 44 }, className: 'mt-2 px-3 py-2 text-sm font-semibold rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-500 text-slate-100' : 'bg-white border-slate-400 text-slate-800') },
+            __alloT('stem.platetectonics.arc_process_reveal_section', 'Show the process on the cut face')),
+          h('a', { href: 'https://www.usgs.gov/faqs/are-tectonic-plates-floating-magma', target: '_blank', rel: 'noopener noreferrer', className: 'inline-block mt-3 text-sm font-semibold underline ' + (isDark ? 'text-sky-300' : 'text-sky-800') }, __alloT('stem.platetectonics.arc_process_source', 'USGS: mostly solid mantle and small regions of melt'))
+        ),
+      ),
+      h('div', { 'data-pt-model-controls': 'true', style: { flex: '1 1 270px', minWidth: 0 }, className: 'flex flex-col gap-2' },
+        // ── Camera tools for the 3D block ──
+        view3d.on && h('div', { 'data-pt-view-tools': 'true', className: 'rounded-lg p-2 border ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
+          h('h4', { className: 'text-sm font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, __alloT('stem.platetectonics.sim_view_tools_heading', 'Turn, zoom and slice')),
+          h('div', { className: 'mt-2' },
             h('div', { role: 'group', 'aria-label': __alloT('stem.platetectonics.block_preset_group', 'Choose a useful angle'), style: { display: 'flex', flexWrap: 'wrap', gap: 4, marginBottom: 6 } },
               tectPresetChoices.map(function(preset) {
                 var active = tectPreset && tectPreset.id === preset.id;
@@ -6035,11 +6138,31 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                [__alloT('stem.platetectonics.sim_tilt_up', 'Tilt up'), { rotX: Math.max(-88, view3d.rotX - 15) }], [__alloT('stem.platetectonics.sim_tilt_down', 'Tilt down'), { rotX: Math.min(88, view3d.rotX + 15) }]]
                 .map(function(b, i) {
                   return h('button', {
-                    key: i, type: 'button', 'aria-label': b[0],
+                    key: i, type: 'button', 'aria-label': b[0], 'aria-controls': 'pt-boundary-3d', 'aria-describedby': 'tect-navigation-help',
                     onClick: function() { updView(b[1]); },
                     className: 'flex-1 min-h-10 px-1 py-1 text-sm rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'border-slate-700 bg-slate-800 text-slate-200 hover:bg-slate-700' : 'border-orange-300 bg-orange-50 text-orange-800 hover:bg-orange-100')
                   }, ['◀', '▶', '▲', '▼'][i]);
                 })
+            ),
+            h('p', { id: 'tect-navigation-help', 'data-tect-navigation-help': 'true', className: 'text-sm leading-relaxed mt-2 mb-2 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+              __alloT('stem.platetectonics.sim_block_navigation_help', 'Drag to turn the block. With the block focused, arrow keys turn it, + and − zoom, and Home resets the view.')),
+            h('div', { 'data-tect-zoom-controls': 'true', className: 'mt-2 mb-2' },
+              h('p', { 'data-tect-zoom-level': 'true', 'aria-live': 'off', className: 'text-sm font-semibold mb-1 tabular-nums' },
+                __alloT('stem.platetectonics.sim_zoom_level', 'View zoom: {n}%').replace('{n}', Math.round(view3d.scale * 100))),
+              h('div', { role: 'group', 'aria-label': __alloT('stem.platetectonics.sim_zoom_group', 'Zoom the 3D block'), className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 80px), 1fr))' } },
+                [{ id: 'out', label: __alloT('stem.platetectonics.sim_zoom_out', 'Zoom out'), disabled: view3d.scale <= 0.4, next: Math.max(0.4, view3d.scale - 0.15) },
+                 { id: 'in', label: __alloT('stem.platetectonics.sim_zoom_in', 'Zoom in'), disabled: view3d.scale >= 2.6, next: Math.min(2.6, view3d.scale + 0.15) }].map(function (action) {
+                  return h('button', { key: action.id, type: 'button', 'data-tect-zoom': action.id, disabled: action.disabled,
+                    'aria-controls': 'pt-boundary-3d', 'aria-describedby': 'tect-zoom-help tect-navigation-help',
+                    onClick: function () {
+                      if (action.disabled) return;
+                      if (action.next === 0.4 || action.next === 2.6) inspectionFocusPending.current = '[data-tect-zoom="' + (action.id === 'in' ? 'out' : 'in') + '"]';
+                      updView({ scale: action.next });
+                    },
+                    style: { minHeight: 44 }, className: 'px-2 py-2 text-sm font-semibold rounded border focus:ring-2 focus:ring-yellow-500 focus:outline-none disabled:opacity-60 ' + (isDark ? 'border-slate-600 bg-slate-800 text-slate-100 hover:bg-slate-700' : 'border-orange-400 bg-orange-50 text-orange-900 hover:bg-orange-100') }, action.label);
+                })),
+              h('p', { id: 'tect-zoom-help', 'aria-live': 'off', className: 'text-sm leading-relaxed mt-1 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+                __alloT('stem.platetectonics.sim_zoom_help', 'Zoom changes the view. Model time, distances and the saved sample stay in place.'))
             ),
             // The cutaway is the bridge between the two views: slide it all
             // the way in and the block becomes the 2D section on the left.
@@ -6158,51 +6281,13 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         h('div', { className: 'text-sm px-1 italic ' + (isDark ? 'text-slate-400' : 'text-orange-800') }, info.desc)
       )
     ),
-    h('section', { 'data-pt-boundary-inspector': s.mode, 'aria-labelledby': 'pt-boundary-inspector-heading',
-      className: 'mx-3 mb-3 rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-900') },
-      h('h4', { id: 'pt-boundary-inspector-heading', className: 'text-sm font-bold' }, __alloT('stem.platetectonics.block_inspect_heading', 'Inspect a boundary feature')),
-      h('div', { role: 'group', 'aria-label': __alloT('stem.platetectonics.block_inspect_group', 'Choose a geological feature to highlight'), className: 'flex flex-wrap gap-2 mt-2' },
-        [{ id: null, label: __alloT('stem.platetectonics.block_inspect_all', 'All features') }].concat(featureChoices).map(function (feature) {
-          var on = selectedFeature === feature.id;
-          return h('button', { key: feature.id || 'all', type: 'button', 'data-pt-boundary-feature-select': feature.id || 'all',
-            'aria-pressed': on, 'aria-controls': tectGlLive ? 'pt-boundary-3d' : 'pt-boundary-section', 'aria-describedby': feature.id ? 'pt-boundary-feature-help-' + feature.id + (on ? ' pt-boundary-inspector-status' : '') : on ? 'pt-boundary-inspector-detail pt-boundary-inspector-status' : undefined,
-            onClick: function () { if (on) return; setFeatureSelection(function (previous) { var next = Object.assign({}, previous); next[s.mode] = feature.id; return next; }); },
-            style: { minHeight: 44 }, className: 'min-h-11 px-3 py-2 text-sm font-semibold rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (on ? 'bg-cyan-800 border-cyan-900 text-white' : isDark ? 'bg-slate-950 border-slate-500 text-slate-100 hover:bg-slate-800' : 'bg-slate-50 border-slate-400 text-slate-800 hover:bg-cyan-50') }, feature.label);
-        })),
-      featureChoices.map(function (feature) { return h('span', { key: 'help-' + feature.id, id: 'pt-boundary-feature-help-' + feature.id, hidden: true }, feature.why); }),
-      h('p', { id: 'pt-boundary-inspector-detail', className: 'text-sm leading-relaxed mt-3' }, selectedFeatureChoice ? selectedFeatureChoice.why : __alloT('stem.platetectonics.block_inspect_overview', 'Connect the surface landforms with the rock beneath them. Select a feature, turn the block and compare the same feature in the cross-section. Your view and model time stay in place.')),
-      h('p', { id: 'pt-boundary-inspector-status', 'data-pt-boundary-inspection-status': selectedFeature || 'none', 'aria-live': 'off', className: 'text-sm font-semibold leading-relaxed mt-2 ' + (isDark ? 'text-yellow-100' : 'text-slate-700') }, featureStatus)
-    ),
-    s.mode === 'convergent' && h('details', { 'data-pt-arc-process-panel': 'true',
-      onToggle: function (event) { if (!event.currentTarget.open && arcProcessRef.current) setArcProcess(null); },
-      className: 'mx-3 mb-3 rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-600 text-slate-100' : 'bg-white border-slate-300 text-slate-900') },
-      h('summary', { className: 'min-h-11 py-2 text-sm font-bold cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none' }, __alloT('stem.platetectonics.arc_process_title', 'Trace arc formation')),
-      h('p', { className: 'text-sm leading-relaxed mt-2' }, __alloT('stem.platetectonics.arc_process_intro', 'Follow water, partial melting and rising magma as three different parts of arc formation. Choose one step to match its numbered trace with the explanation. These routes and the size of the melt patch are schematic.')),
-      h('div', { role: 'group', 'aria-label': __alloT('stem.platetectonics.arc_process_group', 'Choose a step in volcanic arc formation'), className: 'flex flex-wrap gap-2 mt-3' },
-        [{ id: null, label: __alloT('stem.platetectonics.arc_process_hide', 'Hide trace') }].concat(arcProcessChoices).map(function (choice) {
-          var active = selectedArcProcess === choice.id;
-          return h('button', { key: choice.id || 'none', type: 'button', 'data-pt-arc-step': choice.id || 'none', 'aria-pressed': active,
-            'aria-controls': tectGlLive ? 'pt-boundary-3d' : 'pt-boundary-section',
-            'aria-describedby': choice.id ? 'pt-arc-process-help-' + choice.id + (active ? ' pt-arc-process-status' : '') : undefined,
-            onClick: function () { if (!active) setArcProcess(choice.id); }, style: { minHeight: 44 },
-            className: 'px-3 py-2 text-sm font-semibold rounded-lg border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (active ? 'bg-cyan-800 border-cyan-900 text-white' : isDark ? 'bg-slate-950 border-slate-500 text-slate-100' : 'bg-slate-50 border-slate-400 text-slate-800') }, choice.label);
-        })),
-      arcProcessChoices.map(function (choice) { return h('span', { key: choice.id, id: 'pt-arc-process-help-' + choice.id, hidden: true }, choice.why); }),
-      selectedArcChoice && h('p', { 'data-pt-arc-process-explanation': selectedArcProcess, className: 'text-sm leading-relaxed mt-3' }, selectedArcChoice.why),
-      h('p', { id: 'pt-arc-process-status', 'data-pt-arc-process-status': selectedArcProcess || 'none', 'aria-live': 'off', className: 'text-sm font-semibold leading-relaxed mt-2' },
-        !selectedArcProcess ? __alloT('stem.platetectonics.arc_process_choose', 'Choose a step. Reading and changing the trace keeps your model time and saved investigations in place.')
-          : tectGlLive && tectArcProcessFace(tectGlModel) !== 'exposed' ? __alloT('stem.platetectonics.arc_process_need_face', 'This underground trace is shown only on an exposed cut face. Choose Cut face to reveal it; your current camera and model time stay in place until you choose a view.')
-            : tectGlLive ? __alloT('stem.platetectonics.arc_process_face', 'The numbered trace is a teaching annotation on this cut face. Move the cut to inspect another slice. Its routes do not measure the location, depth or amount of melting.')
-              : __alloT('stem.platetectonics.arc_process_section', 'Match the number in the cross-section with your selected step. The dashed route is water; the speckled patch is partial melt; the solid route is rising magma.')),
-      h('a', { href: 'https://www.usgs.gov/faqs/are-tectonic-plates-floating-magma', target: '_blank', rel: 'noopener noreferrer', className: 'inline-block mt-3 text-sm font-semibold underline ' + (isDark ? 'text-sky-300' : 'text-sky-800') }, __alloT('stem.platetectonics.arc_process_source', 'USGS: mostly solid mantle and small regions of melt'))
-    ),
     h('section', {
       className: 'mx-3 mb-3 rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-700' : 'bg-white border-orange-300'),
-      'aria-labelledby': 'ptEvidenceTitle'
+      'aria-labelledby': 'ptEvidenceTitle', 'data-pt-boundary-evidence': 'true'
     },
       h('div', { className: 'flex items-center justify-between gap-2 flex-wrap mb-2' },
         h('div', null,
-          h('div', { className: 'text-[10px] font-bold uppercase ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, __alloT('stem.platetectonics.sim_evidence_heading', 'Boundary evidence')),
+          h('div', { className: 'text-sm font-bold uppercase ' + (isDark ? 'text-cyan-300' : 'text-cyan-700') }, __alloT('stem.platetectonics.sim_evidence_heading', 'Boundary evidence')),
           h('h4', { id: 'ptEvidenceTitle', className: 'text-sm font-black ' + (isDark ? 'text-slate-100' : 'text-slate-900') }, __alloT('stem.platetectonics.sim_evidence_question', 'What observations support {type}?').replace('{type}', info.name.toLowerCase()))
         ),
         // ── The readout, and what is actually worth announcing ──
@@ -6219,14 +6304,14 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         // finding rather than a tick: the deepest band this boundary type has
         // reached. That changes at most twice, and it is the teaching point -
         // only convergent boundaries get down into the deep band.
-        h('span', { className: 'text-[10px] font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-600'), 'data-pt-sim-readout': 'true' },
+        h('span', { className: 'text-sm font-bold ' + (isDark ? 'text-slate-300' : 'text-slate-600'), 'data-pt-sim-readout': 'true' },
           (s.quakeTotal || 0) + ' events | ' + depthSummary
         ),
         h('span', { className: 'sr-only', role: 'status', 'aria-live': 'polite', 'data-pt-sim-depth-band': depthBand },
           depthBandLine
         )
       ),
-      h('div', { className: 'grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-2' },
+      h('div', { 'data-pt-evidence-grid': 'true', className: 'grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 160px), 1fr))' } },
         [
           [__alloT('stem.platetectonics.sim_ev_row_motion', 'Relative motion'), evidence.motion],
           [__alloT('stem.platetectonics.sim_ev_row_crust', 'Crustal outcome'), evidence.crust],
@@ -6234,12 +6319,12 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           [__alloT('stem.platetectonics.sim_ev_row_volcanoes', 'Volcanism clue'), evidence.volcanoes]
         ].map(function(item) {
           return h('div', { key: item[0], className: 'border-l-2 border-cyan-500 pl-2 py-1' },
-            h('span', { className: 'block text-[10px] font-bold uppercase ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[0]),
-            h('strong', { className: 'block text-[11px] leading-snug ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, item[1])
+            h('span', { className: 'block text-sm font-bold uppercase ' + (isDark ? 'text-slate-400' : 'text-slate-500') }, item[0]),
+            h('strong', { className: 'block text-sm leading-relaxed ' + (isDark ? 'text-slate-100' : 'text-slate-800') }, item[1])
           );
         })
       ),
-      h('div', { className: 'mt-2 text-[12px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
+      h('div', { className: 'mt-2 text-sm leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-600') },
         (s.mode === 'convergent' ? __alloT('stem.platetectonics.sim_scenario_note', 'Scenario note: this cross-section depicts oceanic lithosphere subducting beneath another plate. Continental collision looks different. ') : ''),
         __alloT('stem.platetectonics.sim_model_note_clock', 'Model note: the clock runs 60,000 years every second. Rift width and fault offset are rate × time exactly; mountain growth is a simplified estimate; earthquake timing is a qualitative cue, not a forecast. '),
         h('div', { 'data-pt-model-depth-key': 'true', className: 'flex flex-wrap gap-x-4 gap-y-2 mt-2' },
@@ -6547,6 +6632,30 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         { id: 'deep', lo: 300, hi: 700, color: isDark ? '#c4b5fd' : '#6d28d9', label: __alloT('stem.platetectonics.depth_band_deep', 'Deep'), range: __alloT('stem.platetectonics.depth_band_deep_range', '300–700 km') }
       ];
       function bandOf(point) { return bands[point.z >= 300 ? 2 : point.z >= 70 ? 1 : 0]; }
+      var bandCounts = { shallow: 0, intermediate: 0, deep: 0 };
+      log.forEach(function (point) { bandCounts[bandOf(point).id]++; });
+      var samplePhase = captured ? 'checked' : canLock ? 'ready' : 'collect';
+      var readinessText = __alloT('stem.platetectonics.ql_readiness_count', 'Earthquakes at 70 km or deeper: {n}. Minimum for this activity: 8.').replace('{n}', deep.length);
+      // This readout follows the displayed sample and stays outside live
+      // announcements. Reaching the practice target never checks or saves it.
+      var quakeOverview = s.qlOpen && h('section', { 'data-pt-quake-overview': captured ? 'captured' : 'live', 'aria-labelledby': 'pt-ql-overview-title', 'aria-live': 'off', className: 'mt-3 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'bg-slate-950 border-slate-600' : 'bg-slate-50 border-slate-300') },
+        h('div', { className: 'flex flex-wrap items-baseline justify-between gap-2' },
+          h('h4', { id: 'pt-ql-overview-title', className: 'font-bold' }, __alloT('stem.platetectonics.ql_overview_title', 'Earthquakes in this sample')),
+          h('span', { 'data-pt-quake-overview-total': String(log.length), className: 'tabular-nums' }, __alloT('stem.platetectonics.ql_overview_total', '{n} total').replace('{n}', log.length))),
+        h('dl', { 'data-pt-quake-band-key': 'true', className: 'mt-3 min-w-0', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 130px), 1fr))', gap: 8 } }, bands.map(function (band) {
+          return h('div', { key: band.id, className: 'rounded-md border p-2 min-w-0 flex items-center justify-between gap-2 ' + (isDark ? 'border-slate-600 bg-slate-900' : 'border-slate-300 bg-white'), style: { borderLeft: '4px solid ' + band.color } },
+            h('dt', { className: 'font-semibold' }, band.label, h('span', { className: 'block font-normal' }, band.range)),
+            h('dd', { 'data-pt-quake-band-count': band.id, className: 'text-xl font-bold tabular-nums' }, String(bandCounts[band.id])));
+        })),
+        s.mode === 'convergent' && h('div', { 'data-pt-quake-readiness': samplePhase, className: 'mt-3' },
+          !captured && h('p', { id: 'pt-ql-readiness-count', className: 'font-semibold' }, readinessText),
+          !captured && h('div', { role: 'progressbar', 'data-pt-quake-readiness-progress': 'true', 'aria-labelledby': 'pt-ql-readiness-count', 'aria-valuemin': 0, 'aria-valuemax': 8, 'aria-valuenow': Math.min(8, deep.length), 'aria-valuetext': readinessText, className: 'rounded-full overflow-hidden my-2', style: { height: 8, backgroundColor: isDark ? '#334155' : '#e2e8f0' } },
+            h('div', { 'aria-hidden': 'true', style: { width: Math.min(100, deep.length / 8 * 100) + '%', height: '100%', backgroundColor: isDark ? '#fbbf24' : '#b45309' } })),
+          h('p', { id: 'pt-ql-readiness-help', 'data-pt-quake-readiness-help': samplePhase }, captured
+            ? __alloT('stem.platetectonics.ql_readiness_checked', 'Compare your dashed estimate with the solid data fit. These counts belong to the fixed checked sample. Choose Revise my angle to work with the latest observations.')
+            : canLock ? __alloT('stem.platetectonics.ql_readiness_ready', 'Your sample is ready. Compare several points, set your dashed angle estimate, then choose Check my angle against this sample to pause the run and reveal the data fit.')
+              : s.running ? __alloT('stem.platetectonics.ql_readiness_collecting', 'Collecting observations. Watch the pattern and try an angle estimate while the sample grows. Events still needed at 70 km or deeper: {n}.').replace('{n}', 8 - deep.length)
+                : __alloT('stem.platetectonics.ql_readiness_paused', 'Use Play or Advance 60,000 years in the model controls to collect observations. Events still needed at 70 km or deeper: {n}.').replace('{n}', 8 - deep.length))));
       var ink = isDark ? '#f1f5f9' : '#0f172a', muted = isDark ? '#cbd5e1' : '#475569', grid = isDark ? '#334155' : '#e2e8f0';
       var kids = [h('rect', { key: 'bg', x: 0, y: 0, width: VW, height: VH, fill: isDark ? '#0f172a' : '#ffffff' })];
       bands.forEach(function (band) {
@@ -6557,7 +6666,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
         kids.push(h('text', { key: 'tz' + z, 'data-pt-quake-axis-label': 'depth', 'data-km': z, x: L - 8 * unit, y: qz(z) + axisFont * 0.35, fontSize: axisFont, fill: muted, textAnchor: 'end' }, String(z)));
       });
       [0, 200, 400, 600, 800].forEach(function (x) {
-        kids.push(h('line', { key: 'gx' + x, 'data-pt-quake-grid': 'distance', 'data-km': x, x1: qx(x), y1: T, x2: qx(x), y2: VH - B, stroke: grid }));
+        kids.push(h('line', { key: 'gx' + x, 'data-pt-quake-grid': 'distance', 'data-km': x, 'data-pt-quake-boundary-reference': x === 0 ? 'true' : undefined, x1: qx(x), y1: T, x2: qx(x), y2: VH - B, stroke: x === 0 ? muted : grid, strokeWidth: x === 0 ? 1.5 : 1, strokeDasharray: x === 0 ? '3 3' : undefined, vectorEffect: 'non-scaling-stroke' }));
         kids.push(h('text', { key: 'tx' + x, 'data-pt-quake-axis-label': 'distance', 'data-km': x, x: qx(x), y: VH - B + 22 * unit, fontSize: axisFont, fill: muted, textAnchor: x === XMAX ? 'end' : 'middle' }, String(x)));
       });
       log.forEach(function (q, i) {
@@ -6578,34 +6687,42 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
           h('circle', { 'data-pt-quake-inspection-ring': String(inspectedIndex), cx: ix, cy: iz, r: 7 * unit, fill: 'none', stroke: isDark ? '#0f172a' : '#ffffff', strokeWidth: 5, vectorEffect: 'non-scaling-stroke' }),
           h('circle', { cx: ix, cy: iz, r: 7 * unit, fill: 'none', stroke: focusInk, strokeWidth: 2, vectorEffect: 'non-scaling-stroke' })));
       }
+      // Measure hit distances in screen pixels so the point choices survive
+      // a resized, translated or transformed diagram. The list distinguishes
+      // coincident points and provides the same action from the keyboard.
+      function inspectPlottedQuake(event) {
+        var plot = quakePlotRef.current;
+        if (!plot || !log.length || !event || !isFinite(event.clientX) || !isFinite(event.clientY)) return;
+        var matrix = typeof plot.getScreenCTM === 'function' ? plot.getScreenCTM() : null;
+        var bounds = matrix ? null : plot.getBoundingClientRect();
+        if (!matrix && !(bounds.width > 0 && bounds.height > 0)) return;
+        var nearest = -1, best = 22 * 22;
+        log.forEach(function (point, index) {
+          var x = qx(point.x), z = qz(point.z);
+          var px = matrix ? matrix.a * x + matrix.c * z + matrix.e : bounds.left + x * bounds.width / VW;
+          var py = matrix ? matrix.b * x + matrix.d * z + matrix.f : bounds.top + z * bounds.height / VH;
+          var dx = event.clientX - px, dy = event.clientY - py, distance = dx * dx + dy * dy;
+          if (distance < best || (nearest < 0 && distance === best)) { best = distance; nearest = index; }
+        });
+        if (nearest >= 0) inspectQuake(log[nearest]);
+      }
       var card = 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800');
       // The widget re-renders every frame while running; the chart is only
       // built while its panel is open.
-      return h('details', { ref: quakeLogRef, className: 'mx-3 mb-3 ' + card, 'data-pt-quake-log': String(log.length), 'data-pt-quake-live-count': String((s.qlog || []).length), open: !!s.qlOpen,
-          onToggle: function (e) { if (!e || e.target !== e.currentTarget) return; var o = !!e.currentTarget.open; if (o !== !!s.qlOpen) update({ qlOpen: o }); } },
-        h('summary', { className: 'text-sm font-black cursor-pointer ' + (isDark ? 'text-orange-300' : 'text-orange-800') },
-          (captured ? __alloT('stem.platetectonics.ql_summary_captured', '📊 Quake log: checked sample ({n} earthquakes)') : __alloT('stem.platetectonics.ql_summary_live', '📊 Quake log: latest observations ({n} earthquakes)')).replace('{n}', log.length)),
-        h('p', { className: 'text-sm leading-relaxed mt-2', 'data-pt-quake-sample-note': captured ? 'captured' : 'live' }, captured
-          ? __alloT('stem.platetectonics.ql_sample_captured', 'Showing the {n} model earthquakes captured when you checked your angle. This plot stays fixed while the simulator continues. Revise your angle to compare against the latest observations.').replace('{n}', log.length)
-          : __alloT('stem.platetectonics.ql_sample_live', 'Showing the latest {n} model earthquakes (up to 200), plotted by distance from the boundary and depth. For subduction, estimate an angle from the band, then check it against the data.').replace('{n}', log.length)),
-        captured && h('p', { className: 'text-sm leading-relaxed mt-1', 'data-pt-slab-saved-note': s.dipRestored ? 'restored' : 'saved' }, s.dipRestored
-          ? __alloT('stem.platetectonics.ql_saved_restored_fresh', 'Your checked sample is restored. The current model starts paused at zero years. Revise can use these saved points. Play or one paused interval starts a fresh live log; the checked plot stays fixed until you revise it.')
-          : __alloT('stem.platetectonics.ql_saved_kept', 'This checked sample and angle are saved when you leave the activity. Revise keeps the saved result until you check again. Reset clears it.')),
-        s.qlOpen && h('div', { className: 'mt-2', style: { maxWidth: 620 } },
-          h('p', { 'data-pt-quake-axis': 'depth', className: 'text-sm font-semibold mb-1' }, __alloT('stem.platetectonics.ql_axis_z', 'Depth (km)'), ' ↓'),
-          h('svg', { ref: quakePlotRef, 'data-pt-quake-plot': 'equal-scale', viewBox: '0 0 ' + VW + ' ' + VH, width: '100%', role: 'img', 'aria-describedby': inspectedPoint ? 'pt-ql-inspected-values' : 'pt-ql-equal-scale-help', className: 'rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-300'), style: { display: 'block', height: 'auto', aspectRatio: VW + '/' + VH, background: isDark ? '#0f172a' : '#ffffff' },
+      var quakeChart = s.qlOpen && h('div', { 'data-pt-quake-chart': 'true', className: 'min-w-0' },
+        h('p', { 'data-pt-quake-axis': 'depth', className: 'text-sm font-semibold mb-1' }, __alloT('stem.platetectonics.ql_axis_z', 'Depth (km)'), ' ↓'),
+        h('svg', { ref: quakePlotRef, 'data-pt-quake-plot': 'equal-scale', viewBox: '0 0 ' + VW + ' ' + VH, width: '100%', role: 'img', onClick: inspectPlottedQuake, 'aria-describedby': (inspectedPoint ? 'pt-ql-inspected-values' : 'pt-ql-equal-scale-help') + ' pt-ql-plot-selection-help', className: 'rounded-lg border ' + (isDark ? 'border-slate-700' : 'border-slate-300'), style: { display: 'block', height: 'auto', aspectRatio: VW + '/' + VH, cursor: log.length ? 'pointer' : 'default', background: isDark ? '#0f172a' : '#ffffff' },
             'aria-label': (s.mode === 'convergent'
               ? __alloT('stem.platetectonics.ql_aria_depth70', 'Scatter plot of {n} earthquakes, distance from the boundary against depth. {d} are 70 km or deeper. Your line slopes down at {a} degrees.')
               : __alloT('stem.platetectonics.ql_aria_no_slab', 'Scatter plot of {n} earthquakes, distance from the boundary against depth. No slab-angle line is drawn for this boundary.'))
               .replace('{n}', log.length).replace('{d}', deep.length).replace('{a}', s.dipGuess) }, kids),
-          h('p', { 'data-pt-quake-axis': 'distance', className: 'text-sm leading-relaxed font-semibold mt-1 text-center' }, s.mode === 'convergent'
+        h('p', { 'data-pt-quake-axis': 'distance', className: 'text-sm leading-relaxed font-semibold mt-1 text-center' }, s.mode === 'convergent'
             ? __alloT('stem.platetectonics.ql_axis_x', 'Distance from the boundary (km), toward the overriding plate')
             : __alloT('stem.platetectonics.ql_axis_x_neutral', 'Distance from the boundary (km)')),
-          h('p', { id: 'pt-ql-equal-scale-help', 'data-pt-quake-scale-help': 'true', className: 'text-sm leading-relaxed mt-2' }, __alloT('stem.platetectonics.ql_equal_scale_help', 'The same number of kilometres takes the same length on both axes. Depth increases down from the surface, so the band’s slope can help you estimate an angle.')),
-          h('div', { 'data-pt-quake-band-key': 'true', className: 'flex flex-wrap gap-3 mt-3 text-sm' }, bands.map(function (band) {
-            return h('span', { key: band.id, className: 'inline-flex items-center gap-2' }, h('span', { 'aria-hidden': 'true', style: { width: 10, height: 10, display: 'inline-block', backgroundColor: band.color } }), band.label + ' · ' + band.range);
-          })),
-          h('fieldset', { 'data-pt-quake-inspector': captured ? 'captured' : 'live', className: 'min-w-0 mt-3 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'border-slate-600 bg-slate-950' : 'border-slate-300 bg-slate-50') },
+        h('p', { 'data-pt-quake-origin-help': 'true', className: 'text-sm leading-relaxed mt-2' }, __alloT('stem.platetectonics.ql_boundary_reference_help', 'The stronger vertical dashed line marks the boundary at 0 km. Read each event’s distance from that reference.')),
+        h('p', { id: 'pt-ql-equal-scale-help', 'data-pt-quake-scale-help': 'true', className: 'text-sm leading-relaxed mt-2' }, __alloT('stem.platetectonics.ql_equal_scale_help', 'The same number of kilometres takes the same length on both axes. Depth increases down from the surface, so the band’s slope can help you estimate an angle.')),
+        h('p', { id: 'pt-ql-plot-selection-help', 'data-pt-quake-plot-selection-help': 'true', className: 'text-sm leading-relaxed mt-3' }, __alloT('stem.platetectonics.ql_plot_selection_help', 'Choose a point in the graph or an event in the list to trace its coordinates. Use the list to distinguish overlapping points.')));
+      var quakeReadout = s.qlOpen && h('fieldset', { 'data-pt-quake-inspector': captured ? 'captured' : 'live', className: 'min-w-0 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'border-slate-600 bg-slate-950' : 'border-slate-300 bg-slate-50') },
             h('legend', { className: 'px-1 font-bold' }, __alloT('stem.platetectonics.ql_inspect_title', 'Read one earthquake')),
             h('label', { htmlFor: 'pt-ql-event', className: 'block font-semibold' }, __alloT('stem.platetectonics.ql_inspect_choose_label', 'Event in the displayed sample')),
             h('select', { id: 'pt-ql-event', 'data-pt-quake-inspect-select': 'true', value: inspectedIndex < 0 ? '' : String(inspectedIndex), disabled: !log.length, className: 'block w-full min-w-0 min-h-11 mt-1 px-2 rounded-lg border text-sm ' + (isDark ? 'bg-slate-900 border-slate-600' : 'bg-white border-slate-400'), style: { minHeight: 44, maxWidth: '100%' },
@@ -6617,14 +6734,14 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
               h('button', { type: 'button', 'data-pt-quake-inspect-next': 'true', disabled: inspectedIndex < 0 || inspectedIndex >= log.length - 1, className: 'min-h-11 px-3 py-2 rounded-lg border font-semibold disabled:opacity-70', style: { minHeight: 44, color: ink, backgroundColor: isDark ? '#0f172a' : '#ffffff' }, onClick: function () { if (inspectedIndex >= 0 && inspectedIndex < log.length - 1) inspectQuake(log[inspectedIndex + 1]); } }, __alloT('stem.platetectonics.ql_inspect_next', 'Next')),
               h('button', { type: 'button', 'data-pt-quake-inspect-clear': 'true', disabled: !inspectedPoint, className: 'min-h-11 px-3 py-2 rounded-lg border font-semibold disabled:opacity-70', style: { minHeight: 44, color: ink, backgroundColor: isDark ? '#0f172a' : '#ffffff' }, onClick: function () { inspectQuake(null); } }, __alloT('stem.platetectonics.ql_inspect_clear', 'Clear selection'))),
             inspectedPoint && h('div', { id: 'pt-ql-inspected-values', 'data-pt-quake-inspected-values': String(inspectedIndex), className: 'mt-3' },
-              h('dl', { className: 'grid grid-cols-1 sm:grid-cols-3 gap-3' },
+              h('dl', { 'data-pt-quake-inspected-layout': 'true', className: 'min-w-0', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 140px), 1fr))', gap: 12 } },
                 h('div', null, h('dt', { className: 'font-semibold' }, s.mode === 'convergent' ? __alloT('stem.platetectonics.ql_coordinates_trench', 'Distance from trench (km)') : __alloT('stem.platetectonics.ql_coordinates_boundary', 'Distance from boundary (km)')), h('dd', { 'data-pt-quake-inspected-distance': 'true', className: 'mt-1 tabular-nums', style: { overflowWrap: 'anywhere' } }, String(inspectedPoint.x))),
                 h('div', null, h('dt', { className: 'font-semibold' }, __alloT('stem.platetectonics.ql_coordinates_depth', 'Depth (km)')), h('dd', { 'data-pt-quake-inspected-depth': 'true', className: 'mt-1 tabular-nums', style: { overflowWrap: 'anywhere' } }, String(inspectedPoint.z))),
                 h('div', null, h('dt', { className: 'font-semibold' }, __alloT('stem.platetectonics.ql_inspect_band', 'Depth band')), h('dd', { 'data-pt-quake-inspected-band': bandOf(inspectedPoint).id, className: 'mt-1' }, bandOf(inspectedPoint).label + ' · ' + bandOf(inspectedPoint).range))),
               h('p', { 'data-pt-quake-inspected-source': captured ? 'captured' : 'live', className: 'mt-3' }, captured ? __alloT('stem.platetectonics.ql_inspect_captured', 'This event belongs to your fixed checked sample, even while newer earthquakes enter the live run.') : __alloT('stem.platetectonics.ql_inspect_live', 'This event belongs to the latest observation log. Selection follows this observation as the log changes; it clears if the observation leaves the displayed sample.')),
               h('p', { className: 'mt-2' }, __alloT('stem.platetectonics.ql_inspect_read_guides', 'The ring marks this event. Dashed guides connect it to the distance and depth axes; the outlined coordinate row contains the same values.')),
-              h('p', { 'data-pt-quake-inspected-caution': 'true', className: 'mt-2 font-semibold' }, __alloT('stem.platetectonics.ql_inspect_caution', 'Compare several events before drawing a conclusion. One earthquake does not establish a slab angle or boundary type.')))),
-          h('details', { 'data-pt-slab-coordinates': captured ? 'captured' : 'live', className: 'mt-3 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900') },
+              h('p', { 'data-pt-quake-inspected-caution': 'true', className: 'mt-2 font-semibold' }, __alloT('stem.platetectonics.ql_inspect_caution', 'Compare several events before drawing a conclusion. One earthquake does not establish a slab angle or boundary type.'))));
+      var quakeCoordinates = s.qlOpen && h('details', { 'data-pt-slab-coordinates': captured ? 'captured' : 'live', className: 'mt-3 rounded-lg border p-3 text-sm leading-relaxed ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-slate-50 border-slate-300 text-slate-900') },
             h('summary', { className: 'min-h-11 py-2 font-bold cursor-pointer focus:ring-2 focus:ring-yellow-500 focus:outline-none', style: { minHeight: 44 } }, __alloT('stem.platetectonics.ql_coordinates_summary', 'Read the plotted coordinates ({n} events)').replace('{n}', log.length)),
             h('p', { 'data-pt-slab-coordinates-note': captured ? 'captured' : 'live', className: 'mt-2 mb-3' }, captured
               ? __alloT('stem.platetectonics.ql_coordinates_captured', 'These coordinates belong to the checked sample shown in the plot. They stay fixed while the live run continues. Revise your angle to use the latest observations.')
@@ -6640,8 +6757,8 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                 h('th', { scope: 'row', className: 'text-left align-top py-2 pr-2 font-semibold' }, h('button', { type: 'button', 'data-pt-quake-inspect-row': String(i), 'aria-pressed': i === inspectedIndex, 'aria-label': __alloT('stem.platetectonics.ql_inspect_row_aria', 'Inspect event {n}').replace('{n}', i + 1), 'aria-describedby': 'pt-ql-row-keys', tabIndex: i === (inspectedIndex < 0 ? 0 : inspectedIndex) ? 0 : -1, className: 'rounded-md border focus:ring-2 focus:ring-yellow-500 focus:outline-none', style: { minHeight: 44, minWidth: 44 }, onClick: function () { inspectQuake(q); }, onKeyDown: function (event) { inspectQuakeKey(event, q); } }, String(i + 1))),
                 h('td', { 'data-pt-slab-coordinate-distance': 'true', className: 'align-top py-2 pr-2', style: { overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } }, String(q.x)),
                 h('td', { 'data-pt-slab-coordinate-depth': 'true', className: 'align-top py-2', style: { overflowWrap: 'anywhere', fontVariantNumeric: 'tabular-nums' } }, String(q.z))); })))
-              : h('p', { 'data-pt-slab-coordinates-empty': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.ql_coordinates_empty', 'No earthquake coordinates are plotted yet. Play or advance a paused interval to gather observations.')))),
-        s.mode !== 'convergent'
+              : h('p', { 'data-pt-slab-coordinates-empty': 'true', className: 'mt-2' }, __alloT('stem.platetectonics.ql_coordinates_empty', 'No earthquake coordinates are plotted yet. Play or advance a paused interval to gather observations.')));
+      var quakeAngle = s.mode !== 'convergent'
           ? h('p', { className: 'text-sm mt-2 font-semibold' }, log.length
               ? __alloT('stem.platetectonics.ql_no_slab_observations', 'This model’s observations are shallow and close to the boundary. No plate is sinking here, so there is no dipping slab band to fit. Switch to Convergent to compare.')
               : __alloT('stem.platetectonics.ql_no_observations', 'No earthquakes are plotted yet. Run this boundary to gather observations. Switch to Convergent to investigate a dipping slab.'))
@@ -6664,7 +6781,7 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                 h('span', { className: 'inline-flex items-center gap-2' }, h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 24, borderTop: '3px dashed #d97706' } }), __alloT('stem.platetectonics.ql_legend_guess', 'Your estimate (dashed)')),
                 s.dipLocked && h('span', { className: 'inline-flex items-center gap-2' }, h('span', { 'aria-hidden': 'true', style: { display: 'inline-block', width: 24, borderTop: '3px solid ' + (isDark ? '#38bdf8' : '#0369a1') } }), __alloT('stem.platetectonics.ql_legend_fit', 'Data fit (solid)'))),
               !s.dipLocked
-                ? h('button', { type: 'button', 'data-pt-quake-lock': 'true', disabled: !canLock,
+                ? h('button', { type: 'button', 'data-pt-quake-lock': 'true', disabled: !canLock, 'aria-describedby': s.qlOpen ? 'pt-ql-readiness-count pt-ql-readiness-help' : undefined,
                     className: 'min-h-11 mt-1 px-3 py-2 rounded-lg text-sm font-bold border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (canLock ? 'bg-amber-700 text-white border-amber-800' : 'opacity-60 ' + (isDark ? 'bg-slate-800 text-slate-300 border-slate-600' : 'bg-white text-slate-500 border-slate-300')),
                     onClick: function () {
                       if (!canLock || fitDip == null || !isFinite(fitDip) || slabActionPending.current) return;
@@ -6678,27 +6795,42 @@ function ptSpeakButton(h, speak, text, what, __alloT, isDark) {
                       if (typeof props.onRecordSlab === 'function') props.onRecordSlab(checkedSample);
                       if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.ql_sr_checked', 'Angle checked. The run is paused and the sample is captured. Compare your dashed estimate with the solid data fit.'));
                     } },
-                    canLock ? __alloT('stem.platetectonics.ql_check_angle', 'Check my angle against this sample') : __alloT('stem.platetectonics.ql_need_70km', 'Let it run: {n} of 8 quakes at least 70 km deep (a faster rate makes more)').replace('{n}', deep.length))
+                    __alloT('stem.platetectonics.ql_check_angle', 'Check my angle against this sample'))
                 : h('div', { className: 'mt-2' },
                     h('p', { className: 'text-sm leading-relaxed', 'data-pt-quake-fit': fitDip == null ? '' : String(Math.round(fitDip)) },
                       __alloT('stem.platetectonics.ql_result_sample', 'The solid line fits {n} captured earthquakes at 70 km or deeper: about {f}° from horizontal. Your estimate was {g}°. In real subduction zones, the dipping earthquake band (Wadati–Benioff zone) helps trace the sinking slab. Deep earthquakes occur within the slab.')
                         .replace('{n}', deep.length).replace('{f}', fitDip == null ? '?' : Math.round(fitDip)).replace('{g}', s.dipGuess)),
                     h('button', { type: 'button', 'data-pt-slab-revise': 'true', className: 'min-h-11 mt-2 px-3 py-2 rounded-lg text-sm font-bold border focus:ring-2 focus:ring-yellow-500 focus:outline-none ' + (isDark ? 'bg-slate-950 border-slate-600 text-slate-100' : 'bg-white border-slate-400 text-slate-800'),
                       onClick: function () { setQuakeInspection(null); slabActionPending.current = false; slabFocusPending.current = '#pt-ql-dip'; update({ dipLocked: false, dipSample: null }); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.platetectonics.ql_sr_revise', 'Your estimate is editable again. The current run and observations are kept.')); } }, __alloT('stem.platetectonics.ql_revise', 'Revise my angle')))
-            ));
+            );
+      return h('details', { ref: quakeLogRef, className: 'mx-3 mb-3 ' + card, 'data-pt-quake-log': String(log.length), 'data-pt-quake-live-count': String((s.qlog || []).length), open: !!s.qlOpen,
+          onToggle: function (e) { if (!e || e.target !== e.currentTarget) return; var o = !!e.currentTarget.open; if (o !== !!s.qlOpen) update({ qlOpen: o }); } },
+        h('summary', { className: 'text-sm font-black cursor-pointer ' + (isDark ? 'text-orange-300' : 'text-orange-800') },
+          (captured ? __alloT('stem.platetectonics.ql_summary_captured', '📊 Quake log: checked sample ({n} earthquakes)') : __alloT('stem.platetectonics.ql_summary_live', '📊 Quake log: latest observations ({n} earthquakes)')).replace('{n}', log.length)),
+        h('p', { className: 'text-sm leading-relaxed mt-2', 'data-pt-quake-sample-note': captured ? 'captured' : 'live' }, captured
+          ? __alloT('stem.platetectonics.ql_sample_captured', 'Showing the {n} model earthquakes captured when you checked your angle. This plot stays fixed while the simulator continues. Revise your angle to compare against the latest observations.').replace('{n}', log.length)
+          : __alloT('stem.platetectonics.ql_sample_live', 'Showing the latest {n} model earthquakes (up to 200), plotted by distance from the boundary and depth. For subduction, estimate an angle from the band, then check it against the data.').replace('{n}', log.length)),
+        captured && h('p', { className: 'text-sm leading-relaxed mt-1', 'data-pt-slab-saved-note': s.dipRestored ? 'restored' : 'saved' }, s.dipRestored
+          ? __alloT('stem.platetectonics.ql_saved_restored_fresh', 'Your checked sample is restored. The current model starts paused at zero years. Revise can use these saved points. Play or one paused interval starts a fresh live log; the checked plot stays fixed until you revise it.')
+          : __alloT('stem.platetectonics.ql_saved_kept', 'This checked sample and angle are saved when you leave the activity. Revise keeps the saved result until you check again. Reset clears it.')),
+        quakeOverview,
+        h('div', { 'data-pt-quake-workbench': 'true', className: 'min-w-0 mt-3', style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 360px), 1fr))', gap: 16, alignItems: 'start' } },
+          h('div', { 'data-pt-quake-chart-column': 'true', className: 'min-w-0' }, quakeChart,
+            h('div', { 'data-pt-quake-estimate-panel': 'true', className: 'mt-3 pt-3 border-t ' + (isDark ? 'border-slate-700' : 'border-slate-300') }, quakeAngle)),
+          h('div', { 'data-pt-quake-readout-column': 'true', className: 'min-w-0' }, quakeReadout, quakeCoordinates)));
+
     })(),
     // Educational cards
-    h('div', { className: 'mx-3 mb-3 grid grid-cols-1 md:grid-cols-2 gap-2' },
+    h('div', { 'data-pt-learning-cards': 'true', className: 'mx-3 mb-3 grid gap-2', style: { gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 280px), 1fr))' } },
       h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
-        h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, '📐 The math'),
-        h('div', { className: 'text-[11px] leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+        h('h4', { className: 'text-sm font-bold mb-2 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, h('span', { 'aria-hidden': 'true' }, '📐 '), __alloT('stem.platetectonics.sim_math_title', 'The math')),
+        h('div', { className: 'text-sm leading-relaxed ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
           __alloT('stem.platetectonics.sim_try_speeds', 'Plate speeds are commonly measured in centimeters per year. At a constant 2-15 cm/year, a plate would travel about 200-1500 km in 10 million years. Real rates and directions change through time. Earthquake magnitude is logarithmic: one whole moment-magnitude unit represents about 10x recorded wave amplitude and roughly 32x energy release.')
-        ),
-        h('p', { 'data-pt-sim-check': s.mode, className: 'mt-2 text-[11px] leading-relaxed font-semibold rounded-md px-2 py-1.5 border ' + (isDark ? 'bg-slate-950 border-slate-700 text-amber-200' : 'bg-amber-50 border-amber-300 text-amber-900') }, checkText)
+        )
       ),
       h('div', { className: 'rounded-xl border p-3 ' + (isDark ? 'bg-slate-900 border-slate-800 text-slate-200' : 'bg-white border-orange-300 text-slate-800') },
-        h('div', { className: 'text-[11px] font-bold uppercase mb-1 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, '🎯 Try this'),
-        h('ul', { className: 'text-[11px] space-y-0.5 list-disc pl-4 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
+        h('h4', { className: 'text-sm font-bold mb-2 ' + (isDark ? 'text-orange-400' : 'text-orange-700') }, h('span', { 'aria-hidden': 'true' }, '🎯 '), __alloT('stem.platetectonics.sim_try_title', 'Try this')),
+        h('ul', { className: 'text-sm space-y-2 list-disc pl-4 ' + (isDark ? 'text-slate-300' : 'text-slate-700') },
           h('li', null, __alloT('stem.platetectonics.sim_try_convergent', 'Switch to Convergent and compare shallow, intermediate, and deep event colors. Deep-focus earthquakes are strong evidence of a subducting slab.')),
           h('li', null, __alloT('stem.platetectonics.sim_try_divergent', 'Switch to Divergent - see the mid-ocean ridge open and magma fill in (this is happening at the Mid-Atlantic Ridge right now).')),
           h('li', null, __alloT('stem.platetectonics.sim_try_transform', 'Switch to Transform and observe shallow events plus horizontal offset, as at the San Andreas, North Anatolian, and Alpine faults.')),

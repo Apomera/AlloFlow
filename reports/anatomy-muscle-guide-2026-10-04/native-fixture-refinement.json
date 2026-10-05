@@ -1,0 +1,16 @@
+{
+  "path": "tests/e2e/anatomy-muscle-guide.spec.ts",
+  "beforeSha256": "e3127bc4256cfecb03299b82df8d7e2512cc0f93f3cc5fe7b0367dc75ca8e167",
+  "afterSha256": "2daa693591a889ce3e7f5c99458c0eab3c2cdf9db4026c864d6c72ffe8309580",
+  "sourceSha256": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "sourceUnchanged": true,
+  "exactReversal": true,
+  "unrelatedAssertionsPreserved": true,
+  "changes": [
+    "Record English ion evidence",
+    "Assert native Arabic biceps header",
+    "Check Arabic intro/key/caption/ions at all four steps for both aliases"
+  ],
+  "beforeSnapshot": "native-fixture-before.spec.ts",
+  "addedArabicStepRows": 8
+}

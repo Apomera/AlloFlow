@@ -1,0 +1,21 @@
+/* Object discovery keeps instructions readable while the gesture stays in the scene. */
+.kitchen-tool-current>.kitchen-tool-actions{grid-column:2;grid-row:1/3;display:flex;align-items:center;gap:6px}
+.kitchen-tool-actions button{min-height:44px;padding:8px 11px;font-size:13px;white-space:normal}
+#sceneFindStart{background:#eaf0df;border-color:#acc196;color:#2b523a}
+#sceneFindStart:focus-visible{outline:3px solid #78562c;outline-offset:3px}
+#sceneFindStart:disabled{opacity:.65}
+.kitchen-start-cue{position:absolute;left:16px;bottom:16px;width:min(340px,calc(100% - 32px));box-sizing:border-box;padding:12px 14px;border:2px solid #335f44;border-radius:12px;background:#fffef6;color:#234433;box-shadow:0 4px 18px #17332126;pointer-events:none;z-index:4}
+.kitchen-start-cue>div{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}
+.kitchen-start-cue strong{font-size:14px;line-height:1.4}
+.kitchen-start-cue small{font-size:11px;line-height:1.5;text-align:right;color:#3d5b3f;max-width:112px}
+.kitchen-start-cue p{font-size:13px;line-height:1.45;margin:6px 0 0}
+.kitchen-start-cue[data-ready=false]{border-color:#a37835;background:#fff7e5;color:#65471e}
+.kitchen-start-cue[data-ready=false] small{color:#75552c}
+.kitchen-start-marker{position:absolute;box-sizing:border-box;width:30px;height:30px;border:3px solid #fffef6;border-radius:50%;background:#315f45;color:#fffef6;font:700 14px/24px system-ui,sans-serif;text-align:center;box-shadow:0 0 0 2px #315f45,0 3px 7px #183d3350;transform:translate(-50%,calc(-100% - 13px));pointer-events:none;z-index:4}
+.kitchen-start-marker::after{content:'';position:absolute;left:9px;top:27px;width:3px;height:13px;background:#315f45;box-shadow:0 0 0 1px #fffef6}
+.kitchen-start-marker[data-ready=false]{background:#83591e;box-shadow:0 0 0 2px #83591e,0 3px 7px #183d3350}
+.kitchen-start-marker[data-ready=false]::after{background:#83591e}
+@media(max-width:650px){.kitchen-tool-current{gap:3px 6px}.kitchen-tool-current>.kitchen-tool-actions{gap:5px}.kitchen-tool-actions button{font-size:12px;padding:8px}#sceneChooseTool{max-width:83px;padding:8px}.kitchen-start-cue{left:10px;bottom:10px;width:min(340px,calc(100% - 20px));padding:10px 12px}.kitchen-start-cue p{font-size:12px}.kitchen-start-cue strong{font-size:13px}}
+@media(max-width:360px){.kitchen-tool-current{grid-template-columns:minmax(0,1fr) auto}.kitchen-tool-actions button{font-size:11px;padding:8px 6px}#sceneChooseTool{max-width:73px}.kitchen-start-cue>div{gap:7px}.kitchen-start-cue small{max-width:86px}}
+@media(forced-colors:active){#sceneFindStart,.kitchen-start-cue,.kitchen-start-cue[data-ready=false]{background:Canvas;color:CanvasText;border-color:CanvasText}.kitchen-start-cue small,.kitchen-start-cue[data-ready=false] small{color:CanvasText}.kitchen-start-marker,.kitchen-start-marker[data-ready=false]{background:Highlight;color:HighlightText;border-color:Canvas;outline:2px solid CanvasText;box-shadow:none}.kitchen-start-marker::after,.kitchen-start-marker[data-ready=false]::after{background:CanvasText;box-shadow:none}#sceneFindStart:focus-visible{outline-color:Highlight}}
+@media print{#sceneFindStart,.kitchen-start-cue,.kitchen-start-marker{display:none}}

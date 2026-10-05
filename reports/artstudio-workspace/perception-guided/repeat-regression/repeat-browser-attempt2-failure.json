@@ -1,0 +1,10 @@
+{
+  "suite": "Existing repeated-study Chromium harness",
+  "adaptedHarness": "dev-tools/.cache/perception_guided_repeat_regression.cjs",
+  "loadedSourceSHA256": "20c48dc85c5a3c31bc2649704c0423140c2fa6c6cceb4812c9933d844f31b401",
+  "passed": false,
+  "exitCode": 1,
+  "error": "download.saveAs: canceled",
+  "location": "perception_guided_repeat_regression.cjs:68:27",
+  "notes": "An isolated retry reproduced the same revealed-SVG artifact-transfer failure. No assertion failure was reported. Final repeated-study suite result unavailable."
+}

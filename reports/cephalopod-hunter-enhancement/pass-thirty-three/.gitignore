@@ -1,0 +1,23 @@
+*.log
+*.json
+!baseline-reversal.json
+!resource-integrity.json
+!validation-summary.json
+!capture-manifest.json
+!capture-comparison.json
+!visual-review.json
+*.generated.cjs
+*.candidate.cjs
+baseline.source.cjs
+*-artifacts/
+*.txt
+
+# Retain exploratory captures locally; selected matched evidence is curated separately.
+probe-reorder-jelly/
+probe-twoside-jelly/
+probe-baseline-jelly/
+baseline-underside/
+baseline-jelly-views/
+!scene-comparison.json
+baseline-views/squid-narrow-phone*.png
+baseline-views/squid-landscape-phone*.png

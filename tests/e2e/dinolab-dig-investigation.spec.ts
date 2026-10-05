@@ -25,9 +25,11 @@ test('grouped navigation, keyboard excavation, uncertainty, notebook export, and
   await page.keyboard.press('ArrowLeft'); await expect(page.locator('#dinotab-dig')).toBeFocused();
   await expect(page.locator('[data-dig-candidate]')).toHaveCount(6);
   await page.locator('#dino-dig-cell-0').focus(); await page.keyboard.press('Enter');
-  await expect(page.locator('#dino-dig-cell-0')).toHaveAttribute('aria-disabled', 'true');
+  await expect(page.locator('#dino-dig-cell-0')).toHaveAttribute('aria-disabled', 'false');
+  expect(await page.evaluate(() => (window as any).__toolData.dinoLab.digVoxel.depths[0])).toBe(1);
   await page.keyboard.press('ArrowRight'); await expect(page.locator('#dino-dig-cell-1')).toBeFocused();
-  await page.keyboard.press('Enter'); await expect(page.locator('#dino-dig-cell-1')).toHaveAttribute('aria-disabled', 'true');
+  await page.keyboard.press('Enter'); await expect(page.locator('#dino-dig-cell-1')).toHaveAttribute('aria-disabled', 'false');
+  expect(await page.evaluate(() => (window as any).__toolData.dinoLab.digVoxel.depths[1])).toBe(1);
   await page.screenshot({ path: dir + '/dig-desktop.png', fullPage: true });
   await page.getByRole('button', { name: 'Use a prepared sample', exact: true }).click();
   await expect(page.locator('[data-dig-clue]')).toHaveCount(6);

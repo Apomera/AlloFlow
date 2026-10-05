@@ -1,0 +1,67 @@
+{
+  "enhancement": "Measured cutting, actual piece-size feedback, physical knife return, and responsive preparation framing",
+  "units": {
+    "passed": 483,
+    "failed": 0,
+    "files": 43,
+    "report": "unit-results.json"
+  },
+  "browser": {
+    "suites": [
+      {
+        "suite": "cutting",
+        "report": "cutting/cutting-bench-results.json",
+        "passedChecks": 16,
+        "accessibilityScans": 3,
+        "violations": 0,
+        "pageErrors": 0
+      },
+      {
+        "suite": "handoff-regression",
+        "report": "handoff-regression/handoff-results.json",
+        "passedChecks": 18,
+        "accessibilityScans": 3,
+        "violations": 0,
+        "pageErrors": 0
+      },
+      {
+        "suite": "weighing-regression",
+        "report": "weighing-regression/browser-results.json",
+        "passedChecks": 4,
+        "accessibilityScans": 3,
+        "violations": 0,
+        "pageErrors": 0
+      }
+    ],
+    "passedChecks": 38,
+    "accessibilityScans": 9,
+    "violations": 0,
+    "pageErrors": 0
+  },
+  "runtime": {
+    "runtimeFiles": 49,
+    "parsedJS": 41,
+    "mirrors": "all byte-identical",
+    "http": [
+      "recipe_lab_cutting_bench.js",
+      "recipe_lab.html",
+      "recipe_lab.js",
+      "recipe_lab_scene.js",
+      "recipe_lab_gesture_guide.js",
+      "recipe_lab_ingredients.js",
+      "recipe_lab_quests.js",
+      "recipe_lab_workspace.js",
+      "recipe_lab_workspace.css"
+    ],
+    "diffCheck": "passed",
+    "stagedFiles": []
+  },
+  "visuals": [
+    "cutting/desktop-measured-board.png",
+    "cutting/desktop-piece-feedback.png",
+    "cutting/phone-tomato-board.png",
+    "cutting/phone-knife-return.png",
+    "cutting/phone-cutting-feedback.png"
+  ],
+  "git": "Unstaged and uncommitted"
+}

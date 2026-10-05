@@ -1,0 +1,11 @@
+{
+  "correctedAt": "2026-10-04T14:43:22.008630+00:00",
+  "beforeSourceSha256": "fd85f1e8e7613a885bb5c33196d6f137b54d73ba2bd3c41371f729899ce3a8a0",
+  "afterSourceSha256": "85b21dd96f2476e383beef207177736d859170244c35c6705d422e89771f41cb",
+  "onlyNewUndoAlignmentChanged": true,
+  "reverseToProvisionalSourceByteExact": true,
+  "observedUndoHeightPx": 381,
+  "globalActivityCssAndStoredNotesUnchanged": true,
+  "caseDataCoreBuilderSchemaPrintPreserved": true,
+  "reason": "Actual standard320px recovery capture showed oversized Undo beside the long removed context narrative."
+}

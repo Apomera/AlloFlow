@@ -28,7 +28,16 @@
 <label>Situation<select id="scenarioSelect"><option value="rain">Changing weather</option><option value="warm">Warm-weather outing</option><option value="bus-delay">Rain and a bus delay</option></select></label>
 <button class="primary-button" type="submit">Start new practice</button>
 </form>
-<div class="resume-row"><label for="savedRuns">Saved practices</label><select id="savedRuns"><option value="">No saved practices yet</option></select><button id="resumeButton" type="button" class="quiet-button">Resume selected</button></div>
+<section class="saved-practices" aria-labelledby="savedPracticesTitle">
+<h3 id="savedPracticesTitle">Continue a practice</h3><p class="muted small" id="savedSelectionHelp">Choose an outing to see where you left off. Looking at the preview takes no practice time.</p>
+<div class="resume-row"><label for="savedRuns">Saved practices</label><select id="savedRuns" aria-describedby="savedSelectionHelp"><option value="">No saved practices yet</option></select></div>
+<p id="savedEmpty" class="muted small" hidden></p><p id="savedPreviewStatus" class="muted small" role="status" aria-live="polite" aria-atomic="true"></p>
+<section id="savedPreview" class="saved-preview" aria-labelledby="savedPreviewTitle" hidden>
+<div class="saved-preview-heading"><div><p id="savedPreviewState" class="eyebrow"></p><h4 id="savedPreviewTitle" tabindex="-1"></h4></div><div class="saved-preview-clock"><span>Practice clock</span><strong id="savedPreviewClock"></strong></div></div>
+<p id="savedPreviewMeta" class="muted small"></p><p id="savedProgressLabel" class="saved-progress-label"></p><progress id="savedProgress" max="5" value="0" aria-labelledby="savedProgressLabel"></progress>
+<ul id="savedChecks" class="saved-checks"></ul><dl id="savedFacts" class="saved-facts"></dl><p id="savedPlanNote" class="saved-plan-note" hidden></p><p id="savedContinueNote" class="small"></p>
+<div class="button-row"><button id="resumeButton" type="button" class="primary-button" disabled>Continue selected practice</button><button id="readSavedPreview" type="button" class="quiet-button" aria-describedby="readAloudStatus" disabled>Read this preview aloud</button></div>
+</section></section>
 </section>
 <section class="mission-heading" aria-labelledby="missionTitle">
 <div><p class="eyebrow">A little practice for everyday life</p><h1 id="missionTitle">Get ready for an outing</h1><p id="missionIntro" class="lead">Prepare your things, make a travel plan, and adapt when something changes.</p></div>

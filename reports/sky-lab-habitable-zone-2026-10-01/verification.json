@@ -1,0 +1,169 @@
+{
+  "checkedOn": "2026-10-01",
+  "sourceSha256": "184b508f7e68d00464a03ba211065d0afa0844ecf34e872063b4c5b825d00404",
+  "scope": {
+    "sourceSha256": "184b508f7e68d00464a03ba211065d0afa0844ecf34e872063b4c5b825d00404",
+    "baselineSha256": "10af968746cad65620de0d3c223f84b6b71ce89d48f8fe4df6907faa5ee4c2dc",
+    "sourceMatchesMirror": true,
+    "scopeReconstructsBaseline": true,
+    "syntaxValid": true,
+    "ownedEnglishLabels": 70,
+    "unrelatedAstronomyLabelsPreserved": true,
+    "existingTableTestsPreserved": true,
+    "committed": false
+  },
+  "unitChecks": {
+    "passed": 178,
+    "failed": 0,
+    "report": "unit-final.json",
+    "files": [
+      {
+        "file": "astronomy_habitable_zone.test.js",
+        "status": "passed",
+        "tests": 38
+      },
+      {
+        "file": "astronomy_magnitude_explorer.test.js",
+        "status": "passed",
+        "tests": 39
+      },
+      {
+        "file": "astronomy_tables_a11y.test.js",
+        "status": "passed",
+        "tests": 2
+      },
+      {
+        "file": "astronomy_transit_explorer.test.js",
+        "status": "passed",
+        "tests": 19
+      },
+      {
+        "file": "astronomy_ui_resilience.test.js",
+        "status": "passed",
+        "tests": 80
+      }
+    ],
+    "timing": "Completed before the final distance-axis label alignment. Calculation and interaction logic unchanged by that layout adjustment."
+  },
+  "browserScenarios": {
+    "passed": 12,
+    "failed": 0,
+    "habitableZone": [
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "published planet presets link energy and orbit figures while preserving independent investigations",
+        "report": "browser-corrected.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "native keyboard controls keep focus and the climate boundaries remain independent of reflectivity",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "teaching star scenarios retain orbit assumptions and centering respects the selected climate limits",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "restored inputs keep exact published distances and reset preserves other simulator state",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "320px contrast layout has legible diagrams, a usable catalogue and clear model limits",
+        "report": "browser-corrected.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-habitable-zone.spec.ts",
+        "title": "touch distance selection and cancellation stay usable at both bounded extremes",
+        "report": "browser-corrected.json",
+        "status": "passed",
+        "attempts": 1
+      }
+    ],
+    "brightnessRegression": [
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "published examples reproduce the catalogue, link both figures and preserve other notes",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "keyboard distance and magnitude controls preserve focus and express independent assumptions",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "touch chooses distance continuously and cancellation leaves the plot usable",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "five-magnitude examples give a hundredfold V-light change and bounded extremes stay visible",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "restored values recover without snapping catalogue distances or losing independent work",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      },
+      {
+        "file": "astronomy-magnitude-explorer.spec.ts",
+        "title": "320px contrast diagrams, controls and catalogue stay readable with scientific limits exposed",
+        "report": "browser-final.json",
+        "status": "passed",
+        "attempts": 1
+      }
+    ],
+    "correctedRun": {
+      "report": "browser-corrected.json",
+      "stats": {
+        "startTime": "2026-10-01T23:26:09.364Z",
+        "duration": 12405.963,
+        "expected": 3,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      }
+    },
+    "coverage": "Unique passing scenarios across the cited reports. The original touch scenario failed on a malformed test fill value; the input was corrected from .9 to 0.9 and passed again. Published examples and the corrected phone layout also passed on the final source."
+  },
+  "phone": {
+    "widthPx": 320,
+    "horizontalOverflow": false,
+    "svgTextOverlaps": 0,
+    "minSvgFontPx": 12.588888888888889,
+    "minTargetHeightPx": 44,
+    "catalogue": {
+      "overflow": false,
+      "columnHeaders": 4,
+      "rowHeaders": 3
+    },
+    "report": "phone-geometry.json"
+  },
+  "provenance": "data-provenance.json",
+  "sourceSyntax": "passed",
+  "scopedDiffWhitespaceCheck": "passed",
+  "committed": false
+}

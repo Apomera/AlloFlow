@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-09-28T23:53:37.896Z",
+  "generatedAt": "2026-10-05T10:51:42.980Z",
   "toolCount": 72,
   "themesAudited": [
     "light",
@@ -25,7 +25,7 @@
     {
       "id": "advocacy",
       "label": "Self-Advocacy Workshop",
-      "renderedBytes": 430338,
+      "renderedBytes": 430335,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -33,7 +33,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 143446,
+          "renderedBytes": 143445,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -42,7 +42,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 143446,
+          "renderedBytes": 143445,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -51,7 +51,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 143446,
+          "renderedBytes": 143445,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1819,7 +1819,7 @@
     {
       "id": "quietQuestions",
       "label": "Quiet Questions",
-      "renderedBytes": 25395,
+      "renderedBytes": 25338,
       "standardShell": true,
       "issueCount": 0,
       "errorCount": 0,
@@ -1827,7 +1827,7 @@
       "themes": [
         {
           "theme": "light",
-          "renderedBytes": 8463,
+          "renderedBytes": 8444,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1836,7 +1836,7 @@
         },
         {
           "theme": "dark",
-          "renderedBytes": 8463,
+          "renderedBytes": 8444,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,
@@ -1845,7 +1845,7 @@
         },
         {
           "theme": "high-contrast",
-          "renderedBytes": 8469,
+          "renderedBytes": 8450,
           "standardShell": true,
           "issueCount": 0,
           "errorCount": 0,

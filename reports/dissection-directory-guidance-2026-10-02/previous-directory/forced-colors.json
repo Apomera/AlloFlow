@@ -1,0 +1,85 @@
+{
+  "width": 390,
+  "scrollWidth": 388,
+  "clientWidth": 388,
+  "buttons": [
+    {
+      "label": "All structures, 4 structures",
+      "height": 48,
+      "scrollWidth": 176,
+      "clientWidth": 176,
+      "row": false
+    },
+    {
+      "label": "To inspect, 2 structures",
+      "height": 48,
+      "scrollWidth": 176,
+      "clientWidth": 176,
+      "row": false
+    },
+    {
+      "label": "Needs notes, 1 structures",
+      "height": 48,
+      "scrollWidth": 176,
+      "clientWidth": 176,
+      "row": false
+    },
+    {
+      "label": "Recorded, 1 structures",
+      "height": 48,
+      "scrollWidth": 176,
+      "clientWidth": 176,
+      "row": false
+    },
+    {
+      "label": "Dorsal Skin, not currently visible; preview only",
+      "height": 106.1875,
+      "scrollWidth": 354,
+      "clientWidth": 354,
+      "row": true
+    },
+    {
+      "label": "Ventral Skin, viewed",
+      "height": 106.1875,
+      "scrollWidth": 354,
+      "clientWidth": 354,
+      "row": true
+    },
+    {
+      "label": "Tympanic Membrane, viewed",
+      "height": 106.1875,
+      "scrollWidth": 354,
+      "clientWidth": 354,
+      "row": true
+    },
+    {
+      "label": "Nictitating Membrane, not yet viewed",
+      "height": 106.1875,
+      "scrollWidth": 354,
+      "clientWidth": 354,
+      "row": true
+    }
+  ],
+  "texts": [
+    14,
+    14,
+    15.2,
+    14,
+    14,
+    15.2,
+    14,
+    14,
+    15.2,
+    14,
+    14,
+    15.2,
+    14,
+    14
+  ],
+  "names": [
+    15.2,
+    15.2,
+    15.2,
+    15.2
+  ]
+}

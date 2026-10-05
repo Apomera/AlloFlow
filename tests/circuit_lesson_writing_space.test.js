@@ -80,11 +80,11 @@ describe('Lesson writing space', () => {
     await mount({ lessonRecords: { gain: record(tested) } });
     const el = field(), heading = lab().querySelector('.circuit-lesson-writing-heading');
     expect(el.rows).toBe(6); expect(el.maxLength).toBe(4000); expect(el.value).toBe(record().explanation);
-    expect(heading.querySelector('label').htmlFor).toBe(el.id); expect(heading.querySelector('label').textContent).toBe('My explanation for this experiment');
+    expect(heading.querySelector('label').htmlFor).toBe(el.id); expect(heading.querySelector('label').textContent).toBe(tested ? 'My explanation for this experiment' : 'My prediction reasoning (optional)');
     expect(heading.querySelector('button')).toBe(size()); expect(size().type).toBe('button');
     expect(size().textContent).toBe('Expand writing space'); expect(size().getAttribute('aria-expanded')).toBe('false'); expect(size().getAttribute('aria-controls')).toBe(el.id);
     const described = el.getAttribute('aria-describedby').split(/\s+/).map(id => document.getElementById(id));
-    expect(described).toHaveLength(2); expect(described[0].textContent).toContain('your investigation notebook has its own explanation'); expect(described[1]).toBe(count());
+    expect(described).toHaveLength(2); expect(described[0].textContent.toLowerCase()).toContain('your investigation notebook has its own explanation'); expect(described[1]).toBe(count());
     expect(count().textContent).toBe(record().explanation.length + ' / 4000 characters'); expect(count().closest('[aria-live],[role="status"]')).toBeNull();
     expect(writes).not.toHaveBeenCalled(); expect(host.contains(document.activeElement)).toBe(false);
   });

@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "sourceSha256": "13f6ce1ccbd9f85774ef54c1e33bfde33f6020724aee0788eb67dc44a614e4d0",
+  "sourceMirrorEqual": true,
+  "priorSourcePreserved": true,
+  "tests": 69,
+  "newTests": 11,
+  "testFiles": 4,
+  "browserViews": 7,
+  "browserWorkflows": 2,
+  "scopedDiffCheck": true,
+  "scopedIndexEmpty": true,
+  "visualReview": {
+    "reviewedBy": "Root agent",
+    "finalDirectlyReviewed": [
+      "rtl-examples.png"
+    ],
+    "unchangedFromReviewedCaptures": [
+      "desktop-examples.png",
+      "desktop-unavailable.png",
+      "phone-examples.png",
+      "small-phone-unavailable.png",
+      "phone-component-tuning.png",
+      "forced-colors.png"
+    ],
+    "notes": "Reviewed example labels and values, current-region badges, unavailable actions, keyboard focus, phone wrapping, system colors and numeric order."
+  }
+}

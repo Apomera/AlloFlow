@@ -1,0 +1,79 @@
+{
+  "runId": "d87b46bb-2026-10-03T16-15-48-615Z",
+  "sourceSha256": "d87b46bb3ddaa1ddca1be6797687065776d4c1421b811915e639a0ceda4e3f1e",
+  "passed": 283,
+  "failed": 0,
+  "skipped": 146,
+  "stages": [
+    {
+      "stage": "alveolus-guide-units",
+      "report": "reports/anatomy-alveolus-guide-2026-10-03/alveolus-guide-units-d87b46bb-2026-10-03T16-15-48-615Z.json",
+      "proof": "reports/anatomy-alveolus-guide-2026-10-03/alveolus-guide-units-d87b46bb-2026-10-03T16-15-48-615Z-proof.json",
+      "passed": 108,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    },
+    {
+      "stage": "kidney-guide-regression-units",
+      "report": "reports/anatomy-alveolus-guide-2026-10-03/kidney-guide-regression-units-d87b46bb-2026-10-03T16-15-48-615Z.json",
+      "proof": "reports/anatomy-alveolus-guide-2026-10-03/kidney-guide-regression-units-d87b46bb-2026-10-03T16-15-48-615Z-proof.json",
+      "passed": 74,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    },
+    {
+      "stage": "lens-gallery-regression-units",
+      "report": "reports/anatomy-alveolus-guide-2026-10-03/lens-gallery-regression-units-d87b46bb-2026-10-03T16-15-48-615Z.json",
+      "proof": "reports/anatomy-alveolus-guide-2026-10-03/lens-gallery-regression-units-d87b46bb-2026-10-03T16-15-48-615Z-proof.json",
+      "passed": 64,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    },
+    {
+      "stage": "scale-navigation-regression-units",
+      "report": "reports/anatomy-alveolus-guide-2026-10-03/scale-navigation-regression-units-d87b46bb-2026-10-03T16-15-48-615Z.json",
+      "proof": "reports/anatomy-alveolus-guide-2026-10-03/scale-navigation-regression-units-d87b46bb-2026-10-03T16-15-48-615Z-proof.json",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    },
+    {
+      "stage": "alveolus-existing-science-units",
+      "report": "reports/anatomy-alveolus-guide-2026-10-03/alveolus-existing-science-units-d87b46bb-2026-10-03T16-15-48-615Z.json",
+      "proof": "reports/anatomy-alveolus-guide-2026-10-03/alveolus-existing-science-units-d87b46bb-2026-10-03T16-15-48-615Z-proof.json",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 146,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    }
+  ]
+}

@@ -1,0 +1,131 @@
+{
+  "observedAt": "2026-10-04T03:54:16.414Z",
+  "observationAfterActualHostResult": true,
+  "hostValidation": {
+    "attempt": "host-only-03",
+    "status": "passed",
+    "exitCode": 0,
+    "bodySeconds": 15.1,
+    "invocationSeconds": 16.7,
+    "originalCanonicalSpec": true,
+    "testTimeoutMs": 120000,
+    "workers": 1,
+    "retries": 0,
+    "evidenceSource": "Validation owner and root confirmed completed result"
+  },
+  "testedHostSha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+  "bundleSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+  "moduleHash": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+  "moduleFourCopyParity": true,
+  "observedModuleCopies": [
+    {
+      "file": "maine_sld_practice_module.js",
+      "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+      "bytes": 189988
+    },
+    {
+      "file": "desktop/web-app/public/maine_sld_practice_module.js",
+      "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+      "bytes": 189988
+    },
+    {
+      "file": "desktop/app-build/maine_sld_practice_module.js",
+      "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+      "bytes": 189988
+    },
+    {
+      "file": "desktop/web-app/build/maine_sld_practice_module.js",
+      "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+      "bytes": 189988
+    }
+  ],
+  "frozenSourceHashes": {
+    "maine_sld_practice_source.jsx": "46d1ce09304d70d98b60a4a7a758969b3c5f3eef99a6c5b522113a06e9397437",
+    "maine_sld_practice_core.js": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926",
+    "maine_sld_case_data.json": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e",
+    "_build_maine_sld_practice_module.js": "333019e7d0a1e5a8774f33b2022778183b089d7206efaa4193def039274949f4"
+  },
+  "observedHostHashes": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+      "bytes": 2853895,
+      "matchesTestedSnapshot": true,
+      "observedMaineLoaderPins": [
+        "018f7f78"
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+      "bytes": 2853895,
+      "matchesTestedSnapshot": true,
+      "observedMaineLoaderPins": [
+        "018f7f78"
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+      "bytes": 2853895,
+      "matchesTestedSnapshot": true,
+      "observedMaineLoaderPins": [
+        "018f7f78"
+      ]
+    }
+  ],
+  "currentHostThreeCopyParity": true,
+  "currentHostsHaveReviewedLoaderPin": true,
+  "currentSourcesMatchTestedSnapshot": true,
+  "servedImmutableIdentity": {
+    "verifiedAt": "2026-10-04T03:54:18.716Z",
+    "baseUrl": "http://127.0.0.1:65063",
+    "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+    "runtimePid": 19880,
+    "managedSessionId": 95388,
+    "runtimeMetadataSha256": "569c2c23534e504c3e5d272790376d11a1a4cf38dd0f1f23945cf05317d12694",
+    "ownedHelperPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide_layout_integration.cjs",
+    "ownedHelperSha256": "b170417c2a4f85bd41ed18b2ab63e187eddd924722bbdad8165ed6d409fbeb0e",
+    "launchArguments": [
+      "serve",
+      "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc"
+    ],
+    "checks": [
+      {
+        "path": "/app/?tool=maine-sld-practice",
+        "status": 200,
+        "downloadedBytes": 588,
+        "seconds": 0.004698,
+        "servedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+        "expectedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+        "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-layout-post-host-http\\index.html",
+        "failure": null
+      },
+      {
+        "path": "/__sld_preview/host.bundle.js",
+        "status": 200,
+        "downloadedBytes": 1976991,
+        "seconds": 0.005509,
+        "servedSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+        "expectedSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+        "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-layout-post-host-http\\host.bundle.js",
+        "failure": null
+      },
+      {
+        "path": "/app/maine_sld_practice_module.js?v=018f7f78",
+        "status": 200,
+        "downloadedBytes": 189988,
+        "seconds": 0.006042,
+        "servedSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+        "expectedSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+        "responseFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-layout-post-host-http\\maine_sld_practice_module.js",
+        "failure": null
+      }
+    ],
+    "allExactHttp200": true
+  },
+  "boundedSnapshotRetained": true,
+  "rebuildPerformed": false,
+  "pinChangesPerformed": false,
+  "runtimeChangesPerformed": false
+}

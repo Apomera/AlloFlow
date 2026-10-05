@@ -1,0 +1,58 @@
+{
+  "sourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+  "fixtures": [
+    {
+      "pdf": "reports/artstudio-workspace/perception-study-report/print/brightness-single-500-character-notes.pdf",
+      "sourceHTML": "reports/artstudio-workspace/perception-study-report/print/brightness-single-500-character-notes.html",
+      "pdfSHA256": "da85ebbef232513eaaaf6e7363cb30cb6ea194063a8546b1f9e3ce22f14669ab",
+      "pages": 2,
+      "complete500CharacterNotesVerified": 3,
+      "drawingCount": 3,
+      "studyHeadingsWithTheirSummary": true,
+      "renderedPages": [
+        "reports/artstudio-workspace/perception-study-report/print/rendered/brightness-single-1.png",
+        "reports/artstudio-workspace/perception-study-report/print/rendered/brightness-single-2.png"
+      ],
+      "renderedPageSHA256": {
+        "brightness-single-1.png": "d48ba14824beaf6e862dd5791631d4e15a0c42ceae6ce40c4fe62468331907e2",
+        "brightness-single-2.png": "53c1b9d1eafffe6391e2854bafd962759b770a831af09f89defac7182ebabf17"
+      }
+    },
+    {
+      "pdf": "reports/artstudio-workspace/perception-study-report/print/muller-lyer-comparison-500-character-notes.pdf",
+      "sourceHTML": "reports/artstudio-workspace/perception-study-report/print/muller-lyer-comparison-500-character-notes.html",
+      "pdfSHA256": "f45279ac07428b850cf4262926be78d5cfe87ce49a34d5e78972c521756e7141",
+      "pages": 5,
+      "complete500CharacterNotesVerified": 6,
+      "drawingCount": 6,
+      "studyHeadingsWithTheirSummary": true,
+      "renderedPages": [
+        "reports/artstudio-workspace/perception-study-report/print/rendered/muller-lyer-comparison-1.png",
+        "reports/artstudio-workspace/perception-study-report/print/rendered/muller-lyer-comparison-2.png",
+        "reports/artstudio-workspace/perception-study-report/print/rendered/muller-lyer-comparison-3.png",
+        "reports/artstudio-workspace/perception-study-report/print/rendered/muller-lyer-comparison-4.png",
+        "reports/artstudio-workspace/perception-study-report/print/rendered/muller-lyer-comparison-5.png"
+      ],
+      "renderedPageSHA256": {
+        "muller-lyer-comparison-1.png": "744461f837c1105a5668aeeba89e8c649c1ac26e2029e23e628f177404f11903",
+        "muller-lyer-comparison-2.png": "459895a9b443a9238b2498220d2abc32fc9d49ffa047dbe4ddaca87ed6a0764a",
+        "muller-lyer-comparison-3.png": "9eafd6d89f10115a70fd8f761f203cb2eca0de734de8a1358c379831f91eacdc",
+        "muller-lyer-comparison-4.png": "a3b391036394b69a06a9861f88dabdab57c54fcee66fe116e62515a2a87fbca8",
+        "muller-lyer-comparison-5.png": "e93e38e95ab80d6a9070f6afd6a292bad19ee04191f265a6b76c3549545457d9"
+      }
+    }
+  ],
+  "totalPages": 7,
+  "totalFullNotesVerified": 9,
+  "methods": [
+    "pypdf text extraction and page structure",
+    "pdfplumber per-column exact note text after whitespace normalization",
+    "Poppler rendering of every page"
+  ],
+  "visualReview": {
+    "allPagesReviewed": true,
+    "reviewer": "Parent agent inspected all seven final Poppler-rendered pages",
+    "findings": "Readable text, complete notes, intact drawings, visible borders, no clipping or overlap, Study A and B headings appear with their summaries"
+  },
+  "errors": []
+}

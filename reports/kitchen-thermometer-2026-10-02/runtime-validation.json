@@ -1,0 +1,289 @@
+{
+  "pass": true,
+  "runtimeFiles": 59,
+  "parsedJavaScriptFiles": 47,
+  "exactMirrors": [
+    {
+      "file": "index.html",
+      "sha256": "a2bcbad10562fb6d5506c35a9ee8fed7f49a777193d02a0faf0b7bf512cd004b"
+    },
+    {
+      "file": "kitchen_studio.css",
+      "sha256": "a03e1f91d74012cffd3b3158f84c7d73f13673efa725a1e301a158ddb04a1255"
+    },
+    {
+      "file": "kitchen_studio.js",
+      "sha256": "d017cdb9b4f54932f1466be861e84531d7211ad960e6868517158496da82c32d"
+    },
+    {
+      "file": "kitchen_studio_engine.js",
+      "sha256": "5ece664399fd65796bf6e9626aa372fab2a19f03b8d6cc92d76028bf15fc1f89"
+    },
+    {
+      "file": "kitchen_studio_service.js",
+      "sha256": "bbd93468c93bba1830852effee2270f1efd2d55b1a7fa113e2f13d447accbee4"
+    },
+    {
+      "file": "recipe_lab.css",
+      "sha256": "e84032f57bd765b3172dc08cf1e744af9d19311cbde46242ad9350ddfad28f8d"
+    },
+    {
+      "file": "recipe_lab.html",
+      "sha256": "7d2ae21c086d8a2441f6c944709a49776353a09aa5a7674f67fdf6eb24c477c0"
+    },
+    {
+      "file": "recipe_lab.js",
+      "sha256": "3c80d19af82fcb2493772da6d2a78d4e12c66dc070705411657ae7494411ce6e"
+    },
+    {
+      "file": "recipe_lab_burners.js",
+      "sha256": "fc13e8382c8c1940db07f38840f8792a9a6e8ec34b5edf346bfb4847a674a5da"
+    },
+    {
+      "file": "recipe_lab_clock.js",
+      "sha256": "f0af8135f141588689bcc6d004db730994fa9f15e5a70ecb1e7d8d593a10a743"
+    },
+    {
+      "file": "recipe_lab_compare.js",
+      "sha256": "ffd184c76d0706e94a043bd27e31547951afa692146775fcdac1f8bafe6d65f8"
+    },
+    {
+      "file": "recipe_lab_compare_ui.js",
+      "sha256": "c9bebada0dc61b890323d9d76d8a738dc6e9a29a8bba40403198be7b5f3b4e31"
+    },
+    {
+      "file": "recipe_lab_cooking.js",
+      "sha256": "ddd3474366e83027d52031921b23dd7c43db4315d4cd0444ba856723cdd9dfdb"
+    },
+    {
+      "file": "recipe_lab_crushing.js",
+      "sha256": "e9aa848a97107a6cb80193d372ec34f5149a4ee8fed5e874f3c1bfd8f82e086c"
+    },
+    {
+      "file": "recipe_lab_cutting_bench.js",
+      "sha256": "082765ce54136d5df7c047d0596e63bb132704187096821cf832bcf42993241f"
+    },
+    {
+      "file": "recipe_lab_drying.js",
+      "sha256": "69618c1a37706e230118826bb13b0dece8e5de894cd28ff531e388a470d289f1"
+    },
+    {
+      "file": "recipe_lab_dry_pasta.js",
+      "sha256": "34a8da07edd68d2f1dcaea165ece82978886d0f8b064e7a4985a7b68921824f3"
+    },
+    {
+      "file": "recipe_lab_engine.js",
+      "sha256": "ba215f8785478e97c11c2fe25fabb8ad897567d7d1a3cf107a39173c5d6a3144"
+    },
+    {
+      "file": "recipe_lab_folding.js",
+      "sha256": "7b38c37649a672beb9a739bbfaa0c4bed24a52873e99a6c2102317a4e28bd166"
+    },
+    {
+      "file": "recipe_lab_food.js",
+      "sha256": "dfbfd05a8538d02d6dcfbcb25a3c9a8e2c3afae97f1bf25787ab917791bc66cd"
+    },
+    {
+      "file": "recipe_lab_fresh_water.js",
+      "sha256": "7c520fb5ca59646bbef053c55127d1d2e1530b72ee04a1051d1e1eecec2f257c"
+    },
+    {
+      "file": "recipe_lab_garlic.js",
+      "sha256": "9a81e36b0bad51d7cd39dce7dd31f914ec703767311961ed8d173e0d59c66657"
+    },
+    {
+      "file": "recipe_lab_gesture_guide.js",
+      "sha256": "46fc946179a3bbf506f4b1841111815aa43d88d2270e606872889aafcb681cc3"
+    },
+    {
+      "file": "recipe_lab_handoff.js",
+      "sha256": "0793419bb61a8152f7ad706ce52762f2f7e9386d1177bb9f4d859682248003b1"
+    },
+    {
+      "file": "recipe_lab_hands.css",
+      "sha256": "6e30f8509cf331c3cc17d0712457255cae159d769056e778a5105ef3ed18530a"
+    },
+    {
+      "file": "recipe_lab_hands.js",
+      "sha256": "b115f419aca66fa35181e1819a9ede342e16f9b01ed39e61067a7aa10e62b679"
+    },
+    {
+      "file": "recipe_lab_hands_ui.js",
+      "sha256": "a890c318c4c80636df5d398a0ec815aac60c4678494ceb8f180d3c837526cdb3"
+    },
+    {
+      "file": "recipe_lab_heat.js",
+      "sha256": "d9e25766b4c2005c7dfb99f12b8cf8512ae3bfd117decbd064a9b5646cbcff88"
+    },
+    {
+      "file": "recipe_lab_ingredients.css",
+      "sha256": "58885e362ce048284bca0779a269051d252143703664e4222f2564d94f955667"
+    },
+    {
+      "file": "recipe_lab_ingredients.js",
+      "sha256": "d603a3557a3af3ae874eb58df432cd28b2cec27dc124ffc99166b6d24ba34705"
+    },
+    {
+      "file": "recipe_lab_inspection.css",
+      "sha256": "2a9194923e65353c885d66a3b0802f07cf451b160306ee83cb6ac92bdfdc17c6"
+    },
+    {
+      "file": "recipe_lab_inspection.js",
+      "sha256": "ac6485ff8acd368f8956d3603821d10b119a423f378023b2e07a8207781c5a05"
+    },
+    {
+      "file": "recipe_lab_jug.js",
+      "sha256": "5c1b21c58af1dfa7747403babda83c1247222ddf56fc9995cad5ef70f2bcf228"
+    },
+    {
+      "file": "recipe_lab_ladle.js",
+      "sha256": "fa85b12cae8a5c8fe8e1322d42590864c5b0fc3232a26e5777961511edd16b37"
+    },
+    {
+      "file": "recipe_lab_lens.css",
+      "sha256": "99116e5413f581a769e328c6a0a6e158a2fc7b01a7366cca7a373ab040a654d0"
+    },
+    {
+      "file": "recipe_lab_lens.js",
+      "sha256": "56487cb6924c5cdc696b52fd36ff05833296ae390c269c336f78523c64872a43"
+    },
+    {
+      "file": "recipe_lab_object_tools.js",
+      "sha256": "30b137f75c2321e4e307ceaf62851d2aa1c74466611022bc381f5b4eaae9ef3c"
+    },
+    {
+      "file": "recipe_lab_oil.js",
+      "sha256": "e54f817608314c70cca2ddfeb5c01820017967cbea2571d315ad841c0fedd1e7"
+    },
+    {
+      "file": "recipe_lab_pasta.js",
+      "sha256": "12a42b94b7df3de4ca1cece5edb94e5de2de33267447fa1ae9d0f2cdec30d989"
+    },
+    {
+      "file": "recipe_lab_plating.js",
+      "sha256": "ed9bf5406bf6965cdd90e5c15db8e5196a79657cd1cd73fa161c662e26ddbbce"
+    },
+    {
+      "file": "recipe_lab_pot_lab.css",
+      "sha256": "4394700cea3a1d87ea6f76c361ed1f61f8c1a34a95a924b0509d8b8ece6c07a0"
+    },
+    {
+      "file": "recipe_lab_pot_lab.js",
+      "sha256": "0c18283e05dc704d8705ad1bc3f09c4b19eb81586f3413535d801987fbcee4dd"
+    },
+    {
+      "file": "recipe_lab_quests.css",
+      "sha256": "ac5ffaa0fb7cf040b3a8464852ce8673fa76308ab9292ef3d11ef1deb871e615"
+    },
+    {
+      "file": "recipe_lab_quests.js",
+      "sha256": "01bbe7fbdd89dd15204739dd8aabeebd447442155464c94d45fa8f57072c7231"
+    },
+    {
+      "file": "recipe_lab_sampling.js",
+      "sha256": "ef2d8b0634a997ae9597504a46c55fd2fd0868d0fe877ed457b358dd25531471"
+    },
+    {
+      "file": "recipe_lab_sauce_check.js",
+      "sha256": "96146eb154408e14041712ba5eee8c64cd99785130e3a1f735ffef3e4b00f7a9"
+    },
+    {
+      "file": "recipe_lab_scene.js",
+      "sha256": "2e599570e5b308367cccba5040d5bbd6df42322051994b45feda5ab0103698ef"
+    },
+    {
+      "file": "recipe_lab_serving.js",
+      "sha256": "c1ed67739ac6e2bdb0d1eb4e8691d4e30f4261d7fdedf52247db042e0e518be0"
+    },
+    {
+      "file": "recipe_lab_stir.js",
+      "sha256": "4cbcd9c8a3607c2df59ee53e88563134f5bc774ba4a8dc7e045283ce44d9c1dc"
+    },
+    {
+      "file": "recipe_lab_thermometer.css",
+      "sha256": "f76c879580e4f793183e97ddfe287799794df45c870909e5b89f0a120739b54f"
+    },
+    {
+      "file": "recipe_lab_thermometer.js",
+      "sha256": "66d25e172a5cea533ad5363ad5614605ff13ccb981961e1c1304d3a8629ca070"
+    },
+    {
+      "file": "recipe_lab_tomato_press.js",
+      "sha256": "5fa4d9bfb87a9d64447c9b5e693a00974682edb03f525ecfa7c46cf435440306"
+    },
+    {
+      "file": "recipe_lab_tool_rack.js",
+      "sha256": "1ea871093c2b1cd2603fb01d55b678c4ff1daaa1fdb97ef54270472ad80ab715"
+    },
+    {
+      "file": "recipe_lab_turning.js",
+      "sha256": "e749131e7493e15cf89a7d2c166259feee26a27453549198df73815a65c30ebf"
+    },
+    {
+      "file": "recipe_lab_visuals.js",
+      "sha256": "a6d95bc086c3d3b1c5989bdc184e6e3459645e56f5988ad915b7199575ae3cf1"
+    },
+    {
+      "file": "recipe_lab_water.js",
+      "sha256": "d41a20e3c9a9244923e4481466d688a7e29ba4522eb134742ace9638fe4fbd52"
+    },
+    {
+      "file": "recipe_lab_weighing.js",
+      "sha256": "e91f7a0f3a05b902bbff162a4f82688dccc48df9a8104ea12ca29c7ad3da5ce4"
+    },
+    {
+      "file": "recipe_lab_workspace.css",
+      "sha256": "884abe51f55f1f7a358716802c84940a2a519a591bd4c1c20923e6ec958052f5"
+    },
+    {
+      "file": "recipe_lab_workspace.js",
+      "sha256": "716b9999cc3f8df2e43ee8a0d51d2c4105dc1ef8b9f0bfb9b4162490f3b3499c"
+    }
+  ],
+  "http": [
+    {
+      "file": "recipe_lab.html",
+      "status": 200,
+      "cacheControl": "no-store",
+      "exactSource": true
+    },
+    {
+      "file": "recipe_lab.js",
+      "status": 200,
+      "cacheControl": "no-store",
+      "exactSource": true
+    },
+    {
+      "file": "recipe_lab_scene.js",
+      "status": 200,
+      "cacheControl": "no-store",
+      "exactSource": true
+    },
+    {
+      "file": "recipe_lab_workspace.js",
+      "status": 200,
+      "cacheControl": "no-store",
+      "exactSource": true
+    },
+    {
+      "file": "recipe_lab_gesture_guide.js",
+      "status": 200,
+      "cacheControl": "no-store",
+      "exactSource": true
+    },
+    {
+      "file": "recipe_lab_thermometer.js",
+      "status": 200,
+      "cacheControl": "no-store",
+      "exactSource": true
+    },
+    {
+      "file": "recipe_lab_thermometer.css",
+      "status": 200,
+      "cacheControl": "no-store",
+      "exactSource": true
+    }
+  ],
+  "kitchenStagedFiles": [],
+  "commitCreated": false
+}

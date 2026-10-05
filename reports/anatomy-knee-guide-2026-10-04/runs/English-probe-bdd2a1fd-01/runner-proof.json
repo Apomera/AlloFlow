@@ -1,0 +1,24 @@
+{
+  "kind": "English visual probe",
+  "startedAt": "2026-10-04T12:03:10.345Z",
+  "finishedAt": "2026-10-04T12:03:40.169Z",
+  "expectedSource": "bdd2a1fdd6716bc7400a8d37130cbae9596fe390b5a70f891952b784e8c136bb",
+  "expectedFixture": "cd95b8df399dc0d261e8497b817d625e694de8e463b1e313907d947e32b9d66e",
+  "configSha256": "775b3168c098870d7f21165a9f6cbce5c9155ec4b9272239ad7d0c10f5075199",
+  "probeFixtureSha256": "056fbac7608aae875b9105aa96610b56c02d02ebe2b8ae742548dd287aa4b936",
+  "before": {
+    "stem_lab/stem_tool_anatomy.js": "bdd2a1fdd6716bc7400a8d37130cbae9596fe390b5a70f891952b784e8c136bb",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "bdd2a1fdd6716bc7400a8d37130cbae9596fe390b5a70f891952b784e8c136bb",
+    "tests/e2e/anatomy-knee-guide.spec.ts": "cd95b8df399dc0d261e8497b817d625e694de8e463b1e313907d947e32b9d66e"
+  },
+  "after": {
+    "stem_lab/stem_tool_anatomy.js": "bdd2a1fdd6716bc7400a8d37130cbae9596fe390b5a70f891952b784e8c136bb",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "bdd2a1fdd6716bc7400a8d37130cbae9596fe390b5a70f891952b784e8c136bb",
+    "tests/e2e/anatomy-knee-guide.spec.ts": "cd95b8df399dc0d261e8497b817d625e694de8e463b1e313907d947e32b9d66e"
+  },
+  "allPinnedFilesUnchanged": true,
+  "runtimeMirrorsIdentical": true,
+  "exitCode": 1,
+  "signal": null,
+  "error": null
+}

@@ -1,0 +1,41 @@
+{
+  "passed": true,
+  "sourceSha256": "35d953d4e3fb4fb508fce0435a9d8c1df174fdd5653c0111b53c3e789d24247b",
+  "scriptSha256": "797053772baed9b998b5afb7a4b5efa31d9a0469238c3b77019a67f61be69084",
+  "browserResultsSha256": "8e529c280caeec7cc3acabcb4047c1e08bf101a6c2035975d0f827e25c22b92e",
+  "inspection": "All eight corrected PNGs viewed at original resolution through view_image.",
+  "reviewed": [
+    "unchanged-second-reading-1280.png",
+    "ready-second-reading-390.png",
+    "ready-changed-probes-320.png",
+    "multiple-settings-changed-probes-320.png",
+    "different-circuit-second-reading-320.png",
+    "longest-cue-200pct-text-320.png",
+    "forced-colors-second-reading-320.png",
+    "rtl-localized-second-reading-320.png"
+  ],
+  "screenshotSha256": {
+    "unchanged-second-reading-1280.png": "5985ea80339a0be52218e3cffe4b000d3fb3d1acc3e221c80a358d56f211772e",
+    "ready-second-reading-390.png": "b4fcff8b59f2824cba9c5ac568c88a540cc9930b9ed4cf23c943518ae01d9ad9",
+    "ready-changed-probes-320.png": "7a3571a481a5c9b7227fec29714cd0d968a98b688a120248e41f5d9d98e31f7d",
+    "multiple-settings-changed-probes-320.png": "69f98e2b0487c5b1eea496eb7eb53b309bb19203ea279053d89ba39e50171c47",
+    "different-circuit-second-reading-320.png": "685a16439eff333bf2640cd19bc6ab7dfb094fbb23523cdbe269efc3b7007a73",
+    "longest-cue-200pct-text-320.png": "ef5c82602280c93a08b3a8e6b78a19eddcf6bc40413e5477c89e1072eb864262",
+    "forced-colors-second-reading-320.png": "9274fb948974cae97a011b52de81a6f6233ce33129509057638ad97086a4c4fb",
+    "rtl-localized-second-reading-320.png": "8a5ddf4681306db3c334965e90582e806e5226c1eb749c34096443e0759d9ff0"
+  },
+  "materialIssues": [],
+  "findings": [
+    "Recording button, derived cue and sole saved card are consistent in every final view.",
+    "The stale notice from the initial audit fixture is absent.",
+    "Phone headings and help remain readable; the longest cue wraps cleanly at actual doubled font sizes.",
+    "Forced colors retain readable text, controls, borders and disclosure markers.",
+    "Translated RTL text wraps within the card; each probe label remains grouped with its node and numeric tokens keep LTR order."
+  ],
+  "initialReview": {
+    "screenshotsInspected": 8,
+    "approved": false,
+    "issue": "The audit fixture reset the wrong notice key, leaving Recorded observation 2 with one saved point.",
+    "preservedAt": "initial-fixture-notice"
+  }
+}

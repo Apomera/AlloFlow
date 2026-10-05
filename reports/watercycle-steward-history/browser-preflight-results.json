@@ -1,0 +1,4791 @@
+{
+  "mode": "browser-preflight",
+  "pid": 24844,
+  "startedAt": "2026-10-02T11:23:08.266Z",
+  "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "sourceBytes": 3035457,
+  "publicSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "harnessSha256": "5816aac11993ed9142ea5ef7d74fe484e5edae2b04eeecd6cf517c311a16c62e",
+  "checks": [
+    {
+      "label": "phone320 scoped geometry fits",
+      "passed": true,
+      "details": {
+        "width": 270,
+        "overflow": false,
+        "pageOverflow": false,
+        "controls": [
+          {
+            "tag": "SELECT",
+            "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+            "id": "wcStewardHistoryComponent",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "QualityConnectivityCommunity support",
+            "id": "wcStewardHistoryMetric",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+            "id": "wcStewardHistoryYear",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Read the saved scores",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Investigate year 10",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          }
+        ],
+        "axes": [
+          {
+            "text": "100",
+            "size": "12px",
+            "box": {
+              "x": 65.59375,
+              "y": 46.71875,
+              "width": 19.40625,
+              "height": 12,
+              "top": 46.71875,
+              "right": 85,
+              "bottom": 58.71875,
+              "left": 65.59375
+            }
+          },
+          {
+            "text": "75",
+            "size": "12px",
+            "box": {
+              "x": 72.0625,
+              "y": 91.71875,
+              "width": 12.9375,
+              "height": 12,
+              "top": 91.71875,
+              "right": 85,
+              "bottom": 103.71875,
+              "left": 72.0625
+            }
+          },
+          {
+            "text": "50",
+            "size": "12px",
+            "box": {
+              "x": 72.0625,
+              "y": 136.71875,
+              "width": 12.9375,
+              "height": 12,
+              "top": 136.71875,
+              "right": 85,
+              "bottom": 148.71875,
+              "left": 72.0625
+            }
+          },
+          {
+            "text": "25",
+            "size": "12px",
+            "box": {
+              "x": 72.0625,
+              "y": 181.71875,
+              "width": 12.9375,
+              "height": 12,
+              "top": 181.71875,
+              "right": 85,
+              "bottom": 193.71875,
+              "left": 72.0625
+            }
+          },
+          {
+            "text": "0",
+            "size": "12px",
+            "box": {
+              "x": 78.53125,
+              "y": 226.71875,
+              "width": 6.46875,
+              "height": 12,
+              "top": 226.71875,
+              "right": 85,
+              "bottom": 238.71875,
+              "left": 78.53125
+            }
+          },
+          {
+            "text": "1",
+            "size": "12px",
+            "box": {
+              "x": 93,
+              "y": 244.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 244.71875,
+              "right": 93,
+              "bottom": 259.109375,
+              "left": 93
+            }
+          },
+          {
+            "text": "2",
+            "size": "12px",
+            "box": {
+              "x": 111.671875,
+              "y": 244.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 244.71875,
+              "right": 111.671875,
+              "bottom": 259.109375,
+              "left": 111.671875
+            }
+          },
+          {
+            "text": "3",
+            "size": "12px",
+            "box": {
+              "x": 130.328125,
+              "y": 244.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 244.71875,
+              "right": 130.328125,
+              "bottom": 259.109375,
+              "left": 130.328125
+            }
+          },
+          {
+            "text": "4",
+            "size": "12px",
+            "box": {
+              "x": 149,
+              "y": 244.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 244.71875,
+              "right": 149,
+              "bottom": 259.109375,
+              "left": 149
+            }
+          },
+          {
+            "text": "5",
+            "size": "12px",
+            "box": {
+              "x": 167.671875,
+              "y": 244.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 244.71875,
+              "right": 167.671875,
+              "bottom": 259.109375,
+              "left": 167.671875
+            }
+          },
+          {
+            "text": "6",
+            "size": "12px",
+            "box": {
+              "x": 186.328125,
+              "y": 244.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 244.71875,
+              "right": 186.328125,
+              "bottom": 259.109375,
+              "left": 186.328125
+            }
+          },
+          {
+            "text": "7",
+            "size": "12px",
+            "box": {
+              "x": 205,
+              "y": 244.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 244.71875,
+              "right": 205,
+              "bottom": 259.109375,
+              "left": 205
+            }
+          },
+          {
+            "text": "8",
+            "size": "12px",
+            "box": {
+              "x": 223.671875,
+              "y": 244.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 244.71875,
+              "right": 223.671875,
+              "bottom": 259.109375,
+              "left": 223.671875
+            }
+          },
+          {
+            "text": "9",
+            "size": "12px",
+            "box": {
+              "x": 242.328125,
+              "y": 244.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 244.71875,
+              "right": 242.328125,
+              "bottom": 259.109375,
+              "left": 242.328125
+            }
+          },
+          {
+            "text": "10",
+            "size": "12px",
+            "box": {
+              "x": 261,
+              "y": 244.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 244.71875,
+              "right": 261,
+              "bottom": 259.109375,
+              "left": 261
+            }
+          }
+        ],
+        "svgText": 0
+      }
+    },
+    {
+      "label": "phone320 controls at least44px",
+      "passed": true,
+      "details": [
+        {
+          "tag": "SELECT",
+          "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+          "id": "wcStewardHistoryComponent",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "QualityConnectivityCommunity support",
+          "id": "wcStewardHistoryMetric",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+          "id": "wcStewardHistoryYear",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Read the saved scores",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Investigate year 10",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        }
+      ]
+    },
+    {
+      "label": "phone320 axes have fixed readable text",
+      "passed": true,
+      "details": [
+        {
+          "text": "100",
+          "size": "12px",
+          "box": {
+            "x": 65.59375,
+            "y": 46.71875,
+            "width": 19.40625,
+            "height": 12,
+            "top": 46.71875,
+            "right": 85,
+            "bottom": 58.71875,
+            "left": 65.59375
+          }
+        },
+        {
+          "text": "75",
+          "size": "12px",
+          "box": {
+            "x": 72.0625,
+            "y": 91.71875,
+            "width": 12.9375,
+            "height": 12,
+            "top": 91.71875,
+            "right": 85,
+            "bottom": 103.71875,
+            "left": 72.0625
+          }
+        },
+        {
+          "text": "50",
+          "size": "12px",
+          "box": {
+            "x": 72.0625,
+            "y": 136.71875,
+            "width": 12.9375,
+            "height": 12,
+            "top": 136.71875,
+            "right": 85,
+            "bottom": 148.71875,
+            "left": 72.0625
+          }
+        },
+        {
+          "text": "25",
+          "size": "12px",
+          "box": {
+            "x": 72.0625,
+            "y": 181.71875,
+            "width": 12.9375,
+            "height": 12,
+            "top": 181.71875,
+            "right": 85,
+            "bottom": 193.71875,
+            "left": 72.0625
+          }
+        },
+        {
+          "text": "0",
+          "size": "12px",
+          "box": {
+            "x": 78.53125,
+            "y": 226.71875,
+            "width": 6.46875,
+            "height": 12,
+            "top": 226.71875,
+            "right": 85,
+            "bottom": 238.71875,
+            "left": 78.53125
+          }
+        },
+        {
+          "text": "1",
+          "size": "12px",
+          "box": {
+            "x": 93,
+            "y": 244.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 244.71875,
+            "right": 93,
+            "bottom": 259.109375,
+            "left": 93
+          }
+        },
+        {
+          "text": "2",
+          "size": "12px",
+          "box": {
+            "x": 111.671875,
+            "y": 244.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 244.71875,
+            "right": 111.671875,
+            "bottom": 259.109375,
+            "left": 111.671875
+          }
+        },
+        {
+          "text": "3",
+          "size": "12px",
+          "box": {
+            "x": 130.328125,
+            "y": 244.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 244.71875,
+            "right": 130.328125,
+            "bottom": 259.109375,
+            "left": 130.328125
+          }
+        },
+        {
+          "text": "4",
+          "size": "12px",
+          "box": {
+            "x": 149,
+            "y": 244.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 244.71875,
+            "right": 149,
+            "bottom": 259.109375,
+            "left": 149
+          }
+        },
+        {
+          "text": "5",
+          "size": "12px",
+          "box": {
+            "x": 167.671875,
+            "y": 244.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 244.71875,
+            "right": 167.671875,
+            "bottom": 259.109375,
+            "left": 167.671875
+          }
+        },
+        {
+          "text": "6",
+          "size": "12px",
+          "box": {
+            "x": 186.328125,
+            "y": 244.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 244.71875,
+            "right": 186.328125,
+            "bottom": 259.109375,
+            "left": 186.328125
+          }
+        },
+        {
+          "text": "7",
+          "size": "12px",
+          "box": {
+            "x": 205,
+            "y": 244.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 244.71875,
+            "right": 205,
+            "bottom": 259.109375,
+            "left": 205
+          }
+        },
+        {
+          "text": "8",
+          "size": "12px",
+          "box": {
+            "x": 223.671875,
+            "y": 244.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 244.71875,
+            "right": 223.671875,
+            "bottom": 259.109375,
+            "left": 223.671875
+          }
+        },
+        {
+          "text": "9",
+          "size": "12px",
+          "box": {
+            "x": 242.328125,
+            "y": 244.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 244.71875,
+            "right": 242.328125,
+            "bottom": 259.109375,
+            "left": 242.328125
+          }
+        },
+        {
+          "text": "10",
+          "size": "12px",
+          "box": {
+            "x": 261,
+            "y": 244.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 244.71875,
+            "right": 261,
+            "bottom": 259.109375,
+            "left": 261
+          }
+        }
+      ]
+    },
+    {
+      "label": "phone320 scoped axe has zero violations",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "dark scoped geometry fits",
+      "passed": true,
+      "details": {
+        "width": 768,
+        "overflow": false,
+        "pageOverflow": false,
+        "controls": [
+          {
+            "tag": "SELECT",
+            "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+            "id": "wcStewardHistoryComponent",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "QualityConnectivityCommunity support",
+            "id": "wcStewardHistoryMetric",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+            "id": "wcStewardHistoryYear",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Read the saved scores",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Investigate year 10",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          }
+        ],
+        "axes": [
+          {
+            "text": "100",
+            "size": "12px",
+            "box": {
+              "x": 304.59375,
+              "y": 59.703125,
+              "width": 19.40625,
+              "height": 12,
+              "top": 59.703125,
+              "right": 324,
+              "bottom": 71.703125,
+              "left": 304.59375
+            }
+          },
+          {
+            "text": "75",
+            "size": "12px",
+            "box": {
+              "x": 311.0625,
+              "y": 104.703125,
+              "width": 12.9375,
+              "height": 12,
+              "top": 104.703125,
+              "right": 324,
+              "bottom": 116.703125,
+              "left": 311.0625
+            }
+          },
+          {
+            "text": "50",
+            "size": "12px",
+            "box": {
+              "x": 311.0625,
+              "y": 149.703125,
+              "width": 12.9375,
+              "height": 12,
+              "top": 149.703125,
+              "right": 324,
+              "bottom": 161.703125,
+              "left": 311.0625
+            }
+          },
+          {
+            "text": "25",
+            "size": "12px",
+            "box": {
+              "x": 311.0625,
+              "y": 194.703125,
+              "width": 12.9375,
+              "height": 12,
+              "top": 194.703125,
+              "right": 324,
+              "bottom": 206.703125,
+              "left": 311.0625
+            }
+          },
+          {
+            "text": "0",
+            "size": "12px",
+            "box": {
+              "x": 317.53125,
+              "y": 239.703125,
+              "width": 6.46875,
+              "height": 12,
+              "top": 239.703125,
+              "right": 324,
+              "bottom": 251.703125,
+              "left": 317.53125
+            }
+          },
+          {
+            "text": "1",
+            "size": "12px",
+            "box": {
+              "x": 334,
+              "y": 257.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 257.703125,
+              "right": 334,
+              "bottom": 272.09375,
+              "left": 334
+            }
+          },
+          {
+            "text": "2",
+            "size": "12px",
+            "box": {
+              "x": 406.4375,
+              "y": 257.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 257.703125,
+              "right": 406.4375,
+              "bottom": 272.09375,
+              "left": 406.4375
+            }
+          },
+          {
+            "text": "3",
+            "size": "12px",
+            "box": {
+              "x": 478.890625,
+              "y": 257.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 257.703125,
+              "right": 478.890625,
+              "bottom": 272.09375,
+              "left": 478.890625
+            }
+          },
+          {
+            "text": "4",
+            "size": "12px",
+            "box": {
+              "x": 551.328125,
+              "y": 257.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 257.703125,
+              "right": 551.328125,
+              "bottom": 272.09375,
+              "left": 551.328125
+            }
+          },
+          {
+            "text": "5",
+            "size": "12px",
+            "box": {
+              "x": 623.78125,
+              "y": 257.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 257.703125,
+              "right": 623.78125,
+              "bottom": 272.09375,
+              "left": 623.78125
+            }
+          },
+          {
+            "text": "6",
+            "size": "12px",
+            "box": {
+              "x": 696.21875,
+              "y": 257.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 257.703125,
+              "right": 696.21875,
+              "bottom": 272.09375,
+              "left": 696.21875
+            }
+          },
+          {
+            "text": "7",
+            "size": "12px",
+            "box": {
+              "x": 768.671875,
+              "y": 257.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 257.703125,
+              "right": 768.671875,
+              "bottom": 272.09375,
+              "left": 768.671875
+            }
+          },
+          {
+            "text": "8",
+            "size": "12px",
+            "box": {
+              "x": 841.109375,
+              "y": 257.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 257.703125,
+              "right": 841.109375,
+              "bottom": 272.09375,
+              "left": 841.109375
+            }
+          },
+          {
+            "text": "9",
+            "size": "12px",
+            "box": {
+              "x": 913.5625,
+              "y": 257.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 257.703125,
+              "right": 913.5625,
+              "bottom": 272.09375,
+              "left": 913.5625
+            }
+          },
+          {
+            "text": "10",
+            "size": "12px",
+            "box": {
+              "x": 986,
+              "y": 257.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 257.703125,
+              "right": 986,
+              "bottom": 272.09375,
+              "left": 986
+            }
+          }
+        ],
+        "svgText": 0
+      }
+    },
+    {
+      "label": "dark controls at least44px",
+      "passed": true,
+      "details": [
+        {
+          "tag": "SELECT",
+          "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+          "id": "wcStewardHistoryComponent",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "QualityConnectivityCommunity support",
+          "id": "wcStewardHistoryMetric",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+          "id": "wcStewardHistoryYear",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Read the saved scores",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Investigate year 10",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        }
+      ]
+    },
+    {
+      "label": "dark axes have fixed readable text",
+      "passed": true,
+      "details": [
+        {
+          "text": "100",
+          "size": "12px",
+          "box": {
+            "x": 304.59375,
+            "y": 59.703125,
+            "width": 19.40625,
+            "height": 12,
+            "top": 59.703125,
+            "right": 324,
+            "bottom": 71.703125,
+            "left": 304.59375
+          }
+        },
+        {
+          "text": "75",
+          "size": "12px",
+          "box": {
+            "x": 311.0625,
+            "y": 104.703125,
+            "width": 12.9375,
+            "height": 12,
+            "top": 104.703125,
+            "right": 324,
+            "bottom": 116.703125,
+            "left": 311.0625
+          }
+        },
+        {
+          "text": "50",
+          "size": "12px",
+          "box": {
+            "x": 311.0625,
+            "y": 149.703125,
+            "width": 12.9375,
+            "height": 12,
+            "top": 149.703125,
+            "right": 324,
+            "bottom": 161.703125,
+            "left": 311.0625
+          }
+        },
+        {
+          "text": "25",
+          "size": "12px",
+          "box": {
+            "x": 311.0625,
+            "y": 194.703125,
+            "width": 12.9375,
+            "height": 12,
+            "top": 194.703125,
+            "right": 324,
+            "bottom": 206.703125,
+            "left": 311.0625
+          }
+        },
+        {
+          "text": "0",
+          "size": "12px",
+          "box": {
+            "x": 317.53125,
+            "y": 239.703125,
+            "width": 6.46875,
+            "height": 12,
+            "top": 239.703125,
+            "right": 324,
+            "bottom": 251.703125,
+            "left": 317.53125
+          }
+        },
+        {
+          "text": "1",
+          "size": "12px",
+          "box": {
+            "x": 334,
+            "y": 257.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 257.703125,
+            "right": 334,
+            "bottom": 272.09375,
+            "left": 334
+          }
+        },
+        {
+          "text": "2",
+          "size": "12px",
+          "box": {
+            "x": 406.4375,
+            "y": 257.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 257.703125,
+            "right": 406.4375,
+            "bottom": 272.09375,
+            "left": 406.4375
+          }
+        },
+        {
+          "text": "3",
+          "size": "12px",
+          "box": {
+            "x": 478.890625,
+            "y": 257.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 257.703125,
+            "right": 478.890625,
+            "bottom": 272.09375,
+            "left": 478.890625
+          }
+        },
+        {
+          "text": "4",
+          "size": "12px",
+          "box": {
+            "x": 551.328125,
+            "y": 257.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 257.703125,
+            "right": 551.328125,
+            "bottom": 272.09375,
+            "left": 551.328125
+          }
+        },
+        {
+          "text": "5",
+          "size": "12px",
+          "box": {
+            "x": 623.78125,
+            "y": 257.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 257.703125,
+            "right": 623.78125,
+            "bottom": 272.09375,
+            "left": 623.78125
+          }
+        },
+        {
+          "text": "6",
+          "size": "12px",
+          "box": {
+            "x": 696.21875,
+            "y": 257.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 257.703125,
+            "right": 696.21875,
+            "bottom": 272.09375,
+            "left": 696.21875
+          }
+        },
+        {
+          "text": "7",
+          "size": "12px",
+          "box": {
+            "x": 768.671875,
+            "y": 257.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 257.703125,
+            "right": 768.671875,
+            "bottom": 272.09375,
+            "left": 768.671875
+          }
+        },
+        {
+          "text": "8",
+          "size": "12px",
+          "box": {
+            "x": 841.109375,
+            "y": 257.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 257.703125,
+            "right": 841.109375,
+            "bottom": 272.09375,
+            "left": 841.109375
+          }
+        },
+        {
+          "text": "9",
+          "size": "12px",
+          "box": {
+            "x": 913.5625,
+            "y": 257.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 257.703125,
+            "right": 913.5625,
+            "bottom": 272.09375,
+            "left": 913.5625
+          }
+        },
+        {
+          "text": "10",
+          "size": "12px",
+          "box": {
+            "x": 986,
+            "y": 257.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 257.703125,
+            "right": 986,
+            "bottom": 272.09375,
+            "left": 986
+          }
+        }
+      ]
+    },
+    {
+      "label": "dark scoped axe has zero violations",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "forced-dark scoped geometry fits",
+      "passed": true,
+      "details": {
+        "width": 270,
+        "overflow": false,
+        "pageOverflow": false,
+        "controls": [
+          {
+            "tag": "SELECT",
+            "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+            "id": "wcStewardHistoryComponent",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "QualityConnectivityCommunity support",
+            "id": "wcStewardHistoryMetric",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+            "id": "wcStewardHistoryYear",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Read the saved scores",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Investigate year 10",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          }
+        ],
+        "axes": [
+          {
+            "text": "100",
+            "size": "12px",
+            "box": {
+              "x": 65.59375,
+              "y": -19.28125,
+              "width": 19.40625,
+              "height": 12,
+              "top": -19.28125,
+              "right": 85,
+              "bottom": -7.28125,
+              "left": 65.59375
+            }
+          },
+          {
+            "text": "75",
+            "size": "12px",
+            "box": {
+              "x": 72.0625,
+              "y": 25.71875,
+              "width": 12.9375,
+              "height": 12,
+              "top": 25.71875,
+              "right": 85,
+              "bottom": 37.71875,
+              "left": 72.0625
+            }
+          },
+          {
+            "text": "50",
+            "size": "12px",
+            "box": {
+              "x": 72.0625,
+              "y": 70.71875,
+              "width": 12.9375,
+              "height": 12,
+              "top": 70.71875,
+              "right": 85,
+              "bottom": 82.71875,
+              "left": 72.0625
+            }
+          },
+          {
+            "text": "25",
+            "size": "12px",
+            "box": {
+              "x": 72.0625,
+              "y": 115.71875,
+              "width": 12.9375,
+              "height": 12,
+              "top": 115.71875,
+              "right": 85,
+              "bottom": 127.71875,
+              "left": 72.0625
+            }
+          },
+          {
+            "text": "0",
+            "size": "12px",
+            "box": {
+              "x": 78.53125,
+              "y": 160.71875,
+              "width": 6.46875,
+              "height": 12,
+              "top": 160.71875,
+              "right": 85,
+              "bottom": 172.71875,
+              "left": 78.53125
+            }
+          },
+          {
+            "text": "1",
+            "size": "12px",
+            "box": {
+              "x": 93,
+              "y": 178.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 178.71875,
+              "right": 93,
+              "bottom": 193.109375,
+              "left": 93
+            }
+          },
+          {
+            "text": "2",
+            "size": "12px",
+            "box": {
+              "x": 111.671875,
+              "y": 178.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 178.71875,
+              "right": 111.671875,
+              "bottom": 193.109375,
+              "left": 111.671875
+            }
+          },
+          {
+            "text": "3",
+            "size": "12px",
+            "box": {
+              "x": 130.328125,
+              "y": 178.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 178.71875,
+              "right": 130.328125,
+              "bottom": 193.109375,
+              "left": 130.328125
+            }
+          },
+          {
+            "text": "4",
+            "size": "12px",
+            "box": {
+              "x": 149,
+              "y": 178.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 178.71875,
+              "right": 149,
+              "bottom": 193.109375,
+              "left": 149
+            }
+          },
+          {
+            "text": "5",
+            "size": "12px",
+            "box": {
+              "x": 167.671875,
+              "y": 178.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 178.71875,
+              "right": 167.671875,
+              "bottom": 193.109375,
+              "left": 167.671875
+            }
+          },
+          {
+            "text": "6",
+            "size": "12px",
+            "box": {
+              "x": 186.328125,
+              "y": 178.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 178.71875,
+              "right": 186.328125,
+              "bottom": 193.109375,
+              "left": 186.328125
+            }
+          },
+          {
+            "text": "7",
+            "size": "12px",
+            "box": {
+              "x": 205,
+              "y": 178.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 178.71875,
+              "right": 205,
+              "bottom": 193.109375,
+              "left": 205
+            }
+          },
+          {
+            "text": "8",
+            "size": "12px",
+            "box": {
+              "x": 223.671875,
+              "y": 178.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 178.71875,
+              "right": 223.671875,
+              "bottom": 193.109375,
+              "left": 223.671875
+            }
+          },
+          {
+            "text": "9",
+            "size": "12px",
+            "box": {
+              "x": 242.328125,
+              "y": 178.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 178.71875,
+              "right": 242.328125,
+              "bottom": 193.109375,
+              "left": 242.328125
+            }
+          },
+          {
+            "text": "10",
+            "size": "12px",
+            "box": {
+              "x": 261,
+              "y": 178.71875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 178.71875,
+              "right": 261,
+              "bottom": 193.109375,
+              "left": 261
+            }
+          }
+        ],
+        "svgText": 0
+      }
+    },
+    {
+      "label": "forced-dark controls at least44px",
+      "passed": true,
+      "details": [
+        {
+          "tag": "SELECT",
+          "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+          "id": "wcStewardHistoryComponent",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "QualityConnectivityCommunity support",
+          "id": "wcStewardHistoryMetric",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+          "id": "wcStewardHistoryYear",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Read the saved scores",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Investigate year 10",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        }
+      ]
+    },
+    {
+      "label": "forced-dark axes have fixed readable text",
+      "passed": true,
+      "details": [
+        {
+          "text": "100",
+          "size": "12px",
+          "box": {
+            "x": 65.59375,
+            "y": -19.28125,
+            "width": 19.40625,
+            "height": 12,
+            "top": -19.28125,
+            "right": 85,
+            "bottom": -7.28125,
+            "left": 65.59375
+          }
+        },
+        {
+          "text": "75",
+          "size": "12px",
+          "box": {
+            "x": 72.0625,
+            "y": 25.71875,
+            "width": 12.9375,
+            "height": 12,
+            "top": 25.71875,
+            "right": 85,
+            "bottom": 37.71875,
+            "left": 72.0625
+          }
+        },
+        {
+          "text": "50",
+          "size": "12px",
+          "box": {
+            "x": 72.0625,
+            "y": 70.71875,
+            "width": 12.9375,
+            "height": 12,
+            "top": 70.71875,
+            "right": 85,
+            "bottom": 82.71875,
+            "left": 72.0625
+          }
+        },
+        {
+          "text": "25",
+          "size": "12px",
+          "box": {
+            "x": 72.0625,
+            "y": 115.71875,
+            "width": 12.9375,
+            "height": 12,
+            "top": 115.71875,
+            "right": 85,
+            "bottom": 127.71875,
+            "left": 72.0625
+          }
+        },
+        {
+          "text": "0",
+          "size": "12px",
+          "box": {
+            "x": 78.53125,
+            "y": 160.71875,
+            "width": 6.46875,
+            "height": 12,
+            "top": 160.71875,
+            "right": 85,
+            "bottom": 172.71875,
+            "left": 78.53125
+          }
+        },
+        {
+          "text": "1",
+          "size": "12px",
+          "box": {
+            "x": 93,
+            "y": 178.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 178.71875,
+            "right": 93,
+            "bottom": 193.109375,
+            "left": 93
+          }
+        },
+        {
+          "text": "2",
+          "size": "12px",
+          "box": {
+            "x": 111.671875,
+            "y": 178.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 178.71875,
+            "right": 111.671875,
+            "bottom": 193.109375,
+            "left": 111.671875
+          }
+        },
+        {
+          "text": "3",
+          "size": "12px",
+          "box": {
+            "x": 130.328125,
+            "y": 178.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 178.71875,
+            "right": 130.328125,
+            "bottom": 193.109375,
+            "left": 130.328125
+          }
+        },
+        {
+          "text": "4",
+          "size": "12px",
+          "box": {
+            "x": 149,
+            "y": 178.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 178.71875,
+            "right": 149,
+            "bottom": 193.109375,
+            "left": 149
+          }
+        },
+        {
+          "text": "5",
+          "size": "12px",
+          "box": {
+            "x": 167.671875,
+            "y": 178.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 178.71875,
+            "right": 167.671875,
+            "bottom": 193.109375,
+            "left": 167.671875
+          }
+        },
+        {
+          "text": "6",
+          "size": "12px",
+          "box": {
+            "x": 186.328125,
+            "y": 178.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 178.71875,
+            "right": 186.328125,
+            "bottom": 193.109375,
+            "left": 186.328125
+          }
+        },
+        {
+          "text": "7",
+          "size": "12px",
+          "box": {
+            "x": 205,
+            "y": 178.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 178.71875,
+            "right": 205,
+            "bottom": 193.109375,
+            "left": 205
+          }
+        },
+        {
+          "text": "8",
+          "size": "12px",
+          "box": {
+            "x": 223.671875,
+            "y": 178.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 178.71875,
+            "right": 223.671875,
+            "bottom": 193.109375,
+            "left": 223.671875
+          }
+        },
+        {
+          "text": "9",
+          "size": "12px",
+          "box": {
+            "x": 242.328125,
+            "y": 178.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 178.71875,
+            "right": 242.328125,
+            "bottom": 193.109375,
+            "left": 242.328125
+          }
+        },
+        {
+          "text": "10",
+          "size": "12px",
+          "box": {
+            "x": 261,
+            "y": 178.71875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 178.71875,
+            "right": 261,
+            "bottom": 193.109375,
+            "left": 261
+          }
+        }
+      ]
+    },
+    {
+      "label": "forced-dark scoped axe has zero violations",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "host390 scoped geometry fits",
+      "passed": true,
+      "details": {
+        "width": 320,
+        "overflow": false,
+        "pageOverflow": false,
+        "controls": [
+          {
+            "tag": "SELECT",
+            "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+            "id": "wcStewardHistoryComponent",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "QualityConnectivityCommunity support",
+            "id": "wcStewardHistoryMetric",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+            "id": "wcStewardHistoryYear",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Read the saved scores",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Investigate year 10",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          }
+        ],
+        "axes": [
+          {
+            "text": "100",
+            "size": "12px",
+            "box": {
+              "x": 75.59375,
+              "y": 68.21875,
+              "width": 19.40625,
+              "height": 12,
+              "top": 68.21875,
+              "right": 95,
+              "bottom": 80.21875,
+              "left": 75.59375
+            }
+          },
+          {
+            "text": "75",
+            "size": "12px",
+            "box": {
+              "x": 82.0625,
+              "y": 113.21875,
+              "width": 12.9375,
+              "height": 12,
+              "top": 113.21875,
+              "right": 95,
+              "bottom": 125.21875,
+              "left": 82.0625
+            }
+          },
+          {
+            "text": "50",
+            "size": "12px",
+            "box": {
+              "x": 82.0625,
+              "y": 158.21875,
+              "width": 12.9375,
+              "height": 12,
+              "top": 158.21875,
+              "right": 95,
+              "bottom": 170.21875,
+              "left": 82.0625
+            }
+          },
+          {
+            "text": "25",
+            "size": "12px",
+            "box": {
+              "x": 82.0625,
+              "y": 203.21875,
+              "width": 12.9375,
+              "height": 12,
+              "top": 203.21875,
+              "right": 95,
+              "bottom": 215.21875,
+              "left": 82.0625
+            }
+          },
+          {
+            "text": "0",
+            "size": "12px",
+            "box": {
+              "x": 88.53125,
+              "y": 248.21875,
+              "width": 6.46875,
+              "height": 12,
+              "top": 248.21875,
+              "right": 95,
+              "bottom": 260.21875,
+              "left": 88.53125
+            }
+          },
+          {
+            "text": "1",
+            "size": "12px",
+            "box": {
+              "x": 103,
+              "y": 266.21875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 266.21875,
+              "right": 103,
+              "bottom": 280.609375,
+              "left": 103
+            }
+          },
+          {
+            "text": "2",
+            "size": "12px",
+            "box": {
+              "x": 127.21875,
+              "y": 266.21875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 266.21875,
+              "right": 127.21875,
+              "bottom": 280.609375,
+              "left": 127.21875
+            }
+          },
+          {
+            "text": "3",
+            "size": "12px",
+            "box": {
+              "x": 151.4375,
+              "y": 266.21875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 266.21875,
+              "right": 151.4375,
+              "bottom": 280.609375,
+              "left": 151.4375
+            }
+          },
+          {
+            "text": "4",
+            "size": "12px",
+            "box": {
+              "x": 175.671875,
+              "y": 266.21875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 266.21875,
+              "right": 175.671875,
+              "bottom": 280.609375,
+              "left": 175.671875
+            }
+          },
+          {
+            "text": "5",
+            "size": "12px",
+            "box": {
+              "x": 199.890625,
+              "y": 266.21875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 266.21875,
+              "right": 199.890625,
+              "bottom": 280.609375,
+              "left": 199.890625
+            }
+          },
+          {
+            "text": "6",
+            "size": "12px",
+            "box": {
+              "x": 224.109375,
+              "y": 266.21875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 266.21875,
+              "right": 224.109375,
+              "bottom": 280.609375,
+              "left": 224.109375
+            }
+          },
+          {
+            "text": "7",
+            "size": "12px",
+            "box": {
+              "x": 248.328125,
+              "y": 266.21875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 266.21875,
+              "right": 248.328125,
+              "bottom": 280.609375,
+              "left": 248.328125
+            }
+          },
+          {
+            "text": "8",
+            "size": "12px",
+            "box": {
+              "x": 272.5625,
+              "y": 266.21875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 266.21875,
+              "right": 272.5625,
+              "bottom": 280.609375,
+              "left": 272.5625
+            }
+          },
+          {
+            "text": "9",
+            "size": "12px",
+            "box": {
+              "x": 296.78125,
+              "y": 266.21875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 266.21875,
+              "right": 296.78125,
+              "bottom": 280.609375,
+              "left": 296.78125
+            }
+          },
+          {
+            "text": "10",
+            "size": "12px",
+            "box": {
+              "x": 321,
+              "y": 266.21875,
+              "width": 0,
+              "height": 14.390625,
+              "top": 266.21875,
+              "right": 321,
+              "bottom": 280.609375,
+              "left": 321
+            }
+          }
+        ],
+        "svgText": 0
+      }
+    },
+    {
+      "label": "host390 controls at least44px",
+      "passed": true,
+      "details": [
+        {
+          "tag": "SELECT",
+          "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+          "id": "wcStewardHistoryComponent",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "QualityConnectivityCommunity support",
+          "id": "wcStewardHistoryMetric",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+          "id": "wcStewardHistoryYear",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Read the saved scores",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Investigate year 10",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        }
+      ]
+    },
+    {
+      "label": "host390 axes have fixed readable text",
+      "passed": true,
+      "details": [
+        {
+          "text": "100",
+          "size": "12px",
+          "box": {
+            "x": 75.59375,
+            "y": 68.21875,
+            "width": 19.40625,
+            "height": 12,
+            "top": 68.21875,
+            "right": 95,
+            "bottom": 80.21875,
+            "left": 75.59375
+          }
+        },
+        {
+          "text": "75",
+          "size": "12px",
+          "box": {
+            "x": 82.0625,
+            "y": 113.21875,
+            "width": 12.9375,
+            "height": 12,
+            "top": 113.21875,
+            "right": 95,
+            "bottom": 125.21875,
+            "left": 82.0625
+          }
+        },
+        {
+          "text": "50",
+          "size": "12px",
+          "box": {
+            "x": 82.0625,
+            "y": 158.21875,
+            "width": 12.9375,
+            "height": 12,
+            "top": 158.21875,
+            "right": 95,
+            "bottom": 170.21875,
+            "left": 82.0625
+          }
+        },
+        {
+          "text": "25",
+          "size": "12px",
+          "box": {
+            "x": 82.0625,
+            "y": 203.21875,
+            "width": 12.9375,
+            "height": 12,
+            "top": 203.21875,
+            "right": 95,
+            "bottom": 215.21875,
+            "left": 82.0625
+          }
+        },
+        {
+          "text": "0",
+          "size": "12px",
+          "box": {
+            "x": 88.53125,
+            "y": 248.21875,
+            "width": 6.46875,
+            "height": 12,
+            "top": 248.21875,
+            "right": 95,
+            "bottom": 260.21875,
+            "left": 88.53125
+          }
+        },
+        {
+          "text": "1",
+          "size": "12px",
+          "box": {
+            "x": 103,
+            "y": 266.21875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 266.21875,
+            "right": 103,
+            "bottom": 280.609375,
+            "left": 103
+          }
+        },
+        {
+          "text": "2",
+          "size": "12px",
+          "box": {
+            "x": 127.21875,
+            "y": 266.21875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 266.21875,
+            "right": 127.21875,
+            "bottom": 280.609375,
+            "left": 127.21875
+          }
+        },
+        {
+          "text": "3",
+          "size": "12px",
+          "box": {
+            "x": 151.4375,
+            "y": 266.21875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 266.21875,
+            "right": 151.4375,
+            "bottom": 280.609375,
+            "left": 151.4375
+          }
+        },
+        {
+          "text": "4",
+          "size": "12px",
+          "box": {
+            "x": 175.671875,
+            "y": 266.21875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 266.21875,
+            "right": 175.671875,
+            "bottom": 280.609375,
+            "left": 175.671875
+          }
+        },
+        {
+          "text": "5",
+          "size": "12px",
+          "box": {
+            "x": 199.890625,
+            "y": 266.21875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 266.21875,
+            "right": 199.890625,
+            "bottom": 280.609375,
+            "left": 199.890625
+          }
+        },
+        {
+          "text": "6",
+          "size": "12px",
+          "box": {
+            "x": 224.109375,
+            "y": 266.21875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 266.21875,
+            "right": 224.109375,
+            "bottom": 280.609375,
+            "left": 224.109375
+          }
+        },
+        {
+          "text": "7",
+          "size": "12px",
+          "box": {
+            "x": 248.328125,
+            "y": 266.21875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 266.21875,
+            "right": 248.328125,
+            "bottom": 280.609375,
+            "left": 248.328125
+          }
+        },
+        {
+          "text": "8",
+          "size": "12px",
+          "box": {
+            "x": 272.5625,
+            "y": 266.21875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 266.21875,
+            "right": 272.5625,
+            "bottom": 280.609375,
+            "left": 272.5625
+          }
+        },
+        {
+          "text": "9",
+          "size": "12px",
+          "box": {
+            "x": 296.78125,
+            "y": 266.21875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 266.21875,
+            "right": 296.78125,
+            "bottom": 280.609375,
+            "left": 296.78125
+          }
+        },
+        {
+          "text": "10",
+          "size": "12px",
+          "box": {
+            "x": 321,
+            "y": 266.21875,
+            "width": 0,
+            "height": 14.390625,
+            "top": 266.21875,
+            "right": 321,
+            "bottom": 280.609375,
+            "left": 321
+          }
+        }
+      ]
+    },
+    {
+      "label": "host390 scoped axe has zero violations",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "phone390 scoped geometry fits",
+      "passed": true,
+      "details": {
+        "width": 340,
+        "overflow": false,
+        "pageOverflow": false,
+        "controls": [
+          {
+            "tag": "SELECT",
+            "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+            "id": "wcStewardHistoryComponent",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "QualityConnectivityCommunity support",
+            "id": "wcStewardHistoryMetric",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+            "id": "wcStewardHistoryYear",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Read the saved scores",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Investigate year 10",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          }
+        ],
+        "axes": [
+          {
+            "text": "100",
+            "size": "12px",
+            "box": {
+              "x": 65.59375,
+              "y": 3.953125,
+              "width": 19.40625,
+              "height": 12,
+              "top": 3.953125,
+              "right": 85,
+              "bottom": 15.953125,
+              "left": 65.59375
+            }
+          },
+          {
+            "text": "75",
+            "size": "12px",
+            "box": {
+              "x": 72.0625,
+              "y": 48.953125,
+              "width": 12.9375,
+              "height": 12,
+              "top": 48.953125,
+              "right": 85,
+              "bottom": 60.953125,
+              "left": 72.0625
+            }
+          },
+          {
+            "text": "50",
+            "size": "12px",
+            "box": {
+              "x": 72.0625,
+              "y": 93.953125,
+              "width": 12.9375,
+              "height": 12,
+              "top": 93.953125,
+              "right": 85,
+              "bottom": 105.953125,
+              "left": 72.0625
+            }
+          },
+          {
+            "text": "25",
+            "size": "12px",
+            "box": {
+              "x": 72.0625,
+              "y": 138.953125,
+              "width": 12.9375,
+              "height": 12,
+              "top": 138.953125,
+              "right": 85,
+              "bottom": 150.953125,
+              "left": 72.0625
+            }
+          },
+          {
+            "text": "0",
+            "size": "12px",
+            "box": {
+              "x": 78.53125,
+              "y": 183.953125,
+              "width": 6.46875,
+              "height": 12,
+              "top": 183.953125,
+              "right": 85,
+              "bottom": 195.953125,
+              "left": 78.53125
+            }
+          },
+          {
+            "text": "1",
+            "size": "12px",
+            "box": {
+              "x": 93,
+              "y": 201.953125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 201.953125,
+              "right": 93,
+              "bottom": 216.34375,
+              "left": 93
+            }
+          },
+          {
+            "text": "2",
+            "size": "12px",
+            "box": {
+              "x": 119.4375,
+              "y": 201.953125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 201.953125,
+              "right": 119.4375,
+              "bottom": 216.34375,
+              "left": 119.4375
+            }
+          },
+          {
+            "text": "3",
+            "size": "12px",
+            "box": {
+              "x": 145.890625,
+              "y": 201.953125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 201.953125,
+              "right": 145.890625,
+              "bottom": 216.34375,
+              "left": 145.890625
+            }
+          },
+          {
+            "text": "4",
+            "size": "12px",
+            "box": {
+              "x": 172.328125,
+              "y": 201.953125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 201.953125,
+              "right": 172.328125,
+              "bottom": 216.34375,
+              "left": 172.328125
+            }
+          },
+          {
+            "text": "5",
+            "size": "12px",
+            "box": {
+              "x": 198.78125,
+              "y": 201.953125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 201.953125,
+              "right": 198.78125,
+              "bottom": 216.34375,
+              "left": 198.78125
+            }
+          },
+          {
+            "text": "6",
+            "size": "12px",
+            "box": {
+              "x": 225.21875,
+              "y": 201.953125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 201.953125,
+              "right": 225.21875,
+              "bottom": 216.34375,
+              "left": 225.21875
+            }
+          },
+          {
+            "text": "7",
+            "size": "12px",
+            "box": {
+              "x": 251.671875,
+              "y": 201.953125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 201.953125,
+              "right": 251.671875,
+              "bottom": 216.34375,
+              "left": 251.671875
+            }
+          },
+          {
+            "text": "8",
+            "size": "12px",
+            "box": {
+              "x": 278.109375,
+              "y": 201.953125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 201.953125,
+              "right": 278.109375,
+              "bottom": 216.34375,
+              "left": 278.109375
+            }
+          },
+          {
+            "text": "9",
+            "size": "12px",
+            "box": {
+              "x": 304.5625,
+              "y": 201.953125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 201.953125,
+              "right": 304.5625,
+              "bottom": 216.34375,
+              "left": 304.5625
+            }
+          },
+          {
+            "text": "10",
+            "size": "12px",
+            "box": {
+              "x": 331,
+              "y": 201.953125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 201.953125,
+              "right": 331,
+              "bottom": 216.34375,
+              "left": 331
+            }
+          }
+        ],
+        "svgText": 0
+      }
+    },
+    {
+      "label": "phone390 controls at least44px",
+      "passed": true,
+      "details": [
+        {
+          "tag": "SELECT",
+          "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+          "id": "wcStewardHistoryComponent",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "QualityConnectivityCommunity support",
+          "id": "wcStewardHistoryMetric",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+          "id": "wcStewardHistoryYear",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Read the saved scores",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Investigate year 10",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        }
+      ]
+    },
+    {
+      "label": "phone390 axes have fixed readable text",
+      "passed": true,
+      "details": [
+        {
+          "text": "100",
+          "size": "12px",
+          "box": {
+            "x": 65.59375,
+            "y": 3.953125,
+            "width": 19.40625,
+            "height": 12,
+            "top": 3.953125,
+            "right": 85,
+            "bottom": 15.953125,
+            "left": 65.59375
+          }
+        },
+        {
+          "text": "75",
+          "size": "12px",
+          "box": {
+            "x": 72.0625,
+            "y": 48.953125,
+            "width": 12.9375,
+            "height": 12,
+            "top": 48.953125,
+            "right": 85,
+            "bottom": 60.953125,
+            "left": 72.0625
+          }
+        },
+        {
+          "text": "50",
+          "size": "12px",
+          "box": {
+            "x": 72.0625,
+            "y": 93.953125,
+            "width": 12.9375,
+            "height": 12,
+            "top": 93.953125,
+            "right": 85,
+            "bottom": 105.953125,
+            "left": 72.0625
+          }
+        },
+        {
+          "text": "25",
+          "size": "12px",
+          "box": {
+            "x": 72.0625,
+            "y": 138.953125,
+            "width": 12.9375,
+            "height": 12,
+            "top": 138.953125,
+            "right": 85,
+            "bottom": 150.953125,
+            "left": 72.0625
+          }
+        },
+        {
+          "text": "0",
+          "size": "12px",
+          "box": {
+            "x": 78.53125,
+            "y": 183.953125,
+            "width": 6.46875,
+            "height": 12,
+            "top": 183.953125,
+            "right": 85,
+            "bottom": 195.953125,
+            "left": 78.53125
+          }
+        },
+        {
+          "text": "1",
+          "size": "12px",
+          "box": {
+            "x": 93,
+            "y": 201.953125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 201.953125,
+            "right": 93,
+            "bottom": 216.34375,
+            "left": 93
+          }
+        },
+        {
+          "text": "2",
+          "size": "12px",
+          "box": {
+            "x": 119.4375,
+            "y": 201.953125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 201.953125,
+            "right": 119.4375,
+            "bottom": 216.34375,
+            "left": 119.4375
+          }
+        },
+        {
+          "text": "3",
+          "size": "12px",
+          "box": {
+            "x": 145.890625,
+            "y": 201.953125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 201.953125,
+            "right": 145.890625,
+            "bottom": 216.34375,
+            "left": 145.890625
+          }
+        },
+        {
+          "text": "4",
+          "size": "12px",
+          "box": {
+            "x": 172.328125,
+            "y": 201.953125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 201.953125,
+            "right": 172.328125,
+            "bottom": 216.34375,
+            "left": 172.328125
+          }
+        },
+        {
+          "text": "5",
+          "size": "12px",
+          "box": {
+            "x": 198.78125,
+            "y": 201.953125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 201.953125,
+            "right": 198.78125,
+            "bottom": 216.34375,
+            "left": 198.78125
+          }
+        },
+        {
+          "text": "6",
+          "size": "12px",
+          "box": {
+            "x": 225.21875,
+            "y": 201.953125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 201.953125,
+            "right": 225.21875,
+            "bottom": 216.34375,
+            "left": 225.21875
+          }
+        },
+        {
+          "text": "7",
+          "size": "12px",
+          "box": {
+            "x": 251.671875,
+            "y": 201.953125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 201.953125,
+            "right": 251.671875,
+            "bottom": 216.34375,
+            "left": 251.671875
+          }
+        },
+        {
+          "text": "8",
+          "size": "12px",
+          "box": {
+            "x": 278.109375,
+            "y": 201.953125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 201.953125,
+            "right": 278.109375,
+            "bottom": 216.34375,
+            "left": 278.109375
+          }
+        },
+        {
+          "text": "9",
+          "size": "12px",
+          "box": {
+            "x": 304.5625,
+            "y": 201.953125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 201.953125,
+            "right": 304.5625,
+            "bottom": 216.34375,
+            "left": 304.5625
+          }
+        },
+        {
+          "text": "10",
+          "size": "12px",
+          "box": {
+            "x": 331,
+            "y": 201.953125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 201.953125,
+            "right": 331,
+            "bottom": 216.34375,
+            "left": 331
+          }
+        }
+      ]
+    },
+    {
+      "label": "phone390 scoped axe has zero violations",
+      "passed": true,
+      "details": []
+    },
+    {
+      "label": "desktop scoped geometry fits",
+      "passed": true,
+      "details": {
+        "width": 768,
+        "overflow": false,
+        "pageOverflow": false,
+        "controls": [
+          {
+            "tag": "SELECT",
+            "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+            "id": "wcStewardHistoryComponent",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "QualityConnectivityCommunity support",
+            "id": "wcStewardHistoryMetric",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SELECT",
+            "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+            "id": "wcStewardHistoryYear",
+            "height": 44,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Read the saved scores",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          },
+          {
+            "tag": "SUMMARY",
+            "text": "Investigate year 10",
+            "id": "",
+            "height": 46.390625,
+            "style": "14px"
+          }
+        ],
+        "axes": [
+          {
+            "text": "100",
+            "size": "12px",
+            "box": {
+              "x": 304.59375,
+              "y": 26.703125,
+              "width": 19.40625,
+              "height": 12,
+              "top": 26.703125,
+              "right": 324,
+              "bottom": 38.703125,
+              "left": 304.59375
+            }
+          },
+          {
+            "text": "75",
+            "size": "12px",
+            "box": {
+              "x": 311.0625,
+              "y": 71.703125,
+              "width": 12.9375,
+              "height": 12,
+              "top": 71.703125,
+              "right": 324,
+              "bottom": 83.703125,
+              "left": 311.0625
+            }
+          },
+          {
+            "text": "50",
+            "size": "12px",
+            "box": {
+              "x": 311.0625,
+              "y": 116.703125,
+              "width": 12.9375,
+              "height": 12,
+              "top": 116.703125,
+              "right": 324,
+              "bottom": 128.703125,
+              "left": 311.0625
+            }
+          },
+          {
+            "text": "25",
+            "size": "12px",
+            "box": {
+              "x": 311.0625,
+              "y": 161.703125,
+              "width": 12.9375,
+              "height": 12,
+              "top": 161.703125,
+              "right": 324,
+              "bottom": 173.703125,
+              "left": 311.0625
+            }
+          },
+          {
+            "text": "0",
+            "size": "12px",
+            "box": {
+              "x": 317.53125,
+              "y": 206.703125,
+              "width": 6.46875,
+              "height": 12,
+              "top": 206.703125,
+              "right": 324,
+              "bottom": 218.703125,
+              "left": 317.53125
+            }
+          },
+          {
+            "text": "1",
+            "size": "12px",
+            "box": {
+              "x": 334,
+              "y": 224.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 224.703125,
+              "right": 334,
+              "bottom": 239.09375,
+              "left": 334
+            }
+          },
+          {
+            "text": "2",
+            "size": "12px",
+            "box": {
+              "x": 406.4375,
+              "y": 224.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 224.703125,
+              "right": 406.4375,
+              "bottom": 239.09375,
+              "left": 406.4375
+            }
+          },
+          {
+            "text": "3",
+            "size": "12px",
+            "box": {
+              "x": 478.890625,
+              "y": 224.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 224.703125,
+              "right": 478.890625,
+              "bottom": 239.09375,
+              "left": 478.890625
+            }
+          },
+          {
+            "text": "4",
+            "size": "12px",
+            "box": {
+              "x": 551.328125,
+              "y": 224.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 224.703125,
+              "right": 551.328125,
+              "bottom": 239.09375,
+              "left": 551.328125
+            }
+          },
+          {
+            "text": "5",
+            "size": "12px",
+            "box": {
+              "x": 623.78125,
+              "y": 224.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 224.703125,
+              "right": 623.78125,
+              "bottom": 239.09375,
+              "left": 623.78125
+            }
+          },
+          {
+            "text": "6",
+            "size": "12px",
+            "box": {
+              "x": 696.21875,
+              "y": 224.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 224.703125,
+              "right": 696.21875,
+              "bottom": 239.09375,
+              "left": 696.21875
+            }
+          },
+          {
+            "text": "7",
+            "size": "12px",
+            "box": {
+              "x": 768.671875,
+              "y": 224.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 224.703125,
+              "right": 768.671875,
+              "bottom": 239.09375,
+              "left": 768.671875
+            }
+          },
+          {
+            "text": "8",
+            "size": "12px",
+            "box": {
+              "x": 841.109375,
+              "y": 224.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 224.703125,
+              "right": 841.109375,
+              "bottom": 239.09375,
+              "left": 841.109375
+            }
+          },
+          {
+            "text": "9",
+            "size": "12px",
+            "box": {
+              "x": 913.5625,
+              "y": 224.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 224.703125,
+              "right": 913.5625,
+              "bottom": 239.09375,
+              "left": 913.5625
+            }
+          },
+          {
+            "text": "10",
+            "size": "12px",
+            "box": {
+              "x": 986,
+              "y": 224.703125,
+              "width": 0,
+              "height": 14.390625,
+              "top": 224.703125,
+              "right": 986,
+              "bottom": 239.09375,
+              "left": 986
+            }
+          }
+        ],
+        "svgText": 0
+      }
+    },
+    {
+      "label": "desktop controls at least44px",
+      "passed": true,
+      "details": [
+        {
+          "tag": "SELECT",
+          "text": "Headwater StreamsRiver MainstemFloodplain WetlandsForested Buffer ZonesAgricultural WatershedSuburban Edges",
+          "id": "wcStewardHistoryComponent",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "QualityConnectivityCommunity support",
+          "id": "wcStewardHistoryMetric",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SELECT",
+          "text": "Year 1Year 2Year 3Year 4Year 5Year 6Year 7Year 8Year 9Year 10",
+          "id": "wcStewardHistoryYear",
+          "height": 44,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Read the saved scores",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        },
+        {
+          "tag": "SUMMARY",
+          "text": "Investigate year 10",
+          "id": "",
+          "height": 46.390625,
+          "style": "14px"
+        }
+      ]
+    },
+    {
+      "label": "desktop axes have fixed readable text",
+      "passed": true,
+      "details": [
+        {
+          "text": "100",
+          "size": "12px",
+          "box": {
+            "x": 304.59375,
+            "y": 26.703125,
+            "width": 19.40625,
+            "height": 12,
+            "top": 26.703125,
+            "right": 324,
+            "bottom": 38.703125,
+            "left": 304.59375
+          }
+        },
+        {
+          "text": "75",
+          "size": "12px",
+          "box": {
+            "x": 311.0625,
+            "y": 71.703125,
+            "width": 12.9375,
+            "height": 12,
+            "top": 71.703125,
+            "right": 324,
+            "bottom": 83.703125,
+            "left": 311.0625
+          }
+        },
+        {
+          "text": "50",
+          "size": "12px",
+          "box": {
+            "x": 311.0625,
+            "y": 116.703125,
+            "width": 12.9375,
+            "height": 12,
+            "top": 116.703125,
+            "right": 324,
+            "bottom": 128.703125,
+            "left": 311.0625
+          }
+        },
+        {
+          "text": "25",
+          "size": "12px",
+          "box": {
+            "x": 311.0625,
+            "y": 161.703125,
+            "width": 12.9375,
+            "height": 12,
+            "top": 161.703125,
+            "right": 324,
+            "bottom": 173.703125,
+            "left": 311.0625
+          }
+        },
+        {
+          "text": "0",
+          "size": "12px",
+          "box": {
+            "x": 317.53125,
+            "y": 206.703125,
+            "width": 6.46875,
+            "height": 12,
+            "top": 206.703125,
+            "right": 324,
+            "bottom": 218.703125,
+            "left": 317.53125
+          }
+        },
+        {
+          "text": "1",
+          "size": "12px",
+          "box": {
+            "x": 334,
+            "y": 224.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 224.703125,
+            "right": 334,
+            "bottom": 239.09375,
+            "left": 334
+          }
+        },
+        {
+          "text": "2",
+          "size": "12px",
+          "box": {
+            "x": 406.4375,
+            "y": 224.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 224.703125,
+            "right": 406.4375,
+            "bottom": 239.09375,
+            "left": 406.4375
+          }
+        },
+        {
+          "text": "3",
+          "size": "12px",
+          "box": {
+            "x": 478.890625,
+            "y": 224.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 224.703125,
+            "right": 478.890625,
+            "bottom": 239.09375,
+            "left": 478.890625
+          }
+        },
+        {
+          "text": "4",
+          "size": "12px",
+          "box": {
+            "x": 551.328125,
+            "y": 224.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 224.703125,
+            "right": 551.328125,
+            "bottom": 239.09375,
+            "left": 551.328125
+          }
+        },
+        {
+          "text": "5",
+          "size": "12px",
+          "box": {
+            "x": 623.78125,
+            "y": 224.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 224.703125,
+            "right": 623.78125,
+            "bottom": 239.09375,
+            "left": 623.78125
+          }
+        },
+        {
+          "text": "6",
+          "size": "12px",
+          "box": {
+            "x": 696.21875,
+            "y": 224.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 224.703125,
+            "right": 696.21875,
+            "bottom": 239.09375,
+            "left": 696.21875
+          }
+        },
+        {
+          "text": "7",
+          "size": "12px",
+          "box": {
+            "x": 768.671875,
+            "y": 224.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 224.703125,
+            "right": 768.671875,
+            "bottom": 239.09375,
+            "left": 768.671875
+          }
+        },
+        {
+          "text": "8",
+          "size": "12px",
+          "box": {
+            "x": 841.109375,
+            "y": 224.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 224.703125,
+            "right": 841.109375,
+            "bottom": 239.09375,
+            "left": 841.109375
+          }
+        },
+        {
+          "text": "9",
+          "size": "12px",
+          "box": {
+            "x": 913.5625,
+            "y": 224.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 224.703125,
+            "right": 913.5625,
+            "bottom": 239.09375,
+            "left": 913.5625
+          }
+        },
+        {
+          "text": "10",
+          "size": "12px",
+          "box": {
+            "x": 986,
+            "y": 224.703125,
+            "width": 0,
+            "height": 14.390625,
+            "top": 224.703125,
+            "right": 986,
+            "bottom": 239.09375,
+            "left": 986
+          }
+        }
+      ]
+    },
+    {
+      "label": "desktop scoped axe has zero violations",
+      "passed": true,
+      "details": []
+    }
+  ],
+  "nativeActions": [
+    {
+      "action": "open investigation",
+      "variant": "phone320"
+    },
+    {
+      "action": "open table",
+      "variant": "phone320"
+    },
+    {
+      "action": "open investigation",
+      "variant": "dark"
+    },
+    {
+      "action": "open table",
+      "variant": "dark"
+    },
+    {
+      "action": "open investigation",
+      "variant": "forced-dark"
+    },
+    {
+      "action": "open table",
+      "variant": "forced-dark"
+    },
+    {
+      "action": "open investigation",
+      "variant": "host390"
+    },
+    {
+      "action": "open table",
+      "variant": "host390"
+    },
+    {
+      "action": "open investigation",
+      "variant": "phone390"
+    },
+    {
+      "action": "open table",
+      "variant": "phone390"
+    },
+    {
+      "action": "open investigation",
+      "variant": "desktop"
+    },
+    {
+      "action": "open table",
+      "variant": "desktop"
+    }
+  ],
+  "audits": [
+    {
+      "variant": "phone320",
+      "selector": ".wc-steward-history",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(1)"
+              ],
+              "html": "<span>1</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(2)"
+              ],
+              "html": "<span>2</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(3)"
+              ],
+              "html": "<span>3</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(4)"
+              ],
+              "html": "<span>4</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(5)"
+              ],
+              "html": "<span>5</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(6)"
+              ],
+              "html": "<span>6</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(7)"
+              ],
+              "html": "<span>7</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(8)"
+              ],
+              "html": "<span>8</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(9)"
+              ],
+              "html": "<span>9</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(10)"
+              ],
+              "html": "<span>10</span>",
+              "summary": "Fix any of the following:\n  Unable to determine contrast ratio",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Unable to determine contrast ratio"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "dark",
+      "selector": ".wc-steward-history",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(1)"
+              ],
+              "html": "<span>1</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(2)"
+              ],
+              "html": "<span>2</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(3)"
+              ],
+              "html": "<span>3</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(4)"
+              ],
+              "html": "<span>4</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(5)"
+              ],
+              "html": "<span>5</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(6)"
+              ],
+              "html": "<span>6</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(7)"
+              ],
+              "html": "<span>7</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(8)"
+              ],
+              "html": "<span>8</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(9)"
+              ],
+              "html": "<span>9</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(10)"
+              ],
+              "html": "<span>10</span>",
+              "summary": "Fix any of the following:\n  Unable to determine contrast ratio",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Unable to determine contrast ratio"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "forced-dark",
+      "selector": ".wc-steward-history",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(1)"
+              ],
+              "html": "<span>1</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(2)"
+              ],
+              "html": "<span>2</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(3)"
+              ],
+              "html": "<span>3</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(4)"
+              ],
+              "html": "<span>4</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(5)"
+              ],
+              "html": "<span>5</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(6)"
+              ],
+              "html": "<span>6</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(7)"
+              ],
+              "html": "<span>7</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(8)"
+              ],
+              "html": "<span>8</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(9)"
+              ],
+              "html": "<span>9</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(10)"
+              ],
+              "html": "<span>10</span>",
+              "summary": "Fix any of the following:\n  Unable to determine contrast ratio",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Unable to determine contrast ratio"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "host390",
+      "selector": ".wc-steward-history",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(1)"
+              ],
+              "html": "<span>1</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(2)"
+              ],
+              "html": "<span>2</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(3)"
+              ],
+              "html": "<span>3</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(4)"
+              ],
+              "html": "<span>4</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(5)"
+              ],
+              "html": "<span>5</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(6)"
+              ],
+              "html": "<span>6</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(7)"
+              ],
+              "html": "<span>7</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(8)"
+              ],
+              "html": "<span>8</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(9)"
+              ],
+              "html": "<span>9</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(10)"
+              ],
+              "html": "<span>10</span>",
+              "summary": "Fix any of the following:\n  Unable to determine contrast ratio",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Unable to determine contrast ratio"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "phone390",
+      "selector": ".wc-steward-history",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(1)"
+              ],
+              "html": "<span>1</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(2)"
+              ],
+              "html": "<span>2</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(3)"
+              ],
+              "html": "<span>3</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(4)"
+              ],
+              "html": "<span>4</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(5)"
+              ],
+              "html": "<span>5</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(6)"
+              ],
+              "html": "<span>6</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(7)"
+              ],
+              "html": "<span>7</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(8)"
+              ],
+              "html": "<span>8</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(9)"
+              ],
+              "html": "<span>9</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(10)"
+              ],
+              "html": "<span>10</span>",
+              "summary": "Fix any of the following:\n  Unable to determine contrast ratio",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Unable to determine contrast ratio"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "variant": "desktop",
+      "selector": ".wc-steward-history",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(1)"
+              ],
+              "html": "<span>1</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(2)"
+              ],
+              "html": "<span>2</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(3)"
+              ],
+              "html": "<span>3</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(4)"
+              ],
+              "html": "<span>4</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(5)"
+              ],
+              "html": "<span>5</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(6)"
+              ],
+              "html": "<span>6</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(7)"
+              ],
+              "html": "<span>7</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(8)"
+              ],
+              "html": "<span>8</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(9)"
+              ],
+              "html": "<span>9</span>",
+              "summary": "Fix any of the following:\n  Element content is too short to determine if it is actual text content",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "messageKey": "shortTextContent",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element content is too short to determine if it is actual text content"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-history-x-axis > span:nth-child(10)"
+              ],
+              "html": "<span>10</span>",
+              "summary": "Fix any of the following:\n  Unable to determine contrast ratio",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "9.0pt (12px)",
+                    "fontWeight": "normal",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Unable to determine contrast ratio"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "captures": [
+    {
+      "path": "browser-preflight-phone320.png",
+      "sha256": "0f9fbd9cc10ac8f8163712427009200b0b569d471f9c5937572ad465d7aa7765",
+      "bytes": 102609,
+      "width": 270,
+      "height": 3207,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T11:23:13.008Z"
+    },
+    {
+      "path": "browser-preflight-dark.png",
+      "sha256": "f6f2adc7609fba1f817a53109bc09ea1d54d279ff6b62518c482b8809035c49c",
+      "bytes": 103837,
+      "width": 768,
+      "height": 2204,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T11:23:13.864Z"
+    },
+    {
+      "path": "browser-preflight-forced-dark.png",
+      "sha256": "6c103af95e99000e372613ea8c8df1f7ddf72f82afd4541ad6118bc6787558d6",
+      "bytes": 78709,
+      "width": 270,
+      "height": 3207,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T11:23:14.838Z"
+    },
+    {
+      "path": "browser-preflight-host390.png",
+      "sha256": "6ce44a75af43a0f2e916312a7cdf782b0426b6b3ef2da901ed16f183008d5598",
+      "bytes": 101686,
+      "width": 320,
+      "height": 3079,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T11:23:15.873Z"
+    },
+    {
+      "path": "browser-preflight-phone390.png",
+      "sha256": "279e6bbcc7b2e8befe3028e369b3072f4a15685bd536ddaf43d0b862d780d422",
+      "bytes": 101673,
+      "width": 340,
+      "height": 2948,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T11:23:16.787Z"
+    },
+    {
+      "path": "browser-preflight-desktop.png",
+      "sha256": "483b8ed2bf43b18dfde188d81a2751a020fcff0b4f16865befca2e7ba4fdb15b",
+      "bytes": 103720,
+      "width": 768,
+      "height": 2204,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T11:23:17.666Z"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "cases": [
+    {
+      "name": "phone320",
+      "phase": "debrief"
+    },
+    {
+      "name": "dark",
+      "phase": "debrief"
+    },
+    {
+      "name": "forced-dark",
+      "phase": "debrief"
+    },
+    {
+      "name": "host390",
+      "phase": "debrief"
+    },
+    {
+      "name": "phone390",
+      "phase": "debrief"
+    },
+    {
+      "name": "desktop",
+      "phase": "debrief"
+    }
+  ],
+  "completed": true,
+  "successful": true,
+  "resourcesClosed": true,
+  "browserLaunchedAt": "2026-10-02T11:23:09.249Z",
+  "browserClosedAt": "2026-10-02T11:23:18.526Z",
+  "completedAt": "2026-10-02T11:23:18.526Z"
+}

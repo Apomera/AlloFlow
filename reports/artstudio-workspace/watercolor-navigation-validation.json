@@ -1,0 +1,75 @@
+{
+  "date": "2026-10-02",
+  "scope": "Watercolor paper zoom, panning, and safe view navigation",
+  "passed": true,
+  "committed": false,
+  "stagedByThisPass": false,
+  "baselineSha256": "1762ba9cf18445a03b4740011251456f3322dea0fc83a25fa63e2f259765ddb9",
+  "sourceSha256": "4ec820e970afb37b72076b8a7416fc21a2e376c608e8b092addf3b9481781f3f",
+  "tests": {
+    "passed": 328,
+    "files": 25,
+    "log": "watercolor-navigation-regression.txt",
+    "newNavigationCases": 19,
+    "unresolvedFailures": 0,
+    "finalTouchAppearanceRecheck": {
+      "passed": 29,
+      "files": 2,
+      "log": "watercolor-navigation-final-focus.txt"
+    },
+    "initialFocusedLog": "watercolor-navigation-focused.txt",
+    "initialRegressionLog": "watercolor-navigation-regression-initial.txt",
+    "initialCorrections": "An existing engine case exceeded its explicit 20-second timeout under load; the full recheck used the supported ALLOFLOW_ARTSTUDIO_TEST_TIMEOUT_MS=60000 override and passed. An accessibility assertion was updated to accept the new navigation-help reference and verify that every referenced instruction exists. After the full run, two touch-action appearance conditions were aligned with Pan mode and rechecked in the navigation and semantics suites."
+  },
+  "browser": {
+    "passed": true,
+    "results": "watercolor-navigation-browser-results.json",
+    "harness": "Standalone Chromium using actual mouse and keyboard controls and real IndexedDB at an intercepted local origin",
+    "packagedDesktopTested": false,
+    "expandedPaper": {
+      "x": 159,
+      "y": 104,
+      "width": 810,
+      "height": 810
+    },
+    "zoomedPaper": {
+      "x": -246,
+      "y": -303,
+      "width": 1620,
+      "height": 1620
+    },
+    "exactCenterAnchor": true,
+    "phoneWidths": [
+      390,
+      320
+    ],
+    "minimumControlHeight": 44,
+    "exactFullSheetPngDownload": true,
+    "backingCanvas": [
+      1024,
+      1024
+    ],
+    "pureNavigationLeavesPaintAndHistoryUnchanged": true,
+    "detailStrokeUndoRedo": true,
+    "saveForkRecovery": true,
+    "viewAbsentFromSavedArtwork": true,
+    "viewResetsForStudyAndLearner": true,
+    "visualPreviewsInspected": true,
+    "initialLayoutCorrection": "Scrollbar appearance initially changed the fitted paper size. Fit now uses stable outer viewport geometry; zoom and phone viewport checks pass."
+  },
+  "englishAdditions": [
+    "watercolor_paper_view",
+    "watercolor_paint_mode",
+    "watercolor_pan_mode",
+    "watercolor_paper_zoom",
+    "watercolor_fit_paper",
+    "watercolor_navigation_help",
+    "watercolor_pan_canvas",
+    "watercolor_finger_pan"
+  ],
+  "existingEnglishPreserved": true,
+  "mirrorsMatch": true,
+  "syntaxChecksPassed": true,
+  "spectralBuildCheckPassed": true,
+  "scopedWhitespaceChecksPassed": true
+}

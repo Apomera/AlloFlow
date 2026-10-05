@@ -1,0 +1,489 @@
+{
+  "version": 1,
+  "sourceSHA": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963",
+  "userConstraint": "Do not commit; no staging, commit, push or deployment performed.",
+  "final": {
+    "cpu": {
+      "cases": 47,
+      "passed": 47,
+      "failed": 0,
+      "pending": 0,
+      "files": 10,
+      "retries": 0,
+      "reportSHA": "d716b08d0f29fd65b51eba11508586d251d079aa13cfd300b502ded0ac8b2df5",
+      "casesDetail": [
+        {
+          "file": "tests/cephalopodlab_habitat_composition.test.js",
+          "name": "Cephalopod Hunter deterministic habitat composition preserves baseline random call sites, plant geometry and spawn bytes after reversing only approved water flow and rock shadow faces",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_habitat_composition.test.js",
+          "name": "Cephalopod Hunter deterministic habitat composition casts solid reef rocks from both faces while keeping opaque receivers and other habitat material policies",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_habitat_composition.test.js",
+          "name": "Cephalopod Hunter deterministic habitat composition retains actual plant spawn order and all 525 owned random draws, resource counts, heights, yaw and phase",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_habitat_composition.test.js",
+          "name": "Cephalopod Hunter deterministic habitat composition composes the actual settled reef into five rock-rooted groves with clear sand and den paths",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_habitat_composition.test.js",
+          "name": "Cephalopod Hunter deterministic habitat composition keeps stable habitat resources and positions without random draws or repeated buffer uploads",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_habitat_composition.test.js",
+          "name": "Cephalopod Hunter deterministic habitat composition preserves actual baseline grass recycle eligibility and draw order through several player locations",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_habitat_composition.test.js",
+          "name": "Cephalopod Hunter deterministic habitat composition keeps composition outside per-frame animation and leaves grounding, cleanup and resource lifecycle intact",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_kelp_bladder.test.js",
+          "name": "Cephalopod Hunter attached kelp gas bladders keeps every accepted141 kelp attribute and504indices byte-exact, with original grass checked through the approved insertion reversal",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_kelp_bladder.test.js",
+          "name": "Cephalopod Hunter attached kelp gas bladders builds four separate physically closed outward shells with finite unit normals and valid height/footprint bounds",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_kelp_bladder.test.js",
+          "name": "Cephalopod Hunter attached kelp gas bladders intersects actual triangle shells twice across radial and axial rays with a visible volumetric silhouette",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_kelp_bladder.test.js",
+          "name": "Cephalopod Hunter attached kelp gas bladders uses exact existing blade landmarks and keeps both float poles joined through live shader pulse phases and world transforms",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_kelp_bladder.test.js",
+          "name": "Cephalopod Hunter attached kelp gas bladders preserves actual525 spawn draws,25 independent kelp actors, their unchanged material, root frame and camouflage metadata",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_kelp_bladder.test.js",
+          "name": "Cephalopod Hunter attached kelp gas bladders freezes actual pause/reduced-motion flex, resumes accepted clocks and keeps every owned buffer/material stable until one disposal",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_kelp_fronds.test.js",
+          "name": "Cephalopod Hunter attached kelp fronds checks original grass goldens through the exact approved-insertion reversal and preserves live central-kelp attributes",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_kelp_fronds.test.js",
+          "name": "Cephalopod Hunter attached kelp fronds attaches four alternating curved leaves, with narrow tips, broad folded middles and a continuous palette at every joint",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_kelp_fronds.test.js",
+          "name": "Cephalopod Hunter attached kelp fronds keeps joined vertices together under the existing flex and encloses every bent leaf in the actual expanded bounds",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_moon_jelly.test.js",
+          "name": "Cephalopod Hunter moon-jelly anatomy retains five ambient actors and all sixty-five ordered spawn and phase draws",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_moon_jelly.test.js",
+          "name": "Cephalopod Hunter moon-jelly anatomy uses eight bounded finite indexed surfaces with an upward crown, trailing anatomy and ordinary alpha ownership",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_moon_jelly.test.js",
+          "name": "Cephalopod Hunter moon-jelly anatomy updates bell normals from the actual deformed triangles without reallocating or escaping fixed conservative bounds",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_moon_jelly.test.js",
+          "name": "Cephalopod Hunter moon-jelly anatomy keeps deterministic geometry and independently owned resources across all five actors",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_moon_jelly.test.js",
+          "name": "Cephalopod Hunter moon-jelly anatomy attaches actual canal tips, four oral roots and all twenty-four margin roots throughout pulse and wave extrema",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_moon_jelly.test.js",
+          "name": "Cephalopod Hunter moon-jelly anatomy renders four separate open horseshoes under the bell instead of a single closed glowing ring",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_moon_jelly_dome.test.js",
+          "name": "Cephalopod Hunter moon-jelly dome flex retains paired-reference construction, ownership, rest and full lip while changing the actual crown/rim aspect cycle",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_moon_jelly_dome.test.js",
+          "name": "Cephalopod Hunter moon-jelly dome flex keeps the real dome ordered, bounded and clear of all gonad vertices with continuous face-consistent normals through a full forward/reverse pulse",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_flex.test.js",
+          "name": "Cephalopod Hunter rooted shader plant flex keeps roots and slopes fixed, bounds every wave, and matches its analytic derivative to finite differences",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_flex.test.js",
+          "name": "Cephalopod Hunter rooted shader plant flex corrects normals with the inverse transpose before instance and world transforms",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_flex.test.js",
+          "name": "Cephalopod Hunter rooted shader plant flex expands only culled kelp bounds, enclosing posed vertices while every grass instance root stays fixed",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_flex.test.js",
+          "name": "Cephalopod Hunter rooted shader plant flex shares a slow spatial water pulse while retaining independent blade ripples",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_flex.test.js",
+          "name": "Cephalopod Hunter rooted shader plant flex shares one persistent vec4 across material recompiles, retains independent plants, and keeps long-dive phases finite",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_geometry.test.js",
+          "name": "Cephalopod Hunter plant geometry builds finite folded ribbons with valid triangles, normals and final bounds across plant variants",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_geometry.test.js",
+          "name": "Cephalopod Hunter plant geometry uses deterministic variation without random draws or shared mutable geometry",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_geometry.test.js",
+          "name": "Cephalopod Hunter plant geometry preserves all 525 seeded placement, height, yaw and phase draws plus counts and camouflage data",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_geometry.test.js",
+          "name": "Cephalopod Hunter plant geometry keeps grass instance base and top heights while preserving their radial layout, yaw and scale",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_geometry.test.js",
+          "name": "Cephalopod Hunter plant geometry pivots kelp around its fixed root and bounds grass-root movement by cluster radius rather than height",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_plant_geometry.test.js",
+          "name": "Cephalopod Hunter plant geometry retains primary sway frequency, freezes flex under pause, and makes both kinds static under reduced motion",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_reef_placement.test.js",
+          "name": "Cephalopod reef placement measures actual rotated and scaled vertices without translating or mutating the mesh",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_reef_placement.test.js",
+          "name": "Cephalopod reef placement keeps a clear site stable and relocates a blocked one deterministically without consuming RNG",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_reef_placement.test.js",
+          "name": "Cephalopod reef placement keeps resolved recycling sites inside the allowed annulus even when the original candidate is invalid",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_reef_placement.test.js",
+          "name": "Cephalopod reef placement uses a bounded area fallback when the nearby search is blocked and returns null when everything is blocked",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_reef_placement.test.js",
+          "name": "Cephalopod reef placement moves an obstructed surviving colony without replacing resources or metadata and grounds it immediately",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_reef_placement.test.js",
+          "name": "Cephalopod reef placement keeps a fully blocked colony pooled but inactive and restores it when space becomes available",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_seagrass_straps.test.js",
+          "name": "Cephalopod Hunter bounded seagrass strap refinement uniquely reverses only the exact approved insertion while preserving unrelated current source bytes",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_seagrass_straps.test.js",
+          "name": "Cephalopod Hunter bounded seagrass strap refinement keeps live roots, tips, veins, true extrema and footprint while producing finite fuller upper straps with bounded projected area",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_seagrass_straps.test.js",
+          "name": "Cephalopod Hunter bounded seagrass strap refinement preserves all kelp bytes,525 real constructor draws and subsequent stream, actor footprints/instances/materials and independent owned resources",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shelter_grounding.test.js",
+          "name": "Cephalopod Hunter same-frame placed-shelter grounding grounds each real carriable shelter before the first den scan on both shelf and negative terrain",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shelter_grounding.test.js",
+          "name": "Cephalopod Hunter same-frame placed-shelter grounding preserves the existing strict height and horizontal den boundaries after placement",
+          "status": "passed"
+        },
+        {
+          "file": "tests/cephalopodlab_shelter_grounding.test.js",
+          "name": "Cephalopod Hunter same-frame placed-shelter grounding retains exact drop poses, metadata, resources, announcements and zero extra randomness",
+          "status": "passed"
+        }
+      ]
+    },
+    "native": {
+      "cases": 8,
+      "passed": 8,
+      "failed": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "workers": 1,
+      "retries": 0,
+      "aggregation": "Five unchanged habitat/touch cases from final-native.json plus three cases from native-verified.json. No claim of a single all-pass eight-case reporter.",
+      "casesDetail": [
+        {
+          "file": "cephalopod-habitat-lighting.spec.ts",
+          "name": "low natural habitat clusters keep open routes and grounded roots while actual plant, sand and water programs submit",
+          "status": "expected",
+          "retries": 0,
+          "report": "final-native.json",
+          "reportSHA": "67bb25ea5759d2201c5a123a9fbbf56cf6fc105e5f2f7802ddb7fe5bdb1f5e29"
+        },
+        {
+          "file": "cephalopod-habitat-lighting.spec.ts",
+          "name": "balanced natural habitat clusters keep open routes and grounded roots while actual plant, sand and water programs submit",
+          "status": "expected",
+          "retries": 0,
+          "report": "final-native.json",
+          "reportSHA": "67bb25ea5759d2201c5a123a9fbbf56cf6fc105e5f2f7802ddb7fe5bdb1f5e29"
+        },
+        {
+          "file": "cephalopod-habitat-lighting.spec.ts",
+          "name": "diagnostic day and depth changes drive existing lighting while pause and reduced motion retain live resources",
+          "status": "expected",
+          "retries": 0,
+          "report": "final-native.json",
+          "reportSHA": "67bb25ea5759d2201c5a123a9fbbf56cf6fc105e5f2f7802ddb7fe5bdb1f5e29"
+        },
+        {
+          "file": "cephalopod-mobile-experience.spec.ts",
+          "name": "failed Forage replaces Observe with matching visible and spoken advice, then expires without starting a meal",
+          "status": "expected",
+          "retries": 0,
+          "report": "final-native.json",
+          "reportSHA": "67bb25ea5759d2201c5a123a9fbbf56cf6fc105e5f2f7802ddb7fe5bdb1f5e29"
+        },
+        {
+          "file": "cephalopod-mobile-experience.spec.ts",
+          "name": "vampire touch controls describe actual marine snow and preserve held gathering and one-meal Forage",
+          "status": "expected",
+          "retries": 0,
+          "report": "final-native.json",
+          "reportSHA": "67bb25ea5759d2201c5a123a9fbbf56cf6fc105e5f2f7802ddb7fe5bdb1f5e29"
+        },
+        {
+          "file": "cephalopod-moray-jelly-visuals.spec.ts",
+          "name": "low moray and moon jellies render live anatomy and preserve shelter streaming and cleanup",
+          "status": "expected",
+          "retries": 0,
+          "report": "native-verified.json",
+          "reportSHA": "4d002bd29f83ff019d4870fb2824fc3d9ee2eeec636be97db4bcad8687c1577a"
+        },
+        {
+          "file": "cephalopod-moray-jelly-visuals.spec.ts",
+          "name": "balanced moray and moon jellies render live anatomy and preserve shelter streaming and cleanup",
+          "status": "expected",
+          "retries": 0,
+          "report": "native-verified.json",
+          "reportSHA": "4d002bd29f83ff019d4870fb2824fc3d9ee2eeec636be97db4bcad8687c1577a"
+        },
+        {
+          "file": "cephalopod-vampire-feeding.spec.ts",
+          "name": "vampire desktop guidance uses real marine snow while T remains advice and existing feeding controls still work",
+          "status": "expected",
+          "retries": 0,
+          "report": "native-verified.json",
+          "reportSHA": "4d002bd29f83ff019d4870fb2824fc3d9ee2eeec636be97db4bcad8687c1577a"
+        }
+      ]
+    },
+    "testHashes": {
+      "tests/cephalopodlab_moon_jelly_dome.test.js": "8b96f682906e6d43ba6e55968bb57645539c7459a96dc265cfbbafe21c17a606",
+      "tests/cephalopodlab_moon_jelly.test.js": "f62bbb10577c35a992142b69096dd6d9eafe0da5e3d51d7bf65bdfcc22c9dc31",
+      "tests/cephalopodlab_seagrass_straps.test.js": "f93c7e8fe9bda39793603bec629b77d871cb819d795c5519cbcc80fa56c98e00",
+      "tests/cephalopodlab_plant_geometry.test.js": "67ce3118c3a8752d28fdeadea1a81fd13403ef67b51a81ec5d1093ff0ecbaea1",
+      "tests/cephalopodlab_plant_flex.test.js": "d1a9606de0cfa31fd2b9da1d3572ddd1a50553dc13567e2f5b288c6f54d1f9fd",
+      "tests/cephalopodlab_kelp_fronds.test.js": "7be03aac785913040446cee72e184a4bd5ee875b3aa0ac791b58baa937e911c4",
+      "tests/cephalopodlab_kelp_bladder.test.js": "a33ab55074258e98033f05bc90c9d2e97f048fc9cfec878ab90aef76fd17d3fe",
+      "tests/cephalopodlab_habitat_composition.test.js": "341b546661137e67034a8bcbcb3518ab2bdd53f7326aa8b60ca22fb403bd1b0c",
+      "tests/cephalopodlab_reef_placement.test.js": "24a604d2d25ee97a26d6b3de5c1e621486cc814ad366021948ea6908c19961f3",
+      "tests/cephalopodlab_shelter_grounding.test.js": "dc893b8eacf688af9d893682612e19a56e4fc023f41e459777e0b1c0aaf5acb7",
+      "tests/e2e/cephalopod-moray-jelly-visuals.spec.ts": "b4fdc5a61d0f3af284b4eb0ba7c5eb42a81655a73a66e5bb96ee92ed70e7077f",
+      "tests/e2e/cephalopod-habitat-lighting.spec.ts": "eef7bdacca8a734f78ca416623c0e4c91502637682761796a0542a11bfc86cfc",
+      "tests/e2e/cephalopod-vampire-feeding.spec.ts": "ae0f9227ee042e5fd46a8f3a38d59b3cd26aa644e79a0ec3e50eb9cb88c5b9a9",
+      "tests/e2e/cephalopod-mobile-experience.spec.ts": "51572169fc3098898d1d6f7f793224a7ed86d07988ff659ae3fe9aeee19bca7e"
+    },
+    "supportHashes": {
+      "tests/helpers/cephalopod_moon_jelly_reference.cjs": "d2bf66b198c6d9f52f6c526bd3a6d63cb21cb574d5124245aa47b50475d6e5c5",
+      "tests/helpers/cephalopod_prey_tail_reference.cjs": "5a5f41204168df4194845107324ea2386c38e9cbb8b515c0cac1ef605b314f31",
+      "tests/helpers/cephalopod_seagrass_reference.cjs": "57f30ba9a84f98e2b0ace3a7794797becc717c588a1e4a226bf83d195aa88060",
+      "tests/helpers/cephalopod_squid_fin_reference.js": "f8a95fbe615230d90d9ffa6b1088df94ec4079cc217d2e66b8e110c6d7248a68",
+      "tests/fixtures/cephalopod_habitat_original.json": "1e22681c21072570d03aedd8885f1df72f0347e152b69d05117adbeb208d9263",
+      "tests/fixtures/cephalopod_kelp_original.json": "49427d9fcf6384aefc5195584f237853395a8df3b47e0b710d07f46bb7f6e459",
+      "tests/e2e/helpers/cephalopod_controls.ts": "baae69c0994a1abe8698c991f5998e8a1759a8e113fb1be5caa75a12ebf93e6e",
+      "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6"
+    },
+    "sourceHashesUnchangedThroughout": true,
+    "acceptedImages": 34,
+    "captureErrors": 0,
+    "captureLeaks": 0
+  },
+  "negativeControls": [
+    {
+      "kind": "Copied-source dome and grass geometry faults",
+      "detected": 2,
+      "otherCasesPassed": 3,
+      "reportSHA": "d14a3c16efa129fbc2dae872a9dc0a753ab02e1cb923159e69d17e27e37a264e",
+      "productionAndTestsUnchanged": true,
+      "qualification": "Initial controller looked for a width-message literal that was not the actual first failure. The preserved reporter correctly has two intended failures and three passes. Qualification reads that exact reporter and checks the actual dome-aspect and grass projected-area failure, without rerunning or altering tests."
+    },
+    {
+      "kind": "Copied-source vampire Observe regression",
+      "detected": 1,
+      "reportSHA": "42efe42a429f3fb3e3e8a01fd4543d928c34bbeb237c481005d07807d7c94eda",
+      "productionAndTestsUnchanged": true
+    }
+  ],
+  "testMigrations": {
+    "plant": {
+      "sourceHashesUnchanged": {
+        "stem_lab/stem_tool_cephalopodlab.js": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963",
+        "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963",
+        "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963",
+        "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963"
+      },
+      "productionWrites": 0,
+      "reason": "These stale expectations predate the accepted pass28 spatial water pulse. Frond/bladder regexes require motion.x for clPlantX and omit accepted Z+1.7 and pulse weight, causing module-load failures before grass checks. Geometry expects the former per-plant accumulated motion.x clock; the actual0.42 value is1200*.00035. The accepted independent ripple rate is now in motion.y. Two cache-key and one later bladder resume assertions would be stale after import is repaired. Pass30 changes only squid fins/roughness; pass32 exact reversals contain no plant shader/clock/loop change.",
+      "preserved": "Every geometry attribute/golden/prefix/closed-shell/ray/anchor/normal/triangle/footprint assertion, numerical tolerance, phase sweep, pause/reduced-motion snapshot, once-only disposal and RNG assertion remains unchanged. Current wave phases and amplitudes are pinned exactly; actual GLSL pulse and analytic derivative are executed. The y clock retains the original per-kind frequency assertions alongside the new shared x clock.",
+      "files": [
+        {
+          "file": "tests/cephalopodlab_kelp_fronds.test.js",
+          "beforeNormalizedSHA": "7afc89b43f5f2a5981e9edcae777d6dffcd6e9616280ef80c70ff2ad230f91f5",
+          "afterSHA": "7be03aac785913040446cee72e184a4bd5ee875b3aa0ac791b58baa937e911c4",
+          "guards": [
+            {
+              "beforeSHA": "90751fe54a04022818d1c71b88e9262daa1e620f9b812a8a6d95e396ad54c62b",
+              "afterSHA": "8973f45fa43322cf4e24311ea14cca6cc9ed2ec67ce0729d9bcd7f76c1156ff7"
+            },
+            {
+              "beforeSHA": "190f3b5d40315df84ac1af0f5a03032e15306becc1f80c6442a59fd6f4c691f4",
+              "afterSHA": "8ec72b900e8f2819db566d144bb0fdef34836b6edfe2797bc3c8167614891438"
+            }
+          ],
+          "reverseByteExact": true
+        },
+        {
+          "file": "tests/cephalopodlab_kelp_bladder.test.js",
+          "beforeNormalizedSHA": "c773399a4bfec0b3728b5e15f646847b08812659b8680c21e1207016f55fa6ca",
+          "afterSHA": "a33ab55074258e98033f05bc90c9d2e97f048fc9cfec878ab90aef76fd17d3fe",
+          "guards": [
+            {
+              "beforeSHA": "4751587477e4b02e77a92780f43f91500ebc400b743f03bf8c2dc5c011ba68e2",
+              "afterSHA": "568f4f72ecf1fd0290d7b3b1ca3819fac785fa276cc04bdcf023adb4b68f04e8"
+            },
+            {
+              "beforeSHA": "a0eaa7cb63ce884a05377e72941396b03db6b7f346f15340361f72505a2786df",
+              "afterSHA": "1d5931dfeea4bb40f02703e573bba10de7074557ce394f10f61946f15efaeac4"
+            },
+            {
+              "beforeSHA": "d83a2ac3cb664ee5f2993ea9eb62c9a6c10b028f6c0e487b9519865987336f63",
+              "afterSHA": "7adf01bc51652ef86c31a50fb20a3943993fd1366187c016268bb12149b5a11b"
+            }
+          ],
+          "reverseByteExact": true
+        },
+        {
+          "file": "tests/cephalopodlab_plant_geometry.test.js",
+          "beforeNormalizedSHA": "8f1befbd5d1533adb2998be01336ee15d19a081e3cadf220dd6f441184b2ef97",
+          "afterSHA": "67ce3118c3a8752d28fdeadea1a81fd13403ef67b51a81ec5d1093ff0ecbaea1",
+          "guards": [
+            {
+              "beforeSHA": "0de2a90ee03bd04aa49485988e1c21664c1bd640070c16e34dc82fb14d8a9871",
+              "afterSHA": "6e617cacffdf580876da7ac30d381443450f785f484d4f7993ccced587ebc839"
+            },
+            {
+              "beforeSHA": "240177b4c521863b66c64b86d7a1e4ee41d1a7ce8641aec995237bd58d0d0b58",
+              "afterSHA": "f599695e9c81cab56815e70f8f33c9a9ec522b782c26c92e187c4133262f6f0c"
+            }
+          ],
+          "reverseByteExact": true
+        }
+      ]
+    },
+    "nativeBudget": {
+      "reason": "Three browser cases reached their total180second limit at later inspection/help stages in the constrained host. This is not evidence that controls were absent or animation was stranded. Preserve every assertion, frame count, input and retry limit; enlarge only these three cases budget.",
+      "files": [
+        {
+          "file": "tests/e2e/cephalopod-moray-jelly-visuals.spec.ts",
+          "beforeSHA": "860f02231591f02851d1d5190079d5bc83cecb335ca01dd4afa0d2b1e9e13e16",
+          "afterSHA": "b4fdc5a61d0f3af284b4eb0ba7c5eb42a81655a73a66e5bb96ee92ed70e7077f",
+          "reverseByteExact": true
+        },
+        {
+          "file": "tests/e2e/cephalopod-vampire-feeding.spec.ts",
+          "beforeSHA": "7373c763358e6f6fdb95762963c4a25d7c1a8c448cba00341063e43258b5b596",
+          "afterSHA": "ae0f9227ee042e5fd46a8f3a38d59b3cd26aa644e79a0ec3e50eb9cb88c5b9a9",
+          "reverseByteExact": true
+        }
+      ],
+      "productionWrites": 0
+    }
+  },
+  "priorAttempts": [
+    {
+      "report": "final-unit.json",
+      "reason": "Pre-pass28 shader/phase/cache expectations in three older plant tests. Current motion source is exactly unchanged; documented test-only migrations decode and verify accepted live motion, retaining all tolerances and goldens."
+    },
+    {
+      "report": "final-native.json",
+      "passed": 5,
+      "failed": 3,
+      "reason": "Three long cases reached total180second limit late in inspection/help. Increased only their budgets to480seconds, preserving every frame, assertion and zero retries; all three rerun on unchanged production."
+    },
+    {
+      "report": "unit-fault.json",
+      "reason": "Two intended faults were detected and three cases passed. Initial controller searched for the wrong first grass failure literal; saved reporter qualified independently without a rerun."
+    },
+    {
+      "report": "native-fault.json",
+      "reportSHA": "7ce28a43d7d52e31a1a1f57489ecd2146119b07b87e9b8b810f873553577fa95",
+      "acceptedFaults": 0,
+      "reason": "First negative controller supplied an absolute path as a browser tool URL and received404 before model rendering. It was rejected. Corrected source substitution uses the canonical asset URL; native-fault-qualified.json catches the actual Observe text regression."
+    }
+  ],
+  "limits": [
+    "Focused55-case final validation, not whole-repository coverage",
+    "Copied-source failures are deliberate and separate from positive coverage",
+    "Static grass has more opaque coverage; unchanged buffers do not prove unchanged raster cost",
+    "Biological motion is an illustrative animation, not a fluid simulation",
+    "Performance of the constrained test host does not establish target-device frame rate"
+  ]
+}

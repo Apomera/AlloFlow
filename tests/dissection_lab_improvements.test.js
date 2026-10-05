@@ -286,7 +286,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('actionLog: []');
       expect(source).toContain('tactileFeedback: d.tactileFeedback !== false');
       expect(source).toContain('var ADVANCED_SCENARIOS = [');
-      expect(source).toContain('function procedureScenarioStatus(procedureState)');
+      expect(source).toContain('function procedureScenarioStatus(procedureState, inspectedOrgans)');
       expect(source).toContain('function procedureDebriefData()');
       expect(source).toContain('function anatomicalRelationships()');
       expect(source).toContain('var CURATED_ANATOMY_RELATIONSHIPS = {');
@@ -599,7 +599,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain("var toolIsNext = procedureNext.action !== 'complete'");
       expect(source).toContain('"data-next": toolIsNext ? \'true\' : \'false\'');
       expect(source).toContain('"aria-current": toolIsNext ? \'step\' : undefined');
-      expect(source).toContain("'Next \\u00B7 ' + toolState.label");
+      expect(source).toContain('"data-tool-marker": "next"');
       expect(source).toContain("Guided procedure handoff cue connects the next required instrument to its anatomical target and ' + (procedureProtocol.order || []).length + '-step progress rail");
       expect(source).toContain("'; guided handoff cue: next instrument, anatomical target, and ' + (procedureProtocol.order || []).length + '-step progress encoded'");
       expect(source).toContain('function drawLocalizedTechniqueEvidence(procedureState, tissueState)');
@@ -626,7 +626,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('function structureInspectionFootprint(org)');
       expect(source).toContain('/vessel|arter|vena|vein|aorta|cord|nerve|intestin|ureter|duct|esophagus|trachea|spinal|chordae/');
       expect(source).toContain('function structureBoundaryAttachmentPoint(org, towardPoint)');
-      expect(source).toContain('function drawStructureInspectionFootprint(org, x, y, selected, hovered, visibility)');
+      expect(source).toContain('function drawStructureInspectionFootprint(org, x, y, selected, hovered, visibility, callout)');
       expect(source).toContain('var chambered = /heart|stomach|bladder|crop|gizzard|atrium|ventricle|cloaca|lens|humor/');
       expect(source).toContain('var layered = /skin|integument|cuticle|scale|carapace|membrane|muscle|myomere|retina|cornea|sclera|choroid|conjunctiva|diaphragm|septum|pericardium|valve/');
       expect(source).toContain("morphologyLabel: morphology === 'conduit' ? 'TUBE' : morphology.toUpperCase()");
@@ -638,7 +638,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('The inspection footprint is a depth capsule, not an exact anatomical outline');
       expect(source).toContain('var sourceAttachment = structureBoundaryAttachmentPoint(relationshipSource, relationshipPoint)');
       expect(source).toContain('var targetAttachment = structureBoundaryAttachmentPoint(relationship.organ, relationshipSourcePoint)');
-      expect(source).toContain('drawStructureInspectionFootprint(org, px, py, isSel, isHov, layout.visibility)');
+      expect(source).toContain('drawStructureInspectionFootprint(org, px, py, isSel, isHov, layout.visibility, layout)');
       expect(source).toContain("var hoverDepthLabel = anatomicalDepthLabel(structureOpticalDepth(hovOrg))");
       expect(source).toContain("var hoverExposure = structureExposureState(hovOrg, currentProcedure)");
       expect(source).toContain("var hoverMorphology = structureInspectionFootprint(hovOrg).morphologyLabel.toLowerCase()");
@@ -717,7 +717,7 @@ describe('dissection improvement contracts', { timeout: 60000 }, () => {
       expect(source).toContain('Waiting for Internal Organs layer');
       expect(source).toContain("pathway replayed from the beginning.");
       expect(source).toContain('systemTraceReplayToken: Date.now()');
-      expect(source).toContain('.diss-system-playback button[aria-pressed="true"]');      expect(source).toContain('var focusRadius = 12 + (1 - focusEntryProgress)');
+      expect(source).toContain('.diss-overlay-actions button[aria-pressed="true"]');      expect(source).toContain('var focusRadius = 12 + (1 - focusEntryProgress)');
       expect(source).toContain('var focusMuted = (focusMode || (denseHotspotView && d.selectedOrgan))');
       expect(source).toContain('focusEntryProgress = 1 - Math.pow');
       expect(source).toContain('Nearest-target hit testing also treats laid-out labels as interactive targets.');
@@ -2794,16 +2794,16 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
 
     expect(selection).not.toBeNull();
     expect(observePrompt?.textContent).toContain('Observe first');
-    expect(observePrompt?.nextElementSibling).toBe(reference);
+    expect(observePrompt.compareDocumentPosition(reference) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(reference?.open).toBe(false);
     expect(reference?.querySelector('summary')?.textContent).toBe('Check reference and connections');
     expect(reference?.querySelector('.diss-selection-summary')?.textContent).toContain('Green-brown pigmented surface');
     expect(reference?.textContent).toContain('Human/clinical connection');
     expect(reference?.textContent).toContain('Specimen layer:Skin');
     expect(reference?.contains(evidence)).toBe(false);
-    expect(reference?.nextElementSibling).toBe(evidence);
+    expect(reference.compareDocumentPosition(evidence) & Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
     expect(evidence?.querySelector('textarea')?.getAttribute('aria-describedby')).toBe(
-      'diss-observe-first-dorsal_skin diss-evidence-help-dorsal_skin',
+      'diss-observe-first-dorsal_skin diss-evidence-help-dorsal_skin diss-note-status-dorsal_skin',
     );
     expect(selection?.textContent).not.toMatch(/x:\d+% y:\d+%/);
   });
@@ -2993,7 +2993,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(latestToolData.dissection.selectedOrgan).toBe('dorsal_skin');
       let selectionTitle = host.querySelector('#diss-selection-title');
       expect(selectionTitle?.textContent).toBe('Dorsal Skin');
-      expect(document.activeElement).toBe(selectionTitle);
+      expect(document.activeElement).toBe(host.querySelector('#diss-note-dorsal_skin'));
 
       const dorsalReference = host.querySelector('details[data-selection-reference="true"]');
       expect(dorsalReference).not.toBeNull();
@@ -3299,7 +3299,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       },
       {
         action: 'evidence',
-        title: 'Finish the note for Dorsal Skin',
+        title: 'Complete the observation record for Dorsal Skin',
         state: { exploredOrgans: explored },
       },
       {
@@ -3369,7 +3369,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     const page = new DOMParser().parseFromString(html, 'text/html');
     const nextAction = page.querySelector('[data-dissection-next-action]');
     expect(nextAction.getAttribute('data-next-action')).toBe('evidence');
-    expect(nextAction.textContent).toContain('Finish the note for Dorsal Skin');
+    expect(nextAction.textContent).toContain('Complete the observation record for Dorsal Skin');
     expect(page.querySelector('[data-next-action="peel-layer"]')).toBeNull();
   });
 
@@ -3988,7 +3988,13 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('role="radiogroup"');
     expect(html).toContain('Scalpel');
     expect(html).toContain('Active tool: Scalpel');
-    expect(html).toContain('Selected · Ready');
+    const guidedDocument = new DOMParser().parseFromString(html, 'text/html');
+    const selectedInstrument = guidedDocument.querySelector('#diss-instrument-scalpel');
+    expect(selectedInstrument.getAttribute('role')).toBe('radio');
+    expect(selectedInstrument.getAttribute('aria-checked')).toBe('true');
+    expect(selectedInstrument.querySelector('[data-tool-marker="selected"]').textContent).toBe('Selected');
+    expect(selectedInstrument.querySelector('[data-tool-marker="next"]').textContent).toBe('Next step');
+    expect(selectedInstrument.querySelector('.diss-instrument__state').textContent).toBe('Ready');
     expect(html).toContain('class="diss-stage__handoff"');
     expect(html).toContain('Live specimen response monitor');
     expect(html).toContain('diss-stage__telemetry');
@@ -4016,7 +4022,6 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     // above the stage, so the handoff names the phase instead of repeating the whole question.
     expect(html).not.toContain('Next · Which plan best protects anatomy during the initial entry?');
     expect(html).toContain('Which plan best protects anatomy during the initial entry?');
-    const guidedDocument = new DOMParser().parseFromString(html, 'text/html');
     const guidedHandoff = guidedDocument.querySelector('.diss-stage__handoff');
     const guidedProgress = guidedHandoff.querySelector('.diss-stage__handoff-progress').textContent;
     const guidedStep = guidedProgress.match(/^Workflow ([1-6])\/6$/);
@@ -4034,8 +4039,9 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('Precision access');
     expect(html).toContain('RECORDED');
     expect(html).toContain('Scenario lab');
-    expect(html).toContain('Debrief');
-    expect(html).toContain('Next improvement');
+    const layerReview = guidedDocument.querySelector('#diss-layer-review');
+    expect(layerReview.querySelector('h3').textContent).toBe('Layer review');
+    expect(Array.from(layerReview.querySelectorAll('.diss-layer-review__card > h4')).map(node => node.textContent)).toEqual(['What you did', 'What changed', 'Try next']);
     expect(html).toContain('Scenario thresholds');
     expect(html).toContain('Target score: 80');
     expect(html).toContain('Tool control');
@@ -4293,7 +4299,8 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain("className: \"diss-shortcuts\"");
       expect(source).toContain("'Ctrl + wheel', 'Zoom around the pointer'");
       expect(source).toContain('var macroLikelyOnLeft = inspectionLens && macroInset');
-      expect(source).toContain('var compassBottomInset = guidedMode && currentGuided ? Math.max(72, 64 * canvasHudScale) : 14');
+      expect(source).toContain('var compassBottomInset = (guidedMode && currentGuided ? Math.max(72, 64 * canvasHudScale) : 14) + screenPhysiologyHudReserve');
+      expect(source).toContain('var compassY = H - compassHeight - compassBottomInset');
       expect(source).toContain('var lensNearCompass = inspectionLens');
       expect(source).not.toContain("var z = Math.max(0.5, (d.canvasZoom || 1) - 0.25)");
       expect(source).not.toContain("var z = Math.min(3, (d.canvasZoom || 1) + 0.25)");
@@ -4495,8 +4502,28 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('Ideal focus: surface');
     expect(html).toContain('Resolved');
     expect(html).toContain('aria-label="Inspection focus depth"');
-    expect(html).toContain('aria-pressed="true">surface');
+    expect(html).toContain('aria-pressed="true">Surface');
     expect(html).toContain('aria-pressed="true">2x');
+    const root = document.createElement('div');
+    root.innerHTML = html;
+    const focus = root.querySelector('[aria-label="Inspection focus depth"]');
+    const magnify = root.querySelector('[aria-label="Inspection magnification"]');
+    expect(focus.querySelectorAll('button')).toHaveLength(3);
+    expect(magnify.querySelectorAll('button')).toHaveLength(3);
+    expect(focus.contains(magnify)).toBe(false);
+    for (const [target, depth, level, recommendation] of [['lens', 'deep', 2, '6x'], ['iris', 'surface', 6, '2x']]) {
+      const adviceHtml = renderTool('dissection', { dissection: {
+        specimen: 'sheepEye', _dissLoadedSpec: 'sheepEye', activeLayer: 'organs', anatomicalView: 'internal',
+        selectedOrgan: target, workspaceMode: 'advanced', inspectionLens: true, lensPinned: true,
+        lensPinnedOrganId: target, lensFocusDepth: depth, lensMagnification: level, lightIntensity: 60,
+        revealedLayers: { skin: true }, procedureByLayer: { organs: {
+          inspected: true, incisionStarted: true, incisionExtended: true, retracted: true,
+          tissueState: { clarity: 92, exposure: 87, stability: 84, risk: 8, moisture: 67, tension: 45, trauma: 0 },
+        } },
+      } });
+      expect(adviceHtml).toContain('Use ' + recommendation + ' magnification for this tissue depth.');
+      expect(adviceHtml).not.toContain('Use lower magnification for a wider, steadier field.');
+    }
   });
 
   it('provides persistent WCAG preferences, robust focus, composite keyboard navigation, and drag alternatives', () => {
@@ -4644,6 +4671,116 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     }
   }, 60000);
 
+  it('updates physiology playback immediately on motion preference changes and releases the listener', async () => {
+    const originalMatchMedia = window.matchMedia;
+    const listeners = new Set();
+    const media = {
+      matches: true,
+      media: '(prefers-reduced-motion: reduce)',
+      onchange: null,
+      addEventListener: vi.fn((type, listener) => { if (type === 'change') listeners.add(listener); }),
+      removeEventListener: vi.fn((type, listener) => { if (type === 'change') listeners.delete(listener); }),
+      addListener: vi.fn((listener) => listeners.add(listener)),
+      removeListener: vi.fn((listener) => listeners.delete(listener)),
+    };
+    Object.defineProperty(window, 'matchMedia', {
+      configurable: true, writable: true,
+      value: vi.fn((query) => query === media.media ? media : { ...media, media: query, matches: false }),
+    });
+    localStorage.removeItem('dissection_accessibility_preferences');
+    const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
+    const config = window.StemLab._registry.dissection;
+    let latestToolData;
+    let root;
+    let host;
+
+    function Component() {
+      const [toolData, setToolData] = React.useState({ dissection: {
+        specimen: 'sheepHeart', _dissLoadedSpec: 'sheepHeart', workspaceMode: 'advanced',
+        activeLayer: 'organs', revealedLayers: { skin: true, organs: true },
+        livingFunctionEnabled: true, livingFunctionPaused: false, livingFunctionSpeed: 'normal',
+        traceCirculation: true, systemPlaybackPaused: false, reducedMotion: false,
+        sceneDetail: false, soundEnabled: false,
+        organNotes: { leftVentricle: 'Observe the wall thickness' },
+        organConfidence: { leftVentricle: 3 }, exploredOrgans: { 'sheepHeart|leftVentricle': true },
+        quizScore: 1, quizTotal: 2,
+      } });
+      latestToolData = toolData;
+      return config.render(makeCtx({ toolData, setToolData }));
+    }
+
+    try {
+      host = document.createElement('div');
+      document.body.appendChild(host);
+      root = ReactDOMClient.createRoot(host);
+      await act(async () => { root.render(React.createElement(Component)); await Promise.resolve(); });
+      const model = () => host.querySelector('.diss-living-function');
+      const badge = () => model().querySelector('.diss-living-function__badge');
+      const button = (name) => Array.from(model().querySelectorAll('button')).find((el) => el.textContent === name);
+      const pathway = () => host.querySelector('.diss-system-playback');
+      const speed = () => model().querySelector('button[aria-label="Cycle living function speed"]');
+      expect(listeners.size).toBe(1);
+      expect(badge().textContent).toBe('Static · reduced motion');
+      expect(pathway().textContent).toContain('Static directions · reduced motion');
+      expect(button('Function model on').disabled).toBe(false);
+      for (const control of [button('Pause'), button('Replay'), speed(), ...pathway().querySelectorAll('button')]) {
+        expect(control.disabled).toBe(true);
+      }
+      const beforeDissection = latestToolData.dissection;
+      await act(async () => { button('Pause').click(); button('Replay').click(); speed().click(); });
+      expect(latestToolData.dissection).toBe(beforeDissection);
+
+      await act(async () => {
+        media.matches = false;
+        for (const listener of listeners) listener({ matches: false, media: media.media });
+        await Promise.resolve();
+      });
+      expect(latestToolData.dissection).toBe(beforeDissection);
+      expect(badge().textContent).toBe('Playing · normal');
+      expect(model().getAttribute('data-motion')).toBe('playing');
+      expect(pathway().textContent).toContain('Playing directional flow');
+      for (const control of [button('Pause'), button('Replay'), speed(), ...pathway().querySelectorAll('button')]) {
+        expect(control.disabled).toBe(false);
+      }
+      await act(async () => { button('Pause').click(); await Promise.resolve(); });
+      expect(badge().textContent).toBe('Paused · normal');
+      expect(button('Resume').getAttribute('aria-pressed')).toBe('true');
+      await act(async () => { speed().click(); await Promise.resolve(); });
+      expect(badge().textContent).toBe('Paused · slow');
+      await act(async () => { button('Replay').click(); await Promise.resolve(); });
+      expect(badge().textContent).toBe('Playing · slow');
+      expect(latestToolData.dissection.livingFunctionReplayToken).toEqual(expect.any(Number));
+      expect(listeners.size).toBe(1);
+
+      const beforeReduced = latestToolData.dissection;
+      await act(async () => {
+        media.matches = true;
+        for (const listener of listeners) listener({ matches: true, media: media.media });
+        await Promise.resolve();
+      });
+      expect(latestToolData.dissection).toBe(beforeReduced);
+      expect(badge().textContent).toBe('Static · reduced motion');
+      expect(button('Pause').disabled).toBe(true);
+      expect(button('Function model on').disabled).toBe(false);
+      await act(async () => { button('Function model on').click(); await Promise.resolve(); });
+      expect(badge().textContent).toBe('Off · preserved view remains static');
+      expect(button('Enable function model').disabled).toBe(false);
+      expect(listeners.size).toBe(1);
+
+      await act(async () => { root.unmount(); await Promise.resolve(); });
+      root = null;
+      expect(listeners.size).toBe(0);
+    } finally {
+      if (root) await act(async () => { root.unmount(); await Promise.resolve(); });
+      if (host) host.remove();
+      await new Promise((resolve) => setTimeout(resolve, 150));
+      contextSpy.mockRestore();
+      Object.defineProperty(window, 'matchMedia', { configurable: true, writable: true, value: originalMatchMedia });
+      window._dissectionKeyHandler = null;
+      document.getElementById('allo-live-dissection')?.remove();
+    }
+  }, 60000);
+
   it('protects destructive reset and announces filtered structure results with focus recovery', () => {
     for (const filePath of DISSECTION_PATHS) {
       const source = readFileSync(filePath, 'utf8');
@@ -4655,7 +4792,7 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
       expect(source).toContain("focusResetControl('diss-reset-confirm')");
       expect(source).toContain("if (d.resetConfirmPending) cancelSpecimenReset()");
       expect(source).toContain('"aria-controls": "diss-directory-results"');
-      expect(source).toContain('"aria-describedby": "diss-directory-count"');
+      expect(source).toContain('"aria-describedby": "diss-directory-count diss-directory-keyboard-help"');
       expect(source).toContain('"aria-atomic": "true"');
       expect(source).toContain('filteredOrgans.length');
       expect(source).toContain('Accessibility preferences were preserved.');
@@ -4678,7 +4815,10 @@ describe('dissection improved UI render', { timeout: 60000 }, () => {
     expect(html).toContain('Cancel');
     expect(html).toContain('Accessibility preferences are preserved');
     expect(html).toContain('aria-controls="diss-directory-results"');
-    expect(html).toContain('aria-describedby="diss-directory-count"');
+    const directoryDocument = new DOMParser().parseFromString(html, 'text/html');
+    const describedIds = directoryDocument.querySelector('[aria-controls="diss-directory-results"]').getAttribute('aria-describedby').split(/\s+/);
+    expect(describedIds).toEqual(['diss-directory-count', 'diss-directory-keyboard-help']);
+    for (const id of describedIds) expect(directoryDocument.getElementById(id)?.textContent.trim()).toBeTruthy();
     expect(html).toContain('2 matching structures in Organs');
     expect(html).toContain('aria-atomic="true"');
   });
@@ -5594,10 +5734,25 @@ expect(html).toContain('Scenario center');
     const contextSpy = vi.spyOn(HTMLCanvasElement.prototype, 'getContext').mockReturnValue(null);
     const config = window.StemLab._registry.dissection;
     let latestA;
+    let continueAction;
+    const awardXP = vi.fn();
     let rootA;
     let rootB;
     let hostA;
     let hostB;
+
+    function findContinueAction(node) {
+      if (!React.isValidElement(node)) return null;
+      if (node.props.className === 'diss-mission-shortcuts') {
+        const buttons = React.Children.toArray(node.props.children);
+        return buttons[buttons.length - 1].props.onClick;
+      }
+      for (const child of React.Children.toArray(node.props.children)) {
+        const action = findContinueAction(child);
+        if (action) return action;
+      }
+      return null;
+    }
 
     function LabA() {
       const [toolData, setToolData] = React.useState({
@@ -5642,7 +5797,9 @@ expect(html).toContain('Scenario center');
         },
       });
       latestA = toolData;
-      return config.render(makeCtx({ toolData, setToolData }));
+      const view = config.render(makeCtx({ toolData, setToolData, awardXP }));
+      continueAction = findContinueAction(view);
+      return view;
     }
 
     function LabB() {
@@ -5697,6 +5854,32 @@ expect(html).toContain('Scenario center');
       const peelTimer = canvasA._dissTimers?.layerPeel;
       expect(peelTimer).toBeDefined();
       expect(latestA.dissection._incisionAnim?.active).toBe(true);
+      const pendingStartTick = latestA.dissection._incisionAnim.startTick;
+      expect(Number.isFinite(pendingStartTick)).toBe(true);
+      const continueButton = Array.from(hostA.querySelectorAll('.diss-mission-shortcuts button'))
+        .find((button) => button.textContent === 'Technique in progress...');
+      expect(continueButton, 'pending activity shortcut').toBeDefined();
+      expect(continueButton.disabled).toBe(true);
+      expect(revealButton.disabled).toBe(true);
+      const pendingProof = {
+        notes: latestA.dissection.organNotes, confidence: latestA.dissection.organConfidence,
+        explored: latestA.dissection.exploredOrgans, procedures: latestA.dissection.procedureByLayer,
+      };
+      await act(async () => {
+        continueButton.click();
+        continueButton.click();
+        revealButton.click();
+        continueAction();
+        await Promise.resolve();
+      });
+      expect(canvasA._dissTimers?.layerPeel).toBe(peelTimer);
+      expect(latestA.dissection._incisionAnim.startTick).toBe(pendingStartTick);
+      expect(latestA.dissection.activeLayer).toBe('skin');
+      expect(latestA.dissection.revealedLayers?.skin).not.toBe(true);
+      expect({
+        notes: latestA.dissection.organNotes, confidence: latestA.dissection.organConfidence,
+        explored: latestA.dissection.exploredOrgans, procedures: latestA.dissection.procedureByLayer,
+      }).toEqual(pendingProof);
 
       await act(async () => {
         rootB.unmount();
@@ -5713,6 +5896,7 @@ expect(html).toContain('Scenario center');
       });
       expect(latestA.dissection.revealedLayers).toMatchObject({ skin: true });
       expect(latestA.dissection.activeLayer).toBe('muscle');
+      expect(awardXP.mock.calls.filter(([toolId, amount, reason]) => toolId === 'dissection' && amount === 3 && reason === 'Peeled skin layer')).toHaveLength(1);
       expect(canvasA._dissTimers?.layerPeel).toBeUndefined();
       expect(canvasA._dissTimers?.layerTransition).toBeDefined();
       expect(latestA.dissection._procedureDemo).not.toBeNull();

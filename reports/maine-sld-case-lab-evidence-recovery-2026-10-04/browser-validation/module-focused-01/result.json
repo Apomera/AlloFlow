@@ -1,0 +1,295 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/evidence-recovery-validation/module-focused-01/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "maine-sld-practice.spec.ts",
+      "file": "maine-sld-practice.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "all52 scores, evidence and Q8/Q9 work survive steps, case switches and reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2886,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T14:34:33.392Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-284d885bf124c33bc54d",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 70,
+          "column": 5
+        },
+        {
+          "title": "participant review edits return to each exact control and retain their origin through evidence detours without persisting navigation context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 14530,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T14:36:01.701Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-3ab02895d8934a1bc516",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 479,
+          "column": 5
+        },
+        {
+          "title": "session save warning preserves open work and focus across blocked access quota failure recovery and explicit retries",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8479,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T14:36:16.245Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-95af6e5e389028710484",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 555,
+          "column": 5
+        },
+        {
+          "title": "most recent finding removal can restore exact roles and literal notes across all five case records and filtered score sources without transferring recovery state",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 29151,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAccessibleName\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('finding-removal-recovery').getByTestId('undo-finding-removal')\nExpected: \u001b[32m\"Undo removal of Working-memory measure · \u001b[7mnull\u001b[27m · Jordan, Grade 5: achievement and family concerns\"\u001b[39m\nReceived: \u001b[31m\"Undo removal of Working-memory measure · \u001b[7mUnspecified assessment\u001b[27m · Jordan, Grade 5: achievement and family concerns\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAccessibleName\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('finding-removal-recovery').getByTestId('undo-finding-removal')\u001b[22m\n\u001b[2m    33 × locator resolved to <button type=\"button\" class=\"msld-button\" data-testid=\"undo-finding-removal\" aria-label=\"Undo removal of Working-memory measure · Unspecified assessment · Jordan, Grade 5: achievement and family concerns\">Undo removal</button>\u001b[22m\n\u001b[2m       - unexpected value \"Undo removal of Working-memory measure · Unspecified assessment · Jordan, Grade 5: achievement and family concerns\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAccessibleName\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('finding-removal-recovery').getByTestId('undo-finding-removal')\nExpected: \u001b[32m\"Undo removal of Working-memory measure · \u001b[7mnull\u001b[27m · Jordan, Grade 5: achievement and family concerns\"\u001b[39m\nReceived: \u001b[31m\"Undo removal of Working-memory measure · \u001b[7mUnspecified assessment\u001b[27m · Jordan, Grade 5: achievement and family concerns\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAccessibleName\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('finding-removal-recovery').getByTestId('undo-finding-removal')\u001b[22m\n\u001b[2m    33 × locator resolved to <button type=\"button\" class=\"msld-button\" data-testid=\"undo-finding-removal\" aria-label=\"Undo removal of Working-memory measure · Unspecified assessment · Jordan, Grade 5: achievement and family concerns\">Undo removal</button>\u001b[22m\n\u001b[2m       - unexpected value \"Undo removal of Working-memory measure · Unspecified assessment · Jordan, Grade 5: achievement and family concerns\"\u001b[22m\n\n    at findingRemovalAssertRecovery (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:688:232)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:709:1085",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                      "column": 232,
+                      "line": 688
+                    },
+                    "snippet": "  686 | async function findingRemovalDownload(page:Page,name:string){const pending=page.waitForEvent('download');await worksheetAction(page,page.getByTestId('export-reflection'));const file=await pending;const path=join(REPORT,name);await file.saveAs(path);return {worksheet:JSON.parse(await readFile(path,'utf8')),payload:{name,mimeType:'application/json',buffer:await readFile(path)}};}\n  687 | async function findingRemovalRestore(page:Page,payload:any){await page.locator('input[type=file]').setInputFiles(payload);await page.getByRole('alertdialog').getByRole('button',{name:'Restore worksheet',exact:true}).click();}\n> 688 | async function findingRemovalAssertRecovery(page:Page,row:any,fixture:any){const recovery=page.getByTestId('finding-removal-recovery');await expect(recovery).toBeVisible();await expect(recovery.getByTestId('undo-finding-removal')).toHaveAccessibleName('Undo removal of '+row.label+' · '+row.test+' · '+fixture.title);return recovery;}\n      |                                                                                                                                                                                                                                        ^\n  689 | function findingRemovalNoSerializedRecovery(value:any){if(!value||typeof value!=='object')return;for(const [key,item] of Object.entries(value)){expect(key).not.toMatch(/undo|removal|recovery|removedFinding/i);findingRemovalNoSerializedRecovery(item);}}\n  690 | async function findingRemovalSeed(page:Page,data:any){const initial=await findingRemovalDownload(page,'finding-removal-blank-worksheet.json');const worksheet=initial.worksheet;for(const fixture of data.cases){for(let index=0;index<Math.min(3,fixture.narrative.length);index++)worksheet.caseWork[fixture.id].findings['context-'+index]={purpose:index===0?'supporting':'complicating',note:index===0?findingRemovalNote(fixture.id):'Participant '+fixture.id+' context '+index+' must retain its role and literal note.\\n<em>Text only.</em>'};worksheet.caseWork[fixture.id].responses.Q9={answer:'more',note:'Participant '+fixture.id+' existing Q9 reasoning remains independent.'};}worksheet.activeCase='alex';const payload={name:'finding-removal-seed.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(worksheet))};await writeFile(join(REPORT,'finding-removal-seed.json'),payload.buffer);await findingRemovalRestore(page,payload);return {worksheet,payload};}\n  691 | async function findingRemovalFocusVisible(page:Page,id:string){await expect(page.getByTestId(id)).toBeFocused();const bounds=await page.getByTestId(id).evaluate(node=>{const main=document.querySelector('.msld-main')!.getBoundingClientRect(),field=node.getBoundingClientRect();return {mainTop:main.top,mainBottom:main.bottom,fieldTop:field.top,fieldBottom:field.bottom};});expect(bounds.fieldTop).toBeGreaterThanOrEqual(bounds.mainTop-1);expect(bounds.fieldBottom).toBeLessThanOrEqual(bounds.mainBottom+1);}"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                        "column": 232,
+                        "line": 688
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveAccessibleName\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  getByTestId('finding-removal-recovery').getByTestId('undo-finding-removal')\nExpected: \u001b[32m\"Undo removal of Working-memory measure · \u001b[7mnull\u001b[27m · Jordan, Grade 5: achievement and family concerns\"\u001b[39m\nReceived: \u001b[31m\"Undo removal of Working-memory measure · \u001b[7mUnspecified assessment\u001b[27m · Jordan, Grade 5: achievement and family concerns\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveAccessibleName\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for getByTestId('finding-removal-recovery').getByTestId('undo-finding-removal')\u001b[22m\n\u001b[2m    33 × locator resolved to <button type=\"button\" class=\"msld-button\" data-testid=\"undo-finding-removal\" aria-label=\"Undo removal of Working-memory measure · Unspecified assessment · Jordan, Grade 5: achievement and family concerns\">Undo removal</button>\u001b[22m\n\u001b[2m       - unexpected value \"Undo removal of Working-memory measure · Unspecified assessment · Jordan, Grade 5: achievement and family concerns\"\u001b[22m\n\n\n  686 | async function findingRemovalDownload(page:Page,name:string){const pending=page.waitForEvent('download');await worksheetAction(page,page.getByTestId('export-reflection'));const file=await pending;const path=join(REPORT,name);await file.saveAs(path);return {worksheet:JSON.parse(await readFile(path,'utf8')),payload:{name,mimeType:'application/json',buffer:await readFile(path)}};}\n  687 | async function findingRemovalRestore(page:Page,payload:any){await page.locator('input[type=file]').setInputFiles(payload);await page.getByRole('alertdialog').getByRole('button',{name:'Restore worksheet',exact:true}).click();}\n> 688 | async function findingRemovalAssertRecovery(page:Page,row:any,fixture:any){const recovery=page.getByTestId('finding-removal-recovery');await expect(recovery).toBeVisible();await expect(recovery.getByTestId('undo-finding-removal')).toHaveAccessibleName('Undo removal of '+row.label+' · '+row.test+' · '+fixture.title);return recovery;}\n      |                                                                                                                                                                                                                                        ^\n  689 | function findingRemovalNoSerializedRecovery(value:any){if(!value||typeof value!=='object')return;for(const [key,item] of Object.entries(value)){expect(key).not.toMatch(/undo|removal|recovery|removedFinding/i);findingRemovalNoSerializedRecovery(item);}}\n  690 | async function findingRemovalSeed(page:Page,data:any){const initial=await findingRemovalDownload(page,'finding-removal-blank-worksheet.json');const worksheet=initial.worksheet;for(const fixture of data.cases){for(let index=0;index<Math.min(3,fixture.narrative.length);index++)worksheet.caseWork[fixture.id].findings['context-'+index]={purpose:index===0?'supporting':'complicating',note:index===0?findingRemovalNote(fixture.id):'Participant '+fixture.id+' context '+index+' must retain its role and literal note.\\n<em>Text only.</em>'};worksheet.caseWork[fixture.id].responses.Q9={answer:'more',note:'Participant '+fixture.id+' existing Q9 reasoning remains independent.'};}worksheet.activeCase='alex';const payload={name:'finding-removal-seed.json',mimeType:'application/json',buffer:Buffer.from(JSON.stringify(worksheet))};await writeFile(join(REPORT,'finding-removal-seed.json'),payload.buffer);await findingRemovalRestore(page,payload);return {worksheet,payload};}\n  691 | async function findingRemovalFocusVisible(page:Page,id:string){await expect(page.getByTestId(id)).toBeFocused();const bounds=await page.getByTestId(id).evaluate(node=>{const main=document.querySelector('.msld-main')!.getBoundingClientRect(),field=node.getBoundingClientRect();return {mainTop:main.top,mainBottom:main.bottom,fieldTop:field.top,fieldBottom:field.bottom};});expect(bounds.fieldTop).toBeGreaterThanOrEqual(bounds.mainTop-1);expect(bounds.fieldBottom).toBeLessThanOrEqual(bounds.mainBottom+1);}\n    at findingRemovalAssertRecovery (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:688:232)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:709:1085"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T14:36:24.738Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\evidence-recovery-validation\\module-focused-01\\artifacts\\maine-sld-practice-most-re-2c2de-transferring-recovery-state-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\evidence-recovery-validation\\module-focused-01\\artifacts\\maine-sld-practice-most-re-2c2de-transferring-recovery-state-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\evidence-recovery-validation\\module-focused-01\\artifacts\\maine-sld-practice-most-re-2c2de-transferring-recovery-state-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\evidence-recovery-validation\\module-focused-01\\artifacts\\maine-sld-practice-most-re-2c2de-transferring-recovery-state-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\evidence-recovery-validation\\module-focused-01\\artifacts\\maine-sld-practice-most-re-2c2de-transferring-recovery-state-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                    "column": 232,
+                    "line": 688
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-1a5a59cac50a15ed5193",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 694,
+          "column": 5
+        },
+        {
+          "title": "finding removal recovery keeps neighboring board focus protects newer entries and clears only the required snapshots through reset restore and reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 78374,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T14:37:01.419Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-68641cc527aaf909648d",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 717,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T14:34:06.624Z",
+    "duration": 303328.099,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

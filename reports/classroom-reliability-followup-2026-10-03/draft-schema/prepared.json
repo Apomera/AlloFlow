@@ -1,0 +1,36 @@
+{
+  "schemaVersion": 1,
+  "preparedAt": "2026-10-03T15:07:03.032Z",
+  "startHead": "e967db3d9bf94befc568f3c25a3f543d9c591f8d",
+  "files": [
+    {
+      "file": "allo_device_storage_module.js",
+      "before": "before/0-allo_device_storage_module.js",
+      "candidate": "candidate/0-allo_device_storage_module.js",
+      "patch": "0.patch",
+      "beforeSha256": "a1741015f70722b1dbb13a2b1f1a8d82e67ce57a6c58157274e3ed74c24d7365",
+      "afterSha256": "dae0b944581716cba45829f8b818def940af66b9be0bf5f6064ca64d375cada3"
+    },
+    {
+      "file": "desktop/web-app/public/allo_device_storage_module.js",
+      "before": "before/1-allo_device_storage_module.js",
+      "candidate": "candidate/1-allo_device_storage_module.js",
+      "patch": "1.patch",
+      "beforeSha256": "a1741015f70722b1dbb13a2b1f1a8d82e67ce57a6c58157274e3ed74c24d7365",
+      "afterSha256": "dae0b944581716cba45829f8b818def940af66b9be0bf5f6064ca64d375cada3"
+    },
+    {
+      "file": "storage_bridge.html",
+      "before": "before/2-storage_bridge.html",
+      "candidate": "candidate/2-storage_bridge.html",
+      "patch": "2.patch",
+      "beforeSha256": "d75d8ffdaad899e0901bf09949fec3d7f04285fe87ed47208723db3e02eb86d2",
+      "afterSha256": "242eed10662190d15f7ef4ca6a0a247f8375c5b900b2a7f7250b560b96b88a57"
+    }
+  ],
+  "scope": "Five existing host meaningful-draft fields added to native client/bridge predicates only.",
+  "status": "syntax-checked-report-candidates-only",
+  "productionApplied": false,
+  "testsRun": false,
+  "currentCI": "unverified"
+}

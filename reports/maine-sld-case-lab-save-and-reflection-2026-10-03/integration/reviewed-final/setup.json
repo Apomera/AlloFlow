@@ -1,0 +1,77 @@
+{
+  "preparedAt": "2026-10-03T18:52:51.207Z",
+  "port": 65063,
+  "baseUrl": "http://127.0.0.1:65063",
+  "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+  "priorPreviewPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-planning-review-2026-10-03\\integration\\source-preview",
+  "priorPreviewFiles": [
+    {
+      "file": "index.html",
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5"
+    },
+    {
+      "file": "host.css",
+      "sha256": "58a85c127571ce1dbda03af6ac60d44788a0b69689f709d5470c094bba92f84c"
+    },
+    {
+      "file": "tested-host.jsx",
+      "sha256": "7aa905b2c32795470cd16176df97926450807c86c95f1e237d7945a89b2889c9"
+    },
+    {
+      "file": "host.bundle.js",
+      "sha256": "13a146aa57b210dfa3229b45a5243134152ac7085c50235dd3fff096a2341a57"
+    },
+    {
+      "file": "preview.json",
+      "sha256": "ebb1c394e9fbec126f1d71fe9ae96989544eba6d603972be5b9077a234fd0581"
+    },
+    {
+      "file": "runtime.json",
+      "sha256": "35096078f9ab54f4c578c6ad4ef8693a5faff3ecb043d608ecca70c5b8c05bb0"
+    },
+    {
+      "file": "maine_sld_practice_module.js",
+      "sha256": "606ce30776177cc8faeb8d520f09ac15151b584eb8b09be9c25829f3883e5779"
+    },
+    {
+      "file": "frozen-activity.json",
+      "sha256": "6d5d7490e0a9b39613ac9211e7982dc553edc58ca77ee4c557e3f7317ec3ce64"
+    }
+  ],
+  "currentHostSnapshots": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "3ebed2d1c401071a0d3408e34cdfe613491bd4c27a1d3cba77d09caaa888de1f",
+      "bytes": 2848026
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "3ebed2d1c401071a0d3408e34cdfe613491bd4c27a1d3cba77d09caaa888de1f",
+      "bytes": 2848026
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "3ebed2d1c401071a0d3408e34cdfe613491bd4c27a1d3cba77d09caaa888de1f",
+      "bytes": 2848026
+    }
+  ],
+  "observedHostHashesAfterCapture": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "3ebed2d1c401071a0d3408e34cdfe613491bd4c27a1d3cba77d09caaa888de1f"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "3ebed2d1c401071a0d3408e34cdfe613491bd4c27a1d3cba77d09caaa888de1f"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "3ebed2d1c401071a0d3408e34cdfe613491bd4c27a1d3cba77d09caaa888de1f"
+    }
+  ],
+  "sourceDriftDuringPreparation": false,
+  "preexistingDirtyPathsArchived": true,
+  "previousArtifactsPreserved": true,
+  "previewOnly": true,
+  "noSourceModuleOrHostMutations": true
+}

@@ -106,7 +106,7 @@ describe('Guided banner — success note is gated on real completion, not the cl
     const b = mountBanner(baseProps({ guidedStep: 1, guidedEngaged: true, history: [] }));
     expect(b.text()).not.toContain('Analysis done');
     // The async analysis result lands in history (same step, same component instance):
-    b.render(baseProps({ guidedStep: 1, guidedEngaged: true, history: [{ type: 'analysis', id: 'a1', title: 'Analysis' }] }));
+    b.render(baseProps({ guidedStep: 1, guidedEngaged: true, history: [{ type: 'analysis', id: 'a1', title: 'Analysis', data: { readingLevel: 'Grade 2', originalText: 'Plants need sunlight and water.' } }] }));
     const txt = b.text();
     expect(txt).toContain('Analysis done');
     expect(txt).toContain('✅');
@@ -117,16 +117,26 @@ describe('Guided banner — success note is gated on real completion, not the cl
   it('does NOT flash "done" on a fresh step that a prior step\'s history would otherwise satisfy', () => {
     // Arrive at analysis with nothing produced yet, then its result lands → done:
     const b = mountBanner(baseProps({ guidedStep: 1, history: [] }));
-    b.render(baseProps({ guidedStep: 1, history: [{ type: 'analysis', id: 'a1' }] }));
+    b.render(baseProps({ guidedStep: 1, history: [{ type: 'analysis', id: 'a1', data: { readingLevel: 'Grade 2', originalText: 'Plants need sunlight and water.' } }] }));
     expect(b.text()).toContain('Analysis done');
     // Advance to FAQ with the SAME history — re-baselined on step change, so FAQ is NOT yet "done"
     // even though an (unrelated) analysis item sits in history:
-    b.render(baseProps({ guidedStep: 2, history: [{ type: 'analysis', id: 'a1' }] }));
+    b.render(baseProps({ guidedStep: 2, history: [{ type: 'analysis', id: 'a1', data: { readingLevel: 'Grade 2', originalText: 'Plants need sunlight and water.' } }] }));
     expect(b.text()).not.toContain('FAQ ready');
     expect(b.text()).toContain('Generate an FAQ');
     // Now FAQ produces its own output → done:
-    b.render(baseProps({ guidedStep: 2, history: [{ type: 'analysis', id: 'a1' }, { type: 'faq', id: 'f1' }] }));
+    b.render(baseProps({ guidedStep: 2, history: [{ type: 'analysis', id: 'a1', data: { readingLevel: 'Grade 2', originalText: 'Plants need sunlight and water.' } }, { type: 'faq', id: 'f1', data: [{ question: 'What do plants need?', answer: 'Sunlight and water.' }] }] }));
     expect(b.text()).toContain('FAQ ready');
+    b.cleanup();
+  });
+
+  it('ignores existing matching history and new unrelated outputs', () => {
+    const prior = { type: 'analysis', id: 'prior', data: { readingLevel: 'Grade 2' } };
+    const b = mountBanner(baseProps({ guidedStep: 1, history: [prior] }));
+    expect(b.text()).not.toContain('Analysis done');
+    b.render(baseProps({ guidedStep: 1, history: [prior, { type: 'faq', id: 'other', data: [] }] }));
+    expect(b.text()).not.toContain('Analysis done');
+    expect(b.button('Next step')).toBeFalsy();
     b.cleanup();
   });
 
@@ -967,7 +977,8 @@ describe('Guided reading first use', () => {
     const applyGuidedPreset = vi.fn();
     const b = mountBanner(baseProps({ guidedStep: 0, GUIDED_STEPS: config.GUIDED_STEPS,
       allGuidedSteps: config.GUIDED_STEPS, guidedPresets: [preset], applyGuidedPreset }));
-    const button = b.button('Adapt a reading');
+    const button = b.button(preset.label);
+    expect(button).toBeTruthy();
     expect(button.textContent).toContain('7 steps, including review and delivery');
     act(() => button.click());
     expect(applyGuidedPreset).toHaveBeenCalledWith(preset);

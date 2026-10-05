@@ -1,0 +1,137 @@
+{
+  "runId": "e9ee5d4e-2026-10-04T23-37-47-730Z",
+  "sourceSha256": "e9ee5d4e7ae3a4e45f60226e4ae8df129e4b2f254b4f213c76034153383870dc",
+  "selected": "all",
+  "pool": "forks",
+  "maxWorkers": 1,
+  "expectedPassed": 950,
+  "expectedScienceUnselected": 131,
+  "fixturePins": {
+    "tests/anatomy_liver_guide.test.js": "58b2399ec9a91679b76ff118cfb80eba29841bdd068b746ef47d0f5c9b557113",
+    "tests/anatomy_muscle_guide.test.js": "c45ba8a74bff3ec378dde03e97a1892acc854e6a501fca0342e06c3e79ae3a43",
+    "tests/anatomy_learning_continuity.test.js": "0a3b88ba73dd8cf55fbcb08ccf3b7b31aee724aa0bc30f94e6a3d59ea0e01ce9",
+    "tests/anatomy_knee_guide.test.js": "45af941d2ee92c00e8ea02d33be570f62fd8eaa98a695695c4b46f372efb487c",
+    "tests/anatomy_heart_guide.test.js": "2011a5cb781f99a39657a983fae57b8e2791fb40dfd03825acdde09ad2c7ff7f",
+    "tests/anatomy_alveolus_guide.test.js": "f5c9faa7a801568bd959b83abda67b477d8c05b28f77a992fc0750dba167db58",
+    "tests/anatomy_kidney_guide.test.js": "9b3a3d7e59dfad53c6c52b12d668acdd1b5d08a2ff13dfa919b000227fbe5d44",
+    "tests/anatomy_lens_gallery_navigation.test.js": "e0db13cb01d85c1e6e56cd57394fb198f8aaea38cec6e27fae335229e0803cad",
+    "tests/anatomy_scale_navigation.test.js": "f10c5e7f93aaa6b3f05e6f61202c194cdd08bb19450bad7fe1b26bb107d0fc7f",
+    "tests/anatomy_lab_science.test.js": "6cbdd4db7db9f9021cde24726ee2aa584707931c4ca8506f8074b97e72fc3f39",
+    "tests/anatomy_atlas_muted_layers.test.js": "f20a4a9b991c81d6850285ad4ca09d3bec94d8a50c37077923982dfc766ba563"
+  },
+  "stages": [
+    {
+      "name": "liver-guide-units",
+      "files": [
+        "tests/anatomy_liver_guide.test.js"
+      ],
+      "expectedPassed": 142,
+      "requiredCases": []
+    },
+    {
+      "name": "muscle-guide-units",
+      "files": [
+        "tests/anatomy_muscle_guide.test.js"
+      ],
+      "expectedPassed": 248,
+      "requiredCases": []
+    },
+    {
+      "name": "learning-continuity-regression-units",
+      "files": [
+        "tests/anatomy_learning_continuity.test.js"
+      ],
+      "expectedPassed": 30,
+      "requiredCases": []
+    },
+    {
+      "name": "knee-guide-units",
+      "files": [
+        "tests/anatomy_knee_guide.test.js"
+      ],
+      "expectedPassed": 114,
+      "requiredCases": []
+    },
+    {
+      "name": "knee-muted-layer-regression-units",
+      "files": [
+        "tests/anatomy_atlas_muted_layers.test.js"
+      ],
+      "expectedPassed": 4,
+      "requiredCases": []
+    },
+    {
+      "name": "heart-guide-units",
+      "files": [
+        "tests/anatomy_heart_guide.test.js"
+      ],
+      "expectedPassed": 114,
+      "requiredCases": []
+    },
+    {
+      "name": "alveolus-guide-units",
+      "files": [
+        "tests/anatomy_alveolus_guide.test.js"
+      ],
+      "expectedPassed": 108,
+      "requiredCases": []
+    },
+    {
+      "name": "kidney-guide-regression-units",
+      "files": [
+        "tests/anatomy_kidney_guide.test.js"
+      ],
+      "expectedPassed": 74,
+      "requiredCases": []
+    },
+    {
+      "name": "lens-gallery-regression-units",
+      "files": [
+        "tests/anatomy_lens_gallery_navigation.test.js"
+      ],
+      "expectedPassed": 64,
+      "requiredCases": []
+    },
+    {
+      "name": "scale-navigation-regression-units",
+      "files": [
+        "tests/anatomy_scale_navigation.test.js"
+      ],
+      "expectedPassed": 28,
+      "requiredCases": []
+    },
+    {
+      "name": "liver-existing-science-units",
+      "files": [
+        "tests/anatomy_lab_science.test.js"
+      ],
+      "expectedPassed": 24,
+      "requiredCases": [
+        "connects body location, the liver organ, and labeled lobule microanatomy",
+        "clamps liver stages and explains bile flow opposite the blood direction",
+        "opens a labeled motor-end-plate and sarcomere atlas from biceps",
+        "clamps activation phases and exposes paused contraction narration",
+        "coordinates muscle, joint, cardiac, and alveolar diagrams in one accessible pathway",
+        "synchronizes the selected disruption point with the matching Clinical Lens",
+        "opens a labeled lateral knee cutaway from the patella structure",
+        "clamps knee phases and exposes paused stability narration",
+        "offers the heart atlas from structure details without crowding the default view",
+        "clamps restored atlas steps and exposes motion controls and live narration",
+        "honors reduced motion and keeps the atlas responsive on small screens",
+        "connects posterior body location, kidney regions, and nephron processing",
+        "clamps nephron steps and exposes paused flow with final urine narration",
+        "opens a labeled alveolus, barrier, and capillary atlas",
+        "clamps gas-exchange steps and exposes paused transport narration",
+        "gives every focused diagram a labeled visual key and explicit step state",
+        "adds scale and orientation cues to the four original regional diagrams",
+        "activates a structure-changing mechanism layer in every non-cardiac diagram",
+        "changes cardiac valve state and ventricular geometry with the selected flow phase",
+        "keeps the three most relevant structures readable for every selected step",
+        "keeps normal anatomy as the default and exposes an accessible optional control",
+        "changes every diagram and pairs the visible pathology with a functional consequence",
+        "gives every focused diagram a meaningful next-system handoff",
+        "routes handoffs through the shared scale-bridge navigator with a selected target step"
+      ]
+    }
+  ]
+}

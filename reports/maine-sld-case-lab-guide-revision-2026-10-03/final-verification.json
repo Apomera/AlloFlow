@@ -1,0 +1,87 @@
+{
+  "verifiedAt": "2026-10-04T03:55:35.204873+00:00",
+  "status": "PASS",
+  "sourceSha256": "46d1ce09304d70d98b60a4a7a758969b3c5f3eef99a6c5b522113a06e9397437",
+  "moduleSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+  "moduleBytes": 189988,
+  "fourModuleCopiesMatch": true,
+  "targetedBrowserScenariosPassed": 6,
+  "newBrowserScenarios": 2,
+  "originalScenariosBytePreserved": 33,
+  "availableScenarios": 35,
+  "axeScans": 4,
+  "axeViolations": 0,
+  "rootAcceptedCaptureCount": 8,
+  "worksheetSchemaPreserved": true,
+  "guideOriginIsTransient": true,
+  "caseDataCoreBuilderPreserved": true,
+  "activityCssPrintFunctionSharedResponseLabelPreserved": true,
+  "literalClassNamesPreserved": true,
+  "retainedPrintPageCount": 9,
+  "retainedPrintPdfSha256": "8fd65a71f399b21d5089ef3906bf3387a40cf71abd3c5ac62576c7f9705060a6",
+  "printRerun": false,
+  "preparedAssetValidation": false,
+  "combinedDistinctScenarioCoverage": false,
+  "validationMethod": "original canonical specification and unchanged synchronous stylesheet setup",
+  "naturalEditorCaptureProof": {
+    "file": "browser-validation/natural-editor-probe-03/capture-evidence.json",
+    "sha256": "6457f6b8881ced0a7e2f7e411a7b0f335bfa3c6d9d2504b7171cc8085d883cb4",
+    "captureOnlyTraceAssetMethod": true,
+    "priorTraceJavaScriptBodyUnavailable": true,
+    "focusedWriterAndReturnFullyVisible": true,
+    "minimumClearancePx": 7,
+    "caretAndLiteralTextPreserved": true,
+    "noAdditionalScrollWhileTyping": true,
+    "scrollTopAfterFillAndTyping": 4915
+  },
+  "testedHostSourceSha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+  "testedHostBundleSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+  "sharedHostSourcesObserved": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+      "finalMainePinRetained": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+      "finalMainePinRetained": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+      "finalMainePinRetained": true
+    }
+  ],
+  "currentSourceMatchesTestedSnapshot": true,
+  "finalServedBytes": [
+    {
+      "name": "app",
+      "httpStatus": 200,
+      "bytes": 588,
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5"
+    },
+    {
+      "name": "hostBundle",
+      "httpStatus": 200,
+      "bytes": 1976991,
+      "sha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd"
+    },
+    {
+      "name": "activityModule",
+      "httpStatus": 200,
+      "bytes": 189988,
+      "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc"
+    }
+  ],
+  "previewPid": 19880,
+  "scopedIndexEmpty": true,
+  "commitPerformed": false,
+  "deploymentPerformed": false,
+  "evidenceHashes": {
+    "browserValidationSummary": "e3e216dba786b638b0b6cdf806fa92f0bfbfeebb12a03994e49b5cc1356a2dbe",
+    "rootLayoutReview": "220cf2da14d471667f8fe85a58daa389f9757a78f54bae04a508883dea098195",
+    "independentReview": "26ece7c16dc0c3a9c555a228b00be53fe258c7617bb2ddfa6fd39c315c3eca28",
+    "postHostObservation": "6b7328a309fd784f8de8c0816bf7a402d674f7f63b66ca51cd7ece590a03fffa"
+  }
+}

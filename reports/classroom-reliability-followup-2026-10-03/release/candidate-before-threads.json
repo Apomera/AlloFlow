@@ -1,0 +1,794 @@
+{
+  "schemaVersion": 1,
+  "kind": "selected-candidate-capture",
+  "at": "2026-10-03T16:18:42.342Z",
+  "root": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "spec": {
+    "schemaVersion": 1,
+    "scope": "Four follow-up classroom persistence/removal fixes, selected actual-source regressions and two synthetic native browser journeys",
+    "inputs": [
+      "AlloFlowANTI.txt",
+      "_build_live_aac_module.js",
+      "_build_simple_iife_module.js",
+      "_build_utils_pure_module.js",
+      "_build_view_persona_chat_module.js",
+      "allo_command_context_source.js",
+      "allo_crypto_module.js",
+      "allo_device_storage_module.js",
+      "allo_device_vault_module.js",
+      "allo_recovery_vault_integration_module.js",
+      "allopacks/crew_norms_grade6_8.allopack.json",
+      "applied_challenge_module.js",
+      "apps_script/session_mailbox/Code.gs",
+      "build.js",
+      "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js",
+      "desktop/web-app/node_modules/react/umd/react.development.js",
+      "desktop/web-app/package-lock.json",
+      "desktop/web-app/package.json",
+      "desktop/web-app/public/allo_device_storage_module.js",
+      "desktop/web-app/public/applied_challenge_module.js",
+      "desktop/web-app/public/export_handlers_module.js",
+      "desktop/web-app/public/karaoke_audio_store_module.js",
+      "desktop/web-app/public/live_aac_module.js",
+      "desktop/web-app/public/memory_aid_module.js",
+      "desktop/web-app/public/read_aloud_audio_service_module.js",
+      "desktop/web-app/public/resource_read_aloud_module.js",
+      "desktop/web-app/public/session_transport_module.js",
+      "desktop/web-app/public/shared_activity_module.js",
+      "desktop/web-app/public/studio_response_module.js",
+      "desktop/web-app/public/text_utility_helpers_module.js",
+      "desktop/web-app/public/utils_pure_module.js",
+      "desktop/web-app/public/view_persona_chat_module.js",
+      "desktop/web-app/public/view_simplified_module.js",
+      "desktop/web-app/src/AlloFlowANTI.txt",
+      "desktop/web-app/src/App.jsx",
+      "desktop/web-app/src/index.css",
+      "desktop/web-app/tailwind.config.js",
+      "dev-tools/studio_delivery_e2e.cjs",
+      "device_access_code_module.js",
+      "export_handlers_module.js",
+      "firestore_sync_module.js",
+      "host_handlers_source.jsx",
+      "instructional_context_module.js",
+      "karaoke_audio_store_module.js",
+      "live_aac_module.js",
+      "live_aac_source.jsx",
+      "memory_aid_module.js",
+      "misc_handlers_source.jsx",
+      "package-lock.json",
+      "package.json",
+      "pure_helpers_module.js",
+      "read_aloud_audio_service_module.js",
+      "read_aloud_audio_service_source.jsx",
+      "reading_library_module.js",
+      "reports/classroom-reliability-followup-2026-10-03/accessibility/acceptance.cjs",
+      "reports/classroom-reliability-followup-2026-10-03/accessibility/bridge-acceptance.cjs",
+      "reports/classroom-reliability-followup-2026-10-03/cache-coherence/applied.json",
+      "reports/classroom-reliability-followup-2026-10-03/followup.vitest.config.js",
+      "reports/classroom-reliability-followup-2026-10-03/prepare-scope.cjs",
+      "reports/classroom-reliability-followup-2026-10-03/prepare_cache_coherence.cjs",
+      "reports/classroom-reliability-followup-2026-10-03/recovery_draft_schema.test.js",
+      "reports/classroom-reliability-followup-2026-10-03/recovery_media_intent.test.js",
+      "reports/classroom-reliability-followup-2026-10-03/release/candidate_receipt.cjs",
+      "reports/classroom-reliability-followup-2026-10-03/resource_receiver_lifecycle.test.js",
+      "reports/classroom-reliability-followup-2026-10-03/source-before/host_lifecycle_fragments.json",
+      "reports/classroom-reliability-followup-2026-10-03/source-before/session_transport_module.js",
+      "reports/classroom-reliability-followup-2026-10-03/student-response-v2-lifecycle.test.js",
+      "reports/classroom-reliability-followup-2026-10-03/verify-current.cjs",
+      "resource_read_aloud_module.js",
+      "session_transport_module.js",
+      "shared_activity_module.js",
+      "shared_activity_source.jsx",
+      "storage_bridge.html",
+      "studio_response_module.js",
+      "teacher_source.jsx",
+      "test_prep/eppp_part_one_pack.json",
+      "tests/allo_device_storage_a11y.test.js",
+      "tests/class_mailbox.test.js",
+      "tests/classroom_history_save_policy.test.js",
+      "tests/classroom_host_audio_integration.test.js",
+      "tests/device_storage_bridge.test.js",
+      "tests/device_storage_bridge_security.test.js",
+      "tests/helpers/anchored_slice.js",
+      "tests/helpers/host_source.js",
+      "tests/history_reload_rehydrate.test.js",
+      "tests/lib/audio_fixtures.js",
+      "tests/mailbox_image_delivery.test.js",
+      "tests/mailbox_session_bridge.test.js",
+      "tests/report_storage_ack_recovery.test.js",
+      "tests/report_storage_mixed_recovery.test.js",
+      "tests/report_storage_validation.vitest.config.js",
+      "tests/session_summary_test_utils.js",
+      "tests/session_transport.test.js",
+      "tests/setup.js",
+      "tests/storage_adapter_bootstrap_readiness.test.js",
+      "tests/storage_recovery_manager.test.js",
+      "tests/storage_recovery_vault_app.test.js",
+      "tests/storage_security_integration_contract.test.js",
+      "tests/utils_pure_storage.test.js",
+      "text_utility_helpers_module.js",
+      "text_utility_helpers_source.jsx",
+      "ui_modals_module.js",
+      "utils_pure_module.js",
+      "utils_pure_source.jsx",
+      "view_assignment_center_source.jsx",
+      "view_brainstorm_source.jsx",
+      "view_canvas_recovery_dialog_source.jsx",
+      "view_cold_path_surfaces_source.jsx",
+      "view_header_source.jsx",
+      "view_history_panel_module.js",
+      "view_history_panel_source.jsx",
+      "view_launch_pad_module.js",
+      "view_launch_pad_source.jsx",
+      "view_live_session_dock_source.jsx",
+      "view_persona_chat_module.js",
+      "view_persona_chat_source.jsx",
+      "view_quiz_module.js",
+      "view_session_modal_module.js",
+      "view_share_session_surfaces_source.jsx",
+      "view_sidebar_panels_source.jsx",
+      "view_simplified_module.js"
+    ],
+    "parityPairs": [
+      [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/AlloFlowANTI.txt"
+      ],
+      [
+        "AlloFlowANTI.txt",
+        "desktop/web-app/src/App.jsx"
+      ],
+      [
+        "allo_device_storage_module.js",
+        "desktop/web-app/public/allo_device_storage_module.js"
+      ],
+      [
+        "utils_pure_module.js",
+        "desktop/web-app/public/utils_pure_module.js"
+      ],
+      [
+        "read_aloud_audio_service_module.js",
+        "desktop/web-app/public/read_aloud_audio_service_module.js"
+      ],
+      [
+        "view_simplified_module.js",
+        "desktop/web-app/public/view_simplified_module.js"
+      ],
+      [
+        "memory_aid_module.js",
+        "desktop/web-app/public/memory_aid_module.js"
+      ],
+      [
+        "applied_challenge_module.js",
+        "desktop/web-app/public/applied_challenge_module.js"
+      ],
+      [
+        "studio_response_module.js",
+        "desktop/web-app/public/studio_response_module.js"
+      ],
+      [
+        "resource_read_aloud_module.js",
+        "desktop/web-app/public/resource_read_aloud_module.js"
+      ],
+      [
+        "karaoke_audio_store_module.js",
+        "desktop/web-app/public/karaoke_audio_store_module.js"
+      ],
+      [
+        "live_aac_module.js",
+        "desktop/web-app/public/live_aac_module.js"
+      ],
+      [
+        "shared_activity_module.js",
+        "desktop/web-app/public/shared_activity_module.js"
+      ],
+      [
+        "session_transport_module.js",
+        "desktop/web-app/public/session_transport_module.js"
+      ],
+      [
+        "view_persona_chat_module.js",
+        "desktop/web-app/public/view_persona_chat_module.js"
+      ],
+      [
+        "export_handlers_module.js",
+        "desktop/web-app/public/export_handlers_module.js"
+      ],
+      [
+        "text_utility_helpers_module.js",
+        "desktop/web-app/public/text_utility_helpers_module.js"
+      ]
+    ]
+  },
+  "specSha256": "ee5c702963d2cae7a57c6c4bec8b31643c7ba79c059bf0249e65bdb9cedf008c",
+  "candidateSha256": "25f6b0cff126595593a633a5cf17f63881684bb3b6a766062a2c7be0f855db9c",
+  "startHead": "55787e4fba8779c0e35968453626a67de3ec51c8",
+  "endHead": "55787e4fba8779c0e35968453626a67de3ec51c8",
+  "files": {
+    "AlloFlowANTI.txt": {
+      "bytes": 2848026,
+      "sha256": "584569440f0a5b5aba8c446f23c2bdb001d675750eb4cbb1b8c73325d1b48817"
+    },
+    "_build_live_aac_module.js": {
+      "bytes": 1451,
+      "sha256": "954a2e92a0e7d8df67835ccbb8f73978a488f349ff9f75a3194b16b676f40ee8"
+    },
+    "_build_simple_iife_module.js": {
+      "bytes": 3648,
+      "sha256": "c7db9787c6e43b64a02a20481130ece19ea017f6260e6b59609e14834a3dfbc0"
+    },
+    "_build_utils_pure_module.js": {
+      "bytes": 2085,
+      "sha256": "727d7d7ae408dd8a00361f60da96a6e8fe58957071a673ff06d031446da27b98"
+    },
+    "_build_view_persona_chat_module.js": {
+      "bytes": 2951,
+      "sha256": "a2fc26c4049474107052d1861cab66b30f75509ba065c355bda84df903a44b6a"
+    },
+    "allo_command_context_source.js": {
+      "bytes": 112168,
+      "sha256": "fc4ce8a40519c141451594ee6f7fad9db906699956a424ccf1d49841c70454e2"
+    },
+    "allo_crypto_module.js": {
+      "bytes": 22719,
+      "sha256": "88d541c85f83a5efe4a2d17c47b83362b389cf7c165999be9eb25916364fa01a"
+    },
+    "allo_device_storage_module.js": {
+      "bytes": 68630,
+      "sha256": "dae0b944581716cba45829f8b818def940af66b9be0bf5f6064ca64d375cada3"
+    },
+    "allo_device_vault_module.js": {
+      "bytes": 40891,
+      "sha256": "f22f9699c9b7e9c2c1e331e0d93aaa501203b034853d9d8254f6a8c6e9383a53"
+    },
+    "allo_recovery_vault_integration_module.js": {
+      "bytes": 3818,
+      "sha256": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c"
+    },
+    "allopacks/crew_norms_grade6_8.allopack.json": {
+      "bytes": 30543,
+      "sha256": "eb2ab77e9047c7d40499d5e7e20146bce4d6a01bc942ce99cef3f56f6058bf53"
+    },
+    "applied_challenge_module.js": {
+      "bytes": 321211,
+      "sha256": "6c3bac9a49f8eca101664a36f516ff7f469f2b78278c3ce5f1a5335d144dd536"
+    },
+    "apps_script/session_mailbox/Code.gs": {
+      "bytes": 145187,
+      "sha256": "c8e001ff0a8321262a1a2adf12a7b787db84e8f6d00576919b0d792c3db1c41f"
+    },
+    "build.js": {
+      "bytes": 114401,
+      "sha256": "f2909fc8905c52b2fcc6e4bb32debf82473b47fcb0bb11194a3f589253b111c0"
+    },
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.development.js": {
+      "bytes": 1080227,
+      "sha256": "f9044a5e9c39db8bb1a204dff924e526ec0a621e695bb69de1035811be8709e4"
+    },
+    "desktop/web-app/node_modules/react/umd/react.development.js": {
+      "bytes": 109931,
+      "sha256": "28348fef6cb0ed8b2ceeb22deaf824428fd13875d84c73d38f77dd216fc24e7f"
+    },
+    "desktop/web-app/package-lock.json": {
+      "bytes": 895281,
+      "sha256": "1db071fc944f9314b19598fccb7f391a92b7370b58f2f76ad49672c77760951f"
+    },
+    "desktop/web-app/package.json": {
+      "bytes": 1678,
+      "sha256": "f58b9ab62234dc5907e949c743580c4d32581d8568ceebc9c31501a48d64ddef"
+    },
+    "desktop/web-app/public/allo_device_storage_module.js": {
+      "bytes": 68630,
+      "sha256": "dae0b944581716cba45829f8b818def940af66b9be0bf5f6064ca64d375cada3"
+    },
+    "desktop/web-app/public/applied_challenge_module.js": {
+      "bytes": 321211,
+      "sha256": "6c3bac9a49f8eca101664a36f516ff7f469f2b78278c3ce5f1a5335d144dd536"
+    },
+    "desktop/web-app/public/export_handlers_module.js": {
+      "bytes": 204235,
+      "sha256": "1104203ba482d3f4dca498d0cfefabfb6b8e15e6f5e89c4e3e452abb589c76fd"
+    },
+    "desktop/web-app/public/karaoke_audio_store_module.js": {
+      "bytes": 55366,
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df"
+    },
+    "desktop/web-app/public/live_aac_module.js": {
+      "bytes": 75288,
+      "sha256": "0be516840aea0ea0c059e4391e430d50c250c820ca7322181cd35d8a7b539876"
+    },
+    "desktop/web-app/public/memory_aid_module.js": {
+      "bytes": 322001,
+      "sha256": "d9faa63408f5fc2bf22c7e57b30da4be52419fdba144aa23224bbfbe982895a4"
+    },
+    "desktop/web-app/public/read_aloud_audio_service_module.js": {
+      "bytes": 85567,
+      "sha256": "7f606aada8da7e7709dbc73952a13506dba03577b5e885c91abb7932a491f71b"
+    },
+    "desktop/web-app/public/resource_read_aloud_module.js": {
+      "bytes": 28275,
+      "sha256": "12b996325cefe3276f7073c351fa0679dc02eb7ea9bc17efe063aeacc0026d91"
+    },
+    "desktop/web-app/public/session_transport_module.js": {
+      "bytes": 15983,
+      "sha256": "ea9ec09e09ee4c00cb16494590b11b8e12ddbbb1e0143335fba1284c691ee795"
+    },
+    "desktop/web-app/public/shared_activity_module.js": {
+      "bytes": 111117,
+      "sha256": "95f75b7cc021949d87c191d7e350016ba251c65ddccf0a422b57a4ae57277191"
+    },
+    "desktop/web-app/public/studio_response_module.js": {
+      "bytes": 34230,
+      "sha256": "3e9f72bf73832605fc68993f7eb5be663b14a0a696240ec39950bba1b66c7cb5"
+    },
+    "desktop/web-app/public/text_utility_helpers_module.js": {
+      "bytes": 32430,
+      "sha256": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2"
+    },
+    "desktop/web-app/public/utils_pure_module.js": {
+      "bytes": 96731,
+      "sha256": "4c42773ddc303f5f0dea00957261e4ecec6e8e608fb3eae1584a7c60e94049ab"
+    },
+    "desktop/web-app/public/view_persona_chat_module.js": {
+      "bytes": 186615,
+      "sha256": "3e93b1d37327ea50eadc08eacd5f8116c0cacbf8f500348ffbe47fd24cc29530"
+    },
+    "desktop/web-app/public/view_simplified_module.js": {
+      "bytes": 588005,
+      "sha256": "6ba838c86605890d3b771418b934486b72283adf4998ac4e9055746b0d6e250c"
+    },
+    "desktop/web-app/src/AlloFlowANTI.txt": {
+      "bytes": 2848026,
+      "sha256": "584569440f0a5b5aba8c446f23c2bdb001d675750eb4cbb1b8c73325d1b48817"
+    },
+    "desktop/web-app/src/App.jsx": {
+      "bytes": 2848026,
+      "sha256": "584569440f0a5b5aba8c446f23c2bdb001d675750eb4cbb1b8c73325d1b48817"
+    },
+    "desktop/web-app/src/index.css": {
+      "bytes": 7062,
+      "sha256": "bfc9ce3c1702d2d22081252c602d3975aecc6dbbdefba7faeb7f094e0ad3e9c9"
+    },
+    "desktop/web-app/tailwind.config.js": {
+      "bytes": 2649,
+      "sha256": "edf463ff8e14a9536f7f0047b32d0367d07ae0f100263620e0e2f6ce9a8f503e"
+    },
+    "dev-tools/studio_delivery_e2e.cjs": {
+      "bytes": 16125,
+      "sha256": "e89cdeca17af483d5707bdc7cda5c53ecf4e190867d558fabfb437c24320fff6"
+    },
+    "device_access_code_module.js": {
+      "bytes": 9158,
+      "sha256": "b73bf61b14c47c76e499c622ab903b6164ad2a608d5dba89a49c4e7af30f7edc"
+    },
+    "export_handlers_module.js": {
+      "bytes": 204235,
+      "sha256": "1104203ba482d3f4dca498d0cfefabfb6b8e15e6f5e89c4e3e452abb589c76fd"
+    },
+    "firestore_sync_module.js": {
+      "bytes": 45630,
+      "sha256": "d9a1ae9c9ede8aface6f9e7b71e9b276f444b309550d731a5d02072a6d9b048c"
+    },
+    "host_handlers_source.jsx": {
+      "bytes": 661460,
+      "sha256": "6898dfc5a7b180c4390fdba5e4b93dcc72e4c35259fa6764f6abb4b1343ba764"
+    },
+    "instructional_context_module.js": {
+      "bytes": 90681,
+      "sha256": "5bb02968226fa8db55281494b92f5653e7fc371b6e4c59628854a04e9a801942"
+    },
+    "karaoke_audio_store_module.js": {
+      "bytes": 55366,
+      "sha256": "9b9d88b8f07e695d5a7efb7f4a148b660a5e63c48c9df5823e6d6d85845194df"
+    },
+    "live_aac_module.js": {
+      "bytes": 75288,
+      "sha256": "0be516840aea0ea0c059e4391e430d50c250c820ca7322181cd35d8a7b539876"
+    },
+    "live_aac_source.jsx": {
+      "bytes": 75152,
+      "sha256": "ee0781a80a00085b9ceca781416f1ccf3b3d56b14849a50ca6b37ed0017c4f8c"
+    },
+    "memory_aid_module.js": {
+      "bytes": 322001,
+      "sha256": "d9faa63408f5fc2bf22c7e57b30da4be52419fdba144aa23224bbfbe982895a4"
+    },
+    "misc_handlers_source.jsx": {
+      "bytes": 131789,
+      "sha256": "24adfc99058e692fa79a64fee49ca7d3530439798b14b5cf3880b9d29e129762"
+    },
+    "package-lock.json": {
+      "bytes": 141602,
+      "sha256": "8fde867720a10e402bf57ea0bcac4ba68121859a9b50191bfe88cb3663805e94"
+    },
+    "package.json": {
+      "bytes": 23576,
+      "sha256": "e880a66350e09285d4a43457de9765b7a0ad107fa7aa8d2ef566583a4bfd1c77"
+    },
+    "pure_helpers_module.js": {
+      "bytes": 30550,
+      "sha256": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9"
+    },
+    "read_aloud_audio_service_module.js": {
+      "bytes": 85567,
+      "sha256": "7f606aada8da7e7709dbc73952a13506dba03577b5e885c91abb7932a491f71b"
+    },
+    "read_aloud_audio_service_source.jsx": {
+      "bytes": 85381,
+      "sha256": "d6b323fcab01a3c22605ce86ccc7956c85349411a3a8a61ea12c27780a3ea3c1"
+    },
+    "reading_library_module.js": {
+      "bytes": 273794,
+      "sha256": "c57731690773489b8d28b1b3e53e1921a2e92d87ee1f57878d9d6cd7c603de75"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/accessibility/acceptance.cjs": {
+      "bytes": 26839,
+      "sha256": "ad8b713f0bf05390bbc9af8bde63d40525597a4d1edae26371865971e1b21431"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/accessibility/bridge-acceptance.cjs": {
+      "bytes": 22185,
+      "sha256": "b6bd8dc0a5fd446d3e51e6ccad7ee99eeb51cc11f95594e02be647f3be12caa0"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/cache-coherence/applied.json": {
+      "bytes": 11141,
+      "sha256": "48cac62290ab03e288d91ed0e4408e9875ac9bceda4d8520bd4a38e528c619aa"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/followup.vitest.config.js": {
+      "bytes": 1272,
+      "sha256": "78520a0a4254fd47d06a3eb298b138161b2cead8d0123f72d84d1427435ff75e"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/prepare-scope.cjs": {
+      "bytes": 4625,
+      "sha256": "3cb0ab9abe105e4af7a0fdf776c9d9d5dfc395cd5dceaa9ce629ba60f3633e05"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/prepare_cache_coherence.cjs": {
+      "bytes": 12241,
+      "sha256": "468ef14747589e9540818c37cf934ea07247833a6005c992cf2c529a6970762e"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/recovery_draft_schema.test.js": {
+      "bytes": 6855,
+      "sha256": "ebeb30f01ea9bab603d7e914507a37e3e9d09863bc1e8d93f445b57a99ac8b29"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/recovery_media_intent.test.js": {
+      "bytes": 9166,
+      "sha256": "0c3e04ee16db9db0ab627ca87483b6357a600d553b4c8131b33105fb084fda4c"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/release/candidate_receipt.cjs": {
+      "bytes": 9797,
+      "sha256": "e64140a66660a560ce49cf6518346d104853a6de4fa6a96b5eacd7ae9006fe42"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/resource_receiver_lifecycle.test.js": {
+      "bytes": 13051,
+      "sha256": "0b9fd9fb8a381c618a934d99f7357776f9e2c666966a0b7d3be62ee4e058521c"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/source-before/host_lifecycle_fragments.json": {
+      "bytes": 10323,
+      "sha256": "97c87cbd39ed691e9a921f9d461a4a528776125c6e763e1906bf2cb6b17f5574"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/source-before/session_transport_module.js": {
+      "bytes": 15983,
+      "sha256": "ea9ec09e09ee4c00cb16494590b11b8e12ddbbb1e0143335fba1284c691ee795"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/student-response-v2-lifecycle.test.js": {
+      "bytes": 14806,
+      "sha256": "7666aa8b0d595827378ca8237c69dd5f9c6f78c922de7025cbc9dbba60c4d4ed"
+    },
+    "reports/classroom-reliability-followup-2026-10-03/verify-current.cjs": {
+      "bytes": 3312,
+      "sha256": "779e58f60574b2fd4d516a56c46ee95551e25ed34dd72d6dd5c8d25b67683e9d"
+    },
+    "resource_read_aloud_module.js": {
+      "bytes": 28275,
+      "sha256": "12b996325cefe3276f7073c351fa0679dc02eb7ea9bc17efe063aeacc0026d91"
+    },
+    "session_transport_module.js": {
+      "bytes": 15983,
+      "sha256": "ea9ec09e09ee4c00cb16494590b11b8e12ddbbb1e0143335fba1284c691ee795"
+    },
+    "shared_activity_module.js": {
+      "bytes": 111117,
+      "sha256": "95f75b7cc021949d87c191d7e350016ba251c65ddccf0a422b57a4ae57277191"
+    },
+    "shared_activity_source.jsx": {
+      "bytes": 115534,
+      "sha256": "225f15c9d621fef51f90a3eadf51f9e1cf80dce5ec269d5991ad796c49f7bfdb"
+    },
+    "storage_bridge.html": {
+      "bytes": 53333,
+      "sha256": "242eed10662190d15f7ef4ca6a0a247f8375c5b900b2a7f7250b560b96b88a57"
+    },
+    "studio_response_module.js": {
+      "bytes": 34230,
+      "sha256": "3e9f72bf73832605fc68993f7eb5be663b14a0a696240ec39950bba1b66c7cb5"
+    },
+    "teacher_source.jsx": {
+      "bytes": 640167,
+      "sha256": "aed18b2870524fc6b394649568397c3ddaf9a12e264c4aa36ca3b79d5bc378fc"
+    },
+    "test_prep/eppp_part_one_pack.json": {
+      "bytes": 5877876,
+      "sha256": "4f1fa10fa94880afb0cba7e1d9595126b2504fb6f6ea4fd94ba9e21986f0228b"
+    },
+    "tests/allo_device_storage_a11y.test.js": {
+      "bytes": 6656,
+      "sha256": "4b7003342600d96790e55ff8c791b5a0c72ec4720373800a5e9174ad96b66053"
+    },
+    "tests/class_mailbox.test.js": {
+      "bytes": 75542,
+      "sha256": "126e03f72f794f557a90e04090152d726597f186c4c5ba465cf41ee0a8a78e2f"
+    },
+    "tests/classroom_history_save_policy.test.js": {
+      "bytes": 9761,
+      "sha256": "9f0139c7009f4e55e2bbd164c9f5156a279f325a4507cf64d2290957862fbb78"
+    },
+    "tests/classroom_host_audio_integration.test.js": {
+      "bytes": 8899,
+      "sha256": "1bf7601697a93ce12e01a564f63eff16a7c822f2f4d324a78f367990a90f14ce"
+    },
+    "tests/device_storage_bridge.test.js": {
+      "bytes": 34173,
+      "sha256": "12b3e5271e8bf291c2674ae5257b3dc44a8171d50b4b7da300af26bc33ce0518"
+    },
+    "tests/device_storage_bridge_security.test.js": {
+      "bytes": 10391,
+      "sha256": "f35085f7819492bfa58bd297791f2e9db3d4bbaa0f073aa03b43baa3642e0d4e"
+    },
+    "tests/helpers/anchored_slice.js": {
+      "bytes": 6859,
+      "sha256": "4cf6de714e25ff44eefd90379cb4ae12defaae7ce1ad45c323eb3efbdb25c329"
+    },
+    "tests/helpers/host_source.js": {
+      "bytes": 13398,
+      "sha256": "0864317abe04f02b32794e3ad3953e547ec2dea4f67e5afa9bafdbc0aa3c4a92"
+    },
+    "tests/history_reload_rehydrate.test.js": {
+      "bytes": 7509,
+      "sha256": "60d6e7453323e7d468c96b4722540de2eac9933b8714901a249afa6929973a1b"
+    },
+    "tests/lib/audio_fixtures.js": {
+      "bytes": 877,
+      "sha256": "d62f6be5a63251e72842f153437eaf1515b79e18938e732d9a9fd272d5f4d994"
+    },
+    "tests/mailbox_image_delivery.test.js": {
+      "bytes": 21439,
+      "sha256": "0901b9711631fea77dea6c5ec32c466d331dde046ad50b11d84d03dbe6d37310"
+    },
+    "tests/mailbox_session_bridge.test.js": {
+      "bytes": 60180,
+      "sha256": "96ed0822bc4c41c04dc7f2f06dfd55b4bf9debc2badcd238fea2495881f98140"
+    },
+    "tests/report_storage_ack_recovery.test.js": {
+      "bytes": 19905,
+      "sha256": "5caea2af37de4fc85bd393e7b1b8fe959f4fe212522d07b4e40b48aa0ab35186"
+    },
+    "tests/report_storage_mixed_recovery.test.js": {
+      "bytes": 25181,
+      "sha256": "206cf413f63cf935954a62bb9edb20407598702e8999410569324eb49e6ae779"
+    },
+    "tests/report_storage_validation.vitest.config.js": {
+      "bytes": 297,
+      "sha256": "94bb25bc92cabe2a1af572265b4b8235b77c9d675383d74e9a80a92392d3b16c"
+    },
+    "tests/session_summary_test_utils.js": {
+      "bytes": 641,
+      "sha256": "cc1c40fbeea3bea045ee52ebae4eedcf37bf340ac6fc6bde69e1507763312a8a"
+    },
+    "tests/session_transport.test.js": {
+      "bytes": 30592,
+      "sha256": "b83d2dbf4a4c0d3431bde172aa4fd3eb8f8989d6913369fcd9583c30fb89f8d1"
+    },
+    "tests/setup.js": {
+      "bytes": 4652,
+      "sha256": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e"
+    },
+    "tests/storage_adapter_bootstrap_readiness.test.js": {
+      "bytes": 5672,
+      "sha256": "92ee59e7737b9a9d2435df5b93857f15c2e2fdc040b1ac19cab051683ffb9820"
+    },
+    "tests/storage_recovery_manager.test.js": {
+      "bytes": 7442,
+      "sha256": "3645d8cb35ba38f836908a5aadb583066c72ba33e698877e3553d8492f03f401"
+    },
+    "tests/storage_recovery_vault_app.test.js": {
+      "bytes": 3671,
+      "sha256": "4dfe605a49cf8d563c8d58b8f64bfe5c43c9601a9033876cdbe2fd9b16da5a0e"
+    },
+    "tests/storage_security_integration_contract.test.js": {
+      "bytes": 7225,
+      "sha256": "f2c6977da3c5e7d58506fcecf4a1c306dcfc19915b6172473d5b5cbfd1b35f3f"
+    },
+    "tests/utils_pure_storage.test.js": {
+      "bytes": 2347,
+      "sha256": "acc81184eacf93b52aa83025f8824a7c3b14058988e69c16101f42256285d6d8"
+    },
+    "text_utility_helpers_module.js": {
+      "bytes": 32430,
+      "sha256": "d5d58f66a1a265ee1f46d379c58c88ba227d88b881840bc006e81f904e44a6c2"
+    },
+    "text_utility_helpers_source.jsx": {
+      "bytes": 37959,
+      "sha256": "6e3295ec4a7c662347d57ed2b6996fdf676066b09c288a2e92c12a240ae925ee"
+    },
+    "ui_modals_module.js": {
+      "bytes": 122981,
+      "sha256": "b696d6c9fbc9c6d8d7021ea98526441fea74c23609053dc0362ebd166cf0a567"
+    },
+    "utils_pure_module.js": {
+      "bytes": 96731,
+      "sha256": "4c42773ddc303f5f0dea00957261e4ecec6e8e608fb3eae1584a7c60e94049ab"
+    },
+    "utils_pure_source.jsx": {
+      "bytes": 96381,
+      "sha256": "53d55c644e8fd2f979c717748763f9f6d68ad361348ec58b85ee8fe5d012d3dc"
+    },
+    "view_assignment_center_source.jsx": {
+      "bytes": 44500,
+      "sha256": "c582bbe3058b4fa3d96daf8a806fe368262aa12adaae0d157c737737c3db785c"
+    },
+    "view_brainstorm_source.jsx": {
+      "bytes": 50663,
+      "sha256": "f93549c6be3682c2582b7d96437563d0b9cc92c91d972cd609956fd5d03cc7c1"
+    },
+    "view_canvas_recovery_dialog_source.jsx": {
+      "bytes": 46198,
+      "sha256": "655cfba01f30e2e71e64bddcb0beeac7411c00da71012b73e3e8f47c092f0790"
+    },
+    "view_cold_path_surfaces_source.jsx": {
+      "bytes": 25281,
+      "sha256": "415adfc185477f330e9a68e958143ce9c52466f4d6813c3f7cdbb184875920ac"
+    },
+    "view_header_source.jsx": {
+      "bytes": 175215,
+      "sha256": "9606bc6d3c9f69bac2e79b3b289e35782641da0fa7dd7b7cb9020d4383127982"
+    },
+    "view_history_panel_module.js": {
+      "bytes": 93874,
+      "sha256": "32e21f5a535c16bd34432c79f1be4847ef8532e4c3855623163df9f4ec62a824"
+    },
+    "view_history_panel_source.jsx": {
+      "bytes": 116575,
+      "sha256": "93e1edbaf1e8a37baaf3797f154da845dcf0e9a0cda64b85e0ff33facf988dd8"
+    },
+    "view_launch_pad_module.js": {
+      "bytes": 65597,
+      "sha256": "7c834777b310d90370badfa6a137a13ae797463918bd7399844f1881b32170e4"
+    },
+    "view_launch_pad_source.jsx": {
+      "bytes": 61438,
+      "sha256": "5c7acdf0913cfe89f59cf23881629e650881208fe8d45506cb62c6e67b326402"
+    },
+    "view_live_session_dock_source.jsx": {
+      "bytes": 86009,
+      "sha256": "c4a485d3ab918d742ebc81eed19a58f949d93f4754efb424f7f5e0e908405196"
+    },
+    "view_persona_chat_module.js": {
+      "bytes": 186615,
+      "sha256": "3e93b1d37327ea50eadc08eacd5f8116c0cacbf8f500348ffbe47fd24cc29530"
+    },
+    "view_persona_chat_source.jsx": {
+      "bytes": 222157,
+      "sha256": "efeb8bdf8a622ef595c25c356d9884dcab3cd5b7e04c719f5fe1d125fdb00999"
+    },
+    "view_quiz_module.js": {
+      "bytes": 566061,
+      "sha256": "e2d2dc17556cce126e3f278b88bd615b19e30926ab1fc265b3fb15c9316cbd41"
+    },
+    "view_session_modal_module.js": {
+      "bytes": 48378,
+      "sha256": "4ec03ba7ce62ff25e53a91fb1adbf8e218d36bc6b8fcf2588fe9d5b4264cbb7f"
+    },
+    "view_share_session_surfaces_source.jsx": {
+      "bytes": 63016,
+      "sha256": "49d432ee0f686628c7742ca031543a12d88c7920136692335ce67990c7ad8421"
+    },
+    "view_sidebar_panels_source.jsx": {
+      "bytes": 369259,
+      "sha256": "c6f99bb581da4b1f4ae769147f65d78087aaf1088b0b16e6894a4ad750c0997a"
+    },
+    "view_simplified_module.js": {
+      "bytes": 588005,
+      "sha256": "6ba838c86605890d3b771418b934486b72283adf4998ac4e9055746b0d6e250c"
+    }
+  },
+  "parity": [
+    {
+      "canonical": "AlloFlowANTI.txt",
+      "mirror": "desktop/web-app/src/AlloFlowANTI.txt",
+      "match": true
+    },
+    {
+      "canonical": "AlloFlowANTI.txt",
+      "mirror": "desktop/web-app/src/App.jsx",
+      "match": true
+    },
+    {
+      "canonical": "allo_device_storage_module.js",
+      "mirror": "desktop/web-app/public/allo_device_storage_module.js",
+      "match": true
+    },
+    {
+      "canonical": "utils_pure_module.js",
+      "mirror": "desktop/web-app/public/utils_pure_module.js",
+      "match": true
+    },
+    {
+      "canonical": "read_aloud_audio_service_module.js",
+      "mirror": "desktop/web-app/public/read_aloud_audio_service_module.js",
+      "match": true
+    },
+    {
+      "canonical": "view_simplified_module.js",
+      "mirror": "desktop/web-app/public/view_simplified_module.js",
+      "match": true
+    },
+    {
+      "canonical": "memory_aid_module.js",
+      "mirror": "desktop/web-app/public/memory_aid_module.js",
+      "match": true
+    },
+    {
+      "canonical": "applied_challenge_module.js",
+      "mirror": "desktop/web-app/public/applied_challenge_module.js",
+      "match": true
+    },
+    {
+      "canonical": "studio_response_module.js",
+      "mirror": "desktop/web-app/public/studio_response_module.js",
+      "match": true
+    },
+    {
+      "canonical": "resource_read_aloud_module.js",
+      "mirror": "desktop/web-app/public/resource_read_aloud_module.js",
+      "match": true
+    },
+    {
+      "canonical": "karaoke_audio_store_module.js",
+      "mirror": "desktop/web-app/public/karaoke_audio_store_module.js",
+      "match": true
+    },
+    {
+      "canonical": "live_aac_module.js",
+      "mirror": "desktop/web-app/public/live_aac_module.js",
+      "match": true
+    },
+    {
+      "canonical": "shared_activity_module.js",
+      "mirror": "desktop/web-app/public/shared_activity_module.js",
+      "match": true
+    },
+    {
+      "canonical": "session_transport_module.js",
+      "mirror": "desktop/web-app/public/session_transport_module.js",
+      "match": true
+    },
+    {
+      "canonical": "view_persona_chat_module.js",
+      "mirror": "desktop/web-app/public/view_persona_chat_module.js",
+      "match": true
+    },
+    {
+      "canonical": "export_handlers_module.js",
+      "mirror": "desktop/web-app/public/export_handlers_module.js",
+      "match": true
+    },
+    {
+      "canonical": "text_utility_helpers_module.js",
+      "mirror": "desktop/web-app/public/text_utility_helpers_module.js",
+      "match": true
+    }
+  ],
+  "stableCapture": true,
+  "declaredParityMatches": true,
+  "changedDuringCapture": [],
+  "errors": [],
+  "currentCI": {
+    "status": "unverified",
+    "reason": "This helper does not obtain or run CI."
+  },
+  "limits": [
+    "Selected hashes identify working bytes; HEAD alone does not identify this dirty candidate.",
+    "Capture/compare does not run tests or establish current CI, deployment, device storage, student delivery or accessibility acceptance.",
+    "Byte parity is limited to the explicitly declared pairs; loader-pin and generated-source correctness require their existing verifiers.",
+    "A later input change invalidates earlier selected-candidate results and requires another capture and validation."
+  ]
+}

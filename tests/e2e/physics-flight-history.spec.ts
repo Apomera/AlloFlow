@@ -96,8 +96,18 @@ async function assertRun(page: Page, run: number, landmarks = true) {
   expect(state.s).toMatchObject({ t: state.recorded.t, x: state.recorded.mX, y: state.recorded.mY, vx: state.recorded.mVx, vy: state.recorded.mVy });
   expect(state.marker).toMatchObject({ run, index: state.s.index, t: state.s.t });
   if (landmarks) {
-    expect(state.text).toContain(`Landed ${state.end.mX.toFixed(1)} m`);
-    if (state.apex?.tSec > .001) expect(state.text.some((t: string) => t.includes((state.apex.mY !== 0 && Math.abs(state.apex.mY) < .01 ? state.apex.mY.toPrecision(3) : state.apex.mY.toFixed(2)) + ' m') && t.includes('APEX'))).toBe(true);
+    const recordedValue = (value: number) => value !== 0 && Math.abs(value) < .01 ? value.toPrecision(3) : value.toFixed(2);
+    if (state.s.impact) {
+      expect(state.text).toContain('Ground impact');
+      expect(state.text).toContain(`y = ${recordedValue(state.recorded.mY)} m · t = ${state.recorded.t.toFixed(3)} s`);
+    } else expect(state.text).toContain(`Landed ${state.end.mX.toFixed(1)} m`);
+    if (state.apex?.tSec > .001) {
+      const height = recordedValue(state.apex.mY);
+      if (state.s.apex) {
+        expect(state.text).toContain('At apex');
+        expect(state.text).toContain(`y = ${height} m · t = ${state.recorded.t.toFixed(3)} s`);
+      } else expect(state.text.some((t: string) => t.includes(height + ' m') && t.includes('APEX'))).toBe(true);
+    }
   }
   await expect(page.locator('[data-physics-graph-flight]')).toHaveAttribute('data-physics-graph-flight', String(run));
   await expect(page.locator('[data-physics-flight-summary]')).toHaveAttribute('data-run', String(run));
@@ -185,7 +195,7 @@ test('inspecting an older flight pauses a newer launch and resuming continues it
   await mount(page); await launch(page, false, 1);
   await patch(page, { airResist: true, simSpeed: 0 });
   await page.getByRole('button', { name: 'Launch!', exact: true }).click();
-  await expect(page.locator('[data-physics-history-select] option').last()).toContainText('Unfinished flight');
+  await expect(page.locator('[data-physics-history-select] option').last()).toContainText('Unfinished path');
   const before = await evidence(page);
   await page.locator('[data-physics-history-select]').selectOption('0');
   await assertRun(page, 1);

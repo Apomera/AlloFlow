@@ -1,0 +1,14 @@
+{
+  "sourceSha256": "a77166ff17fbd9f9547c5b84b74975295678d27f00b1e11a104f8eaca691fc00",
+  "mirrorSha256": "a77166ff17fbd9f9547c5b84b74975295678d27f00b1e11a104f8eaca691fc00",
+  "specSha256": "811e7400d04517ae4722d239b3908f1e013a8bbd640548cc2549baa04546e50a",
+  "finalSourceSha256": "a77166ff17fbd9f9547c5b84b74975295678d27f00b1e11a104f8eaca691fc00",
+  "finalMirrorSha256": "a77166ff17fbd9f9547c5b84b74975295678d27f00b1e11a104f8eaca691fc00",
+  "finalSpecSha256": "811e7400d04517ae4722d239b3908f1e013a8bbd640548cc2549baa04546e50a",
+  "sourceStable": true,
+  "mirrorStable": true,
+  "specStable": true,
+  "configurations": [],
+  "edgeCases": [],
+  "errors": []
+}

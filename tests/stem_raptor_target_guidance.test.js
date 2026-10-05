@@ -18,4 +18,32 @@ describe('Raptor target caption placement',()=>{
     expect(low.top+44).toBeLessThan(0);expect(high.top).toBeGreaterThan(48);
     expect(low.left).toBe(high.left);
   });
+  it('holds one placement while the prey jitters across the lower boundary',()=>{
+    let placement='',previousTop=null,flips=0;
+    const samples=[335.5,336.5,335.5,336.5,335.2,336.2,335.8,336.8];
+    for(const y of samples){
+      const result=layout(200,y,400,420,placement);
+      if(placement&&result.placement!==placement)flips++;
+      if(previousTop!==null&&placement===result.placement)expect(Math.abs(result.top-previousTop)).toBeLessThan(2);
+      placement=result.placement;previousTop=result.top;
+    }
+    expect(flips).toBe(1);expect(placement).toBe('above');
+    expect(layout(200,320,400,420,placement).placement).toBe('above');
+    expect(layout(200,310,400,420,placement).placement).toBe('below');
+  });
+  it('immediately moves a clipping caption above even when it was below',()=>{
+    for(const [width,height] of [[240,240],[320,420],[1100,760]]){
+      const y=height-34,result=layout(width/2,y,width,height,'below');
+      expect(result.placement).toBe('above');
+      expect(y-24+result.top+44).toBeLessThanOrEqual(height-8);
+    }
+  });
+  it('releases prior placement for a newly acquired target and adapts to a resize',()=>{
+    expect(layout(200,330,400,420,'above').placement).toBe('above');
+    expect(layout(200,330,400,420,'').placement).toBe('below');
+    const resized=layout(160,360,320,380,'below');
+    expect(resized.placement).toBe('above');
+    expect(360-24+resized.top+44).toBeLessThanOrEqual(372);
+    expect(layout(160,360,320,680,resized.placement).placement).toBe('below');
+  });
 });

@@ -8,10 +8,13 @@ const source=readFileSync('stem_lab/stem_tool_cephalopodlab.js','utf8').replace(
 const begin=source.indexOf('function createCLHuntAnimal('),end=source.indexOf('// Compact, individually owned prey rig.',begin);
 if(begin<0||end<=begin)throw Error('Cannot find production animal factory');
 const rigSource=source.slice(begin,end),build=new Function('T','species','Math',rigSource+';return createCLHuntAnimal(T,species);');
+const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+// The historical twelve-rig hash uses the exact approved siphon inverse; live skin assertions use current geometry.
+const priorBuild=new Function('T','species','Math',restorePass42AnimalSource(rigSource)+';return createCLHuntAnimal(T,species);');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Cuttle surface consumed dive RNG');}}),allocated=[];
 const key='cl-cuttle-surface-v14',state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});
 const renderer={capabilities:{isWebGL2:true},extensions:{has(){throw Error('WebGL2 does not need a derivative extension query');}}};
-function rig(id='cuttlefish'){const a=build(THREE,{id,bodyColor:0x8a7a52},noRandom);allocated.push(a);return a;}
+function rig(id='cuttlefish',prior=false){const a=(prior?priorBuild:build)(THREE,{id,bodyColor:0x8a7a52},noRandom);allocated.push(a);return a;}
 function meshes(a){const out=[];a.root.traverse(o=>{if(o.isMesh)out.push(o);});return out;}
 function skinMaterials(a){return [...new Set(meshes(a).map(o=>o.material).filter(m=>m.customProgramCacheKey()===key))];}
 function compiled(m,context=renderer){const s={vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:THREE.ShaderLib.standard.fragmentShader,uniforms:{}};m.onBeforeCompile(s,context);return s;}
@@ -115,7 +118,7 @@ describe('Cuttlefish anatomical camouflage surface',()=>{
 
   it('retains shared pattern/display phase semantics and stable resources on repeated frozen updates',()=>{
     const a=rig(),materials=skinMaterials(a),s=compiled(a.mantleMat),initialMeshes=meshes(a);
-    expect(initialMeshes).toHaveLength(27);expect(new Set(initialMeshes.map(o=>o.geometry)).size).toBe(27);expect(new Set(initialMeshes.map(o=>o.material)).size).toBe(10);
+    expect(initialMeshes).toHaveLength(24);expect(new Set(initialMeshes.map(o=>o.geometry)).size).toBe(24);expect(new Set(initialMeshes.map(o=>o.material)).size).toBe(8);
     const resources=initialMeshes.map(o=>[o,o.geometry,o.material,Object.values(o.geometry.attributes).map(attr=>attr.array),o.geometry.index?.array,o.instanceMatrix?.array]);
     for(const [substrate,expected]of[['sand',.22],['grass',.72],['rock',.9]]){a.update(9,.05,state({substrate,display:true,reducedMotion:true}));expect(s.uniforms.clPattern.value).toBe(expected);expect(s.uniforms.clDisplay.value).toBe(.9);expect(s.uniforms.clPhase.value).toBe(9);}
     a.update(9,0,state({substrate:'rock',display:false,reducedMotion:true}));expect(s.uniforms.clDisplay.value).toBe(0);
@@ -131,7 +134,7 @@ describe('Cuttlefish anatomical camouflage surface',()=>{
     const octoGeometry='c71b3684b3bbab9a2a6fc56ba10664a4dd21407b6af5eb611776740771e214d9',octoShader='aafc6b2600fe7bf7611c641ef934f5425c07b69a7ac993c3caff22f79d7a701f';
     const expectedGeometry={commonOcto:octoGeometry,blueRinged:'515c36985207b0f129363a312a704256894d5114c017696d0512257e57740ea2',mimicOcto:octoGeometry,giantPacific:'00db592341672e0cdc28cfe10e2829833a94d3de3e664bd3c3d15e5c44335b26',caribReef:octoGeometry,coconutOcto:octoGeometry,humboldtSquid:'d08f72f3a1e3928b300dbf2e3180d85dc50fe4c0d6f1242b79bbabfae6ca1a31',nautilus:'e4f571c1c18a7b7f1711d0e0c5f24359d99136bae21acd8826dea4848af8cfde',cuttlefish:'6b9e49bf8641ed794ba44c2e8db5e0f9679fd7487a00a66f193da839b8ba52cd',bobtailSquid:'60102c0a95b03d64194e7ba6017ced845e2c889360ec968f3e082860ab5dceeb',dumboOcto:'84d4220256746f8fdbc6bf660bc65c3326d347f2caad30d7e8bda4bcccb2d0f0',vampireSquid:'09e547862fdaaa0a991435a75d6a94cbd0c10b07a83e0da44ca115bee52c6b3e'};
     const expectedShader={commonOcto:octoShader,blueRinged:'ee7c5b849fc6305cf610c48cde50dc863fcd8d6bb9d5258e2f1c7d3cf33a8f12',mimicOcto:octoShader,giantPacific:octoShader,caribReef:octoShader,coconutOcto:octoShader,humboldtSquid:'226810ba8c78cc544cb455b1f2c7515f7e7423a58bb552925400f08da5e52a8e',nautilus:'30cb9bd8aec3e1bb71a6209c3c98732bb5705ad2279c10485c9f41c2c9589c5b',bobtailSquid:'2c5ca72217b5c01eca819fac422a4127ea16486d79fdb189a228b0ab6ad040b7',dumboOcto:'d8db93437e4f27c812a2d66aaa1e911b08e002a68a3e8ab9187bbe142cdafa06',vampireSquid:'62f5386f9933ed7353c19c7651ba9f566932e0862cfa290c90624e2466ed64a7'};
-    for(const id of Object.keys(expectedGeometry)){const a=rig(id),geometryFrames=[],materialFrames=[];
+    for(const id of Object.keys(expectedGeometry)){const a=rig(id,true),geometryFrames=[],materialFrames=[];
       for(let step=0;step<4;step++){a.update(1+step*.05,.05,state({moving:step>0,jet:step===2,strike:step===3?.6:0,camo:.6,substrate:['sand','rock','grass','sand'][step],display:step===2,reducedMotion:step===3}));geometryFrames.push(geometry(a));if(id!=='cuttlefish')materialFrames.push(materialRecords(a));}
       expect(hash(geometryFrames),id+' geometry').toBe(expectedGeometry[id]);if(id!=='cuttlefish')expect(hash(materialFrames),id+' complete materials/shaders/uniforms').toBe(expectedShader[id]);
     }

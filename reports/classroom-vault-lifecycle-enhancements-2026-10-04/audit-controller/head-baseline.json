@@ -1,0 +1,105 @@
+{
+  "scope": "Actual controller/native Web Crypto; completed stale repository read versus accepted different-DEK backup; no browser/App or other-tab revocation.",
+  "passed": 6,
+  "failed": 12,
+  "modulePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allo_device_vault_module.js",
+  "sha256": "f22f9699c9b7e9c2c1e331e0d93aaa501203b034853d9d8254f6a8c6e9383a53",
+  "checks": [
+    {
+      "name": "readPlainStore: newer accepted backup session starts unlocked",
+      "passed": true
+    },
+    {
+      "name": "readPlainStore: obsolete head cannot produce old plaintext",
+      "passed": true
+    },
+    {
+      "name": "readPlainStore: retired old-head failure uses locked contract",
+      "passed": false,
+      "actual": "VAULT_PASSWORD_OR_CORRUPT",
+      "expected": "VAULT_LOCKED"
+    },
+    {
+      "name": "readPlainStore: old-head verification preserves new accepted key",
+      "passed": false,
+      "actual": true,
+      "expected": false
+    },
+    {
+      "name": "readPlainStore: new accepted backup remains readable",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "name": "readPlainStore: current backup retains its own content",
+      "passed": false,
+      "actual": "",
+      "expected": "Synthetic B"
+    },
+    {
+      "name": "listSnapshots: newer accepted backup session starts unlocked",
+      "passed": true
+    },
+    {
+      "name": "listSnapshots: obsolete head cannot produce old plaintext",
+      "passed": true
+    },
+    {
+      "name": "listSnapshots: retired old-head failure uses locked contract",
+      "passed": false,
+      "actual": "VAULT_PASSWORD_OR_CORRUPT",
+      "expected": "VAULT_LOCKED"
+    },
+    {
+      "name": "listSnapshots: old-head verification preserves new accepted key",
+      "passed": false,
+      "actual": true,
+      "expected": false
+    },
+    {
+      "name": "listSnapshots: new accepted backup remains readable",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "name": "listSnapshots: current backup retains its own content",
+      "passed": false,
+      "actual": "",
+      "expected": "Synthetic B"
+    },
+    {
+      "name": "restoreSnapshot: newer accepted backup session starts unlocked",
+      "passed": true
+    },
+    {
+      "name": "restoreSnapshot: obsolete head cannot produce old plaintext",
+      "passed": true
+    },
+    {
+      "name": "restoreSnapshot: retired old-head failure uses locked contract",
+      "passed": false,
+      "actual": "VAULT_PASSWORD_OR_CORRUPT",
+      "expected": "VAULT_LOCKED"
+    },
+    {
+      "name": "restoreSnapshot: old-head verification preserves new accepted key",
+      "passed": false,
+      "actual": true,
+      "expected": false
+    },
+    {
+      "name": "restoreSnapshot: new accepted backup remains readable",
+      "passed": false,
+      "actual": false,
+      "expected": true
+    },
+    {
+      "name": "restoreSnapshot: current backup retains its own content",
+      "passed": false,
+      "actual": "",
+      "expected": "Synthetic B"
+    }
+  ]
+}

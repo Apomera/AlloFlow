@@ -206,6 +206,34 @@ describe('Geometry World world-surface accessibility', () => {
     expect(m.container.textContent).toContain('Look around (no mouse)');
     m.unmount();
   }, 20000);
+
+  it.each([true, false])('returns learning-path focus to a visible quickbar or the world (quickbar visible: %s)', async quickbarVisible => {
+    const m = mountTool(cfg, {
+      _introShownOnce: true, worldActive: true, activeLesson: 'volumeExplorer',
+      toolbarCollapsed: true, objectivesOpen: true,
+      measureResult: { count: 12, L: 2, W: 2, H: 3, boundingVolume: 12, totalVolume: 12,
+        shapeCounts: { cube: 12 }, materialCounts: { stone: 12 }, blocks: [{ x: 0, y: 0, z: 0 }], isComplete: true, fillPercent: 100 },
+    });
+    try {
+      const headerTrigger = m.container.querySelector('.gw-toolbar button[aria-controls="gw-objective-panel"]');
+      const quickbarTrigger = m.container.querySelector('.gw-fullscreen-quickbar button[aria-controls="gw-objective-panel"]');
+      const world = m.container.querySelector('#geoworld-fs-wrap');
+      expect(headerTrigger).toBeTruthy();
+      expect(quickbarTrigger).toBeTruthy();
+      // jsdom has no layout; these rects model the collapsed header and quickbar.
+      headerTrigger.getClientRects = () => [];
+      quickbarTrigger.getClientRects = () => quickbarVisible ? [{}] : [];
+      const close = m.container.querySelector('.gw-objective-close');
+      close.focus();
+      React.act(() => close.click());
+      await React.act(async () => { await new Promise(resolve => setTimeout(resolve, 0)); });
+      expect(m.container.querySelector('.gw-objective-panel')).toBeNull();
+      expect(m.container.querySelector('.gw-learning-compass')).toBeNull();
+      expect(document.activeElement).toBe(quickbarVisible ? quickbarTrigger : world);
+    } finally {
+      m.unmount();
+    }
+  }, 20000);
 });
 
 describe('Geometry World NPC dialog focus', () => {
@@ -640,9 +668,9 @@ describe('Geometry World mobile action WCAG parity', () => {
     expect(SOURCE).toContain("Date.now() - lastTouch.at < 700");
   });
 
-  it('gives icon-only controls explicit names and toggle state', () => {
-    expect(SOURCE).toContain("'aria-label': d.autoCycle ? 'Stop automatic day and night cycle'");
-    expect(SOURCE).toContain("'aria-pressed': d.autoCycle ? 'true' : 'false'");
+  it('labels the native day-cycle checkbox and names saved-lesson actions', () => {
+    expect(SOURCE.includes("el('label', { className: 'gw-settings-check' }, el('input', { type: 'checkbox', checked: !!d.autoCycle")).toBe(true);
+    expect(SOURCE.includes("upd('autoCycle', ev.target.checked); } }), 'Automatic day and night'")).toBe(true);
     expect(SOURCE).toContain("'aria-label': 'Load saved lesson: ' + (lesson.title || 'Untitled lesson')");
     expect(SOURCE).toContain("'aria-label': 'Delete saved lesson: ' + (lesson.title || 'Untitled lesson')");
   });
@@ -794,7 +822,9 @@ describe('Geometry World visual refinement contract', () => {
 
   it('keeps the game bar compact and moves secondary controls into accessible overlays', () => {
     expect(SOURCE).toContain(`className: 'gw-root', 'aria-label': __alloT('stem.geometryworld.tool_name', 'Geometry World')`);
-    expect(SOURCE).toContain(`el('header', { className: 'gw-toolbar', 'aria-label': currentLesson.sandbox ? 'Geometry World building tools' : __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls')`);
+    expect(SOURCE).toContain(`el('header', { ref: geometryToolbarRef, className: 'gw-toolbar', 'aria-label': currentLesson.sandbox ? 'Geometry World building tools' : __alloT('stem.geometryworld.a11y_geometry_world_lesson_controls', 'Geometry World lesson controls')`);
+    expect(SOURCE).toContain("node.parentElement.style.setProperty('--gw-toolbar-height', height + 'px')");
+    expect(SOURCE).toContain('top:calc(var(--gw-toolbar-height,58px) + 14px)');
     expect(SOURCE).toContain("className: 'gw-brand-lockup'");
     expect(SOURCE).toContain("el('h2', { id: 'gw-title', className: 'gw-title' }");
     expect(SOURCE).toContain(`className: 'gw-status-cluster', 'aria-label': currentLesson.sandbox ? 'Build status and tools' : __alloT('stem.geometryworld.a11y_lesson_status_and_game_menu', 'Lesson status and game menu')`);
@@ -808,18 +838,18 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain('.gw-settings-backdrop{position:absolute;inset:0;');
     expect(SOURCE).toContain("var hudPreset = isGeometryHudPreset(d.hudPreset)");
     expect(SOURCE).toContain("var hudPanel = gwHasOwn(d, 'hudPanel')");
-    expect(SOURCE).toContain("GW_HUD_PRESET_KEY = 'allo.geometryworld.hud.v1'");
+    expect(SOURCE.includes("GW_WORKSPACE_PREFERENCE_KEY = 'allo.geometryworld.hud.v1'")).toBe(true);
     expect(SOURCE).toContain("minimal: { hudPanel: '', label: 'Minimal'");
     expect(SOURCE).toContain("learning: { hudPanel: 'progress', label: 'Learning'");
     expect(SOURCE).toContain("builder: { hudPanel: 'inventory', label: 'Builder'");
     expect(SOURCE).toContain("className: 'gw-hud-preset-fieldset'");
-    expect(SOURCE).toContain("id: 'gw-hud-preset-help'");
+    expect(SOURCE.includes("'data-gw-workspace-panel': 'true'")).toBe(true);
     expect(SOURCE).toContain("'data-geometry-hud-preset': preset.id");
     expect(SOURCE).toContain("'aria-pressed': active");
     expect(SOURCE).toContain("'data-hud-preset': hudPreset");
     expect(SOURCE).toContain("hudPanel === 'inventory' && engine");
     expect(SOURCE).toContain("'data-hud-preset': hudPreset");
-    expect(SOURCE).toContain("'Optional HUD overlays'");
+    expect(SOURCE.includes("el('span', null, 'Optional panel')")).toBe(true);
     expect(SOURCE).toContain("hudPanel === 'progress' && el('section', { id: 'gw-progress-hud'");
     expect(SOURCE).toContain("hudPanel === 'map' && el('section', { id: 'gw-minimap'");
     expect(SOURCE).toContain("hudPanel === 'history' && measureHistory.length > 0");
@@ -855,14 +885,16 @@ describe('Geometry World visual refinement contract', () => {
     expect(SOURCE).toContain("el('section', { className: 'gw-intro-objectives', 'aria-labelledby': 'gw-intro-objectives-title'");
     expect(SOURCE).toContain("el('ol', null");
     expect(SOURCE).toContain("return el('li', { key: 'objlist-' + i");
-    expect(SOURCE).toContain(`className: 'gw-intro-formula', role: 'note', 'aria-label': __alloT('stem.geometryworld.a11y_key_formulas', 'Key formulas')`);
+    expect(SOURCE).toContain("className: 'gw-intro-concept', 'data-geometry-concept': concept.concept, 'aria-labelledby': 'gw-intro-concept-title'");
+    expect(SOURCE).toContain("className: 'gw-intro-concept-relationship' }, concept.relationship");
+    expect(SOURCE).toContain("className: 'gw-intro-concept-question' }, concept.question");
     expect(SOURCE).toContain(`className: 'gw-intro-meta', 'aria-label': __alloT('stem.geometryworld.a11y_lesson_overview', 'Lesson overview')`);
     expect(SOURCE).toContain("className: 'gw-intro-actions'");
     expect(SOURCE).toContain("className: 'gw-primary-cta gw-intro-start gw-focusable'");
     expect(SOURCE).toContain("className: 'gw-intro-secondary gw-focusable'");
     expect(SOURCE).toContain(`'aria-label': __alloT('stem.geometryworld.a11y_start_lesson_without_the_guided_tutorial', 'Start lesson without the guided tutorial')`);
-    expect(SOURCE).toContain('function loadLessonByKey(lessonKey, _attempt, skipTutorial)');
-    expect(SOURCE).toContain('loadLessonByKey(lessonKey, attempt + 1, skipTutorial)');
+    expect(SOURCE.includes('function loadLessonByKey(lessonKey, _attempt, skipTutorial, afterLoad)')).toBe(true);
+    expect(SOURCE.includes('loadLessonByKey(lessonKey, attempt + 1, skipTutorial, afterLoad)')).toBe(true);
     expect(SOURCE).toContain('if (skipTutorial) { lessonState.tutorialStep = 4; lessonState.tutorialDismissed = true; }');
     expect(SOURCE).toContain('.gw-intro-card{box-sizing:border-box;width:min(520px,calc(100% - 24px))!important;');
     expect(SOURCE).toContain('.gw-intro-actions{flex-direction:column}');

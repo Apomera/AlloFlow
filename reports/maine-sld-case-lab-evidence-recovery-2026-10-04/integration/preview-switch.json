@@ -1,0 +1,22 @@
+{
+  "verifiedAt": "2026-10-04T14:38:48.8243225Z",
+  "priorRuntimePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-guide-revision-2026-10-03\\integration\\layout-review-correction\\source-preview\\runtime.json",
+  "priorRuntimeSha256": "569c2c23534e504c3e5d272790376d11a1a4cf38dd0f1f23945cf05317d12694",
+  "priorProcessId": 19880,
+  "priorExecutablePath": null,
+  "priorCommandLine": null,
+  "priorOwnedHelperSha256": "b170417c2a4f85bd41ed18b2ab63e187eddd924722bbdad8165ed6d409fbeb0e",
+  "exclusivePort": 65063,
+  "listenerAddress": null,
+  "priorOwnedProcessAlreadyAbsent": true,
+  "portEmptyBeforeLaunch": true,
+  "exactPriorOwnedProcessAndExclusivePortVerified": false,
+  "newPreviewModuleSha256": "6ab45e2cbf3793f58d0510e5049028855169aa1150fa33209ad2d48179f0b424",
+  "newPreviewBundleSha256": "f6bb88089f30814dc0eddbb875a67128cee05469993d476200f6fbe1d2b3f458",
+  "newPreviewSourceSha256": "86eecff52f711fa3e3398fbfd24e8def69a84ba4ed69466f1c5eb013e1d388e6",
+  "operation": "Prior recorded process already absent and port empty; preserve prior files and launch the new immutable snapshot without stopping any process.",
+  "stoppedOnlyPriorOwnedProcess": false,
+  "noProcessStopped": true,
+  "portReleasedAfterGuardedStop": true,
+  "completedAt": "2026-10-04T14:38:51.9378821Z"
+}

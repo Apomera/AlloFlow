@@ -1,0 +1,28 @@
+{
+  "passed": true,
+  "sourceSha256": "ff1a66032c42e744ed5b8ae7d0ba0f2c324755b7fb4193fa6c1e4eec90156540",
+  "mirrorSha256": "ff1a66032c42e744ed5b8ae7d0ba0f2c324755b7fb4193fa6c1e4eec90156540",
+  "baselineSha256": "e9c7d6a86b45def1263ffb3ba4ea98de19078563a471a6b14d95c285299fe030",
+  "reversedFragments": 3,
+  "previousSourcePreserved": true,
+  "existingTestsPreserved": 10,
+  "tests": 158,
+  "testFiles": 11,
+  "newTests": 13,
+  "browserViews": 6,
+  "nativeWorkflows": 4,
+  "screenshotsReviewed": 6,
+  "gitDiffCheck": true,
+  "scopedChangesUnstaged": true,
+  "scopedGitStatus": "M desktop/web-app/public/stem_lab/stem_tool_circuit.js\n M stem_lab/stem_tool_circuit.js\n?? reports/circuit-observation-continuity-2026-10-04/\n?? tests/circuit_observation_card_identity.test.js",
+  "artifacts": {
+    "source-preservation.json": "eb2385bfa4ddd279ea4681fac1ee82bb04396fbc2d589bcd2b17981b634b736e",
+    "regression-receipt.json": "47be1b552273ae0bafe7d5e0717622aadbdacc24369a8e55cb059fd7577d4ae2",
+    "browser-results.json": "593163956f15b5579fe72dd8a2b3dce5824ee10782eabc6c3a689639f62e3328",
+    "native-results.json": "061a2b3100d5cda8a8bd2a4a4623609d7c39f5c44d990089261a8f066a308947",
+    "visual-review.json": "f0c4e327c2da1cf2e5bb8b31a084cf1bc7cada2ed9059500f719a04ca0e7ec48",
+    "baseline-tests.json": "fb9ccd4a4ec0560426e426a751df740d3e949a289f2ced9bb218c0a046272782",
+    "legacy-recovery-reproduction.json": "9f26ad28cc9fd5e50f9e0350c6d295e5ff9614c483bb1a6a4fe74c4eec4d3235",
+    "validate.cjs": "357bb931dfc5fd9c35377aa9acd9f93f1520dcc003493212d1e623f8c82a2dea"
+  }
+}

@@ -1,0 +1,5 @@
+{
+  "beforeSha256": "e940c9ff894ee148386f073700c73e8e18a775e2554f6d828953a19341b28818",
+  "afterSha256": "0ea0b1143ddefffbdd8f2cbaafc160f55482c7ab5ed0a796335d52d9ed28e27b",
+  "scope": "Two introduced CR characters removed; parser source semantics unchanged; generated parity rechecked."
+}

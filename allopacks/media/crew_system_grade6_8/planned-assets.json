@@ -1,0 +1,90 @@
+{
+  "slug": "crew_system_grade6_8",
+  "sourceShotList": "allopacks/crew_system_grade6_8.IMAGES.md",
+  "assets": [
+    {
+      "id": "cs-term-system",
+      "term": "System",
+      "kind": "term",
+      "scene": "Three simple gears meshing, each a different color",
+      "constraints": "no labels on gears",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Three simple gears meshing, each a different color. no labels on gears."
+    },
+    {
+      "id": "cs-term-capture",
+      "term": "Capture",
+      "kind": "term",
+      "scene": "One open notebook with an arrow from a speech bubble (empty) into the page",
+      "constraints": "single notebook only",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. One open notebook with an arrow from a speech bubble (empty) into the page. single notebook only."
+    },
+    {
+      "id": "cs-term-launch",
+      "term": "Launch",
+      "kind": "term",
+      "scene": "A backpack being zipped, a small clock beside it, a doorway behind",
+      "constraints": "daytime, end of school",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A backpack being zipped, a small clock beside it, a doorway behind. daytime, end of school."
+    },
+    {
+      "id": "cs-term-reset",
+      "term": "Reset",
+      "kind": "term",
+      "scene": "A blank week grid with one block split into three smaller blocks",
+      "constraints": "no numbers",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A blank week grid with one block split into three smaller blocks. no numbers."
+    },
+    {
+      "id": "cs-term-willpower",
+      "term": "Willpower",
+      "kind": "term",
+      "scene": "A phone battery icon nearly empty, red sliver",
+      "constraints": "no percentage text",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A phone battery icon nearly empty, red sliver. no percentage text."
+    },
+    {
+      "id": "cs-term-chunk",
+      "term": "Chunk",
+      "kind": "term",
+      "scene": "A large block being cut into three pieces by a plain line",
+      "constraints": "pieces equal-ish",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A large block being cut into three pieces by a plain line. pieces equal-ish."
+    },
+    {
+      "id": "cs-img-marcus-before",
+      "kind": "lesson",
+      "title": "Three places, no system.",
+      "scene": "A student with writing on the back of his hand, sticky notes on a laptop lid, and a loose paper falling from a bag.",
+      "caption": "three places means the assignment can be in the one you did not check.",
+      "plannedLabels": [
+        "Hand",
+        "Sticky notes",
+        "Falling paper"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A student with plain abstract ink bars on the back of his hand, sticky notes on a laptop lid, and a loose paper falling from a bag. All labels and captions will be editable native fields outside the artwork."
+    },
+    {
+      "id": "cs-img-marcus-after",
+      "kind": "lesson",
+      "title": "One capture spot.",
+      "scene": "The same student typing into a single notes window on a laptop, the sticky notes gone, the hand clean.",
+      "caption": "nothing about his brain changed; his system did.",
+      "plannedLabels": [
+        "One place"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The same student typing into a single notes window on a laptop, the sticky notes gone, the hand clean. All labels and captions will be editable native fields outside the artwork."
+    },
+    {
+      "id": "cs-img-launch",
+      "kind": "lesson",
+      "title": "The launch check.",
+      "scene": "The student at his desk in the last minutes of the day, laptop open to tomorrow, sliding a notebook into a bag.",
+      "caption": "not in your locker at 8:04.",
+      "plannedLabels": [
+        "Look at tomorrow",
+        "Pack tonight"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The student at his desk in the last minutes of the day, laptop open to tomorrow, sliding a notebook into a bag. All labels and captions will be editable native fields outside the artwork."
+    }
+  ]
+}

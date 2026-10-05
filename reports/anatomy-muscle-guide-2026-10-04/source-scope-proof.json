@@ -1,0 +1,63 @@
+{
+  "sourceSha256": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "baselineSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "syntaxPassed": true,
+  "runtimeMirrorsIdentical": true,
+  "onlyMuscleRendererAndScopedCssChanged": true,
+  "authoredAtlasData": {
+    "characters": 309592,
+    "sha256": "a54731f78e7c82243e53fe231eae3548233ab62d66c27a81493251c4f1394b87",
+    "unchanged": true
+  },
+  "originalGeometry": {
+    "literalPaths": 7,
+    "preserved": 7,
+    "routes": 4,
+    "clinicalPaths": 3,
+    "sarcomereBlockByteIdentical": true
+  },
+  "originalNarrativesUnchanged": 10,
+  "originalMechanismCaptionsRetainedInHtml": 4,
+  "quadricepsAliasScopeUnchanged": true,
+  "catalogs": [
+    {
+      "path": "ui_strings.js",
+      "sha256": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+      "mirrorSha256": "71cc2fa7670bd4408046807300d02336119ed304d9004ef1929f1fce9105df8c",
+      "fullFilesIdentical": true,
+      "muscleLabelsIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 74
+    },
+    {
+      "path": "lang/french.js",
+      "sha256": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+      "mirrorSha256": "662089c2892acff976e70c8d8b683ac9fcba0fc897e2e0f19a0a51df94657f44",
+      "fullFilesIdentical": true,
+      "muscleLabelsIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 74
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "sha256": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+      "mirrorSha256": "db90d7c1fd6bce9e4bd5ab8ad210d6952912b515e2fbb3bbaba1036f23773de4",
+      "fullFilesIdentical": true,
+      "muscleLabelsIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 74
+    },
+    {
+      "path": "lang/arabic.js",
+      "sha256": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+      "mirrorSha256": "10d72df63eafb72aab529f6585d38a4fa081bc11c63007b42811af43d3038d59",
+      "fullFilesIdentical": true,
+      "muscleLabelsIdentical": true,
+      "anatomyNamespaceIdentical": true,
+      "registeredKeys": 74
+    }
+  ],
+  "englishKeys": 74,
+  "nativeTranslations": 222,
+  "registeredCatalogValues": 592
+}

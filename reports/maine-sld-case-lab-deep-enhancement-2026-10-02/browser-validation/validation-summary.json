@@ -1,0 +1,256 @@
+{
+  "status": "passed",
+  "scenarios": 19,
+  "unexpected": 0,
+  "flaky": 0,
+  "skipped": 0,
+  "durationMs": 323661.526,
+  "workers": 1,
+  "retries": 0,
+  "testTimeoutMs": 120000,
+  "moduleSha256": "4d5cba967c685e08fe7513ae7dd5e84b715edfea7e3c1a5443017ad6c310f2bf",
+  "testSourceSha256": "353a7ac043dae10fbc4911023b04824c108b2f67efbc05df52230514df430472",
+  "baselineTestSourceSha256": "e58ba106bff79257e7f3d637cbaf387dee808b0068b890cb3c293f3fa6ac957f",
+  "existing16ScenariosPreservedVerbatim": true,
+  "sourceHost": "http://127.0.0.1:65060/app",
+  "moduleCandidate": {
+    "startedAt": "2026-10-02T12:27:12.626Z",
+    "moduleSha256": "4d5cba967c685e08fe7513ae7dd5e84b715edfea7e3c1a5443017ad6c310f2bf",
+    "reviewDate": "2026-10-02",
+    "sourceHost": "http://127.0.0.1:65060/app",
+    "scope": "Working-tree module and host reader; optional actual source-app boot"
+  },
+  "axeScans": 36,
+  "axeViolations": 0,
+  "scans": [
+    {
+      "report": "axe-1440-contrast.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-contrast.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-contrast.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-contrast.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-contrast.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-dark.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-dark.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-dark.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-dark.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-dark.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-light.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-light.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-light.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-light.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "report": "axe-1440-light.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "report": "axe-390-contrast.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "report": "axe-390-contrast.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "report": "axe-390-contrast.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "report": "axe-390-contrast.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "report": "axe-390-contrast.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "report": "axe-390-dark.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "report": "axe-390-dark.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "report": "axe-390-dark.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "report": "axe-390-dark.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "report": "axe-390-dark.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "report": "axe-390-light.json",
+      "step": "case",
+      "violations": []
+    },
+    {
+      "report": "axe-390-light.json",
+      "step": "scores",
+      "violations": []
+    },
+    {
+      "report": "axe-390-light.json",
+      "step": "evidence",
+      "violations": []
+    },
+    {
+      "report": "axe-390-light.json",
+      "step": "reasoning",
+      "violations": []
+    },
+    {
+      "report": "axe-390-light.json",
+      "step": "debrief",
+      "violations": []
+    },
+    {
+      "report": "axe-participant-contrast-expanded-390-dark.json",
+      "step": null,
+      "violations": []
+    },
+    {
+      "report": "axe-selected-evidence-expanded-320.json",
+      "step": null,
+      "violations": []
+    },
+    {
+      "report": "constrained-layouts.json",
+      "viewport": {
+        "width": 320,
+        "height": 700
+      },
+      "violations": []
+    },
+    {
+      "report": "constrained-layouts.json",
+      "viewport": {
+        "width": 390,
+        "height": 844
+      },
+      "violations": []
+    },
+    {
+      "report": "constrained-layouts.json",
+      "viewport": {
+        "width": 1366,
+        "height": 720
+      },
+      "violations": []
+    },
+    {
+      "report": "constrained-layouts.json",
+      "viewport": {
+        "width": 844,
+        "height": 390
+      },
+      "violations": []
+    }
+  ],
+  "constrainedLayouts": [
+    {
+      "width": 320,
+      "height": 700,
+      "contentHeight": 314.5,
+      "collapsedGuideHeight": 36,
+      "expandedGuideHeight": 419.3125,
+      "violations": []
+    },
+    {
+      "width": 390,
+      "height": 844,
+      "contentHeight": 505.5,
+      "collapsedGuideHeight": 36,
+      "expandedGuideHeight": 326.9375,
+      "violations": []
+    },
+    {
+      "width": 1366,
+      "height": 720,
+      "contentHeight": 464.453125,
+      "collapsedGuideHeight": 28,
+      "expandedGuideHeight": 171.375,
+      "violations": []
+    },
+    {
+      "width": 844,
+      "height": 390,
+      "contentHeight": 212,
+      "collapsedGuideHeight": 28,
+      "expandedGuideHeight": 226.5625,
+      "violations": []
+    }
+  ],
+  "screenshots": 50,
+  "actualSourceHostScenarioPassed": true,
+  "contentOrCoreChanges": false
+}

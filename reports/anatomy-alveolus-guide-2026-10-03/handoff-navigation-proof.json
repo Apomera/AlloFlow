@@ -1,0 +1,23 @@
+{
+  "before": "49351974e8cbff677f9bda0a6a8b24f3ee5910d51f327ed7c7b17fa2b4c6e8ae",
+  "after": "d87b46bb3ddaa1ddca1be6797687065776d4c1421b811915e639a0ceda4e3f1e",
+  "patches": [
+    [
+      "          function updateAlveolusGuide(patch, announcement) {",
+      "          function updateAlveolusGuide(patch, announcement, afterUpdate) {"
+    ],
+    [
+      "              accepted = Object.assign({}, state, patch);\n              anatomyTutorProfiles.set(accepted, tutorProfileOf(state));\n              return Object.assign({}, previous, { anatomy: accepted });\n            });\n            finishStudyUpdate(function() { return accepted; }, function() {\n              if (announcement && typeof announceToSR === 'function') announceToSR(announcement);\n            });\n          }\n          function selectAlveolusStep",
+      "              accepted = Object.assign({}, state, typeof patch === 'function' ? patch(state) : patch);\n              anatomyTutorProfiles.set(accepted, tutorProfileOf(state));\n              return Object.assign({}, previous, { anatomy: accepted });\n            });\n            finishStudyUpdate(function() { return accepted; }, function(state) {\n              if (announcement && typeof announceToSR === 'function') announceToSR(announcement);\n              if (afterUpdate) afterUpdate(state);\n            });\n          }\n          function openAlveolusHeart() {\n            var destination = ANATOMY_LENS_ITEMS.find(function(item) { return item.structureId === 'heart'; });\n            var system = destination && SYSTEMS[destination.system];\n            var structure = system && system.structures.find(function(item) { return item.id === 'heart'; });\n            if (!destination || !structure) return;\n            var origin = document.activeElement;\n            updateAlveolusGuide(function(state) {\n              var viewed = safeFlagMap(state._anatomyLensViewed, anatomyLensIds);\n              viewed[destination.id] = true;\n              var level = Number(state.complexity);\n              if ([1, 2, 3].indexOf(level) === -1) level = defaultComplexity;\n              return { system: destination.system, view: destination.view, selectedStructure: 'heart',\n                complexity: Math.max(level, anatomyStructureComplexity(structure)), search: '', _studyFilter: 'all',\n                _bodyView3d: false, _activeTab: 'explore', quizMode: false, _anatomyModelFocus: false, _showStudySheet: false,\n                _regionalAtlasOpen: 'heart', _regionalAtlasStep: 2, _regionalAtlasPlaying: state._regionalAtlasPlaying !== false, _regionalAtlasClinical: false,\n                _showAnatomyLens: false, _anatomyLensEntry: null, _anatomyLensViewed: viewed };\n            }, alveolusCopy.handoff_announcement, function(state) {\n              playSound('structureClick');\n              focusAnatomyLensDestination(state, '#anatomy-regional-atlas', 'heart', origin);\n            });\n          }\n          function selectAlveolusStep"
+    ],
+    [
+      "h('button', { type: 'button', onClick: function() { openAnatomyScaleBridge('heart', 2, alveolusCopy.handoff_announcement); } }, alveolusCopy.handoff_button)",
+      "h('button', { type: 'button', 'data-anatomy-alveolus-handoff': true, onClick: openAlveolusHeart }, alveolusCopy.handoff_button)"
+    ]
+  ],
+  "scope": "Alveolus renderer only",
+  "savedWorkPreserved": true,
+  "clinicalDestinationStartsNormal": true,
+  "playbackPreferencePreserved": true,
+  "guardedDestinationFocus": true
+}

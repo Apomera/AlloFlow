@@ -433,14 +433,42 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   }
   function mmEntryRecordedResult(profile) {
     var sum = profile.summary;
-    return { modelVersion: 1, completed: true, outcome: sum.outcome, angle: profile.angle,
+    var result = { modelVersion: profile.version === 2 ? 2 : 1, completed: true, outcome: sum.outcome, angle: profile.angle,
       peakG: Math.round(sum.peakG * 10) / 10, peakHeatFlux: sum.peakHeatFlux,
       heatLoad: sum.heatLoad, duration: sum.duration, downrange: sum.downrange,
       splashSpeed: sum.splashSpeed, terminal: profile.events.splash ? 'splash' : profile.events.skip ? 'skip' : 'incomplete' };
+    if (result.modelVersion === 2) result.plan = { version: 2, mode: profile.plan.mode, bank: profile.plan.bank };
+    return result;
   }
 
-  // Save only the compact, finite measurements needed to resume and compare a run.
-  // Legacy results have no physical measurements; keep their original three fields.
+  // Persist canonical plan scalars. Irrelevant bank angles do not create a second
+  // identity for guided or ballistic runs, and malformed saves never select a default.
+  function mmStrictEntryPlan(raw) {
+    if (!mmIsObj(raw) || raw.version !== 2 || ['guided', 'ballistic', 'bank'].indexOf(raw.mode) < 0 ||
+        !mmNum(raw.bank) || raw.bank < 0 || raw.bank > 180 || raw.bank !== Math.round(raw.bank * 10) / 10 ||
+        (raw.mode !== 'bank' && raw.bank !== 0)) return null;
+    return { version: 2, mode: raw.mode, bank: raw.bank };
+  }
+  function mmEntryScalarMatches(value, expected) {
+    return typeof expected === 'number' ? mmNum(value) && Math.abs(value - expected) <= 1e-9 + Math.abs(expected) * 1e-12 : value === expected;
+  }
+  function mmEntryPlanMatches(a, b) {
+    return !!(a && b && a.version === b.version && a.mode === b.mode && a.bank === b.bank);
+  }
+  function mmEntryOutcomeMatchesProfile(raw, profile) {
+    if (!raw || !profile || raw.modelVersion !== profile.version) return false;
+    var expected = mmEntryRecordedResult(profile);
+    return Object.keys(expected).every(function(key) {
+      if (key === 'plan') return mmEntryPlanMatches(mmStrictEntryPlan(raw.plan), expected.plan);
+      // Earlier physical saves and older callers retained either the exact peak
+      // or the recorder's one-decimal peak. All other measurements remain exact.
+      if (key === 'peakG' && expected.modelVersion === 1) return mmNum(raw.peakG) && Math.abs(raw.peakG - profile.summary.peakG) <= 0.0500001;
+      return mmEntryScalarMatches(raw[key], expected[key]);
+    });
+  }
+
+  // Earlier animation summaries have no physical measurements. Version 1 metrics
+  // remain readable as archives; active completion additionally requires recomputation.
   function mmCleanEntryOutcome(raw) {
     var inRange = function (v, lo, hi) { return mmNum(v) && v >= lo && v <= hi; };
     if (!mmIsObj(raw) || !inRange(raw.angle, -90, -1) || !inRange(raw.peakG, 0, 1000) ||
@@ -451,49 +479,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       if (raw.legacy === true) result.legacy = true;
       return result;
     }
-    if (raw.modelVersion !== 1 || raw.completed !== true || !inRange(raw.angle, -12, -1) ||
+    if ((raw.modelVersion !== 1 && raw.modelVersion !== 2) || raw.completed !== true || !inRange(raw.angle, -12, -1) ||
         !inRange(raw.peakHeatFlux, 0, 1e9) || !inRange(raw.heatLoad, 0, 1e12) ||
         !inRange(raw.duration, 0.001, 2400) || !inRange(raw.downrange, 0, 1e8) ||
         ['splash', 'skip', 'incomplete'].indexOf(raw.terminal) < 0) return null;
     if (raw.terminal === 'splash' ? (raw.outcome !== 'nominal' && raw.outcome !== 'steep') || !inRange(raw.splashSpeed, 0, 20000)
       : raw.outcome !== raw.terminal || raw.splashSpeed != null) return null;
+    if (raw.modelVersion === 2) {
+      var plan = mmStrictEntryPlan(raw.plan);
+      if (!plan) return null;
+      var profile = mmEntryProfile(raw.angle, { plan: plan });
+      if (!mmEntryOutcomeMatchesProfile(raw, profile)) return null;
+      return mmEntryRecordedResult(profile);
+    }
     return Object.assign(result, { modelVersion: 1, completed: true,
       peakHeatFlux: raw.peakHeatFlux, heatLoad: raw.heatLoad, duration: raw.duration,
       downrange: raw.downrange, splashSpeed: raw.terminal === 'splash' ? raw.splashSpeed : null, terminal: raw.terminal });
   }
   function mmCleanEntryRun(raw) {
-    if (!mmIsObj(raw) || raw.version !== 1 || !mmNum(raw.angle) || raw.angle < -12 || raw.angle > -1 ||
+    if (!mmIsObj(raw) || (raw.version !== 1 && raw.version !== 2) || !mmNum(raw.angle) || raw.angle < -12 || raw.angle > -1 ||
         !mmNum(raw.time) || !mmNum(raw.recovery)) return null;
-    return { version: 1, angle: raw.angle, time: Math.max(0, Math.min(2400, raw.time)),
+    var plan = raw.version === 2 ? mmStrictEntryPlan(raw.plan) : null;
+    if (raw.version === 2 && !plan) return null;
+    var run = { version: raw.version, angle: raw.angle, time: Math.max(0, Math.min(2400, raw.time)),
       recovery: Math.max(0, Math.min(580 / 60, raw.recovery)), recorded: raw.recorded === true };
+    if (plan) run.plan = plan;
+    return run;
+  }
+  // An authentic result may be reviewed before its endpoint. This checks the
+  // result and run identity; the progression gate separately requires recorded.
+  function mmEntryReceiptMatches(rawOutcome, rawRun) {
+    var outcome = mmCleanEntryOutcome(rawOutcome), run = mmCleanEntryRun(rawRun);
+    if (!outcome || !run || !outcome.modelVersion || run.version !== outcome.modelVersion ||
+        !mmEntryScalarMatches(run.angle, outcome.angle) ||
+        (run.version === 2 && !mmEntryPlanMatches(run.plan, outcome.plan))) return false;
+    var profile = run.version === 2 ? mmEntryProfile(run.angle, { plan: run.plan }) : mmEntryProfile(run.angle);
+    return mmEntryOutcomeMatchesProfile(outcome, profile);
   }
   function mmCleanEntryState(raw) {
     raw = mmIsObj(raw) ? raw : {};
     var outcome = mmCleanEntryOutcome(raw.entryOutcome), run = mmCleanEntryRun(raw.entryRun);
+    var note = typeof raw.entryMigrationNote === 'string' ? raw.entryMigrationNote.slice(0, 300) : null;
+    var rejectedNote = 'This saved entry completion could not be verified against its trajectory. Playback restarts at entry interface; earlier attempts and already-paid rewards are retained.';
     if (run) {
-      var matches = outcome && outcome.modelVersion === 1 && Math.abs(run.angle - outcome.angle) < 0.005;
-      if (outcome && outcome.modelVersion === 1 && !matches) outcome = null;
-      if (!matches) { run.recorded = false; run.recovery = 0; }
-      else {
+      var matches = mmEntryReceiptMatches(outcome, run);
+      // A terminal save must contain both the receipt and its recorded flag.
+      // Do not award a completion on the first paused frame after a partial save.
+      if (matches && !run.recorded && run.time >= outcome.duration) matches = false;
+      if (outcome && outcome.modelVersion && !matches) outcome = null;
+      if (!matches) {
+        var profile = run.version === 2 ? mmEntryProfile(run.angle, { plan: run.plan }) : mmEntryProfile(run.angle);
+        var rejectsCompletion = raw.entryRun.recorded === true ||
+          (mmIsObj(raw.entryOutcome) && raw.entryOutcome.modelVersion != null) || run.time >= profile.summary.duration;
+        if (rejectsCompletion) { run.time = 0; if (!note) note = rejectedNote; }
+        run.recorded = false; run.recovery = 0;
+      } else {
         // A completed run can be scrubbed backward without losing its result.
         run.time = Math.min(run.time, outcome.duration);
         if (run.time < outcome.duration || outcome.terminal !== 'splash') run.recovery = 0;
       }
+    } else if (raw.entryRun != null && ((mmIsObj(raw.entryRun) && raw.entryRun.recorded === true) ||
+      (mmIsObj(raw.entryOutcome) && raw.entryOutcome.modelVersion != null))) {
+      if (outcome && outcome.modelVersion) outcome = null;
+      if (!note) note = rejectedNote;
     }
     return {
-      entryOutcome: outcome, entryRun: run,
+      entryPlan: mmEntryPlan(raw.entryPlan), entryOutcome: outcome, entryRun: run,
       entryAttempts: (Array.isArray(raw.entryAttempts) ? raw.entryAttempts : []).slice(-5).map(mmCleanEntryOutcome).filter(Boolean),
       entryAwardedXP: mmNum(raw.entryAwardedXP) ? Math.max(0, Math.min(25, raw.entryAwardedXP)) : 0,
       entryCompletionAwarded: raw.entryCompletionAwarded === true,
       entryPlaybackRate: [1, 10, 30, 60].indexOf(raw.entryPlaybackRate) >= 0 ? raw.entryPlaybackRate : 30,
       entryPaused: raw.entryPaused === true,
-      entryMigrationNote: typeof raw.entryMigrationNote === 'string' ? raw.entryMigrationNote.slice(0, 300) : null
+      entryMigrationNote: note
     };
   }
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
-    cleanEntryOutcome: mmCleanEntryOutcome, cleanEntryRun: mmCleanEntryRun, cleanEntryState: mmCleanEntryState
+    cleanEntryOutcome: mmCleanEntryOutcome, cleanEntryRun: mmCleanEntryRun, cleanEntryState: mmCleanEntryState,
+    entryRecordedResult: mmEntryRecordedResult, entryReceiptMatches: mmEntryReceiptMatches
   }); } catch (e) {}
-
   function mmCleanLaunchResult(raw) {
     if (!mmIsObj(raw) || raw.version !== 1 || ['orbit', 'suborbital'].indexOf(raw.outcome) < 0) return null;
     var fields = ['duration', 'cutoffAltitude', 'cutoffSpeed', 'perigee', 'apogee', 'eccentricity', 'period', 'peakG', 'peakQ', 'propellantRemaining'];
@@ -559,7 +622,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var ta = mmIsObj(injectionSave.tliAccuracy) ? injectionSave.tliAccuracy : null;
     var lr = mmIsObj(d.landingResult) && mmNum(d.landingResult.vVel) ? d.landingResult : null;
     var eo = mmCleanEntryOutcome(d.entryOutcome);
-    return {
+    var summary = {
       when: when || '',
       difficulty: MM_MODE_NAMES[d.difficulty] ? d.difficulty : 'pilot',
       launch: d.launchRun && d.launchRun.recorded === true ? mmCleanLaunchResult(d.launchResult) : null,
@@ -577,13 +640,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       landing: lr ? { crashed: !!lr.crashed, score: mmNum(lr.score) ? lr.score : 0, grade: String(lr.grade || ''),
         vVel: lr.vVel, hVel: mmNum(lr.hVel) ? lr.hVel : 0, fuel: mmNum(lr.fuel) ? lr.fuel : 0, fuelUnit: lr.fuelUnit === 's' ? 's' : '%',
         start: mmCleanDescentStart(lr.start), flight: mmDescentRecordingSummary(lr.recording) } : null,
-      entry: eo ? eo.modelVersion === 1 ? eo : { outcome: eo.outcome, angle: eo.angle, peakG: eo.peakG } : null,
+      entry: eo ? mmIsPhysicalEntry(eo) ? eo : { outcome: eo.outcome, angle: eo.angle, peakG: eo.peakG } : null,
       quiz: { correct: mmNum(d.quizCorrect) ? d.quizCorrect : 0, total: totals.quiz || 0 },
       samples: mmSampleTypeCount(d.lunarSamples), sampleTotal: totals.samples || 8,
       decisions: { optimal: dl.filter(function (x) { return x.quality === 'optimal'; }).length, total: dl.length },
       events: mmEventCosts(dl),
       morale: mmNum(d.crewMorale) ? d.crewMorale : 75
     };
+    var thermal = mmEntryThermalPreview(d);
+    if (thermal) summary.thermalPreview = thermal;
+    return summary;
   }
   // Each graded call and what it caused, in the order it was flown. The flight record
   // already explains each call on its own; this is the part that was missing: how the
@@ -631,7 +697,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     if (sum.entry) {
       var E = sum.entry;
       steps.push({ call: 'You set the entry angle to ' + E.angle.toFixed(1) + MM_DEG_SIGN,
-        result: E.modelVersion === 1 ? (E.terminal === 'skip' ? 'the capsule crossed 122 km upward; later motion was not simulated'
+        result: mmIsPhysicalEntry(E) ? (E.terminal === 'skip' ? 'the capsule crossed 122 km upward; later motion was not simulated'
           : E.terminal === 'incomplete' ? 'the simulation reached its time limit before a terminal event'
           : E.outcome === 'steep' ? 'the capsule reached splashdown, but its ' + E.peakG + ' g peak load exceeded the model\u2019s ' + MM_ENTRY.cautionG + ' g caution level'
           : 'atmospheric drag slowed the capsule for parachute descent, with a peak load of ' + E.peakG + ' g')
@@ -707,15 +773,20 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     if (L) ln('Landing start: ' + mmDescentStartText(L.start));
     if (sum.returnFlight) ln('Earth return: ' + (sum.returnFlight.duration / 3600).toFixed(2) + ' h; interface at 122 km, ' + (sum.returnFlight.interfaceSpeed / 1000).toFixed(3) + ' km/s and ' + sum.returnFlight.angle.toFixed(1) + MM_DEG_SIGN + '; radial closing speed ' + (-sum.returnFlight.interfaceRadialSpeed / 1000).toFixed(3) + ' km/s. Earth-only preset, matched to entry.');
     var E = sum.entry;
-    ln('Entry: ' + (!E ? 'not flown' : E.angle.toFixed(1) + MM_DEG_SIGN + ', ' + (E.modelVersion === 1
+    ln('Entry: ' + (!E ? 'not flown' : E.angle.toFixed(1) + MM_DEG_SIGN + ', ' + (mmIsPhysicalEntry(E)
       ? (E.terminal === 'splash' ? 'splashdown, peak load ' + E.peakG + ' g' : E.terminal === 'skip' ? 'upward crossing of 122 km, skip-out' : 'simulation time limit reached')
       : E.outcome === 'nominal' ? 'in the corridor, about ' + E.peakG + ' g' : E.outcome === 'skip' ? 'too shallow, skip-out' : E.outcome === 'incomplete' ? 'simulation time limit reached' : 'too steep, about ' + E.peakG + ' g')));
     var physicalEntry = mmCleanEntryOutcome(E);
-    if (physicalEntry && physicalEntry.modelVersion === 1) ln('Entry model: ' + physicalEntry.duration.toFixed(1) + ' s, ' +
+    if (physicalEntry && mmIsPhysicalEntry(physicalEntry)) ln('Entry model: ' + physicalEntry.duration.toFixed(1) + ' s, ' +
       (physicalEntry.downrange / 1000).toFixed(0) + ' km downrange, peak heat flux ' + (physicalEntry.peakHeatFlux / 1e6).toFixed(2) +
       ' MW/m\u00b2, heat load ' + (physicalEntry.heatLoad / 1e6).toFixed(1) + ' MJ/m\u00b2; ' +
       (physicalEntry.terminal === 'splash' ? 'splashdown at ' + physicalEntry.splashSpeed.toFixed(1) + ' m/s.'
         : physicalEntry.terminal === 'skip' ? 'skipped out of the atmosphere.' : 'simulation reached its time limit.'));
+    if (physicalEntry && physicalEntry.modelVersion === 2) ln('Entry lift plan: ' + mmEntryPlanLabel(physicalEntry.plan) + '. Total aerodynamic load includes the full lift vector; the trajectory omits crossrange.');
+    var dynamicsReport = mmEntryDynamicsReport(E);
+    if (dynamicsReport) ln(dynamicsReport);
+    var thermalReport = mmEntryThermalReport(sum.thermalPreview);
+    if (thermalReport) { ln(''); ln(thermalReport); }
     ln('Quiz: ' + sum.quiz.correct + ' / ' + sum.quiz.total + '   Rock types collected: ' + sum.samples + ' / ' + sum.sampleTotal);
     var dec = (Array.isArray(opts.decisions) ? opts.decisions : []).filter(mmIsObj);
     if (dec.length) {
@@ -1166,6 +1237,1097 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     }
     return st;
   }
+  // Measured instantaneous vectors, independent of control commands or forecasts.
+  function mmDescentVectorSample(raw) {
+    var st=mmDescentPredictionInitial(raw);if(!st)return null;
+    var forces=null;
+    if(!st.contact) {
+      var g=mmDescentGuidance(st),a=g.thrustN/g.massKg;
+      var engine=Object.freeze({x:a*Math.sin(st.tilt),y:a*Math.cos(st.tilt)});
+      var gravity=Object.freeze({x:0,y:-g.gravity});
+      forces=Object.freeze({massKg:g.massKg,thrustN:g.thrustN,
+        engine:engine,gravity:gravity,net:Object.freeze({x:engine.x,y:engine.y+gravity.y})});
+    }
+    return Object.freeze({altitude:st.alt,time:st.elapsed,tilt:st.tilt,actualThrottle:st.fuel>0?st.thrust:0,
+      contact:st.contact,velocity:Object.freeze({x:st.hVel,y:st.vVel,speed:Math.hypot(st.hVel,st.vVel)}),forces:forces});
+  }
+  function mmDescentVectorArrow(vector,scale) {
+    var dx=vector.x*scale,dy=-vector.y*scale,len=Math.hypot(dx,dy),x=200+dx,y=180+dy;
+    if(len<1e-9)return Object.freeze({x:x,y:y,path:'',visible:false});
+    var ux=dx/len,uy=dy/len,head=Math.min(9,len*.35),half=head*.55;
+    return Object.freeze({x:x,y:y,visible:true,path:'M200 180 L'+x+' '+y+' M'+(x-ux*head-uy*half)+' '+(y-uy*head+ux*half)+
+      ' L'+x+' '+y+' L'+(x-ux*head+uy*half)+' '+(y-uy*head-ux*half)});
+  }
+  function mmDescentVectorGeometry(raw) {
+    var sample=mmDescentVectorSample(raw);if(!sample)return null;
+    var range=mmDescentVisualInterval(Math.max(10,sample.velocity.speed*1.15)),scale=140/range;
+    var forces=null;
+    if(sample.forces) {
+      var arrows={};['engine','gravity','net'].forEach(function(key){arrows[key]=mmDescentVectorArrow(sample.forces[key],14);});
+      forces=Object.freeze({range:10,scale:14,arrows:Object.freeze(arrows)});
+    }
+    return Object.freeze({sample:sample,motion:Object.freeze({range:range,scale:scale,arrow:mmDescentVectorArrow(sample.velocity,scale),
+      limits:Object.freeze({x:200-MM_DESCENT.landH*scale,y:180-MM_DESCENT.landV*scale,
+        width:2*MM_DESCENT.landH*scale,height:2*MM_DESCENT.landV*scale})}),forces:forces});
+  }
+  function mmDescentVectorsView(h) {
+    var text={fontSize:'12px',lineHeight:1.65,color:'#cbd5e1',margin:'8px 0',overflowWrap:'anywhere'};
+    var forced='@media(forced-colors:active){[data-descent-vectors],[data-descent-vectors] *{color:CanvasText!important;background-color:Canvas!important;border-color:CanvasText!important;}'+
+      '[data-descent-vector-grid],[data-descent-vector-craft] *{stroke:GrayText!important;fill:none!important;}'+
+      '[data-descent-vector-arrow="engine"],[data-descent-vector-arrow="velocity"]{stroke:LinkText!important;}'+
+      '[data-descent-vector-arrow="gravity"],[data-descent-vector-arrow="net"],[data-descent-vector-limits],[data-descent-vector-ring]{stroke:CanvasText!important;}'+
+      '[data-descent-vector-dot]{fill:CanvasText!important;}}';
+    function reading(key,label){return h('div',{key:key,style:{minWidth:0}},h('dt',{style:{color:'#cbd5e1'}},label),
+      h('dd',{'data-descent-vector-value':key,style:{margin:0,fontWeight:700,fontSize:'13px',color:'#f8fafc',fontVariantNumeric:'tabular-nums'}},'—'));}
+    function arrow(key,color,dash){return h('g',{key:key},
+      h('path',{'data-descent-vector-arrow':key,d:'',fill:'none',stroke:color,strokeWidth:2.5,strokeDasharray:dash,strokeLinecap:'round',strokeLinejoin:'round',vectorEffect:'non-scaling-stroke'}),
+      h('circle',{'data-descent-vector-ring':key,cx:200,cy:180,r:key==='gravity'?5:3,fill:'none',stroke:color,strokeWidth:1.5,vectorEffect:'non-scaling-stroke',style:{display:'none'}}));}
+    function diagram(name){var motion=name==='motion';return h('div',{'data-descent-vector-plot':name,style:{maxWidth:'360px',margin:'0 auto',minWidth:0}},
+      h('div',{style:{display:'flex',justifyContent:'space-between',gap:'8px',fontSize:'12px',lineHeight:1.6,color:'#cbd5e1'}},h('span',null,'↑ Local up'),h('span',null,'Right →')),
+      h('svg',{'data-descent-vector-diagram':name,viewBox:'0 0 400 360',preserveAspectRatio:'xMidYMid meet',role:'img',
+        'aria-label':motion?'Measured lateral and vertical velocity on equal speed axes.':'Thrust, gravity and net acceleration on equal acceleration axes.',style:{display:'block',width:'100%',height:'auto',background:'#081321',borderRadius:'8px'}},
+        h('g',{'data-descent-vector-grid':true,stroke:'#475569',fill:'none'},
+          h('rect',{x:60,y:40,width:280,height:280,strokeDasharray:'2 5',vectorEffect:'non-scaling-stroke'}),
+          h('circle',{cx:200,cy:180,r:140,vectorEffect:'non-scaling-stroke'}),
+          h('circle',{cx:200,cy:180,r:70,strokeDasharray:'2 5',vectorEffect:'non-scaling-stroke'}),
+          h('line',{x1:60,y1:180,x2:340,y2:180,vectorEffect:'non-scaling-stroke'}),
+          h('line',{x1:200,y1:40,x2:200,y2:320,vectorEffect:'non-scaling-stroke'})),
+        motion?h('rect',{'data-descent-vector-limits':true,x:130,y:138,width:140,height:84,fill:'none',stroke:'#cbd5e1',strokeDasharray:'6 4',strokeWidth:1.5,vectorEffect:'non-scaling-stroke'}):
+          h('g',{'data-descent-vector-craft':true,transform:'rotate(0 200 180)',stroke:'#94a3b8',strokeWidth:1.4,fill:'#182536'},
+            h('polygon',{points:'191,176 196,168 204,168 209,176 209,183 191,183',vectorEffect:'non-scaling-stroke'}),
+            h('rect',{x:189,y:183,width:22,height:7,fill:'#8a6631',vectorEffect:'non-scaling-stroke'}),
+            h('path',{d:'M190 186 L182 198 L177 198 M210 186 L218 198 L223 198 M197 190 L194 194 L206 194 L203 190',fill:'none',vectorEffect:'non-scaling-stroke'})),
+        motion?arrow('velocity','#67e8f9',undefined):['gravity','engine','net'].map(function(key){return arrow(key,key==='engine'?'#fbbf24':key==='gravity'?'#fda4af':'#f8fafc',key==='gravity'?'5 4':key==='net'?'1 4':undefined);}),
+        h('circle',{'data-descent-vector-dot':true,cx:200,cy:180,r:3,fill:'#f8fafc'})),
+      h('p',{'data-descent-vector-scale':name,style:text},'Equal axes.'));
+    }
+    return h('details',{'data-descent-vectors':true,style:{margin:'12px 0',padding:'12px',border:'1px solid #475569',borderRadius:'12px',background:'#0b1729',minWidth:0}},
+      h('style',null,forced),
+      h('summary',{style:{minHeight:'44px',padding:'10px 8px',fontSize:'13px',lineHeight:1.6,fontWeight:700,color:'#f8fafc',cursor:'pointer'}},'Explore flight vectors'),
+      h('p',{'data-descent-vector-source-label':true,style:text},'Open to inspect the measured flight state.'),
+      h('p',{'data-descent-vector-status':true,style:Object.assign({},text,{color:'#a5f3fc',borderLeft:'3px solid #67e8f9',padding:'8px 10px',background:'#0c2538'})},'Velocity describes motion. Acceleration describes how that motion is changing.'),
+      h('div',{'data-descent-vector-content':true,hidden:true,style:{minWidth:0}},
+        h('div',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,280px),1fr))',alignItems:'start',gap:'12px',minWidth:0}},
+          h('figure',{'data-descent-vector-figure':'motion',style:{margin:0,padding:'10px',border:'1px solid #475569',borderRadius:'8px',minWidth:0}},
+            h('figcaption',{style:{fontWeight:700,fontSize:'14px',lineHeight:1.6,color:'#f8fafc'}},'Measured velocity'),
+            h('p',{style:Object.assign({},text,{color:'#67e8f9'})},'Solid arrow: measured motion'),diagram('motion'),
+            h('dl',{style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:'8px',margin:0,fontSize:'12px',lineHeight:1.65}},
+              [['lateral','Lateral velocity'],['vertical','Vertical velocity'],['speed','Speed'],['tilt','Measured tilt']].map(function(a){return reading(a[0],a[1]);})),
+            h('p',{style:text},'Dashed box: touchdown speed limits, under 3 m/s vertically and 5 m/s sideways. Entering this box does not complete a landing. The dot marks zero velocity.')),
+          h('figure',{'data-descent-vector-figure':'forces',style:{margin:0,padding:'10px',border:'1px solid #475569',borderRadius:'8px',minWidth:0}},
+            h('figcaption',{style:{fontWeight:700,fontSize:'14px',lineHeight:1.6,color:'#f8fafc'}},'Measured acceleration'),
+            h('p',{'data-descent-vector-force-note':true,style:text},'Solid: thrust · dashed: gravity · dotted: net'),diagram('forces'),
+            h('dl',{'data-descent-vector-force-values':true,style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:'8px',margin:0,fontSize:'12px',lineHeight:1.65}},
+              [['engine','Thrust acceleration'],['gravity','Lunar gravity'],['netHorizontal','Net sideways'],['netVertical','Net vertical'],['thrust','Engine force'],['mass','Vehicle mass']].map(function(a){return reading(a[0],a[1]);})),
+            h('p',{'data-descent-vector-force-context':true,style:text},'Thrust follows measured tilt. The lander glyph is enlarged.'))),
+        h('p',{style:text},'Velocity and acceleration use separate scales. Both diagrams use local horizontal and up axes. Thrust acceleration uses actual engine output and current mass; gravity acts downward. Tilt alone does not cancel drift when the engine is off.')));
+  }
+  function mmUpdateDescentVectors(host,raw,context) {
+    var root=host&&host.querySelector('[data-descent-vectors]');if(!root||!root.open)return;
+    context=context||{};var geo=mmDescentVectorGeometry(raw),content=root.querySelector('[data-descent-vector-content]');
+    root.dataset.descentVectorAvailable=geo?'true':'false';content.hidden=!geo;
+    function text(selector,value){var n=root.querySelector(selector);if(n)n.textContent=value;}
+    function attrs(node,values){if(node)Object.keys(values).forEach(function(k){node.setAttribute(k,String(values[k]));});}
+    if(!geo){root.dataset.descentVectorSource='unavailable';root.dataset.descentVectorTime='';root.dataset.descentVectorForcesAvailable='false';
+      root.dataset.descentVectorActualThrottle='';root.dataset.descentVectorTilt='';root.dataset.descentVectorContact='';
+      root.querySelectorAll('[data-descent-vector-value]').forEach(function(node){node.textContent='—';});
+      text('[data-descent-vector-source-label]',context.unavailable||'No measured flight state is available.');
+      text('[data-descent-vector-status]','Velocity and force vectors require a recorded state.');return;}
+    var s=geo.sample,f=s.forces;
+    root.dataset.descentVectorSource=context.recorded?'recorded':'live';root.dataset.descentVectorTime=String(s.time);
+    root.dataset.descentVectorForcesAvailable=f?'true':'false';root.dataset.descentVectorActualThrottle=String(s.actualThrottle);
+    root.dataset.descentVectorTilt=String(s.tilt);root.dataset.descentVectorContact=String(s.contact);
+    text('[data-descent-vector-source-label]',(context.recorded?'Recorded':'Live')+' state at '+s.time.toFixed(1)+' s · '+s.altitude.toFixed(1)+' m · actual throttle '+(s.actualThrottle*100).toFixed(1)+'%'+(context.paused?' · flight paused.':'.'));
+    text('[data-descent-vector-status]',s.contact?'At contact. The arrow preserves contact velocity; surface support forces are outside this flight model.':
+      s.actualThrottle===0?'Coasting: gravity changes vertical speed. Sideways velocity persists while the engine is off.':
+      'Velocity shows current motion. Net acceleration shows its instantaneous change, using actual thrust and tilt.');
+    var motion=root.querySelector('[data-descent-vector-diagram="motion"]');
+    attrs(motion,{'data-vector-scale':geo.motion.scale,'data-vector-range':geo.motion.range,
+      'aria-label':(s.contact?'Preserved contact':'Measured')+' velocity: horizontal '+s.velocity.x.toFixed(2)+' and vertical '+s.velocity.y.toFixed(2)+' metres per second. Equal axes, '+geo.motion.range+' metres per second at the outer ring.'});
+    attrs(motion.querySelector('[data-descent-vector-limits]'),geo.motion.limits);
+    function arrow(svg,key,a){var n=svg.querySelector('[data-descent-vector-arrow="'+key+'"]');attrs(n,{d:a.path});n.style.display=a.visible?'':'none';
+      var ring=svg.querySelector('[data-descent-vector-ring="'+key+'"]');attrs(ring,{cx:a.x,cy:a.y});ring.style.display=a.visible?'':'none';}
+    arrow(motion,'velocity',geo.motion.arrow);
+    text('[data-descent-vector-scale="motion"]','Equal m/s axes · outer ring '+geo.motion.range+' m/s · inner ring '+(geo.motion.range/2)+' m/s. Scale follows the inspected speed.');
+    function signed(value,unit,negative,positive,precision){return Math.abs(value).toFixed(precision)+' '+unit+(Math.abs(value)<1e-9?' · zero':value<0?' '+negative:' '+positive);}
+    var values={lateral:signed(s.velocity.x,'m/s','left','right',1),vertical:signed(s.velocity.y,'m/s','down','up',1),speed:s.velocity.speed.toFixed(1)+' m/s',
+      tilt:signed(s.tilt*180/Math.PI,'°','left','right',1)};
+    var forcePlot=root.querySelector('[data-descent-vector-plot="forces"]'),forceValues=root.querySelector('[data-descent-vector-force-values]');
+    forcePlot.style.display=f?'':'none';forceValues.style.display=f?'grid':'none';
+    if(f){var forceSvg=root.querySelector('[data-descent-vector-diagram="forces"]');
+      attrs(forceSvg,{'data-vector-scale':geo.forces.scale,'data-vector-range':geo.forces.range,
+        'aria-label':'Instantaneous thrust, gravity and net acceleration on equal axes. Net horizontal '+f.net.x.toFixed(3)+' and vertical '+f.net.y.toFixed(3)+' metres per second squared. Outer ring: 10 metres per second squared.'});
+      ['engine','gravity','net'].forEach(function(key){arrow(forceSvg,key,geo.forces.arrows[key]);});
+      attrs(forceSvg.querySelector('[data-descent-vector-craft]'),{transform:'rotate('+(s.tilt*180/Math.PI)+' 200 180)'});
+      text('[data-descent-vector-scale="forces"]','Equal m/s² axes · outer ring 10 m/s² · inner ring 5 m/s². This scale stays fixed through flight.');
+      text('[data-descent-vector-force-note]','Solid: thrust · dashed: gravity · dotted: net');
+      text('[data-descent-vector-force-context]','The enlarged lander glyph follows measured tilt. Coincident gravity and net endpoints use concentric rings.');
+      values.engine=Math.hypot(f.engine.x,f.engine.y).toFixed(3)+' m/s²';values.gravity=(-f.gravity.y).toFixed(3)+' m/s²';
+      values.netHorizontal=signed(f.net.x,'m/s²','left','right',3);values.netVertical=signed(f.net.y,'m/s²','down','up',3);
+      values.thrust=(f.thrustN/1000).toFixed(2)+' kN';values.mass=f.massKg.toFixed(0)+' kg';
+    }else {text('[data-descent-vector-force-note]','Contact forces are outside the airborne model.');
+      text('[data-descent-vector-force-context]','Surface support and impact forces were not integrated. Inspect an earlier recorder sample to see airborne acceleration.');
+      ['engine','gravity','netHorizontal','netVertical','thrust','mass'].forEach(function(key){values[key]='—';});}
+    Object.keys(values).forEach(function(key){text('[data-descent-vector-value="'+key+'"]',values[key]);});
+  }
+
+  // Past measured samples and the inspected endpoint; no flight is advanced here.
+  function mmDescentHistory(raw, recording) {
+    if(!raw||!mmNum(raw.elapsed)||!mmNum(raw.x))return null;
+    var state=mmDescentPredictionInitial(raw);
+    if(!state||!mmIsObj(recording)||recording.version!==1||!Array.isArray(recording.samples)||
+      !recording.samples.length||recording.samples.length>360)return null;
+    var rows=[],previous=-Infinity,storedCount=0;
+    function row(s){return Object.freeze({time:s.elapsed,altitude:s.alt,vertical:s.vVel,lateral:s.hVel,
+      throttle:s.fuel>0?s.thrust*100:0,tilt:s.tilt*180/Math.PI});}
+    for(var i=0;i<recording.samples.length;i++) {
+      var p=recording.samples[i];
+      if(!mmIsObj(p)||!mmNum(p.t)||p.t<0||p.t<=previous)return null;
+      if(p.t>state.elapsed)break;
+      if(!['alt','v','h','fuel','throttle','tilt','x'].every(function(k){return mmNum(p[k]);}))return null;
+      var measured=mmDescentPredictionInitial({alt:p.alt,vVel:p.v,hVel:p.h,fuel:p.fuel,thrust:p.throttle,
+        tilt:p.tilt,x:p.x,elapsed:p.t,contact:p.alt===0});
+      if(!measured)return null;
+      rows.push(row(measured));previous=p.t;storedCount++;
+    }
+    if(!rows.length)return null;
+    var current=row(state),last=rows[rows.length-1];
+    if(last.time===current.time)rows[rows.length-1]=current;else rows.push(current);
+    var first=rows[0],duration=current.time-first.time;
+    return Object.freeze({version:1,samples:Object.freeze(rows),current:current,firstTime:first.time,
+      lastTime:current.time,duration:duration,storedCount:storedCount,hasHistory:rows.length>1&&duration>0,
+      contact:state.contact,delta:Object.freeze({vertical:current.vertical-first.vertical,lateral:current.lateral-first.lateral})});
+  }
+  function mmDescentHistoryGeometry(history) {
+    if(!history||history.version!==1||!history.hasHistory||!Array.isArray(history.samples)||
+      history.samples.length<2||history.samples.length>361||!mmNum(history.duration)||history.duration<=0||
+      !mmNum(history.firstTime)||!mmNum(history.lastTime)||history.duration!==history.lastTime-history.firstTime||
+      !history.samples.every(function(p,i,all){return mmIsObj(p)&&['time','vertical','lateral','throttle','tilt'].every(function(k){return mmNum(p[k]);})&&
+        p.time>=history.firstTime&&p.time<=history.lastTime&&(!i||p.time>all[i-1].time)&&p.throttle>=0&&p.throttle<=100&&Math.abs(p.tilt)<=25;}))return null;
+    var peak=0;
+    history.samples.forEach(function(p){peak=Math.max(peak,Math.abs(p.vertical),Math.abs(p.lateral));});
+    var velocityRange=mmDescentVisualInterval(Math.max(5,peak*1.1));
+    var timeTicks=[];
+    for(var i=0;i<5;i++)timeTicks.push(Object.freeze({value:history.firstTime+history.duration*i/4,x:20+100*i}));
+    function plot(min,max,keys) {
+      var curves={};
+      keys.forEach(function(key){
+        var points=history.samples.map(function(p){return Object.freeze({time:p.time,value:p[key],
+          x:20+(p.time-history.firstTime)/history.duration*400,y:200-(p[key]-min)/(max-min)*180});});
+        var end=points[points.length-1];
+        curves[key]=Object.freeze({points:Object.freeze(points),line:points.map(function(p){return p.x+' '+p.y;}).join(' '),
+          end:end,dot:'M'+end.x+' '+end.y+' l0 0'});
+      });
+      return Object.freeze({min:min,max:max,curves:Object.freeze(curves),ticks:Object.freeze([
+        Object.freeze({value:max,y:20}),Object.freeze({value:(min+max)/2,y:110}),Object.freeze({value:min,y:200})])});
+    }
+    return Object.freeze({history:history,timeTicks:Object.freeze(timeTicks),
+      velocity:plot(-velocityRange,velocityRange,['vertical','lateral']),
+      throttle:plot(0,100,['throttle']),tilt:plot(-25,25,['tilt'])});
+  }
+  function mmDescentHistoryView(h) {
+    var text={fontSize:'12px',lineHeight:1.65,color:'#cbd5e1',margin:'8px 0',overflowWrap:'anywhere'};
+    var curves={vertical:['Vertical: positive up','#67e8f9',undefined],lateral:['Lateral: positive right','#fbbf24','6 4'],
+      throttle:['Actual throttle','#fbbf24',undefined],tilt:['Measured tilt: positive right','#c4b5fd',undefined]};
+    function figure(name,title,unit,keys) {
+      return h('figure',{'data-descent-history-figure':name,style:{margin:0,padding:'10px',border:'1px solid #475569',borderRadius:'8px',minWidth:0}},
+        h('figcaption',{style:{fontWeight:700,fontSize:'14px',lineHeight:1.6,color:'#f8fafc'}},title),
+        h('p',{style:Object.assign({},text,{display:'flex',flexWrap:'wrap',gap:'6px 16px'})},keys.map(function(key){return h('span',{key:key,style:{color:curves[key][1]}},
+          (key==='lateral'?'Dashed: ':'Solid: ')+curves[key][0]);})),
+        h('div',{style:{display:'grid',gridTemplateColumns:'48px minmax(0,1fr)',gap:'4px',minWidth:0}},
+          h('div',{style:{position:'relative',height:'150px',fontSize:'12px',lineHeight:1.3,color:'#cbd5e1'}},[0,1,2].map(function(i){return h('span',{
+            key:i,'data-descent-history-ruler':name+'-value-'+i,style:{position:'absolute',right:0,top:(20+90*i)/220*100+'%',transform:'translateY(-50%)',fontVariantNumeric:'tabular-nums'}},'—');})),
+          h('div',{style:{minWidth:0}},
+            h('svg',{'data-descent-history-chart':name,viewBox:'0 0 440 220',preserveAspectRatio:'none',role:'img','aria-label':title,
+              style:{display:'block',width:'100%',height:'150px',background:'#081321',borderRadius:'8px'}},
+              h('g',{'data-descent-history-grid':true,fill:'none',stroke:'#475569',strokeWidth:1},
+                [20,110,200].map(function(y){return h('line',{key:'y'+y,x1:20,y1:y,x2:420,y2:y,vectorEffect:'non-scaling-stroke'});}),
+                [20,120,220,320,420].map(function(x){return h('line',{key:'x'+x,x1:x,y1:20,x2:x,y2:200,strokeDasharray:'2 5',vectorEffect:'non-scaling-stroke'});})),
+              keys.map(function(key){return h('g',{key:key},
+                h('polyline',{'data-descent-history-path':key,points:'',fill:'none',stroke:curves[key][1],strokeWidth:2.5,strokeDasharray:curves[key][2],strokeLinejoin:'round',vectorEffect:'non-scaling-stroke'}),
+                h('path',{'data-descent-history-marker':key,d:'',fill:'none',stroke:curves[key][1],strokeWidth:7,strokeLinecap:'round',vectorEffect:'non-scaling-stroke'}));})),
+            h('div',{style:{position:'relative',height:'22px',fontSize:'12px',lineHeight:1.5,color:'#cbd5e1'}},[0,1,2,3,4].map(function(i){return h('span',{
+              key:i,'data-descent-history-ruler':name+'-time-'+i,'data-descent-history-quarter':i===1||i===3?'true':undefined,
+              style:{position:'absolute',left:(20+100*i)/440*100+'%',transform:i===0?'none':i===4?'translateX(-100%)':'translateX(-50%)',fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}},'—');})))),
+        h('p',{'data-descent-history-scale':name,style:text},unit+' · piloted flight time in seconds.'));
+    }
+    function reading(key,label){return h('div',{key:key,style:{minWidth:0}},h('dt',null,label),h('dd',{'data-descent-history-value':key,
+      style:{margin:0,fontWeight:700,fontSize:'13px',color:'#f8fafc',fontVariantNumeric:'tabular-nums'}},'—'));}
+    return h('details',{'data-descent-history':true,style:{margin:'12px 0',padding:'12px',border:'1px solid #475569',borderRadius:'12px',background:'#0b1729',minWidth:0}},
+      h('style',null,'@media(max-width:480px){[data-descent-history-quarter]{display:none!important;}}'+
+        '@media(forced-colors:active){[data-descent-history],[data-descent-history] *{color:CanvasText!important;background-color:Canvas!important;border-color:CanvasText!important;}'+
+        '[data-descent-history-grid]{stroke:GrayText!important;}[data-descent-history-path],[data-descent-history-marker]{stroke:LinkText!important;}}'),
+      h('summary',{style:{minHeight:'44px',padding:'10px 8px',fontSize:'13px',lineHeight:1.6,fontWeight:700,color:'#f8fafc',cursor:'pointer'}},'Explore flight history'),
+      h('p',{'data-descent-history-source-label':true,style:text},'Open to inspect measured changes during the descent.'),
+      h('p',{'data-descent-history-status':true,style:Object.assign({},text,{color:'#a5f3fc',borderLeft:'3px solid #67e8f9',padding:'8px 10px',background:'#0c2538'})},'Past measurements show how a burn changes motion.'),
+      h('div',{'data-descent-history-content':true,hidden:true,style:{minWidth:0}},
+        h('dl',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,120px),1fr))',gap:'8px',margin:'12px 0',fontSize:'12px',lineHeight:1.65,color:'#cbd5e1'}},
+          [['vertical','Vertical velocity'],['lateral','Lateral velocity'],['throttle','Actual throttle'],['tilt','Measured tilt'],
+           ['deltaVertical','Vertical change from start'],['deltaLateral','Lateral change from start']].map(function(a){return reading(a[0],a[1]);})),
+        h('div',{style:{display:'grid',gap:'12px',minWidth:0}},
+          figure('velocity','Signed velocity history','m/s',['vertical','lateral']),
+          figure('throttle','Measured engine output','percent',['throttle']),
+          figure('tilt','Measured attitude','degrees',['tilt'])),
+        h('p',{style:text},'Dots mark the inspected measurements. Each chart has the same time span. Stored flight samples are linked by straight lines; brief transients may fall between samples.')));
+  }
+  function mmUpdateDescentHistory(host,raw,recording,context) {
+    var root=host&&host.querySelector('[data-descent-history]');if(!root||!root.open)return;
+    context=context||{};var history=mmDescentHistory(raw,recording),geo=mmDescentHistoryGeometry(history);
+    function text(selector,value){var node=root.querySelector(selector);if(node)node.textContent=value;}
+    var content=root.querySelector('[data-descent-history-content]');content.hidden=!geo;
+    root.dataset.descentHistoryAvailable=geo?'true':'false';root.dataset.descentHistorySourceKind=history?(context.recorded?'recorded':'live'):'unavailable';
+    root.dataset.descentHistoryTime=history?String(history.lastTime):'';root.dataset.descentHistoryFirstTime=history?String(history.firstTime):'';
+    root.dataset.descentHistoryPoints=history?String(history.samples.length):'0';root.dataset.descentHistoryContact=history?String(history.contact):'';
+    if(!geo) {
+      root.querySelectorAll('[data-descent-history-value]').forEach(function(n){n.textContent='—';});
+      root.querySelectorAll('[data-descent-history-path]').forEach(function(n){n.setAttribute('points','');});
+      root.querySelectorAll('[data-descent-history-marker]').forEach(function(n){n.setAttribute('d','');});
+      root.querySelectorAll('[data-descent-history-ruler]').forEach(function(n){n.textContent='—';delete n.dataset.value;n.title='';});
+      root.querySelectorAll('[data-descent-history-scale]').forEach(function(n){n.textContent='No earlier measured history is available.';});
+      root.querySelectorAll('[data-descent-history-chart]').forEach(function(n){n.removeAttribute('data-time-first');n.removeAttribute('data-time-last');n.removeAttribute('data-value-min');n.removeAttribute('data-value-max');n.setAttribute('aria-label','No earlier measured history is available.');});
+      text('[data-descent-history-source-label]',history?
+        (context.recorded?'This is the first recorded sample. Inspect a later sample to see its history.':'Waiting for a second measured state. Resume the flight to build a history.'):
+        (context.unavailable||'No measured flight recording is available.'));
+      text('[data-descent-history-status]',history?'A history needs measurements at two different times.':'Flight history requires a recorded state.');return;
+    }
+    var current=history.current,precision=history.duration<1?2:1;
+    text('[data-descent-history-source-label]',(context.recorded?'Recorded':'Live')+' measurements from '+history.firstTime.toFixed(precision)+' to '+history.lastTime.toFixed(precision)+
+      ' s · '+history.samples.length+' points · inspected altitude '+current.altitude.toFixed(1)+' m'+(context.paused?' · flight paused.':'.'));
+    text('[data-descent-history-status]',history.contact?'History ends at the inspected contact state. Earlier points describe the airborne flight.':
+      'Signed velocities preserve changes of direction. Positive vertical means up; positive lateral and tilt mean right.');
+    function signed(value,unit,negative,positive){return Math.abs(value).toFixed(2)+' '+unit+(Math.abs(value)<1e-9?' · zero':value<0?' '+negative:' '+positive);}
+    var values={vertical:signed(current.vertical,'m/s','down','up'),lateral:signed(current.lateral,'m/s','left','right'),
+      throttle:current.throttle.toFixed(1)+'%',tilt:signed(current.tilt,'°','left','right'),
+      deltaVertical:signed(history.delta.vertical,'m/s','down','up'),deltaLateral:signed(history.delta.lateral,'m/s','left','right')};
+    Object.keys(values).forEach(function(key){text('[data-descent-history-value="'+key+'"]',values[key]);});
+    ['velocity','throttle','tilt'].forEach(function(name){
+      var chart=root.querySelector('[data-descent-history-chart="'+name+'"]'),plot=geo[name];
+      chart.dataset.timeFirst=String(history.firstTime);chart.dataset.timeLast=String(history.lastTime);
+      chart.dataset.valueMin=String(plot.min);chart.dataset.valueMax=String(plot.max);
+      chart.setAttribute('aria-label',(name==='velocity'?'Signed vertical and lateral velocity':name==='throttle'?'Actual throttle':'Measured tilt')+
+        ' history from '+history.firstTime+' to '+history.lastTime+' seconds. Points end at the inspected state.');
+      Object.keys(plot.curves).forEach(function(key){var curve=plot.curves[key];
+        root.querySelector('[data-descent-history-path="'+key+'"]').setAttribute('points',curve.line);
+        root.querySelector('[data-descent-history-marker="'+key+'"]').setAttribute('d',curve.dot);});
+      plot.ticks.forEach(function(t,i){var n=root.querySelector('[data-descent-history-ruler="'+name+'-value-'+i+'"]');
+        n.textContent=(t.value>0&&name!=='throttle'?'+':'')+t.value.toFixed(0);n.dataset.value=String(t.value);n.title=String(t.value)+(name==='velocity'?' m/s':name==='throttle'?'%':'°');});
+      geo.timeTicks.forEach(function(t,i){var n=root.querySelector('[data-descent-history-ruler="'+name+'-time-'+i+'"]');
+        n.textContent=t.value.toFixed(precision);n.dataset.value=String(t.value);n.title=String(t.value)+' s from piloted handover';});
+      text('[data-descent-history-scale="'+name+'"]',name==='velocity'?'Signed m/s · range '+plot.min+' to +'+plot.max+' m/s. Scale fits measurements through inspection. Time: seconds from piloted handover.':
+        name==='throttle'?'Actual engine output · fixed 0–100% scale. Time: seconds from piloted handover.':
+        'Measured tilt · fixed −25° to +25° scale; the model limits tilt to '+(MM_DESCENT.maxTilt*180/Math.PI).toFixed(1)+'°. Time: seconds from piloted handover.');
+    });
+  }
+  // Specific mechanical energy in the existing local lunar gravity field.
+  // Per-kilogram values keep changing vehicle mass separate from exhaust energy.
+  function mmDescentSpecificEnergy(altitude,vertical,lateral) {
+    var D=MM_DESCENT;
+    var potential=D.g*D.radius*altitude/(D.radius+altitude);
+    var verticalKinetic=vertical*vertical/2,lateralKinetic=lateral*lateral/2;
+    return Object.freeze({potential:potential,verticalKinetic:verticalKinetic,lateralKinetic:lateralKinetic,
+      total:potential+verticalKinetic+lateralKinetic});
+  }
+  function mmDescentEnergy(raw,recording) {
+    if(!raw||!mmNum(raw.elapsed)||!mmNum(raw.x))return null;
+    var state=mmDescentPredictionInitial(raw);if(!state)return null;
+    var current=mmDescentSpecificEnergy(state.alt,state.vVel,state.hVel),power=null;
+    if(!state.contact) {
+      var acceleration=state.fuel>0?MM_DESCENT.maxThrust*state.thrust/mmDescentMass(state.fuel):0;
+      var verticalPower=acceleration*Math.cos(state.tilt)*state.vVel;
+      var lateralPower=acceleration*Math.sin(state.tilt)*state.hVel;
+      power=Object.freeze({vertical:verticalPower,lateral:lateralPower,total:verticalPower+lateralPower,
+        actualThrottle:state.fuel>0?state.thrust:0});
+    }
+    var measured=mmDescentHistory(raw,recording),history=null;
+    if(measured) {
+      var samples=measured.samples.map(function(p){return Object.freeze(Object.assign({time:p.time},
+        mmDescentSpecificEnergy(p.altitude,p.vertical,p.lateral)));});
+      history=Object.freeze({samples:Object.freeze(samples),firstTime:measured.firstTime,lastTime:measured.lastTime,
+        duration:measured.duration,hasHistory:measured.hasHistory,delta:current.total-samples[0].total});
+    }
+    return Object.freeze({current:current,power:power,history:history,time:state.elapsed,altitude:state.alt,contact:state.contact});
+  }
+  function mmDescentEnergyGeometry(model) {
+    function valid(s){return mmIsObj(s)&&['potential','verticalKinetic','lateralKinetic','total'].every(function(k){return mmNum(s[k])&&s[k]>=0;})&&
+      s.total===s.potential+s.verticalKinetic+s.lateralKinetic;}
+    if(!model||!valid(model.current))return null;
+    var history=model.history,peak=model.current.total;
+    if(history) {
+      if(!Array.isArray(history.samples)||!history.samples.length||history.samples.length>361||!mmNum(history.firstTime)||!mmNum(history.lastTime)||
+        !mmNum(history.duration)||history.duration!==history.lastTime-history.firstTime||history.duration<0||
+        !history.samples.every(function(p,i,all){return valid(p)&&mmNum(p.time)&&p.time>=history.firstTime&&p.time<=history.lastTime&&(!i||p.time>all[i-1].time);}))return null;
+      history.samples.forEach(function(p){peak=Math.max(peak,p.total);});
+    }
+    var range=mmDescentVisualInterval(Math.max(10,peak*1.1));
+    var bars={};['potential','verticalKinetic','lateralKinetic'].forEach(function(key,i){
+      bars[key]=Object.freeze({x:20+model.current[key]/range*400,y:30+55*i,value:model.current[key]});});
+    var curves=null,timeTicks=null;
+    if(history&&history.hasHistory&&history.duration>0&&history.samples.length>1) {
+      curves={};
+      ['potential','verticalKinetic','lateralKinetic','total'].forEach(function(key){
+        var points=history.samples.map(function(p){return Object.freeze({time:p.time,value:p[key],
+          x:20+(p.time-history.firstTime)/history.duration*400,y:200-p[key]/range*180});});
+        var end=points[points.length-1];
+        curves[key]=Object.freeze({points:Object.freeze(points),line:points.map(function(p){return p.x+' '+p.y;}).join(' '),dot:'M'+end.x+' '+end.y+' l0 0'});
+      });
+      Object.freeze(curves);timeTicks=[];
+      for(var i=0;i<5;i++)timeTicks.push(Object.freeze({value:history.firstTime+history.duration*i/4,x:20+100*i}));
+      Object.freeze(timeTicks);
+    }
+    return Object.freeze({range:range,bars:Object.freeze(bars),curves:curves,timeTicks:timeTicks,
+      factor:range>1e6?1e6:range>1000?1000:1,unit:range>1e6?'MJ/kg':range>1000?'kJ/kg':'J/kg'});
+  }
+  function mmDescentEnergyView(h) {
+    var text={fontSize:'12px',lineHeight:1.65,color:'#cbd5e1',margin:'8px 0',overflowWrap:'anywhere'};
+    var keys=['potential','verticalKinetic','lateralKinetic','total'];
+    var names={potential:'Height',verticalKinetic:'Vertical motion',lateralKinetic:'Sideways motion',total:'Total'};
+    var colors={potential:'#67e8f9',verticalKinetic:'#fbbf24',lateralKinetic:'#c4b5fd',total:'#f8fafc'};
+    var dashes={potential:undefined,verticalKinetic:'6 4',lateralKinetic:'1 4',total:'9 3'};
+    function ruler(name,i,style){return h('span',{key:name+'-'+i,'data-descent-energy-ruler':name+'-'+i,style:style},'—');}
+    function reading(key,label){return h('div',{key:key,style:{minWidth:0}},h('dt',null,label),
+      h('dd',{'data-descent-energy-value':key,style:{margin:0,fontWeight:700,fontSize:'13px',color:'#f8fafc',fontVariantNumeric:'tabular-nums'}},'—'));}
+    var axisStyle={position:'relative',height:'22px',fontSize:'12px',lineHeight:1.5,color:'#cbd5e1'};
+    return h('details',{'data-descent-energy':true,style:{margin:'12px 0',padding:'12px',border:'1px solid #475569',borderRadius:'12px',background:'#0b1729',minWidth:0}},
+      h('style',null,'@media(max-width:480px){[data-descent-energy-quarter]{display:none!important;}}'+
+        '@media(forced-colors:active){[data-descent-energy],[data-descent-energy] *{color:CanvasText!important;background-color:Canvas!important;border-color:CanvasText!important;}'+
+        '[data-descent-energy-grid]{stroke:GrayText!important;}[data-descent-energy-line],[data-descent-energy-dot],[data-descent-energy-bar]{stroke:LinkText!important;}}'),
+      h('summary',{style:{minHeight:'44px',padding:'10px 8px',fontSize:'13px',lineHeight:1.6,fontWeight:700,color:'#f8fafc',cursor:'pointer'}},'Explore flight energy'),
+      h('p',{'data-descent-energy-source-label':true,style:text},'Open to inspect energy in the measured flight.'),
+      h('p',{'data-descent-energy-status':true,style:Object.assign({},text,{borderLeft:'3px solid #67e8f9',padding:'8px 10px',background:'#0c2538',color:'#a5f3fc'})},'Height can become motion as the lander falls.'),
+      h('div',{'data-descent-energy-content':true,hidden:true,style:{minWidth:0}},
+        h('dl',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,130px),1fr))',gap:'8px',margin:'12px 0',fontSize:'12px',lineHeight:1.65,color:'#cbd5e1'}},
+          [['potential','Height energy (gravity)'],['verticalKinetic','Vertical motion energy'],['lateralKinetic','Sideways motion energy'],
+           ['total','Total mechanical energy'],['power','Engine mechanical power'],['delta','Total change from first sample']].map(function(a){return reading(a[0],a[1]);})),
+        h('figure',{style:{margin:'12px 0',padding:'10px',border:'1px solid #475569',borderRadius:'8px',minWidth:0}},
+          h('figcaption',{style:{fontSize:'14px',fontWeight:700,color:'#f8fafc',lineHeight:1.6}},'Energy at the inspected state'),
+          h('div',{style:{display:'grid',gridTemplateColumns:'68px minmax(0,1fr)',gap:'4px',minWidth:0}},
+            h('div',{style:{position:'relative',height:'128px',fontSize:'12px',lineHeight:1.3,color:'#cbd5e1'}},keys.slice(0,3).map(function(key,i){return h('span',{
+              key:key,style:{position:'absolute',right:0,top:(30+55*i)/170*100+'%',transform:'translateY(-50%)'}},i===0?'Height':i===1?'Vertical':'Sideways');})),
+            h('div',{style:{minWidth:0}},
+              h('svg',{'data-descent-energy-bars':true,viewBox:'0 0 440 170',preserveAspectRatio:'none',role:'img','aria-label':'Energy components on the same energy per kilogram scale.',style:{display:'block',width:'100%',height:'128px',background:'#081321',borderRadius:'8px'}},
+                h('g',{'data-descent-energy-grid':true,stroke:'#475569',fill:'none'},[20,220,420].map(function(x){return h('line',{key:x,x1:x,y1:15,x2:x,y2:155,strokeDasharray:'2 5',vectorEffect:'non-scaling-stroke'});})),
+                keys.slice(0,3).map(function(key,i){return h('line',{key:key,'data-descent-energy-bar':key,x1:20,x2:20,y1:30+55*i,y2:30+55*i,
+                  stroke:colors[key],strokeWidth:9,strokeDasharray:dashes[key],vectorEffect:'non-scaling-stroke'});})),
+              h('div',{style:axisStyle},[0,1,2].map(function(i){return ruler('bar',i,{position:'absolute',left:(20+200*i)/440*100+'%',
+                transform:i===0?'none':i===2?'translateX(-100%)':'translateX(-50%)',fontVariantNumeric:'tabular-nums'});})))),
+          h('p',{'data-descent-energy-scale':true,style:text},'The three bars use the same energy scale.')),
+        h('figure',{'data-descent-energy-history':true,hidden:true,style:{margin:'12px 0',padding:'10px',border:'1px solid #475569',borderRadius:'8px',minWidth:0}},
+          h('figcaption',{style:{fontSize:'14px',fontWeight:700,color:'#f8fafc',lineHeight:1.6}},'Measured energy history'),
+          h('p',{style:Object.assign({},text,{display:'flex',flexWrap:'wrap',gap:'6px 16px'})},keys.map(function(key,i){return h('span',{key:key,style:{color:colors[key]}},
+            ['Solid: ','Dashed: ','Dotted: ','Long dash: '][i]+names[key]);})),
+          h('div',{style:{display:'grid',gridTemplateColumns:'48px minmax(0,1fr)',gap:'4px',minWidth:0}},
+            h('div',{style:{position:'relative',height:'150px',fontSize:'12px',lineHeight:1.3,color:'#cbd5e1'}},[0,1,2].map(function(i){return ruler('value',i,
+              {position:'absolute',right:0,top:(20+90*i)/220*100+'%',transform:'translateY(-50%)',fontVariantNumeric:'tabular-nums'});})),
+            h('div',{style:{minWidth:0}},
+              h('svg',{'data-descent-energy-chart':true,viewBox:'0 0 440 220',preserveAspectRatio:'none',role:'img','aria-label':'Measured mechanical energy history.',style:{display:'block',width:'100%',height:'150px',background:'#081321',borderRadius:'8px'}},
+                h('g',{'data-descent-energy-grid':true,stroke:'#475569',fill:'none'},[20,110,200].map(function(y){return h('line',{key:y,x1:20,x2:420,y1:y,y2:y,vectorEffect:'non-scaling-stroke'});}),
+                  [20,120,220,320,420].map(function(x){return h('line',{key:x,x1:x,x2:x,y1:20,y2:200,strokeDasharray:'2 5',vectorEffect:'non-scaling-stroke'});})),
+                keys.map(function(key){return h('g',{key:key},h('polyline',{'data-descent-energy-line':key,points:'',fill:'none',stroke:colors[key],strokeWidth:2.5,strokeDasharray:dashes[key],vectorEffect:'non-scaling-stroke'}),
+                  h('path',{'data-descent-energy-dot':key,d:'',fill:'none',stroke:colors[key],strokeWidth:7,strokeLinecap:'round',vectorEffect:'non-scaling-stroke'}));})),
+              h('div',{style:axisStyle},[0,1,2,3,4].map(function(i){return h('span',{key:i,'data-descent-energy-ruler':'time-'+i,'data-descent-energy-quarter':i===1||i===3?'true':undefined,
+                style:{position:'absolute',left:(20+100*i)/440*100+'%',transform:i===0?'none':i===4?'translateX(-100%)':'translateX(-50%)',fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}},'—');})))),
+          h('p',{'data-descent-energy-history-scale':true,style:text},'Measured energy per kilogram against elapsed seconds.')),
+        h('p',{'data-descent-energy-history-note':true,style:text},'Waiting for a second measured state to show energy history.'),
+        h('p',{style:text},'Energy and power are per kilogram of current vehicle mass. Height energy is zero at the model surface. Engine mechanical power is force dotted with velocity; it excludes fuel chemical energy, exhaust energy and electrical power.')));
+  }
+  function mmUpdateDescentEnergy(host,raw,recording,context) {
+    var root=host&&host.querySelector('[data-descent-energy]');if(!root||!root.open)return;
+    context=context||{};var model=mmDescentEnergy(raw,recording),geo=mmDescentEnergyGeometry(model);
+    function text(selector,value){var n=root.querySelector(selector);if(n)n.textContent=value;}
+    root.dataset.descentEnergyAvailable=geo?'true':'false';root.dataset.descentEnergySourceKind=geo?(context.recorded?'recorded':'live'):'unavailable';
+    root.dataset.descentEnergyTime=geo?String(model.time):'';root.dataset.descentEnergyPoints=geo&&model.history?String(model.history.samples.length):'0';
+    root.dataset.descentEnergyContact=geo?String(model.contact):'';root.dataset.descentEnergyPowerAvailable=geo&&model.power?'true':'false';
+    root.querySelector('[data-descent-energy-content]').hidden=!geo;
+    root.querySelector('[data-descent-energy-history]').hidden=!geo||!geo.curves;
+    if(!geo) {
+      root.querySelectorAll('[data-descent-energy-value],[data-descent-energy-ruler]').forEach(function(n){n.textContent='—';delete n.dataset.value;n.title='';});
+      root.querySelectorAll('[data-descent-energy-line]').forEach(function(n){n.setAttribute('points','');});
+      root.querySelectorAll('[data-descent-energy-dot]').forEach(function(n){n.setAttribute('d','');});
+      root.querySelectorAll('[data-descent-energy-bar]').forEach(function(n){n.setAttribute('x2','20');});
+      root.querySelectorAll('[data-descent-energy-chart],[data-descent-energy-bars]').forEach(function(n){n.removeAttribute('data-energy-range');n.removeAttribute('data-time-first');n.removeAttribute('data-time-last');});
+      root.querySelector('[data-descent-energy-bars]').setAttribute('aria-label','No measured energy components available.');
+      root.querySelector('[data-descent-energy-chart]').setAttribute('aria-label','No measured energy history available.');
+      text('[data-descent-energy-source-label]',context.unavailable||'No measured flight state is available.');
+      text('[data-descent-energy-status]','Mechanical energy requires measured height and velocity.');return;
+    }
+    var precision=model.history&&model.history.duration<1?2:1;
+    function energy(value){var magnitude=Math.abs(value),factor=magnitude>=1e6?1e6:magnitude>=1000?1000:1;
+      return (value/factor).toFixed(2)+' '+(factor===1e6?'MJ/kg':factor===1000?'kJ/kg':'J/kg');}
+    ['potential','verticalKinetic','lateralKinetic','total'].forEach(function(key){text('[data-descent-energy-value="'+key+'"]',energy(model.current[key]));});
+    text('[data-descent-energy-value="power"]',model.power?(model.power.total>0?'+':'')+model.power.total.toFixed(2)+' W/kg':'Not modelled at contact');
+    text('[data-descent-energy-value="delta"]',model.history?(model.history.delta>0?'+':'')+energy(model.history.delta):'No earlier measurement');
+    text('[data-descent-energy-source-label]',(context.recorded?'Recorded':'Live')+' energy at '+model.time.toFixed(1)+' s · '+model.altitude.toFixed(1)+' m'+(context.paused?' · flight paused.':'.'));
+    text('[data-descent-energy-status]',model.contact?'Contact retains impact motion energy. Ground support and conversion into heat or deformation are outside this flight model.':
+      model.power.actualThrottle===0?'Coasting: gravity exchanges height and motion energy. Total mechanical energy stays approximately constant.':
+      model.power.total<-1e-9?'The engine is removing mechanical energy at this instant. Thrust can slow motion when it points against velocity.':
+      model.power.total>1e-9?'The engine is adding mechanical energy at this instant. Its force has a component along velocity.':
+      'Engine force has near-zero net mechanical power at this instant. Force can still change velocity.');
+    var bars=root.querySelector('[data-descent-energy-bars]');bars.dataset.energyRange=String(geo.range);
+    bars.setAttribute('aria-label','Measured energy per kilogram: height '+model.current.potential+', vertical motion '+model.current.verticalKinetic+', sideways motion '+model.current.lateralKinetic+' joules per kilogram.');
+    Object.keys(geo.bars).forEach(function(key){root.querySelector('[data-descent-energy-bar="'+key+'"]').setAttribute('x2',String(geo.bars[key].x));});
+    for(var i=0;i<3;i++) {
+      var v=geo.range*i/2,n=root.querySelector('[data-descent-energy-ruler="bar-'+i+'"]');
+      n.textContent=(v/geo.factor).toFixed(1);n.dataset.value=String(v);n.title=String(v)+' J/kg';
+    }
+    text('[data-descent-energy-scale]','Common '+geo.unit+' scale, from 0 to '+(geo.range/geo.factor).toFixed(1)+'. Each bar shows one component; their sum is the total.');
+    var chart=root.querySelector('[data-descent-energy-chart]');chart.dataset.energyRange=String(geo.range);
+    if(geo.curves) {
+      chart.dataset.timeFirst=String(model.history.firstTime);chart.dataset.timeLast=String(model.history.lastTime);
+      chart.setAttribute('aria-label','Height, vertical motion, sideways motion and total energy history from '+model.history.firstTime+' to '+model.history.lastTime+' seconds. All curves use joules per kilogram.');
+      Object.keys(geo.curves).forEach(function(key){root.querySelector('[data-descent-energy-line="'+key+'"]').setAttribute('points',geo.curves[key].line);
+        root.querySelector('[data-descent-energy-dot="'+key+'"]').setAttribute('d',geo.curves[key].dot);});
+      for(var j=0;j<3;j++){var yValue=geo.range*(1-j/2),yn=root.querySelector('[data-descent-energy-ruler="value-'+j+'"]');
+        yn.textContent=(yValue/geo.factor).toFixed(1);yn.dataset.value=String(yValue);yn.title=String(yValue)+' J/kg';}
+      geo.timeTicks.forEach(function(t,k){var tn=root.querySelector('[data-descent-energy-ruler="time-'+k+'"]');
+        tn.textContent=t.value.toFixed(precision);tn.dataset.value=String(t.value);tn.title=String(t.value)+' s from piloted handover';});
+    }else {
+      chart.removeAttribute('data-time-first');chart.removeAttribute('data-time-last');
+      chart.setAttribute('aria-label','Energy history needs an earlier measured state.');
+      root.querySelectorAll('[data-descent-energy-line]').forEach(function(n){n.setAttribute('points','');});
+      root.querySelectorAll('[data-descent-energy-dot]').forEach(function(n){n.setAttribute('d','');});
+      root.querySelectorAll('[data-descent-energy-ruler^="time-"],[data-descent-energy-ruler^="value-"]').forEach(function(n){n.textContent='—';delete n.dataset.value;n.title='';});
+    }
+    text('[data-descent-energy-history-scale]',geo.unit+' · time in seconds from piloted handover. The history and current bars share the same energy scale.');
+    text('[data-descent-energy-history-note]',geo.curves?'Dots mark the inspected state. Only earlier measurements are shown. Stored samples are linked by straight lines; brief transients may fall between samples.':
+      model.history?'Inspect a later sample or resume flight to show changes over time.':'This state has no measured flight history. Current energy readings remain available.');
+  }
+  function mmCreateDescentTerrainSampler(geometry) {
+    var p=geometry&&geometry.attributes&&geometry.attributes.position,index=geometry&&geometry.index;
+    var parameters=geometry&&geometry.parameters,columns=parameters&&parameters.widthSegments+1,rows=parameters&&parameters.heightSegments+1;
+    if(!p||!index||typeof p.getX!=='function'||typeof p.getY!=='function'||typeof p.getZ!=='function'||typeof index.getX!=='function'||
+      !Number.isInteger(columns)||!Number.isInteger(rows)||columns<2||rows<2||columns*rows>262144||
+      p.count!==columns*rows||index.count!==(columns-1)*(rows-1)*6)return null;
+    // Snapshot the actual Float32 mesh coordinates. Its triangles, rather than
+    // the smooth crater formula between vertices, define the visible surface.
+    var xs=new Float64Array(columns),zs=new Float64Array(rows),heights=new Float64Array(p.count);
+    var diagonals=new Uint8Array((columns-1)*(rows-1));
+    for(var x=0;x<columns;x++) {
+      xs[x]=p.getX(x);if(!mmNum(xs[x])||(x&&xs[x]<=xs[x-1]))return null;
+    }
+    for(var z=0;z<rows;z++) {
+      zs[z]=p.getZ(z*columns);if(!mmNum(zs[z])||(z&&zs[z]<=zs[z-1]))return null;
+      for(var col=0;col<columns;col++) {
+        var vertex=z*columns+col,y=p.getY(vertex);
+        if(!mmNum(y)||p.getX(vertex)!==xs[col]||p.getZ(vertex)!==zs[z])return null;
+        heights[vertex]=y;
+      }
+    }
+    for(var row=0;row<rows-1;row++)for(var cell=0;cell<columns-1;cell++) {
+      var a=row*columns+cell,b=a+columns,c=b+1,d=a+1,offset=(row*(columns-1)+cell)*6;
+      var first=0,second=0;
+      for(var k=0;k<6;k++) {
+        var v=index.getX(offset+k),mask=v===a?1:v===b?2:v===c?4:v===d?8:0;
+        if(!mask)return null;
+        if(k<3)first|=mask;else second|=mask;
+      }
+      if((first===11&&second===14)||(first===14&&second===11))diagonals[row*(columns-1)+cell]=0;
+      else if((first===7&&second===13)||(first===13&&second===7))diagonals[row*(columns-1)+cell]=1;
+      else return null;
+    }
+    function interval(axis,value) {
+      var lo=0,hi=axis.length-2;
+      while(lo<hi){var mid=Math.ceil((lo+hi)/2);if(axis[mid]<=value)lo=mid;else hi=mid-1;}
+      return lo;
+    }
+    function heightAt(x,z) {
+      if(!mmNum(x)||!mmNum(z)||x<xs[0]||x>xs[columns-1]||z<zs[0]||z>zs[rows-1])return null;
+      var ix=interval(xs,x),iz=interval(zs,z),u=(x-xs[ix])/(xs[ix+1]-xs[ix]),v=(z-zs[iz])/(zs[iz+1]-zs[iz]);
+      var a=iz*columns+ix,ha=heights[a],hd=heights[a+1],hb=heights[a+columns],hc=heights[a+columns+1],h;
+      if(diagonals[iz*(columns-1)+ix])h=v>=u?ha+(hc-hb)*u+(hb-ha)*v:ha+(hd-ha)*u+(hc-hd)*v;
+      else h=u+v<=1?ha+(hd-ha)*u+(hb-ha)*v:hc+(hb-hc)*(1-u)+(hd-hc)*(1-v);
+      return mmNum(h)?h:null;
+    }
+    function trace(x0,z0,x1,z1,lift) {
+      lift=lift===undefined?0:lift;
+      if(!mmNum(lift)||heightAt(x0,z0)===null||heightAt(x1,z1)===null)return null;
+      var dx=x1-x0,dz=z1-z0,cuts=[0,1];
+      function crossAxis(axis,start,delta) {
+        if(!delta)return;
+        for(var i=1;i<axis.length-1;i++){var t=(axis[i]-start)/delta;if(t>0&&t<1)cuts.push(t);}
+      }
+      crossAxis(xs,x0,dx);crossAxis(zs,z0,dz);cuts.sort(function(a,b){return a-b;});
+      cuts=cuts.filter(function(t,i){return !i||t-cuts[i-1]>1e-12;});
+      var refined=cuts.slice();
+      // Split at each crossed cell diagonal too. A straight marker segment then
+      // lies on a single rendered face, including across crater rims.
+      for(var ci=1;ci<cuts.length;ci++) {
+        var mid=(cuts[ci-1]+cuts[ci])/2,ix=interval(xs,x0+dx*mid),iz=interval(zs,z0+dz*mid);
+        var width=xs[ix+1]-xs[ix],depth=zs[iz+1]-zs[iz],u=(x0-xs[ix])/width,v=(z0-zs[iz])/depth;
+        var diagonal=diagonals[iz*(columns-1)+ix],start=diagonal?v-u:u+v-1,speed=diagonal?dz/depth-dx/width:dx/width+dz/depth;
+        if(speed){var t=-start/speed;if(t>cuts[ci-1]+1e-12&&t<cuts[ci]-1e-12)refined.push(t);}
+      }
+      refined.sort(function(a,b){return a-b;});
+      return Object.freeze(refined.map(function(t) {
+        var x=t===0?x0:t===1?x1:Math.max(xs[0],Math.min(xs[columns-1],x0+dx*t));
+        var z=t===0?z0:t===1?z1:Math.max(zs[0],Math.min(zs[rows-1],z0+dz*t));
+        return Object.freeze({x:x,y:heightAt(x,z)+lift,z:z});
+      }));
+    }
+    return Object.freeze({columns:columns,rows:rows,
+      bounds:Object.freeze({minX:xs[0],maxX:xs[columns-1],minZ:zs[0],maxZ:zs[rows-1]}),heightAt:heightAt,trace:trace});
+  }
+  // Direction toward the existing teaching-scene Sun. Magnitude is arbitrary;
+  // parallel-light projection depends on direction, not distance from a lamp.
+  var MM_DESCENT_SUN=Object.freeze({x:-700,y:260,z:360});
+  function mmProjectDescentShadow(point,plane,sun) {
+    sun=sun||MM_DESCENT_SUN;
+    if(!point||!plane||!sun||['x','y','z'].some(function(k){return !mmNum(point[k])||!mmNum(plane[k])||!mmNum(sun[k]);})||!mmNum(plane.constant))return null;
+    var norm=Math.hypot(plane.x,plane.y,plane.z),light=Math.hypot(sun.x,sun.y,sun.z);
+    var denominator=plane.x*sun.x+plane.y*sun.y+plane.z*sun.z;
+    if(!mmNum(norm)||!mmNum(light)||!mmNum(denominator)||norm===0||light===0||denominator<=norm*light*0.01)return null;
+    var distance=(plane.x*point.x+plane.y*point.y+plane.z*point.z+plane.constant)/denominator;
+    if(distance< -1e-8)return null;
+    var projected={x:point.x-sun.x*distance,y:point.y-sun.y*distance,z:point.z-sun.z*distance};
+    return ['x','y','z'].every(function(k){return mmNum(projected[k]);})?Object.freeze(projected):null;
+  }
+  function mmDescentSidePose(surface,clearance,bank) {
+    if(!mmNum(surface)||!mmNum(clearance)||clearance<0||!mmNum(bank)||Math.abs(bank)>MM_DESCENT.maxTilt+1e-8)return null;
+    var co=Math.cos(bank),si=Math.sin(bank),pads=[[-24,2.5],[-10,2],[10,2],[24,2.5]];
+    var support=-Infinity;
+    pads.forEach(function(p){support=Math.max(support,p[0]*si+28*co+p[1]);});
+    var pivotY=surface-support-clearance;
+    return Object.freeze({pivotY:pivotY,surface:surface,clearance:clearance,bank:bank,
+      pads:Object.freeze(pads.map(function(p){return Object.freeze({x:p[0]*co-28*si,
+        y:pivotY+p[0]*si+28*co,radius:p[1]});}))});
+  }
+  function mmDescentShadowVertices(THREE,hardware) {
+    // Capture the actual Apollo model once. The inexpensive rendering tier
+    // casts from one merged mesh instead of its many separate hardware meshes.
+    var positions=[],point=new THREE.Vector3();hardware.updateMatrixWorld(true);
+    hardware.traverse(function(part) {
+      if(!part.isMesh||!part.visible||!part.geometry)return;
+      var attribute=part.geometry.attributes.position,index=part.geometry.index;
+      if(!attribute)return;
+      var count=index?index.count:attribute.count;
+      for(var v=0;v<count;v++) {
+        point.fromBufferAttribute(attribute,index?index.getX(v):v).applyMatrix4(part.matrixWorld);
+        positions.push(point.x,point.y,point.z);
+      }
+    });
+    return new Float32Array(positions);
+  }
+  function mmBuildDescentShadow(THREE,hardware) {
+    var geometry=new THREE.BufferGeometry();
+    geometry.setAttribute('position',new THREE.BufferAttribute(mmDescentShadowVertices(THREE,hardware),3));
+    // The regular camera still draws the original materials. This mesh writes
+    // only to Three's depth shadow pass, so it cannot cover the visible model.
+    var material=new THREE.MeshBasicMaterial({side:THREE.DoubleSide,colorWrite:false,depthWrite:false,depthTest:false});
+    var shadow=new THREE.Mesh(geometry,material);shadow.name='moon-descent-shadow-caster';
+    shadow.castShadow=true;shadow.frustumCulled=false;return shadow;
+  }
+  // Qualitative plume ejecta. Emission follows fixed flight steps; projection
+  // cannot create grains. Velocities are SI and the flight after launch is
+  // ballistic under local lunar gravity, with no drag or sideways damping.
+  // Shallow sheet reference: https://ntrs.nasa.gov/citations/20130012063
+  var MM_DESCENT_DUST=Object.freeze({altitudeLimit:30,minThrottle:0.1,nozzleHeight:0.7,initialHeight:0.02,
+    gravity:MM_DESCENT.g,worldScale:0.6,cycle:2.5,trailTime:0.07,maxGap:0.25});
+  function mmNewDescentDust(count) {
+    var capacity=mmNum(count)?Math.max(12,Math.min(256,Math.floor(count))):220;
+    var rng=_seededRand(1202),seeds=[];
+    for(var i=0;i<capacity;i++)seeds.push(Object.freeze({azimuth:rng.next()*Math.PI*2,speed:15+rng.next()*25,
+      elevation:(1+rng.next()*1.5)*Math.PI/180}));
+    return {capacity:capacity,seeds:Object.freeze(seeds),grains:new Array(capacity).fill(null),cursor:0,serial:0,
+      interval:MM_DESCENT_DUST.cycle/capacity,nextBirth:null,lastTime:null,previous:null};
+  }
+  function mmStepDescentDust(pool,raw) {
+    if(!pool||!Array.isArray(pool.grains)||pool.grains.length!==pool.capacity||!raw||!mmNum(raw.elapsed)||!mmNum(raw.x)||
+      (raw.z!==undefined&&!mmNum(raw.z)))return false;
+    var s=mmDescentPredictionInitial(raw);if(!s)return false;
+    var now=Object.freeze({elapsed:s.elapsed,x:s.x,z:raw.z||0,alt:s.alt,tilt:s.tilt,thrust:s.thrust,fuel:s.fuel,contact:s.contact});
+    if(pool.lastTime===now.elapsed)return false;
+    if(pool.lastTime!==null&&now.elapsed<pool.lastTime) {
+      pool.grains.fill(null);pool.cursor=0;pool.serial=0;pool.nextBirth=null;pool.previous=null;
+    }
+    var prior=pool.previous,dt=prior?now.elapsed-prior.elapsed:0;
+    if(pool.nextBirth===null||dt>MM_DESCENT_DUST.maxGap)pool.nextBirth=now.elapsed;
+    if(now.contact||now.alt>=MM_DESCENT_DUST.altitudeLimit||now.thrust<=MM_DESCENT_DUST.minThrottle||now.fuel<=0) {
+      pool.nextBirth=now.elapsed+pool.interval;
+    }else {
+      // Interpolate only across adjacent measured flight steps. A resumed or
+      // replaced scene never invents past emissions during a missing interval.
+      for(var n=0;n<32&&pool.nextBirth<=now.elapsed+1e-10;n++,pool.nextBirth+=pool.interval) {
+        var born=Math.min(now.elapsed,pool.nextBirth),a=prior&&dt>0&&dt<=MM_DESCENT_DUST.maxGap?Math.max(0,Math.min(1,(born-prior.elapsed)/dt)):1;
+        function lerp(k){return prior?prior[k]+(now[k]-prior[k])*a:now[k];}
+        var height=lerp('alt'),throttle=lerp('thrust'),fuel=lerp('fuel');
+        if(height<=0||height>=MM_DESCENT_DUST.altitudeLimit||throttle<=MM_DESCENT_DUST.minThrottle||fuel<=0)continue;
+        var seed=pool.seeds[pool.cursor],az=seed.azimuth,speed=seed.speed,up=speed*Math.sin(seed.elevation);
+        var launchX=lerp('x')-(height+MM_DESCENT_DUST.nozzleHeight)*Math.tan(lerp('tilt'))+Math.cos(az)*0.45;
+        var launchZ=lerp('z')+Math.sin(az)*0.45;
+        pool.grains[pool.cursor]=Object.freeze({id:pool.serial++,born:born,launchX:launchX,launchZ:launchZ,
+          vx:speed*Math.cos(seed.elevation)*Math.cos(az),vz:speed*Math.cos(seed.elevation)*Math.sin(az),vy:up,
+          strength:(1-height/MM_DESCENT_DUST.altitudeLimit)*throttle,
+          life:(up+Math.sqrt(up*up+2*MM_DESCENT_DUST.gravity*MM_DESCENT_DUST.initialHeight))/MM_DESCENT_DUST.gravity});
+        pool.cursor=(pool.cursor+1)%pool.capacity;
+      }
+    }
+    pool.previous=now;pool.lastTime=now.elapsed;return true;
+  }
+  function mmSampleDescentDust(pool,time) {
+    if(!pool||!Array.isArray(pool.grains)||!mmNum(time)||time<0)return Object.freeze([]);
+    var out=[],D=MM_DESCENT_DUST;
+    pool.grains.forEach(function(p) {
+      if(!p)return;
+      var age=time-p.born;if(age<0||age>=p.life)return;
+      var tailAge=Math.max(0,age-D.trailTime);
+      out.push(Object.freeze({id:p.id,born:p.born,age:age,life:p.life,launchX:p.launchX,launchZ:p.launchZ,
+        x:p.launchX+p.vx*age,z:p.launchZ+p.vz*age,height:D.initialHeight+p.vy*age-D.gravity*age*age/2,
+        tailX:p.launchX+p.vx*tailAge,tailZ:p.launchZ+p.vz*tailAge,
+        tailHeight:D.initialHeight+p.vy*tailAge-D.gravity*tailAge*tailAge/2,
+        verticalSpeed:p.vy-D.gravity*age,opacity:p.strength*Math.pow(1-age/p.life,0.7)}));
+    });
+    return Object.freeze(out);
+  }
+  function mmDrawDescentDust2D(ctx,grains,groundX,groundZ,lmX,surfaceY) {
+    ctx.save();ctx.strokeStyle='#d0c6b4';ctx.lineWidth=1;
+    grains.forEach(function(p) {
+      // Both renderers keep absolute launch points. The side view exaggerates
+      // vertical clearance so a shallow sheet remains visible on a phone.
+      var x=lmX+(p.x*0.6-groundX)*1.5,y=surfaceY+3+(p.z*0.6-groundZ)*0.18-p.height*8;
+      var tx=lmX+(p.tailX*0.6-groundX)*1.5,ty=surfaceY+3+(p.tailZ*0.6-groundZ)*0.18-p.tailHeight*8;
+      ctx.globalAlpha=Math.sqrt(p.opacity)*0.85;ctx.beginPath();ctx.moveTo(tx,ty);ctx.lineTo(x,y);ctx.stroke();
+    });ctx.restore();
+  }
+  // Optional projections use the same finite-propellant descent integrator as
+  // the live flight. Only cloned states advance. A vertical arrest is not a
+  // landing: lateral motion and further hovering still require control/fuel.
+  var MM_DESCENT_PREDICTION = Object.freeze({ version:1, horizon:90, step:.05, sampleStep:.5 });
+  var _mmDescentPredictionCache = [];
+  function mmCleanDescentPredictionState(raw) {
+    return { descentPredictionOpen:!!raw && raw.descentPredictionOpen===true };
+  }
+  function mmDescentPredictionInitial(raw) {
+    if (!mmIsObj(raw)) return null;
+    var fields=['alt','vVel','hVel','fuel','thrust','tilt'];
+    for (var i=0;i<fields.length;i++) if (!mmNum(raw[fields[i]])) return null;
+    if (raw.alt<0 || raw.alt>100000 || Math.abs(raw.vVel)>5000 || Math.abs(raw.hVel)>5000 ||
+      raw.fuel<0 || raw.fuel>5000 || raw.thrust<0 || raw.thrust>1 || Math.abs(raw.tilt)>MM_DESCENT.maxTilt+1e-10 ||
+      (raw.x!==undefined && !mmNum(raw.x)) || (raw.elapsed!==undefined && (!mmNum(raw.elapsed)||raw.elapsed<0)) ||
+      (raw.contact!==undefined && typeof raw.contact!=='boolean') || (raw.contact===true && raw.alt!==0)) return null;
+    return Object.freeze({alt:raw.alt,vVel:raw.vVel,hVel:raw.hVel,fuel:raw.fuel,
+      thrust:raw.thrust,tilt:raw.tilt,x:raw.x===undefined?0:raw.x,elapsed:raw.elapsed===undefined?0:raw.elapsed,
+      contact:raw.contact===true || raw.alt===0});
+  }
+  function mmDescentPredictionCommands(raw) {
+    raw=mmIsObj(raw)?raw:{};
+    var throttle=mmNum(raw.throttle)?Math.max(0,Math.min(1,raw.throttle)):raw.thrust===true?1:0;
+    return Object.freeze({throttle:throttle,left:raw.left===true,right:raw.right===true});
+  }
+  function mmDescentPredictionRow(st, initial) {
+    return Object.freeze({time:Math.max(0,st.elapsed-initial.elapsed),alt:Math.max(0,st.alt),
+      vVel:st.vVel,hVel:st.hVel,x:st.x-initial.x,fuel:st.fuel,thrust:st.thrust,tilt:st.tilt,
+      massKg:mmDescentMass(st.fuel)});
+  }
+  function mmDescentPredictionEvent(prior, commands, duration, test) {
+    var lo=0,hi=duration;
+    for (var i=0;i<24;i++) {
+      var mid=(lo+hi)/2, copy=Object.assign({},prior);
+      mmDescentStep(copy,commands,mid);
+      if (test(copy)) hi=mid; else lo=mid;
+    }
+    var event=Object.assign({},prior); mmDescentStep(event,commands,hi); return event;
+  }
+  function mmDescentPredictionPeak(prior, commands, duration) {
+    // Around an engine shutdown, speed can cross zero and return below it
+    // within one physics slice. Resolve its smooth local maximum first.
+    var lo=0,hi=duration;
+    for (var i=0;i<32;i++) {
+      var a=(2*lo+hi)/3,b=(lo+2*hi)/3,left=Object.assign({},prior),right=Object.assign({},prior);
+      mmDescentStep(left,commands,a);mmDescentStep(right,commands,b);
+      if (left.vVel<right.vVel) lo=a; else hi=b;
+    }
+    var peak=Object.assign({},prior);mmDescentStep(peak,commands,(lo+hi)/2);return peak;
+  }
+  function mmDescentPredictionAdvance(prior, commands, duration) {
+    var st=Object.assign({},prior),remaining=duration,exhaustion=null,kind=null,D=MM_DESCENT;
+    while (remaining>1e-10 && !kind) {
+      var before=Object.assign({},st),h=Math.min(remaining,D.maxStep);
+      mmDescentStep(st,commands,h);
+      var elapsed=st.elapsed-before.elapsed,candidate=st,burnEnd=null;
+      if (before.fuel>0 && st.fuel===0) {
+        burnEnd=mmDescentPredictionEvent(before,commands,elapsed,function(s){return s.fuel===0;});
+        if (burnEnd.vVel>candidate.vVel) candidate=burnEnd;
+      }
+      var a0=before.fuel>0?D.maxThrust*before.thrust*Math.cos(before.tilt)/mmDescentMass(before.fuel)-mmLunarGravity(before.alt):-mmLunarGravity(before.alt);
+      var a1=st.fuel>0?D.maxThrust*st.thrust*Math.cos(st.tilt)/mmDescentMass(st.fuel)-mmLunarGravity(st.alt):-mmLunarGravity(st.alt);
+      if (candidate.vVel<0 && before.vVel+D.maxAcc*elapsed>=0 && a0>0 && a1<=0) {
+        var peak=mmDescentPredictionPeak(before,commands,elapsed);
+        if (peak.vVel>candidate.vVel) candidate=peak;
+      }
+      if (candidate.vVel>=0) {
+        var arrest=mmDescentPredictionEvent(before,commands,candidate.elapsed-before.elapsed,function(s){return s.vVel>=0;});
+        if (!arrest.contact && arrest.vVel>=0) {st=arrest;kind='arrest';}
+      }
+      if (!kind && st.contact) kind='contact';
+      if (burnEnd && burnEnd.elapsed<=st.elapsed+1e-10 && exhaustion===null) exhaustion=burnEnd.elapsed;
+      remaining-=h;
+    }
+    return {state:st,kind:kind,exhaustionTime:exhaustion};
+  }
+  function mmDescentPredictionRoll(initial, commands, options) {
+    var C=MM_DESCENT_PREDICTION, horizon=options.horizon, step=options.step;
+    // Local time/displacement avoid subtracting large absolute clocks or tracks.
+    var origin=Object.freeze(Object.assign({},initial,{elapsed:0,x:0}));
+    var st=Object.assign({},origin),rows=[mmDescentPredictionRow(st,origin)],kind=null;
+    var nextSample=C.sampleStep,exhaustion=initial.fuel===0?0:null,steps=0;
+    if (st.contact) kind='contact'; else if (st.vVel>=0) kind='already-arrested';
+    while (!kind && st.elapsed<horizon-1e-9 && steps<Math.ceil(horizon/step)+1) {
+      var dt=Math.min(step,horizon-st.elapsed),advance=mmDescentPredictionAdvance(st,commands,dt);
+      st=advance.state;kind=advance.kind;steps++;
+      if (exhaustion===null && advance.exhaustionTime!==null) exhaustion=Math.max(0,advance.exhaustionTime);
+      var t=st.elapsed;
+      if (kind || t+1e-9>=nextSample || t>=horizon-1e-9) {
+        rows.push(mmDescentPredictionRow(st,origin));nextSample+=C.sampleStep;
+      }
+    }
+    if (!kind) kind='horizon';
+    var last=mmDescentPredictionRow(st,origin);
+    if (last.time>rows[rows.length-1].time+1e-9) rows.push(last);
+    else last=rows[rows.length-1];
+    var summary=Object.freeze({kind:kind,time:last.time,altitude:last.alt,vertical:last.vVel,lateral:last.hVel,
+      displacement:last.x,fuelRemaining:last.fuel,propellantUsed:mmDescentMass(initial.fuel)-last.massKg,
+      exhaustionTime:exhaustion,arrestBeforeContact:kind==='arrest',steps:steps});
+    return Object.freeze({commands:commands,samples:Object.freeze(rows),summary:summary});
+  }
+  function mmDescentPredictionProfile(raw, input, rawOptions) {
+    var initial=mmDescentPredictionInitial(raw);if (!initial) return null;
+    var commands=mmDescentPredictionCommands(input),C=MM_DESCENT_PREDICTION;
+    var options=Object.freeze({horizon:rawOptions&&mmNum(rawOptions.horizon)?Math.max(.05,Math.min(C.horizon,rawOptions.horizon)):C.horizon,
+      step:rawOptions&&mmNum(rawOptions.step)?Math.max(1/240,Math.min(.1,rawOptions.step)):C.step});
+    var key=JSON.stringify([initial,commands,options]);
+    for (var i=0;i<_mmDescentPredictionCache.length;i++) if (_mmDescentPredictionCache[i].key===key) return _mmDescentPredictionCache[i].profile;
+    var held=mmDescentPredictionRoll(initial,commands,options);
+    var burn=mmDescentPredictionRoll(initial,Object.freeze({throttle:1,left:false,right:false}),options);
+    var profile=Object.freeze({version:1,initial:initial,options:options,held:held,burn:burn});
+    _mmDescentPredictionCache.push({key:key,profile:profile});if (_mmDescentPredictionCache.length>8) _mmDescentPredictionCache.shift();
+    return profile;
+  }
+  function mmDescentPredictionGeometry(profile) {
+    if (!profile || !profile.initial || !profile.held || !profile.burn) return null;
+    var all=profile.held.samples.concat(profile.burn.samples),minX=0,maxX=0,maxAlt=20;
+    all.forEach(function(s){minX=Math.min(minX,s.x);maxX=Math.max(maxX,s.x);maxAlt=Math.max(maxAlt,s.alt);});
+    var top=Math.ceil(maxAlt/10)*10,scale=Math.min(528/Math.max(20,maxX-minX),288/top),center=(minX+maxX)/2;
+    function point(s){return Object.freeze({x:300+(s.x-center)*scale,y:324-s.alt*scale});}
+    function line(rows){return rows.map(function(s){var p=point(s);return p.x.toFixed(4)+','+p.y.toFixed(4);}).join(' ');}
+    return Object.freeze({scale:scale,left:36,right:564,groundY:324,top:top,
+      leftMetres:center-264/scale,rightMetres:center+264/scale,verticalMetres:288/scale,
+      initial:point(profile.held.samples[0]),heldPoints:line(profile.held.samples),burnPoints:line(profile.burn.samples),
+      heldEnd:point(profile.held.samples[profile.held.samples.length-1]),burnEnd:point(profile.burn.samples[profile.burn.samples.length-1])});
+  }
+  // Read-only chart geometry. Histories and event times remain the original
+  // forecasts; a close view changes only the viewport and its metre scale.
+  function mmDescentVisualInterval(span) {
+    if (!(span>0)) return 0;
+    var power=Math.pow(10,Math.floor(Math.log(span)/Math.LN10)),units=span/power;
+    return (units<=1?1:units<=2?2:units<=2.5?2.5:units<=5?5:10)*power;
+  }
+  function mmDescentVisualFrame(profile, bounds, interval) {
+    var scale=288/(bounds.maxAlt-bounds.minAlt),center=bounds.centerX;
+    function point(row) {return Object.freeze({x:300+(row.x-center)*scale,y:324-(row.alt-bounds.minAlt)*scale});}
+    function inside(p,margin) {margin=margin||0;return p.x>=36+margin && p.x<=564-margin && p.y>=36+margin && p.y<=324-margin;}
+    function line(rows) {return rows.map(function(row){var p=point(row);return p.x.toFixed(4)+','+p.y.toFixed(4);}).join(' ');}
+    function marks(rows) {
+      var dots=[],last=rows[rows.length-1],cursor=1;
+      for (var t=interval;interval>0 && t<last.time-1e-7 && dots.length<8;t+=interval) {
+        while(cursor<rows.length-1 && rows[cursor].time<t) cursor++;
+        var a=rows[cursor-1],b=rows[cursor],u=(t-a.time)/(b.time-a.time);
+        var p=point({x:a.x+(b.x-a.x)*u,alt:a.alt+(b.alt-a.alt)*u});
+        dots.push(Object.freeze({time:t,x:p.x,y:p.y,visible:inside(p)}));
+      }
+      return Object.freeze(dots);
+    }
+    function direction(rows) {
+      var segments=[],total=0;
+      for(var i=1;i<rows.length;i++) {
+        var a=point(rows[i-1]),b=point(rows[i]),dx=b.x-a.x,dy=b.y-a.y,length=Math.sqrt(dx*dx+dy*dy);
+        total+=length;
+        var mid={x:(a.x+b.x)/2,y:(a.y+b.y)/2};
+        if(length>1e-8 && inside(mid,12)) segments.push({x:mid.x,y:mid.y,dx:dx/length,dy:dy/length,time:(rows[i-1].time+rows[i].time)/2});
+      }
+      if(total<12 || !segments.length) return null;
+      var s=segments[Math.floor(segments.length/2)],tip={x:s.x+5*s.dx,y:s.y+5*s.dy};
+      function pair(x,y){return x.toFixed(4)+','+y.toFixed(4);}
+      return Object.freeze({x:s.x,y:s.y,dx:s.dx,dy:s.dy,time:s.time,points:
+        pair(s.x-4*s.dx+4*s.dy,s.y-4*s.dy-4*s.dx)+' '+pair(tip.x,tip.y)+' '+pair(s.x-4*s.dx-4*s.dy,s.y-4*s.dy+4*s.dx)});
+    }
+    var heldEnd=point(profile.held.samples[profile.held.samples.length-1]),burnEnd=point(profile.burn.samples[profile.burn.samples.length-1]);
+    return Object.freeze({scale:scale,centerX:center,leftMetres:center-264/scale,rightMetres:center+264/scale,
+      minAltitude:bounds.minAlt,maxAltitude:bounds.maxAlt,verticalMetres:288/scale,interval:interval,
+      initial:point(profile.held.samples[0]),heldPoints:line(profile.held.samples),burnPoints:line(profile.burn.samples),
+      heldEnd:heldEnd,burnEnd:burnEnd,heldEndVisible:inside(heldEnd),burnEndVisible:inside(burnEnd),
+      heldMarks:marks(profile.held.samples),burnMarks:marks(profile.burn.samples),
+      heldDirection:direction(profile.held.samples),burnDirection:direction(profile.burn.samples)});
+  }
+  function mmDescentPredictionVisuals(profile) {
+    if(!profile || !profile.held || !profile.burn || !Array.isArray(profile.held.samples) || !Array.isArray(profile.burn.samples) ||
+      !profile.held.samples.length || !profile.burn.samples.length) return null;
+    var geo=mmDescentPredictionGeometry(profile);if(!geo) return null;
+    var all=profile.held.samples.concat(profile.burn.samples),minX=0,maxX=0;
+    all.forEach(function(row){minX=Math.min(minX,row.x);maxX=Math.max(maxX,row.x);});
+    var maxTime=Math.max(profile.held.summary.time,profile.burn.summary.time);
+    var main=mmDescentVisualFrame(profile,{centerX:(minX+maxX)/2,minAlt:0,maxAlt:geo.verticalMetres},mmDescentVisualInterval(maxTime/5));
+    // Retain exact coordinates from the established surface-view API.
+    main=Object.freeze(Object.assign({},main,{scale:geo.scale,initial:geo.initial,heldPoints:geo.heldPoints,burnPoints:geo.burnPoints,
+      heldEnd:geo.heldEnd,burnEnd:geo.burnEnd,leftMetres:geo.leftMetres,rightMetres:geo.rightMetres}));
+    var rows=profile.burn.samples,bMinX=rows[0].x,bMaxX=rows[0].x,bMinAlt=rows[0].alt,bMaxAlt=rows[0].alt;
+    rows.forEach(function(row){bMinX=Math.min(bMinX,row.x);bMaxX=Math.max(bMaxX,row.x);bMinAlt=Math.min(bMinAlt,row.alt);bMaxAlt=Math.max(bMaxAlt,row.alt);});
+    var span=mmDescentVisualInterval(Math.max(6,(bMaxAlt-bMinAlt)*1.4,(bMaxX-bMinX)*1.4*288/528));
+    var lower=Math.max(0,(bMinAlt+bMaxAlt-span)/2),detail=null,window=null;
+    var motion=Math.max(bMaxAlt-bMinAlt,bMaxX-bMinX);
+    if(profile.burn.summary.kind==='arrest' && motion>=.05 && 288/span>geo.scale*1.75) {
+      detail=mmDescentVisualFrame(profile,{centerX:(bMinX+bMaxX)/2,minAlt:lower,maxAlt:lower+span},
+        mmDescentVisualInterval(profile.burn.summary.time/4));
+      window=Object.freeze({x:300+(detail.leftMetres-main.centerX)*geo.scale,y:324-detail.maxAltitude*geo.scale,
+        width:(detail.rightMetres-detail.leftMetres)*geo.scale,height:detail.verticalMetres*geo.scale});
+    }
+    return Object.freeze({main:main,detail:detail,window:window,zoom:detail?detail.scale/geo.scale:1});
+  }
+  function mmDescentVisualNumber(value) {return (value>0?'+':'')+value.toFixed(1);}
+  // Presentation landmarks are derived from the existing paths, never a new integration.
+  function mmDescentPredictionLandmarks(profile, visual) {
+    visual=visual||mmDescentPredictionVisuals(profile);if(!visual)return null;
+    function number(value,step,signed) {
+      var precision=step<1?2:1,unit='',n=value;
+      if(Math.abs(value)>=100000){n=value/1000;unit='k';precision=step<1000?2:1;}
+      var rounded=Number(n.toFixed(precision));
+      return (signed&&rounded>0?'+':'')+String(rounded)+unit;
+    }
+    function frame(name) {
+      var f=visual[name];if(!f)return null;
+      var vstep=f.verticalMetres/4,xstep=(f.rightMetres-f.leftMetres)/4;
+      var altitude=[],displacement=[];
+      for(var i=0;i<5;i++) {
+        var alt=f.maxAltitude-i*vstep,x=f.leftMetres+i*xstep;
+        altitude.push(Object.freeze({value:alt,coordinate:36+i*72,percent:10+i*20,label:number(alt,vstep,false)}));
+        displacement.push(Object.freeze({value:x,coordinate:36+i*132,percent:6+i*22,label:number(x,xstep,true)}));
+      }
+      var events={};['held','burn'].forEach(function(key){var s=profile[key].summary,visible=f[key+'EndVisible'];
+        var label=s.kind==='contact'?'● Contact':s.kind==='arrest'?'○ Arrest':s.kind==='already-arrested'?'○ Already arrested':'○ Time limit';
+        var elapsed=s.time>0&&s.time<.005?'<0.01':s.time.toFixed(s.time>0&&s.time<1?2:1);
+        events[key]=Object.freeze({kind:s.kind,visible:visible,label:visible?label:'… Outside view',
+          time:s.time,altitude:s.altitude,reading:elapsed+' s · '+s.altitude.toFixed(1)+' m',
+          context:visible?'Time from inspection · altitude':'Endpoint in surface view'});
+      });
+      var originX=300-f.centerX*f.scale;
+      return Object.freeze({altitude:Object.freeze(altitude),displacement:Object.freeze(displacement),
+        origin:Object.freeze({x:originX,visible:originX>=36&&originX<=564}),events:Object.freeze(events),
+        contact:profile.initial.contact===true});
+    }
+    return Object.freeze({main:frame('main'),detail:frame('detail')});
+  }
+  function mmSetDescentPredictionLandmarks(root,name,svg,marks) {
+    if(!marks)return;
+    ['altitude','displacement'].forEach(function(axis){marks[axis].forEach(function(tick,i){
+      var node=root.querySelector('[data-descent-ruler="'+name+'-'+axis+'"][data-tick="'+i+'"]');if(!node)return;
+      node.textContent=tick.label;node.dataset.value=String(tick.value);
+      var value=(Math.abs(tick.value)<.05?0:tick.value).toFixed(1);
+      node.title=(axis==='altitude'?'Altitude: ':'Displacement from inspected position: ')+value+' m';
+      node.setAttribute('aria-label',node.title);
+    });});
+    var origin=svg.querySelector('[data-descent-visual-origin]');if(origin){
+      origin.setAttribute('x1',String(marks.origin.x));origin.setAttribute('x2',String(marks.origin.x));origin.style.display=marks.origin.visible?'':'none';
+    }
+    var ruler=root.querySelector('[data-descent-visual-rulers="'+name+'"]');
+    if(ruler){ruler.style.maxWidth=marks.contact?'360px':'';ruler.style.margin=marks.contact?'0 auto':'';}
+    var caption=root.querySelector('[data-descent-visual-caption="'+name+'"]');
+    if(caption)caption.textContent=name==='main'?(marks.contact?'Contact inspection':'Surface reference'):'Braking close view';
+    var scale=root.querySelector('[data-descent-prediction-scale]');
+    if(name==='main'&&marks.contact&&scale)scale.textContent='Equal metre axes · '+Number(svg.dataset.horizontalSpan).toFixed(1)+' m across × '+
+      Number(svg.dataset.verticalSpan).toFixed(1)+' m high. Both paths end at the inspected contact position.';
+    ['held','burn'].forEach(function(key){var event=marks.events[key],badge=root.querySelector('[data-descent-event="'+name+'-'+key+'"]');if(!badge)return;
+      badge.dataset.endpoint=event.kind;badge.dataset.endpointVisible=String(event.visible);badge.dataset.time=String(event.time);badge.dataset.altitude=String(event.altitude);
+      badge.querySelector('[data-descent-event-label]').textContent=event.label;
+      badge.querySelector('[data-descent-event-reading]').textContent=event.reading;
+      badge.querySelector('[data-descent-event-context]').textContent=event.context;
+    });
+  }
+
+  function mmSetDescentPredictionVisuals(root, profile) {
+    var visual=mmDescentPredictionVisuals(profile);if(!visual) return;
+    var landmarks=mmDescentPredictionLandmarks(profile,visual);
+    root.dataset.descentPredictionInspectionContact=profile.initial.contact===true?'true':'false';
+    var detail=root.querySelector('[data-descent-prediction-detail]');if(detail)detail.style.display=visual.detail?'':'none';
+    root.dataset.descentPredictionDetailAvailable=visual.detail?'true':'false';
+    function text(selector,value){var node=root.querySelector(selector);if(node)node.textContent=value;}
+    function attrs(node,values){if(node)Object.keys(values).forEach(function(key){node.setAttribute(key,String(values[key]));});}
+    ['main','detail'].forEach(function(name){var frame=visual[name];if(!frame)return;
+      var svg=root.querySelector(name==='main'?'[data-descent-prediction-diagram]':'[data-descent-prediction-detail-diagram]');if(!svg)return;
+      attrs(svg,{'data-metre-scale':frame.scale,'data-altitude-min':frame.minAltitude,'data-altitude-max':frame.maxAltitude,
+        'data-horizontal-span':frame.rightMetres-frame.leftMetres,'data-vertical-span':frame.verticalMetres,'data-time-interval':frame.interval});
+      attrs(svg,{'aria-label':(name==='main'?(profile.initial.contact?'Contact inspection':'Surface reference'):'Braking close view')+'. Equal metre axes. Altitude '+frame.minAltitude.toFixed(1)+' to '+frame.maxAltitude.toFixed(1)+
+        ' metres. Displacement '+mmDescentVisualNumber(frame.leftMetres)+' to '+mmDescentVisualNumber(frame.rightMetres)+
+        ' metres. The solid path holds specified controls; the dashed path uses full thrust and centered tilt. A dotted vertical line marks the inspected ground position. Open endpoints are before contact; filled endpoints are contact.'});
+      text('[data-descent-visual-altitude="'+name+'"]','Altitude '+frame.minAltitude.toFixed(1)+'–'+frame.maxAltitude.toFixed(1)+' m ↑');
+      text('[data-descent-visual-track="'+name+'"]','Displacement '+mmDescentVisualNumber(frame.leftMetres)+' to '+mmDescentVisualNumber(frame.rightMetres)+' m →');
+      text('[data-descent-visual-timing="'+name+'"]',frame.interval>0?'Time dots every '+frame.interval.toFixed(frame.interval<1?2:frame.interval%1?1:0)+' s · chevrons show travel direction.':'No further forecast motion from this inspection.');
+      var ground=svg.querySelector('[data-descent-visual-ground]');if(ground)ground.style.display=frame.minAltitude===0?'':'none';
+      var start=svg.querySelector('[data-descent-visual-start]');attrs(start,{cx:frame.initial.x,cy:frame.initial.y});
+      ['held','burn'].forEach(function(key){var end=frame[key+'End'],visible=frame[key+'EndVisible'];
+        var path=svg.querySelector('[data-descent-visual-path="'+key+'"]');attrs(path,{points:frame[key+'Points']});
+        var endpoint=svg.querySelector('[data-descent-visual-end="'+key+'"]');
+        attrs(endpoint,{cx:end.x,cy:end.y,'data-endpoint':profile[key].summary.kind,fill:profile[key].summary.kind==='contact'?(key==='held'?'#67e8f9':'#fbbf24'):'none'});
+        if(endpoint)endpoint.style.display=visible?'':'none';
+        var ring=svg.querySelector('[data-descent-visual-ring="'+key+'"]');attrs(ring,{cx:end.x,cy:end.y});if(ring)ring.style.display=visible?'':'none';
+        var direction=frame[key+'Direction'],arrow=svg.querySelector('[data-descent-visual-direction="'+key+'"]');
+        if(arrow){arrow.style.display=direction?'':'none';if(direction)attrs(arrow,{points:direction.points,'data-time':direction.time});}
+        var dots=svg.querySelectorAll('[data-descent-visual-time="'+key+'"]'),marks=frame[key+'Marks'];
+        for(var i=0;i<dots.length;i++){var mark=marks[i];dots[i].style.display=mark&&mark.visible?'':'none';if(mark)attrs(dots[i],{cx:mark.x,cy:mark.y,'data-time':mark.time});}
+      });
+      mmSetDescentPredictionLandmarks(root,name,svg,landmarks[name]);
+    });
+    var window=root.querySelector('[data-descent-prediction-detail-window]');if(window){window.style.display=visual.window?'':'none';if(visual.window)attrs(window,visual.window);}
+    if(visual.detail) {
+      text('[data-descent-prediction-detail-scale]',visual.zoom.toFixed(1)+'× closer · '+visual.detail.verticalMetres.toFixed(1)+' m altitude span. Both axes use the same metre scale.');
+      text('[data-descent-prediction-detail-context]',(visual.detail.minAltitude>0?'The surface at 0 m is outside this altitude window.':'This window includes the surface at 0 m.')+
+        (visual.detail.heldEndVisible?' Both forecast endpoints are visible.':' The solid path continues outside the window; its endpoint is in the surface view.'));
+    }
+  }
+
+  function mmDescentPredictionView(h, open, action) {
+    open=open===true;
+    var text={fontSize:'12px',lineHeight:1.65,color:'#cbd5e1',margin:'8px 0',overflowWrap:'anywhere'};
+    var forced='@media(forced-colors:active){[data-descent-prediction],[data-descent-prediction] *{color:CanvasText!important;background-color:Canvas!important;border-color:CanvasText!important;}'+
+      '[data-descent-visual-grid]{stroke:GrayText!important;}[data-descent-visual-case="held"] *{stroke:CanvasText!important;}'+
+      '[data-descent-visual-case="burn"] *{stroke:LinkText!important;}[data-descent-visual-time]{fill:CanvasText!important;}'+
+      '[data-descent-visual-end][data-endpoint="contact"]{fill:CanvasText!important;}[data-descent-visual-start]{fill:CanvasText!important;}'+
+      '[data-descent-visual-ground] line,[data-descent-visual-origin],[data-descent-prediction-detail-window]{stroke:CanvasText!important;}[data-descent-visual-ground] rect{fill:Canvas!important;}}';
+    forced+='@media(max-width:600px){[data-descent-prediction] [data-descent-ruler-minor]{display:none;}}';
+    function reading(id,label){return h('div',{key:id,style:{minWidth:0}},h('dt',{style:{color:'#cbd5e1'}},label),
+      h('dd',{'data-descent-prediction-value':id,style:{margin:0,fontWeight:700,color:'#f8fafc',fontSize:/-(endpoint|time|altitude)$/.test(id)?'14px':'12px',fontVariantNumeric:'tabular-nums'}},'—'));}
+    function chart(name) {var main=name==='main';
+      function ruler(axis,i){return h('span',{key:i,'data-descent-ruler':name+'-'+axis,'data-tick':i,
+        'data-descent-ruler-minor':axis==='displacement'&&(i===1||i===3)?true:undefined,
+        style:axis==='altitude'?{position:'absolute',right:'4px',top:(10+i*20)+'%',transform:'translateY(-50%)',fontSize:'12px',lineHeight:'16px',fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}:
+          {position:'absolute',left:(6+i*22)+'%',top:0,transform:i===0?'none':i===4?'translateX(-100%)':'translateX(-50%)',fontSize:'12px',lineHeight:'16px',fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}},'—');}
+      return h('figure',main?{key:name,style:{margin:0,padding:'10px',border:'1px solid #475569',borderRadius:'10px',minWidth:0,background:'#081321'}}:
+        {key:name,'data-descent-prediction-detail':true,style:{display:'none',margin:0,padding:'10px',border:'1px solid #64748b',borderRadius:'10px',minWidth:0,background:'#081321'}},
+        h('figcaption',{'data-descent-visual-caption':name,style:{fontSize:'14px',lineHeight:1.6,fontWeight:700,color:'#f8fafc',margin:'0 0 6px'}},main?'Surface reference':'Braking close view'),
+        h('p',{'data-descent-visual-altitude':name,style:text},'↑ Altitude'),
+        h('div',{'data-descent-visual-rulers':name,style:{minWidth:0}},
+          h('div',{style:{display:'grid',gridTemplateColumns:'52px minmax(0,1fr)',minWidth:0}},
+            h('div',{'data-descent-ruler-rail':name+'-altitude',style:{position:'relative',color:'#cbd5e1'}},[0,1,2,3,4].map(function(i){return ruler('altitude',i);})),
+            h('svg',Object.assign(main?{'data-descent-prediction-diagram':true}:{'data-descent-prediction-detail-diagram':true},
+          {viewBox:'0 0 600 360',preserveAspectRatio:'xMidYMid meet',role:'img','aria-label':main?'Projected paths on equal metre axes with the model surface at zero altitude.':'A cropped view of the same braking paths on equal metre axes.',
+            style:{display:'block',width:'100%',height:'auto',background:'#081321',borderRadius:'8px'}}),
+          h('rect',{x:36,y:36,width:528,height:288,fill:'none',stroke:'#475569',vectorEffect:'non-scaling-stroke','data-descent-visual-grid':true}),
+          [1,2,3].map(function(i){return h('g',{key:i,'data-descent-visual-grid':true,stroke:'#30465e',strokeDasharray:'2 5'},
+            h('line',{x1:36+i*132,y1:36,x2:36+i*132,y2:324,vectorEffect:'non-scaling-stroke'}),
+            h('line',Object.assign(main&&i===2?{'data-descent-prediction-height-grid':true}:{},{x1:36,y1:36+i*72,x2:564,y2:36+i*72,vectorEffect:'non-scaling-stroke'})));}),
+          h('g',{'data-descent-visual-ground':true},h('rect',{x:36,y:324,width:528,height:12,fill:'#26394f'}),
+            h('line',{x1:36,y1:324,x2:564,y2:324,stroke:'#cbd5e1',strokeWidth:1.5,vectorEffect:'non-scaling-stroke'})),
+          h('line',{'data-descent-visual-origin':true,x1:300,y1:36,x2:300,y2:324,stroke:'#94a3b8',strokeDasharray:'1 4',vectorEffect:'non-scaling-stroke',style:{display:'none'}}),
+          h('svg',{x:36,y:36,width:528,height:288,viewBox:'36 36 528 288',preserveAspectRatio:'xMidYMid meet','data-descent-visual-viewport':name,'aria-hidden':'true',style:{overflow:'hidden'}},
+            main&&h('rect',{'data-descent-prediction-detail-window':true,x:0,y:0,width:0,height:0,fill:'#f8fafc',fillOpacity:.05,stroke:'#f8fafc',strokeDasharray:'4 3',vectorEffect:'non-scaling-stroke'}),
+            ['held','burn'].map(function(key){var color=key==='held'?'#67e8f9':'#fbbf24';return h('g',{key:key,'data-descent-visual-case':key},
+              h('polyline',Object.assign(main?{'data-descent-prediction-path':key}:{},{'data-descent-visual-path':key,points:'',fill:'none',stroke:color,strokeWidth:2.5,strokeDasharray:key==='burn'?'7 5':undefined,strokeLinejoin:'round',vectorEffect:'non-scaling-stroke'})),
+              Array.from({length:8},function(_,i){return h('circle',{key:i,'data-descent-visual-time':key,cx:0,cy:0,r:2.8,fill:color,stroke:'#081321',strokeWidth:1,vectorEffect:'non-scaling-stroke',style:{display:'none'}});}),
+              h('polyline',{'data-descent-visual-direction':key,points:'',fill:'none',stroke:color,strokeWidth:2.5,strokeLinecap:'round',strokeLinejoin:'round',vectorEffect:'non-scaling-stroke',style:{display:'none'}}));})),
+          h('circle',Object.assign(main?{'data-descent-prediction-start':true}:{},{'data-descent-visual-start':true,cx:300,cy:36,r:4,fill:'#f8fafc'})),
+          ['held','burn'].map(function(key){var color=key==='held'?'#67e8f9':'#fbbf24';return h('g',{key:key,'data-descent-visual-case':key},
+              h('circle',{'data-descent-visual-ring':key,cx:300,cy:36,r:key==='held'?7:4,fill:'none',stroke:color,strokeWidth:1,vectorEffect:'non-scaling-stroke'}),
+              h('circle',Object.assign(main?{'data-descent-prediction-end':key}:{},{'data-descent-visual-end':key,cx:300,cy:36,r:4,fill:'none',stroke:color,strokeWidth:2,vectorEffect:'non-scaling-stroke'})));}))),
+          h('div',{'data-descent-ruler-rail':name+'-displacement',style:{position:'relative',height:'24px',marginLeft:'52px',color:'#cbd5e1'}},[0,1,2,3,4].map(function(i){return ruler('displacement',i);}))
+        ),
+        h('div',{style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:'8px',margin:'4px 0 8px',minWidth:0}},
+          ['held','burn'].map(function(key){return h('div',{key:key,'data-descent-event':name+'-'+key,
+            style:{padding:'8px',border:'1px solid #475569',borderTop:'2px solid '+(key==='held'?'#67e8f9':'#fbbf24'),borderRadius:'6px',minWidth:0,fontSize:'12px',lineHeight:1.65,overflowWrap:'anywhere'}},
+            h('div',{style:{fontWeight:700,color:key==='held'?'#67e8f9':'#fbbf24'}},key==='held'?'Specified controls':'Full centered thrust'),
+            h('strong',{'data-descent-event-label':true,style:{display:'block',color:'#f8fafc'}},'—'),
+            h('div',{'data-descent-event-reading':true,style:{color:'#f8fafc',fontVariantNumeric:'tabular-nums'}},'—'),
+            h('div',{'data-descent-event-context':true,style:{color:'#cbd5e1'}},'Time from inspection · altitude'));})
+        ),
+        h('p',{'data-descent-visual-track':name,style:text},'Ground displacement →'),
+        h('p',{'data-descent-visual-timing':name,style:text},'Time marks use the same interval on both paths.'),
+        main?h('p',{'data-descent-prediction-scale':true,style:text},'Shared metre scale.'):
+          h('div',null,h('p',{'data-descent-prediction-detail-scale':true,style:Object.assign({},text,{color:'#f8fafc',fontWeight:700})},'Equal metre axes.'),
+            h('p',{'data-descent-prediction-detail-context':true,style:text},'The dashed box in the surface view marks this window.')));
+    }
+    return h('section',{'data-descent-prediction':true,style:{margin:'12px 0',padding:'12px',background:'#0b1729',border:'1px solid #475569',borderRadius:'12px',minWidth:0}},
+      h('style',null,forced),
+      h('button',{type:'button','data-descent-prediction-toggle':true,'aria-expanded':open,'aria-controls':'mm-descent-prediction-panel',
+        style:{display:'block',width:'100%',textAlign:'left',minHeight:'44px',padding:'8px 12px',borderRadius:'8px',border:'1px solid #64748b',background:'#1e293b',color:'#f8fafc',fontSize:'13px',fontWeight:700},
+        onClick:function(ev){if (typeof action==='function') action(!open,ev);}},open?'Close landing predictions':'Explore landing predictions'),
+      !open && h('div',{id:'mm-descent-prediction-panel',hidden:true}),
+      open && h('div',{id:'mm-descent-prediction-panel','data-descent-prediction-panel':true,style:{minWidth:0}},
+        h('p',{'data-descent-prediction-source':true,style:text},'Waiting for the flight state.'),
+        h('p',{'data-descent-prediction-status':true,style:Object.assign({},text,{color:'#a5f3fc',padding:'10px',background:'#0c2538',borderLeft:'3px solid #67e8f9',borderRadius:'6px'})},'Predictions advance copies of the flight state.'),
+        h('div',{'data-descent-prediction-plot':true,style:{margin:'12px 0',minWidth:0}},
+          h('h4',{style:{fontSize:'14px',lineHeight:1.6,margin:'0 0 8px',color:'#f8fafc',fontWeight:700}},'Projected landing paths'),
+          h('p',{style:text},h('span',{style:{color:'#67e8f9',fontWeight:700}},'Solid path · specified controls'),' · ',
+            h('span',{style:{color:'#fbbf24',fontWeight:700}},'Dashed path · full thrust, centered tilt')),
+          h('div',{'data-descent-prediction-charts':true,style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,320px),1fr))',alignItems:'start',gap:'12px',minWidth:0}},chart('main'),chart('detail')),
+          h('p',{style:text},'Open circles: endpoint before contact. Filled circles: contact. A dot marks the inspected position; the dotted vertical reference marks zero displacement from it. The outlined box marks the close-view window when one is shown.')),
+        h('div',{'data-descent-prediction-cases':true,style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,250px),1fr))',gap:'12px',minWidth:0}},
+          ['held','burn'].map(function(key){return h('section',{key:key,'data-descent-prediction-case':key,style:{padding:'12px',background:'#0f2034',border:'1px solid #475569',borderTop:'3px solid '+(key==='held'?'#67e8f9':'#fbbf24'),borderRadius:'8px',minWidth:0}},
+            h('h5',{'data-descent-prediction-label':key,style:{fontSize:'14px',lineHeight:1.6,margin:'0 0 8px',color:key==='held'?'#67e8f9':'#fbbf24',fontWeight:700}},key==='held'?'Hold specified controls':'Full thrust, center tilt'),
+            h('p',{'data-descent-prediction-command':key,style:text},'—'),
+            h('dl',{style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(110px,1fr))',gap:'10px',margin:0,fontSize:'12px',lineHeight:1.65}},
+              [['endpoint','Forecast endpoint'],['time','Time from inspection'],['altitude','Endpoint altitude'],['vertical','Vertical speed'],['lateral','Lateral drift'],
+                ['track','Displacement from inspection'],['propellant','Propellant used'],['fuel','Fuel remaining'],['exhaustion','Fuel exhaustion']].map(function(a){return reading(key+'-'+a[0],a[1]);})));})),
+        h('p',{'data-descent-prediction-note':true,style:text},'The same flight integrator includes changing mass, finite propellant, throttle response, attitude response and lunar gravity. Each path ends at its first vertical arrest, contact or 90 s. Arrest does not cancel sideways drift or complete a landing. Keeping the lander aloft still uses fuel. Fuel reserve uses the existing equivalent upright hover seconds; propellant use is measured in kilograms. Changing controls changes the prediction; this panel does not operate the lander or change its score. The flat surface and engine/attitude assumptions are those of the existing educational model.')));
+  }
+  function mmUpdateDescentPrediction(host, profile, context) {
+    var root=host&&host.querySelector('[data-descent-prediction]'),panel=root&&root.querySelector('[data-descent-prediction-panel]');if (!panel) return;
+    context=context||{};
+    function text(selector,value){var node=root.querySelector(selector);if(node)node.textContent=value;}
+    var plot=root.querySelector('[data-descent-prediction-plot]'),cases=root.querySelector('[data-descent-prediction-cases]');
+    root.dataset.descentPredictionAvailable=profile?'true':'false';
+    if (!profile) {
+      root.dataset.descentPredictionTime='';
+      text('[data-descent-prediction-source]',context.unavailable||'The inspected state lacks the measurements needed for a prediction.');
+      text('[data-descent-prediction-status]','No forecast is calculated.');
+      if(plot)plot.style.display='none';if(cases)cases.style.display='none';return;
+    }
+    if(plot)plot.style.display='';if(cases)cases.style.display='grid';
+    root.dataset.descentPredictionTime=String(profile.initial.elapsed);
+    root.dataset.descentPredictionSource=context.recorded?'recorded':'live';
+    var cmd=profile.held.commands,tilt=cmd.left===cmd.right?'center':cmd.left?'left':'right';
+    root.dataset.descentPredictionThrottle=String(cmd.throttle);root.dataset.descentPredictionTilt=tilt;
+    text('[data-descent-prediction-source]',(context.recorded?'Recorded state':'Live state')+' at '+profile.initial.elapsed.toFixed(1)+' s · '+profile.initial.alt.toFixed(1)+' m · actual throttle '+(profile.initial.thrust*100).toFixed(0)+'%'+(context.paused?' · flight paused':'')+'.');
+    text('[data-descent-prediction-label="held"]',context.recorded?'Hold inspected throttle, center tilt':'Hold current control commands');
+    text('[data-descent-prediction-command="held"]',(cmd.throttle*100).toFixed(0)+'% commanded throttle · '+tilt+' tilt command'+(context.recorded?'. Recorded actual throttle is used as a hypothetical future command.':'.'));
+    text('[data-descent-prediction-command="burn"]','100% commanded throttle · center tilt command. Initial engine and attitude response carry over.');
+    var words={arrest:'Vertical descent arrested',contact:'Ground contact','already-arrested':'Vertical descent already arrested',horizon:'90 s prediction limit'};
+    ['held','burn'].forEach(function(key){var sum=profile[key].summary,prefix='[data-descent-prediction-value="'+key+'-';
+      var values={endpoint:sum.kind==='horizon'?profile.options.horizon.toFixed(1)+' s prediction limit':words[sum.kind],time:sum.time.toFixed(2)+' s',altitude:sum.altitude.toFixed(1)+' m',
+        vertical:Math.abs(sum.vertical).toFixed(2)+' m/s '+(Math.abs(sum.vertical)<1e-6?'arrested':sum.vertical>0?'up':'down'),
+        lateral:Math.abs(sum.lateral).toFixed(2)+' m/s '+(sum.lateral<0?'left':'right'),track:Math.abs(sum.displacement).toFixed(1)+' m '+(sum.displacement<0?'left':'right'),
+        propellant:sum.propellantUsed.toFixed(2)+' kg',fuel:sum.fuelRemaining.toFixed(2)+' hover s',
+        exhaustion:sum.exhaustionTime===null?'Not reached':sum.exhaustionTime.toFixed(2)+' s'};
+      Object.keys(values).forEach(function(field){text(prefix+field+'"]',values[field]);});
+    });
+    var burn=profile.burn.summary;
+    text('[data-descent-prediction-status]',profile.initial.contact?'At contact: the flight has ended. Inspect an earlier recorder sample to explore braking.'
+      :burn.kind==='already-arrested'?'Vertical descent is already arrested. Further hovering, descent and lateral control are outside this projection.'
+      :burn.kind==='arrest'?'Full centered thrust arrests descent '+burn.altitude.toFixed(1)+' m above the model surface. Lateral drift remains '+Math.abs(burn.lateral).toFixed(2)+' m/s.'
+      :burn.kind==='contact'?'Even full centered thrust reaches contact before vertical arrest in this projection.'
+      :'The projection reaches its time limit; an arrest or contact has not been established.');
+    var geo=mmDescentPredictionGeometry(profile),svg=root.querySelector('[data-descent-prediction-diagram]');
+    if(svg){svg.dataset.metreScale=String(geo.scale);svg.dataset.horizontalSpan=String(geo.rightMetres-geo.leftMetres);svg.dataset.verticalSpan=String(geo.verticalMetres);}
+    var start=root.querySelector('[data-descent-prediction-start]');if(start){start.setAttribute('cx',geo.initial.x);start.setAttribute('cy',geo.initial.y);}
+    ['held','burn'].forEach(function(key){var path=root.querySelector('[data-descent-prediction-path="'+key+'"]'),end=root.querySelector('[data-descent-prediction-end="'+key+'"]'),p=geo[key+'End'];
+      if(path)path.setAttribute('points',geo[key+'Points']);
+      if(end){end.setAttribute('cx',p.x);end.setAttribute('cy',p.y);end.setAttribute('fill',profile[key].summary.kind==='contact'?(key==='held'?'#67e8f9':'#fbbf24'):'none');end.dataset.endpoint=profile[key].summary.kind;}
+    });
+    text('[data-descent-prediction-scale]','Shared metre scale · '+(geo.rightMetres-geo.leftMetres).toFixed(0)+' m across × '+geo.verticalMetres.toFixed(0)+' m high. Surface altitude: 0 m. Paths end at different forecast times.');
+    mmSetDescentPredictionVisuals(root,profile);
+  }
+  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{}, {
+    descentPredictionPhysics:MM_DESCENT_PREDICTION,cleanDescentPredictionState:mmCleanDescentPredictionState,
+    descentPredictionProfile:mmDescentPredictionProfile,descentPredictionGeometry:mmDescentPredictionGeometry,
+    descentVectorSample:mmDescentVectorSample,descentVectorGeometry:mmDescentVectorGeometry,
+    descentVectorsView:mmDescentVectorsView,updateDescentVectors:mmUpdateDescentVectors,
+    descentHistory:mmDescentHistory,descentHistoryGeometry:mmDescentHistoryGeometry,
+    descentHistoryView:mmDescentHistoryView,updateDescentHistory:mmUpdateDescentHistory,
+    descentEnergy:mmDescentEnergy,descentEnergyGeometry:mmDescentEnergyGeometry,
+    descentEnergyView:mmDescentEnergyView,updateDescentEnergy:mmUpdateDescentEnergy,
+    createDescentTerrainSampler:mmCreateDescentTerrainSampler,
+    descentSun:MM_DESCENT_SUN,projectDescentShadow:mmProjectDescentShadow,descentSidePose:mmDescentSidePose,
+    descentShadowVertices:mmDescentShadowVertices,buildDescentShadow:mmBuildDescentShadow,
+    descentDust:MM_DESCENT_DUST,newDescentDust:mmNewDescentDust,stepDescentDust:mmStepDescentDust,
+    sampleDescentDust:mmSampleDescentDust,drawDescentDust2D:mmDrawDescentDust2D,
+    descentPredictionVisuals:mmDescentPredictionVisuals,
+    descentPredictionLandmarks: mmDescentPredictionLandmarks,descentPredictionView:mmDescentPredictionView,updateDescentPrediction:mmUpdateDescentPrediction});}catch(e){}
+
   // Powered approach in a spherical, non-rotating lunar frame. The reference
   // curves request motion; forces are capped and integrated, never assigned to
   // the spacecraft. This educational guidance is not Apollo's flight software.
@@ -4066,7 +5228,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     return { density: pressure / (287.05287 * temp), pressure: pressure,
       temperature: temp, soundSpeed: Math.sqrt(1.4 * 287.05287 * temp) };
   }
-  function mmEntryForces(y, time, events) {
+  // Version 1 keeps the original signed-lift model for earlier flight evidence.
+  // Version 2 rotates a constant lift magnitude with bank: its in-plane projection
+  // changes gamma, while the entire aerodynamic force contributes to crew load.
+  // Crossrange is omitted from this planar trajectory. The existing 3 km/s lift
+  // window is a teaching assumption, not a reconstruction of Apollo guidance.
+  function mmEntryPlan(raw) {
+    raw = mmIsObj(raw) ? raw : {};
+    var mode = ['guided', 'ballistic', 'bank'].indexOf(raw.mode) >= 0 ? raw.mode : 'guided';
+    var bank = mode === 'bank' && mmNum(raw.bank) ? Math.round(Math.max(0, Math.min(180, raw.bank)) * 10) / 10 : 0;
+    return Object.freeze({ version: 2, mode: mode, bank: bank });
+  }
+  function mmEntryForces(y, time, events, plan) {
     var atmosphere = mmEntryAtmosphere(y[0]), speed = Math.max(1, y[1]);
     var q = 0.5 * atmosphere.density * speed * speed, area = MM_ENTRY.capsuleDragArea, chuteFraction = 0;
     var smooth = function (v) { v = Math.max(0, Math.min(1, v)); return v * v * (3 - 2 * v); };
@@ -4079,66 +5252,84 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       area += MM_ENTRY.drogueDragArea * chuteFraction;
     }
     var drag = q * area / MM_ENTRY.mass, r = MM_ENTRY.radius + y[0], gravity = MM_ENTRY.mu / (r * r), lift = 0;
+    var modern = !!(plan && plan.version === 2), liftMagnitude = 0, bank = null;
     if (!events.drogue && speed > 3000) {
       // Cancel curvature and gently aim gamma toward zero, within capsule lift.
       var desiredLift = speed * (-0.05 * y[2] - (speed / r - gravity / speed) * Math.cos(y[2]));
-      lift = Math.max(-drag * MM_ENTRY.liftToDrag, Math.min(drag * MM_ENTRY.liftToDrag, desiredLift));
+      if (!modern) {
+        lift = Math.max(-drag * MM_ENTRY.liftToDrag, Math.min(drag * MM_ENTRY.liftToDrag, desiredLift));
+        liftMagnitude = Math.abs(lift);
+      } else if (plan.mode !== 'ballistic') {
+        liftMagnitude = drag * MM_ENTRY.liftToDrag;
+        if (plan.mode === 'bank') {
+          bank = plan.bank;
+          lift = liftMagnitude * Math.cos(bank * Math.PI / 180);
+        } else {
+          lift = Math.max(-liftMagnitude, Math.min(liftMagnitude, desiredLift));
+          bank = liftMagnitude > 0 ? Math.acos(Math.max(-1, Math.min(1, lift / liftMagnitude))) * 180 / Math.PI : null;
+        }
+      }
     }
     return { density: atmosphere.density, pressure: q, mach: speed / atmosphere.soundSpeed,
       dragArea: area, chuteFraction: chuteFraction,
-      drag: drag, lift: lift, gravity: gravity,
+      drag: drag, lift: lift, liftMagnitude: liftMagnitude, bank: bank, gravity: gravity,
       heatFlux: MM_ENTRY.heatCoefficient * Math.sqrt(atmosphere.density / MM_ENTRY.noseRadius) * Math.pow(speed, 3) };
   }
-  function mmEntryDerivative(y, time, events) {
-    var f = mmEntryForces(y, time, events), v = Math.max(1, y[1]), gamma = y[2], r = MM_ENTRY.radius + y[0];
+  function mmEntryDerivative(y, time, events, plan) {
+    var f = mmEntryForces(y, time, events, plan), v = Math.max(1, y[1]), gamma = y[2], r = MM_ENTRY.radius + y[0];
     return [v * Math.sin(gamma), -f.drag - f.gravity * Math.sin(gamma),
       f.lift / v + (v / r - f.gravity / v) * Math.cos(gamma),
       v * Math.cos(gamma) * MM_ENTRY.radius / r, f.heatFlux, f.drag * v];
   }
-  function mmEntryIntegrate(y, time, dt, events) {
-    var a = mmEntryDerivative(y, time, events);
-    var b = mmEntryDerivative(y.map(function (v, i) { return v + a[i] * dt / 2; }), time + dt / 2, events);
-    var c = mmEntryDerivative(y.map(function (v, i) { return v + b[i] * dt / 2; }), time + dt / 2, events);
-    var d2 = mmEntryDerivative(y.map(function (v, i) { return v + c[i] * dt; }), time + dt, events);
+  function mmEntryIntegrate(y, time, dt, events, plan) {
+    var a = mmEntryDerivative(y, time, events, plan);
+    var b = mmEntryDerivative(y.map(function (v, i) { return v + a[i] * dt / 2; }), time + dt / 2, events, plan);
+    var c = mmEntryDerivative(y.map(function (v, i) { return v + b[i] * dt / 2; }), time + dt / 2, events, plan);
+    var d2 = mmEntryDerivative(y.map(function (v, i) { return v + c[i] * dt; }), time + dt, events, plan);
     return y.map(function (v, i) { return v + dt / 6 * (a[i] + 2 * b[i] + 2 * c[i] + d2[i]); });
   }
-  function mmEntryRecord(y, time, stage, events) {
-    var f = mmEntryForces(y, time, events);
-    return { time: time, altitude: Math.max(0, y[0]), speed: Math.max(0, y[1]), gamma: y[2],
+  function mmEntryRecord(y, time, stage, events, plan) {
+    var f = mmEntryForces(y, time, events, plan), modern = !!(plan && plan.version === 2);
+    var row = { time: time, altitude: Math.max(0, y[0]), speed: Math.max(0, y[1]), gamma: y[2],
       downrange: y[3], dragG: f.drag / MM_ENTRY.g0,
-      loadG: Math.sqrt(f.drag * f.drag + f.lift * f.lift) / MM_ENTRY.g0,
+      loadG: Math.sqrt(f.drag * f.drag + (modern ? f.liftMagnitude * f.liftMagnitude : f.lift * f.lift)) / MM_ENTRY.g0,
       heatFlux: f.heatFlux, heatLoad: y[4], energyLost: y[5], density: f.density,
       dynamicPressure: f.pressure, mach: f.mach, stage: stage,
       dragArea: f.dragArea, chuteFraction: f.chuteFraction,
       // A visual plasma cue only: no radio-frequency/ionization model is solved.
       blackout: stage === 'entry' && y[1] > 2500 && y[0] < 100000 && f.heatFlux > 40000 };
+    if (modern) Object.assign(row, { bank: f.bank, liftAcceleration: f.lift,
+      liftMagnitude: f.liftMagnitude, verticalSpeed: y[1] * Math.sin(y[2]) });
+    return row;
   }
-  var _mmEntryProfiles = [];
+  var _mmEntryProfiles = [], _mmEntryGuidanceProfiles = [];
   function mmEntryProfile(angle, options) {
     var normalized = -Math.round(Math.max(1, Math.min(12, Math.abs(Number.isFinite(angle) ? angle : -6.5))) * 100) / 100;
     var customStep = options && Number.isFinite(options.step);
+    var plan = options && Object.prototype.hasOwnProperty.call(options, 'plan') ? mmEntryPlan(options.plan) : null;
     var dt = customStep ? Math.max(0.05, Math.min(0.5, options.step)) : MM_ENTRY.step;
-    if (!customStep) for (var ci = 0; ci < _mmEntryProfiles.length; ci++) {
-      if (_mmEntryProfiles[ci].angle === normalized) return _mmEntryProfiles[ci];
+    var cache = plan ? _mmEntryGuidanceProfiles : _mmEntryProfiles;
+    if (!customStep) for (var ci = 0; ci < cache.length; ci++) {
+      if (cache[ci].angle === normalized && (!plan || cache[ci].plan.mode === plan.mode && cache[ci].plan.bank === plan.bank)) return cache[ci];
     }
     var events = { drogue: null, main: null, splash: null, skip: null };
     var y = [MM_ENTRY.interfaceAltitude, MM_ENTRY.interfaceSpeed, normalized * Math.PI / 180, 0, 0, 0];
-    var time = 0, stage = 'entry', samples = [mmEntryRecord(y, time, stage, events)];
+    var time = 0, stage = 'entry', samples = [mmEntryRecord(y, time, stage, events, plan)];
     var peakG = 0, peakHeatFlux = 0, peakGTime = 0, peakHeatTime = 0;
     while (time < MM_ENTRY.maxTime) {
-      var step = Math.min(dt, MM_ENTRY.maxTime - time), next = mmEntryIntegrate(y, time, step, events);
+      var step = Math.min(dt, MM_ENTRY.maxTime - time), next = mmEntryIntegrate(y, time, step, events, plan);
       var terminal = next[0] <= 0 ? 'splash' : (time > 1 && next[0] >= MM_ENTRY.interfaceAltitude && next[2] > 0 ? 'skip' : null);
       if (terminal) {
         // Locate the crossing inside the slice; terminal records keep impact speed.
         var lo = 0, hi = step, targetHeight = terminal === 'splash' ? 0 : MM_ENTRY.interfaceAltitude;
         for (var root = 0; root < 24; root++) {
-          var mid = (lo + hi) / 2, probe = mmEntryIntegrate(y, time, mid, events);
+          var mid = (lo + hi) / 2, probe = mmEntryIntegrate(y, time, mid, events, plan);
           if (terminal === 'splash' ? probe[0] > targetHeight : probe[0] < targetHeight) lo = mid; else hi = mid;
         }
-        step = hi; next = mmEntryIntegrate(y, time, step, events); next[0] = targetHeight; stage = terminal;
+        step = hi; next = mmEntryIntegrate(y, time, step, events, plan); next[0] = targetHeight; stage = terminal;
       }
       time += step; y = next;
-      var row = mmEntryRecord(y, time, stage, events);
+      var row = mmEntryRecord(y, time, stage, events, plan);
       if (stage === 'entry' && y[2] < 0 && row.altitude <= MM_ENTRY.drogueAltitude &&
           row.mach <= MM_ENTRY.drogueMaxMach && row.dynamicPressure <= MM_ENTRY.drogueMaxPressure) {
         stage = 'drogue'; row.stage = stage; row.blackout = false; row.chuteFraction = 0; events.drogue = Object.assign({}, row);
@@ -4155,12 +5346,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     Object.freeze(samples[0]);
     Object.keys(events).forEach(function (key) { if (events[key]) Object.freeze(events[key]); });
     var last = samples[samples.length - 1];
-    var profile = Object.freeze({ version: 1, angle: normalized, samples: Object.freeze(samples), events: Object.freeze(events),
+    var profile = { version: plan ? 2 : 1, angle: normalized, samples: Object.freeze(samples), events: Object.freeze(events),
       summary: Object.freeze({ outcome: events.skip ? 'skip' : !events.splash ? 'incomplete' : peakG > MM_ENTRY.cautionG ? 'steep' : 'nominal',
         peakG: peakG, peakHeatFlux: peakHeatFlux, heatLoad: last.heatLoad, duration: time,
         downrange: last.downrange, splashSpeed: events.splash ? last.speed : null,
-        peakGTime: peakGTime, peakHeatTime: peakHeatTime }) });
-    if (!customStep) { _mmEntryProfiles.push(profile); if (_mmEntryProfiles.length > 6) _mmEntryProfiles.shift(); }
+        peakGTime: peakGTime, peakHeatTime: peakHeatTime }) };
+    if (plan) profile.plan = plan;
+    Object.freeze(profile);
+    if (!customStep) { cache.push(profile); if (cache.length > (plan ? 12 : 6)) cache.shift(); }
     return profile;
   }
   function mmEntrySample(profile, seconds) {
@@ -4175,6 +5368,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     // Do not blend that reset backward into the previous canopy's final slice.
     if (a.stage !== b.stage && f < 1) result.chuteFraction = a.chuteFraction;
     result.time = time;
+    if (profile.version === 2) {
+      // Re-evaluate forces at the interpolated state. A lift cutoff must retain
+      // an inactive bank, rather than interpolate null toward a fictitious angle.
+      var activeEvents = { drogue: profile.events.drogue && profile.events.drogue.time <= time ? profile.events.drogue : null,
+        main: profile.events.main && profile.events.main.time <= time ? profile.events.main : null };
+      var physical = mmEntryRecord([result.altitude, result.speed, result.gamma, result.downrange, result.heatLoad, result.energyLost], time, result.stage, activeEvents, profile.plan);
+      ['dragG', 'loadG', 'heatFlux', 'density', 'dynamicPressure', 'mach', 'dragArea', 'chuteFraction', 'bank', 'liftAcceleration', 'liftMagnitude', 'verticalSpeed', 'blackout'].forEach(function(key) { result[key] = physical[key]; });
+    }
     return result;
   }
   // Compatibility for earlier canvas callers: ticks 0..360 cover interface to
@@ -4189,6 +5390,1008 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
   try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
     entry: MM_ENTRY, entryAtmosphere: mmEntryAtmosphere, entryProfile: mmEntryProfile, entrySample: mmEntrySample
   }); } catch (e) {}
+
+  // Entry trajectory diagram: surface, interface and flown path use one physical
+  // scale. Capsule and velocity cue are enlarged; no attitude is inferred here.
+  var _mmEntryTrajectoryGeometries = [];
+  function mmEntryPlanLabel(plan) {
+    if (!plan || typeof plan !== 'object') return 'Guided lift';
+    var mode = plan.mode || plan.guidance || plan.type;
+    if (mode === 'ballistic') return 'Ballistic — no lift';
+    if (mode === 'bank' || mode === 'fixed-bank' || mode === 'fixed') {
+      var bank = Number.isFinite(plan.bank) ? plan.bank : Number.isFinite(plan.bankDegrees) ? plan.bankDegrees : Number.isFinite(plan.bankDeg) ? plan.bankDeg : 0;
+      return 'Fixed bank ' + bank.toFixed(1).replace(/\.0$/, '') + '°';
+    }
+    return 'Guided lift';
+  }
+  function mmEntryTrajectoryPoint(geometry, sample) {
+    var r = geometry.radius, altitude = sample.altitude, theta = sample.downrange / r;
+    var sine = Math.sin(theta), cosine = Math.cos(theta), speed = sample.speed, gamma = sample.gamma;
+    var x = (r + altitude) * sine, y = (r + altitude) * cosine - r;
+    var vx = speed * (Math.sin(gamma) * sine + Math.cos(gamma) * cosine);
+    var vy = speed * (Math.sin(gamma) * cosine - Math.cos(gamma) * sine);
+    return Object.freeze({ time: sample.time, altitude: altitude, downrange: sample.downrange, theta: theta,
+      speed: speed, gamma: gamma, verticalSpeed: speed * Math.sin(gamma), stage: sample.stage,
+      x: x, y: y, vx: vx, vy: vy,
+      px: geometry.centerX + (x - geometry.midX) / geometry.metersPerPixel,
+      py: geometry.centerY - (y - geometry.midY) / geometry.metersPerPixel });
+  }
+  function mmEntryTrajectoryGeometry(profile, width, height) {
+    width = Number.isFinite(width) ? Math.max(160, width) : 600;
+    height = Number.isFinite(height) ? Math.max(120, height) : 240;
+    for (var cached = 0; cached < _mmEntryTrajectoryGeometries.length; cached++) {
+      var candidate = _mmEntryTrajectoryGeometries[cached];
+      if (candidate.profile === profile && candidate.width === width && candidate.height === height) return candidate.geometry;
+    }
+    var radius = MM_ENTRY.radius, rows = profile.samples, maximumTheta = 0;
+    rows.forEach(function(row) { maximumTheta = Math.max(maximumTheta, row.downrange / radius); });
+    var selected = [], stride = Math.max(1, Math.ceil(rows.length / 320));
+    for (var index = 0; index < rows.length; index += stride) selected.push(rows[index]);
+    if (selected[selected.length - 1] !== rows[rows.length - 1]) selected.push(rows[rows.length - 1]);
+    var eventRows = [{ key: 'interface', row: rows[0] }];
+    ['drogue', 'main', 'splash', 'skip'].forEach(function(key) {
+      if (profile.events[key]) { eventRows.push({ key: key, row: profile.events[key] }); selected.push(profile.events[key]); }
+    });
+    selected.sort(function(a, b) { return a.time - b.time; });
+    selected = selected.filter(function(row, index) { return !index || Math.abs(row.time - selected[index - 1].time) > 1e-8; });
+    var surfaceRaw = [], interfaceRaw = [], rawPoints = [];
+    function world(altitude, theta) { return { x: (radius + altitude) * Math.sin(theta), y: (radius + altitude) * Math.cos(theta) - radius }; }
+    for (var segment = 0; segment <= 96; segment++) {
+      var theta = maximumTheta * segment / 96;
+      surfaceRaw.push(world(0, theta)); interfaceRaw.push(world(MM_ENTRY.interfaceAltitude, theta));
+    }
+    selected.forEach(function(row) { rawPoints.push(world(row.altitude, row.downrange / radius)); });
+    var all = surfaceRaw.concat(interfaceRaw, rawPoints), minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+    all.forEach(function(point) { minX = Math.min(minX, point.x); maxX = Math.max(maxX, point.x); minY = Math.min(minY, point.y); maxY = Math.max(maxY, point.y); });
+    var padding = 22, metersPerPixel = Math.max(1, (maxX - minX) / (width - 2 * padding), (maxY - minY) / (height - 2 * padding));
+    var frame = { width: width, height: height, radius: radius, padding: padding, metersPerPixel: metersPerPixel,
+      centerX: width / 2, centerY: height / 2, midX: (minX + maxX) / 2, midY: (minY + maxY) / 2,
+      spanX: width * metersPerPixel, spanY: height * metersPerPixel };
+    function projected(point) { return Object.freeze({ x: point.x, y: point.y,
+      px: frame.centerX + (point.x - frame.midX) / metersPerPixel,
+      py: frame.centerY - (point.y - frame.midY) / metersPerPixel }); }
+    frame.surface = Object.freeze(surfaceRaw.map(projected));
+    frame.interface = Object.freeze(interfaceRaw.map(projected));
+    frame.points = Object.freeze(selected.map(function(row) { return mmEntryTrajectoryPoint(frame, row); }));
+    frame.events = Object.freeze(eventRows.map(function(event) { return Object.freeze({ key: event.key, point: mmEntryTrajectoryPoint(frame, event.row) }); }));
+    frame = Object.freeze(frame);
+    _mmEntryTrajectoryGeometries.push({ profile: profile, width: width, height: height, geometry: frame });
+    if (_mmEntryTrajectoryGeometries.length > 8) _mmEntryTrajectoryGeometries.shift();
+    return frame;
+  }
+  function mmEntryTrajectoryPolyline(points) {
+    return points.map(function(point) { return point.px.toFixed(3) + ',' + point.py.toFixed(3); }).join(' ');
+  }
+  function mmEntryTrajectoryReading(point) {
+    var direction = point.verticalSpeed > 0.01 ? 'Ascending' : point.verticalSpeed < -0.01 ? 'Descending' : 'Level';
+    var signed = function(value, precision) { return (value >= 0 ? '+' : '') + value.toFixed(precision); };
+    return (point.stage === 'skip' ? 'Skip-out · ' : point.stage === 'splash' ? 'Splashdown · ' : '') + direction +
+      ' · vertical speed ' + signed(point.verticalSpeed, 1) + ' m/s · flight path ' + signed(point.gamma * 180 / Math.PI, 2) + '° · altitude ' + (point.altitude / 1000).toFixed(2) + ' km';
+  }
+  function mmEntryTrajectoryVector(point, geometry) {
+    var speed = Math.hypot(point.vx, point.vy), ux = speed > 0 ? point.vx / speed : 0, uy = speed > 0 ? -point.vy / speed : 0, length = 52;
+    // Keep the enlarged cue on the plotted view at a terminal edge.
+    if (ux > 1e-10) length = Math.min(length, (geometry.width - 8 - point.px) / ux);
+    else if (ux < -1e-10) length = Math.min(length, (8 - point.px) / ux);
+    if (uy > 1e-10) length = Math.min(length, (geometry.height - 8 - point.py) / uy);
+    else if (uy < -1e-10) length = Math.min(length, (8 - point.py) / uy);
+    length = Math.max(0, length);
+    return { x: point.px + ux * length, y: point.py + uy * length };
+  }
+  function mmEntryTrajectoryView(h, profile, sample) {
+    var geometry = mmEntryTrajectoryGeometry(profile, 600, 240), point = mmEntryTrajectoryPoint(geometry, sample), vector = mmEntryTrajectoryVector(point, geometry);
+    var flown = geometry.points.filter(function(row) { return row.time <= sample.time; }).concat([point]);
+    var surface = mmEntryTrajectoryPolyline(geometry.surface), surfacePolygon = surface + ' ' + geometry.surface[geometry.surface.length - 1].px.toFixed(3) + ',240 ' + geometry.surface[0].px.toFixed(3) + ',240';
+    var name = function(key) { return key === 'interface' ? 'Entry interface' : key === 'drogue' ? 'Drogues' : key === 'main' ? 'Mains' : key === 'splash' ? 'Splashdown' : 'Skip-out'; };
+    return h('figure', { 'data-entry-trajectory': true, style: { margin: '0 0 14px', padding: '12px', borderRadius: '10px', border: '1px solid #334155', background: '#081321', minWidth: 0 } },
+      h('figcaption', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '6px', fontSize: '13px', fontWeight: 700, color: '#bae6fd' } },
+        h('span', null, 'Measured entry trajectory'), h('span', { 'data-entry-trajectory-plan': true, style: { color: '#cbd5e1', fontSize: '12px' } }, mmEntryPlanLabel(profile.plan))),
+      h('svg', { 'data-entry-trajectory-svg': true, viewBox: '0 0 600 240', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': 'Entry path above a curved Earth surface. Both physical axes have the same scale. The enlarged cyan arrow shows the measured velocity direction.', style: { display: 'block', width: '100%', height: '220px', minHeight: '200px', overflow: 'hidden' } },
+        h('polygon', { points: surfacePolygon, fill: '#123045' }),
+        h('polyline', { points: surface, fill: 'none', stroke: '#94b9ce', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke' }),
+        h('polyline', { points: mmEntryTrajectoryPolyline(geometry.interface), fill: 'none', stroke: '#c4b5fd', strokeWidth: 1.2, strokeDasharray: '5 5', vectorEffect: 'non-scaling-stroke' }),
+        h('polyline', { points: mmEntryTrajectoryPolyline(geometry.points), fill: 'none', stroke: '#64748b', strokeWidth: 1.5, strokeDasharray: '4 4', vectorEffect: 'non-scaling-stroke' }),
+        h('polyline', { 'data-entry-trajectory-flown': true, points: mmEntryTrajectoryPolyline(flown), fill: 'none', stroke: '#67e8f9', strokeWidth: 2.5, vectorEffect: 'non-scaling-stroke' }),
+        geometry.events.map(function(event) { return h('circle', { key: event.key, 'data-entry-trajectory-event': event.key, cx: event.point.px, cy: event.point.py, r: 3.5, fill: event.key === 'skip' ? '#fbbf24' : event.key === 'splash' ? '#86efac' : '#c4b5fd', stroke: '#081321', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }, h('title', null, name(event.key) + ' · ' + event.point.time.toFixed(1) + ' s · ' + (event.point.altitude / 1000).toFixed(2) + ' km')); }),
+        h('line', { 'data-entry-trajectory-vector': true, x1: point.px, y1: point.py, x2: vector.x, y2: vector.y, stroke: '#67e8f9', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' }),
+        h('g', { 'data-entry-trajectory-arrowhead': true, transform: 'translate(' + vector.x + ',' + vector.y + ') rotate(' + (Math.atan2(vector.y - point.py, vector.x - point.px) * 180 / Math.PI) + ')' }, h('path', { d: 'M -9 -4 L 0 0 L -9 4', fill: 'none', stroke: '#67e8f9', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' })),
+        h('circle', { 'data-entry-trajectory-marker': true, cx: point.px, cy: point.py, r: 5, fill: '#f8fafc', stroke: '#0891b2', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' })),
+      h('p', { 'data-entry-trajectory-reading': true, style: { margin: '0 0 8px', color: '#f8fafc', fontSize: '12px', lineHeight: 1.65, fontVariantNumeric: 'tabular-nums', overflowWrap: 'anywhere' } }, mmEntryTrajectoryReading(point)),
+      h('div', { 'data-entry-trajectory-legend': true, style: { display: 'flex', flexWrap: 'wrap', gap: '6px 14px', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.65 } },
+        h('span', { style: { color: '#67e8f9' } }, 'Cyan: flown path and velocity'), h('span', { style: { color: '#c4b5fd' } }, 'Dashed purple: 122 km interface'), h('span', null, 'Dashed gray: full computed path')),
+      h('p', { 'data-entry-trajectory-scale': true, style: { margin: '8px 0', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.65 } }, 'Equal physical axes · view spans ' + (geometry.spanX / 1000).toFixed(0) + ' km × ' + (geometry.spanY / 1000).toFixed(0) + ' km. Earth, interface and trajectory share one scale. Capsule marker and velocity arrow are enlarged.'),
+      h('p', { 'data-entry-trajectory-events': true, style: { margin: 0, color: '#cbd5e1', fontSize: '12px', lineHeight: 1.65 } }, geometry.events.map(function(event) { return name(event.key) + ' ' + event.point.time.toFixed(1) + ' s'; }).join(' · ')));
+  }
+  function mmUpdateEntryTrajectory(host, profile, sample) {
+    if (!host) return;
+    var figure = host.matches && host.matches('[data-entry-trajectory]') ? host : host.querySelector('[data-entry-trajectory]');
+    if (!figure) return;
+    var geometry = mmEntryTrajectoryGeometry(profile, 600, 240), point = mmEntryTrajectoryPoint(geometry, sample), vector = mmEntryTrajectoryVector(point, geometry);
+    var flown = geometry.points.filter(function(row) { return row.time <= sample.time; }).concat([point]);
+    var marker = figure.querySelector('[data-entry-trajectory-marker]'), arrow = figure.querySelector('[data-entry-trajectory-vector]'), head = figure.querySelector('[data-entry-trajectory-arrowhead]'), path = figure.querySelector('[data-entry-trajectory-flown]'), reading = figure.querySelector('[data-entry-trajectory-reading]');
+    if (marker) { marker.setAttribute('cx', point.px); marker.setAttribute('cy', point.py); }
+    if (arrow) { arrow.setAttribute('x1', point.px); arrow.setAttribute('y1', point.py); arrow.setAttribute('x2', vector.x); arrow.setAttribute('y2', vector.y); }
+    if (head) head.setAttribute('transform', 'translate(' + vector.x + ',' + vector.y + ') rotate(' + (Math.atan2(vector.y - point.py, vector.x - point.px) * 180 / Math.PI) + ')');
+    if (path) path.setAttribute('points', mmEntryTrajectoryPolyline(flown));
+    if (reading) reading.textContent = mmEntryTrajectoryReading(point);
+    figure.dataset.entryTrajectoryTime = String(point.time); figure.dataset.entryTrajectoryStage = point.stage;
+    figure.dataset.entryTrajectoryGamma = String(point.gamma); figure.dataset.entryTrajectoryVerticalSpeed = String(point.verticalSpeed);
+    figure.dataset.entryTrajectoryX = String(point.x); figure.dataset.entryTrajectoryY = String(point.y);
+    figure.dataset.entryTrajectoryVx = String(point.vx); figure.dataset.entryTrajectoryVy = String(point.vy);
+    figure.dataset.entryTrajectoryMetersPerPixel = String(geometry.metersPerPixel);
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    entryPlanLabel: mmEntryPlanLabel, entryTrajectoryGeometry: mmEntryTrajectoryGeometry, entryTrajectoryPoint: mmEntryTrajectoryPoint
+  }); } catch (e) {}
+  function mmIsPhysicalEntry(result) { return !!result && (result.modelVersion === 1 || result.modelVersion === 2); }
+  function mmEntryProfileForRun(run, angle, plan) {
+    return run && run.version === 1 ? mmEntryProfile(run.angle)
+      : mmEntryProfile(run && run.version === 2 ? run.angle : angle, { plan: run && run.version === 2 ? run.plan : mmEntryPlan(plan) });
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    entryPlan: mmEntryPlan, entryTrajectoryGeometry: mmEntryTrajectoryGeometry
+  }); } catch (e) {}
+
+  // Entry force and mechanical-energy inspection.
+  // Entry force and mechanical-energy inspection. This derives diagnostics from
+  // the existing immutable trajectory; it neither integrates another trajectory
+  // nor changes a flight receipt. Coordinates are local horizontal and radial up.
+  // NASA Glenn: www1.grc.nasa.gov/beginners-guide-to-aeronautics/what-is-drag/
+  // NASA entry equations: ntrs.nasa.gov/citations/20150010981 (PDF page 16).
+  // NASA TFAWS orbital mechanics: tfaws.nasa.gov/wp-content/uploads/Rickman-Presentation.pdf
+  // (PDF pages 46-51). Adding mu/R to -mu/r places zero potential at the surface.
+  var _mmEntryDynamicsCache = [], _mmEntryDynamicsSources = new WeakMap();
+  function mmEntryDynamicsSourceValid(source) {
+    if (!mmIsObj(source) || (source.version !== 1 && source.version !== 2) ||
+      !Object.isFrozen(source) || !mmNum(source.angle) || !mmIsObj(source.summary) || !Object.isFrozen(source.summary) ||
+      !mmNum(source.summary.duration) || source.summary.duration < 0 ||
+      !mmIsObj(source.events) || !Object.isFrozen(source.events) || !Array.isArray(source.samples) ||
+      !Object.isFrozen(source.samples) || source.samples.length < 2) return false;
+    if (source.version === 2 && (!mmIsObj(source.plan) || source.plan.version !== 2 ||
+      !Object.isFrozen(source.plan) || ['guided','ballistic','bank'].indexOf(source.plan.mode) < 0 ||
+      !mmNum(source.plan.bank) || source.plan.bank < 0 || source.plan.bank > 180)) return false;
+    for (var ei=0; ei<2; ei++) {
+      var event=source.events[ei===0?'drogue':'main'];
+      if (event!==null && (!mmIsObj(event) || !Object.isFrozen(event) || !mmNum(event.time) ||
+        event.time<0 || event.time>source.summary.duration)) return false;
+    }
+    var previous = -1;
+    for (var i = 0; i < source.samples.length; i++) {
+      var s = source.samples[i];
+      if (!mmIsObj(s) || !Object.isFrozen(s) || !mmNum(s.time) || s.time <= previous ||
+        !mmNum(s.altitude) || s.altitude < 0 || !mmNum(s.speed) || s.speed <= 0 ||
+        !mmNum(s.gamma) || !mmNum(s.downrange) || !mmNum(s.heatLoad) ||
+        !mmNum(s.energyLost) || !mmNum(s.loadG)) return false;
+      previous = s.time;
+    }
+    return source.samples[0].time === 0 && Math.abs(previous - source.summary.duration) < 1e-6;
+  }
+  function mmEntryDynamicsVector(x, y) {
+    var magnitude = Math.hypot(x, y), mass = MM_ENTRY.mass;
+    return Object.freeze({ x:x, y:y, magnitude:magnitude,
+      forceX:x*mass, forceY:y*mass, forceMagnitude:magnitude*mass });
+  }
+  function mmEntryDynamicsInspect(source, time, initial) {
+    var s = mmEntrySample(source, time), t = s.time, active = { drogue:null, main:null };
+    // Saved sample metrics interpolate. Force arrows instead use the inspected
+    // state and exact deployment times, including nonlinear canopy inflation.
+    if (source.events.drogue && source.events.drogue.time <= t) active.drogue = source.events.drogue;
+    if (source.events.main && source.events.main.time <= t) active.main = source.events.main;
+    var y = [s.altitude,s.speed,s.gamma,s.downrange,s.heatLoad,s.energyLost];
+    var f = mmEntryForces(y,t,active,source.version===2?source.plan:null);
+    var c = Math.cos(s.gamma), sn = Math.sin(s.gamma), r = MM_ENTRY.radius+s.altitude;
+    var drag = mmEntryDynamicsVector(-f.drag*c,-f.drag*sn);
+    var lift = mmEntryDynamicsVector(-f.lift*sn,f.lift*c);
+    var gravity = mmEntryDynamicsVector(0,-f.gravity);
+    var net = mmEntryDynamicsVector(drag.x+lift.x,drag.y+lift.y+gravity.y);
+    var vx = s.speed*c, vy = s.speed*sn, v = Math.max(1,s.speed);
+    var lateral = source.version===2 && f.bank!==null ?
+      f.liftMagnitude*Math.abs(Math.sin(f.bank*Math.PI/180)) : 0;
+    var kinetic = s.speed*s.speed/2, potential = MM_ENTRY.mu*(1/MM_ENTRY.radius-1/r);
+    var terminal = t === source.summary.duration;
+    return Object.freeze({ time:t, altitude:s.altitude, speed:s.speed, gamma:s.gamma,
+      phase:s.stage, stage:s.stage, outcome:source.summary.outcome, terminal:terminal,
+      endpointNote:terminal && s.stage==='splash'?'preimpact':terminal && s.stage==='skip'?'outgoing-interface':null,
+      drogueDeployed:!!active.drogue, mainDeployed:!!active.main,
+      chuteFraction:f.chuteFraction, dragArea:f.dragArea, dynamicPressure:f.pressure,
+      velocity:Object.freeze({ x:vx, y:vy }),
+      forces:Object.freeze({ drag:drag, lift:lift, gravity:gravity, netPlane:net }),
+      bank:source.version===2?f.bank:null, liftMagnitude:f.liftMagnitude,
+      liftPlane:f.lift, liftLateral:lateral,
+      liftMagnitudeForce:f.liftMagnitude*MM_ENTRY.mass,
+      liftPlaneForce:f.lift*MM_ENTRY.mass, liftLateralForce:lateral*MM_ENTRY.mass,
+      // Full aerodynamic load excludes gravity, matching the original receipt.
+      // The lateral component is only a magnitude in the unresolved normal plane;
+      // its direction and crossrange displacement are not integrated here.
+      reportedLoadG:s.loadG, aeroLoadG:Math.hypot(f.drag,f.liftMagnitude)/MM_ENTRY.g0,
+      speedRate:-f.drag-f.gravity*sn,
+      flightPathRate:f.lift/v+(v/r-f.gravity/v)*c,
+      // These derivatives include the rotation of the local horizontal/up basis.
+      horizontalRate:net.x-vx*vy/r, verticalRate:net.y+vx*vx/r,
+      energy:Object.freeze({ kinetic:kinetic, potential:potential, dragWork:s.energyLost,
+        initial:initial, residual:initial-kinetic-potential-s.energyLost,
+        dragPower:f.drag*s.speed, totalDragWork:MM_ENTRY.mass*s.energyLost }) });
+  }
+  function mmEntryDynamicsProfile(source) {
+    for (var ci=0; ci<_mmEntryDynamicsCache.length; ci++) {
+      if (_mmEntryDynamicsCache[ci].source===source) return _mmEntryDynamicsCache[ci].profile;
+    }
+    if (!mmEntryDynamicsSourceValid(source)) return null;
+    var first=source.samples[0], initial=first.speed*first.speed/2+
+      MM_ENTRY.mu*(1/MM_ENTRY.radius-1/(MM_ENTRY.radius+first.altitude));
+    var descriptor={ modelVersion:source.version, angle:source.angle };
+    if (source.version===2) descriptor.plan=mmEntryPlan(source.plan);
+    Object.freeze(descriptor);
+    var rows=source.samples.map(function(s){return mmEntryDynamicsInspect(source,s.time,initial);});
+    var last=rows[rows.length-1], peakPower=0, peakTime=0, residual=0, planeMax=0, liftMax=0;
+    rows.forEach(function(s){
+      residual=Math.max(residual,Math.abs(s.energy.residual));
+      if (s.energy.dragPower>peakPower) {peakPower=s.energy.dragPower;peakTime=s.time;}
+      ['drag','lift','gravity','netPlane'].forEach(function(k){planeMax=Math.max(planeMax,s.forces[k].magnitude);});
+      liftMax=Math.max(liftMax,s.liftMagnitude);
+    });
+    var summary=Object.freeze({ duration:source.summary.duration, initialEnergy:initial,
+      finalEnergy:last.energy.kinetic+last.energy.potential, finalDragWork:last.energy.dragWork,
+      maxAbsEnergyResidual:residual, peakDragPower:peakPower, peakDragPowerTime:peakTime,
+      maxPlaneAcceleration:planeMax, maxLiftAcceleration:liftMax });
+    var profile=Object.freeze({ version:1, source:descriptor, samples:Object.freeze(rows), summary:summary });
+    _mmEntryDynamicsSources.set(profile,source);
+    _mmEntryDynamicsCache.push({source:source,profile:profile});
+    if (_mmEntryDynamicsCache.length>8) _mmEntryDynamicsCache.shift();
+    return profile;
+  }
+  function mmEntryDynamicsSample(profile, time) {
+    if (!mmIsObj(profile) || !_mmEntryDynamicsSources.has(profile)) return null;
+    var source=_mmEntryDynamicsSources.get(profile);
+    var t=mmNum(time)?Math.max(0,Math.min(source.summary.duration,time)):0;
+    return mmEntryDynamicsInspect(source,t,profile.summary.initialEnergy);
+  }
+  try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{}, {
+    entryDynamicsProfile:mmEntryDynamicsProfile,entryDynamicsSample:mmEntryDynamicsSample});} catch(e) {}
+
+  // Preferences only select the inspection panel. Its source stays with the run.
+  function mmCleanEntryDynamicsState(raw) {
+    raw = mmIsObj(raw) ? raw : {};
+    return { entryDynamicsOpen: raw.entryDynamicsOpen === true,
+      entryDynamicsView: raw.entryDynamicsView === 'energy' ? 'energy' : 'forces' };
+  }
+  function mmEntryDynamicsSource(raw) { return mmEntryThermalSource(raw); }
+  function mmEntryDynamicsReport(raw) {
+    if (!mmIsObj(raw) || raw.completed !== true ||
+        (raw.terminal !== 'splash' && raw.terminal !== 'skip')) return '';
+    var source = mmThermalEntryProfileFromSource(raw);
+    if (!source) return '';
+    var run = { version: source.version, angle: source.angle,
+      time: source.summary.duration, recovery: 0, recorded: true };
+    if (source.version === 2) run.plan = source.plan;
+    if (!mmEntryReceiptMatches(raw, run)) return '';
+    var diagnostics = mmEntryDynamicsProfile(source);
+    var last = mmEntryDynamicsSample(diagnostics, source.summary.duration), e = last.energy;
+    var plan = source.version === 2 ? mmEntryPlanLabel(source.plan) : 'earlier guided lift; bank not recorded';
+    return 'Calculated entry mechanical-energy check: entry model v' + source.version + ', ' +
+      source.angle.toFixed(2) + '\u00b0, ' + plan + '. Earth-surface gravitational potential is zero.\n' +
+      'Energy per mass: initial ' + (e.initial / 1e6).toFixed(3) + ' MJ/kg; terminal kinetic ' +
+      (e.kinetic / 1e6).toFixed(6) + ' MJ/kg; terminal gravitational potential ' +
+      (e.potential / 1e6).toFixed(6) + ' MJ/kg; cumulative drag work ' +
+      (e.dragWork / 1e6).toFixed(3) + ' MJ/kg. Maximum sampled energy residual ' +
+      diagnostics.summary.maxAbsEnergyResidual.toFixed(3) + ' J/kg, including integration and interpolation error.\n' +
+      'Gravity exchanges kinetic and potential energy; lift is perpendicular to velocity; drag transfers mechanical energy to the surrounding flow. Stagnation heat flux estimates power per area; accumulated heat load estimates energy per area. These heating estimates use a separate surface model and do not represent the capsule\u2019s total drag work or absorbed shield energy. ' +
+      (raw.terminal === 'splash' ? 'The trajectory ends at water contact; impact mechanics are omitted.' :
+        'The trajectory ends at the upward entry interface; later orbital flight is omitted.');
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    cleanEntryDynamicsState: mmCleanEntryDynamicsState, entryDynamicsSource: mmEntryDynamicsSource,
+    entryDynamicsReport: mmEntryDynamicsReport
+  }); } catch (e) {}
+
+  // These diagrams inspect the immutable entry trajectory; they do not integrate a new flight.
+  var _mmEntryDynamicsVisualBases = [];
+  function mmEntryDynamicsArrow(vector, centerX, centerY, scale) {
+    var x = vector.x, y = vector.y, magnitude = Math.hypot(x, y), dx = x * scale, dy = -y * scale;
+    var endX = centerX + dx, endY = centerY + dy, length = Math.hypot(dx, dy), visible = magnitude > 1e-9;
+    var ux = length ? dx / length : 0, uy = length ? dy / length : 0, head = Math.min(11, length * 0.42), half = head * 0.42;
+    return Object.freeze({ x: x, y: y, magnitude: magnitude, visible: visible, startX: centerX, startY: centerY,
+      endX: endX, endY: endY, head: visible ? endX + ',' + endY + ' ' + (endX - head * ux - half * uy) + ',' + (endY - head * uy + half * ux) + ' ' + (endX - head * ux + half * uy) + ',' + (endY - head * uy - half * ux) : '',
+      forceMagnitude: Number.isFinite(vector.forceMagnitude) ? vector.forceMagnitude : null });
+  }
+  function mmEntryDynamicsGeometry(profile, seconds, width, height) {
+    width = Number.isFinite(width) ? Math.max(200, width) : 600;
+    height = Number.isFinite(height) ? Math.max(160, height) : 360;
+    var base = null;
+    for (var index = 0; index < _mmEntryDynamicsVisualBases.length; index++) {
+      var cached = _mmEntryDynamicsVisualBases[index];
+      if (cached.profile === profile && cached.width === width && cached.height === height) { base = cached.base; break; }
+    }
+    if (!base) {
+      var maximum = Math.max(1, profile.summary.maxPlaneAcceleration), order = Math.pow(10, Math.floor(Math.log10(maximum)));
+      maximum = Math.ceil(maximum / order * 2) * order / 2;
+      var liftMaximum = Math.max(1, profile.summary.maxLiftAcceleration), liftOrder = Math.pow(10, Math.floor(Math.log10(liftMaximum)));
+      liftMaximum = Math.ceil(liftMaximum / liftOrder * 2) * liftOrder / 2;
+      var energyMin = 0, energyMax = profile.summary.initialEnergy, duration = Math.max(0.001, profile.summary.duration);
+      var keys = ['kinetic', 'potential', 'dragWork'];
+      profile.samples.forEach(function(row) { keys.forEach(function(key) { energyMin = Math.min(energyMin, row.energy[key]); energyMax = Math.max(energyMax, row.energy[key]); }); });
+      energyMin = Math.floor(energyMin / 1e6) * 1e6; energyMax = Math.max(energyMin + 1e6, Math.ceil(energyMax / 1e6) * 1e6);
+      var chart = { left: 10, right: 590, top: 10, bottom: 170, min: energyMin, max: energyMax, duration: duration };
+      function energyPoint(row, key) { return Object.freeze({ time: row.time, value: row.energy[key], x: chart.left + (chart.right - chart.left) * row.time / duration,
+        y: chart.bottom - (chart.bottom - chart.top) * (row.energy[key] - energyMin) / (energyMax - energyMin) }); }
+      var histories = {}, stride = Math.max(1, Math.ceil(profile.samples.length / 240));
+      keys.forEach(function(key) {
+        var selected = [], peak = profile.samples[0];
+        profile.samples.forEach(function(row, rowIndex) {
+          if (row.energy[key] > peak.energy[key]) peak = row;
+          if (rowIndex % stride === 0 || rowIndex === profile.samples.length - 1) selected.push(row);
+        });
+        selected.push(peak); selected.sort(function(a, b) { return a.time - b.time; });
+        histories[key] = Object.freeze(selected.filter(function(row, rowIndex) { return !rowIndex || row.time !== selected[rowIndex - 1].time; }).map(function(row) { return energyPoint(row, key); }));
+      });
+      chart.histories = Object.freeze(histories); chart.initialY = chart.bottom - (chart.bottom - chart.top) * (profile.summary.initialEnergy - energyMin) / (energyMax - energyMin);
+      base = Object.freeze({ width: width, height: height, centerX: width / 2, centerY: height / 2,
+        maxAcceleration: maximum, accelerationScale: Math.min(width, height) * 0.42 / maximum,
+        maxLiftAcceleration: liftMaximum, bankScale: 82 / liftMaximum, chart: Object.freeze(chart) });
+      _mmEntryDynamicsVisualBases.push({ profile: profile, width: width, height: height, base: base });
+      if (_mmEntryDynamicsVisualBases.length > 8) _mmEntryDynamicsVisualBases.shift();
+    }
+    var sample = mmEntryDynamicsSample(profile, seconds), vectors = {};
+    ['drag', 'lift', 'gravity', 'netPlane'].forEach(function(key) { vectors[key] = mmEntryDynamicsArrow(sample.forces[key], base.centerX, base.centerY, base.accelerationScale); });
+    var speed = Math.hypot(sample.velocity.x, sample.velocity.y), velocity = mmEntryDynamicsArrow({ x: speed ? sample.velocity.x / speed : 0, y: speed ? sample.velocity.y / speed : 0 }, base.centerX, base.centerY, 54);
+    var bank = mmEntryDynamicsArrow({ x: sample.liftLateral, y: sample.liftPlane, forceMagnitude: sample.liftMagnitudeForce }, 150, 110, base.bankScale);
+    var chart = base.chart, markers = {};
+    ['kinetic', 'potential', 'dragWork'].forEach(function(key) { markers[key] = Object.freeze({ x: chart.left + (chart.right - chart.left) * sample.time / chart.duration,
+      y: chart.bottom - (chart.bottom - chart.top) * (sample.energy[key] - chart.min) / (chart.max - chart.min) }); });
+    return Object.freeze({ base: base, sample: sample, vectors: Object.freeze(vectors), velocity: velocity, bank: bank,
+      cursorX: chart.left + (chart.right - chart.left) * sample.time / chart.duration, markers: Object.freeze(markers) });
+  }
+  function mmEntryDynamicsSourceLabel(profile) {
+    var source = profile.source;
+    return source.angle.toFixed(1) + '° · model v' + source.modelVersion + ' · ' + (source.modelVersion === 2 ? mmEntryPlanLabel(source.plan) : 'earlier signed in-plane lift');
+  }
+  function mmEntryDynamicsValueTexts(profile, sample) {
+    var energy = sample.energy;
+    function acceleration(vector) { return vector.magnitude.toFixed(2) + ' m/s² · ' + (vector.forceMagnitude / 1000).toFixed(2) + ' kN'; }
+    return { time: sample.time.toFixed(1) + ' s', drag: acceleration(sample.forces.drag), lift: acceleration(sample.forces.lift), gravity: acceleration(sample.forces.gravity), netPlane: acceleration(sample.forces.netPlane),
+      aeroLoadG: sample.aeroLoadG.toFixed(2) + ' g', reportedLoadG: sample.reportedLoadG.toFixed(2) + ' g',
+      bank: profile.source.modelVersion === 2 ? Number.isFinite(sample.bank) ? sample.bank.toFixed(1) + '°' : 'Lift inactive' : 'Earlier signed in-plane lift',
+      fullLift: sample.liftMagnitude.toFixed(2) + ' m/s²', liftPlane: (sample.liftPlane >= 0 ? '+' : '') + sample.liftPlane.toFixed(2) + ' m/s²', liftLateral: sample.liftLateral.toFixed(2) + ' m/s²',
+      kinetic: (energy.kinetic / 1e6).toFixed(3) + ' MJ/kg', potential: (energy.potential / 1e6).toFixed(3) + ' MJ/kg', dragWork: (energy.dragWork / 1e6).toFixed(3) + ' MJ/kg',
+      remaining: ((energy.kinetic + energy.potential) / 1e6).toFixed(3) + ' MJ/kg', initial: (energy.initial / 1e6).toFixed(3) + ' MJ/kg',
+      residual: (energy.residual >= 0 ? '+' : '') + energy.residual.toFixed(1) + ' J/kg', dragPower: energy.dragPower.toFixed(0) + ' W/kg', totalDragWork: (energy.totalDragWork / 1e9).toFixed(3) + ' GJ',
+      endpoint: sample.endpointNote === 'preimpact' ? 'Final sample is immediately before water contact. Water, impact and support forces are outside this trajectory.' : sample.endpointNote === 'outgoing-interface' ? 'The source ends at the outgoing atmospheric interface. Later flight is outside this trajectory.' : 'Use the entry time slider to inspect this same flight. Local horizontal and up axes rotate with position.' };
+  }
+  function mmEntryDynamicsPolyline(points) { return points.map(function(point) { return point.x.toFixed(3) + ',' + point.y.toFixed(3); }).join(' '); }
+  function mmEntryDynamicsView(h, entryProfile, entrySample, controls, action) {
+    controls = controls && typeof controls === 'object' ? controls : {};
+    var open = controls.open === true, view = controls.view === 'energy' ? 'energy' : 'forces', profile = mmEntryDynamicsProfile(entryProfile);
+    var sample = mmEntryDynamicsSample(profile, entrySample.time), values = mmEntryDynamicsValueTexts(profile, sample), geometry = open ? mmEntryDynamicsGeometry(profile, sample.time, 600, 360) : null;
+    var colors = { drag: '#fdba74', lift: '#67e8f9', gravity: '#c4b5fd', netPlane: '#f8fafc', kinetic: '#67e8f9', potential: '#c4b5fd', dragWork: '#fdba74' };
+    var buttonStyle = { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #475569', background: '#1e293b', color: '#f8fafc', fontSize: '12px', fontWeight: 600 };
+    var textStyle = { margin: '8px 0', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.65, overflowWrap: 'anywhere' };
+    function emit(name, value, ev) { if (typeof action === 'function') action(name, value, ev); }
+    function value(name) { return h('span', { 'data-entry-dynamics-value': name, style: { fontWeight: 700, fontVariantNumeric: 'tabular-nums' } }, values[name]); }
+    function reading(name, label, color) { return h('div', { key: name, style: { minWidth: 0 } }, h('dt', { style: { color: color || '#cbd5e1', lineHeight: 1.65 } }, label), h('dd', { style: { margin: 0, lineHeight: 1.65 } }, value(name))); }
+    function arrow(key, vector, color, extra) {
+      return h('g', Object.assign({ key: key, 'data-entry-dynamics-vector': key, 'data-x': vector.x, 'data-y': vector.y, 'data-magnitude': vector.magnitude, 'data-force-magnitude': vector.forceMagnitude, visibility: vector.visible ? 'visible' : 'hidden' }, extra || {}),
+        h('line', { x1: vector.startX, y1: vector.startY, x2: vector.endX, y2: vector.endY, stroke: color, strokeWidth: key === 'netPlane' ? 3 : 2.5, strokeDasharray: key === 'netPlane' ? '5 3' : null, vectorEffect: 'non-scaling-stroke' }),
+        h('polygon', { points: vector.head, fill: color }));
+    }
+    return h('section', { 'data-entry-dynamics': true, 'data-entry-dynamics-time': sample.time, 'data-entry-dynamics-source-version': profile.source.modelVersion, 'data-entry-dynamics-source-angle': profile.source.angle,
+      'data-entry-dynamics-view': view, 'data-entry-dynamics-phase': sample.phase, 'data-entry-dynamics-endpoint': sample.endpointNote || '',
+      style: { marginTop: '14px', padding: '12px', border: '1px solid #475569', borderRadius: '10px', background: '#081321', color: '#e2e8f0', minWidth: 0 } },
+      h('button', { type: 'button', 'data-entry-dynamics-toggle': true, 'aria-expanded': open, 'aria-controls': 'mm-entry-dynamics-panel', style: Object.assign({}, buttonStyle, { display: 'block', width: '100%', textAlign: 'left' }), onClick: function(ev) { emit('open', !open, ev); } }, open ? 'Close entry forces and energy' : 'Explore entry forces and energy'),
+      h('p', { style: textStyle }, open ? h('span', null, 'Same entry clock · ', value('time')) : 'Uses the entry recorder’s time to inspect forces and mechanical energy.'),
+      !open && h('div', { id: 'mm-entry-dynamics-panel', hidden: true }),
+      open && h('div', { id: 'mm-entry-dynamics-panel', 'data-entry-dynamics-panel': true, style: { minWidth: 0 } },
+        h('p', { 'data-entry-dynamics-source': true, style: textStyle }, 'Source flight: ' + mmEntryDynamicsSourceLabel(profile)),
+        h('div', { role: 'group', 'aria-label': 'Entry dynamics views', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', margin: '10px 0' } }, ['forces', 'energy'].map(function(name) {
+          return h('button', { key: name, type: 'button', 'data-entry-dynamics-tab': name, 'aria-pressed': view === name,
+            style: Object.assign({}, buttonStyle, view === name ? { background: '#155e75', borderColor: '#67e8f9' } : {}), onClick: function(ev) { emit('view', name, ev); } }, name === 'forces' ? 'Forces' : 'Mechanical energy');
+        })),
+        view === 'forces' && h('div', { 'data-entry-dynamics-view-panel': 'forces' },
+          h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', gap: '14px', minWidth: 0 } },
+            h('figure', { style: { margin: 0, minWidth: 0 } },
+              h('figcaption', { style: Object.assign({}, textStyle, { fontWeight: 700, color: '#f8fafc' }) }, 'Acceleration in the trajectory plane'),
+              h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65 } }, h('span', null, '↑ Local up'), h('span', null, 'Local horizontal →')),
+              h('svg', { 'data-entry-dynamics-diagram': 'forces', 'data-acceleration-scale': geometry.base.accelerationScale, 'data-acceleration-max': geometry.base.maxAcceleration, viewBox: '0 0 600 360', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': 'Drag, in-plane lift, gravity and their net acceleration, plotted on equal local horizontal and up scales. The gray velocity cue has a separate direction-only scale.', style: { display: 'block', width: '100%', height: 'auto', maxHeight: '360px', background: '#0b1425', borderRadius: '8px' } },
+                h('line', { x1: 48, y1: 180, x2: 552, y2: 180, stroke: '#334155', vectorEffect: 'non-scaling-stroke' }),
+                h('line', { x1: 300, y1: 24, x2: 300, y2: 336, stroke: '#334155', vectorEffect: 'non-scaling-stroke' }),
+                h('circle', { cx: 300, cy: 180, r: geometry.base.accelerationScale * geometry.base.maxAcceleration, fill: 'none', stroke: '#334155', strokeDasharray: '3 5', vectorEffect: 'non-scaling-stroke' }),
+                h('circle', { 'data-entry-dynamics-origin': true, cx: 300, cy: 180, r: 3, fill: '#f8fafc', stroke: '#0f172a', strokeWidth: 2, vectorEffect: 'non-scaling-stroke' }),
+                arrow('velocity', geometry.velocity, '#94a3b8', { 'data-entry-dynamics-vector': undefined, 'data-entry-dynamics-velocity': true }),
+                ['gravity', 'lift', 'drag', 'netPlane'].map(function(key) { return arrow(key, geometry.vectors[key], colors[key]); })),
+              h('p', { 'data-entry-dynamics-force-scale': true, style: textStyle }, 'Dashed circle: ' + geometry.base.maxAcceleration.toFixed(1) + ' m/s². All four acceleration arrows use one scale for the complete source flight. Gray arrow: velocity direction only. The dot marks the vehicle position; its size is enlarged.'),
+              h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '8px', margin: 0, fontSize: '12px' } },
+                reading('drag', 'Orange · drag', colors.drag), reading('lift', 'Cyan · in-plane lift', colors.lift), reading('gravity', 'Purple · gravity', colors.gravity), reading('netPlane', 'Dashed white · net in plane', colors.netPlane))),
+            h('div', { style: { minWidth: 0 } },
+              h('figure', { style: { margin: 0, minWidth: 0 } },
+                h('figcaption', { style: Object.assign({}, textStyle, { color: '#f8fafc', fontWeight: 700 }) }, profile.source.modelVersion === 2 ? 'Lift projection · looking along velocity' : 'Earlier signed in-plane lift'),
+                h('svg', { 'data-entry-dynamics-diagram': 'bank', 'data-bank': profile.source.modelVersion === 2 && Number.isFinite(sample.bank) ? sample.bank : '', 'data-plane': sample.liftPlane, 'data-lateral': sample.liftLateral, 'data-full-lift': sample.liftMagnitude, 'data-lift-scale': geometry.base.bankScale,
+                  viewBox: '0 0 300 220', preserveAspectRatio: 'xMidYMid meet', role: 'img', 'aria-label': profile.source.modelVersion === 2 ? 'Full lift projected onto the trajectory-plane normal and an illustrative lateral direction. The lateral magnitude is not an integrated crossrange trajectory.' : 'Earlier model signed in-plane lift; no bank angle or lateral flight is reconstructed.', style: { display: 'block', width: '100%', height: 'auto', maxHeight: '240px', background: '#0b1425', borderRadius: '8px' } },
+                  h('line', { x1: 30, y1: 110, x2: 270, y2: 110, stroke: '#334155', vectorEffect: 'non-scaling-stroke' }), h('line', { x1: 150, y1: 15, x2: 150, y2: 205, stroke: '#334155', vectorEffect: 'non-scaling-stroke' }),
+                  h('circle', { cx: 150, cy: 110, r: 82, fill: 'none', stroke: '#334155', strokeDasharray: '3 5', vectorEffect: 'non-scaling-stroke' }),
+                  h('line', { 'data-entry-dynamics-bank-projection': 'plane', x1: 150, y1: 110, x2: 150, y2: geometry.bank.endY, stroke: '#67e8f9', strokeWidth: 2, strokeDasharray: '4 3', vectorEffect: 'non-scaling-stroke' }),
+                  h('line', { 'data-entry-dynamics-bank-projection': 'lateral', x1: 150, y1: 110, x2: geometry.bank.endX, y2: 110, stroke: '#fda4af', strokeWidth: 2, strokeDasharray: '4 3', vectorEffect: 'non-scaling-stroke' }),
+                  arrow('fullLift', geometry.bank, '#f8fafc'), h('circle', { cx: 150, cy: 110, r: 5, fill: '#f8fafc' })),
+                h('p', { style: textStyle }, '↑ Positive in-plane normal · → lateral magnitude on an illustrative side. Crossrange motion is omitted. Inset uses its own full-history lift scale: ' + geometry.base.maxLiftAcceleration.toFixed(1) + ' m/s² at the radius.'),
+                h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: '8px', fontSize: '12px', margin: 0 } },
+                  reading('bank', profile.source.modelVersion === 2 ? 'Bank angle' : 'Source lift law'), reading('fullLift', 'Full lift magnitude'), reading('liftPlane', 'Signed plane projection', '#67e8f9'), reading('liftLateral', 'Lateral magnitude', '#fda4af'))),
+              h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '8px', margin: '14px 0 0', fontSize: '12px' } }, reading('aeroLoadG', 'Instant aerodynamic load'), reading('reportedLoadG', 'Source recorder load')),
+              h('p', { 'data-entry-dynamics-load-note': true, style: textStyle }, 'Aerodynamic load combines drag and full lift, including the omitted lateral projection. Gravity is excluded from sensed load. The original recorder value is retained; earlier-model or interpolated values can differ slightly. Net acceleration here includes gravity and the in-plane projection.'))),
+          h('p', { style: textStyle }, 'Drag opposes velocity. Lift is perpendicular to velocity and does no mechanical work in this model. The plane projection can point upward or downward as bank changes. These arrows show forces derived from the source trajectory.')),
+        view === 'energy' && h('div', { 'data-entry-dynamics-view-panel': 'energy' },
+          h('figure', { style: { margin: 0, padding: '8px', background: '#0b1425', borderRadius: '8px', minWidth: 0 } },
+            h('figcaption', { style: Object.assign({}, textStyle, { fontWeight: 700, color: '#f8fafc' }) }, 'Mechanical energy per kilogram · shared entry time'),
+            h('div', { 'data-entry-dynamics-energy-axis': true, style: { display: 'grid', gridTemplateColumns: 'auto minmax(0,1fr)', gap: '8px', minWidth: 0 } },
+              h('div', { style: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', fontSize: '12px', color: '#cbd5e1', padding: '8px 0', fontVariantNumeric: 'tabular-nums' } }, h('span', null, (geometry.base.chart.max / 1e6).toFixed(0)), h('span', null, ((geometry.base.chart.max + geometry.base.chart.min) / 2e6).toFixed(0)), h('span', null, (geometry.base.chart.min / 1e6).toFixed(0))),
+              h('svg', { 'data-entry-dynamics-diagram': 'energy', 'data-energy-max': geometry.base.chart.max, 'data-energy-min': geometry.base.chart.min, viewBox: '0 0 600 180', preserveAspectRatio: 'none', role: 'img', 'aria-label': 'Kinetic energy, Earth-surface-relative gravitational potential and cumulative drag work, in megajoules per kilogram. Dashed white is the initial energy. The inspection cursor uses entry playback time.', style: { display: 'block', width: '100%', height: '180px', minWidth: 0 } },
+                [0, 0.5, 1].map(function(fraction) { var y = geometry.base.chart.bottom - (geometry.base.chart.bottom - geometry.base.chart.top) * fraction; return h('line', { key: fraction, x1: 10, y1: y, x2: 590, y2: y, stroke: '#334155', vectorEffect: 'non-scaling-stroke' }); }),
+                h('line', { x1: 10, y1: geometry.base.chart.initialY, x2: 590, y2: geometry.base.chart.initialY, stroke: '#f8fafc', strokeDasharray: '5 4', vectorEffect: 'non-scaling-stroke' }),
+                ['kinetic', 'potential', 'dragWork'].map(function(key) { return h('polyline', { key: key, 'data-entry-dynamics-trace': key, points: mmEntryDynamicsPolyline(geometry.base.chart.histories[key]), fill: 'none', stroke: colors[key], strokeWidth: 2, vectorEffect: 'non-scaling-stroke' }); }),
+                h('line', { 'data-entry-dynamics-playhead': true, x1: geometry.cursorX, x2: geometry.cursorX, y1: 10, y2: 170, stroke: '#f8fafc', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke' }),
+                ['kinetic', 'potential', 'dragWork'].map(function(key) { return h('circle', { key: key, 'data-entry-dynamics-energy-marker': key, cx: geometry.markers[key].x, cy: geometry.markers[key].y, r: 3, fill: colors[key], stroke: colors[key], strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }); }))),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'space-between', gap: '4px 8px', fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65 } }, h('span', null, 'MJ/kg · 0 s'), h('span', null, geometry.base.chart.duration.toFixed(1) + ' s')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '4px 12px', fontSize: '12px', lineHeight: 1.65, marginTop: '6px' } }, h('span', { style: { color: colors.kinetic } }, 'Cyan · kinetic'), h('span', { style: { color: colors.potential } }, 'Purple · potential'), h('span', { style: { color: colors.dragWork } }, 'Orange · cumulative drag work'), h('span', null, 'Dashed white · initial'))),
+          h('dl', { 'data-entry-dynamics-energy-ledger': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(120px,1fr))', gap: '8px', fontSize: '12px', margin: '12px 0' } },
+            reading('kinetic', 'Kinetic energy', colors.kinetic), reading('potential', 'Potential above Earth surface', colors.potential), reading('dragWork', 'Cumulative drag work', colors.dragWork), reading('initial', 'Initial mechanical energy'), reading('remaining', 'Mechanical energy remaining'), reading('residual', 'Signed numerical residual'), reading('dragPower', 'Instant drag power per kg'), reading('totalDragWork', 'Total drag work')),
+          h('p', { 'data-entry-dynamics-energy-note': true, style: textStyle }, 'Initial energy = kinetic + Earth-surface-relative potential + cumulative drag work + residual. The residual measures source integration and interpolation error, rather than an added physical energy term. Gravity exchanges kinetic and potential energy. Lift does no work. Drag work is mechanical energy removed from the vehicle; it is not the vehicle’s absorbed heat. Heat flux and heat load are per unit area in the entry recorder and thermal lab.')),
+        h('p', { 'data-entry-dynamics-value': 'endpoint', 'data-entry-dynamics-endpoint-note': true, style: textStyle }, values.endpoint)));
+  }
+  function mmUpdateEntryDynamics(host, entryProfile, entrySample, controls) {
+    if (!host) return;
+    var lab = host.matches && host.matches('[data-entry-dynamics]') ? host : host.querySelector('[data-entry-dynamics]');
+    if (!lab || !controls || controls.open !== true || !lab.querySelector('[data-entry-dynamics-panel]')) return;
+    var profile = mmEntryDynamicsProfile(entryProfile), geometry = mmEntryDynamicsGeometry(profile, entrySample.time, 600, 360), sample = geometry.sample, values = mmEntryDynamicsValueTexts(profile, sample);
+    lab.querySelectorAll('[data-entry-dynamics-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-entry-dynamics-value')] || ''; });
+    lab.dataset.entryDynamicsTime = String(sample.time); lab.dataset.entryDynamicsPhase = sample.phase; lab.dataset.entryDynamicsEndpoint = sample.endpointNote || '';
+    function updateArrow(node, vector) {
+      if (!node) return;
+      node.dataset.x = String(vector.x); node.dataset.y = String(vector.y); node.dataset.magnitude = String(vector.magnitude);
+      if (vector.forceMagnitude !== null) node.dataset.forceMagnitude = String(vector.forceMagnitude);
+      node.setAttribute('visibility', vector.visible ? 'visible' : 'hidden');
+      var line = node.querySelector('line'), head = node.querySelector('polygon');
+      if (line) { line.setAttribute('x1', vector.startX); line.setAttribute('y1', vector.startY); line.setAttribute('x2', vector.endX); line.setAttribute('y2', vector.endY); }
+      if (head) head.setAttribute('points', vector.head);
+    }
+    ['drag', 'lift', 'gravity', 'netPlane'].forEach(function(key) { updateArrow(lab.querySelector('[data-entry-dynamics-vector="' + key + '"]'), geometry.vectors[key]); });
+    updateArrow(lab.querySelector('[data-entry-dynamics-velocity]'), geometry.velocity); updateArrow(lab.querySelector('[data-entry-dynamics-vector="fullLift"]'), geometry.bank);
+    var bank = lab.querySelector('[data-entry-dynamics-diagram="bank"]');
+    if (bank) { bank.dataset.bank = profile.source.modelVersion === 2 && Number.isFinite(sample.bank) ? String(sample.bank) : ''; bank.dataset.plane = String(sample.liftPlane); bank.dataset.lateral = String(sample.liftLateral); bank.dataset.fullLift = String(sample.liftMagnitude); }
+    var plane = lab.querySelector('[data-entry-dynamics-bank-projection="plane"]'), lateral = lab.querySelector('[data-entry-dynamics-bank-projection="lateral"]');
+    if (plane) plane.setAttribute('y2', geometry.bank.endY); if (lateral) lateral.setAttribute('x2', geometry.bank.endX);
+    var cursor = lab.querySelector('[data-entry-dynamics-playhead]'); if (cursor) { cursor.setAttribute('x1', geometry.cursorX); cursor.setAttribute('x2', geometry.cursorX); }
+    ['kinetic', 'potential', 'dragWork'].forEach(function(key) { var marker = lab.querySelector('[data-entry-dynamics-energy-marker="' + key + '"]'); if (marker) { marker.setAttribute('cx', geometry.markers[key].x); marker.setAttribute('cy', geometry.markers[key].y); } });
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    entryDynamicsGeometry: mmEntryDynamicsGeometry, entryDynamicsView: mmEntryDynamicsView, updateEntryDynamics: mmUpdateEntryDynamics
+  }); } catch (e) {}
+
+
+  function mmEntryDynamicsControls(raw) {
+    var state = mmCleanEntryDynamicsState(raw);
+    return { open: state.entryDynamicsOpen, view: state.entryDynamicsView };
+  }
+  function mmEntryDynamicsControlChange(controls, action, value) {
+    var next = Object.assign({}, controls);
+    if (action === 'open') next.open = value === true;
+    else if (action === 'view') next.view = value === 'energy' ? 'energy' : 'forces';
+    return next;
+  }
+  function mmEntryDynamicsPersist(controls, update) {
+    update('entryDynamicsOpen', controls.open); update('entryDynamicsView', controls.view);
+  }
+  function mmEntryDynamicsAction(ev, action, value, raw, update) {
+    var host = ev && ev.currentTarget && ev.currentTarget.closest('[data-entry-workspace]');
+    var canvas = host && host.querySelector('[data-entry-canvas]');
+    if (canvas && canvas._entryDynamicsAction) { canvas._entryDynamicsAction(action, value); return; }
+    mmEntryDynamicsPersist(mmEntryDynamicsControlChange(mmEntryDynamicsControls(raw), action, value), update);
+  }
+
+  // A hypothetical, constant-property slab driven by the existing entry heat load.
+  // Boundary-centered finite volumes have half-width capacities at both faces.
+  // Backward Euler conduction and the nonlinear front-face radiation balance are
+  // solved together. The rear face is insulated; no ablation, pyrolysis, incoming
+  // radiation, hot-wall correction or structural/cabin temperature is modeled.
+  var MM_ENTRY_THERMAL = Object.freeze({ version: 1, density: 500, cp: 1500,
+    initialTemperature: 293.15, environmentTemperature: 293.15,
+    sigma: 5.670374419e-8, intervals: 32, step: 0.5, cooldown: 300 });
+  function mmEntryThermalPlan(raw) {
+    raw = mmIsObj(raw) && (raw.version == null || raw.version === 1) ? raw : {};
+    var bounded = function(value, fallback, minimum, maximum, scale) {
+      return Math.round((mmNum(value) ? Math.max(minimum, Math.min(maximum, value)) : fallback) * scale) / scale;
+    };
+    return Object.freeze({ version: 1,
+      thickness: bounded(raw.thickness, 0.05, 0.01, 0.10, 1000),
+      conductivity: bounded(raw.conductivity, 0.12, 0.04, 1.2, 100),
+      emissivity: bounded(raw.emissivity, 0.85, 0, 1, 100) });
+  }
+  function mmEntryThermalRadiation(temperature, plan) {
+    var environment = MM_ENTRY_THERMAL.environmentTemperature;
+    // Factored fourth-power difference avoids cancellation near the environment.
+    return plan.emissivity * MM_ENTRY_THERMAL.sigma * (temperature - environment) *
+      (temperature + environment) * (temperature * temperature + environment * environment);
+  }
+  function mmEntryThermalStored(temperatures, plan) {
+    var intervals = temperatures.length - 1, capacity = MM_ENTRY_THERMAL.density * MM_ENTRY_THERMAL.cp * plan.thickness / intervals;
+    var stored = 0;
+    for (var index = 0; index <= intervals; index++) {
+      stored += capacity * (index === 0 || index === intervals ? 0.5 : 1) *
+        (temperatures[index] - MM_ENTRY_THERMAL.initialTemperature);
+    }
+    return stored;
+  }
+  function mmEntryThermalMatrix(plan, intervals, dt) {
+    var dx = plan.thickness / intervals, capacity = MM_ENTRY_THERMAL.density * MM_ENTRY_THERMAL.cp * dx;
+    var conductance = plan.conductivity / dx, diagonal = [], upper = [], capacities = [];
+    for (var index = 0; index <= intervals; index++) {
+      capacities[index] = capacity * (index === 0 || index === intervals ? 0.5 : 1);
+      var rawDiagonal = capacities[index] / dt + conductance * (index === 0 || index === intervals ? 1 : 2);
+      diagonal[index] = rawDiagonal - (index ? -conductance * upper[index - 1] : 0);
+      upper[index] = index < intervals ? -conductance / diagonal[index] : 0;
+    }
+    var matrix = { intervals: intervals, dt: dt, conductance: conductance,
+      diagonal: diagonal, upper: upper, capacities: capacities };
+    var unit = Array(intervals + 1).fill(0); unit[0] = 1;
+    matrix.response = mmEntryThermalLinearSolve(matrix, unit);
+    return matrix;
+  }
+  function mmEntryThermalLinearSolve(matrix, rhs) {
+    var result = [], index;
+    for (index = 0; index <= matrix.intervals; index++) {
+      result[index] = (rhs[index] + (index ? matrix.conductance * result[index - 1] : 0)) / matrix.diagonal[index];
+    }
+    for (index = matrix.intervals - 1; index >= 0; index--) result[index] -= matrix.upper[index] * result[index + 1];
+    return result;
+  }
+  function mmEntryThermalAdvance(temperatures, inputMean, plan, matrix) {
+    var rhs = temperatures.map(function(temperature, index) { return matrix.capacities[index] * temperature / matrix.dt; });
+    rhs[0] += inputMean;
+    var unconstrained = mmEntryThermalLinearSolve(matrix, rhs), response = matrix.response;
+    var surface = unconstrained[0];
+    if (plan.emissivity > 0) {
+      // This residual is strictly increasing for nonnegative Kelvin temperatures.
+      // No diffusion/radiation stability restriction or temperature clipping is used.
+      var lo = 0, hi = Math.max(surface, MM_ENTRY_THERMAL.environmentTemperature);
+      for (var iteration = 0; iteration < 64; iteration++) {
+        var middle = (lo + hi) / 2;
+        if (middle + response[0] * mmEntryThermalRadiation(middle, plan) < unconstrained[0]) lo = middle;
+        else hi = middle;
+      }
+      surface = (lo + hi) / 2;
+    }
+    var radiation = mmEntryThermalRadiation(surface, plan);
+    return { temperatures: unconstrained.map(function(temperature, index) { return temperature - response[index] * radiation; }),
+      radiation: radiation };
+  }
+  var _mmEntryThermalProfiles = [], _mmEntryThermalSources = typeof WeakMap === 'function' ? new WeakMap() : null;
+  function mmEntryThermalProfile(entryProfile, rawPlan, options) {
+    if (!mmIsObj(entryProfile) || [1, 2].indexOf(entryProfile.version) < 0 || !mmNum(entryProfile.angle) ||
+        !entryProfile.summary || !mmNum(entryProfile.summary.duration) || entryProfile.summary.duration <= 0 ||
+        entryProfile.summary.duration > MM_ENTRY.maxTime || !Array.isArray(entryProfile.samples) || entryProfile.samples.length < 2) return null;
+    var sourcePlan = entryProfile.version === 2 ? mmStrictEntryPlan(entryProfile.plan) : null;
+    if (entryProfile.version === 2 && !sourcePlan) return null;
+    var plan = mmEntryThermalPlan(rawPlan), customStep = options && mmNum(options.step), customIntervals = options && mmNum(options.intervals);
+    var step = customStep ? Math.max(0.1, Math.min(2, options.step)) : MM_ENTRY_THERMAL.step;
+    var intervals = customIntervals ? Math.round(Math.max(16, Math.min(96, options.intervals))) : MM_ENTRY_THERMAL.intervals;
+    var cached = !customStep && !customIntervals;
+    if (cached) for (var cacheIndex = 0; cacheIndex < _mmEntryThermalProfiles.length; cacheIndex++) {
+      var candidate = _mmEntryThermalProfiles[cacheIndex];
+      if (candidate.entry === entryProfile && candidate.profile.plan.thickness === plan.thickness &&
+          candidate.profile.plan.conductivity === plan.conductivity && candidate.profile.plan.emissivity === plan.emissivity) return candidate.profile;
+    }
+    var entryDuration = entryProfile.summary.duration, duration = entryDuration + MM_ENTRY_THERMAL.cooldown;
+    var source = { modelVersion: entryProfile.version, angle: entryProfile.angle };
+    if (sourcePlan) source.plan = Object.freeze(sourcePlan);
+    Object.freeze(source);
+    var temperatures = Array(intervals + 1).fill(MM_ENTRY_THERMAL.initialTemperature);
+    var time = 0, heatIn = 0, heatRadiated = 0, initial = mmEntrySample(entryProfile, 0);
+    if (!mmNum(initial.heatLoad) || initial.heatLoad < 0 || !mmNum(initial.heatFlux) || initial.heatFlux < 0) return null;
+    var previousLoad = initial.heatLoad, matrix = mmEntryThermalMatrix(plan, intervals, step), samples = [];
+    var peakSurfaceT = temperatures[0], peakBackT = temperatures[intervals], peakSurfaceTime = 0, peakBackTime = 0, maximumResidual = 0;
+    function record(inputFlux) {
+      var stored = mmEntryThermalStored(temperatures, plan), residual = heatIn - heatRadiated - stored;
+      var row = Object.freeze({ time: time, temperatures: Object.freeze(temperatures.slice()),
+        surfaceT: temperatures[0], backT: temperatures[intervals], heatIn: heatIn, heatRadiated: heatRadiated,
+        storedEnergy: stored, energyResidual: residual, fluxIn: inputFlux,
+        fluxRadiated: mmEntryThermalRadiation(temperatures[0], plan),
+        fluxConducted: matrix.conductance * (temperatures[0] - temperatures[1]),
+        phase: time < entryDuration ? 'entry' : 'cooling' });
+      if (row.surfaceT > peakSurfaceT) { peakSurfaceT = row.surfaceT; peakSurfaceTime = time; }
+      if (row.backT > peakBackT) { peakBackT = row.backT; peakBackTime = time; }
+      maximumResidual = Math.max(maximumResidual, Math.abs(residual));
+      samples.push(row);
+    }
+    record(initial.heatFlux);
+    while (time < duration) {
+      var boundary = time < entryDuration ? entryDuration : duration;
+      var nextTime = Math.min(boundary, time + step), dt = nextTime - time;
+      if (!(dt > 0)) return null;
+      var incident = nextTime <= entryDuration ? mmEntrySample(entryProfile, nextTime) : null;
+      var nextLoad = incident ? incident.heatLoad : previousLoad;
+      if (!mmNum(nextLoad) || nextLoad < previousLoad || nextLoad > 1e12 ||
+          incident && (!mmNum(incident.heatFlux) || incident.heatFlux < 0)) return null;
+      var inputEnergy = nextLoad - previousLoad;
+      // Split the terminal boundary exactly. The additional 300 seconds prescribe
+      // zero heat input and do not predict later flight, water cooling or recovery.
+      var currentMatrix = dt === step ? matrix : mmEntryThermalMatrix(plan, intervals, dt);
+      var advanced = mmEntryThermalAdvance(temperatures, inputEnergy / dt, plan, currentMatrix);
+      temperatures = advanced.temperatures;
+      heatIn += inputEnergy; heatRadiated += advanced.radiation * dt;
+      previousLoad = nextLoad; time = nextTime;
+      record(time < entryDuration && incident ? incident.heatFlux : 0);
+    }
+    var last = samples[samples.length - 1];
+    var profile = Object.freeze({ version: 1, source: source, plan: plan, samples: Object.freeze(samples),
+      summary: Object.freeze({ peakSurfaceT: peakSurfaceT, peakSurfaceTime: peakSurfaceTime,
+        peakBackT: peakBackT, peakBackTime: peakBackTime, duration: duration, entryDuration: entryDuration,
+        heatIn: heatIn, heatRadiated: heatRadiated, storedEnergy: last.storedEnergy, maxEnergyResidual: maximumResidual }) });
+    if (_mmEntryThermalSources) _mmEntryThermalSources.set(profile, entryProfile);
+    if (cached) { _mmEntryThermalProfiles.push({ entry: entryProfile, profile: profile }); if (_mmEntryThermalProfiles.length > 8) _mmEntryThermalProfiles.shift(); }
+    return profile;
+  }
+  function mmEntryThermalSample(profile, seconds) {
+    if (!profile || !Array.isArray(profile.samples) || !profile.samples.length) return null;
+    var samples = profile.samples, time = Math.max(0, Math.min(profile.summary.duration, mmNum(seconds) ? seconds : 0));
+    var lo = 0, hi = samples.length - 1;
+    while (hi - lo > 1) { var middle = (lo + hi) >> 1; if (samples[middle].time <= time) lo = middle; else hi = middle; }
+    var a = time <= samples[0].time ? samples[0] : samples[lo], b = samples[hi];
+    var fraction = (time - a.time) / Math.max(1e-12, b.time - a.time);
+    if (time >= samples[hi].time) { a = b; fraction = 0; }
+    var temperatures = a.temperatures.map(function(temperature, index) { return temperature + (b.temperatures[index] - temperature) * fraction; });
+    var heatIn = a.heatIn + (b.heatIn - a.heatIn) * fraction, heatRadiated = a.heatRadiated + (b.heatRadiated - a.heatRadiated) * fraction;
+    var stored = mmEntryThermalStored(temperatures, profile.plan), intervals = temperatures.length - 1;
+    var source = _mmEntryThermalSources && _mmEntryThermalSources.get(profile);
+    var inputFlux = time < profile.summary.entryDuration ? source ? mmEntrySample(source, time).heatFlux : a.fluxIn + (b.fluxIn - a.fluxIn) * fraction : 0;
+    return { time: time, temperatures: temperatures, surfaceT: temperatures[0], backT: temperatures[intervals],
+      heatIn: heatIn, heatRadiated: heatRadiated, storedEnergy: stored, energyResidual: heatIn - heatRadiated - stored,
+      // Budgets/temperatures interpolate between solver records. Readout fluxes
+      // use the current prescribed input and the interpolated thermal state.
+      fluxIn: inputFlux,
+      fluxRadiated: mmEntryThermalRadiation(temperatures[0], profile.plan),
+      fluxConducted: profile.plan.conductivity / (profile.plan.thickness / intervals) * (temperatures[0] - temperatures[1]),
+      phase: time < profile.summary.entryDuration ? 'entry' : 'cooling' };
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    thermalConstants: MM_ENTRY_THERMAL, entryThermalPlan: mmEntryThermalPlan,
+    entryThermalProfile: mmEntryThermalProfile, entryThermalSample: mmEntryThermalSample
+  }); } catch (e) {}
+
+  function mmCleanEntryThermalState(raw) {
+    raw = mmIsObj(raw) ? raw : {};
+    var savedPlan = mmIsObj(raw.entryThermalPlan) && (raw.entryThermalPlan.version == null || raw.entryThermalPlan.version === 1) ? raw.entryThermalPlan : {};
+    var parameters = {};
+    ['thickness', 'conductivity', 'emissivity'].forEach(function(key) { if (mmNum(savedPlan[key])) parameters[key] = savedPlan[key]; });
+    return {
+      entryThermalPlan: mmEntryThermalPlan(parameters),
+      entryThermalOpen: raw.entryThermalOpen === true,
+      entryThermalFollow: raw.entryThermalFollow === false ? false : true,
+      entryThermalTime: mmNum(raw.entryThermalTime) ? Math.max(0, Math.min(2700, raw.entryThermalTime)) : 0,
+      entryThermalIncludeReport: raw.entryThermalIncludeReport === true
+    };
+  }
+  function mmThermalEntryProfileFromSource(raw) {
+    if (!mmIsObj(raw) || (raw.modelVersion !== 1 && raw.modelVersion !== 2) || !mmNum(raw.angle) || raw.angle < -12 || raw.angle > -1) return null;
+    var plan = raw.modelVersion === 2 ? mmStrictEntryPlan(raw.plan) : null;
+    if (raw.modelVersion === 2 && !plan || raw.modelVersion === 1 && raw.plan != null) return null;
+    var profile = raw.modelVersion === 2 ? mmEntryProfile(raw.angle, { plan: plan }) : mmEntryProfile(raw.angle);
+    return profile.version === raw.modelVersion && profile.angle === raw.angle ? profile : null;
+  }
+  // A run keeps its own lift plan. Parameter experiments never replace that plan,
+  // its receipt, the entry playback clock or the mission's completion flags.
+  function mmEntryThermalSource(raw) {
+    raw = mmIsObj(raw) ? raw : {};
+    var phase = mmNum(raw.missionPhase) ? raw.missionPhase : 0;
+    if (phase >= 9) {
+      var run = mmCleanEntryState(raw).entryRun;
+      if (run) return mmEntryProfileForRun(run, run.angle, run.plan);
+      var outcome = mmCleanEntryOutcome(raw.entryOutcome);
+      if (outcome && outcome.modelVersion) {
+        var receiptRun = { version: outcome.modelVersion, angle: outcome.angle, time: outcome.duration, recovery: 0, recorded: true };
+        if (outcome.modelVersion === 2) receiptRun.plan = outcome.plan;
+        if (mmEntryReceiptMatches(outcome, receiptRun)) return mmEntryProfileForRun(receiptRun, outcome.angle, outcome.plan);
+      }
+    }
+    return mmEntryProfile(mmReturnAngle(raw.entryAngle), { plan: mmEntryPlan(raw.entryPlan) });
+  }
+  function mmStrictEntryThermalPlan(raw) {
+    if (!mmIsObj(raw) || raw.version !== 1 || !mmNum(raw.thickness) || raw.thickness < 0.01 || raw.thickness > 0.10 ||
+        raw.thickness !== Math.round(raw.thickness * 1000) / 1000 ||
+        !mmNum(raw.conductivity) || raw.conductivity < 0.04 || raw.conductivity > 1.2 ||
+        raw.conductivity !== Math.round(raw.conductivity * 100) / 100 ||
+        !mmNum(raw.emissivity) || raw.emissivity < 0 || raw.emissivity > 1 || raw.emissivity !== Math.round(raw.emissivity * 100) / 100) return null;
+    return { version: 1, thickness: raw.thickness, conductivity: raw.conductivity, emissivity: raw.emissivity };
+  }
+  function mmEntryThermalSnapshot(source, rawPlan, seconds) {
+    if (!source || (source.version !== 1 && source.version !== 2)) return null;
+    var descriptor = { modelVersion: source.version, angle: source.angle };
+    if (source.version === 2) descriptor.plan = source.plan;
+    var canonicalSource = mmThermalEntryProfileFromSource(descriptor);
+    if (!canonicalSource) return null;
+    var profile = mmEntryThermalProfile(canonicalSource, mmEntryThermalPlan(rawPlan));
+    var time = Math.max(0, Math.min(profile.summary.duration, mmNum(seconds) ? seconds : 0));
+    var sample = mmEntryThermalSample(profile, time), compactSource = { modelVersion: profile.source.modelVersion, angle: profile.source.angle };
+    if (profile.source.modelVersion === 2) compactSource.plan = { version: 2, mode: profile.source.plan.mode, bank: profile.source.plan.bank };
+    var summary = {};
+    ['peakSurfaceT', 'peakSurfaceTime', 'peakBackT', 'peakBackTime', 'duration', 'entryDuration',
+      'heatIn', 'heatRadiated', 'storedEnergy', 'maxEnergyResidual'].forEach(function(key) { summary[key] = profile.summary[key]; });
+    return { version: 1, source: compactSource,
+      plan: { version: 1, thickness: profile.plan.thickness, conductivity: profile.plan.conductivity, emissivity: profile.plan.emissivity },
+      time: time, at: { surfaceT: sample.surfaceT, backT: sample.backT }, summary: summary };
+  }
+  // Recalculate archived previews from their own inputs. Derived temperatures and
+  // energies in an imported save are never used as thermal measurements.
+  function mmCleanEntryThermalSnapshot(raw) {
+    if (!mmIsObj(raw) || raw.version !== 1 || !mmNum(raw.time) || raw.time < 0 || raw.time > 2700) return null;
+    var plan = mmStrictEntryThermalPlan(raw.plan);
+    if (!plan) return null;
+    var source = mmThermalEntryProfileFromSource(raw.source);
+    return source ? mmEntryThermalSnapshot(source, plan, raw.time) : null;
+  }
+  function mmEntryThermalPreview(raw) {
+    raw = mmIsObj(raw) ? raw : {};
+    var state = mmCleanEntryThermalState(raw);
+    if (!state.entryThermalIncludeReport) return null;
+    var run = mmCleanEntryState(raw).entryRun;
+    var time = state.entryThermalFollow ? run ? run.time : 0 : state.entryThermalTime;
+    return mmEntryThermalSnapshot(mmEntryThermalSource(raw), state.entryThermalPlan, time);
+  }
+  function mmEntryThermalReport(raw) {
+    var preview = mmCleanEntryThermalSnapshot(raw);
+    if (!preview) return '';
+    var source = preview.source, plan = preview.plan, sum = preview.summary;
+    var lift = source.modelVersion === 2 ? mmEntryPlanLabel(source.plan) : 'earlier guided-lift model';
+    return 'Independent thermal experiment (calculated preview): entry model v' + source.modelVersion + ', ' + source.angle.toFixed(2) + '\u00b0, ' + lift + '.\n' +
+      'Parameters: thickness ' + (plan.thickness * 1000).toFixed(1) + ' mm; conductivity ' + plan.conductivity.toFixed(2) + ' W/(m\u00b7K); emissivity ' + plan.emissivity.toFixed(2) +
+      '; fixed density 500 kg/m\u00b3; specific heat 1500 J/(kg\u00b7K); initial temperature 293.15 K; environment temperature 293.15 K.\n' +
+      'At ' + preview.time.toFixed(1) + ' s: surface ' + preview.at.surfaceT.toFixed(1) + ' K; back face ' + preview.at.backT.toFixed(1) + ' K. Peak surface ' +
+      sum.peakSurfaceT.toFixed(1) + ' K at ' + sum.peakSurfaceTime.toFixed(1) + ' s; peak back face ' + sum.peakBackT.toFixed(1) + ' K at ' + sum.peakBackTime.toFixed(1) + ' s. These peaks are maxima within the simulated window; later back-face warming is not ruled out.\n' +
+      'Energy per area over ' + sum.duration.toFixed(1) + ' s: incident ' + (sum.heatIn / 1e6).toFixed(3) + ' MJ/m\u00b2; reradiated ' + (sum.heatRadiated / 1e6).toFixed(3) +
+      ' MJ/m\u00b2; stored ' + (sum.storedEnergy / 1e6).toFixed(3) + ' MJ/m\u00b2; maximum energy residual ' + sum.maxEnergyResidual.toFixed(3) + ' J/m\u00b2.\n' +
+      'Assumptions: one-dimensional conduction in a slab with fixed properties, surface radiation and an insulated back face. Entry heat flux is the input; 300 s of zero-input cooling follows entry. Net radiation uses fixed 293.15 K surroundings; solar and planetary heating and changing environments are omitted. No ablation, pyrolysis, temperature-dependent properties, hot-wall feedback, cabin temperatures, ocean cooling or change to the entry trajectory is modeled. Skip-out trajectories stop at the upward interface; the separate cooldown does not continue orbital flight. These calculated temperatures do not predict Apollo heat-shield or crew survival.';
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    cleanEntryThermalState: mmCleanEntryThermalState, entryThermalSource: mmEntryThermalSource,
+    entryThermalSnapshot: mmEntryThermalSnapshot, cleanEntryThermalSnapshot: mmCleanEntryThermalSnapshot,
+    entryThermalPreview: mmEntryThermalPreview, entryThermalReport: mmEntryThermalReport
+  }); } catch (e) {}
+
+  // Optional material experiment. Its clock and parameters belong to the lab;
+  // entry trajectory, flight receipts, completion and rewards are unchanged.
+  var _mmEntryThermalVisualBases = [];
+  function mmEntryThermalTemperature(value) { return (value - 273.15).toFixed(1) + ' °C'; }
+  function mmEntryThermalFlow(key, value) {
+    var inward = value >= 0, direction = key === 'radiated' ? (inward ? 'left' : 'right') : (inward ? 'right' : 'left');
+    var label = key === 'incoming' ? (inward ? 'Gas → surface' : 'Surface → gas')
+      : key === 'radiated' ? (inward ? 'Surface → environment' : 'Environment → surface')
+      : inward ? 'Surface → interior' : 'Interior → surface';
+    return Object.freeze({ direction: direction, arrow: direction === 'right' ? '→' : '←', label: label,
+      value: value, text: (Math.abs(value) / 1000).toFixed(2) + ' kW/m²' });
+  }
+  function mmEntryThermalColor(temperature, minimum, maximum) {
+    var ratio = Math.max(0, Math.min(1, (temperature - minimum) / Math.max(1, maximum - minimum)));
+    var low = ratio < 0.55 ? [56, 189, 248] : [251, 146, 60], high = ratio < 0.55 ? [251, 146, 60] : [244, 63, 94];
+    var fraction = ratio < 0.55 ? ratio / 0.55 : (ratio - 0.55) / 0.45;
+    return 'rgb(' + low.map(function(value, index) { return Math.round(value + (high[index] - value) * fraction); }).join(',') + ')';
+  }
+  function mmEntryThermalVisualGeometry(profile, baseline, seconds, width, height) {
+    width = Number.isFinite(width) ? Math.max(160, width) : 600;
+    height = Number.isFinite(height) ? Math.max(100, height) : 140;
+    var base = null;
+    for (var cacheIndex = 0; cacheIndex < _mmEntryThermalVisualBases.length; cacheIndex++) {
+      var cached = _mmEntryThermalVisualBases[cacheIndex];
+      if (cached.profile === profile && cached.baseline === baseline && cached.width === width && cached.height === height) { base = cached.base; break; }
+    }
+    if (!base) {
+      var minimum = 293.15, maximum = minimum + 1;
+      [profile, baseline].forEach(function(series) { series.samples.forEach(function(row) {
+        row.temperatures.forEach(function(temperature) { minimum = Math.min(minimum, temperature); maximum = Math.max(maximum, temperature); });
+      }); });
+      maximum = Math.ceil((maximum - 273.15) / 100) * 100 + 273.15;
+      var duration = Math.max(profile.summary.duration, baseline.summary.duration), left = 12, right = width - 12, top = 8, bottom = height - 12;
+      function history(series, key) {
+        var selected = [], rows = series.samples, stride = Math.max(1, Math.ceil(rows.length / 240)), peak = rows[0];
+        for (var rowIndex = 0; rowIndex < rows.length; rowIndex++) {
+          if (rows[rowIndex][key] > peak[key]) peak = rows[rowIndex];
+          if (rowIndex % stride === 0 || rowIndex === rows.length - 1) selected.push(rows[rowIndex]);
+        }
+        selected.push(peak); selected.sort(function(a, b) { return a.time - b.time; });
+        return Object.freeze(selected.filter(function(row, index) { return !index || row.time !== selected[index - 1].time; }).map(function(row) {
+          return Object.freeze({ time: row.time, temperature: row[key],
+            x: left + (right - left) * row.time / duration,
+            y: bottom - (bottom - top) * (row[key] - minimum) / (maximum - minimum) });
+        }));
+      }
+      base = Object.freeze({ width: width, height: height, minK: minimum, maxK: maximum, duration: duration,
+        left: left, right: right, top: top, bottom: bottom,
+        entryDuration: Math.max(0, profile.summary.duration - 300),
+        surface: history(profile, 'surfaceT'), back: history(profile, 'backT'),
+        baselineSurface: history(baseline, 'surfaceT'), baselineBack: history(baseline, 'backT') });
+      _mmEntryThermalVisualBases.push({ profile: profile, baseline: baseline, width: width, height: height, base: base });
+      if (_mmEntryThermalVisualBases.length > 8) _mmEntryThermalVisualBases.shift();
+    }
+    var time = Math.max(0, Math.min(base.duration, Number.isFinite(seconds) ? seconds : 0));
+    var sample = mmEntryThermalSample(profile, time), reference = mmEntryThermalSample(baseline, time);
+    var cells = Object.freeze(sample.temperatures.map(function(temperature, index) {
+      return Object.freeze({ index: index, depth: profile.plan.thickness * index / Math.max(1, sample.temperatures.length - 1),
+        temperature: temperature, color: mmEntryThermalColor(temperature, base.minK, base.maxK) });
+    }));
+    return Object.freeze({ base: base, sample: sample, baseline: reference, cells: cells,
+      time: time, cursorX: base.left + (base.right - base.left) * time / base.duration,
+      surfaceY: base.bottom - (base.bottom - base.top) * (sample.surfaceT - base.minK) / (base.maxK - base.minK),
+      backY: base.bottom - (base.bottom - base.top) * (sample.backT - base.minK) / (base.maxK - base.minK),
+      incoming: mmEntryThermalFlow('incoming', sample.fluxIn),
+      radiated: mmEntryThermalFlow('radiated', sample.fluxRadiated),
+      conducted: mmEntryThermalFlow('conducted', sample.fluxConducted) });
+  }
+  function mmEntryThermalVisualSnapshot(entryProfile, entrySample, controls) {
+    controls = controls && typeof controls === 'object' ? controls : {};
+    var plan = mmEntryThermalPlan(controls.plan), profile = mmEntryThermalProfile(entryProfile, plan);
+    var baselinePlan = mmEntryThermalPlan({ thickness: 0.05, conductivity: 0.12, emissivity: 0.85 });
+    var baseline = mmEntryThermalProfile(entryProfile, baselinePlan), follow = controls.follow !== false;
+    var time = follow ? entrySample.time : Number.isFinite(controls.time) ? controls.time : 0;
+    time = Math.max(0, Math.min(profile.summary.duration, time));
+    return { plan: plan, profile: profile, baseline: baseline, follow: follow, time: time,
+      sample: mmEntryThermalSample(profile, time), reference: mmEntryThermalSample(baseline, time) };
+  }
+  function mmEntryThermalValueTexts(snapshot) {
+    var sample = snapshot.sample, plan = snapshot.plan, summary = snapshot.profile.summary, referenceSummary = snapshot.baseline.summary;
+    return { surface: mmEntryThermalTemperature(sample.surfaceT), back: mmEntryThermalTemperature(sample.backT),
+      time: snapshot.time.toFixed(1) + ' s', phase: sample.phase === 'cooling' ? 'Zero-input cooling experiment' : 'Entry heat input',
+      thickness: (plan.thickness * 1000).toFixed(0) + ' mm', conductivity: plan.conductivity.toFixed(2) + ' W/(m·K)', emissivity: plan.emissivity.toFixed(2),
+      heatIn: (sample.heatIn / 1e6).toFixed(2) + ' MJ/m²', heatRadiated: (sample.heatRadiated / 1e6).toFixed(2) + ' MJ/m²',
+      storedEnergy: (sample.storedEnergy / 1e6).toFixed(2) + ' MJ/m²', energyResidual: (sample.energyResidual / 1000).toFixed(3) + ' kJ/m²',
+      baselineSurface: mmEntryThermalTemperature(snapshot.reference.surfaceT), baselineBack: mmEntryThermalTemperature(snapshot.reference.backT),
+      peakSurface: mmEntryThermalTemperature(summary.peakSurfaceT), peakBack: mmEntryThermalTemperature(summary.peakBackT),
+      baselinePeakSurface: mmEntryThermalTemperature(referenceSummary.peakSurfaceT), baselinePeakBack: mmEntryThermalTemperature(referenceSummary.peakBackT) };
+  }
+  function mmEntryThermalHistoryPoints(rows) { return rows.map(function(row) { return row.x.toFixed(3) + ',' + row.y.toFixed(3); }).join(' '); }
+  function mmEntryThermalView(h, entryProfile, entrySample, controls, action) {
+    controls = controls && typeof controls === 'object' ? controls : {};
+    var snapshot = mmEntryThermalVisualSnapshot(entryProfile, entrySample, controls), values = mmEntryThermalValueTexts(snapshot), open = controls.open === true;
+    function emit(name, value, ev) { if (typeof action === 'function') action(name, value, ev); }
+    function value(name) { return h('span', { 'data-entry-thermal-value': name, style: { fontVariantNumeric: 'tabular-nums', fontWeight: 700 } }, values[name]); }
+    var buttonStyle = { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid #475569', background: '#1e293b', color: '#f8fafc', fontSize: '12px', fontWeight: 600 };
+    var geometry = open ? mmEntryThermalVisualGeometry(snapshot.profile, snapshot.baseline, snapshot.time, 600, 140) : null;
+    function slider(key, label, min, max, step, divisor) {
+      var selected = snapshot.plan[key] * divisor;
+      return h('label', { key: key, style: { display: 'block', color: '#e2e8f0', fontSize: '12px', lineHeight: 1.6 } },
+        h('span', null, label + ': ', value(key)),
+        h('input', { 'data-entry-thermal-parameter': key, type: 'range', min: min, max: max, step: step, value: selected,
+          'aria-label': label, 'aria-valuetext': values[key], style: { display: 'block', width: '100%', minHeight: '44px', accentColor: '#fb923c' },
+          onChange: function(ev) { var number = Number(ev.target.value); if (Number.isFinite(number)) { var next = Object.assign({}, snapshot.plan); next[key] = number / divisor; emit('plan', mmEntryThermalPlan(next), ev); } } }));
+    }
+    return h('section', { 'data-entry-thermal-lab': true,
+      'data-entry-thermal-time': snapshot.time, 'data-entry-thermal-following': snapshot.follow, 'data-entry-thermal-phase': snapshot.sample.phase,
+      'data-entry-thermal-surface': snapshot.sample.surfaceT, 'data-entry-thermal-back': snapshot.sample.backT,
+      'data-entry-thermal-flux-in': snapshot.sample.fluxIn, 'data-entry-thermal-flux-radiated': snapshot.sample.fluxRadiated, 'data-entry-thermal-flux-conducted': snapshot.sample.fluxConducted,
+      'data-entry-thermal-heat-in': snapshot.sample.heatIn, 'data-entry-thermal-heat-radiated': snapshot.sample.heatRadiated, 'data-entry-thermal-stored-energy': snapshot.sample.storedEnergy, 'data-entry-thermal-energy-residual': snapshot.sample.energyResidual, style: { marginTop: '14px', padding: '12px', border: '1px solid #475569', borderRadius: '10px', background: '#081321', minWidth: 0, color: '#e2e8f0' } },
+      h('button', { type: 'button', 'data-entry-thermal-toggle': true, 'aria-expanded': open, 'aria-controls': 'mm-entry-thermal-panel', style: Object.assign({}, buttonStyle, { display: 'block', width: '100%', textAlign: 'left' }), onClick: function(ev) { emit('open', !open, ev); } }, open ? 'Close heat-shield temperature lab' : 'Explore heat-shield temperatures'),
+      h('p', { style: { margin: '8px 0 0', fontSize: '12px', lineHeight: 1.65, color: '#cbd5e1' } }, 'Generic slab · exposed face ', value('surface'), ' · back face ', value('back'), ' · lab time ', value('time')),
+      !open && h('div', { id: 'mm-entry-thermal-panel', hidden: true }),
+      open && h('div', { id: 'mm-entry-thermal-panel', 'data-entry-thermal-panel': true, style: { marginTop: '12px', minWidth: 0 } },
+        h('h5', { style: { margin: '0 0 8px', fontSize: '14px', color: '#fdba74' } }, 'Illustrative heat-shield lab'),
+        h('p', { 'data-entry-thermal-source': true, style: { margin: '0 0 8px', fontSize: '12px', lineHeight: 1.65, color: '#bae6fd' } }, 'Source flight: ' + entryProfile.angle.toFixed(1) + '° · ' + (entryProfile.version === 2 ? mmEntryPlanLabel(entryProfile.plan) : 'earlier guided lift') + ' · heat-input interval ' + entryProfile.summary.duration.toFixed(1) + ' s'),
+        h('p', { 'data-entry-thermal-boundaries': true, style: { margin: '0 0 12px', fontSize: '12px', lineHeight: 1.65 } }, 'This homogeneous slab uses the current entry trajectory’s estimated heat flux. It models conduction and radiation with fixed material properties. Ablation, pyrolysis, changing properties, cabin heating and survival are omitted. These temperatures describe this material experiment.'),
+        h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,260px),1fr))', gap: '14px', minWidth: 0 } },
+          h('div', { style: { minWidth: 0 } },
+            h('div', { role: 'group', 'aria-label': 'Generic slab presets', style: { display: 'flex', flexWrap: 'wrap', gap: '8px', marginBottom: '10px' } },
+              [{ id: 'insulating', label: 'Insulating 50 mm', thickness: 0.05, conductivity: 0.12 }, { id: 'conductive', label: 'Conductive 50 mm', thickness: 0.05, conductivity: 1.2 }, { id: 'thin', label: 'Thin 20 mm', thickness: 0.02, conductivity: 0.12 }].map(function(preset) {
+                var pressed = Math.abs(snapshot.plan.thickness - preset.thickness) < 1e-10 && Math.abs(snapshot.plan.conductivity - preset.conductivity) < 1e-10 && Math.abs(snapshot.plan.emissivity - 0.85) < 1e-10;
+                return h('button', { key: preset.id, type: 'button', 'data-entry-thermal-preset': preset.id, 'aria-pressed': pressed,
+                  style: Object.assign({}, buttonStyle, pressed ? { background: '#155e75', borderColor: '#67e8f9' } : {}),
+                  onClick: function(ev) { emit('plan', mmEntryThermalPlan({ thickness: preset.thickness, conductivity: preset.conductivity, emissivity: 0.85 }), ev); } }, preset.label);
+              })),
+            slider('thickness', 'Slab thickness', 10, 100, 1, 1000),
+            h('details', { 'data-entry-thermal-advanced': true, style: { margin: '8px 0', fontSize: '12px', lineHeight: 1.65 } },
+              h('summary', { style: { minHeight: '44px', cursor: 'pointer', padding: '8px 0', boxSizing: 'border-box' } }, 'Material properties and boundary assumptions'),
+              slider('conductivity', 'Thermal conductivity', 0.04, 1.2, 0.01, 1), slider('emissivity', 'Surface emissivity', 0, 1, 0.01, 1),
+              h('p', { style: { margin: '8px 0', color: '#cbd5e1' } }, 'Density 500 kg/m³; heat capacity 1,500 J/(kg·K); initial temperature 20 °C. Net radiation exchanges heat with fixed 20 °C (293.15 K) surroundings. Solar and planetary irradiation, changing surroundings, and water or recovery heat transfer are omitted. The back face is insulated. Heat input is prescribed, independent of temperature. The slab retains its thickness and mass.')),
+            h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', marginTop: '10px' } },
+              h('button', { type: 'button', 'data-entry-thermal-follow': true, 'aria-pressed': snapshot.follow, style: buttonStyle, onClick: function(ev) { emit('follow', true, ev); } }, snapshot.follow ? 'Following entry time' : 'Follow entry time'),
+              h('button', { type: 'button', 'data-entry-thermal-peak': 'surface', style: buttonStyle, onClick: function(ev) { emit('time', snapshot.profile.summary.peakSurfaceTime, ev); } }, 'Inspect exposed-face peak'),
+              h('button', { type: 'button', 'data-entry-thermal-peak': 'back', style: buttonStyle, onClick: function(ev) { emit('time', snapshot.profile.summary.peakBackTime, ev); } }, 'Inspect back-face peak')),
+            h('label', { style: { display: 'block', marginTop: '12px', fontSize: '12px', lineHeight: 1.65 } }, 'Independent lab time: ', value('time'),
+              h('input', { 'data-entry-thermal-seek': true, type: 'range', min: 0, max: snapshot.profile.summary.duration, step: 0.1, defaultValue: snapshot.time,
+                'aria-label': 'Independent thermal lab time', 'aria-valuetext': values.time,
+                style: { display: 'block', width: '100%', minHeight: '44px', accentColor: '#fb923c' }, onChange: function(ev) { var time = Number(ev.target.value); if (Number.isFinite(time)) emit('time', time, ev); } })),
+            h('p', { 'data-entry-thermal-clock-note': true, style: { margin: '4px 0 10px', fontSize: '12px', lineHeight: 1.65, color: '#cbd5e1' } }, 'Inspecting lab time leaves entry playback unchanged. After the trajectory ends, the lab adds 300 seconds with zero heat input; radiation and conduction continue. This cooling experiment also applies after a skip-out.'),
+            h('p', { 'data-entry-thermal-value': 'phase', style: { fontSize: '12px', lineHeight: 1.65, color: '#bae6fd' } }, values.phase),
+            h('label', { style: { display: 'flex', alignItems: 'center', gap: '8px', minHeight: '44px', fontSize: '12px', lineHeight: 1.65 } }, h('input', { 'data-entry-thermal-include-report': true, type: 'checkbox', checked: controls.includeReport === true, style: { width: '18px', height: '18px', flexShrink: 0 }, onChange: function(ev) { emit('includeReport', ev.target.checked, ev); } }), 'Include this lab snapshot in the flight report')),
+          h('div', { style: { minWidth: 0 } },
+            h('div', { style: { display: 'flex', justifyContent: 'space-between', gap: '8px', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.65 } }, h('span', null, 'Exposed face ', value('surface')), h('span', { style: { textAlign: 'right' } }, 'Insulated back ', value('back'))),
+            h('div', { 'data-entry-thermal-slab': true, role: 'img', 'aria-label': 'Generic slab temperature through its enlarged depth. Exposed face ' + values.surface + ', back face ' + values.back + '.', style: { display: 'grid', gridTemplateColumns: 'repeat(33,minmax(0,1fr))', height: '80px', border: '1px solid #94a3b8', borderRadius: '6px', overflow: 'hidden', marginTop: '8px' } }, geometry.cells.map(function(cell) {
+              return h('span', { key: cell.index, 'data-entry-thermal-cell': cell.index, 'data-entry-thermal-depth': cell.depth, 'data-entry-thermal-temperature': cell.temperature, 'aria-hidden': true,
+                title: (cell.depth * 1000).toFixed(1) + ' mm: ' + mmEntryThermalTemperature(cell.temperature), style: { background: cell.color, minWidth: 0 } });
+            })),
+            h('p', { 'data-entry-thermal-color-scale': true, style: { margin: '8px 0', fontSize: '12px', color: '#cbd5e1', lineHeight: 1.65 } }, 'Depth enlarged · ', value('thickness'), '. Shared temperature color scale: ' + mmEntryThermalTemperature(geometry.base.minK) + ' to ' + mmEntryThermalTemperature(geometry.base.maxK) + '.'),
+            h('div', { style: { display: 'grid', gap: '6px', margin: '10px 0' } }, ['incoming', 'radiated', 'conducted'].map(function(key) {
+              var flow = geometry[key];
+              return h('div', { key: key, 'data-entry-thermal-flow': key, style: { display: 'flex', flexWrap: 'wrap', gap: '4px 8px', justifyContent: 'space-between', padding: '6px 8px', background: '#0f172a', borderRadius: '6px', fontSize: '12px', lineHeight: 1.65, color: key === 'incoming' ? '#fdba74' : key === 'radiated' ? '#fda4af' : '#67e8f9' } },
+                h('span', { 'data-entry-thermal-flow-label': key }, flow.label), h('span', null, h('span', { 'data-entry-thermal-flow-arrow': key, 'aria-hidden': true }, flow.arrow + ' '), h('span', { 'data-entry-thermal-flow-value': key, style: { fontWeight: 700, fontVariantNumeric: 'tabular-nums' } }, flow.text)));
+            })),
+            h('p', { style: { margin: '4px 0 10px', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.65 } }, 'Arrows show signed heat-flow direction; lengths are illustrative. Radiation is the net exchange with fixed surroundings. Conduction crosses the first internal face; the exposed half-cell also stores heat.'),
+            h('dl', { 'data-entry-thermal-budget': true, style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(110px,1fr))', gap: '8px', fontSize: '12px', margin: 0 } }, [['heatIn', 'Incoming energy'], ['heatRadiated', 'Radiated energy'], ['storedEnergy', 'Stored heat'], ['energyResidual', 'Energy balance residual']].map(function(item) {
+              return h('div', { key: item[0] }, h('dt', { style: { color: '#cbd5e1', lineHeight: 1.65 } }, item[1]), h('dd', { style: { margin: 0, lineHeight: 1.65 } }, value(item[0])));
+            })))),
+        h('figure', { 'data-entry-thermal-history': true, style: { margin: '14px 0 0', padding: '8px', background: '#0b1425', borderRadius: '8px', minWidth: 0 } },
+          h('figcaption', { style: { fontSize: '12px', fontWeight: 700, color: '#e2e8f0', lineHeight: 1.65 } }, 'Temperature histories · shared scale ' + mmEntryThermalTemperature(geometry.base.minK) + ' to ' + mmEntryThermalTemperature(geometry.base.maxK)),
+          h('svg', { 'data-entry-thermal-history-svg': true, viewBox: '0 0 600 140', preserveAspectRatio: 'none', role: 'img', 'aria-label': 'Computed exposed and back-face temperatures through entry and 300 seconds of zero-input cooling. Current and fixed baseline curves use the same temperature and time axes.', style: { display: 'block', width: '100%', height: '150px' } },
+            h('rect', { x: geometry.base.left + (geometry.base.right - geometry.base.left) * geometry.base.entryDuration / geometry.base.duration, y: geometry.base.top,
+              width: (geometry.base.right - geometry.base.left) * 300 / geometry.base.duration, height: geometry.base.bottom - geometry.base.top, fill: '#164e63', opacity: 0.25 }),
+            h('line', { x1: geometry.base.left, y1: geometry.base.bottom, x2: geometry.base.right, y2: geometry.base.bottom, stroke: '#475569', vectorEffect: 'non-scaling-stroke' }),
+            [['baselineSurface', '#cbd5e1', '5 4'], ['baselineBack', '#c4b5fd', '3 4'], ['surface', '#fb923c', null], ['back', '#38bdf8', null]].map(function(line) {
+              return h('polyline', { key: line[0], 'data-entry-thermal-history-line': line[0], points: mmEntryThermalHistoryPoints(geometry.base[line[0]]), fill: 'none', stroke: line[1], strokeWidth: 2, strokeDasharray: line[2], vectorEffect: 'non-scaling-stroke' });
+            }),
+            h('line', { 'data-entry-thermal-playhead': true, x1: geometry.cursorX, x2: geometry.cursorX, y1: geometry.base.top, y2: geometry.base.bottom, stroke: '#f8fafc', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke' }),
+            h('circle', { 'data-entry-thermal-history-marker': 'surface', cx: geometry.cursorX, cy: geometry.surfaceY, r: 3, fill: '#fb923c', stroke: '#fb923c', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' }),
+            h('circle', { 'data-entry-thermal-history-marker': 'back', cx: geometry.cursorX, cy: geometry.backY, r: 3, fill: '#38bdf8', stroke: '#38bdf8', strokeWidth: 1, vectorEffect: 'non-scaling-stroke' })),
+          h('div', { 'data-entry-thermal-chart-axis': true, style: { display: 'flex', justifyContent: 'space-between', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.65 } }, h('span', null, '0 s'), h('span', null, geometry.base.duration.toFixed(1) + ' s')),
+          h('div', { 'data-entry-thermal-history-legend': true, style: { display: 'flex', flexWrap: 'wrap', gap: '4px 12px', fontSize: '12px', lineHeight: 1.65, marginTop: '6px' } },
+            h('span', { style: { color: '#fb923c' } }, 'Orange: exposed face'), h('span', { style: { color: '#38bdf8' } }, 'Cyan: back face'), h('span', { style: { color: '#cbd5e1' } }, 'Dashed gray: baseline exposed'), h('span', { style: { color: '#c4b5fd' } }, 'Dashed purple: baseline back')),
+          h('p', { style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.65 } }, 'Shaded interval: zero heat input after ' + geometry.base.entryDuration.toFixed(1) + ' s. The white line follows lab time.')),
+        h('p', { 'data-entry-thermal-window-note': true, style: { margin: '10px 0 0', fontSize: '12px', lineHeight: 1.65, color: '#cbd5e1' } }, 'Peaks are the highest sampled temperatures within entry plus 300 seconds of cooling. The back face can still be warming when this window ends. Material changes at high temperatures are outside this fixed-property model.'),
+        h('table', { 'data-entry-thermal-comparison': true, style: { width: '100%', tableLayout: 'fixed', borderCollapse: 'collapse', fontSize: '12px', lineHeight: 1.65, marginTop: '12px', overflowWrap: 'anywhere' } },
+          h('caption', { style: { textAlign: 'left', color: '#cbd5e1', fontSize: '12px', marginBottom: '6px' } }, 'Same entry and lab time · fixed baseline: 50 mm, 0.12 W/(m·K), emissivity 0.85'),
+          h('thead', null, h('tr', null, h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px' } }, 'Temperature'), h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px' } }, 'Current'), h('th', { scope: 'col', style: { textAlign: 'left', padding: '4px' } }, 'Baseline'))),
+          h('tbody', null, [['Exposed now', 'surface', 'baselineSurface'], ['Back now', 'back', 'baselineBack'], ['Peak exposed', 'peakSurface', 'baselinePeakSurface'], ['Peak back', 'peakBack', 'baselinePeakBack']].map(function(item) {
+            return h('tr', { key: item[1], style: { borderTop: '1px solid #334155' } }, h('th', { scope: 'row', style: { textAlign: 'left', padding: '4px', fontWeight: 400 } }, item[0]), h('td', { style: { padding: '4px' } }, value(item[1])), h('td', { style: { padding: '4px' } }, value(item[2])));
+          })))));
+  }
+  function mmUpdateEntryThermal(host, entryProfile, entrySample, controls) {
+    if (!host) return;
+    var lab = host.matches && host.matches('[data-entry-thermal-lab]') ? host : host.querySelector('[data-entry-thermal-lab]');
+    if (!lab) return;
+    if (!controls || controls.open !== true || !lab.querySelector('[data-entry-thermal-panel]')) return;
+    var snapshot = mmEntryThermalVisualSnapshot(entryProfile, entrySample, controls), values = mmEntryThermalValueTexts(snapshot);
+    lab.querySelectorAll('[data-entry-thermal-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-entry-thermal-value')] || ''; });
+    lab.dataset.entryThermalTime = String(snapshot.time); lab.dataset.entryThermalFollowing = String(snapshot.follow);
+    lab.dataset.entryThermalPhase = snapshot.sample.phase; lab.dataset.entryThermalSurface = String(snapshot.sample.surfaceT); lab.dataset.entryThermalBack = String(snapshot.sample.backT);
+    lab.dataset.entryThermalFluxIn = String(snapshot.sample.fluxIn); lab.dataset.entryThermalFluxRadiated = String(snapshot.sample.fluxRadiated); lab.dataset.entryThermalFluxConducted = String(snapshot.sample.fluxConducted);
+    lab.dataset.entryThermalHeatIn = String(snapshot.sample.heatIn); lab.dataset.entryThermalHeatRadiated = String(snapshot.sample.heatRadiated); lab.dataset.entryThermalStoredEnergy = String(snapshot.sample.storedEnergy); lab.dataset.entryThermalEnergyResidual = String(snapshot.sample.energyResidual);
+    var geometry = mmEntryThermalVisualGeometry(snapshot.profile, snapshot.baseline, snapshot.time, 600, 140);
+    lab.querySelectorAll('[data-entry-thermal-cell]').forEach(function(node) { var cell = geometry.cells[Number(node.getAttribute('data-entry-thermal-cell'))]; if (!cell) return;
+      node.style.background = cell.color; node.dataset.entryThermalTemperature = String(cell.temperature); node.dataset.entryThermalDepth = String(cell.depth); node.title = (cell.depth * 1000).toFixed(1) + ' mm: ' + mmEntryThermalTemperature(cell.temperature);
+    });
+    var slab = lab.querySelector('[data-entry-thermal-slab]'); if (slab) slab.setAttribute('aria-label', 'Generic slab temperature through its enlarged depth. Exposed face ' + values.surface + ', back face ' + values.back + '.');
+    ['incoming', 'radiated', 'conducted'].forEach(function(key) { var flow = geometry[key], label = lab.querySelector('[data-entry-thermal-flow-label="' + key + '"]'), arrow = lab.querySelector('[data-entry-thermal-flow-arrow="' + key + '"]'), reading = lab.querySelector('[data-entry-thermal-flow-value="' + key + '"]');
+      if (label) label.textContent = flow.label; if (arrow) arrow.textContent = flow.arrow + ' '; if (reading) reading.textContent = flow.text;
+      var row = lab.querySelector('[data-entry-thermal-flow="' + key + '"]'); if (row) { row.dataset.entryThermalFlowDirection = flow.direction; row.dataset.entryThermalFlowSignedValue = String(flow.value); }
+    });
+    var seek = lab.querySelector('[data-entry-thermal-seek]'); if (seek && document.activeElement !== seek) { seek.value = String(snapshot.time); seek.setAttribute('aria-valuetext', values.time); }
+    var cursor = lab.querySelector('[data-entry-thermal-playhead]'); if (cursor) { cursor.setAttribute('x1', geometry.cursorX); cursor.setAttribute('x2', geometry.cursorX); }
+    ['surface', 'back'].forEach(function(key) { var marker = lab.querySelector('[data-entry-thermal-history-marker="' + key + '"]'); if (marker) { marker.setAttribute('cx', geometry.cursorX); marker.setAttribute('cy', key === 'surface' ? geometry.surfaceY : geometry.backY); } });
+    var follow = lab.querySelector('[data-entry-thermal-follow]'); if (follow) { follow.textContent = snapshot.follow ? 'Following entry time' : 'Follow entry time'; follow.setAttribute('aria-pressed', String(snapshot.follow)); }
+  }
+  try { window.MoonMissionPure = Object.assign(window.MoonMissionPure || {}, {
+    entryThermalVisualGeometry: mmEntryThermalVisualGeometry, entryThermalFlow: mmEntryThermalFlow,
+    entryThermalView: mmEntryThermalView, updateEntryThermal: mmUpdateEntryThermal
+  }); } catch (e) {}
+
+
+  function mmEntryThermalControls(raw) {
+    var state = mmCleanEntryThermalState(raw);
+    return { open: state.entryThermalOpen, plan: state.entryThermalPlan, follow: state.entryThermalFollow,
+      time: state.entryThermalTime, includeReport: state.entryThermalIncludeReport };
+  }
+  function mmEntryThermalControlChange(controls, action, value, duration) {
+    var next = Object.assign({}, controls);
+    if (action === 'open') next.open = value === true;
+    else if (action === 'plan') next.plan = mmEntryThermalPlan(value);
+    else if (action === 'time') { next.time = Math.max(0, Math.min(duration, mmNum(value) ? value : 0)); next.follow = false; }
+    else if (action === 'follow') next.follow = value === true;
+    else if (action === 'includeReport') next.includeReport = value === true;
+    return next;
+  }
+  function mmEntryThermalPersist(controls, update) {
+    update('entryThermalOpen', controls.open); update('entryThermalPlan', controls.plan);
+    update('entryThermalFollow', controls.follow); update('entryThermalTime', controls.time);
+    update('entryThermalIncludeReport', controls.includeReport);
+  }
+  function mmEntryThermalAction(ev, action, value, raw, update) {
+    var host = ev && ev.currentTarget && ev.currentTarget.closest('[data-entry-workspace]');
+    var canvas = host && host.querySelector('[data-entry-canvas]');
+    if (canvas && canvas._entryThermalAction) { canvas._entryThermalAction(action, value); return; }
+    var profile = mmEntryThermalSource(raw);
+    mmEntryThermalPersist(mmEntryThermalControlChange(mmEntryThermalControls(raw), action, value,
+      profile.summary.duration + MM_ENTRY_THERMAL.cooldown), update);
+  }
 
   // The trans-lunar coast from the energy equation, with Earth's and the Moon's gravity
   // along the line between them (the Moon held still): how far out and how fast after
@@ -5458,10 +7661,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       if (Math.abs(localZ) < localR + 10 && Math.abs(localX) < 160) continue;
       craters.push({ x: localX, z: localZ, r: localR, d: localR * (0.1 + cRng.next() * 0.14) });
     }
-    // One height function, shared by the mesh and by everything that must sit ON the
-    // ground. The lander used to hold a fixed height above y = 0 while drift slid
-    // relief of +-110 units under it, so after touchdown the camera could end up
-    // inside a hill looking at the ground's underside.
+    // The crater formula authors mesh vertices. Contact cues below sample the
+    // finished triangles, whose faces can differ from this smooth formula.
     function terrainHeight(vx, vz) {
       // Rolling mare relief under the craters.
       var hgt = Math.sin(vx * 0.0042) * 7 + Math.cos(vz * 0.0035) * 6
@@ -5499,6 +7700,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     }
     terGeo.setAttribute('color', new THREE.BufferAttribute(terColors, 3));
     terGeo.computeVertexNormals();
+    var renderedTerrain=mmCreateDescentTerrainSampler(terGeo);
+    function surfaceHeight(x,z) {
+      var height=renderedTerrain?renderedTerrain.heightAt(x,z):null;
+      // Retain the earlier far-field behavior beyond the finite rendered mesh.
+      return height===null?terrainHeight(x,z):height;
+    }
+    glCv.dataset.descentTerrainMode=renderedTerrain?'mesh-triangles':'analytic';
     var microSize = lowPower ? 128 : 256;
     var microDetail = mmRegolithDetail(microSize, 0x4c4d1969);
     var groundColorCanvas = document.createElement('canvas'), groundHeightCanvas = document.createElement('canvas');
@@ -5526,7 +7734,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     // pushed it over the bloom threshold so the landing site washed out.
     var terMat = new THREE.MeshStandardMaterial({ color: 0x8f8a80, map: groundTexture, bumpMap: groundBump, bumpScale: 0.08, vertexColors: true, roughness: 1.0, metalness: 0.0 });
     var terrain = new THREE.Mesh(terGeo, terMat);
-    terrain.receiveShadow = !lowPower;
+    terrain.name='moon-descent-terrain';terrain.userData.descentSurface=renderedTerrain;
+    terrain.receiveShadow = true;
     terrain.castShadow = !lowPower;
     scene.add(terrain);
 
@@ -5536,11 +7745,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var nadirGeo = new THREE.BufferGeometry();
     var nadirPos = new Float32Array(64 * 3);
     nadirGeo.setAttribute('position', new THREE.BufferAttribute(nadirPos, 3));
-    var nadir = new THREE.LineLoop(nadirGeo, nadirMat); nadir.renderOrder = 3; nadir.frustumCulled = false; scene.add(nadir);
+    var nadir = new THREE.LineLoop(nadirGeo, nadirMat); nadir.name='moon-descent-nadir'; nadir.renderOrder = 3; nadir.frustumCulled = false; scene.add(nadir);
     var driftGeo = new THREE.BufferGeometry();
-    driftGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6 * 3), 3));
+    var driftCapacity=renderedTerrain?12*(renderedTerrain.columns+renderedTerrain.rows)+24:6;
+    driftGeo.setAttribute('position', new THREE.BufferAttribute(new Float32Array(driftCapacity*3), 3));
+    driftGeo.setDrawRange(0,0);
     var drift = new THREE.LineSegments(driftGeo, new THREE.LineBasicMaterial({ color: 0xfbbf24, transparent: true, opacity: 0.9, depthTest: false }));
-    drift.renderOrder = 4; drift.frustumCulled = false; scene.add(drift);
+    drift.name='moon-descent-drift';drift.renderOrder = 4; drift.frustumCulled = false; scene.add(drift);
 
     // A reusable, deterministic scatter adds scale near the final approach.
     var rockRng = _seededRand(12021969);
@@ -5551,8 +7762,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var rs = 0.35 + Math.pow(rockRng.next(), 2) * 2.8;
       var rock = new THREE.Mesh(rockGeos[ri % rockGeos.length], rockMat);
       rock.scale.set(rs, rs * 0.6, rs * 0.85); rock.rotation.y = rockRng.next() * Math.PI;
-      rock.position.set(rx, terrainHeight(rx, rz) + rs * 0.3, rz);
-      rock.castShadow = !lowPower; rock.receiveShadow = !lowPower; terrain.add(rock);
+      rock.position.set(rx, surfaceHeight(rx, rz) + rs * 0.3, rz);
+      rock.castShadow = !lowPower; rock.receiveShadow = true; terrain.add(rock);
     }
 
 
@@ -5567,17 +7778,16 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     var sun = new THREE.DirectionalLight(0xfff6e0, 1.35);
     // Low sun angle, as Apollo deliberately chose: long shadows are what make
     // relief readable on a surface with almost no colour variation to go by.
-    sun.position.set(-700, 260, 360);
-    if (!lowPower) {
-      sun.castShadow = true;
-      sun.shadow.mapSize.width = 1024; sun.shadow.mapSize.height = 1024;
-      sun.shadow.camera.near = 1; sun.shadow.camera.far = 1400;
-      sun.shadow.camera.left = -180; sun.shadow.camera.right = 180;
-      sun.shadow.camera.top = 180; sun.shadow.camera.bottom = -180;
-      sun.shadow.bias = -0.0015;
-      renderer.shadowMap.enabled = true;
-      renderer.shadowMap.type = THREE.PCFSoftShadowMap;
-    }
+    sun.position.set(MM_DESCENT_SUN.x, MM_DESCENT_SUN.y, MM_DESCENT_SUN.z);
+    sun.name='moon-descent-sun';sun.castShadow=true;
+    var shadowSize=lowPower?256:1024,shadowSpan=lowPower?12:180;
+    sun.shadow.mapSize.width=shadowSize;sun.shadow.mapSize.height=shadowSize;
+    sun.shadow.camera.near=1;sun.shadow.camera.far=1400;
+    sun.shadow.camera.left=-shadowSpan;sun.shadow.camera.right=shadowSpan;
+    sun.shadow.camera.top=shadowSpan;sun.shadow.camera.bottom=-shadowSpan;
+    sun.shadow.bias=lowPower?-0.00003:-0.0015;
+    renderer.shadowMap.enabled=true;
+    renderer.shadowMap.type=lowPower?THREE.BasicShadowMap:THREE.PCFSoftShadowMap;
     scene.add(sun);
     scene.add(sun.target);
 
@@ -5605,7 +7815,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       hardwareEnvMap = hardwareEnvRT.texture;
       envGen.dispose(); envGeo.dispose(); envMat.dispose();
     } catch (_descentEnvErr) { hardwareEnvRT = null; hardwareEnvMap = null; }
-    var lm = new THREE.Group();
+    var lm = new THREE.Group();lm.name='moon-descent-lander';
     var lmHardware = mmBuildSurfaceLM(THREE, hardwareEnvMap, lowPower);
     // The reusable model's pad bottom is 0.02 * 0.78 above its origin. At
     // zero visual clearance the flight pivot is 2.2 units above the surface.
@@ -5637,6 +7847,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       return support;
     }
     var landingPads = landingPadSamples(lmHardware);
+    var shadowCaster=lowPower?mmBuildDescentShadow(THREE,lmHardware):null;
+    if(shadowCaster)lm.add(shadowCaster);
+    glCv.dataset.descentShadowMode=lowPower?'merged-shadow-map':'shadow-map';
     glCv.dataset.descentModel = 'apollo-shared';
     var bellExitY = lmHardware.position.y + (1.02 - 0.95 / 2) * 0.78;
     var contactProbes = [];
@@ -5651,6 +7864,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       contactProbes.push({ pivot: pivot, angle: pa });
     }
     lm.traverse(function (o) { if (o.isMesh) { o.castShadow = !lowPower; o.receiveShadow = !lowPower; } });
+    if(shadowCaster)shadowCaster.castShadow=true;
     scene.add(lm);
 
     // ── Exhaust plume ──
@@ -5675,29 +7889,19 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
     plumeGrp.position.y = bellExitY;
     lm.add(plumeGrp);
 
-    // ── Blown dust ──
-    // The detail every Apollo landing film is remembered for: below roughly
-    // 30 m the plume sheets regolith outward in flat radial streaks. With no
-    // air it does not billow or hang — it leaves ballistically and is gone.
-    var dustN = lowPower ? 90 : 220;
-    var dustGeo = new THREE.BufferGeometry();
-    var dustPos = new Float32Array(dustN * 3);
-    var dustSeed = [], dustRng = _seededRand(1202);
-    for (var di = 0; di < dustN; di++) {
-      dustSeed.push({ a: dustRng.next() * Math.PI * 2, sp: 12 + dustRng.next() * 32,
-        offset: dustRng.next() * 1.5, life: 1.1 + dustRng.next() * 0.8, born: -100, x: 0, y: 0, z: 0, vx: 0, vz: 0, vy: 0 });
-      dustPos[di * 3] = 0; dustPos[di * 3 + 1] = -9999; dustPos[di * 3 + 2] = 0;
-    }
-    dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
-    var dustMat = new THREE.PointsMaterial({
-      color: 0xbcb2a0, size: 0.45, transparent: true, opacity: 0.0,
-      depthWrite: false, sizeAttenuation: true
-    });
-    var dust = new THREE.Points(dustGeo, dustMat);
-    // Inactive particles sit below the world; a cached bounding sphere there
-    // would incorrectly cull the whole sheet when emission starts later.
-    dust.frustumCulled = false;
-    scene.add(dust);
+    // Both views consume the flight loop's shared ballistic ejecta. Short
+    // streaks show radial motion and each grain has its own fade opacity.
+    var dustN=lowPower?90:220;
+    var dustGeo=new THREE.BufferGeometry();
+    dustGeo.setAttribute('position',new THREE.BufferAttribute(new Float32Array(dustN*6),3));
+    dustGeo.setAttribute('opacity',new THREE.BufferAttribute(new Float32Array(dustN*2),1));
+    dustGeo.setDrawRange(0,0);
+    var dustMat=new THREE.ShaderMaterial({transparent:true,depthWrite:false,
+      uniforms:{tint:{value:new THREE.Color(0xbcb2a0)}},
+      vertexShader:'attribute float opacity; varying float grainOpacity; void main(){grainOpacity=opacity;gl_Position=projectionMatrix*modelViewMatrix*vec4(position,1.0);}',
+      fragmentShader:'uniform vec3 tint; varying float grainOpacity; void main(){gl_FragColor=vec4(tint,sqrt(grainOpacity)*0.65);}' });
+    var dust=new THREE.LineSegments(dustGeo,dustMat);
+    dust.name='moon-descent-dust';dust.frustumCulled=false;scene.add(dust);
 
     // ── Bloom (guarded, house pattern) ──
     var composer = null;
@@ -5743,7 +7947,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
     hostEl.appendChild(glCv);
 
-    var previousSimTime = null, activeCameraMode = '';
+    var activeCameraMode = '';
+    var previousVisualFrame = '';
     // ── Per-frame update ──
     // Driven entirely by the 2D loop's own physics: this owns no state that
     // could ever disagree with the graded simulation.
@@ -5753,13 +7958,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var tilt = s.tilt || 0;
       var thrust = s.thrust || 0;
       var simTime = Number.isFinite(s.time) ? s.time : (s.tick || 0) / 60;
+      // Physics and review own the visual clock. An identical frame needs no
+      // GPU draw; dimensions and bloom readiness also invalidate this key.
+      var visualFrame = JSON.stringify([alt, tilt, thrust, s.fuel, simTime,
+        s.groundX, s.groundZ, s.hVel, s.vVel, s.done, s.cameraMode, s.review, W, H, !!composer]);
+      if (visualFrame === previousVisualFrame) return;
       var burning = thrust > 0.1 && s.fuel > 0 && !s.done;   // the plume stayed lit on a crashed lander
-      // A recorded frame can be inspected out of order. Live ejecta has no
-      // place in that static frame, and must not survive a backwards scrub.
-      if (s.review || (previousSimTime != null && simTime < previousSimTime)) {
-        for (var resetDust = 0; resetDust < dustSeed.length; resetDust++) dustSeed[resetDust].born = -100;
-      }
-      previousSimTime = simTime;
+      // The flight loop supplies held or replay-filtered dust samples.
 
       // The lander holds a fixed world point and the GROUND moves, so craters
       // stream past under lateral drift the way they really would from the
@@ -5775,11 +7980,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       terrain.position.x = -(s.groundX || 0);
       terrain.position.z = -(s.groundZ || 0);
       // The terrain slides and the lander does not, so read the ground under it.
-      var groundH = terrainHeight(-terrain.position.x, -terrain.position.z);
+      var groundH = surfaceHeight(-terrain.position.x, -terrain.position.z);
       var groundX = -terrain.position.x, groundZ = -terrain.position.z;
       // Grading still uses the flat-surface flight model. This is only the
       // visual rigid-body support: keep every tilted pad above local relief.
-      var padSupportY = landingPadSupport(landingPads, tilt, terrainHeight, groundX, groundZ);
+      var padSupportY = landingPadSupport(landingPads, tilt, surfaceHeight, groundX, groundZ);
       lm.position.set(0, padSupportY + (altUnits - 2.2) + 0.01, 0);
       var bankCos = Math.cos(tilt), bankSin = Math.sin(tilt);
       for (var cp = 0; cp < contactProbes.length; cp++) {
@@ -5790,7 +7995,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           var ty = anchor.y - Math.cos(bend) * 1.05;
           var tz = anchor.z + radialZ * Math.sin(bend) * 1.05 * direction;
           var wx = tx * bankCos + ty * bankSin;
-          return lm.position.y - tx * bankSin + ty * bankCos - terrainHeight(groundX + wx, groundZ + tz);
+          return lm.position.y - tx * bankSin + ty * bankCos - surfaceHeight(groundX + wx, groundZ + tz);
         }
         var probeBend = 0, foldDirection = 1;
         if (probeTipClearance(0, 1) < 0) {
@@ -5813,20 +8018,28 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var ringRadius = 4.5 + Math.min(8, altUnits * 0.045);
       for (var ni = 0; ni < 64; ni++) {
         var na = ni / 64 * Math.PI * 2, nx = Math.cos(na) * ringRadius, nz = Math.sin(na) * ringRadius;
-        nadirGeo.attributes.position.setXYZ(ni, nx, terrainHeight(groundX + nx, groundZ + nz) + 0.3, nz);
+        nadirGeo.attributes.position.setXYZ(ni, nx, surfaceHeight(groundX + nx, groundZ + nz) + 0.3, nz);
       }
       nadirGeo.attributes.position.needsUpdate = true;
       var driftX = Math.max(-140, Math.min(140, (s.hVel || 0) * 5 * 0.6));
-      var driftH = terrainHeight(groundX + driftX, groundZ) + 0.45;
       var headX = driftX - Math.sign(driftX) * Math.min(3.5, Math.abs(driftX) * 0.4);
-      var driftP = driftGeo.attributes.position;
-      driftP.setXYZ(0, 0, groundH + 0.45, 0); driftP.setXYZ(1, driftX, driftH, 0);
-      driftP.setXYZ(2, driftX, driftH, 0); driftP.setXYZ(3, headX, driftH, 1.6);
-      driftP.setXYZ(4, driftX, driftH, 0); driftP.setXYZ(5, headX, driftH, -1.6);
+      var driftP=driftGeo.attributes.position,driftCount=0;
+      function groundStroke(x0,z0,x1,z1) {
+        var points=renderedTerrain&&renderedTerrain.trace(groundX+x0,groundZ+z0,groundX+x1,groundZ+z1,0.45);
+        if(!points)points=[{x:groundX+x0,y:surfaceHeight(groundX+x0,groundZ+z0)+0.45,z:groundZ+z0},
+          {x:groundX+x1,y:surfaceHeight(groundX+x1,groundZ+z1)+0.45,z:groundZ+z1}];
+        for(var i=1;i<points.length;i++) {
+          var a=points[i-1],b=points[i];
+          driftP.setXYZ(driftCount++,a.x-groundX,a.y,a.z-groundZ);
+          driftP.setXYZ(driftCount++,b.x-groundX,b.y,b.z-groundZ);
+        }
+      }
+      groundStroke(0,0,driftX,0);groundStroke(driftX,0,headX,1.6);groundStroke(driftX,0,headX,-1.6);
+      driftGeo.setDrawRange(0,driftCount);
       driftP.needsUpdate = true; drift.visible = !s.done && Math.abs(s.hVel || 0) > 0.15;
 
       sun.target.position.copy(lm.position);
-      sun.position.set(lm.position.x - 700, lm.position.y + 260, lm.position.z + 360);
+      sun.position.set(lm.position.x + MM_DESCENT_SUN.x, lm.position.y + MM_DESCENT_SUN.y, lm.position.z + MM_DESCENT_SUN.z);
       if (!lowPower) {
         // Tighten the shadow map during final approach so struts and pads cast
         // crisp shadows instead of sharing one coarse terrain-sized texel.
@@ -5844,37 +8057,25 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       if (burning) {
         var chug = reduce ? 1 : 1 + Math.sin(simTime * 19) * 0.015;
         var nozzleX = bankSin * bellExitY, nozzleY = lm.position.y + bankCos * bellExitY;
-        var nozzleClearance = Math.max(0, nozzleY - terrainHeight(groundX + nozzleX, groundZ));
+        var nozzleClearance = Math.max(0, nozzleY - surfaceHeight(groundX + nozzleX, groundZ));
         var exhaustLength = Math.min(0.55 + thrust * 0.85, nozzleClearance / Math.max(0.1, bankCos) / 5.5);
         plumeGrp.scale.set(0.8 + thrust * 0.25, exhaustLength * chug, 0.8 + thrust * 0.25);
         plumeMat.opacity = 0.045 + thrust * 0.07;
         coreMat.opacity = 0.09 + thrust * 0.11;
       }
 
-      // Ballistic dust, driven by simulation time rather than frames. Grains
-      // retain their world launch points as the lander drifts and fall under
-      // lunar gravity; cutting the engine does not erase airborne grains.
-      // Qualitative sheet geometry follows NASA plume/surface observations:
-      // https://ntrs.nasa.gov/citations/20090022233
-      var dustStrength = (!s.review && burning && alt < 30) ? (1 - alt / 30) * thrust : 0;
-      var dp = dustGeo.attributes.position, liveDust = 0, dustOpacity = 0;
-      for (var k = 0; k < dustN; k++) {
-        var sd = dustSeed[k], age = simTime - sd.born;
-        if (dustStrength > 0 && age >= sd.life) {
-          sd.born = simTime - ((simTime + sd.offset) % sd.life); age = simTime - sd.born;
-          sd.x = groundX - Math.sin(tilt) * Math.min(12, lm.position.y - groundH + bellExitY); sd.z = groundZ;
-          sd.y = terrainHeight(sd.x, sd.z) + 0.15;
-          sd.vx = Math.cos(sd.a) * sd.sp - Math.sin(tilt) * sd.sp * 0.4;
-          sd.vz = Math.sin(sd.a) * sd.sp; sd.vy = 0.35 + dustStrength * 0.55;
-          sd.strength = dustStrength;
-        }
-        var dustY = sd.y + sd.vy * age - 0.5 * MM_DESCENT.g * 0.6 * age * age;
-        if (age >= 0 && age < sd.life && dustY >= terrainHeight(sd.x + sd.vx * age, sd.z + sd.vz * age)) {
-          dp.setXYZ(k, sd.x + sd.vx * age - groundX, dustY, sd.z + sd.vz * age - groundZ); liveDust++;
-          dustOpacity = Math.max(dustOpacity, sd.strength * (1 - age / sd.life));
-        } else { dp.setXYZ(k, 0, -9999, 0); }
+      // The shared flight emitter owns births and world launch points. Context
+      // rebuilds and camera changes only project this same immutable sample.
+      var dustFrame=s.dust||[],dp=dustGeo.attributes.position,da=dustGeo.attributes.opacity;
+      var shownDust=Math.min(dustN,dustFrame.length);
+      for(var k=0;k<shownDust;k++) {
+        var grain=dustFrame[k],launchH=surfaceHeight(grain.launchX*0.6,grain.launchZ*0.6);
+        dp.setXYZ(k*2,grain.tailX*0.6-groundX,launchH+grain.tailHeight*0.6,grain.tailZ*0.6-groundZ);
+        dp.setXYZ(k*2+1,grain.x*0.6-groundX,launchH+grain.height*0.6,grain.z*0.6-groundZ);
+        da.setX(k*2,grain.opacity);da.setX(k*2+1,grain.opacity);
       }
-      dp.needsUpdate = true; dustMat.opacity = liveDust ? dustOpacity * 0.55 : 0;
+      dp.needsUpdate=true;da.needsUpdate=true;dustGeo.setDrawRange(0,shownDust*2);
+      glCv.dataset.descentDustCount=String(shownDust);
 
       // ── Camera ──
       // A chase view that trucks back as altitude grows, so the lander keeps a
@@ -5905,7 +8106,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         camera.updateProjectionMatrix();
         glCv.dataset.descentCamera = cameraMode;
       }
-      var camFloor = terrainHeight(camX - terrain.position.x, camZ - terrain.position.z) + 3;
+      var camFloor = surfaceHeight(camX - terrain.position.x, camZ - terrain.position.z) + 3;
       camera.position.set(camX, Math.max(lm.position.y + up, camFloor), camZ);
       // Look progressively further ahead of the vehicle as height grows, so high
       // up you read the approach and low down you read the touchdown point.
@@ -5918,8 +8119,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       try {
         if (composer) composer.render();
         else renderer.render(scene, camera);
+        previousVisualFrame = visualFrame;
       } catch (_rErr) {
-        try { renderer.render(scene, camera); } catch (_r2Err) {}
+        try { renderer.render(scene, camera); previousVisualFrame = visualFrame; } catch (_r2Err) {}
       }
     }
 
@@ -5954,6 +8156,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
         materials.forEach(function (m) { if (m.dispose) m.dispose(); });
         textures.forEach(function (tex) { if (tex.dispose) tex.dispose(); });
         if (hardwareEnvRT) hardwareEnvRT.dispose();
+        if (sun.shadow && sun.shadow.map) sun.shadow.map.dispose();
         if (composer && composer.dispose) composer.dispose();
         renderer.dispose();
         // Free the drawing buffer outright: Retry Landing builds a whole new
@@ -6069,6 +8272,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           return Object.assign({}, a, { start: mmCleanDescentStart(a.start), recording: mmCleanDescentRecording(a.recording) });
         });
         Object.assign(s, mmCleanEntryState(s));
+        Object.assign(s, mmCleanEntryThermalState(s));
+        Object.assign(s, mmCleanEntryDynamicsState(s));
+        Object.assign(s, mmCleanDescentPredictionState(s));
         Object.assign(s, mmCleanLaunchPlayback(s));
         Object.assign(s, mmCleanTliPlayback(s));
         Object.assign(s, mmCleanTransitPlayback(s));
@@ -6804,7 +9010,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
       var COMPLETE_PHASE = { name: t('stem.moonmission.mission_complete_title', 'Mission Complete'), icon: '\uD83C\uDF1F', desc: t('stem.moonmission.splashdown_debrief', 'Splashdown confirmed. Read your flight record, then fly again.') };
       var activePhase = phase >= 10 ? COMPLETE_PHASE : (PHASES[phase] || COMPLETE_PHASE);
       var nextPhase = phase + 1 < PHASES.length ? PHASES[phase + 1] : null;
-      var entryReady = !!(d.entryRun && d.entryRun.recorded && d.entryOutcome && d.entryOutcome.modelVersion === 1 && d.entryOutcome.completed && d.entryOutcome.terminal === 'splash');
+      var entryReady = !!(d.entryRun && d.entryRun.recorded && d.entryOutcome && d.entryOutcome.terminal === 'splash' && mmEntryReceiptMatches(d.entryOutcome, d.entryRun));
       // One line per phase saying what the student is supposed to DO here. The dashboard
       // used to name the phase and what came next, and left "so what do I press?" to be
       // worked out from whatever sat under the canvas.
@@ -8776,8 +10982,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   }
                   var flightRecording = mmNewDescentRecording();
                   mmRecordDescent(flightRecording, flightState, false);
+                  var dustReduced=!!(window.matchMedia&&window.matchMedia('(prefers-reduced-motion: reduce)').matches);
+                  var descentDust=mmNewDescentDust(dustReduced||(navigator.hardwareConcurrency&&navigator.hardwareConcurrency<=4)?90:220);
+                  var lastDescentDust=Object.freeze([]),lastDustTime=-Infinity;
+                  mmStepDescentDust(descentDust,flightState);
+                  cvEl._descentDustState=function(){return {time:lastDustTime,capacity:descentDust.capacity,grains:lastDescentDust};};
                   var cameraMode = 'chase';
                   var flightPanel = null, instrumentNodes = {}, lastInstrumentTime = -1;
+                  var vectorPanel=null,vectorStamp="",lastVectorTime=-Infinity;
+                  var historyPanel=null,historyStamp="",lastHistoryTime=-Infinity;
+                  var energyPanel=null,energyStamp="",lastEnergyTime=-Infinity;
+                  var predictionOpen = d.descentPredictionOpen === true, predictionStamp = '', lastPredictionTime = -Infinity;
+                  cvEl._descentPredictionAction = function(open) {
+                    predictionOpen = open === true; predictionStamp = ''; lastPredictionTime = -Infinity;
+                    upd('descentPredictionOpen', predictionOpen);
+                  };
                   // Fixed-step accumulator. The descent used to advance one physics
                   // step per FRAME, which tied a graded piloting task to the refresh
                   // rate: the same flight scored differently on a fast machine than a
@@ -8864,11 +11083,14 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     // After touchdown the loop only ticks on a timer and writes nothing to
                     // the DOM, so the parent-watching MutationObserver never fired and Retry
                     // Landing / Begin EVA left the WebGL context behind.
-                    if (!document.contains(cvEl)) { document.removeEventListener('visibilitychange', resetDescentClock); cvEl._descentClockReset = null; if (d3) { try { d3.dispose(); } catch (_goneErr) {} d3 = null; } return; }
+                    if (!document.contains(cvEl)) { document.removeEventListener('visibilitychange', resetDescentClock); cvEl._descentClockReset = null; cvEl._descentPredictionAction = null; cvEl._descentDustState = null; if (d3) { try { d3.dispose(); } catch (_goneErr) {} d3 = null; } return; }
                     if (!flightPanel) {
                       flightPanel = cvEl.parentElement.parentElement.querySelector('[data-descent-instruments]');
                       if (flightPanel) {
                         flightPanel.querySelectorAll('[data-flight-value]').forEach(function(node) { instrumentNodes[node.getAttribute('data-flight-value')] = node; });
+                        vectorPanel=flightPanel.querySelector('[data-descent-vectors]');
+                        historyPanel=flightPanel.querySelector('[data-descent-history]');
+                        energyPanel=flightPanel.querySelector('[data-descent-energy]');
                         var cameraSelect = flightPanel.querySelector('[data-descent-camera]');
                         cameraSelect.addEventListener('change', function() { cameraMode = cameraSelect.value; });
                         var lever = flightPanel.querySelector('[data-descent-throttle]');
@@ -8957,6 +11179,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       // Physics: one real-time step, the same function the tests fly.
                       var _st = flightState;
                       mmDescentStep(_st, _in, PHYS_STEP_MS / 1000);
+                      mmStepDescentDust(descentDust,_st);
                       alt = _st.alt; vVel = _st.vVel; hVel = _st.hVel; fuel = _st.fuel; thrust = _st.thrust; tilt = _st.tilt;
                       flightTime = _st.elapsed; groundX = _st.x * 0.6;
                       mmRecordDescent(flightRecording, _st, alt <= 0);
@@ -8990,7 +11213,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
 
                     // Airborne ejecta keep falling after engine cutoff at contact.
                     // Only the visual clock continues; final flight measurements stay fixed.
-                    if ((landed || crashed) && !document.hidden) dustSettlingTime = Math.min(3, dustSettlingTime + Math.min(0.1, _elapsed / 1000));
+                    if ((landed || crashed) && !document.hidden && !flightPaused && !_mmAnimPaused) dustSettlingTime = Math.min(3, dustSettlingTime + Math.min(0.1, _elapsed / 1000));
 
                     // Instruments use the same state as the graded flight; update at 4 Hz
                     // without re-rendering React or repeatedly announcing moving numbers.
@@ -9058,6 +11281,77 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var viewGroundX = review ? review.x * 0.6 : groundX, viewTime = review ? review.t : flightTime;
                     var viewDone = review ? review.alt <= 0 : landed || crashed;
                     cvEl.dataset.descentReviewTime = review ? review.t.toFixed(3) : '';
+                    // The same samples drive the side view and WebGL. Paused
+                    // and hidden flight retains exact positions; replay has no
+                    // measured ejecta history, so it omits airborne grains.
+                    var dustTime=viewTime+(review?0:dustSettlingTime);
+                    if(review) {lastDescentDust=Object.freeze([]);lastDustTime=-Infinity;}
+                    else if(dustTime!==lastDustTime) {lastDescentDust=mmSampleDescentDust(descentDust,dustTime);lastDustTime=dustTime;}
+                    var dustCount=String(lastDescentDust.length);
+                    if(cvEl.dataset.descentDustCount!==dustCount)cvEl.dataset.descentDustCount=dustCount;
+                    cvEl.dataset.descentDustSource=review?'omitted-recording':'live';
+                    // Optional measured vectors refresh at 4 Hz while flying, immediately
+                    // when held or reviewing. The closed panel does no vector calculations.
+                    if(vectorPanel&&vectorPanel.open) {
+                      var vectorRow=review||(savedLanding&&savedTrace?savedTrace.samples[savedTrace.samples.length-1]:null);
+                      var vectorState=vectorRow?{alt:vectorRow.alt,vVel:vectorRow.v,hVel:vectorRow.h,fuel:vectorRow.fuel,
+                        thrust:vectorRow.throttle,tilt:vectorRow.tilt,x:vectorRow.x,elapsed:vectorRow.t,contact:vectorRow.alt<=0}:flightState;
+                      var vectorHeld=flightPaused||_mmAnimPaused||document.hidden;
+                      var nextVectorStamp=JSON.stringify([vectorState,!!vectorRow,vectorHeld]);
+                      if(nextVectorStamp!==vectorStamp&&(_now-lastVectorTime>=250||vectorHeld||landed||crashed)) {
+                        vectorStamp=nextVectorStamp;lastVectorTime=_now;
+                        mmUpdateDescentVectors(flightPanel,savedLanding&&!savedTrace?null:vectorState,
+                          {recorded:!!vectorRow,paused:vectorHeld,unavailable:'This saved landing has no recorded state for flight vectors. Retry the descent to create a flight recording.'});
+                      }
+                    }
+                    // Optional history uses recorded past samples plus this measured
+                    // endpoint, at 4 Hz in flight and immediately during inspection.
+                    if(historyPanel&&historyPanel.open) {
+                      var historyRow=review||(savedLanding&&savedTrace?savedTrace.samples[savedTrace.samples.length-1]:null);
+                      var historyState=historyRow?{alt:historyRow.alt,vVel:historyRow.v,hVel:historyRow.h,fuel:historyRow.fuel,
+                        thrust:historyRow.throttle,tilt:historyRow.tilt,x:historyRow.x,elapsed:historyRow.t,contact:historyRow.alt<=0}:flightState;
+                      var historyRecording=savedTrace||flightRecording,historyHeld=flightPaused||_mmAnimPaused||document.hidden;
+                      var nextHistoryStamp=JSON.stringify([historyState,!!historyRow,historyHeld,
+                        historyRecording.samples.length,historyRecording.samples[historyRecording.samples.length-1]]);
+                      if(nextHistoryStamp!==historyStamp&&(_now-lastHistoryTime>=250||historyHeld||landed||crashed)) {
+                        historyStamp=nextHistoryStamp;lastHistoryTime=_now;
+                        mmUpdateDescentHistory(flightPanel,savedLanding&&!savedTrace?null:historyState,historyRecording,
+                          {recorded:!!historyRow,paused:historyHeld,unavailable:'This saved landing has no measured flight recording. Retry the descent to create a history.'});
+                      }
+                    }
+                    // Mechanical energy uses measured states only, with the same
+                    // past-sample cutoff as the flight history. Closed skips work.
+                    if(energyPanel&&energyPanel.open) {
+                      var energyRow=review||(savedLanding&&savedTrace?savedTrace.samples[savedTrace.samples.length-1]:null);
+                      var energyState=energyRow?{alt:energyRow.alt,vVel:energyRow.v,hVel:energyRow.h,fuel:energyRow.fuel,
+                        thrust:energyRow.throttle,tilt:energyRow.tilt,x:energyRow.x,elapsed:energyRow.t,contact:energyRow.alt<=0}:flightState;
+                      var energyRecording=savedTrace||flightRecording,energyHeld=flightPaused||_mmAnimPaused||document.hidden;
+                      var nextEnergyStamp=JSON.stringify([energyState,!!energyRow,energyHeld,
+                        energyRecording.samples.length,energyRecording.samples[energyRecording.samples.length-1]]);
+                      if(nextEnergyStamp!==energyStamp&&(_now-lastEnergyTime>=250||energyHeld||landed||crashed)) {
+                        energyStamp=nextEnergyStamp;lastEnergyTime=_now;
+                        mmUpdateDescentEnergy(flightPanel,savedLanding&&!savedTrace?null:energyState,energyRecording,
+                          {recorded:!!energyRow,paused:energyHeld,unavailable:'This saved landing has no measured flight recording. Retry the descent to inspect its energy.'});
+                      }
+                    }
+                    // Forecast copies are refreshed at most twice per active second.
+                    // Paused controls and recorder inspection refresh immediately.
+                    if (predictionOpen && flightPanel) {
+                      var predictionRow = review || (savedLanding && savedTrace ? savedTrace.samples[savedTrace.samples.length - 1] : null);
+                      var predictionState = predictionRow ? {alt:predictionRow.alt,vVel:predictionRow.v,hVel:predictionRow.h,
+                        fuel:predictionRow.fuel,thrust:predictionRow.throttle,tilt:predictionRow.tilt,x:predictionRow.x,
+                        elapsed:predictionRow.t,contact:predictionRow.alt<=0} : flightState;
+                      var predictionCommands = predictionRow ? {throttle:predictionRow.throttle,left:false,right:false} : {
+                        throttle:(padCtl.thrust||keys['arrowup']||keys['w'])?1:throttleSetting,
+                        left:!!(padCtl.left||keys['arrowleft']||keys['a']),right:!!(padCtl.right||keys['arrowright']||keys['d'])};
+                      var predictionHeld = flightPaused || _mmAnimPaused || document.hidden;
+                      var nextPredictionStamp = JSON.stringify([predictionState,predictionCommands,!!predictionRow,predictionHeld]);
+                      if (nextPredictionStamp !== predictionStamp && (_now-lastPredictionTime>=500 || predictionHeld || landed || crashed)) {
+                        predictionStamp = nextPredictionStamp; lastPredictionTime = _now;
+                        mmUpdateDescentPrediction(flightPanel, savedLanding && !savedTrace ? null : mmDescentPredictionProfile(predictionState,predictionCommands),
+                          {recorded:!!predictionRow,paused:predictionHeld,unavailable:'This saved landing has no recorded state for projections. Retry the descent to create a flight recording.'});
+                      }
+                    }
                     if (flightPanel) flightPanel.querySelector('[data-descent-camera]').disabled = !d3;
                     // ── World ──
                     // With the 3D scene live the canvas holds only the HUD, so it must
@@ -9071,7 +11365,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       d3.update({
                         alt: viewAlt, tilt: viewTilt, thrust: viewThrust, fuel: viewFuel,
                         groundX: viewGroundX, groundZ: groundZ, tick: tick, time: viewTime + (review ? 0 : dustSettlingTime), hVel: viewHVel, vVel: viewVVel, done: viewDone,
-                        cameraMode: cameraMode, review: !!review
+                        cameraMode: cameraMode, review: !!review, dust: lastDescentDust
                       });
                     }
                     if (!d3) {
@@ -9122,7 +11416,11 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     }
 
                     // ── Enhanced Lunar Module ──
-                    var lmX = W * 0.5, lmY = surfaceY - 29 - visualClearance;
+                    var sidePose=mmDescentSidePose(surfaceY,visualClearance,viewTilt);
+                    var lmX=W*0.5,lmY=sidePose.pivotY;
+                    cvEl.dataset.descentSidePivotY=String(lmY);
+                    cvEl.dataset.descentSideSurfaceY=String(surfaceY);
+                    cvEl.dataset.descentSideClearance=String(visualClearance);
                     ctx.fillStyle = 'rgba(0,0,0,0.68)';
                     ctx.beginPath(); ctx.ellipse(lmX + visualClearance * 2.65, surfaceY + 3, 29, 4.5, 0, 0, Math.PI * 2); ctx.fill();
                     ctx.strokeStyle = '#67e8f9'; ctx.lineWidth = 1;
@@ -9216,23 +11514,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ctx.fill();
                     }
                     ctx.restore();   // ── end of the vehicle's tilted frame ──
-                    // Surface dust, drawn in WORLD space: the regolith does not bank with
-                    // the spacecraft. It also blows downrange of the viewTilt, because that is
-                    // where the plume is now pointing.
-                    if (viewThrust > 0.1 && viewFuel > 0 && viewAlt < 30 && !viewDone) {
-                      ctx.globalAlpha = 0.38 * (1 - viewAlt / 30) * viewThrust;
-                      ctx.strokeStyle = '#d0c6b4'; ctx.lineWidth = 1;
-                      var dustTime = viewTime;
-                      for (var di = 0; di < 32; di++) {
-                        var dustAge = (dustTime + di * 0.071) % 1.1;
-                        var dustDir = di % 2 ? -1 : 1;
-                        var dustSpeed = 32 + (di * 13 % 55);
-                        var dx = lmX - Math.sin(viewTilt) * 34 + dustDir * dustSpeed * dustAge;
-                        var dy = surfaceY + 3 - (5 * dustAge - 0.5 * MM_DESCENT.g * 4 * dustAge * dustAge);
-                        ctx.beginPath(); ctx.moveTo(dx, dy); ctx.lineTo(dx - dustDir * 4, dy + 0.3); ctx.stroke();
-                      }
-                      ctx.globalAlpha = 1;
-                    }
+                    mmDrawDescentDust2D(ctx,lastDescentDust,viewGroundX,groundZ,lmX,surfaceY);
                     }   // ── end of the 2D world fallback ──
 
                     // HUD
@@ -9484,11 +11766,24 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               h('input', { id: 'moon-descent-throttle', 'data-descent-throttle': 'true', type: 'range', min: 0, max: 100, step: 1, defaultValue: 0, 'aria-describedby': 'moon-descent-throttle-help', style: { display: 'block', width: '100%', height: '44px', accentColor: '#fbbf24' } }),
               h('p', { id: 'moon-descent-throttle-help', style: { fontSize: '12px', color: '#cbd5e1', margin: '0 0 10px' } }, t('stem.moonmission.throttle_help', 'Set a steady throttle, or hold THRUST / W to override it to 100%. Release returns to the slider setting. Set 0% to coast.')),
               h('p', { 'data-descent-guidance': 'true', style: { fontSize: '13px', lineHeight: '1.5', color: '#a5f3fc', margin: '8px 0' } }, t('stem.moonmission.guidance_initial', 'Flight guidance will appear as the descent begins.')),
-              h('details', { style: { fontSize: '12px', lineHeight: '1.6', color: '#cbd5e1' } },
+              mmDescentVectorsView(h),
+              mmDescentHistoryView(h),
+              mmDescentEnergyView(h),
+              mmDescentPredictionView(h, d.descentPredictionOpen, function(open, ev) {
+                var host = ev && ev.currentTarget && ev.currentTarget.closest('[data-descent-session]');
+                var canvas = host && host.querySelector('[data-descent-canvas]');
+                if (canvas && canvas._descentPredictionAction) canvas._descentPredictionAction(open);
+                else upd('descentPredictionOpen', open === true);
+              }),
+              h('details', { 'data-descent-model-notes': true, style: { fontSize: '12px', lineHeight: '1.6', color: '#cbd5e1' } },
+                h('style', null, '@media(forced-colors:active){[data-descent-model-notes],[data-descent-model-notes] *{color:CanvasText!important;background-color:Canvas!important;}[data-descent-model-notes] a{color:LinkText!important;}}'),
                 h('summary', { style: { minHeight: '44px', paddingTop: '10px', cursor: 'pointer', color: '#e2e8f0', fontWeight: '700' } }, t('stem.moonmission.flight_model_notes', 'How to read this flight model')),
                 h('p', null, t('stem.moonmission.flight_model_explanation', 'Mass falls as propellant burns, so the same thrust produces more acceleration. Hover throttle balances lunar gravity at your current tilt. Delta-v is the ideal remaining change in velocity; holding altitude also spends fuel.')),
                 h('p', null, t('stem.moonmission.brake_model_explanation', 'Braking height estimates a full-thrust stop at the current tilt, with an engine-response allowance. It assumes continued thrust and enough fuel, and does not guarantee a safe landing. Begin braking above that height.')),
                 h('p', null, t('stem.moonmission.scene_model_explanation', 'The scene compresses altitude to keep the lander visible. Cyan marks the ground below the lander; amber shows five seconds of drift at the current speed. The terrain is illustrative and is not a landing hazard map.')),
+                h('p', { 'data-descent-dust-note': true }, 'Surface dust follows shallow ballistic arcs under lunar gravity and keeps moving after engine cutoff. Grain speeds and density are illustrative. Recorded frames omit airborne dust.'),
+                h('p', { 'data-descent-shadow-note': true }, 'The lander casts a shadow along the fixed scene sunlight. Both 3D views follow the terrain; the lighter view uses a smaller shadow map. Scene height is compressed, so the shadow is a visual cue rather than an altitude measurement.'),
+                h('p', { 'data-descent-surface-note': true }, 'In 3D, the feet, ground markers and exhaust clearance follow the visible cratered surface. The flight model uses level ground when deciding touchdown and grading the landing.'),
                 h('p', null, t('stem.moonmission.engine_model_explanation', 'Educational final-approach model: 46.7 kN maximum engine thrust, 311 s specific impulse, and an assumed 7,000 kg mass without remaining descent propellant. The throttle range and landing limits are simplified for practice.')),
                 h('a', { href: 'https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/', target: '_blank', rel: 'noopener noreferrer', style: { display: 'inline-block', padding: '10px 0', color: '#7dd3fc', textDecoration: 'underline' } }, 'NASA ideal rocket equation')
               )
@@ -13037,7 +15332,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
           // They are a plan, not a completed attempt or an earned reward.
           (function() {
             var ang = -Math.max(4, Math.min(9, Math.abs(mmNum(d.entryAngle) ? d.entryAngle : -6.5)));
-            var plan = mmEntryProfile(ang), predicted = plan.summary;
+            var selectedLift = mmEntryPlan(d.entryPlan), plan = mmEntryProfile(ang, { plan: selectedLift }), predicted = plan.summary;
             var predictionLabel = predicted.outcome === 'skip' ? 'Predicted skip-out'
               : predicted.outcome === 'steep' ? 'Predicted high-load splashdown'
               : predicted.outcome === 'nominal' ? 'Predicted splashdown' : 'Simulation time limit reached';
@@ -13064,6 +15359,23 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 onChange: function(e) { var next = Number(e.target.value); if (mmNum(next)) setReturnAngle(Math.max(-9, Math.min(-4, next))); },
                 className: 'w-full h-11 cursor-pointer accent-sky-400'
               }),
+              h('fieldset', { style: { margin: '12px 0', padding: '10px', border: '1px solid #475569', borderRadius: '8px', minWidth: 0 } },
+                h('legend', { style: { fontSize: '13px', fontWeight: 700, color: '#e2e8f0' } }, 'Capsule lift plan'),
+                h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px' } }, [
+                  ['guided', 'Guided lift'], ['ballistic', 'Ballistic'], ['bank', 'Fixed bank']
+                ].map(function(item) { return h('button', { key: item[0], type: 'button', 'data-entry-guidance': item[0], 'aria-pressed': selectedLift.mode === item[0],
+                  onClick: function() { upd('entryPlan', mmEntryPlan({ mode: item[0], bank: item[0] === 'bank' ? selectedLift.mode === 'bank' ? selectedLift.bank : 90 : 0 })); },
+                  style: { minHeight: '44px', padding: '8px 12px', borderRadius: '8px', border: '1px solid ' + (selectedLift.mode === item[0] ? '#7dd3fc' : '#64748b'), background: selectedLift.mode === item[0] ? '#075985' : '#1e293b', color: '#f8fafc', fontSize: '12px', fontWeight: 700 } }, item[1]); })),
+                selectedLift.mode === 'bank' && h('label', { htmlFor: 'mm-entry-bank', style: { display: 'block', marginTop: '10px', color: '#e2e8f0', fontSize: '12px' } }, 'Fixed bank: ' + selectedLift.bank.toFixed(1) + '\u00b0',
+                  h('input', { id: 'mm-entry-bank', 'data-entry-bank': true, type: 'range', min: 0, max: 180, step: 1, value: selectedLift.bank,
+                    'aria-label': 'Fixed entry bank angle in degrees', 'aria-valuetext': selectedLift.bank.toFixed(1) + ' degrees. Zero gives upward lift; 90 gives lateral lift; 180 gives downward lift.',
+                    onChange: function(ev) { var value = Number(ev.target.value); if (mmNum(value)) upd('entryPlan', mmEntryPlan({ mode: 'bank', bank: value })); },
+                    style: { width: '100%', minHeight: '44px', accentColor: '#38bdf8' } })),
+                h('p', { 'data-entry-selected-plan': true, style: { margin: '8px 0 0', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.6 } },
+                  selectedLift.mode === 'guided' ? 'The teaching controller rotates lift to soften the descent. Its bank angle changes throughout entry.'
+                  : selectedLift.mode === 'ballistic' ? 'A zero-lift comparison capsule. Gravity and drag determine the descent.'
+                  : 'Bank rotates the full lift vector: 0\u00b0 lifts up, 90\u00b0 points sideways, and 180\u00b0 lifts down. This plan holds bank constant.'),
+                h('p', { style: { margin: '6px 0 0', color: '#cbd5e1', fontSize: '12px', lineHeight: 1.6 } }, 'Choose the plan before flight. Changing lift leaves the incoming return interface unchanged. The planar trajectory omits crossrange; total aerodynamic load includes lateral lift.')),
               h('div', {
                 role: 'status', 'aria-live': 'polite', 'data-entry-predicted-outcome': predicted.outcome,
                 className: 'mt-2 rounded-lg px-3 py-2 text-[0.6875rem] font-bold border ' +
@@ -13084,7 +15396,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   h('dd', { 'data-entry-predicted-value': metric.key, className: 'font-bold text-white mt-1' }, metric.value));
               })),
               h('p', { 'data-entry-plan-model-note': 'true', className: 'text-xs text-slate-300 leading-relaxed' },
-                t('stem.moonmission.entry_plan_model_note', 'Educational model: a spherical, non-rotating Earth, an approximate atmosphere, fixed capsule mass and drag area, and simple lift guidance. Parachutes deploy when the model meets altitude and speed conditions. Heating is an estimate of convective energy transfer, not a heat-shield temperature or a prediction of crew survival.'))
+                t('stem.moonmission.entry_plan_model_note', 'Educational model: a spherical, non-rotating Earth, an approximate atmosphere, fixed capsule mass and drag area. Lift-to-drag is 0.3 above 3 km/s, then lift switches off. Bank responds instantly; crossrange, winds and attitude dynamics are omitted. Parachutes deploy when the model meets altitude and speed conditions. Heating estimates convective energy transfer; shield temperature, ablation and crew survival require additional models.'))
             );
           })(),
           h('button', {
@@ -13095,7 +15407,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               if (!returnReady || !canProceed()) return;
               var ang2 = -Math.max(4, Math.min(9, Math.abs(mmNum(d.entryAngle) ? d.entryAngle : -6.5)));
               upd('entryOutcome', null);
-              upd('entryRun', { version: 1, angle: ang2, time: 0, recovery: 0, recorded: false });
+              upd('entryRun', { version: 2, angle: ang2, plan: Object.assign({}, mmEntryPlan(d.entryPlan)), time: 0, recovery: 0, recorded: false });
               upd('reentryStatus', 0);
               upd('entryPaused', false);
               upd('entryMigrationNote', null);
@@ -13123,29 +15435,50 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   var ctx = cvEl.getContext('2d');
                   var W = cvEl.offsetWidth || 500, HR = cvEl.offsetHeight || 320;
                   cvEl.width = W * 2; cvEl.height = HR * 2; ctx.scale(2, 2); if (typeof ResizeObserver === 'function' && !cvEl._mmRO) { cvEl._mmRO = new ResizeObserver(function() { var nw = cvEl.offsetWidth, nh = cvEl.offsetHeight; if (nw > 0 && nh > 0 && (nw !== W || nh !== HR)) { W = nw; HR = nh; cvEl.width = nw * 2; cvEl.height = nh * 2; ctx.setTransform(2, 0, 0, 2, 0, 0); } }); cvEl._mmRO.observe(cvEl); }   // rotate/resize used to leave the canvas stretched (backing store was locked at first mount)
-                  var savedEntryRun = d.entryRun && d.entryRun.version === 1 ? d.entryRun : null;
-                  var entryProfile = mmEntryProfile(savedEntryRun ? savedEntryRun.angle : d.entryAngle != null ? d.entryAngle : d.entryOutcome ? d.entryOutcome.angle : -6.5);
+                  var savedEntryRun = mmCleanEntryRun(d.entryRun);
+                  var entryProfile = mmEntryProfileForRun(savedEntryRun, d.entryAngle != null ? d.entryAngle : d.entryOutcome ? d.entryOutcome.angle : -6.5, d.entryPlan);
                   var entryTime = savedEntryRun ? Math.min(entryProfile.summary.duration, Math.max(0, savedEntryRun.time || 0)) : 0;
                   var entryRecovery = savedEntryRun ? Math.min(580 / 60, Math.max(0, savedEntryRun.recovery || 0)) : 0;
-                  var entryRecorded = !!(savedEntryRun && savedEntryRun.recorded && d.entryOutcome && d.entryOutcome.modelVersion === 1 && d.entryOutcome.completed);
+                  var entryRecorded = !!(savedEntryRun && savedEntryRun.recorded && mmEntryReceiptMatches(d.entryOutcome, savedEntryRun));
                   var entryRewardAlready = Math.max(d.entryAwardedXP || 0, !savedEntryRun && d.entryOutcome ? d.entryOutcome.outcome === 'nominal' ? 25 : 10 : 0);
                   var entryRate = [1, 10, 30, 60].indexOf(d.entryPlaybackRate) >= 0 ? d.entryPlaybackRate : 30;
                   var entryPaused = !!d.entryPaused, entryLastTs = null, entryLastPublish = -Infinity, entryPublishedKey = '';
+                  var dynamicsControls = mmEntryDynamicsControls(d);
+                  mmEntryDynamicsPersist(dynamicsControls, upd);
+                  cvEl._entryDynamicsAction = function(action, value) {
+                    dynamicsControls = mmEntryDynamicsControlChange(dynamicsControls, action, value);
+                    mmEntryDynamicsPersist(dynamicsControls, upd);
+                    var dynamicsHost = cvEl.closest('[data-entry-workspace]');
+                    if (dynamicsHost) mmUpdateEntryDynamics(dynamicsHost, entryProfile, mmEntrySample(entryProfile, entryTime), dynamicsControls);
+                  };
+                  var thermalControls = mmEntryThermalControls(d);
+                  mmEntryThermalPersist(thermalControls, upd);
+                  cvEl._entryThermalAction = function(action, value) {
+                    thermalControls = mmEntryThermalControlChange(thermalControls, action, value, entryProfile.summary.duration + MM_ENTRY_THERMAL.cooldown);
+                    mmEntryThermalPersist(thermalControls, upd);
+                    var thermalHost = cvEl.closest('[data-entry-workspace]');
+                    if (thermalHost) mmUpdateEntryThermal(thermalHost, entryProfile, mmEntrySample(entryProfile, entryTime), thermalControls);
+                  };
                   var tick = 0, reentryPhase = 0, _lastReentryPhase = -1;
                   var _entryAngle = entryProfile.angle, _entryPeakG = Math.round(entryProfile.summary.peakG * 10) / 10;
+                  // Normalization repairs the render view. Persist the compact
+                  // repaired evidence too, so reopening cannot restore a rejected claim.
+                  upd('entryOutcome', d.entryOutcome || null);
+                  upd('entryAttempts', d.entryAttempts || []);
+                  upd('entryMigrationNote', d.entryMigrationNote || null);
                   if (!savedEntryRun) {
                     if (d.entryOutcome) {
                       upd('entryAttempts', function(cur) { return (Array.isArray(cur) ? cur : []).concat([Object.assign({}, d.entryOutcome, { legacy: true })]).slice(-5); });
                       upd('entryAwardedXP', entryRewardAlready);
                     }
-                    if (d.entryOutcome || d.reentryStatus) upd('entryMigrationNote', d.entryOutcome ? 'This save used the earlier entry animation. Its earlier summary is retained in entry history; playback restarts with the physical model.' : 'This save used the earlier entry animation. Playback restarts with the physical model.');
+                    if (!d.entryMigrationNote && (d.entryOutcome || d.reentryStatus)) upd('entryMigrationNote', d.entryOutcome ? mmIsPhysicalEntry(d.entryOutcome) ? 'This saved entry result has no resumable run. Its earlier summary is retained in entry history; playback restarts at entry interface with the current model.' : 'This save used the earlier entry animation. Its earlier summary is retained in entry history; playback restarts with the physical model.' : 'This save used the earlier entry animation. Playback restarts with the physical model.');
                     upd('entryOutcome', null);
                   }
                   function publishEntry() {
                     var checkpointKey = entryTime + ':' + entryRecovery + ':' + entryRecorded;
                     if (checkpointKey === entryPublishedKey) return;
                     entryPublishedKey = checkpointKey;
-                    upd('entryRun', { version: 1, angle: _entryAngle, time: entryTime, recovery: entryRecovery, recorded: entryRecorded });
+                    upd('entryRun', Object.assign({ version: entryProfile.version, angle: _entryAngle, time: entryTime, recovery: entryRecovery, recorded: entryRecorded }, entryProfile.version === 2 ? { plan: Object.assign({}, entryProfile.plan) } : {}));
                   }
                   function entryVisibilityChanged() { entryLastTs = null; publishEntry(); }
                   document.addEventListener('visibilitychange', entryVisibilityChanged);
@@ -13159,7 +15492,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     var earnedXP = Math.max(0, targetXP - entryRewardAlready);
                     if (earnedXP) { entryRewardAlready = targetXP; upd('entryAwardedXP', targetXP); addXP(earnedXP); }
                     log('Entry ' + _entryAngle.toFixed(1) + '\u00b0: ' + result.outcome + ', peak ' + result.peakG + ' g.');
-                    if (typeof announceToSR === 'function') announceToSR(result.terminal === 'splash' ? 'Entry complete. Splashdown at ' + result.splashSpeed.toFixed(1) + ' metres per second.' : 'Entry ended without splashdown. Try another entry angle.');
+                    if (typeof announceToSR === 'function') announceToSR(result.terminal === 'splash' ? 'Entry complete. Splashdown at ' + result.splashSpeed.toFixed(1) + ' metres per second.' : 'Entry ended without splashdown. Try another entry plan.');
                     publishEntry();
                   }
                   cvEl._entryAction = function(action, value) {
@@ -13177,9 +15510,13 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     cvEl.dataset.entryLoad = String(sample.loadG);
                     cvEl.dataset.entryHeatFlux = String(sample.heatFlux);
                     cvEl.dataset.entryRecovery = String(entryRecovery);
+                     cvEl.dataset.entryGamma = String(sample.gamma); cvEl.dataset.entryVerticalSpeed = String(sample.speed * Math.sin(sample.gamma)); cvEl.dataset.entryBank = sample.bank == null ? '' : String(sample.bank);
                     var panel = cvEl.closest('[data-entry-workspace]');
                     if (!panel) return;
-                    var values = { time: sample.time.toFixed(1) + ' s', altitude: (sample.altitude / 1000).toFixed(2) + ' km', speed: (sample.speed / 1000).toFixed(3) + ' km/s',
+                    mmUpdateEntryTrajectory(panel, entryProfile, sample);
+                    if (dynamicsControls.open) mmUpdateEntryDynamics(panel, entryProfile, sample, dynamicsControls);
+                    if (thermalControls.open) mmUpdateEntryThermal(panel, entryProfile, sample, thermalControls);
+                     var values = { gamma: (sample.gamma * 180 / Math.PI).toFixed(2) + '\u00b0', verticalSpeed: (sample.speed * Math.sin(sample.gamma)).toFixed(1) + ' m/s', bank: entryProfile.version === 1 ? 'Not recorded' : sample.bank == null ? 'Lift inactive' : sample.bank.toFixed(1) + '\u00b0', time: sample.time.toFixed(1) + ' s', altitude: (sample.altitude / 1000).toFixed(2) + ' km', speed: (sample.speed / 1000).toFixed(3) + ' km/s',
                       load: sample.loadG.toFixed(2) + ' g', heat: (sample.heatFlux / 1e6).toFixed(2) + ' MW/m\u00b2', heatLoad: (sample.heatLoad / 1e6).toFixed(1) + ' MJ/m\u00b2',
                       pressure: (sample.dynamicPressure / 1000).toFixed(2) + ' kPa', downrange: (sample.downrange / 1000).toFixed(0) + ' km', stage: sample.stage === 'entry' && sample.blackout ? 'Entry \u00b7 radio cue' : sample.stage };
                     panel.querySelectorAll('[data-entry-value]').forEach(function(node) { node.textContent = values[node.getAttribute('data-entry-value')] || ''; });
@@ -13231,7 +15568,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   }
                   // In the capsule's own frame (shield at +y, apex at -y), so the plasma follows
                   // its attitude. The wake: air the shield has heated, streaming back past the
-                  // shoulders, with bits of the charring shield carried off as sparks.
+                  // shoulders, with illustrative glowing wake particles. Ablation is not modeled.
                   function drawEntryWake(e) {
                     var q = Math.max(0, Math.min(1, e.heat));
                     if (q < 0.02) return;
@@ -13314,7 +15651,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     ctx.restore();
                   }
                   function drawReentry(ts) {
-                    if (!document.contains(cvEl)) { if (cvEl._mmRO) cvEl._mmRO.disconnect(); document.removeEventListener('visibilitychange', entryVisibilityChanged); return; }
+                    if (!document.contains(cvEl)) { if (cvEl._mmRO) cvEl._mmRO.disconnect(); document.removeEventListener('visibilitychange', entryVisibilityChanged); delete cvEl._entryThermalAction; delete cvEl._entryDynamicsAction; return; }
                     var entryDt = Number.isFinite(ts) && entryLastTs != null ? Math.max(0, Math.min(0.25, (ts - entryLastTs) / 1000)) : 0;
                     entryLastTs = Number.isFinite(ts) && !_mmAnimPaused && !entryPaused && !document.hidden ? ts : null;
                     if (!_mmAnimPaused && !entryPaused && !document.hidden) {
@@ -13649,10 +15986,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
             )
           ),
           (function() {
-            var uiRun = d.entryRun || {}, uiProfile = mmEntryProfile(uiRun.angle != null ? uiRun.angle : d.entryAngle != null ? d.entryAngle : d.entryOutcome ? d.entryOutcome.angle : -6.5);
+            var uiRun = d.entryRun || {}, uiProfile = mmEntryProfileForRun(d.entryRun, d.entryAngle != null ? d.entryAngle : d.entryOutcome ? d.entryOutcome.angle : -6.5, d.entryPlan);
             var uiSample = mmEntrySample(uiProfile, uiRun.time || 0), uiPaused = !!d.entryPaused || _mmAnimPaused;
             function entryAction(ev, action, value) { var host = ev.currentTarget.closest('[data-entry-workspace]'), canvas = host && host.querySelector('[data-entry-canvas]'); if (canvas && canvas._entryAction) canvas._entryAction(action, value); }
-            var entryButtonStyle = { padding: '8px 12px', minHeight: '40px', borderRadius: '8px', border: '1px solid #475569', background: '#1e293b', color: '#f8fafc', fontSize: '12px', fontWeight: 600 };
+            var entryButtonStyle = { padding: '8px 12px', minHeight: '44px', borderRadius: '8px', border: '1px solid #475569', background: '#1e293b', color: '#f8fafc', fontSize: '12px', fontWeight: 600 };
             function entryChart(key, title, unit, divisor, color) {
               var rows = uiProfile.samples, maximum = Math.max.apply(null, rows.map(function(row) { return row[key] / divisor; })) * 1.08 || 1;
               var points = [], stride = Math.max(1, Math.floor(rows.length / 180));
@@ -13661,20 +15998,22 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
               var cursor = 20 + 560 * uiSample.time / uiProfile.summary.duration;
               return h('figure', { key: key, style: { margin: 0, minWidth: 0, background: '#0b1425', borderRadius: '8px', padding: '8px' } },
                 h('figcaption', { style: { color: color, fontSize: '12px', fontWeight: 700 } }, title + ' \u00b7 peak ' + (maximum / 1.08).toFixed(2) + ' ' + unit),
-                h('svg', { viewBox: '0 0 600 110', role: 'img', 'aria-label': title + ' over entry time. Use the playback slider for exact readings.', style: { display: 'block', width: '100%' } },
+                h('svg', { viewBox: '0 0 600 90', preserveAspectRatio: 'none', role: 'img', 'aria-label': title + ' over entry time. Use the playback slider for exact readings.', style: { display: 'block', width: '100%', height: '100px' } },
                   h('line', { x1: 20, y1: 82, x2: 580, y2: 82, stroke: '#475569' }),
-                  h('polyline', { points: points.join(' '), fill: 'none', stroke: color, strokeWidth: 2 }),
-                  h('line', { 'data-entry-playhead': key, x1: cursor, x2: cursor, y1: 8, y2: 85, stroke: '#f8fafc', strokeWidth: 1.5 }),
-                  h('text', { x: 20, y: 103, fill: '#cbd5e1', fontSize: 12 }, '0 s'),
-                  h('text', { x: 580, y: 103, textAnchor: 'end', fill: '#cbd5e1', fontSize: 12 }, uiProfile.summary.duration.toFixed(0) + ' s')));
+                  h('polyline', { points: points.join(' '), fill: 'none', stroke: color, strokeWidth: 2, vectorEffect: 'non-scaling-stroke' }),
+                  h('line', { 'data-entry-playhead': key, x1: cursor, x2: cursor, y1: 8, y2: 85, stroke: '#f8fafc', strokeWidth: 1.5, vectorEffect: 'non-scaling-stroke' }),
+                  null),
+                h('div', { 'data-entry-chart-axis': key, style: { display: 'flex', justifyContent: 'space-between', color: '#cbd5e1', fontSize: '12px' } }, h('span', null, '0 s'), h('span', null, uiProfile.summary.duration.toFixed(0) + ' s')));
             }
-            var metricRows = [['time', 'Entry time', uiSample.time.toFixed(1) + ' s'], ['altitude', 'Altitude', (uiSample.altitude / 1000).toFixed(2) + ' km'], ['speed', 'Speed', (uiSample.speed / 1000).toFixed(3) + ' km/s'], ['load', 'Crew load', uiSample.loadG.toFixed(2) + ' g'], ['heat', 'Heat flux', (uiSample.heatFlux / 1e6).toFixed(2) + ' MW/m\u00b2'], ['heatLoad', 'Heat load', (uiSample.heatLoad / 1e6).toFixed(1) + ' MJ/m\u00b2'], ['pressure', 'Dynamic pressure', (uiSample.dynamicPressure / 1000).toFixed(2) + ' kPa'], ['downrange', 'Downrange', (uiSample.downrange / 1000).toFixed(0) + ' km']];
-            var completedEntry = !!(uiRun.recorded && d.entryOutcome && d.entryOutcome.modelVersion === 1 && d.entryOutcome.completed);
+            var metricRows = [['time', 'Entry time', uiSample.time.toFixed(1) + ' s'], ['altitude', 'Altitude', (uiSample.altitude / 1000).toFixed(2) + ' km'], ['speed', 'Speed', (uiSample.speed / 1000).toFixed(3) + ' km/s'], ['load', 'Aerodynamic load', uiSample.loadG.toFixed(2) + ' g'], ['gamma', 'Flight path angle', (uiSample.gamma * 180 / Math.PI).toFixed(2) + '\u00b0'], ['verticalSpeed', 'Vertical speed', (uiSample.speed * Math.sin(uiSample.gamma)).toFixed(1) + ' m/s'], ['bank', 'Bank angle', uiProfile.version === 1 ? 'Not recorded' : uiSample.bank == null ? 'Lift inactive' : uiSample.bank.toFixed(1) + '\u00b0'], ['heat', 'Heat flux', (uiSample.heatFlux / 1e6).toFixed(2) + ' MW/m\u00b2'], ['heatLoad', 'Heat load', (uiSample.heatLoad / 1e6).toFixed(1) + ' MJ/m\u00b2'], ['pressure', 'Dynamic pressure', (uiSample.dynamicPressure / 1000).toFixed(2) + ' kPa'], ['downrange', 'Downrange', (uiSample.downrange / 1000).toFixed(0) + ' km']];
+            var completedEntry = !!(uiRun.recorded && mmEntryReceiptMatches(d.entryOutcome, uiRun));
             return h('div', { 'data-entry-instruments': true, style: { padding: '14px', border: '1px solid #334155', borderRadius: '12px', background: '#0f172a', color: '#e2e8f0' } },
               h('div', { style: { display: 'flex', flexWrap: 'wrap', gap: '8px', alignItems: 'center', justifyContent: 'space-between', marginBottom: '12px' } },
                 h('h4', { style: { margin: 0, fontSize: '15px', fontWeight: 700 } }, 'Entry flight recorder'),
                 h('span', { 'data-entry-value': 'stage', style: { fontFamily: 'monospace', textTransform: 'uppercase', fontSize: '12px', color: '#bae6fd' } }, uiSample.stage)),
               d.entryMigrationNote && h('p', { role: 'status', style: { fontSize: '12px', color: '#fde68a', marginBottom: '10px' } }, d.entryMigrationNote),
+              mmEntryTrajectoryView(h, uiProfile, uiSample),
+              h('p', { 'data-entry-run-plan': true, style: { fontSize: '12px', color: '#bae6fd', margin: '10px 0' } }, uiProfile.version === 2 ? 'Flown plan: ' + mmEntryPlanLabel(uiProfile.plan) : 'Earlier physical model: original guided lift and load calculation.'),
               h('dl', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(116px, 1fr))', gap: '10px', margin: '0 0 14px' } }, metricRows.map(function(item) {
                 return h('div', { key: item[0] }, h('dt', { style: { fontSize: '11px', color: '#cbd5e1' } }, item[1]), h('dd', { 'data-entry-value': item[0], style: { margin: 0, fontSize: '15px', fontWeight: 700, fontVariantNumeric: 'tabular-nums', color: '#f8fafc' } }, item[2]));
               })),
@@ -13684,19 +16023,21 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 h('button', { type: 'button', 'data-entry-result': true, style: entryButtonStyle, onClick: function(ev) { entryAction(ev, 'result'); } }, 'Show entry result')),
               h('label', { htmlFor: 'mm-entry-playback', style: { display: 'block', marginTop: '12px', fontSize: '12px' } }, 'Entry playback time'),
               h('input', { id: 'mm-entry-playback', 'data-entry-seek': true, type: 'range', min: 0, max: uiProfile.summary.duration, step: 0.1, defaultValue: uiSample.time,
-                onChange: function(ev) { entryAction(ev, 'seek', ev.target.value); }, style: { width: '100%', accentColor: '#fb923c', minHeight: '32px' } }),
+                onChange: function(ev) { entryAction(ev, 'seek', ev.target.value); }, style: { width: '100%', accentColor: '#fb923c', minHeight: '44px' } }),
               h('p', { style: { fontSize: '11px', color: '#cbd5e1', margin: '4px 0 12px' } }, 'Scrub to inspect the computed flight. Show entry result works while paused. The white lines mark the current physical time.'),
-              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '8px' } }, entryChart('loadG', 'Crew load', 'g', 1, '#7dd3fc'), entryChart('heatFlux', 'Convective heat flux', 'MW/m\u00b2', 1e6, '#fdba74')),
+              h('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%, 220px), 1fr))', gap: '8px' } }, entryChart('loadG', 'Aerodynamic load', 'g', 1, '#7dd3fc'), entryChart('heatFlux', 'Convective heat flux', 'MW/m\u00b2', 1e6, '#fdba74')),
+              mmEntryDynamicsView(h, uiProfile, uiSample, mmEntryDynamicsControls(d), function(action, value, ev) { mmEntryDynamicsAction(ev, action, value, d, upd); }),
+              mmEntryThermalView(h, uiProfile, uiSample, mmEntryThermalControls(d), function(action, value, ev) { mmEntryThermalAction(ev, action, value, d, upd); }),
               completedEntry && h('p', { role: 'status', 'data-entry-terminal': d.entryOutcome.terminal, style: { marginTop: '12px', fontSize: '13px', color: d.entryOutcome.outcome === 'nominal' ? '#86efac' : '#fde68a' } },
-                d.entryOutcome.terminal === 'splash' ? 'Splashdown at ' + d.entryOutcome.splashSpeed.toFixed(1) + ' m/s. Peak crew load ' + d.entryOutcome.peakG.toFixed(1) + ' g.' + (d.entryOutcome.outcome === 'steep' ? ' This exceeds the model\u2019s 10 g teaching threshold; try a shallower angle.' : '') : d.entryOutcome.terminal === 'skip' ? 'The capsule exited the atmosphere before capture. No parachutes or splashdown occurred. Try a steeper angle.' : 'The computed flight did not reach a terminal event. Choose another entry angle.'),
+                d.entryOutcome.terminal === 'splash' ? 'Splashdown at ' + d.entryOutcome.splashSpeed.toFixed(1) + ' m/s. Peak aerodynamic load ' + d.entryOutcome.peakG.toFixed(1) + ' g.' + (d.entryOutcome.outcome === 'steep' ? ' This exceeds the model\u2019s 10 g teaching threshold; compare entry angle and lift plan.' : '') : d.entryOutcome.terminal === 'skip' ? 'The capsule exited the atmosphere before parachute descent. No parachutes or splashdown occurred. Compare entry angle and lift plan.' : 'The computed flight did not reach a terminal event. Choose another entry angle.'),
               completedEntry && h('button', { type: 'button', 'data-entry-retry': true, style: Object.assign({}, entryButtonStyle, { marginTop: '10px' }), disabled: eventPending,
-                onClick: function() { if (!canProceed()) return; upd('entryRun', null); upd('entryOutcome', null); upd('reentryStatus', 0); upd('entryPaused', false); setPhase(8); } }, 'Try another entry angle'),
+                onClick: function() { if (!canProceed()) return; upd('entryRun', null); upd('entryOutcome', null); upd('reentryStatus', 0); upd('entryPaused', false); setPhase(8); } }, 'Try another entry plan'),
               (d.entryAttempts || []).length > 0 && h('details', { style: { marginTop: '12px', fontSize: '12px' } }, h('summary', { style: { cursor: 'pointer' } }, 'Recent entry attempts (' + d.entryAttempts.length + ')'),
-                h('ol', { style: { margin: '8px 0 0', paddingLeft: '20px' } }, d.entryAttempts.slice().reverse().map(function(attempt, index) { return h('li', { key: index, style: { marginBottom: '4px' } }, attempt.angle.toFixed(1) + '\u00b0 \u00b7 ' + attempt.outcome + ' \u00b7 ' + attempt.peakG.toFixed(1) + ' g' + (attempt.modelVersion === 1 ? ' \u00b7 ' + (attempt.peakHeatFlux / 1e6).toFixed(2) + ' MW/m\u00b2' : ' \u00b7 earlier model')); }))),
+                h('ol', { style: { margin: '8px 0 0', paddingLeft: '20px' } }, d.entryAttempts.slice().reverse().map(function(attempt, index) { return h('li', { key: index, style: { marginBottom: '4px' } }, attempt.angle.toFixed(1) + '\u00b0 \u00b7 ' + attempt.outcome + ' \u00b7 ' + attempt.peakG.toFixed(1) + ' g' + (attempt.modelVersion === 2 ? ' \u00b7 ' + mmEntryPlanLabel(attempt.plan) : attempt.modelVersion === 1 ? ' \u00b7 earlier physical model' : '') + (mmIsPhysicalEntry(attempt) ? ' \u00b7 ' + (attempt.peakHeatFlux / 1e6).toFixed(2) + ' MW/m\u00b2' : ' \u00b7 earlier animation')); }))),
               h('details', { style: { marginTop: '12px', fontSize: '12px', lineHeight: 1.6, color: '#cbd5e1' } }, h('summary', { style: { cursor: 'pointer' } }, 'How this entry model works'),
-                h('p', null, 'A spherical Earth, altitude-dependent gravity, a layered standard atmosphere and a 5,500 kg capsule determine the trajectory. Drag and modest guided lift act on the same state. Parachutes open gradually after altitude, speed and pressure checks. The simplified guidance and constant aerodynamic properties are educational approximations.'),
-                h('p', null, 'Heating uses a Sutton\u2013Graves convective heat-flux estimate. Heat load is its time integral. Predicting heat-shield temperature, ablation or survival would require a separate material and thermal model. The 10 g caution is a teaching threshold; radio blackout is a visual cue.'),
-                h('p', null, 'References: ', h('a', { href: 'https://ntrs.nasa.gov/citations/19770009539', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'U.S. Standard Atmosphere'), ' \u00b7 ', h('a', { href: 'https://ntrs.nasa.gov/citations/19710015566', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'Apollo entry measurements'), ' \u00b7 ', h('a', { href: 'https://www.nasa.gov/history/throwback-to-apollo-parachute-testing/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'Apollo parachute testing'))));
+                h('p', null, 'A spherical Earth, altitude-dependent gravity, a layered standard atmosphere and a 5,500 kg capsule determine the trajectory. Drag and the chosen lift plan act on the same state. Above 3 km/s, lift-to-drag is 0.3 for lifting plans; bank projects lift into the vertical flight plane. Total aerodynamic load includes the full lift vector, even at 90 degrees bank. Crossrange, attitude lag and winds are omitted. Parachutes open gradually after altitude, speed and pressure checks. The simplified guidance and constant aerodynamic properties are educational approximations.'),
+                h('p', null, 'Heating uses a Sutton\u2013Graves convective heat-flux estimate. Heat load is its time integral. The optional heat-shield lab applies this input to a hypothetical slab with conduction and surface radiation. Apollo shield temperature, ablation and survival require a calibrated material model with additional processes. The 10 g caution is a teaching threshold; radio blackout is a visual cue.'),
+                h('p', null, 'References: ', h('a', { href: 'https://ntrs.nasa.gov/citations/19770009539', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'U.S. Standard Atmosphere'), ' \u00b7 ', h('a', { href: 'https://ntrs.nasa.gov/citations/19710015566', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'Apollo entry measurements'), ' \u00b7 ', h('a', { href: 'https://www.nasa.gov/history/throwback-to-apollo-parachute-testing/', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'Apollo parachute testing'), ' \u00b7 ', h('a', { href: 'https://ntrs.nasa.gov/citations/19750005834', target: '_blank', rel: 'noopener noreferrer', style: { color: '#7dd3fc', textDecoration: 'underline' } }, 'Apollo lift-vector and load instruments'))));
           })(),
           h('button', {
             'data-entry-complete': true,
@@ -13810,9 +16151,9 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                   'The real Apollo seismometers ran until 1977 and recorded thousands of moonquakes and meteorite strikes. Almost everything we know about the inside of the Moon came from instruments the crews set down by hand and walked away from.')
               ),
               // Entry corridor \u2014 the last number the mission asks you to get right.
-              d.entryOutcome && h('div', { 'data-entry-debrief': d.entryOutcome.modelVersion === 1 ? 'physical' : 'legacy', className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
+              d.entryOutcome && h('div', { 'data-entry-debrief': mmIsPhysicalEntry(d.entryOutcome) ? 'physical' : 'legacy', className: 'bg-white/5 rounded-lg p-2 border border-white/10 mb-2' },
                 h('p', { className: 'text-[0.6875rem] font-bold mb-0.5 ' + (d.entryOutcome.outcome === 'nominal' ? 'text-green-300' : 'text-yellow-300') },
-                  d.entryOutcome.modelVersion === 1
+                  mmIsPhysicalEntry(d.entryOutcome)
                     ? (d.entryOutcome.terminal === 'skip' ? '\u26a0\ufe0f SKIP-OUT'
                       : d.entryOutcome.terminal === 'incomplete' ? '\u26a0\ufe0f ENTRY INCOMPLETE'
                       : d.entryOutcome.outcome === 'steep' ? '\u26a0\ufe0f HIGH-LOAD SPLASHDOWN' : '\ud83c\udfaf ATMOSPHERIC CAPTURE & SPLASHDOWN') +
@@ -13823,7 +16164,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                       ? '\u26a0\ufe0f SKIP-OUT \u2014 entered at ' + d.entryOutcome.angle.toFixed(1) + '\u00b0, too shallow'
                       : '\u26a0\ufe0f STEEP ENTRY \u2014 ' + d.entryOutcome.angle.toFixed(1) + '\u00b0, about ' + d.entryOutcome.peakG + ' g'),
                 h('p', { className: 'text-[0.6875rem] text-slate-200' },
-                  d.entryOutcome.modelVersion === 1
+                  mmIsPhysicalEntry(d.entryOutcome)
                     ? (d.entryOutcome.terminal === 'skip'
                       ? 'The capsule climbed back above the 122 km entry interface. This simulation ends at that upward crossing; a later return is not modeled.'
                       : d.entryOutcome.terminal === 'incomplete'
@@ -13836,7 +16177,8 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                     : d.entryOutcome.outcome === 'skip'
                       ? 'Too shallow and the atmosphere behaves like a stone skipping on water \u2014 it throws you back out, and the next chance is hours away.'
                       : 'Steeper means shorter, hotter and heavier. The shield is built to burn away, but the crew feels every g of it.'),
-                d.entryOutcome.modelVersion === 1 && h('dl', { className: 'grid grid-cols-2 gap-2 mt-2 text-[0.6875rem]' }, [
+                d.entryOutcome.modelVersion === 2 && h('p', { className: 'text-xs text-sky-200 mt-2', 'data-entry-debrief-plan': true }, 'Flown lift plan: ' + mmEntryPlanLabel(d.entryOutcome.plan)),
+                mmIsPhysicalEntry(d.entryOutcome) && h('dl', { className: 'grid grid-cols-2 gap-2 mt-2 text-[0.6875rem]' }, [
                   ['Peak heat flux', (d.entryOutcome.peakHeatFlux / 1e6).toFixed(2) + ' MW/m\u00b2'],
                   ['Accumulated heat', (d.entryOutcome.heatLoad / 1e6).toFixed(1) + ' MJ/m\u00b2'],
                   ['Simulated time', d.entryOutcome.duration.toFixed(1) + ' s'],
@@ -13936,6 +16278,18 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 );
               })()
             ),
+
+            (function() {
+              var dynamicsSource = mmEntryDynamicsSource(d), dynamicsRun = mmCleanEntryState(d).entryRun;
+              return mmEntryDynamicsView(h, dynamicsSource, mmEntrySample(dynamicsSource, dynamicsRun ? dynamicsRun.time : (mmEntryDynamicsReport(d.entryOutcome) ? dynamicsSource.summary.duration : 0)), mmEntryDynamicsControls(d),
+                function(action, value, ev) { mmEntryDynamicsAction(ev, action, value, d, upd); });
+            })(),
+
+            (function() {
+              var thermalSource = mmEntryThermalSource(d), thermalRun = mmCleanEntryState(d).entryRun;
+              return mmEntryThermalView(h, thermalSource, mmEntrySample(thermalSource, thermalRun ? thermalRun.time : 0), mmEntryThermalControls(d),
+                function(action, value, ev) { mmEntryThermalAction(ev, action, value, d, upd); });
+            })(),
 
             // Debrief notes, the report to hand in, and the flights so far. "Fly again and
             // beat it" had nothing to beat: Fly Another Mission wiped the flight.
@@ -14075,6 +16429,7 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('seismoDeployed', false);
                 upd('mccChoice', null);
                 upd('entryAngle', null);
+                upd('entryPlan', mmEntryPlan(null));
                 upd('entryOutcome', null);
                 upd('entryRun', null);
                 upd('entryAttempts', []);
@@ -14083,6 +16438,10 @@ if (!(window.StemLab.isRegistered && window.StemLab.isRegistered('moonMission'))
                 upd('entryPlaybackRate', 30);
                 upd('entryPaused', false);
                 upd('entryMigrationNote', null);
+                upd('entryDynamicsOpen', false); upd('entryDynamicsView', 'forces');
+                upd('descentPredictionOpen', false);
+                upd('entryThermalOpen', false); upd('entryThermalPlan', mmEntryThermalPlan(null));
+                upd('entryThermalFollow', true); upd('entryThermalTime', 0); upd('entryThermalIncludeReport', false);
                 // aiBriefing is kept: it is the teacher's customization of the whole
                 // mission (objectives, samples, quiz), not something this flight earned.
                 upd('aiBriefingLoading', false);

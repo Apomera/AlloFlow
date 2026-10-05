@@ -1,0 +1,57 @@
+[
+  {
+    "attempt": "Initial unit invocation",
+    "report": "unit-dust-initial.json",
+    "outcome": "No test files found; integration guard had stopped before copying the new file. No pass credit."
+  },
+  {
+    "attempt": "Focused dust unit checks",
+    "report": "unit-dust-focused.json",
+    "outcome": "All 26 passed before final visual refinement; final 242-case run includes them."
+  },
+  {
+    "attempt": "Initial browser authoring run",
+    "artifacts": "browser-initial/",
+    "outcome": "Interrupted before a completed result. A local controller variable shadowed its animation callback; corrected in the new fixture. No JSON completion report."
+  },
+  {
+    "attempt": "First completed dust browser run",
+    "report": "browser-dust-recovery.json",
+    "outcome": "Two passed and two failed. Forced-color model notes failed color contrast; production disclosure received scoped system colors. WebGL probe patched a prototype method although this Three version owns render on each renderer instance; the test now wraps the actual instance."
+  },
+  {
+    "attempt": "Corrected dust browser run",
+    "report": "browser-dust-corrected.json",
+    "outcome": "All four passed. Visual review then increased trail duration and opacity for clearer final streaks."
+  },
+  {
+    "attempt": "Combined final-source browser run",
+    "artifacts": "browser-final/",
+    "outcome": "Seven workflows printed completed passes: all four dust workflows and three energy workflows. The runner then exited with Fatal process out of memory: Worklist::Segment::Create. No JSON completion report; the overall run failed. Completed dust pixel and context-loss evidence is retained."
+  },
+  {
+    "attempt": "Fresh final-source vector suite",
+    "artifacts": "browser-vectors-final/",
+    "outcome": "The first workflow printed a pass; the runner then stalled. Shell initialization separately failed with System.OutOfMemoryException. Root stopped only this own test session. No JSON completion report and no complete-suite pass credit."
+  },
+  {
+    "attempt": "First isolated cutoff workflow",
+    "report": "browser-dust-isolated-1.json",
+    "outcome": "The assertion requiring surviving grains failed after the separate protocol wait and pause calls overshot the intended cutoff interval on a busy host. The failure image shows the craft had reached 0.6 m altitude. The new fixture now clicks the actual Pause button in the page animation loop at the measured target, retaining all particle and physics assertions and adding an upper bound on elapsed time. Production source unchanged; failure screenshot and trace retained."
+  },
+  {
+    "attempt": "Final isolated browser recovery",
+    "reports": [
+      "browser-energy-final.json",
+      "browser-vectors-isolated-1.json",
+      "browser-vectors-isolated-2.json",
+      "browser-vectors-isolated-3.json",
+      "browser-vectors-isolated-4.json",
+      "browser-dust-isolated-1-corrected.json",
+      "browser-dust-isolated-2.json",
+      "browser-dust-isolated-3.json",
+      "browser-dust-isolated-4.json"
+    ],
+    "outcome": "All 12 distinct workflows passed in fresh runner processes. Original assertions, 180-second workflow limits, one worker and zero retries retained."
+  }
+]

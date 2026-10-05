@@ -1,0 +1,168 @@
+{
+  "date": "2026-10-01",
+  "result": "passed",
+  "parent": "845c5dca56cabe2503169c58fd63a0b6630b94ef",
+  "commitBranch": "codex/firstresponse-hand-surfaces",
+  "unitTests": {
+    "passed": 271,
+    "fullRunPassed": 271,
+    "files": 4,
+    "pool": "threads",
+    "timeoutMs": 120000,
+    "seconds": 42.47,
+    "suites": {
+      "firstresponse_hand_surface": 23,
+      "firstresponse_depth_explorer": 115,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    }
+  },
+  "browserTests": {
+    "passed": 32,
+    "fullRunPassed": 32,
+    "retries": 0,
+    "summary": "32 passed (10.1m)",
+    "renderer": "Chromium WebGL with ANGLE SwiftShader",
+    "bodyRegression": 8,
+    "chestInspection": 5,
+    "newHandSurfaces": 3,
+    "legAndRecoveryReview": 4,
+    "manikinAndFace": 9,
+    "visualMarkers": 3
+  },
+  "refinements": [
+    "Continuous closed finger and thumb skin with tapered joints and rounded tips",
+    "Finger proportions and thumb positions mirror between patient and rescuer hands",
+    "Curved nails follow dorsal finger surfaces through movement",
+    "Sculpted palms and mirrored folds fit the rendered skin",
+    "Finger surfaces preserve raised fingertips and heel contact during compression",
+    "Wrist, arm lengths, recovery palm orientation and cheek contact remain stable",
+    "Fewer digit meshes and vertices; curve frames cached once per ring"
+  ],
+  "coverage": [
+    "Nail vertices raycast against actual digit triangles at every age and recovery phase",
+    "Closed and consistently wound skin surfaces with finite unit normals",
+    "Mirrored digit and nail vertices plus index/little finger proportions",
+    "Palm folds raycast against actual sculpted palms and mirror in hand coordinates",
+    "Every rescuer hand vertex remains above the chest contact plane",
+    "Existing CPR, AED, depth measurement, age changes, hand arrangements, recovery views and face features",
+    "Phone keyboard controls, enlarged text spacing, forced colors, app contrast, live draw ownership and context cleanup"
+  ],
+  "screenshots": {
+    "captured": 12,
+    "reviewed": 12,
+    "reviewedFiles": [
+      "adult-chest-hands.png",
+      "child-chest-hands.png",
+      "infant-chest-hands.png",
+      "adult-recovery-hand-surfaces.png",
+      "child-recovery-hand-surfaces.png",
+      "infant-recovery-hand-surfaces.png",
+      "adult-recovery-cheek-hand.png",
+      "child-recovery-cheek-hand.png",
+      "infant-recovery-cheek-hand.png",
+      "phone-chest-hands.png",
+      "forced-colors-phone-hands.png",
+      "contrast-phone-hands.png"
+    ],
+    "reviewedHashes": {
+      "adult-chest-hands.png": "7144830dcc145232e6acbf7d05d79541a777101e65747dc80d7c62106cd4546f",
+      "child-chest-hands.png": "3873c92bde042c4d46c2f7bd6dc932ab34c75caa5dbd590462a92d0f5d573db8",
+      "infant-chest-hands.png": "c5edec3487f9a0dfba28346cf2cd0a19155243dd5853ee7927565a3ac5d655a0",
+      "adult-recovery-hand-surfaces.png": "c93628e35fc162a011f55f0fd388f5e99ac0b9af9bfd750e73b6e44cf58ec60d",
+      "child-recovery-hand-surfaces.png": "07ee8dc20b1e1577a906af70d91758f07413d690c1f95c9c1cce175ed10985ae",
+      "infant-recovery-hand-surfaces.png": "a196d38bb17ed066dcbc76f9cb252e35bba2f6c2f4e519cab652c43638139f0d",
+      "adult-recovery-cheek-hand.png": "7ab73402fd541ca4b440d5ff45b657e0213b93b6dfd37209f2a1dbc6f8145129",
+      "child-recovery-cheek-hand.png": "d76113ad8ca7052d0771692bb0856323b07bd096cc7611b31ee3f0ec304df8e7",
+      "infant-recovery-cheek-hand.png": "54f5a07c5fa326bd5577c20de6cc6a01388cc9814e00d990e2e078bf2a546a3f",
+      "phone-chest-hands.png": "a6975db882ad8b1f3adac0286c5fed37a03ebf3fc3c5663c10cb63d569c22adf",
+      "forced-colors-phone-hands.png": "3679e2d68064f7ba83a8d9c8bb910ac00855f399fdc72e75d7898902ce3bb10e",
+      "contrast-phone-hands.png": "1665b1c47a65157872c30a2edef82255e4be5c5c2683a73df85fca8b35973498"
+    }
+  },
+  "synchronization": {
+    "moduleCopies": "identical",
+    "firstResponseCatalogs": "unchanged from parent",
+    "newEnglishLabels": 0,
+    "sharedRenderer": {
+      "unchangedFromParent": true,
+      "excludedUnrelatedBlock": "Bee persistence helper",
+      "canonicalSha256": "1a6c405cac46819169ffacd0e10b6289a837f9b85649c991493ccdd1c51f5234"
+    }
+  },
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "b9ddf7f77376382b1577747f5f79413462a316c3824f5d5807a6e41207f8e1e9",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "b9ddf7f77376382b1577747f5f79413462a316c3824f5d5807a6e41207f8e1e9",
+    "stem_lab/stem_lab_module.js": "d2c378b5e490c3caf7eda965cd94e9445c157afc63a3a492f7f9334221c3e793",
+    "tests/firstresponse_hand_surface.test.js": "b878923ea925659f00b6d6870faf995c26f1fceef099efb421cd0c1fd0b338e9",
+    "tests/firstresponse_depth_explorer.test.js": "8d95fe9bf754bf6029adb91a4f7b2339700cfa315144a77b90123018244132b0",
+    "tests/firstresponse_body_3d.test.js": "fb90737f362657b15e303ce946bda19f84ef9c1a02ac4f57fb6a1338cc403111",
+    "tests/stem_firstresponse_hook_order.test.js": "50bac19e05d1cb634cdbe7e1ef3927ff730bb9838be311cf01feb2bd58373dc0",
+    "tests/helpers/firstresponse_pose_probe.js": "2faafa6bc208b440f23ea9680351d65c43ad2a5b5e962e597a48157bef4ac672",
+    "tests/e2e/firstresponse-hand-surfaces.spec.ts": "e074842f8702a4e4f14c6ac776b4b989cb3ce272948607166e539fc7792f63cc",
+    "tests/e2e/firstresponse-manikin-realism.spec.ts": "04e26022e791da7a274af2f7e0ed4f7f99fcbfe95a962ae9c243b45dbc508bf9",
+    "tests/e2e/24-firstresponse-body-gl.spec.ts": "feaac0f722726b152d113363fd916ca4ee5a5058286c262c8ec4cedb0886ec9e",
+    "tests/e2e/firstresponse-chest-inspection.spec.ts": "f0aad415cfb363cc266ddd2472c44c28605053cf9233c4794cf5ab092b53f9e3",
+    "tests/e2e/firstresponse-leg-inspection.spec.ts": "f4a257ed97d571e7bb40b5e31e2dafa2d0a848c06dd54601d5bddcc7fb2b4355",
+    "tests/e2e/firstresponse-visual-markers.spec.ts": "0e6c5cd0af3073565927ed5521c59559f38c8f960cf21865a5afaa13a407d603",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "tests/e2e/helpers/png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "playwright.config.ts": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587",
+    "reports/firstresponse-hand-surfaces/playwright.config.ts": "0bdd699b0862dd63751bb1f169bd99d6deb8de5e629cc0f293285d6915c7072f",
+    "reports/firstresponse-depth-comparison/playwright-software.config.ts": "a3ab365e61b809e8d1cde1c47de6d88940be0d902aafc70d56dce7a3bffe01ec",
+    "vendor/three-r128/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04"
+  },
+  "geometryCounts": {
+    "measuredSourceSha256": "b9ddf7f77376382b1577747f5f79413462a316c3824f5d5807a6e41207f8e1e9",
+    "configuration": {
+      "age": "adult",
+      "tab": "coach",
+      "phase": 0,
+      "dark": true,
+      "contrast": false,
+      "shadows": false
+    },
+    "patientLeftDigits": {
+      "scope": "skin including thumb, excluding nails",
+      "parent": {
+        "meshes": 17,
+        "vertices": 9115,
+        "triangles": 14960
+      },
+      "current": {
+        "meshes": 5,
+        "vertices": 1930,
+        "triangles": 3840
+      }
+    },
+    "rescuerLowerDigits": {
+      "scope": "skin including thumb, excluding nails",
+      "parent": {
+        "meshes": 18,
+        "vertices": 9666,
+        "triangles": 15912
+      },
+      "current": {
+        "meshes": 5,
+        "vertices": 1930,
+        "triangles": 3840
+      }
+    },
+    "completeScene": {
+      "scope": "all constructed geometry",
+      "parent": {
+        "meshes": 188,
+        "vertices": 88662,
+        "triangles": 145862
+      },
+      "current": {
+        "meshes": 144,
+        "vertices": 57846,
+        "triangles": 97686
+      },
+      "vertexReductionPercent": 34.8,
+      "triangleReductionPercent": 33
+    }
+  }
+}

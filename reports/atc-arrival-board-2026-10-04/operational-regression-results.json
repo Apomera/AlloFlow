@@ -1,0 +1,196 @@
+{
+  "started": "2026-10-05T04:18:48.694Z",
+  "fixture": "Installed Chrome with actual React host and canonical source. Forecasts and command behavior use actual practice traffic. Isolated math and closed-header checks use labeled diagnostic state fixtures; list overflow uses twelve aircraft added through guided controls.",
+  "checks": [
+    {
+      "name": "Real converging traffic enters the two-minute watch horizon before review counts and severity appear",
+      "pass": true,
+      "detail": {
+        "initial": "No review block outside the horizon",
+        "current": "Spacing review · 1\n1 projected",
+        "shiftTime": 3.499899999999997
+      }
+    },
+    {
+      "name": "Near-radar reviews navigate to existing sections and fit accessibly at 1440px",
+      "pass": true,
+      "detail": {
+        "spacingButtons": [
+          "Spacing review · 11 projected"
+        ],
+        "runwayButtons": [
+          "Runway review · 1Protected areas with timing concerns"
+        ]
+      }
+    },
+    {
+      "name": "Spacing Inspect selects its named aircraft and brings controls into view at 1440px",
+      "pass": true,
+      "detail": {
+        "inspected": 102,
+        "controlsTitleTop": 16.140625,
+        "active": "atc-aircraft-controls-title"
+      }
+    },
+    {
+      "name": "Near-radar reviews navigate to existing sections and fit accessibly at 390px",
+      "pass": true,
+      "detail": {
+        "spacingButtons": [
+          "Spacing review · 11 projected"
+        ],
+        "runwayButtons": [
+          "Runway review · 1Protected areas with timing concerns"
+        ]
+      }
+    },
+    {
+      "name": "Spacing Inspect selects its named aircraft and brings controls into view at 390px",
+      "pass": true,
+      "detail": {
+        "inspected": 102,
+        "controlsTitleTop": 15.71875,
+        "active": "atc-aircraft-controls-title"
+      }
+    },
+    {
+      "name": "Near-radar reviews navigate to existing sections and fit accessibly at 320px",
+      "pass": true,
+      "detail": {
+        "spacingButtons": [
+          "Spacing review · 11 caution"
+        ],
+        "runwayButtons": [
+          "Runway review · 1Protected areas with timing concerns"
+        ]
+      }
+    },
+    {
+      "name": "Spacing Inspect selects its named aircraft and brings controls into view at 320px",
+      "pass": true,
+      "detail": {
+        "inspected": 102,
+        "controlsTitleTop": 15.5625,
+        "active": "atc-aircraft-controls-title"
+      }
+    },
+    {
+      "name": "Runway-board inspection opens the existing controls for an assigned arrival without changing its instructions",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Crossing runway reviews preserve shared estimates and keep radar prominent at 390 and 320px",
+      "pass": true,
+      "detail": [
+        {
+          "width": 390,
+          "radarDocumentTop": 808.671875
+        },
+        {
+          "width": 320,
+          "radarDocumentTop": 916.171875
+        }
+      ]
+    },
+    {
+      "name": "All watch and runway Inspect controls disable during a draft and preserve its recipient",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Math pause is shown in the header and locks watch inspection in a labeled diagnostic challenge fixture",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "A help disclosure freezes actual running traffic and header status then returns to live traffic",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Opening an instruction while running shows paused status without setting user pause and cancellation resumes",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "A closed shift header accurately distinguishes the terminal state in a labeled presentation fixture",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Altitude buttons name the actual target destination while current altitude stays fixed during pause",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Repeated minimum-altitude commands produce unchanged feedback and no duplicate evidence",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Approach altitude controls describe cancellation before an actual instruction returns the aircraft inbound",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "A real final approach below the manual altitude floor uses neutral Set target wording before cancellation",
+      "pass": true,
+      "detail": {
+        "actualFinalAltitude": 850.6182000011383,
+        "commandedTarget": 1000
+      }
+    },
+    {
+      "name": "Changing runways on an approach describes guidance cancellation and preserves actual altitude",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "The Release hold command describes its phase change and returns held traffic inbound",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Radar arrows reveal the selected strip inside a real twelve-aircraft list without moving the document or keyboard focus",
+      "pass": true,
+      "detail": {
+        "aircraftCount": 12,
+        "documentScroll": 0,
+        "maximumNestedScroll": 1347
+      }
+    },
+    {
+      "name": "Review and command semantics remain readable at 200 percent zoom with forced colors",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-playing-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-review-nav-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-watch-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-inspected-controls-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-playing-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-review-nav-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-watch-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-inspected-controls-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-playing-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-review-nav-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-watch-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-inspected-controls-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-runway-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-crossing-review-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-crossing-review-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-altitude-instruction-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-low-final-target-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-twelve-flight-strips-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-operational-clarity-2026-10-04\\after-forced-colors-200percent.png"
+  ],
+  "sourceHash": "54b1bf74a4c825904eed6c251dfd9929d5bbf291016d6e6a7f684cbcb5ebd355",
+  "completed": "2026-10-05T04:20:41.171Z",
+  "passed": 22,
+  "failed": 0,
+  "sourceStable": true
+}

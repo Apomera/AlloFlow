@@ -1,0 +1,13 @@
+'use strict';
+const fs=require('fs'),path=require('path'),crypto=require('crypto'),{spawnSync}=require('child_process');
+const repo='C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated',task='C:/Users/cabba/Documents/Codex/2026-10-02/please';
+const runtime='d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522';
+const author=path.join(task,'work/aquaculture_backup_union_browser.cjs'),out=path.join(task,'work/aquaculture/backup-union-browser');
+const expected=process.argv[2],hash=b=>crypto.createHash('sha256').update(b).digest('hex');
+if(!/^[a-f0-9]{64}$/.test(expected||'')||hash(fs.readFileSync(author))!==expected)throw Error('Frozen browser author changed');
+for(const source of ['stem_lab/stem_tool_aquaculture.js','desktop/web-app/public/stem_lab/stem_tool_aquaculture.js'])if(hash(fs.readFileSync(path.join(repo,source)))!==runtime)throw Error('Runtime changed');
+fs.mkdirSync(out,{recursive:true});const log=path.join(out,'execution.log');if(fs.existsSync(log))throw Error('Preserve prior attempts before rerun');
+const started=new Date().toISOString();
+const run=spawnSync(process.execPath,['--max-old-space-size=768','--max-semi-space-size=8',author],{cwd:task,encoding:'utf8',maxBuffer:16*1024*1024,env:{...process.env,NODE_OPTIONS:'--max-old-space-size=768 --max-semi-space-size=8'}});
+fs.writeFileSync(log,'Started '+started+'\nRuntime '+runtime+'\nAuthor SHA256 '+expected+'\n'+(run.stdout||'')+'\n'+(run.stderr||'')+'\nExit '+run.status+'\n');
+if(run.error)throw run.error;console.log(JSON.stringify({exit:run.status,log,authorSha256:expected}));process.exitCode=run.status;

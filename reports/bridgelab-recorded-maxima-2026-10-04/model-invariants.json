@@ -1,0 +1,11 @@
+{
+  "status": "passed",
+  "sourceSha256": "af5074f16bde7710ab42494c02a14a22ce3509e6db9bfadc8af22861b55a84e8",
+  "inputCombinations": 144,
+  "recordedMaximumChecks": 432,
+  "negativeMarkerChecks": 111,
+  "zeroHistoryChecks": 108,
+  "amplitudeScalingChecks": 108,
+  "unequalPairScaleChecks": 216,
+  "tieSelection": "first exact occurrence"
+}

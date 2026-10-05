@@ -6,8 +6,9 @@ const harness = new GlHarness({
   toolId: 'cephalopodLab', width: 1280, height: 1000, layout: 'document'
 });
 const errors = new WeakMap<Page, string[]>();
-const kinds = ['mantle', 'arm', 'finLeft', 'finRight'] as const;
-const key = 'cl-squid-surface-v27-mottled';
+const kinds = ['mantle', 'head', 'arm', 'tentacle', 'finLeft', 'finRight'] as const;
+const key = 'cl-squid-surface-v34-layered', limbKey = 'cl-squid-limb-oral-v36';
+const skinKeys = [key, limbKey];
 
 async function advance(page: Page, frames: number) {
   await page.evaluate(async count => {
@@ -23,7 +24,7 @@ async function advance(page: Page, frames: number) {
 async function mount(page: Page, quality: 'low' | 'balanced') {
   await harness.mount(page, { cephalopodLab: { activeSection: 'hunt', hunt3DActive: true,
     huntSpeciesId: 'humboldtSquid', huntMode: 'observe', huntSeed: 2741, huntQuality: quality, _threeLoaded: true } });
-  await page.evaluate(cacheKey => {
+  await page.evaluate(cacheKeys => {
     const w = window as any, T = w.THREE;
     const live = w.__glRecorder.records.filter((record: any) => record.scene && record.canvas.isConnected);
     if (live.length !== 1 || live[0].createdBy !== 'page' || live[0].draws <= 0) throw new Error('Expected one page-created, drawn squid context');
@@ -59,18 +60,20 @@ async function mount(page: Page, quality: 'low' | 'balanced') {
       resource.addEventListener('dispose', () => { row.disposed = true; }); return row;
     });
     w.__sqUniforms = null; w.__sqEpoch = 0;
-    w.__sqPrograms = Object.fromEntries(['mantle', 'arm', 'finLeft', 'finRight'].map(kind =>
+    w.__sqPrograms = Object.fromEntries(['mantle', 'head', 'arm', 'tentacle', 'finLeft', 'finRight'].map(kind =>
       [kind, { draws: 0, program: null, epoch: -1, sample: null }]));
     function watch(name: string, kind: string) {
       const mesh = w.__sqRoot.getObjectByName(name);
-      if (!mesh?.isMesh || mesh.material.customProgramCacheKey() !== cacheKey) throw new Error('Expected filtered skin on ' + name);
+      const expectedKey = kind === 'arm' || kind === 'tentacle' ? cacheKeys[1] : cacheKeys[0];
+      if (!mesh?.isMesh || mesh.material.customProgramCacheKey() !== expectedKey) throw new Error('Expected filtered skin on ' + name);
       const original = mesh.onAfterRender;
       mesh.onAfterRender = function (renderer: any, scene: any, camera: any, geometry: any, material: any, group: any) {
         original.call(this, renderer, scene, camera, geometry, material, group);
         w.__sqRenderer = renderer;
         if (!w.__sqUniforms) {
           const materials = [...new Set<any>(body.map((owned: any) => owned.mesh.material)
-            .filter((entry: any) => !Array.isArray(entry) && entry.customProgramCacheKey() === cacheKey))];
+            .filter((entry: any) => !Array.isArray(entry) && cacheKeys.includes(entry.customProgramCacheKey())))];
+          if (materials.length !== 4 || materials.filter((entry: any) => entry.customProgramCacheKey() === cacheKeys[0]).length !== 3 || materials.filter((entry: any) => entry.customProgramCacheKey() === cacheKeys[1]).length !== 1) throw new Error('Expected three base skin materials and one existing limb material');
           // Read the real material closures without replacing/versioning their
           // live programs. Passing the live renderer selects its derivative gate.
           w.__sqUniforms = materials.map((entry: any) => {
@@ -93,20 +96,30 @@ async function mount(page: Page, quality: 'low' | 'balanced') {
         };
         const location = gl.getUniformLocation(program, 'clSurfaceFrame');
         const value = location === null ? null : gl.getUniform(program, location);
-        row.sample = { frame: value === null ? null : Array.from(value), rootWorld: w.__sqRoot.matrixWorld.toArray() };
+        const roughnessLocation = gl.getUniformLocation(program, 'roughness');
+        const oralLocation = gl.getAttribLocation(program, 'clLimbOral'), oralAttribute = geometry.attributes.clLimbOral;
+        const oralBuffer = oralLocation < 0 ? null : gl.getVertexAttrib(oralLocation, gl.VERTEX_ATTRIB_ARRAY_BUFFER_BINDING);
+        const oral = oralAttribute ? { location: oralLocation, enabled: oralLocation >= 0 && gl.getVertexAttrib(oralLocation, gl.VERTEX_ATTRIB_ARRAY_ENABLED),
+          size: oralLocation < 0 ? null : gl.getVertexAttrib(oralLocation, gl.VERTEX_ATTRIB_ARRAY_SIZE), type: oralLocation < 0 ? null : gl.getVertexAttrib(oralLocation, gl.VERTEX_ATTRIB_ARRAY_TYPE),
+          normalized: oralLocation < 0 ? null : gl.getVertexAttrib(oralLocation, gl.VERTEX_ATTRIB_ARRAY_NORMALIZED), bound: !!oralBuffer, stableBuffer: !row.oralBuffer || row.oralBuffer === oralBuffer,
+          count: oralAttribute.count, version: oralAttribute.version, usage: oralAttribute.usage, nonzero: Array.from(oralAttribute.array).filter((entry: any) => entry !== 0).length,
+          finiteBounded: Array.from(oralAttribute.array).every((entry: any) => Number.isFinite(entry) && entry >= 0 && entry <= 1) } : null;
+        if (oralBuffer && !row.oralBuffer) row.oralBuffer = oralBuffer;
+        row.sample = { oral, frame: value === null ? null : Array.from(value), rootWorld: w.__sqRoot.matrixWorld.toArray(),
+          roughness: roughnessLocation === null ? null : gl.getUniform(program, roughnessLocation), materialRoughness: material.roughness, opaque: !material.transparent && material.opacity === 1 };
         row.epoch = w.__sqEpoch;
       };
     }
-    watch('cl-mantle', 'mantle'); watch('cl-arm-0', 'arm');
+    watch('cl-mantle', 'mantle'); watch('cl-head', 'head'); watch('cl-arm-0', 'arm'); watch('cl-tentacle-0', 'tentacle');
     watch('cl-fin--1', 'finLeft'); watch('cl-fin-1', 'finRight');
-  }, key);
+  }, skinKeys);
   await page.locator('canvas[role=application]').focus(); await advance(page, 3);
 }
 
 async function samples(page: Page) {
   return page.evaluate(async () => {
     const w = window as any, T = w.THREE, epoch = ++w.__sqEpoch;
-    const names = ['mantle', 'arm', 'finLeft', 'finRight'];
+    const names = ['mantle', 'head', 'arm', 'tentacle', 'finLeft', 'finRight'];
     for (let frame = 0; frame < 96 && names.some(kind => w.__sqPrograms[kind].epoch !== epoch); frame++)
       await new Promise<void>(resolve => requestAnimationFrame(() => resolve()));
     return names.map(kind => {
@@ -145,6 +158,9 @@ async function state(page: Page) {
       inverseError: frames.length ? Math.max(...frames.map((frame: any) =>
         Math.max(...frame.value.elements.map((value: number, index: number) => Math.abs(value - inverse.elements[index]))))) : Infinity,
       legacy: first ? { pattern: first.clPattern.value, display: first.clDisplay.value, phase: first.clPhase.value } : null,
+      eyeFinish: w.__sqOwned.filter((owned: any) => ['cl-iris', 'cl-pupil'].includes(owned.mesh.name)).map((owned: any) => {
+        const m=owned.mesh.material;return {name:owned.mesh.name,roughness:m.roughness,opaque:!m.transparent&&m.opacity===1,emissive:m.emissive.getHex(),metalness:m.metalness,physical:!!m.isMeshPhysicalMaterial,clearcoat:m.clearcoat??null,clearcoatRoughness:m.clearcoatRoughness??null,color:m.color.toArray(),key:m.customProgramCacheKey()};
+      }),
       stable: w.__sqOwned.every((owned: any) => owned.mesh.geometry === owned.geometry && owned.mesh.material === owned.material &&
         (Array.isArray(owned.material) ? owned.material : [owned.material]).every((material: any, i: number) => material.customProgramCacheKey() === owned.keys[i]) &&
         owned.geometry.index === owned.index && owned.geometry.index?.array === owned.indexArray &&
@@ -173,6 +189,13 @@ function expectStable(current: Awaited<ReturnType<typeof state>>, baseline: Awai
   expect(current.ownedMeshes).toBe(baseline.ownedMeshes); expect(current.resources).toBe(baseline.resources);
   expect(current.geometryCount).toBe(baseline.geometryCount); expect(current.materialCount).toBe(baseline.materialCount);
   expect(current.disposed).toBe(0);
+  expect(current.eyeFinish).toEqual(baseline.eyeFinish);expect(current.eyeFinish).toHaveLength(4);
+  for(const name of ['cl-iris','cl-pupil']){
+    const pair=current.eyeFinish.filter((eye:any)=>eye.name===name);expect(pair,name).toHaveLength(2);
+    for(const eye of pair){expect(eye.opaque,name).toBe(true);expect(eye.emissive,name).toBe(0);expect(skinKeys.includes(eye.key),name).toBe(false);expect(eye.roughness,name+' preserved wet dome').toBe(name==='cl-pupil'?.17:.36);
+      if(name==='cl-pupil'){expect(eye.physical).toBe(true);expect(eye.clearcoat).toBe(.82);expect(eye.clearcoatRoughness).toBe(.12);expect(eye.metalness).toBe(0);expect(Math.max(...eye.color)).toBeLessThan(.004);}else expect(eye.metalness).toBe(.20);
+    }
+  }
   expect(current.gpuGeometries).toBeGreaterThan(0); expect(current.gpuGeometries).toBeLessThanOrEqual(current.geometryCount);
   expect(current.gpuTextures).toBe(baseline.gpuTextures);
   expect(current.record.id).toBe(baseline.record.id); expect(current.record.createdBy).toBe('page'); expect(current.record.lost).toBe(false);
@@ -186,6 +209,17 @@ function expectSamples(readbacks: Awaited<ReturnType<typeof samples>>) {
     expect(sample.frame.every(Number.isFinite), sample.kind).toBe(true);
     expect(sample.rootWorld.every(Number.isFinite), sample.kind).toBe(true);
     expect(sample.inverseError, sample.kind).toBeLessThan(.00002);
+    const expectedRoughness=sample.kind.startsWith('fin')?.55:.50;
+    expect(sample.materialRoughness,sample.kind+' material finish').toBe(expectedRoughness);
+    expect(sample.roughness,sample.kind+' actual linked GL roughness uniform').toBeCloseTo(expectedRoughness,6);
+    expect(sample.opaque,sample.kind).toBe(true);
+    if (sample.kind === 'arm' || sample.kind === 'tentacle') {
+      expect(sample.oral, sample.kind).not.toBeNull(); expect(sample.oral.location, sample.kind).toBeGreaterThanOrEqual(0);
+      expect(sample.oral.enabled && sample.oral.bound && sample.oral.stableBuffer && sample.oral.finiteBounded, sample.kind).toBe(true);
+      expect(sample.oral.size, sample.kind).toBe(1); expect(sample.oral.type, sample.kind).toBe(5126); expect(sample.oral.normalized, sample.kind).toBe(false);
+      expect(sample.oral.count, sample.kind).toBe(189); expect(sample.oral.version, sample.kind).toBe(0); expect(sample.oral.usage, sample.kind).toBe(35044);
+      if (sample.kind === 'arm') expect(sample.oral.nonzero).toBe(0); else expect(sample.oral.nonzero).toBeGreaterThan(0);
+    } else expect(sample.oral, sample.kind).toBeNull();
   }
   expect(readbacks.every(sample => sample.frame.every((value: number, i: number) => value === readbacks[0].frame[i]))).toBe(true);
 }
@@ -232,10 +266,17 @@ for (const quality of ['low', 'balanced'] as const) {
       // Three's unrelated common rand() also uses this multiplier. Scope the
       // absence check to the old pigment hash, not the whole shader prefix.
       expect(fragment).not.toContain('return fract(sin(dot(p,vec3(127.1,311.7,74.7)))*43758.5453)');
+      expect(fragment).toContain('clSqDetailFilter(length(fwidth(clSqMediumPos)))');
+      expect(fragment).toContain('clSkinPos*vec3(20.0,28.0,18.0)');
+      expect(fragment).toContain('diffuseColor.rgb*=clSqMediumTone(');
+      expect(fragment).toContain('roughnessFactor=clSqMediumRoughness(clSqRoughness(');
       expect(fragment).toContain('clSqDetailFilter(length(fwidth(clSqFinePos)))');
       expect(fragment).toContain('clSqDetailFilter(length(fwidth(clSqGrainPos)))');
-      expect(fragment).toContain('diffuseColor.rgb*=clSqPigmentTone('); expect(fragment).toContain('roughnessFactor=clSqRoughness(');
+      expect(fragment).toContain('diffuseColor.rgb*=clSqPigmentTone('); expect(fragment).toContain('clSqRoughness(roughnessFactor,clFine,clSqFineAA)');
       expect(fragment).toContain('float clSqMottleTone('); expect(fragment).toContain('diffuseColor.rgb*=clSqMottleTone(clPatch,clDorsal,clVentral);');
+      const oral = kind === 'arm' || kind === 'tentacle';
+      expect(vertex.includes('attribute float clLimbOral;'), kind).toBe(oral); expect(fragment.includes('clClubOral'), kind).toBe(oral);
+      if (oral) { expect(vertex).toContain('clLimbOralFace=clLimbOral;'); expect(fragment).toContain('(clMedium-0.5)*clSqMediumAA*0.045'); }
     }
     expectStable(initial, initial); expectSamples(initialSamples);
     await page.keyboard.down('KeyW'); await page.keyboard.down('KeyD'); await advance(page, 7);
@@ -274,7 +315,7 @@ for (const quality of ['low', 'balanced'] as const) {
     expect(pixels!.significantColors).toBeGreaterThan(3); expect(pixels!.dominantShare).toBeLessThan(.995);
     await testInfo.attach(`${quality}-squid-gl.png`, { body: pixels!.png, contentType: 'image/png' });
     await testInfo.attach(`${quality}-squid-programs.json`, { body: JSON.stringify({
-      quality, profile, initialSamples, movedSamples, jetSamples, inspectedSamples,
+      quality, profile, initialSamples, movedSamples, jetSamples, inspectedSamples, eyeFinish: initial.eyeFinish,
       programAudit: Object.fromEntries(kinds.map(kind => [kind, { draws: programs[kind].draws, ...programs[kind].program }])),
       ownership: { meshes: initial.ownedMeshes, resources: initial.resources, geometryCount: initial.geometryCount, materialCount: initial.materialCount, gpuTextures: initial.gpuTextures },
       pixelStats: { significantColors: pixels!.significantColors, dominantShare: pixels!.dominantShare }

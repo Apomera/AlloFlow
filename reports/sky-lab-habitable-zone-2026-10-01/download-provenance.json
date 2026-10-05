@@ -1,0 +1,37 @@
+[
+  {
+    "file": "coefficients.dat",
+    "url": "https://personal.ems.psu.edu/~jfk4/ruk15/planets/HZ_coefficients.dat",
+    "checkedOn": "2026-10-01",
+    "status": 200,
+    "sha256": "36202bddd0fdfc8db9a2c8da625b01d63e23510c1c44e192305aa625f14f88f6"
+  },
+  {
+    "file": "author-model.f90",
+    "url": "https://personal.ems.psu.edu/~jfk4/ruk15/planets/HZs.f90",
+    "checkedOn": "2026-10-01",
+    "status": 200,
+    "sha256": "4bec3fa336f330e2493ef9d551a6680f553f5f3aaf5166701194ea6cf89717d5"
+  },
+  {
+    "file": "venus-facts.html",
+    "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html",
+    "checkedOn": "2026-10-01",
+    "status": 200,
+    "sha256": "473c61da0bf7188764ec8ae5b12c0fdc9f922bccd9e3f6b47c885fef0723541c"
+  },
+  {
+    "file": "earth-facts.html",
+    "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
+    "checkedOn": "2026-10-01",
+    "status": 200,
+    "sha256": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef"
+  },
+  {
+    "file": "mars-facts.html",
+    "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
+    "checkedOn": "2026-10-01",
+    "status": 200,
+    "sha256": "366b0ce9b69cbee370be904956748af954468a41b93dc71a796a986519aa8d74"
+  }
+]

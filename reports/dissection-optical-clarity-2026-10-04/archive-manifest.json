@@ -1,0 +1,710 @@
+{
+  "source": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04",
+  "destination": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-optical-clarity-2026-10-04",
+  "files": [
+    {
+      "path": "after-desktop-metrics.json",
+      "SHA": "46f9e9ae0c082032bb22b23f1179a01ad0007fc484856eb3c282c0f45dc6142c"
+    },
+    {
+      "path": "after-desktop.png",
+      "SHA": "b0b13c834e9ea2823bbf7296b81f37339df0e9b4dd4f263965493199d3979da3"
+    },
+    {
+      "path": "after-embedded-large-metrics.json",
+      "SHA": "caf26c2856dfddebec291c4061febe97877b51997db953ba322fa81042900d41"
+    },
+    {
+      "path": "after-embedded-large.png",
+      "SHA": "ea31599fdcf63144bbc50bd3f44111ec9802c616c026bb80170a548905f0a6ab"
+    },
+    {
+      "path": "after-embedded-medium-metrics.json",
+      "SHA": "a7d96a5e72746ea0082b9c7ae17c0aa6798f8c91bfa67672af0df316364ce3a2"
+    },
+    {
+      "path": "after-embedded-medium.png",
+      "SHA": "382879905bb9eda329dc1df36a5d624a65920d079dd7589fa8d8341b57f2c872"
+    },
+    {
+      "path": "after-forced-colors-metrics.json",
+      "SHA": "df7e173d62f1d0a27ca42f8d0628eeaed3dc106022fc9c094efe74cfefc7328a"
+    },
+    {
+      "path": "after-forced-colors.png",
+      "SHA": "de2b2cef6cebd9232a8604d0fdbc3c06ef2325630d49a0a4717c75d155114790"
+    },
+    {
+      "path": "after-phone-metrics.json",
+      "SHA": "4e8f28e31acd383c7a599812358d4bfbfb33a4636d5e8a133aade995ad34f1d3"
+    },
+    {
+      "path": "after-phone.png",
+      "SHA": "5671c7b2047e486a148f3c2b3521e4ff48535d8696fd7b8a00130e680c5e26b3"
+    },
+    {
+      "path": "after-tablet-metrics.json",
+      "SHA": "c8173afafa606778fffb58601f0d67d697152545d04a5a1708e2d6a45f01341f"
+    },
+    {
+      "path": "after-tablet.png",
+      "SHA": "606c3847fbed954addb20f04892fb6aea353c974bc4122221e0ad150377db2ea"
+    },
+    {
+      "path": "baseline/attempt.json",
+      "SHA": "e80b724dbfd28da42bb75b19e53deb82a712ecc483d4690194e382ddee5a63af"
+    },
+    {
+      "path": "baseline/results.json",
+      "SHA": "2ac26e72ecb288c019c49d91c85da8033ce42e407c2a9506cce947f7d85ee9e4"
+    },
+    {
+      "path": "baseline/stderr.txt",
+      "SHA": "f61c93f824ca35745de04846cde18b8f4beb4fac8700d6261f71bb1d45766644"
+    },
+    {
+      "path": "baseline/stdout.txt",
+      "SHA": "418095e72d5023407de824ae0c87e04feaa91ca827ce65e351b50ef47511bdd3"
+    },
+    {
+      "path": "baseline/test-results/.last-run.json",
+      "SHA": "2dfd371a2d1337be1c216dc986747e5493ac9f5374f4c8cfef098b54e90bbb8c"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-4d56d-ependent-on-embedded-medium-chromium/error-context.md",
+      "SHA": "c13b824f345b227bf3a57b9b0c77f34807c8619293d38ff256d2bb758f437978"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-4d56d-ependent-on-embedded-medium-chromium/test-failed-1.png",
+      "SHA": "353efb192f2197705af2283eed2534b0b36ccf7aadb16dc7b3d1c808dff3507d"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-4d56d-ependent-on-embedded-medium-chromium/trace.zip",
+      "SHA": "052552abfd55d30acac5d552a14a3f99c75a2750a898c50b4455ceb526328a16"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/error-context.md",
+      "SHA": "f7099d37ad3065150e9cf1141b9595e83e6c2d7d619a166e64476a7c2a148734"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/test-failed-1.png",
+      "SHA": "5bfb35c0bd00f30cca84c50ce29a3e0c392502c4727415694ecef9e36be519d4"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/trace.zip",
+      "SHA": "70266dca144e2e394bb14f929ce50fb52a6404947ef33b492394f63670cc55b1"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-be707--and-independent-on-desktop-chromium/error-context.md",
+      "SHA": "679269649ee22059a45bbf671e8b9c54058e244f6e24c27f7df637fe7ca60183"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-be707--and-independent-on-desktop-chromium/test-failed-1.png",
+      "SHA": "d9c4a9b3ee005e9e9ab5e856c2a0588ddecdb5000751886c7176d53d30a406ef"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-be707--and-independent-on-desktop-chromium/trace.zip",
+      "SHA": "e26b4c646811a6b1d5d11fec1a2db09291f991af24d906d3f568f48c2c6ecf6a"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-d5c7f-e-and-independent-on-tablet-chromium/error-context.md",
+      "SHA": "3c260af25db419419ed8709fe25b6558af7ded74a32bffeabc13fe1a9335a8d7"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-d5c7f-e-and-independent-on-tablet-chromium/test-failed-1.png",
+      "SHA": "e6bcb24768152b20c5de77abfffec30fe3ec01274e881e3e0b45d477cf9a6618"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-d5c7f-e-and-independent-on-tablet-chromium/trace.zip",
+      "SHA": "3ba24983426f006c7432aea7b942c7ae2f316d9b68cafb5fb5121f056774ecf9"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium/error-context.md",
+      "SHA": "59e4310e48fa30f3ba6af8838f22e72f41eed80c7f4def4f8120d84ca99a0e60"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium/test-failed-1.png",
+      "SHA": "da99644e7a5969816e132390057b0729de734fae6a195cd6084346752167be1e"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium/trace.zip",
+      "SHA": "641edf5c451263cf6cb907640a5475b945d47c10c5e3ec42543de3ed0713ff7d"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-fef28-le-and-independent-on-phone-chromium/error-context.md",
+      "SHA": "5e6ad9f57493e55d7d9fbc9bc87bfb74313a6cb4b94b52191681996890362232"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-fef28-le-and-independent-on-phone-chromium/test-failed-1.png",
+      "SHA": "51abc13bd6e4247861093d462537a4358b110fa7fef0559b74f68f831b11c2c3"
+    },
+    {
+      "path": "baseline/test-results/dissection-optical-clarity-fef28-le-and-independent-on-phone-chromium/trace.zip",
+      "SHA": "564b93b294b80cc95cd72d924424d911ff8d02685bb5b21b0ef05e88a500cf0d"
+    },
+    {
+      "path": "baseline-reviewed/attempt.json",
+      "SHA": "728ab4e23620621c16f0cc2220a139da7eadf3bb2fea1277a6c7cc3552efcd52"
+    },
+    {
+      "path": "baseline-reviewed/results.json",
+      "SHA": "def8fce2c2974f7358cf96e4e7667b85f69a1e65a3e5d1d331f3b909f309cd0a"
+    },
+    {
+      "path": "baseline-reviewed/stderr.txt",
+      "SHA": "6e051c6db3597898b1c978f5c98759476dad9c8af56bb434370ffce3b8ca347b"
+    },
+    {
+      "path": "baseline-reviewed/stdout.txt",
+      "SHA": "b70a2f89ad9b7334dbb560ba84e7560a88b2bef50442ad2c70a6d27e3ca25198"
+    },
+    {
+      "path": "baseline-reviewed/test-results/.last-run.json",
+      "SHA": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "before-desktop-metrics.json",
+      "SHA": "b8ab2e55e85199eac81e388c990be60a493d257ecc8730203595bdc1cad6c052"
+    },
+    {
+      "path": "before-desktop.png",
+      "SHA": "e3d7a08750a1d8daede46c8ca6e13baa80b5ae77482f42eaa40f5f966830daee"
+    },
+    {
+      "path": "before-embedded-large-metrics.json",
+      "SHA": "c735d10e290cd1d1301d2da4c9abf10d43f605a7aec3972f43563db930a456dc"
+    },
+    {
+      "path": "before-embedded-large.png",
+      "SHA": "5aa0506dcd0cfb48ada186b0fb725b205a36ed9ad9f0ba2bdf7aefa5e780d418"
+    },
+    {
+      "path": "before-embedded-medium-metrics.json",
+      "SHA": "cf2117bf3511c126f99fdf2f55a8c44d55c0badd366043cb5f496bb6f104686a"
+    },
+    {
+      "path": "before-embedded-medium.png",
+      "SHA": "9268536d35a9489c80ecb798c7d5744fc3a073336280882428a20f5e62b83c1f"
+    },
+    {
+      "path": "before-forced-colors-metrics.json",
+      "SHA": "0584544b61ee20d16767251bef3fb92d24297f36b5bcc8995cfe206490747eca"
+    },
+    {
+      "path": "before-forced-colors.png",
+      "SHA": "019fbc3f7e5110d1be9bd33c8447060a557d4194db06e16d354089935a180db5"
+    },
+    {
+      "path": "before-phone-metrics.json",
+      "SHA": "823e13a1d65831e2ff70c92c9c96f00975394fe9d8c0cc62f8c03e1a9fee554d"
+    },
+    {
+      "path": "before-phone.png",
+      "SHA": "509e71696a8bef34c3d080347e9ccea6da3abcd19dd3e505778cf023bf3068be"
+    },
+    {
+      "path": "before-tablet-metrics.json",
+      "SHA": "1df5dd3d55949bd69fbb473e56e47feb116b9b4be27fec915f503e52115abfc0"
+    },
+    {
+      "path": "before-tablet.png",
+      "SHA": "2c4e09779da4194f485f6478925c1a4034b2b1f76baa714da7c94ca1de5cd1fe"
+    },
+    {
+      "path": "deep-magnification.png",
+      "SHA": "875a4a0f98204d910707172ed2e6313fe32378589026261a7535e0c8e85043ec"
+    },
+    {
+      "path": "desktop-axe.json",
+      "SHA": "f707c24175ae91fd3724c4ed029e4c15bf15b51a9b177b947519d613dadab3ac"
+    },
+    {
+      "path": "desktop-focus.json",
+      "SHA": "b264ae1652728fe4eb8633c37fdc8de73e805111900db0db0c7dbc111e248cd4"
+    },
+    {
+      "path": "embedded-large-axe.json",
+      "SHA": "8e2e31b3e4a500f2f55dfd4974db0b447525be3eaab7ae658241c779413ce21d"
+    },
+    {
+      "path": "embedded-large-focus.json",
+      "SHA": "043d47dd8213a677d130864917c40a293fae6619096044b1a353b9bf82cffb70"
+    },
+    {
+      "path": "embedded-medium-axe.json",
+      "SHA": "23bb72c21f3ff6fbaeaa97757bd090da2e84b43c70678050bed4d6eb8dd66b9c"
+    },
+    {
+      "path": "embedded-medium-focus.json",
+      "SHA": "b264ae1652728fe4eb8633c37fdc8de73e805111900db0db0c7dbc111e248cd4"
+    },
+    {
+      "path": "final/attempt.json",
+      "SHA": "5bf5aadb9e6c4fa2f6d4a2b7e46b23434b38a03a8ab1c0cde95cf7f4b5ddc5e5"
+    },
+    {
+      "path": "final/stderr.txt",
+      "SHA": "69c3f149eec9380069f5fe1661d2878c1f5a9dbdc129ce1bd31c970bdbe551df"
+    },
+    {
+      "path": "final/stdout.txt",
+      "SHA": "4c05a5745d8481652dd82b9072fcf3ce8d130b40a1c049be5e26db6bbbcfe760"
+    },
+    {
+      "path": "final/test-results/.playwright-artifacts-1/traces/080b00e26b2aba23afc8-57eb8cd6ab33241d2bdd.network",
+      "SHA": "39994b4f0d99f4245909d922f16ba7efad1e71dcb34660f62f2e59b4e43767dc"
+    },
+    {
+      "path": "final/test-results/.playwright-artifacts-1/traces/080b00e26b2aba23afc8-57eb8cd6ab33241d2bdd.trace",
+      "SHA": "6e71ed854232e91b2f609677fe52b69cc214544fc703fa0bac1970a11e9a03cf"
+    },
+    {
+      "path": "final/test-results/.playwright-artifacts-1/traces/resources/42137cb57cd428794c9582352f3c151f17c365ba.css",
+      "SHA": "800ee18e70d600ea7202d64b0f2a04fa6dc88bbee8fa739c69585d7e79b825df"
+    },
+    {
+      "path": "final/test-results/.playwright-artifacts-1/traces/resources/6c0cc390c81e41d44f063862f79ab4a91f1ae7a9.html",
+      "SHA": "c44ab073b1c77c8023354f1d84c5376300e4027517fb6a458ff66943684c9438"
+    },
+    {
+      "path": "final/test-results/.playwright-artifacts-1/traces/resources/page@9a4a9f1766b9fe1bc3ac3e64a377aa20-1791163672418.jpeg",
+      "SHA": "12d2b8ee49583f6c4ba63acd1ce75c1a833e87215d0acba1c3cc97703878403d"
+    },
+    {
+      "path": "final/test-results/.playwright-artifacts-1/traces/resources/page@9a4a9f1766b9fe1bc3ac3e64a377aa20-1791163672453.jpeg",
+      "SHA": "12d2b8ee49583f6c4ba63acd1ce75c1a833e87215d0acba1c3cc97703878403d"
+    },
+    {
+      "path": "final/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/error-context.md",
+      "SHA": "5542a642fabf8a15972ba427fbcbd8fab6518c0011f310ea54ede52274b9617e"
+    },
+    {
+      "path": "final/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/test-failed-1.png",
+      "SHA": "4daefca5de8da3f9d7c16f623606f672b544d5422c5fc8595abe1eddc80f3a68"
+    },
+    {
+      "path": "final/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/trace.zip",
+      "SHA": "d9391d6aae222b955714425934f52d0a7dd3b20fa2336d89f277caf8beb7e184"
+    },
+    {
+      "path": "final-complete/attempt.json",
+      "SHA": "5fd28a119aa7eb6cf2a221d949d58ce938b1380df4a21b20946770a4aac11065"
+    },
+    {
+      "path": "final-complete/results.json",
+      "SHA": "331500378bf962c103a38ca3752103b0403fcc7caf6e6a0408d6880649104acf"
+    },
+    {
+      "path": "final-complete/stderr.txt",
+      "SHA": "d1eb6b5e483c6ab2fc23471820e6be34b8e72a2cedc717d9345edb35d0e305f9"
+    },
+    {
+      "path": "final-complete/stdout.txt",
+      "SHA": "5758791dac5ea5e5ed72cdd6986e74fa4a8f18a5cbf803b785d77b8405d5914d"
+    },
+    {
+      "path": "final-complete/test-results/.last-run.json",
+      "SHA": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "final-reviewed/attempt.json",
+      "SHA": "ab4c0b9a55f223ff953a3264e7c2e92c9dc94f6d5d7d507cfe8b7f65be41b157"
+    },
+    {
+      "path": "final-reviewed/results.json",
+      "SHA": "defd06d978e7fbb3acfca01b7e6da7a3ce42470206c288274eb93d58bed24312"
+    },
+    {
+      "path": "final-reviewed/stderr.txt",
+      "SHA": "461934784cf1373c889f366115b912df0a212451e2900118c2eda7727cd2df04"
+    },
+    {
+      "path": "final-reviewed/stdout.txt",
+      "SHA": "5e11cf83abc9e26d95b00efe7153e51baf17e60603da85ced5a062df3bbbc87d"
+    },
+    {
+      "path": "final-reviewed/test-results/.last-run.json",
+      "SHA": "4fdf3e4af8f29a99d5bbc4b76f48d24d83e13910b378275a37750223c63d2721"
+    },
+    {
+      "path": "final-reviewed/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/error-context.md",
+      "SHA": "8e5d5739d7dbbd4a298c774d1194e9a3f8032ffefeaac308d0ece72fd5a2a202"
+    },
+    {
+      "path": "final-reviewed/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/test-failed-1.png",
+      "SHA": "2f2af8b8fccaee35110924856a34e12921873c97ec14b7d14cea2ec887de268e"
+    },
+    {
+      "path": "final-reviewed/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/trace.zip",
+      "SHA": "798f3130e80c453dc2d15d7dbbec74756724bbbc5f6ee876a3a1b00ec822a037"
+    },
+    {
+      "path": "final-reviewed/test-results/dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium/error-context.md",
+      "SHA": "05a72d9b41d08384a5931922fcf92fbc2f24e7992425e80cf83205736dd35eb0"
+    },
+    {
+      "path": "final-reviewed/test-results/dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium/test-failed-1.png",
+      "SHA": "884eb566796999c19e85f2036ba51635947c0ea86fc38138152069d4b179165a"
+    },
+    {
+      "path": "final-reviewed/test-results/dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium/trace.zip",
+      "SHA": "94069d6de05b7835ed537fc25823f982b1f0d00c1d05a1c3d22e1140cf068049"
+    },
+    {
+      "path": "final-reviewed/test-results/dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium/error-context.md",
+      "SHA": "2c393e33b48fc0709594f0c4809f8fb8847de7d034ae7d052d301be742aaaf07"
+    },
+    {
+      "path": "final-reviewed/test-results/dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium/test-failed-1.png",
+      "SHA": "0f39630a69d26555c9eb5c71a61a3a37119f3148f08dc5c0c21bf4171e4377c8"
+    },
+    {
+      "path": "final-reviewed/test-results/dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium/trace.zip",
+      "SHA": "f4eaf9d8124ca4a70582c220a990d0f4e78d1eb57010f30f7ba6361d5c65399d"
+    },
+    {
+      "path": "focus-desktop.png",
+      "SHA": "b813f5864d81848b87d050da945520867983c9d0a9458af82a29564190a421e7"
+    },
+    {
+      "path": "focus-embedded-large.png",
+      "SHA": "3a984b6b9e72fbbe4740d332240e3a9b7131442729187e965dd89b95345b0171"
+    },
+    {
+      "path": "focus-embedded-medium.png",
+      "SHA": "90684980881aa2382872f7319722963707598f2cc2e7bb8af21cbbbaf5f01d30"
+    },
+    {
+      "path": "focus-forced-colors.png",
+      "SHA": "bc75b8a918a2e97ee0ea5e820239ec0401d98e1a8a2e1deec6f9c9be556c1f71"
+    },
+    {
+      "path": "focus-phone.png",
+      "SHA": "7d2aab6aaf51e46396b812a15d334154752d6faff644d5efeeb2df1b27e437ce"
+    },
+    {
+      "path": "focus-tablet.png",
+      "SHA": "dbda3debfa853aafa49bd5af4b2b231dcff09b175e12683122ce723f74618daa"
+    },
+    {
+      "path": "forced-colors-axe.json",
+      "SHA": "70096471d436f9041ff042a4c6e9921cf286432d40591667ed8299d4d6640e8d"
+    },
+    {
+      "path": "forced-colors-focus.json",
+      "SHA": "490292977a87746371a6ee8150a7205b36b3ec3c5b8c1451407d32674400aae3"
+    },
+    {
+      "path": "grid-edit.json",
+      "SHA": "8155fc2500e6faa4e40a1ce88504cde2774fd8c7e98097c744f38e5eb27014a1"
+    },
+    {
+      "path": "layout-diagnosis/attempt.json",
+      "SHA": "859f8451e7c2da7a8baddfe0c18e88c379c428f2382b2c069a7818e50e28e4fa"
+    },
+    {
+      "path": "layout-diagnosis/results.json",
+      "SHA": "749cdf6e92e414ca04eada8c73014bd8ff921da8e54a98c2ce017ff9c6c55cd1"
+    },
+    {
+      "path": "layout-diagnosis/stderr.txt",
+      "SHA": "d28d38ce1039d1bdcc0d8892df11902ef94fe8ef2a8a5fa8705fc17d02524a54"
+    },
+    {
+      "path": "layout-diagnosis/stdout.txt",
+      "SHA": "1082557bdff5a1bcce7c0a60a8541018b9b48eb919e9981b35f659ceb1cecfc7"
+    },
+    {
+      "path": "layout-diagnosis/test-results/.last-run.json",
+      "SHA": "4fdf3e4af8f29a99d5bbc4b76f48d24d83e13910b378275a37750223c63d2721"
+    },
+    {
+      "path": "layout-diagnosis/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/error-context.md",
+      "SHA": "8eebabcad1b72af3d3de9662d8ecc1f7be63c0d77ffbd1a6667ed713dcc5f875"
+    },
+    {
+      "path": "layout-diagnosis/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/test-failed-1.png",
+      "SHA": "2f2af8b8fccaee35110924856a34e12921873c97ec14b7d14cea2ec887de268e"
+    },
+    {
+      "path": "layout-diagnosis/test-results/dissection-optical-clarity-5490b-dependent-on-embedded-large-chromium/trace.zip",
+      "SHA": "01671bf32232fd94d08bf8aef0292835bf5984f86902ffabd56c42e6ae902240"
+    },
+    {
+      "path": "layout-diagnosis/test-results/dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium/error-context.md",
+      "SHA": "574158cb322b271f2cac3a49150ce0d3919bfaedb66bd66733a826f4a318b4a7"
+    },
+    {
+      "path": "layout-diagnosis/test-results/dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium/test-failed-1.png",
+      "SHA": "884eb566796999c19e85f2036ba51635947c0ea86fc38138152069d4b179165a"
+    },
+    {
+      "path": "layout-diagnosis/test-results/dissection-optical-clarity-58b7d--optical-focus-and-settings-chromium/trace.zip",
+      "SHA": "96f7da95ba1fdc95681b9cdf60498c153baf27e44367c5e91997cf11ca04b7f4"
+    },
+    {
+      "path": "layout-diagnosis/test-results/dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium/error-context.md",
+      "SHA": "c48f434a42b9b7d71dc1d5320ae2602bf54f62f4edf8a85799659e2e381f3b66"
+    },
+    {
+      "path": "layout-diagnosis/test-results/dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium/test-failed-1.png",
+      "SHA": "0f39630a69d26555c9eb5c71a61a3a37119f3148f08dc5c0c21bf4171e4377c8"
+    },
+    {
+      "path": "layout-diagnosis/test-results/dissection-optical-clarity-f0c11-ndependent-on-forced-colors-chromium/trace.zip",
+      "SHA": "99b17ccb359acef824df062fb84d886d595bec55d62344644cb1d9fa2284f431"
+    },
+    {
+      "path": "navigation/attempt.json",
+      "SHA": "f2a6e406c04cd8073f314e305d4fe98fd73c6e575750824856ca8e53add4fda2"
+    },
+    {
+      "path": "navigation/captures/after-desktop-inventory.json",
+      "SHA": "2feb312e31516600dd93ddde55147de7591ddb5dfb3e64cc5175e056ebac73f5"
+    },
+    {
+      "path": "navigation/captures/after-desktop-metrics.json",
+      "SHA": "ad74cab7c962d97feeede89b3ff6ba13abdd19f63176b136cbeb02bf2bc63b92"
+    },
+    {
+      "path": "navigation/captures/after-desktop.png",
+      "SHA": "5b988d5dd17e1b1777a8784d485496ce750e356411cbe6f111060d8047458eaf"
+    },
+    {
+      "path": "navigation/captures/after-embedded-large-inventory.json",
+      "SHA": "2feb312e31516600dd93ddde55147de7591ddb5dfb3e64cc5175e056ebac73f5"
+    },
+    {
+      "path": "navigation/captures/after-embedded-large-metrics.json",
+      "SHA": "6934669eb5ebd05776f956c7bc6a69354da238d969ef68387f5e78375b485cef"
+    },
+    {
+      "path": "navigation/captures/after-embedded-large.png",
+      "SHA": "0ce07f8374cc5d1001086c9ae8ec79aa759a73a12c22ed68309f3124fdaf0bb2"
+    },
+    {
+      "path": "navigation/captures/after-embedded-medium-inventory.json",
+      "SHA": "2feb312e31516600dd93ddde55147de7591ddb5dfb3e64cc5175e056ebac73f5"
+    },
+    {
+      "path": "navigation/captures/after-embedded-medium-metrics.json",
+      "SHA": "f349064ec1c10b3b35a993cb073dfe950c3582887fa8b89db5baf12a1daf8846"
+    },
+    {
+      "path": "navigation/captures/after-embedded-medium.png",
+      "SHA": "d185ed49c95768370ca1aa564c6f5411ee7a323a5d204c6ad3716afe62cd8436"
+    },
+    {
+      "path": "navigation/captures/after-forced-colors-inventory.json",
+      "SHA": "2feb312e31516600dd93ddde55147de7591ddb5dfb3e64cc5175e056ebac73f5"
+    },
+    {
+      "path": "navigation/captures/after-forced-colors-metrics.json",
+      "SHA": "d126bc6438175b1b026cfd8638988fc8d301a2c42ecca2d72d58c18b80e07188"
+    },
+    {
+      "path": "navigation/captures/after-forced-colors.png",
+      "SHA": "51e0cccdf0711fafd7ad6ebfd9168ed49f9aebd96fb3236d632f0bb20bcfa98a"
+    },
+    {
+      "path": "navigation/captures/after-phone-inventory.json",
+      "SHA": "2feb312e31516600dd93ddde55147de7591ddb5dfb3e64cc5175e056ebac73f5"
+    },
+    {
+      "path": "navigation/captures/after-phone-metrics.json",
+      "SHA": "5924985fa9c261111070a67702438b4a4c904c3392107294d5fea35faf09ea2d"
+    },
+    {
+      "path": "navigation/captures/after-phone.png",
+      "SHA": "8c683ee55a5ad55c89384925a590cb9e9516f8b0a0576a69ee6c276eeb96b63a"
+    },
+    {
+      "path": "navigation/captures/after-tablet-inventory.json",
+      "SHA": "2feb312e31516600dd93ddde55147de7591ddb5dfb3e64cc5175e056ebac73f5"
+    },
+    {
+      "path": "navigation/captures/after-tablet-metrics.json",
+      "SHA": "1805513747b93b63dca38b17fe514d1da21e2b5034d6bdf22d1c07fa4db11593"
+    },
+    {
+      "path": "navigation/captures/after-tablet.png",
+      "SHA": "ac26b574cb7757e960e9baf163b69ff471c0a82b16bcbe05616792022f79f3c4"
+    },
+    {
+      "path": "navigation/captures/assessment.png",
+      "SHA": "25dd08e3ee5a8c4a39d1ed729161dd0b650a9cf7caa3731ace2be48c6844b26d"
+    },
+    {
+      "path": "navigation/captures/desktop-axe.json",
+      "SHA": "af133a505d9efe139317da7c278d64174851eaec4086062548fab78048720952"
+    },
+    {
+      "path": "navigation/captures/desktop-focus.json",
+      "SHA": "7c87f5c65b17b54b40dc0aa090a899fed71067754ab8c8ff62571ba33fe774af"
+    },
+    {
+      "path": "navigation/captures/embedded-large-axe.json",
+      "SHA": "f1f894fcc9bbd4ee690fe0d6f944abe1fd603c2cf8dca6ea3dcc6eb041e79dc6"
+    },
+    {
+      "path": "navigation/captures/embedded-large-focus.json",
+      "SHA": "b43bdd165a9d77e2218313596cbb970e1d0834e77a1892904f6bea25e8857ed2"
+    },
+    {
+      "path": "navigation/captures/embedded-medium-axe.json",
+      "SHA": "539d3f1999cab93e4d7c0ff741167d869920f803d0516b7329d1b3c39fade726"
+    },
+    {
+      "path": "navigation/captures/embedded-medium-focus.json",
+      "SHA": "7c87f5c65b17b54b40dc0aa090a899fed71067754ab8c8ff62571ba33fe774af"
+    },
+    {
+      "path": "navigation/captures/focus-desktop.png",
+      "SHA": "f921f63a24c3f9b0cefb9ecb6993fc576d55745eb592a224d4a8cf4a6f8d549d"
+    },
+    {
+      "path": "navigation/captures/focus-embedded-large.png",
+      "SHA": "653447e5662dcee8ba2ea564142b174971c885d964255ff271cee9a1bcfe945e"
+    },
+    {
+      "path": "navigation/captures/focus-embedded-medium.png",
+      "SHA": "2752e2190d1776745d17c941f501b5f73c00a2c405b340a59dc42e9aa60c2005"
+    },
+    {
+      "path": "navigation/captures/focus-forced-colors.png",
+      "SHA": "5b49c8571d2cce0ae2ae83655bd21d986d70d38eef1a7e7be15f08b2ccf40bfe"
+    },
+    {
+      "path": "navigation/captures/focus-phone.png",
+      "SHA": "c902cb9be22715e4df32c3cb7838f638e27e85704d761f0cb381e423e9bdf873"
+    },
+    {
+      "path": "navigation/captures/focus-tablet.png",
+      "SHA": "94cc8cf13d5a99f4ec137bb944ab39a104f023da1923193923d74079d372ad45"
+    },
+    {
+      "path": "navigation/captures/forced-colors-axe.json",
+      "SHA": "1c5367f960ac026c7d03686cc87cadb5636a4ecdacafde45553f5c30f936b44a"
+    },
+    {
+      "path": "navigation/captures/forced-colors-focus.json",
+      "SHA": "8e2b064f56c3e9a57889a02628afecb798934d11b72b5898436852869c71c3ba"
+    },
+    {
+      "path": "navigation/captures/guided.png",
+      "SHA": "11cbf04eec547bc3bc2f91fe07c7456498b02e8ea6b168cbf09d38221ccaef2e"
+    },
+    {
+      "path": "navigation/captures/phone-axe.json",
+      "SHA": "5e0ae88055622ce71b720844869c663d7f3b48805b1f89fdff023175fa84b397"
+    },
+    {
+      "path": "navigation/captures/phone-focus.json",
+      "SHA": "7c87f5c65b17b54b40dc0aa090a899fed71067754ab8c8ff62571ba33fe774af"
+    },
+    {
+      "path": "navigation/captures/procedure.png",
+      "SHA": "00c110a995bbe91e7a0bf331200241f36624a6ea620199c936b87403e863a840"
+    },
+    {
+      "path": "navigation/captures/record.png",
+      "SHA": "57d1c5f17f00d2a4570a96b0e304b24ed4c4149df034dd2e34ccbc74e41a85b4"
+    },
+    {
+      "path": "navigation/captures/setup.png",
+      "SHA": "5284438425a5fe5c7c7e0e27e244323b3338c16c63e4f5193507080f786eef7e"
+    },
+    {
+      "path": "navigation/captures/tablet-axe.json",
+      "SHA": "84f43239277bff20d5a72ed70985f3b198f4397e9152bdfabaac0123f8a94067"
+    },
+    {
+      "path": "navigation/captures/tablet-focus.json",
+      "SHA": "7c87f5c65b17b54b40dc0aa090a899fed71067754ab8c8ff62571ba33fe774af"
+    },
+    {
+      "path": "navigation/captures/text-spacing.png",
+      "SHA": "3ef5dd09907964bddbd753e415d452c2e433aa23f6701494402b0c02aa2290fa"
+    },
+    {
+      "path": "navigation/results.json",
+      "SHA": "978bb2d550535fdffb2c0da7b007b5ccefb478d95f71702314faf93a2941b6a5"
+    },
+    {
+      "path": "navigation/stderr.txt",
+      "SHA": "f2d908cf61b38fe3177d00da3a86107bc6f698fc54f173fe19a68a6f77c9e91b"
+    },
+    {
+      "path": "navigation/stdout.txt",
+      "SHA": "1e44be1b8891a5d09f076b90ac3b2d7f5de0c9c2f934bb0cdc9f8c8732d3f3f6"
+    },
+    {
+      "path": "navigation/test-results/.last-run.json",
+      "SHA": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "phone-axe.json",
+      "SHA": "9181db2380c5aabedbe9bb9b3b12dd79a4578135e3e2f08f72e23ae23eda3432"
+    },
+    {
+      "path": "phone-focus.json",
+      "SHA": "b264ae1652728fe4eb8633c37fdc8de73e805111900db0db0c7dbc111e248cd4"
+    },
+    {
+      "path": "pinned-target.png",
+      "SHA": "7919350e6b6a0431b55553de8a2d6338f5a6f2b6cab3bb95792e6f60a59cffd8"
+    },
+    {
+      "path": "polish-edit.json",
+      "SHA": "6e7d0a6bac62d042685c1df9be8695865938e3b04759bf16035914f4e4416a55"
+    },
+    {
+      "path": "README.md",
+      "SHA": "255683d487bd9e2ff6981779ac69d800b34fdcefc4130871008b07a5bdf6f794"
+    },
+    {
+      "path": "source-edit.json",
+      "SHA": "4512582e28fc3806a10caf259e1d7b0ec8ab3d4bf3f73d1d96b31865648945d6"
+    },
+    {
+      "path": "tablet-axe.json",
+      "SHA": "35317a584afa10cabe753878e51daad49e43e2e921bc500b081ab61efd5b591d"
+    },
+    {
+      "path": "tablet-focus.json",
+      "SHA": "b264ae1652728fe4eb8633c37fdc8de73e805111900db0db0c7dbc111e248cd4"
+    },
+    {
+      "path": "test-edits.json",
+      "SHA": "732adbde96274a26ff793e0e1bdf26099f7c946dbb34803b494ae733dee9e6c9"
+    },
+    {
+      "path": "text-spacing-metrics.json",
+      "SHA": "8cd9cfb4162f0985b482ee5d7fd58bbd7230df440cd1886b51339e4b360031e7"
+    },
+    {
+      "path": "text-spacing.png",
+      "SHA": "648a5503aa64d5b85a5ce53e47c13ade8eaa10cd17bc475e1a460bef75ddba0c"
+    },
+    {
+      "path": "unit/attempt.json",
+      "SHA": "83f442701d95f2541f41f114d36b29003902d8be7b26c3dd5d470e87736cbc46"
+    },
+    {
+      "path": "unit/results.json",
+      "SHA": "15d66c9430df640b04de807b81d9963ae89b533a0eb9001960e5e7c495885ac3"
+    },
+    {
+      "path": "unit/stderr.txt",
+      "SHA": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855"
+    },
+    {
+      "path": "unit/stdout.txt",
+      "SHA": "ed4a264f051774b792e44cc5d52508f146b94714953be876ae7eb3092c5e5b90"
+    },
+    {
+     "path": "verification.json",
+      "SHA": "a08755b277b691d04f881ac0e2bdb3a173a934c91a1271f479cd8861a89878b2"
+    }
+  ]
+}

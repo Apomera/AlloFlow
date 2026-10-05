@@ -1,0 +1,42 @@
+{
+  "measured": {
+    "vertices": 5610,
+    "shadowMeshes": 1,
+    "visible": true,
+    "maximumResidual": 5.329070518200751e-15,
+    "inspected": 81,
+    "plane": {
+      "x": 0.058607809589688975,
+      "y": 0.9697634599841696,
+      "z": -0.23690495211082097,
+      "constant": 12.769989097346825
+    },
+    "sun": [
+      -700,
+      260,
+      360
+    ],
+    "shadowMap": false,
+    "lander": [
+      0,
+      -5.43205584535034,
+      0
+    ],
+    "camera": [
+      14.580705996711695,
+      -0.1528159358641643,
+      19.067077072622983
+    ],
+    "target": false
+  },
+  "pixels": {
+    "width": 1014,
+    "height": 420,
+    "changed": 0,
+    "delta": 0,
+    "depthDisabledChanged": 235,
+    "nonzero": 425880,
+    "glError": 0
+  },
+  "shaderErrors": []
+}

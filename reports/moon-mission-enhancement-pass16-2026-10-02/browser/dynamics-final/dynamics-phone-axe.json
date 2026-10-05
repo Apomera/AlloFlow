@@ -1,0 +1,26 @@
+{
+  "violations": [],
+  "boxes": [
+    {
+      "height": 44,
+      "left": 32,
+      "right": 288
+    },
+    {
+      "height": 44,
+      "left": 32,
+      "right": 92.734375
+    },
+    {
+      "height": 44,
+      "left": 100.734375,
+      "right": 229
+    }
+  ],
+  "fonts": [
+    12,
+    16,
+    12,
+    12
+  ]
+}

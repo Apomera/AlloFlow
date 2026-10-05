@@ -1,0 +1,10 @@
+{
+  "sourceSha256": "d62195c5530468c475f3dbc49639789413957ff2d0e52d0f5806c813767c63d9",
+  "scriptSha256": "3c48a2d0d8fa089116be59a02669de1c2e3220d0db84cb503e9df6dff4d86cf9",
+  "errors": [],
+  "workflows": [],
+  "views": [],
+  "screenshots": [],
+  "failure": "locator.selectOption: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('.circuit-observation-selectors select').first()\u001b[22m\n\u001b[2m    - locator resolved to <select id=\":r2:-first\" aria-label=\"First saved observation\" aria-describedby=\":r2:-first-context\">…</select>\u001b[22m\n\u001b[2m  - attempting select option action\u001b[22m\n\u001b[2m    2 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying select option action\u001b[22m\n\u001b[2m    - waiting 20ms\u001b[22m\n\u001b[2m    2 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m      - element is not visible\u001b[22m\n\u001b[2m    - retrying select option action\u001b[22m\n\u001b[2m      - waiting 100ms\u001b[22m\n\u001b[2m    55 × waiting for element to be visible and enabled\u001b[22m\n\u001b[2m       - element is not visible\u001b[22m\n\u001b[2m     - retrying select option action\u001b[22m\n\u001b[2m       - waiting 500ms\u001b[22m\n\n    at seed (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\circuit-observation-continuity-2026-10-04\\browser-check.cjs:24:457)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\circuit-observation-continuity-2026-10-04\\browser-check.cjs:27:55",
+  "browserClosed": true
+}

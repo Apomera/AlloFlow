@@ -1,0 +1,63 @@
+{
+  "label": "baseline",
+  "passed": false,
+  "completedAt": "2026-10-04T15:51:18.067Z",
+  "results": [
+    {
+      "name": "restore",
+      "status": 1,
+      "elapsedMs": 1188,
+      "error": null,
+      "stdout": "{\"total\":26,\"passed\":8,\"failed\":18,\"destination\":\"C:\\\\Users\\\\cabba\\\\OneDrive\\\\Desktop\\\\UDL-Tool-Updated\\\\reports\\\\classroom-recovery-enhancements-2026-10-04\\\\restore-audit\\\\baseline-results.json\"}\n",
+      "stderr": ""
+    },
+    {
+      "name": "entry",
+      "status": 1,
+      "elapsedMs": 608,
+      "error": null,
+      "stdout": "{\"passed\":false,\"checks\":30,\"failed\":[\"firebase: history clear retires late successful entry\",\"firebase: history clear suppresses late error feedback\",\"firebase: canvas clear retires late successful entry\",\"firebase: canvas clear suppresses late error feedback\",\"pack: history clear retires late successful entry\",\"pack: history clear suppresses late error feedback\",\"pack: history clear suppresses late authoritative policy update\",\"pack: canvas clear retires late successful entry\",\"pack: canvas clear suppresses late error feedback\",\"pack: canvas clear suppresses late authoritative policy update\",\"pack: unmount suppresses late authoritative policy update\",\"hosted: history clear retires late successful entry\",\"hosted: history clear suppresses late error feedback\",\"hosted: history clear suppresses late authoritative policy update\",\"hosted: canvas clear retires late successful entry\",\"hosted: canvas clear suppresses late error feedback\",\"hosted: canvas clear suppresses late authoritative policy update\"]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "shelf",
+      "status": 1,
+      "elapsedMs": 1386,
+      "error": null,
+      "stdout": "{\"passed\":false,\"checks\":9,\"failed\":[\"accepted shelf retires pending, project and file owners before replacement\",\"accepted shelf retires pending opener before first role setter\",\"shelf opened during earlier QR decode retains accepted shelf after completion\",\"shelf opened during earlier QR decode suppresses stale failure feedback\"]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "host-boundaries",
+      "status": 1,
+      "elapsedMs": 1854,
+      "error": null,
+      "stdout": "{\"passed\":false,\"checks\":16,\"failed\":[\"null dialog close retires selected import and clears its input and import-read busy\",\"null dialog close preserves a newer file selected on the same input\",\"null dialog close leaves an unrelated active busy owner intact\",\"permitted close clears vault secrets and selected read through actual wrapper\",\"busy rejected Canvas project start preserves restore, pending and generations\",\"accepted Canvas project start retires pending and hydration before new workspace\",\"accepted non-Canvas project start retires pending restore and persists new scope\",\"accepted project start retires older file selection before project-import busy\",\"host unmount silently retires import and restore without recovery state setters\",\"host unmount without recovery owners still retires both read generations\"]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "vault",
+      "status": 1,
+      "elapsedMs": 1872,
+      "error": null,
+      "stdout": "{\"label\":\"combined-baseline\",\"total\":58,\"failed\":34,\"failedNames\":[\"source: actual record decrypt cannot expose contents after explicit lock\",\"source: latest sync preserves its store when earlier decrypt finishes\",\"source: retired decrypt failure cannot lock the current sync\",\"source: controller replacement retires an initial status result\",\"source: controller replacement retires plaintext already decrypting\",\"source: retired initial status failure does not reject newer work\",\"source: latest native lock status prevents plaintext publication\",\"source: disabled vault status after decrypt prevents obsolete store publication\",\"source: earlier loader completion cannot replace latest selected backup\",\"source: earlier onload is retired before starting its loader\",\"source: same input file replacement retires old read without clearing newer input\",\"source: workspace replacement retires a file loader before apply\",\"source: closing import selection retires a file loader before apply\",\"source: retired reader error preserves newer busy and input\",\"source: retired loader failure preserves newer backup and status\",\"source: synchronous FileReader construction failure releases selection\",\"source: synchronous FileReader read failure releases selection\",\"generated: actual record decrypt cannot expose contents after explicit lock\",\"generated: latest sync preserves its store when earlier decrypt finishes\",\"generated: retired decrypt failure cannot lock the current sync\",\"generated: controller replacement retires an initial status result\",\"generated: controller replacement retires plaintext already decrypting\",\"generated: retired initial status failure does not reject newer work\",\"generated: latest native lock status prevents plaintext publication\",\"generated: disabled vault status after decrypt prevents obsolete store publication\",\"generated: earlier loader completion cannot replace latest selected backup\",\"generated: earlier onload is retired before starting its loader\",\"generated: same input file replacement retires old read without clearing newer input\",\"generated: workspace replacement retires a file loader before apply\",\"generated: closing import selection retires a file loader before apply\",\"generated: retired reader error preserves newer busy and input\",\"generated: retired loader failure preserves newer backup and status\",\"generated: synchronous FileReader construction failure releases selection\",\"generated: synchronous FileReader read failure releases selection\"]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "vault-callers",
+      "status": 1,
+      "elapsedMs": 1266,
+      "error": null,
+      "stdout": "{\"label\":\"combined-baseline\",\"total\":48,\"failed\":22,\"failedNames\":[\"source: commitCanvasRecoveryVaultEnable retired\",\"source: confirmCanvasRecoveryCode retired\",\"source: recoverCanvasRecoveryVault retired\",\"source: importCanvasRecoveryVaultBackup retired\",\"source: setStorageRetentionPolicy retired\",\"source: setCanvasRecoverySnapshotPinned retired\",\"source: removeCanvasRecoverySnapshotMedia retired\",\"source: retryCanvasRecoveryStorage retired\",\"source: eraseCanvasRecoverySnapshot retired\",\"source: unlockCanvasRecoveryVault retired\",\"source: removeCanvasRecoveryKey retired\",\"generated: commitCanvasRecoveryVaultEnable retired\",\"generated: confirmCanvasRecoveryCode retired\",\"generated: recoverCanvasRecoveryVault retired\",\"generated: importCanvasRecoveryVaultBackup retired\",\"generated: setStorageRetentionPolicy retired\",\"generated: setCanvasRecoverySnapshotPinned retired\",\"generated: removeCanvasRecoverySnapshotMedia retired\",\"generated: retryCanvasRecoveryStorage retired\",\"generated: eraseCanvasRecoverySnapshot retired\",\"generated: unlockCanvasRecoveryVault retired\",\"generated: removeCanvasRecoveryKey retired\"]}\n",
+      "stderr": ""
+    },
+    {
+      "name": "vault-actions",
+      "status": 1,
+      "elapsedMs": 1229,
+      "error": null,
+      "stdout": "{\"label\":\"combined-baseline\",\"total\":16,\"failed\":10,\"failedNames\":[\"source: older unlock completion preserves a newer pending unlock and its busy state\",\"source: new credential attempt retires an old plaintext read before credentials resolve\",\"source: older credential failure cannot erase newer unlock feedback\",\"source: older recovery continuation cannot release a newer unlock\",\"source: explicitly retired action keeps the replacement busy indicator and feedback\",\"generated: older unlock completion preserves a newer pending unlock and its busy state\",\"generated: new credential attempt retires an old plaintext read before credentials resolve\",\"generated: older credential failure cannot erase newer unlock feedback\",\"generated: older recovery continuation cannot release a newer unlock\",\"generated: explicitly retired action keeps the replacement busy indicator and feedback\"]}\n",
+      "stderr": ""
+    }
+  ]
+}

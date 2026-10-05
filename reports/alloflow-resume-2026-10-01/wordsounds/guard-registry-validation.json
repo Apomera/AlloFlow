@@ -1,0 +1,23 @@
+{
+  "checkedAt": "2026-10-01T13:55:50.202Z",
+  "scope": [
+    "ui_strings.js",
+    "desktop/web-app/public/ui_strings.js"
+  ],
+  "keyCount": 7,
+  "keys": [
+    "manipulation_review_required",
+    "manipulation_unscored_review",
+    "reading_unscored_review",
+    "skip_unscored_continue",
+    "choose_another_activity",
+    "sentence_review_required",
+    "story_review_required"
+  ],
+  "beforeSha256": "4a7ec832288eecd8911fd41dfba1f0e6b39e3e442a5826ca40f8462c5826464f",
+  "afterSha256": "90f95bae235a27c6d97f1b9306bf19b653ab79b0d8a52bd0a44b180b34e799ee",
+  "preservesEveryExistingByte": true,
+  "preservesEveryExistingValue": true,
+  "otherLanguagePacksChanged": false,
+  "applied": true
+}

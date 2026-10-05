@@ -1,0 +1,39 @@
+{
+  "startedAt": "2026-10-04T14:39:38.548Z",
+  "pid": 36180,
+  "baseUrl": "http://127.0.0.1:65063",
+  "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+  "moduleSha256": "6ab45e2cbf3793f58d0510e5049028855169aa1150fa33209ad2d48179f0b424",
+  "bundleSha256": "f6bb88089f30814dc0eddbb875a67128cee05469993d476200f6fbe1d2b3f458",
+  "sourceSha256": "86eecff52f711fa3e3398fbfd24e8def69a84ba4ed69466f1c5eb013e1d388e6",
+  "pureHttpServe": true,
+  "immutablePrimaryAssetsPreloadedBeforeListen": true,
+  "preloadedAssets": [
+    {
+      "file": "index.html",
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+      "bytes": 588
+    },
+    {
+      "file": "host.css",
+      "sha256": "58a85c127571ce1dbda03af6ac60d44788a0b69689f709d5470c094bba92f84c",
+      "bytes": 235942
+    },
+    {
+      "file": "host.bundle.js",
+      "sha256": "f6bb88089f30814dc0eddbb875a67128cee05469993d476200f6fbe1d2b3f458",
+      "bytes": 1976991
+    },
+    {
+      "file": "maine_sld_practice_module.js",
+      "sha256": "6ab45e2cbf3793f58d0510e5049028855169aa1150fa33209ad2d48179f0b424",
+      "bytes": 194248
+    }
+  ],
+  "ownedHelperPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\evidence_recovery_integration.cjs",
+  "ownedHelperSha256": "5b75361e0294e82dc149f558c5225bd07bd03ccdff4175d7cf9e1e2d1b68da50",
+  "launchArguments": [
+    "serve",
+    "6ab45e2cbf3793f58d0510e5049028855169aa1150fa33209ad2d48179f0b424"
+  ]
+}

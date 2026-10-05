@@ -3,7 +3,7 @@ import { mkdir } from 'node:fs/promises';
 import { GlHarness } from './helpers/stem_gl_harness';
 
 const harness = new GlHarness({ toolFile: 'stem_lab/stem_tool_dissection.js', toolId: 'dissection', width: 1180, height: 900, appStyles: true, preScripts: ['stem_lab/stem_lab_module.js'] });
-const out = 'reports/dissection-physiology-readability-2026-09-28';
+const out = process.env.DISSECTION_PHYSIOLOGY_OUTPUT || 'reports/dissection-physiology-readability-2026-09-28';
 test.describe.configure({ retries: 0 });
 test.use({ viewport: { width: 390, height: 844 }, hasTouch: true, isMobile: true });
 test.beforeAll(async () => { await harness.start(); await mkdir(out, { recursive: true }); });
@@ -89,19 +89,58 @@ test('readable controls report static, paused, playing and off states', async ({
       expect(await button.evaluate(el => parseFloat(getComputedStyle(el).fontSize))).toBeGreaterThanOrEqual(13);
     }
   }
-  await model.getByRole('button', { name: '⏸ Pause', exact: true }).click();
-  await expect(model.getByRole('button', { name: '▶ Resume', exact: true })).toHaveAttribute('aria-pressed', 'true');
-  await expect(badge).toHaveText('Static · reduced motion');
+  const modelReplay = model.getByRole('button', { name: 'Replay', exact: true });
+  const speed = model.getByRole('button', { name: 'Cycle living function speed', exact: true });
+  const pathwayReplay = pathway.getByRole('button', { name: 'Replay', exact: true });
+  for (const control of [model.getByRole('button', { name: 'Pause', exact: true }), modelReplay, speed, pathway.getByRole('button', { name: 'Pause', exact: true }), pathwayReplay]) {
+    await expect(control).toBeDisabled();
+  }
+  await expect(model.getByRole('button', { name: 'Function model on', exact: true })).toBeEnabled();
+  await expect(page.locator('#diss-living-function-help')).toHaveText('Motion is reduced. The model stays static; Pause, Replay, and Speed are unavailable.');
+
   await page.emulateMedia({ reducedMotion: 'no-preference' });
-  await model.getByRole('button', { name: 'Cycle living function speed', exact: true }).click();
+  // The preference change must update the controls before another interaction rerenders the lab.
+  await expect(badge).toHaveText('Playing · normal');
+  await expect(model).toHaveAttribute('data-motion', 'playing');
+  await expect(pathway).toContainText('Playing directional flow');
+  for (const control of [model.getByRole('button', { name: 'Pause', exact: true }), modelReplay, speed, pathway.getByRole('button', { name: 'Pause', exact: true }), pathwayReplay]) {
+    await expect(control).toBeEnabled();
+  }
+
+  await model.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect(model.getByRole('button', { name: 'Resume', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await expect(badge).toHaveText('Paused · normal');
+  await speed.click();
   await expect(badge).toHaveText('Paused · slow');
   await expect(model).toHaveAttribute('data-motion', 'paused');
   await model.screenshot({ path: `${out}/model-controls-phone.png` });
-  await model.getByRole('button', { name: '▶ Resume', exact: true }).click();
+  await modelReplay.click();
   await expect(badge).toHaveText('Playing · slow');
+  await expect(model.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(() => page.evaluate(() => (window as any).__ctx.toolData.dissection.livingFunctionReplayToken)).toBeGreaterThan(0);
+  await model.getByRole('button', { name: 'Pause', exact: true }).click();
+  await model.getByRole('button', { name: 'Resume', exact: true }).click();
+  await expect(badge).toHaveText('Playing · slow');
+
+  await pathway.getByRole('button', { name: 'Pause', exact: true }).click();
+  await expect(pathway).toContainText('Paused on the current directional frame');
+  await expect(pathway.getByRole('button', { name: 'Resume', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await pathwayReplay.click();
+  await expect(pathway).toContainText('Playing directional flow');
+  await expect(pathway.getByRole('button', { name: 'Pause', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await expect.poll(() => page.evaluate(() => (window as any).__ctx.toolData.dissection.systemTraceReplayToken)).toBeGreaterThan(0);
+
   await page.evaluate(() => (window as any).__ctx.update('dissection', 'reducedMotion', true));
   await expect(badge).toHaveText('Static · reduced motion');
+  await expect(pathway).toContainText('Static directions · reduced motion');
+  for (const control of [model.getByRole('button', { name: 'Pause', exact: true }), modelReplay, speed, pathway.getByRole('button', { name: 'Pause', exact: true }), pathwayReplay]) {
+    await expect(control).toBeDisabled();
+  }
   await model.getByRole('button', { name: 'Function model on', exact: true }).click();
   await expect(badge).toHaveText('Off · preserved view remains static');
-  await expect(model.getByRole('button', { name: '↻ Replay', exact: true })).toBeDisabled();
+  await expect(page.locator('#diss-living-function-help')).toHaveText('Enable the function model to use playback controls.');
+  await expect(model.getByRole('button', { name: 'Enable function model', exact: true })).toBeEnabled();
+  for (const control of [model.getByRole('button', { name: 'Pause', exact: true }), modelReplay, speed]) {
+    await expect(control).toBeDisabled();
+  }
 });

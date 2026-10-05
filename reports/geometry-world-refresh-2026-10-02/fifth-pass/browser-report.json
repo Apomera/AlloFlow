@@ -1,0 +1,413 @@
+{
+  "startedAt": "2026-10-03T18:40:37.968Z",
+  "checks": [
+    {
+      "name": "desktop: quota preserves complete live world and initiating Home",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: recovery fits and all targets are usable",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "heights": [
+          44,
+          44,
+          44,
+          44
+        ]
+      }
+    },
+    {
+      "name": "desktop: Stay is focused and dialog traps Tab",
+      "status": "pass",
+      "evidence": {
+        "defaultAction": "Stay here"
+      }
+    },
+    {
+      "name": "desktop: contrast recovery retains readable controls",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: forced colors preserve dialog framing",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: hidden controls never hide recovery",
+      "status": "pass",
+      "evidence": {
+        "visible": true
+      }
+    },
+    {
+      "name": "desktop: recovery suspends world controls and camera",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "desktop: live JSON download never auto-continues",
+      "status": "pass",
+      "evidence": {
+        "filename": "free-build-sandbox-editable.json"
+      }
+    },
+    {
+      "name": "desktop: Escape stays and restores initiating focus",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "desktop: discard requires a second explicit confirmation",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: retry saves then completes the original Home action",
+      "status": "pass",
+      "evidence": {
+        "active": "volumeExplorer"
+      }
+    },
+    {
+      "name": "desktop: confirmed discard completes original action without overwriting earlier saved worlds",
+      "status": "pass",
+      "evidence": {
+        "savedWorldsUnchanged": true
+      }
+    },
+    {
+      "name": "desktop: WebGL remains nonblank without runtime failures",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "phone: quota preserves complete live world and initiating Home",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: recovery fits and all targets are usable",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "heights": [
+          44,
+          44,
+          44,
+          44
+        ]
+      }
+    },
+    {
+      "name": "phone: Stay is focused and dialog traps Tab",
+      "status": "pass",
+      "evidence": {
+        "defaultAction": "Stay here"
+      }
+    },
+    {
+      "name": "phone: contrast recovery retains readable controls",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: forced colors preserve dialog framing",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: hidden controls never hide recovery",
+      "status": "pass",
+      "evidence": {
+        "visible": true
+      }
+    },
+    {
+      "name": "phone: recovery suspends world controls and camera",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "phone: live JSON download never auto-continues",
+      "status": "pass",
+      "evidence": {
+        "filename": "free-build-sandbox-editable.json"
+      }
+    },
+    {
+      "name": "phone: Escape stays and restores initiating focus",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "phone: discard requires a second explicit confirmation",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: retry saves then completes the original Home action",
+      "status": "pass",
+      "evidence": {
+        "active": "volumeExplorer"
+      }
+    },
+    {
+      "name": "phone: confirmed discard completes original action without overwriting earlier saved worlds",
+      "status": "pass",
+      "evidence": {
+        "savedWorldsUnchanged": true
+      }
+    },
+    {
+      "name": "phone: WebGL remains nonblank without runtime failures",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "narrow: quota preserves complete live world and initiating Home",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: recovery fits and all targets are usable",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "heights": [
+          44,
+          44,
+          44,
+          44
+        ]
+      }
+    },
+    {
+      "name": "narrow: Stay is focused and dialog traps Tab",
+      "status": "pass",
+      "evidence": {
+        "defaultAction": "Stay here"
+      }
+    },
+    {
+      "name": "narrow: contrast recovery retains readable controls",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: forced colors preserve dialog framing",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: hidden controls never hide recovery",
+      "status": "pass",
+      "evidence": {
+        "visible": true
+      }
+    },
+    {
+      "name": "narrow: recovery suspends world controls and camera",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "narrow: live JSON download never auto-continues",
+      "status": "pass",
+      "evidence": {
+        "filename": "free-build-sandbox-editable.json"
+      }
+    },
+    {
+      "name": "narrow: Escape stays and restores initiating focus",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "narrow: discard requires a second explicit confirmation",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: retry saves then completes the original Home action",
+      "status": "pass",
+      "evidence": {
+        "active": "volumeExplorer"
+      }
+    },
+    {
+      "name": "narrow: confirmed discard completes original action without overwriting earlier saved worlds",
+      "status": "pass",
+      "evidence": {
+        "savedWorldsUnchanged": true
+      }
+    },
+    {
+      "name": "narrow: WebGL remains nonblank without runtime failures",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "landscape: quota preserves complete live world and initiating Home",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: recovery fits and all targets are usable",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "heights": [
+          44,
+          44,
+          44,
+          44
+        ]
+      }
+    },
+    {
+      "name": "landscape: Stay is focused and dialog traps Tab",
+      "status": "pass",
+      "evidence": {
+        "defaultAction": "Stay here"
+      }
+    },
+    {
+      "name": "landscape: contrast recovery retains readable controls",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: forced colors preserve dialog framing",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: hidden controls never hide recovery",
+      "status": "pass",
+      "evidence": {
+        "visible": true
+      }
+    },
+    {
+      "name": "landscape: recovery suspends world controls and camera",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "landscape: live JSON download never auto-continues",
+      "status": "pass",
+      "evidence": {
+        "filename": "free-build-sandbox-editable.json"
+      }
+    },
+    {
+      "name": "landscape: Escape stays and restores initiating focus",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "landscape: discard requires a second explicit confirmation",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: retry saves then completes the original Home action",
+      "status": "pass",
+      "evidence": {
+        "active": "volumeExplorer"
+      }
+    },
+    {
+      "name": "landscape: confirmed discard completes original action without overwriting earlier saved worlds",
+      "status": "pass",
+      "evidence": {
+        "savedWorldsUnchanged": true
+      }
+    },
+    {
+      "name": "landscape: WebGL remains nonblank without runtime failures",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    }
+  ],
+  "failures": [],
+  "screenshots": [
+    "desktop-save-recovery.png",
+    "phone-save-recovery.png",
+    "narrow-save-recovery.png",
+    "landscape-save-recovery.png"
+  ],
+  "completedAt": "2026-10-03T18:44:05.022Z"
+}

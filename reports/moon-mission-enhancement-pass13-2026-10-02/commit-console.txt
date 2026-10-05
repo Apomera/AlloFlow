@@ -1,0 +1,43 @@
+[main b71881303] Connect Moon Mission powered approach and piloted descent
+ 46 files changed, 2107 insertions(+), 114 deletions(-)
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/README.md
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-artifacts-clock-final/moon-mission-flight-dynami-4961e-ysical-impact-without-WebGL-chromium/descent-fallback.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-artifacts-clock-final/moon-mission-flight-dynami-65efc-instruments-remain-readable-chromium/descent-desktop.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-artifacts-clock-final/moon-mission-flight-dynami-b690a-d-lands-with-fuel-remaining-chromium/descent-final-approach.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-artifacts-clock-final/moon-mission-flight-dynami-b690a-d-lands-with-fuel-remaining-chromium/descent-touchdown.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-artifacts-clock-final/moon-mission-flight-dynami-d47e9-preserve-keyboard-operation-chromium/descent-phone.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-discovery.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/approach/approach-handover-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/approach/approach-local-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/approach/approach-low-gate-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/approach/approach-phone-320-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/approach/approach-short-plan-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/approach/approach-whole-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/approach/phone-axe.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/completed-handover-record-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/computed-handover-desktop-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/computed-handover-phone-320-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/computed-start-card-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/handover-choice-phone-320-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/handover-phone-axe.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/review/camera-chase-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/review/camera-landing-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/review/camera-overhead-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/review/recorded-approach-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/review/recorder-phone-chromium.png
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-clock-final/review/saved-landing.csv
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-final.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/browser-initial.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/clock-final.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/handover-measures.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/integration.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/recorder-final.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/regression-initial.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/restore-worker-timeout.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/unit-final.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/unit-initial.json
+ create mode 100644 reports/moon-mission-enhancement-pass13-2026-10-02/verification.json
+ create mode 100644 tests/e2e/moon-mission-descent-handover.spec.ts
+ create mode 100644 tests/moonmission_descent_clock.test.js
+ create mode 100644 tests/moonmission_descent_handover.test.js
+check_staleness_delta: no English rewording vs HEAD (0 added, 0 removed - gap-report territory).

@@ -1,0 +1,270 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass23-2026-10-04/browser-energy-final/results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-energy.spec.ts",
+      "file": "moon-mission-descent-energy.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "live WebGL energy responds to actual engine force and motion and holds while paused",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 18819,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T17:59:49.974Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "live-webgl-energy",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-energy-final\\results\\moon-mission-descent-energ-928ee-tion-and-holds-while-paused-chromium\\attachments\\live-webgl-energy-e8da48f33575d6e0b86d9193e382a281ce12077c.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0368b572a747f3cada40-dec2ee151aad0d0d188c",
+          "file": "moon-mission-descent-energy.spec.ts",
+          "line": 178,
+          "column": 5
+        }
+      ],
+      "suites": [
+        {
+          "title": "fallback flight energy",
+          "file": "moon-mission-descent-energy.spec.ts",
+          "line": 113,
+          "column": 6,
+          "specs": [
+            {
+              "title": "paused energy is measured, remains optional, and does not operate controls",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4747,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:59:32.212Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "paused-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-energy-final\\results\\moon-mission-descent-energ-3f0af-d-does-not-operate-controls-chromium\\attachments\\paused-energy-729f9978775eadfe65d0f53f26cc71a17f27f243.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0368b572a747f3cada40-c50780597fad52769a01",
+              "file": "moon-mission-descent-energy.spec.ts",
+              "line": 120,
+              "column": 7
+            },
+            {
+              "title": "recorded energy shows conservative coasting, braking power, changing direction, contact and legacy omissions",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 7901,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:59:37.156Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "coast-contact-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-energy-final\\results\\moon-mission-descent-energ-a8010-ontact-and-legacy-omissions-chromium\\attachments\\coast-contact-energy-ccdfac838d8110ec5babe294d060d9bb8b0c9e1b.png"
+                        },
+                        {
+                          "name": "recorded-braking-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-energy-final\\results\\moon-mission-descent-energ-a8010-ontact-and-legacy-omissions-chromium\\attachments\\recorded-braking-energy-c3f39c4613d5524fa8d709b6aca4c5da06adb688.png"
+                        },
+                        {
+                          "name": "recorded-rising-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-energy-final\\results\\moon-mission-descent-energ-a8010-ontact-and-legacy-omissions-chromium\\attachments\\recorded-rising-energy-5d96bb1bad2b1a3e64f633ba8ec68ab05733bfd0.png"
+                        },
+                        {
+                          "name": "first-recorded-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-energy-final\\results\\moon-mission-descent-energ-a8010-ontact-and-legacy-omissions-chromium\\attachments\\first-recorded-energy-4cb0626029116f16f4c5fc2f48ec848a29227aea.png"
+                        },
+                        {
+                          "name": "legacy-energy",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-energy-final\\results\\moon-mission-descent-energ-a8010-ontact-and-legacy-omissions-chromium\\attachments\\legacy-energy-e290234bec67c391884105119cbea53a1ee46a6a.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0368b572a747f3cada40-8fe11df602018d0f7b80",
+              "file": "moon-mission-descent-energy.spec.ts",
+              "line": 131,
+              "column": 7
+            },
+            {
+              "title": "320 px energy supports keyboard operation, readable rulers and forced colors",
+              "ok": true,
+              "tags": [],
+              "tests": [
+                {
+                  "timeout": 180000,
+                  "annotations": [],
+                  "expectedStatus": "passed",
+                  "projectId": "chromium",
+                  "projectName": "chromium",
+                  "results": [
+                    {
+                      "workerIndex": 0,
+                      "parallelIndex": 0,
+                      "status": "passed",
+                      "duration": 4885,
+                      "errors": [],
+                      "stdout": [],
+                      "stderr": [],
+                      "retry": 0,
+                      "startTime": "2026-10-04T17:59:45.074Z",
+                      "annotations": [],
+                      "attachments": [
+                        {
+                          "name": "phone-energy-320",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-energy-final\\results\\moon-mission-descent-energ-6332b-le-rulers-and-forced-colors-chromium\\attachments\\phone-energy-320-05f3f0998053440aa8d013aa8b87768793ae44e1.png"
+                        },
+                        {
+                          "name": "phone-energy-forced",
+                          "contentType": "image/png",
+                          "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass23-2026-10-04\\browser-energy-final\\results\\moon-mission-descent-energ-6332b-le-rulers-and-forced-colors-chromium\\attachments\\phone-energy-forced-a78056b3cf2daa400859031879711f079f0e0459.png"
+                        }
+                      ]
+                    }
+                  ],
+                  "status": "expected"
+                }
+              ],
+              "id": "0368b572a747f3cada40-f053a1a6db9a84b5f3a1",
+              "file": "moon-mission-descent-energy.spec.ts",
+              "line": 158,
+              "column": 7
+            }
+          ]
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T17:59:31.158Z",
+    "duration": 40098.664000000004,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}

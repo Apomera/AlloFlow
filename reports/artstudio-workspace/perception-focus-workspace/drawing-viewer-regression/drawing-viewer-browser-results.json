@@ -1,0 +1,157 @@
+{
+  "checks": [
+    {
+      "experiment": "brightness",
+      "exactActualTrialGeometry": 3,
+      "preservedDraftPinNotebookAndExpansion": true,
+      "modalKeyboardFocus": true,
+      "escapeAndReturnFocus": true,
+      "localChoicesRetained": true
+    },
+    {
+      "experiment": "ebbinghaus",
+      "exactActualTrialGeometry": 3,
+      "preservedDraftPinNotebookAndExpansion": true,
+      "modalKeyboardFocus": true,
+      "escapeAndReturnFocus": true,
+      "localChoicesRetained": true
+    },
+    {
+      "experiment": "mullerLyer",
+      "exactActualTrialGeometry": 3,
+      "preservedDraftPinNotebookAndExpansion": true,
+      "modalKeyboardFocus": true,
+      "escapeAndReturnFocus": true,
+      "localChoicesRetained": true
+    },
+    {
+      "comparisonSlot": "a",
+      "independentSelections": true,
+      "preservedState": true
+    },
+    {
+      "comparisonSlot": "b",
+      "independentSelections": true,
+      "preservedState": true
+    },
+    {
+      "blockedStudy": "hidden",
+      "noEnlargedContent": true
+    },
+    {
+      "blockedStudy": "partial",
+      "noEnlargedContent": true
+    },
+    {
+      "blockedStudy": "conflict",
+      "noEnlargedContent": true
+    },
+    {
+      "invalidatedBy": "remove",
+      "closedWithoutStaleSVG": true
+    },
+    {
+      "invalidatedBy": "hide",
+      "closedWithoutStaleSVG": true
+    },
+    {
+      "invalidatedBy": "note",
+      "closedWithoutStaleSVG": true
+    },
+    {
+      "invalidatedBy": "settings",
+      "closedWithoutStaleSVG": true
+    },
+    {
+      "invalidatedBy": "profile",
+      "closedWithoutStaleSVG": true
+    },
+    {
+      "invalidatedBy": "pair",
+      "closedWithoutStaleSVG": true
+    },
+    {
+      "invalidatedBy": "close-review",
+      "closedWithoutStaleSVG": true
+    },
+    {
+      "filterAndUnrelatedDraftPreserveViewer": true
+    },
+    {
+      "activeStudyViewer": true
+    },
+    {
+      "width": 320,
+      "nearlyFullWidthDrawing": true,
+      "noOverflow": true,
+      "fullNoteReachable": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "width": 390,
+      "nearlyFullWidthDrawing": true,
+      "noOverflow": true,
+      "fullNoteReachable": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "width": 768,
+      "nearlyFullWidthDrawing": true,
+      "noOverflow": true,
+      "fullNoteReachable": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "width": 1280,
+      "nearlyFullWidthDrawing": true,
+      "noOverflow": true,
+      "fullNoteReachable": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "width": 1600,
+      "nearlyFullWidthDrawing": true,
+      "noOverflow": true,
+      "fullNoteReachable": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "theme": "dark",
+      "originalDrawingColors": true,
+      "axe": []
+    },
+    {
+      "theme": "contrast",
+      "originalDrawingColors": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-light",
+      "originalDrawingColors": true,
+      "axe": []
+    },
+    {
+      "theme": "forced-dark",
+      "originalDrawingColors": true,
+      "axe": []
+    },
+    {
+      "text200Percent": true,
+      "drawingAndFullNoteReachable": true,
+      "controls44px": true,
+      "axe": []
+    },
+    {
+      "unmountReleasesNativeModal": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "93f67c2f6be8d44e3986e5b8cb4b5f350569f40c8b2f320bb96e22f8ef512551",
+  "loadedSourceSHA256": "93f67c2f6be8d44e3986e5b8cb4b5f350569f40c8b2f320bb96e22f8ef512551",
+  "finalSourceSHA256": "93f67c2f6be8d44e3986e5b8cb4b5f350569f40c8b2f320bb96e22f8ef512551"
+}

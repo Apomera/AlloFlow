@@ -1,0 +1,236 @@
+{
+  "scope": "Failed beforeAll preparation only; no activity body executed",
+  "browserInvocationStarted": true,
+  "browserInvocationExitCode": 1,
+  "resultStats": {
+    "startTime": "2026-10-03T18:55:20.760Z",
+    "duration": 137476.095,
+    "expected": 0,
+    "skipped": 3,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "resultSha256": "dd01bba9f8afae0c63c4d933fd3464242aa76d46e2cfc164aafb22b7c9df2196",
+  "candidate": {
+    "startedAt": "2026-10-03T18:57:38.170Z",
+    "moduleSha256": "338944e463ff7f0cd48a4c5e83188ba8f2537af467adbd0a8c38d3ce0afec863",
+    "reviewDate": "2026-10-02",
+    "sourceHost": "http://127.0.0.1:65063/app",
+    "scope": "Working-tree module and host reader; optional actual source-app boot"
+  },
+  "runStartTime": "2026-10-03T18:55:20.760Z",
+  "postTailwindCandidateAt": "2026-10-03T18:57:38.170Z",
+  "startToPostTailwindCandidateMs": 137410.0,
+  "selectedPreparationDirectory": "C:\\Users\\cabba\\AppData\\Local\\Temp\\maine-sld-browser-5nfbnT",
+  "files": [
+    {
+      "file": "C:\\Users\\cabba\\AppData\\Local\\Temp\\maine-sld-browser-5nfbnT\\host.html",
+      "bytes": 7637,
+      "createdAt": "2026-10-03T18:55:31.951984+00:00",
+      "modifiedAt": "2026-10-03T18:55:31.960984+00:00",
+      "sha256": "078937f26696db4b8fa0648f503db50f64a93d400418021b95f9c731c2d17b24"
+    },
+    {
+      "file": "C:\\Users\\cabba\\AppData\\Local\\Temp\\maine-sld-browser-5nfbnT\\input.css",
+      "bytes": 59,
+      "createdAt": "2026-10-03T18:55:31.890191+00:00",
+      "modifiedAt": "2026-10-03T18:55:31.947791+00:00",
+      "sha256": "cc1a7ad0d019ddb1d32d0ecb588ba0ac26ce41d8625dd6c366348b25f83a28ec"
+    },
+    {
+      "file": "C:\\Users\\cabba\\AppData\\Local\\Temp\\maine-sld-browser-5nfbnT\\tailwind.css",
+      "bytes": 70729,
+      "createdAt": "2026-10-03T18:57:38.114744+00:00",
+      "modifiedAt": "2026-10-03T18:57:38.115743+00:00",
+      "sha256": "bf46f293143747dd4fdc476d5b5aebed4a991d07cfcf712673eaf6a457bb92db"
+    }
+  ],
+  "traces": [
+    {
+      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\module-four-02\\artifacts\\maine-sld-practice-partici-a0ea5-eset-restoration-and-reload-chromium\\trace.zip",
+      "sha256": "eb75d320e0ab80d894826e117152e19eaf0b49833d055733263a704df0cdd5c1",
+      "entries": [
+        "resources/src@581e739f3e4734c762a512193467c481b0408333.txt",
+        "resources/eb2d1cfa4e4ddc39ada4f4c02c5ac50d6b8e8c5e",
+        "test.trace"
+      ],
+      "events": [
+        {
+          "type": "before",
+          "callId": "hook@1",
+          "startTime": 19685.073
+        },
+        {
+          "type": "before",
+          "callId": "hook@2",
+          "startTime": 19686.822
+        },
+        {
+          "type": "before",
+          "callId": "attach@845bdf57b10c9abf3260f72ba5a8fffe",
+          "startTime": 147023.919
+        },
+        {
+          "type": "after",
+          "callId": "attach@845bdf57b10c9abf3260f72ba5a8fffe",
+          "endTime": 147023.961
+        },
+        {
+          "type": "after",
+          "callId": "hook@2",
+          "endTime": 147024.438,
+          "error": {
+            "name": "",
+            "message": "\u001b[31m\"beforeAll\" hook timeout of 120000ms exceeded.\u001b[39m",
+            "stack": "\u001b[31m\"beforeAll\" hook timeout of 120000ms exceeded.\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:31:6"
+          }
+        },
+        {
+          "type": "after",
+          "callId": "hook@1",
+          "endTime": 147024.514,
+          "error": {
+            "name": "",
+            "message": "\u001b[31m\"beforeAll\" hook timeout of 120000ms exceeded.\u001b[39m",
+            "stack": "\u001b[31m\"beforeAll\" hook timeout of 120000ms exceeded.\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:31:6"
+          }
+        },
+        {
+          "type": "before",
+          "callId": "hook@27",
+          "startTime": 147024.882
+        },
+        {
+          "type": "before",
+          "callId": "hook@28",
+          "startTime": 147025.454
+        },
+        {
+          "type": "before",
+          "callId": "fixture@50",
+          "startTime": 147034.321
+        },
+        {
+          "type": "after",
+          "callId": "fixture@50",
+          "endTime": 147034.353
+        },
+        {
+          "type": "before",
+          "callId": "fixture@51",
+          "startTime": 147034.866
+        },
+        {
+          "type": "after",
+          "callId": "fixture@51",
+          "endTime": 147034.887
+        },
+        {
+          "type": "before",
+          "callId": "attach@c4ccfdaf65e7afc08ad925b722ee2d05",
+          "startTime": 147052.179
+        },
+        {
+          "type": "after",
+          "callId": "attach@c4ccfdaf65e7afc08ad925b722ee2d05",
+          "endTime": 147052.19
+        },
+        {
+          "type": "before",
+          "callId": "fixture@55",
+          "startTime": 147053.14
+        },
+        {
+          "type": "after",
+          "callId": "fixture@55",
+          "endTime": 147053.166
+        },
+        {
+          "type": "before",
+          "callId": "fixture@56",
+          "startTime": 147053.395
+        },
+        {
+          "type": "after",
+          "callId": "fixture@56",
+          "endTime": 147053.414
+        },
+        {
+          "type": "before",
+          "callId": "fixture@58",
+          "startTime": 147053.861
+        },
+        {
+          "type": "after",
+          "callId": "fixture@58",
+          "endTime": 147053.872
+        },
+        {
+          "type": "before",
+          "callId": "fixture@65",
+          "startTime": 147056.122
+        },
+        {
+          "type": "after",
+          "callId": "fixture@65",
+          "endTime": 147056.137
+        },
+        {
+          "type": "before",
+          "callId": "fixture@69",
+          "startTime": 147057.036
+        },
+        {
+          "type": "after",
+          "callId": "fixture@69",
+          "endTime": 147057.047
+        },
+        {
+          "type": "before",
+          "callId": "fixture@71",
+          "startTime": 147057.499
+        },
+        {
+          "type": "after",
+          "callId": "fixture@71",
+          "endTime": 147057.506
+        },
+        {
+          "type": "after",
+          "callId": "hook@28",
+          "endTime": 147059.875
+        },
+        {
+          "type": "after",
+          "callId": "hook@27",
+          "endTime": 147059.901
+        },
+        {
+          "type": "before",
+          "callId": "hook@77",
+          "startTime": 147060.058
+        },
+        {
+          "type": "before",
+          "callId": "fixture@78",
+          "startTime": 147060.418
+        },
+        {
+          "type": "after",
+          "callId": "fixture@78",
+          "endTime": 147060.432
+        },
+        {
+          "type": "after",
+          "callId": "hook@77",
+          "endTime": 147061.399
+        }
+      ]
+    }
+  ],
+  "originalConfigTimeoutMs": 120000,
+  "originalWorkers": 1,
+  "automaticRetries": 0,
+  "allRawAttemptFilesArchived": true,
+  "timingInference": "Candidate metadata is written after the synchronous Tailwind CLI and CSS read. If generated after the 120s hook deadline, the event loop could only surface the timeout after this synchronous preparation returned."
+}

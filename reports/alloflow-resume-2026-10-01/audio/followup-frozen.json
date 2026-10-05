@@ -1,0 +1,11 @@
+{
+  "reports/alloflow-resume-2026-10-01/audio/host-replacements.json": "1fcc45ad2330d3bf56af00b1fd69ab3cbf64b53c3fb602b1925f1230adba6173",
+  "read_aloud_audio_service_source.jsx": "d6b323fcab01a3c22605ce86ccc7956c85349411a3a8a61ea12c27780a3ea3c1",
+  "read_aloud_audio_service_module.js": "7f606aada8da7e7709dbc73952a13506dba03577b5e885c91abb7932a491f71b",
+  "view_simplified_source.jsx": "2e837594311fcff7ccde8052acd5b80118eed8fa38c23387d88f7fc465b7cc63",
+  "view_simplified_module.js": "6ba838c86605890d3b771418b934486b72283adf4998ac4e9055746b0d6e250c",
+  "utils_pure_source.jsx": "19b83ade09ad2ba0ef7b793a206debc397184d579dbe30f8cebe69d07d83c9da",
+  "AlloFlowANTI.txt": "79891929e762a5e59980adf2d69528e98e0fa1d9196cd84941223e0e6241e6bf",
+  "tests/read_aloud_host_retention_resume.test.js": "fd65f59c06dc496be494c11c0f73cf6691d7d7e439100a5d0635fbcba08b780d",
+  "tests/read_aloud_support_inventory_resume.test.js": "bc50a0070c1748ba40ede29af81f613f8eb2de10f6be383e469848ee7f429cf6"
+}

@@ -1,0 +1,11 @@
+{
+  "preservedAt": "2026-10-02T21:18:11.161Z",
+  "candidateHash": "d89575f7776b204588fb096c343622346bf21b8330c98bf2286d74c59aba8821",
+  "candidatePin": "d89575f7",
+  "currentHostSha256": "a7cc5566ce838e9904128683190780c53c64eb56aa90f3d61fffc269cb0bd882",
+  "moduleBytesRetainedHere": true,
+  "sourceBundleBuilt": false,
+  "preview65063Started": false,
+  "browserValidationStarted": false,
+  "status": "Superseded before source-preview build by reviewed library margin-bottom correction. Exact completed pin transaction and host sources retained; no tested-host claim for this candidate."
+}

@@ -1,0 +1,139 @@
+{
+  "source": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\source-before-r2\\AlloFlowANTI.txt",
+  "sourceSha256": "f4afc02f33f87f613f9939ac6b8e71e3eac961a850ccdd4a45c639880d4852cf",
+  "effectSha256": "1b68079e9c5a4d2e8542d6913d9c61fad571382e97351a996d4637acf529c9cc",
+  "completedAt": "2026-10-04T03:24:51.786Z",
+  "actualProductionEffect": true,
+  "controlledBoundaries": [
+    "RTCPeerConnection",
+    "mailbox replies",
+    "resource image preparation/encoding",
+    "data-channel draining",
+    "browser event listeners and timers"
+  ],
+  "total": 25,
+  "passed": 5,
+  "failed": 20,
+  "results": [
+    {
+      "name": "current handshake, presence and device evidence are applied",
+      "passed": true
+    },
+    {
+      "name": "answer echoes current offer attempt identity",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ undefined\n- 'attempt-current-1'\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:114:39\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "tokenless legacy offer still negotiates without invented attempt identity",
+      "passed": true
+    },
+    {
+      "name": "current channel message, nudge, open and close work",
+      "passed": true
+    },
+    {
+      "name": "current welcome prepares, encodes and sends all resource chunks",
+      "passed": true
+    },
+    {
+      "name": "replaced channel ignores stale presence message",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '{\"roster\":{\"student-1\":{\"name\":\"Stale learner\",\"hand\":true,\"at\":1791084291772,\"rtc\":true}},\"evidence\":{\"student-1|directions-1\":{\"uid\":\"student-1\",\"name\":\"Student\",\"directionsId\":\"directions-1\",\"title\":\"Homework\",\"doneCount\":2,\"total\":3,\"xpEarned\":0,\"objectives\":[{\"label\":\"Observe\",\"kind\":\"\",\"done\":true,\"confirmed\":true}],\"at\":1791084291772}},\"now\":123,\"live\":null,\"status\":null}'\n- '{\"roster\":{\"student-1\":{\"name\":\"Current learner\",\"hand\":true,\"at\":1791084291772,\"rtc\":true}},\"evidence\":{\"student-1|directions-1\":{\"uid\":\"student-1\",\"name\":\"Student\",\"directionsId\":\"directions-1\",\"title\":\"Homework\",\"doneCount\":2,\"total\":3,\"xpEarned\":0,\"objectives\":[{\"label\":\"Observe\",\"kind\":\"\",\"done\":true,\"confirmed\":true}],\"at\":1791084291772}},\"now\":123,\"live\":null,\"status\":null}'\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:136:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "replaced channel ignores stale evidence message",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '{\"roster\":{\"student-1\":{\"name\":\"Current learner\",\"hand\":true,\"at\":1791084291773,\"rtc\":true}},\"evidence\":{\"student-1|directions-1\":{\"uid\":\"student-1\",\"name\":\"Student\",\"directionsId\":\"directions-1\",\"title\":\"Homework\",\"doneCount\":999,\"total\":3,\"xpEarned\":0,\"objectives\":[{\"label\":\"Observe\",\"kind\":\"\",\"done\":true,\"confirmed\":true}],\"at\":1791084291773}},\"now\":123,\"live\":null,\"status\":null}'\n- '{\"roster\":{\"student-1\":{\"name\":\"Current learner\",\"hand\":true,\"at\":1791084291773,\"rtc\":true}},\"evidence\":{\"student-1|directions-1\":{\"uid\":\"student-1\",\"name\":\"Student\",\"directionsId\":\"directions-1\",\"title\":\"Homework\",\"doneCount\":2,\"total\":3,\"xpEarned\":0,\"objectives\":[{\"label\":\"Observe\",\"kind\":\"\",\"done\":true,\"confirmed\":true}],\"at\":1791084291773}},\"now\":123,\"live\":null,\"status\":null}'\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:136:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "replaced channel ignores stale nudge message",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:136:57\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "replaced channel close cannot clear replacement RTC status",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\nfalse !== true\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:139:62\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "replaced channel open cannot start a welcome",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:143:39\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "replaced peer ignores late datachannel registration",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ [Function (anonymous)]\n- undefined\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:147:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed effect ignores stale presence message",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '{\"roster\":{\"student-1\":{\"name\":\"Disposed learner\",\"hand\":true,\"at\":1791084291776,\"rtc\":false}},\"evidence\":{\"student-1|directions-1\":{\"uid\":\"student-1\",\"name\":\"Student\",\"directionsId\":\"directions-1\",\"title\":\"Homework\",\"doneCount\":2,\"total\":3,\"xpEarned\":0,\"objectives\":[{\"label\":\"Observe\",\"kind\":\"\",\"done\":true,\"confirmed\":true}],\"at\":1791084291776}},\"now\":123,\"live\":null,\"status\":null}'\n- '{\"roster\":{\"student-1\":{\"name\":\"Current learner\",\"hand\":true,\"at\":124,\"rtc\":false}},\"evidence\":{\"student-1|directions-1\":{\"uid\":\"student-1\",\"name\":\"Student\",\"directionsId\":\"directions-1\",\"title\":\"Homework\",\"doneCount\":2,\"total\":3,\"xpEarned\":0,\"objectives\":[{\"label\":\"Observe\",\"kind\":\"\",\"done\":true,\"confirmed\":true}],\"at\":1791084291776}},\"now\":123,\"live\":null,\"status\":null}'\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:152:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed effect ignores stale evidence message",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '{\"roster\":{\"student-1\":{\"name\":\"Current learner\",\"hand\":true,\"at\":124,\"rtc\":false}},\"evidence\":{\"student-1|directions-1\":{\"uid\":\"student-1\",\"name\":\"Student\",\"directionsId\":\"directions-1\",\"title\":\"Homework\",\"doneCount\":999,\"total\":3,\"xpEarned\":0,\"objectives\":[{\"label\":\"Observe\",\"kind\":\"\",\"done\":true,\"confirmed\":true}],\"at\":1791084291776}},\"now\":123,\"live\":null,\"status\":null}'\n- '{\"roster\":{\"student-1\":{\"name\":\"Current learner\",\"hand\":true,\"at\":124,\"rtc\":false}},\"evidence\":{\"student-1|directions-1\":{\"uid\":\"student-1\",\"name\":\"Student\",\"directionsId\":\"directions-1\",\"title\":\"Homework\",\"doneCount\":2,\"total\":3,\"xpEarned\":0,\"objectives\":[{\"label\":\"Observe\",\"kind\":\"\",\"done\":true,\"confirmed\":true}],\"at\":1791084291776}},\"now\":123,\"live\":null,\"status\":null}'\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:152:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed effect ignores stale nudge message",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:152:57\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed effect ignores late open and welcome",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ '{\"roster\":{\"student-1\":{\"name\":\"Current learner\",\"hand\":true,\"at\":1791084291776,\"rtc\":true}},\"evidence\":{\"student-1|directions-1\":{\"uid\":\"student-1\",\"name\":\"Student\",\"directionsId\":\"directions-1\",\"title\":\"Homework\",\"doneCount\":2,\"total\":3,\"xpEarned\":0,\"objectives\":[{\"label\":\"Observe\",\"kind\":\"\",\"done\":true,\"confirmed\":true}],\"at\":1791084291776}},\"now\":123,\"live\":null,\"status\":null}'\n- '{\"roster\":{\"student-1\":{\"name\":\"Current learner\",\"hand\":true,\"at\":124,\"rtc\":false}},\"evidence\":{\"student-1|directions-1\":{\"uid\":\"student-1\",\"name\":\"Student\",\"directionsId\":\"directions-1\",\"title\":\"Homework\",\"doneCount\":2,\"total\":3,\"xpEarned\":0,\"objectives\":[{\"label\":\"Observe\",\"kind\":\"\",\"done\":true,\"confirmed\":true}],\"at\":1791084291776}},\"now\":123,\"live\":null,\"status\":null}'\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:156:38\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed effect ignores late datachannel registration",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n+ actual - expected\n\n+ [Function (anonymous)]\n- undefined\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:160:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed negotiation stops after awaited remote boundary and skips remaining batch",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'remote',\n+   'answer',\n+   'local',\n+   'ice',\n+   'send-answer'\n  ]\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:166:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed negotiation stops after awaited answer boundary and skips remaining batch",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'remote',\n    'answer',\n+   'local',\n+   'ice',\n+   'send-answer'\n  ]\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:166:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed negotiation stops after awaited local boundary and skips remaining batch",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'remote',\n    'answer',\n    'local',\n+   'ice',\n+   'send-answer'\n  ]\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:166:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed negotiation stops after awaited ice boundary and skips remaining batch",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'remote',\n    'answer',\n    'local',\n    'ice',\n+   'send-answer'\n  ]\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:166:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed welcome stops after awaited prepare boundary",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'prepare',\n+   'encode',\n+   'drain',\n+   'drain',\n+   'prepare',\n+   'encode',\n+   'drain',\n+   'drain'\n  ]\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:173:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed welcome stops after awaited encode boundary",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'prepare',\n    'encode',\n+   'drain',\n+   'drain',\n+   'prepare',\n+   'encode',\n+   'drain',\n+   'drain'\n  ]\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:173:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed welcome stops after awaited drain boundary",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly deep-equal:\n+ actual - expected\n\n  [\n    'prepare',\n    'encode',\n    'drain',\n+   'drain',\n+   'prepare',\n+   'encode',\n+   'drain',\n+   'drain'\n  ]\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:173:10\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "wakes coalesce during active receive and request one follow-up",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n3 !== 1\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:177:126\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\connection-audit\\teacher-connection.node.cjs:188:11"
+    },
+    {
+      "name": "disposed active receive applies nothing and schedules no follow-up",
+      "passed": true
+    }
+  ]
+}

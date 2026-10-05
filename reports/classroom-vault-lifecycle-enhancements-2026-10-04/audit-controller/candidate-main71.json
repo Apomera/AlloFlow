@@ -1,0 +1,368 @@
+{
+  "scope": "Actual production Node controller/host getter with native Web Crypto; synthetic 10k crypto config; fixed render closures and stable refs; no browser or full App rendering.",
+  "passed": 71,
+  "failed": 0,
+  "inputs": [
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-vault-lifecycle-enhancements-2026-10-04\\candidate\\allo_device_vault_module.js",
+      "sha256": "808069fd93cf53d4199929a8e2e4af6b20f8489a1026e2e26c2a74b0d2c8cbf6"
+    },
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-vault-lifecycle-enhancements-2026-10-04\\candidate\\AlloFlowANTI.txt",
+      "sha256": "349a91c643a85fe9025c3f58f96623c72771988d0021225b71e698e296d5ace2"
+    },
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allo_crypto_module.js",
+      "sha256": "88d541c85f83a5efe4a2d17c47b83362b389cf7c165999be9eb25916364fa01a"
+    },
+    {
+      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\allo_recovery_vault_integration_module.js",
+      "sha256": "0d7a92f20b6b48fc0e02fde5704dd480d4c0463f62a9f69b86e7942d16cb970c"
+    }
+  ],
+  "checks": [
+    {
+      "name": "unlock: synchronous lock takes effect",
+      "passed": true
+    },
+    {
+      "name": "unlock: late completion leaves this controller locked",
+      "passed": true
+    },
+    {
+      "name": "unlock: later plaintext read remains denied",
+      "passed": true
+    },
+    {
+      "name": "unlock: committed data remains readable with its current credential",
+      "passed": true
+    },
+    {
+      "name": "recoverWithKey: synchronous lock takes effect",
+      "passed": true
+    },
+    {
+      "name": "recoverWithKey: late completion leaves this controller locked",
+      "passed": true
+    },
+    {
+      "name": "recoverWithKey: later plaintext read remains denied",
+      "passed": true
+    },
+    {
+      "name": "recoverWithKey: storage operation reports its committed success",
+      "passed": true
+    },
+    {
+      "name": "recoverWithKey: lock does not roll back the accepted storage transaction",
+      "passed": true
+    },
+    {
+      "name": "recoverWithKey: committed data remains readable with its current credential",
+      "passed": true
+    },
+    {
+      "name": "changePassword: synchronous lock takes effect",
+      "passed": true
+    },
+    {
+      "name": "changePassword: late completion leaves this controller locked",
+      "passed": true
+    },
+    {
+      "name": "changePassword: later plaintext read remains denied",
+      "passed": true
+    },
+    {
+      "name": "changePassword: storage operation reports its committed success",
+      "passed": true
+    },
+    {
+      "name": "changePassword: lock does not roll back the accepted storage transaction",
+      "passed": true
+    },
+    {
+      "name": "changePassword: committed data remains readable with its current credential",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey: synchronous lock takes effect",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey: late completion leaves this controller locked",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey: later plaintext read remains denied",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey: storage operation reports its committed success",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey: lock does not roll back the accepted storage transaction",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey: committed data remains readable with its current credential",
+      "passed": true
+    },
+    {
+      "name": "importEncryptedBackup: synchronous lock takes effect",
+      "passed": true
+    },
+    {
+      "name": "importEncryptedBackup: late completion leaves this controller locked",
+      "passed": true
+    },
+    {
+      "name": "importEncryptedBackup: later plaintext read remains denied",
+      "passed": true
+    },
+    {
+      "name": "importEncryptedBackup: storage operation reports its committed success",
+      "passed": true
+    },
+    {
+      "name": "importEncryptedBackup: lock does not roll back the accepted storage transaction",
+      "passed": true
+    },
+    {
+      "name": "importEncryptedBackup: committed data remains readable with its current credential",
+      "passed": true
+    },
+    {
+      "name": "enableProtection: synchronous lock takes effect",
+      "passed": true
+    },
+    {
+      "name": "enableProtection: late completion leaves this controller locked",
+      "passed": true
+    },
+    {
+      "name": "enableProtection: later plaintext read remains denied",
+      "passed": true
+    },
+    {
+      "name": "enableProtection: storage operation reports its committed success",
+      "passed": true
+    },
+    {
+      "name": "enableProtection: lock does not roll back the accepted storage transaction",
+      "passed": true
+    },
+    {
+      "name": "enableProtection: committed data remains readable with its current credential",
+      "passed": true
+    },
+    {
+      "name": "rotateRecoveryKey: late completion leaves controller locked",
+      "passed": true
+    },
+    {
+      "name": "rotateRecoveryKey: later plaintext read remains denied",
+      "passed": true
+    },
+    {
+      "name": "rotateRecoveryKey: storage operation reports its committed success",
+      "passed": true
+    },
+    {
+      "name": "rotateRecoveryKey: lock does not roll back accepted transaction",
+      "passed": true
+    },
+    {
+      "name": "enableProtection already-enabled: retired read cannot schedule fresh unlock",
+      "passed": true
+    },
+    {
+      "name": "enableProtection already-enabled: no durable change",
+      "passed": true
+    },
+    {
+      "name": "in-flight key validation: lock rejects obsolete plaintext read",
+      "passed": true
+    },
+    {
+      "name": "in-flight key validation: retired read uses locked error contract",
+      "passed": true
+    },
+    {
+      "name": "in-flight key validation: controller stays locked",
+      "passed": true
+    },
+    {
+      "name": "obsolete validation failure: corrupted earlier read rejected",
+      "passed": true
+    },
+    {
+      "name": "obsolete validation failure: accepted newer session preserved",
+      "passed": true
+    },
+    {
+      "name": "obsolete validation failure: new session still reads saved content",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey already-disabled: late completion stays locked",
+      "passed": true
+    },
+    {
+      "name": "removeRecoveryKey already-disabled: no durable change",
+      "passed": true
+    },
+    {
+      "name": "old failure: newer unlock succeeds before obsolete completion",
+      "passed": true
+    },
+    {
+      "name": "old failure: obsolete error preserves accepted new key",
+      "passed": true
+    },
+    {
+      "name": "old failure: accepted new session still reads saved content",
+      "passed": true
+    },
+    {
+      "name": "control: initial controller locked",
+      "passed": true
+    },
+    {
+      "name": "control: ordinary bad password rejected",
+      "passed": true
+    },
+    {
+      "name": "control: bad password remains locked",
+      "passed": true
+    },
+    {
+      "name": "control: ordinary unlock publishes key",
+      "passed": true
+    },
+    {
+      "name": "control: ordinary unlocked read works",
+      "passed": true
+    },
+    {
+      "name": "control: ordinary lock denies future plaintext",
+      "passed": true
+    },
+    {
+      "name": "control: later explicit unlock restores access",
+      "passed": true
+    },
+    {
+      "name": "host controller: concurrent first renders share one instance",
+      "passed": true
+    },
+    {
+      "name": "host controller: concurrent first renders create exactly once",
+      "passed": true
+    },
+    {
+      "name": "host controller: every returned instance is current",
+      "passed": true
+    },
+    {
+      "name": "host controller: sequential cached access remains stable",
+      "passed": true
+    },
+    {
+      "name": "host controller: concurrent getters initially locked",
+      "passed": true
+    },
+    {
+      "name": "host init failure: both waiting callers reject",
+      "passed": true
+    },
+    {
+      "name": "host init failure: one shared loader attempt",
+      "passed": true
+    },
+    {
+      "name": "host init failure: no controller cached",
+      "passed": true
+    },
+    {
+      "name": "host init failure: owning pending request released",
+      "passed": true
+    },
+    {
+      "name": "host init failure: subsequent retry creates controller",
+      "passed": true
+    },
+    {
+      "name": "host init failure: successful retry creates exactly once",
+      "passed": true
+    },
+    {
+      "name": "host init: cached controller wins after dependency await",
+      "passed": true
+    },
+    {
+      "name": "host init: older dependency await does not overwrite cached owner",
+      "passed": true
+    }
+  ],
+  "observations": [
+    {
+      "name": "unlock",
+      "outcome": "VAULT_LOCKED",
+      "commits": 0,
+      "enabled": true,
+      "locked": true
+    },
+    {
+      "name": "recoverWithKey",
+      "outcome": "fulfilled",
+      "commits": 1,
+      "enabled": true,
+      "locked": true
+    },
+    {
+      "name": "changePassword",
+      "outcome": "fulfilled",
+      "commits": 1,
+      "enabled": true,
+      "locked": true
+    },
+    {
+      "name": "removeRecoveryKey",
+      "outcome": "fulfilled",
+      "commits": 1,
+      "enabled": true,
+      "locked": true
+    },
+    {
+      "name": "importEncryptedBackup",
+      "outcome": "fulfilled",
+      "commits": 1,
+      "enabled": true,
+      "locked": true
+    },
+    {
+      "name": "enableProtection",
+      "outcome": "fulfilled",
+      "commits": 1,
+      "enabled": true,
+      "locked": true
+    },
+    {
+      "name": "rotateRecoveryKey",
+      "outcome": "fulfilled",
+      "commits": 1,
+      "locked": true
+    },
+    {
+      "name": "enableProtection already-enabled",
+      "outcome": "VAULT_LOCKED"
+    },
+    {
+      "name": "concurrent-host-getters",
+      "created": 1,
+      "sameController": true
+    }
+  ]
+}

@@ -1,0 +1,290 @@
+{
+  "format": "alloflow-maine-sld-practice",
+  "schemaVersion": 1,
+  "moduleVersion": "1.1.0",
+  "reviewed": "2026-10-02",
+  "exportedAt": "2026-10-02T15:08:05.914Z",
+  "activeCase": "taylor",
+  "caseWork": {
+    "alex": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Legacy alex observation."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "Legacy alex Q8."
+        },
+        "Q9": {
+          "answer": "more",
+          "note": "Legacy alex Q9."
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "Legacy alex summary.",
+        "gap": "",
+        "family": "Legacy alex family.",
+        "multilingual": "Legacy alex language evidence."
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "alex-general-ed-adequate": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Legacy alex-general-ed-adequate observation."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "Legacy alex-general-ed-adequate Q8."
+        },
+        "Q9": {
+          "answer": "more",
+          "note": "Legacy alex-general-ed-adequate Q9."
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "Legacy alex-general-ed-adequate summary.",
+        "gap": "",
+        "family": "Legacy alex-general-ed-adequate family.",
+        "multilingual": "Legacy alex-general-ed-adequate language evidence."
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "jordan": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Legacy jordan observation."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "Legacy jordan Q8."
+        },
+        "Q9": {
+          "answer": "more",
+          "note": "Legacy jordan Q9."
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "Legacy jordan summary.",
+        "gap": "",
+        "family": "Legacy jordan family.",
+        "multilingual": "Legacy jordan language evidence."
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "marisol": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "taylor": {
+      "findings": {},
+      "responses": {
+        "Q1": {
+          "answer": "",
+          "note": ""
+        },
+        "Q2": {
+          "answer": "",
+          "note": ""
+        },
+        "Q3": {
+          "answer": "",
+          "note": ""
+        },
+        "Q4": {
+          "answer": "",
+          "note": ""
+        },
+        "Q5": {
+          "answer": "",
+          "note": ""
+        },
+        "Q6": {
+          "answer": "",
+          "note": ""
+        },
+        "Q7": {
+          "answer": "",
+          "note": ""
+        },
+        "Q8": {
+          "answer": "",
+          "note": ""
+        },
+        "Q9": {
+          "answer": "",
+          "note": ""
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": false,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    }
+  }
+}

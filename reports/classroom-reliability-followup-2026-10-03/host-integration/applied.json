@@ -1,0 +1,28 @@
+{
+  "at": "2026-10-03T15:30:42.208Z",
+  "startHead": "e967db3d9bf94befc568f3c25a3f543d9c591f8d",
+  "productionApplied": true,
+  "syntax": "pass",
+  "reverseExact": true,
+  "patchInputs": {
+    "student-response-v2.patch.json": "eea496161048021c2676370c74909f714ef13172bf8b0574ae684a0067df188f",
+    "receiver/replacements.json": "e993acd9c214ab46633d386312ff1a3b05788fdd62dd13e4e8d795bd145d831d"
+  },
+  "files": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "before": "b5fb9c913c1fa3884d2fe0190a10401179cb5e362a48856d01a47db7a53f7fe7",
+      "after": "69b228c6f92ae7d102fdd5c954927bf69eb999f429ba8f71a94e2ee9ee1e47a6"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "before": "b5fb9c913c1fa3884d2fe0190a10401179cb5e362a48856d01a47db7a53f7fe7",
+      "after": "69b228c6f92ae7d102fdd5c954927bf69eb999f429ba8f71a94e2ee9ee1e47a6"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "before": "b5fb9c913c1fa3884d2fe0190a10401179cb5e362a48856d01a47db7a53f7fe7",
+      "after": "69b228c6f92ae7d102fdd5c954927bf69eb999f429ba8f71a94e2ee9ee1e47a6"
+    }
+  ]
+}

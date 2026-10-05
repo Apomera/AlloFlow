@@ -1,0 +1,127 @@
+{
+  "date": "2026-10-02",
+  "feature": "Recorded founder connection timelines",
+  "sourceSha256": "2f95fc6d1dc23848c471fda8a54218d04d666c4372258bb5f2b4a132e325e7bb",
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "noCommitByUserRequest": true,
+  "deployed": false,
+  "preview": {
+    "url": "http://127.0.0.1:56559/?preview=archipelago",
+    "assets": [
+      {
+        "path": "/",
+        "status": 200,
+        "bytes": 1129
+      },
+      {
+        "path": "/evolab.js",
+        "status": 200,
+        "bytes": 2034058
+      },
+      {
+        "path": "/app.css",
+        "status": 200,
+        "bytes": 625027
+      },
+      {
+        "path": "/react.js",
+        "status": 200,
+        "bytes": 10751
+      },
+      {
+        "path": "/react-dom.js",
+        "status": 200,
+        "bytes": 131835
+      },
+      {
+        "path": "/three.js",
+        "status": 200,
+        "bytes": 603445
+      }
+    ],
+    "servedSourceMatches": true
+  },
+  "changes": [
+    "Optional timeline rebuilds only when opened, from the actual matched closed and open founder worlds for the selected draw.",
+    "Plot marker H or p(A), select recorded G0 through the captured endpoint with keyboard points or native generation buttons, and compare actual cohorts.",
+    "The comparison sentence and data table follow the chosen metric; full precision values remain in exports.",
+    "Inspect the selected connected newborn generation and its exact allele ancestry while keeping the study endpoint, prediction, batch mean, caseboard and founder collection unchanged.",
+    "Bounded timeline view metadata persists with the compact study recipe and selects the saved draw during explicit replay.",
+    "A separate journal entry and replayable JSON export include the whole recorded timeline, selected view and current study explanation.",
+    "Phone cohort cards stack, generation controls have 44px targets, and a focusable horizontal table preserves readable headings and values."
+  ],
+  "validation": {
+    "distinctModelComponentAndRenderChecks": 76,
+    "modelComponent": {
+      "passed": 74,
+      "files": 9,
+      "log": "timeline-units-final.log",
+      "pool": "one fork worker after thread startup timed out"
+    },
+    "renderGoldens": {
+      "passed": 2,
+      "log": "timeline-goldens-final.log",
+      "scope": "Only the two EvoLab digest entries were refreshed."
+    },
+    "browser": {
+      "distinctPassedScenarios": 9,
+      "logs": [
+        "timeline-browser-final.log",
+        "timeline-browser-polish.log"
+      ],
+      "finalRefinementRerun": 2,
+      "coverage": [
+        "Actual chart coordinates and values for both measures, lazy computation, G0 unavailable birth observations, native and SVG keyboard controls.",
+        "Earlier-generation inspection with exact passport IDs, copy indices and values, unchanged endpoint mean/prediction/caseboard and expedition state.",
+        "Independent timeline/study journal records, full precision export, bounded saved view and deterministic replay.",
+        "Real WebGL desktop with one active drawn context; reduced motion/no-WebGL phone; zero WCAG 2 A/AA and 2.1 AA axe violations and no page overflow.",
+        "After screenshot review, reran both new journeys with metric-specific comparison assertions and scrollable phone table checks.",
+        "Seven existing repeated-study, caseboard and single-case journeys, including 24 draws, cancellation and journal preservation."
+      ]
+    },
+    "visualReview": [
+      "Desktop and phone timeline screenshots inspected. Final phone table uses contained horizontal scrolling; comparison describes the active plotted metric."
+    ],
+    "translationKeysPrepared": 1506,
+    "sharedTranslationCatalogApplied": false
+  },
+  "scientificBoundaries": [
+    "Each plotted generation is an actual recorded cohort; lines connect observations and do not introduce intermediate simulated data.",
+    "G0 is the matched founding cohort. It has no recorded arrival or reproduction round; those counts are undefined.",
+    "Six or 24 initial founders are distinct from later established N24 cohorts.",
+    "Successive generations form one private model history and are not independent trials or the same organisms changing their inherited traits.",
+    "The study batch mean and always-claim caseboard still refer to the captured endpoint while earlier cohorts are explored.",
+    "The founder connection model has selection and mutation off. H=2p(1-p) measures one neutral marker, rather than genome-wide diversity or real Galapagos behavior.",
+    "Arrival counts and newborn copies from immigrant parents remain separate measures.",
+    "Absent cohorts produce undefined marker measures; G0 and absent newborn cohorts cannot enter the newborn inspector.",
+    "The existing model rules and expedition random future are unchanged; no fabricated scientific outcomes or generated biological rules are introduced."
+  ],
+  "artifacts": [
+    {
+      "path": "tests/evolab_connection_timeline.test.js",
+      "bytes": 5886,
+      "sha256": "d3cb7114af0b84a1768e962a5b0b5e0c38f5cee618c05ab95af96ff34ef0c681"
+    },
+    {
+      "path": "tests/e2e/evolab-connection-timeline.spec.ts",
+      "bytes": 14341,
+      "sha256": "8000fbe9f7f1a46847d4eafc41b7fa4c31bb1a83de61db66b9e0d423a0b91b30"
+    },
+    {
+      "path": "reports/evolab-living-island/connection-timeline-desktop.png",
+      "bytes": 61610,
+      "sha256": "7511a85328fa887488d2fc4ed88d8092da525fe3dda31237c23ae4b5398d927c"
+    },
+    {
+      "path": "reports/evolab-living-island/connection-timeline-phone.png",
+      "bytes": 62276,
+      "sha256": "8689b0839081ab3b7e8acce2ba4f8db172dcd22011d2f019296eb3e0aa6b5c8d"
+    },
+    {
+      "path": "reports/evolab-living-island/ui-strings.delta.json",
+      "bytes": 155465,
+      "sha256": "bd152060c40e44d214a89a915af3d6041d0b3d04419f9ffc01503956b8502fc7"
+    }
+  ]
+}

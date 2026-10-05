@@ -1,0 +1,295 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-30/p/work/sld-react/guide-revision-validation/module-five-01/artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "maine-sld-practice.spec.ts",
+      "file": "maine-sld-practice.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "reviewed guide revision buttons focus each existing question without replacing participant reasoning",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13129,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T03:07:41.855Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-967c64c8b7052d7750b6",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 389,
+          "column": 5
+        },
+        {
+          "title": "participant review edits return to each exact control and retain their origin through evidence detours without persisting navigation context",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 22503,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T03:08:21.781Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-3ab02895d8934a1bc516",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 479,
+          "column": 5
+        },
+        {
+          "title": "session save warning preserves open work and focus across blocked access quota failure recovery and explicit retries",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11121,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T03:08:44.297Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-95af6e5e389028710484",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 555,
+          "column": 5
+        },
+        {
+          "title": "reviewed guide revisions return by keyboard to all nine originating questions in all five cases while preserving literal notes and an explicit finding detour",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 115385,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m130\u001b[39m\nReceived:    \u001b[31m77.3125\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m130\u001b[39m\nReceived:    \u001b[31m77.3125\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:643:75",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                      "column": 75,
+                      "line": 643
+                    },
+                    "snippet": "  641 |     const nearby=page.getByTestId('guide-return-q9');await nearby.scrollIntoViewIfNeeded();await note.focus();await expect(note).toBeFocused();await expect(nearby).toBeInViewport();\n  642 |     const geometry=await page.evaluate(()=>{const main=document.querySelector('.msld-main')!,writer=document.querySelector('[data-testid=\"q9-note\"]')!,button=document.querySelector('[data-testid=\"guide-return-q9\"]')!;const rectangle=(node:Element)=>{const box=node.getBoundingClientRect();return {top:box.top,bottom:box.bottom,left:box.left,right:box.right,height:box.height};};return {viewport:{width:innerWidth,height:innerHeight},main:rectangle(main),writer:rectangle(writer),returnButton:rectangle(button),writerFocused:document.activeElement===writer};});\n> 643 |     expect(geometry.writerFocused).toBe(true);expect(geometry.writer.top).toBeGreaterThanOrEqual(geometry.main.top-1);expect(geometry.writer.bottom).toBeLessThanOrEqual(geometry.main.bottom+1);expect(geometry.returnButton.top).toBeGreaterThanOrEqual(geometry.main.top-1);expect(geometry.returnButton.bottom).toBeLessThanOrEqual(geometry.main.bottom+1);\n      |                                                                           ^\n  644 |     await writeFile(join(REPORT,'guide-revision-taylor-q9-editor-geometry.json'),JSON.stringify(geometry,null,2));await noActivityHorizontalOverflow(page);await page.screenshot({path:join(REPORT,'guide-revision-writing-taylor-q9-844x390-dark.png'),fullPage:false});await comparisonAxe(page,'axe-guide-revision-editor-844x390-dark',{width:844,height:390,theme:'dark',caseId:fixture.id,question,scope:'Active guide-origin Q9 writer and adjacent return action in the short landscape viewport'});\n  645 |    }\n  646 |    if(fixture.id==='marisol'&&question==='Q8'){"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                        "column": 75,
+                        "line": 643
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m130\u001b[39m\nReceived:    \u001b[31m77.3125\u001b[39m\n\n  641 |     const nearby=page.getByTestId('guide-return-q9');await nearby.scrollIntoViewIfNeeded();await note.focus();await expect(note).toBeFocused();await expect(nearby).toBeInViewport();\n  642 |     const geometry=await page.evaluate(()=>{const main=document.querySelector('.msld-main')!,writer=document.querySelector('[data-testid=\"q9-note\"]')!,button=document.querySelector('[data-testid=\"guide-return-q9\"]')!;const rectangle=(node:Element)=>{const box=node.getBoundingClientRect();return {top:box.top,bottom:box.bottom,left:box.left,right:box.right,height:box.height};};return {viewport:{width:innerWidth,height:innerHeight},main:rectangle(main),writer:rectangle(writer),returnButton:rectangle(button),writerFocused:document.activeElement===writer};});\n> 643 |     expect(geometry.writerFocused).toBe(true);expect(geometry.writer.top).toBeGreaterThanOrEqual(geometry.main.top-1);expect(geometry.writer.bottom).toBeLessThanOrEqual(geometry.main.bottom+1);expect(geometry.returnButton.top).toBeGreaterThanOrEqual(geometry.main.top-1);expect(geometry.returnButton.bottom).toBeLessThanOrEqual(geometry.main.bottom+1);\n      |                                                                           ^\n  644 |     await writeFile(join(REPORT,'guide-revision-taylor-q9-editor-geometry.json'),JSON.stringify(geometry,null,2));await noActivityHorizontalOverflow(page);await page.screenshot({path:join(REPORT,'guide-revision-writing-taylor-q9-844x390-dark.png'),fullPage:false});await comparisonAxe(page,'axe-guide-revision-editor-844x390-dark',{width:844,height:390,theme:'dark',caseId:fixture.id,question,scope:'Active guide-origin Q9 writer and adjacent return action in the short landscape viewport'});\n  645 |    }\n  646 |    if(fixture.id==='marisol'&&question==='Q8'){\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts:643:75"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T03:08:55.430Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-validation\\module-five-01\\artifacts\\maine-sld-practice-reviewe-25731--an-explicit-finding-detour-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "video",
+                      "contentType": "video/webm",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-validation\\module-five-01\\artifacts\\maine-sld-practice-reviewe-25731--an-explicit-finding-detour-chromium\\video.webm"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-validation\\module-five-01\\artifacts\\maine-sld-practice-reviewe-25731--an-explicit-finding-detour-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-validation\\module-five-01\\artifacts\\maine-sld-practice-reviewe-25731--an-explicit-finding-detour-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide-revision-validation\\module-five-01\\artifacts\\maine-sld-practice-reviewe-25731--an-explicit-finding-detour-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\maine-sld-practice.spec.ts",
+                    "column": 75,
+                    "line": 643
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-1b69b93de783af2bcdb7",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 614,
+          "column": 5
+        },
+        {
+          "title": "reviewed guide narrative status treats whitespace as blank and guide return context clears through navigation case isolation reset restore and reload",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 23074,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T03:11:30.831Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6cd521108d1d04c8dc57-90b05ab02c14a13a45d0",
+          "file": "maine-sld-practice.spec.ts",
+          "line": 665,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T03:07:40.377Z",
+    "duration": 297004.26800000004,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

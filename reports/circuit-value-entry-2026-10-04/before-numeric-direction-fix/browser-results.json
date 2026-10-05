@@ -1,0 +1,130 @@
+{
+  "sourceSha256": "a7d6a2257d68d162d120e0dd431e297a6a2b58ebafa2d2860fd48f17fa3a1180",
+  "scriptSha256": "1cde294f007800cd00e069a7bd8e4c7975e2b7ca4bc3a454beb1adec11984d97",
+  "errors": [],
+  "workflows": [
+    {
+      "name": "Enter and blur apply once; keyboard, pointer and Escape recover invalid entries",
+      "savedWorkAndHistoryPreserved": true
+    },
+    {
+      "name": "Logarithmic frequency entry, recovery and dynamic pulse-edge bounds"
+    }
+  ],
+  "views": [
+    {
+      "name": "desktop-draft",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 808,
+        "scrollWidth": 808,
+        "state": "pending",
+        "invalid": "false",
+        "text": "Input voltage (V)1.00 V0–5 · Press Enter or leave the field to apply. Esc restores the current value.Typed value not applied yet."
+      },
+      "axeViolations": [],
+      "file": "desktop-draft.png",
+      "sha256": "8deffd5e3cab2881c031491abee9f7eb176fdff380d045814d68309f84d4a2aa"
+    },
+    {
+      "name": "desktop-invalid",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 808,
+        "scrollWidth": 808,
+        "state": "invalid",
+        "invalid": "true",
+        "text": "Input voltage (V)1.60 V0–5 · Press Enter or leave the field to apply. Esc restores the current value.Value not applied. Enter a number from 0 to 5. Current circuit value: 1.60 VUse current value"
+      },
+      "axeViolations": [],
+      "file": "desktop-invalid.png",
+      "sha256": "9099575d5f026ec5b9ee84b7a714dc8e7065f6ceb8d6e9604239e94d2f9055a9"
+    },
+    {
+      "name": "phone-invalid",
+      "width": 320,
+      "geometry": {
+        "viewport": 320,
+        "pageWidth": 320,
+        "width": 244,
+        "scrollWidth": 244,
+        "state": "invalid",
+        "invalid": "true",
+        "text": "Input voltage (V)1.60 V0–5 · Press Enter or leave the field to apply. Esc restores the current value.Value not applied. Enter a number from 0 to 5. Current circuit value: 1.60 VUse current value"
+      },
+      "axeViolations": [],
+      "file": "phone-invalid.png",
+      "sha256": "76af49ec35820750adaf2d7902a6fa06347e5b6aecf4da95e034c047a0de4311"
+    },
+    {
+      "name": "forced-colors",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 314,
+        "scrollWidth": 314,
+        "state": "invalid",
+        "invalid": "true",
+        "text": "Input voltage (V)1.60 V0–5 · Press Enter or leave the field to apply. Esc restores the current value.Value not applied. Enter a number from 0 to 5. Current circuit value: 1.60 VUse current value"
+      },
+      "axeViolations": [],
+      "file": "forced-colors.png",
+      "sha256": "317860e393f27b1e54a293e5aa99bb689e162eecca1adfb493246f3b6673c947"
+    },
+    {
+      "name": "rtl-invalid",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 314,
+        "scrollWidth": 314,
+        "state": "invalid",
+        "invalid": "true",
+        "text": "Input voltage (V)1.60 V0–5 · Press Enter or leave the field to apply. Esc restores the current value.Value not applied. Enter a number from 0 to 5. Current circuit value: 1.60 VUse current value"
+      },
+      "axeViolations": [],
+      "file": "rtl-invalid.png",
+      "sha256": "2fa1661aeae11b85e3a54c9708c8de99e814bbd22cd1c522e7b1d1ced1e4934b"
+    },
+    {
+      "name": "network-log-invalid",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 334,
+        "scrollWidth": 334,
+        "state": "invalid",
+        "invalid": "true",
+        "text": "Frequency (Hz)10000.01–100000 · Logarithmic slider · Press Enter or leave the field to apply. Esc restores the current value.Value not applied. Enter a number from 0.01 to 100000. Current circuit value: 1000Use current value"
+      },
+      "axeViolations": [],
+      "file": "network-log-invalid.png",
+      "sha256": "4b448758ccc75b0f76ba2744e9d4127036cdc1b8ccd2f95e1c9b9ea674785c1e"
+    },
+    {
+      "name": "network-updated-bound",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 266,
+        "scrollWidth": 266,
+        "state": "invalid",
+        "invalid": "true",
+        "text": "Rise / fall (% of period)50.01–10 · Press Enter or leave the field to apply. Esc restores the current value.Value not applied. Enter a number from 0.01 to 10. Current circuit value: 5Use current value"
+      },
+      "axeViolations": [],
+      "file": "network-updated-bound.png",
+      "sha256": "2be87f748aeb4b176c87368cbb847cf79749b1102cb3cb065a5e7fe019b7d894"
+    }
+  ],
+  "passed": true,
+  "browserClosed": true
+}

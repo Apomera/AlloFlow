@@ -1,0 +1,111 @@
+{
+  "reviewedAt": "2026-10-04T14:58:59.723402+00:00",
+  "reviewer": "/root/recovery_review",
+  "status": "accepted",
+  "sourceSha256": "85b21dd96f2476e383beef207177736d859170244c35c6705d422e89771f41cb",
+  "moduleSha256": "c5af6b18d2a3a02d1fe99f885b874ea0bae04c1fa74b283a6bda7d69a2bdf87f",
+  "browserTestSha256": "25f75f6b96dfdba61036c1267e932cd94d0e4691a9969e80867ebe865afd0771",
+  "sourceCheckFile": "independent-source-check-03.json",
+  "sourceCheckSha256": "e7044d454e6c27919fd375ed8b0d1717b5852aa355be238c9130d72b8eae6ee7",
+  "sourceChecksPassed": 16,
+  "normalRunIdentityFile": "browser-validation/module-focused-02/run-identity.json",
+  "normalRunIdentitySha256": "f2bef735c7a30134a3d8fe7ff00658a96fbbd6dabd84e812d13291f33e775a64",
+  "resultFile": "browser-validation/module-focused-02/result.json",
+  "resultSha256": "b9fd9ea49a8a92346fabeb5716f7c7f720e45cbcfd82fb3bec7ae4fcf1de2f26",
+  "selectedScenarioCount": 5,
+  "scenarioTitles": [
+    "all52 scores, evidence and Q8/Q9 work survive steps, case switches and reload",
+    "participant review edits return to each exact control and retain their origin through evidence detours without persisting navigation context",
+    "session save warning preserves open work and focus across blocked access quota failure recovery and explicit retries",
+    "most recent finding removal can restore exact roles and literal notes across all five case records and filtered score sources without transferring recovery state",
+    "finding removal recovery keeps neighboring board focus protects newer entries and clears only the required snapshots through reset restore and reload"
+  ],
+  "original35PrefixIndependentlyByteVerified": true,
+  "availableScenarioCount": 37,
+  "preparedAssetValidation": false,
+  "images": [
+    {
+      "path": "browser-validation/module-focused-02/browser/finding-removal-recovery-alex-320-dark.png",
+      "sha256": "8aa568bcf9e995a49ac3260df103bb78a8c531dfc220edf28161e9f4eaba7399",
+      "bytes": 43877,
+      "directlyViewedAtOriginalResolution": true,
+      "status": "accepted",
+      "observation": "Undo retains a compact natural height alongside the narrative finding; action text and case context are legible."
+    },
+    {
+      "path": "browser-validation/module-focused-02/browser/finding-removal-preview-alex-320-dark.png",
+      "sha256": "5e96b7ea004abcfedcbbfd5669c346c200f16deca2bd85b0655f078784ac1331",
+      "bytes": 27275,
+      "directlyViewedAtOriginalResolution": true,
+      "status": "accepted",
+      "observation": "Expanded participant literal note wraps inside the mobile content area; markup remains visible as text and unbroken R characters stay inside the card."
+    },
+    {
+      "path": "browser-validation/module-focused-02/browser/finding-removal-recovery-alex-844x390-dark.png",
+      "sha256": "288fed4abe86b8d102c8fd368afc4e8f62b389800ddac4f57421e560b6b8fd82",
+      "bytes": 44809,
+      "directlyViewedAtOriginalResolution": true,
+      "status": "accepted",
+      "observation": "Recovery title, score source, action and disclosure are legible in the short landscape content area."
+    },
+    {
+      "path": "browser-validation/module-focused-02/browser/finding-removal-restored-note-alex-844x390-dark.png",
+      "sha256": "783d4e0aa75c1144a06b8a3ed92ad0c1cac3fbf7dae50eec4d94770161ca73cf",
+      "bytes": 39017,
+      "directlyViewedAtOriginalResolution": true,
+      "status": "accepted",
+      "observation": "Restored 4000-character writer and focus ring fit the short landscape content area; note count and limit message remain visible."
+    }
+  ],
+  "scopedAccessibilityScans": [
+    {
+      "path": "browser-validation/module-focused-02/browser/axe-finding-removal-recovery-320-dark.json",
+      "sha256": "c6011c68e7a8d524ac698373526c14667da0963a9f2ad44e39e73dd9e8c3bbb6",
+      "violations": 0,
+      "width": 320,
+      "height": 844,
+      "theme": "dark",
+      "state": "Most recent removed finding recovery"
+    },
+    {
+      "path": "browser-validation/module-focused-02/browser/axe-finding-removal-recovery-844x390-dark.json",
+      "sha256": "d7a9f655bed9f737d716e1b4f7102cf9f8fe0b6184e30143c58bcd4ca8a4eef7",
+      "violations": 0,
+      "width": 844,
+      "height": 390,
+      "theme": "dark",
+      "state": "Score finding removal recovery in short landscape"
+    },
+    {
+      "path": "browser-validation/module-focused-02/browser/axe-finding-removal-restored-note-844x390-dark.json",
+      "sha256": "2264d644de8970a68c469da1668c74e64269ce55844a5449adf22540ec7a9fd1",
+      "violations": 0,
+      "width": 844,
+      "height": 390,
+      "theme": "dark",
+      "state": "Restored literal participant note fully focused in short landscape"
+    },
+    {
+      "path": "browser-validation/module-focused-02/browser/axe-full-review-returned-1366-light.json",
+      "sha256": "591150f6e3cf14675a9b97fb4bb9612fda2d12b8ac8e718b68bc449fa540c571",
+      "violations": 0,
+      "step": "debrief",
+      "caseId": "alex",
+      "width": 1366,
+      "theme": "light",
+      "scope": "Participant review returned with earlier reasoning expanded"
+    },
+    {
+      "path": "browser-validation/module-focused-02/browser/axe-save-warning-320-dark.json",
+      "sha256": "388c63533297ddb3615529867b34bfca89033abecd33c212b09a05861067e1de",
+      "violations": 0,
+      "width": 320,
+      "theme": "dark",
+      "step": "reasoning",
+      "storageMode": "blocked",
+      "scope": "Persistent save warning, immediate download and active form note"
+    }
+  ],
+  "historyScope": "Earlier original/corrected capture-only overflow probes and provisional module-focused-01 pixels retain their exact old candidate identities. They are excluded from final acceptance.",
+  "limits": "Independent source preservation and final module layout review. Five focused module scenarios and five scoped axe scans, not all37 scenarios or a full application/WCAG/legal audit. Actual complete source-host boot is a separate validation owner responsibility; print/core/data/schema remained byte-identical and were not broadly rerun."
+}

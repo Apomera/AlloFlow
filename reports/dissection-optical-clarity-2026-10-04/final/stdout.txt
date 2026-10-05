@@ -1,0 +1,8 @@
+
+Running 14 tests using 1 worker
+
+  ok  1 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on phone (9.9s)
+  ok  2 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on tablet (6.0s)
+  ok  3 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on desktop (6.7s)
+  ok  4 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on embedded-medium (6.0s)
+  x   5 [chromium] › tests\e2e\dissection-optical-clarity.spec.ts:81:30 › optical controls are readable and independent on embedded-large (6.6s)

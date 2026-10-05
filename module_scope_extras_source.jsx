@@ -597,7 +597,29 @@ const uploadSessionAssets = async (appId, resources, sessionCode) => {
     console.error("[SESSION DEBUG] Pre-check error:", preCheckErr);
   }
   const securityMetadata = getSessionAssetSecurityMetadata(sessionCode);
-  const safeResources = structuredClone(stripUnsafeLiveSessionFields(resources.map(sanitizePortableAacResource)));
+  const portableResources = resources.map((item) => {
+    if (!item || item.type !== "word-sounds") return sanitizePortableAacResource(item);
+    const readiness = window.AlloModules && window.AlloModules.WordSoundsReadiness;
+    if (!readiness || typeof readiness.portable !== "function") throw new Error("Word Sounds audio preparation is unavailable. Reload and retry.");
+    return readiness.portable(item);
+  });
+  const safeResources = structuredClone(stripUnsafeLiveSessionFields(portableResources));
+  portableResources.forEach((item, index) => {
+    if (!item || item.type !== "word-sounds") return;
+    ["wsPreloadedWords", "data"].forEach((layout) => {
+      if (!Array.isArray(item[layout]) || !Array.isArray(safeResources[index]?.[layout])) return;
+      item[layout].forEach((word, wordIndex) => {
+        const assets = word?._ttsAssets;
+        const target = safeResources[index][layout][wordIndex];
+        if (!assets || !target || typeof target !== "object") return;
+        ["__proto__", "constructor", "prototype"].forEach((key) => {
+          if (!Object.prototype.hasOwnProperty.call(assets, key)) return;
+          if (!target._ttsAssets || typeof target._ttsAssets !== "object" || Array.isArray(target._ttsAssets)) target._ttsAssets = Object.create(null);
+          Object.defineProperty(target._ttsAssets, key, { value: { mime: assets[key].mime, base64: assets[key].base64 }, enumerable: true, configurable: true, writable: true });
+        });
+      });
+    });
+  });
   const writeTasks = [];
   const processField = (obj, key, assetSeed) => {
     const val = obj[key];

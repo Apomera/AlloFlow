@@ -1,0 +1,36 @@
+{
+  "sourceSha256": "b7417987e07ff085d8ab90ed1030a19e7a153a6c637f2b6689f2d56ee42aaf64",
+  "startedAt": "2026-10-05T02:10:49.431Z",
+  "sourceStable": true,
+  "suites": [
+    {
+      "name": "atc-deep-dive-2026-10-03",
+      "checksPassed": 28
+    },
+    {
+      "name": "atc-quality-pass3-2026-10-03",
+      "checksPassed": 20
+    },
+    {
+      "name": "atc-visual-engagement-2026-10-03",
+      "checksPassed": 23
+    },
+    {
+      "name": "atc-decision-support-2026-10-04",
+      "checksPassed": 18
+    },
+    {
+      "name": "atc-learning-experience-2026-10-04",
+      "checksPassed": 19
+    },
+    {
+      "name": "atc-operational-clarity-2026-10-04",
+      "checksPassed": 22
+    },
+    {
+      "name": "atc-practice-flow-2026-10-04",
+      "checksPassed": 17
+    }
+  ],
+  "completedAt": "2026-10-05T02:15:40.650Z"
+}

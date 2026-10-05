@@ -1,0 +1,49 @@
+# Evolution disclosure and terminal guidance — October 3, 2026
+
+The coordinator applied the three guarded substitutions to current canonical/public source at **13:46 UTC on October 3, 2026**, preserving newer Evolution authoring. Both runtime partners match SHA-256 `b587a28fcb14a13e6a70a1d81e41ded97694cb6577b0e45c11bf04ddfa47563f`. **126 unique current-source Evolution checks pass: six new mounted cases plus 120 existing checks across four regression files.** No skipped checks are reported. [Current focused results](current-integrated-unit.json) and [current regression results](current-regressions-unit.json) retain the separate serial runs. The [apply receipt](integration-prepared/20261003T134445925Z/apply-receipt.json) records reverse-byte equality, compile-only syntax validation and unchanged EOL/BOM/final newline. This validates the bounded Evolution change; it is not a full-project or native-browser verification claim.
+
+This worker initially prepared an isolated candidate to preserve concurrent Evolution authoring. The original candidate preserves the October 1 snapshot, including all pre-existing uncommitted authoring at that time. Integration used only three replacements on the latest source; it did not copy that old candidate over newer authoring. The worker has not edited production source or runtime mirrors directly.
+
+The complete generation field report includes offspring counts, mutations and trait means. A new walkthrough now withholds both that report and the fallback summary while showing parents or survivors. The existing walkthrough still reveals the actual survivor cohort in its survivors stage; the complete report appears when offspring are shown. Moving backward hides it again. Ordinary historical playback retains its existing complete reports.
+
+After extinction or generation 60, the habitat hint repeats the existing registered terminal review guidance instead of instructing learners to use disabled habitat controls. No translation registry changes are required.
+
+`initial-source-inventory.json` records all four pre-edit runtime hashes and snapshots. Canonical and public started identical at `4832ab1605faf1bf8f3669d3c0c9a542c9f492823df1f8e85ac5fc56469bb0cb`. The two ignored build copies are older and were preserved. `prepare-candidate.cjs` writes only the isolated candidate and its patch evidence. The reverse guard reproduces the frozen canonical bytes exactly.
+
+`evolab_reveal_integrity.test.js` mounts the real tool through the existing harness. Six cases cover actual cohort sequencing, both outcome render branches, the forecast route, unchanged historical playback and recorded state, and both terminal states. `EVOLAB_REVEAL_SOURCE` selects the frozen baseline, isolated candidate, or a subsequently coordinated runtime. Its report-local Vitest configuration does not change shared test configuration or harnesses.
+
+## Historical isolated validation
+
+Root granted one serialized unit-runner slot. Both baseline and candidate used one worker and the default test timeout. No production files were changed.
+
+The initial baseline report, `baseline-unit.json`, is retained. Its first fixture exposed jsdom's missing `scrollIntoView`, a visible-text lookup where real replay controls use accessible labels, and an unsuitable sampled extinction fixture. Those report-local test issues were corrected without reducing outcome assertions.
+
+`baseline-corrected-unit.json` reaches the intended field-report, fallback-summary, forecast-route and generation-60 guidance failures. Its historical-playback case timed out under host load; the deliberately dwindled extinction fixture had an inconsistent `nextId` and was rejected by real save restoration.
+
+The intermediate `candidate-unit.json` passes four of six cases: fallback disclosure, forecast disclosure, complete immutable historical playback, and generation-60 guidance. The main field-report workflow timed out after 27.5 seconds under host load and the extinction fixture still failed save restoration. The final test revision sets its one-parent fixture's `nextId` to 2, and compares canonical serialized evidence instead of repeatedly constructing deep assertion diagnostics. Both exact memory and local-storage comparisons remain.
+
+The first candidate process attempt never launched because automatic permission review exceeded its deadline; the single permitted retry launched and completed. After a later root-granted serialized slot, the corrected final run completed with **six of six cases passing**, one worker and the default test timeout. `candidate-final-unit.json` retains the full result; the longest case completed in 4,629 ms. The tested candidate SHA-256 is `d66e3b2e247c863ae335b07aedf33d8bb5885cecc0648e04ab3e40abff96ca3d`; final fixture SHA-256 is `825a09340eb26819113bd0dfc35c10f48f5cec5136fcc0e451f7ab8765a6eb54`. These results verify the isolated October 1 candidate. No browser, broad build, staging, commit, push or deployment has been performed by this worker.
+
+## Integration evidence — October 3, 2026
+
+Before integration, read-only review at 13:38 UTC found canonical and public source identical at SHA-256 `2f95fc6d1dc23848c471fda8a54218d04d666c4372258bb5f2b4a132e325e7bb`, with newer authoring than the October 1 snapshot. The three original patch anchors each occurred once and none of their replacements was present. The field report was unconditional at line 4691, its fallback was ungated, and the active habitat hint remained at line 4711. The walkthrough's `watchNext` logic was unchanged after normalizing the baseline's CRLF and current LF line endings; its `watching` and phase expressions retained the same meaning.
+
+`current-integration-check-2026-10-03.json` retains the pre-integration hashes, anchor counts, and read-only in-memory rebase. That predicted hash matches the coordinator's actual applied source, `b587a28fcb14a13e6a70a1d81e41ded97694cb6577b0e45c11bf04ddfa47563f`. Reversing only those substitutions reproduces the exact newer source snapshot. Current canonical/public bytes were independently reread after the coordinator's six-case run and match the receipt.
+
+The coordinator's integration used fresh canonical/public guards, exactly one occurrence of each original anchor, zero replacement occurrences, and reverse-byte equality. It changed exactly three lines in each source partner. If reapplying on later authoring, prepare fresh guards and a new proposed hash; the full October 1 candidate must never replace a newer source. The same six regression cases passed on both the old isolated candidate and the integrated source; these are six distinct cases, not twelve.
+
+The two ignored build copies remain at their original older hash, `8628429313652e4b61c3398c598083caf406783122de38e6e5027c38b1d2c59e`, and were preserved. Their later synchronization belongs to the coordinated runtime/build owner. Original/current snapshots, both patch evidence records, the apply receipt and the six-case regression remain available for review. No staging, commit, push, deployment or broad build occurred in this integration.
+
+## Prepared integration helper
+
+At the coordinator's request, `integrate-evolution-reveal-2026-10-03.cjs` supports separate `prepare` and `apply <manifest>` modes. This worker ran prepare only; the coordinator then ran apply successfully. The immutable manifest is `integration-prepared/20261003T134445925Z/manifest.json`, with fresh canonical/public snapshots, the current candidate, and `evolution-reveal.patch` containing exactly three changed lines in each source partner. The prepared candidate hash matches the actual applied source.
+
+Prepare verified exactly one original occurrence and zero replacement occurrences per anchor, reverse-byte equality, and unchanged EOL/BOM/final-newline signature (18,788 LF newlines; no CRLF, lone CR or BOM; final newline retained). `node:vm.Script` parsed the candidate successfully without executing it. This is syntax validation, not a test run. Apply refuses changed sources, changed prepared snapshots/candidate, invalid manifest scope, nonunique anchors or EOL drift. It touches only canonical/public files and emits an exact-byte receipt. It never copies the old October 1 candidate or edits ignored builds, hosts, translation registries or pins.
+
+The coordinator ran the report-local Vitest configuration with `EVOLAB_REVEAL_SOURCE=stem_lab/stem_tool_evolab.js`, one worker/default timeouts, and recorded six passing cases in `current-integrated-unit.json`. A separate serial run passed all 120 existing checks in `tests/evolab_living_island.test.js`, `tests/evolab_cohort_explorer.test.js`, `tests/evolab_population_comparison.test.js`, and `tests/evolab_habitat_trail.test.js`, retained in `current-regressions-unit.json`. Independent report-only review confirmed zero pending/skipped tests and unchanged canonical/public hashes after that run. These 126 unique current-source checks exclude repeated isolated/baseline runs. The worker ran no additional tests or browsers during preparation, integration or this report update.
+
+## Loader pin findings
+
+Evolution has no individual content-hash loader pin. `AlloFlowANTI.txt:15037` lists its module path; `:15382–15383` appends the shared `pluginCdnVersion`, currently `6770c29ca` at `:13960`. Both desktop source shells use the same generic loader. Evolution is listed for plugin asset handling at `build.js:1530` and is absent from `CONTENT_HASH_PINNED` at `:2444–2478`. The shared version is updated by the normal build transform at `:2537` and `:2558–2559`.
+
+The local canonical/public repair requires no host or manifest pin edit. Refreshing the shared plugin cache version and packaging ignored builds belongs to the coordinated release/build stage. This helper deliberately leaves those shared surfaces untouched.

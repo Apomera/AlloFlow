@@ -8,9 +8,12 @@ const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_to
 const start=source.indexOf('function createCLHuntAnimal('),end=source.indexOf('// Compact, individually owned prey rig.',start);
 if(start<0||end<=start)throw Error('Animal factory anchors missing');
 const build=new Function('T','species','Math',source.slice(start,end)+';return createCLHuntAnimal(T,species);');
+const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+// Restore only the approved cuttle funnel for this historical whole-rig fingerprint.
+const priorBuild=new Function('T','species','Math',restorePass42AnimalSource(source.slice(start,end))+';return createCLHuntAnimal(T,species);');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Shell construction consumed dive RNG');}}),allocated=[];
 const state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});
-function rig(id='nautilus'){const a=build(THREE,{id,bodyColor:0x8a7a52},noRandom);allocated.push(a);return a;}
+function rig(id='nautilus',prior=false){const a=(prior?priorBuild:build)(THREE,{id,bodyColor:0x8a7a52},noRandom);allocated.push(a);return a;}
 function meshes(a){const all=[];a.root.traverse(o=>{if(o.isMesh)all.push(o);});return all;}
 function shellChild(o){for(let p=o;p;p=p.parent)if(p.name==='cl-shell')return true;return false;}
 function shellMeshes(a){return meshes(a).filter(shellChild);}
@@ -102,6 +105,6 @@ describe('Nautilus external shell and living-chamber opening',()=>{
 
   it('preserves pre-change complete other-species rigs and nautilus non-shell/non-eye geometry, materials and shaders',()=>{
     const expected={commonOcto:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',blueRinged:'93198a1edb04aa7894c65c563d945ca17483c046c025d04a5a0c0c92e71a2aaf',mimicOcto:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',giantPacific:'bbd7f1259032347eaf63884ca47074e90ccea89f3e37a014395e7a5011c464c0',caribReef:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',coconutOcto:'062749c57c069d1144ba02361e100b9cc357e646e7a6d6cde864cb98f1f36121',humboldtSquid:'a1ac2cc415f88aedd66eabaeacb96a6221cd6ee4fd6304ebd5d4503f12aef92d',nautilus:'2e589536a86ed76b23108faea2fd93accde9f660f0d6c95fc4e9e8eac69fee74',cuttlefish:'05067cfb886de1799621787d65729da2b9888d0e9f7bab36adce7176b14e14f6',bobtailSquid:'4ee65934d880254c0949288a9955588e46912707c2b6dae5c4e71b02e3291e38',dumboOcto:'fa760b6a4268d0af180653270cf5708467461425420bdfe93db17236104f836b',vampireSquid:'7497d5c70ed65a3b7bf94ecc0d081369d1dcfc124c16dbd12f56da5545751d70'};
-    for(const [id,fingerprint]of Object.entries(expected)){const a=rig(id),frames=[];for(let i=0;i<4;i++){a.update(1+i*.05,.05,state({moving:i>0,jet:i===2,strike:i===3?.6:0,camo:.6,substrate:['sand','rock','grass','sand'][i],display:i===2,reducedMotion:i===3}));frames.push(hash(protectedRecords(a)));}expect(hash(frames),id).toBe(fingerprint);}
+    for(const [id,fingerprint]of Object.entries(expected)){const a=rig(id,true),frames=[];for(let i=0;i<4;i++){a.update(1+i*.05,.05,state({moving:i>0,jet:i===2,strike:i===3?.6:0,camo:.6,substrate:['sand','rock','grass','sand'][i],display:i===2,reducedMotion:i===3}));frames.push(hash(protectedRecords(a)));}expect(hash(frames),id).toBe(fingerprint);}
   },240000); // Forty-eight complete geometry/shader snapshots can exceed the default 5s on a busy host.
 });

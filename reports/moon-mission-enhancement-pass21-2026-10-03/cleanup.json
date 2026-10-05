@@ -1,0 +1,17 @@
+{
+  "removedExactPrivateFiles": [
+    "moon-pass21-baseline.js",
+    "moon-pass21-candidate.js",
+    "moon-pass21-frame.js",
+    "moon-pass21-history.js",
+    "moon-pass21-integrate.py",
+    "moon-pass21-preserve.py",
+    "moon-pass21-probe.cjs",
+    "moon-pass21-worker-smoke.cjs",
+    "moon-pass21-finalize.py"
+  ],
+  "resolvedParentVerified": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-11",
+  "runtimeTestsAndEvidenceRetained": true,
+  "sharedScopedIndexStillUnchanged": true,
+  "sourceSha256": "578816db8e00c92374667b19643c596eedd8af91fa83d52109c0c31e33637e45"
+}

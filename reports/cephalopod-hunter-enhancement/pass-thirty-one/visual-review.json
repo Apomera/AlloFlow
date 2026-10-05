@@ -1,0 +1,37 @@
+{
+  "version": 1,
+  "sourceSHA": "f2ef9cbc4c1a9899703bad86da73d2553704bb3953428cdac1b47098a8af3450",
+  "baselineSHA": "ce0c01a8fc85d002bc970c5103fec84be77ff9d2fd42a295fbe629219c9e2182",
+  "acceptedImages": 28,
+  "acceptedPairs": 10,
+  "blockingFindings": 0,
+  "reviewers": {
+    "root": "Inspected all paired natural native GL, fish detail native GL and diagnostic condition images; audited exact natural and detail scene/camera parity.",
+    "independent": "Read-only agent inspected all28 final PNGs: sixteen natural DOM/GL, six paused camera-only detail and six diagnostic condition. No browser/test runs or source edits."
+  },
+  "findings": {
+    "natural": "Sand is subtly warmer and less pale across all four profiles while retaining caustics, rock shadows, foreground separation and squid volume. UI positions and readouts remain stable; desktop popup clears its hint and narrow/landscape preserve useful central viewing space.",
+    "detail": "Rounded fork tips modestly soften the pointed silhouette. Shallow camber adds restrained shading with no visible tip spikes, new triangulation seam, detached hinge, tearing or body intersection in these poses. Existing school remains coherent.",
+    "conditions": "Shallow day retains caustics, animal shadow and rock-base contrast. Night stays darker while foreground grain and nearby animal/coral/crab remain readable without a muddy cast. Deep day retains blue water/player separation and readable sloping terrain."
+  },
+  "acceptedFolders": [
+    "baseline-views",
+    "current-views",
+    "baseline-detail-fixed",
+    "current-detail-fixed",
+    "baseline-condition-views",
+    "current-condition-views"
+  ],
+  "excludedFolders": [
+    "baseline-detail-views",
+    "baseline-detail-verified",
+    "current-detail-verified"
+  ],
+  "limitations": [
+    "Model polish is subtle at normal school distance; no major visibility gain is claimed",
+    "Static poses do not prove every live tail phase",
+    "The night diagnostic has a small visible crab pose drift, so no exact whole-scene pixel parity is claimed",
+    "Existing390px hint-edge and lowest fin-tip clearance limitation remains; no wholly unobstructed-model claim",
+    "Camera-only detail and controlled time/depth diagnostics are separately labeled from natural chase-camera evidence"
+  ]
+}

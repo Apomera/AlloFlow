@@ -1,0 +1,186 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-kidney-guide-2026-10-03/runs/browser-078868f4-01/test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ],
+      [
+        "html"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "anatomy-kidney-guide.spec.ts",
+      "file": "anatomy-kidney-guide.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "A learner opens kidney filtration, pauses flow and navigates four steps without losing focus or saved work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4053,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:41:53.251Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "6569e34eb50ad48413a4-84594579e6ce0acb1a3f",
+          "file": "anatomy-kidney-guide.spec.ts",
+          "line": 80,
+          "column": 5
+        },
+        {
+          "title": "Kidney scale figures and keys remain readable across desktop, 320px phones, Arabic larger text and forced colors",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 420000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 3674,
+                  "error": {
+                    "message": "Error: Connect renal circulation: relate filtration and fluid balance to the cardiac output that supplies renal blood flow. actual contrast\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m4.5\u001b[39m\nReceived:    \u001b[31m2.3559417615334315\u001b[39m",
+                    "stack": "Error: Connect renal circulation: relate filtration and fluid balance to the cardiac output that supplies renal blood flow. actual contrast\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m4.5\u001b[39m\nReceived:    \u001b[31m2.3559417615334315\u001b[39m\n    at measure (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-kidney-guide.spec.ts:116:181)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-kidney-guide.spec.ts:133:83",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-kidney-guide.spec.ts",
+                      "column": 181,
+                      "line": 116
+                    },
+                    "snippet": "  114 |   const diagrams=await page.locator(atlas+' figure[data-anatomy-kidney-scale]').evaluateAll(figures=>figures.map(figure=>{const svg=figure.querySelector('svg')!,svgBox=svg.getBoundingClientRect();const texts=[...svg.querySelectorAll('text')].filter(element=>element.getBoundingClientRect().width&&element.getBoundingClientRect().height).map(element=>{const css=getComputedStyle(element),m=element.getScreenCTM(),box=element.getBoundingClientRect();return {text:element.textContent?.trim(),font:parseFloat(css.fontSize),effectiveFont:parseFloat(css.fontSize)*(m?Math.hypot(m.c,m.d):0),box:{left:box.left,right:box.right,top:box.top,bottom:box.bottom}};});const intersections:any[]=[];for(let i=0;i<texts.length;i++)for(let j=i+1;j<texts.length;j++){const a=texts[i].box,b=texts[j].box;if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>0.5&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>0.5)intersections.push([texts[i].text,texts[j].text]);}return {scale:figure.getAttribute('data-anatomy-kidney-scale'),width:svgBox.width,height:svgBox.height,texts,intersections};}));\n  115 |   record.styles.push({view,metrics,diagrams});expect(metrics.length).toBeGreaterThan(0);expect(diagrams).toHaveLength(3);\n> 116 |   for(const metric of metrics){expect(metric.font,metric.text+' rendered HTML text').toBeGreaterThanOrEqual(view.reading?17:16);expect(metric.ratio,metric.text+' actual contrast').toBeGreaterThanOrEqual(4.5);if(metric.tag==='BUTTON'){expect(metric.width,metric.text+' touch width').toBeGreaterThanOrEqual(44);expect(metric.height,metric.text+' touch height').toBeGreaterThanOrEqual(44);}}\n      |                                                                                                                                                                                     ^\n  117 |   for(const diagram of diagrams){expect(diagram.texts.length,diagram.scale+' visible numerical markers').toBeGreaterThan(0);expect(diagram.intersections,diagram.scale+' label intersections').toEqual([]);for(const text of diagram.texts){expect(text.text,diagram.scale+' SVG text belongs in the HTML key').toMatch(/^\\d+$/);expect(text.effectiveFont,diagram.scale+' marker '+text.text+' effective CSS size').toBeGreaterThanOrEqual(10);}}\n  118 | }\n  119 | async function scan(page:Page,record:any,view:View){"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-kidney-guide.spec.ts",
+                        "column": 181,
+                        "line": 116
+                      },
+                      "message": "Error: Connect renal circulation: relate filtration and fluid balance to the cardiac output that supplies renal blood flow. actual contrast\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m4.5\u001b[39m\nReceived:    \u001b[31m2.3559417615334315\u001b[39m\n\n  114 |   const diagrams=await page.locator(atlas+' figure[data-anatomy-kidney-scale]').evaluateAll(figures=>figures.map(figure=>{const svg=figure.querySelector('svg')!,svgBox=svg.getBoundingClientRect();const texts=[...svg.querySelectorAll('text')].filter(element=>element.getBoundingClientRect().width&&element.getBoundingClientRect().height).map(element=>{const css=getComputedStyle(element),m=element.getScreenCTM(),box=element.getBoundingClientRect();return {text:element.textContent?.trim(),font:parseFloat(css.fontSize),effectiveFont:parseFloat(css.fontSize)*(m?Math.hypot(m.c,m.d):0),box:{left:box.left,right:box.right,top:box.top,bottom:box.bottom}};});const intersections:any[]=[];for(let i=0;i<texts.length;i++)for(let j=i+1;j<texts.length;j++){const a=texts[i].box,b=texts[j].box;if(Math.min(a.right,b.right)-Math.max(a.left,b.left)>0.5&&Math.min(a.bottom,b.bottom)-Math.max(a.top,b.top)>0.5)intersections.push([texts[i].text,texts[j].text]);}return {scale:figure.getAttribute('data-anatomy-kidney-scale'),width:svgBox.width,height:svgBox.height,texts,intersections};}));\n  115 |   record.styles.push({view,metrics,diagrams});expect(metrics.length).toBeGreaterThan(0);expect(diagrams).toHaveLength(3);\n> 116 |   for(const metric of metrics){expect(metric.font,metric.text+' rendered HTML text').toBeGreaterThanOrEqual(view.reading?17:16);expect(metric.ratio,metric.text+' actual contrast').toBeGreaterThanOrEqual(4.5);if(metric.tag==='BUTTON'){expect(metric.width,metric.text+' touch width').toBeGreaterThanOrEqual(44);expect(metric.height,metric.text+' touch height').toBeGreaterThanOrEqual(44);}}\n      |                                                                                                                                                                                     ^\n  117 |   for(const diagram of diagrams){expect(diagram.texts.length,diagram.scale+' visible numerical markers').toBeGreaterThan(0);expect(diagram.intersections,diagram.scale+' label intersections').toEqual([]);for(const text of diagram.texts){expect(text.text,diagram.scale+' SVG text belongs in the HTML key').toMatch(/^\\d+$/);expect(text.effectiveFont,diagram.scale+' marker '+text.text+' effective CSS size').toBeGreaterThanOrEqual(10);}}\n  118 | }\n  119 | async function scan(page:Page,record:any,view:View){\n    at measure (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-kidney-guide.spec.ts:116:181)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-kidney-guide.spec.ts:133:83"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T14:41:57.501Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-kidney-guide-2026-10-03\\runs\\browser-078868f4-01\\test-results\\anatomy-kidney-guide-Kidne-99ef2-rger-text-and-forced-colors-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-kidney-guide-2026-10-03\\runs\\browser-078868f4-01\\test-results\\anatomy-kidney-guide-Kidne-99ef2-rger-text-and-forced-colors-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-kidney-guide-2026-10-03\\runs\\browser-078868f4-01\\test-results\\anatomy-kidney-guide-Kidne-99ef2-rger-text-and-forced-colors-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-kidney-guide.spec.ts",
+                    "column": 181,
+                    "line": 116
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "6569e34eb50ad48413a4-aa9bd74eff9ec8457a09",
+          "file": "anatomy-kidney-guide.spec.ts",
+          "line": 129,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T14:41:52.532Z",
+    "duration": 8888.906,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

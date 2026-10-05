@@ -1,0 +1,109 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "case": "annual/month readiness and direct-row review",
+      "width": 1280,
+      "checks": [
+        "actual current-model preview source/reading/units/delta precision",
+        "annual metric refresh",
+        "native month/species and landmark preview refresh",
+        "ready count and capacity guidance",
+        "new capture focuses notebook heading",
+        "duplicate record handlers preserve all work",
+        "keyboard review focuses exact live h4 despite same archived id",
+        "preserved inputs/writing/archives/parked draft and reload",
+        "scoped axe, reflow, reduced motion and 44px targets"
+      ],
+      "errors": []
+    },
+    {
+      "case": "annual/month readiness and direct-row review",
+      "width": 390,
+      "checks": [
+        "actual current-model preview source/reading/units/delta precision",
+        "annual metric refresh",
+        "native month/species and landmark preview refresh",
+        "ready count and capacity guidance",
+        "new capture focuses notebook heading",
+        "duplicate record handlers preserve all work",
+        "keyboard review focuses exact live h4 despite same archived id",
+        "preserved inputs/writing/archives/parked draft and reload",
+        "scoped axe, reflow, reduced motion and 44px targets"
+      ],
+      "errors": []
+    },
+    {
+      "case": "annual/month readiness and direct-row review",
+      "width": 320,
+      "checks": [
+        "actual current-model preview source/reading/units/delta precision",
+        "annual metric refresh",
+        "native month/species and landmark preview refresh",
+        "ready count and capacity guidance",
+        "new capture focuses notebook heading",
+        "duplicate record handlers preserve all work",
+        "keyboard review focuses exact live h4 despite same archived id",
+        "preserved inputs/writing/archives/parked draft and reload",
+        "scoped axe, reflow, reduced motion and 44px targets",
+        "forced colors"
+      ],
+      "errors": []
+    },
+    {
+      "case": "capture applicability and one-sided readings",
+      "width": 320,
+      "checks": [
+        "A-only species with numeric A is capturable",
+        "B absence stays not-stocked",
+        "shared water remains system while following absent B species",
+        "no-A and no numeric side is unavailable",
+        "monthly and annual unavailable controls disabled",
+        "no invented numeric reading or irrelevant review action",
+        "exact live-row focus",
+        "scoped axe/reflow/forced colors"
+      ],
+      "availability": [
+        {
+          "case": "A-only progress and shared water",
+          "errors": []
+        },
+        {
+          "case": "monthly/annual unavailable and no-A absent species helper",
+          "errors": []
+        }
+      ]
+    },
+    {
+      "case": "same values with distinct provenance and new A",
+      "width": 320,
+      "checks": [
+        "actual equal temperature values with earlier settings/model are distinct captures",
+        "current provenance review targets current row",
+        "no-A annual capture is allowed",
+        "adding A keeps previous no-A context frozen",
+        "new A/B context is a fresh capture despite same B value",
+        "exact numeric context and protected-work preservation",
+        "scoped axe/reflow/forced colors"
+      ],
+      "errors": [],
+      "noAErrors": []
+    },
+    {
+      "case": "capacity, matching precedence and released space",
+      "width": 320,
+      "checks": [
+        "eight actual distinct notes",
+        "annual/month full guidance and enabled safe handlers",
+        "keyboard notebook-space focus",
+        "matching capture takes precedence over full",
+        "remove leaves remaining frozen rows and archived writing intact",
+        "both panels refresh ready at 7/8",
+        "fresh capture refills one space",
+        "new match versus other full source",
+        "scoped axe/reflow/forced colors"
+      ],
+      "errors": []
+    }
+  ]
+}

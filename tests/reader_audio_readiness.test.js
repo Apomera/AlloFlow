@@ -158,12 +158,25 @@ describe('teacher audio readiness', () => {
     expect(recovery()).not.toBeNull();
     expect(row().getAttribute('data-review-tone')).not.toBe('ok');
   });
-  it('only all-ready audio is prepared, with a device-scoped claim', () => {
-    window.__alloGetReadAloudAudioSummary = () => summary(2);
-    mount();
+  it('only verified all-ready audio has a device-scoped claim', async () => {
+    const { KS, store, sentences } = liveStore();
+    loadAlloModule('read_aloud_audio_service_source.jsx');
+    const durableStore = KS.createStore();
+    durableStore.hydrate(JSON.parse(JSON.stringify(store.serialize())));
+    const bridge = window.AlloModules.createReadAloudLegacyBridge({
+      getResource: () => ({ id: 'audio-1', type: 'simplified' }),
+      getStore: () => store,
+      getProfile: () => ({ voice: 'Kore', language: 'English', synthesisRate: 1, voiceResolverVersion: 2 }),
+      enumerateResourceSegments: () => sentences.map((text, index) => ({ text, segmentId: 'body/0/' + index })),
+    });
+    window.__alloGetReadAloudReadiness = async () => ({ resourceId: 'audio-1',
+      ...bridge.readiness(sentences, 'reference', { durableStore, receipt: { verified: true, verifiedAt: 'fixture-readback' } }) });
+    await act(async () => { mount(); });
     expect(row().textContent).toContain('Audio prepared');
     expect(row().textContent).toContain('on this device');
     expect(recovery()).toBeNull();
+    durableStore.clear();
+    delete window.__alloGetReadAloudReadiness;
   });
   it.each([['selectedVoice', 'Aoede'], ['voiceSpeed', 0.8], ['leveledTextLanguage', 'Spanish']])('rechecks a changed %s without playback', (key, value) => {
     let state = summary(2);

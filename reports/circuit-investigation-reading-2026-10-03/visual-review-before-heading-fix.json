@@ -1,0 +1,55 @@
+{
+  "approved": false,
+  "sourceSha256": "e81cf1cb831d3754b208ed31d6467b14cb6fa140c5b6c299855ce671c5c12257",
+  "scriptSha256": "24c13ac9dfbd4306f1b629d257637b2f590d6a12bbad5be58ef34a894487c71e",
+  "browserResultsSha256": "2be98bd7702aa5c585ad609630c0ebb46e08b89e7e1f998006291f70ed0476b4",
+  "nativeSession": null,
+  "nativeChunkId": "c2d414",
+  "nativeExitCode": 0,
+  "browserClosedByFinally": true,
+  "method": "All six PNGs inspected at original resolution with view_image.",
+  "screenshots": [
+    {
+      "file": "investigation-reading-1280.png",
+      "sha256": "ccabd9016e2b3e1bcee5a6ba2b40253fc7b8532cb4380119e67f081f5fbb4678",
+      "reviewed": true
+    },
+    {
+      "file": "investigation-reading-320.png",
+      "sha256": "4e1db9f4b0a42b9b809bf2aabef999a5dc25fd0e46af96ef6586bc76a170f9fc",
+      "reviewed": true
+    },
+    {
+      "file": "investigation-reading-390.png",
+      "sha256": "1d96ba8af055d49a3fe2e568c77e5435cea48fd2cc381e1b20bce38a83d22bca",
+      "reviewed": true
+    },
+    {
+      "file": "investigation-reading-200pct-text-320.png",
+      "sha256": "a7d227023cca5e903c753ab90fcef808d244c7918ef397cd819facdbf002e85f",
+      "reviewed": true
+    },
+    {
+      "file": "forced-colors-investigation-reading-320.png",
+      "sha256": "63cfbeb9bfb0d10d7675179d2aef0fa28b1e1553b3c294a0cb6c6bdb3672cdb1",
+      "reviewed": true
+    },
+    {
+      "file": "rtl-investigation-reading-320.png",
+      "sha256": "6f03c589a73f1510bb6b9cb721f8d517db5fdf4f6ebe4629a644d3f863389773",
+      "reviewed": true
+    }
+  ],
+  "materialIssues": [
+    {
+      "file": "investigation-reading-200pct-text-320.png",
+      "description": "The 52px number marker leaves insufficient heading width: Compare wraps as Compa/re and readings as reading/s. Prompt words, including component, are now intact.",
+      "recommendation": "Permit the heading to wrap below its marker when enlarged text makes their combined width exceed the card."
+    }
+  ],
+  "observations": [
+    "Ordinary 1280/390/320, forced colors and RTL views remain clear.",
+    "Both prompt paragraphs span the full card content width on phones. Number markers are circular at 26px and 52px.",
+    "Desktop PNG bytes differ from the historical capture; visual review found no layout or typography change. Do not claim byte-identical screenshots."
+  ]
+}

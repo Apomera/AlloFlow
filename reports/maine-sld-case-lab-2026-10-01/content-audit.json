@@ -1,0 +1,45 @@
+{
+  "reviewedAt": "2026-10-02T10:58:12.993854+00:00",
+  "scope": "Read-only review of summarized claims in the fictional Maine SLD React training activity, not a real eligibility record.",
+  "moduleSha256": "94bb51978ae58be5b7e88e36fc1cdc0150d4cf35ecc9f5ad91ae82c62062ef1f",
+  "dataSha256": "e94127d046c620117b6b58ec64104ee12921da33e09afb76cb071e849dbb719a",
+  "blockingInaccuracies": [],
+  "findings": [
+    "Current Maine Q1-Q9 pathway retained, including Q3 four subparts, Q5/Q6 narratives, Q7 validity review, and distinct Q8/Q9 decisions.",
+    "MUSER VII.3 excludes SLD from the separate adverse-effect procedure.",
+    "Jordan record explicitly stipulates valid achievement evidence in all eight areas relative to age and grade; the isolated processing score does not override it.",
+    "All 52 Alex score labels and values match the original alex_v7_scores.json fixture. WISC primary subtests are scaled scores; other listed scores are standard scores. No derived percentiles or confidence intervals, and no universal-battery requirement.",
+    "Multilingual checklist addresses instruction/access, assessment validity, primary cause, timely evaluation, and concurrent ESOL/special education.",
+    "All form source IDs resolve. Case tasks, academic areas, Q3 subparts, Q4 streams, debrief cautions and labels are populated in reviewed fields."
+  ],
+  "primarySources": [
+    {
+      "id": "sld-form",
+      "label": "Maine DOE SLD form and checklist (August 2026)",
+      "url": "https://www.maine.gov/doe/sites/maine.gov.doe/files/inline-files/Supervision%20and%20Monitoring%20-%20Specific%20Learner%20Disability%20Checklist%20-%208.13.2026.pdf"
+    },
+    {
+      "id": "muser",
+      "label": "MUSER Chapter 101: current rule source (2026)",
+      "url": "https://www.maine.gov/sos/sites/maine.gov.sos/files/inline-files/071c101-2026-129-AMD-EMR.docx"
+    },
+    {
+      "id": "idea-sdi",
+      "label": "IDEA: specially designed instruction, 34 CFR 300.39",
+      "url": "https://sites.ed.gov/idea/regs/b/a/300.39"
+    },
+    {
+      "id": "ml-guide",
+      "label": "Maine DOE multilingual learners with disabilities guide (2025)",
+      "url": "https://www.maine.gov/doe/sites/maine.gov.doe/files/inline-files/Multilingual%20Learning%20-%20Identifying%20%26%20Serving%20Students%20Who%20are%20Multilingual%20with%20Disabilities%20Policy%20%26%20Resource%20Guide%20-%204.14.2025.pdf"
+    },
+    {
+      "id": "ml-resources",
+      "label": "Maine DOE multilingual learner disability resources",
+      "url": "https://www.maine.gov/doe/learning/multilinguallearner/resources/MLdisabilities"
+    }
+  ],
+  "reviewDate": "2026-10-02",
+  "releaseStatus": "Local uncommitted work; not published.",
+  "subsequentChanges": "Presentation-only final refinements: print margins, question heading normalization, and labeled dialog content region. Reviewed case data and guidance unchanged."
+}

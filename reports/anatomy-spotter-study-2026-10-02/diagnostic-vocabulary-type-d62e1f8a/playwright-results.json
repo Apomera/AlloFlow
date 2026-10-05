@@ -1,0 +1,322 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-spotter-study-2026-10-02/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "anatomy-spotter-study.spec.ts",
+      "file": "anatomy-spotter-study.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "A real wrong Spotter answer returns from a reloaded structure study with its round, navigation and newer notes intact",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 11477,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:28:36.743Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8eb25d9e17a482b9840c-f02acdef2333caceb93c",
+          "file": "anatomy-spotter-study.spec.ts",
+          "line": 68,
+          "column": 5
+        },
+        {
+          "title": "A paused unanswered Spotter permits normal Explore names and canvas selection, then resumes the same unanswered round",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8569,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:28:49.764Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8eb25d9e17a482b9840c-1c94f8a1d3bcf60e0ed3",
+          "file": "anatomy-spotter-study.spec.ts",
+          "line": 79,
+          "column": 5
+        },
+        {
+          "title": "Study and return effects respect deliberate focus, and a superseded round cannot use its saved study origin",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5415,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:28:58.355Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8eb25d9e17a482b9840c-23573cbbce2a67d91d41",
+          "file": "anatomy-spotter-study.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "Spotter explains cumulative answer counts and separates the chosen function from the marked structure",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 18186,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-anatomy-spotter-your-answer] h6')\nExpected: \u001b[32m\"Your answer\"\u001b[39m\nReceived: \u001b[31m\"Your answer\u001b[7m: Sternum\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-anatomy-spotter-your-answer] h6')\u001b[22m\n\u001b[2m    33 × locator resolved to <h6 id=\"anatomy-spotter-chosen-title\">Your answer: Sternum</h6>\u001b[22m\n\u001b[2m       - unexpected value \"Your answer: Sternum\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-anatomy-spotter-your-answer] h6')\nExpected: \u001b[32m\"Your answer\"\u001b[39m\nReceived: \u001b[31m\"Your answer\u001b[7m: Sternum\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-anatomy-spotter-your-answer] h6')\u001b[22m\n\u001b[2m    33 × locator resolved to <h6 id=\"anatomy-spotter-chosen-title\">Your answer: Sternum</h6>\u001b[22m\n\u001b[2m       - unexpected value \"Your answer: Sternum\"\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts:99:250",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts",
+                      "column": 250,
+                      "line": 99
+                    },
+                    "snippet": "   97 |   const record=recordFor(page,'learningClarity');await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1280,height:1000});await mount(page,base);await expect(page.locator('[data-anatomy-spotter-score]')).toHaveText('2 correct · 3 answered');await expect(page.locator('[data-anatomy-spotter-best]')).toHaveCount(0);await expect(page.locator(panel)).toContainText('Untimed practice');const answered=await wrongAnswer(page);\n   98 |   await expect(page.locator('[data-anatomy-spotter-score]')).toHaveText('2 correct · 4 answered');const chosen=page.locator('[data-anatomy-spotter-option=\"'+answered._spotterFeedback+'\"]'),marked=page.locator('[data-anatomy-spotter-option=\"'+answered._spotterTarget+'\"]');\n>  99 |   const chosenName=(await chosen.locator('span').nth(1).innerText()).trim(),markedName=(await marked.locator('span').nth(1).innerText()).trim();record.names={chosenName,markedName};await expect(page.locator('[data-anatomy-spotter-your-answer] h6')).toHaveText('Your answer');await expect(page.locator('[data-anatomy-spotter-marked] h6')).toHaveText('Marked structure');await expect(page.locator('[data-anatomy-spotter-your-answer] p')).toContainText(chosenName);await expect(page.locator('[data-anatomy-spotter-marked] p')).toContainText(markedName);\n      |                                                                                                                                                                                                                                                          ^\n  100 |   await expect(page.locator(feedback)).not.toContainText('{chosen}');await expect(page.locator(feedback)).not.toContainText('{target}');await capture(page,record,page.locator(panel),'desktop-structured-feedback');await page.locator('[data-anatomy-spotter-end]').click();await expect(page.locator('[data-anatomy-spotter-start]')).toBeFocused();await expect(page.locator('[data-anatomy-spotter-score]')).toHaveText('2 correct · 4 answered');expect(record.errors).toEqual([]);\n  101 | });\n  102 |"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts",
+                        "column": 250,
+                        "line": 99
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-anatomy-spotter-your-answer] h6')\nExpected: \u001b[32m\"Your answer\"\u001b[39m\nReceived: \u001b[31m\"Your answer\u001b[7m: Sternum\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-anatomy-spotter-your-answer] h6')\u001b[22m\n\u001b[2m    33 × locator resolved to <h6 id=\"anatomy-spotter-chosen-title\">Your answer: Sternum</h6>\u001b[22m\n\u001b[2m       - unexpected value \"Your answer: Sternum\"\u001b[22m\n\n\n   97 |   const record=recordFor(page,'learningClarity');await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1280,height:1000});await mount(page,base);await expect(page.locator('[data-anatomy-spotter-score]')).toHaveText('2 correct · 3 answered');await expect(page.locator('[data-anatomy-spotter-best]')).toHaveCount(0);await expect(page.locator(panel)).toContainText('Untimed practice');const answered=await wrongAnswer(page);\n   98 |   await expect(page.locator('[data-anatomy-spotter-score]')).toHaveText('2 correct · 4 answered');const chosen=page.locator('[data-anatomy-spotter-option=\"'+answered._spotterFeedback+'\"]'),marked=page.locator('[data-anatomy-spotter-option=\"'+answered._spotterTarget+'\"]');\n>  99 |   const chosenName=(await chosen.locator('span').nth(1).innerText()).trim(),markedName=(await marked.locator('span').nth(1).innerText()).trim();record.names={chosenName,markedName};await expect(page.locator('[data-anatomy-spotter-your-answer] h6')).toHaveText('Your answer');await expect(page.locator('[data-anatomy-spotter-marked] h6')).toHaveText('Marked structure');await expect(page.locator('[data-anatomy-spotter-your-answer] p')).toContainText(chosenName);await expect(page.locator('[data-anatomy-spotter-marked] p')).toContainText(markedName);\n      |                                                                                                                                                                                                                                                          ^\n  100 |   await expect(page.locator(feedback)).not.toContainText('{chosen}');await expect(page.locator(feedback)).not.toContainText('{target}');await capture(page,record,page.locator(panel),'desktop-structured-feedback');await page.locator('[data-anatomy-spotter-end]').click();await expect(page.locator('[data-anatomy-spotter-start]')).toBeFocused();await expect(page.locator('[data-anatomy-spotter-score]')).toHaveText('2 correct · 4 answered');expect(record.errors).toEqual([]);\n  101 | });\n  102 |\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts:99:250"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:29:03.791Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-spotter-study-2026-10-02\\test-results\\anatomy-spotter-study-Spot-e0eea-n-from-the-marked-structure-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-spotter-study-2026-10-02\\test-results\\anatomy-spotter-study-Spot-e0eea-n-from-the-marked-structure-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-spotter-study-2026-10-02\\test-results\\anatomy-spotter-study-Spot-e0eea-n-from-the-marked-structure-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts",
+                    "column": 250,
+                    "line": 99
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "8eb25d9e17a482b9840c-f6c3216df7d254369f91",
+          "file": "anatomy-spotter-study.spec.ts",
+          "line": 96,
+          "column": 5
+        },
+        {
+          "title": "Spotter feedback and study context are readable on desktop, 320px phone, Arabic larger text and all display themes",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 4559,
+                  "error": {
+                    "message": "Error: Vocabulary help\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m16\u001b[39m\nReceived:    \u001b[31m14\u001b[39m",
+                    "stack": "Error: Vocabulary help\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m16\u001b[39m\nReceived:    \u001b[31m14\u001b[39m\n    at measure (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts:106:153)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts:114:96",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts",
+                      "column": 153,
+                      "line": 106
+                    },
+                    "snippet": "  104 | async function measure(page:Page,record:any,selector:string,context:any){\n  105 |   const metrics=await page.locator(selector).evaluateAll(elements=>elements.filter(element=>element.getClientRects().length&&(element.textContent?.trim()||element.getAttribute('aria-label'))).map(element=>{const css=getComputedStyle(element),foreground=css.color;let parent:Element|null=element,background='rgb(255, 255, 255)';while(parent){const color=getComputedStyle(parent).backgroundColor,n=color.match(/[\\d.]+/g)?.map(Number);if(n&&n.length>=3&&(n.length===3||n[3]!==0)){background=color;break;}parent=parent.parentElement;}const lum=(value:string)=>value.match(/[\\d.]+/g)!.slice(0,3).map(Number).map(x=>x/255).map(x=>x<=0.04045?x/12.92:Math.pow((x+0.055)/1.055,2.4)).reduce((total,x,i)=>total+x*[0.2126,0.7152,0.0722][i],0),a=lum(foreground),b=lum(background),box=element.getBoundingClientRect();return {tag:element.tagName,text:element.getAttribute('aria-label')||element.textContent?.trim().slice(0,120),font:parseFloat(css.fontSize),width:box.width,height:box.height,foreground,background,ratio:(Math.max(a,b)+0.05)/(Math.min(a,b)+0.05),disabled:(element as HTMLButtonElement).disabled===true};}));\n> 106 |   record.styles.push({context,selector,metrics});expect(metrics.length).toBeGreaterThan(0);for(const metric of metrics){expect(metric.font,metric.text).toBeGreaterThanOrEqual(context.reading?17:16);expect(metric.ratio,metric.text+' actual contrast').toBeGreaterThanOrEqual(4.5);if(metric.tag==='BUTTON'){expect(metric.width,metric.text).toBeGreaterThanOrEqual(44);expect(metric.height,metric.text).toBeGreaterThanOrEqual(44);}}return metrics;\n      |                                                                                                                                                         ^\n  107 | }\n  108 | async function scan(page:Page,record:any,selector:string,context:any){const box=await page.locator(selector).evaluate(element=>({client:element.clientWidth,scroll:element.scrollWidth,left:element.getBoundingClientRect().left,right:element.getBoundingClientRect().right})),dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));const violations=await page.evaluate(async selector=>{const result=await (window as any).axe.run({include:[[selector]]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22a','wcag22aa']}});return result.violations.map((item:any)=>({id:item.id,nodes:item.nodes.map((node:any)=>({target:node.target,summary:node.failureSummary}))}));},selector);record.scans.push({context,selector,box,dimensions,violations});expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.width);expect(box.scroll).toBeLessThanOrEqual(box.client+1);expect(box.left).toBeGreaterThanOrEqual(0);expect(box.right).toBeLessThanOrEqual(dimensions.width);expect(violations).toEqual([]);}\n  109 | async function labelPixels(page:Page,record:any,selector:string,name:string){const button=page.locator(selector);await button.scrollIntoViewIfNeeded();const bounds=await button.evaluate(element=>{const range=document.createRange();range.selectNodeContents(element);const r=range.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom};}),clip={x:Math.ceil(bounds.left)+2,y:Math.ceil(bounds.top)+2,width:Math.floor(bounds.right)-Math.ceil(bounds.left)-4,height:Math.floor(bounds.bottom)-Math.ceil(bounds.top)-4};expect(clip.width).toBeGreaterThan(30);expect(clip.height).toBeGreaterThan(6);const metrics=pixelStats(readPng(await page.screenshot({path:captures+'/'+name+'.png',clip})));record.labelPixels.push({name,...metrics});record.captures.push(name+'.png');expect(metrics.significantColors).toBeGreaterThanOrEqual(2);expect(metrics.dominantShare).toBeLessThan(0.95);}"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts",
+                        "column": 153,
+                        "line": 106
+                      },
+                      "message": "Error: Vocabulary help\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m16\u001b[39m\nReceived:    \u001b[31m14\u001b[39m\n\n  104 | async function measure(page:Page,record:any,selector:string,context:any){\n  105 |   const metrics=await page.locator(selector).evaluateAll(elements=>elements.filter(element=>element.getClientRects().length&&(element.textContent?.trim()||element.getAttribute('aria-label'))).map(element=>{const css=getComputedStyle(element),foreground=css.color;let parent:Element|null=element,background='rgb(255, 255, 255)';while(parent){const color=getComputedStyle(parent).backgroundColor,n=color.match(/[\\d.]+/g)?.map(Number);if(n&&n.length>=3&&(n.length===3||n[3]!==0)){background=color;break;}parent=parent.parentElement;}const lum=(value:string)=>value.match(/[\\d.]+/g)!.slice(0,3).map(Number).map(x=>x/255).map(x=>x<=0.04045?x/12.92:Math.pow((x+0.055)/1.055,2.4)).reduce((total,x,i)=>total+x*[0.2126,0.7152,0.0722][i],0),a=lum(foreground),b=lum(background),box=element.getBoundingClientRect();return {tag:element.tagName,text:element.getAttribute('aria-label')||element.textContent?.trim().slice(0,120),font:parseFloat(css.fontSize),width:box.width,height:box.height,foreground,background,ratio:(Math.max(a,b)+0.05)/(Math.min(a,b)+0.05),disabled:(element as HTMLButtonElement).disabled===true};}));\n> 106 |   record.styles.push({context,selector,metrics});expect(metrics.length).toBeGreaterThan(0);for(const metric of metrics){expect(metric.font,metric.text).toBeGreaterThanOrEqual(context.reading?17:16);expect(metric.ratio,metric.text+' actual contrast').toBeGreaterThanOrEqual(4.5);if(metric.tag==='BUTTON'){expect(metric.width,metric.text).toBeGreaterThanOrEqual(44);expect(metric.height,metric.text).toBeGreaterThanOrEqual(44);}}return metrics;\n      |                                                                                                                                                         ^\n  107 | }\n  108 | async function scan(page:Page,record:any,selector:string,context:any){const box=await page.locator(selector).evaluate(element=>({client:element.clientWidth,scroll:element.scrollWidth,left:element.getBoundingClientRect().left,right:element.getBoundingClientRect().right})),dimensions=await page.evaluate(()=>({width:innerWidth,scroll:document.documentElement.scrollWidth}));const violations=await page.evaluate(async selector=>{const result=await (window as any).axe.run({include:[[selector]]},{runOnly:{type:'tag',values:['wcag2a','wcag2aa','wcag21a','wcag21aa','wcag22a','wcag22aa']}});return result.violations.map((item:any)=>({id:item.id,nodes:item.nodes.map((node:any)=>({target:node.target,summary:node.failureSummary}))}));},selector);record.scans.push({context,selector,box,dimensions,violations});expect(dimensions.scroll).toBeLessThanOrEqual(dimensions.width);expect(box.scroll).toBeLessThanOrEqual(box.client+1);expect(box.left).toBeGreaterThanOrEqual(0);expect(box.right).toBeLessThanOrEqual(dimensions.width);expect(violations).toEqual([]);}\n  109 | async function labelPixels(page:Page,record:any,selector:string,name:string){const button=page.locator(selector);await button.scrollIntoViewIfNeeded();const bounds=await button.evaluate(element=>{const range=document.createRange();range.selectNodeContents(element);const r=range.getBoundingClientRect();return {left:r.left,top:r.top,right:r.right,bottom:r.bottom};}),clip={x:Math.ceil(bounds.left)+2,y:Math.ceil(bounds.top)+2,width:Math.floor(bounds.right)-Math.ceil(bounds.left)-4,height:Math.floor(bounds.bottom)-Math.ceil(bounds.top)-4};expect(clip.width).toBeGreaterThan(30);expect(clip.height).toBeGreaterThan(6);const metrics=pixelStats(readPng(await page.screenshot({path:captures+'/'+name+'.png',clip})));record.labelPixels.push({name,...metrics});record.captures.push(name+'.png');expect(metrics.significantColors).toBeGreaterThanOrEqual(2);expect(metrics.dominantShare).toBeLessThan(0.95);}\n    at measure (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts:106:153)\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts:114:96"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:29:29.908Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-spotter-study-2026-10-02\\test-results\\anatomy-spotter-study-Spot-e7a8c-text-and-all-display-themes-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-spotter-study-2026-10-02\\test-results\\anatomy-spotter-study-Spot-e7a8c-text-and-all-display-themes-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-spotter-study-2026-10-02\\test-results\\anatomy-spotter-study-Spot-e7a8c-text-and-all-display-themes-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts",
+                    "column": 153,
+                    "line": 106
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "8eb25d9e17a482b9840c-fb35b87cb344ea888f25",
+          "file": "anatomy-spotter-study.spec.ts",
+          "line": 111,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T23:28:33.700Z",
+    "duration": 75559.511,
+    "expected": 3,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

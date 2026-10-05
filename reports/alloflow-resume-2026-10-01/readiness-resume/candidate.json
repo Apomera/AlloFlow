@@ -1,0 +1,193 @@
+{
+  "checkedAt": "2026-10-01T17:21:23.451Z",
+  "head": "1bce28945b84b84299a462c3d32209be18f3c4e6",
+  "keyCount": 26,
+  "allExistingRegistryAndFallbackBytesPreserved": true,
+  "files": [
+    {
+      "file": "word_sounds_readiness_contract.js",
+      "sha256": "364c4241ff653f705ca529780e1142b8ad3147864953d1f315831791a918fb4e",
+      "bytes": 25170
+    },
+    {
+      "file": "host_handlers_source.jsx",
+      "sha256": "6898dfc5a7b180c4390fdba5e4b93dcc72e4c35259fa6764f6abb4b1343ba764",
+      "bytes": 661460
+    },
+    {
+      "file": "view_word_sounds_preview_source.jsx",
+      "sha256": "f3a412a28d2e121e40d1ea1b92405ce3adbea23a2e62eee0862ce38818d06fe3",
+      "bytes": 17451
+    },
+    {
+      "file": "live_aac_source.jsx",
+      "sha256": "ee0781a80a00085b9ceca781416f1ccf3b3d56b14849a50ca6b37ed0017c4f8c",
+      "bytes": 75152
+    },
+    {
+      "file": "module_scope_extras_source.jsx",
+      "sha256": "8c6ab8878290e3bd5e081627570767d5faeb310a7793e42470445f5e61d66b43",
+      "bytes": 38542
+    },
+    {
+      "file": "word_sounds_module.js",
+      "sha256": "e6fea7b3e1789ee3ab5484ce7f3276cbd7fe69be86c27c585d07a26de395e1f3",
+      "bytes": 904164
+    },
+    {
+      "file": "allo_data_source.jsx",
+      "sha256": "35cd2d6e43c645b2e781fdf53cc6777e40335ccdc0eac01822e11d28d73119f8",
+      "bytes": 84236
+    },
+    {
+      "file": "host_handlers_module.js",
+      "sha256": "eb3abff5ff4a717de1ec49ebb44630a33bd8df5cee4f4a99090081260dc68beb",
+      "bytes": 535079
+    },
+    {
+      "file": "view_word_sounds_preview_module.js",
+      "sha256": "237d915ec26450c049eaf9cf7cf95a31c255afb1816cbf533cfd62b3df0773b5",
+      "bytes": 44994
+    },
+    {
+      "file": "live_aac_module.js",
+      "sha256": "0be516840aea0ea0c059e4391e430d50c250c820ca7322181cd35d8a7b539876",
+      "bytes": 75288
+    },
+    {
+      "file": "module_scope_extras_module.js",
+      "sha256": "24f5f2d073639e714c53d4908f84ccc5e8817fdf80c30114f6a32c569ee9d972",
+      "bytes": 62117
+    },
+    {
+      "file": "allo_data_module.js",
+      "sha256": "f6dbb11228d734a770265924dfe9dc920a388d1f06e01f4c812a3bb355908b77",
+      "bytes": 84580
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "79891929e762a5e59980adf2d69528e98e0fa1d9196cd84941223e0e6241e6bf",
+      "bytes": 2834594
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "79891929e762a5e59980adf2d69528e98e0fa1d9196cd84941223e0e6241e6bf",
+      "bytes": 2834594
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "79891929e762a5e59980adf2d69528e98e0fa1d9196cd84941223e0e6241e6bf",
+      "bytes": 2834594
+    },
+    {
+      "file": "reflective_journal.md",
+      "sha256": "2155d77b79337c0f2f78220bbdf7e78faa239bca3426cbf2edea117de125810a",
+      "bytes": 468659
+    }
+  ],
+  "mirrors": [
+    {
+      "file": "desktop/web-app/build/host_handlers_module.js",
+      "sha256": "eb3abff5ff4a717de1ec49ebb44630a33bd8df5cee4f4a99090081260dc68beb"
+    },
+    {
+      "file": "desktop/web-app/build/view_word_sounds_preview_module.js",
+      "sha256": "237d915ec26450c049eaf9cf7cf95a31c255afb1816cbf533cfd62b3df0773b5"
+    },
+    {
+      "file": "desktop/web-app/build/live_aac_module.js",
+      "sha256": "0be516840aea0ea0c059e4391e430d50c250c820ca7322181cd35d8a7b539876"
+    },
+    {
+      "file": "desktop/web-app/build/module_scope_extras_module.js",
+      "sha256": "24f5f2d073639e714c53d4908f84ccc5e8817fdf80c30114f6a32c569ee9d972"
+    },
+    {
+      "file": "desktop/web-app/build/allo_data_module.js",
+      "sha256": "f6dbb11228d734a770265924dfe9dc920a388d1f06e01f4c812a3bb355908b77"
+    },
+    {
+      "file": "desktop/web-app/public/word_sounds_module.js",
+      "sha256": "e6fea7b3e1789ee3ab5484ce7f3276cbd7fe69be86c27c585d07a26de395e1f3"
+    },
+    {
+      "file": "desktop/web-app/build/word_sounds_module.js",
+      "sha256": "e6fea7b3e1789ee3ab5484ce7f3276cbd7fe69be86c27c585d07a26de395e1f3"
+    }
+  ],
+  "heldMirrors": [
+    {
+      "file": "desktop/web-app/build/ui_strings.js",
+      "sha256": "7ce069826f8f43fa6e10493f9d0196de30baf940aefc7a3425c13b3a10631a3b",
+      "reason": "Neither HEAD nor confirmed preimage; preserved"
+    }
+  ],
+  "freeBytes": 7501398016,
+  "sharedHostFilesChangedByThisScript": false,
+  "previewKeyboardFixRebuiltOnlyPreview": true,
+  "catalogRefresh": {
+    "checkedAt": "2026-10-01T17:11:06.521Z",
+    "owned26KeysUnchanged": true,
+    "existingExternalWorkPreserved": true,
+    "paths": [
+      {
+        "file": "ui_strings.js",
+        "beforeSha256": "3050e670fef0444b5c58acb2b8f84f1a79b4a85df72536dfab563bb4daec7591",
+        "afterSha256": "a57c36664238434c052994f6bb568ead086a405c13d5057157fd498378564281"
+      },
+      {
+        "file": "desktop/web-app/public/ui_strings.js",
+        "beforeSha256": "3050e670fef0444b5c58acb2b8f84f1a79b4a85df72536dfab563bb4daec7591",
+        "afterSha256": "a57c36664238434c052994f6bb568ead086a405c13d5057157fd498378564281"
+      }
+    ]
+  },
+  "sharedCatalogObservations": [
+    {
+      "file": "ui_strings.js",
+      "observedAt": "2026-10-01T17:21:23.387Z",
+      "sha256": "88492f00306e08aedc93081e974e160974ec21f5dc41b6c6020ec5949c0b0f23",
+      "wholeFileFrozen": false
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "observedAt": "2026-10-01T17:21:23.419Z",
+      "sha256": "88492f00306e08aedc93081e974e160974ec21f5dc41b6c6020ec5949c0b0f23",
+      "wholeFileFrozen": false
+    }
+  ],
+  "ownedEnglishKeys": {
+    "keys": [
+      "word_sounds.readiness_audio_qualifier",
+      "word_sounds.readiness_cancel",
+      "word_sounds.readiness_cancelled",
+      "word_sounds.readiness_category_feedback",
+      "word_sounds.readiness_category_instruction",
+      "word_sounds.readiness_category_isolation",
+      "word_sounds.readiness_category_letter_name",
+      "word_sounds.readiness_category_phoneme",
+      "word_sounds.readiness_category_speech",
+      "word_sounds.readiness_check",
+      "word_sounds.readiness_checking",
+      "word_sounds.readiness_counts",
+      "word_sounds.readiness_dependencies",
+      "word_sounds.readiness_failed",
+      "word_sounds.readiness_heading",
+      "word_sounds.readiness_limits",
+      "word_sounds.readiness_omitted",
+      "word_sounds.readiness_panel",
+      "word_sounds.readiness_preflight_detail",
+      "word_sounds.readiness_preflight_send",
+      "word_sounds.readiness_preflight_start",
+      "word_sounds.readiness_preflight_title",
+      "word_sounds.readiness_preflight_unknown",
+      "word_sounds.readiness_ready",
+      "word_sounds.readiness_recovery",
+      "word_sounds.readiness_review"
+    ],
+    "sha256": "65c714e4e0c782ebb5842b1dbdb466d8875df7317904075823804ae74cad6828",
+    "expectedManifest": "reports/alloflow-resume-2026-10-01/readiness-integration/english-strings-candidate.json",
+    "verifiedCurrentRootPublic": true
+  },
+  "wholeCheckoutFrozen": false
+}

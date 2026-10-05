@@ -1,0 +1,7 @@
+{
+  "sessionId": 83936,
+  "toolChunk": "a8a8b6",
+  "exitCode": 1,
+  "completed": true,
+  "reason": "The fixture attempted native selectOption while the comparison disclosure was closed. Open it before choosing the pair, then close it for the observation-card workflow."
+}

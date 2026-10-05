@@ -1,0 +1,91 @@
+[
+  {
+    "slug": "american_revolution_causes_grade5",
+    "id": "ar-timeline",
+    "file": "ar-timeline.png",
+    "src": "C:/Users/cabba/.codex/generated_images/01a1073a-b80d-79a2-84f7-30ef375fdc22/exec-4994506f-5e09-4893-b080-7af235175345.png",
+    "prompt": "Use case: historical-scene. Asset type: one educational timeline illustration for a Grade 5 American Revolution lesson. Create a wide warm watercolor and ink storybook timeline strip, seven clearly separated miniature vignettes evenly spaced in a single row on ivory paper. Left to right ONLY: a folded treaty document and quill with blank pages; blank paper beside a wax stamp; a snowy colonial Boston street with a calm tense crowd and distant red-coated British troops (no firing or injury); wooden tea chests beside an eighteenth-century sailing ship in Boston harbor at dusk; the same harbor with a wooden barrier closing the dock; adult delegates in eighteenth-century clothing around a wooden table with blank papers; colonial civilian militia gathered on a village green with muskets held down safely. Quiet muted earth colors, readable silhouettes, historically plausible clothing and architecture, no modern objects, no exaggerated caricatures. Connect vignettes with a subtle plain horizontal arrow. Keep generous clean space below each vignette for editable labels that will be added by the app. Absolutely NO words, letters, numerals, readable script, dates, captions, seals with characters, flags with text, logos, or watermark in the raster artwork. There must be exactly seven vignettes and no graphic violence.",
+    "alt": "Seven scenes show a treaty, a paper stamp, a snowy Boston crowd, tea chests beside a ship, a closed harbor, delegates meeting, and militia gathering.",
+    "title": "Selected turning points, 1763–1775",
+    "caption": "Selected events trace an escalating conflict. Use the complete text timeline for the events between these scenes.",
+    "labels": [
+      {
+        "text": "1763: Treaty of Paris",
+        "position": "bottom-center",
+        "anchorX": 7,
+        "anchorY": 90
+      },
+      {
+        "text": "1765: Stamp Act",
+        "position": "bottom-center",
+        "anchorX": 21,
+        "anchorY": 90
+      },
+      {
+        "text": "1770: Boston Massacre",
+        "position": "bottom-center",
+        "anchorX": 35,
+        "anchorY": 90
+      },
+      {
+        "text": "1773: Tea Party",
+        "position": "bottom-center",
+        "anchorX": 50,
+        "anchorY": 90
+      },
+      {
+        "text": "1774: Port closed",
+        "position": "bottom-center",
+        "anchorX": 64,
+        "anchorY": 90
+      },
+      {
+        "text": "1774: Congress meets",
+        "position": "bottom-center",
+        "anchorX": 78,
+        "anchorY": 90
+      },
+      {
+        "text": "1775: Fighting begins",
+        "position": "bottom-center",
+        "anchorX": 92,
+        "anchorY": 90
+      }
+    ]
+  },
+  {
+    "slug": "american_revolution_causes_grade5",
+    "id": "ar-perspectives",
+    "file": "ar-perspectives.png",
+    "src": "C:/Users/cabba/.codex/generated_images/01a1073a-b80d-79a2-84f7-30ef375fdc22/exec-df6d0eec-1ae7-42ac-a40f-985ab89e4ff9.png",
+    "prompt": "Use case: historical-scene. Asset: one two-panel educational illustration for Grade 5 explaining different eighteenth-century viewpoints about colonial taxation. Warm watercolor and fine ink storybook style on ivory paper, muted earth colors. Left panel: a serious but humane British official in an eighteenth-century coat, seated at a wooden desk with thick blank ledgers, a quill and a small modest pile of coins; he is considering the cost of war. Right panel: an ordinary colonial family, adults and a school-age child in historically plausible plain clothing, seated together at home reading a blank official sheet by candlelight; their faces show concern and thought, not rage. Balance both viewpoints respectfully, no caricatures or villains. Equal panels separated by clean ivory gutter, generous clean space below for app captions. No modern objects. Absolutely no words, letters, numerals, readable handwriting, thought-bubble text, labels, dates, logos or watermark anywhere. Blank paper only. One combined two-panel image; do not add further scenes.",
+    "alt": "A British official studies blank ledgers and coins; a colonial family studies a blank notice by candlelight.",
+    "title": "Two viewpoints on taxes",
+    "caption": "Britain sought revenue after war. Many colonists objected to taxes imposed without representation. These scenes illustrate viewpoints, not specific people.",
+    "labels": [
+      {
+        "text": "War costs",
+        "position": "top-left",
+        "anchorX": 25,
+        "anchorY": 7
+      },
+      {
+        "text": "Representation",
+        "position": "top-right",
+        "anchorX": 75,
+        "anchorY": 7
+      }
+    ]
+  },
+  {
+    "slug": "constitution_grade8",
+    "id": "ct-convention",
+    "file": "ct-convention.png",
+    "src": "C:/Users/cabba/.codex/generated_images/01a1073a-b80d-79a2-84f7-30ef375fdc22/exec-05d5c9f3-abb6-470a-888d-119593b17530.png",
+    "prompt": "Use case: historical-scene. Asset: one educational historical illustration for a Grade 8 Constitution lesson. A warm, grounded watercolor and ink scene of the Philadelphia Constitutional Convention in the summer of 1787. Adult male delegates in historically plausible late eighteenth-century coats and waistcoats, seated and talking around wood tables in the Pennsylvania State House assembly room, with papers, quills and inkpots. The tall windows and shutters are closed; soft summer light slips through narrow gaps. Convey a hot room and serious deliberation, without depicting a famous person as an exact portrait. All papers entirely blank. Muted warm earth colors and restrained detail, clear educational storybook composition. Leave subtle clean margins. No modern suits, electrical lights, microphone, computer, present-day flag, contemporary furniture, readable writing, numbers, titles, labels, logos or watermark. Artwork is an interpretive scene, not a claimed documentary reconstruction.",
+    "alt": "Delegates in eighteenth-century clothing deliberate around wood tables with blank papers and quills in a room with closed shutters.",
+    "title": "Debating a new framework",
+    "caption": "Philadelphia, summer 1787: delegates debated the structure and powers of the federal government. This interpretive scene is not a documentary reconstruction.",
+    "labels": []
+  }
+]

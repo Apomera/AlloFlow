@@ -1,0 +1,15 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sourceSha256": "af5074f16bde7710ab42494c02a14a22ce3509e6db9bfadc8af22861b55a84e8",
+  "matchingEnglishKeys": 1238,
+  "unitAndModelChecksPassed": 219,
+  "completeInteractionChecksPassed": 163,
+  "browserChecksPassed": 15,
+  "finalPeakInteractionChecksPassed": 4,
+  "finalPeakBrowserWorkflowsPassed": 3,
+  "inputCombinations": 144,
+  "recordedMaximumChecks": 432,
+  "unequalPairScaleChecks": 216,
+  "commit": "not created; changes remain uncommitted"
+}

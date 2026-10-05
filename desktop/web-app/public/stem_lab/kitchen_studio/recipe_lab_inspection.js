@@ -65,7 +65,7 @@
       var nextKind=zone==='pot'?'pasta':'sauce',hidden=zone!=='pot'&&(!(zone==='pan'||zone==='finish')||!active);
       if(hidden){if(gesture||frame!==null)cancel();view=s;kind=nextKind;panel.hidden=true;locked=true;checkButton.setAttribute('aria-pressed',String(active));return;}
       if(view!==s||kind!==nextKind||hidden||historical)cancel();view=s;kind=nextKind;panel.hidden=hidden;checkButton.setAttribute('aria-pressed',String(active));
-      locked=historical||host.ended()||(kind==='pasta'?(!s.pot.pasta||s.pot.drained):!s.pan.combined);
+      locked=historical||host.ended()||(kind==='pasta'?(s.pot.lid==='covered'||!s.pot.pasta||s.pot.drained):!s.pan.combined);
       var checks=R.inspections(s).filter(function(c){return c.kind===kind;});observed=checks[checks.length-1]||null;var previous=checks[checks.length-2];
       $('foodCheckTitle').textContent=kind==='pasta'?'Check a pasta sample':'Read the sauce trail';
       $('foodCheckTag').textContent=historical?'Recorded inspection':'Inspection station';
@@ -75,7 +75,7 @@
       $('foodCheckEquivalent').textContent=kind==='pasta'?'Check texture without dragging':'Check coating without dragging';$('foodCheckEquivalent').disabled=locked;svg.setAttribute('aria-disabled',String(locked));
       var stale=observed&&(kind==='pasta'?!!s.pot.sample&&(Math.abs(s.pot.progress-s.pot.sample.progress)>.000001||(s.pastaModel===1&&observed.clumped!==R.pastaSurface(s).clumped)):!s.pan.tasted);
       var result=observed?clock(observed.time)+' · '+observed.label+'. '+observed.observation+(stale?' The food has changed since this check. Inspect again before deciding.':''):kind==='pasta'?'No sample checked yet. Texture will be revealed after the check.':'No sauce trail checked yet. Observe the coating before deciding on another adjustment.';
-      if(historical)result+=' Recorded view; checking is locked.';else if(host.ended())result+=' Cook finished; start a fresh cook to inspect again.';else if(locked)result+=' '+(kind==='pasta'?'Add pasta to boiling water first; sample before draining.':'Combine the pasta and sauce before this final check.');
+      if(historical)result+=' Recorded view; checking is locked.';else if(host.ended())result+=' Cook finished; start a fresh cook to inspect again.';else if(locked)result+=' '+(kind==='pasta'?(s.pot.lid==='covered'?'Lift the lid onto its rest before checking texture.':'Add pasta to boiling water first; sample before draining.'):'Combine the pasta and sauce before this final check.');
       say(result);$('foodCheckPrevious').textContent=previous?'Previous check at '+clock(previous.time)+': '+previous.label+'.':'';
       $('foodCheckVisualTitle').textContent=(kind==='pasta'?'Fork pressing a pasta sample. ':'Spoon drawn through sauce. ')+(observed?observed.observation:'Complete the gesture or use the equivalent check button to record an observation.');
       paint(observed?1:0,observed);$('foodCheckGesture').textContent='';

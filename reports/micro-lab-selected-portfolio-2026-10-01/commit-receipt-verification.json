@@ -1,0 +1,39 @@
+{
+  "commit": "83af89d4880066c87458f8546d29e9e0410c1342",
+  "parent": "8b3ba6c1f3b083e3f6b038969f6d832118e38b97",
+  "tree": "57dadd116766f0c58b415085ffce97482b0b93d6",
+  "changedFiles": 235,
+  "refUpdated": true,
+  "indexRefreshed": true,
+  "committedRuntimeSha256": "c30097993f66367ec6273125e1218039a8093afd355e1d30bf56f5eda24a6252",
+  "runtimeMirrorAndStagingMatch": true,
+  "nonMicroTranslationsPreserved": true,
+  "establishedMicroLabelsUnchanged": true,
+  "cumulativeAddedMicroLabels": 192,
+  "storedMicroLabels": 1997,
+  "validatedMicroLabelsUsedBySource": 1879,
+  "sealedInputsUnchanged": true,
+  "pendingOwnedTrackedFiles": [],
+  "unit": {
+    "passed": 631,
+    "failed": 0,
+    "files": 19,
+    "report": "unit-results.json",
+    "priorRuns": [
+      "unit-initial-results.json"
+    ],
+    "note": "The final consolidated focused regression run passes. Earlier attempt reports, if any, are retained."
+  },
+  "browser": {
+    "passed": 42,
+    "failed": 0,
+    "skipped": 0,
+    "flaky": 0,
+    "project": "chromium",
+    "report": "browser-results.json",
+    "priorRuns": [
+      "browser-initial-results.json"
+    ],
+    "scope": "Selected activity portfolio downloads, complete evidence and draft inclusion, local-only selection, cleanup and status feedback, keyboard and narrow layouts, and retained portfolio, Growth citation, design, evidence, recovery and navigation workflows, served from the local working tree."
+  }
+}

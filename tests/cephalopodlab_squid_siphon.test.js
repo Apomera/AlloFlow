@@ -3,11 +3,17 @@ import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { restoreCLSquidFinReference } from './helpers/cephalopod_squid_fin_reference.js';
 const require=createRequire(import.meta.url),THREE=require('../vendor/three-r128/three.min.js');
 const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8').replace(/\r\n/g,'\n');
 const start=source.indexOf('function createCLHuntAnimal('),end=source.indexOf('// Compact, individually owned prey rig.',start);
 assert.ok(start>=0&&end>start,'Actual animal factory must be present');
 const build=new Function('T','species','Math',source.slice(start,end)+';return createCLHuntAnimal(T,species);');
+// Pass30 reverses only the exact accepted Humboldt fin roll and skin finish for this older protected fingerprint.
+// All live geometry/material/motion assertions still use the actual production build.
+const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+const protectedBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(source.slice(start,end)),true)+';return createCLHuntAnimal(T,species);');
+
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Animal construction/animation consumed dive RNG');}}),allocated=[];
 const state=(extra={})=>({moving:false,jet:false,strike:0,strikeAim:null,camo:0,substrate:'sand',display:false,reducedMotion:false,...extra});
 function rig(id='humboldtSquid',T=THREE){const a=build(T,{id,bodyColor:0xbc6048},noRandom);allocated.push(a);return a;}
@@ -86,6 +92,6 @@ describe('Humboldt squid continuous muscular funnel',()=>{
 
   it('preserves every non-siphon Humboldt surface and all eleven complete rigs from measured original b34',()=>{
     const fixture=JSON.parse(readFileSync('tests/fixtures/cephalopod_siphon_protected.json','utf8'));assert.equal(fixture.version,1);assert.equal(fixture.baselineSourceSha256,'b34c982127743a9d1f47ed392d0d48d09fa6adba588560bb178ab5e180e5d369');assert.equal(fixture.exclusion,'Humboldt-only cl-siphon ancestor');assert.equal(Object.keys(fixture.fingerprints).length,12);/* Pass27 approves only the Humboldt pigment compiler; frozen original fixture and eleven other complete rigs remain protected. */
-    assert.deepEqual(captureProtectedFingerprints(build),Object.assign({},fixture.fingerprints,{humboldtSquid:'86c10d96cc149317d1f7faefccfff6c14a35c11dc2509829d819e5575460f081'}));
+    assert.deepEqual(captureProtectedFingerprints(protectedBuild),Object.assign({},fixture.fingerprints,{humboldtSquid:'86c10d96cc149317d1f7faefccfff6c14a35c11dc2509829d819e5575460f081'}));
   },240000);
 });

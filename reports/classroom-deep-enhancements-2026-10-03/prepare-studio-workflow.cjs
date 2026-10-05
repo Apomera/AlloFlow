@@ -1,0 +1,4 @@
+'use strict';
+const fs=require('node:fs'),path=require('node:path'),assert=require('node:assert/strict');
+const root=path.resolve(__dirname,'../..'),from='reports/classroom-reliability-next-2026-10-03/accessibility',to='reports/classroom-deep-enhancements-2026-10-03/studio-workflow';
+let code=fs.readFileSync(path.join(root,from,'acceptance.cjs'),'utf8');assert.equal(code.split(from).length,3,'Two report destination anchors');code=code.replaceAll(from,to);code=code.replace("'use strict';","'use strict';\nprocess.env.PLAYWRIGHT_BROWSERS_PATH = 'C:/Users/cabba/AppData/Local/ms-playwright';");fs.mkdirSync(path.join(root,to),{recursive:true});fs.writeFileSync(path.join(root,to,'acceptance.cjs'),code);console.log('Studio workflow retained; report destination and installed-browser path updated.');

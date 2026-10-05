@@ -1,0 +1,32 @@
+{
+  "pid": 22604,
+  "loadedAt": "2026-10-05T04:25:52.128Z",
+  "completedAt": "2026-10-05T04:25:52.382Z",
+  "loadedRuntimes": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "4bb912b9f1d00c1b54be26d29197f0c1bd9c1277161664d21842532f973f4bf3",
+      "bytes": 3153009
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "4bb912b9f1d00c1b54be26d29197f0c1bd9c1277161664d21842532f973f4bf3",
+      "bytes": 3153009
+    }
+  ],
+  "loadedBaseline": {
+    "path": "reports/watercycle-storm-caption-clarity/baseline-runtime.js",
+    "sha256": "141a0381080552bfaa7f18271f5a9abd17993ad4b5123111c5957dc4ea389bf8",
+    "bytes": 3144075
+  },
+  "loadedTest": {
+    "path": "tests/watercycle_storm_caption_clarity.test.js",
+    "sha256": "9a4a78803de7de09376b39120a9d99e0ae77d29f523ce06986c67118652a3343",
+    "bytes": 22646
+  },
+  "loadedPaintManifest": {
+    "path": "reports/watercycle-storm-caption-clarity/paint-changes.json",
+    "sha256": "060e136868b146b6c0d0a28bec3dc30d16eb3156b22687a50b70ecfdb98dec00",
+    "bytes": 22495
+  }
+}

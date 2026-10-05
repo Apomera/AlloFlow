@@ -608,8 +608,18 @@ describe('queens age, and colonies replace failing queens', () => {
     const s = Object.assign(BH.bhCreateNewColonyState(11, 1), { day: 20, queenHealth: 30, brood: 10000 });
     const r = BH.bhStepColony(s, cfg(() => 0));
     expect(r.event && r.event.id).toBe('supersedure');
-    expect(r.next.queenHealth).toBeGreaterThanOrEqual(80);
+    expect(r.next.queenHealth).toBe(0);
+    expect(r.next.eggsLaid).toBe(0);
+    expect(r.next.queenTransition).toMatchObject({ kind: 'supersedure', daysRemaining: 21, pendingHealth: 85 });
     expect(r.next.brood).toBeLessThan(10000);
+    let waiting = Object.assign({}, s, r.next);
+    for (let i = 0; i < 21; i++) {
+      waiting = Object.assign({}, waiting, BH.bhStepColony(waiting, cfg()).next);
+      expect(waiting.eggsLaid).toBe(0);
+    }
+    expect(waiting.queenTransition).toBeNull();
+    expect(waiting.queenHealth).toBeGreaterThanOrEqual(80);
+    expect(BH.bhStepColony(waiting, cfg()).next.eggsLaid).toBeGreaterThan(0);
   });
 });
 
@@ -621,7 +631,10 @@ describe('splits and the hive scale report what they really mean', () => {
     expect(html.includes('/10 points'), 'grade out of 10').toBe(true);
   });
   it('the split parent raises a new queen, and the scale shows a readable gross weight', () => {
-    expect(SRC_TEXT.includes('b.queenHealth = 90;                  // the old queen goes with the split')).toBe(true);
+    const html = renderTool('beehive', { beehive: { viewMode: 'beekeeper', tutorialDone: true,
+      day: 10, queenHealth: 0, queenTransition: { kind: 'split', daysRemaining: 21, pendingHealth: 90 } } });
+    expect(html).toContain('laying is paused for 21 more modeled day(s)');
+    expect(html).toContain('Existing brood keeps developing');
     expect(SRC_TEXT.includes('var _hsclWt = 22 + Math.min(2, ls.supersAdded || 0) * 5 + (honey || 0) * 0.45')).toBe(true);
     expect(SRC_TEXT.includes("c.font = 'bold 2.6px monospace';")).toBe(false);
   });
@@ -836,13 +849,13 @@ describe('every year-card point can be earned in year 1', () => {
 describe('the daily model version says the equations changed', () => {
   let BH;
   beforeAll(() => { resetStemLab(); window.__RR_TEST_EXPORTS__ = {}; loadTool(TOOL, 'beehive'); BH = window.__RR_TEST_EXPORTS__.beehive; });
-  it('is 1.1, and a baseline saved under 1.0 does not count as the same model', () => {
-    expect(BH.BEEHIVE_COLONY_MODEL_VERSION).toBe('colony-daily-1.1');
+  it('is 1.2, and a baseline saved under 1.0 does not count as the same model', () => {
+    expect(BH.BEEHIVE_COLONY_MODEL_VERSION).toBe('colony-daily-1.2');
     const state = Object.assign(BH.bhCreateNewColonyState(2468, 1), { day: 8 });
     const old = Object.assign(BH.bhCreateExperimentSnapshot(state), { modelVersion: 'colony-daily-1.0' });
     const cmp = BH.bhCompareExperiments(old, state);
     const model = cmp.checks.find((c) => c.id === 'model');
-    expect(model).toMatchObject({ matched: false, baseline: 'colony-daily-1.0', current: 'colony-daily-1.1' });
+    expect(model).toMatchObject({ matched: false, baseline: 'colony-daily-1.0', current: 'colony-daily-1.2' });
   });
 });
 
@@ -890,6 +903,12 @@ describe('notebooks merged: one thermo lab, one notebook next to the day\'s move
 
 describe('saved discoveries flow into the notebook claim', () => {
   let host, root, latest, cfg;
+  let scrollDescriptor, scrollIntoView;
+  beforeEach(() => {
+    scrollDescriptor = Object.getOwnPropertyDescriptor(HTMLElement.prototype, 'scrollIntoView');
+    scrollIntoView = vi.fn();
+    Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', { configurable: true, value: scrollIntoView });
+  });
   async function mount(state) {
     resetStemLab(); window.__testHooks = {}; window.__RR_TEST_EXPORTS__ = {};
     cfg = loadTool(TOOL, 'beehive');
@@ -904,7 +923,12 @@ describe('saved discoveries flow into the notebook claim', () => {
     }
     await act(async () => { root.render(React.createElement(App)); await Promise.resolve(); });
   }
-  afterEach(() => { act(() => root.unmount()); host.remove(); delete window.__testHooks; delete window.__RR_TEST_EXPORTS__; vi.restoreAllMocks(); vi.unstubAllGlobals(); });
+  afterEach(() => {
+    act(() => root.unmount()); host.remove(); delete window.__testHooks; delete window.__RR_TEST_EXPORTS__;
+    vi.restoreAllMocks(); vi.unstubAllGlobals(); vi.useRealTimers();
+    if (scrollDescriptor) Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', scrollDescriptor);
+    else delete HTMLElement.prototype.scrollIntoView;
+  });
 
   it('adds each finding once to the evidence box', async () => {
     await mount({ day: 8, notebookOpen: true, notebook: { discoveries: { stores: { title: 'Follow the food', observation: 'Stores fell while bees foraged', comparison: '21 → 19 lb', explanation: 'They eat more than they bring in' } } } });
@@ -917,12 +941,15 @@ describe('saved discoveries flow into the notebook claim', () => {
     expect(latest.beehive.notebook.beekeeper.evidence).toBe(line); // not duplicated
   });
   it('the launcher opens the thermoregulation discovery', async () => {
+    vi.useFakeTimers();
     await mount({ day: 8 });
     const open = host.querySelector('[data-beehive-open-thermo="true"]');
     expect(open).toBeTruthy();
     await act(async () => { open.click(); await Promise.resolve(); });
+    await act(async () => { vi.runOnlyPendingTimers(); await Promise.resolve(); });
     expect(latest.beehive.discoveryLesson).toBe('thermo');
     expect(host.querySelectorAll('[data-beehive-thermoregulation="true"]').length).toBe(1);
+    expect(scrollIntoView).toHaveBeenCalledWith({ block: 'start', behavior: 'auto' });
   });
 });
 

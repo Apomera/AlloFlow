@@ -1,0 +1,24 @@
+{
+  "verifiedAt": "2026-10-02T20:16:56.344Z",
+  "baseUrl": "http://127.0.0.1:65061",
+  "checks": [
+    {
+      "path": "/app/?tool=maine-sld-practice",
+      "status": 200,
+      "servedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+      "expectedHash": null
+    },
+    {
+      "path": "/__sld_preview/host.bundle.js",
+      "status": 200,
+      "servedSha256": "a039b280afc485d222af35d3f516fed2d54d4915b73dc36b7d23baea0a699e27",
+      "expectedHash": "a039b280afc485d222af35d3f516fed2d54d4915b73dc36b7d23baea0a699e27"
+    },
+    {
+      "path": "/app/maine_sld_practice_module.js?v=879c289b",
+      "status": 200,
+      "servedSha256": "879c289b65b47014fb07be571c9e55c51c3df31653d109bb29f21d7ec2e9e48c",
+      "expectedHash": "879c289b65b47014fb07be571c9e55c51c3df31653d109bb29f21d7ec2e9e48c"
+    }
+  ]
+}

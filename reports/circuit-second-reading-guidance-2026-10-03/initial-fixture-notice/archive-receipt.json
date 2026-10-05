@@ -1,0 +1,87 @@
+{
+  "reason": "Fixture reset used notebookNotice instead of the product investigationNotice, leaving the previous native Record observation 2 message in one-observation screenshots. Product source and native behavior were correct.",
+  "sourceSha256": "35d953d4e3fb4fb508fce0435a9d8c1df174fdd5653c0111b53c3e789d24247b",
+  "nativeSession": 5136,
+  "nativeExitCode": 0,
+  "browserClosed": true,
+  "automatedPassed": true,
+  "visualApproved": false,
+  "reviewedAllEightAtOriginalResolution": true,
+  "files": [
+    {
+      "file": "browser-check.cjs",
+      "sha256": "bf49c5bb8cee222dc1c1b9ebd07b690982a79a37fe7c031bc942bcd97ade8a87",
+      "bytes": 44388
+    },
+    {
+      "file": "browser-results.json",
+      "sha256": "466e003e077c494caa9bc669318da4b83cc74059002090a0c571e0e51e84dba3",
+      "bytes": 261067
+    },
+    {
+      "file": "browser-close.json",
+      "sha256": "72c3eda68f82d34a84a839b3afa4fa79a83c21c32aa9a8c77bbbe8c1c90a392c",
+      "bytes": 239
+    },
+    {
+      "file": "browser-preflight.json",
+      "sha256": "4ec710ff223b9326df78ccfe3f3c4a4f2c321526fdf211deffc89c71640f4d45",
+      "bytes": 1250
+    },
+    {
+      "file": "generate-browser.cjs",
+      "sha256": "111d5ec8b427ef3c54a0a9e8e5c83be65d48d50beb969e53b2e3f7ef5389a0a7",
+      "bytes": 7427
+    },
+    {
+      "file": "workflow-setup.txt",
+      "sha256": "6cfafc2ef1514ad0f8fd392cdafc0a4936f42b53acd6fa2d7341ff3fbfa2ce81",
+      "bytes": 6574
+    },
+    {
+      "file": "workflow-run.txt",
+      "sha256": "e642d673f476bef27fe85d5626e3f080b1668de8a991cd11057bbe5023753594",
+      "bytes": 7331
+    },
+    {
+      "file": "different-circuit-second-reading-320.png",
+      "sha256": "34f25cd03c18eaef575f900295207eb5329380c17d3a59347b87e41ca3d0dd75",
+      "bytes": 34404
+    },
+    {
+      "file": "forced-colors-second-reading-320.png",
+      "sha256": "d57aff02b4608ff458e07de4f6c971098859fa4ce74632d5097521f22de589a4",
+      "bytes": 13935
+    },
+    {
+      "file": "longest-cue-200pct-text-320.png",
+      "sha256": "76e6fde709e7cbaad915018073f26e15bc0aa1c8963fc8f904423a2d149b0652",
+      "bytes": 98071
+    },
+    {
+      "file": "multiple-settings-changed-probes-320.png",
+      "sha256": "a91c99e97b7556680a5b13e30ceeca6e72bb798ee428d8650ae8f85390aa8eae",
+      "bytes": 35723
+    },
+    {
+      "file": "ready-changed-probes-320.png",
+      "sha256": "bd27f717d271143a5a459dff3a7da19cd478fef9d52655ec6c15abd19f4943d8",
+      "bytes": 37352
+    },
+    {
+      "file": "ready-second-reading-390.png",
+      "sha256": "f656e9b55bc6a1d5b61558d888b8a74750d29ad003676387b2f3caee8604e7af",
+      "bytes": 39855
+    },
+    {
+      "file": "rtl-localized-second-reading-320.png",
+      "sha256": "f19a4e5af66dfc77566e4719d415fd13cee90d8e58718711d41587c42b21aa83",
+      "bytes": 40174
+    },
+    {
+      "file": "unchanged-second-reading-1280.png",
+      "sha256": "a474c8e899da3958c7b24660b91f183267649efbe324c5230e7c1bea5026f5b2",
+      "bytes": 52765
+    }
+  ]
+}

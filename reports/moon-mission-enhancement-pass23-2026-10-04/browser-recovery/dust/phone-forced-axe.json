@@ -1,0 +1,263 @@
+{
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "tags": [
+        "cat.color",
+        "wcag2aa",
+        "wcag143",
+        "TTv5",
+        "TT13.c",
+        "EN-301-549",
+        "EN-9.1.4.3",
+        "ACT",
+        "RGAAv4",
+        "RGAA-3.2.1"
+      ],
+      "description": "Ensure the contrast between foreground and background colors meets WCAG 2 AA minimum contrast ratio thresholds",
+      "help": "Elements must meet minimum color contrast ratio thresholds",
+      "helpUrl": "https://dequeuniversity.com/rules/axe/4.12/color-contrast?application=axeAPI",
+      "nodes": [
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#e2e8f0",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.23,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "bold",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section data-descent-instruments=\"true\" aria-label=\"Flight instruments\" style=\"padding: 14px; background: rgb(8, 19, 34); color: rgb(226, 232, 240); border-top: 1px solid rgb(51, 65, 85);\">",
+                  "target": [
+                    "section[data-descent-instruments=\"true\"]"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.23 (foreground color: #e2e8f0, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<summary style=\"min-height: 44px; padding-top: 10px; cursor: pointer; color: rgb(226, 232, 240); font-weight: 700;\">How to read this flight model</summary>",
+          "target": [
+            "details[open=\"\"] > summary"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.23 (foreground color: #e2e8f0, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#cbd5e1",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.48,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section data-descent-instruments=\"true\" aria-label=\"Flight instruments\" style=\"padding: 14px; background: rgb(8, 19, 34); color: rgb(226, 232, 240); border-top: 1px solid rgb(51, 65, 85);\">",
+                  "target": [
+                    "section[data-descent-instruments=\"true\"]"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<p>Mass falls as propellant burns, so the same thrust produces more acceleration. Hover throttle balances lunar gravity at your current tilt. Delta-v is the ideal remaining change in velocity; holding altitude also spends fuel.</p>",
+          "target": [
+            "details[open=\"\"] > p:nth-child(2)"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#cbd5e1",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.48,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section data-descent-instruments=\"true\" aria-label=\"Flight instruments\" style=\"padding: 14px; background: rgb(8, 19, 34); color: rgb(226, 232, 240); border-top: 1px solid rgb(51, 65, 85);\">",
+                  "target": [
+                    "section[data-descent-instruments=\"true\"]"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<p>Braking height estimates a full-thrust stop at the current tilt, with an engine-response allowance. It assumes continued thrust and enough fuel, and does not guarantee a safe landing. Begin braking above that height.</p>",
+          "target": [
+            "details[open=\"\"] > p:nth-child(3)"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#cbd5e1",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.48,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section data-descent-instruments=\"true\" aria-label=\"Flight instruments\" style=\"padding: 14px; background: rgb(8, 19, 34); color: rgb(226, 232, 240); border-top: 1px solid rgb(51, 65, 85);\">",
+                  "target": [
+                    "section[data-descent-instruments=\"true\"]"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<p>The scene compresses altitude to keep the lander visible. Cyan marks the ground below the lander; amber shows five seconds of drift at the current speed. The terrain is illustrative and is not a landing hazard map.</p>",
+          "target": [
+            "details[open=\"\"] > p:nth-child(4)"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#cbd5e1",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.48,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section data-descent-instruments=\"true\" aria-label=\"Flight instruments\" style=\"padding: 14px; background: rgb(8, 19, 34); color: rgb(226, 232, 240); border-top: 1px solid rgb(51, 65, 85);\">",
+                  "target": [
+                    "section[data-descent-instruments=\"true\"]"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<p data-descent-dust-note=\"true\">Surface dust follows shallow ballistic arcs under lunar gravity and keeps moving after engine cutoff. Grain speeds and density are illustrative. Recorded frames omit airborne dust.</p>",
+          "target": [
+            "p[data-descent-dust-note=\"true\"]"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#cbd5e1",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.48,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section data-descent-instruments=\"true\" aria-label=\"Flight instruments\" style=\"padding: 14px; background: rgb(8, 19, 34); color: rgb(226, 232, 240); border-top: 1px solid rgb(51, 65, 85);\">",
+                  "target": [
+                    "section[data-descent-instruments=\"true\"]"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<p>Educational final-approach model: 46.7 kN maximum engine thrust, 311 s specific impulse, and an assumed 7,000 kg mass without remaining descent propellant. The throttle range and landing limits are simplified for practice.</p>",
+          "target": [
+            "details[open=\"\"] > p:nth-child(6)"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "any": [
+            {
+              "id": "color-contrast",
+              "data": {
+                "fgColor": "#7dd3fc",
+                "bgColor": "#ffffff",
+                "contrastRatio": 1.66,
+                "fontSize": "9.0pt (12px)",
+                "fontWeight": "normal",
+                "messageKey": null,
+                "expectedContrastRatio": "4.5:1"
+              },
+              "relatedNodes": [
+                {
+                  "html": "<section data-descent-instruments=\"true\" aria-label=\"Flight instruments\" style=\"padding: 14px; background: rgb(8, 19, 34); color: rgb(226, 232, 240); border-top: 1px solid rgb(51, 65, 85);\">",
+                  "target": [
+                    "section[data-descent-instruments=\"true\"]"
+                  ]
+                }
+              ],
+              "impact": "serious",
+              "message": "Element has insufficient color contrast of 1.66 (foreground color: #7dd3fc, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+            }
+          ],
+          "all": [],
+          "none": [],
+          "impact": "serious",
+          "html": "<a href=\"https://www1.grc.nasa.gov/beginners-guide-to-aeronautics/ideal-rocket-equation/\" target=\"_blank\" rel=\"noopener noreferrer\" style=\"display: inline-block; padding: 10px 0px; color: rgb(125, 211, 252); text-decoration: underline;\">NASA ideal rocket equation</a>",
+          "target": [
+            "a"
+          ],
+          "failureSummary": "Fix any of the following:\n  Element has insufficient color contrast of 1.66 (foreground color: #7dd3fc, background color: #ffffff, font size: 9.0pt (12px), font weight: normal). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    }
+  ]
+}

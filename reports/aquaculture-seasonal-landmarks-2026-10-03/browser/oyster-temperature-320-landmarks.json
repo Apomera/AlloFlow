@@ -1,0 +1,206 @@
+{
+  "selection": {
+    "metricId": "temperature",
+    "speciesId": "oyster"
+  },
+  "helper": {
+    "metric": {
+      "id": "temperature",
+      "label": "Temperature",
+      "unit": " C",
+      "max": 32,
+      "shared": true,
+      "speciesId": "system",
+      "organism": null,
+      "deltaUnit": " C"
+    },
+    "state": "ready",
+    "validMonths": 12,
+    "low": {
+      "value": 10,
+      "months": [
+        0,
+        1
+      ]
+    },
+    "high": {
+      "value": 25,
+      "months": [
+        6
+      ]
+    },
+    "comparison": {
+      "state": "match",
+      "validMonths": 12,
+      "magnitude": 0,
+      "months": [
+        {
+          "month": 0,
+          "a": 10,
+          "b": 10,
+          "delta": 0
+        },
+        {
+          "month": 1,
+          "a": 10,
+          "b": 10,
+          "delta": 0
+        },
+        {
+          "month": 2,
+          "a": 12,
+          "b": 12,
+          "delta": 0
+        },
+        {
+          "month": 3,
+          "a": 14,
+          "b": 14,
+          "delta": 0
+        },
+        {
+          "month": 4,
+          "a": 16,
+          "b": 16,
+          "delta": 0
+        },
+        {
+          "month": 5,
+          "a": 18,
+          "b": 18,
+          "delta": 0
+        },
+        {
+          "month": 6,
+          "a": 25,
+          "b": 25,
+          "delta": 0
+        },
+        {
+          "month": 7,
+          "a": 19,
+          "b": 19,
+          "delta": 0
+        },
+        {
+          "month": 8,
+          "a": 17,
+          "b": 17,
+          "delta": 0
+        },
+        {
+          "month": 9,
+          "a": 15,
+          "b": 15,
+          "delta": 0
+        },
+        {
+          "month": 10,
+          "a": 13,
+          "b": 13,
+          "delta": 0
+        },
+        {
+          "month": 11,
+          "a": 11,
+          "b": 11,
+          "delta": 0
+        }
+      ]
+    }
+  },
+  "independent": {
+    "validMonths": 12,
+    "low": {
+      "value": 10,
+      "months": [
+        0,
+        1
+      ]
+    },
+    "high": {
+      "value": 25,
+      "months": [
+        6
+      ]
+    },
+    "comparison": {
+      "validMonths": 12,
+      "magnitude": 0,
+      "months": [
+        {
+          "month": 0,
+          "a": 10,
+          "b": 10,
+          "delta": 0
+        },
+        {
+          "month": 1,
+          "a": 10,
+          "b": 10,
+          "delta": 0
+        },
+        {
+          "month": 2,
+          "a": 12,
+          "b": 12,
+          "delta": 0
+        },
+        {
+          "month": 3,
+          "a": 14,
+          "b": 14,
+          "delta": 0
+        },
+        {
+          "month": 4,
+          "a": 16,
+          "b": 16,
+          "delta": 0
+        },
+        {
+          "month": 5,
+          "a": 18,
+          "b": 18,
+          "delta": 0
+        },
+        {
+          "month": 6,
+          "a": 25,
+          "b": 25,
+          "delta": 0
+        },
+        {
+          "month": 7,
+          "a": 19,
+          "b": 19,
+          "delta": 0
+        },
+        {
+          "month": 8,
+          "a": 17,
+          "b": 17,
+          "delta": 0
+        },
+        {
+          "month": 9,
+          "a": 15,
+          "b": 15,
+          "delta": 0
+        },
+        {
+          "month": 10,
+          "a": 13,
+          "b": 13,
+          "delta": 0
+        },
+        {
+          "month": 11,
+          "a": 11,
+          "b": 11,
+          "delta": 0
+        }
+      ]
+    }
+  }
+}

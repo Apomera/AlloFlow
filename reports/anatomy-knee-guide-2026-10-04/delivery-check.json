@@ -1,0 +1,480 @@
+{
+  "date": "2026-10-04",
+  "sourceSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "runtimeMirrorsIdentical": true,
+  "syntaxPassed": true,
+  "onlyKneeRendererAndScopedCssChanged": true,
+  "authoredAtlasData": {
+    "characters": 309592,
+    "sha256": "a54731f78e7c82243e53fe231eae3548233ab62d66c27a81493251c4f1394b87",
+    "unchanged": true
+  },
+  "originalGeometry": {
+    "literalPaths": 19,
+    "preserved": 19,
+    "routes": 4,
+    "clinicalPaths": 2
+  },
+  "originalNarrativesUnchanged": 10,
+  "originalMechanismCaptionsRetainedInHtml": 4,
+  "catalogs": {
+    "pairs": 4,
+    "englishKeys": 70,
+    "nativeTranslations": 210,
+    "registeredValues": 560,
+    "kneeValuesAndAnatomyNamespaceIdentical": true,
+    "unrelatedBytesPreservedByInsertionReversal": true,
+    "currentScopedCheck": {
+      "checkedAt": "2026-10-04T14:41:14.720Z",
+      "success": true,
+      "onlyOffScopeChanges": true,
+      "registeredValues": 560,
+      "files": [
+        {
+          "path": "ui_strings.js",
+          "installedSha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+          "testedSha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+          "currentSha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+          "anatomyNamespaceSha256": "130617a54713a98c163210cf64f1e0baf232f2ac5cb6be270a6ba7e7286f2c1c",
+          "anatomyNamespaceUnchanged": true,
+          "kneeValuesUnchanged": true,
+          "registeredKeys": 70,
+          "preTestOffScopeDifferences": [
+            {
+              "path": "stem.bridgelab.recorded_peak_at",
+              "after": "Recorded at: "
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_inspect_a",
+              "after": "Inspect A recorded maximum"
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_inspect_b",
+              "after": "Inspect B recorded maximum"
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_markers",
+              "after": "Circle A marks the notebook reference maximum; diamond B marks the current maximum. Markers follow the signed curves; the cards report magnitudes. Scene labels identify the displayed trial."
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_scope",
+              "after": "These are the largest magnitudes in the recorded history, with the first occurrence shown for a tie. Full-event results use smaller calculation steps and may be larger. Inspect either time to compare both trials at that moment."
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_title",
+              "after": "Where do these trials peak?"
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_zero",
+              "after": "This recorded response is zero throughout the event. There is no distinguishable peak to inspect."
+            },
+            {
+              "path": "stem.dinolab.preview_target",
+              "after": "Next 3D stroke: {tool} at {coord}"
+            },
+            {
+              "path": "stem.dinolab.preview_canvas_key",
+              "after": "Solid 1 · dashed 0–1 · × 0 model layers"
+            },
+            {
+              "path": "stem.dinolab.preview_legend_title",
+              "after": "Read the 3D removal guide"
+            },
+            {
+              "path": "stem.dinolab.preview_solid",
+              "after": "Solid box: 1 model layer with the brush"
+            },
+            {
+              "path": "stem.dinolab.preview_dashed",
+              "after": "Dashed box: 0–1 model layer with the trowel"
+            },
+            {
+              "path": "stem.dinolab.preview_held",
+              "after": "Crossed surface: 0 layer removals"
+            },
+            {
+              "path": "stem.dinolab.preview_volume_hint",
+              "after": "Boxes span one top model layer at each current surface. A dashed box may stop at contact. The guide does not show buried finds."
+            },
+            {
+              "path": "stem.dinolab.preview_target_hint",
+              "after": "Move over the site to preview a stroke. Click or press Enter to use the displayed 3D target. Leaving the canvas restores the selected column."
+            },
+            {
+              "path": "stem.dinolab.preview_selected_hint",
+              "after": "This panel plans {coord}, the selected column. Moving the pointer changes only the canvas preview; it does not select a column or excavate."
+            }
+          ],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/ui_strings.js",
+          "installedSha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+          "testedSha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+          "currentSha256": "dd449bca5d2090c6bdf41e660b385bfa2e318a293f7ef05807a887a6f28a2c90",
+          "anatomyNamespaceSha256": "130617a54713a98c163210cf64f1e0baf232f2ac5cb6be270a6ba7e7286f2c1c",
+          "anatomyNamespaceUnchanged": true,
+          "kneeValuesUnchanged": true,
+          "registeredKeys": 70,
+          "preTestOffScopeDifferences": [
+            {
+              "path": "stem.bridgelab.recorded_peak_at",
+              "after": "Recorded at: "
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_inspect_a",
+              "after": "Inspect A recorded maximum"
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_inspect_b",
+              "after": "Inspect B recorded maximum"
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_markers",
+              "after": "Circle A marks the notebook reference maximum; diamond B marks the current maximum. Markers follow the signed curves; the cards report magnitudes. Scene labels identify the displayed trial."
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_scope",
+              "after": "These are the largest magnitudes in the recorded history, with the first occurrence shown for a tie. Full-event results use smaller calculation steps and may be larger. Inspect either time to compare both trials at that moment."
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_title",
+              "after": "Where do these trials peak?"
+            },
+            {
+              "path": "stem.bridgelab.recorded_peak_zero",
+              "after": "This recorded response is zero throughout the event. There is no distinguishable peak to inspect."
+            },
+            {
+              "path": "stem.dinolab.preview_target",
+              "after": "Next 3D stroke: {tool} at {coord}"
+            },
+            {
+              "path": "stem.dinolab.preview_canvas_key",
+              "after": "Solid 1 · dashed 0–1 · × 0 model layers"
+            },
+            {
+              "path": "stem.dinolab.preview_legend_title",
+              "after": "Read the 3D removal guide"
+            },
+            {
+              "path": "stem.dinolab.preview_solid",
+              "after": "Solid box: 1 model layer with the brush"
+            },
+            {
+              "path": "stem.dinolab.preview_dashed",
+              "after": "Dashed box: 0–1 model layer with the trowel"
+            },
+            {
+              "path": "stem.dinolab.preview_held",
+              "after": "Crossed surface: 0 layer removals"
+            },
+            {
+              "path": "stem.dinolab.preview_volume_hint",
+              "after": "Boxes span one top model layer at each current surface. A dashed box may stop at contact. The guide does not show buried finds."
+            },
+            {
+              "path": "stem.dinolab.preview_target_hint",
+              "after": "Move over the site to preview a stroke. Click or press Enter to use the displayed 3D target. Leaving the canvas restores the selected column."
+            },
+            {
+              "path": "stem.dinolab.preview_selected_hint",
+              "after": "This panel plans {coord}, the selected column. Moving the pointer changes only the canvas preview; it does not select a column or excavate."
+            }
+          ],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "lang/french.js",
+          "installedSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+          "testedSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+          "currentSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+          "anatomyNamespaceSha256": "15e55ec1fc7a1431b59e0607d2c379b970855aaf11e96ca031af9b7375d22b06",
+          "anatomyNamespaceUnchanged": true,
+          "kneeValuesUnchanged": true,
+          "registeredKeys": 70,
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/lang/french.js",
+          "installedSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+          "testedSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+          "currentSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+          "anatomyNamespaceSha256": "15e55ec1fc7a1431b59e0607d2c379b970855aaf11e96ca031af9b7375d22b06",
+          "anatomyNamespaceUnchanged": true,
+          "kneeValuesUnchanged": true,
+          "registeredKeys": 70,
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "lang/spanish_latin_america.js",
+          "installedSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+          "testedSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+          "currentSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+          "anatomyNamespaceSha256": "f2d8e6a99254e42a410ffd157d203fb6a6f47079e01849ddce1ff47156915b21",
+          "anatomyNamespaceUnchanged": true,
+          "kneeValuesUnchanged": true,
+          "registeredKeys": 70,
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+          "installedSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+          "testedSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+          "currentSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+          "anatomyNamespaceSha256": "f2d8e6a99254e42a410ffd157d203fb6a6f47079e01849ddce1ff47156915b21",
+          "anatomyNamespaceUnchanged": true,
+          "kneeValuesUnchanged": true,
+          "registeredKeys": 70,
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "lang/arabic.js",
+          "installedSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+          "testedSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+          "currentSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+          "anatomyNamespaceSha256": "47b3ba02167bfbe19adbc511e982d636f09d4ddaa58839b9e5555697f75c685b",
+          "anatomyNamespaceUnchanged": true,
+          "kneeValuesUnchanged": true,
+          "registeredKeys": 70,
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/lang/arabic.js",
+          "installedSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+          "testedSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+          "currentSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+          "anatomyNamespaceSha256": "47b3ba02167bfbe19adbc511e982d636f09d4ddaa58839b9e5555697f75c685b",
+          "anatomyNamespaceUnchanged": true,
+          "kneeValuesUnchanged": true,
+          "registeredKeys": 70,
+          "preTestOffScopeDifferences": [],
+          "offScopeDifferences": []
+        }
+      ],
+      "pairs": [
+        {
+          "path": "ui_strings.js",
+          "kneeValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        },
+        {
+          "path": "lang/french.js",
+          "kneeValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        },
+        {
+          "path": "lang/spanish_latin_america.js",
+          "kneeValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        },
+        {
+          "path": "lang/arabic.js",
+          "kneeValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        }
+      ]
+    },
+    "currentFullFilePairsIdentical": true
+  },
+  "focusedTests": {
+    "passed": 524,
+    "knee": 114,
+    "mutedLayers": 4,
+    "heart": 114,
+    "alveolus": 108,
+    "kidney": 74,
+    "gallery": 64,
+    "scale": 28,
+    "selectedScience": 18,
+    "unselectedScienceSkipped": 137
+  },
+  "browser": {
+    "run": "runs/browser-521ba74a-01",
+    "journeys": 2,
+    "accessibilityScans": 5,
+    "violations": 0,
+    "pageErrors": 0,
+    "horizontalOverflow": false,
+    "markerIntersections": 0,
+    "minTextContrast": 4.829404522659002,
+    "minNumericMarkerContrast": 7.562998081458594,
+    "minControlHeight": 48.390625,
+    "minControlWidth": 105.203125,
+    "minNumericMarkerSize": 16.104452054794518,
+    "normalHtmlText": 16,
+    "largerHtmlText": 17,
+    "visualKeySymbolsLtrIsolated": true,
+    "independentlyReviewedCaptures": [
+      {
+        "name": "desktop-knee-clinical-step-4.png",
+        "sha256": "c57538b6755d09df9b18b919d530ee2a52b18685d25614931b9a5ca1770b7fca"
+      },
+      {
+        "name": "desktop-light-knee-guide.png",
+        "sha256": "a51536f57f5d10d0ffa76509e58dd9de3baf4193bc21fbefc72cd21d08bce116"
+      },
+      {
+        "name": "phone-light-knee-guide.png",
+        "sha256": "2d4dc7440376942fa0f2ddb96df6a710844fde9eaf14e73e8b5b14c398087bb8"
+      },
+      {
+        "name": "phone-dark-knee-guide.png",
+        "sha256": "39d0c83608c93b79ba64e284543e4adb71fcf8f959420d461c49cd086b13f3ea"
+      },
+      {
+        "name": "phone-arabic-dark-larger-knee-guide.png",
+        "sha256": "048e2301180f56049f5e65841717bf16be47420565c372aa7fa6fd2a8fd08c5a"
+      },
+      {
+        "name": "phone-forced-colors-knee-guide.png",
+        "sha256": "27ede61a4b39f0b104cb9d566b6dbbf98b97ea263cd145b7d88a272071f58e99"
+      }
+    ]
+  },
+  "git": {
+    "readOnlyChecksPassed": true,
+    "indexUnchanged": true,
+    "scopedStagedPaths": []
+  },
+  "evidence": [
+    {
+      "name": "knee-guide-units-521ba74a-2026-10-04T14-18-02-847Z-proof.json",
+      "sha256": "fcd4d4c521f7172f12717c547334496576c180942d5c9331a4e5c04e1431e1a8"
+    },
+    {
+      "name": "knee-guide-units-521ba74a-2026-10-04T14-18-02-847Z.json",
+      "sha256": "ffdc0c1cec59c8d9299fd3389c1e90a7746532d97f254cff1521319dd858650d"
+    },
+    {
+      "name": "knee-muted-layer-regression-units-521ba74a-2026-10-04T14-18-02-847Z-proof.json",
+      "sha256": "e88f5c69b4ed29889dfe52f7c26bb3c7e367a9329e647621019799f7cc5c6a4b"
+    },
+    {
+      "name": "knee-muted-layer-regression-units-521ba74a-2026-10-04T14-18-02-847Z.json",
+      "sha256": "3ede9498d31046dcd6bb1561a38cf15e19456e286de0ceef73be5f6efe685eca"
+    },
+    {
+      "name": "heart-guide-units-521ba74a-2026-10-04T14-18-02-847Z-proof.json",
+      "sha256": "86806a28a1489a6b84c3165266f5273de320b1787b596e855b4103996381b679"
+    },
+    {
+      "name": "heart-guide-units-521ba74a-2026-10-04T14-18-02-847Z.json",
+      "sha256": "6e5464edd5cc4944eb83cc2089b76dce692cbdf2c72372d14502959aaf2572f4"
+    },
+    {
+      "name": "alveolus-guide-units-521ba74a-2026-10-04T14-18-02-847Z-proof.json",
+      "sha256": "a99a8503a83bf7b91fd9e4cc6f0eca34c0620d5e28edc5e019cd0a4e5932e64c"
+    },
+    {
+      "name": "alveolus-guide-units-521ba74a-2026-10-04T14-18-02-847Z.json",
+      "sha256": "78f56e753813eead406262a37562a1e6adf9c27d4d3cc533f675ef6ba3b7eeae"
+    },
+    {
+      "name": "kidney-guide-regression-units-521ba74a-2026-10-04T14-18-02-847Z-proof.json",
+      "sha256": "128c2b70838737157a94bea4830927539bacb70b42aff12f44e9192fed5d8e31"
+    },
+    {
+      "name": "kidney-guide-regression-units-521ba74a-2026-10-04T14-18-02-847Z.json",
+      "sha256": "a77b90471ece18b09d2d57009da20a22b27a1de5a771b19047f04e8a89e75ced"
+    },
+    {
+      "name": "lens-gallery-regression-units-521ba74a-2026-10-04T14-18-02-847Z-proof.json",
+      "sha256": "0f732dececda992bc91f0a08349a1d431241d482a06b54f2dd6c1ba3ad4b5341"
+    },
+    {
+      "name": "lens-gallery-regression-units-521ba74a-2026-10-04T14-18-02-847Z.json",
+      "sha256": "a59854fa5c96a593d9c1642f14297cbbf19beba079c7a63fe752b13e60bb9cd6"
+    },
+    {
+      "name": "scale-navigation-regression-units-521ba74a-2026-10-04T14-18-02-847Z-proof.json",
+      "sha256": "17d5e1644fade87ffdc231a5f3a9bf1d1731edd04342e88993ffd1006bd75f8c"
+    },
+    {
+      "name": "scale-navigation-regression-units-521ba74a-2026-10-04T14-18-02-847Z.json",
+      "sha256": "815f7157dffc0e5ac8a1c4b9b6c3c944bc70e13de89352d2b786f6d60e1002fa"
+    },
+    {
+      "name": "knee-existing-science-units-521ba74a-2026-10-04T14-18-02-847Z-proof.json",
+      "sha256": "173fd86e625f5849d544b861d65f9963d42c83d14f0307fbb1cf3ea7466fe99f"
+    },
+    {
+      "name": "knee-existing-science-units-521ba74a-2026-10-04T14-18-02-847Z.json",
+      "sha256": "91066dbd7c910319f3abf63a97684a46567c563ff07476511958dd47c63931f0"
+    },
+    {
+      "name": "units-521ba74a-2026-10-04T14-18-02-847Z-summary.json",
+      "sha256": "3213e3a701e9ddf8502190cd8515f8f4270fbe9d5e781c86da3f9fc0564f1e8d"
+    },
+    {
+      "name": "source-scope-proof.json",
+      "sha256": "91d0a5e09c288f8df202a70be348642f85f47300641011dd5166ba69653e9a30"
+    },
+    {
+      "name": "catalog-validation.json",
+      "sha256": "dd09406b337e26a160b32fcfeff6bcc1acd8ecefbecdc5315a9e83fd0b8b4d9c"
+    },
+    {
+      "name": "catalog-readback.json",
+      "sha256": "80c85e79fba4f11f90a6cb55bd6617cc99e558b1f453b405884fa60fe07ec4d6"
+    },
+    {
+      "name": "catalog-concurrent-change-audit.json",
+      "sha256": "df9fa6c561103851554da49f6c1bb7fdd885d53b37da08003dad4968d88f4e4c"
+    },
+    {
+      "name": "legacy-assertion-patches.json",
+      "sha256": "824b3393ad6b7a57a6aa52dbc6963ecd08049f77b9d7b3a297c44f130fab210c"
+    },
+    {
+      "name": "fragment-key-refinement.json",
+      "sha256": "ad9bf56961d54c50d395a4ee4b24873eb8ac0c64ef52f36e42f93bcdde08eba3"
+    },
+    {
+      "name": "clinical-order-refinement.json",
+      "sha256": "8a143b81c89dd82ded8f60bbc4c7e1570fa9d4dc9bb6c5266a98496c8baea478"
+    },
+    {
+      "name": "git-read-only-check.json",
+      "sha256": "2642fc6ca2415704a4619b623ee0644b7bddcfb3397361df9faa50ffcb993f4f"
+    },
+    {
+      "name": "README.md",
+      "sha256": "08bbb2f488a24641f64e3d414bb99df7d6def47841ff8f888171f2f01c217eed"
+    },
+    {
+      "name": "runs/browser-521ba74a-01/runner-proof.json",
+      "sha256": "0a61d39fdaa6fbe51ad69f06054a2cf3d385d07077d6a9486f75c8701c5726f1"
+    },
+    {
+      "name": "runs/browser-521ba74a-01/browser-validation.json",
+      "sha256": "82089c8e7612d1695d9283a1b9cfbc39fdf35a8d1f48ad002b6f4439dd2b6962"
+    },
+    {
+      "name": "runs/browser-521ba74a-01/playwright-results.json",
+      "sha256": "beda78b79f3314dc352bcc00040dae8b20ffd66697dba2015964e32b8da1fc72"
+    },
+    {
+      "name": "runs/browser-521ba74a-01/browser-review-summary.json",
+      "sha256": "be96b58be54bb7616862a3a7d6527f9e4f3a5ff84dca1a2b2b3a7b400617de08"
+    },
+    {
+      "name": "runs/browser-521ba74a-01/independent-visual-review.json",
+      "sha256": "20457b88994a881774f6920736604938b384cbcdd18a767764692d9edaf2cd5a"
+    },
+    {
+      "name": "runs/browser-521ba74a-01/catalog-snapshots.json",
+      "sha256": "6419283ce52825051ca6869c68f260fee12c89c0194add91cbe88d06cfa8b280"
+    }
+  ],
+  "completed": true
+}

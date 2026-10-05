@@ -1,0 +1,282 @@
+{
+  "sourceSha256": "13012e008abd6828c6f0c8bda29a1ea929cd2bd247dba73d160b08e8a16c2bef",
+  "prePassSourceSha256": "134f55e1737b8e0a8efadb7b61d7204b252cef9117fbc04526f4b2dc6bf9b064",
+  "mirrorByteIdentical": true,
+  "syntax": "valid",
+  "lineEndings": "LF",
+  "browser": {
+    "newCasesPassed": 15,
+    "previousCasesPassed": 14,
+    "totalChecksPassed": 29,
+    "newCases": [
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "inspection phone shows readable directory shortcuts and previews without credit",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "inspection tablet shows readable directory shortcuts and previews without credit",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "inspection desktop shows readable directory shortcuts and previews without credit",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "inspection embedded-large shows readable directory shortcuts and previews without credit",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "inspection forced-colors shows readable directory shortcuts and previews without credit",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "the record shortcut previews a visible target and inspection requires a separate activation",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "an occluded target can be previewed and cannot earn inspection credit",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "guided directory preview keeps the fixed target until explicit inspection opens its evidence check",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "a hidden guided target remains fixed while the directory explains its visibility",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "a restored draft remains uninspected until its visible directory result is activated",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "the record handoff prioritizes unfinished notes before offering another inspection",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "planning, reflection, and study routes keep their own next actions",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "quiz hides inspection handoff shortcuts",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "timed practical hides inspection handoff shortcuts",
+        "status": "passed"
+      },
+      {
+        "file": "dissection-inspection-handoff.spec.ts",
+        "title": "the record inspection shortcut follows the current guided target and pauses for its evidence check",
+        "status": "passed"
+      }
+    ],
+    "runs": [
+      {
+        "file": "browser-results.json",
+        "stats": {
+          "startTime": "2026-10-02T20:37:58.688Z",
+          "duration": 109214.448,
+          "expected": 14,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      {
+        "file": "guided-browser-results.json",
+        "stats": {
+          "startTime": "2026-10-02T20:49:00.111Z",
+          "duration": 4986.3240000000005,
+          "expected": 1,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      {
+        "file": "previous-browser-results.json",
+        "stats": {
+          "startTime": "2026-10-02T20:41:05.148Z",
+          "duration": 95328.522,
+          "expected": 14,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    ],
+    "guidedFollowupReason": "An additional case checks the record shortcut against the current guided target and verifies that the evidence checkpoint pauses further inspection shortcuts.",
+    "initialGuidedRun": {
+      "file": "guided-browser-initial-results.json",
+      "stats": {
+        "startTime": "2026-10-02T20:44:17.621Z",
+        "duration": 20442.661,
+        "expected": 0,
+        "skipped": 0,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "attachments": [
+        "guided-browser-artifacts/dissection-inspection-hand-27872-uses-for-its-evidence-check-chromium/test-failed-1.png",
+        "guided-browser-artifacts/dissection-inspection-hand-27872-uses-for-its-evidence-check-chromium/error-context.md",
+        "guided-browser-artifacts/dissection-inspection-hand-27872-uses-for-its-evidence-check-chromium/error-context.md",
+        "guided-browser-artifacts/dissection-inspection-hand-27872-uses-for-its-evidence-check-chromium/trace.zip"
+      ],
+      "correction": "The fixture initially expected the record badge during the guided evidence checkpoint. beginGuidedObservation clears the selection and hides the note editor. The corrected case checks that the checkpoint is visible, the note handoff is absent, inspection credit is explicit, and existing notes, confidence, guided targets, and scores are preserved. Product source was unchanged."
+    }
+  },
+  "unit": {
+    "passed": 349,
+    "total": 349,
+    "failed": 0,
+    "runs": [
+      "unit-core-results.json",
+      "unit-broad-results.json"
+    ],
+    "suites": [
+      {
+        "name": "dissection_canvas_loop.test.js",
+        "passed": 3
+      },
+      {
+        "name": "dissection_reference_workbench.test.js",
+        "passed": 149
+      },
+      {
+        "name": "dissection_workspace_bands.test.js",
+        "passed": 106
+      },
+      {
+        "name": "dissection_lab_improvements.test.js",
+        "passed": 91
+      }
+    ]
+  },
+  "layouts": [
+    {
+      "name": "phone",
+      "panels": [
+        {
+          "clientWidth": 318,
+          "scrollWidth": 318,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0
+        },
+        {
+          "clientWidth": 286,
+          "scrollWidth": 286,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0
+        }
+      ],
+      "axeViolations": 0
+    },
+    {
+      "name": "tablet",
+      "panels": [
+        {
+          "clientWidth": 766,
+          "scrollWidth": 766,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0
+        },
+        {
+          "clientWidth": 734,
+          "scrollWidth": 734,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0
+        }
+      ],
+      "axeViolations": 0
+    },
+    {
+      "name": "desktop",
+      "panels": [
+        {
+          "clientWidth": 1178,
+          "scrollWidth": 1178,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0
+        },
+        {
+          "clientWidth": 302,
+          "scrollWidth": 302,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0
+        }
+      ],
+      "axeViolations": 0
+    },
+    {
+      "name": "embedded-large",
+      "panels": [
+        {
+          "clientWidth": 318,
+          "scrollWidth": 318,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 16,
+          "clippedText": 0,
+          "clippedTargets": 0
+        },
+        {
+          "clientWidth": 284,
+          "scrollWidth": 284,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 16,
+          "clippedText": 0,
+          "clippedTargets": 0
+        }
+      ],
+      "axeViolations": 0
+    },
+    {
+      "name": "forced-colors",
+      "panels": [
+        {
+          "clientWidth": 388,
+          "scrollWidth": 388,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0
+        },
+        {
+          "clientWidth": 356,
+          "scrollWidth": 356,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0
+        }
+      ],
+      "axeViolations": 0
+    }
+  ]
+}

@@ -1,0 +1,473 @@
+{
+  "sourceSha256": "bf7568de2f6c38b431665a33aa9f473ed7ac020efb13c1b6be25f3850d1c5d60",
+  "prePassSourceSha256": "13012e008abd6828c6f0c8bda29a1ea929cd2bd247dba73d160b08e8a16c2bef",
+  "mirrorByteIdentical": true,
+  "syntax": "valid",
+  "lineEndings": "LF",
+  "browser": {
+    "newCasesPassed": 19,
+    "previousCasesPassed": 25,
+    "totalChecksPassed": 44,
+    "runs": [
+      {
+        "file": "browser-results.json",
+        "passed": 19,
+        "stats": {
+          "startTime": "2026-10-02T21:17:16.239Z",
+          "duration": 226338.246,
+          "expected": 19,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "checks": [
+          {
+            "title": "directory guidance phone explains a view change and keeps inspection explicit",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "directory guidance tablet explains a view change and keeps inspection explicit",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "directory guidance desktop explains a view change and keeps inspection explicit",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "directory guidance embedded-large explains a view change and keeps inspection explicit",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "directory guidance forced-colors explains a view change and keeps inspection explicit",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "the inspection shortcut adds guidance and focusing the result does not inspect it",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "activating an occluded result retains its local guidance and cannot award credit",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "a hidden prior inspection offers record review and preserves existing evidence",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "a restored hidden draft still requires view recovery and explicit inspection",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "obscured anatomy opens field setup without performing preparation",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "partly exposed anatomy opens field setup without performing preparation",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "guidance follows the current single search result and disappears for broad, empty, or filtered results",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "guided view recovery keeps the fixed target and pauses guidance at the evidence question",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "guided guidance does not suggest a structure outside the fixed target",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "quiz keeps directory recovery guidance unavailable",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "timed practical keeps directory recovery guidance unavailable",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "flashcards keeps directory recovery guidance unavailable",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "comparison keeps directory recovery guidance unavailable",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "eye study keeps directory recovery guidance unavailable",
+            "file": "dissection-directory-guidance.spec.ts",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "previous-inspection-browser-results.json",
+        "passed": 15,
+        "stats": {
+          "startTime": "2026-10-02T21:21:52.941Z",
+          "duration": 109861.159,
+          "expected": 15,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "checks": [
+          {
+            "title": "inspection phone shows readable directory shortcuts and previews without credit",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "inspection tablet shows readable directory shortcuts and previews without credit",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "inspection desktop shows readable directory shortcuts and previews without credit",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "inspection embedded-large shows readable directory shortcuts and previews without credit",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "inspection forced-colors shows readable directory shortcuts and previews without credit",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "the record shortcut previews a visible target and inspection requires a separate activation",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "an occluded target can be previewed and cannot earn inspection credit",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "guided directory preview keeps the fixed target until explicit inspection opens its evidence check",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "a hidden guided target remains fixed while the directory explains its visibility",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "a restored draft remains uninspected until its visible directory result is activated",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "the record handoff prioritizes unfinished notes before offering another inspection",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "planning, reflection, and study routes keep their own next actions",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "quiz hides inspection handoff shortcuts",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "timed practical hides inspection handoff shortcuts",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "the record inspection shortcut follows the current guided target and pauses for its evidence check",
+            "file": "dissection-guidance-previous-inspection.tmp.spec.ts",
+            "status": "passed"
+          }
+        ]
+      },
+      {
+        "file": "previous-directory-browser-results.json",
+        "passed": 10,
+        "stats": {
+          "startTime": "2026-10-02T21:24:02.023Z",
+          "duration": 41466.513999999996,
+          "expected": 10,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        },
+        "checks": [
+          {
+            "title": "directory layout phone is readable and supports navigation without recording progress",
+            "file": "dissection-guidance-previous-directory.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "directory layout tablet is readable and supports navigation without recording progress",
+            "file": "dissection-guidance-previous-directory.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "directory layout embedded-large is readable and supports navigation without recording progress",
+            "file": "dissection-guidance-previous-directory.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "directory layout desktop is readable and supports navigation without recording progress",
+            "file": "dissection-guidance-previous-directory.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "directory layout forced-colors is readable and supports navigation without recording progress",
+            "file": "dissection-guidance-previous-directory.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "keyboard activation inspects a chosen visible result and restores directory focus",
+            "file": "dissection-guidance-previous-directory.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "empty-state actions preserve a query when removing a filter and reset an unsuccessful search",
+            "file": "dissection-guidance-previous-directory.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "activating hidden anatomy offers recovery without selecting it or awarding credit",
+            "file": "dissection-guidance-previous-directory.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "directory controls stay unavailable during assessment",
+            "file": "dissection-guidance-previous-directory.tmp.spec.ts",
+            "status": "passed"
+          },
+          {
+            "title": "keyboard navigation brings the last result of a long layer into view without inspecting it",
+            "file": "dissection-guidance-previous-directory.tmp.spec.ts",
+            "status": "passed"
+          }
+        ]
+      }
+    ]
+  },
+  "unit": {
+    "passed": 349,
+    "failed": 0,
+    "finalWorkerPool": "forks",
+    "suites": [
+      {
+        "name": "dissection_canvas_loop.test.js",
+        "passed": 3
+      },
+      {
+        "name": "dissection_reference_workbench.test.js",
+        "passed": 149
+      },
+      {
+        "name": "dissection_workspace_bands.test.js",
+        "passed": 106
+      },
+      {
+        "name": "dissection_lab_improvements.test.js",
+        "passed": 91
+      }
+    ],
+    "diagnostics": {
+      "initialCore": {
+        "file": "unit-core-initial-results.json",
+        "log": "unit-core-initial.log",
+        "passed": 255,
+        "failed": 3,
+        "reason": "Three eye-reference cases exceeded the existing five-second test deadline.",
+        "recoveredCases": [
+          {
+            "title": "optional 3D eye reference study isolates the eye study from other activities: { compareMode: true }",
+            "status": "passed",
+            "durationMs": 48.84490000000369
+          },
+          {
+            "title": "optional 3D eye reference study maps six reference selections to real sheep-eye structure IDs",
+            "status": "passed",
+            "durationMs": 66.07359999999608
+          },
+          {
+            "title": "3D evidence handoff restores only a modeled return selection: missing",
+            "status": "passed",
+            "durationMs": 31.087100000004284
+          }
+        ]
+      },
+      "isolatedStartupFailures": [
+        {
+          "file": "unit-focused-reference-initial-results.json",
+          "log": "unit-focused-reference-initial.log",
+          "pool": "forks",
+          "testsExecuted": 0
+        },
+        {
+          "file": "unit-focused-reference-attempt-2-results.json",
+          "log": "unit-focused-reference-attempt-2.log",
+          "pool": "forks",
+          "testsExecuted": 0
+        },
+        {
+          "file": "unit-focused-reference-results.json",
+          "log": "unit-focused-reference.log",
+          "pool": "threads",
+          "testsExecuted": 0
+        }
+      ],
+      "resolution": "A fresh full core run passed all258 unchanged cases, including the three initially timed-out cases. The lab suite passed all91 cases. Product source, unit assertions, and test deadlines were unchanged during these runs. The logs do not establish the underlying startup stall."
+    }
+  },
+  "layouts": [
+    {
+      "name": "phone",
+      "phases": [
+        {
+          "phase": "occluded",
+          "clientWidth": 292,
+          "scrollWidth": 292,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0,
+          "axeViolations": 0
+        },
+        {
+          "phase": "visible",
+          "clientWidth": 292,
+          "scrollWidth": 292,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0,
+          "axeViolations": 0
+        }
+      ]
+    },
+    {
+      "name": "tablet",
+      "phases": [
+        {
+          "phase": "occluded",
+          "clientWidth": 740,
+          "scrollWidth": 740,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0,
+          "axeViolations": 0
+        },
+        {
+          "phase": "visible",
+          "clientWidth": 740,
+          "scrollWidth": 740,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0,
+          "axeViolations": 0
+        }
+      ]
+    },
+    {
+      "name": "desktop",
+      "phases": [
+        {
+          "phase": "occluded",
+          "clientWidth": 308,
+          "scrollWidth": 308,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0,
+          "axeViolations": 0
+        },
+        {
+          "phase": "visible",
+          "clientWidth": 308,
+          "scrollWidth": 308,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0,
+          "axeViolations": 0
+        }
+      ]
+    },
+    {
+      "name": "embedded-large",
+      "phases": [
+        {
+          "phase": "occluded",
+          "clientWidth": 292,
+          "scrollWidth": 292,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 16,
+          "clippedText": 0,
+          "clippedTargets": 0,
+          "axeViolations": 0
+        },
+        {
+          "phase": "visible",
+          "clientWidth": 292,
+          "scrollWidth": 292,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 16,
+          "clippedText": 0,
+          "clippedTargets": 0,
+          "axeViolations": 0
+        }
+      ]
+    },
+    {
+      "name": "forced-colors",
+      "phases": [
+        {
+          "phase": "occluded",
+          "clientWidth": 362,
+          "scrollWidth": 362,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0,
+          "axeViolations": 0
+        },
+        {
+          "phase": "visible",
+          "clientWidth": 362,
+          "scrollWidth": 362,
+          "minimumTargetHeight": 48,
+          "minimumFontSize": 14,
+          "clippedText": 0,
+          "clippedTargets": 0,
+          "axeViolations": 0
+        }
+      ]
+    }
+  ]
+}

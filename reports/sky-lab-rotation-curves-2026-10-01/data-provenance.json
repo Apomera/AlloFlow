@@ -1,0 +1,34 @@
+{
+  "retrieved": "2026-10-01",
+  "catalog": "SPARC 2016",
+  "primaryCatalogURL": "https://astroweb.cwru.edu/SPARC/",
+  "files": {
+    "SPARC_Lelli2016c.mrt": {
+      "downloadSHA256": "5aa0501f6b0d881fa579030e315e7b5b6ef561a5bd3a07472f9929c7e5728243",
+      "normalizedTextSHA256": "5aa0501f6b0d881fa579030e315e7b5b6ef561a5bd3a07472f9929c7e5728243"
+    },
+    "MassModels_Lelli2016c.mrt": {
+      "downloadSHA256": "9108994b12cc401b94a1768beca61c53ec354779385c9c9cc571049f3043244c",
+      "normalizedTextSHA256": "fd56b08f93ee6be38bb5b2305a16a2dc57d98ee29034223c5d14ecf8f50759d0"
+    }
+  },
+  "subset": [
+    {
+      "galaxy": "NGC3198",
+      "samples": 43
+    },
+    {
+      "galaxy": "NGC6503",
+      "samples": 31
+    }
+  ],
+  "columns": [
+    "R (kpc)",
+    "Vobs (km/s)",
+    "e_Vobs (km/s)",
+    "Vgas (km/s)",
+    "Vdisk at M/L=1 (km/s)",
+    "Vbulge at M/L=1 (km/s)"
+  ],
+  "verification": "Every included value is checked against the published fixed-width table columns. Content hashes normalize CRLF to LF for portable verification; original download hashes are also retained."
+}

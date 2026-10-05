@@ -1,0 +1,39 @@
+{
+  "reviewedAt": "2026-10-05T00:42:09.808Z",
+  "sourceSha256": "1d85b9949990de9b65108d1de5f500d9bfdd8f246c4b29a4a36e72010c684762",
+  "browserPhase": "browser-contrast-final",
+  "review": "Manual image review by the primary agent and an independent agent, with rendered geometry, contrast and keyboard assertions in Chromium.",
+  "blockingIssues": [],
+  "screenshots": [
+    {
+      "file": "growth-chart-desktop.png",
+      "sha256": "edc18a0df26bbfdd42246be04d4c6680814bcebf1481e96cac0fa096a73506eb",
+      "notes": "At hour 6 the circle and diamond align with the guide and model values. The 0–100 and 0–24 axes align with gridlines. Control 20.7, trial 16.7 and difference -4.0 are legible, and the hour-24 tick stays on one line."
+    },
+    {
+      "file": "growth-chart-hour-24.png",
+      "sha256": "de92b3a445216817ffd14d70b318858ae174ca4c467ec7cdf18abccbada3a068",
+      "notes": "At hour 24 both selected markers are visible at the upper/right boundary, with space around the plot. The guide and selected-hour values agree, and the 24 tick remains on one line."
+    },
+    {
+      "file": "growth-chart-overlap.png",
+      "sha256": "77b65260d11e333edae76ff8845a7ff01fdeb04cac6eae77fb470c9463e920e9",
+      "notes": "At hour zero the coincident curves retain an open circle around the smaller diamond. The guide aligns with the left boundary, both values are 5.0 and the difference is 0.0."
+    },
+    {
+      "file": "growth-chart-phone-320.png",
+      "sha256": "1da413a6577cb3552a87a66a7c853c19e3b4f596f1b07a3c72303f602ea07704",
+      "notes": "Axes, guide and shape markers remain legible at 320px. All hour ticks stay on one line, readout cards stack, and selector focus is visible without horizontal overflow."
+    },
+    {
+      "file": "growth-chart-400-percent.png",
+      "sha256": "966ed1ada5e0a94e5aca99a08836a37f020e6d1d121ebaffe3828c5bd365fd78",
+      "notes": "At 400% enlargement the chart and stacked readout cards fit the narrow view. Labels remain readable and aligned, both marker shapes retain their proportions, and keyboard focus is visible."
+    },
+    {
+      "file": "growth-chart-contrast.png",
+      "sha256": "2f01ddd779ecd170e377cc41644c3c106b849671986489638052f39e2c52a266",
+      "notes": "The white forced-color canvas uses a dark dashed control, system-colored solid trial and dark dashed guide. Curves, outlined marker shapes, text and numeric cards remain visible. Chromium also measures at least 3:1 curve/guide contrast in dark and light forced-color palettes."
+    }
+  ]
+}

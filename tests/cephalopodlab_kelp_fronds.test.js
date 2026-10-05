@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 
 const require = createRequire(import.meta.url), THREE = require('../vendor/three-r128/three.min.js');
+const { restoreOriginalSeagrassSource } = require('./helpers/cephalopod_seagrass_reference.cjs');
 // An explicit candidate path supports pre-integration validation without changing
 // the canonical simulator. Normal unit runs always read the production source.
 const source = readFileSync(process.env.CLH_KELP_TEST_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', 'utf8');
@@ -12,17 +13,29 @@ const a = source.indexOf('function shadeCLHuntPlantFlex('), b = source.indexOf('
 assert.ok(a >= 0 && b > a, 'Expected the live plant factory and flex helpers');
 const math = Object.create(Math);math.random = () => { throw new Error('Plant geometry must not consume dive RNG'); };
 const { build, configure, shade } = new Function('Math', source.slice(a, b) + ';return{build:createCLHuntPlantGeometry,configure:createCLHuntPlantFlex,shade:shadeCLHuntPlantFlex};')(math);
+// Old grass golden remains exact after reversing only the approved strap insertion.
+// The standalone seagrass suite checks the actual live strap geometry independently.
+const grassReferenceSource=restoreOriginalSeagrassSource(source),grassReferenceAt=grassReferenceSource.indexOf('function shadeCLHuntPlantFlex('),grassReferenceEnd=grassReferenceSource.indexOf('function createCLHuntMarineSnowGeometry(',grassReferenceAt);
+assert.ok(grassReferenceAt>=0&&grassReferenceEnd>grassReferenceAt);
+const grassReferenceBuild=new Function('Math',grassReferenceSource.slice(grassReferenceAt,grassReferenceEnd)+';return createCLHuntPlantGeometry;')(math);
 const shader = { vertexShader: THREE.ShaderLib.standard.vertexShader, fragmentShader: THREE.ShaderLib.standard.fragmentShader, uniforms: {} };shade(shader);
 const waveSource = shader.vertexShader.match(/vec2 clPlantWave\(([^)]*)\)\{([^{}]*)\}/);
 assert.ok(waveSource, 'Expected the actual injected flex kernel');
 const wave = new Function('sin', 'cos', 'vec2', 'return function(' + waveSource[1].replace(/float /g, '') + '){' + waveSource[2].replace(/\bfloat /g, 'let ') + '};')(Math.sin, Math.cos, (x, y) => [x, y]);
-const xParameters = shader.vertexShader.match(/clPlantWave\(clPlantT,clPlantMotion\.x\+clPlantInstancePhase,([\d.]+),([\d.]+)\)/);
-const zParameters = shader.vertexShader.match(/clPlantWave\(clPlantT,clPlantMotion\.y\+clPlantInstancePhase\*([\d.]+),([\d.]+),([\d.]+)\)/);
-assert.ok(xParameters && zParameters);
-function pose(point, height, phase, enabled = 1) {
-  const t = Math.max(0, Math.min(1, point.y / Math.max(height, .001)));
-  const x = wave(t, phase, +xParameters[1], +xParameters[2]), z = wave(t, phase * .79, +zParameters[2], +zParameters[3]);
-  return point.clone().add(new THREE.Vector3(x[0] * height * enabled, 0, z[0] * height * enabled));
+const xParameters = shader.vertexShader.match(/vec2 clPlantX=clPlantWave\(clPlantT,([^,]+),([\d.]+),([\d.]+)\);/);
+const zParameters = shader.vertexShader.match(/vec2 clPlantZ=clPlantWave\(clPlantT,([^,]+),([\d.]+),([\d.]+)\);/);
+assert.ok(xParameters && zParameters, 'Expected the actual accepted spatial-pulse wave expressions');
+assert.deepEqual([xParameters[1],zParameters[1]],['clPlantMotion.y+clPlantInstancePhase','clPlantMotion.y+1.7+clPlantInstancePhase*0.73']);
+assert.deepEqual([+xParameters[2],+xParameters[3],+zParameters[2],+zParameters[3]],[1.6,.12,2.1,.035]);
+const livePhase = expression => new Function('phases','instancePhase','return '+expression.replace(/clPlantMotion\.x/g,'phases[0]').replace(/clPlantMotion\.y/g,'phases[1]').replace(/clPlantInstancePhase/g,'instancePhase')+';');
+const xPhase=livePhase(xParameters[1]),zPhase=livePhase(zParameters[1]);
+const pulseDefinition=shader.vertexShader.match(/float clPlantPulse\(([^)]*)\)\{([^{}]*)\}/);
+assert.ok(pulseDefinition, 'Expected the actual accepted shared pulse');
+const pulse=new Function('sin','return function('+pulseDefinition[1].replace(/float /g,'')+'){'+pulseDefinition[2].replace(/\bfloat /g,'let ')+'};')(Math.sin);
+function pose(point, height, phase, enabled = 1, sitePhase = 0) {
+  const t = Math.max(0, Math.min(1, point.y / Math.max(height, .001))),phases=[phase,phase*.79],weight=enabled*pulse(phases[0],sitePhase);
+  const x=wave(t,xPhase(phases,0),+xParameters[2],+xParameters[3]),z=wave(t,zPhase(phases,0),+zParameters[2],+zParameters[3]);
+  return point.clone().add(new THREE.Vector3(x[0]*height*weight,0,z[0]*height*weight));
 }
 function snapshot(geometry, prefix = Infinity) {
   return { ...Object.fromEntries(Object.entries(geometry.attributes).map(([name, attr]) => [name, Array.from(attr.array.slice(0, prefix * attr.itemSize))])), index: Array.from(geometry.index.array.slice(0, prefix === 57 ? 216 : undefined)), ...(prefix === Infinity ? { metadata: geometry.userData, box: [geometry.boundingBox.min.toArray(), geometry.boundingBox.max.toArray()], sphere: [geometry.boundingSphere.center.toArray(), geometry.boundingSphere.radius] } : {}) };
@@ -30,10 +43,10 @@ function snapshot(geometry, prefix = Infinity) {
 const hash = value => createHash('sha256').update(JSON.stringify(value)).digest('hex');
 
 describe('Cephalopod Hunter attached kelp fronds', () => {
-  it('preserves every original grass and central-kelp attribute while adding a bounded finite topology', () => {
+  it('checks original grass goldens through the exact approved-insertion reversal and preserves live central-kelp attributes', () => {
     const grass = [], central = [];
     for (let variant = 0; variant < 80; variant++) {
-      const geometry = build(THREE, 'grass', .6 + variant / 79 * 1.3, variant);
+      const geometry = grassReferenceBuild(THREE, 'grass', .6 + variant / 79 * 1.3, variant);
       try { grass.push(snapshot(geometry));assert.equal(geometry.attributes.position.count, 33);assert.equal(geometry.index.count / 3, 40); } finally { geometry.dispose(); }
     }
     for (const height of [5, 7, 9]) for (let variant = 0; variant < 25; variant++) {
@@ -104,7 +117,7 @@ describe('Cephalopod Hunter attached kelp fronds', () => {
         assert.equal(geometry.boundingBox.min.x, restBox.min.x - height * .12);assert.equal(geometry.boundingBox.max.x, restBox.max.x + height * .12);
         assert.equal(geometry.boundingBox.min.z, restBox.min.z - height * .035);assert.equal(geometry.boundingBox.max.z, restBox.max.z + height * .035);
         assert.equal(geometry.boundingBox.min.y, restBox.min.y);assert.equal(geometry.boundingBox.max.y, restBox.max.y);
-        assert.deepEqual(motion.value.toArray(), [0, 0, height, 0]);assert.equal(material.customProgramCacheKey(), 'cl-plant-flex-v15');
+        assert.deepEqual(motion.value.toArray(), [0, 0, height, 0]);assert.equal(material.customProgramCacheKey(), 'cl-plant-flex-v28-water-pulse');
         mesh.position.set(17, -48, 23);mesh.rotation.y = .83;mesh.updateMatrixWorld(true);
         for (let phase = 0; phase < Math.PI * 2; phase += .41) {
           for (let vertex = 0; vertex < p.count; vertex++) {

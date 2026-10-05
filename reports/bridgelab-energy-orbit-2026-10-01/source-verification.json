@@ -1,0 +1,20 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sourceSha256": "125cc8221de044567fc5f3d311f09bb66aa67bd31439487c57e044808f13eff1",
+  "matchingEnglishKeys": 1100,
+  "coveredUnitFiles": 5,
+  "unitChecksPassed": 170,
+  "browserChecksPassed": 16,
+  "totalDistinctChecksPassed": 186,
+  "unitReports": [
+    "unit-results.json",
+    "unit-followup-results.json"
+  ],
+  "browserReports": [
+    "browser-results.json",
+    "browser-refinement-results.json",
+    "browser-final-results.json",
+    "browser-explanation-results.json"
+  ]
+}

@@ -1,0 +1,80 @@
+{
+  "startedAt": "2026-10-04T01:09:30.699Z",
+  "completedAt": "2026-10-04T01:17:39.777Z",
+  "sameSynchronousTailwindCommand": true,
+  "command": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app\\node_modules\\tailwindcss\\lib\\cli.js",
+    "-i",
+    "C:\\Users\\cabba\\AppData\\Local\\Temp\\maine-sld-browser-GENvV7\\input.css",
+    "-o",
+    "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\save-and-reflection-validation\\preparation-readiness-02\\preparation-readiness.css",
+    "--content",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\admin_hub_module.js,C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\maine_sld_practice_module.js,C:\\Users\\cabba\\AppData\\Local\\Temp\\maine-sld-browser-GENvV7\\host.html"
+  ],
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\desktop\\web-app",
+  "cliDurationMs": 472883.937,
+  "listenDurationMs": 2359.2464,
+  "inputHashes": {
+    "adminHub": "9e9f9641a17436d9430bc901adecc580f40a92119a1f44f3db862762c4037097",
+    "module": "8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a",
+    "input": "cc1a7ad0d019ddb1d32d0ecb588ba0ac26ce41d8625dd6c366348b25f83a28ec",
+    "html": "078937f26696db4b8fa0648f503db50f64a93d400418021b95f9c731c2d17b24"
+  },
+  "outputBytes": 70761,
+  "outputSha256": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163",
+  "priorOutputSha256": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163",
+  "httpChecks": [
+    {
+      "path": "/__host",
+      "status": 200,
+      "bytes": 7637,
+      "sha256": "078937f26696db4b8fa0648f503db50f64a93d400418021b95f9c731c2d17b24",
+      "durationMs": 12234.0077
+    },
+    {
+      "path": "/__tw.css",
+      "status": 200,
+      "bytes": 70761,
+      "sha256": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163",
+      "durationMs": 6631.9831
+    },
+    {
+      "path": "/desktop/web-app/node_modules/react/umd/react.production.min.js",
+      "status": 200,
+      "bytes": 10751,
+      "sha256": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+      "durationMs": 7105.1318
+    },
+    {
+      "path": "/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "status": 200,
+      "bytes": 131835,
+      "sha256": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+      "durationMs": 7108.8037
+    },
+    {
+      "path": "/app_styles_module.js",
+      "status": 200,
+      "bytes": 303159,
+      "sha256": "18a7f13e4eb4453badea9db8c7afefba0717f39ccc7c34f6e4fa7cc28acddc8d",
+      "durationMs": 7033.3546
+    },
+    {
+      "path": "/admin_hub_module.js",
+      "status": 200,
+      "bytes": 31357,
+      "sha256": "9e9f9641a17436d9430bc901adecc580f40a92119a1f44f3db862762c4037097",
+      "durationMs": 6318.9081
+    },
+    {
+      "path": "/maine_sld_practice_module.js",
+      "status": 200,
+      "bytes": 187182,
+      "sha256": "8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a",
+      "durationMs": 5272.4006
+    }
+  ],
+  "noBrowserNoAssertionsNoBuildNoAxe": true,
+  "original120sHookTimeoutUnchanged": true,
+  "ready": false
+}

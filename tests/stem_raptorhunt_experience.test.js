@@ -299,7 +299,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('attitudeState');
     expect(text).toContain("targetFocusHalo.name = 'raptor-target-focus-halo'");
     expect(text).toContain('function updateTargetFocusHalo');
-    expect(text).toContain('updateTargetFocusHalo(targetInfo, nextTargetState, now)');
+    expect(text).toContain('updateTargetFocusHalo(targetInfo, targetVisualState, now)');
     expect(text).toContain('raptorFlightState');
     expect(text).toContain('function updateFlightState(nextState)');
     expect(text).toContain("thermal: 'Thermal'");
@@ -384,7 +384,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(text).toContain('updateWingtipVortices(now);');
     expect(text).toContain('updateWaterWakes(now,dt);');
     expect(text).toContain('updateTouchdownFx(dt);');
-    expect(text).toContain('updateTargetGuide(targetInfo, nextTargetState, now);');
+    expect(text).toContain('updateTargetGuide(targetInfo, targetVisualState, now);');
     expect(text).toContain('updateBiomeLandmarks(now);');
     expect(text).toContain('updateAltitudeLighting();');
     expect(text).toMatch(/thermalLiftParticles\.visible = !_rmFX && thermalActive/);
@@ -3209,8 +3209,8 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain("pm2.animation.kind === 'fish'");
     expect(init).toContain('pm2.animation.wings.forEach');
     expect(init).toContain('pm2.animation.legs.forEach');
-    // a3a2b8473 moved the beacon pulse into target feedback; it still holds still under reduced motion.
-    expect(init).toContain('pm2.beaconCap.scale.setScalar(_rmFX ? 1 : 0.6 + Math.sin(');
+    // Target feedback keeps the beacon steady during the strike window and reduced motion.
+    expect(init).toContain("pm2.beaconCap.scale.setScalar(_rmFX || nextStrikeStage==='window' || nextStrikeStage==='throw' ? 1 : 0.9 + Math.sin(");
   });
 
   it('animates each raptor family with distinct wing and tail mechanics', () => {
@@ -3311,7 +3311,8 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).toContain("'ALIGN ' + _alignPct + '% - ' + targetCorrectionLabel(nextTargetCorrection) +");
     expect(init).toContain('reticle.dataset.lockState = nextTargetState');
     expect(init).toContain('var targetPatch = { targetState: nextTargetState, targetHint: nextTargetHint,');
-    expect(init).toContain('targetAlign: nextTargetAlign, targetRange: nextTargetRange };');
+    expect(init).toContain('targetAlign: nextTargetAlign, targetRange: nextTargetRange, strikeStage: nextStrikeStage };');
+    expect(text).toContain("'data-strike-stage': simUI.strikeStage || 'approach'");
     expect(init).toContain('targetPatch.targetAnnouncement =');
   });
 
@@ -3524,7 +3525,7 @@ describe('Raptor Hunt 3D interaction and responsive visual regressions', () => {
     expect(init).not.toContain('strikeFeedbackEl');
     expect(init).toContain("var impactFovKick = (!_rmFX && camMode !== 'fp' && strikeFeedbackActive)");
     expect(init).toContain("var impactCameraPush = (!_rmFX && strikeFeedbackActive)");
-    expect(init).toContain('var talonStrikeAmount = _rmFX || raptor.landed || raptor.crashed ? 0 : talonThrow.active ? 1 : strikeFeedbackActive');
+    expect(init).toContain('var talonStrikeAmount = raptor.landed || raptor.crashed ? 0 : carriedPrey ? 1 : _rmFX ? 0 : talonThrow.active ? 1');
     expect(init).toContain("targetInfo.canStrike && !strikeReady ? 'recovering'");
     expect(init).toContain('var STRIKE_FX_SLOT_COUNT = 4');
     expect(init).toContain('var STRIKE_FX_PER_SLOT = 28');
@@ -3553,7 +3554,7 @@ describe('Raptor Hunt configurable controls and key guide', () => {
     expect(table.match(/t: 'assist'/g)).toHaveLength(4);
   });
   it('routes keyboard input through the active preset and ignores unbound keys', () => {
-    expect(text).toContain("var action = controlScheme.keys[raw];\n          if (!action) return;");
+    expect(text).toMatch(/var action = controlScheme\.keys\[raw\];\r?\n\s+if \(!action\) return;/);
     expect(text).toContain('return action && RAPTOR_ACTION_KEYS[action] ? RAPTOR_ACTION_KEYS[action] : raw;');
     expect(text).toContain("} else if (action === 'controls' && value) {");
     expect(text).toContain("} else if (action === 'keyGuide' && value) {");
@@ -3565,7 +3566,7 @@ describe('Raptor Hunt configurable controls and key guide', () => {
   });
   it('renders a contextual key guide that refreshes on target, pause, and landing changes', () => {
     expect(text).toContain("keyGuide.className = 'rh-flight-key-guide';");
-    expect(text).toContain('if (targetStateChanged || targetCorrectionChanged) refreshKeyGuide();');
+    expect(text).toContain('if (targetStateChanged || targetCorrectionChanged || strikeStageChanged) refreshKeyGuide();');
     expect(text).toContain('if (raptor.landed !== wasLanded || raptor.crashed !== wasCrashed) refreshKeyGuide();');
     expect(text).toContain("'data-raptor-key-guide-toggle': 'true'");
     expect(text).toContain("'data-raptor-control-scheme-select': 'true'");

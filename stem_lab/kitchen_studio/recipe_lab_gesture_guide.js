@@ -1,12 +1,22 @@
 /* Observes a gesture; never advances time or commits cooking actions. */
 (function(root){
   'use strict';
+  var TimerWinding=root.KitchenTimerWinding||(typeof require==='function'?require('./recipe_lab_timer_winding.js'):null);
   function fraction(n){return Number.isFinite(n)?Math.max(0,Math.min(1,n)):0;}
   function near(a,b,r){return !!a&&!!b&&Number.isFinite(a.x)&&Number.isFinite(a.z)&&Math.hypot(a.x-b.x,a.z-b.z)<r;}
   function describe(s,g,c){
     if(!g)return null;c=c||{};var R=root.KitchenRecipes,p=g.current,pan=R.panPosition(s),pot={x:-1.1,z:-.45},jug={x:-1.2,z:1.06},a={title:'Working in the kitchen',phase:'move',instruction:'Move deliberately, then release.',detail:'Cooking time is paused while you handle a tool.',progress:null,progressLabel:'Gesture progress',target:null,over:false,invalid:false};
     function set(title,phase,instruction,detail){a.title=title;a.phase=phase;a.instruction=instruction;a.detail=detail;}
     function destination(hit,over){a.target=hit;a.over=!!over;}
+    if(g.kind==='timer-wind')return TimerWinding.guidance(s,g,c.timers,c.locked);if(g.kind==='pan-choice')return root.KitchenPanChoice.guidance(s,g);
+    if(g.kind==='handoff')return root.KitchenIngredientHandoff.guidance(s,g);
+    if(g.kind==='fresh-water')return root.KitchenFreshWater.guidance(s,g);
+    if(g.kind==='probe')return root.KitchenThermometer.guidance(s,g);
+    if(g.kind==='lid')return root.KitchenLid.guidance(s,g);
+    if(g.kind==='rinse')return root.KitchenRinsing.guidance(s,g);
+    if(g.kind==='wash')return root.KitchenHandwashing.guidance(s,g);
+    if(g.kind==='dry-pasta')return root.KitchenDryPasta.guidance(s,g);
+    if(g.kind==='knife-rest')return root.KitchenCuttingBench.guidance(s,g);
     if(g.kind==='sauce-check'){var t=g.trace;a.invalid=t.invalid;a.progress=t.invalid?0:t.progress;set('Read the sauce trail',t.invalid?'retry':root.KitchenSauceCheck.complete(t)?'release':'draw',t.invalid?'Release to cancel. Keep one steady path across the pan.':root.KitchenSauceCheck.complete(t)?'Release to lift the spoon and inspect.':'Draw steadily right through the sauce.','Watch the track close and compare the coating after releasing. No cooking time passes during this check.');a.progressLabel='Spoon drawn across the pan';destination({pan:true},!t.invalid);
     }else if(g.kind==='turn'){var t=g.trace,piece=root.KitchenTurning.reading(s,g.index),phases={slide:0,lift:1,turn:2,lower:3,release:4},steps={slide:'Slide right to tuck the spatula underneath.',lift:'Lift upward to raise the slice.',turn:'Sweep left to turn the lifted slice.',lower:'Lower the turned slice back into the pan.',release:'Release to record the completed turn.'};a.invalid=t.invalid;set('Turn slice '+(g.index+1),t.invalid?'retry':t.phase,t.invalid?'Release to cancel. Follow one direction at each step.':steps[t.phase],piece?'Before this turn · exposed face: '+piece.top+' · contact face: '+piece.bottom+'. Turning preserves their cooking history.':'The clock stays paused during this movement.');a.progress=t.invalid?0:(phases[t.phase]+t.progress)/4;a.progressLabel='Slide, lift, turn and lower';destination({piece:g.index},!t.invalid);
     }else if(g.kind==='oil-bottle'){var i=root.KitchenOil.info(s,c.oilAmount||0,false),flow=g.trace.phase==='pour'&&g.trace.tilt>=18;set('Measure olive oil',g.trace.phase==='carry'?'carry':flow?'pour':i.exact?'ready':i.amount>i.goal?'remeasure':'level',g.trace.phase==='carry'?'Carry the bottle over the marked cup.':flow?'Lift back to level the bottle and stop the flow.':i.exact?'Release the level bottle, then pick up the cup.':i.amount>i.goal?'Release the bottle. Return the cup to remeasure.':'Pull down gently to tilt; release to put the bottle down.',i.amount+' mL in the practice cup · recipe target '+i.goal+' mL.');a.progress=fraction(i.amount/i.goal);a.progressLabel='Oil measured toward recipe target';destination({oilCup:true},g.trace.phase==='pour');

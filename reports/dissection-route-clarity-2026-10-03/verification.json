@@ -1,0 +1,1533 @@
+{
+  "generatedAt": "2026-10-04T03:21:23.720Z",
+  "sourceSha256": "c947bbdf3f4e2d2ead29a5498efbde95e3823e8b17fe8fc08e2b451928dc20a1",
+  "specSha256": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8",
+  "baselineSha256": "2a2ff5929bdc6a54d080b973b8588fc1e1a5f5438cebce25c789859405afba18",
+  "initialSourceSha256": "b1146b11f3199cf97611281ea4e555ad21e723ad9950f0061f43effd9a8bd02e",
+  "sourceIntegrity": {
+    "mirrorsIdentical": true,
+    "parsePassed": true,
+    "lf": true,
+    "recordedEdits": 6,
+    "reversedSha256": "2a2ff5929bdc6a54d080b973b8588fc1e1a5f5438cebce25c789859405afba18",
+    "outsideCssSha256": "6615af6f9d779af6b956c4f3ed93c0b27d9f700bd89dbf97cc6ef263e95218c8",
+    "cssOnly": true
+  },
+  "browser": {
+    "startTime": "2026-10-04T03:14:02.709Z",
+    "duration": 47477.119,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0,
+    "exitCode": 0,
+    "workers": 1,
+    "retries": 0,
+    "video": "off",
+    "cases": [
+      {
+        "id": "3e8431d04f6ddfcc4472-6b64a1e029cdc8e6900c",
+        "title": "route rail phone shows readable controls and preserved workspace detail",
+        "file": "dissection-route-clarity.spec.ts",
+        "line": 36,
+        "duration": 4762
+      },
+      {
+        "id": "3e8431d04f6ddfcc4472-009195ac8f67897bf303",
+        "title": "route rail tablet shows readable controls and preserved workspace detail",
+        "file": "dissection-route-clarity.spec.ts",
+        "line": 36,
+        "duration": 5098
+      },
+      {
+        "id": "3e8431d04f6ddfcc4472-151385a32595f7730434",
+        "title": "route rail desktop shows readable controls and preserved workspace detail",
+        "file": "dissection-route-clarity.spec.ts",
+        "line": 36,
+        "duration": 4662
+      },
+      {
+        "id": "3e8431d04f6ddfcc4472-d48dc5b40b633ad240b9",
+        "title": "route rail embedded-medium shows readable controls and preserved workspace detail",
+        "file": "dissection-route-clarity.spec.ts",
+        "line": 36,
+        "duration": 4383
+      },
+      {
+        "id": "3e8431d04f6ddfcc4472-0e59e34913061b2481fe",
+        "title": "route rail embedded-large shows readable controls and preserved workspace detail",
+        "file": "dissection-route-clarity.spec.ts",
+        "line": 36,
+        "duration": 4390
+      },
+      {
+        "id": "3e8431d04f6ddfcc4472-584ea9bb8144126ae416",
+        "title": "route rail forced-colors shows readable controls and preserved workspace detail",
+        "file": "dissection-route-clarity.spec.ts",
+        "line": 36,
+        "duration": 6788
+      },
+      {
+        "id": "3e8431d04f6ddfcc4472-7bd43f9791c51801e800",
+        "title": "route rail reflows without activating another learning route",
+        "file": "dissection-route-clarity.spec.ts",
+        "line": 65,
+        "duration": 2877
+      },
+      {
+        "id": "3e8431d04f6ddfcc4472-0c4b0dc9aab964c2ba95",
+        "title": "route rail keyboard activation starts Guided investigation with saved evidence intact",
+        "file": "dissection-route-clarity.spec.ts",
+        "line": 70,
+        "duration": 2885
+      },
+      {
+        "id": "3e8431d04f6ddfcc4472-529b8f2c414b6030ad1f",
+        "title": "route rail keeps practical route locks readable and keyboard navigation skips disabled routes",
+        "file": "dissection-route-clarity.spec.ts",
+        "line": 77,
+        "duration": 2503
+      },
+      {
+        "id": "3e8431d04f6ddfcc4472-f5bd34c88c4ac41a5f53",
+        "title": "route rail retains full labels with increased text spacing",
+        "file": "dissection-route-clarity.spec.ts",
+        "line": 85,
+        "duration": 3600
+      }
+    ]
+  },
+  "units": {
+    "total": 197,
+    "passed": 197,
+    "failed": 0,
+    "pending": 0,
+    "success": true,
+    "exitCode": 0
+  },
+  "baseline": {
+    "captures": 6,
+    "behavioralCasesCounted": 0,
+    "temporaryRendererSha256": "2a2ff5929bdc6a54d080b973b8588fc1e1a5f5438cebce25c789859405afba18"
+  },
+  "history": {
+    "initial": {
+      "startTime": "2026-10-04T03:08:22.306Z",
+      "duration": 141170.819,
+      "expected": 9,
+      "skipped": 0,
+      "unexpected": 1,
+      "flaky": 0
+    },
+    "final": {
+      "startTime": "2026-10-04T03:14:02.709Z",
+      "duration": 47477.119,
+      "expected": 10,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    }
+  },
+  "screenshots": {
+    "captureOnlyStyle": ".diss-next-action {position:static!important;}"
+  },
+  "measurements": [
+    {
+      "name": "phone",
+      "available": 320,
+      "largeText": false,
+      "before": {
+        "client": 318,
+        "scroll": 318,
+        "width": 320,
+        "routeColumns": 2,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 50,
+            "left": 8.1875,
+            "right": 157.203125,
+            "top": 1236.296875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 50,
+            "left": 162.796875,
+            "right": 311.8125,
+            "top": 1236.296875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 44,
+            "left": 8.1875,
+            "right": 157.203125,
+            "top": 1294.890625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 50,
+            "left": 162.796875,
+            "right": 311.8125,
+            "top": 1291.890625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 11.52,
+            "height": 40,
+            "left": 141.625,
+            "right": 221.734375,
+            "top": 1352.484375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 11.52,
+            "height": 40,
+            "left": 225.734375,
+            "right": 306.8125,
+            "top": 1352.484375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "after": {
+        "client": 318,
+        "scroll": 318,
+        "width": 320,
+        "routeColumns": 1,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 49.1875,
+            "left": 10.59375,
+            "right": 309.40625,
+            "top": 1238.703125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 309.40625,
+            "top": 1295.890625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 309.40625,
+            "top": 1351.890625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 309.40625,
+            "top": 1407.890625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 14,
+            "height": 48,
+            "left": 16.390625,
+            "right": 156.796875,
+            "top": 1469.6875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 14,
+            "height": 48,
+            "left": 163.1875,
+            "right": 303.609375,
+            "top": 1469.6875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "inventoryIdentical": true,
+      "beforeHeight": 178,
+      "afterHeight": 307,
+      "images": {
+        "before": "04937ff381d278195aa8cc6d1a03f77ae4dc8b463b36b4be3e25d39abc49d106",
+        "after": "c3ac6570c55c69e9a40e3251608a24ebc82a3faf431032dfd0e0cbdc69f56ee1",
+        "focus": "4558f1a0e637a7e1f90e3a8da0c97c35aa99aed730f6db954869aacc4d55b352"
+      },
+      "accessibility": {
+        "violations": 0,
+        "incomplete": [],
+        "passes": 11
+      }
+    },
+    {
+      "name": "tablet",
+      "available": 768,
+      "largeText": false,
+      "before": {
+        "client": 766,
+        "scroll": 766,
+        "width": 768,
+        "routeColumns": 4,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 44,
+            "left": 8.1875,
+            "right": 197.96875,
+            "top": 718.375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 44,
+            "left": 205.96875,
+            "right": 409.59375,
+            "top": 718.375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 44,
+            "left": 417.59375,
+            "right": 554.234375,
+            "top": 718.375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 44,
+            "left": 562.234375,
+            "right": 759.8125,
+            "top": 718.375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 11.52,
+            "height": 40,
+            "left": 589.625,
+            "right": 669.734375,
+            "top": 775.375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 11.52,
+            "height": 40,
+            "left": 673.734375,
+            "right": 754.8125,
+            "top": 775.375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "after": {
+        "client": 766,
+        "scroll": 766,
+        "width": 768,
+        "routeColumns": 2,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 49.1875,
+            "left": 10.59375,
+            "right": 380,
+            "top": 720.78125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 49.1875,
+            "left": 388,
+            "right": 757.40625,
+            "top": 720.78125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 380,
+            "top": 777.96875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 48,
+            "left": 388,
+            "right": 757.40625,
+            "top": 777.96875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 14,
+            "height": 48,
+            "left": 411.203125,
+            "right": 578.203125,
+            "top": 839.765625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 14,
+            "height": 48,
+            "left": 584.59375,
+            "right": 751.609375,
+            "top": 839.765625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "inventoryIdentical": true,
+      "beforeHeight": 119,
+      "afterHeight": 195,
+      "images": {
+        "before": "3951b5cb939c06f4c395b39b72f7db8f4a062010af427e2dd2d6b0007854876d",
+        "after": "cd0655675b089c8b00607df06906e6e264aef4bf79fc58509954bc2996984496",
+        "focus": "e5466686979b11f4c44bf5092f5fbe09d14eac67d7ca2e89924ae4b9b416b8d1"
+      },
+      "accessibility": {
+        "violations": 0,
+        "incomplete": [],
+        "passes": 11
+      }
+    },
+    {
+      "name": "desktop",
+      "available": 1180,
+      "largeText": false,
+      "before": {
+        "client": 1178,
+        "scroll": 1178,
+        "width": 1180,
+        "routeColumns": 4,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 44,
+            "left": 8.1875,
+            "right": 255.171875,
+            "top": 652.578125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 44,
+            "left": 263.171875,
+            "right": 524,
+            "top": 652.578125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 44,
+            "left": 532,
+            "right": 725.84375,
+            "top": 652.578125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 44,
+            "left": 733.84375,
+            "right": 988.625,
+            "top": 652.578125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 11.52,
+            "height": 40,
+            "left": 1001.625,
+            "right": 1081.734375,
+            "top": 654.578125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 11.52,
+            "height": 40,
+            "left": 1085.734375,
+            "right": 1166.8125,
+            "top": 654.578125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "after": {
+        "client": 1178,
+        "scroll": 1178,
+        "width": 1180,
+        "routeColumns": 4,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 59.59375,
+            "left": 10.59375,
+            "right": 236.296875,
+            "top": 651.984375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 59.59375,
+            "left": 244.296875,
+            "right": 470,
+            "top": 651.984375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 59.59375,
+            "left": 478,
+            "right": 703.703125,
+            "top": 651.984375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 59.59375,
+            "left": 711.703125,
+            "right": 937.40625,
+            "top": 651.984375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 14,
+            "height": 48,
+            "left": 951.203125,
+            "right": 1054.203125,
+            "top": 657.78125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 14,
+            "height": 48,
+            "left": 1060.59375,
+            "right": 1163.609375,
+            "top": 657.78125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "inventoryIdentical": true,
+      "beforeHeight": 67,
+      "afterHeight": 82,
+      "images": {
+        "before": "2dfc5e3a74abda0301875000b1762b58960ad5fe1cf7d4eb2f7d673825237e25",
+        "after": "833ce31829b8c24b75c34725537fd026838be7d3422ccd0f3926098321c27f0b",
+        "focus": "593db17fc773367bd333d2e6407b8c74b6c517a00f3a2dabd48ce7c8d316f582"
+      },
+      "accessibility": {
+        "violations": 0,
+        "incomplete": [],
+        "passes": 11
+      }
+    },
+    {
+      "name": "embedded-medium",
+      "available": 520,
+      "largeText": false,
+      "before": {
+        "client": 518,
+        "scroll": 518,
+        "width": 520,
+        "routeColumns": 3,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 44,
+            "left": 8.1875,
+            "right": 183.828125,
+            "top": 926.140625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 44,
+            "left": 191.828125,
+            "right": 381.3125,
+            "top": 926.140625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 44,
+            "left": 389.3125,
+            "right": 511.8125,
+            "top": 926.140625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 44,
+            "left": 8.1875,
+            "right": 328.625,
+            "top": 981.140625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 11.52,
+            "height": 40,
+            "left": 341.625,
+            "right": 421.734375,
+            "top": 983.140625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 11.52,
+            "height": 40,
+            "left": 425.734375,
+            "right": 506.8125,
+            "top": 983.140625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "after": {
+        "client": 518,
+        "scroll": 518,
+        "width": 520,
+        "routeColumns": 2,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 49.1875,
+            "left": 10.59375,
+            "right": 256,
+            "top": 928.546875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 49.1875,
+            "left": 264,
+            "right": 509.40625,
+            "top": 928.546875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 256,
+            "top": 985.734375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 48,
+            "left": 264,
+            "right": 509.40625,
+            "top": 985.734375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 14,
+            "height": 48,
+            "left": 163.203125,
+            "right": 330.203125,
+            "top": 1047.53125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 14,
+            "height": 48,
+            "left": 336.59375,
+            "right": 503.609375,
+            "top": 1047.53125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "inventoryIdentical": true,
+      "beforeHeight": 120,
+      "afterHeight": 195,
+      "images": {
+        "before": "f603528514b9ba75d34d73a15aa72175a1af5ced1e3fb9725a6265d574751558",
+        "after": "b68e3b8e85892bdf3c921813063e90e79752757478454e204894b1e8f17a6e2f",
+        "focus": "0c3279a1ba1b71e4f1ddb43c04516d90da6e125970e7c0508e70b699883288e6"
+      },
+      "accessibility": {
+        "violations": 0,
+        "incomplete": [],
+        "passes": 11
+      }
+    },
+    {
+      "name": "embedded-large",
+      "available": 320,
+      "largeText": true,
+      "before": {
+        "client": 318,
+        "scroll": 318,
+        "width": 320,
+        "routeColumns": 2,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 44,
+            "left": 8.1875,
+            "right": 311.8125,
+            "top": 1295.34375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 44,
+            "left": 8.1875,
+            "right": 189.484375,
+            "top": 1347.34375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 44,
+            "left": 197.484375,
+            "right": 311.8125,
+            "top": 1347.34375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 44,
+            "left": 8.1875,
+            "right": 311.8125,
+            "top": 1399.34375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 16,
+            "height": 41.34375,
+            "left": 98.421875,
+            "right": 199.953125,
+            "top": 1456.34375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 16,
+            "height": 41.34375,
+            "left": 203.953125,
+            "right": 306.8125,
+            "top": 1456.34375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "after": {
+        "client": 318,
+        "scroll": 318,
+        "width": 320,
+        "routeColumns": 1,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 49.1875,
+            "left": 10.59375,
+            "right": 309.40625,
+            "top": 1297.75,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 309.40625,
+            "top": 1354.9375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 309.40625,
+            "top": 1410.9375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 309.40625,
+            "top": 1466.9375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 16,
+            "height": 49.1875,
+            "left": 16.390625,
+            "right": 156.796875,
+            "top": 1528.734375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 16,
+            "height": 49.1875,
+            "left": 163.1875,
+            "right": 303.609375,
+            "top": 1528.734375,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "inventoryIdentical": true,
+      "beforeHeight": 224,
+      "afterHeight": 308,
+      "images": {
+        "before": "66dd7c5f57becc0e28181fa11705c9e797d60d7ea4fdb9b15ee2cef045451e65",
+        "after": "cdbe4d98e16f470ece806f867bb818a370549cda0b4c96ea584b178d190c2ba5",
+        "focus": "cd3ec8b2f48a07e6036a7a97779f55693efafadd6bc88b885c9e13295277f419"
+      },
+      "accessibility": {
+        "violations": 0,
+        "incomplete": [],
+        "passes": 11
+      }
+    },
+    {
+      "name": "forced-colors",
+      "available": 390,
+      "largeText": false,
+      "before": {
+        "client": 388,
+        "scroll": 388,
+        "width": 390,
+        "routeColumns": 2,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 44,
+            "left": 8.1875,
+            "right": 192.203125,
+            "top": 1023.125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 44,
+            "left": 197.796875,
+            "right": 381.8125,
+            "top": 1023.125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 44,
+            "left": 8.1875,
+            "right": 192.203125,
+            "top": 1072.71875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 44,
+            "left": 197.796875,
+            "right": 381.8125,
+            "top": 1072.71875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 11.52,
+            "height": 40,
+            "left": 211.625,
+            "right": 291.734375,
+            "top": 1127.3125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 11.52,
+            "height": 40,
+            "left": 295.734375,
+            "right": 376.8125,
+            "top": 1127.3125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "after": {
+        "client": 388,
+        "scroll": 388,
+        "width": 390,
+        "routeColumns": 1,
+        "controls": [
+          {
+            "text": "🔎 Procedure practice",
+            "font": 16,
+            "height": 49.1875,
+            "left": 10.59375,
+            "right": 379.40625,
+            "top": 1025.53125,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧭 Guided investigation",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 379.40625,
+            "top": 1082.71875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "📚 Study tools",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 379.40625,
+            "top": 1138.71875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "🧠 Practice assessment",
+            "font": 16,
+            "height": 48,
+            "left": 10.59375,
+            "right": 379.40625,
+            "top": 1194.71875,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Essentials",
+            "font": 14,
+            "height": 48,
+            "left": 16.390625,
+            "right": 191.796875,
+            "top": 1256.515625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 3,
+            "underline": true,
+            "pressed": true,
+            "disabled": false,
+            "opacity": 1
+          },
+          {
+            "text": "Advanced",
+            "font": 14,
+            "height": 48,
+            "left": 198.1875,
+            "right": 373.609375,
+            "top": 1256.515625,
+            "clipped": false,
+            "nowrap": false,
+            "border": 1,
+            "underline": false,
+            "pressed": false,
+            "disabled": false,
+            "opacity": 1
+          }
+        ]
+      },
+      "inventoryIdentical": true,
+      "beforeHeight": 167,
+      "afterHeight": 307,
+      "images": {
+        "before": "614688f1ab48c5f3e5e66efcf9ee049c3544d3e309668afd3aa44dd4a5dbd12b",
+        "after": "0dc7603cdc0b487dab9394fd3a2926f490545779e12be5219104e23129887c63",
+        "focus": "3ac6dff36abc31c7a2b12085216ae01de39f04f36675be83f2f10331cd9d2258"
+      },
+      "accessibility": {
+        "violations": 0,
+        "incomplete": [],
+        "passes": 11
+      }
+    }
+  ],
+  "whitespaceCheckPassed": true,
+  "stagedScope": [],
+  "status": "M desktop/web-app/public/stem_lab/stem_tool_dissection.js\n M stem_lab/stem_tool_dissection.js\n?? reports/dissection-route-clarity-2026-10-03/\n?? tests/e2e/dissection-route-clarity.spec.ts",
+  "rawAttempts": {
+    "before": {
+      "mode": "before",
+      "attempt": "before",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@playwright/test/cli.js",
+        "test",
+        "dissection-route-clarity.spec.ts",
+        "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\route-clarity.config.cjs",
+        "--grep",
+        "route rail .* shows readable controls"
+      ],
+      "browserCachePath": "C:/Users/cabba/AppData/Local/ms-playwright",
+      "startedAt": "2026-10-04T03:04:20.473Z",
+      "finishedAt": "2026-10-04T03:06:22.735Z",
+      "exitCode": 0,
+      "before": {
+        "stem_lab/stem_tool_dissection.js": "2a2ff5929bdc6a54d080b973b8588fc1e1a5f5438cebce25c789859405afba18",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "2a2ff5929bdc6a54d080b973b8588fc1e1a5f5438cebce25c789859405afba18",
+        "tests/e2e/dissection-route-clarity.spec.ts": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8",
+        "stem_lab/.route-clarity-baseline.js": "2a2ff5929bdc6a54d080b973b8588fc1e1a5f5438cebce25c789859405afba18"
+      },
+      "after": {
+        "stem_lab/stem_tool_dissection.js": "2a2ff5929bdc6a54d080b973b8588fc1e1a5f5438cebce25c789859405afba18",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "2a2ff5929bdc6a54d080b973b8588fc1e1a5f5438cebce25c789859405afba18",
+        "tests/e2e/dissection-route-clarity.spec.ts": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8"
+      }
+    },
+    "initial": {
+      "mode": "new",
+      "attempt": "initial",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@playwright/test/cli.js",
+        "test",
+        "dissection-route-clarity.spec.ts",
+        "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\route-clarity.config.cjs"
+      ],
+      "browserCachePath": "C:/Users/cabba/AppData/Local/ms-playwright",
+      "startedAt": "2026-10-04T03:08:17.748Z",
+      "finishedAt": "2026-10-04T03:10:45.102Z",
+      "exitCode": 1,
+      "before": {
+        "stem_lab/stem_tool_dissection.js": "b1146b11f3199cf97611281ea4e555ad21e723ad9950f0061f43effd9a8bd02e",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "b1146b11f3199cf97611281ea4e555ad21e723ad9950f0061f43effd9a8bd02e",
+        "tests/e2e/dissection-route-clarity.spec.ts": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8"
+      },
+      "after": {
+        "stem_lab/stem_tool_dissection.js": "b1146b11f3199cf97611281ea4e555ad21e723ad9950f0061f43effd9a8bd02e",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "b1146b11f3199cf97611281ea4e555ad21e723ad9950f0061f43effd9a8bd02e",
+        "tests/e2e/dissection-route-clarity.spec.ts": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8"
+      }
+    },
+    "final": {
+      "mode": "new",
+      "attempt": "final",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@playwright/test/cli.js",
+        "test",
+        "dissection-route-clarity.spec.ts",
+        "--config=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\route-clarity.config.cjs"
+      ],
+      "browserCachePath": "C:/Users/cabba/AppData/Local/ms-playwright",
+      "startedAt": "2026-10-04T03:14:00.787Z",
+      "finishedAt": "2026-10-04T03:14:50.333Z",
+      "exitCode": 0,
+      "before": {
+        "stem_lab/stem_tool_dissection.js": "c947bbdf3f4e2d2ead29a5498efbde95e3823e8b17fe8fc08e2b451928dc20a1",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "c947bbdf3f4e2d2ead29a5498efbde95e3823e8b17fe8fc08e2b451928dc20a1",
+        "tests/e2e/dissection-route-clarity.spec.ts": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8"
+      },
+      "after": {
+        "stem_lab/stem_tool_dissection.js": "c947bbdf3f4e2d2ead29a5498efbde95e3823e8b17fe8fc08e2b451928dc20a1",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "c947bbdf3f4e2d2ead29a5498efbde95e3823e8b17fe8fc08e2b451928dc20a1",
+        "tests/e2e/dissection-route-clarity.spec.ts": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8"
+      }
+    },
+    "unit": {
+      "mode": "unit",
+      "attempt": "unit",
+      "command": [
+        "C:\\Program Files\\nodejs\\node.exe",
+        "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/vitest/vitest.mjs",
+        "run",
+        "tests/dissection_lab_improvements.test.js",
+        "tests/dissection_workspace_bands.test.js",
+        "--pool=threads",
+        "--maxWorkers=1",
+        "--reporter=default",
+        "--reporter=json",
+        "--outputFile=C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-route-clarity-2026-10-03/unit/results.json"
+      ],
+      "browserCachePath": "C:/Users/cabba/AppData/Local/ms-playwright",
+      "startedAt": "2026-10-04T03:15:07.887Z",
+      "finishedAt": "2026-10-04T03:17:55.651Z",
+      "exitCode": 0,
+      "before": {
+        "stem_lab/stem_tool_dissection.js": "c947bbdf3f4e2d2ead29a5498efbde95e3823e8b17fe8fc08e2b451928dc20a1",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "c947bbdf3f4e2d2ead29a5498efbde95e3823e8b17fe8fc08e2b451928dc20a1",
+        "tests/e2e/dissection-route-clarity.spec.ts": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8"
+      },
+      "after": {
+        "stem_lab/stem_tool_dissection.js": "c947bbdf3f4e2d2ead29a5498efbde95e3823e8b17fe8fc08e2b451928dc20a1",
+        "desktop/web-app/public/stem_lab/stem_tool_dissection.js": "c947bbdf3f4e2d2ead29a5498efbde95e3823e8b17fe8fc08e2b451928dc20a1",
+        "tests/e2e/dissection-route-clarity.spec.ts": "bc5b3a6a3bbe2e4fda3d529c5fdd4822ee6d7f1e11247772c39a0bf741872fa8"
+      }
+    }
+  }
+}

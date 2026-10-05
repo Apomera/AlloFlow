@@ -170,6 +170,12 @@
     var progress = window.StemLab && window.StemLab.geometryWorldLessonProgress;
     try { return !!(progress && typeof progress.completed === 'function' && progress.completed(key)); } catch (_) { return false; }
   }
+  function homeLessonTopic(lesson) {
+    var checks = window.StemLab && window.StemLab.geometryWorldLessonChecks;
+    var model = checks && typeof checks.conceptModel === 'function' ? checks.conceptModel(lesson, lesson.id) : null;
+    var topics = {volume:'Volume',composite:'Volume',surface:'Surface area',fraction_dimensions:'Fractions',fraction_pieces:'Fractions',scale:'Scale',area:'Area and perimeter',perimeter:'Area and perimeter'};
+    return model && topics[model.concept] || 'Other geometry';
+  }
   function setBuilderPrintScale(ctx, value) {
     // Form input is deliberately stricter than legacy scale normalization: an
     // unfinished or invalid draft must never silently change a saved scale.
@@ -597,6 +603,17 @@
     blocks.sort(compareBlocks);
     return { schema: EDITABLE_WORLD_SCHEMA, title: 'Geometry World editable build', coordinateSystem: 'x-right,y-up,z-depth', blocks: blocks };
   }
+  function liveEditableWorld(engine) {
+    // Persist every student cell exactly, without legacy rounding or defaults.
+    var blocks=[];
+    Object.keys(engine.blocks || {}).forEach(function(key){
+      var data=engine.blocks[key] && engine.blocks[key].userData;
+      if (!isStudentBlock(data)) return;
+      var p=data.gridPos;
+      blocks.push({x:p && p.x,y:p && p.y,z:p && p.z,type:data.blockType,shape:data.shape,rotation:data.rotation});
+    });
+    return {schema:EDITABLE_WORLD_SCHEMA,title:'Geometry World editable build',coordinateSystem:'x-right,y-up,z-depth',blocks:blocks};
+  }
   // A portable creation contains the fresh retained selection, including any
   // disconnected parts the student kept selected. Centering changes the file
   // coordinates only; the live world, materials and rotations stay untouched.
@@ -628,11 +645,15 @@
   }
   function saveEditableWorld(ctx) {
     var engine = window[ENGINE_KEY];
-    if (!engine) { announce(ctx, 'Open the 3D world before saving.', 'info'); return; }
-    var checked = normalizeEditableWorld(editableWorld(engine));
-    if (!checked.ok) { announce(ctx, checked.error, 'error'); return; }
-    downloadBlob(new Blob([JSON.stringify(checked.value, null, 2)], { type: 'application/json' }), safeFilePart((engine._currentLesson && engine._currentLesson.title) || 'geometry-world') + '-editable.json');
+    if (!engine) { announce(ctx, 'Open the 3D world before saving.', 'info'); return false; }
+    var checked;
+    try {
+      checked = normalizeEditableWorld(liveEditableWorld(engine));
+      if (!checked.ok) { announce(ctx, 'The current build could not be exported completely. '+checked.error+' No file was downloaded.', 'error'); return false; }
+      downloadBlob(new Blob([JSON.stringify(checked.value, null, 2)], { type: 'application/json' }), safeFilePart((engine._currentLesson && engine._currentLesson.title) || 'geometry-world') + '-editable.json');
+    } catch (error) { announce(ctx, error && error.message || 'The editable build could not be downloaded.', 'error'); return false; }
     announce(ctx, 'Saved ' + checked.summary.blockCount + ' editable student block' + (checked.summary.blockCount === 1 ? '' : 's') + ' with shapes and rotations.', 'success');
+    return true;
   }
   var WORKSHOP_TOOLS=[
     {id:'palette',title:'Shapes & materials',group:'Build',description:'Choose a block, its material, and rotation.',keywords:'cube slab wedge quarter stone wood brick glass color colour paint hotbar Q R',selector:'.gwe-current-tools'},
@@ -647,7 +668,7 @@
     {id:'print',title:'Inspect & prepare a print',group:'Print',description:'Check separate pieces, printer fit, and connecting bases.',keywords:'3d printing stl print lab oversized support plate thickness margin',selector:'.gwe-print-guide-options',selection:true},
     {id:'scale',title:'Adjust print size',group:'Print',description:'Set millimeters per block for STL and Print Lab.',keywords:'scale bed dimensions width height depth size mm printer',selector:'.gwe-scale-editor',selection:true},
     {id:'save',title:'Save, open & duplicate projects',group:'Keep',description:'Name your project, save a variation, or open an editable file.',keywords:'json export import backup download autosave worlds copy recover',selector:'[aria-label="Keep your work"]'},
-    {id:'workspace',title:'Workspace & scenery',group:'Explore',description:'Choose the garden or meadow, or start another world.',keywords:'environment lesson fresh sandbox landscape settings',selector:'.gwe-workspace-options'}
+    {id:'workspace',title:'World & scenery',group:'Explore',description:'Choose the garden or meadow, or start another world.',keywords:'workspace environment lesson fresh sandbox landscape settings',selector:'.gwe-workspace-options'}
   ];
   function findWorkshopTools(query,hasSelection) {
     var words=String(query || '').trim().toLowerCase().split(/\s+/).filter(Boolean);
@@ -694,10 +715,12 @@
     var box=new THREE.Box3(new THREE.Vector3(facts.min.x,facts.min.y,facts.min.z),new THREE.Vector3(facts.max.x,facts.max.y,facts.max.z)),center=box.getCenter(new THREE.Vector3());
     var oldTouch=canvas.style.touchAction,oldCursor=canvas.style.cursor,pointers=new Map(),disposed=false,frame=0,observer=null,view={azimuth:facts.width>=facts.depth?0:Math.PI/2,elevation:.24,zoom:1.05},name=facts.width>=facts.depth?'side':'front';
     function active(){return !disposed && !engine._destroyed && !engine._showcase && engine._currentLesson===origin.lesson && engine._previewReviewCamera===controller && engine._buildBatchPreview && engine._buildBatchPreview.owner===owner;}
+    function interactive(){return active() && !engine._pendingWorldTransition;}
     function stop(event){event.preventDefault();event.stopImmediatePropagation();}
     function publish(next){name=next;if(onViewChange)onViewChange(next);}
     function fit(){
       frame=0;if(!active()){controller.dispose(false);return false;}
+      if(engine._pendingWorldTransition){clearPointers();return false;}
       var area=canvas.getBoundingClientRect();if(!area.width || !area.height)return false;
       camera.aspect=area.width/area.height;camera.updateProjectionMatrix();
       var ground=engine._currentLesson.ground,groundY=ground && Number.isFinite(ground.y)?ground.y:0;
@@ -713,19 +736,19 @@
     }
     function schedule(){if(!disposed && !frame)frame=window.requestAnimationFrame(fit);}
     function clearPointers(){pointers.forEach(function(_,id){if(canvas.hasPointerCapture && canvas.hasPointerCapture(id))try{canvas.releasePointerCapture(id);}catch(_){}});pointers.clear();canvas.style.cursor='grab';}
-    function down(event){if(!active() || (event.button!==0 && event.button!==2))return;stop(event);if(pointers.size>=2)return;pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});if(canvas.setPointerCapture)try{canvas.setPointerCapture(event.pointerId);}catch(_){}canvas.style.cursor='grabbing';}
-    function move(event){if(!active() || !pointers.has(event.pointerId))return;stop(event);var previous=pointers.get(event.pointerId),dx=event.clientX-previous.x,dy=event.clientY-previous.y;
+    function down(event){if(!interactive() || (event.button!==0 && event.button!==2))return;stop(event);if(pointers.size>=2)return;pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});if(canvas.setPointerCapture)try{canvas.setPointerCapture(event.pointerId);}catch(_){}canvas.style.cursor='grabbing';}
+    function move(event){if(!interactive() || !pointers.has(event.pointerId))return;stop(event);var previous=pointers.get(event.pointerId),dx=event.clientX-previous.x,dy=event.clientY-previous.y;
       if(pointers.size===2){var other; pointers.forEach(function(p,id){if(id!==event.pointerId)other=p;});var before=Math.hypot(previous.x-other.x,previous.y-other.y),after=Math.hypot(event.clientX-other.x,event.clientY-other.y);if(before>8 && after>8)view.zoom=Math.max(.65,Math.min(3,view.zoom*before/after));}
       else{view.azimuth-=dx*.008;view.elevation=Math.max(.10,Math.min(Math.PI/2-.04,view.elevation+dy*.006));publish('orbit');}
       pointers.set(event.pointerId,{x:event.clientX,y:event.clientY});schedule();
     }
     function up(event){if(!pointers.has(event.pointerId))return;stop(event);pointers.delete(event.pointerId);if(canvas.hasPointerCapture && canvas.hasPointerCapture(event.pointerId))try{canvas.releasePointerCapture(event.pointerId);}catch(_){}if(!pointers.size)canvas.style.cursor='grab';}
-    function wheel(event){if(!active())return;stop(event);controller.zoom(Math.exp(Math.max(-100,Math.min(100,event.deltaY))*.002));}
-    function block(event){if(active())stop(event);}
+    function wheel(event){if(!interactive())return;stop(event);controller.zoom(Math.exp(Math.max(-100,Math.min(100,event.deltaY))*.002));}
+    function block(event){if(interactive())stop(event);}
     var handlers={pointerdown:down,pointermove:move,pointerup:up,pointercancel:up,lostpointercapture:up,mousedown:block,click:block,dblclick:block,contextmenu:block,wheel:wheel,touchstart:block,touchmove:block,touchend:block,touchcancel:block};
     var controller={focus:center,view:function(next){
-      if(!active())return false;var presets={front:[Math.PI/2,.15],side:[0,.15],top:[0,Math.PI/2-.04],perspective:[Math.PI/4,.42]};if(!presets[next])return false;clearPointers();view.azimuth=presets[next][0];view.elevation=presets[next][1];view.zoom=1.05;publish(next);schedule();return true;
-    },zoom:function(factor){if(!active() || !Number.isFinite(factor) || factor<=0)return false;view.zoom=Math.max(.65,Math.min(3,view.zoom*factor));schedule();return true;},fit:function(){if(!active())return false;view.zoom=1.05;schedule();return true;},scheduleFit:schedule,dispose:function(restore){
+      if(!interactive())return false;var presets={front:[Math.PI/2,.15],side:[0,.15],top:[0,Math.PI/2-.04],perspective:[Math.PI/4,.42]};if(!presets[next])return false;clearPointers();view.azimuth=presets[next][0];view.elevation=presets[next][1];view.zoom=1.05;publish(next);schedule();return true;
+    },zoom:function(factor){if(!interactive() || !Number.isFinite(factor) || factor<=0)return false;view.zoom=Math.max(.65,Math.min(3,view.zoom*factor));schedule();return true;},fit:function(){if(!interactive())return false;view.zoom=1.05;schedule();return true;},scheduleFit:schedule,dispose:function(restore){
       if(disposed)return;disposed=true;if(frame)window.cancelAnimationFrame(frame);frame=0;if(observer)observer.disconnect();window.removeEventListener('resize',schedule);window.removeEventListener('blur',clearPointers);document.removeEventListener('visibilitychange',clearPointers);
       Object.keys(handlers).forEach(function(key){canvas.removeEventListener(key,handlers[key],true);});clearPointers();canvas.style.touchAction=oldTouch;canvas.style.cursor=oldCursor;
       if(engine._previewReviewCamera!==controller)return;delete engine._previewReviewCamera;
@@ -745,10 +768,14 @@
   function firstBlockGuidance(touchActive) {
     return 'Aim at the ground and ' + (touchActive ? 'tap Place' : 'press B') + ' to add your first block.';
   }
+  function transitionBuilderWorld(engine, target, action) {
+    return typeof engine.transitionWorld === 'function' ? engine.transitionWorld(target, action) : action();
+  }
   function startSandboxMode(ctx, options) {
     var engine = window[ENGINE_KEY];
     if (!engine || typeof engine.loadLesson !== 'function') { announce(ctx, 'The 3D world is still getting ready. Try Free Build again in a moment.', 'info'); return false; }
-    engine.loadLesson(FREE_BUILD_LESSON);
+    return transitionBuilderWorld(engine, FREE_BUILD_LESSON, function () {
+    if (engine.loadLesson(FREE_BUILD_LESSON) === false) return false;
     engine._builderSelection = null;
     patchGeometryState(ctx, {
       builderPrintContext:null, builderPrintCheck:null, builderPanel:'build',
@@ -764,6 +791,7 @@
     announce(ctx, 'Free Build Sandbox opened. ' + firstBlockGuidance(!!(workspace && workspace.getAttribute('data-touch-active') === 'true')), 'success');
     if(!options || options.focus!==false)focusWorldSurface(50);
     return true;
+    });
   }
   // Keep the entire workspace before the confirmed replacement. A lesson's
   // definitions do not describe every live block, so record the actual roles too.
@@ -801,7 +829,7 @@
   function restoreEditableImportRecovery(ctx, engine, saved) {
     // Rebuild the actual saved cells instead of recreating lesson fills and then
     // colliding with them. loadLesson still owns NPC/environment lifecycle.
-    engine.loadLesson(Object.assign({},saved.lesson,{ground:null,structures:[]}));
+    if (engine.loadLesson(Object.assign({},saved.lesson,{ground:null,structures:[]})) === false) throw new Error('The previous workspace could not be reopened.');
     if (Object.keys(engine.blocks || {}).length) throw new Error('The recovery workspace was not empty.');
     engine._currentLesson = saved.lesson;
     engine._replayingHistory = true;
@@ -862,6 +890,10 @@
     if (!engine || typeof engine.loadLesson !== 'function' || typeof engine.placeBlock !== 'function') return { ok: false, error: 'The Geometry World engine is not ready.' };
     var checked=normalizeEditableWorld(candidate);
     if (!checked.ok) return checked;
+    var result=transitionBuilderWorld(engine,checked.value,function(){return restoreValidatedEditableWorld(engine,checked,ctx);});
+    return result===false ? {ok:false,blocked:true,error:'Your current workspace is still open. Resolve the save notice before replacing it.'} : result;
+  }
+  function restoreValidatedEditableWorld(engine, checked, ctx) {
     if (engine._showcaseExporting) return {ok:false,error:'Wait for the Showcase image to finish saving.'};
     var saved, presentation=engine._showcase;
     // End Showcase before capturing the building camera. Its event handler may
@@ -883,7 +915,7 @@
     } catch (_) { return {ok:false,error:'The current workspace could not be backed up. No blocks were changed.'}; }
     var restoringDraft=engine._workshopRestoreInProgress;engine._workshopRestoreInProgress=true;
     try {
-      engine.loadLesson(FREE_BUILD_LESSON);
+      if (engine.loadLesson(FREE_BUILD_LESSON) === false) throw new Error('The current workspace could not be replaced.');
       var available=Math.max(0,MAX_BLOCKS-(engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks || {}).length));
       if (checked.value.blocks.length>available) throw new Error('The sandbox does not have enough safe block capacity for this file.');
       checked.value.blocks.forEach(function(block) {
@@ -980,12 +1012,14 @@
   function saveWorldDraft(engine,title,storage) {
     if(!engine || engine._destroyed || !engine._currentLesson || !engine._currentLesson.sandbox)return {ok:false,reason:'Local drafts are available in Free Build.'};
     var shelf=readWorldShelf(storage);if(!shelf.ok)return shelf;
-    var world=editableWorld(engine),id=engine._workshopProjectId,previous=shelf.projects.find(function(p){return p.id===id;});
+    var id=engine._workshopProjectId,previous=shelf.projects.find(function(p){return p.id===id;});
     if(previous && previous.version!==engine._workshopProjectVersion)return {ok:false,reason:'This project changed in another tab. Download your current build, then reopen the saved project.'};
     if(id && !previous)return {ok:false,reason:'This project was removed in another tab. Download your current build before starting another project.'};
+    var world;
+    try {world=liveEditableWorld(engine);}catch(error){return {ok:false,reason:'The current build could not be saved completely. '+(error && error.message || 'Student block metadata is unreadable.')};}
     if(!id && !world.blocks.length)return {ok:true,projects:shelf.projects,empty:true};
     world.title=editableTitle(title || (previous && previous.world.title) || 'Untitled build');
-    if(world.blocks.length){var checked=normalizeEditableWorld(world);if(!checked.ok)return {ok:false,reason:checked.error+' Download your build before leaving.'};world=checked.value;}
+    if(world.blocks.length){var checked=normalizeEditableWorld(world);if(!checked.ok)return {ok:false,reason:checked.error+' Your current build is unchanged.'};world=checked.value;}
     var signature=JSON.stringify([world,engine._currentLesson.builderGarden!==false]);
     if(previous && signature===engine._workshopSavedSignature)return {ok:true,projects:shelf.projects,project:previous,unchanged:true};
     if(!id && shelf.projects.length>=8)return {ok:false,reason:'My Worlds holds 8 projects. Download and remove a saved project to make room. Your current build is unchanged.'};
@@ -1008,7 +1042,8 @@
   function saveWorldCopy(engine,title,storage) {
     if(!engine || engine._destroyed || !engine._currentLesson || !engine._currentLesson.sandbox)return {ok:false,reason:'Open Free Build to save a variation.'};
     var shelf=readWorldShelf(storage);if(!shelf.ok)return shelf;
-    var world=editableWorld(engine),previous=shelf.projects.find(function(p){return p.id===engine._workshopProjectId;});
+    var world,previous=shelf.projects.find(function(p){return p.id===engine._workshopProjectId;});
+    try {world=liveEditableWorld(engine);}catch(error){return {ok:false,reason:'The current build could not be saved completely. '+(error && error.message || 'Student block metadata is unreadable.')};}
     if(!world.blocks.length)return {ok:false,reason:'Place a block before saving a new variation.'};
     world.title=editableTitle(title || (previous && previous.world.title) || 'Untitled build');
     // Fork the current geometry without writing over the earlier saved draft.
@@ -1064,7 +1099,7 @@
     engine.releaseInput && engine.releaseInput();try{if(document.pointerLockElement)document.exitPointerLock();}catch(_){}
     engine._entryAnim=null;engine._viewPresetAnim=null;if(engine._creationFocus){engine._creationFocus.manual=true;engine._creationFocus.transition=null;}engine.flyMode=true;engine.velocity && engine.velocity.set(0,0,0);
     canvas.style.touchAction='none';canvas.style.cursor=mode==='select'?'crosshair':'grab';
-    function allowed(){var m=engine._modalState||{};return !engine._destroyed && !engine._showcase && engine._currentLesson && engine._currentLesson.sandbox && !Object.keys(m).some(function(k){return /^show/.test(k)&&m[k];});}
+    function allowed(){var m=engine._modalState||{};return !engine._destroyed && !engine._pendingWorldTransition && !engine._showcase && engine._currentLesson && engine._currentLesson.sandbox && !Object.keys(m).some(function(k){return /^show/.test(k)&&m[k];});}
     function stop(e){e.preventDefault();e.stopImmediatePropagation();}
     function clear(){if(marquee){marquee.remove();marquee=null;}if(start && canvas.hasPointerCapture && canvas.hasPointerCapture(start.id))canvas.releasePointerCapture(start.id);start=null;}
     function down(e){if(!allowed() || (e.button!==0 && e.button!==2))return;stop(e);start={x:e.clientX,y:e.clientY,lastX:e.clientX,lastY:e.clientY,id:e.pointerId,pan:e.button===2||e.shiftKey};canvas.setPointerCapture && canvas.setPointerCapture(e.pointerId);if(mode==='select'){marquee=document.createElement('div');marquee.className='gwe-selection-marquee';document.body.appendChild(marquee);}}
@@ -1081,12 +1116,12 @@
       onSelection(updateWorkshopSelection(engine,cells,e.altKey?'remove':e.shiftKey?'add':operation));
     }clear();}
     var cameraActions={
-      zoom:function(factor){var offset=engine.camera.position.clone().sub(target);offset.setLength(Math.max(2,Math.min(140,offset.length()*factor)));engine.camera.position.copy(target).add(offset);look();},
-      pan:function(dx,dy){var shift=new THREE.Vector3(dx,dy,0).applyQuaternion(engine.camera.quaternion);target.add(shift);engine.camera.position.add(shift);look();}
+      zoom:function(factor){if(!allowed())return false;var offset=engine.camera.position.clone().sub(target);offset.setLength(Math.max(2,Math.min(140,offset.length()*factor)));engine.camera.position.copy(target).add(offset);look();},
+      pan:function(dx,dy){if(!allowed())return false;var shift=new THREE.Vector3(dx,dy,0).applyQuaternion(engine.camera.quaternion);target.add(shift);engine.camera.position.add(shift);look();}
     };
     engine._workshopCameraActions=cameraActions;
     function wheel(e){if(mode!=='orbit' || !allowed())return;stop(e);var offset=engine.camera.position.clone().sub(target),length=offset.length();offset.setLength(Math.max(2,Math.min(140,length*Math.exp(Math.max(-100,Math.min(100,e.deltaY))*.002))));engine.camera.position.copy(target).add(offset);look();}
-    function key(e){if(e.code==='Escape'){clear();onExit();}}
+    function key(e){if(engine._pendingWorldTransition)return;if(e.code==='Escape'){clear();onExit();}}
     function block(e){if(allowed())stop(e);}
     var handlers={pointerdown:down,pointermove:move,pointerup:up,pointercancel:clear,mousedown:block,click:block,dblclick:block,contextmenu:block,wheel:wheel,touchstart:block,touchmove:block,touchend:block};
     Object.keys(handlers).forEach(function(k){canvas.addEventListener(k,handlers[k],{capture:true,passive:false});});window.addEventListener('keydown',key,true);
@@ -1109,7 +1144,7 @@
     var keyboardSteps={x:0,y:0,z:0},keyboardAxis=null;var oldCursor=canvas.style.cursor,oldTouch=canvas.style.touchAction;canvas.style.cursor='default';canvas.style.touchAction='none';
     engine.releaseInput && engine.releaseInput();try{if(document.pointerLockElement)document.exitPointerLock();}catch(_){}
     engine._entryAnim=null;engine._viewPresetAnim=null;if(engine._creationFocus){engine._creationFocus.manual=true;engine._creationFocus.transition=null;}engine.flyMode=true;engine.velocity && engine.velocity.set(0,0,0);
-    function allowed(){var m=engine._modalState||{};return !engine._destroyed && !engine._showcase && engine._currentLesson && engine._currentLesson.sandbox && !Object.keys(m).some(function(k){return /^show/.test(k)&&m[k];});}
+    function allowed(){var m=engine._modalState||{};return !engine._destroyed && !engine._pendingWorldTransition && !engine._showcase && engine._currentLesson && engine._currentLesson.sandbox && !Object.keys(m).some(function(k){return /^show/.test(k)&&m[k];});}
     function stop(e){e.preventDefault();e.stopImmediatePropagation();}
     function project(p,rect){var q=p.clone().project(engine.camera);return {x:rect.left+(q.x+1)*rect.width/2,y:rect.top+(1-q.y)*rect.height/2,z:q.z};}
     function preview(axis,steps){if(keyboardAxis!==axis){keyboardSteps={x:0,y:0,z:0};keyboardAxis=axis;}keyboardSteps[axis]=Math.max(-128,Math.min(128,keyboardSteps[axis]+steps));var offset={x:0,y:0,z:0};offset[axis]=keyboardSteps[axis];if(!offset[axis])onPreview(null);else onPreview(previewSelectionEdit(engine,'move',offset),offset);}
@@ -1118,9 +1153,9 @@
       var button=document.createElement('button'),line=document.createElementNS('http://www.w3.org/2000/svg','line');button.type='button';button.textContent=axis.toUpperCase()+' ↗';button.dataset.axis=axis;button.setAttribute('aria-label','Drag '+axis.toUpperCase()+' axis; arrow keys move one block');button.title='Drag to preview a grid move. Arrow keys move one block; Shift moves five.';
       line.dataset.axis=axis;svg.appendChild(line);root.appendChild(button);axes[axis]={button:button,line:line,vector:{x:0,y:0}};
       button.addEventListener('pointerdown',function(e){if(e.button!==0||!allowed())return;stop(e);button.focus();drag={axis:axis,id:e.pointerId,x:e.clientX,y:e.clientY,vector:Object.assign({},axes[axis].vector),button:button,last:null};button.setPointerCapture(e.pointerId);});
-      button.addEventListener('pointermove',function(e){if(!drag||drag.id!==e.pointerId)return;stop(e);if(!allowed()){release();onPreview(null);return;}var offset=workshopDragOffset(axis,e.clientX-drag.x,e.clientY-drag.y,drag.vector);if(!offset){onPreview({ok:false,reason:'This axis points toward the camera. Orbit the camera or use the arrow keys.'});return;}if(offset[axis]!==drag.last){drag.last=offset[axis];keyboardAxis=axis;keyboardSteps={x:0,y:0,z:0};keyboardSteps[axis]=offset[axis];if(offset[axis]===0)onPreview(null);else onPreview(previewSelectionEdit(engine,'move',offset),offset);}});
+      button.addEventListener('pointermove',function(e){if(!drag||drag.id!==e.pointerId)return;stop(e);if(!allowed()){release();if(!engine._pendingWorldTransition)onPreview(null);return;}var offset=workshopDragOffset(axis,e.clientX-drag.x,e.clientY-drag.y,drag.vector);if(!offset){onPreview({ok:false,reason:'This axis points toward the camera. Orbit the camera or use the arrow keys.'});return;}if(offset[axis]!==drag.last){drag.last=offset[axis];keyboardAxis=axis;keyboardSteps={x:0,y:0,z:0};keyboardSteps[axis]=offset[axis];if(offset[axis]===0)onPreview(null);else onPreview(previewSelectionEdit(engine,'move',offset),offset);}});
       button.addEventListener('pointerup',function(e){if(drag&&drag.id===e.pointerId){stop(e);release();}});
-      button.addEventListener('pointercancel',function(){release();onPreview(null);});
+      button.addEventListener('pointercancel',function(){release();if(!engine._pendingWorldTransition)onPreview(null);});
       button.addEventListener('keydown',function(e){if(!allowed())return;var step=['ArrowRight','ArrowUp'].indexOf(e.key)!==-1?1:['ArrowLeft','ArrowDown'].indexOf(e.key)!==-1?-1:0;if(step){stop(e);preview(axis,step*(e.shiftKey?5:1));}else if(e.key==='Enter'||e.key===' '){stop(e);preview(axis,1);}});
       button.addEventListener('click',function(e){stop(e);if(e.detail===0 && allowed())preview(axis,1);});
     });
@@ -1132,7 +1167,7 @@
       if(visible){Object.keys(axes).forEach(function(axis){var a=axes[axis],point=center.clone();point[axis]+=1;var q=project(point,rect),dx=q.x-p.x,dy=q.y-p.y,len=Math.hypot(dx,dy);a.vector={x:dx,y:dy};if(len<2){dx=axis==='x'?1:axis==='z'?-1:0;dy=axis==='y'?-1:.6;len=Math.hypot(dx,dy);}var x=Math.max(rect.left+26,Math.min(rect.right-26,p.x+dx/len*88)),y=Math.max(rect.top+26,Math.min(rect.bottom-26,p.y+dy/len*88));a.button.style.left=x+'px';a.button.style.top=y+'px';a.line.setAttribute('x1',p.x);a.line.setAttribute('y1',p.y);a.line.setAttribute('x2',x);a.line.setAttribute('y2',y);});rotate.style.left=Math.max(rect.left+38,Math.min(rect.right-38,p.x))+'px';rotate.style.top=Math.max(rect.top+26,Math.min(rect.bottom-26,p.y+60))+'px';}
       frame=window.requestAnimationFrame(draw);
     }
-    function key(e){if(e.key==='Escape'){stop(e);release();onPreview(null);onExit();}}
+    function key(e){if(engine._pendingWorldTransition)return;if(e.key==='Escape'){stop(e);release();onPreview(null);onExit();}}
     function block(e){if(allowed())stop(e);}
     var events=['pointerdown','mousedown','click','dblclick','contextmenu','touchstart'];events.forEach(function(k){canvas.addEventListener(k,block,{capture:true,passive:false});});window.addEventListener('keydown',key,true);draw();
     return function(){disposed=true;window.cancelAnimationFrame(frame);release();root.remove();if(engine._workshopTransformActions===transformActions)delete engine._workshopTransformActions;document.removeEventListener('fullscreenchange',attach);events.forEach(function(k){canvas.removeEventListener(k,block,true);});window.removeEventListener('keydown',key,true);canvas.style.cursor=oldCursor;canvas.style.touchAction=oldTouch;};
@@ -1407,7 +1442,8 @@
   // The complete project stays in this browser only, outside exported model metadata.
   // A matching handoff ID prevents a stale or unrelated source from replacing it.
   function captureProject(ctx, engine, id) {
-    if(engine.flushWorkshopDraft)engine.flushWorkshopDraft();
+    // The memory snapshot must still be available when durable storage fails.
+    if(engine.flushWorkshopDraft && !engine._worldTransitionDepth)try{engine.flushWorkshopDraft();}catch(_){}
     var blocks = [];
     Object.keys(engine.blocks || {}).forEach(function(key) {
       var mesh = engine.blocks[key], p = gridPosition(mesh), u = mesh && mesh.userData;
@@ -1425,11 +1461,13 @@
   function restoreWorkshopDraftIdentity(engine,saved){engine._workshopProjectId=saved && saved.id || null;engine._workshopProjectVersion=saved && saved.version || null;engine._workshopSavedSignature=saved && saved.signature || null;}
   // options.resume: rebuild behind the Home chooser (Continue your workspace)
   // without closing it, announcing, or taking focus.
+  // null means a replacement was blocked; false means there was no matching project.
   function restoreProject(ctx, engine, pending, options) {
     var saved = window.__alloGeometryWorldReturnProject;
     if (!saved || !pending.projectId || saved.id !== pending.projectId) return false;
     var resuming = !!(options && options.resume);
-    engine.loadLesson(saved.lesson);
+    var result=transitionBuilderWorld(engine,{title:saved.lesson.title || 'Returning workspace',kind:'return-project',snapshot:saved},function(){
+    if (window.__alloGeometryWorldReturnProject !== saved || engine.loadLesson(saved.lesson) === false) return false;
     // Rebuilding saved blocks is not new placement: no block_place events.
     var wasSuppressed = engine._batchSuppressEvents; engine._batchSuppressEvents = true;
     try { saved.blocks.forEach(function(block) { engine.placeBlock(block.x,block.y,block.z,block.type,block.shape,block.rotation); }); }
@@ -1456,12 +1494,17 @@
     announce(ctx, 'Returned to your complete workspace with selection, undo history, and print scale preserved. Check the revised model before printing.', 'success');
     focusWorldSurface(50);
     return true;
+    });
+    return result===false ? null : result;
   }
   // Reopen a My Worlds draft by id. The engine flushes the live draft on the way
   // out (destroyEngine), so it holds the latest blocks.
   function restoreDraft(ctx, engine, id) {
     if (!id || typeof id !== 'string') return false;
     var shelf = readWorldShelf(), chosen = shelf.ok && shelf.projects.filter(function(p){return p.id===id;})[0];
+    if (!chosen || !chosen.world.blocks.length) return false;
+    var outcome=transitionBuilderWorld(engine,{title:chosen.world.title,kind:'saved-project'},function(){
+    var fresh=readWorldShelf();chosen=fresh.ok && fresh.projects.filter(function(p){return p.id===id;})[0];
     if (!chosen || !chosen.world.blocks.length) return false;
     var wasSuppressed = engine._batchSuppressEvents, result;
     engine._batchSuppressEvents = true;
@@ -1471,6 +1514,8 @@
     if (engine.refreshLandscape) engine.refreshLandscape(engine._currentLesson.ground);
     engine._workshopProjectId = chosen.id; engine._workshopProjectVersion = chosen.version; engine._workshopSavedSignature = JSON.stringify([chosen.world, chosen.garden]);
     return true;
+    });
+    return outcome===false ? null : outcome;
   }
   // Leaving Geometry World destroys its engine, so coming back to a sandbox used
   // to rebuild an empty one while Home offered "Continue your workspace". Rebuild
@@ -1481,7 +1526,10 @@
     // Only while it is still the work in progress: a send whose Print Lab never
     // opened can leave it behind after the student moved to another draft.
     var current = saved && saved.id && (!last || !!(saved.workshopDraft && saved.workshopDraft.id && saved.workshopDraft.id === last.id));
-    if (current && restoreProject(ctx, engine, { projectId:saved.id, printContext:saved.state && saved.state.builderPrintContext }, { resume:true })) return true;
+    if (current) {
+      var restored=restoreProject(ctx, engine, { projectId:saved.id, printContext:saved.state && saved.state.builderPrintContext }, { resume:true });
+      if (restored!==false) return restored;
+    }
     return restoreDraft(ctx, engine, last && last.id);
   }
   function aimedStudentMeasurement(ctx, updateDisplay) {
@@ -1692,6 +1740,14 @@
     var radius=Math.max(2,size.length()*(1+1/Math.min(tanX,tanY))/1.65);
     return {x:center.x,y:center.y,z:center.z,radius:radius};
   }
+  function selectedCreationCameraView(engine) {
+    var state=engine && engine._creationFocus;
+    if(!state)return 'none';
+    if(state.returning)return 'returning';
+    if(state.manual || (state.view && state.view.name==='orbit'))return 'custom';
+    var name=state.view && state.view.name;
+    return name==='front' || name==='side' || name==='top'?name:'framed';
+  }
   function selectedCreationView(ctx,preset) {
     var engine=window[ENGINE_KEY];
     if(!engine || engine._destroyed || engine._showcase)return false;
@@ -1754,7 +1810,7 @@
       var animation=state.transition;if(!animation)return;
       animation.elapsed+=dt;var t=animation.duration?Math.min(1,animation.elapsed/animation.duration):1,ease=1-Math.pow(1-t,3);
       camera.position.copy(animation.from).lerp(animation.to,ease);camera.quaternion.copy(animation.fromQuaternion).slerp(animation.toQuaternion,ease);syncCamera();
-      if(t===1){state.transition=null;if(state.returning){
+      if(t===1){camera.position.copy(animation.to);camera.quaternion.copy(animation.toQuaternion);syncCamera();state.transition=null;if(state.returning){
         engine.disposeCreationFocus();patchGeometryState(ctx,{sandboxDockCollapsed:state.collapsed});
         window.requestAnimationFrame(function(){
           if(engine._destroyed || window[ENGINE_KEY]!==engine || engine._currentLesson!==state.lesson)return;
@@ -2365,19 +2421,32 @@
   function restorePendingEditableBuild(ctx, engine) {
     var pending = window.__alloGeometryWorldPendingBuild;
     if (!pending) return false;
+    transitionBuilderWorld(engine,{title:pending.intent==='freeBuild' ? 'Free Build' : 'Returning Print Lab build',kind:'print-lab-return',handoff:pending},function(){
+      if (window.__alloGeometryWorldPendingBuild!==pending) return false;
+      return restorePendingBuildAccepted(ctx,engine,pending);
+    });
+    // A rejected handoff remains pending and must not fall through to a blank world.
+    return true;
+  }
+  function restorePendingBuildAccepted(ctx, engine, pending) {
     // Print Lab's "Start in Geometry World": Free Build, not the Home chooser.
     if (pending.intent === 'freeBuild') {
+      var resumed=resumeSandboxWorkspace(ctx, engine);
+      if (resumed===null || (resumed===false && engine.loadLesson(FREE_BUILD_LESSON)===false)) return false;
       delete window.__alloGeometryWorldPendingBuild;
-      if (!resumeSandboxWorkspace(ctx, engine)) engine.loadLesson(FREE_BUILD_LESSON);
       patchGeometryState(ctx, { activeLesson: 'builderSandbox', worldActive: true, showGeometryHome:false,_geometryHomeInitial:false, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: 'inventory', builderPanel:'build' });
       announce(ctx, 'Free Build is open. Build something, choose Select build, then Send to Print Lab.', 'success');
       focusWorldSurface(50);
       return true;
     }
-    if (restoreProject(ctx, engine, pending)) { delete window.__alloGeometryWorldPendingBuild; return true; }
+    var returned=restoreProject(ctx, engine, pending);
+    if (returned===null) return false;
+    if (returned) { delete window.__alloGeometryWorldPendingBuild; return true; }
     // The full project was already reopened through Continue and may have been
     // edited since; its latest blocks are in the draft it was sent from.
-    if (restoreDraft(ctx, engine, pending.draftId)) {
+    var reopened=restoreDraft(ctx, engine, pending.draftId);
+    if (reopened===null) return false;
+    if (reopened) {
       delete window.__alloGeometryWorldPendingBuild;
       var draftContext = pending.printContext || {};
       patchGeometryState(ctx, { activeLesson: 'builderSandbox', worldActive: true, showGeometryHome:false,_geometryHomeInitial:false, showLessonIntro: false, tutorialDismissed: true, hudPreset: 'builder', hudPanel: '', builderPanel:'build', builderPrintContext:{unitMm:printUnit(draftContext.unitMm),aiUse:draftContext.aiUse || 'NONE',aiDisclosure:String(draftContext.aiDisclosure || '').slice(0,500)}, measureResult: null });
@@ -2387,8 +2456,7 @@
     }
     var source = pending.sourceModel;
     var blocks = source && source.schema === 'alloflow-geometry-world-build/1' && Array.isArray(source.blocks) ? source.blocks : null;
-    delete window.__alloGeometryWorldPendingBuild;
-    if (!blocks || !blocks.length) { announce(ctx, 'The returning Geometry World source was invalid and was not opened.', 'error'); return true; }
+    if (!blocks || !blocks.length) { delete window.__alloGeometryWorldPendingBuild; announce(ctx, 'The returning Geometry World source was invalid and was not opened.', 'error'); return true; }
     var clean = [], requestedCount = 0;
     var seen = {};
     blocks.forEach(function (block) {
@@ -2399,9 +2467,10 @@
       requestedCount++;
       if (clean.length < MAX_BLOCKS) clean.push(next);
     });
-    if (!clean.length) { announce(ctx, 'The returning Geometry World source had no usable blocks.', 'error'); return true; }
+    if (!clean.length) { delete window.__alloGeometryWorldPendingBuild; announce(ctx, 'The returning Geometry World source had no usable blocks.', 'error'); return true; }
     clean.sort(compareBlocks);
-    engine.loadLesson(FREE_BUILD_LESSON);
+    if (engine.loadLesson(FREE_BUILD_LESSON)===false) return false;
+    delete window.__alloGeometryWorldPendingBuild;
     var available = Math.max(0, MAX_BLOCKS - (engine.getConstructionBlockCount ? engine.getConstructionBlockCount() : Object.keys(engine.blocks || {}).length));
     clean = clean.slice(0, available);
     if (!clean.length) { announce(ctx, 'The sandbox has no remaining block capacity for this returning build.', 'error'); return true; }
@@ -2556,7 +2625,7 @@
     suggestCreationDuplicate:suggestCreationDuplicate,
     selectionEditSnapshot:selectionEditSnapshot, transformCreationBlocks:transformCreationBlocks, previewSelectionEdit:previewSelectionEdit, commitSelectionEdit:commitSelectionEdit,
     normalizeBuildStamp:normalizeBuildStamp, readBuildStamps:readBuildStamps, saveSelectionStamp:saveSelectionStamp, removeBuildStamp:removeBuildStamp, previewBuildStamp:previewBuildStamp, BUILD_STAMP_KEY:BUILD_STAMP_KEY,
-    selectedCreationPresetFocus:selectedCreationPresetFocus, selectedCreationView:selectedCreationView, orbitSelectedCreation:orbitSelectedCreation,
+    selectedCreationPresetFocus:selectedCreationPresetFocus, selectedCreationCameraView:selectedCreationCameraView, selectedCreationView:selectedCreationView, orbitSelectedCreation:orbitSelectedCreation,
     createSelectionFrame:createSelectionFrame, selectionNeedsReview:selectionNeedsReview,
     setBuilderPrintScale:setBuilderPrintScale,
     MAX_BLOCKS: MAX_BLOCKS,
@@ -2571,6 +2640,7 @@
     axisPlane: axisPlane,
     faceSignature: faceSignature,
     editableWorld: editableWorld,
+    saveEditableWorld:saveEditableWorld,
     selectedEditableWorld:selectedEditableWorld, saveSelectedEditableWorld:saveSelectedEditableWorld,
     selectedBuildStlDownload:selectedBuildStlDownload, scaleStlForDownload:scaleStlForDownload,
     normalizeEditableWorld: normalizeEditableWorld,
@@ -2597,6 +2667,121 @@
     captureProject:captureProject, restoreProject:restoreProject, selectionMeasurement:selectionMeasurement, polledSelectionMeasurement:polledSelectionMeasurement,
     openSelectedBuildInPrintLab:openSelectedBuildInPrintLab, worldToStl:worldToStl, printUnit:printUnit
   };
+
+  var GEOMETRY_ACTIVITY_GUIDE_CSS = `
+#geoworld-fs-workspace .gwe-activity-backdrop{background:#111817b8;padding:16px}
+#geoworld-fs-workspace .gwe-activity-guide{width:min(720px,100%);padding:20px;border-color:#bccdd1;border-radius:8px;background:#fff;color:#1b292d;font:14px/1.55 ui-sans-serif,system-ui,sans-serif;overscroll-behavior:contain;scrollbar-color:#8da2a8 #f3f6f7;scroll-padding-top:112px}
+#geoworld-fs-workspace .gwe-activity-guide *{box-sizing:border-box;letter-spacing:0;overflow-wrap:anywhere}
+#geoworld-fs-workspace .gwe-activity-guide>header{position:sticky;top:-20px;z-index:4;min-height:74px;margin:-20px -20px 12px;padding:12px 20px;background:#fff;border-bottom:1px solid #d6e0e3;align-items:flex-start;gap:12px}
+#geoworld-fs-workspace .gwe-activity-guide>header>div{min-width:0;flex:1}
+#geoworld-fs-workspace .gwe-activity-guide>header>button{flex:0 0 auto;min-width:44px;min-height:44px;padding:8px 12px}
+#geoworld-fs-workspace .gwe-activity-guide h2{margin:4px 0 0;color:#1b292d;font-size:22px;line-height:1.35}
+#geoworld-fs-workspace .gwe-activity-guide h3{color:#1b292d;font-size:20px;line-height:1.4}
+#geoworld-fs-workspace .gwe-activity-guide h4{color:#1b292d;font-size:14px;line-height:1.5}
+#geoworld-fs-workspace .gwe-activity-guide :is(.gwe-activity-eyebrow,.gwe-activity-position){color:#135651;font-size:11px;font-weight:700;line-height:1.5;margin:0 0 4px}
+#geoworld-fs-workspace .gwe-activity-guide :is(.gwe-activity-intro,.gwe-activity-note,.gwe-activity-track-help){color:#52666d;font-size:12px;line-height:1.6}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-intro{margin:8px 0 12px;font-size:13px}
+#geoworld-fs-workspace .gwe-activity-guide :is(button,select,summary){min-width:0;min-height:44px;padding:9px 12px;border:1px solid #b5c7cc;border-radius:6px;background:#fff;color:#25383d;font-family:inherit;font-size:13px;font-weight:600;line-height:1.5}
+#geoworld-fs-workspace .gwe-activity-guide :is(button,select,summary):hover{background:#edf6f5;border-color:#668f91}
+#geoworld-fs-workspace .gwe-activity-guide :is(button,select,textarea,summary,input):focus-visible{outline:3px solid #007d79;outline-offset:2px}
+#geoworld-fs-workspace .gwe-activity-guide>label{display:block;margin-top:8px;font-size:12px;font-weight:650;line-height:1.5;color:#52666d}
+#geoworld-fs-workspace .gwe-activity-guide>select{margin-top:5px;font-weight:500}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-progress{margin:8px 0;color:#52666d;font-size:12px}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-route{margin:8px 0}
+#geoworld-fs-workspace .gwe-activity-guide details>summary{padding:8px 0;border:0;border-radius:0;background:transparent;color:#135651;font-size:13px;font-weight:650}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-lesson-map svg{border-radius:6px;border-color:#c0cdd1}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-lesson-map figcaption{color:#52666d}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-card{padding:16px 0 0;margin:8px 0 16px;border:0;border-top:1px solid #d6e0e3;border-radius:0;background:transparent}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-card>p{margin:10px 0;font-size:14px;line-height:1.6}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-card>.gwe-activity-position{margin:0 0 6px;font-size:11px}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-guide-name{color:#52666d;font-size:12px!important}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-track{background:#e6f5f2;border-color:#b5dcd5;color:#135651;margin:0 7px 8px 0}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-track[aria-pressed=true]{background:#e6f5f2;color:#135651;border-color:#007d79;opacity:1}
+#geoworld-fs-workspace .gwe-activity-guide :is(.gwe-activity-travel,.gwe-activity-check-build){background:#007d79;color:#fff;border-color:#007d79}
+#geoworld-fs-workspace .gwe-activity-guide :is(.gwe-activity-travel,.gwe-activity-check-build):hover{background:#135651;color:#fff;border-color:#135651}
+#geoworld-fs-workspace .gwe-activity-guide :is(.gwe-activity-check,.gwe-activity-evidence,.gwe-activity-goal,.gwe-milestone-note){padding:14px 0;margin:14px 0;border:0;border-top:1px solid #d6e0e3;border-radius:0;background:transparent;color:#25383d}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-card>details{margin:12px 0;border-top:1px solid #d6e0e3}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-goal>strong{color:#135651;font-size:12px;text-transform:none}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-card>label:not(.gwe-activity-review){display:block;margin:12px 0 4px;color:#25383d;font-size:14px;font-weight:650;line-height:1.55}
+#geoworld-fs-workspace .gwe-activity-guide textarea{min-height:110px;margin:4px 0 8px;padding:12px;border-color:#8ba5ac;border-radius:6px;background:#fff;color:#1b292d;font:14px/1.6 ui-sans-serif,system-ui,sans-serif;scroll-margin-top:112px}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-review{min-height:44px;padding:8px 0;font-size:13px;color:#25383d}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-review input{width:20px;height:20px;flex:0 0 20px;accent-color:#007d79}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-review:has(input:checked){color:#135651;font-weight:650}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-pager{padding-top:12px;margin:12px 0 16px;border-top:1px solid #d6e0e3;gap:10px}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-pager>span{color:#52666d}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-pager button:last-child{background:#e6f5f2;color:#135651;border-color:#b5dcd5}
+#geoworld-fs-workspace .gwe-activity-guide>footer{padding-top:16px;border-top:1px solid #d6e0e3;display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+#geoworld-fs-workspace .gwe-activity-guide>footer button{width:100%;font-size:12px}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-tracking-state{padding:10px 0;margin:12px 0;border:0;border-top:1px solid #d6e0e3;border-bottom:1px solid #d6e0e3;border-radius:0;background:transparent;color:#25383d}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-journal-snapshot{border-color:#c0cdd1;border-radius:6px;background:#fff}
+#geoworld-fs-workspace .gwe-activity-guide :is(.gwe-journal-snapshot figcaption span,.gwe-journal-snapshot>.gwe-activity-note){color:#52666d}
+#geoworld-fs-workspace .gwe-activity-guide :is(.gwe-journal-empty,.gwe-journal-snapshot img){background:#f3f6f7;color:#52666d}
+#geoworld-fs-workspace .gwe-activity-guide :is(.gwe-journal-saved-check,.gwe-journal-notice){border:0;border-left:3px solid #007d79;border-radius:0;background:#edf6f5;color:#25383d}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-journal-saved-check[data-build-check=revise]{border-left-color:#b94c32;background:#fff4ef}
+#geoworld-fs-workspace .gwe-activity-guide .gwe-journal-clear{color:#52666d;background:transparent}
+@media(max-width:520px){#geoworld-fs-workspace .gwe-activity-backdrop{padding:8px}#geoworld-fs-workspace .gwe-activity-guide{padding:16px;scroll-padding-top:120px}#geoworld-fs-workspace .gwe-activity-guide>header{top:-16px;margin:-16px -16px 10px;padding:10px 16px;min-height:70px;gap:8px}#geoworld-fs-workspace .gwe-activity-guide h2{font-size:20px}#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-intro{display:none}#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-route{margin:4px 0}#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-card{padding:14px 0 0;margin-top:8px}#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-track,#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-travel{width:100%;margin:0 0 8px}#geoworld-fs-workspace .gwe-activity-guide>footer{grid-template-columns:repeat(2,minmax(0,1fr))}#geoworld-fs-workspace .gwe-activity-guide .gwe-activity-pager button{padding:9px 6px}}
+.theme-contrast #geoworld-fs-workspace .gwe-activity-guide,[data-stem-theme=contrast] #geoworld-fs-workspace .gwe-activity-guide,#geoworld-fs-workspace[data-stem-theme=contrast] .gwe-activity-guide{background:#000!important;color:#fff!important;border-color:#ff0!important}
+.theme-contrast .gwe-activity-guide :is(header,footer,article,details,summary,h2,h3,h4,p,label,strong,span,div,figure,figcaption),[data-stem-theme=contrast] .gwe-activity-guide :is(header,footer,article,details,summary,h2,h3,h4,p,label,strong,span,div,figure,figcaption){background:#000!important;color:#fff!important;border-color:#ff0!important}
+.theme-contrast .gwe-activity-guide :is(button,select,textarea,input),[data-stem-theme=contrast] .gwe-activity-guide :is(button,select,textarea,input){background:#000!important;color:#0f0!important;border-color:#0f0!important;accent-color:#0f0}
+.theme-contrast .gwe-activity-guide :focus-visible,[data-stem-theme=contrast] .gwe-activity-guide :focus-visible{outline-color:#ff0!important}
+@media(forced-colors:active){#geoworld-fs-workspace .gwe-activity-guide,#geoworld-fs-workspace .gwe-activity-guide :is(header,footer,article,details,summary,h2,h3,h4,p,label,strong,span,div,figure,figcaption){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}#geoworld-fs-workspace .gwe-activity-guide :is(button,select,textarea,input){background:Canvas!important;color:ButtonText!important;border-color:ButtonText!important}#geoworld-fs-workspace .gwe-activity-guide :focus-visible{outline-color:Highlight!important}}
+`;
+
+  var GEOMETRY_BUILDER_READABILITY_CSS = `
+#geoworld-fs-workspace.gw-root .gwe-tool-category{display:grid;grid-template-columns:72px minmax(0,1fr);align-items:center;gap:8px}
+#geoworld-fs-workspace.gw-root .gwe-tool-category select{width:100%;box-sizing:border-box;min-width:0;min-height:44px;padding:8px 10px;font:inherit}
+#geoworld-fs-workspace.gw-root .gwe-finder-reset{flex:none;min-height:44px;font:600 13px system-ui;cursor:pointer}
+#geoworld-fs-workspace.gw-root .gwe-tool-finder :is(label,strong,.gwe-tool-group),#geoworld-fs-workspace.gw-root .gwe-builder-dock :is(.gwe-builder-eyebrow,.gwe-builder-name,.gwe-section-title,.gwe-metric strong){letter-spacing:0}
+#geoworld-fs-workspace.gw-root .gwe-tool-result{border-radius:6px;background:#303b3c}
+#geoworld-fs-workspace.gw-root .gwe-tool-result:disabled{opacity:1;background:transparent;color:#c6d3d2;border-style:dashed}
+#geoworld-fs-workspace.gw-root .gwe-selected-metrics{display:block}
+#geoworld-fs-workspace.gw-root .gwe-selected-metrics>.gwe-metric{display:flex;align-items:center;gap:8px;padding:0;text-align:left;border:0}
+#geoworld-fs-workspace.gw-root .gwe-selected-metrics>.gwe-metric span{margin:0}
+#geoworld-fs-workspace.gw-root .gwe-grid-span{margin-top:12px;color:#f4f7f6}
+#geoworld-fs-workspace.gw-root .gwe-grid-span-label{font-size:13px;font-weight:650;line-height:1.5}
+#geoworld-fs-workspace.gw-root .gwe-grid-span dl{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:8px 0 0}
+#geoworld-fs-workspace.gw-root .gwe-grid-span dl>div{min-width:0}
+#geoworld-fs-workspace.gw-root .gwe-grid-span dt{font-size:12px;line-height:1.5;color:#c6d3d2;overflow-wrap:anywhere}
+#geoworld-fs-workspace.gw-root .gwe-grid-span dd{margin:4px 0 0;font-size:19px;font-weight:650;line-height:1.3;color:#b9eee4;font-variant-numeric:tabular-nums}
+#geoworld-fs-workspace.gw-root .gwe-grid-span dd span{display:block;font-size:12px;font-weight:400;line-height:1.5;color:#c6d3d2}
+#geoworld-fs-workspace.gw-root .gwe-grid-span-note{margin:8px 0 0;font-size:12px;line-height:1.5;color:#c6d3d2}
+#geoworld-fs-workspace.gw-root .gwe-camera-presets{grid-template-columns:repeat(3,minmax(0,1fr))}
+#geoworld-fs-workspace.gw-root :is(.gwe-camera-presets,.gwe-camera-view-presets) button[aria-pressed="true"]{background:#b9eee4!important;color:#173b38!important;border-color:#b9eee4!important;box-shadow:inset 0 0 0 2px #173b38}
+#geoworld-fs-workspace.gw-root .gwe-camera-preset-check{font-size:inherit;line-height:1}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-grid-span :is(dt,.gwe-grid-span-label,.gwe-grid-span-note,dd span){font-size:14px;line-height:1.5}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-grid-span dd{font-size:22px}
+.theme-contrast #geoworld-fs-workspace.gw-root .gwe-grid-span :is(dt,dd,span,p),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root .gwe-grid-span :is(dt,dd,span,p){color:#fff!important}
+.theme-contrast #geoworld-fs-workspace.gw-root :is(.gwe-camera-presets,.gwe-camera-view-presets) button[aria-pressed="true"],[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root :is(.gwe-camera-presets,.gwe-camera-view-presets) button[aria-pressed="true"]{background:#000!important;color:#0f0!important;border-color:#0f0!important;box-shadow:inset 0 0 0 2px #0f0}
+@media(forced-colors:active){#geoworld-fs-workspace.gw-root .gwe-grid-span :is(dt,dd,span,p){color:CanvasText!important}#geoworld-fs-workspace.gw-root :is(.gwe-camera-presets,.gwe-camera-view-presets) button[aria-pressed="true"]{background:Canvas!important;color:ButtonText!important;border-color:Highlight!important;box-shadow:none}}
+#geoworld-fs-workspace.gw-root[data-ui-surface="solid"] :is(.gwe-builder-dock,.gwe-focus-return,.gwe-preview-review,.gwe-print-focus-hud){background:#202728;backdrop-filter:none}
+#geoworld-fs-workspace.gw-root[data-ui-surface="solid"] :is(.gwe-builder-head,.gwe-builder-footer,.gwe-builder-quick-actions){background:#202728}
+#geoworld-fs-workspace.gw-root[data-ui-surface="solid"] .gwe-pointer-hud{background:#f3f6f7;backdrop-filter:none}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gwe-builder-dock,.gwe-preview-review,.gwe-print-focus-hud,.gwe-focus-return,.gwe-pointer-hud){font-size:15px;line-height:1.5}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gwe-builder-dock,.gwe-preview-review,.gwe-print-focus-hud,.gwe-focus-return,.gwe-pointer-hud) :is(button,input,select,textarea){font-size:15px;line-height:1.4;white-space:normal;overflow-wrap:anywhere}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gwe-builder-note,.gwe-builder-intro,.gwe-selection-scope,.gwe-edit-notice,.gwe-tool-result,.gwe-preview-review p,.gwe-print-focus-hud p,.gwe-project-status,.gwe-details p){font-size:15px;line-height:1.5}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gwe-builder-dock,.gwe-preview-review) :is(label,legend,summary){font-size:15px;line-height:1.5}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gwe-selection-label,.gwe-metric span,.gwe-tool-count,.gwe-tool-group,.gwe-tool-rotation,.gwe-builder-eyebrow,.gwe-selected-eyebrow,.gwe-print-ready-label,.gwe-print-scale,.gwe-print-ready-basis,.gwe-scale-help,.gwe-stamp-card-facts,.gwe-preview-facts,.gwe-preview-facts small,.gwe-preview-footer-heading span){font-size:13px;line-height:1.5}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gwe-selection-value,.gwe-section-title,.gwe-tool-result strong,.gwe-builder-name,.gwe-selected-heading h3,.gwe-preview-review h3){font-size:17px;line-height:1.4;white-space:normal;overflow-wrap:anywhere}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-workflow li{font-size:13px}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-builder-title>div{min-width:0}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-builder-dock[data-collapsed="true"]{max-width:calc(100% - 24px)}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-builder-dock[data-collapsed="true"] .gwe-collapse{white-space:nowrap}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gwe-tool-finder-toggle,.gwe-focus-return span,.gwe-pointer-hud span){font-size:15px}
+#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] :is(.gwe-match-actions kbd,.gwe-choice-change){font-size:12px}
+@media(max-width:800px){#geoworld-fs-workspace.gw-root .gwe-builder-dock[data-finder="true"]{max-height:calc(100% - 118px)}#geoworld-fs-workspace.gw-root .gwe-builder-dock[data-finder="true"] :is(.gwe-builder-head,.gwe-builder-footer){display:none}}
+@media(max-width:800px) and (max-height:700px) and (orientation:portrait){#geoworld-fs-workspace.gw-root .gwe-builder-dock[data-collapsed="false"]:not([data-finder="true"]):has(.gwe-creation-summary[data-selected="true"]){max-height:calc(100% - 148px)}#geoworld-fs-workspace.gw-root .gwe-builder-dock[data-collapsed="false"]:not([data-finder="true"]):has(.gwe-creation-summary[data-selected="true"]) :is(.gwe-workflow,.gwe-builder-eyebrow){display:none}}
+@media(max-height:520px) and (orientation:landscape){#geoworld-fs-workspace.gw-root[data-touch-active="true"]>.gwe-home-shortcut{display:none}}
+#geoworld-fs-workspace.gw-root[data-toolbar-collapsed="true"]>.gwe-home-shortcut,#geoworld-fs-workspace.gw-root[data-fullscreen="true"]>.gwe-home-shortcut{display:none}
+@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-touch-active="true"] .gwe-builder-dock[data-collapsed="true"]{top:270px;bottom:auto;left:8px;right:auto;transform:none;width:auto}#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(>.gw-coordinate-hud[open]) .gwe-builder-dock[data-collapsed="true"]{visibility:hidden;pointer-events:none}}
+@media(max-width:800px) and (max-height:567px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-touch-active="true"] .gwe-builder-dock[data-collapsed="true"]{top:68px;left:90px}#geoworld-fs-workspace.gw-root[data-touch-active="true"] .gwe-builder-dock[data-collapsed="true"] .gwe-builder-head{padding:4px}#geoworld-fs-workspace.gw-root[data-touch-active="true"] .gwe-builder-dock[data-collapsed="true"] .gwe-collapse{padding-left:8px;padding-right:8px}#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(.gwe-builder-dock[data-collapsed="true"])>.gw-coordinate-hud:not([open]){top:68px!important}#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(.gwe-builder-dock[data-collapsed="true"])>.gw-coordinate-hud:not([open])>summary{min-height:44px!important}#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(.gwe-builder-dock[data-collapsed="true"]):not(:has(>.gw-coordinate-hud[open])) .gw-placement-hint{max-width:calc(100% - 98px)}}
+@media(max-width:800px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(.gwe-builder-dock[data-collapsed="true"]):has(>.gw-coordinate-hud[open]) .gw-placement-hint{visibility:hidden;pointer-events:none}}
+@media(max-width:800px) and (max-height:567px) and (orientation:portrait){#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(.gwe-builder-dock[data-collapsed="true"]) .gw-touch-actions{gap:4px!important}#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(.gwe-builder-dock[data-collapsed="true"]) .gw-touch-actions>button{min-height:44px!important;height:44px!important;padding:2px 6px!important;line-height:1.1!important}#geoworld-fs-workspace.gw-root[data-touch-active="true"]:has(.gwe-builder-dock[data-collapsed="true"]) .gw-touch-mode-hint{display:none!important}}
+@media(max-height:520px){#geoworld-fs-workspace.gw-root .gwe-tool-finder form{grid-template-columns:72px minmax(0,1fr);align-items:center}#geoworld-fs-workspace.gw-root .gwe-tool-finder form>input{grid-column:2}#geoworld-fs-workspace.gw-root .gwe-tool-category{grid-column:1/-1}}
+@media(max-width:380px){#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-builder-head{gap:6px}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-builder-title{gap:7px}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-builder-icon{display:none}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-tool-finder{padding:10px}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-preview-review .gwe-preview-buttons{grid-template-columns:1fr}#geoworld-fs-workspace.gw-root[data-ui-text-size="large"] .gwe-preview-review .gwe-preview-buttons button:last-child{grid-column:auto}}
+.theme-contrast #geoworld-fs-workspace.gw-root :is(.gwe-tool-result,.gwe-pointer-hud,.gwe-focus-return,.gwe-preview-review,.gwe-print-focus-hud,.gwe-builder-head,.gwe-builder-footer,.gwe-builder-quick-actions),[data-stem-theme="contrast"] #geoworld-fs-workspace.gw-root :is(.gwe-tool-result,.gwe-pointer-hud,.gwe-focus-return,.gwe-preview-review,.gwe-print-focus-hud,.gwe-builder-head,.gwe-builder-footer,.gwe-builder-quick-actions){background:#000!important;color:#fff!important;border-color:#ff0!important}
+@media(forced-colors:active){#geoworld-fs-workspace.gw-root .gwe-tool-finder :is(span,strong,label,p){color:CanvasText!important}}
+@media(forced-colors:active){#geoworld-fs-workspace.gw-root :is(.gwe-tool-result,.gwe-pointer-hud,.gwe-focus-return,.gwe-preview-review,.gwe-print-focus-hud,.gwe-builder-head,.gwe-builder-footer,.gwe-builder-quick-actions){background:Canvas!important;color:CanvasText!important;border-color:CanvasText!important}#geoworld-fs-workspace.gw-root :is(.gwe-tool-result,.gwe-pointer-hud,.gwe-focus-return,.gwe-preview-review,.gwe-print-focus-hud,.gwe-builder-dock) :is(button,input,select,textarea){background:Canvas!important;color:ButtonText!important;border-color:ButtonText!important}}
+`;
 
   // Placement note (2026-09-06): the launcher and the dock start below the
   // viewport's own controls. Both used to sit at the same height as the
@@ -2645,6 +2830,137 @@
       ,".gwe-showcase-tools{width:min(430px,100%);box-sizing:border-box}.gwe-showcase-actions{display:grid;grid-template-columns:1.2fr .85fr 1fr}.gwe-showcase-actions button{min-width:0;padding:9px 8px;white-space:normal;font-size:12px}.gwe-showcase-files-backdrop{position:absolute;inset:0;z-index:5;display:flex;align-items:center;justify-content:flex-end;padding:20px;box-sizing:border-box;background:#08251d55}.gwe-showcase-files{display:flex;flex-direction:column;width:408px;max-width:100%;max-height:100%;box-sizing:border-box;border:1px solid #a5b9a7;border-radius:22px;background:#f8f6ee;color:#173b35;box-shadow:0 24px 70px #09251d55;text-shadow:none}.gwe-showcase-files:focus{outline:none}.gwe-files-header{flex-shrink:0;display:flex;align-items:flex-start;justify-content:space-between;gap:12px;padding:20px 18px 15px;border-bottom:1px solid #2b534323}.gwe-files-eyebrow{font-size:9px;font-weight:750;letter-spacing:.18em;color:#536c58}.gwe-files-header h2{margin:5px 0 4px;font-size:25px;line-height:1.15;letter-spacing:-.035em;font-weight:750}.gwe-files-header p{margin:0;color:#566c5d;font-size:12px}.gwe-showcase-files button{box-sizing:border-box;min-height:44px;padding:9px 12px;border:1px solid #9ab09d;border-radius:10px;background:#fffdf7;color:#1c4a3b;font:inherit;font-size:12px;font-weight:650;cursor:pointer}.gwe-showcase-files button:hover{background:#e5ecdd;border-color:#477858}.gwe-showcase-files button:focus-visible,.gwe-showcase-files .gwe-recovery:focus{outline:3px solid #8e6229;outline-offset:2px}.gwe-showcase-files button:disabled{opacity:.6;cursor:wait}.gwe-showcase-files .gwe-files-close{flex:0 0 44px;width:44px;padding:0;font-size:24px}.gwe-files-body{display:flex;flex-direction:column;gap:12px;min-height:0;padding:15px 18px 18px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#92a58e #f8f6ee}.gwe-file-card{padding:15px;border:1px solid #9db09d66;border-radius:15px;background:#fffef9}.gwe-file-heading{display:flex;align-items:center;gap:10px}.gwe-file-icon{width:27px;height:27px;flex:0 0 27px;color:#537856}.gwe-file-card h3{margin:0;font-size:15px;line-height:1.3;letter-spacing:-.015em}.gwe-file-card p{margin:9px 0 12px;color:#506858;font-size:12px;line-height:1.55}.gwe-file-card>button{width:100%}.gwe-file-actions{display:grid;grid-template-columns:1fr 1.2fr;gap:7px}.gwe-showcase-files .gwe-file-primary{background:#24533e;color:#f8f6ee;border-color:#24533e}.gwe-showcase-files .gwe-file-primary:hover{background:#33654b}.gwe-file-card .gwe-file-note{margin:9px 0 0;font-size:11px;line-height:1.5}.gwe-file-import{border-style:dashed;background:#eef1e7}.gwe-file-photo{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:4px}.gwe-file-photo strong,.gwe-file-photo span{display:block;font-size:12px}.gwe-file-photo span{margin-top:4px;font-size:11px;color:#566c5d}.gwe-file-status{margin:0;padding:10px;border-radius:10px;background:#dde9d5;font-size:12px;line-height:1.5}.gwe-showcase-files .gwe-recovery{margin-top:12px;background:#f8f6ee;border-color:#9ab09d;color:#173b35}.gwe-showcase-files .gwe-recovery p,.gwe-showcase-files .gwe-recovery strong{color:#173b35}.gwe-showcase-files .gwe-recovery[data-state=\"error\"]{background:#fff0df;border-color:#ac703c}.gwe-showcase-files .gwe-recovery-actions{display:flex;flex-wrap:wrap;gap:7px}.gwe-showcase-files .gwe-replace{background:#6a422e;color:#fff9ee;border-color:#6a422e}@media(max-width:520px){.gwe-showcase-tools{width:min(320px,100%)}.gwe-showcase-actions button{padding:8px 5px;font-size:11px}.gwe-showcase-files-backdrop{padding:10px;justify-content:center}.gwe-files-header{padding:16px 14px 12px}.gwe-files-header h2{font-size:23px}.gwe-files-body{padding:12px 14px 14px}.gwe-file-card{padding:12px}}@media(max-height:500px){.gwe-showcase-files-backdrop{padding:8px}.gwe-files-header{padding:10px 14px}.gwe-files-header h2{font-size:21px}.gwe-files-body{padding:10px 14px}}.theme-contrast .gwe-showcase-files,[data-stem-theme=\"contrast\"] .gwe-showcase-files{background:#000;color:#fff;border:2px solid #0ff}.theme-contrast .gwe-showcase-files :is(.gwe-files-header,.gwe-files-body,.gwe-file-card,.gwe-recovery,.gwe-file-status),[data-stem-theme=\"contrast\"] .gwe-showcase-files :is(.gwe-files-header,.gwe-files-body,.gwe-file-card,.gwe-recovery,.gwe-file-status){background:#000;color:#fff;border-color:#0ff}.theme-contrast .gwe-showcase-files :is(p,span,strong,h2,h3,svg),[data-stem-theme=\"contrast\"] .gwe-showcase-files :is(p,span,strong,h2,h3,svg){color:#fff}.theme-contrast .gwe-showcase-files button,[data-stem-theme=\"contrast\"] .gwe-showcase-files button{background:#000;color:#0f0;border:2px solid #0f0}"
       ,".gwe-showcase-orbit{transform:translateY(-50%)}@media(max-height:500px){.gwe-showcase{padding:12px 16px}.gwe-showcase-caption{top:12px;left:20px;right:20px;display:flex;flex-wrap:wrap;align-items:center;gap:6px 18px}.gwe-showcase-caption>span,.gwe-showcase-meta{display:none}.gwe-showcase-caption strong{margin:0;font-size:23px;line-height:1.2}.gwe-showcase-looks{margin:0;padding:3px}.gwe-showcase-looks button{min-width:80px;padding:8px 12px;font-size:11px}.gwe-showcase-tools{padding:6px}.gwe-showcase-views button{padding:6px 5px}.gwe-showcase-actions button{padding:8px 7px;font-size:11px}}@media(max-height:500px) and (min-width:740px){.gwe-showcase-tools{flex-direction:row;gap:10px;width:min(780px,100%);padding:7px 9px;border-radius:16px}.gwe-showcase-views{flex:1.05 1 0;min-width:0}.gwe-showcase-actions{flex:1.2 1 0;min-width:0;gap:6px}.gwe-showcase-actions button{font-size:12px}}"
       ,".gwe-builder-dock .gwe-choice-card{appearance:none;min-height:76px;text-align:left;color:inherit;font:inherit;cursor:pointer}.gwe-choice-card .gwe-selection-label{display:flex;justify-content:space-between;gap:6px}.gwe-choice-change{font-size:10px;font-weight:650;color:#d4e8ca;text-decoration:underline;text-underline-offset:3px}.gwe-builder-dock .gwe-choice-card:hover{background:#315446;border-color:#bad0b886}.gwe-builder-dock .gwe-choice-card:focus-visible,.gwe-builder-dock .gwe-resume-building:focus-visible{outline:3px solid #f1d094;outline-offset:2px}.gwe-builder-footer{flex:0 0 auto;padding:10px 15px 12px;border-top:1px solid #b9d1bf26;background:#173b35}.gwe-resume-building{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;min-height:44px;padding:9px 12px;border:1px solid #acc9af66;border-radius:11px;background:#244c40;color:#f5f0e5;font:inherit;font-size:12px;font-weight:650;cursor:pointer}.gwe-resume-building svg{order:1}.gwe-resume-building:hover{background:#315b49;border-color:#d4e8ca}.gwe-builder-quick-actions button:disabled{cursor:default}.gwe-builder-dock[data-collapsed=\"true\"] .gwe-collapse{padding:8px 12px;white-space:nowrap}@media(max-width:800px){.gwe-builder-dock[data-collapsed=\"false\"]{max-height:min(62%,calc(100% - 118px))}.gwe-builder-footer{padding:8px 13px 10px}.gwe-builder-head{padding-top:8px;padding-bottom:8px}.gwe-builder-quick-actions{padding-top:8px;padding-bottom:9px}.gwe-workflow{padding-top:7px}}@media(max-height:500px){.gwe-builder-dock[data-collapsed=\"false\"]{max-height:calc(100% - 118px)}.gwe-builder-dock[data-collapsed=\"false\"] .gwe-builder-icon,.gwe-builder-dock[data-collapsed=\"false\"] .gwe-builder-eyebrow{display:none}.gwe-builder-head{padding:6px 12px}.gwe-workflow{padding-top:5px}.gwe-builder-quick-actions{padding:6px 12px 8px}.gwe-builder-footer{padding:6px 12px 8px}}.theme-contrast .gwe-choice-change,[data-stem-theme=\"contrast\"] .gwe-choice-change{color:#0f0}.theme-contrast .gwe-builder-footer,[data-stem-theme=\"contrast\"] .gwe-builder-footer{background:#000;border-color:#0ff}"
+      ,`
+.gwe-home-backdrop{padding:0;background:#f3f6f7;color:#1b292d;align-items:stretch}
+.gwe-home{width:100%;height:100%;max-height:100%;border:0;border-radius:0;box-shadow:none;background:#fff;padding:22px 28px 26px;color:#1b292d;scrollbar-color:#8da2a8 #f3f6f7}
+.gwe-home *{letter-spacing:0;overflow-wrap:break-word}
+.gwe-home>header,.gwe-home>nav,.gwe-home>section,.gwe-home>footer,.gwe-home>.gwe-home-detail,.gwe-home>.gwe-world-shelf{width:100%;max-width:1100px;margin-left:auto;margin-right:auto}
+.gwe-home .gwe-home-top{min-height:44px;padding-bottom:12px;border-bottom:1px solid #e2e8ea}
+.gwe-home .gwe-home-brand{font-size:16px;color:#1b292d;gap:10px}
+.gwe-home .gwe-home-brand>span{width:28px;height:28px;color:#007d79}
+.gwe-home button{border-radius:6px;background:#fff;border-color:#c0cdd1;color:#25383d;font-size:13px;line-height:1.4;padding:10px 14px;min-width:0}
+.gwe-home button:hover{background:#edf6f5;border-color:#668f91}
+.gwe-home button:focus-visible,.gwe-home select:focus-visible,.gwe-home input:focus-visible{outline:3px solid #007d79;outline-offset:3px}
+.gwe-home button:disabled{cursor:default}
+.gwe-home .gwe-home-continue{background:#e6f5f2;border-color:#b5dcd5;color:#135651;font-size:12px}
+.gwe-home .gwe-home-heading{width:100%;max-width:1100px;margin:20px auto 18px}
+.gwe-home .gwe-home-eyebrow{margin:0 0 5px;font-size:11px!important;color:#5a6e74!important}
+.gwe-home h1{font-size:34px;line-height:1.15;margin:0 0 8px;color:#1b292d}
+.gwe-home .gwe-home-heading>p:last-child{font-size:14px;line-height:1.5;color:#52666d}
+.gwe-home .gwe-home-grid{grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.gwe-home .gwe-home-card{display:grid;grid-template-columns:32px minmax(0,1fr) 14px;align-items:start;gap:10px;min-height:138px;padding:16px 14px;border:1px solid #d8e2e5;border-top:3px solid #007d79;border-radius:8px;background:#f3f8f8;text-align:left}
+.gwe-home .gwe-home-card[data-path=learn]{background:#f3f8f8;border-color:#d8e2e5;border-top-color:#007d79}
+.gwe-home .gwe-home-card[data-path=build]{background:#f3f6fa;border-top-color:#537fbd}
+.gwe-home .gwe-home-card[data-path=explore]{background:#f7f8f2;border-color:#d8e2e5;border-top-color:#668739}
+.gwe-home .gwe-home-card[data-path=create]{background:#fcf4f2;border-color:#eadeda;border-top-color:#c3634f}
+.gwe-home .gwe-home-card:hover{background:#fff;border-color:#668f91}
+.gwe-home .gwe-home-art{width:32px;height:38px;color:#007d79;flex-basis:auto}
+.gwe-home .gwe-home-card[data-path=build] .gwe-home-art{color:#456da3}
+.gwe-home .gwe-home-card[data-path=explore] .gwe-home-art{color:#5b7535}
+.gwe-home .gwe-home-card[data-path=create] .gwe-home-art{color:#ae5241}
+.gwe-home .gwe-home-card-kicker{font-size:10px;line-height:1.4;color:#52666d}
+.gwe-home .gwe-home-card strong{font-size:20px;line-height:1.2;margin:4px 0 7px;color:#1b292d}
+.gwe-home .gwe-home-card-description{font-size:12px;line-height:1.45;color:#52666d}
+.gwe-home .gwe-home-arrow{font-size:16px;color:#5e747a}
+.gwe-home .gwe-home-learning{margin-top:22px;padding:18px 0 20px;border-top:1px solid #d8e2e5;border-bottom:1px solid #d8e2e5;border-radius:0;background:none}
+.gwe-home .gwe-home-learning-head{display:flex;align-items:baseline;justify-content:space-between;gap:8px;margin-bottom:14px}
+.gwe-home .gwe-home-learning-head h2{font-size:15px;line-height:1.4;color:#52666d;margin:0}
+.gwe-home .gwe-home-learning-progress{font-size:11px;line-height:1.4;color:#52666d;font-variant-numeric:tabular-nums}
+.gwe-home .gwe-home-learning-body{display:grid;grid-template-columns:minmax(0,1fr) minmax(200px,320px);gap:28px;align-items:center}
+.gwe-home .gwe-home-learning-copy{min-width:0}
+.gwe-home .gwe-home-learning-copy h3{font-size:23px;line-height:1.25;margin:0 0 10px;color:#1b292d}
+.gwe-home .gwe-lesson-facts{gap:0;margin:10px 0 12px;align-items:center}
+.gwe-home .gwe-lesson-facts li{border:0;border-radius:0;background:none;color:#52666d;font-size:11px;padding:0 10px;line-height:1.5;border-left:1px solid #c4d2d6}
+.gwe-home .gwe-lesson-facts li:first-child{padding-left:0;border-left:0}
+.gwe-home .gwe-home-goals{font-size:12px;line-height:1.6;color:#334b53;margin:10px 0 12px;padding-left:18px}
+.gwe-home .gwe-home-first-task{font-size:12px;line-height:1.55;color:#52666d;margin:10px 0 14px}
+.gwe-home .gwe-home-first-task strong{color:#1b292d}
+.gwe-home .gwe-home-learning-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:14px}
+.gwe-home .gwe-home-learning-actions .gwe-home-secondary{margin:0}
+.gwe-home .gwe-home-primary{background:#007d79;border-color:#007d79;color:#fff}
+.gwe-home .gwe-home-primary:hover{background:#006963;border-color:#006963}
+.gwe-home .gwe-lesson-map svg{border-radius:8px;border-color:#c4d2d6}
+.gwe-home .gwe-lesson-map figcaption{font-size:11px;line-height:1.5;color:#52666d;margin-top:6px}
+.gwe-home .gwe-home-detail{max-width:1100px}
+.gwe-home .gwe-home-detail h2{font-size:21px;line-height:1.3;color:#1b292d}
+.gwe-home .gwe-home-detail p,.gwe-home .gwe-home-detail li{color:#52666d}
+.gwe-home .gwe-home-preview{border:0;border-radius:0;background:none;padding:0;margin:0 0 20px}
+.gwe-home .gwe-home-preview.gwe-home-preview--route{background:none;grid-template-columns:minmax(0,1fr) minmax(200px,360px);gap:28px;padding:0}
+.gwe-home .gwe-home-lesson-picker select,.gwe-home .gwe-home-practice-row input{border-radius:6px;border-color:#bdcdd2;background:#fff;color:#25383d}
+.gwe-home .gwe-home-journey{gap:20px}
+.gwe-home .gwe-home-journey article{border:0;border-radius:0;background:none;padding:16px 0;border-top:2px solid #bdd8d5}
+.gwe-home .gwe-home-journey article>span{color:#007d79;font-size:11px;margin-bottom:12px}
+.gwe-home .gwe-home-journey h2{font-size:17px}
+.gwe-home .gwe-home-save{border-radius:6px;border-color:#e8c4ba;background:#fff5f1;padding:12px;margin:14px 0}
+.gwe-home .gwe-home-learning .gwe-home-save{flex-wrap:wrap;gap:8px}
+.gwe-home .gwe-home-save p{color:#6a4f46;line-height:1.5}
+.gwe-home .gwe-home-create-option{border:0;border-top:1px solid #d8e2e5;border-radius:0;background:none;padding:20px 0;margin-bottom:0}
+.gwe-home .gwe-home-practice-level button{border-radius:6px;border-color:#c0cdd1;background:#fff;color:#25383d}
+.gwe-home .gwe-home-practice-level button[aria-pressed=true]{border-color:#007d79;background:#e8f5f2}
+.gwe-home .gwe-home-practice-level span,.gwe-home .gwe-home-skill-count{color:#52666d}
+.gwe-home .gwe-home-skill-dots i{border-color:#007d79}
+.gwe-home .gwe-home-skill-dots i[data-ok=true]{background:#007d79}
+.gwe-home .gwe-home-progress,.gwe-home .gwe-home-detail p.gwe-home-practice-focus{color:#00736e}
+.gwe-home .gwe-home-practice-skills{border-color:#d8e2e5}
+.gwe-home .gwe-home-file{border-radius:8px;border-color:#a7bec4;background:#f3f8f8}
+.gwe-home .gwe-home-footer{border-top:0;padding-top:14px;margin-top:0}
+.gwe-home .gwe-home-footer p{color:#52666d}
+.gwe-home .gwe-world-shelf{background:none;border:0;border-top:1px solid #d8e2e5;border-radius:0;padding:18px 0;color:#25383d;margin-top:0}
+.gwe-home .gwe-shelf-heading h2{font-size:19px;color:#1b292d}
+.gwe-home .gwe-project-card{border-radius:8px;border-color:#c7d5d8;background:#fff}
+.gwe-home .gwe-project-pick{border:0;border-radius:0;padding:0 0 12px;background:transparent;color:#25383d}
+.gwe-home .gwe-project-pick[aria-pressed=true]{box-shadow:inset 0 0 0 2px #007d79}
+.gwe-home .gwe-project-pick img,.gwe-home .gwe-project-empty-art{background:#eaf1f3}
+.gwe-home .gwe-project-actions{border-color:#d8e2e5}
+.gwe-home .gwe-project-status{color:#52666d}
+.gwe-home .gwe-lesson-concept{padding:10px 12px;border-left:3px solid #c3634f;background:#fbf6f4;margin:12px 0}
+.gwe-home .gwe-lesson-concept strong{display:block;font-size:13px;line-height:1.5;color:#25383d}
+.gwe-home .gwe-lesson-concept p{font-size:12px;line-height:1.55;color:#52666d;margin:4px 0 0}
+.gwe-home .gwe-guided-browser{display:grid;grid-template-columns:minmax(230px,300px) minmax(0,1fr);gap:28px;align-items:start}
+.gwe-home .gwe-guided-catalog{min-width:0;border-right:1px solid #d8e2e5;padding-right:20px}
+.gwe-home .gwe-guided-catalog .gwe-home-lesson-picker{gap:6px;margin-bottom:14px}
+.gwe-home .gwe-guided-catalog label{color:#334b53;font-size:12px}
+.gwe-home .gwe-guided-catalog select{width:100%;font-size:13px;min-width:0}
+.gwe-home .gwe-catalog-summary{display:flex;justify-content:space-between;align-items:baseline;gap:8px;margin:0 0 8px;font-size:12px;line-height:1.5;color:#52666d}
+.gwe-home .gwe-catalog-summary strong{color:#25383d;font-size:13px}
+.gwe-home .gwe-catalog-lessons{list-style:none;padding:0;margin:0;max-height:440px;overflow:auto;overscroll-behavior:contain;scrollbar-width:thin;scrollbar-color:#8da2a8 #f3f6f7}
+.gwe-home .gwe-catalog-lessons li{margin:0;border-top:1px solid #e2e8ea}
+.gwe-home .gwe-catalog-lessons button{width:100%;display:grid;gap:5px;text-align:left;border:0;border-left:3px solid transparent;border-radius:0;padding:12px 10px;background:#fff;min-height:76px;color:#25383d}
+.gwe-home .gwe-catalog-lessons button:hover{background:#f3f8f8}
+.gwe-home .gwe-catalog-lessons button[aria-pressed=true]{border-left-color:#007d79;background:#e8f5f2}
+.gwe-home .gwe-catalog-lessons button:focus-visible{outline-offset:-3px}
+.gwe-home .gwe-catalog-lesson-title{font-size:13px;line-height:1.45;font-weight:700;color:#25383d}
+.gwe-home .gwe-catalog-lesson-meta{display:flex;flex-wrap:wrap;gap:4px 10px;font-size:11px;line-height:1.5;font-weight:450;color:#52666d}
+.gwe-home .gwe-catalog-lesson-status{font-size:11px;line-height:1.4;color:#52666d;font-weight:550}
+.gwe-home .gwe-catalog-lesson-status[data-completed=true]{color:#006963}
+.gwe-home .gwe-catalog-preview-link{display:flex;align-items:center;min-height:44px;padding:9px 2px;margin-top:8px;font-size:12px;line-height:1.5;font-weight:650;color:#00736e;text-underline-offset:3px}
+.gwe-home .gwe-catalog-preview-link:focus-visible{outline:3px solid #007d79;outline-offset:3px}
+.gwe-home .gwe-guided-selection{min-width:0}
+.gwe-home .gwe-guided-selection .gwe-home-preview--route{grid-template-columns:1fr;gap:20px;margin:0}
+.gwe-home .gwe-guided-selection .gwe-lesson-map{width:100%;max-width:360px;justify-self:start}
+.gwe-home .gwe-guided-launch{margin-top:14px;margin-bottom:2px}
+.gwe-home .gwe-guided-launch>.gwe-home-primary{min-width:160px}
+.gwe-home .gwe-guided-selection .gwe-home-save{flex-wrap:wrap;gap:8px;margin:14px 0 10px}
+.gwe-home .gwe-guided-selection h2:focus-visible{outline:3px solid #007d79;outline-offset:4px}
+@media(max-width:800px){.gwe-home .gwe-guided-browser{grid-template-columns:minmax(200px,250px) minmax(0,1fr);gap:20px}.gwe-home .gwe-guided-catalog{padding-right:16px}}
+@media(max-width:600px){.gwe-home .gwe-guided-browser{grid-template-columns:1fr;gap:20px}.gwe-home .gwe-guided-catalog{padding-right:0;border-right:0;border-bottom:1px solid #d8e2e5;padding-bottom:16px}.gwe-home .gwe-catalog-lessons{max-height:250px}.gwe-home .gwe-guided-catalog .gwe-home-lesson-picker{display:grid;grid-template-columns:minmax(0,1fr) minmax(0,1fr);gap:6px 10px}.gwe-home .gwe-guided-catalog .gwe-home-lesson-picker label{grid-row:1}.gwe-home .gwe-guided-catalog .gwe-home-lesson-picker select{grid-row:2}.gwe-home .gwe-guided-launch>.gwe-home-primary{width:100%}}
+@media(forced-colors:active){.gwe-home .gwe-catalog-lessons button[aria-pressed=true]{border-left:3px solid Highlight;outline:1px solid Highlight}}
+.theme-contrast .gwe-home .gwe-catalog-lessons button,[data-stem-theme=contrast] .gwe-home .gwe-catalog-lessons button{background:#000!important;color:#fff!important;border-color:#0ff!important}
+.theme-contrast .gwe-home .gwe-catalog-lessons button[aria-pressed=true],[data-stem-theme=contrast] .gwe-home .gwe-catalog-lessons button[aria-pressed=true]{outline:2px solid #0f0;outline-offset:-2px}
+.theme-contrast .gwe-home :is(.gwe-catalog-summary,.gwe-catalog-lesson-title,.gwe-catalog-lesson-meta,.gwe-catalog-lesson-status),[data-stem-theme=contrast] .gwe-home :is(.gwe-catalog-summary,.gwe-catalog-lesson-title,.gwe-catalog-lesson-meta,.gwe-catalog-lesson-status){color:#fff!important}
+.theme-contrast .gwe-home .gwe-catalog-preview-link,[data-stem-theme=contrast] .gwe-home .gwe-catalog-preview-link{color:#0f0!important}
+.theme-contrast .gwe-home :is(.gwe-catalog-preview-link,.gwe-guided-selection h2):focus-visible,[data-stem-theme=contrast] .gwe-home :is(.gwe-catalog-preview-link,.gwe-guided-selection h2):focus-visible{outline-color:#0ff}
+@media(max-width:900px){.gwe-home .gwe-home-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.gwe-home .gwe-home-card{min-height:112px}.gwe-home .gwe-home-learning-body{gap:20px;grid-template-columns:minmax(0,1fr) minmax(160px,260px)}}
+@media(max-width:600px){.gwe-home{padding:16px}.gwe-home .gwe-home-top{padding-bottom:10px}.gwe-home .gwe-home-heading{margin:17px auto 16px}.gwe-home h1{font-size:29px}.gwe-home .gwe-home-grid{gap:8px}.gwe-home .gwe-home-card{grid-template-columns:minmax(0,1fr) 12px;gap:6px;padding:12px 10px;min-height:158px}.gwe-home .gwe-home-art{width:28px;height:30px;grid-column:1}.gwe-home .gwe-home-card-copy{grid-column:1/-1}.gwe-home .gwe-home-arrow{grid-column:2;grid-row:1}.gwe-home .gwe-home-card strong{font-size:18px}.gwe-home .gwe-home-card-kicker{font-size:10px}.gwe-home .gwe-home-card-description{font-size:11px}.gwe-home .gwe-home-learning{margin-top:18px;padding:16px 0}.gwe-home .gwe-home-learning-head{align-items:flex-start;flex-direction:column;gap:4px}.gwe-home .gwe-home-learning-body,.gwe-home .gwe-home-preview.gwe-home-preview--route{grid-template-columns:1fr;gap:18px}.gwe-home .gwe-home-learning-copy h3{font-size:21px}.gwe-home .gwe-home-learning .gwe-lesson-map{max-width:340px;width:100%;justify-self:center}.gwe-home .gwe-home-journey{grid-template-columns:1fr;gap:8px}.gwe-home .gwe-home-journey article{padding:12px 0}.gwe-home .gwe-home-learning-actions button{flex:1 1 130px}.gwe-home .gwe-home-footer{padding-top:16px}.gwe-home .gwe-home-create-option{padding:16px 0}}
+@media(max-height:520px) and (min-width:901px){.gwe-home{padding:16px 24px}.gwe-home .gwe-home-heading{margin:14px auto}.gwe-home h1{font-size:29px}.gwe-home .gwe-home-card{min-height:124px;padding:12px}.gwe-home .gwe-home-learning{margin-top:16px;padding:14px 0}.gwe-home .gwe-home-learning-head{margin-bottom:10px}}
+.theme-contrast .gwe-home,[data-stem-theme=contrast] .gwe-home{background:#000;color:#fff;border:2px solid #0ff}
+.theme-contrast .gwe-home :is(.gwe-home-top,.gwe-home-learning,.gwe-home-journey article,.gwe-home-create-option,.gwe-lesson-concept),[data-stem-theme=contrast] .gwe-home :is(.gwe-home-top,.gwe-home-learning,.gwe-home-journey article,.gwe-home-create-option,.gwe-lesson-concept){background:#000;border-color:#0ff}
+.theme-contrast .gwe-home :is(h1,h2,h3,p,span,strong,label,li),[data-stem-theme=contrast] .gwe-home :is(h1,h2,h3,p,span,strong,label,li){color:#fff!important}
+.theme-contrast .gwe-home .gwe-home-card,[data-stem-theme=contrast] .gwe-home .gwe-home-card{background:#000!important;border:2px solid #0ff!important}
+@media(forced-colors:active){.gwe-home .gwe-home-card,.gwe-home .gwe-home-learning,.gwe-home .gwe-lesson-concept{border-color:CanvasText}.gwe-home button:focus-visible,.gwe-home select:focus-visible,.gwe-home input:focus-visible{outline-color:Highlight}}
+`
+      ,GEOMETRY_ACTIVITY_GUIDE_CSS
+      ,GEOMETRY_BUILDER_READABILITY_CSS
     ].join('');
     document.head.appendChild(style);
   }
@@ -3043,10 +3359,20 @@
       }
       function closeHome(){if(homePage!=='start')homeNavigate('start');else continueWorkspace();}
       function homeLesson(key){var eng=window[ENGINE_KEY];if(eng && eng.startHomeLesson)eng.startHomeLesson(key);}
-      function homePractice(round,level){var eng=window[ENGINE_KEY];if(eng && eng.startPracticeRound){setPracticeRound('');setPracticeError('');eng.startPracticeRound(round,level);}}
+      function homePractice(round,level){
+        var eng=window[ENGINE_KEY];if(!eng || !eng.startPracticeRound)return false;
+        return transitionBuilderWorld(eng,{title:'Practice round',kind:'practice',round:round,level:level},function(){
+          if(eng.startPracticeRound(round,level)===false)return false;
+          setPracticeRound('');setPracticeError('');return true;
+        });
+      }
       function homeCreator(blank){
-        if(blank && !startSandboxMode(ctx,{focus:false}))return;
-        patchGeometryState(ctx,{showGeometryHome:false,_geometryHomeInitial:false,creatorMode:true,showSandboxLauncher:false});
+        var eng=window[ENGINE_KEY];
+        function openCreator(){
+          if(blank && !startSandboxMode(ctx,{focus:false}))return false;
+          patchGeometryState(ctx,{showGeometryHome:false,_geometryHomeInitial:false,creatorMode:true,showSandboxLauncher:false});return true;
+        }
+        return blank && eng ? transitionBuilderWorld(eng,FREE_BUILD_LESSON,openCreator) : openCreator();
       }
       function homeAi(){
         patchGeometryState(ctx,{showGeometryHome:false,_geometryHomeInitial:false,showGameSettings:true});
@@ -3059,12 +3385,40 @@
       function homeSaveNotice(){return data.worldActive && !data._geometryHomeInitial && h('div',{className:'gwe-home-save',role:'note'},h('p',null,'Starting a different world replaces the workspace shown. You can save its student-built blocks first.'),h('button',{type:'button',onClick:function(){saveEditableWorld(ctx);}},'Save current build JSON'));}
       function homeStartSandbox(){if(startSandboxMode(ctx))patchGeometryState(ctx,{showGeometryHome:false,_geometryHomeInitial:false});}
       function changeBuilderGarden(enabled){var live=window[ENGINE_KEY];if(!live || !live._currentLesson || !live._currentLesson.sandbox)return;live._currentLesson=Object.assign({},live._currentLesson,{builderGarden:enabled});if(live.refreshLandscape)live.refreshLandscape(live._currentLesson.ground);patchGeometryState(ctx,{builderGardenEnabled:enabled});announce(ctx,enabled?'Garden workshop scenery shown.':'Open meadow scenery shown.','info');}
-      function renderLessonPreview(lesson){
+      function renderLessonPreview(lesson,actions){
         var overview=lessonOverviewModel(lesson);
-        return h('article',{className:'gwe-home-preview gwe-home-preview--route'},
-          h('div',{className:'gwe-home-lesson-copy'},h('h2',null,lesson.title),h('p',null,lesson.description),renderLessonFacts(h,overview, __alloT),
-            lesson.objectives && h('ul',{className:'gwe-home-goals'},lesson.objectives.slice(0,3).map(function(o,i){return h('li',{key:i},o);}))),
+        return h('article',{className:'gwe-home-preview gwe-home-preview--route',id:homePage==='learn'?'gwe-home-lesson-preview':undefined,'aria-labelledby':homePage==='learn'?'gwe-home-selected-lesson':undefined},
+          h('div',{className:'gwe-home-lesson-copy'},h('h2',{id:homePage==='learn'?'gwe-home-selected-lesson':undefined,tabIndex:homePage==='learn'?-1:undefined},lesson.title),h('p',null,lesson.description),renderLessonFacts(h,overview, __alloT),
+            renderHomeConcept(lesson),
+            lesson.objectives && h('ul',{className:'gwe-home-goals'},lesson.objectives.slice(0,3).map(function(o,i){return h('li',{key:i},o);})),actions),
           renderLessonMap(h,overview));
+      }
+      function renderHomeConcept(lesson){
+        var checks=window.StemLab && window.StemLab.geometryWorldLessonChecks;
+        var concept=checks && typeof checks.conceptModel==='function' ? checks.conceptModel(lesson,lesson.id) : null;
+        return concept && h('div',{className:'gwe-lesson-concept','aria-label':__alloT('stem.geometryworld_builder.learning_focus','Learning focus')},h('strong',null,concept.relationship),h('p',null,concept.question));
+      }
+      function renderGuidedCatalog(lessons,lesson,topic,visibleLessons,topics){
+        function selectLesson(id){patchGeometryState(ctx,{geometryHomeLesson:id});}
+        return h('section',{className:'gwe-guided-catalog','aria-label':__alloT('stem.geometryworld_builder.guided_lesson_catalog','Guided lesson catalog')},
+          h('div',{className:'gwe-home-lesson-picker'},
+            h('label',{htmlFor:'gwe-home-topic'},'Topic'),
+            h('select',{id:'gwe-home-topic',value:topic,onChange:function(event){
+              var next=event.target.value,matches=lessons.filter(function(item){return next==='All topics' || homeLessonTopic(item)===next;});
+              var selected=matches.some(function(item){return lesson && item.id===lesson.id;})?lesson:matches[0];
+              patchGeometryState(ctx,{geometryHomeLessonTopic:next,geometryHomeLesson:selected && selected.id});
+            }},h('option',{value:'All topics'},'All topics'),topics.map(function(value){return h('option',{key:value,value:value},value);})),
+            h('label',{htmlFor:'gwe-home-lesson'},'Choose a lesson'),
+            h('select',{id:'gwe-home-lesson',value:lesson?lesson.id:'',onChange:function(event){patchGeometryState(ctx,{geometryHomeLesson:event.target.value,geometryHomeLessonTopic:'All topics'});}},lessons.map(function(item){return h('option',{key:item.id,value:item.id},(lessonCompleted(item.id)?'\u2713 ':'')+item.title);}))),
+          h('p',{className:'gwe-catalog-summary',role:'status','aria-live':'polite'},h('strong',null,topic==='All topics'?'All guided lessons':topic),h('span',null,visibleLessons.length+' lesson'+(visibleLessons.length===1?'':'s'))),
+          h('ul',{className:'gwe-catalog-lessons',role:'list'},visibleLessons.map(function(item){
+            var overview=lessonOverviewModel(item),completed=lessonCompleted(item.id);
+            var workload=overview.activityCount?overview.activityCount+' activit'+(overview.activityCount===1?'y':'ies'):overview.questionCount?overview.questionCount+' question step'+(overview.questionCount===1?'':'s'):Array.isArray(item.objectives)&&item.objectives.length?item.objectives.length+' goal'+(item.objectives.length===1?'':'s'):'';
+            return h('li',{key:item.id},h('button',{type:'button','data-gwe-lesson-row':item.id,'aria-pressed':lesson && lesson.id===item.id?'true':'false','aria-controls':'gwe-home-lesson-preview',onClick:function(){selectLesson(item.id);}},
+              h('span',{className:'gwe-catalog-lesson-title'},item.title),
+              h('span',{className:'gwe-catalog-lesson-meta'},h('span',null,homeLessonTopic(item)),overview.minutes && h('span',null,overview.minutes),workload && h('span',null,workload)),
+              h('span',{className:'gwe-catalog-lesson-status','data-completed':completed?'true':'false'},completed?'Completed':'Not completed')));
+          })),lesson && h('a',{className:'gwe-catalog-preview-link',href:'#gwe-home-selected-lesson','aria-controls':'gwe-home-lesson-preview'},'View '+lesson.title));
       }
       // Practice rounds are generated by the core (window.StemLab.geometryWorldPractice).
       // A round number rebuilds the same world, so a class can play one round together;
@@ -3110,23 +3464,44 @@
         var doneCount=availableLessons.filter(function(l){return lessonCompleted(l.id);}).length;
         var nextUnfinished=availableLessons.filter(function(l){return !lessonCompleted(l.id);})[0];
         var chosen=homePage==='explore'?(data.geometryHomeExplore || 'geometryGarden'):data.geometryHomeLesson || (nextUnfinished && nextUnfinished.id) || 'volumeExplorer';
-        var lesson=availableLessons.filter(function(l){return l.id===chosen;})[0] || availableLessons[0];
-        var titles={start:'What would you like to do?',learn:'Find your next discovery.',build:'Make something your own.',explore:'A little room to wonder.',create:'Create a lesson worth exploring.',open:'Pick up where you left off.'};
+        var topics=[];availableLessons.forEach(function(item){var value=homeLessonTopic(item);if(topics.indexOf(value)<0)topics.push(value);});
+        var topic=topics.indexOf(data.geometryHomeLessonTopic)>=0?data.geometryHomeLessonTopic:'All topics';
+        var visibleLessons=homePage==='learn' && topic!=='All topics'?availableLessons.filter(function(item){return homeLessonTopic(item)===topic;}):availableLessons;
+        var lesson=visibleLessons.filter(function(l){return l.id===chosen;})[0] || visibleLessons[0];
+        var titles={start:'Geometry World',learn:'Guided lessons',build:'Free Build Studio',explore:'Explore a world',create:'Create a lesson',open:'My Worlds'};
+        var featuredOverview=homePage==='start' && lesson ? lessonOverviewModel(lesson) : null;
+        var firstActivity=lesson && Array.isArray(lesson.activities) ? lesson.activities.find(function(activity){return activity && typeof activity.title==='string';}) : null;
         return h('div',{key:'gwe-home',className:'gwe-home-backdrop'},h('section',{className:'gwe-home',ref:homeRef,tabIndex:-1,role:'dialog','aria-modal':'true','aria-labelledby':'gwe-home-title','aria-describedby':'gwe-home-description',onKeyDown:function(event){trapDialogKeys(event,closeHome);event.stopPropagation();}},
           h('header',{className:'gwe-home-top'},h('span',{className:'gwe-home-brand'},h('span',{'aria-hidden':'true'},studioCubeMark(h)),'Geometry World'),canContinue && h('button',{type:'button',className:'gwe-home-continue',onClick:continueWorkspace},'Continue your workspace',h('span',{'aria-hidden':'true'},' →'))),
-          h('div',{className:'gwe-home-heading'},homePage!=='start' && h('button',{type:'button',className:'gwe-home-back',onClick:function(){homeNavigate('start');}},'← All ways to explore'),h('p',{className:'gwe-home-eyebrow'},homePage==='start'?'LEARN · MAKE · DISCOVER':'GEOMETRY WORLD / '+homePage.toUpperCase()),h('h1',{id:'gwe-home-title'},titles[homePage] || titles.start),h('p',{id:'gwe-home-description'},homePage==='start'?'Choose a mode below. Return here anytime with the Geometry World Home button.':homePage==='build'?'Start with blocks. Finish with something you can share, revisit, or hold in your hands.':homePage==='learn'?'Choose a guided world, meet its guides, and practise geometry through discovery.':homePage==='explore'?'Wander through the Geometry Garden. Measure what catches your eye. No questions. No score.':homePage==='create'?'Build a world, add characters and questions, and turn your idea into a learning experience.':'Return to a local project, or open an editable Geometry World JSON file.')),
+          h('div',{className:'gwe-home-heading'},homePage!=='start' && h('button',{type:'button',className:'gwe-home-back',onClick:function(){homeNavigate('start');}},'← All ways to explore'),h('p',{className:'gwe-home-eyebrow'},homePage==='start'?'Learning studio':'GEOMETRY WORLD / '+homePage.toUpperCase()),h('h1',{id:'gwe-home-title'},titles[homePage] || titles.start),h('p',{id:'gwe-home-description'},homePage==='start'?'What would you like to do?':homePage==='build'?'Build, measure, and revise a creation.':homePage==='learn'?'Investigate a world and explain the geometry you find.':homePage==='explore'?'Look for patterns, compare structures, and measure what you notice.':homePage==='create'?'Create structures, characters, and questions for a learning world.':'Return to a local project, or open an editable Geometry World JSON file.')),
           homePage==='start' && h('nav',{className:'gwe-home-grid','aria-label':__alloT('stem.geometryworld_builder.geometry_world_modes','Geometry World modes')},[
-            ['learn','Learn','Guided lessons','Meet your guides, solve challenges, and make geometry click.'],
-            ['build','Build','Free Build Studio','Build freely, showcase your creation, and prepare a 3D print.'],
-            ['explore','Explore','Garden and Skyline City','Quiet places to wander, notice patterns, and measure.'],
-            ['create','Create a lesson','Lesson Creator','Design a learning world with characters and questions.']
+            ['learn','Learn','Guided lessons','Investigate volume, area, fractions, and scale.'],
+            ['build','Build','Free Build Studio','Make a creation. Measure and refine it.'],
+            ['explore','Explore','Garden and Skyline City','Find patterns in places and structures.'],
+            ['create','Create a lesson','Lesson Creator','Set a challenge for another learner.']
           ].map(function(card){return h('button',{key:card[0],type:'button',className:'gwe-home-card','data-path':card[0],onClick:function(){homeNavigate(card[0]);}},h('span',{className:'gwe-home-art'},homeArt(card[0])),h('span',{className:'gwe-home-card-copy'},h('span',{className:'gwe-home-card-kicker'},card[2]),h('strong',null,card[1]),h('span',{className:'gwe-home-card-description'},card[3])),h('span',{className:'gwe-home-arrow','aria-hidden':'true'},'↗'));})),
+          homePage==='start' && lesson && h('section',{className:'gwe-home-learning','aria-labelledby':'gwe-home-learning-title'},
+            h('div',{className:'gwe-home-learning-head'},h('h2',{id:'gwe-home-learning-title'},doneCount?'Next discovery':'Start an investigation'),h('span',{className:'gwe-home-learning-progress'},doneCount+' of '+availableLessons.length+' guided lessons complete')),
+            h('div',{className:'gwe-home-learning-body'},
+              h('div',{className:'gwe-home-learning-copy'},h('h3',null,lesson.title),renderLessonFacts(h,featuredOverview,__alloT),renderHomeConcept(lesson),
+                lesson.objectives && h('ul',{className:'gwe-home-goals'},lesson.objectives.slice(0,2).map(function(objective,index){return h('li',{key:index},objective);})),
+                firstActivity && h('p',{className:'gwe-home-first-task'},h('strong',null,'First stop: '),firstActivity.title),
+                homeSaveNotice(),
+                h('div',{className:'gwe-home-learning-actions'},h('button',{type:'button',className:'gwe-home-primary','data-gwe-featured-lesson':lesson.id,disabled:!live || !live.startHomeLesson,onClick:function(){homeLesson(lesson.id);}},lessonCompleted(lesson.id)?'Revisit this lesson':'Start this lesson'),h('button',{type:'button',className:'gwe-home-secondary',onClick:function(){homeNavigate('learn');}},'All guided lessons'))),
+              renderLessonMap(h,featuredOverview))),
           (homePage==='start'||homePage==='open') && renderWorldShelf(),
           homePage==='start' && h('footer',{className:'gwe-home-footer'},h('div',null,h('strong',null,'Already have a creation?'),h('p',null,'Bring an editable build back into Geometry World.')),h('button',{type:'button',onClick:function(){homeNavigate('open');}},'Open a saved build',h('span',{'aria-hidden':'true'},' →'))),
-          (homePage==='learn'||homePage==='explore') && h('div',{className:'gwe-home-detail'},homePage==='learn' && h('div',{className:'gwe-home-lesson-picker'},h('label',{htmlFor:'gwe-home-lesson'},'Choose a lesson'),h('select',{id:'gwe-home-lesson',value:lesson?lesson.id:chosen,onChange:function(event){patchGeometryState(ctx,{geometryHomeLesson:event.target.value});}},availableLessons.map(function(l){return h('option',{key:l.id,value:l.id},(lessonCompleted(l.id)?'✓ ':'')+l.title); })),homePage==='learn' && doneCount>0 && h('p',{className:'gwe-home-progress','data-gwe-lessons-done':doneCount},doneCount+' of '+availableLessons.length+' guided lessons complete')),
-            homePage==='explore' && availableLessons.length>1 && h('div',{className:'gwe-home-practice-level gwe-home-place-picker',role:'group','aria-label':__alloT('stem.geometryworld_builder.a11y_choose_a_place', 'Choose a place')},availableLessons.map(function(l){
+          homePage==='learn' && h('div',{className:'gwe-home-detail'},
+            h('p',{className:'gwe-home-progress','data-gwe-lessons-done':doneCount},doneCount+' of '+availableLessons.length+' guided lessons complete'),
+            h('div',{className:'gwe-guided-browser'},renderGuidedCatalog(availableLessons,lesson,topic,visibleLessons,topics),
+              h('section',{className:'gwe-guided-selection','aria-label':__alloT('stem.geometryworld_builder.selected_guided_lesson','Selected guided lesson')},
+                lesson && lessonCompleted(lesson.id) && h('p',{className:'gwe-home-progress','data-gwe-lesson-done':'true'},'Completed. Starting it again replays it from the beginning.'),
+                lesson && renderLessonPreview(lesson,h('div',{className:'gwe-guided-launch'},homeSaveNotice(),h('button',{type:'button',className:'gwe-home-primary',disabled:!live || !live.startHomeLesson,onClick:function(){homeLesson(lesson.id);}},lessonCompleted(lesson.id)?'Revisit this lesson':'Start this lesson'))))),
+            renderPracticeCard(live)),
+          homePage==='explore' && h('div',{className:'gwe-home-detail'},
+            availableLessons.length>1 && h('div',{className:'gwe-home-practice-level gwe-home-place-picker',role:'group','aria-label':__alloT('stem.geometryworld_builder.a11y_choose_a_place', 'Choose a place')},availableLessons.map(function(l){
               return h('button',{key:l.id,type:'button','data-gwe-place':l.id,'aria-pressed':lesson && lesson.id===l.id?'true':'false',onClick:function(){patchGeometryState(ctx,{geometryHomeExplore:l.id});}},h('strong',null,l.exploreName || l.title),l.exploreBlurb && h('span',null,l.exploreBlurb));
-            })),lesson && lessonCompleted(lesson.id) && h('p',{className:'gwe-home-progress','data-gwe-lesson-done':'true'},'✓ Completed. Starting it again replays it from the beginning.'),lesson && renderLessonPreview(lesson),homeSaveNotice(),h('button',{type:'button',className:'gwe-home-primary',disabled:!live || !live.startHomeLesson || !lesson,onClick:function(){homeLesson(lesson.id);}},homePage==='explore'?'Enter '+((lesson && lesson.exploreName) || 'Geometry Garden'):'Start this lesson'),homePage==='learn' && renderPracticeCard(live)),
+            })),lesson && lessonCompleted(lesson.id) && h('p',{className:'gwe-home-progress','data-gwe-lesson-done':'true'},'\u2713 Completed. Starting it again replays it from the beginning.'),lesson && renderLessonPreview(lesson),homeSaveNotice(),h('button',{type:'button',className:'gwe-home-primary',disabled:!live || !live.startHomeLesson || !lesson,onClick:function(){homeLesson(lesson.id);}},'Enter '+((lesson && lesson.exploreName) || 'Geometry Garden'))),
           homePage==='build' && h('div',{className:'gwe-home-detail'},h('div',{className:'gwe-home-journey'},[['01','Build freely','Cubes, slabs, wedges, materials, and room to experiment.'],['02','Showcase & save','Frame your creation beautifully. Save a picture or an editable build.'],['03','Prepare a 3D print','Set the scale, download STL, or continue in Print Lab.']].map(function(step){return h('article',{key:step[0]},h('span',null,step[0]),h('h2',null,step[1]),h('p',null,step[2]));})),homeSaveNotice(),h('button',{type:'button',className:'gwe-home-primary',disabled:!live,onClick:homeStartSandbox},'Open blank sandbox'),h('button',{type:'button',className:'gwe-home-secondary',onClick:function(){homeNavigate('open');}},'Open a saved build')),
           homePage==='create' && h('div',{className:'gwe-home-detail'},canContinue && h('section',{className:'gwe-home-create-option'},h('h2',null,'Build on this workspace'),h('p',null,'Keep your current structures and add characters, dialogue, and questions.'),h('button',{type:'button',className:'gwe-home-primary',onClick:function(){homeCreator(false);}},'Create in this workspace')),h('section',{className:'gwe-home-create-option'},h('h2',null,'Start with a blank canvas'),h('p',null,'Build a new lesson from the ground up.'),homeSaveNotice(),h('button',{type:'button',className:canContinue?'gwe-home-secondary':'gwe-home-primary',disabled:!live,onClick:function(){homeCreator(true);}},'Start a blank lesson')),ctx.callGemini && h('section',{className:'gwe-home-create-option'},h('h2',null,'Develop an idea with AI'),h('p',null,'Choose your topic and grade level in the AI lesson builder.'),h('button',{type:'button',className:'gwe-home-secondary',onClick:homeAi},'Open AI lesson builder'))),
           homePage==='open' && h('div',{className:'gwe-home-detail'},h('div',{className:'gwe-home-file'},fileIcon('open'),h('h2',null,'Your blocks. Your next idea.'),h('p',null,'Editable JSON keeps block shapes, materials, and rotations. STL print files belong in Print Lab.'),h('button',{type:'button',ref:editableOpenRef,className:'gwe-home-primary',disabled:editableBusy || !live,onClick:chooseShowcaseFile},editableBusy?'Checking file…':'Choose editable JSON')),homeSaveNotice(),renderEditableRecovery(true))
@@ -3182,16 +3557,20 @@
         var live=window[ENGINE_KEY];if(!live || live._showcaseExporting)return;
         var fresh=readWorldShelf(),chosen=fresh.projects.find(function(p){return p.id===project.id;});
         if(!fresh.ok || !chosen){publishProjectNotice(fresh.reason || 'This project is no longer saved.');setWorldShelf(fresh);return;}
-        if(live._currentLesson && live._currentLesson.sandbox){var backup=saveWorldDraft(live);savedDraft(backup);if(!backup.ok)return;if(backup.project && chosen.id===backup.project.id)chosen=backup.project;}
+        return transitionBuilderWorld(live,{title:chosen.world.title,kind:'saved-project'},function(){
+        fresh=readWorldShelf();chosen=fresh.projects.find(function(p){return p.id===project.id;});
+        if(!fresh.ok || !chosen){publishProjectNotice(fresh.reason || 'This project is no longer saved.');setWorldShelf(fresh);return false;}
         var result;
         if(chosen.world.blocks.length)result=restoreEditableWorld(live,chosen.world,ctx);
-        else {live.loadLesson(FREE_BUILD_LESSON);result={ok:true};}
-        if(!result.ok){publishProjectNotice(result.error);return;}
+        else {result={ok:live.loadLesson(FREE_BUILD_LESSON)!==false};}
+        if(!result.ok){publishProjectNotice(result.error);return false;}
         live._currentLesson=Object.assign({},live._currentLesson,{builderGarden:chosen.garden});if(live.refreshLandscape)live.refreshLandscape(live._currentLesson.ground);
         live._workshopProjectId=chosen.id;live._workshopProjectVersion=chosen.version;live._workshopSavedSignature=JSON.stringify([chosen.world,chosen.garden]);
         setProjectName(chosen.world.title);setProjectChoice('');setRemoveProject('');setPointerMode('build');if(chosen.world.blocks.length)live._builderSelection={blocks:chosen.world.blocks.map(function(b){return {x:b.x,y:b.y,z:b.z};}),exact:true};
         patchGeometryState(ctx,{activeLesson:'builderSandbox',worldActive:true,blocksPlaced:chosen.world.blocks.length,tutorialDismissed:true,showGeometryHome:false,_geometryHomeInitial:false,showLessonIntro:false,showSandboxLauncher:false,creatorMode:false,builderPanel:'build',sandboxDockCollapsed:false,hudPreset:'builder',hudPanel:'',builderPrintContext:null,builderPrintCheck:null,measureResult:null});
         savedDraft({ok:true,projects:readWorldShelf().projects,project:chosen});announce(ctx,'Opened '+chosen.world.title+'. Continue editing your saved blocks.','success');if(chosen.world.blocks.length)window.requestAnimationFrame(function(){if(window[ENGINE_KEY]===live && live._workshopProjectId===chosen.id)focusSelectedBuild(liveBuilderCtx.current);});else focusWorldSurface(50);
+        return true;
+        });
       }
       function renderWorldShelf(){
         return h('section',{className:'gwe-world-shelf','aria-label':__alloT('stem.geometryworld_builder.my_worlds','My Worlds')},h('div',{className:'gwe-shelf-heading'},h('h2',null,'My Worlds'),h('span',null,worldShelf.projects.length+' / 8 projects')),
@@ -3287,8 +3666,13 @@
             h('strong',null,result.status==='met'?'Challenge solved!':result.status==='revise'?'Not yet. Keep building.':'Select your build'),
             result.checks.length ? h('ul',null,result.checks.map(function(c,i){return h('li',{key:i,'data-ok':c.ok?'true':'false'},h('span',{'aria-hidden':'true'},c.ok?'✓ ':'• '),c.label+': '+c.detail);})) : h('p',null,result.message)));
       }
-      var _toolFinderOpen=React.useState(false),toolFinderOpen=_toolFinderOpen[0],setToolFinderOpen=_toolFinderOpen[1];
+      var _toolFinderOpen=React.useState(false),toolFinderOpen=_toolFinderOpen[0],updateToolFinderOpen=_toolFinderOpen[1];
+      // A newer finder action supersedes queued frame and timer focus handoffs.
+      var toolFocusRequest=React.useRef(0);
+      function setToolFinderOpen(open){toolFocusRequest.current+=1;updateToolFinderOpen(open);return toolFocusRequest.current;}
+      React.useEffect(function(){return function(){toolFocusRequest.current+=1;};},[]);
       var _toolQuery=React.useState(''),toolQuery=_toolQuery[0],setToolQuery=_toolQuery[1];
+      var _toolCategory=React.useState('all'),toolCategory=_toolCategory[0],setToolCategory=_toolCategory[1];
       var toolFinderButton=React.useRef(null),toolFinderInput=React.useRef(null);
       var _previewReview=React.useState(false),previewReview=_previewReview[0],setPreviewReview=_previewReview[1];
       var _previewSurroundings=React.useState(false),previewSurroundings=_previewSurroundings[0],setPreviewSurroundings=_previewSurroundings[1];
@@ -3299,20 +3683,28 @@
       React.useEffect(function(){if(!selectionEditPreview || !data.sandboxDockCollapsed)setPreviewReview(false);},[selectionEditPreview,data.sandboxDockCollapsed]);
       React.useEffect(function(){
         if(!previewReview)return undefined;
-        function escape(event){if(event.key!=='Escape' || document.pointerLockElement)return;event.preventDefault();event.stopPropagation();cancelSelectionPreview();finishPreviewReview();}
+        function escape(event){if(event.key!=='Escape' || document.pointerLockElement || (window[ENGINE_KEY] && window[ENGINE_KEY]._pendingWorldTransition))return;event.preventDefault();event.stopPropagation();cancelSelectionPreview();finishPreviewReview();}
         window.addEventListener('keydown',escape,true);return function(){window.removeEventListener('keydown',escape,true);};
       },[previewReview]);
-      function closeToolFinder(){setToolFinderOpen(false);window.requestAnimationFrame(function(){if(toolFinderButton.current)toolFinderButton.current.focus();});}
+      function workshopFocusAllowed(owner,expectedCollapsed,request){
+        var liveData=(liveBuilderCtx.current.toolData || {}).geometryWorld || {},modal=owner && owner._modalState || {};
+        if(request!==toolFocusRequest.current || window[ENGINE_KEY]!==owner || !owner || owner._destroyed || owner._pendingWorldTransition || owner._showcase || liveData.activeLesson!=='builderSandbox' || !liveData.worldActive || !!liveData.sandboxDockCollapsed!==expectedCollapsed || liveData.showcaseActive || liveData.showSandboxLauncher)return false;
+        if(['showSaveRecovery','showNpcDialog','showHelp','showGameSettings','showPeerWorlds','showTeacherView','showMyLessons','showLessonEditor','showGeometryHome','showLessonIntro','showReflection','showCompletion'].some(function(key){return !!(liveData[key] || modal[key]);}))return false;
+        var workspace=document.getElementById('geoworld-fs-workspace');
+        return !!(workspace && workspace.isConnected && !workspace.querySelector('[role="dialog"][aria-modal="true"]'));
+      }
+      function closeToolFinder(){var owner=window[ENGINE_KEY],request=setToolFinderOpen(false);window.requestAnimationFrame(function(){if(workshopFocusAllowed(owner,false,request) && toolFinderButton.current && toolFinderButton.current.isConnected)toolFinderButton.current.focus();});}
       function navigateWorkshopTool(tool){
         if(!tool || !tool.available)return;
-        setToolFinderOpen(false);patchGeometryState(ctx,{sandboxDockCollapsed:false,builderPanel:'build'});
+        if(tool.id==='palette'){resumeBuilding('material');return;}
+        var request=setToolFinderOpen(false);patchGeometryState(ctx,{sandboxDockCollapsed:false,builderPanel:'build'});
         var current=window[ENGINE_KEY];
         window.requestAnimationFrame(function(){
-          if(window[ENGINE_KEY]!==current || !current || current._destroyed)return;
+          if(!workshopFocusAllowed(current,false,request))return;
           var dock=document.querySelector('.gwe-builder-dock'),target=dock && dock.querySelector(tool.selector);if(!target)return;
           for(var node=target;node && node!==dock;node=node.parentElement)if(node.tagName==='DETAILS')node.open=true;
           window.requestAnimationFrame(function(){
-            if(!target.isConnected)return;var body=dock.querySelector('.gwe-builder-body');
+            if(!workshopFocusAllowed(current,false,request) || !target.isConnected || !dock.isConnected)return;var body=dock.querySelector('.gwe-builder-body');
             var control=target.matches('details')?target.querySelector('summary'):target.querySelector('h3,h4,legend,label,button,input,select');control=control || target;
             if(!control.matches('button,input,select,summary'))control.tabIndex=-1;control.focus({preventScroll:true});
             if(body)body.scrollTop+=target.getBoundingClientRect().top-body.getBoundingClientRect().top-8;
@@ -3320,12 +3712,13 @@
         });
       }
       function renderToolFinder(){
-        var tools=findWorkshopTools(toolQuery,hasRetainedSelection),first=tools.find(function(tool){return tool.available;});
+        var tools=findWorkshopTools(toolQuery,hasRetainedSelection).filter(function(tool){return toolCategory==='all' || tool.group===toolCategory;}).map(function(tool){return Object.assign({},tool,{available:tool.available && (tool.id!=='send' || hasStudentBuild!==false)});}),first=tools.find(function(tool){return tool.available;});
         return h('section',{id:'gwe-tool-finder',className:'gwe-tool-finder','aria-label':__alloT('stem.geometryworld_builder.find_a_free_build_tool','Find a Free Build tool'),onKeyDown:function(event){event.stopPropagation();if(event.key==='Escape'){event.preventDefault();closeToolFinder();}}},
-          h('form',{role:'search',onSubmit:function(event){event.preventDefault();if(first)navigateWorkshopTool(first);}},h('label',{htmlFor:'gwe-tool-query'},'What would you like to do?'),h('input',{ref:toolFinderInput,id:'gwe-tool-query',type:'search',value:toolQuery,placeholder:'Try roof, rotate, save, or print…',autoComplete:'off',onChange:function(event){setToolQuery(event.target.value);}})),
-          h('p',{className:'gwe-tool-count',role:'status'},tools.length?tools.length+' tool'+(tools.length===1?'':'s')+' · Enter opens the first available result':'No matching tools. Try a shorter word, such as “build” or “save”.'),
-          h('div',{className:'gwe-tool-results'},tools.map(function(tool){return h('button',{type:'button',key:tool.id,className:'gwe-tool-result','data-tool':tool.id,disabled:!tool.available,onClick:function(){navigateWorkshopTool(tool);}},h('span',{className:'gwe-tool-group'},tool.group),h('strong',null,tool.title),h('span',null,tool.available?tool.description:'Select a creation first to use this tool.'),h('span',{className:'gwe-tool-arrow','aria-hidden':'true'},'↗'));})),
-          !hasRetainedSelection && tools.some(function(tool){return !tool.available;}) && h('button',{type:'button',className:'gwe-finder-select',onClick:function(){navigateWorkshopTool(findWorkshopTools('',false).find(function(tool){return tool.id==='select';}));}},'Show selection controls'));
+          h('form',{role:'search',onSubmit:function(event){event.preventDefault();if(first)navigateWorkshopTool(first);}},h('label',{htmlFor:'gwe-tool-query'},'Find a tool'),h('input',{ref:toolFinderInput,id:'gwe-tool-query',type:'search',value:toolQuery,placeholder:'Search tools',autoComplete:'off',onChange:function(event){setToolQuery(event.target.value);}}),h('label',{className:'gwe-tool-category',htmlFor:'gwe-tool-category'},'Category',h('select',{id:'gwe-tool-category',value:toolCategory,onChange:function(event){setToolCategory(event.target.value);}},['all','Build','Edit','Share','Print','Keep','Explore'].map(function(category){return h('option',{key:category,value:category},category==='all'?'All tools':category);})))),
+          h('p',{className:'gwe-tool-count',role:'status'},tools.length?tools.length+' matching tool'+(tools.length===1?'':'s'):'No matching tools'),
+          !tools.length && h('button',{type:'button',className:'gwe-finder-reset',onClick:function(){setToolQuery('');setToolCategory('all');if(toolFinderInput.current)toolFinderInput.current.focus();}},'Clear filters'),
+          h('div',{className:'gwe-tool-results'},tools.map(function(tool){return h('button',{type:'button',key:tool.id,className:'gwe-tool-result','data-tool':tool.id,disabled:!tool.available,onClick:function(){navigateWorkshopTool(tool);}},h('span',{className:'gwe-tool-group'},tool.group),h('strong',null,tool.title),h('span',null,tool.available?tool.description:tool.id==='send'?'Place blocks before sending a creation to Print Lab.':'Select a creation first to use this tool.'),h('span',{className:'gwe-tool-arrow','aria-hidden':'true'},'↗'));})),
+          !hasRetainedSelection && tools.some(function(tool){return tool.selection && !tool.available;}) && h('button',{type:'button',className:'gwe-finder-select',onClick:function(){navigateWorkshopTool(findWorkshopTools('',false).find(function(tool){return tool.id==='select';}));}},'Show selection controls'));
       }
       function beginPreviewReview(){previewCameraOrigin.current=capturePreviewCamera(window[ENGINE_KEY]);var result=frameBuildPreview(ctx,selectionEditPreview,selectionPreviewOwner.current);if(!result.ok){setSelectionEditNotice(result.reason);return;}setToolFinderOpen(false);setPreviewReview(true);window.requestAnimationFrame(function(){var review=document.querySelector('.gwe-preview-review');if(review)review.focus({preventScroll:true});});}
       function finishPreviewReview(){setPreviewReview(false);patchGeometryState(ctx,{sandboxDockCollapsed:false});window.requestAnimationFrame(function(){var target=document.querySelector('.gwe-edit-preview') || toolFinderButton.current;if(target){target.tabIndex=-1;target.focus({preventScroll:true});}});}
@@ -3383,6 +3776,7 @@
       var scaleInputRef=React.useRef(null);
       React.useEffect(function(){setScaleDraft(String(currentPrintUnit));setScaleError('');},[currentPrintUnit]);
       var liveBuilderCtx = React.useRef(ctx); liveBuilderCtx.current = ctx;
+      var _creationCameraView=React.useState(selectedCreationCameraView(window[ENGINE_KEY])), setCreationCameraView=_creationCameraView[1];
       React.useEffect(function () {
         var previousEngine=null, signature='', selectedBlockKeys='', outline=null, outlineOwner=null, selectionPollCache={current:null}, selectionPollResult=null;
         var previousStudentPresence = null;
@@ -3414,6 +3808,7 @@
           }
           if(eng && !eng._showcase && (liveBuilderCtx.current.toolData.geometryWorld || {}).showcaseActive)patchGeometryState(liveBuilderCtx.current,{showcaseActive:false});
           if(!!(eng && eng._creationFocus)!==!!((liveBuilderCtx.current.toolData.geometryWorld || {}).creationFocusAvailable))patchGeometryState(liveBuilderCtx.current,{creationFocusAvailable:!!(eng && eng._creationFocus)});
+          setCreationCameraView(selectedCreationCameraView(eng));
           if(outline)outline.visible=!(eng && eng._showcase);
           syncGeometryPrintGuide(eng,liveBuilderCtx.current);
           if(eng!==previousEngine){disposeGeometryPrintGuide(previousEngine);if(previousEngine && previousEngine.disposeShowcaseLook)previousEngine.disposeShowcaseLook();if(previousEngine && previousEngine.disposeCreationFocus)previousEngine.disposeCreationFocus();clearOutline();signature='';selectedBlockKeys='';previousEngine=eng;}
@@ -3488,7 +3883,8 @@
             // A fresh engine (re-entering the tool) is not in the sandbox yet; a
             // sandbox the student just opened or picked from My Worlds already is.
             if (!engine._currentLesson || engine._currentLesson.sandbox !== true) {
-              if (!resumeSandboxWorkspace(ctx, engine)) engine.loadLesson(FREE_BUILD_LESSON);
+              var resumed=resumeSandboxWorkspace(ctx, engine);
+              if (resumed===false) engine.loadLesson(FREE_BUILD_LESSON);
             }
             return;
           }
@@ -3517,16 +3913,17 @@
       var launcherOpen = !!data.showSandboxLauncher;
       var collapsed = data.sandboxDockCollapsed === undefined ? typeof window.matchMedia === 'function' && window.matchMedia('(max-width:800px),(max-height:520px)').matches : !!data.sandboxDockCollapsed;
       function resumeBuilding(choice) {
-        setToolFinderOpen(false);
+        var request=setToolFinderOpen(false);
         if(pointerMode!=='build'){setPointerMode('build');cancelSelectionPreview();}
         var owner = window[ENGINE_KEY];
         if (owner && owner.releaseInput) owner.releaseInput();
-        patchGeometryState(ctx, { sandboxDockCollapsed:true, builderPanel:'build', hudPanel:'' });
+        var resumePatch={sandboxDockCollapsed:true,builderPanel:'build',hudPanel:''};
+        if(choice){resumePatch.buildToolsOpenSandbox=true;resumePatch.touchMoreOpen=false;}
+        patchGeometryState(ctx,resumePatch);
         if (buildResumeTimerRef.current) clearTimeout(buildResumeTimerRef.current);
         buildResumeTimerRef.current = setTimeout(function () {
           buildResumeTimerRef.current = null;
-          var liveData = (liveBuilderCtx.current.toolData || {}).geometryWorld || {};
-          if (window[ENGINE_KEY] !== owner || liveData.activeLesson !== 'builderSandbox' || !liveData.worldActive || !liveData.sandboxDockCollapsed || liveData.showGeometryHome || liveData.showcaseActive) return;
+          if (!workshopFocusAllowed(owner,true,request)) return;
           var workspace = document.getElementById('geoworld-fs-workspace');
           if (workspace && workspace.querySelector('[role="dialog"][aria-modal="true"]')) return;
           var selector = choice === 'material' ? '.gw-hotbar-item[aria-pressed="true"]' : choice === 'shape' ? '.gw-shape-item[aria-pressed="true"]' : '';
@@ -3639,11 +4036,15 @@
             selectionEditPreview && renderPreviewFacts())
         );
       }
+      function renderCreationViewPresets(className,label){
+        var current=selectedCreationCameraView(window[ENGINE_KEY]);
+        return h('div',{className:className,role:'group','aria-label':label},['front','side','top'].map(function(preset){var active=current===preset;return h('button',{key:preset,type:'button','aria-pressed':active,'data-gwe-creation-view':preset,onClick:function(){selectedCreationView(ctx,preset);}},active && h('span',{className:'gwe-camera-preset-check','aria-hidden':'true'},'\u2713'),preset[0].toUpperCase()+preset.slice(1));}));
+      }
       function renderCreationCameraTools(){
         return h('details',{className:'gwe-camera-orbit-tools'},h('summary',null,'Orbit & views'),
           h('div',{className:'gwe-builder-actions','aria-label':__alloT('stem.geometryworld_builder.orbit_selected_creation','Orbit selected creation')},
             [['Orbit left',-Math.PI/12,0,1],['Orbit right',Math.PI/12,0,1],['Tilt up',0,Math.PI/18,1],['Tilt down',0,-Math.PI/18,1],['Closer',0,0,1/1.18],['Farther',0,0,1.18]].map(function(action){return h('button',{key:action[0],type:'button',onClick:function(){orbitSelectedCreation(ctx,action[1],action[2],action[3]);}},action[0]);})),
-          h('div',{className:'gwe-builder-actions','aria-label':__alloT('stem.geometryworld_builder.selected_creation_views','Selected creation views')},['front','side','top','free'].map(function(preset){return h('button',{key:preset,type:'button',onClick:function(){selectedCreationView(ctx,preset);}},preset==='free'?'Free view':preset[0].toUpperCase()+preset.slice(1));}))
+          renderCreationViewPresets('gwe-builder-actions gwe-camera-view-presets',__alloT('stem.geometryworld_builder.selected_creation_views','Selected creation views'))
         );
       }
       function applyPrintScale(value) {
@@ -3669,8 +4070,10 @@
         patchGeometryState(ctx, { showSandboxLauncher: true, showGameSettings: false, showPredictionPanel: false, objectivesOpen: false, hudPanel: '' });
       }
       function returnToLessons() {
-        patchGeometryState(ctx, { activeLesson: 'volumeExplorer', worldActive: false, showLessonIntro: true, sandboxDockCollapsed: false, measureResult: null, measureHistory: [], hudPanel: '' });
-        announce(ctx, 'Guided lesson picker ready. Choose a lesson and start when you are ready.', 'info');
+        var live=window[ENGINE_KEY];
+        if(live && live.openGeometryHome)live.openGeometryHome();
+        patchGeometryState(ctx, { showGeometryHome: true, geometryHomePage: 'learn', _geometryHomeInitial: false, showLessonIntro: false, showSandboxLauncher: false });
+        announce(ctx, 'Guided lesson catalog ready. Choose a lesson, or continue your current workspace.', 'info');
       }
       function chooseEditableWorld(event) {
         if (window[ENGINE_KEY] && window[ENGINE_KEY]._showcaseExporting) { event.target.value = ''; return; }
@@ -3704,10 +4107,13 @@
       }
       function confirmEditableRestore() {
         if (!editablePreview || !editablePreview.value) return;
-        var liveEngine = window[ENGINE_KEY];
-        if (liveEngine && liveEngine._showcaseExporting) return;
-        var result = restoreEditableWorld(liveEngine, editablePreview.value, ctx);
+        var liveEngine = window[ENGINE_KEY],candidate=editablePreview.value,token=editableReadTokenRef.current;
+        if (!liveEngine || liveEngine._showcaseExporting) return;
+        return transitionBuilderWorld(liveEngine,candidate,function(){
+        if(editableReadTokenRef.current!==token)return false;
+        var result = restoreEditableWorld(liveEngine, candidate, ctx);
         if (!result.ok) {
+          if(result.blocked)return false;
           editableApplyFailedRef.current=true;setEditablePreview(null);setEditableError(result.error);
           if (!liveEngine || !liveEngine._showcase) patchGeometryState(ctx,{sandboxDockCollapsed:false,builderPanel:'build',hudPanel:'inventory'});
           announce(ctx,result.error,'error');return;
@@ -3717,6 +4123,8 @@
         cancelEditablePreview();
         announce(ctx, 'Opened ' + result.value.title + ' with ' + result.placedCount + ' student block' + (result.placedCount === 1 ? '' : 's') + '. The previous sandbox was replaced only after confirmation.', 'success');
         focusWorldSurface(50);
+        return true;
+        });
       }
 
       function downloadEditableRecovery() {
@@ -4012,7 +4420,7 @@
       if ((isSandbox && data.worldActive) || homeOpen) additions.push(h('input', {key:'gwe-editable-file',ref:editableInputRef,type:'file',accept:'.json,application/json',onChange:chooseEditableWorld,style:{display:'none'},tabIndex:-1,'aria-hidden':'true'}));
 
       if(isSandbox && data.worldActive && data.creationFocusAvailable && engine && engine._creationFocus && !engine._showcase)additions.push(h('div',{key:'gwe-focus-return',className:'gwe-focus-return','aria-label':__alloT('stem.geometryworld_builder.creation_camera','Creation camera')},
-        h('span',null,'Creation framed'),h('button',{type:'button',onClick:function(){if(engine.restoreCreationView)engine.restoreCreationView();}},'Previous view'),renderCreationCameraTools()));
+        h('span',{className:'gwe-creation-camera-status',role:'status','data-gwe-camera-state':selectedCreationCameraView(engine)},({front:'Front view',side:'Side view',top:'Top view',custom:'Custom view',returning:'Returning to previous view'})[selectedCreationCameraView(engine)] || 'Creation framed'),h('button',{type:'button',disabled:selectedCreationCameraView(engine)==='returning',onClick:function(){if(engine.restoreCreationView)engine.restoreCreationView();setCreationCameraView(selectedCreationCameraView(engine));}},'Previous view'),renderCreationCameraTools()));
 
       if (isSandbox && data.worldActive) additions.push(h('aside', {
         key: 'gwe-dock', className: 'gwe-builder-dock', 'data-collapsed': collapsed ? 'true' : 'false',
@@ -4021,11 +4429,11 @@
         h('div', { className: 'gwe-builder-head' },
           h('div', { className: 'gwe-builder-title' },
             h('span', { className: 'gwe-builder-icon', 'aria-hidden': 'true' }, studioCubeMark(h)),
-            !collapsed && h('div', null, h('div', { className: 'gwe-builder-eyebrow' }, 'Sandbox mode'), h('div', { className: 'gwe-builder-name' }, 'Free Build Studio'))
+            !collapsed && h('div', null, h('div', { className: 'gwe-builder-eyebrow' }, 'Build tools'), h('div', { className: 'gwe-builder-name' }, 'Free Build Studio'))
           ),
-          h('button', { type: 'button', className: 'gwe-collapse', onClick: function () { if (!collapsed) resumeBuilding(); else patchGeometryState(ctx, { sandboxDockCollapsed:false, builderPanel:'build' }); }, 'aria-expanded': collapsed ? 'false' : 'true', 'aria-label': collapsed ? 'Expand Free Build Studio' : 'Collapse Free Build Studio' }, collapsed ? 'Build tools' : '\u2212')
+          h('button', { type: 'button', className: 'gwe-collapse', onClick: function () { if (!collapsed) resumeBuilding(); else patchGeometryState(ctx, { sandboxDockCollapsed:false, builderPanel:'build' }); }, 'aria-expanded': collapsed ? 'false' : 'true', 'aria-label': collapsed ? 'Expand Free Build Studio' : 'Collapse Free Build Studio', title: collapsed ? 'Free Build Studio' : 'Collapse Free Build Studio' }, collapsed ? 'Studio' : '\u2212')
         ),
-        !collapsed && h('div',{className:'gwe-tool-finder-bar'},h('button',{ref:toolFinderButton,type:'button',className:'gwe-tool-finder-toggle','aria-expanded':toolFinderOpen,'aria-controls':'gwe-tool-finder',onClick:function(){if(toolFinderOpen)closeToolFinder();else {setToolQuery('');setToolFinderOpen(true);}}},h('svg',{viewBox:'0 0 24 24',width:18,height:18,fill:'none',stroke:'currentColor',strokeWidth:1.8,'aria-hidden':'true'},h('circle',{cx:10,cy:10,r:6}),h('path',{d:'m15 15 5 5'})),toolFinderOpen?'Close tool finder':'Find a tool',h('span',{'aria-hidden':'true'},toolFinderOpen?'×':'→'))),
+        !collapsed && h('div',{className:'gwe-tool-finder-bar'},h('button',{ref:toolFinderButton,type:'button',className:'gwe-tool-finder-toggle','aria-expanded':toolFinderOpen,'aria-controls':'gwe-tool-finder',onClick:function(){if(toolFinderOpen)closeToolFinder();else {setToolQuery('');setToolCategory('all');setToolFinderOpen(true);}}},h('svg',{viewBox:'0 0 24 24',width:18,height:18,fill:'none',stroke:'currentColor',strokeWidth:1.8,'aria-hidden':'true'},h('circle',{cx:10,cy:10,r:6}),h('path',{d:'m15 15 5 5'})),toolFinderOpen?'Close tool finder':'Find a tool',h('span',{'aria-hidden':'true'},toolFinderOpen?'×':'→'))),
         !collapsed && !toolFinderOpen && h('ol', {className:'gwe-workflow', 'aria-label':__alloT('stem.geometryworld_builder.creation_workflow','Creation workflow')},
           h('li', {'aria-current': hasStudentBuild === false ? 'step' : undefined}, h('span', {'aria-hidden':'true'}, '1'), 'Build'),
           h('li', {'aria-current': hasStudentBuild !== false && !hasRetainedSelection ? 'step' : undefined}, h('span', {'aria-hidden':'true'}, '2'), 'Select'),
@@ -4053,7 +4461,9 @@
             ),
             h('div',{className:'gwe-selected-metrics','aria-label':__alloT('stem.geometryworld_builder.selected_build_summary','Selected build summary')},
               h('div',{className:'gwe-metric'},h('strong',null,measured.count),h('span',null,'Blocks selected')),
-              h('div',{className:'gwe-metric'},h('strong',null,measured.L+'×'+measured.W+'×'+measured.H),h('span',null,'Block bounds'))
+              h('div',{className:'gwe-grid-span'},h('span',{className:'gwe-grid-span-label'},'Grid span'),
+                h('dl',null,[['x','Width (X)',measured.L],['z','Depth (Z)',measured.W],['y','Height (Y)',measured.H]].map(function(axis){return h('div',{key:axis[0],'data-gwe-grid-axis':axis[0]},h('dt',null,axis[1]),h('dd',null,axis[2],h('span',null,axis[2]===1?'grid cell':'grid cells')));})),
+                h('p',{className:'gwe-grid-span-note'},'Grid-cell bounds, including gaps; not occupied volume.'))
             ),
             h('p',{className:'gwe-selection-scope'},'Showcase and Print Lab use these blocks.')
           ) : h('section', {key:'gwe-creation-summary',className:'gwe-creation-summary','data-selected':'false','aria-label':__alloT('stem.geometryworld_builder.your_creation','Your creation')},
@@ -4068,7 +4478,7 @@
             'That measurement was the ground or a lesson structure. Aim at a block you placed to size a print.'),
           measured && h('div', { key:'gwe-inspect-actions',className: 'gwe-builder-actions', 'aria-label':__alloT('stem.geometryworld_builder.inspect_selected_creation','Inspect selected creation') },
             measuredIsStudentBuild && h('button',{type:'button',className:'gwe-focus-action',onClick:function(){focusSelectedBuild(ctx);},title:__alloT('stem.geometryworld_builder.frame_your_creation_and_keep_editing','Frame your creation and keep editing')},'Focus creation'),
-            hasRetainedSelection && h('div',{className:'gwe-camera-presets','aria-label':__alloT('stem.geometryworld_builder.frame_selected_creation','Frame selected creation')},['front','side','top','free'].map(function(preset){return h('button',{key:preset,type:'button',onClick:function(){selectedCreationView(ctx,preset);}},preset==='free'?'Free view':preset[0].toUpperCase()+preset.slice(1));})),
+            hasRetainedSelection && renderCreationViewPresets('gwe-camera-presets',__alloT('stem.geometryworld_builder.frame_selected_creation','Frame selected creation')),
             h('button',{type:'button',className:'gwe-showcase-action',onClick:function(){showcaseBuild(ctx);}},'Showcase creation'),
             h('button', {type:'button', onClick:function(){patchGeometryState(ctx,{measureResult:measured,builderPanel:'measure',sandboxDockCollapsed:true,hudPanel:''});}}, 'Explore measurements'),
             engine && engine._builderSelection && h('button', {type:'button',className:'gwe-clear-selection', onClick:function(){engine._builderSelection=null;patchGeometryState(ctx,{measureResult:null,builderPanel:'build'});}}, 'Clear selection')
@@ -4154,12 +4564,12 @@
             )
           ),
           h('details', {className:'gwe-details gwe-workspace-options'},
-            h('summary', null, 'Workspace options'),
+            h('summary', null, 'World & scenery'),
             h('div',{className:'gwe-builder-actions','aria-label':__alloT('stem.geometryworld_builder.free_build_environment','Free Build environment')},
               h('button',{type:'button','aria-pressed':!!(engine && engine._currentLesson && engine._currentLesson.builderGarden!==false),onClick:function(){changeBuilderGarden(true);}},'Garden workshop'),
               h('button',{type:'button','aria-pressed':!!(engine && engine._currentLesson && engine._currentLesson.builderGarden===false),onClick:function(){changeBuilderGarden(false);}},'Open meadow')),
             h('div', { className: 'gwe-builder-actions' },
-              h('button', { type: 'button', onClick: returnToLessons }, '\uD83D\uDCD8 Choose guided lesson'),
+              h('button', { type: 'button', onClick: returnToLessons, 'aria-haspopup': 'dialog' }, '\uD83D\uDCD8 Choose guided lesson'),
               h('button', { type: 'button', onClick: openLauncher, 'aria-haspopup': 'dialog', 'aria-controls': 'gwe-sandbox-launcher', 'data-gwe-focus-return': 'sandbox-dock' }, '\u2728 Start a fresh sandbox')
             )
           ),
@@ -4174,7 +4584,7 @@
       if (launcherOpen) additions.push(h('div', { key: 'gwe-modal', className: 'gwe-backdrop', role: 'presentation' },
         h('section', {
           id: 'gwe-sandbox-launcher', role: 'dialog', 'aria-modal': 'true', 'aria-labelledby': 'gwe-launcher-title', 'aria-describedby': 'gwe-launcher-desc',
-          className: 'gwe-launcher', tabIndex: -1, onKeyDown: function (event) { trapDialogKeys(event, closeLauncher); }
+          className: 'gwe-launcher', tabIndex: -1, onKeyDown: function (event) { event.stopPropagation(); trapDialogKeys(event, closeLauncher); }
         },
           h('div', { className: 'gwe-launcher-hero' },
             h('div', {className:'gwe-launcher-art', 'aria-hidden':'true'}, studioCubeMark(h)),
@@ -4250,8 +4660,11 @@
         )
       ));
       var children = React.Children.toArray(base.props.children).concat(additions).map(function(child){
-        if(!React.isValidElement(child) || child.type==='style' || child.type==='input' || child.props.className==='gwe-home-backdrop' || child.props.className==='gwe-activity-backdrop' || child.props.className==='gwe-concept-backdrop')return child;
-        return React.cloneElement(child,{inert:(homeOpen||guideOpen||conceptOpen)?'':undefined,'aria-hidden':(homeOpen||guideOpen||conceptOpen)?'true':child.props['aria-hidden']});
+        if(!React.isValidElement(child) || child.type==='style')return child;
+        if(child.props['data-gw-save-recovery'])return React.cloneElement(child,{inert:undefined,'aria-hidden':undefined});
+        if(data.showSaveRecovery)return React.cloneElement(child,{inert:'','aria-hidden':'true'});
+        if(child.type==='input' || child.props.className==='gwe-home-backdrop' || child.props.className==='gwe-activity-backdrop' || child.props.className==='gwe-concept-backdrop')return child;
+        return React.cloneElement(child,{inert:(homeOpen||guideOpen||conceptOpen)?'':child.props.inert,'aria-hidden':(homeOpen||guideOpen||conceptOpen)?'true':child.props['aria-hidden']});
       });
       return React.cloneElement(base, {
         className: (base.props.className || '') + ' gwe-enhanced',

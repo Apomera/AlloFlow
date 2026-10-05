@@ -1,0 +1,170 @@
+{
+  "archivedAt": "2026-10-04T14:55:02.905146+00:00",
+  "name": "module-focused-02",
+  "stats": {
+    "startTime": "2026-10-04T14:49:42.147Z",
+    "duration": 294487.125,
+    "expected": 5,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "identity": {
+    "phase": "module-focused",
+    "attempt": "02",
+    "expectedModuleSha256": "c5af6b18d2a3a02d1fe99f885b874ea0bae04c1fa74b283a6bda7d69a2bdf87f",
+    "sourceSha256": "85b21dd96f2476e383beef207177736d859170244c35c6705d422e89771f41cb",
+    "browserTestSha256": "25f75f6b96dfdba61036c1267e932cd94d0e4691a9969e80867ebe865afd0771",
+    "workers": 1,
+    "automaticRetries": 0,
+    "timeoutMs": 120000,
+    "normalTracePolicy": "retain-on-failure",
+    "validationMethod": "original canonical specification and unchanged synchronous stylesheet setup",
+    "preparedAssetValidation": false,
+    "selectedScenarios": 5,
+    "availableScenarios": 37,
+    "original35PrefixBytePreserved": true,
+    "original35Sha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+    "original35Bytes": 174682,
+    "configSha256": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587",
+    "expectedBaselineFailure": false
+  },
+  "resultSha256": "b9fd9ea49a8a92346fabeb5716f7c7f720e45cbcfd82fb3bec7ae4fcf1de2f26",
+  "files": [
+    {
+      "file": "module-focused-02/artifacts/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "file": "module-focused-02/browser/axe-finding-removal-recovery-320-dark.json",
+      "bytes": 125,
+      "sha256": "c6011c68e7a8d524ac698373526c14667da0963a9f2ad44e39e73dd9e8c3bbb6"
+    },
+    {
+      "file": "module-focused-02/browser/axe-finding-removal-recovery-844x390-dark.json",
+      "bytes": 138,
+      "sha256": "d7a9f655bed9f737d716e1b4f7102cf9f8fe0b6184e30143c58bcd4ca8a4eef7"
+    },
+    {
+      "file": "module-focused-02/browser/axe-finding-removal-restored-note-844x390-dark.json",
+      "bytes": 155,
+      "sha256": "2264d644de8970a68c469da1668c74e64269ce55844a5449adf22540ec7a9fd1"
+    },
+    {
+      "file": "module-focused-02/browser/axe-full-review-returned-1366-light.json",
+      "bytes": 174,
+      "sha256": "591150f6e3cf14675a9b97fb4bb9612fda2d12b8ac8e718b68bc449fa540c571"
+    },
+    {
+      "file": "module-focused-02/browser/axe-save-warning-320-dark.json",
+      "bytes": 187,
+      "sha256": "388c63533297ddb3615529867b34bfca89033abecd33c212b09a05861067e1de"
+    },
+    {
+      "file": "module-focused-02/browser/browser-candidate.json",
+      "bytes": 290,
+      "sha256": "768a982d0241dbe310d06e93d19cd424333aad04aa16a2da92db6f577fb992b2"
+    },
+    {
+      "file": "module-focused-02/browser/finding-removal-all-five-restored-worksheet.json",
+      "bytes": 44159,
+      "sha256": "f849add4d072578e698d95d05f8e233c72f7a7b70c597a993e3da8acb58c5e34"
+    },
+    {
+      "file": "module-focused-02/browser/finding-removal-blank-worksheet.json",
+      "bytes": 5213,
+      "sha256": "28195705546a7a5c5917e253e9153e20d4ff291157fe5662add12337391ba618"
+    },
+    {
+      "file": "module-focused-02/browser/finding-removal-pending-snapshots-worksheet.json",
+      "bytes": 14988,
+      "sha256": "c041e7c1017a0b78cd325587686d395e9e9e280617f63c2d044d32d7d9b8d049"
+    },
+    {
+      "file": "module-focused-02/browser/finding-removal-preview-alex-320-dark.png",
+      "bytes": 27275,
+      "sha256": "5e96b7ea004abcfedcbbfd5669c346c200f16deca2bd85b0655f078784ac1331"
+    },
+    {
+      "file": "module-focused-02/browser/finding-removal-recovery-alex-320-dark.png",
+      "bytes": 43877,
+      "sha256": "8aa568bcf9e995a49ac3260df103bb78a8c531dfc220edf28161e9f4eaba7399"
+    },
+    {
+      "file": "module-focused-02/browser/finding-removal-recovery-alex-844x390-dark.png",
+      "bytes": 44809,
+      "sha256": "288fed4abe86b8d102c8fd368afc4e8f62b389800ddac4f57421e560b6b8fd82"
+    },
+    {
+      "file": "module-focused-02/browser/finding-removal-restored-note-alex-844x390-dark.png",
+      "bytes": 39017,
+      "sha256": "783d4e0aa75c1144a06b8a3ed92ad0c1cac3fbf7dae50eec4d94770161ca73cf"
+    },
+    {
+      "file": "module-focused-02/browser/finding-removal-seed.json",
+      "bytes": 24377,
+      "sha256": "aa00de545473156c5a71811b5e81366d32a4b85bc47b61405a1560d5d940642c"
+    },
+    {
+      "file": "module-focused-02/browser/full-review-evidence-detour-return-390-light.png",
+      "bytes": 48885,
+      "sha256": "21be1cf5922594ae7d059408d9fe4071b23c4d8cb700b40abc7a5e84aa15e9c2"
+    },
+    {
+      "file": "module-focused-02/browser/full-review-navigation-context-worksheet.json",
+      "bytes": 5843,
+      "sha256": "1d82903d7d2c887b7ee5b7bd9033fc4cc033496e33a7707e960d4d5aaa8f5c70"
+    },
+    {
+      "file": "module-focused-02/browser/full-review-returned-controls-1366-light.png",
+      "bytes": 82656,
+      "sha256": "1a3fd39b612d86893c6bb5005b3c06d28fa4e11b3a6946985a7dc626369d6fc3"
+    },
+    {
+      "file": "module-focused-02/browser/save-warning-all-five-open-work.json",
+      "bytes": 5744,
+      "sha256": "55bc9d71556fc1c92b0b75d103a70505a375203c46fb850cb1d1994cd6b9d371"
+    },
+    {
+      "file": "module-focused-02/browser/save-warning-desktop-open-work-1366-dark.png",
+      "bytes": 87235,
+      "sha256": "35e8711c2e0100283b9c394862b6c57e1884cc551a2cd551378afea3819989a4"
+    },
+    {
+      "file": "module-focused-02/browser/save-warning-landscape-844x390-dark.png",
+      "bytes": 35991,
+      "sha256": "ad3fa001cf0ed3ad5220205424355eeaeeb6bdeacbbd08fc175790be907ad083"
+    },
+    {
+      "file": "module-focused-02/browser/save-warning-open-note-320-dark.png",
+      "bytes": 42685,
+      "sha256": "61d8c32b3ad5ee34234c4e18fb773284bc063fb1268184156176e515ee557457"
+    },
+    {
+      "file": "module-focused-02/result.json",
+      "bytes": 7448,
+      "sha256": "b9fd9ea49a8a92346fabeb5716f7c7f720e45cbcfd82fb3bec7ae4fcf1de2f26"
+    },
+    {
+      "file": "module-focused-02/run-command.ps1",
+      "bytes": 1816,
+      "sha256": "6c47a602771ed0fe78decfde942bea1e6bf8e5448fbad756069bbd9f8f61142e"
+    },
+    {
+      "file": "module-focused-02/run-identity.json",
+      "bytes": 902,
+      "sha256": "f2bef735c7a30134a3d8fe7ff00658a96fbbd6dabd84e812d13291f33e775a64"
+    },
+    {
+      "file": "module-focused-02/run.log",
+      "bytes": 1424,
+      "sha256": "63d7b38fc15f3660e875ca0253929426c9b42897f11c0bb73c4d58cff32957e1"
+    },
+    {
+      "file": "module-focused-02/runner-helper.py",
+      "bytes": 4152,
+      "sha256": "d722f71ce1f9c9d7ac245fd7151f9a333441207ecf08eef4bfac0ec0bddce5cd"
+    }
+  ]
+}

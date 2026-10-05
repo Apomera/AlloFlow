@@ -1,0 +1,19 @@
+{
+  "phase": "module-focused",
+  "attempt": "01",
+  "expectedModuleSha256": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9",
+  "sourceSha256": "0ace7842ded217dfc67d240f357acdfbca59a493ae0e7aef709e0dd006b846df",
+  "browserTestSha256": "2807144531c423401b691b10ad1c7e1cd6bfb7a6151ea68927a90d7ee4187e28",
+  "workers": 1,
+  "automaticRetries": 0,
+  "timeoutMs": 120000,
+  "normalTracePolicy": "retain-on-failure",
+  "validationMethod": "original canonical specification and unchanged synchronous stylesheet setup",
+  "preparedAssetValidation": false,
+  "selectedScenarios": 2,
+  "availableScenarios": 38,
+  "original37PrefixBytePreserved": true,
+  "original37Sha256": "25f75f6b96dfdba61036c1267e932cd94d0e4691a9969e80867ebe865afd0771",
+  "original37Bytes": 195578,
+  "configSha256": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587"
+}

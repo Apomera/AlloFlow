@@ -1,0 +1,141 @@
+{
+  "startedAt": "2026-10-03T16:51:20.477Z",
+  "runnerSha256": "b48cce0bedaacbaf77363fa0d09f3f800e69b2610d00312e0853260d46744e33",
+  "files": [
+    {
+      "file": "reports/classroom-reliability-followup-2026-10-03/student-response-v2-lifecycle.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/0-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "reports/classroom-reliability-followup-2026-10-03/resource_receiver_lifecycle.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/1-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "reports/classroom-reliability-followup-2026-10-03/recovery_media_intent.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/2-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "reports/classroom-reliability-followup-2026-10-03/recovery_draft_schema.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/3-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/classroom_host_audio_integration.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/4-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/classroom_history_save_policy.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/5-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/history_reload_rehydrate.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/6-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/report_storage_mixed_recovery.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/7-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/utils_pure_storage.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/8-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/device_storage_bridge.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/9-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/device_storage_bridge_security.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/10-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/allo_device_storage_a11y.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/11-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/storage_recovery_manager.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/12-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/storage_recovery_vault_app.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/13-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/storage_security_integration_contract.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/14-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/mailbox_image_delivery.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/15-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/class_mailbox.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/16-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/mailbox_session_bridge.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/17-attempt-1.json",
+      "passed": true
+    },
+    {
+      "file": "tests/session_transport.test.js",
+      "attempt": 1,
+      "exitCode": 0,
+      "report": "isolated/18-attempt-1.json",
+      "passed": true
+    }
+  ],
+  "passed": true,
+  "completedAt": "2026-10-03T16:56:39.841Z"
+}

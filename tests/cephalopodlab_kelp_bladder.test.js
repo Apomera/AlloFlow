@@ -5,6 +5,7 @@ import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
 
 const require=createRequire(import.meta.url),THREE=require('../vendor/three-r128/three.min.js');
+const {restoreOriginalSeagrassSource}=require('./helpers/cephalopod_seagrass_reference.cjs');
 const source=readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE||process.env.CLH_KELP_TEST_SOURCE||'stem_lab/stem_tool_cephalopodlab.js','utf8');
 const accepted=JSON.parse(readFileSync('tests/fixtures/cephalopod_kelp_original.json','utf8'));
 assert.equal(accepted.version,1);assert.equal(accepted.baselineSourceSha256,'b34c982127743a9d1f47ed392d0d48d09fa6adba588560bb178ab5e180e5d369');
@@ -15,6 +16,11 @@ const helpers=region('function shadeCLHuntPlantFlex(','function createCLHuntMari
 const noRandom=Object.create(Math);noRandom.random=()=>{throw new Error('Decorative plant geometry must not consume dive RNG');};
 const actual=new Function('Math',helpers+';return{build:createCLHuntPlantGeometry,configure:createCLHuntPlantFlex,shade:shadeCLHuntPlantFlex};')(noRandom);
 const oldBuild=new Function('Math',accepted.factorySource+';return createCLHuntPlantGeometry;')(noRandom);
+// Retain the original grass oracle; exclude only the exact approved static insertion.
+// Actual live grass is checked independently by cephalopodlab_seagrass_straps.test.js.
+const grassReferenceSource=restoreOriginalSeagrassSource(source),grassReferenceAt=grassReferenceSource.indexOf('function shadeCLHuntPlantFlex('),grassReferenceEnd=grassReferenceSource.indexOf('function createCLHuntMarineSnowGeometry(',grassReferenceAt);
+assert.ok(grassReferenceAt>=0&&grassReferenceEnd>grassReferenceAt);
+const grassReferenceBuild=new Function('Math',grassReferenceSource.slice(grassReferenceAt,grassReferenceEnd)+';return createCLHuntPlantGeometry;')(noRandom);
 const oldHelpers=helpers.slice(0,helpers.indexOf('function createCLHuntPlantGeometry('))+accepted.factorySource;
 function point(geometry,index){return new THREE.Vector3().fromBufferAttribute(geometry.attributes.position,index);}
 function bytes(array,count=array.length){return Buffer.from(array.buffer,array.byteOffset,count*array.BYTES_PER_ELEMENT);}
@@ -33,12 +39,19 @@ const shader={vertexShader:THREE.ShaderLib.standard.vertexShader,fragmentShader:
 const definition=shader.vertexShader.match(/vec2 clPlantWave\(([^)]*)\)\{([^{}]*)\}/);
 assert.ok(definition,'Expected the actual injected wave kernel');
 const wave=new Function('sin','cos','vec2','return function('+definition[1].replace(/float /g,'')+'){'+definition[2].replace(/\bfloat /g,'let ')+'};')(Math.sin,Math.cos,(x,y)=>[x,y]);
-const xp=shader.vertexShader.match(/clPlantWave\(clPlantT,clPlantMotion\.x\+clPlantInstancePhase,([\d.]+),([\d.]+)\)/);
-const zp=shader.vertexShader.match(/clPlantWave\(clPlantT,clPlantMotion\.y\+clPlantInstancePhase\*([\d.]+),([\d.]+),([\d.]+)\)/);
-assert.ok(xp&&zp,'Expected actual shader displacement parameters');
-function sample(rest,height,phases,enabled=1){
-  const t=Math.max(0,Math.min(1,rest.y/Math.max(height,.001))),x=wave(t,phases[0],+xp[1],+xp[2]),z=wave(t,phases[1],+zp[2],+zp[3]);
-  return {point:rest.clone().add(new THREE.Vector3(x[0]*height*enabled,0,z[0]*height*enabled)),slope:[x[1]*enabled,z[1]*enabled]};
+const xp=shader.vertexShader.match(/vec2 clPlantX=clPlantWave\(clPlantT,([^,]+),([\d.]+),([\d.]+)\);/);
+const zp=shader.vertexShader.match(/vec2 clPlantZ=clPlantWave\(clPlantT,([^,]+),([\d.]+),([\d.]+)\);/);
+assert.ok(xp&&zp,'Expected actual accepted spatial-pulse displacement parameters');
+assert.deepEqual([xp[1],zp[1]],['clPlantMotion.y+clPlantInstancePhase','clPlantMotion.y+1.7+clPlantInstancePhase*0.73']);
+assert.deepEqual([+xp[2],+xp[3],+zp[2],+zp[3]],[1.6,.12,2.1,.035]);
+const livePhase=expression=>new Function('phases','instancePhase','return '+expression.replace(/clPlantMotion\.x/g,'phases[0]').replace(/clPlantMotion\.y/g,'phases[1]').replace(/clPlantInstancePhase/g,'instancePhase')+';');
+const xPhase=livePhase(xp[1]),zPhase=livePhase(zp[1]);
+const pulseDefinition=shader.vertexShader.match(/float clPlantPulse\(([^)]*)\)\{([^{}]*)\}/);
+assert.ok(pulseDefinition,'Expected the actual accepted shared pulse');
+const pulse=new Function('sin','return function('+pulseDefinition[1].replace(/float /g,'')+'){'+pulseDefinition[2].replace(/\bfloat /g,'let ')+'};')(Math.sin);
+function sample(rest,height,phases,enabled=1,sitePhase=0){
+  const t=Math.max(0,Math.min(1,rest.y/Math.max(height,.001))),weight=enabled*pulse(phases[0],sitePhase),x=wave(t,xPhase(phases,0),+xp[2],+xp[3]),z=wave(t,zPhase(phases,0),+zp[2],+zp[3]);
+  return {point:rest.clone().add(new THREE.Vector3(x[0]*height*weight,0,z[0]*height*weight)),slope:[x[1]*weight,z[1]*weight]};
 }
 function construct(helperSource=helpers){
   const grass=region('        var grass = [];','        // Terrain-conforming caustics:'),kelp=region('        var kelpStrands = [];','        // ─── Hydrothermal vent');
@@ -54,9 +67,9 @@ const pauseGuard=source.slice(pauseAt,source.indexOf('\n',pauseAt));
 const liveSway=new Function('kelpStrands','grass','gameState','now',helpers+';'+pauseGuard+'\n'+region('            kelpStrands.forEach(function(k) {','            // Vent plume rises')+region('            grass.forEach(function(g) {','            // ─── Floor + caustics follow')+'\n}');
 
 describe('Cephalopod Hunter attached kelp gas bladders',()=>{
-  it('keeps every accepted141 kelp attribute and504indices byte-exact, with all grass buffers and metadata exact',()=>{
+  it('keeps every accepted141 kelp attribute and504indices byte-exact, with original grass checked through the approved insertion reversal',()=>{
     for(let variant=0;variant<80;variant++){
-      const height=.6+variant/79*1.3,current=actual.build(THREE,'grass',height,variant),previous=oldBuild(THREE,'grass',height,variant);
+      const height=.6+variant/79*1.3,current=grassReferenceBuild(THREE,'grass',height,variant),previous=oldBuild(THREE,'grass',height,variant);
       try{
         assert.equal(current.attributes.position.count,33);assert.equal(current.index.count,120);
         for(const [name,attr] of Object.entries(previous.attributes))samePrefix(current.attributes[name].array,attr.array);
@@ -165,7 +178,7 @@ describe('Cephalopod Hunter attached kelp gas bladders',()=>{
       const all=[...current.grass,...current.kelp];assert.equal(current.scene.children.length,105);assert.equal(new Set(all.map(plant=>plant.mesh.geometry)).size,105);assert.equal(new Set(all.map(plant=>plant.mesh.material)).size,105);
       for(const [i,plant] of current.kelp.entries()){
         const old=previous.kelp[i],mesh=plant.mesh;assert.equal(mesh.name,'cl-kelp');assert.deepEqual(mesh.position.toArray(),old.mesh.position.toArray());assert.deepEqual(mesh.rotation.toArray(),old.mesh.rotation.toArray());assert.equal(plant.phase,old.phase);assert.equal(plant.baseHeight,old.baseHeight);assert.deepEqual(mesh.userData,old.mesh.userData);
-        assert.equal(mesh.material.isMeshStandardMaterial,true);assert.equal(mesh.material.transparent,true);assert.equal(mesh.material.opacity,.85);assert.equal(mesh.material.depthWrite,false);assert.equal(mesh.material.side,THREE.DoubleSide);assert.equal(mesh.material.vertexColors,true);assert.equal(mesh.material.roughness,.95);assert.equal(mesh.material.customProgramCacheKey(),'cl-plant-flex-v15');
+        assert.equal(mesh.material.isMeshStandardMaterial,true);assert.equal(mesh.material.transparent,true);assert.equal(mesh.material.opacity,.85);assert.equal(mesh.material.depthWrite,false);assert.equal(mesh.material.side,THREE.DoubleSide);assert.equal(mesh.material.vertexColors,true);assert.equal(mesh.material.roughness,.95);assert.equal(mesh.material.customProgramCacheKey(),'cl-plant-flex-v28-water-pulse');
         assert.equal(mesh.children.length,0);assert.notEqual(mesh.geometry.attributes.position.array.buffer,old.mesh.geometry.attributes.position.array.buffer);assert.notEqual(plant.flex.value,old.flex.value);
       }
     }finally{dispose(current);dispose(previous);}
@@ -179,7 +192,7 @@ describe('Cephalopod Hunter attached kelp gas bladders',()=>{
       state.paused=false;state.a11y.reducedMotion=true;for(const now of [5600,8000,15000]){liveSway(fixture.kelp,fixture.grass,state,now);assert.deepEqual(all.map(plant=>plant.flex.value.toArray()),moving.map(pose=>[...pose.slice(0,3),0]));}
       state.a11y.reducedMotion=false;liveSway(fixture.kelp,fixture.grass,state,16000);
       for(const [i,plant] of all.entries()){
-        const saved=resources[i],rate=plant.mesh.isInstancedMesh ? .001 : .0008;assert.equal(plant.flex.value.x,(16000*rate+plant.phase)%(Math.PI*2));assert.equal(plant.flex.value.w,1);assert.equal(plant.mesh.rotation.z,0);
+        const saved=resources[i],rate=plant.mesh.isInstancedMesh ? .001 : .0008;assert.equal(plant.flex.value.x,(16000*.00035)%(Math.PI*2));assert.equal(plant.flex.value.y,(16000*rate+plant.phase)%(Math.PI*2));assert.equal(plant.flex.value.w,1);assert.equal(plant.mesh.rotation.z,0);
         assert.equal(plant.mesh.geometry,saved.geometry);assert.equal(plant.mesh.material,saved.material);assert.equal(plant.flex,saved.uniform);assert.equal(plant.flex.value,saved.value);
         for(const [name,attr] of Object.entries(plant.mesh.geometry.attributes)){assert.equal(attr.array,saved.arrays[name].array);assert.ok(bytes(attr.array).equals(saved.arrays[name].bytes));assert.equal(attr.version,saved.arrays[name].version);}
         assert.equal(plant.mesh.geometry.index.array,saved.index);assert.ok(bytes(saved.index).equals(saved.indexBytes));assert.equal(saved.geometryDisposals,0);assert.equal(saved.materialDisposals,0);

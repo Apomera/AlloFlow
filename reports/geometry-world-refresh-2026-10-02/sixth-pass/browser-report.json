@@ -1,0 +1,3801 @@
+{
+  "startedAt": "2026-10-04T02:41:54.258Z",
+  "checks": [
+    {
+      "name": "desktop: Workspace is the default with only one panel visible",
+      "status": "pass",
+      "evidence": {
+        "tab": "workspace"
+      }
+    },
+    {
+      "name": "desktop: workspace standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "StandardLarger",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "SolidTranslucent",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Show top bar",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Show coordinates",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Show station compass",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Minimal",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "Learning",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "Builder",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "NoneLesson progressMinimapMeasurement no",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Reset workspace appearance",
+            "height": 44,
+            "width": 231.921875
+          }
+        ],
+        "tab": "gw-settings-panel-workspace"
+      }
+    },
+    {
+      "name": "desktop: workspace accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: view standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Auto (Detailed)Battery saverBalancedDeta",
+            "height": 44,
+            "width": 146
+          },
+          {
+            "text": "✨ Explore tour",
+            "height": 44,
+            "width": 135.125
+          },
+          {
+            "text": "Front",
+            "height": 44,
+            "width": 63.15625
+          },
+          {
+            "text": "Side",
+            "height": 44,
+            "width": 55.15625
+          },
+          {
+            "text": "Top",
+            "height": 44,
+            "width": 52.78125
+          },
+          {
+            "text": "Free",
+            "height": 44,
+            "width": 81.375
+          },
+          {
+            "text": "Scene map",
+            "height": 44,
+            "width": 99.421875
+          },
+          {
+            "text": "☀️ Day🌅 Sunrise🌇 Sunset🌙 Night🌟 Gold",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Automatic day and night",
+            "height": 44,
+            "width": 718
+          }
+        ],
+        "tab": "gw-settings-panel-view"
+      }
+    },
+    {
+      "name": "desktop: view accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: learning standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "📏 Volume Explorer📐 Area & Surface🏗️ B",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "🇺🇸 English🇪🇸 Español🇫🇷 Français🇸\ud83c",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "? Help",
+            "height": 44,
+            "width": 63.890625
+          },
+          {
+            "text": "Sound",
+            "height": 44,
+            "width": 718
+          }
+        ],
+        "tab": "gw-settings-panel-learning"
+      }
+    },
+    {
+      "name": "desktop: learning accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: create standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "💾 Save",
+            "height": 44,
+            "width": 78.4375
+          },
+          {
+            "text": "🩸 3D Print",
+            "height": 44,
+            "width": 100.984375
+          },
+          {
+            "text": "📸 Photo",
+            "height": 44,
+            "width": 87.109375
+          },
+          {
+            "text": "Worksheet",
+            "height": 44,
+            "width": 94.1875
+          },
+          {
+            "text": "Teacher key",
+            "height": 44,
+            "width": 99.96875
+          },
+          {
+            "text": "Learning record",
+            "height": 44,
+            "width": 125.984375
+          },
+          {
+            "text": "Concept snapshots",
+            "height": 44,
+            "width": 146.1875
+          },
+          {
+            "text": "🎨 Create",
+            "height": 44,
+            "width": 91.421875
+          },
+          {
+            "text": "📂 Load",
+            "height": 44,
+            "width": 79.859375
+          },
+          {
+            "text": "📊 Data",
+            "height": 44,
+            "width": 78.796875
+          },
+          {
+            "text": "📋 MTSS",
+            "height": 44,
+            "width": 84.984375
+          }
+        ],
+        "tab": "gw-settings-panel-create"
+      }
+    },
+    {
+      "name": "desktop: create accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: roving keyboard tabs and Home/End",
+      "status": "pass",
+      "evidence": {
+        "arrows": true,
+        "homeEnd": true
+      }
+    },
+    {
+      "name": "desktop: native select keys never invoke world shortcuts",
+      "status": "pass",
+      "evidence": {
+        "nativeLarger": true,
+        "sceneCommands": 0
+      }
+    },
+    {
+      "name": "desktop: live changes stay open, save, and retain the world",
+      "status": "pass",
+      "evidence": {
+        "version": 1,
+        "preset": "learning",
+        "toolbarCollapsed": false,
+        "uiTextSize": "large",
+        "uiSurface": "glass",
+        "showCoordinates": false,
+        "showStationCompass": false
+      }
+    },
+    {
+      "name": "desktop: selected layout has a visible check and distinct framing",
+      "status": "pass",
+      "evidence": {
+        "bg": "rgb(185, 238, 228)",
+        "check": 18,
+        "text": "Learning"
+      }
+    },
+    {
+      "name": "desktop: manual optional panel reports Custom",
+      "status": "pass",
+      "evidence": {
+        "layout": "custom"
+      }
+    },
+    {
+      "name": "desktop: workspace larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "StandardLarger",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "SolidTranslucent",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Show top bar",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Show coordinates",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Show station compass",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Minimal",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "Learning",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "Builder",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "NoneLesson progressMinimapMeasurement no",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Reset workspace appearance",
+            "height": 44,
+            "width": 231.921875
+          }
+        ],
+        "tab": "gw-settings-panel-workspace"
+      }
+    },
+    {
+      "name": "desktop: view larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Auto (Detailed)Battery saverBalancedDeta",
+            "height": 44,
+            "width": 146
+          },
+          {
+            "text": "✨ Explore tour",
+            "height": 44,
+            "width": 135.125
+          },
+          {
+            "text": "Front",
+            "height": 44,
+            "width": 63.15625
+          },
+          {
+            "text": "Side",
+            "height": 44,
+            "width": 55.15625
+          },
+          {
+            "text": "Top",
+            "height": 44,
+            "width": 52.78125
+          },
+          {
+            "text": "Free",
+            "height": 44,
+            "width": 81.375
+          },
+          {
+            "text": "Scene map",
+            "height": 44,
+            "width": 99.421875
+          },
+          {
+            "text": "☀️ Day🌅 Sunrise🌇 Sunset🌙 Night🌟 Gold",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Automatic day and night",
+            "height": 44,
+            "width": 718
+          }
+        ],
+        "tab": "gw-settings-panel-view"
+      }
+    },
+    {
+      "name": "desktop: learning larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "📏 Volume Explorer📐 Area & Surface🏗️ B",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "🇺🇸 English🇪🇸 Español🇫🇷 Français🇸\ud83c",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "? Help",
+            "height": 44,
+            "width": 63.890625
+          },
+          {
+            "text": "Sound",
+            "height": 44,
+            "width": 718
+          }
+        ],
+        "tab": "gw-settings-panel-learning"
+      }
+    },
+    {
+      "name": "desktop: create larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "💾 Save",
+            "height": 44,
+            "width": 78.4375
+          },
+          {
+            "text": "🩸 3D Print",
+            "height": 44,
+            "width": 100.984375
+          },
+          {
+            "text": "📸 Photo",
+            "height": 44,
+            "width": 87.109375
+          },
+          {
+            "text": "Worksheet",
+            "height": 44,
+            "width": 94.1875
+          },
+          {
+            "text": "Teacher key",
+            "height": 44,
+            "width": 99.96875
+          },
+          {
+            "text": "Learning record",
+            "height": 44,
+            "width": 125.984375
+          },
+          {
+            "text": "Concept snapshots",
+            "height": 44,
+            "width": 146.1875
+          },
+          {
+            "text": "🎨 Create",
+            "height": 44,
+            "width": 91.421875
+          },
+          {
+            "text": "📂 Load",
+            "height": 44,
+            "width": 79.859375
+          },
+          {
+            "text": "📊 Data",
+            "height": 44,
+            "width": 78.796875
+          },
+          {
+            "text": "📋 MTSS",
+            "height": 44,
+            "width": 84.984375
+          }
+        ],
+        "tab": "gw-settings-panel-create"
+      }
+    },
+    {
+      "name": "desktop: active camera is visibly distinct",
+      "status": "pass",
+      "evidence": [
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "true",
+          "background": "rgb(185, 238, 228)"
+        }
+      ]
+    },
+    {
+      "name": "desktop: high contrast settings",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: forced color settings",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "desktop: Tab trap ignores hidden panels",
+      "status": "pass",
+      "evidence": {
+        "trapped": true
+      }
+    },
+    {
+      "name": "desktop: hiding top bar preserves the dialog and restore entry",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "desktop: overlay preferences hide only optional aids",
+      "status": "pass",
+      "evidence": {
+        "coordinates": "hidden",
+        "canvas": "present"
+      }
+    },
+    {
+      "name": "desktop: larger palette labels fit stable tiles",
+      "status": "pass",
+      "evidence": [
+        {
+          "name": "Stone",
+          "width": 40,
+          "contents": 40,
+          "tile": 88
+        },
+        {
+          "name": "Grass",
+          "width": 38,
+          "contents": 38,
+          "tile": 88
+        },
+        {
+          "name": "Wood",
+          "width": 42,
+          "contents": 42,
+          "tile": 88
+        },
+        {
+          "name": "Diamond",
+          "width": 65,
+          "contents": 65,
+          "tile": 88
+        },
+        {
+          "name": "Gold",
+          "width": 33,
+          "contents": 33,
+          "tile": 88
+        },
+        {
+          "name": "Sand",
+          "width": 35,
+          "contents": 35,
+          "tile": 88
+        },
+        {
+          "name": "Glass",
+          "width": 36,
+          "contents": 36,
+          "tile": 88
+        },
+        {
+          "name": "Water",
+          "width": 42,
+          "contents": 42,
+          "tile": 88
+        },
+        {
+          "name": "Brick",
+          "width": 36,
+          "contents": 36,
+          "tile": 88
+        },
+        {
+          "name": "Ice",
+          "width": 20,
+          "contents": 20,
+          "tile": 88
+        },
+        {
+          "name": "Lava",
+          "width": 32,
+          "contents": 32,
+          "tile": 88
+        },
+        {
+          "name": "Torch",
+          "width": 39,
+          "contents": 39,
+          "tile": 88
+        },
+        {
+          "name": "Obsidian",
+          "width": 62,
+          "contents": 62,
+          "tile": 88
+        },
+        {
+          "name": "Marble",
+          "width": 50,
+          "contents": 50,
+          "tile": 88
+        },
+        {
+          "name": "Copper",
+          "width": 51,
+          "contents": 51,
+          "tile": 88
+        },
+        {
+          "name": "Emerald",
+          "width": 57,
+          "contents": 57,
+          "tile": 88
+        },
+        {
+          "name": "Amethyst",
+          "width": 68,
+          "contents": 68,
+          "tile": 88
+        },
+        {
+          "name": "Leaves",
+          "width": 47,
+          "contents": 47,
+          "tile": 88
+        },
+        {
+          "name": "Snow",
+          "width": 39,
+          "contents": 39,
+          "tile": 88
+        },
+        {
+          "name": "Wool",
+          "width": 37,
+          "contents": 37,
+          "tile": 88
+        }
+      ]
+    },
+    {
+      "name": "desktop: larger action bar stays in one row below the placement hint",
+      "status": "pass",
+      "evidence": {
+        "height": 52,
+        "visible": true,
+        "wrap": "nowrap",
+        "hintOverlaps": false
+      }
+    },
+    {
+      "name": "desktop: denied storage applies locally and tells the truth",
+      "status": "pass",
+      "evidence": {
+        "sessionOnly": true
+      }
+    },
+    {
+      "name": "desktop: reset restores appearance without changing evidence or geometry",
+      "status": "pass",
+      "evidence": {
+        "worldRetained": true
+      }
+    },
+    {
+      "name": "desktop: Escape restores focus to visible Settings entry",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "desktop: saved readability survives a fresh mount",
+      "status": "pass",
+      "evidence": {
+        "textSize": "large",
+        "coordinates": "hidden"
+      }
+    },
+    {
+      "name": "desktop: WebGL is nonblank and no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "phone: Workspace is the default with only one panel visible",
+      "status": "pass",
+      "evidence": {
+        "tab": "workspace"
+      }
+    },
+    {
+      "name": "phone: workspace standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "StandardLarger",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "SolidTranslucent",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Show top bar",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Show coordinates",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Show station compass",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Minimal",
+            "height": 44,
+            "width": 113.328125
+          },
+          {
+            "text": "Learning",
+            "height": 44,
+            "width": 113.328125
+          },
+          {
+            "text": "Builder",
+            "height": 44,
+            "width": 113.34375
+          },
+          {
+            "text": "NoneLesson progressMinimapMeasurement no",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Reset workspace appearance",
+            "height": 44,
+            "width": 231.921875
+          }
+        ],
+        "tab": "gw-settings-panel-workspace"
+      }
+    },
+    {
+      "name": "phone: workspace accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: view standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Auto (Battery saver)Battery saverBalance",
+            "height": 44,
+            "width": 180
+          },
+          {
+            "text": "✨ Explore tour",
+            "height": 44,
+            "width": 135.125
+          },
+          {
+            "text": "Front",
+            "height": 44,
+            "width": 165
+          },
+          {
+            "text": "Side",
+            "height": 44,
+            "width": 165
+          },
+          {
+            "text": "Top",
+            "height": 44,
+            "width": 165
+          },
+          {
+            "text": "Free",
+            "height": 44,
+            "width": 165
+          },
+          {
+            "text": "Scene map",
+            "height": 44,
+            "width": 99.421875
+          },
+          {
+            "text": "☀️ Day🌅 Sunrise🌇 Sunset🌙 Night🌟 Gold",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Automatic day and night",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "",
+            "height": 44,
+            "width": 352
+          }
+        ],
+        "tab": "gw-settings-panel-view"
+      }
+    },
+    {
+      "name": "phone: view accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: learning standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "📏 Volume Explorer📐 Area & Surface🏗️ B",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "🇺🇸 English🇪🇸 Español🇫🇷 Français🇸\ud83c",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "? Help",
+            "height": 44,
+            "width": 63.890625
+          },
+          {
+            "text": "Sound",
+            "height": 44,
+            "width": 352
+          }
+        ],
+        "tab": "gw-settings-panel-learning"
+      }
+    },
+    {
+      "name": "phone: learning accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: create standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "💾 Save",
+            "height": 44,
+            "width": 78.4375
+          },
+          {
+            "text": "🩸 3D Print",
+            "height": 44,
+            "width": 100.984375
+          },
+          {
+            "text": "📸 Photo",
+            "height": 44,
+            "width": 87.109375
+          },
+          {
+            "text": "Worksheet",
+            "height": 44,
+            "width": 94.1875
+          },
+          {
+            "text": "Teacher key",
+            "height": 44,
+            "width": 99.96875
+          },
+          {
+            "text": "Learning record",
+            "height": 44,
+            "width": 125.984375
+          },
+          {
+            "text": "Concept snapshots",
+            "height": 44,
+            "width": 146.1875
+          },
+          {
+            "text": "🎨 Create",
+            "height": 44,
+            "width": 91.421875
+          },
+          {
+            "text": "📂 Load",
+            "height": 44,
+            "width": 79.859375
+          },
+          {
+            "text": "📊 Data",
+            "height": 44,
+            "width": 78.796875
+          },
+          {
+            "text": "📋 MTSS",
+            "height": 44,
+            "width": 84.984375
+          }
+        ],
+        "tab": "gw-settings-panel-create"
+      }
+    },
+    {
+      "name": "phone: create accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: roving keyboard tabs and Home/End",
+      "status": "pass",
+      "evidence": {
+        "arrows": true,
+        "homeEnd": true
+      }
+    },
+    {
+      "name": "phone: native select keys never invoke world shortcuts",
+      "status": "pass",
+      "evidence": {
+        "nativeLarger": true,
+        "sceneCommands": 0
+      }
+    },
+    {
+      "name": "phone: live changes stay open, save, and retain the world",
+      "status": "pass",
+      "evidence": {
+        "version": 1,
+        "preset": "learning",
+        "toolbarCollapsed": false,
+        "uiTextSize": "large",
+        "uiSurface": "glass",
+        "showCoordinates": false,
+        "showStationCompass": false
+      }
+    },
+    {
+      "name": "phone: selected layout has a visible check and distinct framing",
+      "status": "pass",
+      "evidence": {
+        "bg": "rgb(185, 238, 228)",
+        "check": 18,
+        "text": "Learning"
+      }
+    },
+    {
+      "name": "phone: manual optional panel reports Custom",
+      "status": "pass",
+      "evidence": {
+        "layout": "custom"
+      }
+    },
+    {
+      "name": "phone: workspace larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "StandardLarger",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "SolidTranslucent",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Show top bar",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Show coordinates",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Show station compass",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Minimal",
+            "height": 44,
+            "width": 113.328125
+          },
+          {
+            "text": "Learning",
+            "height": 44,
+            "width": 113.328125
+          },
+          {
+            "text": "Builder",
+            "height": 44,
+            "width": 113.34375
+          },
+          {
+            "text": "NoneLesson progressMinimapMeasurement no",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Reset workspace appearance",
+            "height": 44,
+            "width": 231.921875
+          }
+        ],
+        "tab": "gw-settings-panel-workspace"
+      }
+    },
+    {
+      "name": "phone: view larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Auto (Battery saver)Battery saverBalance",
+            "height": 44,
+            "width": 180
+          },
+          {
+            "text": "✨ Explore tour",
+            "height": 44,
+            "width": 135.125
+          },
+          {
+            "text": "Front",
+            "height": 44,
+            "width": 165
+          },
+          {
+            "text": "Side",
+            "height": 44,
+            "width": 165
+          },
+          {
+            "text": "Top",
+            "height": 44,
+            "width": 165
+          },
+          {
+            "text": "Free",
+            "height": 44,
+            "width": 165
+          },
+          {
+            "text": "Scene map",
+            "height": 44,
+            "width": 99.421875
+          },
+          {
+            "text": "☀️ Day🌅 Sunrise🌇 Sunset🌙 Night🌟 Gold",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "Automatic day and night",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "",
+            "height": 44,
+            "width": 352
+          }
+        ],
+        "tab": "gw-settings-panel-view"
+      }
+    },
+    {
+      "name": "phone: learning larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "📏 Volume Explorer📐 Area & Surface🏗️ B",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "🇺🇸 English🇪🇸 Español🇫🇷 Français🇸\ud83c",
+            "height": 44,
+            "width": 352
+          },
+          {
+            "text": "? Help",
+            "height": 44,
+            "width": 63.890625
+          },
+          {
+            "text": "Sound",
+            "height": 44,
+            "width": 352
+          }
+        ],
+        "tab": "gw-settings-panel-learning"
+      }
+    },
+    {
+      "name": "phone: create larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 90
+          },
+          {
+            "text": "💾 Save",
+            "height": 44,
+            "width": 78.4375
+          },
+          {
+            "text": "🩸 3D Print",
+            "height": 44,
+            "width": 100.984375
+          },
+          {
+            "text": "📸 Photo",
+            "height": 44,
+            "width": 87.109375
+          },
+          {
+            "text": "Worksheet",
+            "height": 44,
+            "width": 94.1875
+          },
+          {
+            "text": "Teacher key",
+            "height": 44,
+            "width": 99.96875
+          },
+          {
+            "text": "Learning record",
+            "height": 44,
+            "width": 125.984375
+          },
+          {
+            "text": "Concept snapshots",
+            "height": 44,
+            "width": 146.1875
+          },
+          {
+            "text": "🎨 Create",
+            "height": 44,
+            "width": 91.421875
+          },
+          {
+            "text": "📂 Load",
+            "height": 44,
+            "width": 79.859375
+          },
+          {
+            "text": "📊 Data",
+            "height": 44,
+            "width": 78.796875
+          },
+          {
+            "text": "📋 MTSS",
+            "height": 44,
+            "width": 84.984375
+          }
+        ],
+        "tab": "gw-settings-panel-create"
+      }
+    },
+    {
+      "name": "phone: active camera is visibly distinct",
+      "status": "pass",
+      "evidence": [
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "true",
+          "background": "rgb(185, 238, 228)"
+        }
+      ]
+    },
+    {
+      "name": "phone: high contrast settings",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: forced color settings",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "phone: Tab trap ignores hidden panels",
+      "status": "pass",
+      "evidence": {
+        "trapped": true
+      }
+    },
+    {
+      "name": "phone: hiding top bar preserves the dialog and restore entry",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "phone: overlay preferences hide only optional aids",
+      "status": "pass",
+      "evidence": {
+        "coordinates": "hidden",
+        "canvas": "present"
+      }
+    },
+    {
+      "name": "phone: larger palette labels fit stable tiles",
+      "status": "pass",
+      "evidence": [
+        {
+          "name": "Stone",
+          "width": 40,
+          "contents": 40,
+          "tile": 88
+        },
+        {
+          "name": "Grass",
+          "width": 38,
+          "contents": 38,
+          "tile": 88
+        },
+        {
+          "name": "Wood",
+          "width": 42,
+          "contents": 42,
+          "tile": 88
+        },
+        {
+          "name": "Diamond",
+          "width": 65,
+          "contents": 65,
+          "tile": 88
+        },
+        {
+          "name": "Gold",
+          "width": 33,
+          "contents": 33,
+          "tile": 88
+        },
+        {
+          "name": "Sand",
+          "width": 35,
+          "contents": 35,
+          "tile": 88
+        },
+        {
+          "name": "Glass",
+          "width": 36,
+          "contents": 36,
+          "tile": 88
+        },
+        {
+          "name": "Water",
+          "width": 42,
+          "contents": 42,
+          "tile": 88
+        },
+        {
+          "name": "Brick",
+          "width": 36,
+          "contents": 36,
+          "tile": 88
+        },
+        {
+          "name": "Ice",
+          "width": 20,
+          "contents": 20,
+          "tile": 88
+        },
+        {
+          "name": "Lava",
+          "width": 32,
+          "contents": 32,
+          "tile": 88
+        },
+        {
+          "name": "Torch",
+          "width": 39,
+          "contents": 39,
+          "tile": 88
+        },
+        {
+          "name": "Obsidian",
+          "width": 62,
+          "contents": 62,
+          "tile": 88
+        },
+        {
+          "name": "Marble",
+          "width": 50,
+          "contents": 50,
+          "tile": 88
+        },
+        {
+          "name": "Copper",
+          "width": 51,
+          "contents": 51,
+          "tile": 88
+        },
+        {
+          "name": "Emerald",
+          "width": 57,
+          "contents": 57,
+          "tile": 88
+        },
+        {
+          "name": "Amethyst",
+          "width": 68,
+          "contents": 68,
+          "tile": 88
+        },
+        {
+          "name": "Leaves",
+          "width": 47,
+          "contents": 47,
+          "tile": 88
+        },
+        {
+          "name": "Snow",
+          "width": 39,
+          "contents": 39,
+          "tile": 88
+        },
+        {
+          "name": "Wool",
+          "width": 37,
+          "contents": 37,
+          "tile": 88
+        }
+      ]
+    },
+    {
+      "name": "phone: larger action bar stays in one row below the placement hint",
+      "status": "pass",
+      "evidence": {
+        "layout": "touch actions",
+        "desktopBar": "not rendered"
+      }
+    },
+    {
+      "name": "phone: denied storage applies locally and tells the truth",
+      "status": "pass",
+      "evidence": {
+        "sessionOnly": true
+      }
+    },
+    {
+      "name": "phone: reset restores appearance without changing evidence or geometry",
+      "status": "pass",
+      "evidence": {
+        "worldRetained": true
+      }
+    },
+    {
+      "name": "phone: Escape restores focus to visible Settings entry",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "phone: saved readability survives a fresh mount",
+      "status": "pass",
+      "evidence": {
+        "textSize": "large",
+        "coordinates": "hidden"
+      }
+    },
+    {
+      "name": "phone: WebGL is nonblank and no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "narrow: Workspace is the default with only one panel visible",
+      "status": "pass",
+      "evidence": {
+        "tab": "workspace"
+      }
+    },
+    {
+      "name": "narrow: workspace standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "StandardLarger",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "SolidTranslucent",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Show top bar",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Show coordinates",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Show station compass",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Minimal",
+            "height": 44,
+            "width": 90
+          },
+          {
+            "text": "Learning",
+            "height": 44,
+            "width": 90
+          },
+          {
+            "text": "Builder",
+            "height": 44,
+            "width": 90
+          },
+          {
+            "text": "NoneLesson progressMinimapMeasurement no",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Reset workspace appearance",
+            "height": 44,
+            "width": 231.921875
+          }
+        ],
+        "tab": "gw-settings-panel-workspace"
+      }
+    },
+    {
+      "name": "narrow: workspace accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: view standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Auto (Battery saver)Battery saverBalance",
+            "height": 44,
+            "width": 180
+          },
+          {
+            "text": "✨ Explore tour",
+            "height": 44,
+            "width": 135.125
+          },
+          {
+            "text": "Front",
+            "height": 44,
+            "width": 130
+          },
+          {
+            "text": "Side",
+            "height": 44,
+            "width": 130
+          },
+          {
+            "text": "Top",
+            "height": 44,
+            "width": 130
+          },
+          {
+            "text": "Free",
+            "height": 44,
+            "width": 130
+          },
+          {
+            "text": "Scene map",
+            "height": 44,
+            "width": 99.421875
+          },
+          {
+            "text": "☀️ Day🌅 Sunrise🌇 Sunset🌙 Night🌟 Gold",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Automatic day and night",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "",
+            "height": 44,
+            "width": 282
+          }
+        ],
+        "tab": "gw-settings-panel-view"
+      }
+    },
+    {
+      "name": "narrow: view accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: learning standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "📏 Volume Explorer📐 Area & Surface🏗️ B",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "🇺🇸 English🇪🇸 Español🇫🇷 Français🇸\ud83c",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "? Help",
+            "height": 44,
+            "width": 63.890625
+          },
+          {
+            "text": "Sound",
+            "height": 44,
+            "width": 282
+          }
+        ],
+        "tab": "gw-settings-panel-learning"
+      }
+    },
+    {
+      "name": "narrow: learning accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: create standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "💾 Save",
+            "height": 44,
+            "width": 78.4375
+          },
+          {
+            "text": "🩸 3D Print",
+            "height": 44,
+            "width": 100.984375
+          },
+          {
+            "text": "📸 Photo",
+            "height": 44,
+            "width": 87.109375
+          },
+          {
+            "text": "Worksheet",
+            "height": 44,
+            "width": 94.1875
+          },
+          {
+            "text": "Teacher key",
+            "height": 44,
+            "width": 99.96875
+          },
+          {
+            "text": "Learning record",
+            "height": 44,
+            "width": 125.984375
+          },
+          {
+            "text": "Concept snapshots",
+            "height": 44,
+            "width": 146.1875
+          },
+          {
+            "text": "🎨 Create",
+            "height": 44,
+            "width": 91.421875
+          },
+          {
+            "text": "📂 Load",
+            "height": 44,
+            "width": 79.859375
+          },
+          {
+            "text": "📊 Data",
+            "height": 44,
+            "width": 78.796875
+          },
+          {
+            "text": "📋 MTSS",
+            "height": 44,
+            "width": 84.984375
+          }
+        ],
+        "tab": "gw-settings-panel-create"
+      }
+    },
+    {
+      "name": "narrow: create accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: roving keyboard tabs and Home/End",
+      "status": "pass",
+      "evidence": {
+        "arrows": true,
+        "homeEnd": true
+      }
+    },
+    {
+      "name": "narrow: native select keys never invoke world shortcuts",
+      "status": "pass",
+      "evidence": {
+        "nativeLarger": true,
+        "sceneCommands": 0
+      }
+    },
+    {
+      "name": "narrow: live changes stay open, save, and retain the world",
+      "status": "pass",
+      "evidence": {
+        "version": 1,
+        "preset": "learning",
+        "toolbarCollapsed": false,
+        "uiTextSize": "large",
+        "uiSurface": "glass",
+        "showCoordinates": false,
+        "showStationCompass": false
+      }
+    },
+    {
+      "name": "narrow: selected layout has a visible check and distinct framing",
+      "status": "pass",
+      "evidence": {
+        "bg": "rgb(185, 238, 228)",
+        "check": 18,
+        "text": "Learning"
+      }
+    },
+    {
+      "name": "narrow: manual optional panel reports Custom",
+      "status": "pass",
+      "evidence": {
+        "layout": "custom"
+      }
+    },
+    {
+      "name": "narrow: workspace larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "StandardLarger",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "SolidTranslucent",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Show top bar",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Show coordinates",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Show station compass",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Minimal",
+            "height": 44,
+            "width": 90
+          },
+          {
+            "text": "Learning",
+            "height": 44,
+            "width": 90
+          },
+          {
+            "text": "Builder",
+            "height": 44,
+            "width": 90
+          },
+          {
+            "text": "NoneLesson progressMinimapMeasurement no",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Reset workspace appearance",
+            "height": 44,
+            "width": 231.921875
+          }
+        ],
+        "tab": "gw-settings-panel-workspace"
+      }
+    },
+    {
+      "name": "narrow: view larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Auto (Battery saver)Battery saverBalance",
+            "height": 44,
+            "width": 180
+          },
+          {
+            "text": "✨ Explore tour",
+            "height": 44,
+            "width": 135.125
+          },
+          {
+            "text": "Front",
+            "height": 44,
+            "width": 130
+          },
+          {
+            "text": "Side",
+            "height": 44,
+            "width": 130
+          },
+          {
+            "text": "Top",
+            "height": 44,
+            "width": 130
+          },
+          {
+            "text": "Free",
+            "height": 44,
+            "width": 130
+          },
+          {
+            "text": "Scene map",
+            "height": 44,
+            "width": 99.421875
+          },
+          {
+            "text": "☀️ Day🌅 Sunrise🌇 Sunset🌙 Night🌟 Gold",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "Automatic day and night",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "",
+            "height": 44,
+            "width": 282
+          }
+        ],
+        "tab": "gw-settings-panel-view"
+      }
+    },
+    {
+      "name": "narrow: learning larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "📏 Volume Explorer📐 Area & Surface🏗️ B",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "🇺🇸 English🇪🇸 Español🇫🇷 Français🇸\ud83c",
+            "height": 44,
+            "width": 282
+          },
+          {
+            "text": "? Help",
+            "height": 44,
+            "width": 63.890625
+          },
+          {
+            "text": "Sound",
+            "height": 44,
+            "width": 282
+          }
+        ],
+        "tab": "gw-settings-panel-learning"
+      }
+    },
+    {
+      "name": "narrow: create larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 72.5
+          },
+          {
+            "text": "💾 Save",
+            "height": 44,
+            "width": 78.4375
+          },
+          {
+            "text": "🩸 3D Print",
+            "height": 44,
+            "width": 100.984375
+          },
+          {
+            "text": "📸 Photo",
+            "height": 44,
+            "width": 87.109375
+          },
+          {
+            "text": "Worksheet",
+            "height": 44,
+            "width": 94.1875
+          },
+          {
+            "text": "Teacher key",
+            "height": 44,
+            "width": 99.96875
+          },
+          {
+            "text": "Learning record",
+            "height": 44,
+            "width": 125.984375
+          },
+          {
+            "text": "Concept snapshots",
+            "height": 44,
+            "width": 146.1875
+          },
+          {
+            "text": "🎨 Create",
+            "height": 44,
+            "width": 91.421875
+          },
+          {
+            "text": "📂 Load",
+            "height": 44,
+            "width": 79.859375
+          },
+          {
+            "text": "📊 Data",
+            "height": 44,
+            "width": 78.796875
+          },
+          {
+            "text": "📋 MTSS",
+            "height": 44,
+            "width": 84.984375
+          }
+        ],
+        "tab": "gw-settings-panel-create"
+      }
+    },
+    {
+      "name": "narrow: active camera is visibly distinct",
+      "status": "pass",
+      "evidence": [
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "true",
+          "background": "rgb(185, 238, 228)"
+        }
+      ]
+    },
+    {
+      "name": "narrow: high contrast settings",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: forced color settings",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "narrow: Tab trap ignores hidden panels",
+      "status": "pass",
+      "evidence": {
+        "trapped": true
+      }
+    },
+    {
+      "name": "narrow: hiding top bar preserves the dialog and restore entry",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "narrow: overlay preferences hide only optional aids",
+      "status": "pass",
+      "evidence": {
+        "coordinates": "hidden",
+        "canvas": "present"
+      }
+    },
+    {
+      "name": "narrow: larger palette labels fit stable tiles",
+      "status": "pass",
+      "evidence": [
+        {
+          "name": "Stone",
+          "width": 40,
+          "contents": 40,
+          "tile": 88
+        },
+        {
+          "name": "Grass",
+          "width": 38,
+          "contents": 38,
+          "tile": 88
+        },
+        {
+          "name": "Wood",
+          "width": 42,
+          "contents": 42,
+          "tile": 88
+        },
+        {
+          "name": "Diamond",
+          "width": 65,
+          "contents": 65,
+          "tile": 88
+        },
+        {
+          "name": "Gold",
+          "width": 33,
+          "contents": 33,
+          "tile": 88
+        },
+        {
+          "name": "Sand",
+          "width": 35,
+          "contents": 35,
+          "tile": 88
+        },
+        {
+          "name": "Glass",
+          "width": 36,
+          "contents": 36,
+          "tile": 88
+        },
+        {
+          "name": "Water",
+          "width": 42,
+          "contents": 42,
+          "tile": 88
+        },
+        {
+          "name": "Brick",
+          "width": 36,
+          "contents": 36,
+          "tile": 88
+        },
+        {
+          "name": "Ice",
+          "width": 20,
+          "contents": 20,
+          "tile": 88
+        },
+        {
+          "name": "Lava",
+          "width": 32,
+          "contents": 32,
+          "tile": 88
+        },
+        {
+          "name": "Torch",
+          "width": 39,
+          "contents": 39,
+          "tile": 88
+        },
+        {
+          "name": "Obsidian",
+          "width": 62,
+          "contents": 62,
+          "tile": 88
+        },
+        {
+          "name": "Marble",
+          "width": 50,
+          "contents": 50,
+          "tile": 88
+        },
+        {
+          "name": "Copper",
+          "width": 51,
+          "contents": 51,
+          "tile": 88
+        },
+        {
+          "name": "Emerald",
+          "width": 57,
+          "contents": 57,
+          "tile": 88
+        },
+        {
+          "name": "Amethyst",
+          "width": 68,
+          "contents": 68,
+          "tile": 88
+        },
+        {
+          "name": "Leaves",
+          "width": 47,
+          "contents": 47,
+          "tile": 88
+        },
+        {
+          "name": "Snow",
+          "width": 39,
+          "contents": 39,
+          "tile": 88
+        },
+        {
+          "name": "Wool",
+          "width": 37,
+          "contents": 37,
+          "tile": 88
+        }
+      ]
+    },
+    {
+      "name": "narrow: larger action bar stays in one row below the placement hint",
+      "status": "pass",
+      "evidence": {
+        "layout": "touch actions",
+        "desktopBar": "not rendered"
+      }
+    },
+    {
+      "name": "narrow: denied storage applies locally and tells the truth",
+      "status": "pass",
+      "evidence": {
+        "sessionOnly": true
+      }
+    },
+    {
+      "name": "narrow: reset restores appearance without changing evidence or geometry",
+      "status": "pass",
+      "evidence": {
+        "worldRetained": true
+      }
+    },
+    {
+      "name": "narrow: Escape restores focus to visible Settings entry",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "narrow: saved readability survives a fresh mount",
+      "status": "pass",
+      "evidence": {
+        "textSize": "large",
+        "coordinates": "hidden"
+      }
+    },
+    {
+      "name": "narrow: WebGL is nonblank and no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    },
+    {
+      "name": "landscape: Workspace is the default with only one panel visible",
+      "status": "pass",
+      "evidence": {
+        "tab": "workspace"
+      }
+    },
+    {
+      "name": "landscape: workspace standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "StandardLarger",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "SolidTranslucent",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Show top bar",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Show coordinates",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Show station compass",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Minimal",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "Learning",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "Builder",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "NoneLesson progressMinimapMeasurement no",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Reset workspace appearance",
+            "height": 44,
+            "width": 231.921875
+          }
+        ],
+        "tab": "gw-settings-panel-workspace"
+      }
+    },
+    {
+      "name": "landscape: workspace accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: view standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Auto (Battery saver)Battery saverBalance",
+            "height": 44,
+            "width": 180
+          },
+          {
+            "text": "✨ Explore tour",
+            "height": 44,
+            "width": 135.125
+          },
+          {
+            "text": "Front",
+            "height": 44,
+            "width": 63.15625
+          },
+          {
+            "text": "Side",
+            "height": 44,
+            "width": 55.15625
+          },
+          {
+            "text": "Top",
+            "height": 44,
+            "width": 52.78125
+          },
+          {
+            "text": "Free",
+            "height": 44,
+            "width": 81.375
+          },
+          {
+            "text": "Scene map",
+            "height": 44,
+            "width": 99.421875
+          },
+          {
+            "text": "☀️ Day🌅 Sunrise🌇 Sunset🌙 Night🌟 Gold",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Automatic day and night",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "",
+            "height": 44,
+            "width": 718
+          }
+        ],
+        "tab": "gw-settings-panel-view"
+      }
+    },
+    {
+      "name": "landscape: view accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: learning standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "📏 Volume Explorer📐 Area & Surface🏗️ B",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "🇺🇸 English🇪🇸 Español🇫🇷 Français🇸\ud83c",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "? Help",
+            "height": 44,
+            "width": 63.890625
+          },
+          {
+            "text": "Sound",
+            "height": 44,
+            "width": 718
+          }
+        ],
+        "tab": "gw-settings-panel-learning"
+      }
+    },
+    {
+      "name": "landscape: learning accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: create standard layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "💾 Save",
+            "height": 44,
+            "width": 78.4375
+          },
+          {
+            "text": "🩸 3D Print",
+            "height": 44,
+            "width": 100.984375
+          },
+          {
+            "text": "📸 Photo",
+            "height": 44,
+            "width": 87.109375
+          },
+          {
+            "text": "Worksheet",
+            "height": 44,
+            "width": 94.1875
+          },
+          {
+            "text": "Teacher key",
+            "height": 44,
+            "width": 99.96875
+          },
+          {
+            "text": "Learning record",
+            "height": 44,
+            "width": 125.984375
+          },
+          {
+            "text": "Concept snapshots",
+            "height": 44,
+            "width": 146.1875
+          },
+          {
+            "text": "🎨 Create",
+            "height": 44,
+            "width": 91.421875
+          },
+          {
+            "text": "📂 Load",
+            "height": 44,
+            "width": 79.859375
+          },
+          {
+            "text": "📊 Data",
+            "height": 44,
+            "width": 78.796875
+          },
+          {
+            "text": "📋 MTSS",
+            "height": 44,
+            "width": 84.984375
+          }
+        ],
+        "tab": "gw-settings-panel-create"
+      }
+    },
+    {
+      "name": "landscape: create accessibility",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: roving keyboard tabs and Home/End",
+      "status": "pass",
+      "evidence": {
+        "arrows": true,
+        "homeEnd": true
+      }
+    },
+    {
+      "name": "landscape: native select keys never invoke world shortcuts",
+      "status": "pass",
+      "evidence": {
+        "nativeLarger": true,
+        "sceneCommands": 0
+      }
+    },
+    {
+      "name": "landscape: live changes stay open, save, and retain the world",
+      "status": "pass",
+      "evidence": {
+        "version": 1,
+        "preset": "learning",
+        "toolbarCollapsed": false,
+        "uiTextSize": "large",
+        "uiSurface": "glass",
+        "showCoordinates": false,
+        "showStationCompass": false
+      }
+    },
+    {
+      "name": "landscape: selected layout has a visible check and distinct framing",
+      "status": "pass",
+      "evidence": {
+        "bg": "rgb(185, 238, 228)",
+        "check": 18,
+        "text": "Learning"
+      }
+    },
+    {
+      "name": "landscape: manual optional panel reports Custom",
+      "status": "pass",
+      "evidence": {
+        "layout": "custom"
+      }
+    },
+    {
+      "name": "landscape: workspace larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "StandardLarger",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "SolidTranslucent",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Show top bar",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Show coordinates",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Show station compass",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "Minimal",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "Learning",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "Builder",
+            "height": 44,
+            "width": 235.328125
+          },
+          {
+            "text": "NoneLesson progressMinimapMeasurement no",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Reset workspace appearance",
+            "height": 44,
+            "width": 231.921875
+          }
+        ],
+        "tab": "gw-settings-panel-workspace"
+      }
+    },
+    {
+      "name": "landscape: view larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Auto (Battery saver)Battery saverBalance",
+            "height": 44,
+            "width": 180
+          },
+          {
+            "text": "✨ Explore tour",
+            "height": 44,
+            "width": 135.125
+          },
+          {
+            "text": "Front",
+            "height": 44,
+            "width": 63.15625
+          },
+          {
+            "text": "Side",
+            "height": 44,
+            "width": 55.15625
+          },
+          {
+            "text": "Top",
+            "height": 44,
+            "width": 52.78125
+          },
+          {
+            "text": "Free",
+            "height": 44,
+            "width": 81.375
+          },
+          {
+            "text": "Scene map",
+            "height": 44,
+            "width": 99.421875
+          },
+          {
+            "text": "☀️ Day🌅 Sunrise🌇 Sunset🌙 Night🌟 Gold",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "Automatic day and night",
+            "height": 44,
+            "width": 718
+          },
+          {
+            "text": "",
+            "height": 44,
+            "width": 718
+          }
+        ],
+        "tab": "gw-settings-panel-view"
+      }
+    },
+    {
+      "name": "landscape: learning larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "📏 Volume Explorer📐 Area & Surface🏗️ B",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "🇺🇸 English🇪🇸 Español🇫🇷 Français🇸\ud83c",
+            "height": 44,
+            "width": 353
+          },
+          {
+            "text": "? Help",
+            "height": 44,
+            "width": 63.890625
+          },
+          {
+            "text": "Sound",
+            "height": 44,
+            "width": 718
+          }
+        ],
+        "tab": "gw-settings-panel-learning"
+      }
+    },
+    {
+      "name": "landscape: create larger layout and targets",
+      "status": "pass",
+      "evidence": {
+        "fits": true,
+        "noHorizontalScroll": true,
+        "controls": [
+          {
+            "text": "×",
+            "height": 44,
+            "width": 44
+          },
+          {
+            "text": "Workspace",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "View",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Learning",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "Create",
+            "height": 48,
+            "width": 178.5
+          },
+          {
+            "text": "💾 Save",
+            "height": 44,
+            "width": 78.4375
+          },
+          {
+            "text": "🩸 3D Print",
+            "height": 44,
+            "width": 100.984375
+          },
+          {
+            "text": "📸 Photo",
+            "height": 44,
+            "width": 87.109375
+          },
+          {
+            "text": "Worksheet",
+            "height": 44,
+            "width": 94.1875
+          },
+          {
+            "text": "Teacher key",
+            "height": 44,
+            "width": 99.96875
+          },
+          {
+            "text": "Learning record",
+            "height": 44,
+            "width": 125.984375
+          },
+          {
+            "text": "Concept snapshots",
+            "height": 44,
+            "width": 146.1875
+          },
+          {
+            "text": "🎨 Create",
+            "height": 44,
+            "width": 91.421875
+          },
+          {
+            "text": "📂 Load",
+            "height": 44,
+            "width": 79.859375
+          },
+          {
+            "text": "📊 Data",
+            "height": 44,
+            "width": 78.796875
+          },
+          {
+            "text": "📋 MTSS",
+            "height": 44,
+            "width": 84.984375
+          }
+        ],
+        "tab": "gw-settings-panel-create"
+      }
+    },
+    {
+      "name": "landscape: active camera is visibly distinct",
+      "status": "pass",
+      "evidence": [
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "false",
+          "background": "rgb(48, 59, 60)"
+        },
+        {
+          "active": "true",
+          "background": "rgb(185, 238, 228)"
+        }
+      ]
+    },
+    {
+      "name": "landscape: high contrast settings",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: forced color settings",
+      "status": "pass",
+      "evidence": {
+        "violations": []
+      }
+    },
+    {
+      "name": "landscape: Tab trap ignores hidden panels",
+      "status": "pass",
+      "evidence": {
+        "trapped": true
+      }
+    },
+    {
+      "name": "landscape: hiding top bar preserves the dialog and restore entry",
+      "status": "pass",
+      "evidence": {
+        "retained": true
+      }
+    },
+    {
+      "name": "landscape: overlay preferences hide only optional aids",
+      "status": "pass",
+      "evidence": {
+        "coordinates": "hidden",
+        "canvas": "present"
+      }
+    },
+    {
+      "name": "landscape: larger palette labels fit stable tiles",
+      "status": "pass",
+      "evidence": [
+        {
+          "name": "Stone",
+          "width": 40,
+          "contents": 40,
+          "tile": 88
+        },
+        {
+          "name": "Grass",
+          "width": 38,
+          "contents": 38,
+          "tile": 88
+        },
+        {
+          "name": "Wood",
+          "width": 42,
+          "contents": 42,
+          "tile": 88
+        },
+        {
+          "name": "Diamond",
+          "width": 65,
+          "contents": 65,
+          "tile": 88
+        },
+        {
+          "name": "Gold",
+          "width": 33,
+          "contents": 33,
+          "tile": 88
+        },
+        {
+          "name": "Sand",
+          "width": 35,
+          "contents": 35,
+          "tile": 88
+        },
+        {
+          "name": "Glass",
+          "width": 36,
+          "contents": 36,
+          "tile": 88
+        },
+        {
+          "name": "Water",
+          "width": 42,
+          "contents": 42,
+          "tile": 88
+        },
+        {
+          "name": "Brick",
+          "width": 36,
+          "contents": 36,
+          "tile": 88
+        },
+        {
+          "name": "Ice",
+          "width": 20,
+          "contents": 20,
+          "tile": 88
+        },
+        {
+          "name": "Lava",
+          "width": 32,
+          "contents": 32,
+          "tile": 88
+        },
+        {
+          "name": "Torch",
+          "width": 39,
+          "contents": 39,
+          "tile": 88
+        },
+        {
+          "name": "Obsidian",
+          "width": 62,
+          "contents": 62,
+          "tile": 88
+        },
+        {
+          "name": "Marble",
+          "width": 50,
+          "contents": 50,
+          "tile": 88
+        },
+        {
+          "name": "Copper",
+          "width": 51,
+          "contents": 51,
+          "tile": 88
+        },
+        {
+          "name": "Emerald",
+          "width": 57,
+          "contents": 57,
+          "tile": 88
+        },
+        {
+          "name": "Amethyst",
+          "width": 68,
+          "contents": 68,
+          "tile": 88
+        },
+        {
+          "name": "Leaves",
+          "width": 47,
+          "contents": 47,
+          "tile": 88
+        },
+        {
+          "name": "Snow",
+          "width": 39,
+          "contents": 39,
+          "tile": 88
+        },
+        {
+          "name": "Wool",
+          "width": 37,
+          "contents": 37,
+          "tile": 88
+        }
+      ]
+    },
+    {
+      "name": "landscape: larger action bar stays in one row below the placement hint",
+      "status": "pass",
+      "evidence": {
+        "layout": "touch actions",
+        "desktopBar": "not rendered"
+      }
+    },
+    {
+      "name": "landscape: denied storage applies locally and tells the truth",
+      "status": "pass",
+      "evidence": {
+        "sessionOnly": true
+      }
+    },
+    {
+      "name": "landscape: reset restores appearance without changing evidence or geometry",
+      "status": "pass",
+      "evidence": {
+        "worldRetained": true
+      }
+    },
+    {
+      "name": "landscape: Escape restores focus to visible Settings entry",
+      "status": "pass",
+      "evidence": {
+        "restored": true
+      }
+    },
+    {
+      "name": "landscape: saved readability survives a fresh mount",
+      "status": "pass",
+      "evidence": {
+        "textSize": "large",
+        "coordinates": "hidden"
+      }
+    },
+    {
+      "name": "landscape: WebGL is nonblank and no runtime errors",
+      "status": "pass",
+      "evidence": {
+        "lost": false,
+        "nonblack": 192,
+        "errors": []
+      }
+    }
+  ],
+  "failures": [],
+  "screenshots": [
+    "desktop-workspace-settings.png",
+    "desktop-larger-workspace.png",
+    "phone-workspace-settings.png",
+    "phone-larger-workspace.png",
+    "narrow-workspace-settings.png",
+    "narrow-larger-workspace.png",
+    "landscape-workspace-settings.png",
+    "landscape-larger-workspace.png"
+  ],
+  "completedAt": "2026-10-04T02:44:19.796Z"
+}

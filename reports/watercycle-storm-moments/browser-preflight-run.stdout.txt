@@ -1,0 +1,1 @@
+{"mode":"browser-preflight","pid":41988,"completed":true,"successful":true,"checks":60,"captures":2,"errors":[],"browserClosedAt":"2026-10-02T20:17:12.314Z"}

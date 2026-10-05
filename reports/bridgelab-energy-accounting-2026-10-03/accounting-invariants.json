@@ -1,0 +1,9 @@
+{
+  "status": "passed",
+  "sourceSha256": "190332ec7e0b03a0549a3b844cdd22213a85fb7cd23ae0039ae85e233066f992",
+  "inputCombinations": 48,
+  "accountingSnapshots": 192,
+  "freeVibrationChecks": 48,
+  "amplitudeScalingChecks": 12,
+  "scope": "Current recorded energy; fixed scale; conservation within numerical tolerance; zero and tiny input; damping and zero damping after shaking."
+}

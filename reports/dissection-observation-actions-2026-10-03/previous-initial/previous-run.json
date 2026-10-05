@@ -1,0 +1,19 @@
+{
+  "start": "2026-10-03T16:05:35.661Z",
+  "end": "2026-10-03T16:16:30.471Z",
+  "status": 1,
+  "args": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\@playwright\\test\\cli.js",
+    "test",
+    "tests/e2e/dissection-observation-actions-previous-0.spec.ts",
+    "tests/e2e/dissection-observation-actions-previous-1.spec.ts",
+    "tests/e2e/dissection-observation-actions-previous-2.spec.ts",
+    "tests/e2e/dissection-observation-actions-previous-3.spec.ts",
+    "tests/e2e/dissection-observation-actions-previous-4.spec.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=list,json",
+    "--output=reports/dissection-observation-actions-2026-10-03/previous-artifacts"
+  ]
+}

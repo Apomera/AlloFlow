@@ -1,0 +1,227 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.config.cjs",
+    "rootDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-4",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-4/liver-English-probe-test-results",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "",
+        "name": "",
+        "testDir": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-4",
+        "testIgnore": [],
+        "testMatch": [
+          "liver-english-probe.spec.ts"
+        ],
+        "timeout": 300000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list",
+        null
+      ],
+      [
+        "json",
+        {
+          "outputFile": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-liver-guide-2026-10-04/runs/English-probe-fb644f98-01/playwright-results.json"
+        }
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "liver-english-probe.spec.ts",
+      "file": "liver-english-probe.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "A learner traces four liver steps, preserves paused flow and current study work, and opens intestinal villus absorption with keyboard focus",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 18856,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.anatomy-liver-guide[data-anatomy-atlas]')\nExpected: focused\nReceived: inactive\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.anatomy-liver-guide[data-anatomy-atlas]')\u001b[22m\n\u001b[2m    28 × locator resolved to <section tabindex=\"-1\" data-anatomy-atlas=\"liver\" id=\"anatomy-regional-atlas\" data-anatomy-scale-bridge=\"liver\" aria-label=\"Liver blood and bile flow\" data-anatomy-atlas-step=\"portal_entry\" class=\"anatomy-atlas anatomy-liver-guide\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.anatomy-liver-guide[data-anatomy-atlas]')\nExpected: focused\nReceived: inactive\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.anatomy-liver-guide[data-anatomy-atlas]')\u001b[22m\n\u001b[2m    28 × locator resolved to <section tabindex=\"-1\" data-anatomy-atlas=\"liver\" id=\"anatomy-regional-atlas\" data-anatomy-scale-bridge=\"liver\" aria-label=\"Liver blood and bile flow\" data-anatomy-atlas-step=\"portal_entry\" class=\"anatomy-atlas anatomy-liver-guide\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts:84:448",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts",
+                      "column": 448,
+                      "line": 84
+                    },
+                    "snippet": "  82 | }\n  83 | test('A learner traces four liver steps, preserves paused flow and current study work, and opens intestinal villus absorption with keyboard focus',async({page})=>{\n> 84 |  const record=recordFor(page,'journey');await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1280,height:1000});await mount(page);const saved=work(await state(page)),tools=page.locator('[data-anatomy-learning-tools]');if(!await tools.evaluate(e=>(e as HTMLDetailsElement).open))await tools.locator('summary').click();await tools.locator('button[data-scale-stage=\"tissue\"]').click();await expect(page.locator(atlas)).toBeFocused();await expect(page.locator('[data-anatomy-lens]')).toHaveCount(0);const opened=await sameWork(page,saved);expect(opened).toMatchObject({system:'organs',view:'anterior',complexity:1,selectedStructure:'liver',_regionalAtlasOpen:'liver',_regionalAtlasStep:0,_regionalAtlasPlaying:true});await assertFigures(page);for(const id of stepIds)await expect(page.locator(atlas+' [data-anatomy-liver-step=\"'+id+'\"]')).toHaveAttribute('aria-controls','anatomy-liver-step-detail');await assertStep(page,0,true);\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                ^\n  85 |  await page.locator(flow).click();await expect(page.locator(flow)).toBeFocused();await assertStep(page,0,false);record.steps.push({action:'pause flow',playing:false,workPreserved:true});await page.evaluate(()=>{const d=(window as any).__toolData.anatomy;(window as any).__ctx.updateMulti('anatomy',{_structureNotes:{...d._structureNotes,liver:'A newer explanation saved while liver flow is paused.'}});});const newer=work(await state(page));\n  86 |  for(let index=1;index<4;index++){const b=page.locator(atlas+' [data-anatomy-liver-step=\"'+stepIds[index]+'\"]');await b.focus();await page.keyboard.press('Enter');await expect(b).toBeFocused();await assertStep(page,index,false);await sameWork(page,newer);record.steps.push({action:'choose step with keyboard',step:stepIds[index],playing:false,workPreserved:true,geometry:await assertGeometry(page)});}\n  87 |  for(let index=2;index>=0;index--){await page.locator(previous).click();await assertStep(page,index,false);await sameWork(page,newer);}await page.locator(previous).evaluate(e=>(e as HTMLButtonElement).click());await assertStep(page,0,false);record.steps.push({action:'previous stops at first step',playing:false});for(let index=1;index<4;index++){await page.locator(next).click();await assertStep(page,index,false);await sameWork(page,newer);}await page.locator(next).evaluate(e=>(e as HTMLButtonElement).click());await assertStep(page,3,false);record.steps.push({action:'next stops at last step',playing:false});"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts",
+                        "column": 448,
+                        "line": 84
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('.anatomy-liver-guide[data-anatomy-atlas]')\nExpected: focused\nReceived: inactive\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('.anatomy-liver-guide[data-anatomy-atlas]')\u001b[22m\n\u001b[2m    28 × locator resolved to <section tabindex=\"-1\" data-anatomy-atlas=\"liver\" id=\"anatomy-regional-atlas\" data-anatomy-scale-bridge=\"liver\" aria-label=\"Liver blood and bile flow\" data-anatomy-atlas-step=\"portal_entry\" class=\"anatomy-atlas anatomy-liver-guide\">…</section>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n\n  82 | }\n  83 | test('A learner traces four liver steps, preserves paused flow and current study work, and opens intestinal villus absorption with keyboard focus',async({page})=>{\n> 84 |  const record=recordFor(page,'journey');await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1280,height:1000});await mount(page);const saved=work(await state(page)),tools=page.locator('[data-anatomy-learning-tools]');if(!await tools.evaluate(e=>(e as HTMLDetailsElement).open))await tools.locator('summary').click();await tools.locator('button[data-scale-stage=\"tissue\"]').click();await expect(page.locator(atlas)).toBeFocused();await expect(page.locator('[data-anatomy-lens]')).toHaveCount(0);const opened=await sameWork(page,saved);expect(opened).toMatchObject({system:'organs',view:'anterior',complexity:1,selectedStructure:'liver',_regionalAtlasOpen:'liver',_regionalAtlasStep:0,_regionalAtlasPlaying:true});await assertFigures(page);for(const id of stepIds)await expect(page.locator(atlas+' [data-anatomy-liver-step=\"'+id+'\"]')).toHaveAttribute('aria-controls','anatomy-liver-step-detail');await assertStep(page,0,true);\n     |                                                                                                                                                                                                                                                                                                                                                                                                                                                                ^\n  85 |  await page.locator(flow).click();await expect(page.locator(flow)).toBeFocused();await assertStep(page,0,false);record.steps.push({action:'pause flow',playing:false,workPreserved:true});await page.evaluate(()=>{const d=(window as any).__toolData.anatomy;(window as any).__ctx.updateMulti('anatomy',{_structureNotes:{...d._structureNotes,liver:'A newer explanation saved while liver flow is paused.'}});});const newer=work(await state(page));\n  86 |  for(let index=1;index<4;index++){const b=page.locator(atlas+' [data-anatomy-liver-step=\"'+stepIds[index]+'\"]');await b.focus();await page.keyboard.press('Enter');await expect(b).toBeFocused();await assertStep(page,index,false);await sameWork(page,newer);record.steps.push({action:'choose step with keyboard',step:stepIds[index],playing:false,workPreserved:true,geometry:await assertGeometry(page)});}\n  87 |  for(let index=2;index>=0;index--){await page.locator(previous).click();await assertStep(page,index,false);await sameWork(page,newer);}await page.locator(previous).evaluate(e=>(e as HTMLButtonElement).click());await assertStep(page,0,false);record.steps.push({action:'previous stops at first step',playing:false});for(let index=1;index<4;index++){await page.locator(next).click();await assertStep(page,index,false);await sameWork(page,newer);}await page.locator(next).evaluate(e=>(e as HTMLButtonElement).click());await assertStep(page,3,false);record.steps.push({action:'next stops at last step',playing:false});\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts:84:448"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T23:26:09.894Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-English-probe-test-results\\liver-english-probe-A-lear-ae736-orption-with-keyboard-focus\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-English-probe-test-results\\liver-english-probe-A-lear-ae736-orption-with-keyboard-focus\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-English-probe-test-results\\liver-english-probe-A-lear-ae736-orption-with-keyboard-focus\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts",
+                    "column": 448,
+                    "line": 84
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c9d6c4b6ad56e8543ef7-5f410515c39a9b6674ed",
+          "file": "liver-english-probe.spec.ts",
+          "line": 83,
+          "column": 5
+        },
+        {
+          "title": "Liver location, organ and lobule keys remain readable across desktop, 320px phones, Arabic larger text and forced colors",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 420000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "",
+              "projectName": "",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 41996,
+                  "error": {
+                    "message": "Error: Connect the liver's body location to lobule microanatomy, portal blood processing, venous return, and bile flow. rendered HTML text\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m17\u001b[39m\nReceived:    \u001b[31m13\u001b[39m",
+                    "stack": "Error: Connect the liver's body location to lobule microanatomy, portal blood processing, venous return, and bile flow. rendered HTML text\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m17\u001b[39m\nReceived:    \u001b[31m13\u001b[39m\n    at measure (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts:117:86)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts:134:83",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts",
+                      "column": 86,
+                      "line": 117
+                    },
+                    "snippet": "  115 |   }));\n  116 |   const geometry=await assertGeometry(page);record.styles.push({view,flowSymbols,metrics,diagrams,geometry});expect(metrics.length).toBeGreaterThan(0);expect(diagrams).toHaveLength(3);\n> 117 |   for(const metric of metrics){expect(metric.font,metric.text+' rendered HTML text').toBeGreaterThanOrEqual(view.reading?17:16);expect(metric.ratio,metric.text+' actual contrast').toBeGreaterThanOrEqual(4.5);if(metric.tag==='BUTTON'){expect(metric.width,metric.text+' touch width').toBeGreaterThanOrEqual(44);expect(metric.height,metric.text+' touch height').toBeGreaterThanOrEqual(44);}}\n      |                                                                                      ^\n  118 |   for(const diagram of diagrams){expect(diagram.texts.length,diagram.scale+' visible numerical markers').toBeGreaterThan(0);expect(diagram.intersections,diagram.scale+' label intersections').toEqual([]);for(const text of diagram.texts){expect(text.text,diagram.scale+' SVG text belongs in the HTML key').toMatch(/^\\d+$/);expect(text.effectiveFont,diagram.scale+' marker '+text.text+' effective CSS size').toBeGreaterThanOrEqual(14);expect(text.ratio,diagram.scale+' marker '+text.text+' actual fill contrast').toBeGreaterThanOrEqual(4.5);}}\n  119 | }\n  120 | async function scan(page:Page,record:any,view:View){"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts",
+                        "column": 86,
+                        "line": 117
+                      },
+                      "message": "Error: Connect the liver's body location to lobule microanatomy, portal blood processing, venous return, and bile flow. rendered HTML text\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m17\u001b[39m\nReceived:    \u001b[31m13\u001b[39m\n\n  115 |   }));\n  116 |   const geometry=await assertGeometry(page);record.styles.push({view,flowSymbols,metrics,diagrams,geometry});expect(metrics.length).toBeGreaterThan(0);expect(diagrams).toHaveLength(3);\n> 117 |   for(const metric of metrics){expect(metric.font,metric.text+' rendered HTML text').toBeGreaterThanOrEqual(view.reading?17:16);expect(metric.ratio,metric.text+' actual contrast').toBeGreaterThanOrEqual(4.5);if(metric.tag==='BUTTON'){expect(metric.width,metric.text+' touch width').toBeGreaterThanOrEqual(44);expect(metric.height,metric.text+' touch height').toBeGreaterThanOrEqual(44);}}\n      |                                                                                      ^\n  118 |   for(const diagram of diagrams){expect(diagram.texts.length,diagram.scale+' visible numerical markers').toBeGreaterThan(0);expect(diagram.intersections,diagram.scale+' label intersections').toEqual([]);for(const text of diagram.texts){expect(text.text,diagram.scale+' SVG text belongs in the HTML key').toMatch(/^\\d+$/);expect(text.effectiveFont,diagram.scale+' marker '+text.text+' effective CSS size').toBeGreaterThanOrEqual(14);expect(text.ratio,diagram.scale+' marker '+text.text+' actual fill contrast').toBeGreaterThanOrEqual(4.5);}}\n  119 | }\n  120 | async function scan(page:Page,record:any,view:View){\n    at measure (C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts:117:86)\n    at C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts:134:83"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T23:26:48.000Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-English-probe-test-results\\liver-english-probe-Liver--4a396-rger-text-and-forced-colors\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-English-probe-test-results\\liver-english-probe-Liver--4a396-rger-text-and-forced-colors\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-English-probe-test-results\\liver-english-probe-Liver--4a396-rger-text-and-forced-colors\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\liver-english-probe.spec.ts",
+                    "column": 86,
+                    "line": 117
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "c9d6c4b6ad56e8543ef7-856b8d1c6d2e928eabec",
+          "file": "liver-english-probe.spec.ts",
+          "line": 130,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-04T23:25:58.254Z",
+    "duration": 117745.68999999999,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

@@ -1,0 +1,90 @@
+{
+  "slug": "crew_feedback_grade6_8",
+  "sourceShotList": "allopacks/crew_feedback_grade6_8.IMAGES.md",
+  "assets": [
+    {
+      "id": "cf-term-feedback",
+      "term": "Feedback",
+      "kind": "term",
+      "scene": "A returned page with three small plain marks in the margin, no legible words",
+      "constraints": "marks only",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A returned page with three small plain marks in the margin, no legible words. marks only."
+    },
+    {
+      "id": "cf-term-verdict",
+      "term": "Verdict",
+      "kind": "term",
+      "scene": "A gavel on a block",
+      "constraints": "plain symbol",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A gavel on a block. plain symbol."
+    },
+    {
+      "id": "cf-term-rubric",
+      "term": "Rubric",
+      "kind": "term",
+      "scene": "A three-row grid with shaded cells stepping up from left to right",
+      "constraints": "no words in cells",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A three-row grid with shaded cells stepping up from left to right. no words in cells."
+    },
+    {
+      "id": "cf-term-revise",
+      "term": "Revise",
+      "kind": "term",
+      "scene": "A page with one paragraph highlighted and a pencil touching only that paragraph",
+      "constraints": "the rest untouched",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A page with one paragraph highlighted and a pencil touching only that paragraph. the rest untouched."
+    },
+    {
+      "id": "cf-term-gap",
+      "term": "Gap",
+      "kind": "term",
+      "scene": "Two platforms with a small space between them and a plank almost across",
+      "constraints": "gap is small",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Two platforms with a small space between them and a plank almost across. gap is small."
+    },
+    {
+      "id": "cf-term-yet",
+      "term": "Yet",
+      "kind": "term",
+      "scene": "A house frame under construction with scaffolding, clearly in progress",
+      "constraints": "not ruined, being built",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A house frame under construction with scaffolding, clearly in progress. not ruined, being built."
+    },
+    {
+      "id": "cf-img-sinking",
+      "kind": "lesson",
+      "title": "The first thirty seconds.",
+      "scene": "A student holding a returned page, shoulders dropped, three margin marks visible.",
+      "caption": "the sinking feeling is normal; the skill is what happens next.",
+      "plannedLabels": [
+        "Three comments"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A student holding a returned page, shoulders dropped, three margin marks visible. All labels and captions will be editable native fields outside the artwork."
+    },
+    {
+      "id": "cf-img-map",
+      "kind": "lesson",
+      "title": "The rubric as a map.",
+      "scene": "The same student with the page beside a three-row rubric grid; two rows marked lower, a small route line drawn from the low rows to the page.",
+      "caption": "the comments and her own ratings match; now they are a map.",
+      "plannedLabels": [
+        "Claim",
+        "Evidence",
+        "Reasoning"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The same student with the page beside a three-row rubric grid; two rows marked lower, a small route line drawn from the low rows to the page. All labels and captions will be editable native fields outside the artwork."
+    },
+    {
+      "id": "cf-img-revision",
+      "kind": "lesson",
+      "title": "The whole revision.",
+      "scene": "The page with one new sentence inserted and one small evidence note added, everything else unchanged; a clock showing a short span.",
+      "caption": "revising keeps what works.",
+      "plannedLabels": [
+        "One piece of evidence",
+        "One connecting sentence"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The page with one new abstract line of marks inserted and one small evidence note added, everything else unchanged; a clock showing a short span. All labels and captions will be editable native fields outside the artwork."
+    }
+  ]
+}

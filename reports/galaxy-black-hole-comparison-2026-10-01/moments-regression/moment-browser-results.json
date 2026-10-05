@@ -1,0 +1,60 @@
+{
+  "errors": [],
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "events": 5,
+      "touchSnap": false
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "events": 5,
+      "touchSnap": true
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "events": 5,
+      "touchSnap": true
+    }
+  ],
+  "chosen": 0,
+  "events": [
+    {
+      "key": "breakup",
+      "time": 0.45,
+      "radius": 7.330527750924518
+    },
+    {
+      "key": "closest",
+      "time": 15.428681703872472,
+      "radius": 4.445401489869813
+    },
+    {
+      "key": "farthest",
+      "time": 61.03061497085003,
+      "radius": 11.311971162077883
+    },
+    {
+      "key": "closest",
+      "time": 106.63254821486753,
+      "radius": 4.4454002957078504
+    },
+    {
+      "key": "end",
+      "time": 119.9999999999566,
+      "radius": 6.923714297587061
+    }
+  ],
+  "exactNavigation": true,
+  "boundaries": true,
+  "curveSynchronized": true,
+  "keyboard": true,
+  "pickingSnap": true,
+  "viewPreserved": true,
+  "replay": true,
+  "reset": true,
+  "cleanup": true
+}

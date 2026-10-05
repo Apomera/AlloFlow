@@ -1,0 +1,739 @@
+{
+  "sourceSha256": "44b41d2f3ce4440416e53dae3babaf063455504080b82a59644ec1c4bc48f116",
+  "cases": [
+    {
+      "name": "initial coast",
+      "sourceUnchanged": true,
+      "held": {
+        "kind": "contact",
+        "time": 14.463763239979563,
+        "altitude": 0,
+        "vertical": -32.48433141253747,
+        "lateral": 4,
+        "displacement": 57.855052959918254,
+        "fuelRemaining": 110,
+        "propellantUsed": 0,
+        "exhaustionTime": null,
+        "arrestBeforeContact": false,
+        "steps": 290
+      },
+      "burn": {
+        "kind": "arrest",
+        "time": 2.070734386146064,
+        "altitude": 290.03172925006135,
+        "vertical": 7.247226568862786e-10,
+        "lateral": 4,
+        "displacement": 8.282937544584255,
+        "fuelRemaining": 102.38809280335539,
+        "propellantUsed": 30.023034230950543,
+        "exhaustionTime": null,
+        "arrestBeforeContact": true,
+        "steps": 42
+      },
+      "zoom": 15.000000000000002,
+      "main": {
+        "scale": 0.96,
+        "leftMetres": -246.0724735200409,
+        "rightMetres": 303.9275264799591,
+        "minAltitude": 0,
+        "maxAltitude": 300,
+        "interval": 5,
+        "initial": {
+          "x": 272.2295745792392,
+          "y": 36
+        },
+        "heldEnd": {
+          "x": 327.7704254207608,
+          "y": 324
+        },
+        "burnEnd": {
+          "x": 280.18119462204015,
+          "y": 45.56953991994112
+        },
+        "heldEndVisible": true,
+        "burnEndVisible": true,
+        "heldMarks": [
+          {
+            "time": 5,
+            "x": 291.4295745792392,
+            "y": 98.68168422467167,
+            "visible": true
+          },
+          {
+            "time": 10,
+            "x": 310.62957457923926,
+            "y": 200.32899233564987,
+            "visible": true
+          }
+        ],
+        "burnMarks": [],
+        "heldDirection": {
+          "x": 301.9895745792399,
+          "y": 149.8141561318771,
+          "dx": 0.18223285637761447,
+          "dy": 0.9832554022513458,
+          "time": 7.750000000000174,
+          "points": "305.1937,145.1522 302.9007,154.7304 297.3276,146.6101"
+        },
+        "burnDirection": null
+      },
+      "detail": {
+        "scale": 14.4,
+        "leftMetres": -14.191864561041204,
+        "rightMetres": 22.47480210562546,
+        "minAltitude": 285.01586462503064,
+        "maxAltitude": 305.01586462503064,
+        "interval": 1,
+        "initial": {
+          "x": 240.36284967899337,
+          "y": 108.22845060044128
+        },
+        "heldEnd": {
+          "x": 1073.4756123018162,
+          "y": 4428.228450600442
+        },
+        "burnEnd": {
+          "x": 359.63715032100663,
+          "y": 251.7715493995579
+        },
+        "heldEndVisible": false,
+        "burnEndVisible": true,
+        "heldMarks": [
+          {
+            "time": 1,
+            "x": 297.96284967899334,
+            "y": 249.51725602300948,
+            "visible": true
+          },
+          {
+            "time": 2,
+            "x": 355.56284967899336,
+            "y": 414.1838555579369,
+            "visible": false
+          },
+          {
+            "time": 3,
+            "x": 413.1628496789934,
+            "y": 602.2285568742698,
+            "visible": false
+          },
+          {
+            "time": 4,
+            "x": 470.76284967899335,
+            "y": 813.6517113289666,
+            "visible": false
+          },
+          {
+            "time": 5,
+            "x": 528.3628496789934,
+            "y": 1048.4537139705162,
+            "visible": false
+          },
+          {
+            "time": 6,
+            "x": 585.9628496789933,
+            "y": 1306.6350035430132,
+            "visible": false
+          },
+          {
+            "time": 7,
+            "x": 643.5628496789934,
+            "y": 1588.196062490649,
+            "visible": false
+          },
+          {
+            "time": 8,
+            "x": 701.1628496789933,
+            "y": 1893.1374169626768,
+            "visible": false
+          }
+        ],
+        "burnMarks": [
+          {
+            "time": 1,
+            "x": 297.96284967899334,
+            "y": 213.0632299293089,
+            "visible": true
+          },
+          {
+            "time": 2,
+            "x": 355.56284967899336,
+            "y": 251.60246387317312,
+            "visible": true
+          }
+        ],
+        "heldDirection": {
+          "x": 283.5628496789933,
+          "y": 212.73395129676743,
+          "dx": 0.36454276767058624,
+          "dy": 0.9311866464565893,
+          "time": 0.7499999999999998,
+          "points": "285.8294,207.5510 285.3856,217.3899 278.3799,210.4674"
+        },
+        "burnDirection": {
+          "x": 312.36284967899326,
+          "y": 226.91588141294773,
+          "dx": 0.7206705778457322,
+          "dy": 0.6932776631534427,
+          "time": 1.249999999999998,
+          "points": "312.2533,221.2601 315.9662,230.3823 306.7071,227.0255"
+        }
+      },
+      "window": {
+        "x": 258.6053846006397,
+        "y": 31.184769959970595,
+        "width": 35.199999999999996,
+        "height": 19.2
+      }
+    },
+    {
+      "name": "65 percent braking",
+      "sourceUnchanged": true,
+      "held": {
+        "kind": "arrest",
+        "time": 3.8163289388020725,
+        "altitude": 281.9921847593526,
+        "vertical": 6.68511260237814e-10,
+        "lateral": 4,
+        "displacement": 15.26531575520829,
+        "fuelRemaining": 100.6430640410971,
+        "propellantUsed": 36.88868154431293,
+        "exhaustionTime": null,
+        "arrestBeforeContact": true,
+        "steps": 77
+      },
+      "burn": {
+        "kind": "arrest",
+        "time": 2.070734386146064,
+        "altitude": 290.03172925006135,
+        "vertical": 7.247226568862786e-10,
+        "lateral": 4,
+        "displacement": 8.282937544584255,
+        "fuelRemaining": 102.38809280335539,
+        "propellantUsed": 30.023034230950543,
+        "exhaustionTime": null,
+        "arrestBeforeContact": true,
+        "steps": 42
+      },
+      "zoom": 15.000000000000002,
+      "main": {
+        "scale": 0.96,
+        "leftMetres": -267.3673421223959,
+        "rightMetres": 282.6326578776041,
+        "minAltitude": 0,
+        "maxAltitude": 300,
+        "interval": 1,
+        "initial": {
+          "x": 292.6726484375,
+          "y": 36
+        },
+        "heldEnd": {
+          "x": 307.3273515625,
+          "y": 53.28750263102154
+        },
+        "burnEnd": {
+          "x": 300.6242684803009,
+          "y": 45.56953991994112
+        },
+        "heldEndVisible": true,
+        "burnEndVisible": true,
+        "heldMarks": [
+          {
+            "time": 1,
+            "x": 296.51264843750005,
+            "y": 43.8399144028275,
+            "visible": true
+          },
+          {
+            "time": 2,
+            "x": 300.3526484375,
+            "y": 49.355035084070096,
+            "visible": true
+          },
+          {
+            "time": 3,
+            "x": 304.1926484375,
+            "y": 52.492573254105935,
+            "visible": true
+          }
+        ],
+        "burnMarks": [
+          {
+            "time": 1,
+            "x": 296.51264843750005,
+            "y": 42.98898528859121,
+            "visible": true
+          },
+          {
+            "time": 2,
+            "x": 300.3526484375,
+            "y": 45.558267551515485,
+            "visible": true
+          }
+        ],
+        "heldDirection": {
+          "x": 303.23264843749996,
+          "y": 51.856953134821595,
+          "dx": 0.8338018728496635,
+          "dy": 0.55206379779188,
+          "time": 2.749999999999993,
+          "points": "302.1057,46.3135 307.4017,54.6173 297.6892,52.9839"
+        },
+        "burnDirection": null
+      },
+      "detail": {
+        "scale": 14.4,
+        "leftMetres": -14.191864561041204,
+        "rightMetres": 22.47480210562546,
+        "minAltitude": 285.01586462503064,
+        "maxAltitude": 305.01586462503064,
+        "interval": 1,
+        "initial": {
+          "x": 240.36284967899337,
+          "y": 108.22845060044128
+        },
+        "heldEnd": {
+          "x": 460.1833965539928,
+          "y": 367.5409900657639
+        },
+        "burnEnd": {
+          "x": 359.63715032100663,
+          "y": 251.7715493995579
+        },
+        "heldEndVisible": false,
+        "burnEndVisible": true,
+        "heldMarks": [
+          {
+            "time": 1,
+            "x": 297.96284967899334,
+            "y": 225.82716664285363,
+            "visible": true
+          },
+          {
+            "time": 2,
+            "x": 355.56284967899336,
+            "y": 308.55397686149274,
+            "visible": true
+          },
+          {
+            "time": 3,
+            "x": 413.1628496789934,
+            "y": 355.6170494120298,
+            "visible": false
+          }
+        ],
+        "burnMarks": [
+          {
+            "time": 1,
+            "x": 297.96284967899334,
+            "y": 213.0632299293089,
+            "visible": true
+          },
+          {
+            "time": 2,
+            "x": 355.56284967899336,
+            "y": 251.60246387317312,
+            "visible": true
+          }
+        ],
+        "heldDirection": {
+          "x": 312.36284967899326,
+          "y": 248.73536261035787,
+          "dx": 0.5321864471397291,
+          "dy": 0.8466271821060273,
+          "time": 1.249999999999998,
+          "points": "313.6206,243.2201 315.0238,252.9685 306.8476,247.4776"
+        },
+        "burnDirection": {
+          "x": 312.36284967899326,
+          "y": 226.91588141294773,
+          "dx": 0.7206705778457322,
+          "dy": 0.6932776631534427,
+          "time": 1.249999999999998,
+          "points": "312.2533,221.2601 315.9662,230.3823 306.7071,227.0255"
+        }
+      },
+      "window": {
+        "x": 279.0484584589005,
+        "y": 31.184769959970595,
+        "width": 35.199999999999996,
+        "height": 19.2
+      }
+    },
+    {
+      "name": "recorded 5-second coast",
+      "sourceUnchanged": true,
+      "held": {
+        "kind": "contact",
+        "time": 9.463763239979848,
+        "altitude": 0,
+        "vertical": -32.48433141253747,
+        "lateral": 4,
+        "displacement": 37.85505295991939,
+        "fuelRemaining": 110,
+        "propellantUsed": 0,
+        "exhaustionTime": null,
+        "arrestBeforeContact": false,
+        "steps": 190
+      },
+      "burn": {
+        "kind": "arrest",
+        "time": 3.7960309475660217,
+        "altitude": 200.92051511054677,
+        "vertical": 1.592649307574634e-9,
+        "lateral": 4,
+        "displacement": 15.184123790264087,
+        "fuelRemaining": 95.66458206744036,
+        "propellantUsed": 56.44101213075828,
+        "exhaustionTime": null,
+        "arrestBeforeContact": true,
+        "steps": 76
+      },
+      "zoom": 4.8,
+      "main": {
+        "scale": 1.2,
+        "leftMetres": -201.07247352004032,
+        "rightMetres": 238.92752647995968,
+        "minAltitude": 0,
+        "maxAltitude": 240,
+        "interval": 2,
+        "initial": {
+          "x": 277.28696822404834,
+          "y": 42.35210528084036
+        },
+        "heldEnd": {
+          "x": 322.71303177595166,
+          "y": 324
+        },
+        "burnEnd": {
+          "x": 295.50791677236526,
+          "y": 82.89538186734387
+        },
+        "heldEndVisible": true,
+        "burnEndVisible": true,
+        "heldMarks": [
+          {
+            "time": 2,
+            "x": 286.88696822404836,
+            "y": 87.33063432418737,
+            "visible": true
+          },
+          {
+            "time": 4,
+            "x": 296.4869682240484,
+            "y": 140.1025988515382,
+            "visible": true
+          },
+          {
+            "time": 6,
+            "x": 306.08696822404835,
+            "y": 200.66839334249224,
+            "visible": true
+          },
+          {
+            "time": 8,
+            "x": 315.68696822404837,
+            "y": 269.0284705738026,
+            "visible": true
+          }
+        ],
+        "burnMarks": [
+          {
+            "time": 2,
+            "x": 286.88696822404836,
+            "y": 73.78218501612886,
+            "visible": true
+          }
+        ],
+        "heldDirection": {
+          "x": 300.0869682240485,
+          "y": 161.96229982229272,
+          "dx": 0.1590461572678502,
+          "dy": 0.9872711480937394,
+          "time": 4.750000000000026,
+          "points": "303.3999,157.3770 300.8822,166.8987 295.5017,158.6494"
+        },
+        "burnDirection": {
+          "x": 288.08696822404835,
+          "y": 75.96497499683892,
+          "dx": 0.4817539988350409,
+          "dy": 0.8763065015201288,
+          "time": 2.2499999999999947,
+          "points": "289.6652,70.5327 290.4957,80.3465 282.6547,74.3868"
+        }
+      },
+      "detail": {
+        "scale": 5.76,
+        "leftMetres": -38.241271438201295,
+        "rightMetres": 53.425395228465376,
+        "minAltitude": 192.8135470215899,
+        "maxAltitude": 242.8135470215899,
+        "interval": 1,
+        "initial": {
+          "x": 256.26972348403945,
+          "y": 82.69613619239146
+        },
+        "heldEnd": {
+          "x": 474.3148285331751,
+          "y": 1434.6060308443577
+        },
+        "burnEnd": {
+          "x": 343.73027651596055,
+          "y": 277.3038638076084
+        },
+        "heldEndVisible": false,
+        "burnEndVisible": true,
+        "heldMarks": [
+          {
+            "time": 1,
+            "x": 279.3097234840394,
+            "y": 185.96865202139608,
+            "visible": true
+          },
+          {
+            "time": 2,
+            "x": 302.34972348403943,
+            "y": 298.5930756004572,
+            "visible": true
+          },
+          {
+            "time": 3,
+            "x": 325.38972348403945,
+            "y": 420.56961738927623,
+            "visible": false
+          },
+          {
+            "time": 4,
+            "x": 348.4297234840394,
+            "y": 551.898505331741,
+            "visible": false
+          },
+          {
+            "time": 5,
+            "x": 371.46972348403943,
+            "y": 692.579984858262,
+            "visible": false
+          },
+          {
+            "time": 6,
+            "x": 394.50972348403945,
+            "y": 842.6143188883204,
+            "visible": false
+          },
+          {
+            "time": 7,
+            "x": 417.5497234840394,
+            "y": 1002.0017878331461,
+            "visible": false
+          },
+          {
+            "time": 8,
+            "x": 440.5897234840394,
+            "y": 1170.7426895986105,
+            "visible": false
+          }
+        ],
+        "burnMarks": [
+          {
+            "time": 1,
+            "x": 279.3097234840394,
+            "y": 171.3870415836816,
+            "visible": true
+          },
+          {
+            "time": 2,
+            "x": 302.34972348403943,
+            "y": 233.5605189217763,
+            "visible": true
+          },
+          {
+            "time": 3,
+            "x": 325.38972348403945,
+            "y": 268.7028823439193,
+            "visible": true
+          }
+        ],
+        "heldDirection": {
+          "x": 285.0697234840394,
+          "y": 213.54025730979686,
+          "dx": 0.20449576460736058,
+          "dy": 0.9788674487680399,
+          "time": 1.249999999999998,
+          "points": "288.1672,208.8068 286.0922,218.4346 280.3363,210.4428"
+        },
+        "burnDirection": {
+          "x": 308.1097234840393,
+          "y": 244.03791082918454,
+          "dx": 0.4817539988350432,
+          "dy": 0.8763065015201275,
+          "time": 2.2499999999999947,
+          "points": "309.6879,238.6057 310.5185,248.4194 302.6775,242.4597"
+        }
+      },
+      "window": {
+        "x": 231.39744249820683,
+        "y": 32.623743574092146,
+        "width": 110,
+        "height": 60
+      }
+    },
+    {
+      "name": "terminal contact",
+      "sourceUnchanged": true,
+      "held": {
+        "kind": "contact",
+        "time": 0,
+        "altitude": 0,
+        "vertical": -9,
+        "lateral": 4,
+        "displacement": 0,
+        "fuelRemaining": 110,
+        "propellantUsed": 0,
+        "exhaustionTime": null,
+        "arrestBeforeContact": false,
+        "steps": 0
+      },
+      "burn": {
+        "kind": "contact",
+        "time": 0,
+        "altitude": 0,
+        "vertical": -9,
+        "lateral": 4,
+        "displacement": 0,
+        "fuelRemaining": 110,
+        "propellantUsed": 0,
+        "exhaustionTime": null,
+        "arrestBeforeContact": false,
+        "steps": 0
+      },
+      "zoom": 1,
+      "main": {
+        "scale": 14.4,
+        "leftMetres": -18.333333333333332,
+        "rightMetres": 18.333333333333332,
+        "minAltitude": 0,
+        "maxAltitude": 20,
+        "interval": 0,
+        "initial": {
+          "x": 300,
+          "y": 324
+        },
+        "heldEnd": {
+          "x": 300,
+          "y": 324
+        },
+        "burnEnd": {
+          "x": 300,
+          "y": 324
+        },
+        "heldEndVisible": true,
+        "burnEndVisible": true,
+        "heldMarks": [],
+        "burnMarks": [],
+        "heldDirection": null,
+        "burnDirection": null
+      },
+      "detail": null,
+      "window": null
+    },
+    {
+      "name": "near-empty fuel",
+      "sourceUnchanged": true,
+      "held": {
+        "kind": "contact",
+        "time": 14.463763239979563,
+        "altitude": 0,
+        "vertical": -32.48433141253747,
+        "lateral": 4,
+        "displacement": 57.855052959918254,
+        "fuelRemaining": 0.01,
+        "propellantUsed": 0,
+        "exhaustionTime": null,
+        "arrestBeforeContact": false,
+        "steps": 290
+      },
+      "burn": {
+        "kind": "contact",
+        "time": 14.470989102124987,
+        "altitude": 0,
+        "vertical": -32.479823043067,
+        "lateral": 4,
+        "displacement": 57.88395640849995,
+        "fuelRemaining": 0,
+        "propellantUsed": 0.037273841711794375,
+        "exhaustionTime": 0.02398239523172379,
+        "arrestBeforeContact": false,
+        "steps": 290
+      },
+      "zoom": 1,
+      "main": {
+        "scale": 0.96,
+        "leftMetres": -246.05802179575002,
+        "rightMetres": 303.94197820424995,
+        "minAltitude": 0,
+        "maxAltitude": 300,
+        "interval": 5,
+        "initial": {
+          "x": 272.21570092392005,
+          "y": 36
+        },
+        "heldEnd": {
+          "x": 327.75655176544154,
+          "y": 324
+        },
+        "burnEnd": {
+          "x": 327.78429907607995,
+          "y": 324
+        },
+        "heldEndVisible": true,
+        "burnEndVisible": true,
+        "heldMarks": [
+          {
+            "time": 5,
+            "x": 291.41570092392004,
+            "y": 98.68168422467167,
+            "visible": true
+          },
+          {
+            "time": 10,
+            "x": 310.61570092392003,
+            "y": 200.32899233564987,
+            "visible": true
+          }
+        ],
+        "burnMarks": [
+          {
+            "time": 5,
+            "x": 291.41570092392004,
+            "y": 98.60397588443098,
+            "visible": true
+          },
+          {
+            "time": 10,
+            "x": 310.61570092392003,
+            "y": 200.1733277639501,
+            "visible": true
+          }
+        ],
+        "heldDirection": {
+          "x": 301.9757009239207,
+          "y": 149.8141561318771,
+          "dx": 0.18223285637761968,
+          "dy": 0.9832554022513448,
+          "time": 7.750000000000174,
+          "points": "305.1798,145.1522 302.8869,154.7304 297.3137,146.6101"
+        },
+        "burnDirection": {
+          "x": 301.9757009239207,
+          "y": 149.69357253942303,
+          "dx": 0.18236552879975482,
+          "dy": 0.9832308039853033,
+          "time": 7.750000000000174,
+          "points": "305.1792,145.0312 302.8875,154.6097 297.3133,146.4901"
+        }
+      },
+      "detail": null,
+      "window": null
+    }
+  ]
+}

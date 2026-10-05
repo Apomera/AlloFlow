@@ -1,0 +1,15 @@
+{
+  "file": "desktop/web-app/public/stem_lab_module.js",
+  "before": "fcbd9f78155ad450595c2e8feea2eba60e39c3fcdc152d0bef578ccdcdb0e876",
+  "after": "13e8858f654a81eec2cb5a64801908ddf7419b4f0eb6caaaa96e5856c93a8a94",
+  "canonicalAndNestedUnchanged": true,
+  "mirrored": true,
+  "differences": [
+    "Perception Lab menu label",
+    "Perception Lab tool card",
+    "Perception Lab search terms",
+    "Perception Lab ready-tool whitelist entry"
+  ],
+  "guard": "Proved the stale mirror differs only by the four existing registrations before copying canonical bytes.",
+  "parses": true
+}

@@ -1,0 +1,249 @@
+{
+  "status": "passed",
+  "passed": true,
+  "complete": true,
+  "sourceSha256": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
+  "baselineCommit": "54d638b3213b0fbd484305feff43b769da8902f7",
+  "testPins": {
+    "tests/e2e/physics-trail-identity.spec.ts": "631a884fe9601edaa3c743255e0741cb702987b88847bc127021d601a1dcab5a",
+    "tests/e2e/physics-clarity.spec.ts": "2835c6ee259d1af9b6b2ba70b02fb0ac75e6c8883b4140f6e0c9dfff7d4f53b2",
+    "tests/e2e/physics-flight-history.spec.ts": "fcf0d0fefc0f7140e581e0064c94d731fc69b4a733d2ff4ed532df9d4f1fb377"
+  },
+  "catalogKeys": [
+    "plot_unfinished_path",
+    "plot_role_selected",
+    "plot_role_recorded",
+    "plot_role_unfinished",
+    "plot_current_trail_speed",
+    "plot_vacuum_preview_key",
+    "plot_flights_on_plot",
+    "plot_trail_identity_help"
+  ],
+  "unitTests": 356,
+  "unitFiles": 21,
+  "browserTests": 28,
+  "browserSuites": {
+    "trail": {
+      "passed": 4,
+      "files": [
+        "physics-trail-identity.spec.ts"
+      ],
+      "durationMs": 78078.465
+    },
+    "regression": {
+      "passed": 18,
+      "files": [
+        "physics-apex-inspection.spec.ts",
+        "physics-clarity.spec.ts",
+        "physics-flight-history.spec.ts",
+        "physics-visual-layout.spec.ts"
+      ],
+      "durationMs": 385004.825
+    },
+    "point-regression": {
+      "passed": 6,
+      "files": [
+        "physics-velocity-clarity.spec.ts"
+      ],
+      "durationMs": 135883.851
+    }
+  },
+  "visualReports": {
+    "trails": {
+      "configurations": 9,
+      "minFont": 12,
+      "minTextContrast": 11.642242170794445,
+      "minSVGContrast": 5.752500888271728,
+      "minCanvasContrast": 9.069851975673235,
+      "minRenderedSwatchContrast": 5.867126804277804,
+      "focusedSwatchScreenshots": 9
+    },
+    "points": {
+      "configurations": 9,
+      "minFont": 12,
+      "minTextContrast": 8.785602671809508,
+      "minSVGContrast": 7.318928113412897
+    }
+  },
+  "historicalFilesPreserved": 51,
+  "historicalScreenshots": 47,
+  "historicalVisualReports": 4,
+  "themeTransition": {
+    "beforeSha256": "d2761bd2af6147f6e5cff47d44569ceb9fc1d214115ce0fb3186dc7bae422a10",
+    "sourceSha256": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
+    "mirrorMatches": true,
+    "modelPrefixUnchanged": true,
+    "legendUsesCurrentRenderTheme": true,
+    "canvasUsesCommittedTheme": true,
+    "themeFixedSha256": "c37fd985765a1129f60fefbc55fd1b2b66989ca2786ed181f3cef82ac1f71250"
+  },
+  "swatchRendering": {
+    "beforeSha256": "c37fd985765a1129f60fefbc55fd1b2b66989ca2786ed181f3cef82ac1f71250",
+    "sourceSha256": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
+    "mirrorMatches": true,
+    "modelPrefixUnchanged": true,
+    "gradientUsesViewBoxCoordinates": true,
+    "gradientCoordinates": [
+      2,
+      8,
+      54,
+      8
+    ]
+  },
+  "initialUnitTests": 356,
+  "initialUnitFiles": 21,
+  "initialUnitTestsPassed": 356,
+  "initialUnitTimeouts": 0,
+  "initialUnitMissingFiles": [],
+  "unitRecoveryTests": 0,
+  "unitRecoveryFiles": [],
+  "unitDistinctFileFullNames": 343,
+  "gradientNegativeControl": {
+    "detectedBlankPaint": true,
+    "restoredPaintVerified": true,
+    "sampledColumns": 100,
+    "visibleColumns": 0
+  },
+  "browserFiles": [
+    "physics-apex-inspection.spec.ts",
+    "physics-clarity.spec.ts",
+    "physics-flight-history.spec.ts",
+    "physics-trail-identity.spec.ts",
+    "physics-velocity-clarity.spec.ts",
+    "physics-visual-layout.spec.ts"
+  ],
+  "screenshots": {
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-default-1100.png": "e827aac631c808403e55131c665c388685a999f9ebb2014e9b8682d87b06cefe",
+    "reports/physics-trail-identity-2026-10-02/trails-default-1100.png": "1b996ec20a8025b96285ddd99465f6db7fd716dede6741cc61c6d5d8e80fee04",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-dark-1100.png": "823c58e4adb75da713aca218cd19d84c524178386354ec24c9a320da6802438b",
+    "reports/physics-trail-identity-2026-10-02/trails-dark-1100.png": "b800429969147f8552cd4d3d809bbb609a1879df73102e3665d2a78d9fcb68e5",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-contrast-1100.png": "7e56928514aa849119e42cc8fd3e2be10ace8e37ee1e10f36a5a33201fc976e7",
+    "reports/physics-trail-identity-2026-10-02/trails-contrast-1100.png": "f880cbd47e91019c69b6b28f6d0293babedbab18a9a9d23f0e39e72a8668c17b",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-default-375.png": "4e10f646cc692fc71d01e416adef030eaa9aae92d8a0c3f2cb734bb643e57251",
+    "reports/physics-trail-identity-2026-10-02/trails-default-375.png": "216207c2db701634badeec8a501652766118d10ade16ec6b73a122b49f45e135",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-dark-375.png": "f338d4f73001c5d8e634f7def34cfcf0a7ac8c672b4805bb520df6fb99443f30",
+    "reports/physics-trail-identity-2026-10-02/trails-dark-375.png": "b7cbe0efd17e21f710680955c89f3caf5f8ab16083e5c36cd3612073a0594f97",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-contrast-375.png": "1abd80eea0a69ff02c5e1ef968729a582cc4ceea0d0cc8dbff254f1ef1d0aafc",
+    "reports/physics-trail-identity-2026-10-02/trails-contrast-375.png": "17a95d9eb5244a53b489e4d5fb12227e9f3bc4725ed5b8ee7a3c8cad8e7d1b9e",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-default-320.png": "4e10f646cc692fc71d01e416adef030eaa9aae92d8a0c3f2cb734bb643e57251",
+    "reports/physics-trail-identity-2026-10-02/trails-default-320.png": "0dcdd1c8f083cd4d68db92841ba9d2ec7167f3929f31e59681d16c7916362b76",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-dark-320.png": "823c58e4adb75da713aca218cd19d84c524178386354ec24c9a320da6802438b",
+    "reports/physics-trail-identity-2026-10-02/trails-dark-320.png": "21e08279d4939b9784a484cf140984ff1c9bdc81c2cfd50cf81d854380789a41",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-contrast-320.png": "7e56928514aa849119e42cc8fd3e2be10ace8e37ee1e10f36a5a33201fc976e7",
+    "reports/physics-trail-identity-2026-10-02/trails-contrast-320.png": "063a8e9194ac2b1dbfdf84990e74874a225242439a44ca91670f7d30f0c690dc",
+    "reports/physics-trail-identity-2026-10-02/point-regression/velocity-default-1100.png": "32d8b8b7a074e15c1910e33f91aa4e34e1b6eeeafcb4a92df989db21915b7795",
+    "reports/physics-trail-identity-2026-10-02/point-regression/velocity-dark-1100.png": "490199117bbaab89049c58c6a04c7dba2e4eccb4f42361c536508ee6e505bfc1",
+    "reports/physics-trail-identity-2026-10-02/point-regression/velocity-contrast-1100.png": "f9fac6b5033cd0f5c5e2c54b8d348f918cd9be8730cb6a20d76dd7921e5a05a4",
+    "reports/physics-trail-identity-2026-10-02/point-regression/velocity-default-375.png": "070882445e137742dad526f9213b98129dac1417ca8e4cf4b05f2bf23dd2fb44",
+    "reports/physics-trail-identity-2026-10-02/point-regression/velocity-dark-375.png": "3820048ea5eab73ffb61d2bc967a3965244cb8d110bed51edbf01bfa097d3991",
+    "reports/physics-trail-identity-2026-10-02/point-regression/velocity-contrast-375.png": "901a4aff350f42d35ba0341fa7c660165159c265b7b5e1464892f05c0c2dca74",
+    "reports/physics-trail-identity-2026-10-02/point-regression/velocity-default-320.png": "42faba6dec40ef22c10d54ff723b1ce072999df9540dfe80bb9f8223463f56a1",
+    "reports/physics-trail-identity-2026-10-02/point-regression/velocity-dark-320.png": "b113abcdd9561aa980f12dbb5701341b7d24d4f3788b84dbfa5b7fdee2390124",
+    "reports/physics-trail-identity-2026-10-02/point-regression/velocity-contrast-320.png": "230234f873bc1d1de4cf7fb17cbed23e454fe1f8675a9af1a27d14d8da45b67d",
+    "reports/physics-trail-identity-2026-10-02/point-regression/selected-launch.png": "d381c392dfc4d1a182288546b85e3c53fca99bc358a0b2011b5407c9ac94bac2",
+    "reports/physics-trail-identity-2026-10-02/point-regression/selected-rising.png": "d241d4718bd41ae0cd18aa59fc3653e0c88ce10bce92c270030268d6d3acf105",
+    "reports/physics-trail-identity-2026-10-02/point-regression/selected-apex.png": "ae68df6f75d4e335e7f3f77ef9449663cd8b53828e720469ee7ae49a99de073e",
+    "reports/physics-trail-identity-2026-10-02/point-regression/selected-near-apex.png": "5460415869966f91a02291898e1dc302aa07499c47a8052156d3bd7237000bd6",
+    "reports/physics-trail-identity-2026-10-02/point-regression/selected-falling.png": "2bd22c13bed12c69346bbbe2993d02fcabffdab7ff2312e2dfb3c0d89487d174",
+    "reports/physics-trail-identity-2026-10-02/point-regression/selected-impact.png": "156491e481009186a828f59e7ba83d8081c6033301c91b558509777cb63b41f9",
+    "reports/physics-trail-identity-2026-10-02/point-regression/selected-after-six-control-changes.png": "9233cc77c4edbf910ea16f2f31a67ae230193c8efe6c1f9acbbebcaab4ddfabd",
+    "reports/physics-trail-identity-2026-10-02/point-regression/horizontal-release-unresolved.png": "745d4072458aa49b0c82e6872e0903d4dbf5d8fb54838a04b226409cf3917c77",
+    "reports/physics-trail-identity-2026-10-02/point-regression/horizontal-release-canonical-apex.png": "8b3b9303020127e5617c00985781995f25ff91024b4dfd01813e4441527ce16a",
+    "reports/physics-trail-identity-2026-10-02/point-regression/unfinished-highest-rising.png": "a81875437f44f55fb715c7f8edc3f60a2c5e95368b5a51078b680f4c8fc6f8ca"
+  },
+  "diagnosticScreenshots": {
+    "reports/physics-trail-identity-2026-10-02/gradient-negative-control/old-object-bounding-box.png": "51b42640a275048555aa814cf5061c8691a2882356c14f52aef88917972d20f1"
+  },
+  "dependencies": {
+    "stem_lab/stem_tool_physics.js": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
+    "desktop/web-app/public/stem_lab/stem_tool_physics.js": "71e2d584e2e0b64f910150af0ba344830057312e737d09bf65d02d97e54c0c64",
+    "tests/e2e/physics-trail-identity.spec.ts": "631a884fe9601edaa3c743255e0741cb702987b88847bc127021d601a1dcab5a",
+    "tests/e2e/physics-clarity.spec.ts": "2835c6ee259d1af9b6b2ba70b02fb0ac75e6c8883b4140f6e0c9dfff7d4f53b2",
+    "tests/e2e/physics-flight-history.spec.ts": "fcf0d0fefc0f7140e581e0064c94d731fc69b4a733d2ff4ed532df9d4f1fb377",
+    "reports/physics-trail-identity-2026-10-02/theme-transition-integrity.json": "99e865ef648e7bcd4b7f3894378f501c76ee175f2a6b8a0b7063984ef24a4fc6",
+    "reports/physics-trail-identity-2026-10-02/swatch-rendering-integrity.json": "11964cb16ea2ac105df2ea0b9bafed7191639c56c89292e0e77f9f238b902078",
+    "ui_strings.js": "ca9386869013fa94574f24c16239fa3717be2cb48b64cf25aaaa3316cda45579",
+    "desktop/web-app/public/ui_strings.js": "ca9386869013fa94574f24c16239fa3717be2cb48b64cf25aaaa3316cda45579",
+    ".github/workflows/physics.yml": "52e4bfa0bb6a79ee0c6fd99ee278d78a65067b9fdf3ae8ed023daae730f65bc9",
+    "reports/physics-point-clarity-2026-10-02/unit-results.json": "66e71b4c8a86d614661b9a83c025f540e45c0f5dbb2253f7b3e1f7730b05224d",
+    "reports/physics-trail-identity-2026-10-02/unit-results.json": "e80e883ca79a522ad58ae79ca05d8b954189b57ae38a882bebd609e8037c4a1c",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-default-1100.json": "343157622f710c9c6f15e0d47c8d31d2e25b38c7e9057b4c75dffdd92d640f8f",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-dark-1100.json": "1b2d49a773dd4c823d18de0f7d926638359398fbaa98fc30f2f5e884e6dca005",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-contrast-1100.json": "e426ca010590d3e31a9186886d3f877d27504a3be80d336465656a0eae3b0e58",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-default-375.json": "98c521d2a46f92a1f8c7af95a5fa406a068d5e7377525aa3ab86a0ab3d020c60",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-dark-375.json": "0e8e6df1ab671f8f6c553bc8183a63fb6d7abf07b66edb3acda8f4f2626b34b1",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-contrast-375.json": "a15e6011c03d412fffbf254c3fb09801760db87547fdcab43f61f2da1226c245",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-default-320.json": "98c521d2a46f92a1f8c7af95a5fa406a068d5e7377525aa3ab86a0ab3d020c60",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-dark-320.json": "1b2d49a773dd4c823d18de0f7d926638359398fbaa98fc30f2f5e884e6dca005",
+    "reports/physics-trail-identity-2026-10-02/swatch-focus-contrast-320.json": "e426ca010590d3e31a9186886d3f877d27504a3be80d336465656a0eae3b0e58",
+    "reports/physics-trail-identity-2026-10-02/gradient-negative-control/evidence.json": "93755c273f2ecbb99a71aa23a5cbe4b07e3e5046031621bc0ce2ffcf12ba9f01",
+    "reports/physics-trail-identity-2026-10-02/verify-report.cjs": "d635ff51c0d28bbe95eaca8746c891b90a62611f7e3d1cec4cdcf3dc4dfbdf85",
+    "reports/physics-trail-identity-2026-10-02/run-checks.cjs": "23e2c4f393585e99205fae85dc57aa904cc2d225fb58a19d6d961fef61c97ba8"
+  },
+  "checks": [
+    {
+      "name": "Pinned source, mirror, and three edited browser specs",
+      "status": "passed"
+    },
+    {
+      "name": "Numerical and recording prefix matches baseline commit",
+      "status": "passed"
+    },
+    {
+      "name": "Final theme-transition source and integrity proof",
+      "status": "passed"
+    },
+    {
+      "name": "Focused swatch source and rendering integrity proof",
+      "status": "passed"
+    },
+    {
+      "name": "Eight English physics labels and desktop catalog parity",
+      "status": "passed"
+    },
+    {
+      "name": "CI includes the new spec with one worker and no retries",
+      "status": "passed"
+    },
+    {
+      "name": "356 unit assertions in 21 files, with audited recovery when needed",
+      "status": "passed"
+    },
+    {
+      "name": "trail: 4 browser cases pass once",
+      "status": "passed"
+    },
+    {
+      "name": "regression: 18 browser cases pass once",
+      "status": "passed"
+    },
+    {
+      "name": "point-regression: 6 browser cases pass once",
+      "status": "passed"
+    },
+    {
+      "name": "Nine trail width/theme visual configurations",
+      "status": "passed"
+    },
+    {
+      "name": "Nine point regression width/theme configurations and ten event screenshots",
+      "status": "passed"
+    },
+    {
+      "name": "51 historical files preserve the runner-recorded hashes",
+      "status": "passed"
+    },
+    {
+      "name": "Verifier and runner dependency hashes",
+      "status": "passed"
+    },
+    {
+      "name": "Complete aggregate totals",
+      "status": "passed"
+    }
+  ],
+  "missing": [],
+  "failures": [],
+  "scope": "Checks designated final report files and runner-recorded integrity hashes; does not execute tests or rewrite README.",
+  "completedAt": "2026-10-04T03:25:38.785Z"
+}

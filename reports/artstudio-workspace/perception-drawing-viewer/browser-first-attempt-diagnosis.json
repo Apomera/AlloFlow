@@ -1,0 +1,4 @@
+{
+  "kind": "harness-selector",
+  "reason": "Initial output-directory replacement also changed the recorded preview data attribute in the copied harness. Restore selector; product source unchanged."
+}

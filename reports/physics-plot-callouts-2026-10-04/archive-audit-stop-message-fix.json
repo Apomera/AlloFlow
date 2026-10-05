@@ -1,0 +1,13 @@
+{
+  "reason": "The preserved failed regression has Playwright’s exact stop-after-one-failure message. Other archived stages must retain empty top-level errors.",
+  "beforeVerifierSha256": "4172a492cc2bff18c93861df85388008d9ba15f83a21b635c2f915b39cbec4d6",
+  "afterVerifierSha256": "f96d4a5099a38114af14431d26bf5bd94730408214ffba0362990d0849798271",
+  "preservedVerificationSha256": "8072ce2b6aa5eb5159f19a7c58d100d64b9aa1b0bb47492d7f235774fba1c99f",
+  "archivedRegressionErrors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "sourceAndTestsUnchanged": true,
+  "pixelAndContrastThresholdsUnchanged": true
+}

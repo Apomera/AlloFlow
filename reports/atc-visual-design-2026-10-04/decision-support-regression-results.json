@@ -1,0 +1,211 @@
+{
+  "started": "2026-10-05T02:13:01.092Z",
+  "fixture": "Installed Chrome with canonical ATC source and React host. Exercise outcomes use actual controls and simulation; browser readback assertions inspect the live game without replacing physics.",
+  "checks": [
+    {
+      "name": "Current/target controls and heading/speed previews fit accessibly at 1440px",
+      "pass": true,
+      "detail": {
+        "width": 1440,
+        "headingButtonMeasurements": [
+          {
+            "text": "North · 000°",
+            "width": 265.484375,
+            "height": 44
+          },
+          {
+            "text": "East · 090°",
+            "width": 265.484375,
+            "height": 44
+          },
+          {
+            "text": "South · 180°",
+            "width": 265.484375,
+            "height": 44
+          },
+          {
+            "text": "West · 270°",
+            "width": 265.484375,
+            "height": 44
+          },
+          {
+            "text": "Send instruction",
+            "width": 133.734375,
+            "height": 44
+          },
+          {
+            "text": "Cancel",
+            "width": 67.859375,
+            "height": 44
+          }
+        ]
+      }
+    },
+    {
+      "name": "Current/target controls and heading/speed previews fit accessibly at 390px",
+      "pass": true,
+      "detail": {
+        "width": 390,
+        "headingButtonMeasurements": [
+          {
+            "text": "North · 000°",
+            "width": 148,
+            "height": 44
+          },
+          {
+            "text": "East · 090°",
+            "width": 148,
+            "height": 44
+          },
+          {
+            "text": "South · 180°",
+            "width": 148,
+            "height": 44
+          },
+          {
+            "text": "West · 270°",
+            "width": 148,
+            "height": 44
+          },
+          {
+            "text": "Send instruction",
+            "width": 114.34375,
+            "height": 44
+          },
+          {
+            "text": "Cancel",
+            "width": 57.875,
+            "height": 44
+          }
+        ]
+      }
+    },
+    {
+      "name": "Current/target controls and heading/speed previews fit accessibly at 320px",
+      "pass": true,
+      "detail": {
+        "width": 320,
+        "headingButtonMeasurements": [
+          {
+            "text": "North · 000°",
+            "width": 113,
+            "height": 44
+          },
+          {
+            "text": "East · 090°",
+            "width": 113,
+            "height": 44
+          },
+          {
+            "text": "South · 180°",
+            "width": 113,
+            "height": 44
+          },
+          {
+            "text": "West · 270°",
+            "width": 113,
+            "height": 44
+          },
+          {
+            "text": "Send instruction",
+            "width": 114.34375,
+            "height": 44
+          },
+          {
+            "text": "Cancel",
+            "width": 57.875,
+            "height": 44
+          }
+        ]
+      }
+    },
+    {
+      "name": "Manual heading altitude and speed instructions retain current values while displaying new targets",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Heading compass and shortest-turn presets preview an instruction without changing aircraft or log",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Invalid draft and Escape preserve the model and restore the initiating command focus",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Blocked clearance and repeated runway approach and go-around visibly explain unchanged instructions without duplicate evidence",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Paused approach targets show Guided and heading preview explains cancellation before committing current altitude",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Holding defers speed arrival estimates and heading preview releases the hold only on send",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Go-around readback is numeric and speed preview defers estimates while preserving recovery mode",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Speed preview qualifies distance divided by speed comparison without confusing it with planned arrival",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Real final approach shows automatic targets and speed stays on final while a heading ends guidance",
+      "pass": true,
+      "detail": {
+        "actualFinalAltitude": 3950,
+        "speedTarget": 120
+      }
+    },
+    {
+      "name": "Draft locks flight-strip selection and preserves the addressed aircraft through send",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Mobile navigation focuses and scrolls between radar and commands with keyboard follow-through",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Decision form remains usable at 200 percent zoom and in forced colors with reduced motion",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Debrief evidence filters retain chronology include recovery in both relevant views and reset for another attempt",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Speed presets are valid unique sorted and include the selected aircraft approach speed",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Live traffic freezes during preview without changing the pause setting and resumes after cancellation",
+      "pass": true,
+      "detail": null
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-decision-support-2026-10-04\\after-playing-1440.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-decision-support-2026-10-04\\after-playing-390.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-decision-support-2026-10-04\\after-playing-320.png",
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-decision-support-2026-10-04\\after-filtered-debrief-390.png"
+  ],
+  "completed": "2026-10-05T02:13:24.390Z",
+  "passed": 18,
+  "failed": 0
+}

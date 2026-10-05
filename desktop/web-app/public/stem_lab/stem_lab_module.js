@@ -2987,21 +2987,433 @@
     // Keep this payload version independent from the shared STEM localStorage key.
     // Future Bee migrations can inspect it without invalidating other tool data.
     var _BEEHIVE_PERSISTENCE_VERSION = 1;
+  // BEEHIVE_STATE_RECOVERY_START
+  // These validators also run in the host loader; keep them self-contained.
+  function bhColonyObservationsUnsupported(value) {
+    return !!value && typeof value === 'object' && !Array.isArray(value) &&
+      Object.prototype.hasOwnProperty.call(value, 'schemaVersion') && value.schemaVersion !== 1;
+  }
+  function bhNormalizeColonyObservation(value) {
+    var record = function(v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+    var integer = function(v, min, max) { return Number.isSafeInteger(v) && v >= min && v <= max; };
+    if (!record(value) || value.source !== 'daily-history' || !integer(value.id, 1, Number.MAX_SAFE_INTEGER - 1) || !integer(value.day, 0, 10000000)) return null;
+    var raw = record(value.metrics) ? value.metrics : {}, metrics = {};
+    [['workers', 250000, true], ['food', 1000000, false], ['mites', 100, false], ['stability', 100, false]].forEach(function(spec) {
+      var n = raw[spec[0]];
+      metrics[spec[0]] = Number.isFinite(n) && n >= 0 && n <= spec[1] && (!spec[2] || Number.isInteger(n)) ? n : null;
+    });
+    return { id: value.id, source: 'daily-history', day: value.day,
+      savedOnDay: integer(value.savedOnDay, value.day, 10000000) ? value.savedOnDay : null,
+      runSerial: integer(value.runSerial, 1, 10000000) ? value.runSerial : null,
+      simulationSeed: integer(value.simulationSeed, 0, 4294967295) ? value.simulationSeed : null,
+      modelVersion: typeof value.modelVersion === 'string' && value.modelVersion.trim() && value.modelVersion.length <= 80 ? value.modelVersion : null,
+      metrics: metrics };
+  }
+  function bhNormalizeColonyObservations(value) {
+    var raw = value && typeof value === 'object' && !Array.isArray(value) && value.schemaVersion === 1 ? value : {};
+    var ids = Object.create(null), order = [];
+    (Array.isArray(raw.entries) ? raw.entries : []).forEach(function(item) {
+      var entry = bhNormalizeColonyObservation(item);
+      if (!entry) return;
+      if (!Object.prototype.hasOwnProperty.call(ids, entry.id)) order.push(entry.id);
+      ids[entry.id] = entry;
+    });
+    var entries = order.map(function(id) { return ids[id]; });
+    // Imports may contain more than the current save limit; keep their valid
+    // evidence. Admission control limits new captures without evicting records.
+    var nextId = Number.isSafeInteger(raw.nextId) && raw.nextId > 0 ? raw.nextId : 1;
+    entries.forEach(function(entry) { nextId = Math.max(nextId, entry.id + 1); });
+    return { schemaVersion: 1, nextId: nextId, entries: entries };
+  }
+  function bhNormalizeForecastDraft(value) {
+    var v = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
+    var metrics = ['workers', 'brood', 'honey', 'nectarHoney', 'syrup', 'pollen', 'varroaLevel', 'diseaseRisk', 'morale', 'queenHealth'];
+    return { metricId: metrics.indexOf(v.metricId) >= 0 ? v.metricId : 'workers', horizon: v.horizon === 30 ? 30 : 7,
+      direction: ['higher', 'lower', 'same'].indexOf(v.direction) >= 0 ? v.direction : '',
+      prediction: typeof v.prediction === 'string' ? v.prediction.slice(0, 1200) : '' };
+  }
+  function bhNormalizeForecastStudy(value) {
+    var rec = function(v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+    var text = function(v, max) { return typeof v === 'string' ? v.slice(0, max) : ''; };
+    var integer = function(v, max) { return Number.isInteger(v) && v >= 0 && v <= max; };
+    if (!rec(value) || value.schemaVersion !== 1 || !text(value.id, 80) || !rec(value.context)) return null;
+    var c = value.context, keys = ['workers', 'brood', 'honey', 'nectarHoney', 'syrup', 'pollen', 'varroaLevel', 'diseaseRisk', 'morale', 'queenHealth'];
+    if (keys.indexOf(value.metricId) < 0 || ['higher', 'lower', 'same'].indexOf(value.direction) < 0 ||
+      !integer(value.startDay, 10000000) || [7, 30].indexOf(value.horizon) < 0 || value.targetDay !== value.startDay + value.horizon ||
+      !integer(c.simulationSeed, 4294967295) || !integer(c.runSerial, 1000000000) || c.runSerial < 1 ||
+      !text(c.modelVersion, 64) || !text(c.stockId, 40) || !text(c.siteId, 40) || !Number.isFinite(c.gardenBonus) || c.gardenBonus < 0 || c.gardenBonus > 30) return null;
+    function points(list) {
+      var seen = {}, result = [];
+      (Array.isArray(list) ? list : []).slice(0, 64).forEach(function(p) {
+        if (!rec(p) || !integer(p.day, 10000030) || p.day < value.startDay || p.day > value.targetDay || seen[p.day]) return;
+        seen[p.day] = true;
+        var point = { day: p.day };
+        keys.forEach(function(key) { point[key] = Number.isFinite(p[key]) && p[key] >= 0 && p[key] <= (['varroaLevel', 'diseaseRisk', 'morale', 'queenHealth'].indexOf(key) >= 0 ? 100 : 1000000000) ? p[key] : null; });
+        result.push(point);
+      });
+      return result.sort(function(a, b) { return a.day - b.day; }).slice(0, 31);
+    }
+    var forecast = points(value.forecast), observations = points(value.observations);
+    var status = ['tracking', 'complete', 'interrupted'].indexOf(value.status) >= 0 ? value.status : 'interrupted';
+    var reason = text(value.reason, 240);
+    if (!forecast.length || forecast[0].day !== value.startDay || !observations.length || observations[0].day !== value.startDay) {
+      status = 'interrupted'; reason = 'The saved starting readings or forecast are incomplete.';
+    } else if (status === 'complete' && !observations.some(function(p) { return p.day === value.targetDay; })) {
+      status = 'interrupted'; reason = 'The planned checkpoint was not recorded in this save.';
+    }
+    if (status !== 'interrupted' && observations.some(function(p, index) { return index > 0 && p.day !== observations[index - 1].day + 1; })) {
+      status = 'interrupted'; reason = 'Daily monitoring was interrupted. Missing checkpoints cannot be reconstructed.';
+    }
+    var notices = [], omitted = integer(value.omittedNotices, 10000000) ? value.omittedNotices : 0;
+    if (Array.isArray(value.notices)) omitted += Math.max(0, value.notices.length - 240);
+    (Array.isArray(value.notices) ? value.notices : []).slice(0, 240).forEach(function(n) {
+      if (!rec(n) || !integer(n.day, 10000030) || n.day < value.startDay || n.day > value.targetDay || ['action', 'event'].indexOf(n.kind) < 0 || !text(n.label, 160)) { omitted++; return; }
+      if (notices.length >= 120) { omitted++; return; }
+      notices.push({ day: n.day, kind: n.kind, id: text(n.id, 120), label: text(n.label, 160) });
+    });
+    return { schemaVersion: 1, id: text(value.id, 80), metricId: value.metricId, horizon: value.horizon,
+      direction: value.direction, prediction: text(value.prediction, 1200), startDay: value.startDay, targetDay: value.targetDay,
+      context: { modelVersion: text(c.modelVersion, 64), simulationSeed: c.simulationSeed, runSerial: c.runSerial,
+        stockId: text(c.stockId, 40), siteId: text(c.siteId, 40), gardenBonus: c.gardenBonus },
+      forecast: forecast, observations: observations, notices: notices, omittedNotices: Math.min(10000000, omitted),
+      status: status, reason: reason, explanation: text(value.explanation, 1600), saved: value.saved === true };
+  }
+  function bhNormalizeForecastPortfolio(value) {
+    var entries = [], seen = Object.create(null);
+    (value && Array.isArray(value.entries) ? value.entries : []).slice(0, 24).forEach(function(entry) {
+      if (!entry || typeof entry !== 'object' || typeof entry.id !== 'string' || !entry.id || typeof entry.text !== 'string' || !entry.text || entries.length >= 6) return;
+      var id = entry.id.slice(0, 80);
+      if (seen[id]) return;
+      seen[id] = true;
+      entries.push({ id: id, title: typeof entry.title === 'string' ? entry.title.slice(0, 160) : 'Forecast investigation', text: entry.text.slice(0, 32000) });
+    });
+    return { schemaVersion: 1, entries: entries };
+  }
+  function bhForecastDataEqual(a, b) {
+    if (a === b) return true;
+    if (!a || !b || typeof a !== 'object' || typeof b !== 'object' || Array.isArray(a) !== Array.isArray(b)) return false;
+    var keys = Object.keys(a);
+    return keys.length === Object.keys(b).length && keys.every(function(key) { return Object.prototype.hasOwnProperty.call(b, key) && bhForecastDataEqual(a[key], b[key]); });
+  }
+  function bhRecoverBeehiveState(value) {
+    var isRecord = function(v) { return !!v && typeof v === 'object' && !Array.isArray(v); };
+    if (!isRecord(value)) return { state: {}, repairs: ['colony state'] };
+    var state = value, repairs = [];
+    function replace(key, next) {
+      if (state === value) state = Object.assign({}, value);
+      if (next === undefined) delete state[key]; else state[key] = next;
+      repairs.push(key);
+    }
+    if (Object.prototype.hasOwnProperty.call(value, 'forecastInvestigation')) {
+      var study = bhNormalizeForecastStudy(value.forecastInvestigation);
+      if (!bhForecastDataEqual(study, value.forecastInvestigation)) replace('forecastInvestigation', study);
+    }
+    if (Object.prototype.hasOwnProperty.call(value, 'forecastInvestigationDraft')) {
+      var draft = bhNormalizeForecastDraft(value.forecastInvestigationDraft);
+      if (!bhForecastDataEqual(draft, value.forecastInvestigationDraft)) replace('forecastInvestigationDraft', draft);
+    }
+    // Repair known nested fields without replacing intact progress or notes.
+    // This block is also used by the host loader, so it has no tool dependencies.
+    function cleanFields(record, numbers, strings, booleans) {
+      var clean = record;
+      function check(key, valid) {
+        if (!Object.prototype.hasOwnProperty.call(record, key) || valid(record[key])) return;
+        if (clean === record) clean = Object.assign({}, record);
+        delete clean[key];
+      }
+      (numbers || []).forEach(function(key) { check(key, Number.isFinite); });
+      (strings || []).forEach(function(key) { check(key, function(v) { return typeof v === 'string'; }); });
+      (booleans || []).forEach(function(key) { check(key, function(v) { return typeof v === 'boolean'; }); });
+      return clean;
+    }
+    function cleanArray(list, recoverEntry) {
+      if (!Array.isArray(list)) return [];
+      var clean = [], changed = false;
+      list.forEach(function(entry) {
+        var next = recoverEntry(entry);
+        if (next == null) changed = true;
+        else { clean.push(next); if (next !== entry) changed = true; }
+      });
+      return changed ? clean : list;
+    }
+    function cleanNumericMap(record, defaults, strings) {
+      var clean = cleanFields(record, [], strings), keys = Object.keys(defaults);
+      keys.forEach(function(key) {
+        if (Number.isFinite(record[key])) return;
+        if (clean === record) clean = Object.assign({}, record);
+        clean[key] = defaults[key];
+      });
+      return clean;
+    }
+    function cleanRole(role, fields, arrays, records) {
+      var clean = cleanFields(role, fields[0], fields[1], fields[2]);
+      function set(key, next) {
+        if (next === role[key]) return;
+        if (clean === role) clean = Object.assign({}, role);
+        if (next === undefined) delete clean[key]; else clean[key] = next;
+      }
+      Object.keys(arrays || {}).forEach(function(key) {
+        if (Object.prototype.hasOwnProperty.call(role, key)) set(key, cleanArray(role[key], arrays[key]));
+      });
+      Object.keys(records || {}).forEach(function(key) {
+        if (role[key] == null) return;
+        set(key, isRecord(role[key]) ? records[key](role[key]) : undefined);
+      });
+      return clean;
+    }
+    var numeric = {
+      day: [0, 10000000], workers: [0, 1000000], brood: [0, 500000], drones: [0, 250000],
+      honey: [0, 1000000], syrup: [0, 1000000], pollen: [0, 1000000], wax: [0, 1000000],
+      queenHealth: [0, 100], varroaLevel: [0, 100], diseaseRisk: [0, 100], morale: [0, 100],
+      habitat: [0, 100], pesticideExposure: [0, 100], foragingEfficiency: [0, 100], actionPoints: [0, 100],
+      capacity: [0, 1000000], simulationSeed: [0, 4294967295], randomState: [0, 4294967295],
+      experimentRunSerial: [1, 10000000], seededFromDay: [0, 10000000]
+    };
+    Object.keys(numeric).forEach(function(key) {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) return;
+      var n = value[key], bounds = numeric[key];
+      if (typeof n !== 'number' || !Number.isFinite(n)) replace(key, undefined);
+      else if (n < bounds[0] || n > bounds[1]) replace(key, Math.max(bounds[0], Math.min(bounds[1], n)));
+    });
+    ['history', 'journal', 'eventLog', 'managementTrail'].forEach(function(key) {
+      if (!Object.prototype.hasOwnProperty.call(value, key)) return;
+      if (!Array.isArray(value[key])) { replace(key, []); return; }
+      if (key === 'history') {
+        var historyAliases = { d: ['day'], h: ['honey'], w: ['workers'], v: ['varroaLevel', 'varroa'], m: ['morale'] };
+        var historyRecords = cleanArray(value[key], function(entry) {
+          if (!isRecord(entry)) return null;
+          var clean = cleanFields(entry, ['d', 'day', 'h', 'honey', 'w', 'workers', 'v', 'varroaLevel', 'varroa', 'm', 'morale']);
+          Object.keys(historyAliases).forEach(function(field) {
+            if (Number.isFinite(clean[field])) return;
+            var alias = historyAliases[field].find(function(name) { return Number.isFinite(entry[name]); });
+            if (!alias) return;
+            if (clean === entry) clean = Object.assign({}, entry);
+            clean[field] = entry[alias];
+          });
+          // A dated checkpoint can have no usable measurements. Retaining it
+          // prevents a later duplicate from resurrecting an older reading.
+          return Number.isFinite(clean.d) && clean.d >= 0 ? clean : null;
+        });
+        if (historyRecords !== value[key]) replace(key, historyRecords);
+        return;
+      }
+      var records = value[key].filter(function(entry) {
+        if (!isRecord(entry)) return false;
+        if (key === 'journal') return Number.isFinite(entry.day) && typeof entry.text === 'string';
+        if (key === 'managementTrail') return Number.isFinite(entry.day) && entry.day >= 0 && (typeof entry.label === 'string' || typeof entry.choiceId === 'string');
+        return true;
+      });
+      if (records.length !== value[key].length) replace(key, records);
+    });
+    ['layersViewed', 'yearReviewsSeen'].forEach(function(key) {
+      if (Object.prototype.hasOwnProperty.call(value, key) && !Array.isArray(value[key])) replace(key, []);
+    });
+    ['notebook', 'discovery', 'discoveryRecords', 'varietals', 'badges', 'treatmentsUsed', 'yearLedger', 'managementHistory', 'queen', 'drone', 'experimentArchive'].forEach(function(key) {
+      if (Object.prototype.hasOwnProperty.call(value, key) && !isRecord(value[key])) replace(key, {});
+    });
+    ['varietals', 'yearLedger'].forEach(function(key) {
+      var map = state[key]; if (!isRecord(map)) return;
+      var clean = {}, damaged = false;
+      Object.keys(map).forEach(function(id) { if (isRecord(map[id])) clean[id] = map[id]; else damaged = true; });
+      if (damaged) replace(key, clean);
+    });
+    if (isRecord(state.notebook)) {
+      var notebook = state.notebook, cleanNotebook = notebook;
+      ['beekeeper', 'queen', 'drone', 'experiment', 'discoveries', 'sharedMap', 'honeyStores'].forEach(function(key) {
+        if (Object.prototype.hasOwnProperty.call(notebook, key) && !isRecord(notebook[key])) {
+          if (cleanNotebook === notebook) cleanNotebook = Object.assign({}, notebook);
+          cleanNotebook[key] = {};
+        }
+      });
+      var notebookText = cleanFields(cleanNotebook, [], ['synthesis']);
+      ['beekeeper', 'queen', 'drone', 'sharedMap', 'honeyStores'].forEach(function(key) {
+        if (!isRecord(notebookText[key])) return;
+        var entry = cleanFields(notebookText[key], [], ['observation', 'prediction', 'evidence', 'explanation', 'text']);
+        if (entry !== notebookText[key]) notebookText = Object.assign({}, notebookText, (function() { var patch = {}; patch[key] = entry; return patch; })());
+      });
+      cleanNotebook = notebookText;
+      if (Object.prototype.hasOwnProperty.call(cleanNotebook, 'colonyObservations') && !bhColonyObservationsUnsupported(cleanNotebook.colonyObservations)) {
+        var colonyObservations = bhNormalizeColonyObservations(cleanNotebook.colonyObservations);
+        if (!bhForecastDataEqual(colonyObservations, cleanNotebook.colonyObservations)) cleanNotebook = Object.assign({}, cleanNotebook, { colonyObservations: colonyObservations });
+      }
+      if (Object.prototype.hasOwnProperty.call(cleanNotebook, 'forecastStudies')) {
+        var forecastPortfolio = bhNormalizeForecastPortfolio(cleanNotebook.forecastStudies);
+        if (!bhForecastDataEqual(forecastPortfolio, cleanNotebook.forecastStudies)) cleanNotebook = Object.assign({}, cleanNotebook, { forecastStudies: forecastPortfolio });
+      }
+      if (isRecord(cleanNotebook.discoveries)) {
+        var discoveries = {}, damagedDiscoveries = false;
+        Object.keys(cleanNotebook.discoveries).forEach(function(id) {
+          var entry = cleanNotebook.discoveries[id];
+          if (!isRecord(entry)) { damagedDiscoveries = true; return; }
+          discoveries[id] = cleanFields(entry, [], ['prediction', 'observation', 'explanation', 'comparison']);
+          if (discoveries[id] !== entry) damagedDiscoveries = true;
+        });
+        if (damagedDiscoveries) cleanNotebook = Object.assign({}, cleanNotebook, { discoveries: discoveries });
+      }
+      if (cleanNotebook !== notebook) replace('notebook', cleanNotebook);
+    }
+    if (state.forecastInvestigation && state.forecastInvestigation.saved &&
+      !bhNormalizeForecastPortfolio(state.notebook && state.notebook.forecastStudies).entries.some(function(entry) { return entry.id === state.forecastInvestigation.id; })) {
+      replace('forecastInvestigation', Object.assign({}, state.forecastInvestigation, { saved: false }));
+    }
+    if (isRecord(state.queen)) {
+      var queen = state.queen;
+      var cleanQueen = cleanRole(queen,
+        [['day', 'score', 'hiveHealth', 'territory'], ['phase', 'selectedAction'], ['active', 'paused', 'resultRecorded']], {
+          structures: function(entry) {
+            return isRecord(entry) && ['brood', 'honey', 'pollen', 'guard', 'nursery', 'fan'].indexOf(entry.type) >= 0 &&
+              Number.isFinite(entry.x) && Number.isFinite(entry.y) && Number.isFinite(entry.level) && entry.level > 0 ? entry : null;
+          },
+          threats: function(entry) {
+            if (!isRecord(entry) || typeof entry.type !== 'string' || !Number.isFinite(entry.hp) || entry.hp < 0 || !Number.isFinite(entry.strength) || entry.strength <= 0) return null;
+            return cleanFields(entry, ['maxHp', 'bornDay'], ['icon', 'label', 'desc']);
+          },
+          events: function(entry) { return isRecord(entry) && typeof entry.text === 'string' ? cleanFields(entry, [], ['type']) : null; },
+          productionQueue: function(entry) {
+            if (!isRecord(entry) || ['workers', 'drones'].indexOf(entry.type) < 0 || !Number.isFinite(entry.remaining) || entry.remaining < 0 || !Number.isFinite(entry.amount) || entry.amount < 0) return null;
+            return cleanFields(entry, [], ['id', 'label', 'icon']);
+          }
+        }, {
+          feedback: function(entry) { return cleanFields(entry, [], ['tone', 'text']); },
+          rival: function(entry) { return cleanNumericMap(entry, { health: 100, strength: 0, stores: 0, structures: 0, pressure: 0, intel: 0 }, ['name', 'doctrine', 'posture', 'lastMove', 'telegraph', 'counter']); },
+          career: function(entry) { return cleanFields(entry, ['matches', 'wins', 'bestScore'], []); },
+          resources: function(entry) { return cleanNumericMap(entry, { nectar: 0, pollen: 0, wax: 0, royalJelly: 0 }); },
+          population: function(entry) { return cleanNumericMap(entry, { nurses: 0, builders: 0, guards: 0, foragers: 0, scouts: 0, drones: 0 }); },
+          pheromones: function(entry) { return cleanNumericMap(entry, { qmp: 0, alarm: 0, nasonov: 0, brood: 0 }); },
+          lastImpact: function(entry) {
+            return cleanRole(entry, [['cycle'], ['kind', 'title', 'summary']], {
+              changes: function(change) { return isRecord(change) && typeof change.label === 'string' && Number.isFinite(change.before) && Number.isFinite(change.after) ? cleanFields(change, ['delta'], ['suffix']) : null; },
+              events: function(text) { return typeof text === 'string' ? text : null; }
+            });
+          }
+        });
+      if (queen.buildMode != null && ['brood', 'honey', 'pollen', 'guard', 'nursery', 'fan'].indexOf(queen.buildMode) < 0) cleanQueen = Object.assign({}, cleanQueen, { buildMode: null });
+      if (queen.result != null && ['victory', 'defeat'].indexOf(queen.result) < 0) cleanQueen = Object.assign({}, cleanQueen, { result: null });
+      if (cleanQueen !== queen) replace('queen', cleanQueen);
+    }
+    if (state.activeEvent) {
+      var activeEvent = state.activeEvent;
+      var cleanEvent = isRecord(activeEvent) ? activeEvent : {};
+      var eventText = { label: 'Recovered colony event', desc: 'This saved event has unreadable text. Acknowledge it to continue.', emoji: '\u26A0\uFE0F', lesson: 'Review the current colony measurements before continuing.' };
+      Object.keys(eventText).forEach(function(key) {
+        if (typeof cleanEvent[key] === 'string') return;
+        if (cleanEvent === activeEvent) cleanEvent = Object.assign({}, activeEvent);
+        cleanEvent[key] = eventText[key];
+      });
+      if (cleanEvent !== activeEvent) replace('activeEvent', cleanEvent);
+    }
+    if (isRecord(state.drone)) {
+      var drone = state.drone;
+      var cleanDrone = cleanRole(drone,
+        [['highScore', 'attempts', 'successes', 'courseSeed', 'discoveryRunSerial', 'replayIndex'], ['bestDifficulty'], ['active', 'paused']], {}, {
+          lastRun: function(run) {
+            return cleanRole(run,
+              [['courseSeed', 'navigationAssists', 'score', 'maxAlt', 'distance', 'routeMarkers', 'routeMarkerGoal', 'nectar', 'nectarGoal', 'energyLeft', 'facts', 'obstacleHits', 'trafficHits', 'timeRemaining'],
+                ['pacing', 'energyUnits', 'flightModelVersion', 'routePlan', 'difficulty', 'scenario', 'carryover'], ['success', 'reachedDca']], {
+                telemetry: function(sample) {
+                  if (!isRecord(sample) || !Number.isFinite(sample.t) || !Number.isFinite(sample.altitude)) return null;
+                  return cleanFields(sample, ['x', 'z', 'energy', 'wind', 'clearance'], ['phase', 'action', 'impact'], ['hazard']);
+                },
+                decisionLog: function(entry) {
+                  if (!isRecord(entry)) return null;
+                  return cleanFields(entry, ['turn', 'seconds', 'altitudeBefore', 'altitude', 'energyBefore', 'energy', 'rangeBefore', 'range', 'x', 'z'], ['action', 'target', 'phase']);
+                }
+              });
+          }
+        });
+      if (cleanDrone !== drone) replace('drone', cleanDrone);
+    }
+    if (isRecord(state.discoveryRecords)) {
+      var discoveryRecords = state.discoveryRecords, cleanDiscoveries = {}, damagedRecords = false;
+      function validSnapshot(snapshot) {
+        return isRecord(snapshot) && snapshot.version === 1 && typeof snapshot.runKey === 'string' && snapshot.runKey.length > 0 &&
+          ['lesson', 'mode', 'label'].every(function(key) { return typeof snapshot[key] === 'string'; }) && Number.isFinite(snapshot.clock) &&
+          Array.isArray(snapshot.metrics) && snapshot.metrics.length > 0 &&
+          snapshot.metrics.every(function(metric) { return isRecord(metric) && ['id', 'label', 'unit'].every(function(key) { return typeof metric[key] === 'string'; }) && Number.isFinite(metric.value) && (metric.angle == null || typeof metric.angle === 'boolean'); }) &&
+          new Set(snapshot.metrics.map(function(metric) { return metric.id; })).size === snapshot.metrics.length;
+      }
+      function validComparison(comparison, snapshot) {
+        if (!isRecord(comparison)) return false;
+        if (typeof comparison.error === 'string') return true;
+        return validSnapshot(snapshot) && comparison.beforeLabel === snapshot.label && typeof comparison.afterLabel === 'string' &&
+          Array.isArray(comparison.rows) && comparison.rows.length === snapshot.metrics.length && comparison.rows.every(function(row) {
+            if (!isRecord(row) || !['before', 'after', 'delta'].every(function(key) { return Number.isFinite(row[key]); }) || (row.deltaUnit != null && typeof row.deltaUnit !== 'string')) return false;
+            var metric = snapshot.metrics.find(function(item) { return item.id === row.id; });
+            if (!metric || row.label !== metric.label || row.before !== metric.value || row.unit !== metric.unit || !!row.angle !== !!metric.angle) return false;
+            var delta = row.after - row.before;
+            if (metric.angle) delta = ((delta + 180) % 360 + 360) % 360 - 180;
+            return row.delta === Math.round(delta * 1000) / 1000;
+          }) && new Set(comparison.rows.map(function(row) { return row.id; })).size === comparison.rows.length &&
+          comparison.unchanged === comparison.rows.every(function(row) { return row.delta === 0; });
+      }
+      Object.keys(discoveryRecords).forEach(function(id) {
+        var record = discoveryRecords[id];
+        if (!isRecord(record)) { damagedRecords = true; return; }
+        var clean = cleanFields(record, ['prediction', 'link', 'observedAt'], ['observation', 'note', 'comparisonNotice'], ['checked', 'saved']);
+        var damagedSnapshot = record.snapshot != null && !validSnapshot(record.snapshot);
+        var damagedComparison = record.comparison != null && !validComparison(record.comparison, record.snapshot);
+        if (clean.observation !== record.observation || clean.note !== record.note) clean = Object.assign({}, clean, { saved: false });
+        if (damagedSnapshot || damagedComparison) {
+          clean = Object.assign({}, clean, { comparison: null, saved: false });
+          if (damagedSnapshot) delete clean.snapshot;
+        }
+        cleanDiscoveries[id] = clean;
+        if (clean !== record) damagedRecords = true;
+      });
+      if (damagedRecords) replace('discoveryRecords', cleanDiscoveries);
+    }
+    if (repairs.indexOf('managementTrail') >= 0) replace('managementHistory', { schemaVersion: 1, retainedCount: state.managementTrail.length, omittedCount: null, complete: false });
+    if (repairs.indexOf('simulationSeed') >= 0 || repairs.indexOf('randomState') >= 0) replace('seededFromDay', Number.isFinite(state.day) ? state.day : 0);
+    if (Number.isFinite(state.syrup) && Number.isFinite(state.honey) && state.syrup > state.honey) replace('syrup', state.honey);
+    // Shared with the host save loader: structural checks must stand alone.
+    // Inferring lost ages or a queen transition ends full-run replayability.
+    var currentBiology = state.modelVersion === 'colony-daily-1.2';
+    var savedAges = state.broodCohorts;
+    var hasAges = Object.prototype.hasOwnProperty.call(state, 'broodCohorts');
+    var validAges = isRecord(savedAges) && savedAges.schemaVersion === 1 &&
+      Array.isArray(savedAges.workers) && savedAges.workers.length === 21 &&
+      Array.isArray(savedAges.drones) && savedAges.drones.length === 24;
+    var ageTotal = 0;
+    if (validAges) [savedAges.workers, savedAges.drones].forEach(function(counts) {
+      for (var ci = 0; ci < counts.length; ci++) {
+        var count = counts[ci];
+        if (!Number.isInteger(count) || count < 0 || count > 500000) validAges = false;
+        ageTotal += count;
+      }
+    });
+    if (validAges && ageTotal !== Math.round(Number.isFinite(state.brood) ? state.brood : 3000)) validAges = false;
+    var inferredAges = !validAges && (hasAges || (currentBiology && state.day > 0));
+    if (inferredAges && hasAges) replace('broodCohorts', undefined);
+    var pendingQueen = state.queenTransition;
+    var damagedTransition = pendingQueen != null && (!isRecord(pendingQueen) ||
+      ['requeen', 'supersedure', 'split'].indexOf(pendingQueen.kind) === -1 ||
+      !Number.isInteger(pendingQueen.daysRemaining) || pendingQueen.daysRemaining < 1 || pendingQueen.daysRemaining > 60 ||
+      !Number.isFinite(pendingQueen.pendingHealth) || pendingQueen.pendingHealth < 0 || pendingQueen.pendingHealth > 100);
+    if (damagedTransition) replace('queenTransition', null);
+    if (currentBiology && state.day > 0 && (inferredAges || damagedTransition)) {
+      var recoveredDay = Math.floor(state.day);
+      if (state.seededFromDay !== recoveredDay) replace('seededFromDay', recoveredDay);
+    }
+    return { state: state, repairs: repairs };
+  }
+  // BEEHIVE_STATE_RECOVERY_END
     function _serializeBeehiveForPersistence(beehive) {
       if (!beehive || typeof beehive !== 'object' || Array.isArray(beehive)) return null;
-      var persisted = Object.assign({}, beehive, { _persistenceVersion: _BEEHIVE_PERSISTENCE_VERSION });
+      var recovered = bhRecoverBeehiveState(beehive);
+      var persisted = Object.assign({}, recovered.state, { _persistenceVersion: _BEEHIVE_PERSISTENCE_VERSION });
+      if (recovered.repairs.length) persisted.saveRecovery = { fields: recovered.repairs.slice() };
       // Simulation clocks are session controls. A reload must wait for an
       // explicit learner action instead of silently advancing the colony.
       delete persisted.autoAdvance;
-      if (beehive.queen && typeof beehive.queen === 'object' && !Array.isArray(beehive.queen)) {
-        var queen = Object.assign({}, beehive.queen);
+      if (recovered.state.queen && typeof recovered.state.queen === 'object' && !Array.isArray(recovered.state.queen)) {
+        var queen = Object.assign({}, recovered.state.queen);
         // Queen RTS has enough durable state to resume, but an active match
         // reopens paused so elapsed cycles never accrue during reload/remount.
         if (queen.active) queen.paused = true;
         persisted.queen = queen;
       }
-      if (beehive.drone && typeof beehive.drone === 'object' && !Array.isArray(beehive.drone)) {
-        var drone = Object.assign({}, beehive.drone);
+      if (recovered.state.drone && typeof recovered.state.drone === 'object' && !Array.isArray(recovered.state.drone)) {
+        var drone = Object.assign({}, recovered.state.drone);
         // The live flight model is held in refs and cannot be reconstructed from
         // these UI flags. Reload into preflight/debrief while retaining completed
         // runs, scores, attempts, route choices, and accessibility preferences.
@@ -5812,6 +6224,7 @@
         fractionViz: { label: t('stem.assessment.fraction_lab') || 'Fraction Lab', icon: '\uD83C\uDF55' },
         chemBalance: { label: t('stem.tools_menu.chemistry_lab') || 'Chemistry Lab', icon: '\u2696\uFE0F' },
         opticsLab: { label: t('stem.optics.optics_lab') || 'Optics Lab', icon: '\uD83D\uDD06' },
+        perceptionLab: { label: t('stem.tools_menu.perception_lab', 'Perception Lab'), icon: '\uD83D\uDC41\uFE0F' },
         codingPlayground: { label: t('stem.coding.coding_playground') || 'Coding Playground', icon: '\uD83D\uDDA5\uFE0F' },
         graphCalc: { label: t('stem.tools_menu.graphing_calculator') || 'Graphing Calculator', icon: '\uD83D\uDCDF' },
         solarSystem: { label: t('stem.solarsystem.solar_system_explorer_2') || 'Solar System Explorer', icon: '\uD83E\uDE90' },
@@ -7142,6 +7555,12 @@
               },
               { id: '_cat_LearningBehavioral', icon: '', label: t('stem.tools_menu.learning_behavioral_science') || '\uD83E\uDDE0 Learning & Behavioral Science', desc: '', color: 'slate', chip: 'applied', palette: ['indigo', 'violet', 'rose'], category: true },
               {
+                id: 'perceptionLab', icon: '\uD83D\uDC41\uFE0F', label: t('stem.tools_menu.perception_lab', 'Perception Lab'),
+                desc: t('stem.tools_menu.perception_lab_description', 'Investigate optical illusions with six adjustable experiments. Predict, compare, reveal measurements, and explain how context changes what you see.'),
+                aliases: ['optical illusions', 'visual perception', 'illusion lab', 'brightness', 'simultaneous contrast', 'Ebbinghaus', 'Muller Lyer', 'Müller-Lyer', 'moire', 'moiré', 'cafe wall', 'café wall', 'ambiguous depth', 'Necker cube'],
+                color: 'violet', ready: true
+              },
+              {
                 id: 'behaviorLab', icon: '\uD83D\uDC2D', label: t('stem.tools_menu.behavior_shaping_lab') || 'Behavior Shaping Lab',
                 desc: t('stem.tools_menu.train_a_virtual_mouse_using_operant') || 'Train a virtual mouse using operant conditioning! Learn ABA fundamentals: reinforcement, shaping, extinction, and schedules of reinforcement.',
                 color: 'amber', ready: true
@@ -7327,6 +7746,7 @@
               kitchenLab: 'food safety usda safe temperatures bacteria danger zone cooking culinary science kitchen knife skills recipe',
               chemBalance: 'chemistry lab chemistry chemical equation balancer equation balancing stoichiometry reaction reactions molecule molecules',
               opticsLab: 'optics lab light lab geometric optics wave optics lens lenses mirror mirrors reflection refraction snell diffraction interference polarization ap physics',
+              perceptionLab: 'perception lab optical illusion illusions visual perception brightness contrast simultaneous contrast ebbinghaus muller lyer moire moiré cafe wall necker cube ambiguous depth predict compare reveal measurements explain',
               fractionViz: 'fraction lab fractions compare numerator denominator pizza visualizer',
               base10: 'base ten base-10 manipulatives place value math blocks abacus slide rule',
               titrationLab: 'chemistry lab titration acid base acids bases ph hcl',
@@ -8860,7 +9280,7 @@
             // Earth & Space
             astronomy: true, coasterLab: true, galaxy: true, moonMission: true, plateTectonics: true, spaceColony: true, spaceExplorer: true, spaceStation: true,
             // Data & Logic
-            behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true, timelineStudio: true,
+            perceptionLab: true, behaviorLab: true, schoolBehaviorToolkit: true, dataStudio: true, economicsLab: true, logicLab: true, timelineStudio: true,
             // Geography
             geoQuiz: true, geometryProver: true, geometryWorld: true,
             // gisStudio: without this the new catalog tile would open a BLANK content

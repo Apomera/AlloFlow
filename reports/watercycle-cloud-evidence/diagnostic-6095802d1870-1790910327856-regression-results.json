@@ -1,0 +1,2694 @@
+{
+  "numTotalTestSuites": 17,
+  "numPassedTestSuites": 17,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 201,
+  "numPassedTests": 201,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790907586010,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle Check investigation preservation"
+          ],
+          "fullName": "Water Cycle Check investigation preservation preserves model, condition, baseline, notebook, export, stage and existing comparison implementations",
+          "status": "passed",
+          "title": "preserves model, condition, baseline, notebook, export, stage and existing comparison implementations",
+          "duration": 15.74500000000262,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check investigation preservation"
+          ],
+          "fullName": "Water Cycle Check investigation preservation preserves the original first-answer score, attempt, streak and reward statements",
+          "status": "passed",
+          "title": "preserves the original first-answer score, attempt, streak and reward statements",
+          "duration": 341.52189999999973,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check investigation preservation"
+          ],
+          "fullName": "Water Cycle Check investigation preservation ships identical source and public Check investigation implementations",
+          "status": "passed",
+          "title": "ships identical source and public Check investigation implementations",
+          "duration": 13.083599999998114,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check original first-answer behavior"
+          ],
+          "fullName": "Water Cycle Check original first-answer behavior still scores a first quiz answer once and disables all original answer choices",
+          "status": "passed",
+          "title": "still scores a first quiz answer once and disables all original answer choices",
+          "duration": 251.08920000000217,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check original first-answer behavior"
+          ],
+          "fullName": "Water Cycle Check original first-answer behavior still counts a first myth response once with the original correct-answer reward",
+          "status": "passed",
+          "title": "still counts a first myth response once with the original correct-answer reward",
+          "duration": 66.52769999999873,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth +0 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth +0 without changing its truth or answer",
+          "duration": 1.0253000000011525,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 1 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 1 without changing its truth or answer",
+          "duration": 0.4724999999962165,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 2 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 2 without changing its truth or answer",
+          "duration": 0.43299999999726424,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 3 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 3 without changing its truth or answer",
+          "duration": 0.4415000000008149,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 4 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 4 without changing its truth or answer",
+          "duration": 1.1365000000005239,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 5 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 5 without changing its truth or answer",
+          "duration": 0.9755000000004657,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 6 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 6 without changing its truth or answer",
+          "duration": 0.5273999999990338,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 7 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 7 without changing its truth or answer",
+          "duration": 0.47260000000096625,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 8 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 8 without changing its truth or answer",
+          "duration": 0.38200000000506407,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity offers an explicit destination for myth 9 without changing its truth or answer",
+          "status": "passed",
+          "title": "offers an explicit destination for myth 9 without changing its truth or answer",
+          "duration": 0.40610000000015134,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept evaporation without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept evaporation without accepting arbitrary selectors",
+          "duration": 2.5732999999963795,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept condensation without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept condensation without accepting arbitrary selectors",
+          "duration": 1.5285000000003492,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept precipitation without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept precipitation without accepting arbitrary selectors",
+          "duration": 7.985399999997753,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept collection without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept collection without accepting arbitrary selectors",
+          "duration": 1.3153000000020256,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept transpiration without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept transpiration without accepting arbitrary selectors",
+          "duration": 1.1065999999991618,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept infiltration without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept infiltration without accepting arbitrary selectors",
+          "duration": 1.1441000000049826,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept sublimation without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept sublimation without accepting arbitrary selectors",
+          "duration": 1.0803999999989173,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept watershed without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept watershed without accepting arbitrary selectors",
+          "duration": 1.1149999999979627,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept Darcy's Law without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept Darcy's Law without accepting arbitrary selectors",
+          "duration": 1.0460000000020955,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept latent heat without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept latent heat without accepting arbitrary selectors",
+          "duration": 1.1304999999993015,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept Clausius-Clapeyron without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept Clausius-Clapeyron without accepting arbitrary selectors",
+          "duration": 1.215700000000652,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept Bowen ratio without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept Bowen ratio without accepting arbitrary selectors",
+          "duration": 1.062899999997171,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity covers the authored or AI-supported concept aquifer without accepting arbitrary selectors",
+          "status": "passed",
+          "title": "covers the authored or AI-supported concept aquifer without accepting arbitrary selectors",
+          "duration": 1.1040999999968335,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity matches identity using question content, not just the myth index or concept",
+          "status": "passed",
+          "title": "matches identity using question content, not just the myth index or concept",
+          "duration": 0.8591000000014901,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity requires an answered supported question and rejects forged destination and answer keys",
+          "status": "passed",
+          "title": "requires an answered supported question and rejects forged destination and answer keys",
+          "duration": 0.9244000000035157,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: bounded destinations and exact question identity"
+          ],
+          "fullName": "Water Cycle Check: bounded destinations and exact question identity returns detached destinations and navigation patches that callers cannot rewrite globally",
+          "status": "passed",
+          "title": "returns detached destinations and navigation patches that callers cannot rewrite globally",
+          "duration": 0.40970000000379514,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers quiz preserves every condition, baseline, notebook, paused-parcel and assessment field through navigation",
+          "status": "passed",
+          "title": "quiz preserves every condition, baseline, notebook, paused-parcel and assessment field through navigation",
+          "duration": 130.4774000000034,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers myth preserves every condition, baseline, notebook, paused-parcel and assessment field through navigation",
+          "status": "passed",
+          "title": "myth preserves every condition, baseline, notebook, paused-parcel and assessment field through navigation",
+          "duration": 146.92859999999928,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers opens the actual temperature input with its existing value and baseline intact",
+          "status": "passed",
+          "title": "opens the actual temperature input with its existing value and baseline intact",
+          "duration": 83.59209999999439,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers opens actual wind transport controls rather than falling back to sunlight",
+          "status": "passed",
+          "title": "opens actual wind transport controls rather than falling back to sunlight",
+          "duration": 165.52810000000318,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers renders process evidence without selecting a new journey stage or changing process-comparison writing",
+          "status": "passed",
+          "title": "renders process evidence without selecting a new journey stage or changing process-comparison writing",
+          "duration": 62.32839999999851,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: actual investigation and return handlers"
+          ],
+          "fullName": "Water Cycle Check: actual investigation and return handlers returns stale contexts to a safe heading without replacing a newer question or its scores",
+          "status": "passed",
+          "title": "returns stale contexts to a safe heading without replacing a newer question or its scores",
+          "duration": 112.84509999999864,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards quiz saves reconsideration separately while all first-attempt scores and rewards remain unchanged",
+          "status": "passed",
+          "title": "quiz saves reconsideration separately while all first-attempt scores and rewards remain unchanged",
+          "duration": 198.57600000000093,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards myth saves reconsideration separately while all first-attempt scores and rewards remain unchanged",
+          "status": "passed",
+          "title": "myth saves reconsideration separately while all first-attempt scores and rewards remain unchanged",
+          "duration": 201.9274000000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards keeps natural whitespace and invalidates the saved marker when evidence is edited",
+          "status": "passed",
+          "title": "keeps natural whitespace and invalidates the saved marker when evidence is edited",
+          "duration": 256.0344999999943,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards requires meaningful observation text and an offered revised answer",
+          "status": "passed",
+          "title": "requires meaningful observation text and an offered revised answer",
+          "duration": 177.45870000000286,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards keeps a bounded, labeled observation field with unique explanatory references",
+          "status": "passed",
+          "title": "keeps a bounded, labeled observation field with unique explanatory references",
+          "duration": 190.76810000000114,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards preserves saved or draft notes when a new question clears the active investigation",
+          "status": "passed",
+          "title": "preserves saved or draft notes when a new question clears the active investigation",
+          "duration": 142.39190000000235,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards keeps pending AI focus on the quiz heading and focuses the resolved question without losing notes or changing prior scores",
+          "status": "passed",
+          "title": "keeps pending AI focus on the quiz heading and focuses the resolved question without losing notes or changing prior scores",
+          "duration": 184.7201999999961,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: explanation, revised answer and non-duplicate rewards"
+          ],
+          "fullName": "Water Cycle Check: explanation, revised answer and non-duplicate rewards retains existing notes when reopening the exact question and creates separate notes for a replacement question",
+          "status": "passed",
+          "title": "retains existing notes when reopening the exact question and creates separate notes for a replacement question",
+          "duration": 340.1030000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state rejects malformed reflection history without crashing and detaches accepted choices",
+          "status": "passed",
+          "title": "rejects malformed reflection history without crashing and detaches accepted choices",
+          "duration": 1.6196000000054482,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state ignores a malformed persisted investigation without changing protected learner state",
+          "status": "passed",
+          "title": "ignores a malformed persisted investigation without changing protected learner state",
+          "duration": 54.34010000000126,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state offers a bounded related overview for unfamiliar AI concept without rendering inherited vocabulary properties",
+          "status": "passed",
+          "title": "offers a bounded related overview for unfamiliar AI concept without rendering inherited vocabulary properties",
+          "duration": 63.918299999997544,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state offers a bounded related overview for __proto__ without rendering inherited vocabulary properties",
+          "status": "passed",
+          "title": "offers a bounded related overview for __proto__ without rendering inherited vocabulary properties",
+          "duration": 73.2413000000015,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state offers a bounded related overview for constructor without rendering inherited vocabulary properties",
+          "status": "passed",
+          "title": "offers a bounded related overview for constructor without rendering inherited vocabulary properties",
+          "duration": 57.862499999995634,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: persisted and unfamiliar assessment state"
+          ],
+          "fullName": "Water Cycle Check: persisted and unfamiliar assessment state renders empty quiz and myth states as named tasks with native start buttons",
+          "status": "passed",
+          "title": "renders empty quiz and myth states as named tasks with native start buttons",
+          "duration": 33.67160000000149,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: canonical saved question provenance"
+          ],
+          "fullName": "Water Cycle Check: canonical saved question provenance rejects a saved session whose questionText disagrees with its exact question key",
+          "status": "passed",
+          "title": "rejects a saved session whose questionText disagrees with its exact question key",
+          "duration": 0.704699999994773,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: canonical saved question provenance"
+          ],
+          "fullName": "Water Cycle Check: canonical saved question provenance rejects a saved session whose originalAnswer disagrees with its exact question key",
+          "status": "passed",
+          "title": "rejects a saved session whose originalAnswer disagrees with its exact question key",
+          "duration": 0.34279999999853317,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: canonical saved question provenance"
+          ],
+          "fullName": "Water Cycle Check: canonical saved question provenance rejects a saved session whose choices disagrees with its exact question key",
+          "status": "passed",
+          "title": "rejects a saved session whose choices disagrees with its exact question key",
+          "duration": 0.31829999999899883,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Check: canonical saved question provenance"
+          ],
+          "fullName": "Water Cycle Check: canonical saved question provenance rejects an answer object and does not grant a saved status to malformed imported reflection data",
+          "status": "passed",
+          "title": "rejects an answer object and does not grant a saved status to malformed imported reflection data",
+          "duration": 0.819100000000617,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790907633535,
+      "endTime": 1790907636936.819,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_check_investigations.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter browser preservation"
+          ],
+          "fullName": "Water Cycle chapter browser preservation preserves complete animation engines, route/replay handlers, models, notes and Check implementations",
+          "status": "passed",
+          "title": "preserves complete animation engines, route/replay handlers, models, notes and Check implementations",
+          "duration": 31.360799999998562,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter browser preservation"
+          ],
+          "fullName": "Water Cycle chapter browser preservation preserves the original first-answer score, counter and reward statements",
+          "status": "passed",
+          "title": "preserves the original first-answer score, counter and reward statements",
+          "duration": 687.8786999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter browser preservation"
+          ],
+          "fullName": "Water Cycle chapter browser preservation ships byte-identical source and desktop chapter implementations",
+          "status": "passed",
+          "title": "ships byte-identical source and desktop chapter implementations",
+          "duration": 37.9989000000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions returns detached bounded catalogs that callers cannot change",
+          "status": "passed",
+          "title": "returns detached bounded catalogs that callers cannot change",
+          "duration": 4.622100000000501,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions rejects inherited keys, objects and unsupported saved selections without coercion",
+          "status": "passed",
+          "title": "rejects inherited keys, objects and unsupported saved selections without coercion",
+          "duration": 1.559400000000096,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual ocean parcel in the ocean chapter",
+          "status": "passed",
+          "title": "follows the actual ocean parcel in the ocean chapter",
+          "duration": 1.365299999999479,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual evaporating parcel in the vapor chapter",
+          "status": "passed",
+          "title": "follows the actual evaporating parcel in the vapor chapter",
+          "duration": 0.5403000000005704,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual condensing parcel in the cloud chapter",
+          "status": "passed",
+          "title": "follows the actual condensing parcel in the cloud chapter",
+          "duration": 0.5101999999988038,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual precipitating parcel in the precipitation chapter",
+          "status": "passed",
+          "title": "follows the actual precipitating parcel in the precipitation chapter",
+          "duration": 0.4655000000002474,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual ground_choice parcel in the land chapter",
+          "status": "passed",
+          "title": "follows the actual ground_choice parcel in the land chapter",
+          "duration": 0.9831000000012864,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual river_runoff parcel in the land chapter",
+          "status": "passed",
+          "title": "follows the actual river_runoff parcel in the land chapter",
+          "duration": 0.5704999999998108,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual infiltrating parcel in the land chapter",
+          "status": "passed",
+          "title": "follows the actual infiltrating parcel in the land chapter",
+          "duration": 0.41740000000027067,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual aquifer_flow parcel in the land chapter",
+          "status": "passed",
+          "title": "follows the actual aquifer_flow parcel in the land chapter",
+          "duration": 0.33480000000054133,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual plant_absorb parcel in the land chapter",
+          "status": "passed",
+          "title": "follows the actual plant_absorb parcel in the land chapter",
+          "duration": 0.42439999999987776,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual transpiring parcel in the land chapter",
+          "status": "passed",
+          "title": "follows the actual transpiring parcel in the land chapter",
+          "duration": 0.3739999999997963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions follows the actual complete parcel in the return chapter",
+          "status": "passed",
+          "title": "follows the actual complete parcel in the return chapter",
+          "duration": 0.6139000000002852,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions selects the ocean chapter independently of a paused underground parcel",
+          "status": "passed",
+          "title": "selects the ocean chapter independently of a paused underground parcel",
+          "duration": 0.7980999999999767,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions selects the vapor chapter independently of a paused underground parcel",
+          "status": "passed",
+          "title": "selects the vapor chapter independently of a paused underground parcel",
+          "duration": 0.3176000000003114,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions selects the cloud chapter independently of a paused underground parcel",
+          "status": "passed",
+          "title": "selects the cloud chapter independently of a paused underground parcel",
+          "duration": 0.3500000000003638,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions selects the precipitation chapter independently of a paused underground parcel",
+          "status": "passed",
+          "title": "selects the precipitation chapter independently of a paused underground parcel",
+          "duration": 0.42810000000099535,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions selects the land chapter independently of a paused underground parcel",
+          "status": "passed",
+          "title": "selects the land chapter independently of a paused underground parcel",
+          "duration": 0.547099999999773,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions selects the return chapter independently of a paused underground parcel",
+          "status": "passed",
+          "title": "selects the return chapter independently of a paused underground parcel",
+          "duration": 0.593300000000454,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions starts inactive or invalid remembered parcels in ocean storage without claiming a traveled route",
+          "status": "passed",
+          "title": "starts inactive or invalid remembered parcels in ocean storage without claiming a traveled route",
+          "duration": 0.3403999999991356,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions describes condensation as vapor becoming liquid droplets and separates deposition",
+          "status": "passed",
+          "title": "describes condensation as vapor becoming liquid droplets and separates deposition",
+          "duration": 1.5104000000010274,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions keeps the infiltrating substep scientifically distinct with time and energy limits",
+          "status": "passed",
+          "title": "keeps the infiltrating substep scientifically distinct with time and energy limits",
+          "duration": 1.2140999999992346,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions keeps the aquifer_flow substep scientifically distinct with time and energy limits",
+          "status": "passed",
+          "title": "keeps the aquifer_flow substep scientifically distinct with time and energy limits",
+          "duration": 0.9192000000002736,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions keeps the plant_absorb substep scientifically distinct with time and energy limits",
+          "status": "passed",
+          "title": "keeps the plant_absorb substep scientifically distinct with time and energy limits",
+          "duration": 1.3924000000006345,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle chapter catalog and scientific descriptions"
+          ],
+          "fullName": "Water Cycle chapter catalog and scientific descriptions keeps the transpiring substep scientifically distinct with time and energy limits",
+          "status": "passed",
+          "title": "keeps the transpiring substep scientifically distinct with time and energy limits",
+          "duration": 1.0784000000003289,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the inactive parcel or any saved learning",
+          "status": "passed",
+          "title": "browses all six chapters with focus and without changing the inactive parcel or any saved learning",
+          "duration": 1179.7119000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the moving 2D parcel or any saved learning",
+          "status": "passed",
+          "title": "browses all six chapters with focus and without changing the moving 2D parcel or any saved learning",
+          "duration": 1166.4125999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the paused 3D aquifer parcel or any saved learning",
+          "status": "passed",
+          "title": "browses all six chapters with focus and without changing the paused 3D aquifer parcel or any saved learning",
+          "duration": 1385.8113000000012,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the scrubbed replay parcel or any saved learning",
+          "status": "passed",
+          "title": "browses all six chapters with focus and without changing the scrubbed replay parcel or any saved learning",
+          "duration": 1339.0774999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the land choice parcel or any saved learning",
+          "status": "passed",
+          "title": "browses all six chapters with focus and without changing the land choice parcel or any saved learning",
+          "duration": 1150.2228999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks browses all six chapters with focus and without changing the completed loop parcel or any saved learning",
+          "status": "passed",
+          "title": "browses all six chapters with focus and without changing the completed loop parcel or any saved learning",
+          "duration": 1093.4428999999982,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks inspects every land substep independently of the paused parcel and follows it again without choosing a route",
+          "status": "passed",
+          "title": "inspects every land substep independently of the paused parcel and follows it again without choosing a route",
+          "duration": 1234.3453000000009,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks keeps a chosen chapter while the parcel advances and follows the current parcel only on request",
+          "status": "passed",
+          "title": "keeps a chosen chapter while the parcel advances and follows the current parcel only on request",
+          "duration": 469.1216999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks renders invalid saved chapter keys safely without rewriting parcel state or learner writing",
+          "status": "passed",
+          "title": "renders invalid saved chapter keys safely without rewriting parcel state or learner writing",
+          "duration": 205.80219999999827,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks distinguishes live parcel labels from scrubbed replay positions",
+          "status": "passed",
+          "title": "distinguishes live parcel labels from scrubbed replay positions",
+          "duration": 337.0230999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle native chapter controls and actual callbacks"
+          ],
+          "fullName": "Water Cycle native chapter controls and actual callbacks does not mark other chapters completed merely because the parcel is later in the cycle",
+          "status": "passed",
+          "title": "does not mark other chapters completed merely because the parcel is later in the cycle",
+          "duration": 79.48709999999846,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790907646917,
+      "endTime": 1790907657338.487,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_journey_chapters.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab server-renders the expanded lab without mounting canvas refs",
+          "status": "passed",
+          "title": "server-renders the expanded lab without mounting canvas refs",
+          "duration": 2611.5042999999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab renders a phase-coded HUD, intensity meter, and connected atmospheric pathway",
+          "status": "passed",
+          "title": "renders a phase-coded HUD, intensity meter, and connected atmospheric pathway",
+          "duration": 303.70780000000013,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab keeps the source and deploy mirror byte-identical",
+          "status": "passed",
+          "title": "keeps the source and deploy mirror byte-identical",
+          "duration": 2.854099999999562,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab classifies the six investigation presets with the shared science kernel",
+          "status": "passed",
+          "title": "classifies the six investigation presets with the shared science kernel",
+          "duration": 41.39919999999984,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab uses the vertical profile for phase and lower-air humidity for virga",
+          "status": "passed",
+          "title": "uses the vertical profile for phase and lower-air humidity for virga",
+          "duration": 13.863299999999981,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab separates horizontal drift from vertical precipitation growth over plains",
+          "status": "passed",
+          "title": "separates horizontal drift from vertical precipitation growth over plains",
+          "duration": 11.99619999999959,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab provides a lifecycle-safe 2.5D chamber and a bridge to the existing 3D journey",
+          "status": "passed",
+          "title": "provides a lifecycle-safe 2.5D chamber and a bridge to the existing 3D journey",
+          "duration": 24.4366,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab exposes a dedicated 3D cloud chamber without changing the default 2D lab",
+          "status": "passed",
+          "title": "exposes a dedicated 3D cloud chamber without changing the default 2D lab",
+          "duration": 313.8200999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab explains the magnified cloud-formation sequence in the warm inside-cloud lens",
+          "status": "passed",
+          "title": "explains the magnified cloud-formation sequence in the warm inside-cloud lens",
+          "duration": 298.3031000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab explains and keys the visible virga evaporation sequence without implying vapor is visible",
+          "status": "passed",
+          "title": "explains and keys the visible virga evaporation sequence without implying vapor is visible",
+          "duration": 308.91179999999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab labels the expanded controls and dynamic result for assistive technology",
+          "status": "passed",
+          "title": "labels the expanded controls and dynamic result for assistive technology",
+          "duration": 657.3980999999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab models phase changes by fall height and exposes the schematic thermal layer",
+          "status": "passed",
+          "title": "models phase changes by fall height and exposes the schematic thermal layer",
+          "duration": 14.92910000000029,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab supports a warm inversion with separate melting and refreezing layers",
+          "status": "passed",
+          "title": "supports a warm inversion with separate melting and refreezing layers",
+          "duration": 17.618999999999687,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab server-renders the interactive three-point temperature profile",
+          "status": "passed",
+          "title": "server-renders the interactive three-point temperature profile",
+          "duration": 389.8850000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab checks flash-to-thunder distance estimates with qualitative feedback",
+          "status": "passed",
+          "title": "checks flash-to-thunder distance estimates with qualitative feedback",
+          "duration": 38.27640000000065,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab limits lightning to cold mixed-phase deep convection",
+          "status": "passed",
+          "title": "limits lightning to cold mixed-phase deep convection",
+          "duration": 12.682399999999689,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab bridges the complete hail profile into the existing 3D renderer",
+          "status": "passed",
+          "title": "bridges the complete hail profile into the existing 3D renderer",
+          "duration": 367.35849999999937,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab models developing, mature, and weakening stages with cumulative ground effects",
+          "status": "passed",
+          "title": "models developing, mature, and weakening stages with cumulative ground effects",
+          "duration": 12.81959999999981,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab explains the flash-to-thunder delay and keeps sound optional",
+          "status": "passed",
+          "title": "explains the flash-to-thunder delay and keeps sound optional",
+          "duration": 13.021700000000237,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab offers normalized, accessible guided lightning snapshots without changing the weather setup",
+          "status": "passed",
+          "title": "offers normalized, accessible guided lightning snapshots without changing the weather setup",
+          "duration": 452.82990000000063,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab models storm charge anatomy and deterministic thunder-wave travel",
+          "status": "passed",
+          "title": "models storm charge anatomy and deterministic thunder-wave travel",
+          "duration": 16.812699999999495,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab server-renders non-color storm anatomy, pathway, and instrument semantics",
+          "status": "passed",
+          "title": "server-renders non-color storm anatomy, pathway, and instrument semantics",
+          "duration": 466.04169999999976,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab keeps one causal flash event active until the modeled thunder wave arrives",
+          "status": "passed",
+          "title": "keeps one causal flash event active until the modeled thunder wave arrives",
+          "duration": 29.30450000000019,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab keeps enhanced storm cues semantic, pooled, and reduced-motion safe",
+          "status": "passed",
+          "title": "keeps enhanced storm cues semantic, pooled, and reduced-motion safe",
+          "duration": 57.801400000000285,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790907588242,
+      "endTime": 1790907594722.8015,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_precipitation_lab.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science exposes exactly the six canonical processes in both shipped helpers",
+          "status": "passed",
+          "title": "exposes exactly the six canonical processes in both shipped helpers",
+          "duration": 5.90729999999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science does not let the exported ID list redefine valid processes",
+          "status": "passed",
+          "title": "does not let the exported ID list redefine valid processes",
+          "duration": 1.8921999999997752,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'evaporation' compared with 'condensation'",
+          "status": "passed",
+          "title": "phase: 'evaporation' compared with 'condensation'",
+          "duration": 0.7181000000000495,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'evaporation' compared with 'precipitation'",
+          "status": "passed",
+          "title": "phase: 'evaporation' compared with 'precipitation'",
+          "duration": 0.404700000000048,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'evaporation' compared with 'collection'",
+          "status": "passed",
+          "title": "phase: 'evaporation' compared with 'collection'",
+          "duration": 0.21460000000024593,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'evaporation' compared with 'transpiration'",
+          "status": "passed",
+          "title": "phase: 'evaporation' compared with 'transpiration'",
+          "duration": 0.24299999999993815,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'evaporation' compared with 'infiltration'",
+          "status": "passed",
+          "title": "phase: 'evaporation' compared with 'infiltration'",
+          "duration": 0.2640000000001237,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'condensation' compared with 'evaporation'",
+          "status": "passed",
+          "title": "phase: 'condensation' compared with 'evaporation'",
+          "duration": 0.1890000000003056,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'condensation' compared with 'precipitation'",
+          "status": "passed",
+          "title": "phase: 'condensation' compared with 'precipitation'",
+          "duration": 0.2709999999997308,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'condensation' compared with 'collection'",
+          "status": "passed",
+          "title": "phase: 'condensation' compared with 'collection'",
+          "duration": 0.3593999999998232,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'condensation' compared with 'transpiration'",
+          "status": "passed",
+          "title": "phase: 'condensation' compared with 'transpiration'",
+          "duration": 0.23500000000012733,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'condensation' compared with 'infiltration'",
+          "status": "passed",
+          "title": "phase: 'condensation' compared with 'infiltration'",
+          "duration": 0.17139999999972133,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'precipitation' compared with 'evaporation'",
+          "status": "passed",
+          "title": "phase: 'precipitation' compared with 'evaporation'",
+          "duration": 0.14740000000028886,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'precipitation' compared with 'condensation'",
+          "status": "passed",
+          "title": "phase: 'precipitation' compared with 'condensation'",
+          "duration": 0.14170000000012806,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'precipitation' compared with 'collection'",
+          "status": "passed",
+          "title": "phase: 'precipitation' compared with 'collection'",
+          "duration": 0.1631999999999607,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'precipitation' compared with 'transpiration'",
+          "status": "passed",
+          "title": "phase: 'precipitation' compared with 'transpiration'",
+          "duration": 0.1287000000002081,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'precipitation' compared with 'infiltration'",
+          "status": "passed",
+          "title": "phase: 'precipitation' compared with 'infiltration'",
+          "duration": 0.12130000000024665,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'collection' compared with 'evaporation'",
+          "status": "passed",
+          "title": "phase: 'collection' compared with 'evaporation'",
+          "duration": 0.1149000000000342,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'collection' compared with 'condensation'",
+          "status": "passed",
+          "title": "phase: 'collection' compared with 'condensation'",
+          "duration": 0.11670000000003711,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'collection' compared with 'precipitation'",
+          "status": "passed",
+          "title": "phase: 'collection' compared with 'precipitation'",
+          "duration": 0.11999999999989086,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'collection' compared with 'transpiration'",
+          "status": "passed",
+          "title": "phase: 'collection' compared with 'transpiration'",
+          "duration": 0.1127000000001317,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'collection' compared with 'infiltration'",
+          "status": "passed",
+          "title": "phase: 'collection' compared with 'infiltration'",
+          "duration": 0.11180000000013024,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'transpiration' compared with 'evaporation'",
+          "status": "passed",
+          "title": "phase: 'transpiration' compared with 'evaporation'",
+          "duration": 0.11220000000002983,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'transpiration' compared with 'condensation'",
+          "status": "passed",
+          "title": "phase: 'transpiration' compared with 'condensation'",
+          "duration": 0.11400000000003274,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'transpiration' compared with 'precipitation'",
+          "status": "passed",
+          "title": "phase: 'transpiration' compared with 'precipitation'",
+          "duration": 0.15999999999985448,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'transpiration' compared with 'collection'",
+          "status": "passed",
+          "title": "phase: 'transpiration' compared with 'collection'",
+          "duration": 0.11200000000008004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'transpiration' compared with 'infiltration'",
+          "status": "passed",
+          "title": "phase: 'transpiration' compared with 'infiltration'",
+          "duration": 0.10429999999996653,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'infiltration' compared with 'evaporation'",
+          "status": "passed",
+          "title": "phase: 'infiltration' compared with 'evaporation'",
+          "duration": 0.10609999999996944,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'infiltration' compared with 'condensation'",
+          "status": "passed",
+          "title": "phase: 'infiltration' compared with 'condensation'",
+          "duration": 0.45180000000027576,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'infiltration' compared with 'precipitation'",
+          "status": "passed",
+          "title": "phase: 'infiltration' compared with 'precipitation'",
+          "duration": 0.253400000000056,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'infiltration' compared with 'collection'",
+          "status": "passed",
+          "title": "phase: 'infiltration' compared with 'collection'",
+          "duration": 0.13630000000011933,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science phase: 'infiltration' compared with 'transpiration'",
+          "status": "passed",
+          "title": "phase: 'infiltration' compared with 'transpiration'",
+          "duration": 0.4137000000000626,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'evaporation' compared with 'condensation'",
+          "status": "passed",
+          "title": "energy: 'evaporation' compared with 'condensation'",
+          "duration": 0.1696999999999207,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'evaporation' compared with 'precipitation'",
+          "status": "passed",
+          "title": "energy: 'evaporation' compared with 'precipitation'",
+          "duration": 0.18299999999999272,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'evaporation' compared with 'collection'",
+          "status": "passed",
+          "title": "energy: 'evaporation' compared with 'collection'",
+          "duration": 0.1224000000001979,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'evaporation' compared with 'transpiration'",
+          "status": "passed",
+          "title": "energy: 'evaporation' compared with 'transpiration'",
+          "duration": 0.1792000000000371,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'evaporation' compared with 'infiltration'",
+          "status": "passed",
+          "title": "energy: 'evaporation' compared with 'infiltration'",
+          "duration": 0.12530000000015207,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'condensation' compared with 'evaporation'",
+          "status": "passed",
+          "title": "energy: 'condensation' compared with 'evaporation'",
+          "duration": 0.19610000000011496,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'condensation' compared with 'precipitation'",
+          "status": "passed",
+          "title": "energy: 'condensation' compared with 'precipitation'",
+          "duration": 0.21520000000009532,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'condensation' compared with 'collection'",
+          "status": "passed",
+          "title": "energy: 'condensation' compared with 'collection'",
+          "duration": 0.23900000000003274,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'condensation' compared with 'transpiration'",
+          "status": "passed",
+          "title": "energy: 'condensation' compared with 'transpiration'",
+          "duration": 0.16190000000005966,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'condensation' compared with 'infiltration'",
+          "status": "passed",
+          "title": "energy: 'condensation' compared with 'infiltration'",
+          "duration": 0.10730000000012296,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'precipitation' compared with 'evaporation'",
+          "status": "passed",
+          "title": "energy: 'precipitation' compared with 'evaporation'",
+          "duration": 0.09420000000000073,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'precipitation' compared with 'condensation'",
+          "status": "passed",
+          "title": "energy: 'precipitation' compared with 'condensation'",
+          "duration": 0.09259999999994761,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'precipitation' compared with 'collection'",
+          "status": "passed",
+          "title": "energy: 'precipitation' compared with 'collection'",
+          "duration": 0.09569999999985157,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'precipitation' compared with 'transpiration'",
+          "status": "passed",
+          "title": "energy: 'precipitation' compared with 'transpiration'",
+          "duration": 0.16229999999995925,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'precipitation' compared with 'infiltration'",
+          "status": "passed",
+          "title": "energy: 'precipitation' compared with 'infiltration'",
+          "duration": 0.11360000000013315,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'collection' compared with 'evaporation'",
+          "status": "passed",
+          "title": "energy: 'collection' compared with 'evaporation'",
+          "duration": 0.11609999999973297,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'collection' compared with 'condensation'",
+          "status": "passed",
+          "title": "energy: 'collection' compared with 'condensation'",
+          "duration": 0.10559999999986758,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'collection' compared with 'precipitation'",
+          "status": "passed",
+          "title": "energy: 'collection' compared with 'precipitation'",
+          "duration": 0.1000000000003638,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'collection' compared with 'transpiration'",
+          "status": "passed",
+          "title": "energy: 'collection' compared with 'transpiration'",
+          "duration": 0.09580000000005384,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'collection' compared with 'infiltration'",
+          "status": "passed",
+          "title": "energy: 'collection' compared with 'infiltration'",
+          "duration": 0.250999999999749,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'transpiration' compared with 'evaporation'",
+          "status": "passed",
+          "title": "energy: 'transpiration' compared with 'evaporation'",
+          "duration": 0.15189999999984138,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'transpiration' compared with 'condensation'",
+          "status": "passed",
+          "title": "energy: 'transpiration' compared with 'condensation'",
+          "duration": 0.11249999999972715,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'transpiration' compared with 'precipitation'",
+          "status": "passed",
+          "title": "energy: 'transpiration' compared with 'precipitation'",
+          "duration": 0.09990000000016153,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'transpiration' compared with 'collection'",
+          "status": "passed",
+          "title": "energy: 'transpiration' compared with 'collection'",
+          "duration": 0.10300000000006548,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'transpiration' compared with 'infiltration'",
+          "status": "passed",
+          "title": "energy: 'transpiration' compared with 'infiltration'",
+          "duration": 0.10489999999981592,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'infiltration' compared with 'evaporation'",
+          "status": "passed",
+          "title": "energy: 'infiltration' compared with 'evaporation'",
+          "duration": 0.09310000000004948,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'infiltration' compared with 'condensation'",
+          "status": "passed",
+          "title": "energy: 'infiltration' compared with 'condensation'",
+          "duration": 0.09160000000019863,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'infiltration' compared with 'precipitation'",
+          "status": "passed",
+          "title": "energy: 'infiltration' compared with 'precipitation'",
+          "duration": 0.08979999999974098,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'infiltration' compared with 'collection'",
+          "status": "passed",
+          "title": "energy: 'infiltration' compared with 'collection'",
+          "duration": 0.09349999999994907,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science energy: 'infiltration' compared with 'transpiration'",
+          "status": "passed",
+          "title": "energy: 'infiltration' compared with 'transpiration'",
+          "duration": 0.2555999999999585,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science preserves supplied source, driver, and latent heat evidence",
+          "status": "passed",
+          "title": "preserves supplied source, driver, and latent heat evidence",
+          "duration": 122.6895999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science scopes condensation to liquid droplets even when the scene trace mentions ice",
+          "status": "passed",
+          "title": "scopes condensation to liquid droplets even when the scene trace mentions ice",
+          "duration": 0.563799999999901,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science does not turn infiltration into automatic groundwater recharge",
+          "status": "passed",
+          "title": "does not turn infiltration into automatic groundwater recharge",
+          "duration": 1.6318999999994048,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science uses explicit energy metadata rather than interpreting display wording",
+          "status": "passed",
+          "title": "uses explicit energy metadata rather than interpreting display wording",
+          "duration": 1.9803000000001703,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science rejects unknown processes, repeated pairs, and unsupported questions",
+          "status": "passed",
+          "title": "rejects unknown processes, repeated pairs, and unsupported questions",
+          "duration": 0.42629999999917345,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: canonical science"
+          ],
+          "fullName": "Water Cycle process comparison: canonical science returns no classification for missing or malformed trace evidence",
+          "status": "passed",
+          "title": "returns no classification for missing or malformed trace evidence",
+          "duration": 35.34010000000035,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state starts with a distinct evaporation/transpiration pair and no checked answer",
+          "status": "passed",
+          "title": "starts with a distinct evaporation/transpiration pair and no checked answer",
+          "duration": 1.0484999999998763,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state recovers unknown and identical pairs to valid distinct selections",
+          "status": "passed",
+          "title": "recovers unknown and identical pairs to valid distinct selections",
+          "duration": 352.6214,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state keeps only supported questions and choices, and requires an answer before checked",
+          "status": "passed",
+          "title": "keeps only supported questions and choices, and requires an answer before checked",
+          "duration": 0.774199999999837,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state clears stale persisted feedback when repairing a pair or question",
+          "status": "passed",
+          "title": "clears stale persisted feedback when repairing a pair or question",
+          "duration": 4.809500000000298,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state retains only bounded text notes for valid ordered distinct pairs",
+          "status": "passed",
+          "title": "retains only bounded text notes for valid ordered distinct pairs",
+          "duration": 1.5900000000001455,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state pair changes clear an old answer and feedback while keeping the chosen question",
+          "status": "passed",
+          "title": "pair changes clear an old answer and feedback while keeping the chosen question",
+          "duration": 0.9940999999998894,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state question changes clear the old answer and feedback without changing the pair",
+          "status": "passed",
+          "title": "question changes clear the old answer and feedback without changing the pair",
+          "duration": 0.6853000000000975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state a revised answer needs another explicit check",
+          "status": "passed",
+          "title": "a revised answer needs another explicit check",
+          "duration": 0.5270999999993364,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state checking records an explicit check for every valid choice without awarding correctness",
+          "status": "passed",
+          "title": "checking records an explicit check for every valid choice without awarding correctness",
+          "duration": 1.440099999999802,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state same pair, question, or answer actions preserve an already checked comparison",
+          "status": "passed",
+          "title": "same pair, question, or answer actions preserve an already checked comparison",
+          "duration": 0.4540999999999258,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state notes follow their ordered pair through switching and question changes",
+          "status": "passed",
+          "title": "notes follow their ordered pair through switching and question changes",
+          "duration": 0.3611000000000786,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state bounds edited notes and preserves checked feedback during writing",
+          "status": "passed",
+          "title": "bounds edited notes and preserves checked feedback during writing",
+          "duration": 0.413300000000163,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state unknown actions return detached valid state without changing existing evidence",
+          "status": "passed",
+          "title": "unknown actions return detached valid state without changing existing evidence",
+          "duration": 1.5982999999996537,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state normalization detaches notes from the supplied state",
+          "status": "passed",
+          "title": "normalization detaches notes from the supplied state",
+          "duration": 0.22000000000025466,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle process comparison: safe learner state"
+          ],
+          "fullName": "Water Cycle process comparison: safe learner state the public helper matches the source implementation",
+          "status": "passed",
+          "title": "the public helper matches the source implementation",
+          "duration": 0.08780000000024302,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790907661440,
+      "endTime": 1790907661992.088,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_process_compare.test.js"
+    }
+  ],
+  "waterCycleCloudEvidenceVerification": {
+    "sourceSha256Before": "6095802d18700a2c380a39640e8ec39f3f7e67c1e04dc7583ab07443da30e4c9",
+    "sourceSha256After": "6095802d18700a2c380a39640e8ec39f3f7e67c1e04dc7583ab07443da30e4c9",
+    "publicSha256Before": "6095802d18700a2c380a39640e8ec39f3f7e67c1e04dc7583ab07443da30e4c9",
+    "publicSha256After": "6095802d18700a2c380a39640e8ec39f3f7e67c1e04dc7583ab07443da30e4c9",
+    "testFiles": [
+      {
+        "path": "tests/watercycle_precipitation_lab.test.js",
+        "sha256Before": "b37f33ebf635668a253063a3e43fa29cce65bd97a2d3f4c0b1910ffd3f3641e0",
+        "sha256After": "b37f33ebf635668a253063a3e43fa29cce65bd97a2d3f4c0b1910ffd3f3641e0"
+      },
+      {
+        "path": "tests/watercycle_process_compare.test.js",
+        "sha256Before": "6e1ca32d85dcb6b158c715906c8046058e5109d57428275b68e960252fa32c70",
+        "sha256After": "6e1ca32d85dcb6b158c715906c8046058e5109d57428275b68e960252fa32c70"
+      },
+      {
+        "path": "tests/watercycle_journey_chapters.test.js",
+        "sha256Before": "31d9930b2d6bf7cd436aaae5d873117be527e86caad2b766a4618c4ef8e06c4d",
+        "sha256After": "31d9930b2d6bf7cd436aaae5d873117be527e86caad2b766a4618c4ef8e06c4d"
+      },
+      {
+        "path": "tests/watercycle_check_investigations.test.js",
+        "sha256Before": "2dd862600b9c6a6cd31fbc712edb2a068fa3b1171e40ea7a88ea3358651a1a99",
+        "sha256After": "2dd862600b9c6a6cd31fbc712edb2a068fa3b1171e40ea7a88ea3358651a1a99"
+      }
+    ],
+    "preservation": {
+      "baselinePath": "reports/watercycle-cloud-evidence/baseline-runtime.js",
+      "baselineSha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+      "anchors": [
+        {
+          "name": "journey3dRef",
+          "sha256": "3e0b1948cea51fef6137c1e760cdb286c163b2a17dd70e92ede98af46c7fb4aa"
+        },
+        {
+          "name": "canvasRef",
+          "sha256": "1b33ed71c593daecfd3c852ec249e38daef6d3aaef976ed6388d7df8b17536a5"
+        },
+        {
+          "name": "precip3dRef",
+          "sha256": "20c9c11cade3c694fd8ec0c733444e9cb2b4af22be7a3e5f3169e56d97944790"
+        },
+        {
+          "name": "precipCanvasRef",
+          "sha256": "b970e65b975f83503658a4928e9574b92d9b4ecf4132df8129bf65922e0c5d5c"
+        },
+        {
+          "name": "openPrecipitationIn3d",
+          "sha256": "ded3dd6ef0428621427246c3b25e67485b0c93acec325fb06ab5ef4c7ae6cff3"
+        },
+        {
+          "name": "logPrecipObservation",
+          "sha256": "f2032a3244bd8e8c91267600ab99614eab120591562e3c40fb4f3e7770d33d80"
+        },
+        {
+          "name": "resetPrecipLab",
+          "sha256": "da110ff15ea45bac2ba2d23e5ba4993e0bc84135ea80fce1a860b31102cd5a13"
+        },
+        {
+          "name": "applyPrecipPreset",
+          "sha256": "df1794bd36119b29537ddf6be185dccd6deef19799a88555f972bbd2eae84fd4"
+        },
+        {
+          "name": "setPrecipCameraFocus",
+          "sha256": "20917460429982f7288e386921640f16d5214e315061b709c5291b55e5db3c38"
+        },
+        {
+          "name": "setPrecipViewMode",
+          "sha256": "f5369dc58cef32e629d290b8408f96bca2014551f28150f21bfdcfedb8b7bb28"
+        },
+        {
+          "name": "setPrecipControl",
+          "sha256": "791c3d4b2640b621e6ec94c166cbbf2076c6737365887b864ec17bf079b7602e"
+        },
+        {
+          "name": "setIQ",
+          "sha256": "2d81907ea3a5bb59d268c287500fc095954af5bb9dddbca82a37aaf5eee9e28b"
+        },
+        {
+          "name": "precipConfig",
+          "sha256": "4fb1582d7f60c250493e71856230f23052501f27a763c67222ce137a5bbda61b"
+        },
+        {
+          "name": "precipModel",
+          "sha256": "0c978c6c7662bcbb3f301b8e26c1c813006198c9e5c7a86f925897278643390c"
+        },
+        {
+          "name": "iq",
+          "sha256": "70423374b974ef39b9abb42616f1de066de31b8a68047f1e1e44c8019e998c60"
+        },
+        {
+          "name": "iqStored",
+          "sha256": "75086e95ef2b24d4e961de0c6f2b3812f199f927c0f5e686389c08ff140029ba"
+        },
+        {
+          "name": "checkWaterCycleChallenges",
+          "sha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f"
+        },
+        {
+          "name": "wcPrecipExperiment",
+          "sha256": "2ba07171749c8b473dd3c66c2230a0717c6163356aaad9f0f51952f1338004d1"
+        },
+        {
+          "name": "wcPrecipExperimentValue",
+          "sha256": "49c0744b002cf5ab9a52fa056eba0d1729b861d2bf8568cbc6edb6964076920c"
+        },
+        {
+          "name": "wcPrecipSetupSnapshot",
+          "sha256": "6db71b7a9a9d4dc40ef9dd2be64b506b2bfc3b4c5204eb3586c72516f70d4e5b"
+        },
+        {
+          "name": "WC_PRECIP_EXPERIMENT_INPUTS",
+          "sha256": "d09da164201a05bcdd98f3db44b73798a757ae2148a7c1057132ac79952938be"
+        },
+        {
+          "name": "wcPrecipPhaseAt",
+          "sha256": "1accf9572082154abfd983859d5c4cede1e57a257ba9ab2f1cdec6a7f927c67f"
+        },
+        {
+          "name": "wcPrecipPhaseFromModel",
+          "sha256": "b6257da2ad5b0a760cd1e02d57397638091f7c55e144794a850fa39f5032028a"
+        },
+        {
+          "name": "wcPrecipPhaseAtTransitions",
+          "sha256": "17ef2e8888a6f211b0172ca9102359551c8f8a0dcca39a86870b0c3efab72da6"
+        },
+        {
+          "name": "computeWcPrecipitationModel",
+          "sha256": "01d0a78646cafbc11459296425e0674dd308d4201bf4b58ab4324b8f4b4aa88e"
+        },
+        {
+          "name": "buildWcPrecipThermalStructure",
+          "sha256": "c876d75d0ec5ca5a63bbabdac15c6dc5b66767b4c603025f6fa47c37fd3cd360"
+        },
+        {
+          "name": "wcPrecipTemperatureAt",
+          "sha256": "087d9089835a39401cb0f2c56d7e5a3302604851c2b26424a52f63eae91afdeb"
+        },
+        {
+          "name": "normalizeWcPrecipConfig",
+          "sha256": "9b968009281e991f870072d14a1b74f7036f08e77966c3c7760b5d990a2637b6"
+        },
+        {
+          "name": "WC_PRECIP_PRESETS",
+          "sha256": "dd8b800709339a35e35ec9d0dd8b00a8bc8b2d39fe0498e50aa994c24adf560a"
+        },
+        {
+          "name": "WC_PRECIP_DEFAULTS",
+          "sha256": "e2f88e8943e3fe2b30bbf0ceeb0e86be4b6762511c171757107cdb30ba2a520e"
+        },
+        {
+          "name": "wcQuizBank",
+          "sha256": "5f6378b528d90eac9974fb003bedce3f4f9d76981dcca17ddfa7616d281dcf41"
+        },
+        {
+          "name": "wcQuizQuestion",
+          "sha256": "a4b6613b91b16ef64b10104906049fe8fb2cc156ead7e539cf7be0e3c5bee1c5"
+        },
+        {
+          "name": "WCProcessCompare",
+          "sha256": "6b2869a0e86c41c8b86fc3c2722200b716210ebeba4e407ffc56a1c1f2051c46"
+        },
+        {
+          "name": "WCJourneyChapters",
+          "sha256": "6b87b9ca6210dfb5ebc710395142956738f30845189020728d96230a5a41866f"
+        },
+        {
+          "name": "WCCheckInvestigation",
+          "sha256": "69e47c9d4d859f88cef5b92b56454caf90738399c91c18f4863dfb0c7a242316"
+        },
+        {
+          "name": "WATER_CYCLE_PRESETS",
+          "sha256": "0d83add1268900e7e27e917c72000ebad2ba47d994302e1afed9b5257e838535"
+        },
+        {
+          "name": "wcCloudGuideDrawing",
+          "sha256": "6e7b9f055be0144c8dd65ba35331b0b673011b54da1b51709d4ea068db64d179"
+        },
+        {
+          "name": "WC_CLOUD_COMPARISONS",
+          "sha256": "6e87a34e9914b669bea8f6bbed01d27d9c8a2a842541022b2119ab0b69064e3e"
+        },
+        {
+          "name": "WC_CLOUD_GUIDE",
+          "sha256": "8e5cb5f4f45012533212ea8a8228a4f1b552094832ae127e946f4c51c5e692f6"
+        }
+      ],
+      "scoring": [
+        {
+          "name": "myth",
+          "sha256": "d62ec9d1e25b1f51a3e3df672121855b3a471f5fce9b421d22666c3340a33aa0"
+        },
+        {
+          "name": "quiz",
+          "sha256": "bead9c9e4285cdf1f96692a5bcb695d2554a27b14c8d82948a0e08c46af746fb"
+        }
+      ],
+      "derivations": [
+        {
+          "name": "comparison",
+          "sha256": "12e3f9595438a0ad4bd2326ef4e2553c337d6bbae798cfe1e656dab3a4700507"
+        },
+        {
+          "name": "signal",
+          "sha256": "9716c3180a30c1e21957919d1901b19cb2121a17992eed6c6caa1cfee88a9baf"
+        }
+      ]
+    },
+    "startedAt": "2026-10-02T02:19:45.408Z",
+    "completedAt": "2026-10-02T02:21:02.503Z",
+    "processExitCode": 0,
+    "singleWorker": true,
+    "fileParallelism": false
+  }
+}

@@ -1,0 +1,29 @@
+{
+  "date": "2026-10-04",
+  "existingKey": "trace_muscle_activation",
+  "english": {
+    "trace_muscle_activation": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening."
+  },
+  "translations": {
+    "french": {
+      "trace_muscle_activation": "Suivez le signal d’un neurone moteur depuis la terminaison axonale jusqu’à la libération de calcium et au raccourcissement du sarcomère."
+    },
+    "spanish_latin_america": {
+      "trace_muscle_activation": "Sigue la señal de una neurona motora desde la terminal axónica hasta la liberación de calcio y el acortamiento del sarcómero."
+    },
+    "arabic": {
+      "trace_muscle_activation": "تتبّع إشارة العصبون الحركي من النهاية المحورية إلى إطلاق الكالسيوم وتقصّر القُسيم العضلي."
+    }
+  },
+  "semanticReview": {
+    "status": "passed",
+    "scope": "Three replacements of an inherited English fallback in native catalogs; no added facts or placeholders.",
+    "preservedMeaning": [
+      "Follow a motor-neuron signal",
+      "Begin at the axon terminal",
+      "Continue to calcium release",
+      "Continue to sarcomere shortening"
+    ],
+    "defects": []
+  }
+}

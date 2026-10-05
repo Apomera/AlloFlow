@@ -1,0 +1,99 @@
+{
+  "checkedOn": "2026-10-01",
+  "publishedBoundaryModel": {
+    "paper": "Kopparapu et al. 2014",
+    "url": "https://arxiv.org/abs/1404.5292",
+    "massEarth": 1,
+    "rangeK": [
+      2600,
+      7200
+    ],
+    "temperatureOffsetK": 5780,
+    "coefficientsFile": "coefficients.dat",
+    "authorCodeFile": "author-model.f90"
+  },
+  "solarReference": {
+    "temperatureK": 5772,
+    "irradianceWm2": 1361,
+    "source": "IAU 2015 Resolution B3",
+    "url": "https://arxiv.org/abs/1510.07674"
+  },
+  "equilibriumModel": {
+    "sigma": 5.670374419e-8,
+    "constantsUrl": "https://physics.nist.gov/cuu/pdf/all.pdf",
+    "energySource": "https://science.nasa.gov/earth/earth-observatory/climate-and-earths-energy-budget/",
+    "equations": [
+      "S/S_Earth=L/r^2",
+      "r_boundary=sqrt(L/S_eff)",
+      "S_eff=c0+c1*(T-5780)+c2*(T-5780)^2+c3*(T-5780)^3+c4*(T-5780)^4",
+      "T_eq=[1361*(L/r^2)*(1-A)/(4*sigma)]^(1/4)"
+    ]
+  },
+  "planetReferenceInputs": [
+    {
+      "id": "venus",
+      "distanceAu": 0.72333199,
+      "albedo": 0.77,
+      "surfaceK": 737
+    },
+    {
+      "id": "earth",
+      "distanceAu": 1.00000011,
+      "albedo": 0.294,
+      "surfaceK": 288
+    },
+    {
+      "id": "mars",
+      "distanceAu": 1.52366231,
+      "albedo": 0.25,
+      "surfaceK": 214
+    }
+  ],
+  "snapshots": [
+    {
+      "file": "coefficients.dat",
+      "url": "https://personal.ems.psu.edu/~jfk4/ruk15/planets/HZ_coefficients.dat",
+      "checkedOn": "2026-10-01",
+      "status": 200,
+      "sha256": "36202bddd0fdfc8db9a2c8da625b01d63e23510c1c44e192305aa625f14f88f6"
+    },
+    {
+      "file": "author-model.f90",
+      "url": "https://personal.ems.psu.edu/~jfk4/ruk15/planets/HZs.f90",
+      "checkedOn": "2026-10-01",
+      "status": 200,
+      "sha256": "4bec3fa336f330e2493ef9d551a6680f553f5f3aaf5166701194ea6cf89717d5"
+    },
+    {
+      "file": "venus-facts.html",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/venusfact.html",
+      "checkedOn": "2026-10-01",
+      "status": 200,
+      "sha256": "473c61da0bf7188764ec8ae5b12c0fdc9f922bccd9e3f6b47c885fef0723541c"
+    },
+    {
+      "file": "earth-facts.html",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/earthfact.html",
+      "checkedOn": "2026-10-01",
+      "status": 200,
+      "sha256": "1b06e3ec31249d063d40d1b38837fac89ddcd2f4b25268b38e8a6d5f413e70ef"
+    },
+    {
+      "file": "mars-facts.html",
+      "url": "https://nssdc.gsfc.nasa.gov/planetary/factsheet/marsfact.html",
+      "checkedOn": "2026-10-01",
+      "status": 200,
+      "sha256": "366b0ce9b69cbee370be904956748af954468a41b93dc71a796a986519aa8d74"
+    }
+  ],
+  "assumptions": [
+    "Published conservative climate limits assume one Earth mass and their specified atmospheric composition.",
+    "Albedo changes the separate blackbody energy balance, not the climate-model coefficients.",
+    "Planet presets transfer orbital distance and Bond albedo; they do not model actual planetary atmospheres or change mass.",
+    "The orbit is treated as circular at a constant semimajor-axis distance.",
+    "Uniform heat redistribution, emissivity one, no greenhouse or internal heating in the equilibrium calculation.",
+    "Teaching star temperatures and luminosities are independent; a main-sequence relation is not imposed.",
+    "Measurement and model uncertainty are not propagated; zone membership does not establish habitability."
+  ],
+  "runtimeNetworkRequestsRequired": false
+}

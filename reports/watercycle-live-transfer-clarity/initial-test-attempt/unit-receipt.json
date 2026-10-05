@@ -1,0 +1,98 @@
+{
+  "mode": "unit",
+  "runnerPid": 48000,
+  "childPid": 27616,
+  "startedAt": "2026-10-05T01:09:10.033Z",
+  "completedAt": "2026-10-05T01:10:14.336Z",
+  "command": {
+    "executable": "C:\\Program Files\\nodejs\\node.exe",
+    "args": [
+      "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\node_modules\\vitest\\vitest.mjs",
+      "run",
+      "tests/watercycle_live_transfer_clarity.test.js",
+      "--maxWorkers=1",
+      "--no-file-parallelism",
+      "--testTimeout=120000",
+      "--hookTimeout=120000",
+      "--reporter=default",
+      "--reporter=json",
+      "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\watercycle-live-transfer-clarity\\unit-results.json"
+    ],
+    "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "expectedSha": "b0e8df249e5ea01587fac43151f2ad69d64ca2589f8b572d74278211db334d03",
+  "sourceBefore": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "b0e8df249e5ea01587fac43151f2ad69d64ca2589f8b572d74278211db334d03",
+      "bytes": 3138663
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "b0e8df249e5ea01587fac43151f2ad69d64ca2589f8b572d74278211db334d03",
+      "bytes": 3138663
+    }
+  ],
+  "sourceAfter": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "b0e8df249e5ea01587fac43151f2ad69d64ca2589f8b572d74278211db334d03",
+      "bytes": 3138663
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "b0e8df249e5ea01587fac43151f2ad69d64ca2589f8b572d74278211db334d03",
+      "bytes": 3138663
+    }
+  ],
+  "testsBefore": [
+    {
+      "path": "tests/watercycle_live_transfer_clarity.test.js",
+      "sha256": "1d039770e1e8fae55e5ea4ebe868e2563343df3a25ce59ba127b6b214691beaa",
+      "bytes": 22854
+    }
+  ],
+  "testsAfter": [
+    {
+      "path": "tests/watercycle_live_transfer_clarity.test.js",
+      "sha256": "1d039770e1e8fae55e5ea4ebe868e2563343df3a25ce59ba127b6b214691beaa",
+      "bytes": 22854
+    }
+  ],
+  "preserved": true,
+  "recipe": {
+    "path": "reports/watercycle-live-transfer-clarity/run-tests.cjs",
+    "sha256": "b42f85765c8df68553ecbf62a5860b0a46eef345340be70ee3f48b7603f47c1f",
+    "bytes": 4223
+  },
+  "baseline": {
+    "path": "reports/watercycle-live-transfer-clarity/baseline-runtime.js",
+    "sha256": "d07dee1e72991365377a039453c49ecc9b3fbb45c3d83f76366af75461a40beb",
+    "bytes": 3119260
+  },
+  "results": {
+    "path": "reports/watercycle-live-transfer-clarity/unit-results.json",
+    "sha256": "de75c6e3b3e84ea1a318cbd67e1721d7fb8b60dbf44edc7f18c79cc381ae8c59",
+    "bytes": 10810
+  },
+  "log": {
+    "path": "reports/watercycle-live-transfer-clarity/unit-results.log",
+    "sha256": "950c251bb3acc76a95cda2dd3fe8930b18a48bb69289fd8837f346e4f1fb69b9",
+    "bytes": 2930
+  },
+  "summary": {
+    "success": true,
+    "total": 22,
+    "passed": 22,
+    "failed": 0,
+    "pending": 0,
+    "failedSuites": 0
+  },
+  "loadedRuntime": {
+    "path": "reports/watercycle-live-transfer-clarity/unit-loaded-runtime.json",
+    "sha256": "6e5c24b13e422b2647c3eae6e55ee6843c3d1fc8828247513dd06b27a7baa083",
+    "bytes": 887
+  }
+}

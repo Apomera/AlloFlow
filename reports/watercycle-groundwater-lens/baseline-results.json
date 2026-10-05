@@ -1,0 +1,367 @@
+{
+  "mode": "baseline",
+  "pid": 42624,
+  "startedAt": "2026-10-02T12:05:16.798Z",
+  "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "sourceBytes": 3035457,
+  "publicHostSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+  "harnessSha256": "54edcc376f5a0ea8e3c0b7af99fe5a49be8d5f3e001808a4fdb2aec6e5d85001",
+  "checks": [
+    {
+      "label": "phone320 baseline land chapter mounted",
+      "passed": true
+    },
+    {
+      "label": "phone320 baseline old pore figure mounted",
+      "passed": true
+    },
+    {
+      "label": "phone390 baseline land chapter mounted",
+      "passed": true
+    },
+    {
+      "label": "phone390 baseline old pore figure mounted",
+      "passed": true
+    },
+    {
+      "label": "desktop baseline land chapter mounted",
+      "passed": true
+    },
+    {
+      "label": "desktop baseline old pore figure mounted",
+      "passed": true
+    },
+    {
+      "label": "host390 baseline land chapter mounted",
+      "passed": true
+    },
+    {
+      "label": "host390 baseline old pore figure mounted",
+      "passed": true
+    },
+    {
+      "label": "dark baseline land chapter mounted",
+      "passed": true
+    },
+    {
+      "label": "dark baseline old pore figure mounted",
+      "passed": true
+    },
+    {
+      "label": "forced-phone baseline land chapter mounted",
+      "passed": true
+    },
+    {
+      "label": "forced-phone baseline old pore figure mounted",
+      "passed": true
+    },
+    {
+      "label": "forced-dark baseline land chapter mounted",
+      "passed": true
+    },
+    {
+      "label": "forced-dark baseline old pore figure mounted",
+      "passed": true
+    }
+  ],
+  "cases": [
+    {
+      "context": "land",
+      "variant": "phone320"
+    },
+    {
+      "context": "check",
+      "variant": "phone320"
+    },
+    {
+      "context": "land",
+      "variant": "phone390"
+    },
+    {
+      "context": "check",
+      "variant": "phone390"
+    },
+    {
+      "context": "land",
+      "variant": "desktop"
+    },
+    {
+      "context": "check",
+      "variant": "desktop"
+    },
+    {
+      "context": "land",
+      "variant": "host390"
+    },
+    {
+      "context": "check",
+      "variant": "host390"
+    },
+    {
+      "context": "land",
+      "variant": "dark"
+    },
+    {
+      "context": "check",
+      "variant": "dark"
+    },
+    {
+      "context": "land",
+      "variant": "forced-phone"
+    },
+    {
+      "context": "check",
+      "variant": "forced-phone"
+    },
+    {
+      "context": "land",
+      "variant": "forced-dark"
+    },
+    {
+      "context": "check",
+      "variant": "forced-dark"
+    }
+  ],
+  "nativeActions": [
+    {
+      "context": "check",
+      "variant": "phone320",
+      "action": "open native groundwater investigation"
+    },
+    {
+      "context": "check",
+      "variant": "phone390",
+      "action": "open native groundwater investigation"
+    },
+    {
+      "context": "check",
+      "variant": "desktop",
+      "action": "open native groundwater investigation"
+    },
+    {
+      "context": "check",
+      "variant": "host390",
+      "action": "open native groundwater investigation"
+    },
+    {
+      "context": "check",
+      "variant": "dark",
+      "action": "open native groundwater investigation"
+    },
+    {
+      "context": "check",
+      "variant": "forced-phone",
+      "action": "open native groundwater investigation"
+    },
+    {
+      "context": "check",
+      "variant": "forced-dark",
+      "action": "open native groundwater investigation"
+    }
+  ],
+  "audits": [],
+  "captures": [
+    {
+      "path": "baseline-land-phone320.png",
+      "sha256": "fa131a96f1679bcb1c093e6caa3fd2f0d6fad3d5d12564fdf68978572c3d2d38",
+      "bytes": 41287,
+      "width": 240,
+      "height": 1327,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:24.394Z"
+    },
+    {
+      "path": "baseline-canvas-phone320.png",
+      "sha256": "27709706de97ac47b728849d2151fd181a94dae046f616048d7ce570737b5d27",
+      "bytes": 93447,
+      "width": 272,
+      "height": 379,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:25.865Z"
+    },
+    {
+      "path": "baseline-check-phone320.png",
+      "sha256": "7e9c919a96a37fb902e5f9d35cd919df256316b47448626cb9483e9868c48ba4",
+      "bytes": 8854,
+      "width": 230,
+      "height": 201,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:28.104Z"
+    },
+    {
+      "path": "baseline-land-phone390.png",
+      "sha256": "6d31180692822fdae5ffde494cbe13a5cf41d8cb473f7b4cfb13743b4a6863d4",
+      "bytes": 40770,
+      "width": 310,
+      "height": 1155,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:30.292Z"
+    },
+    {
+      "path": "baseline-canvas-phone390.png",
+      "sha256": "5a62b15c312972e20f1b340318d0d35386ae84afff3af9e9103e058ba7d0bf63",
+      "bytes": 106179,
+      "width": 342,
+      "height": 379,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:30.806Z"
+    },
+    {
+      "path": "baseline-check-phone390.png",
+      "sha256": "ff9671ef8acc63b14e80ebcff7612fe5019a8f3b417815f8393a4035eddb5328",
+      "bytes": 9450,
+      "width": 300,
+      "height": 183,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:33.118Z"
+    },
+    {
+      "path": "baseline-land-desktop.png",
+      "sha256": "459f7734197ae5ecf013e9bcf14403811f5ef5dea67f9333a8b90e105dd3ca1e",
+      "bytes": 41730,
+      "width": 972,
+      "height": 644,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:36.198Z"
+    },
+    {
+      "path": "baseline-canvas-desktop.png",
+      "sha256": "1aec2b33553985e5a1eadba6913ea417493451ba5e730526920bcff977e0b6ed",
+      "bytes": 189877,
+      "width": 1004,
+      "height": 519,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:37.028Z"
+    },
+    {
+      "path": "baseline-check-desktop.png",
+      "sha256": "741a81142f1ce5d8adaa3ae905773fc10df6d1709858e0ae2aff4f147890f77d",
+      "bytes": 11554,
+      "width": 962,
+      "height": 171,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:40.274Z"
+    },
+    {
+      "path": "baseline-land-host390.png",
+      "sha256": "7efd33bddeccc7696e5b0576ab0ee92dbee7aa83ef74a4cde52162444b600f88",
+      "bytes": 40783,
+      "width": 298,
+      "height": 1175,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:42.021Z"
+    },
+    {
+      "path": "baseline-canvas-host390.png",
+      "sha256": "b5fcc1960f4495b3b3d613d2558e9f07827fd452587c8bc46b3efe75d88e19ad",
+      "bytes": 123857,
+      "width": 330,
+      "height": 519,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:42.508Z"
+    },
+    {
+      "path": "baseline-check-host390.png",
+      "sha256": "942af44fbb1936254a51665449a7d59dda45bc282ac0a258344fc7de346fbe5b",
+      "bytes": 12742,
+      "width": 288,
+      "height": 200,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:44.322Z"
+    },
+    {
+      "path": "baseline-land-dark.png",
+      "sha256": "516f84b1991675fcb36d25947527d03c350cb00c6319187ba320652caf459315",
+      "bytes": 43297,
+      "width": 972,
+      "height": 644,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:47.186Z"
+    },
+    {
+      "path": "baseline-canvas-dark.png",
+      "sha256": "dc45a236dd3fbee256509a23efe813352bd9fb527570b9790b91aadc4d390d3f",
+      "bytes": 181553,
+      "width": 1004,
+      "height": 519,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:48.214Z"
+    },
+    {
+      "path": "baseline-check-dark.png",
+      "sha256": "fcc1792210f70564cbdfc0e22938698c46946c893c2c6a930a672ac51ba80222",
+      "bytes": 10835,
+      "width": 962,
+      "height": 171,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:50.940Z"
+    },
+    {
+      "path": "baseline-land-forced-phone.png",
+      "sha256": "03e1c58592bd71b1d39c58d9f39659eae8be3696ca62cbbfd955a71c0e095a2d",
+      "bytes": 36014,
+      "width": 240,
+      "height": 1327,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:52.451Z"
+    },
+    {
+      "path": "baseline-canvas-forced-phone.png",
+      "sha256": "afedfb0e5eab3a720c086e949f5f7d5d549a591000802aefb44e193bdcbd11f3",
+      "bytes": 82816,
+      "width": 272,
+      "height": 379,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:52.954Z"
+    },
+    {
+      "path": "baseline-check-forced-phone.png",
+      "sha256": "fb9a526f0748e3ee0e1a1e72aa0a1013688f97c083d06dacceb3fe49d9bd8731",
+      "bytes": 8227,
+      "width": 230,
+      "height": 201,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:54.252Z"
+    },
+    {
+      "path": "baseline-land-forced-dark.png",
+      "sha256": "9c27ee2a29e03932a41f67af45c28cb626bd72f32902bbc461c5ee63755ba2f5",
+      "bytes": 39816,
+      "width": 972,
+      "height": 644,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:56.454Z"
+    },
+    {
+      "path": "baseline-canvas-forced-dark.png",
+      "sha256": "d9f4ba724bc0737fd0320b77eefc46ef0e710431f06a2bb1b6639ec40e033597",
+      "bytes": 167759,
+      "width": 1004,
+      "height": 519,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:56.822Z"
+    },
+    {
+      "path": "baseline-check-forced-dark.png",
+      "sha256": "9fda93df03059d67c85e737ab87febfda5c44c62737e0e4b929950e70cd0a7d4",
+      "bytes": 10768,
+      "width": 962,
+      "height": 171,
+      "sourceSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+      "capturedAt": "2026-10-02T12:05:59.125Z"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "contrastReadings": [],
+  "completed": true,
+  "successful": true,
+  "browserClosed": true,
+  "serverUsed": false,
+  "serverClosed": true,
+  "serverClosedAt": null,
+  "resourcesClosed": true,
+  "browserLaunchedAt": "2026-10-02T12:05:16.951Z",
+  "browserClosedAt": "2026-10-02T12:05:59.292Z",
+  "completedAt": "2026-10-02T12:05:59.292Z"
+}

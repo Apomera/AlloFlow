@@ -1,0 +1,205 @@
+{
+  "client": 318,
+  "scroll": 398,
+  "width": 320,
+  "workflowColumns": 1,
+  "statColumns": 2,
+  "text": [
+    {
+      "text": "Virtual Biology Laboratory",
+      "font": 10.88,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Virtual Dissection Lab",
+      "font": 20,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Work through the specimen one clear action at a time. Current focus: Predict before contact.",
+      "font": 13.44,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "1Orient",
+      "font": 11.2,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "1",
+      "font": 10.4,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "2Prepare",
+      "font": 11.2,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "2",
+      "font": 10.4,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "3Reveal",
+      "font": 11.2,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "3",
+      "font": 10.4,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "4Identify",
+      "font": 11.2,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "4",
+      "font": 10.4,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "5Record evidence",
+      "font": 11.2,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "5",
+      "font": 10.4,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "6Review",
+      "font": 11.2,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "6",
+      "font": 10.4,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen.",
+      "font": 13.44,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Go to specimen",
+      "font": 13.12,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Structures and notes",
+      "font": 13.12,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Continue activity",
+      "font": 13.12,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Specimen",
+      "font": 9.92,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "🐷 Fetal Pig (Sus scrofa)",
+      "font": 12.48,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Layer",
+      "font": 9.92,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "3 of 5 · Visceral Organs",
+      "font": 12.48,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "Structures viewed",
+      "font": 9.92,
+      "clipped": false,
+      "nowrap": false
+    },
+    {
+      "text": "1 of 27",
+      "font": 12.48,
+      "clipped": false,
+      "nowrap": false
+    }
+  ],
+  "controls": [
+    {
+      "text": "Go to specimen",
+      "height": 44
+    },
+    {
+      "text": "Structures and notes",
+      "height": 44
+    },
+    {
+      "text": "Continue activity",
+      "height": 44
+    }
+  ],
+  "steps": [
+    {
+      "current": true,
+      "border": 1,
+      "clipped": false
+    },
+    {
+      "current": false,
+      "border": 1,
+      "clipped": false
+    },
+    {
+      "current": false,
+      "border": 1,
+      "clipped": false
+    },
+    {
+      "current": false,
+      "border": 1,
+      "clipped": false
+    },
+    {
+      "current": false,
+      "border": 1,
+      "clipped": false
+    },
+    {
+      "current": false,
+      "border": 1,
+      "clipped": false
+    }
+  ]
+}

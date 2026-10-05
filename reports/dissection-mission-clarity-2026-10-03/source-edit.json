@@ -1,0 +1,74 @@
+{
+  "beforeSha256": "4461400d1f3843cde4c90d619c6ae83784b9fce31caafdc4c028a00d05153b2b",
+  "afterSha256": "2a2ff5929bdc6a54d080b973b8588fc1e1a5f5438cebce25c789859405afba18",
+  "reversedSha256": "4461400d1f3843cde4c90d619c6ae83784b9fce31caafdc4c028a00d05153b2b",
+  "paths": [
+    "stem_lab/stem_tool_dissection.js",
+    "desktop/web-app/public/stem_lab/stem_tool_dissection.js"
+  ],
+  "edits": [
+    {
+      "oldText": "  font-size: .68rem;\n  font-weight: 900;\n  letter-spacing: .16em;\n  text-transform: uppercase;",
+      "newText": "  font-size: .875rem;\n  font-weight: 750;\n  line-height: 1.5;\n  letter-spacing: .04em;\n  overflow-wrap: anywhere;"
+    },
+    {
+      "oldText": ".diss-mission h2 { margin: 0; color: #fff; font-size: clamp(1.25rem, 2.6vw, 1.8rem); line-height: 1.08; font-weight: 900; }",
+      "newText": ".diss-mission h2 { margin: 0; color: #fff; font-size: clamp(1.375rem, 2.4cqi, 1.8rem); line-height: 1.3; font-weight: 900; overflow-wrap: anywhere; }"
+    },
+    {
+      "oldText": ".diss-mission__copy { max-width: 46rem; margin: .45rem 0 0; color: #dbeafe; font-size: .84rem; line-height: 1.5; }",
+      "newText": ".diss-mission__copy { max-width: 70ch; margin: .6rem 0 0; color: #e2edff; font-size: .875rem; line-height: 1.6; overflow-wrap: anywhere; }"
+    },
+    {
+      "oldText": ".diss-workflow { display: flex; flex-wrap: wrap; gap: .45rem; margin: .8rem 0 0; padding: 0; list-style: none; }\n.diss-workflow li { display: inline-flex; align-items: center; gap: .35rem; padding: .35rem .58rem; border: 1px solid rgba(255,255,255,.2); border-radius: 999px; background: rgba(15,23,42,.24); color: #f8fafc; font-size: .7rem; font-weight: 800; }\n.diss-workflow__number { display: inline-grid; width: 1.3rem; height: 1.3rem; place-items: center; border-radius: 999px; background: #ccfbf1; color: #115e59; font-size: .65rem; }",
+      "newText": ".diss-workflow { display: grid; grid-template-columns: repeat(6, minmax(0, 1fr)); gap: .5rem; margin: .9rem 0 0; padding: 0; list-style: none; }\n.diss-workflow li { display: flex; min-width: 0; min-height: 3.5rem; align-items: center; gap: .45rem; padding: .5rem; border: 1px solid #7fabbf; border-radius: .65rem; background: rgba(15,23,42,.34); color: #f8fafc; font-size: .875rem; font-weight: 750; line-height: 1.5; overflow-wrap: anywhere; }\n.diss-workflow__number { display: inline-grid; width: 1.75rem; height: 1.75rem; flex: 0 0 auto; place-items: center; border-radius: 999px; background: #ccfbf1; color: #115e59; font-size: .875rem; font-weight: 800; }"
+    },
+    {
+      "oldText": ".diss-mission__stats { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .55rem; }\n.diss-stat { min-width: 0; padding: .58rem .68rem; border: 1px solid rgba(255,255,255,.18); border-radius: .8rem; background: rgba(15,23,42,.25); }\n.diss-stat__label { display: block; color: #a5f3fc; font-size: .62rem; font-weight: 900; letter-spacing: .08em; text-transform: uppercase; }\n.diss-stat__value { display: block; margin-top: .15rem; overflow: hidden; color: #fff; font-size: .78rem; font-weight: 850; text-overflow: ellipsis; white-space: nowrap; }",
+      "newText": ".diss-mission__stats { grid-column: 1 / -1; display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .65rem; }\n.diss-stat { min-width: 0; padding: .75rem .85rem; border: 1px solid #7fabbf; border-radius: .8rem; background: rgba(15,23,42,.34); }\n.diss-stat__label { display: block; color: #bae6fd; font-size: .875rem; font-weight: 650; line-height: 1.5; overflow-wrap: anywhere; }\n.diss-stat__value { display: block; margin-top: .2rem; color: #fff; font-size: 1rem; font-weight: 800; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }"
+    },
+    {
+      "oldText": ".diss-mission-shortcuts button { flex: 1 1 9rem; min-height: 2.75rem; padding: .6rem .75rem; border: 1px solid #a5d2ea; border-radius: .65rem; background: #eaf6ff; color: #143d60; font-size: .82rem; font-weight: 800; }",
+      "newText": ".diss-mission-shortcuts button { flex: 1 1 9rem; min-width: 0; min-height: 3rem !important; padding: .65rem .75rem; border: 1px solid #a5d2ea; border-radius: .65rem; background: #eaf6ff; color: #143d60; font-size: .875rem; font-weight: 800; line-height: 1.5; white-space: normal; overflow-wrap: anywhere; }"
+    },
+    {
+      "oldText": ".diss-workflow li[data-state=\"complete\"] { border-color: rgba(153,246,228,.55); background: rgba(13,148,136,.35); }\n.diss-workflow li[data-state=\"current\"] { border-color: #fde68a; background: #fef3c7; color: #422006; box-shadow: 0 0 0 2px rgba(246,198,91,.22); }\n.diss-workflow li[data-state=\"upcoming\"] { opacity: .72; }",
+      "newText": ".diss-workflow li[data-state=\"complete\"] { border-color: #83bead; background: #11464c; }\n.diss-workflow li[data-state=\"current\"] { border: 3px solid #fde68a; background: #fef3c7; color: #422006; box-shadow: none; }\n.diss-workflow li[data-state=\"upcoming\"] { opacity: 1; }"
+    },
+    {
+      "oldText": "@media (max-width: 640px) {\n  .diss-mission { padding: .9rem; border-radius: 1rem; }\n  .diss-mission__stats { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: .35rem; }\n  .diss-stat { padding: .48rem .45rem; }\n  .diss-mode-rail { gap: .35rem; }",
+      "newText": "@media (max-width: 640px) {\n  .diss-mode-rail { gap: .35rem; }"
+    },
+    {
+      "oldText": "@media (max-width: 430px) {\n  .diss-mission__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); }\n  .diss-mission__stats .diss-stat:last-child { grid-column: 1 / -1; }\n  .diss-stat__value { overflow: visible; text-overflow: clip; white-space: normal; }\n  .diss-field-monitor__summary { grid-template-columns: 1fr auto; }",
+      "newText": "@media (max-width: 430px) {\n  .diss-field-monitor__summary { grid-template-columns: 1fr auto; }"
+    },
+    {
+      "oldText": "  .diss-field-monitor__summary small { grid-column: 1 / -1; white-space: normal; }\n}\n`;",
+      "newText": "  .diss-field-monitor__summary small { grid-column: 1 / -1; white-space: normal; }\n}\n\n/* Mission status and navigation reflow with the lab's own width. */\n[data-dissection-root] .diss-mission-shortcuts button:focus-visible { outline: 3px solid #fde68a; outline-offset: 2px; box-shadow: none; }\n[data-dissection-root][data-text-size=\"large\"] .diss-mission :is(p, li, span, button) { font-size: 1rem !important; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-mission { border-color: #111827; background: #fff; color: #000; box-shadow: none; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-mission::after { display: none; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-mission :is(p, h2, li, span, button) { color: #000; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-mission :is(li, .diss-workflow__number, .diss-stat, button) { border-color: #111827; background: #fff; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-mission-shortcuts button:focus-visible { outline-color: #111827; }\n[data-dissection-root][data-high-contrast=\"true\"] .diss-workflow li[aria-current=\"step\"] { text-decoration: underline; text-underline-offset: .15em; }\n@container dissection (max-width: 980px) { .diss-workflow { grid-template-columns: repeat(3, minmax(0, 1fr)); } }\n@container dissection (max-width: 700px) { .diss-mission__stats { grid-template-columns: repeat(2, minmax(0, 1fr)); } .diss-mission__stats .diss-stat:last-child { grid-column: 1 / -1; } }\n@container dissection (max-width: 520px) { .diss-mission { padding: .85rem; border-radius: 1rem; } .diss-workflow { grid-template-columns: repeat(2, minmax(0, 1fr)); } }\n@container dissection (max-width: 440px) { .diss-mission__stats { grid-template-columns: minmax(0, 1fr); } .diss-mission__stats .diss-stat:last-child { grid-column: auto; } }\n@media (forced-colors: active) {\n  [data-dissection-root] .diss-mission { border-color: CanvasText; background: Canvas; color: CanvasText; box-shadow: none; }\n  .diss-mission::after { display: none; }\n  [data-dissection-root] .diss-mission :is(p, h2, li, span, button) { color: CanvasText; }\n  [data-dissection-root] .diss-mission :is(li, .diss-workflow__number, .diss-stat, button) { border-color: CanvasText; background: Canvas; }\n  .diss-workflow li[aria-current=\"step\"] { border-width: 3px; text-decoration: underline; text-underline-offset: .15em; }\n}\n`;"
+    },
+    {
+      "oldText": ".diss-mission::after {\n  content: \"\";\n  position: absolute;\n  width: 12rem;\n  height: 12rem;\n  right: -5rem;\n  bottom: -7rem;\n  border: 1.5rem solid rgba(255, 255, 255, .06);\n  border-radius: 999px;\n  pointer-events: none;\n}",
+      "newText": ".diss-mission::after {\n  content: \"\";\n  position: absolute;\n  inset: 0;\n  border-radius: inherit;\n  background: radial-gradient(circle at 100% 100%, transparent 0 5rem, rgba(255,255,255,.06) 5rem 6.5rem, transparent 6.5rem);\n  pointer-events: none;\n}"
+    },
+    {
+      "oldText": ".diss-mission__copy { max-width: 70ch; margin: .6rem 0 0; color: #e2edff; font-size: .875rem; line-height: 1.6; overflow-wrap: anywhere; }",
+      "newText": ".diss-mission__copy { max-width: 46rem; margin: .6rem 0 0; color: #e2edff; font-size: .875rem; line-height: 1.6; overflow-wrap: anywhere; }"
+    },
+    {
+      "oldText": ".diss-workflow li { display: flex; min-width: 0; min-height: 3.5rem; align-items: center; gap: .45rem; padding: .5rem; border: 1px solid #7fabbf; border-radius: .65rem; background: rgba(15,23,42,.34); color: #f8fafc; font-size: .875rem; font-weight: 750; line-height: 1.5; overflow-wrap: anywhere; }",
+      "newText": ".diss-workflow li { display: flex; min-width: 0; min-height: 3rem; align-items: center; gap: .45rem; padding: .5rem; border: 1px solid #7fabbf; border-radius: .65rem; background: rgba(15,23,42,.34); color: #f8fafc; font-size: .875rem; font-weight: 750; line-height: 1.5; overflow-wrap: anywhere; }"
+    },
+    {
+      "oldText": "@container dissection (max-width: 440px) { .diss-mission__stats { grid-template-columns: minmax(0, 1fr); } .diss-mission__stats .diss-stat:last-child { grid-column: auto; } }",
+      "newText": "@container dissection (max-width: 440px) { .diss-mission__stats { grid-template-columns: minmax(0, 1fr); } .diss-mission__stats .diss-stat:last-child { grid-column: auto; } .diss-stat { display: grid; grid-template-columns: minmax(0, .8fr) minmax(0, 1.4fr); align-items: center; gap: .5rem; padding: .55rem .65rem; } .diss-stat__value { margin-top: 0; } }"
+    },
+    {
+      "oldText": "React.createElement(\"div\", { className: \"diss-mission__stats\", \"aria-label\": __alloT('stem.dissection.a11y_current_lab_status', 'Current lab status') },",
+      "newText": "React.createElement(\"div\", { className: \"diss-mission__stats\", role: \"group\", \"aria-label\": __alloT('stem.dissection.a11y_current_lab_status', 'Current lab status') },"
+    }
+  ],
+  "initialAfterSha256": "e3d6cba4dce49800757df13b1019a2bbb27760a61f96f13f0f37d3f206aa3808",
+  "cssAfterSha256": "1110ca023e13e8a6dc46577effce15f6a1b2e45022eb5b17374e76d1997daf84",
+  "beforeSemanticSpecSha256": "29e155981f604232b1d921bdf7e1989bab61691f166c2bf00f6c53d13ebb02e4"
+}

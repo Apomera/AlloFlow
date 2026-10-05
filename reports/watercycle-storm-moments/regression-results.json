@@ -1,0 +1,2489 @@
+{
+  "numTotalTestSuites": 16,
+  "numPassedTestSuites": 16,
+  "numFailedTestSuites": 0,
+  "numPendingTestSuites": 0,
+  "numTotalTests": 122,
+  "numPassedTests": 122,
+  "numFailedTests": 0,
+  "numPendingTests": 0,
+  "numTodoTests": 0,
+  "snapshot": {
+    "added": 0,
+    "failure": false,
+    "filesAdded": 0,
+    "filesRemoved": 0,
+    "filesRemovedList": [],
+    "filesUnmatched": 0,
+    "filesUpdated": 0,
+    "matched": 0,
+    "total": 0,
+    "unchecked": 0,
+    "uncheckedKeysByFile": [],
+    "unmatched": 0,
+    "updated": 0,
+    "didUpdate": false
+  },
+  "startTime": 1790973777099,
+  "success": true,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity loads the actual helper and five production pairs from both shipped files",
+          "status": "passed",
+          "title": "loads the actual helper and five production pairs from both shipped files",
+          "duration": 1.9180999999998676,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity retains towers identity across fresh saved copies",
+          "status": "passed",
+          "title": "retains towers identity across fresh saved copies",
+          "duration": 0.2591000000002168,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity retains low-layers identity across fresh saved copies",
+          "status": "passed",
+          "title": "retains low-layers identity across fresh saved copies",
+          "duration": 0.18360000000006949,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity retains rain-layers identity across fresh saved copies",
+          "status": "passed",
+          "title": "retains rain-layers identity across fresh saved copies",
+          "duration": 0.16280000000006112,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity retains high-ice identity across fresh saved copies",
+          "status": "passed",
+          "title": "retains high-ice identity across fresh saved copies",
+          "duration": 0.1789000000001124,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity retains cloudlets identity across fresh saved copies",
+          "status": "passed",
+          "title": "retains cloudlets identity across fresh saved copies",
+          "duration": 0.13830000000007203,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose id no longer matches its canonical identity",
+          "status": "passed",
+          "title": "rejects a saved pair whose id no longer matches its canonical identity",
+          "duration": 0.9545000000000528,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose clouds no longer matches its canonical identity",
+          "status": "passed",
+          "title": "rejects a saved pair whose clouds no longer matches its canonical identity",
+          "duration": 0.6205999999999676,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose question no longer matches its canonical identity",
+          "status": "passed",
+          "title": "rejects a saved pair whose question no longer matches its canonical identity",
+          "duration": 0.5452999999999975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity rejects a saved pair whose answer no longer matches its canonical identity",
+          "status": "passed",
+          "title": "rejects a saved pair whose answer no longer matches its canonical identity",
+          "duration": 0.5235999999999876,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity rejects absent, unknown, and malformed pair identities",
+          "status": "passed",
+          "title": "rejects absent, unknown, and malformed pair identities",
+          "duration": 0.4433999999998832,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: canonical comparison identity"
+          ],
+          "fullName": "Water Cycle cloud evidence: canonical comparison identity safely rejects cyclic, BigInt, and nonstring cloud array members",
+          "status": "passed",
+          "title": "safely rejects cyclic, BigInt, and nonstring cloud array members",
+          "duration": 1.3635999999999058,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing normalizes malformed note bags to an empty object",
+          "status": "passed",
+          "title": "normalizes malformed note bags to an empty object",
+          "duration": 0.3106999999999971,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing keeps only canonical keys and known string fields",
+          "status": "passed",
+          "title": "keeps only canonical keys and known string fields",
+          "duration": 0.19290000000000873,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing omits malformed and empty entries without inventing learner notes",
+          "status": "passed",
+          "title": "omits malformed and empty entries without inventing learner notes",
+          "duration": 0.546500000000151,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing ignores inherited pair entries and inherited note fields",
+          "status": "passed",
+          "title": "ignores inherited pair entries and inherited note fields",
+          "duration": 0.23919999999998254,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing clips saved strings to the independent observation and uncertainty limits",
+          "status": "passed",
+          "title": "clips saved strings to the independent observation and uncertainty limits",
+          "duration": 0.13949999999999818,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing preserves multiline writing and returns independent copies",
+          "status": "passed",
+          "title": "preserves multiline writing and returns independent copies",
+          "duration": 0.24769999999989523,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing returns fresh blank field values when a known pair has no saved note",
+          "status": "passed",
+          "title": "returns fresh blank field values when a known pair has no saved note",
+          "duration": 0.24250000000006366,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing returns a fresh selected note without exposing the saved object",
+          "status": "passed",
+          "title": "returns a fresh selected note without exposing the saved object",
+          "duration": 0.18489999999997053,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for towers while keeping the other comparisons",
+          "status": "passed",
+          "title": "round-trips independent writing for towers while keeping the other comparisons",
+          "duration": 1.3846000000000913,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for low-layers while keeping the other comparisons",
+          "status": "passed",
+          "title": "round-trips independent writing for low-layers while keeping the other comparisons",
+          "duration": 1.1924999999998818,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for rain-layers while keeping the other comparisons",
+          "status": "passed",
+          "title": "round-trips independent writing for rain-layers while keeping the other comparisons",
+          "duration": 1.1592000000000553,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for high-ice while keeping the other comparisons",
+          "status": "passed",
+          "title": "round-trips independent writing for high-ice while keeping the other comparisons",
+          "duration": 1.1520000000000437,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing round-trips independent writing for cloudlets while keeping the other comparisons",
+          "status": "passed",
+          "title": "round-trips independent writing for cloudlets while keeping the other comparisons",
+          "duration": 1.1346000000000913,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing ignores unknown fields and nonstring writes without altering valid saved notes",
+          "status": "passed",
+          "title": "ignores unknown fields and nonstring writes without altering valid saved notes",
+          "duration": 0.9501000000000204,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing does not attach writing to unknown or changed comparison content",
+          "status": "passed",
+          "title": "does not attach writing to unknown or changed comparison content",
+          "duration": 0.31799999999998363,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing clears one field while retaining the other field and another pair",
+          "status": "passed",
+          "title": "clears one field while retaining the other field and another pair",
+          "duration": 0.200099999999793,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing removes the selected entry only when both note fields are empty",
+          "status": "passed",
+          "title": "removes the selected entry only when both note fields are empty",
+          "duration": 0.19219999999995707,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: recoverable learner writing"
+          ],
+          "fullName": "Water Cycle cloud evidence: recoverable learner writing clips writes and normalizes unrelated malformed entries in a pure copy",
+          "status": "passed",
+          "title": "clips writes and normalizes unrelated malformed entries in a pure copy",
+          "duration": 0.2637999999999465,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: original science, engines, and scoring"
+          ],
+          "fullName": "Water Cycle cloud evidence: original science, engines, and scoring pins the frozen baseline and identical shipped runtime bytes",
+          "status": "passed",
+          "title": "pins the frozen baseline and identical shipped runtime bytes",
+          "duration": 23.835199999999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: original science, engines, and scoring"
+          ],
+          "fullName": "Water Cycle cloud evidence: original science, engines, and scoring preserves both cloud banks, precipitation calculations and controls, engine refs, and cross-mode helpers",
+          "status": "passed",
+          "title": "preserves both cloud banks, precipitation calculations and controls, engine refs, and cross-mode helpers",
+          "duration": 386.4776999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: original science, engines, and scoring"
+          ],
+          "fullName": "Water Cycle cloud evidence: original science, engines, and scoring preserves the actual first-answer quiz and myth scoring statements",
+          "status": "passed",
+          "title": "preserves the actual first-answer quiz and myth scoring statements",
+          "duration": 378.4707000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle cloud evidence: original science, engines, and scoring"
+          ],
+          "fullName": "Water Cycle cloud evidence: original science, engines, and scoring preserves the complete comparison and signal derivation ranges",
+          "status": "passed",
+          "title": "preserves the complete comparison and signal derivation ranges",
+          "duration": 14.769600000000082,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790973799141,
+      "endTime": 1790973799962.7695,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_cloud_evidence.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: bounded scientific catalog"
+          ],
+          "fullName": "Water Cycle groundwater lens: bounded scientific catalog loads the actual bounded helper from both shipped runtimes",
+          "status": "passed",
+          "title": "loads the actual bounded helper from both shipped runtimes",
+          "duration": 2.305499999999938,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: bounded scientific catalog"
+          ],
+          "fullName": "Water Cycle groundwater lens: bounded scientific catalog returns fresh part definitions that cannot alter the scientific catalog",
+          "status": "passed",
+          "title": "returns fresh part definitions that cannot alter the scientific catalog",
+          "duration": 1.3095999999998185,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: bounded scientific catalog"
+          ],
+          "fullName": "Water Cycle groundwater lens: bounded scientific catalog returns detached fixed interpretations with stable unscored answer identities",
+          "status": "passed",
+          "title": "returns detached fixed interpretations with stable unscored answer identities",
+          "duration": 0.5125000000000455,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: bounded scientific catalog"
+          ],
+          "fullName": "Water Cycle groundwater lens: bounded scientific catalog keeps soil inspection selectable without inventing a measurement",
+          "status": "passed",
+          "title": "keeps soil inspection selectable without inventing a measurement",
+          "duration": 0.539299999999912,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: bounded scientific catalog"
+          ],
+          "fullName": "Water Cycle groundwater lens: bounded scientific catalog keeps boundary inspection selectable without inventing a measurement",
+          "status": "passed",
+          "title": "keeps boundary inspection selectable without inventing a measurement",
+          "duration": 0.20869999999990796,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: bounded scientific catalog"
+          ],
+          "fullName": "Water Cycle groundwater lens: bounded scientific catalog keeps groundwater inspection selectable without inventing a measurement",
+          "status": "passed",
+          "title": "keeps groundwater inspection selectable without inventing a measurement",
+          "duration": 0.4230999999999767,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context defaults independent Explorer and Check contexts to soil with no answer",
+          "status": "passed",
+          "title": "defaults independent Explorer and Check contexts to soil with no answer",
+          "duration": 0.3044000000002143,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context recognizes soil_storage as supported without a score or reward",
+          "status": "passed",
+          "title": "recognizes soil_storage as supported without a score or reward",
+          "duration": 1.2275999999999385,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context recognizes all_recharge as retry without a score or reward",
+          "status": "passed",
+          "title": "recognizes all_recharge as retry without a score or reward",
+          "duration": 0.30539999999996326,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context recognizes dry_soil as retry without a score or reward",
+          "status": "passed",
+          "title": "recognizes dry_soil as retry without a score or reward",
+          "duration": 0.2623999999998432,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context binds Check answers to the full question identity including equal 160-character prefixes",
+          "status": "passed",
+          "title": "binds Check answers to the full question identity including equal 160-character prefixes",
+          "duration": 0.3103000000000975,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context clears stale Check feedback while retaining the learner inspection choice",
+          "status": "passed",
+          "title": "clears stale Check feedback while retaining the learner inspection choice",
+          "duration": 0.26129999999989195,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context answers a changed Check question with its new identity and the retained part",
+          "status": "passed",
+          "title": "answers a changed Check question with its new identity and the retained part",
+          "duration": 0.4621999999999389,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context does not reuse a Check answer in Explorer or an Explorer answer in Check",
+          "status": "passed",
+          "title": "does not reuse a Check answer in Explorer or an Explorer answer in Check",
+          "duration": 0.13429999999993925,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context ignores a supplied Explorer identity because its lesson has a fixed identity",
+          "status": "passed",
+          "title": "ignores a supplied Explorer identity because its lesson has a fixed identity",
+          "duration": 0.2942000000000462,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context requires a nonempty string Check identity (missing)",
+          "status": "passed",
+          "title": "requires a nonempty string Check identity (missing)",
+          "duration": 0.19200000000000728,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context requires a nonempty string Check identity (null)",
+          "status": "passed",
+          "title": "requires a nonempty string Check identity (null)",
+          "duration": 0.09320000000002437,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context requires a nonempty string Check identity (number)",
+          "status": "passed",
+          "title": "requires a nonempty string Check identity (number)",
+          "duration": 0.10140000000001237,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context requires a nonempty string Check identity (object)",
+          "status": "passed",
+          "title": "requires a nonempty string Check identity (object)",
+          "duration": 0.12359999999989668,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context requires a nonempty string Check identity (array)",
+          "status": "passed",
+          "title": "requires a nonempty string Check identity (array)",
+          "duration": 0.1011999999998352,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context requires a nonempty string Check identity (empty string)",
+          "status": "passed",
+          "title": "requires a nonempty string Check identity (empty string)",
+          "duration": 0.09720000000015716,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context rejects feedback from saved version undefined while retaining the part",
+          "status": "passed",
+          "title": "rejects feedback from saved version undefined while retaining the part",
+          "duration": 0.19600000000014006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context rejects feedback from saved version null while retaining the part",
+          "status": "passed",
+          "title": "rejects feedback from saved version null while retaining the part",
+          "duration": 0.09269999999992251,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context rejects feedback from saved version 0 while retaining the part",
+          "status": "passed",
+          "title": "rejects feedback from saved version 0 while retaining the part",
+          "duration": 0.19160000000010768,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context rejects feedback from saved version 1 while retaining the part",
+          "status": "passed",
+          "title": "rejects feedback from saved version 1 while retaining the part",
+          "duration": 0.0884000000000924,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context rejects feedback from saved version 2 while retaining the part",
+          "status": "passed",
+          "title": "rejects feedback from saved version 2 while retaining the part",
+          "duration": 0.08320000000003347,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context clears feedback on every explicit part selection including the selected part",
+          "status": "passed",
+          "title": "clears feedback on every explicit part selection including the selected part",
+          "duration": 0.3249999999998181,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: question, identity and context"
+          ],
+          "fullName": "Water Cycle groundwater lens: question, identity and context preserves the other context as a detached normalized copy",
+          "status": "passed",
+          "title": "preserves the other context as a detached normalized copy",
+          "duration": 0.7882000000001881,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: safe saved metadata"
+          ],
+          "fullName": "Water Cycle groundwater lens: safe saved metadata rejects invalid scopes for reading and copies metadata without writes for mutations",
+          "status": "passed",
+          "title": "rejects invalid scopes for reading and copies metadata without writes for mutations",
+          "duration": 1.9355000000000473,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: safe saved metadata"
+          ],
+          "fullName": "Water Cycle groundwater lens: safe saved metadata does not coerce unsupported part or answer values into canonical IDs",
+          "status": "passed",
+          "title": "does not coerce unsupported part or answer values into canonical IDs",
+          "duration": 1.9931000000001404,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: safe saved metadata"
+          ],
+          "fullName": "Water Cycle groundwater lens: safe saved metadata ignores inherited context records and inherited metadata fields",
+          "status": "passed",
+          "title": "ignores inherited context records and inherited metadata fields",
+          "duration": 0.6551999999999225,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: safe saved metadata"
+          ],
+          "fullName": "Water Cycle groundwater lens: safe saved metadata rejects arrays carrying named contexts or named record properties",
+          "status": "passed",
+          "title": "rejects arrays carrying named contexts or named record properties",
+          "duration": 0.31300000000010186,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: safe saved metadata"
+          ],
+          "fullName": "Water Cycle groundwater lens: safe saved metadata normalizes malformed, cyclic and BigInt bags without traversing unknown state",
+          "status": "passed",
+          "title": "normalizes malformed, cyclic and BigInt bags without traversing unknown state",
+          "duration": 2.157600000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: safe saved metadata"
+          ],
+          "fullName": "Water Cycle groundwater lens: safe saved metadata drops unknown properties and returns metadata without copying model, notes or rewards",
+          "status": "passed",
+          "title": "drops unknown properties and returns metadata without copying model, notes or rewards",
+          "duration": 0.33390000000008513,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: safe saved metadata"
+          ],
+          "fullName": "Water Cycle groundwater lens: safe saved metadata does not mutate deeply frozen metadata when reading, selecting or answering",
+          "status": "passed",
+          "title": "does not mutate deeply frozen metadata when reading, selecting or answering",
+          "duration": 0.16219999999998436,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: actual unscored renderer callbacks"
+          ],
+          "fullName": "Water Cycle groundwater lens: actual unscored renderer callbacks inspects soil through the real button, updates semantic state and preserves live simulation state",
+          "status": "passed",
+          "title": "inspects soil through the real button, updates semantic state and preserves live simulation state",
+          "duration": 276.9493,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: actual unscored renderer callbacks"
+          ],
+          "fullName": "Water Cycle groundwater lens: actual unscored renderer callbacks inspects boundary through the real button, updates semantic state and preserves live simulation state",
+          "status": "passed",
+          "title": "inspects boundary through the real button, updates semantic state and preserves live simulation state",
+          "duration": 262.3275000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: actual unscored renderer callbacks"
+          ],
+          "fullName": "Water Cycle groundwater lens: actual unscored renderer callbacks inspects groundwater through the real button, updates semantic state and preserves live simulation state",
+          "status": "passed",
+          "title": "inspects groundwater through the real button, updates semantic state and preserves live simulation state",
+          "duration": 258.8593999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: actual unscored renderer callbacks"
+          ],
+          "fullName": "Water Cycle groundwater lens: actual unscored renderer callbacks uses the real soil_storage answer callback to produce supported feedback without score writes",
+          "status": "passed",
+          "title": "uses the real soil_storage answer callback to produce supported feedback without score writes",
+          "duration": 261.58269999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: actual unscored renderer callbacks"
+          ],
+          "fullName": "Water Cycle groundwater lens: actual unscored renderer callbacks uses the real all_recharge answer callback to produce retry feedback without score writes",
+          "status": "passed",
+          "title": "uses the real all_recharge answer callback to produce retry feedback without score writes",
+          "duration": 310.7365,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: actual unscored renderer callbacks"
+          ],
+          "fullName": "Water Cycle groundwater lens: actual unscored renderer callbacks uses the real dry_soil answer callback to produce retry feedback without score writes",
+          "status": "passed",
+          "title": "uses the real dry_soil answer callback to produce retry feedback without score writes",
+          "duration": 400.6432,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: actual unscored renderer callbacks"
+          ],
+          "fullName": "Water Cycle groundwater lens: actual unscored renderer callbacks binds actual Check rendering to the complete canonical normalized question key and isolates Explorer",
+          "status": "passed",
+          "title": "binds actual Check rendering to the complete canonical normalized question key and isolates Explorer",
+          "duration": 450.49609999999984,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: actual unscored renderer callbacks"
+          ],
+          "fullName": "Water Cycle groundwater lens: actual unscored renderer callbacks does not trust an invalid saved Check session key when recording new practice feedback",
+          "status": "passed",
+          "title": "does not trust an invalid saved Check session key when recording new practice feedback",
+          "duration": 434.0459000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: independent simulation preservation"
+          ],
+          "fullName": "Water Cycle groundwater lens: independent simulation preservation pins the committed exact prior runtime and source/public parity",
+          "status": "passed",
+          "title": "pins the committed exact prior runtime and source/public parity",
+          "duration": 47.5011999999997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: independent simulation preservation"
+          ],
+          "fullName": "Water Cycle groundwater lens: independent simulation preservation preserves complete model, routes, physical-time traces and 3D engine plus all 2D code outside the reviewed pore paint",
+          "status": "passed",
+          "title": "preserves complete model, routes, physical-time traces and 3D engine plus all 2D code outside the reviewed pore paint",
+          "duration": 605.2887000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: independent simulation preservation"
+          ],
+          "fullName": "Water Cycle groundwater lens: independent simulation preservation preserves exact original quiz and myth first-answer counters and rewards",
+          "status": "passed",
+          "title": "preserves exact original quiz and myth first-answer counters and rewards",
+          "duration": 633.2674999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: independent simulation preservation"
+          ],
+          "fullName": "Water Cycle groundwater lens: independent simulation preservation rejects state writes and arbitrary calls inside the reviewed decorative paint boundary",
+          "status": "passed",
+          "title": "rejects state writes and arbitrary calls inside the reviewed decorative paint boundary",
+          "duration": 1.9695000000001528,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: independent simulation preservation"
+          ],
+          "fullName": "Water Cycle groundwater lens: independent simulation preservation detects changes outside the decorative block rather than excluding the 2D engine",
+          "status": "passed",
+          "title": "detects changes outside the decorative block rather than excluding the 2D engine",
+          "duration": 357.76820000000043,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle groundwater lens: independent simulation preservation"
+          ],
+          "fullName": "Water Cycle groundwater lens: independent simulation preservation requires the new Check wrapper to be only the shared unscored renderer adapter",
+          "status": "passed",
+          "title": "requires the new Check wrapper to be only the shared unscored renderer adapter",
+          "duration": 0.9717000000000553,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790973779223,
+      "endTime": 1790973783547.9717,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_groundwater_lens.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab server-renders the expanded lab without mounting canvas refs",
+          "status": "passed",
+          "title": "server-renders the expanded lab without mounting canvas refs",
+          "duration": 2115.1362,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab renders a phase-coded HUD, intensity meter, and connected atmospheric pathway",
+          "status": "passed",
+          "title": "renders a phase-coded HUD, intensity meter, and connected atmospheric pathway",
+          "duration": 501.2022000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab keeps the source and deploy mirror byte-identical",
+          "status": "passed",
+          "title": "keeps the source and deploy mirror byte-identical",
+          "duration": 34.92150000000038,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab classifies the six investigation presets with the shared science kernel",
+          "status": "passed",
+          "title": "classifies the six investigation presets with the shared science kernel",
+          "duration": 89.14420000000018,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab uses the vertical profile for phase and lower-air humidity for virga",
+          "status": "passed",
+          "title": "uses the vertical profile for phase and lower-air humidity for virga",
+          "duration": 49.5927999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab separates horizontal drift from vertical precipitation growth over plains",
+          "status": "passed",
+          "title": "separates horizontal drift from vertical precipitation growth over plains",
+          "duration": 41.36959999999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab provides a lifecycle-safe 2.5D chamber and a bridge to the existing 3D journey",
+          "status": "passed",
+          "title": "provides a lifecycle-safe 2.5D chamber and a bridge to the existing 3D journey",
+          "duration": 80.33320000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab exposes a dedicated 3D cloud chamber without changing the default 2D lab",
+          "status": "passed",
+          "title": "exposes a dedicated 3D cloud chamber without changing the default 2D lab",
+          "duration": 532.3179,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab explains the magnified cloud-formation sequence in the warm inside-cloud lens",
+          "status": "passed",
+          "title": "explains the magnified cloud-formation sequence in the warm inside-cloud lens",
+          "duration": 442.2029000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab explains and keys the visible virga evaporation sequence without implying vapor is visible",
+          "status": "passed",
+          "title": "explains and keys the visible virga evaporation sequence without implying vapor is visible",
+          "duration": 486.89780000000064,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab labels the expanded controls and dynamic result for assistive technology",
+          "status": "passed",
+          "title": "labels the expanded controls and dynamic result for assistive technology",
+          "duration": 92.78420000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab models phase changes by fall height and exposes the schematic thermal layer",
+          "status": "passed",
+          "title": "models phase changes by fall height and exposes the schematic thermal layer",
+          "duration": 43.5625,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab supports a warm inversion with separate melting and refreezing layers",
+          "status": "passed",
+          "title": "supports a warm inversion with separate melting and refreezing layers",
+          "duration": 42.54709999999977,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab server-renders the interactive three-point temperature profile",
+          "status": "passed",
+          "title": "server-renders the interactive three-point temperature profile",
+          "duration": 530.0292,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab checks flash-to-thunder distance estimates with qualitative feedback",
+          "status": "passed",
+          "title": "checks flash-to-thunder distance estimates with qualitative feedback",
+          "duration": 127.67680000000018,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab limits lightning to cold mixed-phase deep convection",
+          "status": "passed",
+          "title": "limits lightning to cold mixed-phase deep convection",
+          "duration": 40.18449999999939,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab bridges the complete hail profile into the existing 3D renderer",
+          "status": "passed",
+          "title": "bridges the complete hail profile into the existing 3D renderer",
+          "duration": 562.2624000000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab models developing, mature, and weakening stages with cumulative ground effects",
+          "status": "passed",
+          "title": "models developing, mature, and weakening stages with cumulative ground effects",
+          "duration": 43.52860000000055,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab explains the flash-to-thunder delay and keeps sound optional",
+          "status": "passed",
+          "title": "explains the flash-to-thunder delay and keeps sound optional",
+          "duration": 37.23739999999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab offers normalized, accessible guided lightning snapshots without changing the weather setup",
+          "status": "passed",
+          "title": "offers normalized, accessible guided lightning snapshots without changing the weather setup",
+          "duration": 639.9408999999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab models storm charge anatomy and deterministic thunder-wave travel",
+          "status": "passed",
+          "title": "models storm charge anatomy and deterministic thunder-wave travel",
+          "duration": 41.532899999999245,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab server-renders non-color storm anatomy, pathway, and instrument semantics",
+          "status": "passed",
+          "title": "server-renders non-color storm anatomy, pathway, and instrument semantics",
+          "duration": 645.1229000000003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab keeps one causal flash event active until the modeled thunder wave arrives",
+          "status": "passed",
+          "title": "keeps one causal flash event active until the modeled thunder wave arrives",
+          "duration": 77.22990000000027,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Water Cycle Precipitation Lab"
+          ],
+          "fullName": "Water Cycle Precipitation Lab keeps enhanced storm cues semantic, pooled, and reduced-motion safe",
+          "status": "passed",
+          "title": "keeps enhanced storm cues semantic, pooled, and reduced-motion safe",
+          "duration": 127.86189999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790973784794,
+      "endTime": 1790973792222.8618,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_precipitation_lab.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Storm Lab controlled experiments"
+          ],
+          "fullName": "Storm Lab controlled experiments captures a normalized, immutable setup independent of mutable source data",
+          "status": "passed",
+          "title": "captures a normalized, immutable setup independent of mutable source data",
+          "duration": 2.4826000000000477,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm Lab controlled experiments"
+          ],
+          "fullName": "Storm Lab controlled experiments records the derived middle temperature so later replay does not derive a different profile",
+          "status": "passed",
+          "title": "records the derived middle temperature so later replay does not derive a different profile",
+          "duration": 1.3514999999999873,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm Lab controlled experiments"
+          ],
+          "fullName": "Storm Lab controlled experiments ignores display, playback, environment, and notebook choices",
+          "status": "passed",
+          "title": "ignores display, playback, environment, and notebook choices",
+          "duration": 0.9023999999999432,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm Lab controlled experiments"
+          ],
+          "fullName": "Storm Lab controlled experiments compares recomputed phases while intensity can remain unchanged",
+          "status": "passed",
+          "title": "compares recomputed phases while intensity can remain unchanged",
+          "duration": 1.4564000000000306,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm Lab controlled experiments"
+          ],
+          "fullName": "Storm Lab controlled experiments identifies lifecycle progress as a changed model condition",
+          "status": "passed",
+          "title": "identifies lifecycle progress as a changed model condition",
+          "duration": 0.8313999999998032,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm Lab controlled experiments"
+          ],
+          "fullName": "Storm Lab controlled experiments reports every changed condition rather than treating two presets as a fair one-variable test",
+          "status": "passed",
+          "title": "reports every changed condition rather than treating two presets as a fair one-variable test",
+          "duration": 2.6398000000001502,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm Lab controlled experiments"
+          ],
+          "fullName": "Storm Lab controlled experiments distinguishes a timing-only distance change from precipitation changes",
+          "status": "passed",
+          "title": "distinguishes a timing-only distance change from precipitation changes",
+          "duration": 0.7947999999998956,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm Lab controlled experiments"
+          ],
+          "fullName": "Storm Lab controlled experiments counts wind and terrain choices even when a particular outcome does not change",
+          "status": "passed",
+          "title": "counts wind and terrain choices even when a particular outcome does not change",
+          "duration": 0.7335000000000491,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm Lab controlled experiments"
+          ],
+          "fullName": "Storm Lab controlled experiments keeps both computed models independent of inputs and later comparisons",
+          "status": "passed",
+          "title": "keeps both computed models independent of inputs and later comparisons",
+          "duration": 0.7721999999998843,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790973801194,
+      "endTime": 1790973801205.7722,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_storm_experiment.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Storm immersion weather response"
+          ],
+          "fullName": "Storm immersion weather response moves toward selected conditions without a jump or overshoot",
+          "status": "passed",
+          "title": "moves toward selected conditions without a jump or overshoot",
+          "duration": 2231.7259000000004,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm immersion weather response"
+          ],
+          "fullName": "Storm immersion weather response has the same response at different frame rates",
+          "status": "passed",
+          "title": "has the same response at different frame rates",
+          "duration": 378.3049000000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm immersion weather response"
+          ],
+          "fullName": "Storm immersion weather response applies reduced-motion changes immediately and retains discrete choices",
+          "status": "passed",
+          "title": "applies reduced-motion changes immediately and retains discrete choices",
+          "duration": 371.3960000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm immersion weather response"
+          ],
+          "fullName": "Storm immersion weather response slows before reversing wind direction instead of flipping instantly",
+          "status": "passed",
+          "title": "slows before reversing wind direction instead of flipping instantly",
+          "duration": 415.9837000000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm immersion weather response"
+          ],
+          "fullName": "Storm immersion weather response bounds saved navigation and transition settings",
+          "status": "passed",
+          "title": "bounds saved navigation and transition settings",
+          "duration": 490.53459999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Storm immersion weather response"
+          ],
+          "fullName": "Storm immersion weather response renders recovery, touch navigation, and track controls in the 3D view",
+          "status": "passed",
+          "title": "renders recovery, touch navigation, and track controls in the 3D view",
+          "duration": 553.0340000000006,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790973793258,
+      "endTime": 1790973797701.034,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/watercycle_storm_immersion.test.js"
+    }
+  ],
+  "waterCycleStormMomentsVerification": {
+    "mode": "regression",
+    "expectedRuntimeSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+    "startedAt": "2026-10-02T20:42:56.535Z",
+    "runtimeFiles": [
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929
+      }
+    ],
+    "testFiles": [
+      {
+        "path": "tests/watercycle_precipitation_lab.test.js",
+        "sha256": "6ebfd62ac589a6842e3ce5da462cae6cb65720f7d15798bc11dba447c99e4609",
+        "bytes": 40595
+      },
+      {
+        "path": "tests/watercycle_storm_experiment.test.js",
+        "sha256": "ef21b9e3ba40c1d76be1f5cde31b975d64db41865657cdd77a1f9205900330b9",
+        "bytes": 6570
+      },
+      {
+        "path": "tests/watercycle_storm_immersion.test.js",
+        "sha256": "0978dccd46963f1f80c98d8ab8ced447941fe53911a560f3c782db6b5cdb4dbd",
+        "bytes": 3132
+      },
+      {
+        "path": "tests/watercycle_cloud_evidence.test.js",
+        "sha256": "1ba4b499c6146597fd7ca840877b7288d33d172aa2c0d8fd2bc0e2f038473568",
+        "bytes": 23808
+      },
+      {
+        "path": "tests/watercycle_groundwater_lens.test.js",
+        "sha256": "7ae7f27b198b5efcb98b430e191480c9cf34042cdff949af4d9b9cdfd73445c2",
+        "bytes": 32790
+      }
+    ],
+    "fixtureFiles": [
+      {
+        "path": "reports/watercycle-cloud-evidence/baseline-runtime.js",
+        "sha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+        "bytes": 2999560,
+        "expectedSha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c"
+      },
+      {
+        "path": "reports/watercycle-steward-history/browser-tested-runtime.js",
+        "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+        "bytes": 3035457,
+        "expectedSha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a"
+      }
+    ],
+    "closureEvidence": [
+      {
+        "path": "reports/watercycle-storm-moments/baseline-results.json",
+        "sha256": "aa0a4679146793664d15b87cfab129e6e08e83e3f8c4e02cc197c061009a9fd6",
+        "bytes": 145137,
+        "mode": "baseline",
+        "sourceSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "publicSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "successful": true,
+        "historical": false,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/baseline-tested-runtime.js",
+          "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+          "bytes": 3058809
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T15:05:28.247Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-results.json",
+        "sha256": "04187a7c60db26830c2d81363bb08cc525ed4d2420d6e4fb6e02a297e82d1c55",
+        "bytes": 411542,
+        "mode": "browser-preflight",
+        "sourceSha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+        "publicSha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+        "successful": false,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-tested-runtime.js",
+          "sha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+          "bytes": 3088096
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:00:41.182Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-results.json",
+        "sha256": "2a0b0a15845098f278648d51b4dbde4b505b9286f60ce9712c9a5f4e2fee6741",
+        "bytes": 2149514,
+        "mode": "browser",
+        "sourceSha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+        "publicSha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+        "successful": false,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-tested-runtime.js",
+          "sha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+          "bytes": 3088179
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:13:34.444Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/browser-preflight-results.json",
+        "sha256": "e91c2355d5ce1fb31594c58684da49e1bdf7d35bb27d78b7967fb9d71467fddb",
+        "bytes": 246591,
+        "mode": "browser-preflight",
+        "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "publicSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "successful": true,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/browser-preflight-tested-runtime.js",
+          "sha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+          "bytes": 3088986
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:17:12.314Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-results.json",
+        "sha256": "fc5ca8b13894843a8cec0e558f3cbd0f45be4691ee2edeec58621e2068b1253e",
+        "bytes": 1883148,
+        "mode": "browser",
+        "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "publicSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "successful": true,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-tested-runtime.js",
+          "sha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+          "bytes": 3088986
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:21:12.135Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-results.json",
+        "sha256": "81e93b9f51988d4b46ddedee4a4d25e0e456b898a70f338424a1c295e8495eaf",
+        "bytes": 1890707,
+        "mode": "browser",
+        "sourceSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "publicSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "successful": true,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-tested-runtime.js",
+          "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+          "bytes": 3088917
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:27:17.565Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/browser-results.json",
+        "sha256": "09ffcae756327641c1893979b97884a0f9cbda7cb6937a2b1ca9b10b9105efee",
+        "bytes": 1890707,
+        "mode": "browser",
+        "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "publicSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "successful": true,
+        "historical": false,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/browser-tested-runtime.js",
+          "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+          "bytes": 3088929
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:39:10.124Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      }
+    ],
+    "preservation": {
+      "baselinePath": "reports/watercycle-storm-moments/baseline-runtime.js",
+      "baselineSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "kernelExportSha256": "da24a0e41cc4cdf235271266034829f83497eba9523cbbe9093b6d6a67bbfe6a",
+      "timelineAnchors": [
+        {
+          "index": 0,
+          "sha256": "ed7bd64c322af4632d2f5ce1a05cf95df7e756b1e66112298005613785a08f3b"
+        },
+        {
+          "index": 1,
+          "sha256": "339194213f7a3fe546f67585cd8d1f4d9dc37041b2b8802bfe9157126b02f6d4"
+        },
+        {
+          "index": 2,
+          "sha256": "8aab0671239c6275549f3e17f4d2f95025002bbd8efc9ffc3661fa07dc8a36d8"
+        },
+        {
+          "index": 3,
+          "sha256": "9fd104ba176b74305023b779ddae1257ea0e38114191b5316ae7c022d51d5dff"
+        },
+        {
+          "index": 4,
+          "sha256": "b41c2fd8ec7307cb68509f39987546fb8cb0ce950625e1723d503b5ee450191f"
+        }
+      ],
+      "anchors": [
+        {
+          "name": "wcPrecipClamp",
+          "sha256": "3fa034a6f72f30bfd06904397bf0e5b3d592966b43e8026ae40db4824a93db32"
+        },
+        {
+          "name": "advanceWcStormWeather",
+          "sha256": "d5737b72f907e26231dda1382635f6f401a084083dfacc0efc1c1324afed526e"
+        },
+        {
+          "name": "WC_PRECIP_DEFAULTS",
+          "sha256": "e2f88e8943e3fe2b30bbf0ceeb0e86be4b6762511c171757107cdb30ba2a520e"
+        },
+        {
+          "name": "WC_PRECIP_PRESETS",
+          "sha256": "dd8b800709339a35e35ec9d0dd8b00a8bc8b2d39fe0498e50aa994c24adf560a"
+        },
+        {
+          "name": "normalizeWcPrecipConfig",
+          "sha256": "9b968009281e991f870072d14a1b74f7036f08e77966c3c7760b5d990a2637b6"
+        },
+        {
+          "name": "wcPrecipTemperatureAt",
+          "sha256": "087d9089835a39401cb0f2c56d7e5a3302604851c2b26424a52f63eae91afdeb"
+        },
+        {
+          "name": "buildWcPrecipThermalStructure",
+          "sha256": "c876d75d0ec5ca5a63bbabdac15c6dc5b66767b4c603025f6fa47c37fd3cd360"
+        },
+        {
+          "name": "buildWcStormLifecycle",
+          "sha256": "aa96e105fc6311baa58cffd0be4c8fc95080479b8a659a8ae78294a6121b2a62"
+        },
+        {
+          "name": "buildWcThunderModel",
+          "sha256": "bb6f68de2aab6a593f4ff08c3949123f76e22f0e883d5830a6c03b5046465fd5"
+        },
+        {
+          "name": "evaluateWcThunderEstimate",
+          "sha256": "8a787efb80773b2a2be99f70ca6ee5562bebdcca9934f1e9d646465855fae24b"
+        },
+        {
+          "name": "buildWcStormAnatomy",
+          "sha256": "1966b150f8db2d8c9855ea883da8933cd510f93f61ef96e63fea96c59602ffa3"
+        },
+        {
+          "name": "computeWcPrecipitationModel",
+          "sha256": "01d0a78646cafbc11459296425e0674dd308d4201bf4b58ab4324b8f4b4aa88e"
+        },
+        {
+          "name": "wcPrecipPhaseAtTransitions",
+          "sha256": "17ef2e8888a6f211b0172ca9102359551c8f8a0dcca39a86870b0c3efab72da6"
+        },
+        {
+          "name": "wcPrecipPhaseFromModel",
+          "sha256": "b6257da2ad5b0a760cd1e02d57397638091f7c55e144794a850fa39f5032028a"
+        },
+        {
+          "name": "wcPrecipPhaseAt",
+          "sha256": "1accf9572082154abfd983859d5c4cede1e57a257ba9ab2f1cdec6a7f927c67f"
+        },
+        {
+          "name": "WC_PRECIP_EXPERIMENT_INPUTS",
+          "sha256": "d09da164201a05bcdd98f3db44b73798a757ae2148a7c1057132ac79952938be"
+        },
+        {
+          "name": "wcPrecipSetupSnapshot",
+          "sha256": "6db71b7a9a9d4dc40ef9dd2be64b506b2bfc3b4c5204eb3586c72516f70d4e5b"
+        },
+        {
+          "name": "wcPrecipExperimentValue",
+          "sha256": "49c0744b002cf5ab9a52fa056eba0d1729b861d2bf8568cbc6edb6964076920c"
+        },
+        {
+          "name": "wcPrecipExperiment",
+          "sha256": "2ba07171749c8b473dd3c66c2230a0717c6163356aaad9f0f51952f1338004d1"
+        },
+        {
+          "name": "stormStageStops",
+          "sha256": "554c9fcfc2557ff2b133ef2ac032eee75e75afc53f0cff7b28c6ebea1b981b7e"
+        },
+        {
+          "name": "stormAccumulationKeys",
+          "sha256": "f24e9c095f39506ece14307d85a34b0b4da1915dacf3bc06774b3c889415968a"
+        },
+        {
+          "name": "setStormLifecycleTime",
+          "sha256": "7f9de8974b4b48d38d91e471d44110765e1442ec7a3e45bf549f76371841a33d"
+        },
+        {
+          "name": "setIQ",
+          "sha256": "2d81907ea3a5bb59d268c287500fc095954af5bb9dddbca82a37aaf5eee9e28b"
+        },
+        {
+          "name": "stormExperiment",
+          "sha256": "118f92e524bc4973bb27f131c140e183221facd467ae40ad26b0d8574072c32d"
+        },
+        {
+          "name": "stormSavedPairs",
+          "sha256": "5a11acd1b4f8d61c6bd9dcef243ed042224bf2a63e485aca5eb041c9e3c77d53"
+        },
+        {
+          "name": "stormVariables",
+          "sha256": "4173e05eb75d4c7f022b69601097ab7996454d6193b681c05e364b4649180204"
+        },
+        {
+          "name": "setStormExperiment",
+          "sha256": "d0cdd16fd393d780091b07943566be113da047dfd75b52a963dbc2ec42bad8e6"
+        },
+        {
+          "name": "stormExperimentFocus",
+          "sha256": "40507b4b8512a03a3addf076de10aea9f484e61734a7229926517ea839b11d5a"
+        },
+        {
+          "name": "pinStormSetup",
+          "sha256": "44efeb82c91e78608a56d2a84df4b166670a11cfc04951601060f8c5b49b6268"
+        },
+        {
+          "name": "startStormExperiment",
+          "sha256": "d3876fb38ddf4678668de6301eda84f0797d1a6d7245c379394e6496208aed56"
+        },
+        {
+          "name": "restoreStormControls",
+          "sha256": "e03e72dc0a2e47d0f79a638bc0257e3498bf3a00229c24f89a9a2267b44c10b4"
+        },
+        {
+          "name": "saveStormComparison",
+          "sha256": "9199c6dbe9b071c7513f0f36fca6c45319e239e4c5780a9975d774db0ddf560f"
+        },
+        {
+          "name": "downloadStormComparison",
+          "sha256": "23d7685bf653ffd9edbe8acc5d4045bd8adac9bc8adf81aef58d960d5f0312dc"
+        },
+        {
+          "name": "stormComparisonLabel",
+          "sha256": "28d792b4da79e81e5ee8421843128c6ffe7cb6281e96294a41c84dbeafac8aa1"
+        },
+        {
+          "name": "stormComparisonValue",
+          "sha256": "7d26c9e3e1fd2d04d6556326bd63cbf14d4e137a4211065f313973f0da751ff6"
+        },
+        {
+          "name": "renderStormSetup",
+          "sha256": "333341a966ebecc7903807ac4292542a119c1061bcbbb031c66d046e8026f4ea"
+        },
+        {
+          "name": "renderStormExperiment",
+          "sha256": "2c53cf500c66f1c472cc40eae68c531f38e84c38a634a2a7579f6e2aa38a9340"
+        },
+        {
+          "name": "setPrecipControl",
+          "sha256": "791c3d4b2640b621e6ec94c166cbbf2076c6737365887b864ec17bf079b7602e"
+        },
+        {
+          "name": "setPrecipViewMode",
+          "sha256": "f5369dc58cef32e629d290b8408f96bca2014551f28150f21bfdcfedb8b7bb28"
+        },
+        {
+          "name": "setPrecipCameraFocus",
+          "sha256": "20917460429982f7288e386921640f16d5214e315061b709c5291b55e5db3c38"
+        },
+        {
+          "name": "applyPrecipPreset",
+          "sha256": "df1794bd36119b29537ddf6be185dccd6deef19799a88555f972bbd2eae84fd4"
+        },
+        {
+          "name": "resetPrecipLab",
+          "sha256": "da110ff15ea45bac2ba2d23e5ba4993e0bc84135ea80fce1a860b31102cd5a13"
+        },
+        {
+          "name": "logPrecipObservation",
+          "sha256": "f2032a3244bd8e8c91267600ab99614eab120591562e3c40fb4f3e7770d33d80"
+        },
+        {
+          "name": "openPrecipitationIn3d",
+          "sha256": "ded3dd6ef0428621427246c3b25e67485b0c93acec325fb06ab5ef4c7ae6cff3"
+        },
+        {
+          "name": "precipCanvasRef",
+          "sha256": "b970e65b975f83503658a4928e9574b92d9b4ecf4132df8129bf65922e0c5d5c"
+        },
+        {
+          "name": "precip3dRef",
+          "sha256": "20c9c11cade3c694fd8ec0c733444e9cb2b4af22be7a3e5f3169e56d97944790"
+        },
+        {
+          "name": "scheduleStormLifecycleTick",
+          "sha256": "f2830efa589db52d63e59925210592f4a9bd824f9d953cc4a5804f748d2d5c8d"
+        },
+        {
+          "name": "canvasRef",
+          "sha256": "aa6dcd61dcff9fdbdedbec6610022cde252ec7a16db6e691aac4b7c1d80bd8e3"
+        },
+        {
+          "name": "journey3dRef",
+          "sha256": "3e0b1948cea51fef6137c1e760cdb286c163b2a17dd70e92ede98af46c7fb4aa"
+        },
+        {
+          "name": "onWcKey",
+          "sha256": "4b9662e6b29032ca30d6b052ad72a3ee715d3904d3c9c2658a3ae73b85510b09"
+        },
+        {
+          "name": "setJourneyReplayProgress",
+          "sha256": "c8a6f135c2911133ef74755baa88b9cf227cf0ddd480e41fce75bd8abb4992e9"
+        },
+        {
+          "name": "resumeLiveJourney",
+          "sha256": "d705797b062824ed70e919159125f00b57ebd43243fee5249b5b3796df94c34e"
+        },
+        {
+          "name": "chooseJourneyPath",
+          "sha256": "4a0f1b0a5eeb129fffc77a35d682a8269f3a17d79a91dd450f6a6939a651bf43"
+        },
+        {
+          "name": "journeyReplaySegmentAt",
+          "sha256": "c42250f745da6263738e2efa21c3d8196c03ee78545bdf6973b6da1d5cc982da"
+        },
+        {
+          "name": "handleJourney3dKey",
+          "sha256": "ab13ca3b15e7bbf30c6bba5179cbb6bc6ad980cf4f3e03964d18792743e5cffd"
+        },
+        {
+          "name": "handleJourney3dSceneClick",
+          "sha256": "9e3cf03fe2a542e412afb5027f7d653806b20338e9e706824ddd6732960ea561"
+        },
+        {
+          "name": "controlJourneyCamera",
+          "sha256": "015cdbe498220ed636de0a8350adf780c569c7f4ecfd5aa8fa6944cbdc225800"
+        },
+        {
+          "name": "beginWcQuickJourney",
+          "sha256": "6e6fb43f7d79de104e995f55ca1cb76ac688c92251a7b6700774c0aba20f3214"
+        },
+        {
+          "name": "wcLandResponse",
+          "sha256": "3d65f4a6bddc6027d299351be3b39a0436bc60baddb748238ae63604f7257fcc"
+        },
+        {
+          "name": "estimateWcLandIndices",
+          "sha256": "20fb254221bdb3e39e6fa74da4d0acce195b62139e03390b01b13019b30796fb"
+        },
+        {
+          "name": "estimateWcRouteShares",
+          "sha256": "d8e4f27647d00ac6ee8149e44d0981518081ecd7ddc169ecd48c484ea85e8f6f"
+        },
+        {
+          "name": "WCGroundwaterLens",
+          "sha256": "b06cb09eebe636eaac139009f38977bb036f26dfdbd0ebbd41d5a2b06a578fa9"
+        },
+        {
+          "name": "WC_GROUNDWATER_LENS_STYLE",
+          "sha256": "28fa17d468047b74e9313b44b21165453e49434dbac06d16acc2df3507d606fe"
+        },
+        {
+          "name": "renderWcGroundwaterLens",
+          "sha256": "b94c799fc9ee8c6c29c12be2cd9c7888e60279a21f6569e8d99b864a8439b781"
+        },
+        {
+          "name": "renderWcCheckPores",
+          "sha256": "3a415f015059b42d1471f363e28a4031d820d3c8c86caa99156df3f87a737712"
+        },
+        {
+          "name": "WCJourneyChapters",
+          "sha256": "6b87b9ca6210dfb5ebc710395142956738f30845189020728d96230a5a41866f"
+        },
+        {
+          "name": "renderWcJourneyChapters",
+          "sha256": "90d9fb3ec01e2a0551480f7a0187b61cd36783fda8e0780b6c7bc0b49d9ee0fa"
+        },
+        {
+          "name": "WCCloudEvidence",
+          "sha256": "20e86fe092509382580e29055d0dbf8aa8445a675d6d37601cf0866626d65d42"
+        },
+        {
+          "name": "renderCloudFieldGuide",
+          "sha256": "c2cd7657b4c7c4f064019cdc39d031087877394fa4e6f18336361e38143fb55b"
+        },
+        {
+          "name": "WCExploreNotebook",
+          "sha256": "e305ea1ab08b92d12d237b88357bde5d81d91df2b04cd0af676a7373fe28ea91"
+        },
+        {
+          "name": "WCCheckInvestigation",
+          "sha256": "69e47c9d4d859f88cef5b92b56454caf90738399c91c18f4863dfb0c7a242316"
+        },
+        {
+          "name": "WCProcessCompare",
+          "sha256": "6b2869a0e86c41c8b86fc3c2722200b716210ebeba4e407ffc56a1c1f2051c46"
+        },
+        {
+          "name": "MATTER_ENERGY_TRACE",
+          "sha256": "5b29d16aba2e615e7a40801745c9af2dbc4051fd27d2510360f05568314c96c2"
+        },
+        {
+          "name": "JOURNEY_MATTER_ENERGY_TRACE",
+          "sha256": "b1c153ec3df774de5d9a14c8a57f86c71f5342529d610eb9a49dda51377139cd"
+        },
+        {
+          "name": "STAGE_HYDROLOGIC_TIME_TRACE",
+          "sha256": "7d2bcf2dc30e8fe609417e486bb59b6f94f4adecafd59261baf2933f6274c17a"
+        },
+        {
+          "name": "JOURNEY_HYDROLOGIC_TIME_TRACE",
+          "sha256": "ada899581c4abcb415df59fbbe9caa1894603d3abaadef938fc8cdfc78234a7c"
+        },
+        {
+          "name": "checkWaterCycleChallenges",
+          "sha256": "5ebaedbdcfbff0f3e39e04ae1e39a41746c9b5081a9dbba0887ad2f6330a1a5f"
+        },
+        {
+          "name": "studyVocab",
+          "sha256": "b0f14f19adf959922940084fa469d5548e2b11146f4953eb234b4574067318fe"
+        },
+        {
+          "name": "selectStage",
+          "sha256": "e9706956b6549e605f0fcacc0f1788256d6a683a06868d831217857b2ec23fc7"
+        },
+        {
+          "name": "wcQuizBank",
+          "sha256": "5f6378b528d90eac9974fb003bedce3f4f9d76981dcca17ddfa7616d281dcf41"
+        },
+        {
+          "name": "wcQuizQuestion",
+          "sha256": "a4b6613b91b16ef64b10104906049fe8fb2cc156ead7e539cf7be0e3c5bee1c5"
+        }
+      ],
+      "scoredAnchors": [
+        {
+          "name": "myth",
+          "sha256": "d62ec9d1e25b1f51a3e3df672121855b3a471f5fce9b421d22666c3340a33aa0"
+        },
+        {
+          "name": "quiz",
+          "sha256": "bead9c9e4285cdf1f96692a5bcb695d2554a27b14c8d82948a0e08c46af746fb"
+        }
+      ]
+    },
+    "recipeFiles": [
+      {
+        "path": "reports/watercycle-storm-moments/tested-test-bundle.cjs",
+        "sha256": "6a06559e2a579418b1dbcbc821c7dcae8b5c4e1483df9ba931a9a97d51710539",
+        "bytes": 16956,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\storm-moments-test-bundle.cjs"
+      },
+      {
+        "path": "reports/watercycle-storm-moments/tested-read-audit.cjs",
+        "sha256": "f02c905d6b5b6b06530930fcbaeade9c7b8252d30833b93a186f781683fb3671",
+        "bytes": 1969,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\storm-moments-read-audit.cjs"
+      }
+    ],
+    "singleWorker": true,
+    "fileParallelism": false,
+    "completedAt": "2026-10-02T20:43:21.266Z",
+    "processExitCode": 0,
+    "processSignal": null,
+    "processPid": 32344,
+    "processClosed": true,
+    "processClosedAt": "2026-10-02T20:43:21.265Z",
+    "runtimeFilesAfter": [
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929
+      }
+    ],
+    "testFilesAfter": [
+      {
+        "path": "tests/watercycle_precipitation_lab.test.js",
+        "sha256": "6ebfd62ac589a6842e3ce5da462cae6cb65720f7d15798bc11dba447c99e4609",
+        "bytes": 40595
+      },
+      {
+        "path": "tests/watercycle_storm_experiment.test.js",
+        "sha256": "ef21b9e3ba40c1d76be1f5cde31b975d64db41865657cdd77a1f9205900330b9",
+        "bytes": 6570
+      },
+      {
+        "path": "tests/watercycle_storm_immersion.test.js",
+        "sha256": "0978dccd46963f1f80c98d8ab8ced447941fe53911a560f3c782db6b5cdb4dbd",
+        "bytes": 3132
+      },
+      {
+        "path": "tests/watercycle_cloud_evidence.test.js",
+        "sha256": "1ba4b499c6146597fd7ca840877b7288d33d172aa2c0d8fd2bc0e2f038473568",
+        "bytes": 23808
+      },
+      {
+        "path": "tests/watercycle_groundwater_lens.test.js",
+        "sha256": "7ae7f27b198b5efcb98b430e191480c9cf34042cdff949af4d9b9cdfd73445c2",
+        "bytes": 32790
+      }
+    ],
+    "fixtureFilesAfter": [
+      {
+        "path": "reports/watercycle-cloud-evidence/baseline-runtime.js",
+        "sha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+        "bytes": 2999560
+      },
+      {
+        "path": "reports/watercycle-steward-history/browser-tested-runtime.js",
+        "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+        "bytes": 3035457
+      }
+    ],
+    "closureEvidenceAfter": [
+      {
+        "path": "reports/watercycle-storm-moments/baseline-results.json",
+        "sha256": "aa0a4679146793664d15b87cfab129e6e08e83e3f8c4e02cc197c061009a9fd6",
+        "bytes": 145137,
+        "mode": "baseline",
+        "sourceSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "publicSha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+        "successful": true,
+        "historical": false,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/baseline-tested-runtime.js",
+          "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+          "bytes": 3058809
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T15:05:28.247Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-results.json",
+        "sha256": "04187a7c60db26830c2d81363bb08cc525ed4d2420d6e4fb6e02a297e82d1c55",
+        "bytes": 411542,
+        "mode": "browser-preflight",
+        "sourceSha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+        "publicSha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+        "successful": false,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-preflight-f0ae2910-4568/browser-preflight-tested-runtime.js",
+          "sha256": "f0ae2910497c3434623753a59fbeab46f7d1409858f7f15052c1947de6766446",
+          "bytes": 3088096
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:00:41.182Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-results.json",
+        "sha256": "2a0b0a15845098f278648d51b4dbde4b505b9286f60ce9712c9a5f4e2fee6741",
+        "bytes": 2149514,
+        "mode": "browser",
+        "sourceSha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+        "publicSha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+        "successful": false,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-23a99078-38212/browser-tested-runtime.js",
+          "sha256": "23a990788cde75820339dc70520239ecec868c18dd6bb84e09d780b8c3c95f04",
+          "bytes": 3088179
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:13:34.444Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/browser-preflight-results.json",
+        "sha256": "e91c2355d5ce1fb31594c58684da49e1bdf7d35bb27d78b7967fb9d71467fddb",
+        "bytes": 246591,
+        "mode": "browser-preflight",
+        "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "publicSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "successful": true,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/browser-preflight-tested-runtime.js",
+          "sha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+          "bytes": 3088986
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:17:12.314Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-results.json",
+        "sha256": "fc5ca8b13894843a8cec0e558f3cbd0f45be4691ee2edeec58621e2068b1253e",
+        "bytes": 1883148,
+        "mode": "browser",
+        "sourceSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "publicSha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+        "successful": true,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-31371fb6-48608/browser-tested-runtime.js",
+          "sha256": "31371fb650d90e35e1ba61735f865f7e05b8a4847d6edce3fb9ab6ec4cd42fa4",
+          "bytes": 3088986
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:21:12.135Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-results.json",
+        "sha256": "81e93b9f51988d4b46ddedee4a4d25e0e456b898a70f338424a1c295e8495eaf",
+        "bytes": 1890707,
+        "mode": "browser",
+        "sourceSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "publicSha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+        "successful": true,
+        "historical": true,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/diagnostic-browser-55700c6d-16944/browser-tested-runtime.js",
+          "sha256": "55700c6d618510dd60001c83bd69e8c600984ab59cf32410533e9b5b73be05b6",
+          "bytes": 3088917
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:27:17.565Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      },
+      {
+        "path": "reports/watercycle-storm-moments/browser-results.json",
+        "sha256": "09ffcae756327641c1893979b97884a0f9cbda7cb6937a2b1ca9b10b9105efee",
+        "bytes": 1890707,
+        "mode": "browser",
+        "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "publicSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "successful": true,
+        "historical": false,
+        "frozenRuntime": {
+          "path": "reports/watercycle-storm-moments/browser-tested-runtime.js",
+          "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+          "bytes": 3088929
+        },
+        "publicHashField": "publicHostSha256",
+        "browserClosedAt": "2026-10-02T20:39:10.124Z",
+        "resourcesClosed": true,
+        "serverUsed": false,
+        "serverClosed": true,
+        "serverClosedAt": null
+      }
+    ],
+    "recipeFilesAfter": [
+      {
+        "path": "reports/watercycle-storm-moments/tested-test-bundle.cjs",
+        "sha256": "6a06559e2a579418b1dbcbc821c7dcae8b5c4e1483df9ba931a9a97d51710539",
+        "bytes": 16956,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\storm-moments-test-bundle.cjs",
+        "executionSha256After": "6a06559e2a579418b1dbcbc821c7dcae8b5c4e1483df9ba931a9a97d51710539"
+      },
+      {
+        "path": "reports/watercycle-storm-moments/tested-read-audit.cjs",
+        "sha256": "f02c905d6b5b6b06530930fcbaeade9c7b8252d30833b93a186f781683fb3671",
+        "bytes": 1969,
+        "executionPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-7\\storm-moments-read-audit.cjs",
+        "executionSha256After": "f02c905d6b5b6b06530930fcbaeade9c7b8252d30833b93a186f781683fb3671"
+      }
+    ],
+    "loadedFiles": [
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929,
+        "loadedAt": "2026-10-02T20:42:58.854Z",
+        "pid": 11048
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929,
+        "loadedAt": "2026-10-02T20:42:58.885Z",
+        "pid": 11048
+      },
+      {
+        "path": "reports/watercycle-steward-history/browser-tested-runtime.js",
+        "sha256": "ed26499bf0435d1c613eb7d619e2537bc66ae06798382090ddb262cb20d6a29a",
+        "bytes": 3035457,
+        "loadedAt": "2026-10-02T20:42:58.895Z",
+        "pid": 11048
+      },
+      {
+        "path": "tests/watercycle_groundwater_lens.test.js",
+        "sha256": "7ae7f27b198b5efcb98b430e191480c9cf34042cdff949af4d9b9cdfd73445c2",
+        "bytes": 32790,
+        "loadedAt": "2026-10-02T20:42:58.896Z",
+        "pid": 11048
+      },
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929,
+        "loadedAt": "2026-10-02T20:43:12.129Z",
+        "pid": 21620
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929,
+        "loadedAt": "2026-10-02T20:43:12.194Z",
+        "pid": 21620
+      },
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929,
+        "loadedAt": "2026-10-02T20:43:18.776Z",
+        "pid": 2196
+      },
+      {
+        "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929,
+        "loadedAt": "2026-10-02T20:43:18.805Z",
+        "pid": 2196
+      },
+      {
+        "path": "reports/watercycle-cloud-evidence/baseline-runtime.js",
+        "sha256": "a0b86ac156e3045c52448226e518ed1ad4acd2b104c491d56efc7c1272b3579c",
+        "bytes": 2999560,
+        "loadedAt": "2026-10-02T20:43:18.814Z",
+        "pid": 2196
+      },
+      {
+        "path": "tests/watercycle_cloud_evidence.test.js",
+        "sha256": "1ba4b499c6146597fd7ca840877b7288d33d172aa2c0d8fd2bc0e2f038473568",
+        "bytes": 23808,
+        "loadedAt": "2026-10-02T20:43:18.815Z",
+        "pid": 2196
+      },
+      {
+        "path": "tests/watercycle_cloud_evidence.test.js",
+        "sha256": "1ba4b499c6146597fd7ca840877b7288d33d172aa2c0d8fd2bc0e2f038473568",
+        "bytes": 23808,
+        "loadedAt": "2026-10-02T20:43:18.706Z",
+        "pid": 32344
+      },
+      {
+        "path": "tests/watercycle_storm_experiment.test.js",
+        "sha256": "ef21b9e3ba40c1d76be1f5cde31b975d64db41865657cdd77a1f9205900330b9",
+        "bytes": 6570,
+        "loadedAt": "2026-10-02T20:43:21.061Z",
+        "pid": 32344
+      },
+      {
+        "path": "tests/watercycle_groundwater_lens.test.js",
+        "sha256": "7ae7f27b198b5efcb98b430e191480c9cf34042cdff949af4d9b9cdfd73445c2",
+        "bytes": 32790,
+        "loadedAt": "2026-10-02T20:42:58.778Z",
+        "pid": 32344
+      },
+      {
+        "path": "tests/watercycle_precipitation_lab.test.js",
+        "sha256": "6ebfd62ac589a6842e3ce5da462cae6cb65720f7d15798bc11dba447c99e4609",
+        "bytes": 40595,
+        "loadedAt": "2026-10-02T20:43:04.695Z",
+        "pid": 32344
+      },
+      {
+        "path": "tests/watercycle_storm_immersion.test.js",
+        "sha256": "0978dccd46963f1f80c98d8ab8ced447941fe53911a560f3c782db6b5cdb4dbd",
+        "bytes": 3132,
+        "loadedAt": "2026-10-02T20:43:13.212Z",
+        "pid": 32344
+      },
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929,
+        "loadedAt": "2026-10-02T20:43:13.284Z",
+        "pid": 62956
+      },
+      {
+        "path": "stem_lab/stem_tool_watercycle.js",
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929,
+        "loadedAt": "2026-10-02T20:43:21.168Z",
+        "pid": 71884
+      }
+    ],
+    "loadedReport": {
+      "loadedRuntimes": [
+        {
+          "path": "stem_lab/stem_tool_watercycle.js",
+          "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603"
+        },
+        {
+          "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+          "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603"
+        }
+      ],
+      "loadedTest": {
+        "path": "tests/watercycle_cloud_evidence.test.js",
+        "sha256": "1ba4b499c6146597fd7ca840877b7288d33d172aa2c0d8fd2bc0e2f038473568"
+      }
+    },
+    "sourceSha256Before": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+    "sourceSha256After": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+    "publicSha256Before": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+    "publicSha256After": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603"
+  }
+}

@@ -1,0 +1,19 @@
+const fs = require('node:fs'), path = require('node:path'), assert = require('node:assert/strict'), crypto = require('node:crypto'), { spawnSync } = require('node:child_process');
+const root = path.resolve(__dirname, '../..');
+const summary = JSON.parse(fs.readFileSync(path.join(__dirname, 'validation-summary.json')));
+assert(summary.passed && summary.distinctPassedChecks === 377 && summary.nativeScenarios === 4);
+const checks = [];
+for (const file of ['AlloFlowANTI.txt', 'host_handlers_source.jsx', 'dev-tools/host_handlers_wave3_manifest.json']) {
+  const result = spawnSync('git', ['diff', '--no-index', '--check', '--', path.join(__dirname, 'before', file), path.join(root, file)], { cwd: root, encoding: 'utf8', windowsHide: true });
+  assert([0, 1].includes(result.status)); assert.equal(result.stdout.trim(), '', `New whitespace issue: ${file}`); assert(!result.stderr.includes('error:'));
+  checks.push({ file, passed: true, status: result.status });
+}
+const markdown = fs.readFileSync(path.join(__dirname, 'README.md'), 'utf8');
+for (const match of markdown.matchAll(/\]\(([^)]+)\)/g)) if (!match[1].includes('://')) assert(fs.existsSync(path.join(__dirname, match[1])), 'Report link: ' + match[1]);
+const hashes = summary.productionFiles.map(item => ({ file: item.file, sha256: crypto.createHash('sha256').update(fs.readFileSync(path.join(root, item.file))).digest('hex') }));
+for (const item of hashes) assert.equal(item.sha256, summary.productionFiles.find(record => record.file === item.file).candidateSha256, 'Closure hash: ' + item.file);
+fs.writeFileSync(path.join(__dirname, 'closure-checks.json'), JSON.stringify({ closedAt: new Date().toISOString(), passed: true, ownWhitespaceChecks: checks, reportLinksExist: true, ownedHashes: hashes, gitIndexTouched: false }, null, 2) + '\n');
+const line = '\n- 2026-10-04 | Codex classroom recovery enhancements | COMPLETE locally, UNCOMMITTED; ownership RELEASED. Explicit workspace replacements retire old learner hydration, QR loads, recovery file selections, builder/view restore and vault UI continuations. Automatic Canvas student-entry protection preserves slow initial QR loading; actual clears release retired unlock/recovery busy state. Current imports/errors and normal boot hydration preserved, persistent saved-homework library unchanged. Vault controller/request/latest-status guards and all twelve callers protect locked/plaintext state; latest selection owns import; newer actions own feedback/finally. Organizer resource updater returned to its original hot callback, three edit markers retained in moved bodies, and Return-to-Start reading-support confirmation retained inside handler. Seven production files, 57 reversible operations, exact mirrors/build parity/getters; HostHandlers SHA' + hashes.find(item => item.file === 'host_handlers_module.js').sha256 + ', pinb6aa6e66. All377distinct checks passed (217new focused +160 existing), one unchanged LaunchPad skip excluded; four native Chromium FileReader/IndexedDB/WebCrypto scenarios pass, pageErrors0, final browser inputs and owned files stable. Original203 baseline had88 controls/115 failing assertions; review reproductions had5 failures/49controls before corrections. Maine pin6ab45e2c->c5af6b18->fec6407e preserved with all other concurrent bytes checked. Full App/remote service/physical assistive-tech acceptance not claimed. Shared index untouched, no commit/push/deploy/fullbuild. Report reports/classroom-recovery-enhancements-2026-10-04/README.md. Preserve all prior/shared work.\n';
+const handoff = path.join(root, 'AGENT_HANDOFF.md'); assert(!fs.readFileSync(handoff, 'utf8').includes('HostHandlers SHA' + hashes.find(item => item.file === 'host_handlers_module.js').sha256 + ', pinb6aa6e66'));
+fs.appendFileSync(handoff, line);
+console.log(JSON.stringify({ passed: true, checks: 377, native: 4, handoff: 'complete locally' }));

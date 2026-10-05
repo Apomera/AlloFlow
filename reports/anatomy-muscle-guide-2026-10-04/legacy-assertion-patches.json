@@ -1,0 +1,64 @@
+{
+  "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\anatomy_lab_science.test.js",
+  "beforeSha256": "aa941ef447c4c97136824cf977fc86bdd5e0418ed57adc6e418ba8d93a4438ea",
+  "afterSha256": "8c9c8d81b0d6faa096c9a52f7370271e78890deb0ebe9d850dc910ad6f166d91",
+  "exactChanges": 9,
+  "unrelatedBytesPreserved": true,
+  "candidateChecked": true,
+  "patches": [
+    {
+      "name": "Named activation and sarcomere figures replace the combined SVG title",
+      "from": "    expect(open).toContain('Neuromuscular junction, calcium release, and sarcomere contraction diagram');",
+      "to": "    const root = document.createElement('div'); root.innerHTML = open;\n    const figures = [...root.querySelectorAll('figure[data-anatomy-muscle-scale]')];\n    expect(figures.map(figure => figure.getAttribute('data-anatomy-muscle-scale'))).toEqual(['activation', 'sarcomere']);\n    figures.forEach(figure => {\n      const svg = figure.querySelector('svg[role=\"img\"]'); expect(svg).not.toBeNull();\n      const names = svg.getAttribute('aria-labelledby').trim().split(/\\s+/); expect(names).toHaveLength(2);\n      names.forEach(id => expect(figure.querySelector('[id=\"' + id + '\"]').textContent.trim()).toBeTruthy());\n      [...svg.querySelectorAll('text')].forEach(marker => expect(marker.textContent.trim()).toMatch(/^\\d+$/));\n      expect(figure.querySelector('figcaption ol')).not.toBeNull();\n    });",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Readable structure keys replace case-specific embedded SVG words",
+      "from": "    expect(open).toContain('axon terminal');\n    expect(open).toContain('synaptic vesicles');\n    expect(open).toContain('nicotinic ACh receptors');\n    expect(open).toContain('T-tubule');\n    expect(open).toContain('sarcoplasmic reticulum');\n    expect(open).toContain('SARCOMERE');",
+      "to": "    const activationKey = figures[0].querySelector('figcaption').textContent.toLowerCase();\n    ['axon terminal', 'synaptic vesicles', 'nicotinic ach receptors', 't-tubule', 'sarcoplasmic reticulum'].forEach(label => expect(activationKey).toContain(label));\n    expect(figures[1].querySelector('h6').textContent.toLowerCase()).toContain('sarcomere');\n    const sarcomereKey = figures[1].querySelector('figcaption').textContent.toLowerCase();\n    ['actin', 'myosin', 'z disc'].forEach(label => expect(sarcomereKey).toContain(label));",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Native muscle activation group uses its readable guide name",
+      "from": "    expect(open).toContain('aria-label=\"Neuromuscular activation steps\"');",
+      "to": "    expect(open).toContain('aria-label=\"Muscle activation steps\"');",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Native activation action and paused status replace hidden English name and exact class serialization",
+      "from": "    expect(html).toContain('class=\"anatomy-atlas is-paused\"');\n    expect(html).toContain('aria-label=\"Play muscle-activation animation\"');",
+      "to": "    const root = document.createElement('div'); root.innerHTML = html;\n    const atlas = root.querySelector('[data-anatomy-atlas=\"biceps\"]');\n    expect(atlas.classList.contains('is-paused')).toBe(true);\n    expect(atlas.querySelector('[data-anatomy-muscle-flow]').textContent).toMatch(/play/i);\n    expect(atlas.querySelector('.anatomy-muscle-playback').textContent).toMatch(/paused/i);",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Named muscle structure keys provide scale orientation",
+      "from": "      } else if (diagram.id === 'patella') {\n        const root = document.createElement('div'); root.innerHTML = html;",
+      "to": "      } else if (diagram.id === 'biceps') {\n        const root = document.createElement('div'); root.innerHTML = html;\n        const activation = root.querySelector('figure[data-anatomy-muscle-scale=\"activation\"]');\n        const sarcomere = root.querySelector('figure[data-anatomy-muscle-scale=\"sarcomere\"]');\n        expect(activation.querySelector('figcaption').textContent.toLowerCase()).toContain('axon terminal');\n        expect(activation.querySelector('figcaption').textContent.toLowerCase()).toContain('t-tubule');\n        expect(sarcomere.querySelector('figcaption').textContent.toLowerCase()).toMatch(/actin.*myosin.*z disc/);\n      } else if (diagram.id === 'patella') {\n        const root = document.createElement('div'); root.innerHTML = html;",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Include the muscle guide in native focus and clinical control assertions",
+      "from": "if (diagram.id === 'heart' || diagram.id === 'kidneys' || diagram.id === 'alveoli' || diagram.id === 'patella')",
+      "to": "if (diagram.id === 'heart' || diagram.id === 'kidneys' || diagram.id === 'alveoli' || diagram.id === 'patella' || diagram.id === 'biceps')",
+      "expectedOccurrences": 3
+    },
+    {
+      "name": "Readable myasthenia narrative replaces tiny clinical SVG wording",
+      "from": "clinicalId: 'myasthenia_gravis', title: 'Myasthenia gravis', visual: 'fewer functional ACh receptors'",
+      "to": "clinicalId: 'myasthenia_gravis', title: 'Myasthenia gravis', visual: 'Fewer functional nicotinic acetylcholine receptors reduce the motor end plate safety factor.'",
+      "expectedOccurrences": 1
+    }
+  ],
+  "unchangedFixtures": [
+    {
+      "path": "tests/anatomy_atlas_muted_layers.test.js",
+      "reason": "This suite exercises Knee mechanisms, which the muscle pass does not change.",
+      "sha256": "f20a4a9b991c81d6850285ad4ca09d3bec94d8a50c37077923982dfc766ba563"
+    },
+    {
+      "path": "tests/anatomy_learning_continuity.test.js",
+      "reason": "Preserve exactly two tagged actin filaments, fixed filament lengths, moving Z discs, and original userSpaceOnUse marker contract for both muscle aliases.",
+      "sha256": "0a3b88ba73dd8cf55fbcb08ccf3b7b31aee724aa0bc30f94e6a3d59ea0e01ce9"
+    }
+  ]
+}

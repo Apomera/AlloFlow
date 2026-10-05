@@ -1,0 +1,22 @@
+{
+  "fixture": "tests/anatomy_muscle_guide.test.js",
+  "sha256": "2da1f6731781532a20f7159944d84fd996f8db01f8ab22f4854a36a49f8577f2",
+  "foundationSha256": "45af941d2ee92c00e8ea02d33be570f62fd8eaa98a695695c4b46f372efb487c",
+  "expectedCases": 244,
+  "origins": [
+    "biceps",
+    "quads"
+  ],
+  "runtimePaths": [
+    "stem_lab/stem_tool_anatomy.js",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js"
+  ],
+  "authoredSteps": 4,
+  "contextChanges": 16,
+  "guardedActions": 6,
+  "completeLiteralPathShapes": 7,
+  "routes": 4,
+  "clinicalPaths": 3,
+  "filamentNodes": 2,
+  "notes": "Original dynamic receptor/head geometry asserted after evaluation; seven complete literal path strings include the original arrow definition. No runtime, catalog, legacy fixture or Git edits."
+}

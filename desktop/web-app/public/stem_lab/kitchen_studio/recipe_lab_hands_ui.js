@@ -22,7 +22,7 @@
       var icon=document.createElementNS('http://www.w3.org/2000/svg','svg');icon.setAttribute('viewBox','0 0 70 70');icon.setAttribute('aria-hidden','true');icon.innerHTML=art[item[0]];
       b.append(icon,element('span',item[2],'hands-item-tag'),element('strong',item[1]),element('span','','hands-item-state'));
       $('handsShelf').append(b);sourceNodes[item[0]]=b;
-      b.addEventListener('click',function(e){if(b.dataset.suppressClick){delete b.dataset.suppressClick;return;}if(locked)return;host.pause();pick(selected===item[0]?null:item[0]);});
+      b.addEventListener('click',function(e){if(b.dataset.suppressClick){delete b.dataset.suppressClick;return;}if(locked||b.disabled)return;host.pause();pick(selected===item[0]?null:item[0]);});
       b.addEventListener('pointerdown',function(e){
         if(locked||b.disabled||e.button!==0||!e.isPrimary)return;
         if(drag){cancel();return;}host.pause();
@@ -63,7 +63,7 @@
     function say(text){$('handsFeedback').textContent=text;}
     function pick(item){selected=item;Object.keys(sourceNodes).forEach(function(k){sourceNodes[k].setAttribute('aria-pressed',String(k===item));});if(item)say(sourceNodes[item].querySelector('strong').textContent+' picked up. Choose cookware, or press Escape to put it down.');}
     function drop(target,method){
-      if(locked||!selected)return;var action=H.transferAction(selected,target),source=sourceNodes[selected];
+      if(locked||!selected)return;if(target==='pot'&&view.pot.lid==='covered'){say('Lift the lid onto its rest before reaching into the pot.');return;}var action=H.transferAction(selected,target),source=sourceNodes[selected];
       if(!action){say('That item does not belong there. Choose another destination, or press Escape to put it down.');return;}
       pick(null);host.apply(action,undefined,method);say(host.getState().feedback);
       if(source.disabled||source.hidden)targetNodes[target].focus({preventScroll:true});
@@ -116,20 +116,22 @@
     $('handsJug').addEventListener('keyup',function(e){if(e.code==='Space'){e.preventDefault();stopPour();}});$('handsJug').addEventListener('blur',stopPour);
     window.addEventListener('blur',cancel);document.addEventListener('visibilitychange',function(){if(document.hidden)cancel();});window.addEventListener('pagehide',cancel);
     function render(next,nextZone,historical){
-      var changed=nextZone!==zone||(view&&view.log.length>0&&next.log[0]!==view.log[0]);view=next;zone=nextZone;locked=historical||host.ended()||R.serving(next).started;
+      // A lid change invalidates an in-flight carry while leaving pan tools and burner dials usable.
+      var lidChanged=view&&((view.pot.lid==='covered')!==(next.pot.lid==='covered')),changed=nextZone!==zone||lidChanged||(view&&view.log.length>0&&next.log[0]!==view.log[0]);view=next;zone=nextZone;locked=historical||host.ended()||R.serving(next).started;
       if(changed||locked)cancel();
       panel.hidden=zone==='prep';dials.hidden=zone==='prep';dialHelp.hidden=zone==='prep';shortcuts.hidden=zone==='prep';
-      var p=view.pot,n=view.pan,v=view.prep,disabled={water:p.water>0||p.pasta,oil:n.oil,produce:n.produce,garlic:n.garlic,pasta:p.pasta,cup:p.reserve+n.waterAdded>=200*view.servings/2||p.drained,pot:p.drained||!p.pasta,cooked:!p.drained||n.combined,pan:!n.combined||view.plated,spoon:view.plated};
+      var p=view.pot,n=view.pan,v=view.prep,covered=p.lid==='covered',disabled={water:covered||p.water>0||p.pasta,oil:n.oil,produce:n.produce,garlic:n.garlic,pasta:covered||p.pasta,cup:covered||p.reserve+n.waterAdded>=200*view.servings/2||p.drained,pot:covered||p.drained||!p.pasta,cooked:!p.drained||n.combined,pan:!n.combined||view.plated,spoon:view.plated||covered&&zone==='pot'};
       var states={water:R.ingredients(view).water+' mL',oil:R.ingredients(view).oil+' mL',produce:v.cut?(v.dry?'Cut & dried':'Cut; still wet'):'Needs cutting',garlic:v.garlic?'Minced':'Needs mincing',pasta:v.pasta+' g weighed',cup:p.reserve?'Water saved':'Save before draining',spoon:zone==='pot'?'Sample the pasta':'Check the dish',pot:p.sample?'Sample taken':'Sample before draining',cooked:p.drained?'Ready to transfer':'Still in the pot',pan:n.tasted?'Checked; turn heat off':'Check before serving'};
+      if(covered){states.water='Lift lid before filling';states.pasta='Lift lid before adding';states.cup='Lift lid before saving water';states.pot='Lift lid before draining';if(zone==='pot')states.spoon='Lift lid before sampling';}
       items.forEach(function(item){var b=sourceNodes[item[0]];b.hidden=!item[3].split(' ').includes(zone);b.disabled=locked||!!disabled[item[0]];b.querySelector('.hands-item-state').textContent=states[item[0]];if(item[0]==='produce')b.querySelector('strong').textContent=R.recipe(view.id).produce;if(selected===item[0]&&(b.hidden||b.disabled))pick(null);});
-      Object.keys(targetNodes).forEach(function(k){targetNodes[k].disabled=locked;});
-      var observations=R.inspect(view),captions={pot:observations.pot,pan:view.plated?'Dish plated':observations.pan,colander:p.drained?'Pasta drained':'Collect drained pasta',plate:view.plated?'Your dish is served':'Ready for your dish'};
+      Object.keys(targetNodes).forEach(function(k){targetNodes[k].disabled=locked||covered&&k==='pot';});
+      var observations=R.inspect(view),captions={pot:observations.pot+(covered?' · Lift the lid onto its rest to access water or pasta.':''),pan:view.plated?'Dish plated':observations.pan,colander:p.drained?'Pasta drained':'Collect drained pasta',plate:view.plated?'Your dish is served':'Ready for your dish'};
       Object.keys(captions).forEach(function(k){targetNodes[k].querySelector('.hands-target-state').textContent=captions[k];});
       panel.querySelector('[data-pot-liquid]').style.opacity=p.water?1:0;panel.querySelector('[data-pan-food]').style.opacity=n.produce&&!view.plated?1:n.oil&&!view.plated?.35:0;panel.querySelector('[data-pan-food]').setAttribute('fill',n.damage>=1?'#513b2e':view.id==='tomato'?'#be664b':n.brown>=.7?'#a87943':'#d4bf91');panel.querySelector('[data-plate-food]').style.opacity=view.plated?1:0;
       panel.querySelector('[data-mushroom-art]').style.display=view.id==='mushroom'?'':'none';panel.querySelector('[data-tomato-art]').style.display=view.id==='tomato'?'':'none';
       ['pot','pan'].forEach(function(k){var dial=$('handsDial'+k),heat=view[k].heat;dial.setAttribute('aria-valuenow',heat);dial.setAttribute('aria-valuetext',['Off','Low','Medium','High'][heat]);dial.setAttribute('aria-disabled',String(locked));dial.querySelector('.hands-dial-needle').setAttribute('transform','rotate('+(-135+heat*90)+' 80 65)');dial.nextSibling.textContent=['Off','Low','Medium','High'][heat]+' · '+Math.round(view[k].temp)+'°C';});
       $('handsJug').disabled=locked||!n.produce||p.reserve<10;if(!pouring)paintPour();
-      if(historical)say('Recorded kitchen. Direct tools are locked during replay.');else if(view.plated)say('Dish served. Review how your actions shaped it.');else if(changed)say('Choose what to move. Preparation and heat still matter.');
+      if(historical)say('Recorded kitchen. Direct tools are locked during replay.');else if(view.plated)say('Dish served. Review how your actions shaped it.');else if(covered&&zone==='pot')say('Lift the lid onto its rest before sampling, adding ingredients, saving water, or draining. Pan tools and burner dials remain usable.');else if(changed)say('Choose what to move. Preparation and heat still matter.');
     }
     return {render:render,cancel:cancel};
   }

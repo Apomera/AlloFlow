@@ -34,6 +34,12 @@ function dbqPrintSourceUrl(value) {
     return '';
   }
 }
+function dbqTrustedSourceUrl(doc) {
+  const provenance = doc && doc.sourceProvenance;
+  if (!provenance || provenance.version !== 1 || !['supplied', 'supplied-link', 'retrieved'].includes(provenance.origin) || !provenance.recordId) return '';
+  const captured = dbqPrintSourceUrl(provenance.url);
+  return captured && captured === dbqPrintSourceUrl(doc.sourceUrl) ? captured : '';
+}
 // Generated excerpts are not all quotations. Unknown kinds never read as verbatim.
 function dbqExcerptKind(doc) {
   const kind = String((doc && doc.excerptKind) || '').trim().toLowerCase();
@@ -105,7 +111,7 @@ function DbqView(props) {
     var callTTS = props.callTTS;
     var selectedVoice = props.selectedVoice;
     const dbqData = generatedContent.data;
-    const docs = dbqNormalizeDocs(dbqData.documents);
+    const docs = dbqNormalizeDocs(dbqData.documents).map(doc => ({ ...doc, sourceUrl: dbqTrustedSourceUrl(doc) }));
     const docIdSet = new Set(docs.map(doc => doc.id));
     const knownDocIds = ids => (Array.isArray(ids) ? ids : []).map(String).filter(id => docIdSet.has(id));
     const rubric = dbqData.rubric || [];
@@ -253,7 +259,7 @@ function DbqView(props) {
     // min-h-0 lets the tab panel below actually shrink inside this column, and
     // overflow-y-auto means a work pane that hits its own minimum scrolls the
     // whole resource instead of being clipped by the shell.
-    return <div className="space-y-0 max-w-5xl mx-auto h-full min-h-0 flex flex-col overflow-y-auto overflow-x-hidden">{!callGemini && <p role="status" className="text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 mb-3">AI feedback is unavailable in this session. You can keep reading, writing, and using the rubric.</p>}<div className={`bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl shrink-0 ${headerCollapsed ? 'p-3 mb-2' : 'p-4 sm:p-5 mb-4'}`}><div className="flex flex-col sm:flex-row items-start justify-between gap-3"><div className="flex-1 min-w-0"><h2 className="text-lg sm:text-xl font-black text-amber-900 flex items-center gap-2 break-words">📜 {dbqData.title || 'Document-Based Question'}</h2>{dbqData.historicalContext && !headerCollapsed && <p tabIndex={0} role="region" aria-label={t("ui_common.historical_context") || 'Historical Context'} className="mt-2 text-sm text-amber-800 leading-relaxed bg-white/60 rounded-lg p-3 border border-amber-100 overflow-y-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" style={{
+    return <div className="space-y-0 max-w-5xl mx-auto h-full min-h-0 flex flex-col overflow-y-auto overflow-x-hidden">{dbqData.sourceDisclosure && <p role="status" className="text-sm rounded-lg border border-slate-300 p-3 mb-3">{dbqData.sourceDisclosure}{dbqData.documentCount && dbqData.documentCount.actual !== dbqData.documentCount.requested ? ' Requested ' + dbqData.documentCount.requested + ' documents; available ' + dbqData.documentCount.actual + '.' : ''}</p>}{!callGemini && <p role="status" className="text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 mb-3">AI feedback is unavailable in this session. You can keep reading, writing, and using the rubric.</p>}<div className={`bg-gradient-to-r from-amber-50 to-orange-50 border-2 border-amber-200 rounded-2xl shrink-0 ${headerCollapsed ? 'p-3 mb-2' : 'p-4 sm:p-5 mb-4'}`}><div className="flex flex-col sm:flex-row items-start justify-between gap-3"><div className="flex-1 min-w-0"><h2 className="text-lg sm:text-xl font-black text-amber-900 flex items-center gap-2 break-words">📜 {dbqData.title || 'Document-Based Question'}</h2>{dbqData.historicalContext && !headerCollapsed && <p tabIndex={0} role="region" aria-label={t("ui_common.historical_context") || 'Historical Context'} className="mt-2 text-sm text-amber-800 leading-relaxed bg-white/60 rounded-lg p-3 border border-amber-100 overflow-y-auto focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-amber-600" style={{
               maxHeight: 'min(30vh, 220px)'
             }}><strong>Historical Context:</strong> {dbqData.historicalContext}</p>}</div><div className="text-right shrink-0"><div className="text-2xl font-black text-amber-700">{progress.answered}/{progress.total}</div><div className="text-[11px] font-bold text-amber-500 uppercase">{t("ui_common.completed")}</div><div className="w-20 h-2 bg-amber-100 rounded-full mt-1 overflow-hidden" role="progressbar" aria-label={t("ui_common.completed") || "Completed"} aria-valuemin={0} aria-valuemax={progress.total || 1} aria-valuenow={progress.answered}><div className="h-full bg-amber-500 rounded-full transition-all duration-500" style={{
                 width: `${progress.total > 0 ? progress.answered / progress.total * 100 : 0}%`
@@ -286,8 +292,8 @@ function DbqView(props) {
                                                 <h3 style="font-size:15px;font-weight:800;color:#1e293b;margin:0">${dbqEscapePrintText(doc.title || 'Document ' + doc.id)}</h3>
                                                 <span style="font-size:10px;font-weight:700;padding:2px 8px;border-radius:999px;background:${typeColors[doc.documentType] || '#64748b'}15;color:${typeColors[doc.documentType] || '#64748b'};text-transform:uppercase">${dbqEscapePrintText(doc.documentType || 'source')}</span>
                                             </div>
-                                            ${(() => { const kindLabel = dbqExcerptLabel(dbqExcerptKind(doc), t); return '<p style="font-size:11px;color:#334155;padding:8px 16px 0;margin:0"><strong>' + dbqEscapePrintText(kindLabel.badge) + ':</strong> ' + dbqEscapePrintText(kindLabel.note) + '</p>' + (doc.source ? '<p style="font-size:11px;color:#64748b;padding:4px 16px 0;margin:0;font-style:italic">' + dbqEscapePrintText(kindLabel.prefix) + ' ' + dbqEscapePrintText(doc.source) + '</p>' : ''); })()}
-                                            ${dbqPrintSourceUrl(doc.sourceUrl) ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + dbqEscapePrintText(dbqPrintSourceUrl(doc.sourceUrl)) + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 View Original Source (' + (() => {
+                                            ${(() => { const kindLabel = dbqExcerptLabel(dbqExcerptKind(doc), t); return '<p style="font-size:11px;color:#334155;padding:8px 16px 0;margin:0"><strong>' + dbqEscapePrintText(kindLabel.badge) + ':</strong> ' + dbqEscapePrintText(kindLabel.note + (doc.sameSourceExcerpts ? ' This is one of several excerpts from the same source.' : '')) + '</p>' + (doc.source ? '<p style="font-size:11px;color:#64748b;padding:4px 16px 0;margin:0;font-style:italic">' + dbqEscapePrintText(kindLabel.prefix) + ' ' + dbqEscapePrintText(doc.source) + '</p>' : ''); })()}
+                                            ${dbqTrustedSourceUrl(doc) ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + dbqEscapePrintText(dbqTrustedSourceUrl(doc)) + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 View Original Source (' + (() => {
                 try {
                   return new URL(doc.sourceUrl).hostname;
                 } catch {
@@ -469,8 +475,8 @@ function DbqView(props) {
                 marginLeft: '4px'
               }}>⚔️ {activeDoc.perspective}</span>}</div>{(() => {
                 const kindLabel = dbqExcerptLabel(dbqExcerptKind(activeDoc), t);
-                return <div className="-mt-2 mb-3 space-y-1"><p className="text-xs text-slate-700"><span data-dbq-excerpt-kind={dbqExcerptKind(activeDoc)} className="inline-block mr-2 px-2 py-0.5 rounded-full border border-cyan-700 bg-cyan-50 text-cyan-900 text-[11px] font-bold not-italic">{kindLabel.badge}</span>{kindLabel.note}</p>{activeDoc.source && <p className="text-xs text-slate-600 italic">{kindLabel.prefix} {activeDoc.source}</p>}</div>;
-              })()}{dbqPrintSourceUrl(activeDoc.sourceUrl) && <a href={dbqPrintSourceUrl(activeDoc.sourceUrl)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline">🔗 View Original Source<span className="text-[11px] font-normal text-indigo-400 max-w-[200px] truncate">{(() => {
+                return <div className="-mt-2 mb-3 space-y-1"><p className="text-xs text-slate-700"><span data-dbq-excerpt-kind={dbqExcerptKind(activeDoc)} className="inline-block mr-2 px-2 py-0.5 rounded-full border border-cyan-700 bg-cyan-50 text-cyan-900 text-[11px] font-bold not-italic">{kindLabel.badge}</span>{kindLabel.note}{activeDoc.sameSourceExcerpts && ' This is one of several excerpts from the same source.'}</p>{activeDoc.source && <p className="text-xs text-slate-600 italic">{kindLabel.prefix} {activeDoc.source}</p>}</div>;
+              })()}{dbqTrustedSourceUrl(activeDoc) && <a href={dbqTrustedSourceUrl(activeDoc)} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline">🔗 View Original Source<span className="text-[11px] font-normal text-indigo-400 max-w-[200px] truncate">{(() => {
                   try {
                     return new URL(activeDoc.sourceUrl).hostname;
                   } catch {

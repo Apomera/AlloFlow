@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "baselineSHA": "ce0c01a8fc85d002bc970c5103fec84be77ff9d2fd42a295fbe629219c9e2182",
+  "candidateSHA": "f2ef9cbc4c1a9899703bad86da73d2553704bb3953428cdac1b47098a8af3450",
+  "guardCount": 5,
+  "reverseByteExact": true,
+  "guards": [
+    {
+      "id": "silver-prey-rounded-cambered-caudal",
+      "beforeSHA": "c6d93fb60dd452df87c2b7a4e015f4d92c69ddd1ae33f92f73e853cb8418ddab",
+      "afterSHA": "5a92ff03eeb0eb09aafb9ace094f3a7563f4e9e5c626012c43e4864c609ba628"
+    },
+    {
+      "id": "mineral-sand-warm-albedo",
+      "beforeSHA": "e9608fda069d60e2ef1e363af2f1ffdb8621491772eac256df17fee167a64ef0",
+      "afterSHA": "ecdf48166f92886ae0630d39294d5324036738d0309539ddb30cc070c1a7f047"
+    },
+    {
+      "id": "derive-fish-depth-advice-without-changing-capture-readiness",
+      "beforeSHA": "13048d929366659544371f1987e323fcb434786fb03cf8b0a5e4af00ee016b90",
+      "afterSHA": "d676ad5ef5b2e8dce8dcfeebeac6fd778c8c27e888e944b08d85ad1ef1309557"
+    },
+    {
+      "id": "use-depth-advice-after-existing-strike-recovery-and-cover-priorities",
+      "beforeSHA": "df703944ff7949c7f717e7d2aaf7f90906fc720b7d4d1b666ec25b484a846621",
+      "afterSHA": "24c4e9f19dfb2694f90db064aa1503ebb90c1959155e263cc7d32205253df93e"
+    },
+    {
+      "id": "silver-prey-caudal-tip-normal-continuity",
+      "beforeSHA": "5a92ff03eeb0eb09aafb9ace094f3a7563f4e9e5c626012c43e4864c609ba628",
+      "afterSHA": "40aec84fa7b75c17b5d702f41240f0406abd19eed2c209185048ae6ccbc1e457"
+    }
+  ]
+}

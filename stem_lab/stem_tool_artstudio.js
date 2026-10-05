@@ -37,6 +37,7 @@ window.StemLab = window.StemLab || {
   // https://github.com/rvanwijnen/spectral.js — original source SHA-256: 8a26013ec1885b659206130ae99b63d326cefd0b3a9cf0a96bfc13457822126a
   var artStudioSpectral = (function () {
     var exports = {}, module = {exports: exports};
+    var define = globalThis.define;
 //  MIT License
 //
 //  Copyright (c) 2025 Ronald van Wijnen
@@ -998,6 +999,32 @@ window.StemLab = window.StemLab || {
       for (var y=0;y<repeats;y++) for(var x=0;x<repeats;x++) ctx.fillRect(point[0]+x*size,point[1]+y*size,1,1);
     });
   }
+  function artStudioPixelExportOptions(size,scale,repeats) {
+    size=typeof size==='number' || typeof size==='string'?Number(size):NaN;
+    scale=typeof scale==='number' || typeof scale==='string'?Number(scale):NaN;
+    repeats=typeof repeats==='number' || typeof repeats==='string'?Number(repeats):NaN;
+    size=[8,16,24,32,48,64].indexOf(Number(size))>=0?Number(size):16;
+    scale=[1,2,4,8,16].indexOf(Number(scale))>=0?Number(scale):1;
+    repeats=[1,2,3].indexOf(Number(repeats))>=0?Number(repeats):1;
+    return {size:size,scale:scale,repeats:repeats,side:size*scale*repeats};
+  }
+  function artStudioPixelExportCanvas(canvas,data,size,scale,repeats) {
+    if(!canvas)return false;
+    var options=artStudioPixelExportOptions(size,scale,repeats);
+    canvas.width=canvas.height=options.side;
+    var context=canvas.getContext('2d');if(!context)return false;
+    context.clearRect(0,0,options.side,options.side);context.imageSmoothingEnabled=false;
+    Object.keys(data||{}).forEach(function(key){
+      var point=artStudioPixelCell(key,options.size),color=data[key];
+      if(!point || typeof color!=='string' || !color.trim() || color.length>160)return;
+      // Canvas accepts saved CSS colors beyond the palette parser's formats.
+      // Invalid assignments stay transparent instead of inheriting another cell.
+      context.fillStyle='rgba(0,0,0,0)';context.fillStyle=color;
+      for(var y=0;y<options.repeats;y++)for(var x=0;x<options.repeats;x++)
+        context.fillRect((point[0]+x*options.size)*options.scale,(point[1]+y*options.size)*options.scale,options.scale,options.scale);
+    });
+    return true;
+  }
   // END ART STUDIO PIXEL COLOR HELPERS
 
   // BEGIN ART STUDIO PIXEL LAYER HELPERS
@@ -1078,6 +1105,24 @@ window.StemLab = window.StemLab || {
     return {pixelGrid:next.size,pixelLayers:layers,pixelActiveLayer:next.activeId,pixelData:artStudioPixelComposite(next)};
   }
   // END ART STUDIO PIXEL LAYER HELPERS
+
+  // BEGIN ART STUDIO PIXEL SELECTION HELPERS
+  function artStudioPixelResizeSelection(pixels,width,height,scale) {
+    if(!pixels || typeof pixels!=='object' || Array.isArray(pixels) ||
+      !Number.isInteger(width) || !Number.isInteger(height) || width<1 || height<1 || width>64 || height>64 ||
+      (scale!==2 && scale!==0.5))return null;
+    var w=scale===2?width*2:Math.ceil(width/2),h=scale===2?height*2:Math.ceil(height/2);
+    if(w>64 || h>64)return null;
+    var result={};
+    for(var y=0;y<h;y++)for(var x=0;x<w;x++) {
+      var sx=Math.min(width-1,Math.floor((x+0.5)*width/w));
+      var sy=Math.min(height-1,Math.floor((y+0.5)*height/h));
+      var key=sx+','+sy;
+      if(Object.prototype.hasOwnProperty.call(pixels,key))result[x+','+y]=pixels[key];
+    }
+    return {w:w,h:h,pixels:result};
+  }
+  // END ART STUDIO PIXEL SELECTION HELPERS
 
   // BEGIN ART STUDIO PIXEL IMPORT HELPERS
   function artStudioPixelImportPalette(samples,limit) {
@@ -1715,11 +1760,14 @@ window.StemLab = window.StemLab || {
   function artStudioOpModel(d) {
     function number(key,fallback,min,max){var value=d[key];return typeof value==='number'&&Number.isFinite(value)?Math.max(min,Math.min(max,value)):fallback;}
     var hueA=number('opHueA',0,0,360),hueB=number('opHueB',180,0,360);
-    return {opStyle:['concentric','checkerboard','moire','vibrating'].indexOf(d.opStyle)>=0?d.opStyle:'concentric',
+    return {opStyle:['concentric','checkerboard','moire','vibrating','cafeWall','colorContrast'].indexOf(d.opStyle)>=0?d.opStyle:'concentric',
       opDensity:Math.round(number('opDensity',20,3,60)),opSpeed:number('opSpeed',5,1,20),opRotation:number('opRotation',0,0,360),opWarp:number('opWarp',60,0,100),opAngle:number('opAngle',12,0,90),
       opHueA:hueA,opHueB:hueB,opSatA:number('opSatA',85,0,100),opSatB:number('opSatB',85,0,100),opLitA:number('opLitA',50,0,100),opLitB:number('opLitB',50,0,100),
+      opCafeOffset:number('opCafeOffset',50,0,100),opCafeMortar:number('opCafeMortar',6,0,30),opCafeMortarLit:number('opCafeMortarLit',50,0,100),
+      opCenterHue:number('opCenterHue',35,0,360),opCenterSat:number('opCenterSat',0,0,100),opCenterLit:number('opCenterLit',50,0,100),opCenterSize:number('opCenterSize',40,10,70),opReveal:d.opReveal===true,
       opColorMode:d.opColorMode==='mono'||(d.opColorMode===undefined&&hueA===0&&hueB===0)?'mono':'custom'};
   }
+  function artStudioOpStill(model){return model.opStyle==='cafeWall'||model.opStyle==='colorContrast';}
   function artStudioOpPhase(value){return typeof value==='number'&&Number.isFinite(value)?((value%360)+360)%360:0;}
   function artStudioOpColors(model){return model.opColorMode==='mono'?['#000000','#ffffff']:['A','B'].map(function(letter){return 'hsl('+model['opHue'+letter]+','+model['opSat'+letter]+'%,'+model['opLit'+letter]+'%)';});}
   function artStudioOpScene(model,phase) {
@@ -1744,6 +1792,29 @@ window.StemLab = window.StemLab || {
         var points=[];for(var y=top;y<bottom;y+=4)points.push(boundary(stripe,y));points.push(boundary(stripe,bottom));
         points.push(boundary(stripe+1,bottom));for(var y2=top+Math.floor((bottom-top-0.0001)/4)*4;y2>=top;y2-=4)points.push(boundary(stripe+1,y2));polygon(points,stripe);
       }
+    }else if(model.opStyle==='cafeWall'){
+      // Rectangular tiles use straight, parallel row boundaries. Stagger only
+      // the odd rows; the comparison draws those same boundaries over tiles.
+      var tileWidth=cell*2,mortar=cell*model.opCafeMortar/100;
+      var firstRow=Math.floor(low/cell)-1,lastRow=Math.ceil(high/cell)+1;
+      for(var cafeRow=firstRow;cafeRow<lastRow;cafeRow++){
+        var offset=((cafeRow%2)+2)%2*tileWidth*model.opCafeOffset/100;
+        for(var cafeColumn=Math.floor((low-offset)/tileWidth)-1;cafeColumn<Math.ceil((high-offset)/tileWidth)+1;cafeColumn++){
+          var left=cafeColumn*tileWidth+offset,right=left+tileWidth,yTop=cafeRow*cell+mortar/2,yBottom=(cafeRow+1)*cell-mortar/2;
+          polygon([rotate(left,yTop),rotate(right,yTop),rotate(right,yBottom),rotate(left,yBottom)],cafeColumn);
+        }
+      }
+      if(model.opReveal)for(var guideRow=firstRow;guideRow<=lastRow;guideRow++)items.push({kind:'line',points:[rotate(low-8,guideRow*cell),rotate(high+8,guideRow*cell)],stroke:'#e11d48',width:2,opacity:1});
+      return {background:'hsl(0,0%,'+model.opCafeMortarLit+'%)',items:items};
+    }else if(model.opStyle==='colorContrast'){
+      var center='hsl('+model.opCenterHue+','+model.opCenterSat+'%,'+model.opCenterLit+'%)',size=256*model.opCenterSize/100;
+      function rectangle(left,top,width,height,fill){items.push({kind:'polygon',points:[[left,top],[left+width,top],[left+width,top+height],[left,top+height]],fill:fill});}
+      if(!model.opReveal){rectangle(0,0,256,512,colors[0]);rectangle(256,0,256,512,colors[1]);}
+      rectangle(128-size/2,256-size/2,size,size,center);rectangle(384-size/2,256-size/2,size,size,center);
+      // The bridge shares precisely the same fill as both center swatches.
+      // No samples or gradients are substituted when the comparison is shown.
+      if(model.opReveal)rectangle(128,256-size/10,256,size/5,center);
+      return {background:model.opCenterLit<50?'#e5e5e5':'#202020',items:items};
     }else{
       var span=Math.SQRT2*256+cell*2,relative=model.opAngle*Math.PI/180+Math.sin(time)*Math.PI/15;
       for(var layer=0;layer<2;layer++)for(var line=-Math.ceil(span/cell);line<=Math.ceil(span/cell);line++){
@@ -2390,8 +2461,59 @@ const d = labToolData.artStudio || {};
           const pixelImportRequestRef = React.useRef({sequence:0,context:null});
           const watercolorPaperRef = React.useRef(null);
           const [watercolorFit, setWatercolorFit] = React.useState(512);
+          const [watercolorZoom,setWatercolorZoom]=React.useState(1);
+          const [watercolorNavigation,setWatercolorNavigation]=React.useState('paint');
+          const watercolorZoomAnchorRef=React.useRef(null);
+          function cancelWatercolorNavigationGesture() {
+            var canvas=document.getElementById('watercolorCanvas');
+            if(canvas && canvas._watercolorEngine && canvas._watercolorEngine.cancelPointer)canvas._watercolorEngine.cancelPointer();
+          }
+          function changeWatercolorNavigation(mode) {
+            cancelWatercolorNavigationGesture();setWatercolorNavigation(mode==='pan'?'pan':'paint');
+          }
+          function zoomWatercolorPaper(zoom,reset) {
+            if([1,1.5,2,3].indexOf(zoom)<0)return;
+            cancelWatercolorNavigationGesture();
+            var paper=watercolorPaperRef.current,canvas=document.getElementById('watercolorCanvas');
+            if(paper && canvas) {
+              var view=paper.getBoundingClientRect(),rect=canvas.getBoundingClientRect();
+              watercolorZoomAnchorRef.current=reset?{reset:true}:{
+                x:Math.max(0,Math.min(1,(view.left+paper.clientLeft+paper.clientWidth/2-rect.left)/Math.max(1,rect.width))),
+                y:Math.max(0,Math.min(1,(view.top+paper.clientTop+paper.clientHeight/2-rect.top)/Math.max(1,rect.height)))};
+              if(reset){paper.scrollLeft=0;paper.scrollTop=0;}
+            }
+            setWatercolorZoom(zoom);
+          }
+          React.useLayoutEffect(function(){
+            var anchor=watercolorZoomAnchorRef.current,paper=watercolorPaperRef.current,canvas=document.getElementById('watercolorCanvas');
+            if(!anchor || !paper || !canvas)return;
+            if(anchor.reset){paper.scrollLeft=0;paper.scrollTop=0;}
+            else {var view=paper.getBoundingClientRect(),rect=canvas.getBoundingClientRect();
+              paper.scrollLeft+=rect.left+anchor.x*rect.width-view.left-paper.clientLeft-paper.clientWidth/2;
+              paper.scrollTop+=rect.top+anchor.y*rect.height-view.top-paper.clientTop-paper.clientHeight/2;}
+            watercolorZoomAnchorRef.current=null;
+          },[watercolorZoom,watercolorFit]);
           const symmetryPaperRef = React.useRef(null);
           const [symmetryFit, setSymmetryFit] = React.useState(512);
+          const [symmetryZoom,setSymmetryZoom]=React.useState(1);
+          const [symmetryNavigation,setSymmetryNavigation]=React.useState('paint');
+          const symmetryZoomAnchorRef=React.useRef(null);
+          function cancelSymmetryNavigationGesture(){var canvas=document.getElementById('symmetryCanvas');if(canvas&&canvas._symCancelGesture)canvas._symCancelGesture();}
+          function changeSymmetryNavigation(mode){cancelSymmetryNavigationGesture();setSymmetryNavigation(mode==='pan'?'pan':'paint');}
+          function zoomSymmetryPaper(zoom,reset){
+            if([1,1.5,2,3].indexOf(zoom)<0)return;
+            cancelSymmetryNavigationGesture();var paper=symmetryPaperRef.current,canvas=document.getElementById('symmetryCanvas');
+            if(paper&&canvas){var view=paper.getBoundingClientRect(),rect=canvas.getBoundingClientRect();
+              symmetryZoomAnchorRef.current=reset?{reset:true}:{x:Math.max(0,Math.min(1,(view.left+paper.clientLeft+paper.clientWidth/2-rect.left)/Math.max(1,rect.width))),y:Math.max(0,Math.min(1,(view.top+paper.clientTop+paper.clientHeight/2-rect.top)/Math.max(1,rect.height)))};
+              if(reset){paper.scrollLeft=0;paper.scrollTop=0;}}
+            setSymmetryZoom(zoom);
+          }
+          React.useLayoutEffect(function(){
+            var anchor=symmetryZoomAnchorRef.current,paper=symmetryPaperRef.current,canvas=document.getElementById('symmetryCanvas');if(!anchor||!paper||!canvas)return;
+            if(anchor.reset){paper.scrollLeft=0;paper.scrollTop=0;}
+            else{var view=paper.getBoundingClientRect(),rect=canvas.getBoundingClientRect();paper.scrollLeft+=rect.left+anchor.x*rect.width-view.left-paper.clientLeft-paper.clientWidth/2;paper.scrollTop+=rect.top+anchor.y*rect.height-view.top-paper.clientTop-paper.clientHeight/2;}
+            symmetryZoomAnchorRef.current=null;
+          },[symmetryZoom,symmetryFit]);
           function changeSymmetrySettings(values) {
             var canvas=document.getElementById('symmetryCanvas');if(canvas && canvas._symCancelGesture)canvas._symCancelGesture();updMany(values);
           }
@@ -2407,6 +2529,7 @@ const d = labToolData.artStudio || {};
           const pixelVisibleArtwork = artStudioPixelComposite(pixelLayerModel);
           const pixelBrushSize = [1, 2, 3, 4, 6, 8].indexOf(Number(d.pixelBrushSize)) >= 0 ? Number(d.pixelBrushSize) : 1;
           const pixelBrushPattern = [25, 50, 75].indexOf(Number(d.pixelBrushPattern)) >= 0 ? Number(d.pixelBrushPattern) : 100;
+          const pixelExportOptions=artStudioPixelExportOptions(pixelGridSize,d.pixelExportScale,d.pixelExportRepeat);
           function zoomPixelCanvas(zoom) {
             var viewport = pixelViewportRef.current, canvas = document.getElementById('pixelCanvas');
             if (viewport && canvas) {
@@ -2588,6 +2711,28 @@ const d = labToolData.artStudio || {};
             });
             updMany(artStudioPixelLayerSnapshot(model,undefined,size));
           }
+          function changePixelWrapping(enabled) {
+            var canvas=document.getElementById('pixelCanvas');
+            if(canvas && canvas._pixelCancelGesture)canvas._pixelCancelGesture();
+            upd('pixelWrapEdges',enabled===true);
+          }
+          function offsetPixelTile(axis) {
+            if(['x','y','both'].indexOf(axis)<0)return;
+            var canvas=document.getElementById('pixelCanvas');
+            if(canvas && canvas._pixelCancelGesture)canvas._pixelCancelGesture();
+            var before=currentPixelCheckpoint(),model=artStudioPixelLayerModel(before,pixelLayerDefaultName);
+            var active=model.layers.find(function(layer){return layer.id===model.activeId;});
+            if(!active || !active.visible || active.locked)return;
+            var current=active.pixels,next={},half=Math.floor(model.size/2);
+            Object.keys(current).forEach(function(key){
+              var point=artStudioPixelCell(key,model.size);if(!point)return;
+              var x=(point[0]+(axis==='y'?0:half))%model.size,y=(point[1]+(axis==='x'?0:half))%model.size;
+              next[x+','+y]=current[key];
+            });
+            if(Object.keys(current).every(function(key){return next[key]===current[key];}))return;
+            rememberPixelArtwork(before);updMany(artStudioPixelLayerSnapshot(model,next));
+            if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.pixel_tile_offset_done','Active layer shifted by half a tile. Repeat the same shift to restore its position, or use Undo.'));
+          }
           function transformPixelArtwork(operation) {
             var canvas = document.getElementById('pixelCanvas');
             if (canvas && canvas._pixelCancelGesture) canvas._pixelCancelGesture();
@@ -2619,7 +2764,13 @@ const d = labToolData.artStudio || {};
           React.useEffect(function () {
             var paper=watercolorPaperRef.current;
             if(!paper)return;
-            var measure=function(){setWatercolorFit(Math.max(64,Math.floor(Math.min(paper.clientWidth-20,paper.clientHeight-20))));};
+            var measure=function(){
+              var bounds=paper.getBoundingClientRect(),workspace=paper.closest('#watercolorFullscreenWorkspace');
+              var expanded=workspace && (document.fullscreenElement===workspace || workspace.getAttribute('data-allo-fullscreen-active')==='true');
+              // Scrollbars must not change the base fit size as zoom increases.
+              var width=bounds.width || paper.clientWidth,height=expanded?(bounds.height || paper.clientHeight):window.innerHeight*0.82;
+              setWatercolorFit(Math.max(64,Math.floor(Math.min(width-24,height-24))));
+            };
             measure();
             var observer=typeof ResizeObserver==='function'?new ResizeObserver(measure):null;
             if(observer)observer.observe(paper);
@@ -2631,7 +2782,10 @@ const d = labToolData.artStudio || {};
             var workspace=paper.closest('#symmetryFullscreenWorkspace');
             var measure=function(){
               if(workspace){var wide=workspace.clientWidth>=850?'true':'false';if(workspace.dataset.symmetryWide!==wide)workspace.dataset.symmetryWide=wide;}
-              if(paper.clientWidth && paper.clientHeight)setSymmetryFit(Math.max(128,Math.floor(Math.min(paper.clientWidth-24,paper.clientHeight-24))));
+              var bounds=paper.getBoundingClientRect();
+              // Outer geometry stays stable when a zoomed sheet adds scrollbars.
+              var width=bounds.width?bounds.width-2:paper.clientWidth,height=bounds.height?bounds.height-2:paper.clientHeight;
+              if(width&&height)setSymmetryFit(Math.max(128,Math.floor(Math.min(width-24,height-24))));
             };
             measure();var observer=typeof ResizeObserver==='function'?new ResizeObserver(measure):null;
             if(observer){observer.observe(paper);if(workspace)observer.observe(workspace);}window.addEventListener('resize',measure);
@@ -2978,6 +3132,13 @@ const d = labToolData.artStudio || {};
           if(fractalHistoryRef.current.owner!==fractalOwner||(fractalHistoryRef.current.expected&&fractalHistoryRef.current.expected!==fractalSignature))fractalHistoryRef.current={owner:fractalOwner,undo:[],redo:[]};
           fractalHistoryRef.current.expected=fractalSignature;fractalHistoryRef.current.current=fractalModel;
           React.useEffect(function(){setStudioFocusView(false);},[studioPersistenceScope]);
+          const watercolorViewOwner=studioPersistenceScope+'|'+(d.watercolorRestoreToken||'');
+          React.useLayoutEffect(function(){
+            cancelWatercolorNavigationGesture();setWatercolorNavigation('paint');setWatercolorZoom(1);watercolorZoomAnchorRef.current=null;
+            var paper=watercolorPaperRef.current;if(paper){paper.scrollLeft=0;paper.scrollTop=0;}
+          },[watercolorViewOwner]);
+          const symmetryViewOwner=studioPersistenceScope+'|'+(d.symmetryRestoreToken||'');
+          React.useLayoutEffect(function(){cancelSymmetryNavigationGesture();setSymmetryNavigation('paint');setSymmetryZoom(1);symmetryZoomAnchorRef.current=null;var paper=symmetryPaperRef.current;if(paper){paper.scrollLeft=0;paper.scrollTop=0;}},[symmetryViewOwner]);
           const pixelArtworkOwner = studioPersistenceScope + '|' + (d.pixelRestoreToken || '');
           if (pixelHistoryRef.current.owner !== pixelArtworkOwner) {
             pixelHistoryRef.current = { owner: pixelArtworkOwner, undo: [], redo: [] };
@@ -3638,7 +3799,8 @@ const d = labToolData.artStudio || {};
           const spinModel = artStudioSpinModel(d,reducedMotion);
           React.useEffect(function(){return function(){if(spinRuntimeRef.current)spinRuntimeRef.current.dispose();};},[]);
           const opModel = artStudioOpModel(d);
-          const opPaused = d.opPaused===undefined?reducedMotion:!!d.opPaused;
+          const opStill = artStudioOpStill(opModel);
+          const opPaused = opStill || (d.opPaused===undefined?reducedMotion:!!d.opPaused);
           function changeOp(values){var canvas=document.getElementById('opArtCanvas'),next=Object.assign({},canvas&&canvas._captureArtStudioState?canvas._captureArtStudioState():{opPhase:artStudioOpPhase(d.opPhase),opPaused:opPaused},values);if(canvas&&canvas._opUpdate)canvas._opUpdate(artStudioOpModel(Object.assign({},opModel,next)),next.opPaused,next.opPhase,Object.prototype.hasOwnProperty.call(values,'opPhase'));updMany(next);}
           React.useEffect(function(){return function(){if(opRuntimeRef.current)opRuntimeRef.current.dispose();};},[]);
           React.useEffect(function () {
@@ -3901,14 +4063,14 @@ const d = labToolData.artStudio || {};
           const renderCanvasTouchMode = function (options) {
             var opts = options || {};
             var activeValue = opts.activeValue || 'draw';
-            var mode = d[opts.stateKey] === activeValue ? 'draw' : 'scroll';
+            var mode = opts.mode || (d[opts.stateKey] === activeValue ? 'draw' : 'scroll');
             return React.createElement("div", { className: "mb-2 rounded-xl border border-slate-300 bg-white/95 p-2" },
               React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": opts.groupLabel },
                 React.createElement("span", { className: "mr-1 text-[0.6875rem] font-black text-slate-700" }, "Finger input:"),
-                React.createElement("button", { type: "button", "aria-pressed": mode === 'scroll', onClick: function () { upd(opts.stateKey, 'scroll'); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'scroll' ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, "Scroll page"),
-                React.createElement("button", { type: "button", "aria-pressed": mode === 'draw', onClick: function () { upd(opts.stateKey, activeValue); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'draw' ? (opts.activeClass || "bg-indigo-700 text-white") : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, opts.interactLabel || "Draw on canvas")
+                React.createElement("button", { type: "button", "aria-pressed": mode === 'scroll', onClick: function () { if(opts.onChange)opts.onChange('scroll');else upd(opts.stateKey, 'scroll'); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'scroll' ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, "Scroll page"),
+                React.createElement("button", { type: "button", "aria-pressed": mode === 'draw', onClick: function () { if(opts.onChange)opts.onChange(activeValue);else upd(opts.stateKey, activeValue); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'draw' ? (opts.activeClass || "bg-indigo-700 text-white") : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, opts.interactLabel || "Draw on canvas")
               ),
-              React.createElement("p", { id: opts.helpId, 'data-studio-touch-description': 'true', className: "mt-1 text-xs leading-relaxed text-slate-600" }, mode === 'draw'
+              React.createElement("p", { id: opts.helpId, 'data-studio-touch-description': 'true', className: "mt-1 text-xs leading-relaxed text-slate-600" }, mode === 'pan' ? opts.panHelp : mode === 'draw'
                 ? (opts.activeHelp || "One-finger interaction is active. Choose Scroll page when you want to move past this canvas.")
                 : (opts.scrollHelp || "One-finger scrolling is active. A stylus and mouse can still interact; choose the second option for finger input."))
             );
@@ -5000,9 +5162,11 @@ const d = labToolData.artStudio || {};
               var sizing = Number(d.watercolorSizing);
               var bloomSensitivity = Number(d.watercolorBloomSensitivity);
               var blottingStrength = Number(d.watercolorBlotting);
+              var liftingStrength = Number(d.watercolorLifting);
               return {
                 color: parseColor(d.watercolorColor || '#2f6fb0'),
                 touchMode: d.watercolorTouchMode === 'draw' ? 'draw' : 'scroll',
+                panMode: watercolorNavigation==='pan',
                 brush: d.watercolorBrush || 'round',
                 surface: d.watercolorSurface || 'wet',
                 flowDirection: d.watercolorFlowDirection || 'down',
@@ -5026,14 +5190,15 @@ const d = labToolData.artStudio || {};
                 airflow: clamp((isFinite(airflow) ? airflow : 25) / 100, 0, 1),
                 sizing: clamp((isFinite(sizing) ? sizing : 58) / 100, 0, 1),
                 bloomSensitivity: clamp((isFinite(bloomSensitivity) ? bloomSensitivity : 60) / 100, 0, 1),
-                blottingStrength: clamp((isFinite(blottingStrength) ? blottingStrength : 70) / 100, 0, 1)
+                blottingStrength: clamp((isFinite(blottingStrength) ? blottingStrength : 70) / 100, 0, 1),
+                liftingStrength: clamp((isFinite(liftingStrength) ? liftingStrength : 70) / 100, 0, 1)
               };
             }
 
             var existing = canvas._watercolorEngine;
             if (existing) {
               var nextParams = readParams();
-              canvas.style.touchAction = nextParams.touchMode === 'draw' ? 'none' : 'pan-y';
+              canvas.style.touchAction = nextParams.panMode || nextParams.touchMode === 'draw' ? 'none' : 'pan-y';
               existing.configure(nextParams);
               existing.restoreArtworkIfChanged(d.watercolorSnapshot || '', d.watercolorStateKey || '',
                 d.watercolorRestoreToken || '', !!d.watercolorStateIsCheckpoint);
@@ -5187,7 +5352,7 @@ const d = labToolData.artStudio || {};
             var frameId = 0;
             var lastTime = 0;
             var accumulator = 0;
-            var drawing = false;
+            var drawing = false,panning=null;
             var lastX = null, lastY = null;
             var lastStrokeTime = 0;
             var lastPressure = 0.7;
@@ -5195,6 +5360,7 @@ const d = labToolData.artStudio || {};
             var lastBrushAngle = 0;
             var keyboardX = SIM_W / 2, keyboardY = SIM_H / 2;
             var brushCursor = null;
+            var keyboardCursorActive = false;
             var reservoirWater = 1;
             var reservoirPigment = 1;
             var strokeSeed = 1;
@@ -5211,6 +5377,7 @@ const d = labToolData.artStudio || {};
             var STEP = 1 / 30;
 
             function updateA11y() {
+              if(params.panMode){canvas.setAttribute('aria-label',__alloT('stem.artstudio.watercolor_pan_canvas',"Watercolor paper navigation. Drag or use Arrow keys to pan; Shift moves farther. Painting is disabled in Pan mode. Choose Paint on paper to resume painting."));return;}
               canvas.setAttribute('aria-label', 'Watercolor painting canvas using a ' + params.brush +
                 ' brush on ' + params.surface + ' paper. Brush size ' + Math.round(params.size) +
                 ' pixels, water ' + Math.round(params.water * 100) + ' percent, pigment ' +
@@ -5231,7 +5398,8 @@ const d = labToolData.artStudio || {};
                 Math.round(params.bloomSensitivity * 100) + ' percent. ' +
                 (params.showWetness ? 'Wetness map visible. ' : '') +
                 (params.showFlow ? 'Flow vectors visible. ' : '') +
-                (paused ? 'Drying is paused.' : 'Drying is active.'));
+                (paused ? 'Drying is paused.' : 'Drying is active.') + ' ' +
+                formatArtStudioLearningText(__alloT('stem.artstudio.watercolor_cursor_position','Keyboard brush at column {column}, row {row}.'),{column:Math.round(keyboardX+1),row:Math.round(keyboardY+1)}));
             }
 
             function loadSnapshot(url) {
@@ -5370,6 +5538,7 @@ const d = labToolData.artStudio || {};
             function restoreState(state) {
               if (!state || state.simWidth !== SIM_W || state.simHeight !== SIM_H ||
                   !state.water || state.water.length !== COUNT) return false;
+              finishWatercolorPointer(null,true);
               if (frameId) cancelAnimationFrame(frameId);
               running = false;
               drawing = false;
@@ -5467,6 +5636,7 @@ const d = labToolData.artStudio || {};
               strokeSeed = isFinite(Number(state.strokeSeed)) ? Number(state.strokeSeed) : 1;
               keyboardX = clamp(isFinite(Number(state.keyboardX)) ? Number(state.keyboardX) : SIM_W / 2, 0, SIM_W - 1);
               keyboardY = clamp(isFinite(Number(state.keyboardY)) ? Number(state.keyboardY) : SIM_H / 2, 0, SIM_H - 1);
+              if(keyboardCursorActive && brushCursor && brushCursor.keyboard && !params.panMode && document.activeElement===canvas)showKeyboardBrush(false);
               lastStatusKey = '';
               render();
               updateHistoryControls();
@@ -5984,6 +6154,35 @@ const d = labToolData.artStudio || {};
               else if (params.brush === 'rigger') { major = radius * (1.86 + tilt * 0.32); minor = Math.max(0.9, radius * (0.34 - tilt * 0.06)); }
               return {major:major,minor:minor,angle:angle};
             }
+            function revealKeyboardBrush(x,y,dynamics) {
+              var paper=watercolorPaperRef.current;if(!paper || !paper.clientWidth || !paper.clientHeight)return;
+              var view=paper.getBoundingClientRect(),rect=canvas.getBoundingClientRect();if(!rect.width || !rect.height)return;
+              var shape=brushFootprint(dynamics.pressure,dynamics.tilt,dynamics.angle),cos=Math.abs(Math.cos(shape.angle)),sin=Math.abs(Math.sin(shape.angle));
+              var centerX=rect.left+x*rect.width/SIM_W,centerY=rect.top+y*rect.height/SIM_H;
+              // Conservative rotated bounds also cover flat and rigger tips.
+              var radiusX=cos*shape.major*rect.width/SIM_W+sin*shape.minor*rect.height/SIM_H;
+              var radiusY=sin*shape.major*rect.width/SIM_W+cos*shape.minor*rect.height/SIM_H;
+              var left=view.left+(paper.clientLeft||0),top=view.top+(paper.clientTop||0),margin=12;
+              function revealAxis(scroll,extent,visible,start,center,radius,sheetStart,sheetSize) {
+                var first=Math.max(sheetStart,center-radius-margin),last=Math.min(sheetStart+sheetSize,center+radius+margin);
+                // A brush larger than the viewport cannot fit; retain its center.
+                if(last-first>visible){var padding=Math.min(margin,visible/4);first=center-padding;last=center+padding;}
+                var delta=first<start?first-start:last>start+visible?last-start-visible:0;
+                return clamp(scroll+delta,0,Math.max(0,extent-visible));
+              }
+              paper.scrollLeft=revealAxis(paper.scrollLeft,paper.scrollWidth,paper.clientWidth,left,centerX,radiusX,rect.left,rect.width);
+              paper.scrollTop=revealAxis(paper.scrollTop,paper.scrollHeight,paper.clientHeight,top,centerY,radiusY,rect.top,rect.height);
+            }
+            function showKeyboardBrush(reveal) {
+              keyboardCursorActive=true;
+              var dynamics={pressure:0.7,tilt:0,angle:0};
+              if(reveal)revealKeyboardBrush(keyboardX,keyboardY,dynamics);
+              showBrushCursor(keyboardX,keyboardY,dynamics,true);updateA11y();
+            }
+            function focusWatercolorPointer() {
+              keyboardCursorActive=false;
+              try{canvas.focus({preventScroll:true});}catch(_){canvas.focus();}
+            }
             function hideBrushCursor() {
               brushCursor = null;
               var cursor = document.getElementById('artstudio-watercolor-cursor');
@@ -6171,7 +6370,12 @@ const d = labToolData.artStudio || {};
                     if (remobilized > 0) bloom[index] = clamp(bloom[index] + remobilized * (0.18 + params.bleed * 0.20), 0, 1);
                   }
                   if (liftPigment) {
-                    var liftAmount = clamp(deposit * (0.10 + params.water * 0.28) * (0.58 + safePressure * 0.42), 0, 0.72);
+                    // A damp brush releases pigment gradually. Dry bristles on dry
+                    // paper cannot remove color, and zero strength only rewets.
+                    var liftStrength = clamp(isFinite(Number(params.liftingStrength)) ? Number(params.liftingStrength) : 0.70, 0, 1);
+                    var liftMoisture = clamp(water[index] / 0.12, 0, 1);
+                    var liftAmount = clamp(deposit * (0.10 + params.water * 0.28) * (0.58 + safePressure * 0.42) *
+                      (liftStrength / 0.70) * liftMoisture, 0, 0.72);
                     pigmentR[index] *= 1 - liftAmount;
                     pigmentG[index] *= 1 - liftAmount;
                     pigmentB[index] *= 1 - liftAmount;
@@ -6183,11 +6387,11 @@ const d = labToolData.artStudio || {};
                     pigmentMobilityRMass[index] *= 1 - liftAmount;
                     pigmentMobilityGMass[index] *= 1 - liftAmount;
                     pigmentMobilityBMass[index] *= 1 - liftAmount;
-                    var liftCellDensity = pigmentDensity[index] + stainDensity[index];
-                    var liftCellStaining = liftCellDensity > 0.0001
-                      ? clamp((pigmentStainingMass[index] + stainStainingMass[index]) / liftCellDensity, 0, 1)
-                      : params.staining;
-                    var fixedLift = liftAmount * (0.46 - liftCellStaining * 0.40) * (0.72 + params.sizing * 0.50);
+                    // The settled glaze retains its own staining response. A fresh
+                    // wash or a newly selected pigment cannot change that trait.
+                    var liftSettledStaining = stainDensity[index] > 0.0001
+                      ? clamp(stainStainingMass[index] / stainDensity[index], 0, 1) : 0;
+                    var fixedLift = liftAmount * (0.46 - liftSettledStaining * 0.40) * (0.72 + params.sizing * 0.50);
                     stainR[index] *= 1 - fixedLift;
                     stainG[index] *= 1 - fixedLift;
                     stainB[index] *= 1 - fixedLift;
@@ -6239,7 +6443,10 @@ const d = labToolData.artStudio || {};
               configure: function (nextParams, snapshotUrl) {
                 var previousBrush = params.brush;
                 var previousColor = params.color;
+                if(nextParams && !!nextParams.panMode!==!!params.panMode)finishWatercolorPointer(null,true);
                 params = nextParams || params;
+                canvas.style.cursor=params.panMode?(panning?'grabbing':'grab'):'crosshair';
+                if(params.panMode)hideBrushCursor();
                 var colorChanged = !previousColor || !params.color || params.color.r !== previousColor.r ||
                   params.color.g !== previousColor.g || params.color.b !== previousColor.b;
                 if (params.brush !== previousBrush || colorChanged) {
@@ -6340,6 +6547,7 @@ const d = labToolData.artStudio || {};
                 scheduleDurablePersistence(300);
                 return paused;
               },
+              cancelPointer: function(){finishWatercolorPointer(null,true);keyboardCursorActive=false;hideBrushCursor();},
               dabAt: function (x, y, pressure) { localRevision += 1; pushHistory(); strokeSeed += 1; addDab(x, y, { pressure: pressure || 0.7, speed: 0.12, tilt: 0, angle: 0 }); ensureLoop(); scheduleDurablePersistence(650); },
               undo: undoState,
               redo: redoState,
@@ -6360,7 +6568,8 @@ const d = labToolData.artStudio || {};
               discardPersistedState: discardDurableState
             };
             canvas._watercolorEngine = engine;
-            canvas.style.touchAction = d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y';
+            canvas.style.touchAction = params.panMode || params.touchMode === 'draw' ? 'none' : 'pan-y';
+            canvas.style.cursor=params.panMode?'grab':'crosshair';
 
             function dynamicsForEvent(event) {
               var pressure = Number(event.pressure);
@@ -6448,9 +6657,16 @@ const d = labToolData.artStudio || {};
             }
 
             canvas.onpointerdown = function (event) {
-              if ((event.button !== undefined && event.button !== 0) || event.isPrimary === false || drawing) return;
+              if ((event.button !== undefined && event.button !== 0) || event.isPrimary === false || drawing || panning) return;
+              if(params.panMode) {
+                var paper=watercolorPaperRef.current;if(!paper || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY))return;
+                event.preventDefault();hideBrushCursor();
+                panning={id:event.pointerId,x:event.clientX,y:event.clientY,left:paper.scrollLeft,top:paper.scrollTop};
+                canvas._watercolorPointerId=event.pointerId;canvas.style.cursor='grabbing';focusWatercolorPointer();
+                try{canvas.setPointerCapture(event.pointerId);}catch(_){}return;
+              }
               if (event.pointerType === 'touch' && params.touchMode !== 'draw') return;
-              event.preventDefault(); drawing = true; lastX = null; lastY = null;
+              event.preventDefault(); drawing = true; lastX = null; lastY = null;focusWatercolorPointer();
               canvas._watercolorPointerId = event.pointerId;
               lastStrokeTime = 0; lastPressure = 0.7; lastTilt = 0; lastBrushAngle = 0;
               localRevision += 1;
@@ -6460,6 +6676,12 @@ const d = labToolData.artStudio || {};
               paintPointerSamples(event);
             };
             canvas.onpointermove = function (event) {
+              if(panning) {
+                if(event.pointerId!==panning.id || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY))return;
+                var paper=watercolorPaperRef.current;if(!paper)return;
+                event.preventDefault();paper.scrollLeft=panning.left+panning.x-event.clientX;paper.scrollTop=panning.top+panning.y-event.clientY;return;
+              }
+              if(params.panMode){hideBrushCursor();return;}
               if (!drawing) {
                 if (event.pointerType !== 'touch') {
                   var point = pointFor(event), hoverDynamics = dynamicsForEvent(event);
@@ -6473,6 +6695,11 @@ const d = labToolData.artStudio || {};
               paintPointerSamples(event);
             };
             function finishWatercolorPointer(event, cancelled) {
+              if(panning) {
+                if(event && event.pointerId!==undefined && event.pointerId!==panning.id)return;
+                var panId=panning.id;panning=null;canvas.style.cursor=params.panMode?'grab':'crosshair';
+                try{canvas.releasePointerCapture(panId);}catch(_){}return;
+              }
               if (!drawing || (event && event.pointerId !== undefined && event.pointerId !== canvas._watercolorPointerId)) return;
               // A fast release can contain a point never delivered by pointermove.
               // Complete the existing stroke, without creating another history entry
@@ -6483,16 +6710,19 @@ const d = labToolData.artStudio || {};
               }
               drawing = false; lastX = null; lastY = null; lastStrokeTime = 0;
               if (cancelled) hideBrushCursor();
-              try { if (event && event.pointerId !== undefined) canvas.releasePointerCapture(event.pointerId); } catch (_) {}
+              try { var releaseId=event && event.pointerId!==undefined?event.pointerId:canvas._watercolorPointerId;if(releaseId!==undefined)canvas.releasePointerCapture(releaseId); } catch (_) {}
               scheduleDurablePersistence(650);
             }
             canvas.onpointerup = function (event) { finishWatercolorPointer(event, false); };
             canvas.onpointercancel = function (event) { finishWatercolorPointer(event, true); };
             canvas.onlostpointercapture = function (event) { finishWatercolorPointer(event, true); };
             canvas.onpointerenter = function (event) { if (!drawing && event.pointerType !== 'touch') canvas.onpointermove(event); };
-            canvas.onpointerleave = function () { if (!drawing) hideBrushCursor(); };
-            canvas.onfocus = function () { showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true); };
-            canvas.onblur = hideBrushCursor;
+            canvas.onpointerleave = function () {
+              if(drawing)return;
+              if(keyboardCursorActive && document.activeElement===canvas && !params.panMode)showKeyboardBrush(false);else hideBrushCursor();
+            };
+            canvas.onfocus = function () {if(params.panMode || drawing || panning)hideBrushCursor();else showKeyboardBrush(true);};
+            canvas.onblur = function(){keyboardCursorActive=false;finishWatercolorPointer(null,true);hideBrushCursor();};
             canvas.onkeydown = function (event) {
               var historyKey = String(event.key || '').toLowerCase();
               if (!event.ctrlKey && !event.metaKey && !event.altKey && historyKey === 'p') {
@@ -6513,7 +6743,23 @@ const d = labToolData.artStudio || {};
                 if (typeof announceToSR === 'function') announceToSR(didRedo ? __alloT('stem.artstudio.sr_watercolor_redone', 'Watercolor redone.') : __alloT('stem.artstudio.sr_nothing_to_redo', 'Nothing to redo.'));
                 return;
               }
-              var move = Math.max(2, params.size * (SIM_W / Math.max(1, LOGICAL_W)) * 0.55);
+              if(event.ctrlKey || event.metaKey)return;
+              if(event.key==='Escape'){
+                if(drawing || panning){event.preventDefault();finishWatercolorPointer(null,true);}
+                keyboardCursorActive=false;hideBrushCursor();return;
+              }
+              if(params.panMode) {
+                if(event.altKey)return;
+                if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Enter',' '].indexOf(event.key)<0)return;
+                finishWatercolorPointer(null,true);
+                event.preventDefault();var paper=watercolorPaperRef.current;if(!paper)return;var distance=event.shiftKey?160:48;
+                if(event.key==='ArrowLeft')paper.scrollLeft-=distance;if(event.key==='ArrowRight')paper.scrollLeft+=distance;
+                if(event.key==='ArrowUp')paper.scrollTop-=distance;if(event.key==='ArrowDown')paper.scrollTop+=distance;
+                if(event.key==='Home'){paper.scrollLeft=0;paper.scrollTop=0;}if(event.key==='End'){paper.scrollLeft=paper.scrollWidth;paper.scrollTop=paper.scrollHeight;}return;
+              }
+              if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Enter',' '].indexOf(event.key)<0)return;
+              finishWatercolorPointer(null,true);
+              var move = event.altKey?1:Math.max(2, params.size * (SIM_W / Math.max(1, LOGICAL_W)) * 0.55)*(event.shiftKey?4:1);
               var moved = false;
               if (event.key === 'ArrowLeft') { keyboardX = clamp(keyboardX - move, 0, SIM_W - 1); moved = true; }
               else if (event.key === 'ArrowRight') { keyboardX = clamp(keyboardX + move, 0, SIM_W - 1); moved = true; }
@@ -6523,14 +6769,15 @@ const d = labToolData.artStudio || {};
               else if (event.key === 'End') { keyboardX = SIM_W - 1; keyboardY = SIM_H - 1; moved = true; }
               if (moved) {
                 event.preventDefault();
-                showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true);
+                if(event.key==='Home' || event.key==='End'){var paper=watercolorPaperRef.current;if(paper){paper.scrollLeft=event.key==='Home'?0:Math.max(0,paper.scrollWidth-paper.clientWidth);paper.scrollTop=event.key==='Home'?0:Math.max(0,paper.scrollHeight-paper.clientHeight);}}
+                showKeyboardBrush(true);
                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_watercolor_cursor_at_column_row', 'Watercolor cursor at column {value1}, row {value2}.'), { value1: Math.round(keyboardX + 1), value2: Math.round(keyboardY + 1) }));
                 return;
               }
               if (event.key === 'Enter' || event.key === ' ') {
                 event.preventDefault();
+                showKeyboardBrush(true);
                 engine.dabAt(keyboardX, keyboardY, 0.7);
-                showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true);
                 if (typeof announceToSR === 'function') announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.sr_watercolor_dab_placed_at_column_row', 'Watercolor dab placed at column {value1}, row {value2}.'), { value1: Math.round(keyboardX + 1), value2: Math.round(keyboardY + 1) }));
               }
             };
@@ -6566,6 +6813,13 @@ const d = labToolData.artStudio || {};
             canvas._pixelGridSize = gridSize;
             canvas._pixelLayerId = pixelLayerModel.activeId;
             canvas._pixelLayerEditable = pixelLayerEditable;
+            var pendingSelection=canvas._pixelPendingLayerSelection;
+            if(pendingSelection) {
+              canvas._pixelPendingLayerSelection=null;
+              if(!newArtwork && d.pixelTool==='select' && pendingSelection.owner===pixelArtworkOwner &&
+                pendingSelection.layer===pixelLayerModel.activeId && pendingSelection.size===gridSize && pendingSelection.history===pixelHistoryRef.current)
+                canvas._pixelSelection=pendingSelection.bounds;
+            }
             if (d.pixelTool !== 'select') canvas._pixelSelection = canvas._pixelSelectionDrag = canvas._pixelSelectionAnchor = canvas._pixelSelectionPreview = null;
             if (d.pixelTool !== 'pan' && canvas._pixelPan) {
               canvas._pixelPan = null;
@@ -6600,9 +6854,13 @@ const d = labToolData.artStudio || {};
               var size = (!d.pixelTool || d.pixelTool === 'brush' || d.pixelTool === 'eraser') ? pixelBrushSize : 1;
               var startX = x - Math.floor(size / 2), startY = y - Math.floor(size / 2);
               var center = (size - 1) / 2;
+              var wrapBrush=d.pixelWrapEdges===true && (!d.pixelTool || d.pixelTool==='brush' || d.pixelTool==='eraser');
               for (var by = 0; by < size; by++) for (var bx = 0; bx < size; bx++) {
                 var px = startX + bx, py = startY + by;
-                if (px < 0 || py < 0 || px >= gridSize || py >= gridSize) continue;
+                if (px < 0 || py < 0 || px >= gridSize || py >= gridSize) {
+                  if(!wrapBrush)continue;
+                  px=(px+gridSize)%gridSize;py=(py+gridSize)%gridSize;
+                }
                 if (d.pixelBrushShape === 'round' && (bx-center)*(bx-center)+(by-center)*(by-center) > size*size/4) continue;
                 // Anchor ordered dithering to the artwork, not each brush dab.
                 // Repeated or overlapping strokes therefore keep one pattern.
@@ -6652,7 +6910,13 @@ const d = labToolData.artStudio || {};
               var selection=canvas._pixelSelection, clipboard=canvas._pixelClipboard;
               var hasPixels=selection && Object.keys(selectionPixels(selection,grid)).length>0;
               var busy=!!(canvas._pixelSelectionDrag || canvas._pixelSelectionAnchor);
-              ['copy','cut','delete','rotate','flip-x','flip-y'].forEach(function(action){var button=document.getElementById('artstudio-pixel-selection-'+action);if(button)button.disabled=!hasPixels || busy || (action!=='copy' && !pixelLayerEditable);});
+              ['copy','cut','delete','rotate','flip-x','flip-y','grow','shrink','copy-layer','cut-layer'].forEach(function(action){
+                var button=document.getElementById('artstudio-pixel-selection-'+action);if(!button)return;
+                button.disabled=!hasPixels || busy || (['copy','copy-layer'].indexOf(action)<0 && !pixelLayerEditable);
+                if(action==='grow' && selection && (selection.w*2>gridSize || selection.h*2>gridSize))button.disabled=true;
+                if(action==='shrink' && selection && selection.w===1 && selection.h===1)button.disabled=true;
+                if((action==='copy-layer' || action==='cut-layer') && pixelLayerModel.layers.length>=ART_STUDIO_PIXEL_MAX_LAYERS)button.disabled=true;
+              });
               var selectAll=document.getElementById('artstudio-pixel-selection-all');
               if(selectAll)selectAll.disabled=busy;
               var paste=document.getElementById('artstudio-pixel-selection-paste');
@@ -6706,8 +6970,27 @@ const d = labToolData.artStudio || {};
               if(target.x===bounds.x && target.y===bounds.y)return;
               commitSelectionGrid(placeSelection(grid,bounds,target,selectionPixels(bounds,grid),true),target);
             }
+            function selectionToLayer(pixels,bounds,move) {
+              if(pixelLayerModel.layers.length>=ART_STUDIO_PIXEL_MAX_LAYERS || (move && !pixelLayerEditable))return false;
+              var before=pixelCheckpoint(grid,gridSize),model=artStudioPixelLayerModel(before,pixelLayerDefaultName);
+              var source=model.layers.find(function(layer){return layer.id===model.activeId;}),index=model.layers.indexOf(source),number=1;
+              while(model.layers.some(function(layer){return layer.id==='layer-'+number;}))number++;
+              var next={id:'layer-'+number,name:formatArtStudioLearningText(__alloT('stem.artstudio.pixel_selection_layer_name','{name} selection'),{name:source.name}).slice(0,60),visible:source.visible,locked:false,
+                pixels:placeSelection({},null,bounds,pixels,false)};
+              if(source.opacity!==undefined)next.opacity=source.opacity;
+              if(source.blend!==undefined)next.blend=source.blend;
+              if(move)source.pixels=placeSelection(source.pixels,bounds,bounds,{},true);
+              model.layers.splice(index+1,0,next);model.activeId=next.id;
+              endPixelLayerOpacityGesture();rememberPixelArtwork(before);
+              canvas._pixelPendingLayerSelection={owner:pixelArtworkOwner,layer:next.id,size:gridSize,history:pixelHistoryRef.current,bounds:Object.assign({},bounds)};
+              updMany(artStudioPixelLayerSnapshot(model));
+              if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(move?
+                __alloT('stem.artstudio.pixel_selection_layer_moved','Moved selected pixels to {name}. Undo restores the original layer.'):
+                __alloT('stem.artstudio.pixel_selection_layer_copied','Copied selected pixels to {name}. Undo removes the new layer.'),{name:next.name}));
+              return true;
+            }
             canvas._pixelSelectionAction=function(action) {
-              if(!pixelLayerEditable && ['deselect','all','copy'].indexOf(action)<0){announcePixelLayerProtection();return false;}
+              if(!pixelLayerEditable && ['deselect','all','copy','copy-layer'].indexOf(action)<0){announcePixelLayerProtection();return false;}
               if(action==='deselect') {canvas._pixelSelection=canvas._pixelSelectionAnchor=canvas._pixelSelectionDrag=canvas._pixelSelectionPreview=null;drawPixelGrid();return true;}
               if(canvas._pixelSelectionDrag || canvas._pixelSelectionAnchor)return false;
               var bounds=canvas._pixelSelection;
@@ -6721,6 +7004,15 @@ const d = labToolData.artStudio || {};
               }
               var pixels=selectionPixels(bounds,grid);
               if(!bounds || !Object.keys(pixels).length)return false;
+              if(action==='copy-layer' || action==='cut-layer')return selectionToLayer(pixels,bounds,action==='cut-layer');
+              if(action==='grow' || action==='shrink') {
+                if(action==='shrink' && bounds.w===1 && bounds.h===1)return false;
+                var resized=artStudioPixelResizeSelection(pixels,bounds.w,bounds.h,action==='grow'?2:0.5);
+                if(!resized || resized.w>gridSize || resized.h>gridSize)return false;
+                var resizedBounds=selectionPlacement({x:bounds.x,y:bounds.y,w:resized.w,h:resized.h},0,0);
+                commitSelectionGrid(placeSelection(grid,bounds,resizedBounds,resized.pixels,true),resizedBounds);
+                return true;
+              }
               if(action==='rotate' || action==='flip-x' || action==='flip-y') {
                 var rotating=action==='rotate', transformed={};
                 var target=selectionPlacement({x:bounds.x,y:bounds.y,w:rotating?bounds.h:bounds.w,h:rotating?bounds.w:bounds.h},0,0);
@@ -6811,7 +7103,9 @@ const d = labToolData.artStudio || {};
               if (targetKey === (artStudioPixelColorKey(fillColor) || fillColor)) return;
               var queue = [[startX, startY]], visited = {};
               for (var index = 0; index < queue.length; index++) {
-                var x = queue[index][0], y = queue[index][1], key = x + ',' + y;
+                var x = queue[index][0], y = queue[index][1];
+                if(d.pixelWrapEdges===true){x=(x+gridSize)%gridSize;y=(y+gridSize)%gridSize;}
+                var key = x + ',' + y;
                 if (x < 0 || x >= gridSize || y < 0 || y >= gridSize || visited[key]) continue;
                 visited[key] = true;
                 if ((artStudioPixelColorKey(grid[key]) || grid[key] || null) !== targetKey) continue;
@@ -7058,16 +7352,10 @@ const d = labToolData.artStudio || {};
               try { return canvas.toDataURL('image/png'); }
               finally { drawPixelGrid(); }
             };
-            canvas._pixelExportNative = function () {
-              var output = document.createElement('canvas'); output.width = output.height = gridSize;
-              var outputContext = output.getContext('2d');
-              if (!outputContext) return '';
-              var composite=artStudioPixelComposite(pixelLayerModel,grid);
-              Object.keys(composite).forEach(function (key) {
-                var point = key.split(',').map(Number);
-                outputContext.fillStyle = composite[key]; outputContext.fillRect(point[0], point[1], 1, 1);
-              });
-              return output.toDataURL('image/png');
+            canvas._pixelExportNative = function (scale,repeats) {
+              var output=document.createElement('canvas'),composite=artStudioPixelComposite(pixelLayerModel,grid);
+              if(!artStudioPixelExportCanvas(output,composite,gridSize,scale,repeats))return '';
+              try{return output.toDataURL('image/png');}catch(_){return '';}
             };
             drawPixelGrid();
           };
@@ -7079,7 +7367,8 @@ const d = labToolData.artStudio || {};
             if (!canvas) return;
 
             canvas.dataset.touchMode = d.symmetryTouchMode === 'draw' ? 'draw' : 'scroll';
-            canvas.style.touchAction = canvas.dataset.touchMode === 'draw' ? 'none' : 'pan-y';
+            canvas.style.touchAction = symmetryNavigation==='pan' || canvas.dataset.touchMode === 'draw' ? 'none' : 'pan-y';
+            canvas.style.cursor=symmetryNavigation==='pan'?(canvas._symPan?'grabbing':'grab'):'crosshair';
 
             var ctx = canvas.getContext('2d');
 
@@ -7139,10 +7428,11 @@ const d = labToolData.artStudio || {};
               if (cursor) {
                 var displayW = canvas.clientWidth || W;
                 var displayH = canvas.clientHeight || H;
-                cursor.style.left = ((canvas.offsetLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
-                cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
-                cursor.style.display = show ? 'block' : 'none';
+                cursor.style.left = ((canvas.offsetLeft || 0) + (canvas.clientLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
+                cursor.style.top = ((canvas.offsetTop || 0) + (canvas.clientTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
+                cursor.style.display = show && symmetryNavigation!=='pan' ? 'block' : 'none';
               }
+              if(symmetryNavigation==='pan'){canvas.setAttribute('aria-label',__alloT('stem.artstudio.sym_navigation_canvas','Symmetry paper navigation. Drag or use Arrow keys to pan; Shift moves farther. Painting is disabled in Pan mode. Choose Paint on paper to resume drawing.'));return;}
               canvas.setAttribute('aria-label',formatArtStudioLearningText(__alloT('stem.artstudio.sym_workspace_canvas','Symmetry drawing canvas in {pattern} mode with {copies}, using {stroke} and {blend} blending. Origin at {x} percent x, {y} percent y. Keyboard cursor at x {cursorX}, y {cursorY}.'),{
                 pattern:patternMode==='bilateral'?__alloT('stem.artstudio.a11y_sym_pattern_bilateral','bilateral mirror'):patternMode==='kaleidoscope'?__alloT('stem.artstudio.a11y_sym_pattern_kaleidoscope','kaleidoscope'):__alloT('stem.artstudio.a11y_sym_pattern_rotational','rotational'),
                 copies:patternMode==='bilateral'?__alloT('stem.artstudio.sym_workspace_reflected','2 reflected copies'):formatArtStudioLearningText(__alloT('stem.artstudio.sym_workspace_folds','{count} folds'),{count:folds}),
@@ -7310,6 +7600,7 @@ const d = labToolData.artStudio || {};
             var symmetryRestoreToken = d.symmetryRestoreToken || '';
             var symmetryOwner=studioPersistenceScope+'|'+symmetryRestoreToken;
             if (canvas._symOwner!==symmetryOwner || canvas._symSnapshot !== incomingSymmetrySnapshot || canvas._symRestoreToken !== symmetryRestoreToken) {
+              if(canvas._symPan){var previousPanId=canvas._symPan.id;canvas._symPan=null;try{if(previousPanId!=='legacy')canvas.releasePointerCapture(previousPanId);}catch(_){}}
               canvas._symOwner=symmetryOwner;
               canvas._symSnapshot = incomingSymmetrySnapshot;
               canvas._symRestoreToken = symmetryRestoreToken;
@@ -7521,6 +7812,7 @@ const d = labToolData.artStudio || {};
             }
 
             function finishPointer(e, cancelled) {
+              if(canvas._symPan){var pan=canvas._symPan;if(e&&(e.pointerId===undefined?'legacy':e.pointerId)!==pan.id)return;canvas._symPan=null;canvas.style.cursor=symmetryNavigation==='pan'?'grab':'crosshair';try{if(pan.id!=='legacy')canvas.releasePointerCapture(pan.id);}catch(_){}return;}
               if (!canvas._symDrawing || (e && (e.pointerId===undefined?'legacy':e.pointerId)!==canvas._symPointerId)) return;
               var pointerId=canvas._symPointerId;
               var before = canvas._symStrokeStartSnapshot;
@@ -7553,8 +7845,13 @@ const d = labToolData.artStudio || {};
             canvas._symCancelGesture=function(){finishPointer(null,true);};
             canvas._symRefreshHistory=refreshSymmetryHistory;
             canvas.onpointerdown = function (e) {
-              if(canvas._symRestoring || canvas._symDrawing)return;
+              if(canvas._symRestoring || canvas._symDrawing || canvas._symPan || e.isPrimary===false)return;
               if (e.button !== undefined && e.button !== 0) return;
+              if(symmetryNavigation==='pan'){
+                var paper=symmetryPaperRef.current;if(!paper || !Number.isFinite(e.clientX) || !Number.isFinite(e.clientY))return;
+                e.preventDefault();canvas._symPan={id:e.pointerId===undefined?'legacy':e.pointerId,x:e.clientX,y:e.clientY,left:paper.scrollLeft,top:paper.scrollTop};
+                try{canvas.focus({preventScroll:true});}catch(_){canvas.focus();}canvas._symKeyboardFocused=false;updateKeyboardCursor(false);canvas.style.cursor='grabbing';try{if(e.pointerId!==undefined)canvas.setPointerCapture(e.pointerId);}catch(_){}return;
+              }
               if (!canvasAllowsFingerInteraction(canvas, e)) return;
               e.preventDefault();
               canvas._symDrawing = true;
@@ -7571,6 +7868,7 @@ const d = labToolData.artStudio || {};
               try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
             };
             canvas.onpointermove = function (e) {
+              if(canvas._symPan){var pan=canvas._symPan,paper=symmetryPaperRef.current;if(!paper || (e.pointerId===undefined?'legacy':e.pointerId)!==pan.id || !Number.isFinite(e.clientX) || !Number.isFinite(e.clientY))return;e.preventDefault();paper.scrollLeft=pan.left+pan.x-e.clientX;paper.scrollTop=pan.top+pan.y-e.clientY;return;}
               if (!canvas._symDrawing || (e.pointerId===undefined?'legacy':e.pointerId)!==canvas._symPointerId) return;
               e.preventDefault();
               if (strokeMode === 'line') {
@@ -7592,7 +7890,7 @@ const d = labToolData.artStudio || {};
             canvas.onfocus = function () {canvas._symKeyboardFocused=true;updateKeyboardCursor(true);};
             canvas.onblur = function () {canvas._symKeyboardFocused=false;updateKeyboardCursor(false);};
             canvas.onkeydown = function (event) {
-              if(event.key==='Escape' && canvas._symDrawing){event.preventDefault();finishPointer(null,true);return;}
+              if(event.key==='Escape' && (canvas._symDrawing || canvas._symPan)){event.preventDefault();finishPointer(null,true);return;}
               var historyKey = String(event.key || '').toLowerCase();
               if ((event.ctrlKey || event.metaKey) && historyKey === 'z') {
                 event.preventDefault();
@@ -7603,6 +7901,14 @@ const d = labToolData.artStudio || {};
                 event.preventDefault();
                 redoSymmetry();
                 return;
+              }
+              if(symmetryNavigation==='pan'){
+                var paper=symmetryPaperRef.current,step=event.shiftKey?160:48;if(!paper)return;
+                if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].indexOf(event.key)>=0)finishPointer(null,true);
+                if(event.key==='ArrowLeft')paper.scrollLeft-=step;else if(event.key==='ArrowRight')paper.scrollLeft+=step;else if(event.key==='ArrowUp')paper.scrollTop-=step;else if(event.key==='ArrowDown')paper.scrollTop+=step;
+                else if(event.key==='Home'){paper.scrollLeft=0;paper.scrollTop=0;}else if(event.key==='End'){paper.scrollLeft=paper.scrollWidth-paper.clientWidth;paper.scrollTop=paper.scrollHeight-paper.clientHeight;}
+                else if(event.key!=='Enter' && event.key!==' ')return;
+                event.preventDefault();updateKeyboardCursor(false);return;
               }
               if(canvas._symRestoring || canvas._symDrawing)return;
               canvas._symKeyboardFocused=true;
@@ -10158,6 +10464,10 @@ const d = labToolData.artStudio || {};
             tab === 'watercolor' && React.createElement("div", { id:'watercolorFullscreenWorkspace',className: "artstudio-watercolor-workspace space-y-3" },
               React.createElement('style',null,`
                 .artstudio-watercolor-workspace{min-width:0}
+                .artstudio-watercolor-paper{height:calc(var(--watercolor-fit-side) + 24px);max-height:82dvh;overflow:auto!important;overscroll-behavior:contain}
+                .artstudio-watercolor-sheet{position:relative;margin:0 auto}
+                .artstudio-watercolor-sheet #watercolorCanvas{width:var(--watercolor-side)!important;height:var(--watercolor-side)!important;max-width:none!important;margin:0}
+                .artstudio-watercolor-navigation :is(button,select):focus-visible{outline:3px solid #0f766e;outline-offset:2px}
                 .artstudio-watercolor-workspace button,.artstudio-watercolor-workspace select,.artstudio-watercolor-workspace summary,.artstudio-watercolor-workspace input[type=color],.artstudio-watercolor-workspace input[type=range]{min-height:44px}
                 .artstudio-watercolor-colors button{min-width:44px}
                 @media(max-width:700px){#watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-colors{flex:0 0 auto}}
@@ -10166,7 +10476,7 @@ const d = labToolData.artStudio || {};
                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"])> *{margin:0;min-width:0;min-height:0}
                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-colors{grid-column:1/-1;grid-row:1}
                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-canvas-workspace{grid-column:1;grid-row:2;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:8px}
-                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-paper{margin:0;min-width:0;min-height:0;display:grid;place-items:center}
+                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-paper{margin:0;min-width:0;min-height:0;display:block;height:auto;max-height:none}
                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) #watercolorCanvas{width:var(--watercolor-side)!important;height:var(--watercolor-side)!important;max-width:none!important;margin:0}
                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-settings{grid-column:2;grid-row:2;overflow:auto;overscroll-behavior:contain;padding:0 4px 8px 0}
                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-settings [role=group].grid{grid-template-columns:repeat(2,minmax(0,1fr))}
@@ -10178,7 +10488,7 @@ const d = labToolData.artStudio || {};
               React.createElement("div", { className: "artstudio-watercolor-colors flex items-center gap-2 flex-wrap bg-teal-50 rounded-xl p-3 border border-teal-200" },
                 React.createElement("label", { htmlFor: "artstudio-watercolor-color", className: "text-xs font-bold text-teal-800" }, __alloT('stem.artstudio.watercolor_color', "Pigment color")),
                 React.createElement("input", { id: "artstudio-watercolor-color", type: "color", value: d.watercolorColor || '#2f6fb0', onChange: function (e) { upd('watercolorColor', e.target.value); }, 'aria-label': __alloT('stem.artstudio.watercolor_color', "Pigment color"), className: "h-8 w-12 rounded cursor-pointer border border-teal-600 bg-white" }),
-                React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.watercolor_finger_toggle','Draw with a finger'),'aria-pressed':d.watercolorTouchMode==='draw',onClick:function(){upd('watercolorTouchMode',d.watercolorTouchMode==='draw'?'scroll':'draw');},className:'min-h-[44px] rounded-lg border border-teal-600 px-3 text-xs font-bold '+(d.watercolorTouchMode==='draw'?'bg-teal-700 text-white':'bg-white text-teal-900')},d.watercolorTouchMode==='draw'?__alloT('stem.artstudio.watercolor_finger_draw','Finger: draw'):__alloT('stem.artstudio.watercolor_finger_scroll','Finger: scroll')),
+                React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.watercolor_finger_toggle','Draw with a finger'),'aria-pressed':watercolorNavigation==='paint' && d.watercolorTouchMode==='draw',onClick:function(){changeWatercolorNavigation('paint');upd('watercolorTouchMode',watercolorNavigation==='pan'?'draw':d.watercolorTouchMode==='draw'?'scroll':'draw');},className:'min-h-[44px] rounded-lg border border-teal-600 px-3 text-xs font-bold '+(d.watercolorTouchMode==='draw'?'bg-teal-700 text-white':'bg-white text-teal-900')},watercolorNavigation==='pan'?__alloT('stem.artstudio.watercolor_finger_pan','Finger: pan'):d.watercolorTouchMode==='draw'?__alloT('stem.artstudio.watercolor_finger_draw','Finger: draw'):__alloT('stem.artstudio.watercolor_finger_scroll','Finger: scroll')),
                 React.createElement("div", { className: "flex gap-1 ml-auto flex-wrap" },
                   WATERCOLOR_PIGMENTS.map(function (swatch) {
                     return React.createElement("button", { key: swatch.color, type: "button", onClick: function () { upd('watercolorColor', swatch.color); Object.keys(swatch.values).forEach(function (key) { upd(key, swatch.values[key]); }); if (typeof announceToSR === 'function') announceToSR(swatch.label + ' pigment preset applied: ' + swatch.description + '.'); }, title: swatch.label + ': ' + swatch.description, 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_pigment_preset', 'Choose {value1} pigment preset, {value2}'), { value1: swatch.label, value2: swatch.description }), 'aria-pressed': artStudioHexColor(d.watercolorColor, '#2f6fb0') === swatch.color, className: "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 " + (artStudioHexColor(d.watercolorColor, '#2f6fb0') === swatch.color ? 'border-slate-900 scale-110' : 'border-white'), style: { background: swatch.color, boxShadow: '0 1px 3px rgba(0,0,0,0.25)' } });
@@ -10188,9 +10498,11 @@ const d = labToolData.artStudio || {};
               ),
 
               React.createElement("section", { 'aria-label': __alloT('stem.artstudio.a11y_watercolor_canvas_workspace', 'Watercolor canvas workspace'), className: "artstudio-watercolor-canvas-workspace space-y-2" },
-                React.createElement("div", { ref:watercolorPaperRef,className: "artstudio-watercolor-paper rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg", style:{position:'relative',overflow:'hidden'} },
-                  React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 1024, height: 1024, role: "img", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_painting_canvas_focus_and_use_arrow', 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.'), 'aria-describedby': "artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { '--watercolor-side':watercolorFit+'px', maxWidth: 'min(100%, 82dvh)', aspectRatio: '1 / 1', touchAction: d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y' } }),
-                  React.createElement('div',{id:'artstudio-watercolor-cursor','aria-hidden':true,style:{display:'none',position:'absolute',pointerEvents:'none',zIndex:2,boxSizing:'border-box',border:'1px solid #0f172a',boxShadow:'0 0 0 1px rgba(255,255,255,0.95)'}},React.createElement('span',{style:{position:'absolute',left:'50%',top:'50%',width:3,height:3,borderRadius:'50%',background:'#0f172a',boxShadow:'0 0 0 1px white',transform:'translate(-50%,-50%)'}}))
+                React.createElement("div", { ref:watercolorPaperRef,className: "artstudio-watercolor-paper rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg", style:{position:'relative',overflow:'auto','--watercolor-fit-side':watercolorFit+'px'} },
+                  React.createElement('div',{className:'artstudio-watercolor-sheet',style:{width:Math.round(watercolorFit*watercolorZoom),height:Math.round(watercolorFit*watercolorZoom)}},
+                  React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 1024, height: 1024, role: "img", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_painting_canvas_focus_and_use_arrow', 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.'), 'aria-describedby': "artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status artstudio-watercolor-navigation-help", 'aria-keyshortcuts': watercolorNavigation==='pan'?"ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Home End Escape P Control+Z Control+Shift+Z Control+Y Meta+Z Meta+Shift+Z Meta+Y":"ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home End Enter Space Escape P Control+Z Control+Shift+Z Control+Y Meta+Z Meta+Shift+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { '--watercolor-side':Math.round(watercolorFit*watercolorZoom)+'px', maxWidth:'none', aspectRatio: '1 / 1', touchAction: watercolorNavigation==='pan' || d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y' } }),
+                  React.createElement('div',{'data-watercolor-cursor-layer':true,'aria-hidden':true,style:{position:'absolute',inset:0,overflow:'hidden',pointerEvents:'none',zIndex:2}},React.createElement('div',{id:'artstudio-watercolor-cursor','aria-hidden':true,style:{display:'none',position:'absolute',pointerEvents:'none',zIndex:2,boxSizing:'border-box',border:'1px solid #0f172a',boxShadow:'0 0 0 1px rgba(255,255,255,0.95)'}},React.createElement('span',{style:{position:'absolute',left:'50%',top:'50%',width:3,height:3,borderRadius:'50%',background:'#0f172a',boxShadow:'0 0 0 1px white',transform:'translate(-50%,-50%)'}})))
+                  )
                 ),
                 React.createElement("div", { className: "artstudio-watercolor-actions flex gap-2 flex-wrap items-center" },
                   React.createElement("button", { id: "artstudio-watercolor-undo", type: "button", ref:watercolorHistoryButtonRef, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.undo()); if (typeof announceToSR === 'function') announceToSR(changed ? __alloT('stem.artstudio.sr_watercolor_undone', 'Watercolor undone.') : __alloT('stem.artstudio.sr_nothing_to_undo', 'Nothing to undo.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.undo_watercolor', "Undo")),
@@ -10205,6 +10517,13 @@ const d = labToolData.artStudio || {};
               ),
 
               React.createElement('aside',{className:'artstudio-watercolor-settings space-y-3','aria-label':__alloT('stem.artstudio.watercolor_settings','Watercolor paint settings')},
+              React.createElement('fieldset',{className:'artstudio-watercolor-navigation rounded-xl border border-teal-200 bg-teal-50 p-2'},
+                React.createElement('legend',{className:'text-xs font-bold text-teal-900'},__alloT('stem.artstudio.watercolor_paper_view','Paper view')),
+                React.createElement('div',{className:'grid grid-cols-2 gap-2'},[['paint',__alloT('stem.artstudio.watercolor_paint_mode','Paint on paper')],['pan',__alloT('stem.artstudio.watercolor_pan_mode','Pan paper')]].map(function(option){return React.createElement('button',{id:'artstudio-watercolor-mode-'+option[0],key:option[0],type:'button','aria-pressed':watercolorNavigation===option[0],'aria-describedby':'artstudio-watercolor-navigation-help',onClick:function(){changeWatercolorNavigation(option[0]);},className:'rounded-lg border border-teal-700 px-2 text-xs font-bold '+(watercolorNavigation===option[0]?'bg-teal-700 text-white':'bg-white text-teal-900')},option[1]);})),
+                React.createElement('label',{className:'my-2 block text-xs font-bold text-teal-900'},__alloT('stem.artstudio.watercolor_paper_zoom','Paper zoom'),React.createElement('select',{id:'artstudio-watercolor-zoom','aria-label':__alloT('stem.artstudio.watercolor_paper_zoom','Paper zoom'),'aria-describedby':'artstudio-watercolor-navigation-help',value:watercolorZoom,onChange:function(event){zoomWatercolorPaper(Number(event.target.value));},className:'mt-1 w-full rounded-lg border border-teal-700 bg-white px-2 text-xs'},[1,1.5,2,3].map(function(zoom){return React.createElement('option',{key:zoom,value:zoom},zoom===1?__alloT('stem.artstudio.watercolor_fit_paper','Fit whole paper'):Math.round(zoom*100)+'%');}))),
+                React.createElement('button',{id:'artstudio-watercolor-fit',type:'button',onClick:function(){zoomWatercolorPaper(1,true);},className:'w-full rounded-lg border border-teal-700 bg-white px-2 text-xs font-bold text-teal-900'},__alloT('stem.artstudio.watercolor_fit_paper','Fit whole paper')),
+                React.createElement('p',{id:'artstudio-watercolor-navigation-help',className:'mt-2 text-xs text-teal-900'},__alloT('stem.artstudio.watercolor_navigation_help',"Zoom changes the view, not your paint or brush size on the sheet. Choose Pan to drag with a mouse, stylus, or finger; Arrow keys pan, and Shift moves farther. Enter and Space do not paint in Pan mode. Fit whole paper returns to the complete sheet."))
+              ),
               (function () {
                 var stainingValue = isFinite(Number(d.watercolorStaining)) ? Number(d.watercolorStaining) : 50;
                 var opacityValue = isFinite(Number(d.watercolorOpacity)) ? Number(d.watercolorOpacity) : 40;
@@ -10276,6 +10595,7 @@ const d = labToolData.artStudio || {};
                     return React.createElement("button", { type: "button", key: brush.id, "aria-pressed": (d.watercolorBrush || 'round') === brush.id, onClick: function () { upd('watercolorBrush', brush.id); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold transition-all " + ((d.watercolorBrush || 'round') === brush.id ? 'bg-teal-700 text-white' : 'bg-white text-slate-600 hover:bg-teal-50') }, brush.icon + ' ' + brush.label);
                   })
                 ),
+                d.watercolorBrush === 'lift' && React.createElement('p',{id:'artstudio-watercolor-lift-help',className:'rounded-lg border border-teal-200 bg-teal-50 p-2 text-xs text-teal-900'},__alloT('stem.artstudio.watercolor_lift_help',"Lift highlights gradually with a damp brush. Low-staining dry color releases more readily; staining color leaves a trace. Water, pressure, and Lift strength control pickup. At 0% strength, the brush only adds clear water. Pigment load is inactive, and masked areas stay protected. Use Blot to absorb a wet puddle.")),
                 d.watercolorBrush === 'blot' && React.createElement('p',{id:'artstudio-watercolor-blot-help',className:'rounded-lg border border-teal-200 bg-teal-50 p-2 text-xs text-teal-900'},__alloT('stem.artstudio.watercolor_blot_help','Press or drag to absorb water and loose pigment from a wet wash. Dry paint and masking stay intact. Use Clear water first to loosen dried color, then blot. Brush size, pressure, and Blot strength control pickup; Water and Pigment settings are inactive.')),
                 d.watercolorBrush === 'salt' && React.createElement('p',{className:'rounded-lg border border-teal-200 bg-teal-50 p-2 text-xs text-teal-900'},__alloT('stem.artstudio.watercolor_salt_damp_help','Sprinkle onto a damp wash for pale crystal centers and darker rims. Fully dry paint stays unchanged; very wet puddles make a softer effect.')),
                 React.createElement("div", { role: "group", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_paper_state', 'Watercolor paper state'), className: "flex items-center gap-2 flex-wrap" },
@@ -10326,6 +10646,7 @@ const d = labToolData.artStudio || {};
                   { key: 'watercolorPaper', label: __alloT('stem.artstudio.paper_texture', 'Paper texture'), min: 0, max: 100, fallback: 48, unit: '%' },
                   { key: 'watercolorGranulation', label: __alloT('stem.artstudio.granulation', 'Granulation'), min: 0, max: 100, fallback: 54, unit: '%' }
                 ];
+                if(d.watercolorBrush==='lift')basicControls.splice(1,0,{key:'watercolorLifting',label:__alloT('stem.artstudio.watercolor_lift_strength','Lift strength'),min:0,max:100,fallback:70,unit:'%'});
                 if(d.watercolorBrush==='blot')basicControls.splice(1,0,{key:'watercolorBlotting',label:__alloT('stem.artstudio.watercolor_blot_strength','Blot strength'),min:0,max:100,fallback:70,unit:'%'});
                 var advancedControls = [
                   { key: 'watercolorStaining', label: __alloT('stem.artstudio.staining_strength', 'Staining strength'), fallback: 50 },
@@ -10347,7 +10668,7 @@ const d = labToolData.artStudio || {};
                   if (!isFinite(value)) value = control.fallback;
                   return React.createElement("label", { key: control.key, className: "text-[0.6875rem] font-bold text-slate-600" },
                     control.label + ': ' + Math.round(value) + control.unit,
-                    React.createElement("input", { type: "range", min: control.min, max: control.max, value: value, disabled:d.watercolorBrush==='blot' && (control.key==='watercolorWater' || control.key==='watercolorPigment'), 'aria-describedby':d.watercolorBrush==='blot'?'artstudio-watercolor-blot-help':undefined, 'aria-label': control.label, onChange: function (e) { upd(control.key, parseInt(e.target.value)); }, className: "block w-full accent-teal-700 mt-1 disabled:opacity-40" })
+                    React.createElement("input", { type: "range", min: control.min, max: control.max, value: value, disabled:(d.watercolorBrush==='blot' && (control.key==='watercolorWater' || control.key==='watercolorPigment')) || (d.watercolorBrush==='lift' && control.key==='watercolorPigment'), 'aria-describedby':d.watercolorBrush==='blot'?'artstudio-watercolor-blot-help':d.watercolorBrush==='lift'?'artstudio-watercolor-lift-help':undefined, 'aria-label': control.label, onChange: function (e) { upd(control.key, parseInt(e.target.value)); }, className: "block w-full accent-teal-700 mt-1 disabled:opacity-40" })
                   );
                 };
                 return React.createElement("div", { className: "space-y-2" },
@@ -10386,17 +10707,17 @@ const d = labToolData.artStudio || {};
                 React.createElement("div", { className: "max-w-md rounded-xl border border-teal-300 bg-teal-50 p-2.5", role: "group", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_touch_interaction', 'Watercolor touch interaction') },
                   React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-teal-800" }, "Finger input"),
                   React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2" },
-                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'scroll'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_scroll_page', 'Watercolor touch mode set to scroll page.')); }, 'aria-pressed': d.watercolorTouchMode !== 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode !== 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u2195 Scroll page"),
-                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'draw'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_draw_on_paper', 'Watercolor touch mode set to draw on paper.')); }, 'aria-pressed': d.watercolorTouchMode === 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode === 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u270E Draw on paper")
+                    React.createElement("button", { type: "button", onClick: function () { changeWatercolorNavigation('paint');upd('watercolorTouchMode', 'scroll'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_scroll_page', 'Watercolor touch mode set to scroll page.')); }, 'aria-pressed': watercolorNavigation==='paint' && d.watercolorTouchMode !== 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (watercolorNavigation==='paint' && d.watercolorTouchMode !== 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u2195 Scroll page"),
+                    React.createElement("button", { type: "button", onClick: function () { changeWatercolorNavigation('paint');upd('watercolorTouchMode', 'draw'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_draw_on_paper', 'Watercolor touch mode set to draw on paper.')); }, 'aria-pressed': watercolorNavigation==='paint' && d.watercolorTouchMode === 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (watercolorNavigation==='paint' && d.watercolorTouchMode === 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u270E Draw on paper")
                   ),
-                  React.createElement("p", { id: "artstudio-watercolor-touch-help", className: "mt-2 text-[0.625rem] leading-relaxed text-teal-900" }, d.watercolorTouchMode === 'draw' ? "One-finger drawing is active. Choose Scroll page when you want to move past the canvas." : "One-finger scrolling is active. A stylus can still paint; choose Draw on paper for finger painting.")
+                  React.createElement("p", { id: "artstudio-watercolor-touch-help", className: "mt-2 text-[0.625rem] leading-relaxed text-teal-900" }, watercolorNavigation==='pan'?__alloT('stem.artstudio.watercolor_pan_canvas',"Watercolor paper navigation. Drag or use Arrow keys to pan; Shift moves farther. Painting is disabled in Pan mode. Choose Paint on paper to resume painting."):d.watercolorTouchMode === 'draw' ? "One-finger drawing is active. Choose Scroll page when you want to move past the canvas." : "One-finger scrolling is active. A stylus can still paint; choose Draw on paper for finger painting.")
                 ),
                 React.createElement('div', {className:'flex items-center flex-wrap gap-2 rounded-xl border border-sky-200 bg-sky-50 p-2'},
                   React.createElement('button', {type:'button',onClick:function(){var c=document.getElementById('watercolorCanvas');if(c && c._watercolorEngine)c._watercolorEngine.wetPaper();if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.wet_paper_done','Paper wetted with clear water. Masked areas remain protected.'));},className:'min-h-[44px] rounded-lg bg-sky-800 px-3 text-xs font-bold text-white'},__alloT('stem.artstudio.wet_paper','Wet paper')),
                   React.createElement('span',{className:'text-xs text-sky-950'},__alloT('stem.artstudio.wet_paper_help','Prepare a wet sheet for soft washes. Dry paint before adding a crisp glaze.'))
                 ),
                 React.createElement('p', { className: 'rounded-lg border border-sky-200 bg-sky-50 px-3 py-2 text-xs text-sky-950', role: 'note' }, __alloT('stem.artstudio.watercolor_backrun_hint', 'Try a backrun: paint a wash, let it become damp, then add clean water with the Clear water brush. Watch mobile color move from the wetter center toward a darker rim.')),
-                React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, __alloT('stem.artstudio.watercolor_keyboard_help', "Draw with a pointer or stylus; pressure, tilt, and stroke speed shape the mark. Focus the canvas and use Arrow keys to move; press Enter or Space to dab, P to pause drying, and Ctrl/Command+Z to undo.")),
+                React.createElement("p", { id: "artstudio-watercolor-keyboard-help", className: "text-[0.6875rem] text-slate-600 text-center" }, watercolorNavigation==='pan'?__alloT('stem.artstudio.watercolor_pan_keyboard',"Pan mode: drag to move the paper. Arrow keys pan; Shift moves farther. Home and End reach the viewport edges. Enter and Space do not paint. Escape ends an active pan. P pauses or resumes drying. Ctrl or Command+Z undoes artwork; Shift+Ctrl or Command+Z redoes."):__alloT('stem.artstudio.watercolor_precision_keyboard',"Paint mode: Arrow keys move the brush; Alt makes fine moves and Shift moves farther. Home and End reach opposite paper corners. The view follows the brush. Enter or Space places one dab. Escape ends an active stroke. P pauses or resumes drying. Ctrl or Command+Z undoes; Shift+Ctrl or Command+Z redoes.")),
                 React.createElement("div", { id: "artstudio-watercolor-status", className: "text-[0.6875rem] font-semibold text-teal-900 text-center bg-teal-50 rounded-lg border border-teal-200 px-3 py-2" }, "Paper: Dry | active area 0%. Brush load: 100% water | 100% pigment. Masked area: 0%. Climate: 45% humidity | 25% airflow. Paper chemistry: 58% sizing | 60% bloom response. Drying active. Wet-state autosave on."),
               ),
 
@@ -10423,6 +10744,9 @@ const d = labToolData.artStudio || {};
                 .artstudio-pixel-layer-list{display:flex;flex-direction:column;gap:4px;max-height:184px;overflow:auto;margin:8px 0}
                 .artstudio-pixel-layer-list button{text-align:left;overflow-wrap:anywhere;padding:6px 8px;border:1px solid #94a3b8;border-radius:6px;background:#fff;color:#0f172a;font-size:12px}
                 .artstudio-pixel-layer-list button[aria-pressed=true]{border:2px solid #be185d;background:#fdf2f8}
+                .artstudio-pixel-tiling{min-width:0}
+                .artstudio-pixel-tiling button{width:100%;min-height:44px;white-space:normal;text-align:left}
+                .artstudio-pixel-tiling :is(button,input):focus-visible{outline:3px solid #2563eb;outline-offset:2px}
                 .artstudio-pixel-layers :is(button,input,select):focus-visible{outline:3px solid #2563eb;outline-offset:2px}
                 .artstudio-pixel-layers :is(input[type=range],select){display:block;width:100%;min-height:44px;min-width:0;max-width:100%;accent-color:#be185d}
                 .artstudio-pixel-layers select{border:1px solid #94a3b8;border-radius:6px;background:#fff;padding:0 8px;font-size:12px}
@@ -10549,10 +10873,12 @@ const d = labToolData.artStudio || {};
                 ),
                 d.pixelTool==='select' && React.createElement('div',{className:'my-2 rounded-lg border border-pink-300 bg-pink-50 p-2',role:'group','aria-label':__alloT('stem.artstudio.pixel_selection_actions','Selected pixels')},
                   React.createElement('div',{className:'flex flex-wrap gap-1'},[
-                    ['all',__alloT('stem.artstudio.pixel_select_all','Select all')],['copy',__alloT('stem.artstudio.pixel_copy','Copy pixels')],['cut',__alloT('stem.artstudio.pixel_cut','Cut pixels')],['paste',__alloT('stem.artstudio.pixel_paste','Paste pixels')],['rotate',__alloT('stem.artstudio.pixel_rotate_selection','Rotate selection ↻')],['flip-x',__alloT('stem.artstudio.pixel_flip_selection_x','Flip selection ↔')],['flip-y',__alloT('stem.artstudio.pixel_flip_selection_y','Flip selection ↕')],['delete',__alloT('stem.artstudio.pixel_delete_selection','Delete pixels')],['deselect',__alloT('stem.artstudio.pixel_deselect','Deselect')]
-                  ].map(function(action){return React.createElement('button',{id:'artstudio-pixel-selection-'+action[0],key:action[0],type:'button',ref:function(button){if(!button)return;var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelRefreshSelectionControls)canvas._pixelRefreshSelectionControls();else button.disabled=action[0]!=='all';},onClick:function(){var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelSelectionAction)canvas._pixelSelectionAction(action[0]);},className:'min-h-[44px] rounded-lg border border-pink-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},action[1]);})),
+                    ['all',__alloT('stem.artstudio.pixel_select_all','Select all')],['copy',__alloT('stem.artstudio.pixel_copy','Copy pixels')],['cut',__alloT('stem.artstudio.pixel_cut','Cut pixels')],['paste',__alloT('stem.artstudio.pixel_paste','Paste pixels')],['copy-layer',__alloT('stem.artstudio.pixel_copy_selection_layer','Copy to new layer')],['cut-layer',__alloT('stem.artstudio.pixel_move_selection_layer','Move to new layer')],['grow',__alloT('stem.artstudio.pixel_grow_selection','Grow selection ×2')],['shrink',__alloT('stem.artstudio.pixel_shrink_selection','Shrink selection ÷2')],['rotate',__alloT('stem.artstudio.pixel_rotate_selection','Rotate selection ↻')],['flip-x',__alloT('stem.artstudio.pixel_flip_selection_x','Flip selection ↔')],['flip-y',__alloT('stem.artstudio.pixel_flip_selection_y','Flip selection ↕')],['delete',__alloT('stem.artstudio.pixel_delete_selection','Delete pixels')],['deselect',__alloT('stem.artstudio.pixel_deselect','Deselect')]
+                  ].map(function(action){return React.createElement('button',{id:'artstudio-pixel-selection-'+action[0],key:action[0],type:'button','aria-describedby':['grow','shrink'].indexOf(action[0])>=0?'artstudio-pixel-selection-resize-help':(['copy-layer','cut-layer'].indexOf(action[0])>=0?'artstudio-pixel-selection-layer-help':undefined),ref:function(button){if(!button)return;var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelRefreshSelectionControls)canvas._pixelRefreshSelectionControls();else button.disabled=action[0]!=='all';},onClick:function(){var canvas=document.getElementById('pixelCanvas');if(canvas && canvas._pixelSelectionAction)canvas._pixelSelectionAction(action[0]);},className:'min-h-[44px] rounded-lg border border-pink-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},action[1]);})),
                   React.createElement('p',{id:'artstudio-pixel-selection-status','aria-live':'polite',className:'mt-2 text-xs text-slate-800'},__alloT('stem.artstudio.pixel_selection_empty','Drag to select a region. Keyboard: Enter, move to the opposite corner, then Enter again.')),
                   React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_help','Drag inside to move. Arrow keys nudge; Shift moves 4 cells. Escape deselects. Ctrl/Cmd+C, X, V copy, cut, paste within this canvas. Delete clears selected pixels.')),
+                  React.createElement('p',{id:'artstudio-pixel-selection-resize-help',className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_resize_help','Grow doubles each cell without smoothing. Shrink samples nearest cells and can remove fine detail. The resized region shifts inward to fit; selections larger than the grid cannot grow. Each action is one Undo step.')),
+                  React.createElement('p',{id:'artstudio-pixel-selection-layer-help',className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_layer_help','Copy keeps the original pixels. Move puts them on a new layer at the same position. Both keep layer opacity and blending; the new layer is unlocked.')),
                   React.createElement('p',{className:'mt-2 text-xs text-slate-700'},__alloT('stem.artstudio.pixel_selection_transform_help','Rotate turns the selection 90° clockwise. Flips affect selected pixels. A rotated region shifts inward if needed to stay on the grid.'))
                 ),
 
@@ -10629,8 +10955,32 @@ const d = labToolData.artStudio || {};
                   React.createElement('legend',{className:'text-xs font-bold'},__alloT('stem.artstudio.pixel_mirror_shapes','Mirror brush, eraser and shapes')),
                   [['pixelMirrorX',__alloT('stem.artstudio.pixel_mirror_x','Left / right')],['pixelMirrorY',__alloT('stem.artstudio.pixel_mirror_y','Top / bottom')]].map(function(option){return React.createElement('label',{key:option[0],className:'flex min-h-[44px] items-center gap-2 text-xs font-bold'},React.createElement('input',{type:'checkbox',checked:!!d[option[0]],onChange:function(e){upd(option[0],e.target.checked);}}),option[1]);})
                 ),
+                React.createElement('fieldset',{id:'artstudio-pixel-tiling',className:'artstudio-pixel-tiling my-2 rounded-lg border border-slate-300 p-2'},
+                  React.createElement('legend',{className:'text-xs font-bold'},__alloT('stem.artstudio.pixel_tile_tools','Seamless tiles')),
+                  React.createElement('label',{className:'flex min-h-[44px] items-center gap-2 text-xs font-bold'},
+                    React.createElement('input',{id:'artstudio-pixel-wrap-edges',type:'checkbox',checked:d.pixelWrapEdges===true,'aria-describedby':'artstudio-pixel-tiling-help',onChange:function(event){changePixelWrapping(event.target.checked);}}),__alloT('stem.artstudio.pixel_wrap_edges','Wrap brush and Fill at edges')),
+                  React.createElement('div',{className:'space-y-1'},[['x',__alloT('stem.artstudio.pixel_tile_offset_x','Center left / right seam')],['y',__alloT('stem.artstudio.pixel_tile_offset_y','Center top / bottom seam')],['both',__alloT('stem.artstudio.pixel_tile_offset_both','Center both seams')]].map(function(option){return React.createElement('button',{id:'artstudio-pixel-tile-offset-'+option[0],key:option[0],type:'button',disabled:!pixelLayerEditable || !Object.keys(pixelActiveLayer.pixels).length,'aria-describedby':'artstudio-pixel-tiling-help',onClick:function(){offsetPixelTile(option[0]);},className:'rounded-lg border border-slate-400 bg-white px-2 text-xs font-bold disabled:opacity-40'},option[1]);})),
+                  React.createElement('p',{id:'artstudio-pixel-tiling-help',className:'my-2 text-xs text-slate-600'},__alloT('stem.artstudio.pixel_tile_help',"Brush and Eraser continue on the opposite edge; Fill connects matching cells across edges. Center a seam on the active layer, repair it, then repeat the same shift to restore the position. Check the repeating-tile preview. Locked and hidden layers stay protected."))
+                ),
                 React.createElement('p',{className:'my-2 text-xs text-slate-600'},__alloT('stem.artstudio.pixel_shape_hint','Drag a shape to preview; release to draw. Pick color reuses a painted cell.')),
-                React.createElement('button',{type:'button',className:'my-2 min-h-[44px] rounded-lg border border-emerald-700 px-3 text-xs font-bold text-emerald-800',onClick:function(){var c=document.getElementById('pixelCanvas');if(!c || !c._pixelExportNative)return;var link=document.createElement('a');link.download='pixel-sprite-'+pixelGridSize+'x'+pixelGridSize+'.png';link.href=c._pixelExportNative();link.click();}},__alloT('stem.artstudio.pixel_native_png','Export transparent sprite')+' ('+pixelGridSize+'×'+pixelGridSize+')'),
+                React.createElement('fieldset',{id:'artstudio-pixel-export-options',className:'my-2 rounded-lg border border-emerald-700 p-2'},
+                  React.createElement('legend',{className:'text-xs font-bold text-emerald-900'},__alloT('stem.artstudio.pixel_export_options','Sprite and tile export')),
+                  React.createElement('label',{htmlFor:'artstudio-pixel-export-scale',className:'mt-1 block text-xs font-bold'},__alloT('stem.artstudio.pixel_export_scale','Pixel scale')),
+                  React.createElement('select',{id:'artstudio-pixel-export-scale',value:pixelExportOptions.scale,'aria-describedby':'artstudio-pixel-export-help',onChange:function(event){upd('pixelExportScale',artStudioPixelExportOptions(pixelGridSize,event.target.value,1).scale);},className:'mt-1 w-full rounded-lg border border-slate-400 px-2 text-xs'},
+                    [1,2,4,8,16].map(function(scale){return React.createElement('option',{key:scale,value:scale},scale===1?__alloT('stem.artstudio.pixel_export_native_scale','Native pixels (1×)'):scale+'×');})),
+                  React.createElement('label',{htmlFor:'artstudio-pixel-export-repeat',className:'mt-2 block text-xs font-bold'},__alloT('stem.artstudio.pixel_export_repeat','Tile arrangement')),
+                  React.createElement('select',{id:'artstudio-pixel-export-repeat',value:pixelExportOptions.repeats,'aria-describedby':'artstudio-pixel-export-help',onChange:function(event){upd('pixelExportRepeat',artStudioPixelExportOptions(pixelGridSize,1,event.target.value).repeats);},className:'mt-1 w-full rounded-lg border border-slate-400 px-2 text-xs'},
+                    [1,2,3].map(function(repeats){return React.createElement('option',{key:repeats,value:repeats},repeats===1?__alloT('stem.artstudio.pixel_export_single','Single sprite / tile'):repeats+' × '+repeats);})),
+                  React.createElement('p',{id:'artstudio-pixel-export-size','aria-live':'polite',className:'mt-2 text-xs font-bold'},formatArtStudioLearningText(__alloT('stem.artstudio.pixel_export_dimensions','PNG: {width} × {height} pixels'),{width:pixelExportOptions.side,height:pixelExportOptions.side})),
+                  React.createElement('button',{id:'artstudio-pixel-export-sprite',type:'button','aria-describedby':'artstudio-pixel-export-size artstudio-pixel-export-help',className:'my-2 min-h-[44px] w-full rounded-lg border border-emerald-700 px-3 text-xs font-bold text-emerald-800',onClick:function(){
+                    var c=document.getElementById('pixelCanvas');if(!c || !c._pixelExportNative)return;
+                    var png=c._pixelExportNative(pixelExportOptions.scale,pixelExportOptions.repeats);
+                    if(!png){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.pixel_export_failed','The PNG could not be created. Try exporting again.'),'error');return;}
+                    var link=document.createElement('a');link.download='pixel-'+(pixelExportOptions.repeats===1?'sprite-':'tile-')+pixelExportOptions.side+'x'+pixelExportOptions.side+'.png';link.href=png;link.click();
+                    if(typeof addToast==='function')addToast(__alloT('stem.artstudio.toast_png_exported','\uD83D\uDCE5 PNG exported!'),'success');
+                  }},__alloT('stem.artstudio.pixel_native_png','Export transparent sprite')+' ('+pixelExportOptions.side+'×'+pixelExportOptions.side+')'),
+                  React.createElement('p',{id:'artstudio-pixel-export-help',className:'text-xs text-slate-700'},__alloT('stem.artstudio.pixel_export_help','Each artwork cell becomes a crisp square of pixels. Repeats place identical tiles edge to edge. Visible layers and their blending are combined; empty cells stay transparent. Preview backgrounds, grid lines, cursors, and selections are excluded. Export settings do not change your artwork or Undo history.'))
+                ),
                 renderStudioColorCapsule({prefix:'pixel',color:pixelColor,label:__alloT('stem.artstudio.pixel_custom_color','Custom pixel color')}),
 
                 React.createElement("div", { className: "flex items-center gap-2 mb-1.5 flex-wrap" },
@@ -10697,7 +11047,8 @@ const d = labToolData.artStudio || {};
                 #symmetryFullscreenWorkspace>*{margin-top:0;min-width:0}
                 .artstudio-symmetry-header{grid-row:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#fff;color:#0f172a;padding:8px;border:1px solid #cbd5e1;border-radius:12px}
                 .artstudio-symmetry-header .symmetry-actions{display:flex;flex-wrap:wrap;gap:4px}
-                #symmetryCanvasContainer{grid-row:2;height:min(76dvh,820px);padding:12px;background:#0f172a;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #64748b;border-radius:12px}
+                #symmetryCanvasContainer{grid-row:2;height:min(76dvh,820px);padding:12px;background:#0f172a;display:flex;overflow:auto;overscroll-behavior:contain;border:1px solid #64748b;border-radius:12px}
+                .artstudio-symmetry-sheet{position:relative;flex:0 0 auto;margin:auto;max-width:none!important}
                 #symmetryFullscreenWorkspace #symmetryCanvas{width:var(--symmetry-side)!important;height:var(--symmetry-side)!important;max-height:none!important;max-width:none!important}
                 .artstudio-symmetry-controls{grid-row:3;padding:10px;background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:12px}
                 .artstudio-symmetry-controls>summary{min-height:44px;padding:10px 0;font-size:12px;font-weight:800;cursor:pointer}
@@ -10740,6 +11091,14 @@ const d = labToolData.artStudio || {};
               React.createElement('details',{className:'artstudio-symmetry-controls',open:!isCompactStudio||undefined},
                 React.createElement('summary',null,__alloT('stem.artstudio.sym_workspace_controls','Pattern, brush, and colors')),
                 React.createElement('div',{className:'space-y-3'},
+                React.createElement('fieldset',{id:'artstudio-symmetry-paper-view',className:'min-w-0 rounded-lg border border-violet-300 bg-violet-50 p-2'},
+                  React.createElement('legend',{className:'text-xs font-bold'},__alloT('stem.artstudio.sym_paper_view','Paper view')),
+                  React.createElement('div',{className:'grid grid-cols-2 gap-2'},[['paint',__alloT('stem.artstudio.sym_paint_mode','Paint on paper')],['pan',__alloT('stem.artstudio.sym_pan_mode','Pan paper')]].map(function(option){return React.createElement('button',{id:'artstudio-symmetry-view-'+option[0],key:option[0],type:'button','aria-pressed':symmetryNavigation===option[0],'aria-describedby':'artstudio-symmetry-navigation-help',onClick:function(){changeSymmetryNavigation(option[0]);},className:'rounded-lg border border-violet-700 px-2 text-xs font-bold '+(symmetryNavigation===option[0]?'bg-violet-700 text-white':'bg-white text-violet-900')},option[1]);})),
+                  React.createElement('label',{htmlFor:'artstudio-symmetry-zoom',className:'my-2 block text-xs font-bold'},__alloT('stem.artstudio.sym_paper_zoom','Paper zoom')),
+                  React.createElement('select',{id:'artstudio-symmetry-zoom',value:symmetryZoom,'aria-describedby':'artstudio-symmetry-navigation-help',onChange:function(event){zoomSymmetryPaper(Number(event.target.value));},className:'w-full rounded-lg border border-violet-700 bg-white px-2 text-xs'},[1,1.5,2,3].map(function(zoom){return React.createElement('option',{key:zoom,value:zoom},zoom===1?__alloT('stem.artstudio.sym_fit_paper','Fit whole paper'):Math.round(zoom*100)+'%');})),
+                  React.createElement('button',{id:'artstudio-symmetry-fit',type:'button','aria-describedby':'artstudio-symmetry-navigation-help',onClick:function(){zoomSymmetryPaper(1,true);},className:'my-2 w-full rounded-lg border border-violet-700 bg-white px-2 text-xs font-bold text-violet-900'},__alloT('stem.artstudio.sym_fit_paper','Fit whole paper')),
+                  React.createElement('p',{id:'artstudio-symmetry-navigation-help',className:'text-xs text-violet-900'},__alloT('stem.artstudio.sym_navigation_help','Zoom changes the view, not your artwork or brush size on the sheet. Choose Pan to drag with a mouse, stylus, or finger; Arrow keys pan, and Shift moves farther. Enter and Space do not paint in Pan mode. Fit whole paper returns to the complete sheet.'))
+                ),
 
               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
 
@@ -10904,6 +11263,9 @@ const d = labToolData.artStudio || {};
 
               renderCanvasTouchMode({
                 stateKey: 'symmetryTouchMode',
+                mode:symmetryNavigation==='pan'?'pan':undefined,
+                onChange:function(mode){changeSymmetryNavigation('paint');changeSymmetrySetting('symmetryTouchMode',mode);},
+                panHelp:__alloT('stem.artstudio.sym_navigation_canvas','Symmetry paper navigation. Drag or use Arrow keys to pan; Shift moves farther. Painting is disabled in Pan mode. Choose Paint on paper to resume drawing.'),
                 groupLabel: 'Symmetry touch interaction',
                 helpId: 'artstudio-symmetry-touch-help',
                 interactLabel: 'Draw pattern',
@@ -10914,17 +11276,17 @@ const d = labToolData.artStudio || {};
 
               )),
               React.createElement("p", { id: "artstudio-symmetry-keyboard-help", className: "text-xs text-slate-600 text-center" },
-                __alloT('stem.artstudio.sym_workspace_keyboard','Pointer: drag for dots, freehand, or symmetric erasing; in Line mode, drag from start to end. Stabilization softens hand jitter, and optional pen pressure changes stylus width. Pattern changes apply to new marks without flattening existing artwork. Escape cancels an unfinished line. Keyboard: Arrow keys move the cursor; hold Shift with an Arrow key to draw a line; Space or Enter stamps marks; Home returns to the pattern origin; Alt makes one-pixel moves; Ctrl or Command+Z undoes and Shift+Ctrl or Command+Z redoes.')
+                symmetryNavigation==='pan'?__alloT('stem.artstudio.sym_navigation_keyboard',"Pan mode: drag to move the paper. Arrow keys pan; Shift moves farther. Home and End reach the viewport edges. Enter and Space do not draw. Escape ends an active pan. Ctrl or Command+Z undoes artwork; Shift+Ctrl or Command+Z redoes."):__alloT('stem.artstudio.sym_workspace_keyboard','Pointer: drag for dots, freehand, or symmetric erasing; in Line mode, drag from start to end. Stabilization softens hand jitter, and optional pen pressure changes stylus width. Pattern changes apply to new marks without flattening existing artwork. Escape cancels an unfinished line. Keyboard: Arrow keys move the cursor; hold Shift with an Arrow key to draw a line; Space or Enter stamps marks; Home returns to the pattern origin; Alt makes one-pixel moves; Ctrl or Command+Z undoes and Shift+Ctrl or Command+Z redoes.')
               ),
               React.createElement("div", {id:'symmetryCanvasContainer',ref:symmetryPaperRef},
-              React.createElement("div", { className: "relative mx-auto w-fit max-w-full overflow-hidden rounded-xl", style: {width:symmetryFit,height:symmetryFit, background: d.symBackgroundMode === 'light' ? '#f8fafc' : d.symBackgroundMode === 'transparent' ? 'repeating-conic-gradient(#e2e8f0 0 25%,#ffffff 0 50%) 0 / 20px 20px' : '#0f172a' } },
+              React.createElement("div", { className: "artstudio-symmetry-sheet overflow-hidden rounded-xl", style: {width:Math.round(symmetryFit*symmetryZoom),height:Math.round(symmetryFit*symmetryZoom), background: d.symBackgroundMode === 'light' ? '#f8fafc' : d.symBackgroundMode === 'transparent' ? 'repeating-conic-gradient(#e2e8f0 0 25%,#ffffff 0 50%) 0 / 20px 20px' : '#0f172a' } },
                 React.createElement("canvas", { tabIndex: 0, id: 'symmetryCanvas', ref: symmetryRef, width: 1024, height: 1024, role: "img",
                   'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_symmetry_canvas', 'Symmetry drawing canvas in {value1} mode, using {value2} and {value3} blending. Origin at {value4} percent x, {value5} percent y.'), { value1: ((d.symPatternMode || (d.symMirrorOnly ? 'kaleidoscope' : 'rotate')) === 'bilateral' ? __alloT('stem.artstudio.a11y_sym_pattern_bilateral', 'bilateral mirror') : (d.symPatternMode || (d.symMirrorOnly ? 'kaleidoscope' : 'rotate')) === 'kaleidoscope' ? __alloT('stem.artstudio.a11y_sym_pattern_kaleidoscope', 'kaleidoscope') : __alloT('stem.artstudio.a11y_sym_pattern_rotational', 'rotational')), value2: ((d.symStrokeMode || 'freehand') === 'dots' ? __alloT('stem.artstudio.a11y_sym_stroke_dots', 'dot stamps') : (d.symStrokeMode || 'freehand') === 'line' ? __alloT('stem.artstudio.a11y_sym_stroke_line', 'straight lines') : (d.symStrokeMode || 'freehand') === 'eraser' ? __alloT('stem.artstudio.a11y_sym_stroke_eraser', 'symmetric erasing') : __alloT('stem.artstudio.a11y_sym_stroke_freehand', 'continuous freehand')), value3: (d.symBlendMode === 'glow' ? __alloT('stem.artstudio.a11y_blend_glow', 'glow') : __alloT('stem.artstudio.a11y_blend_normal', 'normal')), value4: Math.round((isFinite(Number(d.symCenterX)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterX))) : 0.5) * 100), value5: Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100) }),
-                  'aria-describedby': "artstudio-symmetry-touch-help artstudio-symmetry-keyboard-help",
-                  'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space Escape Control+Z Meta+Z Control+Shift+Z Meta+Shift+Z Control+Y Meta+Y",
+                  'aria-describedby': "artstudio-symmetry-touch-help artstudio-symmetry-keyboard-help artstudio-symmetry-navigation-help",
+                  'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home End Enter Space Escape Control+Z Meta+Z Control+Shift+Z Meta+Shift+Z Control+Y Meta+Y",
                   key: 'sym-' + (d.symmetryClear || 0),
                   className: "relative z-0 block max-w-full flex-shrink-0 cursor-crosshair rounded-xl border-2 border-pink-200 bg-transparent shadow-lg focus-visible:ring-4 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
-                  style: { '--symmetry-side':symmetryFit+'px',width:symmetryFit,height:symmetryFit, background: 'transparent', touchAction: d.symmetryTouchMode === 'draw' ? 'none' : 'pan-y' } }),
+                  style: { '--symmetry-side':Math.round(symmetryFit*symmetryZoom)+'px',width:Math.round(symmetryFit*symmetryZoom),height:Math.round(symmetryFit*symmetryZoom), background: 'transparent', touchAction: symmetryNavigation==='pan' || d.symmetryTouchMode === 'draw' ? 'none' : 'pan-y' } }),
                 d.symShowGuides === false ? null : (function() {
                   var guidePattern = ['rotate', 'kaleidoscope', 'bilateral'].indexOf(d.symPatternMode) !== -1 ? d.symPatternMode : (d.symMirrorOnly ? 'kaleidoscope' : 'rotate');
                   var guideFolds = Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6));
@@ -13233,7 +13595,7 @@ const d = labToolData.artStudio || {};
               React.createElement('style',null,`[data-artstudio-op-layout] button{min-width:44px;min-height:44px;overflow-wrap:anywhere}[data-artstudio-op-layout] :focus-visible{outline:3px solid #a21caf;outline-offset:3px}[data-artstudio-op-layout] [aria-labelledby="artstudio-op-style-label"]{display:grid;grid-template-columns:repeat(2,minmax(0,1fr))}@media(min-width:1024px){[data-artstudio-focus="true"] [data-artstudio-op-layout]{grid-template-columns:minmax(280px,340px) minmax(0,1fr)}[data-artstudio-focus="true"] [data-artstudio-op-controls]{max-height:76dvh;overflow:auto;padding-right:4px}}@media(max-width:1023px){[data-artstudio-op-preview]{grid-row:1}}`),
               React.createElement('div',{'data-artstudio-op-layout':'true',className:'grid grid-cols-1 lg:grid-cols-2 gap-4',style:{alignItems:'flex-start'}},
                 React.createElement('div',{'data-artstudio-op-controls':'true',className:'space-y-3'},
-                  React.createElement('div',{className:'rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3 space-y-3'},
+                  opStill ? React.createElement('p',{id:'artstudio-op-motion-status',className:'rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3 text-xs text-fuchsia-800'},__alloT('stem.artstudio.op_static_status','This is a still pattern. Adjust its geometry and colors, then compare with the guides.')) : React.createElement('div',{className:'rounded-xl border border-fuchsia-200 bg-fuchsia-50 p-3 space-y-3'},
                     React.createElement('div',{className:'flex flex-wrap gap-2'},
                       React.createElement('button',{type:'button','aria-label':opPaused?__alloT('stem.artstudio.op_resume_label','Resume Op Art animation'):__alloT('stem.artstudio.op_pause_label','Pause Op Art animation'),'aria-describedby':'artstudio-op-motion-status',onClick:function(){changeOp({opPaused:!opPaused});if(typeof announceToSR==='function')announceToSR(opPaused?__alloT('stem.artstudio.sr_op_art_animation_resumed','Op Art animation resumed.'):__alloT('stem.artstudio.sr_op_art_animation_paused','Op Art animation paused.'));},className:'flex-1 rounded-lg bg-fuchsia-700 text-white px-3 py-2 text-xs font-bold'},opPaused?__alloT('stem.artstudio.op_resume','Resume'):__alloT('stem.artstudio.op_pause','Pause')),
                       React.createElement('button',{id:'artstudio-op-step',type:'button',onClick:function(){var c=document.getElementById('opArtCanvas'),phase=c&&c._captureArtStudioState?c._captureArtStudioState().opPhase:artStudioOpPhase(d.opPhase);changeOp({opPhase:artStudioOpPhase(phase+5),opPaused:true});},className:'flex-1 rounded-lg border border-fuchsia-300 bg-white text-fuchsia-800 px-3 py-2 text-xs font-bold'},__alloT('stem.artstudio.op_step','Next frame')),
@@ -13246,11 +13608,28 @@ const d = labToolData.artStudio || {};
                     React.createElement('h4',{className:'text-xs font-bold text-fuchsia-800'},__alloT('stem.artstudio.op_art_controls','Op Art Controls')),
                     React.createElement('span',{id:'artstudio-op-style-label',className:'block text-xs font-bold text-fuchsia-800'},__alloT('stem.artstudio.style_2','Style')),
                     React.createElement('div',{role:'group','aria-labelledby':'artstudio-op-style-label',className:'gap-2'},[
-                      {id:'concentric',label:__alloT('stem.artstudio.rings','◎ Rings')},{id:'checkerboard',label:__alloT('stem.artstudio.checker','▓ Checker')},{id:'moire',label:__alloT('stem.artstudio.moir','≡ Moiré')},{id:'vibrating',label:__alloT('stem.artstudio.vibrate','≈ Vibrate')}
-                    ].map(function(style){return React.createElement('button',{key:style.id,type:'button','aria-pressed':opModel.opStyle===style.id,onClick:function(){changeOp({opStyle:style.id});if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.op_style_selected','{style} Op Art style selected.'),{style:style.label}));},className:'rounded-lg px-2 py-2 text-xs font-bold '+(opModel.opStyle===style.id?'bg-fuchsia-700 text-white':'bg-white border border-fuchsia-300 text-fuchsia-800')},style.label);})),
-                    [{key:'opSpeed',label:__alloT('stem.artstudio.speed','Speed'),min:1,max:20,units:' animation speed'},{key:'opDensity',label:__alloT('stem.artstudio.density','Density'),min:3,max:60,units:' pattern density'},{key:'opRotation',label:__alloT('stem.artstudio.op_rotation','Pattern rotation'),min:0,max:360,units:' degrees'},opModel.opStyle==='moire'?{key:'opAngle',label:__alloT('stem.artstudio.op_crossing_angle','Line crossing angle'),min:0,max:90,units:' degrees'}:{key:'opWarp',label:__alloT('stem.artstudio.op_distortion','Distortion'),min:0,max:100,units:' percent'}].map(function(control){var value=opModel[control.key];return React.createElement('div',{key:control.key},
+                      {id:'concentric',label:__alloT('stem.artstudio.rings','◎ Rings')},{id:'checkerboard',label:__alloT('stem.artstudio.checker','▓ Checker')},{id:'moire',label:__alloT('stem.artstudio.moir','≡ Moiré')},{id:'vibrating',label:__alloT('stem.artstudio.vibrate','≈ Vibrate')},
+                      {id:'cafeWall',label:__alloT('stem.artstudio.op_cafe_wall','▤ Café wall')},{id:'colorContrast',label:__alloT('stem.artstudio.op_color_contrast','◧ Color context')}
+                    ].map(function(style){return React.createElement('button',{key:style.id,type:'button','aria-pressed':opModel.opStyle===style.id,onClick:function(){var next={opStyle:style.id,opReveal:false};if(style.id==='cafeWall')Object.assign(next,{opPaused:true,opPhase:0,opDensity:8,opRotation:0});else if(style.id==='colorContrast')Object.assign(next,{opPaused:true,opPhase:0});changeOp(next);if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.op_style_selected','{style} Op Art style selected.'),{style:style.label}));},className:'rounded-lg px-2 py-2 text-xs font-bold '+(opModel.opStyle===style.id?'bg-fuchsia-700 text-white':'bg-white border border-fuchsia-300 text-fuchsia-800')},style.label);})),
+                    (opModel.opStyle==='colorContrast' ? [
+                      {key:'opCenterSize',label:__alloT('stem.artstudio.op_center_size','Center swatch size'),min:10,max:70,units:' percent panel width'},
+                      {key:'opCenterHue',label:__alloT('stem.artstudio.op_center_hue','Shared center hue'),min:0,max:360,units:' degrees hue'},
+                      {key:'opCenterSat',label:__alloT('stem.artstudio.op_center_saturation','Shared center saturation'),min:0,max:100,units:' percent saturation'},
+                      {key:'opCenterLit',label:__alloT('stem.artstudio.op_center_lightness','Shared center lightness'),min:0,max:100,units:' percent lightness'}
+                    ] : (opStill ? [] : [{key:'opSpeed',label:__alloT('stem.artstudio.speed','Speed'),min:1,max:20,units:' animation speed'}]).concat([
+                      {key:'opDensity',label:__alloT('stem.artstudio.density','Density'),min:3,max:60,units:' pattern density'},
+                      {key:'opRotation',label:__alloT('stem.artstudio.op_rotation','Pattern rotation'),min:0,max:360,units:' degrees'}
+                    ],opModel.opStyle==='cafeWall' ? [
+                      {key:'opCafeOffset',label:__alloT('stem.artstudio.op_cafe_offset','Alternate row offset'),min:0,max:100,units:' percent tile width'},
+                      {key:'opCafeMortar',label:__alloT('stem.artstudio.op_cafe_mortar','Mortar width'),min:0,max:30,units:' percent row height'},
+                      {key:'opCafeMortarLit',label:__alloT('stem.artstudio.op_cafe_mortar_lightness','Mortar lightness'),min:0,max:100,units:' percent lightness'}
+                    ] : [opModel.opStyle==='moire'?{key:'opAngle',label:__alloT('stem.artstudio.op_crossing_angle','Line crossing angle'),min:0,max:90,units:' degrees'}:{key:'opWarp',label:__alloT('stem.artstudio.op_distortion','Distortion'),min:0,max:100,units:' percent'}])).map(function(control){var value=opModel[control.key];return React.createElement('div',{key:control.key},
                       React.createElement('label',{htmlFor:'artstudio-'+control.key,className:'block text-xs font-bold text-fuchsia-800'},control.label+': '+value),
                       React.createElement('input',{id:'artstudio-'+control.key,type:'range',min:control.min,max:control.max,value:value,'aria-valuetext':value+control.units,onChange:function(event){var patch={};patch[control.key]=parseFloat(event.target.value);changeOp(patch);},className:'w-full accent-fuchsia-600'}));}),
+                    opStill && React.createElement('div',{className:'rounded-lg border border-fuchsia-300 bg-white p-3 space-y-2'},
+                      React.createElement('button',{id:'artstudio-op-reveal',type:'button','aria-pressed':opModel.opReveal,'aria-describedby':'artstudio-op-comparison-help',onClick:function(){changeOp({opReveal:!opModel.opReveal});},className:'w-full rounded-lg px-3 py-2 text-xs font-bold '+(opModel.opReveal?'bg-fuchsia-700 text-white':'border border-fuchsia-300 text-fuchsia-800')},opModel.opStyle==='cafeWall'?__alloT('stem.artstudio.op_cafe_guides','Show parallel row guides'):__alloT('stem.artstudio.op_compare_centers','Compare matching centers')),
+                      React.createElement('p',{id:'artstudio-op-comparison-help',className:'text-xs leading-relaxed text-fuchsia-900'},opModel.opStyle==='cafeWall'?__alloT('stem.artstudio.op_cafe_help','The row boundaries stay straight and parallel as you change the tile offset and mortar. Toggle the guides to compare their direction.'):__alloT('stem.artstudio.op_context_help','Both centers use the same color values. Compare replaces the surrounds with one neutral field and joins the unchanged centers with the same color.'))
+                    ),
                     React.createElement('div',{role:'group','aria-label':__alloT('stem.artstudio.op_color_mode','Pattern colors'),className:'flex gap-2'},[
                       {id:'mono',label:__alloT('stem.artstudio.op_black_white','Black & white')},{id:'custom',label:__alloT('stem.artstudio.op_two_colors','Two colors')}
                     ].map(function(mode){return React.createElement('button',{key:mode.id,type:'button','aria-pressed':opModel.opColorMode===mode.id,onClick:function(){changeOp({opColorMode:mode.id});},className:'flex-1 rounded-lg px-2 py-2 text-xs font-bold '+(opModel.opColorMode===mode.id?'bg-fuchsia-700 text-white':'bg-white border border-fuchsia-300 text-fuchsia-800')},mode.label);})),
@@ -13258,16 +13637,20 @@ const d = labToolData.artStudio || {};
                     React.createElement('details',{className:'rounded-lg border border-fuchsia-200 bg-white p-3'},
                       React.createElement('summary',{className:'cursor-pointer text-xs font-bold text-fuchsia-800'},__alloT('stem.artstudio.op_edit_colors','Edit color A and B')),
                       ['A','B'].map(function(letter){return React.createElement('fieldset',{key:letter,disabled:opModel.opColorMode==='mono',className:'mt-3 space-y-2 disabled:opacity-50'},
-                        React.createElement('legend',{className:'text-xs font-bold text-fuchsia-800'},letter==='A'?__alloT('stem.artstudio.op_color_a','Color A · pattern'):__alloT('stem.artstudio.op_color_b','Color B · paper')),
+                        React.createElement('legend',{className:'text-xs font-bold text-fuchsia-800'},opModel.opStyle==='colorContrast'?(letter==='A'?__alloT('stem.artstudio.op_surround_a','Color A · left surround'):__alloT('stem.artstudio.op_surround_b','Color B · right surround')):(letter==='A'?__alloT('stem.artstudio.op_color_a','Color A · pattern'):__alloT('stem.artstudio.op_color_b','Color B · paper'))),
                         [{part:'Hue',label:letter==='A'?__alloT('stem.artstudio.color_a_hue','Color A Hue'):__alloT('stem.artstudio.color_b_hue','Color B Hue'),max:360,unit:' degrees hue'},{part:'Sat',label:__alloT('stem.artstudio.op_saturation','Saturation'),max:100,unit:' percent saturation'},{part:'Lit',label:__alloT('stem.artstudio.op_lightness','Lightness'),max:100,unit:' percent lightness'}].map(function(control){var key='op'+control.part+letter;return React.createElement('div',{key:key},React.createElement('label',{htmlFor:'artstudio-'+key,className:'block text-xs text-fuchsia-800'},control.label+': '+opModel[key]),React.createElement('input',{id:'artstudio-'+key,type:'range',min:0,max:control.max,value:opModel[key],'aria-valuetext':opModel[key]+control.unit,onChange:function(event){var patch={};patch[key]=parseFloat(event.target.value);changeOp(patch);},className:'w-full accent-fuchsia-600'}));}));}),
                       React.createElement('button',{id:'artstudio-op-swap',type:'button',disabled:opModel.opColorMode==='mono',onClick:function(){changeOp({opHueA:opModel.opHueB,opSatA:opModel.opSatB,opLitA:opModel.opLitB,opHueB:opModel.opHueA,opSatB:opModel.opSatA,opLitB:opModel.opLitA});},className:'w-full mt-3 rounded-lg border border-fuchsia-300 text-fuchsia-800 text-xs font-bold disabled:opacity-50'},__alloT('stem.artstudio.op_swap_colors','Swap A and B'))
                     ),
                     React.createElement('div',{role:'group','aria-labelledby':'artstudio-op-presets-label',className:'flex flex-wrap gap-2'},
                       React.createElement('span',{id:'artstudio-op-presets-label',className:'w-full text-xs font-bold text-fuchsia-800'},__alloT('stem.artstudio.op_presets','Presets')),
-                      [{label:__alloT('stem.artstudio.classic_b_w','Classic B&W'),style:'concentric',hA:0,hB:0,density:25,speed:4,mode:'mono',warp:0},{label:__alloT('stem.artstudio.neon_pulse','Neon Pulse'),style:'concentric',hA:280,hB:160,density:15,speed:8,mode:'custom',warp:60},{label:__alloT('stem.artstudio.spiral_vortex','Spiral Vortex'),style:'moire',hA:200,hB:30,density:40,speed:6,mode:'custom',warp:60},{label:__alloT('stem.artstudio.wave_grid','Wave Grid'),style:'checkerboard',hA:10,hB:190,density:20,speed:5,mode:'custom',warp:85}].map(function(preset){return React.createElement('button',{key:preset.label,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_op_art_preset','Load {value1} Op Art preset'),{value1:preset.label}),onClick:function(){changeOp({opStyle:preset.style,opHueA:preset.hA,opHueB:preset.hB,opSatA:85,opSatB:85,opLitA:50,opLitB:50,opDensity:preset.density,opSpeed:preset.speed,opColorMode:preset.mode,opWarp:preset.warp,opAngle:12,opRotation:0,opPhase:0});if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.op_preset_loaded','{preset} Op Art preset loaded.'),{preset:preset.label}));},className:'rounded-lg border border-fuchsia-300 bg-white px-2 py-2 text-xs font-bold text-fuchsia-800'},preset.label);})
+                      [{label:__alloT('stem.artstudio.classic_b_w','Classic B&W'),style:'concentric',hA:0,hB:0,density:25,speed:4,mode:'mono',warp:0},{label:__alloT('stem.artstudio.neon_pulse','Neon Pulse'),style:'concentric',hA:280,hB:160,density:15,speed:8,mode:'custom',warp:60},{label:__alloT('stem.artstudio.spiral_vortex','Spiral Vortex'),style:'moire',hA:200,hB:30,density:40,speed:6,mode:'custom',warp:60},{label:__alloT('stem.artstudio.wave_grid','Wave Grid'),style:'checkerboard',hA:10,hB:190,density:20,speed:5,mode:'custom',warp:85},
+                        {label:__alloT('stem.artstudio.op_cafe_preset','Staggered wall'),style:'cafeWall',hA:0,hB:0,density:8,speed:5,mode:'mono',warp:0},
+                        {label:__alloT('stem.artstudio.op_context_preset','Warm & cool surrounds'),style:'colorContrast',hA:210,hB:30,density:8,speed:5,mode:'custom',warp:0}
+                      ].map(function(preset){return React.createElement('button',{key:preset.label,type:'button','aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.a11y_load_op_art_preset','Load {value1} Op Art preset'),{value1:preset.label}),onClick:function(){var patch={opStyle:preset.style,opHueA:preset.hA,opHueB:preset.hB,opSatA:85,opSatB:85,opLitA:50,opLitB:50,opDensity:preset.density,opSpeed:preset.speed,opColorMode:preset.mode,opWarp:preset.warp,opAngle:12,opRotation:0,opPhase:0,opReveal:false};if(preset.style==='cafeWall'||preset.style==='colorContrast')Object.assign(patch,{opPaused:true,opCafeOffset:50,opCafeMortar:6,opCafeMortarLit:50,opCenterHue:35,opCenterSat:0,opCenterLit:50,opCenterSize:40});if(preset.style==='colorContrast')Object.assign(patch,{opLitA:30,opLitB:70});changeOp(patch);if(typeof announceToSR==='function')announceToSR(formatArtStudioLearningText(__alloT('stem.artstudio.op_preset_loaded','{preset} Op Art preset loaded.'),{preset:preset.label}));},className:'rounded-lg border border-fuchsia-300 bg-white px-2 py-2 text-xs font-bold text-fuchsia-800'},preset.label);})
                     )
                   ),
                   React.createElement('div',{className:'flex flex-wrap gap-2'},['png','svg'].map(function(format){return React.createElement('button',{key:format,type:'button','aria-label':format==='png'?__alloT('stem.artstudio.export_op_art_png','Export Op Art as PNG'):__alloT('stem.artstudio.op_svg','Export Op Art as SVG'),onClick:function(){try{var canvas=document.getElementById('opArtCanvas');if(!canvas||!canvas._opExportPNG||!canvas._opSVG)throw new Error('Canvas unavailable');var link=document.createElement('a');link.download='op-art-'+Date.now()+'.'+format;link.href=format==='svg'?'data:image/svg+xml;charset=utf-8,'+encodeURIComponent(canvas._opSVG()):canvas._opExportPNG();link.click();if(typeof addToast==='function')addToast(format==='svg'?__alloT('stem.artstudio.op_svg_exported','Op Art SVG exported.'):__alloT('stem.artstudio.toast_png_exported','PNG exported!'),'success');if(format==='png'&&typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.sr_op_art_png_exported','Op Art PNG exported.'));}catch(error){if(typeof addToast==='function')addToast(__alloT('stem.artstudio.op_export_failed','Could not export this frame. Please try again.'),'error');}},className:'flex-1 rounded-lg border border-emerald-300 bg-emerald-50 px-3 py-2 text-xs font-bold text-emerald-800'},format==='png'?__alloT('stem.artstudio.export_png_10','Export PNG'):__alloT('stem.artstudio.op_vector','Vector SVG'));})),
+                  typeof setStemLabTool==='function' && React.createElement('button',{id:'artstudio-op-perception-link',type:'button',onClick:function(){try{if(typeof window!=='undefined'&&typeof window.__alloEnsureStemPluginLoaded==='function')window.__alloEnsureStemPluginLoaded('perceptionLab');}catch(error){}closeArtStudio('perceptionLab');},className:'w-full rounded-lg border border-indigo-300 bg-indigo-50 px-3 py-2 text-xs font-bold text-indigo-800'},__alloT('stem.artstudio.op_open_perception','Explore experiments in Perception Lab')),
                   React.createElement("div", { className: "bg-gradient-to-br from-purple-50 to-indigo-50 rounded-xl p-3 border border-purple-200" },
 
                     React.createElement("button", { id: "artstudio-op-info-toggle", "aria-expanded": !!d.showOpInfo, "aria-controls": "artstudio-op-info", onClick: function () { upd('showOpInfo', !d.showOpInfo); }, className: "w-full flex items-center justify-between py-1 text-xs font-bold text-purple-700 focus-visible:ring-2 focus-visible:ring-purple-500 focus-visible:ring-offset-2 rounded" },
@@ -13293,7 +13676,7 @@ const d = labToolData.artStudio || {};
                 ),
                 React.createElement('div',{'data-artstudio-op-preview':'true',className:'min-w-0'},
                   React.createElement('canvas',{id:'opArtCanvas',key:'op-'+studioPersistenceScope+'-'+(d.opRestoreToken||''),width:512,height:512,role:'img','aria-describedby':'artstudio-op-motion-status',
-                    'aria-label':formatArtStudioLearningText(__alloT('stem.artstudio.a11y_op_art_output','Op Art output: {value1} at density {value2} and speed {value3}, {value4}.'),{value1:opModel.opStyle==='concentric'?__alloT('stem.artstudio.a11y_op_concentric','concentric rings'):opModel.opStyle==='checkerboard'?__alloT('stem.artstudio.a11y_op_checkerboard','a warped checkerboard grid'):opModel.opStyle==='moire'?__alloT('stem.artstudio.a11y_op_moire','overlapping Moire line fields'):__alloT('stem.artstudio.a11y_op_waves','vibrating wavy stripes'),value2:opModel.opDensity,value3:opModel.opSpeed,value4:opPaused?__alloT('stem.artstudio.a11y_state_paused','paused'):__alloT('stem.artstudio.a11y_state_animating','animating')}),
+                    'aria-label':opStill ? (opModel.opStyle==='cafeWall'?formatArtStudioLearningText(__alloT('stem.artstudio.op_cafe_output','Still café wall: {rows} rows, {offset}% alternate row offset, {mortar}% mortar width. {comparison}'),{rows:opModel.opDensity,offset:opModel.opCafeOffset,mortar:opModel.opCafeMortar,comparison:opModel.opReveal?__alloT('stem.artstudio.op_guides_shown','Parallel row guides shown.'):__alloT('stem.artstudio.op_guides_hidden','Parallel row guides hidden.')}):formatArtStudioLearningText(__alloT('stem.artstudio.op_context_output','Still color context: two matching center swatches, hue {hue}°, saturation {saturation}%, lightness {lightness}%. {comparison}'),{hue:opModel.opCenterHue,saturation:opModel.opCenterSat,lightness:opModel.opCenterLit,comparison:opModel.opReveal?__alloT('stem.artstudio.op_centers_compared','Shared surround and connecting strip shown.'):__alloT('stem.artstudio.op_centers_surrounded','Different surrounds shown.')})) : formatArtStudioLearningText(__alloT('stem.artstudio.a11y_op_art_output','Op Art output: {value1} at density {value2} and speed {value3}, {value4}.'),{value1:opModel.opStyle==='concentric'?__alloT('stem.artstudio.a11y_op_concentric','concentric rings'):opModel.opStyle==='checkerboard'?__alloT('stem.artstudio.a11y_op_checkerboard','a warped checkerboard grid'):opModel.opStyle==='moire'?__alloT('stem.artstudio.a11y_op_moire','overlapping Moire line fields'):__alloT('stem.artstudio.a11y_op_waves','vibrating wavy stripes'),value2:opModel.opDensity,value3:opModel.opSpeed,value4:opPaused?__alloT('stem.artstudio.a11y_state_paused','paused'):__alloT('stem.artstudio.a11y_state_animating','animating')}),
                     className:'rounded-xl border-2 border-fuchsia-300 shadow-lg mx-auto block',style:{maxWidth:'100%',background:'#0a0a0a'},ref:function(canvas){
                       if(!canvas)return;
                       if(canvas._opUpdate){canvas._opUpdate(opModel,opPaused,d.opPhase);return;}
@@ -13302,7 +13685,7 @@ const d = labToolData.artStudio || {};
                       var model=opModel,paused=opPaused,phase=artStudioOpPhase(d.opPhase),savedPhase=phase,scene=null,disposed=false,lastTime=null,pending=0;
                       function stop(){if(canvas._opAnim)cancelAnimationFrame(canvas._opAnim);canvas._opAnim=0;lastTime=null;pending=0;}
                       function draw(){scene=artStudioOpScene(model,phase);artStudioOpPaint(context,scene);canvas.setAttribute('data-op-phase',String(phase));var slider=document.getElementById('artstudio-opPhase');if(slider){slider.value=phase;slider.setAttribute('aria-valuetext',phase.toFixed(1)+' degrees');}var output=document.getElementById('artstudio-op-phase-value');if(output)output.textContent=phase.toFixed(1)+'°';}
-                      function schedule(){if(!disposed&&!paused&&!document.hidden&&!canvas._opAnim)canvas._opAnim=requestAnimationFrame(frame);}
+                      function schedule(){if(!disposed&&!paused&&!artStudioOpStill(model)&&!document.hidden&&!canvas._opAnim)canvas._opAnim=requestAnimationFrame(frame);}
                       function frame(timestamp){canvas._opAnim=0;if(disposed||paused||!canvas.isConnected||document.hidden)return;if(lastTime!==null)pending+=Math.max(0,Math.min(100,timestamp-lastTime))/1000;lastTime=timestamp;if(pending>=1/30-1e-9){phase=artStudioOpPhase(phase+pending*model.opSpeed*6);pending=0;draw();}schedule();}
                       function visibility(){stop();schedule();}
                       document.addEventListener('visibilitychange',visibility);
@@ -13312,14 +13695,14 @@ const d = labToolData.artStudio || {};
                       canvas._opExportPNG=function(){return canvas._opExportCanvas().toDataURL('image/png');};
                       canvas._opUpdate=function(nextModel,nextPaused,nextSavedPhase,forcePhase){
                         var next=artStudioOpPhase(nextSavedPhase),changed=JSON.stringify(model)!==JSON.stringify(nextModel),moved=forcePhase||next!==savedPhase,wasPaused=paused;
-                        model=nextModel;paused=nextPaused;if(moved){phase=next;savedPhase=next;}
+                        model=nextModel;paused=artStudioOpStill(model)||nextPaused;if(moved){phase=next;savedPhase=next;}
                         if(paused||wasPaused!==paused||moved)stop();if(changed||moved)draw();schedule();
                       };
                       opRuntimeRef.current={dispose:function(){disposed=true;stop();document.removeEventListener('visibilitychange',visibility);delete canvas._opUpdate;}};
                       draw();schedule();
                     }
                   }),
-                  React.createElement('p',{className:'mt-3 text-xs text-center text-fuchsia-800'},__alloT('stem.artstudio.op_export_help','Pause or scrub to choose a frame. PNG and SVG save the frame shown here.'))
+                  React.createElement('p',{className:'mt-3 text-xs text-center text-fuchsia-800'},opStill?__alloT('stem.artstudio.op_static_export_help','PNG and SVG save this composition, including any comparison guides currently shown.'):__alloT('stem.artstudio.op_export_help','Pause or scrub to choose a frame. PNG and SVG save the frame shown here.'))
                 )
               )
             ),

@@ -1,0 +1,174 @@
+{
+  "date": "2026-10-04",
+  "sourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+  "pluginMirrorSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+  "pluginMirrorIdentical": true,
+  "suites": [
+    {
+      "suite": "study-report",
+      "file": "reports/artstudio-workspace/perception-study-report/study-report-browser-results.json",
+      "expectedGroups": 36,
+      "groups": 36,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+      "finalSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3"
+    },
+    {
+      "suite": "recorded-preview",
+      "file": "reports/artstudio-workspace/perception-study-report/recorded-preview-regression/recorded-preview-browser-results.json",
+      "expectedGroups": 42,
+      "groups": 42,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+      "finalSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3"
+    },
+    {
+      "suite": "guided",
+      "file": "reports/artstudio-workspace/perception-study-report/guided-regression/guided-browser-results.json",
+      "expectedGroups": 25,
+      "groups": 25,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+      "finalSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3"
+    },
+    {
+      "suite": "comparison",
+      "file": "reports/artstudio-workspace/perception-study-report/comparison-regression/comparison-browser-results.json",
+      "expectedGroups": 23,
+      "groups": 23,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3",
+      "finalSourceSHA256": "fb342568ae4d240b660666ee916b2def0fbb8f0498cf73a2223dd8db8ebee1b3"
+    }
+  ],
+  "passedBrowserGroups": 126,
+  "errors": [],
+  "artifactErrors": [],
+  "externalRequests": [],
+  "assertionPreservation": [
+    {
+      "suite": "recorded-preview",
+      "expectedGroups": 42,
+      "original": "dev-tools/perception_lab_recorded_preview_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_study_report_recorded_preview_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-recorded-preview",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-study-report/recorded-preview-regression",
+      "result": "recorded-preview-browser-results.json",
+      "exactTextEqualityAfterReversingOnlyOutputDirectoryReplacement": true,
+      "assertionsRemovedOrAltered": 0,
+      "originalSHA256": "cdf23a119c076347984d4e840b58f5c96a3cd632b147eff3126db77dcf8b6f4e",
+      "adaptedSHA256": "9c0e874e9e176abe56ef0ce944b708edaa96a60a3efeedbd2983c5e1789ced85"
+    },
+    {
+      "suite": "guided",
+      "expectedGroups": 25,
+      "original": "dev-tools/perception_lab_guided_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_study_report_guided_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-guided",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-study-report/guided-regression",
+      "result": "guided-browser-results.json",
+      "exactTextEqualityAfterReversingOnlyOutputDirectoryReplacement": true,
+      "assertionsRemovedOrAltered": 0,
+      "originalSHA256": "bda693817a1f40a8ef98a91d3480616ba8d32ae05962a08e6ad9a07cd5c6f3f0",
+      "adaptedSHA256": "929ba25523ca8dcfac035c23747cf45a75f422d0c0061dc361193e7d2f701d08"
+    },
+    {
+      "suite": "comparison",
+      "expectedGroups": 23,
+      "original": "dev-tools/perception_lab_study_compare_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_study_report_comparison_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-compare",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-study-report/comparison-regression",
+      "result": "comparison-browser-results.json",
+      "exactTextEqualityAfterReversingOnlyOutputDirectoryReplacement": true,
+      "assertionsRemovedOrAltered": 0,
+      "originalSHA256": "3c130e4942a3fa21be0b7e26ec12008300f7199eb9cecc77f93cf9795e8aca0e",
+      "adaptedSHA256": "7d09d69a140c80ed61ff8952bb63d48cfbd5c609e3447221c6e30f15adde3647"
+    }
+  ],
+  "priorReportsPreserved": true,
+  "earlierRunDirectories": [
+    "previous-2026-10-04T22-52-56-636Z"
+  ],
+  "printFixtures": {
+    "PDFfiles": [
+      {
+        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\artstudio-workspace\\perception-study-report\\print\\brightness-single-500-character-notes.pdf",
+        "bytes": 42247,
+        "sourceHTML": "print/brightness-single-500-character-notes.html"
+      },
+      {
+        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\artstudio-workspace\\perception-study-report\\print\\muller-lyer-comparison-500-character-notes.pdf",
+        "bytes": 54183,
+        "sourceHTML": "print/muller-lyer-comparison-500-character-notes.html"
+      }
+    ],
+    "settings": {
+      "preferCSSPageSize": true,
+      "printBackground": true,
+      "scale": 1,
+      "displayHeaderFooter": false
+    },
+    "authoringMarkerRequiredBeforeHarnessExecution": true,
+    "latestPageRenderingAndVisualReviewOwnedByParent": true
+  },
+  "printRenderingAndVisualVerificationOwner": "Parent agent separately renders every PDF page with bundled Poppler and verifies text and layout; not included in the browser group count.",
+  "regressionScope": "Recorded preview, guided study and comparison cover report-adjacent state and rendering. Notebook finder/import/store/schema flows are unchanged; new report QA covers filtering and full toolData preservation.",
+  "execution": {
+    "permissions": "default sandbox",
+    "installedBrowserCache": "C:/Users/cabba/AppData/Local/ms-playwright",
+    "regressions": "serial",
+    "nativeDownloadsRequired": false,
+    "PDFOperationMarker": "Successfully run exactly once before the first QA authoring dispatch, expected-output-count 2, output-format pdf."
+  },
+  "visualReview": [
+    "report-study-a-panel-390.png",
+    "report-forced-dark-b-panel.png",
+    "report-large-text-a-panel.png",
+    "report-print.png"
+  ],
+  "beforePrintPagination": {
+    "directory": "reports/artstudio-workspace/perception-study-report/before-print-pagination",
+    "sourceSHA256": "5d13df2ff4e47f226103c80c4637282194342517aac2f80b56e9570c05635965",
+    "passedNewBrowserGroups": 36,
+    "recordedPreviewRegressionGroups": 42,
+    "reasonForRerun": "Read-only PDF page review found Study A heading/reference orphaned after comparison overview. One print-only CSS selector now breaks before Study A; all initial evidence is preserved."
+  },
+  "currentPrintFixtureSHA256": [
+    {
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\artstudio-workspace\\perception-study-report\\print\\brightness-single-500-character-notes.pdf",
+      "SHA256": "da85ebbef232513eaaaf6e7363cb30cb6ea194063a8546b1f9e3ce22f14669ab"
+    },
+    {
+      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\artstudio-workspace\\perception-study-report\\print\\muller-lyer-comparison-500-character-notes.pdf",
+      "SHA256": "f45279ac07428b850cf4262926be78d5cfe87ce49a34d5e78972c521756e7141"
+    }
+  ],
+  "finalPrintVerification": {
+    "file": "reports/artstudio-workspace/perception-study-report/print/print-verification.json",
+    "SHA256": "9ac590e45e9d1dc8d4b735c2cc6ec44763155e8020a53ce1f6b84efdeaaade90",
+    "fixtures": 2,
+    "pages": 7,
+    "full500CharacterNotesVerified": 9,
+    "allPagesVisuallyReviewed": true,
+    "findings": "Readable text, complete notes, intact drawings, visible borders, no clipping or overlap, Study A and B headings appear with their summaries"
+  },
+  "guidedCompletionDiagnostic": {
+    "firstUnchangedFailure": "reports/artstudio-workspace/perception-study-report/guided-regression/guided-browser-first-attempt-failure.json",
+    "beforeThirdFile": "reports/artstudio-workspace/perception-study-report/guided-diagnostic/ebbinghaus-before-third-record.json",
+    "timingFile": "reports/artstudio-workspace/perception-study-report/guided-diagnostic/ebbinghaus-completion-timing.json",
+    "immediateSampledActiveCount": 1,
+    "nextEvaluateActiveCount": 0,
+    "afterCommitPaintActiveCount": 0,
+    "savedTrials": 3,
+    "selectedReview": "baseline",
+    "completionAnnouncement": "Three new matches recorded. The baseline and new study are selected for comparison. Reveal each study separately when you are ready.",
+    "interpretation": "The prior harness sampled before the React completion commit. The next page evaluation already showed all three records and the A/B review; guided study identity was preserved. The final unchanged adapter passed all 25 groups.",
+    "assertionRelaxed": false,
+    "productChangedForDiagnostic": false
+  }
+}

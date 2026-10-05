@@ -1,0 +1,115 @@
+{
+  "checks": [
+    {
+      "matching": "brightness",
+      "fixedReference": true,
+      "swapAndRemovePreserveTargets": true,
+      "keyboardStep": true,
+      "preciseButtons": true,
+      "explicitReveal": "Left RGB 128; right RGB 147. Difference: +19 RGB-code steps.\n\nThe difference records your visual match under these settings. Remove or swap the surroundings to see whether your impression changes. Different people, displays, and viewing conditions can give different matches.\n\nScientific reference: Michael Bach",
+      "resetHidesValues": true,
+      "axe": []
+    },
+    {
+      "matching": "ebbinghaus",
+      "fixedReference": true,
+      "swapAndRemovePreserveTargets": true,
+      "keyboardStep": true,
+      "preciseButtons": true,
+      "explicitReveal": "Reference: 48 units; comparison: 61 units. Difference: +13 units (+27.08% of the reference).\n\nThe difference records your visual match under these settings. Remove or swap the surroundings to see whether your impression changes. Different people, displays, and viewing conditions can give different matches.\n\nScientific reference: Michael Bach",
+      "resetHidesValues": true,
+      "axe": []
+    },
+    {
+      "matching": "mullerLyer",
+      "fixedReference": true,
+      "swapAndRemovePreserveTargets": true,
+      "keyboardStep": true,
+      "preciseButtons": true,
+      "explicitReveal": "Reference: 400 units; comparison: 456 units. Difference: +56 units (+14% of the reference).\n\nThe difference records your visual match under these settings. Remove or swap the surroundings to see whether your impression changes. Different people, displays, and viewing conditions can give different matches.\n\nScientific reference: Michael Bach",
+      "resetHidesValues": true,
+      "axe": []
+    },
+    {
+      "identicalComparisonScale": [
+        {
+          "x": 365,
+          "y": -334.3125,
+          "width": 568,
+          "height": 340.796875
+        },
+        {
+          "x": 983,
+          "y": -334.3125,
+          "width": 568,
+          "height": 340.796875
+        }
+      ],
+      "expandedComparisonScale": {
+        "x": 49,
+        "y": 592.6875,
+        "width": 726,
+        "height": 435.59375
+      },
+      "independentMeasurementVisibility": true,
+      "changedSettings": true
+    },
+    {
+      "hiddenBrightnessReference": true,
+      "swappedArtHandoff": true,
+      "referenceColorHandoffExplained": true
+    },
+    {
+      "notebookIdentityAndOrder": true,
+      "deleteUndoFocus": true,
+      "savedPinPreservesDraft": true,
+      "differentExperimentHasNoDeltas": true,
+      "jsonMatchesSavedState": true,
+      "svgMatchesVisibleDrawing": true,
+      "remountPersistence": true
+    },
+    {
+      "externalNotebookReplacementClearsUndo": true,
+      "emptyExportDisabled": true
+    },
+    {
+      "viewport": 320,
+      "noOverflow": true,
+      "comparisonStacking": true,
+      "buttons44": true,
+      "axe": []
+    },
+    {
+      "viewport": 390,
+      "noOverflow": true,
+      "comparisonStacking": true,
+      "buttons44": true,
+      "axe": []
+    },
+    {
+      "viewport": 768,
+      "noOverflow": true,
+      "comparisonStacking": true,
+      "buttons44": true,
+      "axe": []
+    },
+    {
+      "viewport": 1280,
+      "noOverflow": true,
+      "comparisonStacking": false,
+      "buttons44": true,
+      "axe": []
+    },
+    {
+      "darkAxe": []
+    },
+    {
+      "largeText200PercentNoOverflow": true
+    },
+    {
+      "forcedColorsStimulusPreserved": true
+    }
+  ],
+  "errors": [],
+  "sourceSHA256": "e2ba62eac85491487767c284c681fb78e8b76d8d755bd0545035e5268e76c550"
+}

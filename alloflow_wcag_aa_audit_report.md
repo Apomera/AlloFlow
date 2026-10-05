@@ -5,6 +5,9 @@
 
 > **Historical audit snapshot.** This report reflects the April 1-2, 2026 Knowbility-prep audit state. It is preserved for traceability and should not be read as the current VPAT, current tool count, or a present-day certification claim. For current findings and scope, use the [current WCAG audit](a11y-audit/WCAG-2.2-current-audit.md) and [current interim VPAT](VPAT-2.5-WCAG-AlloFlow.md).
 
+> **Technical correction added October 2, 2026:** The historical 14px-bold contrast exception and 78/100 partial-conformance score below must not be used as current WCAG evidence. Label counts are not a conformance measure. The original snapshot is preserved; see the [linked technical correction](a11y-audit/WCAG-2.2-current-audit.md#historical-technical-corrections).
+
+
 ---
 
 ## Executive Summary

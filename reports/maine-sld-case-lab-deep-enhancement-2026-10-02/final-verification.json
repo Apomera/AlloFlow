@@ -1,0 +1,38 @@
+{
+  "activity": {
+    "moduleSha256": "4d5cba967c685e08fe7513ae7dd5e84b715edfea7e3c1a5443017ad6c310f2bf",
+    "moduleBytes": 136029,
+    "fourCopyHashes": {
+      "maine_sld_practice_module.js": "4d5cba967c685e08fe7513ae7dd5e84b715edfea7e3c1a5443017ad6c310f2bf",
+      "desktop/web-app/public/maine_sld_practice_module.js": "4d5cba967c685e08fe7513ae7dd5e84b715edfea7e3c1a5443017ad6c310f2bf",
+      "desktop/app-build/maine_sld_practice_module.js": "4d5cba967c685e08fe7513ae7dd5e84b715edfea7e3c1a5443017ad6c310f2bf",
+      "desktop/web-app/build/maine_sld_practice_module.js": "4d5cba967c685e08fe7513ae7dd5e84b715edfea7e3c1a5443017ad6c310f2bf"
+    },
+    "reviewedDataCoreByteExact": {
+      "maine_sld_case_data.json": true,
+      "maine_sld_practice_core.js": true
+    },
+    "sourceSha256": "9e1af57d957899835dd647902319d477c70b0e816d3e87cf2bdf1b676ecc1b63",
+    "baseline": {
+      "maine_sld_practice_source.jsx": "942a028af10baf2ed1ba1df063d060ea47e1a7283bf50c273ada47016f4eacc8",
+      "maine_sld_practice_core.js": "d4e8ee1df20ad79cd32de6a92f5bcd5945ea614acd21e6d3aec418e1b1184944",
+      "maine_sld_case_data.json": "e94127d046c620117b6b58ec64104ee12921da33e09afb76cb071e849dbb719a",
+      "maine_sld_practice_module.js": "2a2e0dd185b387eda6325be662a98a9969155511bbe8c9a3a1bfb44fe5b2b607"
+    }
+  },
+  "browserStats": {
+    "startTime": "2026-10-02T12:26:26.834Z",
+    "duration": 323661.526,
+    "expected": 19,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "scopedAxeScans": 36,
+  "allScopedViolationsEmpty": true,
+  "finalHostSourceSha256": "aa349c6e414acaaeaa0cbe3df25a4c8241f5a12506bff8f3714b3c1bcd62dbbd",
+  "previewUrl": "http://127.0.0.1:65060/app/?tool=maine-sld-practice",
+  "independentVisualReview": "accepted seven representative captures",
+  "rootVisualReview": "accepted four representative captures",
+  "localUncommittedUnpublished": true
+}

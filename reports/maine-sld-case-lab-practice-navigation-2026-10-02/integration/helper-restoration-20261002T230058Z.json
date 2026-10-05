@@ -1,0 +1,45 @@
+{
+  "verifiedAt": "2026-10-02T23:01:40.7958690Z",
+  "baseUrl": "http://127.0.0.1:65063",
+  "restorationAuthorized": true,
+  "oldPid": 18480,
+  "oldHelperAbsentBeforeRestoration": true,
+  "oldHttpState": "All three requested paths refused the connection before restoration",
+  "priorMetadataPreserved": "preview-before-helper-restoration-20261002T230058Z.json",
+  "priorSuccessfulHealthPreserved": "post-timeout-read-only-health.json",
+  "newPid": 44448,
+  "startedAt": "2026-10-02T23:00:59.288Z",
+  "mode": "serve",
+  "rebuildPerformed": false,
+  "productSourceOrPinsChanged": false,
+  "stdout": "preview-restored-20261002T230058Z.stdout.log",
+  "stderr": "preview-restored-20261002T230058Z.stderr.log",
+  "stderrBytes": 0,
+  "responding": true,
+  "checks": [
+    {
+      "path": "/app/?tool=maine-sld-practice",
+      "status": 200,
+      "bytes": 588,
+      "servedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+      "expectedSha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+      "elapsedMs": 97
+    },
+    {
+      "path": "/__sld_preview/host.bundle.js",
+      "status": 200,
+      "bytes": 1973360,
+      "servedSha256": "ff636aa9912c61d45c30f4fcfdb608e30586c743dbdd0bc52f1e995561f01b61",
+      "expectedSha256": "ff636aa9912c61d45c30f4fcfdb608e30586c743dbdd0bc52f1e995561f01b61",
+      "elapsedMs": 21
+    },
+    {
+      "path": "/app/maine_sld_practice_module.js?v=18908160",
+      "status": 200,
+      "bytes": 172509,
+      "servedSha256": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25",
+      "expectedSha256": "189081606d02a6b7178c5c8046fdd5cefd62b98b9d5768fc6ea89f7b08b85f25",
+      "elapsedMs": 2
+    }
+  ]
+}

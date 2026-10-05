@@ -1,0 +1,1 @@
+{"mode":"browser","pid":48608,"completed":true,"successful":true,"checks":792,"captures":17,"errors":[],"browserClosedAt":"2026-10-02T20:21:12.135Z"}

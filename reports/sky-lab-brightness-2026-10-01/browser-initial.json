@@ -1,0 +1,694 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/sky-lab-brightness-2026-10-01/browser-initial-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "astronomy-cosmic-calendar.spec.ts",
+      "file": "astronomy-cosmic-calendar.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "all milestone choices link computed dates, markers, source ages and saved notes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16838,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:32:44.657Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10cf0c6ac3c576b487a3-c1f53775a24a0e722d8e",
+          "file": "astronomy-cosmic-calendar.spec.ts",
+          "line": 75,
+          "column": 5
+        },
+        {
+          "title": "roving tabs wrap, preserve focus and navigate with Home and End",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2268,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:33:02.668Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10cf0c6ac3c576b487a3-8a35639175bb0cdc70de",
+          "file": "astronomy-cosmic-calendar.spec.ts",
+          "line": 88,
+          "column": 5
+        },
+        {
+          "title": "zoom rows accept touch and keyboard without jumping the scale or faking offscreen markers",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2666,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:33:04.958Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10cf0c6ac3c576b487a3-38ce4f2a9b94f2ec2bd8",
+          "file": "astronomy-cosmic-calendar.spec.ts",
+          "line": 99,
+          "column": 5
+        },
+        {
+          "title": "lifetime range and examples stay synchronized across scales, including zero",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2853,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:33:07.641Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10cf0c6ac3c576b487a3-5cb2e04b787e62b9e390",
+          "file": "astronomy-cosmic-calendar.spec.ts",
+          "line": 111,
+          "column": 5
+        },
+        {
+          "title": "restored legacy selections and malformed controls recover coherently while retaining other work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2880,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:33:10.509Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10cf0c6ac3c576b487a3-42f0a66643066b9de10a",
+          "file": "astronomy-cosmic-calendar.spec.ts",
+          "line": 122,
+          "column": 5
+        },
+        {
+          "title": "320px contrast retains readable, unclipped figures and 44px controls with clear age limits",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3319,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:33:13.409Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "10cf0c6ac3c576b487a3-b932c309cb3b305d67ef",
+          "file": "astronomy-cosmic-calendar.spec.ts",
+          "line": 132,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "astronomy-magnitude-explorer.spec.ts",
+      "file": "astronomy-magnitude-explorer.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "published examples reproduce the catalogue, link both figures and preserve other notes",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 17908,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#astronomy-magnitude-mv')\nExpected: \u001b[32m\"1.4543989071428\u001b[7m47\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"1.4543989071428\u001b[7m5\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#astronomy-magnitude-mv')\u001b[22m\n\u001b[2m    33 × locator resolved to <input max=\"15\" min=\"-10\" step=\"any\" type=\"range\" class=\"astr-focus\" value=\"1.454398907142847\" aria-valuetext=\"+1.45 mag\" id=\"astronomy-magnitude-mv\" aria-describedby=\"astronomy-magnitude-mv-help\"/>\u001b[22m\n\u001b[2m       - unexpected value \"1.45439890714285\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#astronomy-magnitude-mv')\nExpected: \u001b[32m\"1.4543989071428\u001b[7m47\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"1.4543989071428\u001b[7m5\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#astronomy-magnitude-mv')\u001b[22m\n\u001b[2m    33 × locator resolved to <input max=\"15\" min=\"-10\" step=\"any\" type=\"range\" class=\"astr-focus\" value=\"1.454398907142847\" aria-valuetext=\"+1.45 mag\" id=\"astronomy-magnitude-mv\" aria-describedby=\"astronomy-magnitude-mv-help\"/>\u001b[22m\n\u001b[2m       - unexpected value \"1.45439890714285\"\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts:78:57",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                      "column": 57,
+                      "line": 78
+                    },
+                    "snippet": "  76 |  for(const[name,id]of[['Sun reference','sun'],['Sirius','sirius'],['Vega','vega']]){\n  77 |   await lab.getByRole('button',{name,exact:true}).click();const v=await linked(page);check(v);expect(v.m.referenceId).toBe(id);\n> 78 |   await expect(page.locator('#astronomy-magnitude-mv')).toHaveValue(String(v.m.absoluteV));await expect(page.locator('#astronomy-magnitude-distance')).toHaveValue(String(v.m.distanceLog));\n     |                                                         ^\n  79 |   if(id!=='sun')expect(v.m.apparentV).toBeCloseTo(v.m.reference.apparentV,10);\n  80 |  }\n  81 |  await lab.getByRole('button',{name:'100 pc',exact:true}).click();await lab.getByRole('button',{name:'A_V = 3',exact:true}).click();check(await linked(page));"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                        "column": 57,
+                        "line": 78
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#astronomy-magnitude-mv')\nExpected: \u001b[32m\"1.4543989071428\u001b[7m47\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"1.4543989071428\u001b[7m5\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#astronomy-magnitude-mv')\u001b[22m\n\u001b[2m    33 × locator resolved to <input max=\"15\" min=\"-10\" step=\"any\" type=\"range\" class=\"astr-focus\" value=\"1.454398907142847\" aria-valuetext=\"+1.45 mag\" id=\"astronomy-magnitude-mv\" aria-describedby=\"astronomy-magnitude-mv-help\"/>\u001b[22m\n\u001b[2m       - unexpected value \"1.45439890714285\"\u001b[22m\n\n\n  76 |  for(const[name,id]of[['Sun reference','sun'],['Sirius','sirius'],['Vega','vega']]){\n  77 |   await lab.getByRole('button',{name,exact:true}).click();const v=await linked(page);check(v);expect(v.m.referenceId).toBe(id);\n> 78 |   await expect(page.locator('#astronomy-magnitude-mv')).toHaveValue(String(v.m.absoluteV));await expect(page.locator('#astronomy-magnitude-distance')).toHaveValue(String(v.m.distanceLog));\n     |                                                         ^\n  79 |   if(id!=='sun')expect(v.m.apparentV).toBeCloseTo(v.m.reference.apparentV,10);\n  80 |  }\n  81 |  await lab.getByRole('button',{name:'100 pc',exact:true}).click();await lab.getByRole('button',{name:'A_V = 3',exact:true}).click();check(await linked(page));\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts:78:57"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:33:25.017Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-85ce5-es-and-preserve-other-notes-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-85ce5-es-and-preserve-other-notes-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-85ce5-es-and-preserve-other-notes-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-85ce5-es-and-preserve-other-notes-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                    "column": 57,
+                    "line": 78
+                  }
+                },
+                {
+                  "workerIndex": 2,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 16966,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#astronomy-magnitude-mv')\nExpected: \u001b[32m\"1.4543989071428\u001b[7m47\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"1.4543989071428\u001b[7m5\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#astronomy-magnitude-mv')\u001b[22m\n\u001b[2m    33 × locator resolved to <input max=\"15\" min=\"-10\" step=\"any\" type=\"range\" class=\"astr-focus\" value=\"1.454398907142847\" aria-valuetext=\"+1.45 mag\" id=\"astronomy-magnitude-mv\" aria-describedby=\"astronomy-magnitude-mv-help\"/>\u001b[22m\n\u001b[2m       - unexpected value \"1.45439890714285\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#astronomy-magnitude-mv')\nExpected: \u001b[32m\"1.4543989071428\u001b[7m47\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"1.4543989071428\u001b[7m5\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#astronomy-magnitude-mv')\u001b[22m\n\u001b[2m    33 × locator resolved to <input max=\"15\" min=\"-10\" step=\"any\" type=\"range\" class=\"astr-focus\" value=\"1.454398907142847\" aria-valuetext=\"+1.45 mag\" id=\"astronomy-magnitude-mv\" aria-describedby=\"astronomy-magnitude-mv-help\"/>\u001b[22m\n\u001b[2m       - unexpected value \"1.45439890714285\"\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts:78:57",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                      "column": 57,
+                      "line": 78
+                    },
+                    "snippet": "  76 |  for(const[name,id]of[['Sun reference','sun'],['Sirius','sirius'],['Vega','vega']]){\n  77 |   await lab.getByRole('button',{name,exact:true}).click();const v=await linked(page);check(v);expect(v.m.referenceId).toBe(id);\n> 78 |   await expect(page.locator('#astronomy-magnitude-mv')).toHaveValue(String(v.m.absoluteV));await expect(page.locator('#astronomy-magnitude-distance')).toHaveValue(String(v.m.distanceLog));\n     |                                                         ^\n  79 |   if(id!=='sun')expect(v.m.apparentV).toBeCloseTo(v.m.reference.apparentV,10);\n  80 |  }\n  81 |  await lab.getByRole('button',{name:'100 pc',exact:true}).click();await lab.getByRole('button',{name:'A_V = 3',exact:true}).click();check(await linked(page));"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                        "column": 57,
+                        "line": 78
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveValue\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#astronomy-magnitude-mv')\nExpected: \u001b[32m\"1.4543989071428\u001b[7m47\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"1.4543989071428\u001b[7m5\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveValue\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#astronomy-magnitude-mv')\u001b[22m\n\u001b[2m    33 × locator resolved to <input max=\"15\" min=\"-10\" step=\"any\" type=\"range\" class=\"astr-focus\" value=\"1.454398907142847\" aria-valuetext=\"+1.45 mag\" id=\"astronomy-magnitude-mv\" aria-describedby=\"astronomy-magnitude-mv-help\"/>\u001b[22m\n\u001b[2m       - unexpected value \"1.45439890714285\"\u001b[22m\n\n\n  76 |  for(const[name,id]of[['Sun reference','sun'],['Sirius','sirius'],['Vega','vega']]){\n  77 |   await lab.getByRole('button',{name,exact:true}).click();const v=await linked(page);check(v);expect(v.m.referenceId).toBe(id);\n> 78 |   await expect(page.locator('#astronomy-magnitude-mv')).toHaveValue(String(v.m.absoluteV));await expect(page.locator('#astronomy-magnitude-distance')).toHaveValue(String(v.m.distanceLog));\n     |                                                         ^\n  79 |   if(id!=='sun')expect(v.m.apparentV).toBeCloseTo(v.m.reference.apparentV,10);\n  80 |  }\n  81 |  await lab.getByRole('button',{name:'100 pc',exact:true}).click();await lab.getByRole('button',{name:'A_V = 3',exact:true}).click();check(await linked(page));\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts:78:57"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-10-01T20:34:04.450Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-85ce5-es-and-preserve-other-notes-chromium-retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-85ce5-es-and-preserve-other-notes-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-85ce5-es-and-preserve-other-notes-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-85ce5-es-and-preserve-other-notes-chromium-retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                    "column": 57,
+                    "line": 78
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-21c2781b0ef1b7343881",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 74,
+          "column": 5
+        },
+        {
+          "title": "keyboard distance and magnitude controls preserve focus and express independent assumptions",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3171,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:34:22.665Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-eb2fefbdda42a1777905",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 86,
+          "column": 5
+        },
+        {
+          "title": "touch chooses distance continuously and cancellation leaves the plot usable",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1550,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:34:26.153Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-51bb02d96420e1ba4f9f",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 98,
+          "column": 5
+        },
+        {
+          "title": "five-magnitude examples give a hundredfold V-light change and bounded extremes stay visible",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2454,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:34:27.719Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-c0bcab3a9e81c2f09707",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 106,
+          "column": 5
+        },
+        {
+          "title": "restored values recover without snapping catalogue distances or losing independent work",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 1962,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:34:30.187Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-7c2a17f0f0c3efd314f0",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 120,
+          "column": 5
+        },
+        {
+          "title": "320px contrast diagrams, controls and catalogue stay readable with scientific limits exposed",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 3,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1418,
+                  "error": {
+                    "message": "Error: astronomy-magnitude-curve m_V\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m-0.5\u001b[39m\nReceived:    \u001b[31m-5.551605224609375\u001b[39m",
+                    "stack": "Error: astronomy-magnitude-curve m_V\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m-0.5\u001b[39m\nReceived:    \u001b[31m-5.551605224609375\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts:146:98",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                      "column": 98,
+                      "line": 146
+                    },
+                    "snippet": "  144 |  expect(geometry.overflow).toBe(false);expect(geometry.background).toBe('rgb(0, 0, 0)');expect(geometry.svgs).toHaveLength(2);expect(geometry.table).toEqual({overflow:false,columnHeaders:4,rowHeaders:2});\n  145 |  for(const svg of geometry.svgs)for(const t of svg.text){\n> 146 |   expect(t.font,svg.id+' '+t.label).toBeGreaterThanOrEqual(11);expect(t.left,svg.id+' '+t.label).toBeGreaterThanOrEqual(-.5);expect(t.top,svg.id+' '+t.label).toBeGreaterThanOrEqual(-.5);\n      |                                                                                                  ^\n  147 |   expect(t.right,svg.id+' '+t.label).toBeLessThanOrEqual(t.width+.5);expect(t.bottom,svg.id+' '+t.label).toBeLessThanOrEqual(t.height+.5);\n  148 |  }\n  149 |  for(const svg of geometry.svgs)for(let i=0;i<svg.text.length;i++)for(let j=i+1;j<svg.text.length;j++){"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                        "column": 98,
+                        "line": 146
+                      },
+                      "message": "Error: astronomy-magnitude-curve m_V\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m-0.5\u001b[39m\nReceived:    \u001b[31m-5.551605224609375\u001b[39m\n\n  144 |  expect(geometry.overflow).toBe(false);expect(geometry.background).toBe('rgb(0, 0, 0)');expect(geometry.svgs).toHaveLength(2);expect(geometry.table).toEqual({overflow:false,columnHeaders:4,rowHeaders:2});\n  145 |  for(const svg of geometry.svgs)for(const t of svg.text){\n> 146 |   expect(t.font,svg.id+' '+t.label).toBeGreaterThanOrEqual(11);expect(t.left,svg.id+' '+t.label).toBeGreaterThanOrEqual(-.5);expect(t.top,svg.id+' '+t.label).toBeGreaterThanOrEqual(-.5);\n      |                                                                                                  ^\n  147 |   expect(t.right,svg.id+' '+t.label).toBeLessThanOrEqual(t.width+.5);expect(t.bottom,svg.id+' '+t.label).toBeLessThanOrEqual(t.height+.5);\n  148 |  }\n  149 |  for(const svg of geometry.svgs)for(let i=0;i<svg.text.length;i++)for(let j=i+1;j<svg.text.length;j++){\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts:146:98"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T20:34:32.169Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-48906-h-scientific-limits-exposed-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-48906-h-scientific-limits-exposed-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-48906-h-scientific-limits-exposed-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-48906-h-scientific-limits-exposed-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                    "column": 98,
+                    "line": 146
+                  }
+                },
+                {
+                  "workerIndex": 4,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2430,
+                  "error": {
+                    "message": "Error: astronomy-magnitude-curve m_V\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m-0.5\u001b[39m\nReceived:    \u001b[31m-5.551605224609375\u001b[39m",
+                    "stack": "Error: astronomy-magnitude-curve m_V\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m-0.5\u001b[39m\nReceived:    \u001b[31m-5.551605224609375\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts:146:98",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                      "column": 98,
+                      "line": 146
+                    },
+                    "snippet": "  144 |  expect(geometry.overflow).toBe(false);expect(geometry.background).toBe('rgb(0, 0, 0)');expect(geometry.svgs).toHaveLength(2);expect(geometry.table).toEqual({overflow:false,columnHeaders:4,rowHeaders:2});\n  145 |  for(const svg of geometry.svgs)for(const t of svg.text){\n> 146 |   expect(t.font,svg.id+' '+t.label).toBeGreaterThanOrEqual(11);expect(t.left,svg.id+' '+t.label).toBeGreaterThanOrEqual(-.5);expect(t.top,svg.id+' '+t.label).toBeGreaterThanOrEqual(-.5);\n      |                                                                                                  ^\n  147 |   expect(t.right,svg.id+' '+t.label).toBeLessThanOrEqual(t.width+.5);expect(t.bottom,svg.id+' '+t.label).toBeLessThanOrEqual(t.height+.5);\n  148 |  }\n  149 |  for(const svg of geometry.svgs)for(let i=0;i<svg.text.length;i++)for(let j=i+1;j<svg.text.length;j++){"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                        "column": 98,
+                        "line": 146
+                      },
+                      "message": "Error: astronomy-magnitude-curve m_V\n\n\u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThanOrEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: >= \u001b[32m-0.5\u001b[39m\nReceived:    \u001b[31m-5.551605224609375\u001b[39m\n\n  144 |  expect(geometry.overflow).toBe(false);expect(geometry.background).toBe('rgb(0, 0, 0)');expect(geometry.svgs).toHaveLength(2);expect(geometry.table).toEqual({overflow:false,columnHeaders:4,rowHeaders:2});\n  145 |  for(const svg of geometry.svgs)for(const t of svg.text){\n> 146 |   expect(t.font,svg.id+' '+t.label).toBeGreaterThanOrEqual(11);expect(t.left,svg.id+' '+t.label).toBeGreaterThanOrEqual(-.5);expect(t.top,svg.id+' '+t.label).toBeGreaterThanOrEqual(-.5);\n      |                                                                                                  ^\n  147 |   expect(t.right,svg.id+' '+t.label).toBeLessThanOrEqual(t.width+.5);expect(t.bottom,svg.id+' '+t.label).toBeLessThanOrEqual(t.height+.5);\n  148 |  }\n  149 |  for(const svg of geometry.svgs)for(let i=0;i<svg.text.length;i++)for(let j=i+1;j<svg.text.length;j++){\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts:146:98"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 1,
+                  "startTime": "2026-10-01T20:34:35.413Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-48906-h-scientific-limits-exposed-chromium-retry1\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-48906-h-scientific-limits-exposed-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-48906-h-scientific-limits-exposed-chromium-retry1\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\sky-lab-brightness-2026-10-01\\browser-initial-results\\astronomy-magnitude-explor-48906-h-scientific-limits-exposed-chromium-retry1\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\astronomy-magnitude-explorer.spec.ts",
+                    "column": 98,
+                    "line": 146
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "0725fd79eaa3e49dc0e6-bb38378795b2b0efc279",
+          "file": "astronomy-magnitude-explorer.spec.ts",
+          "line": 129,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-01T20:32:41.905Z",
+    "duration": 116607.88,
+    "expected": 10,
+    "skipped": 0,
+    "unexpected": 2,
+    "flaky": 0
+  }
+}

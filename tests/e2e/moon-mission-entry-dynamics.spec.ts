@@ -37,7 +37,7 @@ async function telemetry(page: Page) {
 }
 async function profile(page: Page, angle = -6.5) {
   return page.evaluate(value => {
-    const P = (window as any).MoonMissionPure, p = P.entryProfile(value);
+    const P = (window as any).MoonMissionPure, p = P.entryProfile(value, { plan: P.entryPlan((window as any).__toolData.moonMission.entryPlan) });
     return { summary: p.summary, events: p.events, constants: P.entry };
   }, angle);
 }
@@ -95,7 +95,7 @@ test('entry presets predict the same trajectories and begin without awarding a r
   await page.locator('[data-entry-begin]').click();
   await expect(page.locator('[data-entry-canvas]')).toHaveAttribute('data-entry-stage', 'entry');
   const state = await saved(page);
-  expect(state.entryRun).toMatchObject({ version: 1, angle: -6.5, time: 0, recovery: 0, recorded: false });
+  expect(state.entryRun).toMatchObject({ version: 2, angle: -6.5, plan: { version: 2, mode: 'guided', bank: 0 }, time: 0, recovery: 0, recorded: false });
   expect(state.entryOutcome).toBeNull();
   expect(state.entryPaused).toBe(false);
   expect(state.entryMigrationNote).toBeNull();
@@ -112,7 +112,7 @@ test('nominal playback follows heating and chute events, preserves reviewed resu
   const heatTime = await seek(page, p.summary.peakHeatTime);
   const expected = await page.evaluate(time => {
     const P = (window as any).MoonMissionPure;
-    return P.entrySample(P.entryProfile(-6.5), time);
+    return P.entrySample(P.entryProfile(-6.5, { plan: P.entryPlan((window as any).__toolData.moonMission.entryPlan) }), time);
   }, heatTime);
   await expect(page.locator('[data-entry-value="heat"]')).toHaveText((expected.heatFlux / 1e6).toFixed(2) + ' MW/m²');
   expect((await telemetry(page)).heat).toBeCloseTo(expected.heatFlux, 3);
@@ -130,7 +130,7 @@ test('nominal playback follows heating and chute events, preserves reviewed resu
   await expect(page.locator('[data-entry-complete]')).toBeEnabled();
   const done = await saved(page);
   expect(done.entryAttempts).toHaveLength(1);
-  expect(done.entryOutcome).toMatchObject({ modelVersion: 1, completed: true, outcome: 'nominal', terminal: 'splash' });
+  expect(done.entryOutcome).toMatchObject({ modelVersion: 2, completed: true, outcome: 'nominal', terminal: 'splash' });
   expect(done.entryOutcome.duration).toBeCloseTo(p.summary.duration, 5);
   expect(done.missionXP).toBe(25);
   await page.locator('[data-entry-result]').click();
@@ -244,7 +244,8 @@ test('phone entry controls and charts fit, support keyboard seeking, and retain 
     expect(box.right).toBeLessThanOrEqual(390);
     expect(box.height).toBeGreaterThanOrEqual(32);
   }
-  await expect(page.locator('[data-entry-instruments] svg[role="img"]')).toHaveCount(2);
+  await expect(page.locator('[data-entry-instruments] svg[role="img"]')).toHaveCount(3);
+  await expect(page.locator('[data-entry-chart-axis]')).toHaveCount(2);
   await page.locator('[data-entry-result]').click();
   const before = await telemetry(page);
   await page.setViewportSize({ width: 1000, height: 900 });
@@ -266,7 +267,7 @@ test('legacy completed entry migrates malformed history once and retains its alr
   await expect.poll(async () => (await telemetry(page)).time).toBe(0);
   const migrated = await saved(page);
   expect(migrated.entryOutcome).toBeNull();
-  expect(migrated.entryRun).toMatchObject({ version: 1, angle: -6.5, time: 0, recovery: 0, recorded: false });
+  expect(migrated.entryRun).toMatchObject({ version: 2, angle: -6.5, plan: { version: 2, mode: 'guided', bank: 0 }, time: 0, recovery: 0, recorded: false });
   expect(migrated.entryAttempts).toHaveLength(1);
   expect(migrated.entryAttempts[0]).toMatchObject({ legacy: true, outcome: 'nominal', angle: -6.5, peakG: 6.5 });
   expect(migrated.entryAwardedXP).toBe(25);
@@ -277,7 +278,7 @@ test('legacy completed entry migrates malformed history once and retains its alr
   const complete = await saved(page);
   expect(complete.entryAttempts).toHaveLength(2);
   expect(complete.entryAttempts.filter((attempt: any) => attempt.legacy)).toHaveLength(1);
-  expect(complete.entryAttempts[1]).toMatchObject({ modelVersion: 1, completed: true, outcome: 'nominal', terminal: 'splash' });
+  expect(complete.entryAttempts[1]).toMatchObject({ modelVersion: 2, completed: true, outcome: 'nominal', terminal: 'splash' });
   expect(complete.missionXP).toBe(25);
   await mount(page, { moonMission: complete });
   await expect(page.locator('[data-entry-terminal="splash"]')).toBeVisible();

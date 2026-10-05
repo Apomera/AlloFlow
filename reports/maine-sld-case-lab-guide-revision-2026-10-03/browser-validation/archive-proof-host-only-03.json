@@ -1,0 +1,58 @@
+{
+  "method": "non-destructive copies with byte verification; existing evidence must match",
+  "attempts": [
+    "host-only-03"
+  ],
+  "files": [
+    {
+      "path": "host-only-03/artifacts/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "host-only-03/browser/actual-app-host.png",
+      "bytes": 81368,
+      "sha256": "a12a92bff9324583f1c949fc9180f219272a3bc33c0f15a24c6effff7802c133"
+    },
+    {
+      "path": "host-only-03/browser/actual-app-marisol-host.png",
+      "bytes": 83972,
+      "sha256": "c793e90cf955c6023d905859d0cbc5e51bd2fa5fe80b7848d98eadb7f012957c"
+    },
+    {
+      "path": "host-only-03/browser/actual-hub-card.png",
+      "bytes": 91482,
+      "sha256": "0409fa72fb644fad89a229962b9d6fc28e6c56a48588113dd95947b6696dfe81"
+    },
+    {
+      "path": "host-only-03/browser/browser-candidate.json",
+      "bytes": 290,
+      "sha256": "35e575fe9cc837602191f0831ea567fa35112090e646a304153d8db02bd0e632"
+    },
+    {
+      "path": "host-only-03/result.json",
+      "bytes": 3193,
+      "sha256": "82597ab26158194b44000687ec0be6789705d287f26e87429a5377d21bd29182"
+    },
+    {
+      "path": "host-only-03/run-command.ps1",
+      "bytes": 1567,
+      "sha256": "9ec483bd4fad9cb543c772c808e94392ea67d41de1a639fee9c88308f5945704"
+    },
+    {
+      "path": "host-only-03/run-identity.json",
+      "bytes": 2027,
+      "sha256": "18ede7891e67488263858c12bf84e1dbb4871b42d04bdad39d054b8ed71d2f1e"
+    },
+    {
+      "path": "host-only-03/run.log",
+      "bytes": 599,
+      "sha256": "6df242a65bbe5ad3c1e6ff4cb5265b319e69073fb4d3bd21a3b01abfbd5c9b4d"
+    },
+    {
+      "path": "host-only-03/runner-helper.py",
+      "bytes": 4093,
+      "sha256": "6a6353c9312f15e046f3ce0c7188976a6956d5e998b27ea8b1ff2b3b6b12c2ee"
+    }
+  ]
+}

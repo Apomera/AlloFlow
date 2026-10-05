@@ -279,6 +279,14 @@ const WordSoundsReviewPanel = ({
     // computed by the player so this list and the skip always agree.
     wordFamilySkips
 }) => {
+    // Match the host translator while tolerating missing keys and both placeholder conventions.
+    const reviewText = (key, fallback, params = {}) => {
+        const fullKey = 'word_sounds.' + key;
+        const translated = typeof t === 'function' ? t(fullKey, params) : '';
+        const template = typeof translated === 'string' && translated && translated !== fullKey ? translated : fallback;
+        return template.replace(/\{\{?([a-zA-Z0-9_]+)\}?\}/g, (token, name) =>
+            Object.prototype.hasOwnProperty.call(params, name) ? String(params[name]) : token);
+    };
     React.useEffect(() => {
     }, []);
     const [expandedIndex, setExpandedIndex] = React.useState(null);
@@ -370,16 +378,16 @@ const WordSoundsReviewPanel = ({
     // for words that did not change.
     const describeGapFix = ({ fixed, unchanged, requested, stalled }) => {
         const parts = [];
-        if (fixed) parts.push(`${fixed} fixed`);
-        if (requested) parts.push(`audio requested for ${requested} (arrives in the background)`);
-        if (unchanged) parts.push(`${unchanged} unchanged`);
-        if (!parts.length) return 'Nothing to do.';
+        if (fixed) parts.push(reviewText('review_fix_fixed', "{count} fixed", { count: fixed }));
+        if (requested) parts.push(reviewText('review_fix_requested', "audio requested for {count} (arrives in the background)", { count: requested }));
+        if (unchanged) parts.push(reviewText('review_fix_unchanged', "{count} unchanged", { count: unchanged }));
+        if (!parts.length) return reviewText('review_fix_empty', "Nothing to do.");
         const summary = parts.join(', ') + '.';
         if (stalled) {
-            return `${summary} Stopped early: the service is refusing requests, which usually means a rate-limit cooldown. Try again in a minute.`;
+            return reviewText('review_fix_stalled', "{summary} Stopped early after several words stayed unchanged. Try again later, or edit those words by hand.", { summary });
         }
         return unchanged
-            ? `${summary} Try again, or edit those words by hand.`
+            ? reviewText('review_fix_retry', "{summary} Try again, or edit those words by hand.", { summary })
             : summary;
     };
     const runGapFixes = React.useCallback(async (gaps) => {
@@ -406,7 +414,7 @@ const WordSoundsReviewPanel = ({
                 setGapFixResult(describeGapFix(total));
             }
         }
-    }, [runOneGapFix]);
+    }, [runOneGapFix, t]);
     const [imageRefinementInputs, setImageRefinementInputs] = React.useState({});
     const [draggedPhoneme, setDraggedPhoneme] = React.useState(null);
     const [dragOverIndex, setDragOverIndex] = React.useState(null);
@@ -711,7 +719,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         {isLoading && <span role="status" aria-live="polite" className="flex items-center gap-1 bg-white/20 px-2 py-0.5 rounded-full text-xs animate-pulse motion-reduce:animate-none"><div className="w-2 h-2 bg-white rounded-full animate-bounce motion-reduce:animate-none"/> {t('word_sounds.generating_more') || 'Generating more...'}</span>}
                         {!isLoading && preloadedWords.some(w => w && w._ttsFailed) && (
                             <span className="flex items-center gap-2 bg-red-500/30 border border-red-200/60 px-3 py-1 rounded-full text-xs">
-                                <span>🔇 Audio missing for {preloadedWords.filter(w => w && w._ttsFailed).length} word{preloadedWords.filter(w => w && w._ttsFailed).length === 1 ? '' : 's'}</span>
+                                <span>{reviewText('review_missing_audio', "Words missing audio: {count}", { count: preloadedWords.filter(w => w && w._ttsFailed).length })}</span>
                                 {typeof onRetryFailedTTS === 'function' && (
                                     <button
                                         type="button"
@@ -805,13 +813,13 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         const coverage = (preloadedWords[0] || {})._ttsCoverage;
                         const packNote = coverage && coverage.rateLimited
                             ? (coverage.gaveUp
-                                ? ' The last packing run was cut short by a rate limit, so most of this audio was never generated. Re-prepare in setup, ideally on the Kokoro local voice.'
-                                : ' The last packing run hit a rate limit and recovered, so some audio may be missing.')
-                            : ' Student devices will be silent for these; re-prepare the pack in setup to fix this.';
+                                ? reviewText('review_pack_stopped', " The last packing run was cut short by a rate limit. Re-prepare in setup, or use the Kokoro local voice.")
+                                : reviewText('review_pack_recovered', " The last packing run hit a rate limit and recovered, so some audio may be missing."))
+                            : reviewText('review_pack_silent', " Student devices may lack audio for these words or use a fallback voice; re-prepare the pack in setup.");
                         addGap({
                             key: 'audio',
                             test: (w) => w && !w.ttsReady && !portableKeys.has(norm(w.targetWord || w.word || w.term)),
-                            text: (n) => `🔇 ${n} word${n === 1 ? '' : 's'} without portable audio.${packNote}`,
+                            text: (n) => reviewText('review_gap_audio', "Words without portable audio: {count}.{note}", { count: n, note: packNote }),
                             each: null,
                         });
 
@@ -821,7 +829,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         addGap({
                             key: 'audio_runtime',
                             test: (w) => w && w._ttsFailed,
-                            text: (n) => `🔁 ${n} word${n === 1 ? '' : 's'} whose audio failed to load in this session`,
+                            text: (n) => reviewText('review_gap_runtime_audio', "Words whose audio failed to load in this session: {count}", { count: n }),
                             label: t('word_sounds.fix_audio') || 'Retry audio',
                             needsNetwork: !ttsIsLocal,
                             // Batch by nature: it re-arms the prefetch for every
@@ -834,7 +842,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         addGap({
                             key: 'rhyme',
                             test: (w) => w && !(w.rhymeWord || (w.rhymes || [])[0]),
-                            text: (n) => `🎵 ${n} without a rhyme answer (board is built on-device)`,
+                            text: (n) => reviewText('review_gap_rhyme', "Without a rhyme answer (board is built on-device): {count}", { count: n }),
                             // The player derives one at runtime, so this is a
                             // completeness note, not a broken board. Fixing it
                             // means regenerating the whole word.
@@ -846,7 +854,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         addGap({
                             key: 'task',
                             test: (w) => w && !(w.manipulationTask && w.manipulationTask.answer),
-                            text: (n) => `🔁 ${n} without a Sound Swap task (fallback task used)`,
+                            text: (n) => reviewText('review_gap_task', "Words without a Sound Swap answer: {count}. Unverified tasks are unavailable to students; choose another activity or review the task.", { count: n }),
                             label: t('word_sounds.fix_tasks') || 'Build tasks',
                             needsNetwork: true,
                             each: onRegenerateManipulationTask,
@@ -863,7 +871,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                 const choices = w && w.activityItems && w.activityItems.decoding && w.activityItems.decoding.choices;
                                 return Array.isArray(choices) && choices.some((c) => !imageKeys.has(norm(c)));
                             },
-                            text: () => `🖼️ ${missingDecodingImgs} Read & Match picture${missingDecodingImgs === 1 ? '' : 's'} missing`,
+                            text: () => reviewText('review_gap_images', "Read & Match pictures missing: {count}", { count: missingDecodingImgs }),
                             label: t('word_sounds.fix_images') || 'Generate pictures',
                             needsNetwork: true,
                             each: onGenerateImage ? ((i) => onGenerateImage(i, preloadedWords[i] && (preloadedWords[i].targetWord || preloadedWords[i].word))) : null,
@@ -889,7 +897,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                 ].filter(Boolean);
                                 return texts.some((s) => !portableKeys.has(norm(s)));
                             },
-                            text: (n) => `🔇 ${n} word${n === 1 ? '' : 's'} whose sentence or story read-back audio did not pack. On student devices the read-back will be missing or fall back to a lower-quality voice; re-prepare the pack in setup.`,
+                            text: (n) => reviewText('review_gap_sentence_audio', "Words whose sentence or story read-back audio did not pack: {count}. On student devices the read-back will be missing or fall back to a lower-quality voice; re-prepare the pack in setup.", { count: n }),
                             each: null,
                         });
 
@@ -910,7 +918,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                                 if (!sm) return false;
                                 return [...(sm.sequence || []), ...(sm.extras || [])].some((c) => !imageKeys.has(norm(c)));
                             },
-                            text: () => `🖼️ ${missingTileImgs} Picture the Sentence tile${missingTileImgs === 1 ? '' : 's'} without a picture. The tray waits for every picture, so these items stall on student devices; re-prepare the pack in setup.`,
+                            text: () => reviewText('review_gap_tiles', "Picture the Sentence tiles without a picture: {count}. The tray waits for every picture, so these items stall on student devices; re-prepare the pack in setup.", { count: missingTileImgs }),
                             each: null,
                         });
 
@@ -927,7 +935,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                             text: (n) => {
                                 const sample = [...new Set(preloadedWords
                                     .flatMap((w) => (w && w._unverifiedWords) || []))].slice(0, 6);
-                                return `📖 ${n} word${n === 1 ? '' : 's'} generated rhymes or family members that are not in the K-2 word lists: ${sample.join(', ')}${sample.length < n ? '…' : ''}. Worth a look before teaching them.`;
+                                return reviewText('review_gap_unverified', "Words with generated rhymes or family members outside the K-2 word lists: {count}. Examples: {words}. Worth a look before teaching them.", { count: n, words: sample.join(', ') });
                             },
                             // A judgement call, not a repair: the teacher edits
                             // or regenerates the word if they disagree.
@@ -937,7 +945,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                         addGap({
                             key: 'edited',
                             test: (w) => w && w._packEdited,
-                            text: (n) => `✏️ ${n} word${n === 1 ? '' : 's'} edited since preparation (boards rebuild from your edits)`,
+                            text: (n) => reviewText('review_gap_edited', "Words edited since preparation (boards rebuild from your edits): {count}", { count: n }),
                             // Re-packing an edited word is not built yet, so
                             // there is deliberately no button here rather than
                             // one that quietly does something else.
@@ -950,7 +958,7 @@ const phonemeLabel = (p) => (typeof p === 'string' ? p : (p && (p.grapheme || p.
                             // Generation now tries eSpeak before the spelling
                             // heuristic, so this means a real G2P engine could
                             // not do the word either.
-                            text: (n) => `⚠️ ${n} with sounds estimated from spelling`,
+                            text: (n) => reviewText('review_gap_phonemes', "With sounds estimated from spelling: {count}", { count: n }),
                             label: t('word_sounds.fix_phonemes') || 'Re-check sounds',
                             needsNetwork: true,
                             each: onCheckPhonemes,

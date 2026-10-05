@@ -1,0 +1,85 @@
+{
+  "archivedAt": "2026-10-04T15:02:15.647838+00:00",
+  "name": "host-only-01",
+  "stats": {
+    "startTime": "2026-10-04T14:58:25.291Z",
+    "duration": 116383.877,
+    "expected": 1,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  },
+  "identity": {
+    "phase": "host-only",
+    "attempt": "01",
+    "expectedModuleSha256": "c5af6b18d2a3a02d1fe99f885b874ea0bae04c1fa74b283a6bda7d69a2bdf87f",
+    "sourceSha256": "85b21dd96f2476e383beef207177736d859170244c35c6705d422e89771f41cb",
+    "browserTestSha256": "25f75f6b96dfdba61036c1267e932cd94d0e4691a9969e80867ebe865afd0771",
+    "workers": 1,
+    "automaticRetries": 0,
+    "timeoutMs": 120000,
+    "normalTracePolicy": "retain-on-failure",
+    "validationMethod": "original canonical specification and unchanged synchronous stylesheet setup",
+    "preparedAssetValidation": false,
+    "selectedScenarios": 1,
+    "availableScenarios": 37,
+    "original35PrefixBytePreserved": true,
+    "original35Sha256": "7bb6f0cc88bba10e031afde06bc224c189b26003a584f6f8dd9b7104d25bd8f4",
+    "original35Bytes": 174682,
+    "configSha256": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587",
+    "expectedBaselineFailure": false
+  },
+  "resultSha256": "43fdf804777e1cc43187a2419c8d9f2a2907114be28169605315f5354e9ea944",
+  "files": [
+    {
+      "file": "host-only-01/artifacts/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "file": "host-only-01/browser/actual-app-host.png",
+      "bytes": 81528,
+      "sha256": "9c45f1f0867173d89395bdca9082aee45b1999e7b12977062e3dc6bf9b0ac159"
+    },
+    {
+      "file": "host-only-01/browser/actual-app-marisol-host.png",
+      "bytes": 83871,
+      "sha256": "2aa9b942952318834e885be33ca7fb51ab9b082bfadeee38755263f9f9426544"
+    },
+    {
+      "file": "host-only-01/browser/actual-hub-card.png",
+      "bytes": 91539,
+      "sha256": "cbce35ce0620eabb89ff3b713c4fc6f6bf34e8790b37194c86a7439b3692ed62"
+    },
+    {
+      "file": "host-only-01/browser/browser-candidate.json",
+      "bytes": 290,
+      "sha256": "ea11e997fbde4888b3f829fbec0da6383da9750f6eb1569f1361f73d313bbc53"
+    },
+    {
+      "file": "host-only-01/result.json",
+      "bytes": 3197,
+      "sha256": "43fdf804777e1cc43187a2419c8d9f2a2907114be28169605315f5354e9ea944"
+    },
+    {
+      "file": "host-only-01/run-command.ps1",
+      "bytes": 1579,
+      "sha256": "f744ff0d6e720d7d28c51c4c47627cc88f7440c0f18545d21349549728125406"
+    },
+    {
+      "file": "host-only-01/run-identity.json",
+      "bytes": 897,
+      "sha256": "6c9918fc5e953a3cd6e986e97e908f9aa57940b75f409f3640168a919ac66bf0"
+    },
+    {
+      "file": "host-only-01/run.log",
+      "bytes": 597,
+      "sha256": "62ba1e1f1c3b785265ce952d6b591ea8084a7e3bae53ba3a163bbaad93d60649"
+    },
+    {
+      "file": "host-only-01/runner-helper.py",
+      "bytes": 4152,
+      "sha256": "d722f71ce1f9c9d7ac245fd7151f9a333441207ecf08eef4bfac0ec0bddce5cd"
+    }
+  ]
+}

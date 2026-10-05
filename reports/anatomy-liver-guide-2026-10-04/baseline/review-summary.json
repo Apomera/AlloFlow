@@ -1,0 +1,279 @@
+{
+  "sourceLfSha256": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "finishedSourceLfSha256": "a3f12a1f4506865209a5d4e784292f9b5fbba2b7e9776f0cdbb78f57185d4420",
+  "mirrorsStable": true,
+  "fixtureSha256": "2d4736b22076a0ee62e4bd6496818f30e3b92cbe42e93468c64f900fcf88b4aa",
+  "configSha256": "569c6119474ba91d60f49c5a5406bd45fbd18bb089a0c922e8aa245dae91b192",
+  "authoredAtlas": "liver",
+  "authoredStepIds": [
+    "portal_entry",
+    "sinusoidal_exchange",
+    "central_return",
+    "bile_flow"
+  ],
+  "authoredMechanisms": [
+    "dual-blood-supply",
+    "sinusoidal-hepatocyte-exchange",
+    "central-venous-drainage",
+    "bile-counterflow"
+  ],
+  "authoredClinicalId": "hepatic_fibrosis",
+  "views": [
+    {
+      "name": "desktop-light",
+      "minSvgEffectiveFont": 7.55,
+      "maxSvgEffectiveFont": 12.268749999999999,
+      "overlaps": [
+        [
+          "portal blood + arterial blood mix",
+          "processed blood drains to hepatic veins"
+        ],
+        [
+          "HEPATIC LOBULE",
+          "artery"
+        ],
+        [
+          "HEPATIC LOBULE",
+          "bile duct"
+        ]
+      ],
+      "minHtmlFont": 11,
+      "minHtmlContrast": 3.7681843718971657,
+      "controls": [
+        {
+          "text": "Play flow",
+          "width": 69.65625,
+          "height": 30.5
+        },
+        {
+          "text": "Clinical lens",
+          "width": 82.828125,
+          "height": 30.5
+        },
+        {
+          "text": "1. Portal triad entryTwo blood supplies enter",
+          "width": 147,
+          "height": 45.5
+        },
+        {
+          "text": "2. Sinusoidal exchangeBlood passes hepatocytes",
+          "width": 147,
+          "height": 45.5
+        },
+        {
+          "text": "3. Central venous returnProcessed blood exits",
+          "width": 147,
+          "height": 45.5
+        },
+        {
+          "text": "4. Bile flows outwardCanaliculi lead to bile duct",
+          "width": 147,
+          "height": 45.5
+        },
+        {
+          "text": "Trace nutrient absorption",
+          "width": 157.53125,
+          "height": 36
+        }
+      ],
+      "overflow": false,
+      "screenshotSha256": "8653547b27639ae48cf89b1cddda49bd33381c8308e5686e9a2e11b6d0e49c6e"
+    },
+    {
+      "name": "phone-light",
+      "minSvgEffectiveFont": 2.975,
+      "maxSvgEffectiveFont": 4.8343750000000005,
+      "overlaps": [
+        [
+          "HEPATIC LOBULE",
+          "artery"
+        ],
+        [
+          "HEPATIC LOBULE",
+          "bile duct"
+        ]
+      ],
+      "minHtmlFont": 11,
+      "minHtmlContrast": 3.7681843718971657,
+      "controls": [
+        {
+          "text": "Play flow",
+          "width": 69.65625,
+          "height": 30.5
+        },
+        {
+          "text": "Clinical lens",
+          "width": 82.828125,
+          "height": 30.5
+        },
+        {
+          "text": "1. Portal triad entryTwo blood supplies enter",
+          "width": 117,
+          "height": 73
+        },
+        {
+          "text": "2. Sinusoidal exchangeBlood passes hepatocytes",
+          "width": 117,
+          "height": 73
+        },
+        {
+          "text": "3. Central venous returnProcessed blood exits",
+          "width": 117,
+          "height": 73
+        },
+        {
+          "text": "4. Bile flows outwardCanaliculi lead to bile duct",
+          "width": 117,
+          "height": 73
+        },
+        {
+          "text": "Trace nutrient absorption",
+          "width": 157.53125,
+          "height": 36
+        }
+      ],
+      "overflow": false,
+      "screenshotSha256": "45f619127a3c4bda17c9527886283b54ef438822b23dd84125203a15797dde6b"
+    },
+    {
+      "name": "desktop-light-clinical-step-4",
+      "minSvgEffectiveFont": 7.55,
+      "maxSvgEffectiveFont": 12.268749999999999,
+      "overlaps": [
+        [
+          "portal blood + arterial blood mix",
+          "processed blood drains to hepatic veins"
+        ],
+        [
+          "portal blood + arterial blood mix",
+          "fibrotic bands distort sinusoidal flow"
+        ],
+        [
+          "processed blood drains to hepatic veins",
+          "fibrotic bands distort sinusoidal flow"
+        ],
+        [
+          "HEPATIC LOBULE",
+          "artery"
+        ],
+        [
+          "HEPATIC LOBULE",
+          "bile duct"
+        ]
+      ],
+      "minHtmlFont": 11,
+      "minHtmlContrast": 3.7681843718971657,
+      "controls": [
+        {
+          "text": "Play flow",
+          "width": 69.65625,
+          "height": 30.5
+        },
+        {
+          "text": "Hide clinical",
+          "width": 85,
+          "height": 30.5
+        },
+        {
+          "text": "1. Portal triad entryTwo blood supplies enter",
+          "width": 147,
+          "height": 45.5
+        },
+        {
+          "text": "2. Sinusoidal exchangeBlood passes hepatocytes",
+          "width": 147,
+          "height": 45.5
+        },
+        {
+          "text": "3. Central venous returnProcessed blood exits",
+          "width": 147,
+          "height": 45.5
+        },
+        {
+          "text": "4. Bile flows outwardCanaliculi lead to bile duct",
+          "width": 147,
+          "height": 45.5
+        },
+        {
+          "text": "Trace nutrient absorption",
+          "width": 157.53125,
+          "height": 36
+        }
+      ],
+      "overflow": false,
+      "screenshotSha256": "a6022c5d5361f42a86689059ae7eb7a9647bc03947d2b536bdee3079ebb2956d"
+    }
+  ],
+  "stepWhilePaused": {
+    "playingAfter": true
+  },
+  "handoff": {
+    "before": {
+      "_structureNotes": {
+        "liver": "Saved explanation of opposite blood and bile flow.",
+        "sm_intestine": "Saved explanation of villus absorption."
+      },
+      "_structureConfidence": {
+        "liver": "learning",
+        "sm_intestine": "practice"
+      },
+      "_spotterScore": 2,
+      "_spotterTotal": 3,
+      "quizIdx": 2,
+      "_quizAttempts": 4,
+      "quizScore": 3,
+      "quizFeedback": "saved-feedback",
+      "_quizSeed": 23,
+      "_flashcardRounds": {
+        "organs": 1
+      },
+      "_connectionConcepts": {
+        "version": 1,
+        "answers": {
+          "conn_3": "choice_1"
+        }
+      }
+    },
+    "after": {
+      "_structureNotes": {
+        "liver": "Saved explanation of opposite blood and bile flow.",
+        "sm_intestine": "Saved explanation of villus absorption."
+      },
+      "_structureConfidence": {
+        "liver": "learning",
+        "sm_intestine": "practice"
+      },
+      "_spotterScore": 2,
+      "_spotterTotal": 3,
+      "quizIdx": 2,
+      "_quizAttempts": 4,
+      "quizScore": 3,
+      "quizFeedback": "saved-feedback",
+      "_quizSeed": 23,
+      "_flashcardRounds": {
+        "organs": 1
+      },
+      "_connectionConcepts": {
+        "version": 1,
+        "answers": {
+          "conn_3": "choice_1"
+        }
+      }
+    },
+    "changedWorkKeys": [],
+    "destination": {
+      "system": "organs",
+      "complexity": 1,
+      "selectedStructure": "sm_intestine",
+      "atlas": "sm_intestine",
+      "step": 1,
+      "playing": true,
+      "clinical": true
+    },
+    "destinationAtlasVisible": false,
+    "destinationFocused": false
+  },
+  "pageErrors": [],
+  "browserCleanup": "harness destroyed, page closed, server stopped in finally",
+  "baselineLaunchDiagnostic": "Initial dispatch used a sandbox APPDATA browser directory; preserved launch-diagnostic-01 and corrected PLAYWRIGHT_BROWSERS_PATH to the existing user browser installation."
+}

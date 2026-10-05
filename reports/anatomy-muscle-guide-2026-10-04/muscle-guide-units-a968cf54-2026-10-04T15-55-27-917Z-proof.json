@@ -1,0 +1,26 @@
+{
+  "runId": "a968cf54-2026-10-04T15-55-27-917Z",
+  "report": "reports/anatomy-muscle-guide-2026-10-04/muscle-guide-units-a968cf54-2026-10-04T15-55-27-917Z.json",
+  "before": {
+    "stem_lab/stem_tool_anatomy.js": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+    "tests/anatomy_muscle_guide.test.js": "2da1f6731781532a20f7159944d84fd996f8db01f8ab22f4854a36a49f8577f2"
+  },
+  "after": {
+    "stem_lab/stem_tool_anatomy.js": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "a968cf549fe8661c39fc6853e7405ec02152de7c140047cc0ee15a44b434364a",
+    "tests/anatomy_muscle_guide.test.js": "2da1f6731781532a20f7159944d84fd996f8db01f8ab22f4854a36a49f8577f2"
+  },
+  "sourceUnchanged": true,
+  "mirrorsIdentical": true,
+  "fixtureMatchesPin": true,
+  "exitCode": 0,
+  "error": null,
+  "passed": 244,
+  "failed": 0,
+  "skipped": 0,
+  "total": 244,
+  "success": true,
+  "expectedPassed": 244,
+  "failures": []
+}

@@ -380,7 +380,7 @@ const _dsBridge = () => {
       ? Promise.resolve(window.alloDeviceStorage)
       : new Promise((resolve, reject) => {
           const s = document.createElement('script');
-          s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent';
+          s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent';
           s.onload = () => {
             // Pages answers missing files with its SPA index as HTML 200 —
             // verify the global actually appeared (lame.min.js lesson).

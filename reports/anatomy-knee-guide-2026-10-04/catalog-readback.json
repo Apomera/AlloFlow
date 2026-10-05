@@ -1,0 +1,2932 @@
+{
+  "date": "2026-10-04",
+  "namespace": "stem.anatomy",
+  "keysPerLanguage": 70,
+  "catalogCopies": 8,
+  "checks": [
+    {
+      "path": "ui_strings.js",
+      "sha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+      "bytes": 11135387,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "allValuesMatch": true,
+      "allPlaceholdersMatch": true
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "sha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+      "bytes": 11135387,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "allValuesMatch": true,
+      "allPlaceholdersMatch": true
+    },
+    {
+      "path": "lang/french.js",
+      "sha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "bytes": 8458242,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "allValuesMatch": true,
+      "allPlaceholdersMatch": true
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "sha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "bytes": 8458242,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "allValuesMatch": true,
+      "allPlaceholdersMatch": true
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "sha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "bytes": 8879035,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "allValuesMatch": true,
+      "allPlaceholdersMatch": true
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "sha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "bytes": 8879035,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "allValuesMatch": true,
+      "allPlaceholdersMatch": true
+    },
+    {
+      "path": "lang/arabic.js",
+      "sha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "bytes": 8996023,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "allValuesMatch": true,
+      "allPlaceholdersMatch": true
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "sha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "bytes": 8996023,
+      "checks": [
+        {
+          "key": "knee_guide_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_marker_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_orientation",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_overview_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_support_svg_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_structure_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_current_step",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_femur",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patella",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_tibia",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_fibula",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_quadriceps",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_patellar",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_meniscus",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_acl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_pcl",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_key_collateral",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_key",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_bone",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_cartilage",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_force",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_pause_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_play_flow",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_paused",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flow_playing",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_previous",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_next",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_step_position",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_focus_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_architecture_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_extension_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_flexion_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_short",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_stability_detail",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_show_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_hide_clinical",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_shown",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_hidden",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_change",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_effect",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_clinical_note",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_label",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_lead",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_context",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_button",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_handoff_announcement",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_architecture",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_extension",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_flexion",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "knee_guide_mechanism_stability",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ],
+      "allValuesMatch": true,
+      "allPlaceholdersMatch": true
+    }
+  ],
+  "mirrors": [
+    {
+      "canonical": "ui_strings.js",
+      "mirror": "desktop/web-app/public/ui_strings.js",
+      "byteEqual": true,
+      "sha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+      "mirrorSha256": "3baac2693b8ebaaee3295aa55a2faa181774ed2e3ab7b018ecf74fb37c1024d9",
+      "kneeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "130617a54713a98c163210cf64f1e0baf232f2ac5cb6be270a6ba7e7286f2c1c",
+      "matchedKneeKeys": 70,
+      "offScopeDifferences": []
+    },
+    {
+      "canonical": "lang/french.js",
+      "mirror": "desktop/web-app/public/lang/french.js",
+      "byteEqual": true,
+      "sha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "mirrorSha256": "697bcc2e934cb64bce2cabf614f96e0ff2f26e91b19cf2106bf15bfd9f1bdefb",
+      "kneeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "15e55ec1fc7a1431b59e0607d2c379b970855aaf11e96ca031af9b7375d22b06",
+      "matchedKneeKeys": 70,
+      "offScopeDifferences": []
+    },
+    {
+      "canonical": "lang/spanish_latin_america.js",
+      "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "byteEqual": true,
+      "sha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "mirrorSha256": "2e19da2a2bfa2454b519fa8ccfa6fd2500208edd4668bc7d6391c7e8a590bb39",
+      "kneeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "f2d8e6a99254e42a410ffd157d203fb6a6f47079e01849ddce1ff47156915b21",
+      "matchedKneeKeys": 70,
+      "offScopeDifferences": []
+    },
+    {
+      "canonical": "lang/arabic.js",
+      "mirror": "desktop/web-app/public/lang/arabic.js",
+      "byteEqual": true,
+      "sha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "mirrorSha256": "976466a3014607b860581ffd855e61e9af651033ecbe44fa94dc971302fed027",
+      "kneeValuesEqual": true,
+      "anatomyNamespaceValuesEqual": true,
+      "anatomyNamespaceSha256": "47b3ba02167bfbe19adbc511e982d636f09d4ddaa58839b9e5555697f75c685b",
+      "matchedKneeKeys": 70,
+      "offScopeDifferences": []
+    }
+  ],
+  "failures": [],
+  "complete": true
+}

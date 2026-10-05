@@ -1,0 +1,19 @@
+PASS Current/target controls and heading/speed previews fit accessibly at 1440px
+PASS Current/target controls and heading/speed previews fit accessibly at 390px
+PASS Current/target controls and heading/speed previews fit accessibly at 320px
+PASS Manual heading altitude and speed instructions retain current values while displaying new targets
+PASS Heading compass and shortest-turn presets preview an instruction without changing aircraft or log
+PASS Invalid draft and Escape preserve the model and restore the initiating command focus
+PASS Blocked clearance and repeated runway approach and go-around visibly explain unchanged instructions without duplicate evidence
+PASS Paused approach targets show Guided and heading preview explains cancellation before committing current altitude
+PASS Holding defers speed arrival estimates and heading preview releases the hold only on send
+PASS Go-around readback is numeric and speed preview defers estimates while preserving recovery mode
+PASS Speed preview qualifies distance divided by speed comparison without confusing it with planned arrival
+PASS Real final approach shows automatic targets and speed stays on final while a heading ends guidance
+PASS Draft locks flight-strip selection and preserves the addressed aircraft through send
+PASS Mobile navigation focuses and scrolls between radar and commands with keyboard follow-through
+PASS Decision form remains usable at 200 percent zoom and in forced colors with reduced motion
+PASS Debrief evidence filters retain chronology include recovery in both relevant views and reset for another attempt
+PASS Speed presets are valid unique sorted and include the selected aircraft approach speed
+PASS Live traffic freezes during preview without changing the pause setting and resumes after cancellation
+{"passed":18,"failed":0,"runtimeErrors":[]}

@@ -1,0 +1,33 @@
+{
+  "verifiedAt": "2026-10-02T11:07:16.975Z",
+  "moduleHash": "94bb51978ae58be5b7e88e36fc1cdc0150d4cf35ecc9f5ad91ae82c62062ef1f",
+  "moduleFiles": [
+    "maine_sld_practice_module.js",
+    "desktop/web-app/public/maine_sld_practice_module.js",
+    "desktop/app-build/maine_sld_practice_module.js",
+    "desktop/web-app/build/maine_sld_practice_module.js"
+  ],
+  "hosts": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "originalPin": "a6339b83",
+      "finalPin": "94bb5197",
+      "sha256": "2866c01a445f4fdb205ba6f3bd100ca3bccba2404cab6146e46de33a5e0728a8",
+      "onlyPinChangedThisResume": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "originalPin": "a6339b83",
+      "finalPin": "94bb5197",
+      "sha256": "2866c01a445f4fdb205ba6f3bd100ca3bccba2404cab6146e46de33a5e0728a8",
+      "onlyPinChangedThisResume": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "originalPin": "a6339b83",
+      "finalPin": "94bb5197",
+      "sha256": "2866c01a445f4fdb205ba6f3bd100ca3bccba2404cab6146e46de33a5e0728a8",
+      "onlyPinChangedThisResume": true
+    }
+  ]
+}

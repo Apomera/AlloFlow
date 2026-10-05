@@ -1,0 +1,11 @@
+{
+  "sourceLfSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "startedAt": "2026-10-04T06:04:08.929Z",
+  "errors": [],
+  "views": [],
+  "fixtureSourceHash": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "startedMirrorsEqual": true,
+  "finishedSourceLfSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "finishedMirrorsEqual": true,
+  "finishedAt": "2026-10-04T06:04:25.235Z"
+}

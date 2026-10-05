@@ -1,0 +1,170 @@
+{
+  "sourceSha256": "578816db8e00c92374667b19643c596eedd8af91fa83d52109c0c31e33637e45",
+  "cases": [
+    {
+      "name": "coast-contact",
+      "sourceUnchanged": true,
+      "available": true,
+      "pointCount": 30,
+      "firstTime": 0,
+      "lastTime": 14.463763239979563,
+      "current": {
+        "time": 14.463763239979563,
+        "altitude": 0,
+        "vertical": -32.48433141253747,
+        "lateral": 4,
+        "throttle": 0,
+        "tilt": 0
+      },
+      "delta": {
+        "vertical": -23.484331412537472,
+        "lateral": 0
+      },
+      "velocityRange": 50,
+      "plotsBounded": true
+    },
+    {
+      "name": "powered-contact",
+      "sourceUnchanged": true,
+      "available": true,
+      "pointCount": 56,
+      "firstTime": 0,
+      "lastTime": 27.30292881379434,
+      "current": {
+        "time": 27.30292881379434,
+        "altitude": 0,
+        "vertical": -29.572305294648476,
+        "lateral": -4.224866785554576,
+        "throttle": 7.820462438551025e-83,
+        "tilt": -1.194578988007116e-39
+      },
+      "delta": {
+        "vertical": -20.572305294648476,
+        "lateral": -8.224866785554575
+      },
+      "velocityRange": 50,
+      "plotsBounded": true
+    },
+    {
+      "name": "powered-direction-change",
+      "sourceUnchanged": true,
+      "available": true,
+      "pointCount": 13,
+      "firstTime": 0,
+      "lastTime": 6.000000000000088,
+      "current": {
+        "time": 6.000000000000088,
+        "altitude": 261.61770143167485,
+        "vertical": 4.339916635986592,
+        "lateral": -4.0617481390115415,
+        "throttle": 99.99999999999993,
+        "tilt": -20.05352222602808
+      },
+      "delta": {
+        "vertical": 13.339916635986592,
+        "lateral": -8.061748139011542
+      },
+      "velocityRange": 20,
+      "plotsBounded": true
+    },
+    {
+      "name": "preburn-coasting",
+      "sourceUnchanged": true,
+      "available": true,
+      "pointCount": 5,
+      "firstTime": 0,
+      "lastTime": 1.9999999999999953,
+      "current": {
+        "time": 1.9999999999999953,
+        "altitude": 278.75309687795175,
+        "vertical": -12.246916354513933,
+        "lateral": 4,
+        "throttle": 0,
+        "tilt": 0
+      },
+      "delta": {
+        "vertical": -3.2469163545139335,
+        "lateral": 0
+      },
+      "velocityRange": 20,
+      "plotsBounded": true
+    },
+    {
+      "name": "first-recorded-sample",
+      "sourceUnchanged": true,
+      "available": false,
+      "pointCount": 1,
+      "firstTime": 0,
+      "lastTime": 0,
+      "current": {
+        "time": 0,
+        "altitude": 300,
+        "vertical": -9,
+        "lateral": 4,
+        "throttle": 0,
+        "tilt": 0
+      },
+      "delta": {
+        "vertical": 0,
+        "lateral": 0
+      },
+      "plotsBounded": true
+    },
+    {
+      "name": "changed-future-does-not-enter-history",
+      "sourceUnchanged": true,
+      "available": true,
+      "pointCount": 13,
+      "firstTime": 0,
+      "lastTime": 6.000000000000088,
+      "current": {
+        "time": 6.000000000000088,
+        "altitude": 261.61770143167485,
+        "vertical": 4.339916635986592,
+        "lateral": -4.0617481390115415,
+        "throttle": 99.99999999999993,
+        "tilt": -20.05352222602808
+      },
+      "delta": {
+        "vertical": 13.339916635986592,
+        "lateral": -8.061748139011542
+      },
+      "velocityRange": 20,
+      "plotsBounded": true
+    },
+    {
+      "name": "live-between-stored-samples",
+      "sourceUnchanged": true,
+      "available": true,
+      "pointCount": 14,
+      "firstTime": 0,
+      "lastTime": 6.200000000000088,
+      "current": {
+        "time": 6.200000000000088,
+        "altitude": 261.61770143167485,
+        "vertical": 4,
+        "lateral": -3,
+        "throttle": 99.99999999999993,
+        "tilt": -20.05352222602808
+      },
+      "delta": {
+        "vertical": 13,
+        "lateral": -7
+      },
+      "velocityRange": 20,
+      "plotsBounded": true
+    },
+    {
+      "name": "legacy-unavailable",
+      "sourceUnchanged": true,
+      "available": false,
+      "pointCount": 0,
+      "plotsBounded": true
+    }
+  ],
+  "maxInverseMappingError": 1.5987211554602254e-14,
+  "coastContactTime": 14.463763239979563,
+  "poweredContactTime": 27.30292881379434,
+  "poweredPeakUpward": 4.339916635986592,
+  "poweredMinimumLateral": -4.224866785554576
+}

@@ -1,0 +1,12 @@
+AssertionError [ERR_ASSERTION]: The input was expected to not match the regular expression /Alt\+ArrowRight/. Input:
+
+'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home End Enter Space Escape P Control+Z Control+Shift+Z Control+Y Meta+Z Meta+Shift+Z Meta+Y'
+
+    at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\dev-tools\artstudio_watercolor_precision_qa.cjs:202:12 {
+  generatedMessage: true,
+  code: 'ERR_ASSERTION',
+  actual: 'ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home End Enter Space Escape P Control+Z Control+Shift+Z Control+Y Meta+Z Meta+Shift+Z Meta+Y',
+  expected: /Alt\+ArrowRight/,
+  operator: 'doesNotMatch',
+  diff: 'simple'
+}

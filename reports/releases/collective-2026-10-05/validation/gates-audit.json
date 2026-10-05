@@ -1,0 +1,303 @@
+[
+  {
+    "command": "node dev-tools/sync_allosheet_assets.cjs --check",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 0.136,
+    "log": "gate-01.log"
+  },
+  {
+    "command": "node _build_adventure_module.js --check",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 0.195,
+    "log": "gate-02.log"
+  },
+  {
+    "command": "node dev-tools/check_render_refs.cjs",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 28.52,
+    "log": "gate-03.log"
+  },
+  {
+    "command": "node dev-tools/check_keyless_map.cjs",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 17.031,
+    "log": "gate-04.log"
+  },
+  {
+    "command": "node dev-tools/check_stem_render.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 18.876,
+    "log": "gate-05.log"
+  },
+  {
+    "command": "node dev-tools/check_stem_reachability.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 0.599,
+    "log": "gate-06.log"
+  },
+  {
+    "command": "node dev-tools/check_sel_render.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 0.984,
+    "log": "gate-07.log"
+  },
+  {
+    "command": "node dev-tools/check_sel_a11y.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 7.055,
+    "log": "gate-08.log"
+  },
+  {
+    "command": "node dev-tools/check_sel_hub_wcag.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 1.452,
+    "log": "gate-09.log"
+  },
+  {
+    "command": "node dev-tools/check_module_render.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 0.65,
+    "log": "gate-10.log"
+  },
+  {
+    "command": "node dev-tools/check_aria_handler.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 21.386,
+    "log": "gate-11.log"
+  },
+  {
+    "command": "node dev-tools/check_hardcoded_aria_text.cjs --quiet",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 17.397,
+    "log": "gate-12.log"
+  },
+  {
+    "command": "node dev-tools/check_hardcoded_toast_text.cjs --quiet",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 11.5,
+    "log": "gate-13.log"
+  },
+  {
+    "command": "node dev-tools/check_lang_json.cjs",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 6.956,
+    "log": "gate-14.log"
+  },
+  {
+    "command": "node dev-tools/check_cmd_i18n.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 13.942,
+    "log": "gate-15.log"
+  },
+  {
+    "command": "node dev-tools/i18n/audit_cmd_hand_sources.cjs --gate --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 6.689,
+    "log": "gate-16.log"
+  },
+  {
+    "command": "node dev-tools/i18n/merge_cmd_ui_translations.cjs --gate --quiet",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 15.717,
+    "log": "gate-17.log"
+  },
+  {
+    "command": "node dev-tools/i18n/check_cmd_value_staleness.cjs --gate --quiet",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 5.903,
+    "log": "gate-18.log"
+  },
+  {
+    "command": "node dev-tools/i18n/audit_runtime_pack_coverage.cjs --gate --quiet",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 72.564,
+    "log": "gate-19.log"
+  },
+  {
+    "command": "node dev-tools/i18n/audit_ui_pack_coverage.cjs --gate --quiet",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 35.938,
+    "log": "gate-20.log"
+  },
+  {
+    "command": "node dev-tools/i18n/check_safety_string_spanglish.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 32.113,
+    "log": "gate-21.log"
+  },
+  {
+    "command": "node dev-tools/check_build_smoke.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 0.673,
+    "log": "gate-22.log"
+  },
+  {
+    "command": "node dev-tools/verify_module_registry.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 9.361,
+    "log": "gate-23.log"
+  },
+  {
+    "command": "node dev-tools/check_view_props.cjs",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 1.212,
+    "log": "gate-24.log"
+  },
+  {
+    "command": "node dev-tools/check_window_icons.cjs",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 0.131,
+    "log": "gate-25.log"
+  },
+  {
+    "command": "node dev-tools/check_iife_lazy_lookup.cjs",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 2.271,
+    "log": "gate-26.log"
+  },
+  {
+    "command": "node dev-tools/i18n/check_lang_staleness.cjs --quiet --gate-guarded --ratchet",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 35.71,
+    "log": "gate-27.log"
+  },
+  {
+    "command": "node dev-tools/scan_silent_announcer.cjs --quiet",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 0.92,
+    "log": "gate-28.log"
+  },
+  {
+    "command": "node dev-tools/scan_mouse_only_controls.cjs",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 7.747,
+    "log": "gate-29.log"
+  },
+  {
+    "command": "node dev-tools/scan_mouse_only_controls.cjs . \"--pattern=^(view_persona_chat|persona_ui|personas|persona_session_artifact)_module\\.js$\" \"--baseline=dev-tools/persona_mouse_only_baseline.json\"",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 0.185,
+    "log": "gate-30.log"
+  },
+  {
+    "command": "node dev-tools/scan_fn_in_tool_state.cjs",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 11.499,
+    "log": "gate-31.log"
+  },
+  {
+    "command": "node dev-tools/scan_window_key_listeners.cjs",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 12.15,
+    "log": "gate-32.log"
+  },
+  {
+    "command": "node dev-tools/scan_answer_position_bias.cjs",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 2.028,
+    "log": "gate-33.log"
+  },
+  {
+    "command": "node dev-tools/scan_answer_length_bias.cjs --check",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 0.605,
+    "log": "gate-34.log"
+  },
+  {
+    "command": "node dev-tools/scan_source_bank_duplication.cjs --check",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 0.847,
+    "log": "gate-35.log"
+  },
+  {
+    "command": "node dev-tools/scan_emoji_mojibake.cjs",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 4.063,
+    "log": "gate-36.log"
+  },
+  {
+    "command": "node dev-tools/scan_pack_script_bleed.cjs",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 5.481,
+    "log": "gate-37.log"
+  },
+  {
+    "command": "node dev-tools/scan_pack_latin_residue.cjs",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 3.02,
+    "log": "gate-38.log"
+  },
+  {
+    "command": "node dev-tools/scan_pack_length_outlier.cjs",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 6.916,
+    "log": "gate-39.log"
+  },
+  {
+    "command": "node dev-tools/scan_shell_i18n.cjs --all --gate",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 33.898,
+    "log": "gate-40.log"
+  },
+  {
+    "command": "node dev-tools/check_anchored_slices.cjs --quiet",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 134.802,
+    "log": "gate-41.log"
+  },
+  {
+    "command": "node dev-tools/check_free_vars.cjs --quiet",
+    "exit": 1,
+    "signal": null,
+    "elapsedSeconds": 25.888,
+    "log": "gate-42.log"
+  },
+  {
+    "command": "node dev-tools/check_tdz_render.cjs --quiet",
+    "exit": 0,
+    "signal": null,
+    "elapsedSeconds": 1.043,
+    "log": "gate-43.log"
+  }
+]

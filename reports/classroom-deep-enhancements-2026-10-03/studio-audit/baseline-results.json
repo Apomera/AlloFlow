@@ -1,0 +1,54 @@
+{
+  "runner": "native-node-real-react-jsdom-vm-module",
+  "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\source-before\\studio_response_module.js",
+  "sourceSha256": "3e9f72bf73832605fc68993f7eb5be663b14a0a696240ec39950bba1b66c7cb5",
+  "total": 9,
+  "passed": 5,
+  "failed": 4,
+  "results": [
+    {
+      "name": "current valid restore applies real validated writing and success feedback",
+      "status": "passed"
+    },
+    {
+      "name": "current invalid restore preserves writing and reports the actual failure",
+      "status": "passed"
+    },
+    {
+      "name": "oversized current restore never reads the file or changes work",
+      "status": "passed"
+    },
+    {
+      "name": "learner edit during restore is preserved and retains current failure feedback",
+      "status": "passed"
+    },
+    {
+      "name": "unmount retires a deferred restore before any response write",
+      "status": "passed"
+    },
+    {
+      "name": "older file read rejection cannot overwrite newer successful restore feedback",
+      "status": "failed",
+      "message": "The newest attempt owns feedback\n+ actual - expected\n\n+ 'Choose a text backup downloaded from this resource. Your current work has not changed.'\n- 'Backup restored to this workspace. Check the save status before leaving.'\n",
+      "stack": "AssertionError [ERR_ASSERTION]: The newest attempt owns feedback\n+ actual - expected\n\n+ 'Choose a text backup downloaded from this resource. Your current work has not changed.'\n- 'Backup restored to this workspace. Check the save status before leaving.'\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\restore-ownership.cjs:161:12\n    at async main (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\restore-ownership.cjs:204:9)"
+    },
+    {
+      "name": "older valid backup cannot apply after a newer invalid restore selection",
+      "status": "failed",
+      "message": "Selecting a newer file retires the older attempt even if the new file is invalid\n\n1 !== 0\n",
+      "stack": "AssertionError [ERR_ASSERTION]: Selecting a newer file retires the older attempt even if the new file is invalid\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\restore-ownership.cjs:169:12\n    at async main (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\restore-ownership.cjs:204:9)"
+    },
+    {
+      "name": "older valid completion waits out of the way of a newer pending valid attempt",
+      "status": "failed",
+      "message": "An older attempt cannot write while a newer read is pending\n\n1 !== 0\n",
+      "stack": "AssertionError [ERR_ASSERTION]: An older attempt cannot write while a newer read is pending\n\n1 !== 0\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\restore-ownership.cjs:180:12\n    at async main (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\restore-ownership.cjs:204:9)"
+    },
+    {
+      "name": "older valid completion after a newer success cannot replace its feedback",
+      "status": "failed",
+      "message": "The old work-changed catch must not replace newer success\n+ actual - expected\n\n+ 'Choose a text backup downloaded from this resource. Your current work has not changed.'\n- 'Backup restored to this workspace. Check the save status before leaving.'\n",
+      "stack": "AssertionError [ERR_ASSERTION]: The old work-changed catch must not replace newer success\n+ actual - expected\n\n+ 'Choose a text backup downloaded from this resource. Your current work has not changed.'\n- 'Backup restored to this workspace. Check the save status before leaving.'\n\n    at cases (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\restore-ownership.cjs:193:12)\n    at async main (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-deep-enhancements-2026-10-03\\studio-audit\\restore-ownership.cjs:204:9)"
+    }
+  ]
+}

@@ -1,0 +1,101 @@
+{
+  "sourceSha256": "c261c4bbb7fd7ee719164628a0bdf92c1e797d7ff58453943b9dcc5169e75a54",
+  "captures": [
+    {
+      "path": "browser-shadow-1-final/shadow/left-bank-approach.png",
+      "observation": "The banked lander has visible clearance above the horizon; the recorded-frame label and controls are legible.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-shadow-1-final/shadow/left-bank-contact.png",
+      "observation": "The lowest left-bank pad meets the surface. The measured hard-landing result remains visible.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-shadow-1-final/shadow/right-bank-approach.png",
+      "observation": "The opposite bank retains pad clearance with the expected orientation.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-shadow-1-final/shadow/right-bank-contact.png",
+      "observation": "The lowest right-bank pad meets the surface without sinking through it.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-shadow-2-final/shadow/phone-tilted-contact.png",
+      "observation": "At 320 px the lander, touchdown surface and three controls fit without horizontal overflow.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-shadow-2-final/shadow/phone-shadow-notes-forced.png",
+      "observation": "The complete model notes remain readable in forced colors; the new paragraph wraps inside the viewport.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-shadow-3-final/shadow/reduced-motion-landing-shadow.png",
+      "observation": "The actual hardware is clear above the crater floor; its long shadow is visible on the terrain at the lower right.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-shadow-3-final/shadow/reduced-motion-contact-shadow.png",
+      "observation": "The touchdown shadow follows the sloping terrain; the lowest pad is supported and the landing receipt stays visible.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-shadow-3-final/shadow/shadow-context-loss-support.png",
+      "observation": "Graphics loss restores the tilted 2D contact pose and existing hard-landing result.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-shadow-4-verified/shadow/full-detail-shadow-map.png",
+      "observation": "The full-detail overhead view retains terrain and rock shadows, the nadir marker and clear controls.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-dust-1-final/dust/fallback-burning-dust.png",
+      "observation": "The tilted craft stays clear of the surface during a measured live burn; ground markers and controls remain readable.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-dust-1-final/dust/fallback-after-engine-cutoff.png",
+      "observation": "The upright coast frame retains clearance and the existing drift cue after engine cutoff.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-dust-1-final/dust/fallback-settled-contact.png",
+      "observation": "All upright footpads meet the surface after settling, with the original measured impact result visible.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-dust-4-final/dust/webgl-ballistic-dust.png",
+      "observation": "The moving banked lander casts a recognizable terrain shadow; the dust and drift cue remain visible.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-dust-4-final/dust/webgl-landing-view-dust.png",
+      "observation": "The landing camera keeps the banked hardware, exhaust and surface instruments readable alongside the new shadow.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    },
+    {
+      "path": "browser-dust-4-final/dust/context-loss-keeps-ballistic-dust.png",
+      "observation": "Context loss returns the same held flight to the corrected 2D pose with dust and surface markers intact.",
+      "accepted": true,
+      "reviewedWith": "Native screenshot read through view_image"
+    }
+  ]
+}

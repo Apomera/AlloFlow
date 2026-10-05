@@ -1,0 +1,27 @@
+{
+  "action": "study-tools",
+  "tone": "assessment",
+  "step": "Step 6\nof 6",
+  "stepName": "Workflow step 6 of 6",
+  "phase": "Next best action · Study tools",
+  "title": "Choose a study activity",
+  "prose": [
+    "Open flashcards, compare a selected structure, or start a timed specimen practical."
+  ],
+  "meta": [
+    "🐸 Frog (Rana)",
+    "🟢 Skin · layer 1/5"
+  ],
+  "buttons": [
+    {
+      "text": "Choose a study activity",
+      "name": null,
+      "disabled": false
+    },
+    {
+      "text": "View specimen",
+      "name": null,
+      "disabled": false
+    }
+  ]
+}

@@ -1,0 +1,7 @@
+Add immersive Orion navigation and alpine waypoints
+
+Move through Orion gas and dust with free camera controls, interior viewpoints and light-year readouts. Keep model dimensions and star positions fixed, and restore interior poses through the notebook and portable backups.
+
+Refine Everest rock and snow materials and add map-selected terrain waypoints with live course information and ridge visibility.
+
+Validation: 55 targeted unit checks and 12 real WebGL browser scenarios, including WebGL 1, phones, camera transforms, notebook restore, shared flight controls and waypoint occlusion.

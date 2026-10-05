@@ -1,0 +1,331 @@
+{
+  "checkedAt": "2026-10-02T23:32:10.744Z",
+  "completed": true,
+  "successful": true,
+  "checks": [
+    {
+      "label": "Manifest finalized without commit",
+      "passed": true
+    },
+    {
+      "label": "All pinned files retained",
+      "passed": true
+    },
+    {
+      "label": "Main, public and frozen candidate bytes agree",
+      "passed": true
+    },
+    {
+      "label": "Uncommitted starting baseline exact",
+      "passed": true
+    },
+    {
+      "label": "Entire prior source token sequence preserved",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/baseline-results.json completed and closed",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/baseline-results.json actual loaded and frozen runtime/harness",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/baseline-results.json honest outcome",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/baseline-results.json exact PNG receipts and capture chronology",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/browser-preflight-results.json completed and closed",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/browser-preflight-results.json actual loaded and frozen runtime/harness",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/browser-preflight-results.json honest outcome",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/browser-preflight-results.json exact PNG receipts and capture chronology",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/browser-results.json completed and closed",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/browser-results.json actual loaded and frozen runtime/harness",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/browser-results.json honest outcome",
+      "passed": true
+    },
+    {
+      "label": "reports/watercycle-thermal-layer-inspector/browser-results.json exact PNG receipts and capture chronology",
+      "passed": true
+    },
+    {
+      "label": "Final browser loaded current candidate",
+      "passed": true
+    },
+    {
+      "label": "All eight final display contexts",
+      "passed": true
+    },
+    {
+      "label": "Clear layout, text and controls: desktop",
+      "passed": true
+    },
+    {
+      "label": "Independent text contrast: desktop",
+      "passed": true
+    },
+    {
+      "label": "Text-free decorative plots fit: desktop",
+      "passed": true
+    },
+    {
+      "label": "Clear layout, text and controls: phone320",
+      "passed": true
+    },
+    {
+      "label": "Independent text contrast: phone320",
+      "passed": true
+    },
+    {
+      "label": "Text-free decorative plots fit: phone320",
+      "passed": true
+    },
+    {
+      "label": "Clear layout, text and controls: phone390",
+      "passed": true
+    },
+    {
+      "label": "Independent text contrast: phone390",
+      "passed": true
+    },
+    {
+      "label": "Text-free decorative plots fit: phone390",
+      "passed": true
+    },
+    {
+      "label": "Clear layout, text and controls: host390",
+      "passed": true
+    },
+    {
+      "label": "Independent text contrast: host390",
+      "passed": true
+    },
+    {
+      "label": "Text-free decorative plots fit: host390",
+      "passed": true
+    },
+    {
+      "label": "Clear layout, text and controls: dark",
+      "passed": true
+    },
+    {
+      "label": "Independent text contrast: dark",
+      "passed": true
+    },
+    {
+      "label": "Text-free decorative plots fit: dark",
+      "passed": true
+    },
+    {
+      "label": "Clear layout, text and controls: app-contrast",
+      "passed": true
+    },
+    {
+      "label": "Independent text contrast: app-contrast",
+      "passed": true
+    },
+    {
+      "label": "Text-free decorative plots fit: app-contrast",
+      "passed": true
+    },
+    {
+      "label": "Clear layout, text and controls: forced-phone",
+      "passed": true
+    },
+    {
+      "label": "Independent text contrast: forced-phone",
+      "passed": true
+    },
+    {
+      "label": "Text-free decorative plots fit: forced-phone",
+      "passed": true
+    },
+    {
+      "label": "Clear layout, text and controls: forced-dark",
+      "passed": true
+    },
+    {
+      "label": "Independent text contrast: forced-dark",
+      "passed": true
+    },
+    {
+      "label": "Text-free decorative plots fit: forced-dark",
+      "passed": true
+    },
+    {
+      "label": "Displayed three-level readings match actual kernel",
+      "passed": true
+    },
+    {
+      "label": "Eight actual particle cues covered",
+      "passed": true
+    },
+    {
+      "label": "Actual temperatures, crossings, selected markers and separate surface cues agree",
+      "passed": true
+    },
+    {
+      "label": "All eight actual model fixtures inspected at each level",
+      "passed": true
+    },
+    {
+      "label": "Native inspection preserves learner state and paused pixels",
+      "passed": true
+    },
+    {
+      "label": "Scoped final accessibility audits complete",
+      "passed": true
+    },
+    {
+      "label": "Genuine 3D resource and function identities preserved",
+      "passed": true
+    },
+    {
+      "label": "unit all tests pass",
+      "passed": true
+    },
+    {
+      "label": "unit raw receipt binds exact after receipt",
+      "passed": true
+    },
+    {
+      "label": "unit successful process chronology",
+      "passed": true
+    },
+    {
+      "label": "unit frozen input files match before and after",
+      "passed": true
+    },
+    {
+      "label": "unit actual file reads match frozen inputs",
+      "passed": true
+    },
+    {
+      "label": "unit helper loaded report retained exactly",
+      "passed": true
+    },
+    {
+      "label": "unit executable recipes stayed exact",
+      "passed": true
+    },
+    {
+      "label": "unit every owned browser closed before tests",
+      "passed": true
+    },
+    {
+      "label": "unit preservation receipts stayed exact",
+      "passed": true
+    },
+    {
+      "label": "regression all tests pass",
+      "passed": true
+    },
+    {
+      "label": "regression raw receipt binds exact after receipt",
+      "passed": true
+    },
+    {
+      "label": "regression successful process chronology",
+      "passed": true
+    },
+    {
+      "label": "regression frozen input files match before and after",
+      "passed": true
+    },
+    {
+      "label": "regression actual file reads match frozen inputs",
+      "passed": true
+    },
+    {
+      "label": "regression helper loaded report retained exactly",
+      "passed": true
+    },
+    {
+      "label": "regression executable recipes stayed exact",
+      "passed": true
+    },
+    {
+      "label": "regression every owned browser closed before tests",
+      "passed": true
+    },
+    {
+      "label": "regression preservation receipts stayed exact",
+      "passed": true
+    },
+    {
+      "label": "Failed fixture diagnostic remains an honest closed run",
+      "passed": true
+    },
+    {
+      "label": "Failed fixture diagnostic retains actual executed test and source bytes",
+      "passed": true
+    },
+    {
+      "label": "Sequential test runs have distinct full test names",
+      "passed": true
+    },
+    {
+      "label": "Native process closure covers every failed and final test process",
+      "passed": true
+    },
+    {
+      "label": "Learner preview receipt serves exact candidate",
+      "passed": true
+    },
+    {
+      "label": "Headline totals derive only from final successful runs",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "preservation": {
+    "passed": true,
+    "boundaries": {
+      "helper": 1,
+      "style": 1,
+      "renderer": 1,
+      "append": 1,
+      "coldLabel": 1,
+      "warmLabel": 1
+    },
+    "baselineTokens": 356218,
+    "candidatePriorTokens": 356218,
+    "mismatch": null
+  },
+  "counts": {
+    "focusedTests": 34,
+    "regressionTests": 146,
+    "totalPassed": 180,
+    "browserChecks": 1208,
+    "nativeActions": 169,
+    "finalCaptures": 37,
+    "scopedAudits": 37,
+    "browserRunsClosed": 3,
+    "ownedTestProcessesClosed": 12
+  },
+  "manifestSha256": "e47513bf612005ed8e0886e848e2ada73711f9bee50bc8d6b8a91636fe91c8a5",
+  "verifierSha256": "639a15c7c8816a09dd061a64ea2e10f04f74c1af0450412cc788bdc0e65b01a7"
+}

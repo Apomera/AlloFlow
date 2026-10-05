@@ -1,0 +1,119 @@
+{
+  "passed": true,
+  "sourceSha256": "6478b21accc3061b34a7328507d83bffec5d7de7d4786565e300e1ddb7d7a4ba",
+  "mirrorSha256": "6478b21accc3061b34a7328507d83bffec5d7de7d4786565e300e1ddb7d7a4ba",
+  "previousVerifiedSourcePreserved": "b207d09a0e834d5abeae5fba88f8303e3e457189ba58088677af6f05e3d543fa",
+  "previousPass": {
+    "tests": 318,
+    "browserViews": 14
+  },
+  "regression": {
+    "tests": 121,
+    "files": 8,
+    "attempts": 8
+  },
+  "browser": {
+    "views": 14,
+    "visibleFocusChecks": 14,
+    "nativeToggles": 9,
+    "nativeTestTransitions": 2,
+    "lifecycleChecks": 3,
+    "measuredFontsAtTwiceNormal": 26,
+    "forcedTextRows": 16,
+    "rootInspected": 6,
+    "reviewerInspected": 14
+  },
+  "artifacts": {
+    "regressionSha256": "585538b531a32a102f03812f3a485a66e52341123d04fcd82cc23877b7d4f9f5",
+    "regressionReceiptSha256": "546ddb438d44713dc1b069f79d95c2427da5305fd65546125f3f69e85042f525",
+    "browserResultSha256": "61965367faee3c8c75d79777463ae96e6ae744e5762584a8987263ab424debe7",
+    "visualReviewSha256": "69a9b135226cd4cf064bbad9b3cab5b1d0a737adc28a6d2b75b47a711f57a3e2",
+    "validatorSha256": "0758b8891e711f6e67a9eebac70e5ef6ca4fca62e1693f5984b59b9651577bee",
+    "screenshots": [
+      {
+        "file": "prediction-guide-transition-tested-390.png",
+        "sha256": "c9b77f287b5f70cd05ab5e5c474f9bbbd587275bd6594494b8b8a23037447895",
+        "width": 326,
+        "height": 655
+      },
+      {
+        "file": "prediction-guide-closed-gain-320.png",
+        "sha256": "80f78ba7c3421be29fdf8f37b6d3060e758561c595a1af4010830a62985dffde",
+        "width": 232,
+        "height": 59
+      },
+      {
+        "file": "prediction-guide-open-gain-1280.png",
+        "sha256": "76083d09b50dd1c1f32cf58dd9d25e0b97ff15786831828a70b6ef41f9ef3b62",
+        "width": 782,
+        "height": 290
+      },
+      {
+        "file": "prediction-guide-open-gain-320.png",
+        "sha256": "4a31a6cc8b9ad1bd8da2d58d9f2f1dd10c8a8b7f65a46f639b13f6bb9bb5777f",
+        "width": 232,
+        "height": 467
+      },
+      {
+        "file": "prediction-guide-closed-limit-320.png",
+        "sha256": "80f78ba7c3421be29fdf8f37b6d3060e758561c595a1af4010830a62985dffde",
+        "width": 232,
+        "height": 59
+      },
+      {
+        "file": "prediction-guide-open-limit-1280.png",
+        "sha256": "46de2aa5fd925230c80088d354c9afe796510ec12080d9553dbf8feb91b12252",
+        "width": 782,
+        "height": 290
+      },
+      {
+        "file": "prediction-guide-open-limit-320.png",
+        "sha256": "1dd95fb84e250ce26003e7b432a19da6ce895525e103dd84c63ec649951ba94d",
+        "width": 232,
+        "height": 467
+      },
+      {
+        "file": "prediction-guide-closed-sensor-320.png",
+        "sha256": "20212b1e4f7da00d74b638ee27a7b8d20d9a96aac2b885ee03e6899936427198",
+        "width": 232,
+        "height": 60
+      },
+      {
+        "file": "prediction-guide-open-sensor-1280.png",
+        "sha256": "a3eafa391862fbd6a4467a2e996d2e8d02c7677709481b48f22ba70144998334",
+        "width": 782,
+        "height": 290
+      },
+      {
+        "file": "prediction-guide-open-sensor-320.png",
+        "sha256": "d77b274b53773acd1755dd0aec1c1496816b59c066e439c34b5aab81cb7e83d9",
+        "width": 232,
+        "height": 489
+      },
+      {
+        "file": "prediction-guide-gain-200pct-text-320.png",
+        "sha256": "1dc86282ac99145150874c2b2f54fade5d5cefdb54698ea14fb7683d8118ea09",
+        "width": 232,
+        "height": 1653
+      },
+      {
+        "file": "prediction-guide-sensor-200pct-text-320.png",
+        "sha256": "35b2111e69f4863d29f35b333c7f1ddce1612d58c9e0de75c0bd32a6b5e3b41d",
+        "width": 232,
+        "height": 1742
+      },
+      {
+        "file": "forced-colors-prediction-guide-gain-320.png",
+        "sha256": "ff180d7d8bde751e2d74b1707a6f25cf61f4d0245bc4bd36940d9261c458a07e",
+        "width": 232,
+        "height": 467
+      },
+      {
+        "file": "forced-colors-prediction-guide-sensor-320.png",
+        "sha256": "23d73caa019ef508433366426258b6308e82b1d38b13ae118686f33c2265e8a3",
+        "width": 232,
+        "height": 489
+      }
+    ]
+  }
+}

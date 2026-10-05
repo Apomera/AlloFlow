@@ -1,0 +1,304 @@
+{
+  "slug": "constitution_grade8",
+  "version": 1,
+  "revision": "2026-10-04",
+  "style": "Watercolor historical scene with authored civics diagrams",
+  "provider": "Built-in image generation and authored SVG diagrams",
+  "textPolicy": "Text-free raster artwork; captions and labels stay in native editable fields",
+  "note": "Visual review completed when asset status is visual-review-passed; educator review pending.",
+  "references": [
+    "https://www.nps.gov/inde/learn/historyculture/stories-constitutionalconvention.htm"
+  ],
+  "nativeMappings": {
+    "glossary": {
+      "Constitution": "ct-term-constitution",
+      "Legislative": "ct-term-legislative",
+      "Executive": "ct-term-executive",
+      "Judicial": "ct-term-judicial",
+      "Veto": "ct-term-veto",
+      "Override": "ct-term-override",
+      "Federalism": "ct-term-federalism",
+      "Amendment": "ct-term-amendment",
+      "Ratify": "ct-term-ratify",
+      "Impeach": "ct-term-impeach",
+      "Unconstitutional": "ct-term-unconstitutional",
+      "Compromise": "ct-term-compromise"
+    },
+    "anchor": {
+      "0": "ct-term-legislative",
+      "1": "ct-term-executive",
+      "2": "ct-term-judicial",
+      "3": "ct-term-federalism",
+      "4": "ct-context-connected"
+    },
+    "sort": {
+      "ct1": "ct-context-war",
+      "ct2": "ct-term-veto",
+      "ct3": "ct-term-unconstitutional",
+      "ct4": "ct-context-spending",
+      "ct5": "ct-context-war",
+      "ct6": "ct-term-unconstitutional",
+      "ct7": "ct-context-nomination",
+      "ct8": "ct-context-nomination",
+      "ct9": "ct-term-override",
+      "ct10": "ct-term-judicial"
+    }
+  },
+  "assets": [
+    {
+      "id": "ct-term-constitution",
+      "kind": "term",
+      "file": "ct-term-constitution.png",
+      "webpFile": "ct-term-constitution.webp",
+      "vectorFile": "ct-term-constitution.svg",
+      "alt": "A blank parchment has rolled corners at opposite ends.",
+      "prompt": "Authored text-free SVG diagram: A blank parchment has rolled corners at opposite ends.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-legislative",
+      "kind": "term",
+      "file": "ct-term-legislative.png",
+      "webpFile": "ct-term-legislative.webp",
+      "vectorFile": "ct-term-legislative.svg",
+      "alt": "A triangular roof rests above four columns and a broad base.",
+      "prompt": "Authored text-free SVG diagram: A triangular roof rests above four columns and a broad base.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-executive",
+      "kind": "term",
+      "file": "ct-term-executive.png",
+      "webpFile": "ct-term-executive.webp",
+      "vectorFile": "ct-term-executive.svg",
+      "alt": "A wood desk holds a blank sheet and a slanted pen.",
+      "prompt": "Authored text-free SVG diagram: A wood desk holds a blank sheet and a slanted pen.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-judicial",
+      "kind": "term",
+      "file": "ct-term-judicial.png",
+      "webpFile": "ct-term-judicial.webp",
+      "vectorFile": "ct-term-judicial.svg",
+      "alt": "Two balanced pans hang from a horizontal beam on a central post.",
+      "prompt": "Authored text-free SVG diagram: Two balanced pans hang from a horizontal beam on a central post.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-veto",
+      "kind": "term",
+      "file": "ct-term-veto.png",
+      "webpFile": "ct-term-veto.webp",
+      "vectorFile": "ct-term-veto.svg",
+      "alt": "An arrow points left toward a blank sheet.",
+      "prompt": "Authored text-free SVG diagram: An arrow points left toward a blank sheet.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-override",
+      "kind": "term",
+      "file": "ct-term-override.png",
+      "webpFile": "ct-term-override.webp",
+      "vectorFile": "ct-term-override.svg",
+      "alt": "Three people stand beside a blank sheet above an arrow moving right.",
+      "prompt": "Authored text-free SVG diagram: Three people stand beside a blank sheet above an arrow moving right.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-federalism",
+      "kind": "term",
+      "file": "ct-term-federalism.png",
+      "webpFile": "ct-term-federalism.webp",
+      "vectorFile": "ct-term-federalism.svg",
+      "alt": "Lines connect one larger columned building to three smaller buildings.",
+      "prompt": "Authored text-free SVG diagram: Lines connect one larger columned building to three smaller buildings.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-amendment",
+      "kind": "term",
+      "file": "ct-term-amendment.png",
+      "webpFile": "ct-term-amendment.webp",
+      "vectorFile": "ct-term-amendment.svg",
+      "alt": "A blue rectangular slip is attached across the lower portion of a blank document.",
+      "prompt": "Authored text-free SVG diagram: A blue rectangular slip is attached across the lower portion of a blank document.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-ratify",
+      "kind": "term",
+      "file": "ct-term-ratify.png",
+      "webpFile": "ct-term-ratify.webp",
+      "vectorFile": "ct-term-ratify.svg",
+      "alt": "A hand reaches toward the lower corner of a blank parchment.",
+      "prompt": "Authored text-free SVG diagram: A hand reaches toward the lower corner of a blank parchment.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-impeach",
+      "kind": "term",
+      "file": "ct-term-impeach.png",
+      "webpFile": "ct-term-impeach.webp",
+      "vectorFile": "ct-term-impeach.svg",
+      "alt": "A columned building faces a blank document.",
+      "prompt": "Authored text-free SVG diagram: A columned building faces a blank document.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-unconstitutional",
+      "kind": "term",
+      "file": "ct-term-unconstitutional.png",
+      "webpFile": "ct-term-unconstitutional.webp",
+      "vectorFile": "ct-term-unconstitutional.svg",
+      "alt": "A pair of balanced pans appears beside a blank document.",
+      "prompt": "Authored text-free SVG diagram: A pair of balanced pans appears beside a blank document.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-term-compromise",
+      "kind": "term",
+      "file": "ct-term-compromise.png",
+      "webpFile": "ct-term-compromise.webp",
+      "vectorFile": "ct-term-compromise.svg",
+      "alt": "Two people face arrows converging on a shared gold rectangle.",
+      "prompt": "Authored text-free SVG diagram: Two people face arrows converging on a shared gold rectangle.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-context-connected",
+      "kind": "term",
+      "file": "ct-context-connected.png",
+      "webpFile": "ct-context-connected.webp",
+      "vectorFile": "ct-context-connected.svg",
+      "alt": "Three linked circular wheels, two blue and one gold, contain small open centers.",
+      "prompt": "Authored text-free SVG diagram: Three linked circular wheels, two blue and one gold, contain small open centers.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-context-war",
+      "kind": "term",
+      "file": "ct-context-war.png",
+      "webpFile": "ct-context-war.webp",
+      "vectorFile": "ct-context-war.svg",
+      "alt": "Two long weapons cross at an angle.",
+      "prompt": "Authored text-free SVG diagram: Two long weapons cross at an angle.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "id": "ct-context-nomination",
+      "kind": "term",
+      "file": "ct-context-nomination.png",
+      "webpFile": "ct-context-nomination.webp",
+      "vectorFile": "ct-context-nomination.svg",
+      "alt": "An arrow connects a blank sheet with a person.",
+      "prompt": "Authored text-free SVG diagram: An arrow connects a blank sheet with a person.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    },
+    {
+      "slug": "constitution_grade8",
+      "id": "ct-convention",
+      "file": "ct-convention.png",
+      "src": "C:/Users/cabba/.codex/generated_images/01a1073a-b80d-79a2-84f7-30ef375fdc22/exec-05d5c9f3-abb6-470a-888d-119593b17530.png",
+      "prompt": "Use case: historical-scene. Asset: one educational historical illustration for a Grade 8 Constitution lesson. A warm, grounded watercolor and ink scene of the Philadelphia Constitutional Convention in the summer of 1787. Adult male delegates in historically plausible late eighteenth-century coats and waistcoats, seated and talking around wood tables in the Pennsylvania State House assembly room, with papers, quills and inkpots. The tall windows and shutters are closed; soft summer light slips through narrow gaps. Convey a hot room and serious deliberation, without depicting a famous person as an exact portrait. All papers entirely blank. Muted warm earth colors and restrained detail, clear educational storybook composition. Leave subtle clean margins. No modern suits, electrical lights, microphone, computer, present-day flag, contemporary furniture, readable writing, numbers, titles, labels, logos or watermark. Artwork is an interpretive scene, not a claimed documentary reconstruction.",
+      "alt": "Delegates in eighteenth-century clothing deliberate around wood tables with blank papers and quills in a room with closed shutters.",
+      "title": "Debating a new framework",
+      "caption": "Philadelphia, summer 1787: delegates debated the structure and powers of the federal government. This interpretive scene is not a documentary reconstruction.",
+      "labels": [],
+      "kind": "lesson",
+      "provider": "Built-in image generation",
+      "status": "visual-review-passed",
+      "afterType": "simplified"
+    },
+    {
+      "id": "ct-img-checks",
+      "kind": "lesson",
+      "file": "ct-img-checks.png",
+      "webpFile": "ct-img-checks.webp",
+      "vectorFile": "ct-img-checks.svg",
+      "alt": "Three building and balance symbols form a triangle. Opposing arrows join the top pair, and separate arrows connect each upper symbol with the lower one.",
+      "prompt": "Authored text-free SVG diagram: Three building and balance symbols form a triangle. Opposing arrows join the top pair, and separate arrows connect each upper symbol with the lower one.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending",
+      "title": "Selected checks on power",
+      "afterType": "anchor-chart",
+      "caption": "Congress makes laws and may override a veto. The President may veto a bill and nominate judges; the Senate confirms appointments. Courts review laws and executive actions under the Constitution. The diagram shows selected checks, not every power.",
+      "labels": [
+        {
+          "text": "Congress",
+          "position": "center",
+          "anchorX": 11,
+          "anchorY": 6
+        },
+        {
+          "text": "President",
+          "position": "center",
+          "anchorX": 89,
+          "anchorY": 6
+        },
+        {
+          "text": "Courts",
+          "position": "center",
+          "anchorX": 50,
+          "anchorY": 96
+        },
+        {
+          "text": "Veto",
+          "position": "center",
+          "anchorX": 50,
+          "anchorY": 16
+        },
+        {
+          "text": "Override",
+          "position": "center",
+          "anchorX": 50,
+          "anchorY": 36
+        },
+        {
+          "text": "Senate confirms",
+          "position": "center",
+          "anchorX": 15,
+          "anchorY": 59
+        },
+        {
+          "text": "President nominates",
+          "position": "center",
+          "anchorX": 85,
+          "anchorY": 59
+        },
+        {
+          "text": "Judicial review",
+          "position": "center",
+          "anchorX": 50,
+          "anchorY": 56
+        }
+      ]
+    },
+    {
+      "id": "ct-context-spending",
+      "kind": "term",
+      "file": "ct-context-spending.png",
+      "webpFile": "ct-context-spending.webp",
+      "vectorFile": "ct-context-spending.svg",
+      "alt": "Three small stacks of plain gold coins sit at different heights.",
+      "prompt": "Authored text-free SVG diagram: Three small stacks of plain gold coins sit at different heights.",
+      "provider": "Authored SVG diagram",
+      "status": "visual-review-pending"
+    }
+  ]
+}

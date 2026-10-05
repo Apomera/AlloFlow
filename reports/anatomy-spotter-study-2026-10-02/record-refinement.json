@@ -1,0 +1,10 @@
+{
+  "beforeLfSha256": "c3ab2286e11e55351ed6ef7d72f0eee5b938da96980822dc46c7b7fd87a7b412",
+  "afterLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+  "byteEqual": true,
+  "changes": [
+    "Consume older case/connection navigation origins on a new Spotter study visit",
+    "Show only valid positive timed records with the existing translated label",
+    "Keep scroll support optional in the accepted focus helper"
+  ]
+}

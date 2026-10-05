@@ -91,8 +91,8 @@ describe('Orion Nebula interior navigation', () => {
       ['overview', [1.1, .8, 10.4], [-.144, .336, 3.24]],
       ['trapezium', [.75, .52, 4.2], [-.144, .336, 3.24]],
       ['cavity', [.05, .6, 5.4], [1.4, -2.3, 1]],
-      ['front', [4.2, -1.9, 2.25], [4.56, -2.76, .84]],
-      ['dust', [-2.3, 3.6, 4.2], [-3.12, 3.48, 2.76]]
+      ['front', [7, -4.5, 3.5], [4.56, -2.76, .84]],
+      ['dust', [-6.6, 6.6, 6.8], [-3.6, 4.56, 2.64]]
     ];
     const current = Object.freeze({ ...start, travel: 14.25 });
     for (const [id, eye, aim] of stations) {

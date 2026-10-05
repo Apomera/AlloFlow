@@ -81,6 +81,16 @@ afterEach(() => {
 });
 
 describe('Geometry World compact measurement inspector', () => {
+  it('reserves the portrait touch action rail when feedback is visible', () => {
+    const view = mountTool({ buildToolsOpenSandbox: false, buildToolsOpenLesson: false });
+    const workspace = view.container.querySelector('#geoworld-fs-workspace');
+    expect(workspace.dataset.touchActive).toBe('true');
+    expect(workspace.dataset.buildTools).toBe('closed');
+    const css = view.container.querySelector('[data-gw-workspace-refresh]').textContent;
+    expect(css).toContain('@media(max-width:800px) and (orientation:portrait)');
+    expect(css).toContain('[data-build-tools="closed"][data-touch-active="true"] .gw-action-feedback{box-sizing:border-box;left:12px!important;right:auto!important;transform:none!important;max-width:calc(100% - 108px)!important}');
+  });
+
   it('shows dimensions and accurate volume above a closed native phone disclosure', () => {
     const view = mountTool();
     const card = view.container.querySelector('.gw-measure-card');

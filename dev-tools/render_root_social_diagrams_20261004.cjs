@@ -1,0 +1,5 @@
+'use strict';
+const fs=require('fs'),path=require('path'),{chromium}=require('playwright');
+const root=path.resolve(__dirname,'..'),slugs=['american_revolution_causes_grade5','constitution_grade8','map_skills_grade3'];
+async function main(){const browser=await chromium.launch({headless:true,executablePath:'C:/Users/cabba/AppData/Local/ms-playwright/chromium_headless_shell-1223/chrome-headless-shell-win64/chrome-headless-shell.exe'});try{const page=await browser.newPage();for(const slug of slugs){const folder=path.join(root,'allopacks/media',slug),m=JSON.parse(fs.readFileSync(path.join(folder,'manifest.json')));for(const a of m.assets.filter(a=>a.vectorFile)){const source=fs.readFileSync(path.join(folder,a.vectorFile),'utf8');const w=Number(source.match(/width="(\d+)"/)[1]),h=Number(source.match(/height="(\d+)"/)[1]);await page.setViewportSize({width:w,height:h});await page.setContent('<html><body style="margin:0">'+source+'</body></html>');await page.locator('svg').screenshot({path:path.join(folder,a.file)});}console.log(slug,m.assets.filter(a=>a.vectorFile).length);}}finally{await browser.close();}}
+main().catch(e=>{console.error(e);process.exit(1);});

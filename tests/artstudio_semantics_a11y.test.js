@@ -155,9 +155,23 @@ describe('Art Studio graphic and form semantics', () => {
     expect(html).toContain('id="watercolorCanvas"');
     expect(html).toContain('aria-label="Watercolor painting canvas. Focus and use Arrow keys');
     expect(html).toContain('id="artstudio-watercolor-keyboard-help"');
-    expect(html).toContain('aria-describedby="artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status"');
-    expect(html).toContain('Control+Z Control+Y Meta+Z Meta+Y');
-    expect(html).toContain('Enter Space P Control+Z');
+    const host = document.createElement('div');
+    host.innerHTML = html;
+    const descriptionIds = host.querySelector('#watercolorCanvas').getAttribute('aria-describedby').split(/\s+/);
+    expect(descriptionIds).toEqual(expect.arrayContaining([
+      'artstudio-watercolor-touch-help',
+      'artstudio-watercolor-keyboard-help',
+      'artstudio-watercolor-status',
+      'artstudio-watercolor-navigation-help',
+    ]));
+    for (const descriptionId of descriptionIds) expect(host.querySelector('#' + descriptionId)).not.toBeNull();
+    const shortcuts = host.querySelector('#watercolorCanvas').getAttribute('aria-keyshortcuts').split(/\s+/);
+    expect(shortcuts).toEqual(expect.arrayContaining([
+      'Enter', 'Space', 'Escape', 'P',
+      'Alt+ArrowRight', 'Shift+ArrowRight',
+      'Control+Z', 'Control+Shift+Z', 'Control+Y',
+      'Meta+Z', 'Meta+Shift+Z', 'Meta+Y',
+    ]));
     expect(html).toContain('id="artstudio-watercolor-status"');
     expect(html).not.toContain('id="artstudio-watercolor-status" role="status"');
     expect(html).toContain('id="artstudio-watercolor-undo"');

@@ -1,0 +1,41 @@
+{
+  "runId": "c7eb2488-2026-10-04T12-04-44-712Z",
+  "startedAt": "2026-10-04T12:04:44.715Z",
+  "finishedAt": "2026-10-04T12:04:53.501Z",
+  "report": "reports/anatomy-knee-guide-2026-10-04/knee-guide-units-c7eb2488-2026-10-04T12-04-44-712Z.json",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/anatomy_knee_guide.test.js",
+    "--pool=forks",
+    "--maxWorkers=1",
+    "--no-isolate",
+    "--testTimeout=300000",
+    "--hookTimeout=300000",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=reports/anatomy-knee-guide-2026-10-04/knee-guide-units-c7eb2488-2026-10-04T12-04-44-712Z.json"
+  ],
+  "before": {
+    "stem_lab/stem_tool_anatomy.js": "c7eb2488927953f913f84cbe9a82b88b834aca899c8eed4a649ae3705d72d46f",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "c7eb2488927953f913f84cbe9a82b88b834aca899c8eed4a649ae3705d72d46f",
+    "tests/anatomy_knee_guide.test.js": "45af941d2ee92c00e8ea02d33be570f62fd8eaa98a695695c4b46f372efb487c"
+  },
+  "after": {
+    "stem_lab/stem_tool_anatomy.js": "c7eb2488927953f913f84cbe9a82b88b834aca899c8eed4a649ae3705d72d46f",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "c7eb2488927953f913f84cbe9a82b88b834aca899c8eed4a649ae3705d72d46f",
+    "tests/anatomy_knee_guide.test.js": "45af941d2ee92c00e8ea02d33be570f62fd8eaa98a695695c4b46f372efb487c"
+  },
+  "sourceUnchanged": true,
+  "mirrorsIdentical": true,
+  "exitCode": 0,
+  "error": null,
+  "total": 114,
+  "passed": 114,
+  "skipped": 0,
+  "failed": 0,
+  "success": true,
+  "expectedPassed": 114,
+  "failures": []
+}

@@ -1,0 +1,216 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-symmetry-navigation.js" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+index 77e238ab9..fa406f475 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-symmetry-navigation.js"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+@@ -2468,6 +2468,25 @@ const d = labToolData.artStudio || {};
+           },[watercolorZoom,watercolorFit]);
+           const symmetryPaperRef = React.useRef(null);
+           const [symmetryFit, setSymmetryFit] = React.useState(512);
++          const [symmetryZoom,setSymmetryZoom]=React.useState(1);
++          const [symmetryNavigation,setSymmetryNavigation]=React.useState('paint');
++          const symmetryZoomAnchorRef=React.useRef(null);
++          function cancelSymmetryNavigationGesture(){var canvas=document.getElementById('symmetryCanvas');if(canvas&&canvas._symCancelGesture)canvas._symCancelGesture();}
++          function changeSymmetryNavigation(mode){cancelSymmetryNavigationGesture();setSymmetryNavigation(mode==='pan'?'pan':'paint');}
++          function zoomSymmetryPaper(zoom,reset){
++            if([1,1.5,2,3].indexOf(zoom)<0)return;
++            cancelSymmetryNavigationGesture();var paper=symmetryPaperRef.current,canvas=document.getElementById('symmetryCanvas');
++            if(paper&&canvas){var view=paper.getBoundingClientRect(),rect=canvas.getBoundingClientRect();
++              symmetryZoomAnchorRef.current=reset?{reset:true}:{x:Math.max(0,Math.min(1,(view.left+paper.clientLeft+paper.clientWidth/2-rect.left)/Math.max(1,rect.width))),y:Math.max(0,Math.min(1,(view.top+paper.clientTop+paper.clientHeight/2-rect.top)/Math.max(1,rect.height)))};
++              if(reset){paper.scrollLeft=0;paper.scrollTop=0;}}
++            setSymmetryZoom(zoom);
++          }
++          React.useLayoutEffect(function(){
++            var anchor=symmetryZoomAnchorRef.current,paper=symmetryPaperRef.current,canvas=document.getElementById('symmetryCanvas');if(!anchor||!paper||!canvas)return;
++            if(anchor.reset){paper.scrollLeft=0;paper.scrollTop=0;}
++            else{var view=paper.getBoundingClientRect(),rect=canvas.getBoundingClientRect();paper.scrollLeft+=rect.left+anchor.x*rect.width-view.left-paper.clientLeft-paper.clientWidth/2;paper.scrollTop+=rect.top+anchor.y*rect.height-view.top-paper.clientTop-paper.clientHeight/2;}
++            symmetryZoomAnchorRef.current=null;
++          },[symmetryZoom,symmetryFit]);
+           function changeSymmetrySettings(values) {
+             var canvas=document.getElementById('symmetryCanvas');if(canvas && canvas._symCancelGesture)canvas._symCancelGesture();updMany(values);
+           }
+@@ -2736,7 +2755,10 @@ const d = labToolData.artStudio || {};
+             var workspace=paper.closest('#symmetryFullscreenWorkspace');
+             var measure=function(){
+               if(workspace){var wide=workspace.clientWidth>=850?'true':'false';if(workspace.dataset.symmetryWide!==wide)workspace.dataset.symmetryWide=wide;}
+-              if(paper.clientWidth && paper.clientHeight)setSymmetryFit(Math.max(128,Math.floor(Math.min(paper.clientWidth-24,paper.clientHeight-24))));
++              var bounds=paper.getBoundingClientRect();
++              // Outer geometry stays stable when a zoomed sheet adds scrollbars.
++              var width=bounds.width?bounds.width-2:paper.clientWidth,height=bounds.height?bounds.height-2:paper.clientHeight;
++              if(width&&height)setSymmetryFit(Math.max(128,Math.floor(Math.min(width-24,height-24))));
+             };
+             measure();var observer=typeof ResizeObserver==='function'?new ResizeObserver(measure):null;
+             if(observer){observer.observe(paper);if(workspace)observer.observe(workspace);}window.addEventListener('resize',measure);
+@@ -3088,6 +3110,8 @@ const d = labToolData.artStudio || {};
+             cancelWatercolorNavigationGesture();setWatercolorNavigation('paint');setWatercolorZoom(1);watercolorZoomAnchorRef.current=null;
+             var paper=watercolorPaperRef.current;if(paper){paper.scrollLeft=0;paper.scrollTop=0;}
+           },[watercolorViewOwner]);
++          const symmetryViewOwner=studioPersistenceScope+'|'+(d.symmetryRestoreToken||'');
++          React.useLayoutEffect(function(){cancelSymmetryNavigationGesture();setSymmetryNavigation('paint');setSymmetryZoom(1);symmetryZoomAnchorRef.current=null;var paper=symmetryPaperRef.current;if(paper){paper.scrollLeft=0;paper.scrollTop=0;}},[symmetryViewOwner]);
+           const pixelArtworkOwner = studioPersistenceScope + '|' + (d.pixelRestoreToken || '');
+           if (pixelHistoryRef.current.owner !== pixelArtworkOwner) {
+             pixelHistoryRef.current = { owner: pixelArtworkOwner, undo: [], redo: [] };
+@@ -4011,14 +4035,14 @@ const d = labToolData.artStudio || {};
+           const renderCanvasTouchMode = function (options) {
+             var opts = options || {};
+             var activeValue = opts.activeValue || 'draw';
+-            var mode = d[opts.stateKey] === activeValue ? 'draw' : 'scroll';
++            var mode = opts.mode || (d[opts.stateKey] === activeValue ? 'draw' : 'scroll');
+             return React.createElement("div", { className: "mb-2 rounded-xl border border-slate-300 bg-white/95 p-2" },
+               React.createElement("div", { className: "flex flex-wrap items-center gap-2", role: "group", "aria-label": opts.groupLabel },
+                 React.createElement("span", { className: "mr-1 text-[0.6875rem] font-black text-slate-700" }, "Finger input:"),
+-                React.createElement("button", { type: "button", "aria-pressed": mode === 'scroll', onClick: function () { upd(opts.stateKey, 'scroll'); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'scroll' ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, "Scroll page"),
+-                React.createElement("button", { type: "button", "aria-pressed": mode === 'draw', onClick: function () { upd(opts.stateKey, activeValue); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'draw' ? (opts.activeClass || "bg-indigo-700 text-white") : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, opts.interactLabel || "Draw on canvas")
++                React.createElement("button", { type: "button", "aria-pressed": mode === 'scroll', onClick: function () { if(opts.onChange)opts.onChange('scroll');else upd(opts.stateKey, 'scroll'); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'scroll' ? "bg-slate-900 text-white" : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, "Scroll page"),
++                React.createElement("button", { type: "button", "aria-pressed": mode === 'draw', onClick: function () { if(opts.onChange)opts.onChange(activeValue);else upd(opts.stateKey, activeValue); }, className: "min-h-[40px] rounded-lg px-3 text-xs font-black " + (mode === 'draw' ? (opts.activeClass || "bg-indigo-700 text-white") : "border border-slate-300 bg-white text-slate-700 hover:bg-slate-50") }, opts.interactLabel || "Draw on canvas")
+               ),
+-              React.createElement("p", { id: opts.helpId, 'data-studio-touch-description': 'true', className: "mt-1 text-xs leading-relaxed text-slate-600" }, mode === 'draw'
++              React.createElement("p", { id: opts.helpId, 'data-studio-touch-description': 'true', className: "mt-1 text-xs leading-relaxed text-slate-600" }, mode === 'pan' ? opts.panHelp : mode === 'draw'
+                 ? (opts.activeHelp || "One-finger interaction is active. Choose Scroll page when you want to move past this canvas.")
+                 : (opts.scrollHelp || "One-finger scrolling is active. A stylus and mouse can still interact; choose the second option for finger input."))
+             );
+@@ -7270,7 +7294,8 @@ const d = labToolData.artStudio || {};
+             if (!canvas) return;
+ 
+             canvas.dataset.touchMode = d.symmetryTouchMode === 'draw' ? 'draw' : 'scroll';
+-            canvas.style.touchAction = canvas.dataset.touchMode === 'draw' ? 'none' : 'pan-y';
++            canvas.style.touchAction = symmetryNavigation==='pan' || canvas.dataset.touchMode === 'draw' ? 'none' : 'pan-y';
++            canvas.style.cursor=symmetryNavigation==='pan'?(canvas._symPan?'grabbing':'grab'):'crosshair';
+ 
+             var ctx = canvas.getContext('2d');
+ 
+@@ -7330,10 +7355,11 @@ const d = labToolData.artStudio || {};
+               if (cursor) {
+                 var displayW = canvas.clientWidth || W;
+                 var displayH = canvas.clientHeight || H;
+-                cursor.style.left = ((canvas.offsetLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
+-                cursor.style.top = ((canvas.offsetTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
+-                cursor.style.display = show ? 'block' : 'none';
++                cursor.style.left = ((canvas.offsetLeft || 0) + (canvas.clientLeft || 0) + keyboardCursor.x / W * displayW - 10) + 'px';
++                cursor.style.top = ((canvas.offsetTop || 0) + (canvas.clientTop || 0) + keyboardCursor.y / H * displayH - 10) + 'px';
++                cursor.style.display = show && symmetryNavigation!=='pan' ? 'block' : 'none';
+               }
++              if(symmetryNavigation==='pan'){canvas.setAttribute('aria-label',__alloT('stem.artstudio.sym_navigation_canvas','Symmetry paper navigation. Drag or use Arrow keys to pan; Shift moves farther. Painting is disabled in Pan mode. Choose Paint on paper to resume drawing.'));return;}
+               canvas.setAttribute('aria-label',formatArtStudioLearningText(__alloT('stem.artstudio.sym_workspace_canvas','Symmetry drawing canvas in {pattern} mode with {copies}, using {stroke} and {blend} blending. Origin at {x} percent x, {y} percent y. Keyboard cursor at x {cursorX}, y {cursorY}.'),{
+                 pattern:patternMode==='bilateral'?__alloT('stem.artstudio.a11y_sym_pattern_bilateral','bilateral mirror'):patternMode==='kaleidoscope'?__alloT('stem.artstudio.a11y_sym_pattern_kaleidoscope','kaleidoscope'):__alloT('stem.artstudio.a11y_sym_pattern_rotational','rotational'),
+                 copies:patternMode==='bilateral'?__alloT('stem.artstudio.sym_workspace_reflected','2 reflected copies'):formatArtStudioLearningText(__alloT('stem.artstudio.sym_workspace_folds','{count} folds'),{count:folds}),
+@@ -7501,6 +7527,7 @@ const d = labToolData.artStudio || {};
+             var symmetryRestoreToken = d.symmetryRestoreToken || '';
+             var symmetryOwner=studioPersistenceScope+'|'+symmetryRestoreToken;
+             if (canvas._symOwner!==symmetryOwner || canvas._symSnapshot !== incomingSymmetrySnapshot || canvas._symRestoreToken !== symmetryRestoreToken) {
++              if(canvas._symPan){var previousPanId=canvas._symPan.id;canvas._symPan=null;try{if(previousPanId!=='legacy')canvas.releasePointerCapture(previousPanId);}catch(_){}}
+               canvas._symOwner=symmetryOwner;
+               canvas._symSnapshot = incomingSymmetrySnapshot;
+               canvas._symRestoreToken = symmetryRestoreToken;
+@@ -7712,6 +7739,7 @@ const d = labToolData.artStudio || {};
+             }
+ 
+             function finishPointer(e, cancelled) {
++              if(canvas._symPan){var pan=canvas._symPan;if(e&&(e.pointerId===undefined?'legacy':e.pointerId)!==pan.id)return;canvas._symPan=null;canvas.style.cursor=symmetryNavigation==='pan'?'grab':'crosshair';try{if(pan.id!=='legacy')canvas.releasePointerCapture(pan.id);}catch(_){}return;}
+               if (!canvas._symDrawing || (e && (e.pointerId===undefined?'legacy':e.pointerId)!==canvas._symPointerId)) return;
+               var pointerId=canvas._symPointerId;
+               var before = canvas._symStrokeStartSnapshot;
+@@ -7744,8 +7772,13 @@ const d = labToolData.artStudio || {};
+             canvas._symCancelGesture=function(){finishPointer(null,true);};
+             canvas._symRefreshHistory=refreshSymmetryHistory;
+             canvas.onpointerdown = function (e) {
+-              if(canvas._symRestoring || canvas._symDrawing)return;
++              if(canvas._symRestoring || canvas._symDrawing || canvas._symPan || e.isPrimary===false)return;
+               if (e.button !== undefined && e.button !== 0) return;
++              if(symmetryNavigation==='pan'){
++                var paper=symmetryPaperRef.current;if(!paper || !Number.isFinite(e.clientX) || !Number.isFinite(e.clientY))return;
++                e.preventDefault();canvas._symPan={id:e.pointerId===undefined?'legacy':e.pointerId,x:e.clientX,y:e.clientY,left:paper.scrollLeft,top:paper.scrollTop};
++                try{canvas.focus({preventScroll:true});}catch(_){canvas.focus();}canvas._symKeyboardFocused=false;updateKeyboardCursor(false);canvas.style.cursor='grabbing';try{if(e.pointerId!==undefined)canvas.setPointerCapture(e.pointerId);}catch(_){}return;
++              }
+               if (!canvasAllowsFingerInteraction(canvas, e)) return;
+               e.preventDefault();
+               canvas._symDrawing = true;
+@@ -7762,6 +7795,7 @@ const d = labToolData.artStudio || {};
+               try { canvas.setPointerCapture(e.pointerId); } catch (err) {}
+             };
+             canvas.onpointermove = function (e) {
++              if(canvas._symPan){var pan=canvas._symPan,paper=symmetryPaperRef.current;if(!paper || (e.pointerId===undefined?'legacy':e.pointerId)!==pan.id || !Number.isFinite(e.clientX) || !Number.isFinite(e.clientY))return;e.preventDefault();paper.scrollLeft=pan.left+pan.x-e.clientX;paper.scrollTop=pan.top+pan.y-e.clientY;return;}
+               if (!canvas._symDrawing || (e.pointerId===undefined?'legacy':e.pointerId)!==canvas._symPointerId) return;
+               e.preventDefault();
+               if (strokeMode === 'line') {
+@@ -7783,7 +7817,7 @@ const d = labToolData.artStudio || {};
+             canvas.onfocus = function () {canvas._symKeyboardFocused=true;updateKeyboardCursor(true);};
+             canvas.onblur = function () {canvas._symKeyboardFocused=false;updateKeyboardCursor(false);};
+             canvas.onkeydown = function (event) {
+-              if(event.key==='Escape' && canvas._symDrawing){event.preventDefault();finishPointer(null,true);return;}
++              if(event.key==='Escape' && (canvas._symDrawing || canvas._symPan)){event.preventDefault();finishPointer(null,true);return;}
+               var historyKey = String(event.key || '').toLowerCase();
+               if ((event.ctrlKey || event.metaKey) && historyKey === 'z') {
+                 event.preventDefault();
+@@ -7795,6 +7829,14 @@ const d = labToolData.artStudio || {};
+                 redoSymmetry();
+                 return;
+               }
++              if(symmetryNavigation==='pan'){
++                var paper=symmetryPaperRef.current,step=event.shiftKey?160:48;if(!paper)return;
++                if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End'].indexOf(event.key)>=0)finishPointer(null,true);
++                if(event.key==='ArrowLeft')paper.scrollLeft-=step;else if(event.key==='ArrowRight')paper.scrollLeft+=step;else if(event.key==='ArrowUp')paper.scrollTop-=step;else if(event.key==='ArrowDown')paper.scrollTop+=step;
++                else if(event.key==='Home'){paper.scrollLeft=0;paper.scrollTop=0;}else if(event.key==='End'){paper.scrollLeft=paper.scrollWidth-paper.clientWidth;paper.scrollTop=paper.scrollHeight-paper.clientHeight;}
++                else if(event.key!=='Enter' && event.key!==' ')return;
++                event.preventDefault();updateKeyboardCursor(false);return;
++              }
+               if(canvas._symRestoring || canvas._symDrawing)return;
+               canvas._symKeyboardFocused=true;
+               var step = event.altKey ? 1 : 10;
+@@ -10932,7 +10974,8 @@ const d = labToolData.artStudio || {};
+                 #symmetryFullscreenWorkspace>*{margin-top:0;min-width:0}
+                 .artstudio-symmetry-header{grid-row:1;display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:8px;background:#fff;color:#0f172a;padding:8px;border:1px solid #cbd5e1;border-radius:12px}
+                 .artstudio-symmetry-header .symmetry-actions{display:flex;flex-wrap:wrap;gap:4px}
+-                #symmetryCanvasContainer{grid-row:2;height:min(76dvh,820px);padding:12px;background:#0f172a;display:flex;align-items:center;justify-content:center;overflow:hidden;border:1px solid #64748b;border-radius:12px}
++                #symmetryCanvasContainer{grid-row:2;height:min(76dvh,820px);padding:12px;background:#0f172a;display:flex;overflow:auto;overscroll-behavior:contain;border:1px solid #64748b;border-radius:12px}
++                .artstudio-symmetry-sheet{position:relative;flex:0 0 auto;margin:auto;max-width:none!important}
+                 #symmetryFullscreenWorkspace #symmetryCanvas{width:var(--symmetry-side)!important;height:var(--symmetry-side)!important;max-height:none!important;max-width:none!important}
+                 .artstudio-symmetry-controls{grid-row:3;padding:10px;background:#fff;color:#0f172a;border:1px solid #cbd5e1;border-radius:12px}
+                 .artstudio-symmetry-controls>summary{min-height:44px;padding:10px 0;font-size:12px;font-weight:800;cursor:pointer}
+@@ -10975,6 +11018,14 @@ const d = labToolData.artStudio || {};
+               React.createElement('details',{className:'artstudio-symmetry-controls',open:!isCompactStudio||undefined},
+                 React.createElement('summary',null,__alloT('stem.artstudio.sym_workspace_controls','Pattern, brush, and colors')),
+                 React.createElement('div',{className:'space-y-3'},
++                React.createElement('fieldset',{id:'artstudio-symmetry-paper-view',className:'min-w-0 rounded-lg border border-violet-300 bg-violet-50 p-2'},
++                  React.createElement('legend',{className:'text-xs font-bold'},__alloT('stem.artstudio.sym_paper_view','Paper view')),
++                  React.createElement('div',{className:'grid grid-cols-2 gap-2'},[['paint',__alloT('stem.artstudio.sym_paint_mode','Paint on paper')],['pan',__alloT('stem.artstudio.sym_pan_mode','Pan paper')]].map(function(option){return React.createElement('button',{id:'artstudio-symmetry-view-'+option[0],key:option[0],type:'button','aria-pressed':symmetryNavigation===option[0],'aria-describedby':'artstudio-symmetry-navigation-help',onClick:function(){changeSymmetryNavigation(option[0]);},className:'rounded-lg border border-violet-700 px-2 text-xs font-bold '+(symmetryNavigation===option[0]?'bg-violet-700 text-white':'bg-white text-violet-900')},option[1]);})),
++                  React.createElement('label',{htmlFor:'artstudio-symmetry-zoom',className:'my-2 block text-xs font-bold'},__alloT('stem.artstudio.sym_paper_zoom','Paper zoom')),
++                  React.createElement('select',{id:'artstudio-symmetry-zoom',value:symmetryZoom,'aria-describedby':'artstudio-symmetry-navigation-help',onChange:function(event){zoomSymmetryPaper(Number(event.target.value));},className:'w-full rounded-lg border border-violet-700 bg-white px-2 text-xs'},[1,1.5,2,3].map(function(zoom){return React.createElement('option',{key:zoom,value:zoom},zoom===1?__alloT('stem.artstudio.sym_fit_paper','Fit whole paper'):Math.round(zoom*100)+'%');})),
++                  React.createElement('button',{id:'artstudio-symmetry-fit',type:'button','aria-describedby':'artstudio-symmetry-navigation-help',onClick:function(){zoomSymmetryPaper(1,true);},className:'my-2 w-full rounded-lg border border-violet-700 bg-white px-2 text-xs font-bold text-violet-900'},__alloT('stem.artstudio.sym_fit_paper','Fit whole paper')),
++                  React.createElement('p',{id:'artstudio-symmetry-navigation-help',className:'text-xs text-violet-900'},__alloT('stem.artstudio.sym_navigation_help','Zoom changes the view, not your artwork or brush size on the sheet. Choose Pan to drag with a mouse, stylus, or finger; Arrow keys pan, and Shift moves farther. Enter and Space do not paint in Pan mode. Fit whole paper returns to the complete sheet.'))
++                ),
+ 
+               React.createElement("div", { className: "flex items-center gap-2 mb-2 flex-wrap" },
+ 
+@@ -11139,6 +11190,9 @@ const d = labToolData.artStudio || {};
+ 
+               renderCanvasTouchMode({
+                 stateKey: 'symmetryTouchMode',
++                mode:symmetryNavigation==='pan'?'pan':undefined,
++                onChange:function(mode){changeSymmetryNavigation('paint');changeSymmetrySetting('symmetryTouchMode',mode);},
++                panHelp:__alloT('stem.artstudio.sym_navigation_canvas','Symmetry paper navigation. Drag or use Arrow keys to pan; Shift moves farther. Painting is disabled in Pan mode. Choose Paint on paper to resume drawing.'),
+                 groupLabel: 'Symmetry touch interaction',
+                 helpId: 'artstudio-symmetry-touch-help',
+                 interactLabel: 'Draw pattern',
+@@ -11149,17 +11203,17 @@ const d = labToolData.artStudio || {};
+ 
+               )),
+               React.createElement("p", { id: "artstudio-symmetry-keyboard-help", className: "text-xs text-slate-600 text-center" },
+-                __alloT('stem.artstudio.sym_workspace_keyboard','Pointer: drag for dots, freehand, or symmetric erasing; in Line mode, drag from start to end. Stabilization softens hand jitter, and optional pen pressure changes stylus width. Pattern changes apply to new marks without flattening existing artwork. Escape cancels an unfinished line. Keyboard: Arrow keys move the cursor; hold Shift with an Arrow key to draw a line; Space or Enter stamps marks; Home returns to the pattern origin; Alt makes one-pixel moves; Ctrl or Command+Z undoes and Shift+Ctrl or Command+Z redoes.')
++                symmetryNavigation==='pan'?__alloT('stem.artstudio.sym_navigation_keyboard',"Pan mode: drag to move the paper. Arrow keys pan; Shift moves farther. Home and End reach the viewport edges. Enter and Space do not draw. Escape ends an active pan. Ctrl or Command+Z undoes artwork; Shift+Ctrl or Command+Z redoes."):__alloT('stem.artstudio.sym_workspace_keyboard','Pointer: drag for dots, freehand, or symmetric erasing; in Line mode, drag from start to end. Stabilization softens hand jitter, and optional pen pressure changes stylus width. Pattern changes apply to new marks without flattening existing artwork. Escape cancels an unfinished line. Keyboard: Arrow keys move the cursor; hold Shift with an Arrow key to draw a line; Space or Enter stamps marks; Home returns to the pattern origin; Alt makes one-pixel moves; Ctrl or Command+Z undoes and Shift+Ctrl or Command+Z redoes.')
+               ),
+               React.createElement("div", {id:'symmetryCanvasContainer',ref:symmetryPaperRef},
+-              React.createElement("div", { className: "relative mx-auto w-fit max-w-full overflow-hidden rounded-xl", style: {width:symmetryFit,height:symmetryFit, background: d.symBackgroundMode === 'light' ? '#f8fafc' : d.symBackgroundMode === 'transparent' ? 'repeating-conic-gradient(#e2e8f0 0 25%,#ffffff 0 50%) 0 / 20px 20px' : '#0f172a' } },
++              React.createElement("div", { className: "artstudio-symmetry-sheet overflow-hidden rounded-xl", style: {width:Math.round(symmetryFit*symmetryZoom),height:Math.round(symmetryFit*symmetryZoom), background: d.symBackgroundMode === 'light' ? '#f8fafc' : d.symBackgroundMode === 'transparent' ? 'repeating-conic-gradient(#e2e8f0 0 25%,#ffffff 0 50%) 0 / 20px 20px' : '#0f172a' } },
+                 React.createElement("canvas", { tabIndex: 0, id: 'symmetryCanvas', ref: symmetryRef, width: 1024, height: 1024, role: "img",
+                   'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_symmetry_canvas', 'Symmetry drawing canvas in {value1} mode, using {value2} and {value3} blending. Origin at {value4} percent x, {value5} percent y.'), { value1: ((d.symPatternMode || (d.symMirrorOnly ? 'kaleidoscope' : 'rotate')) === 'bilateral' ? __alloT('stem.artstudio.a11y_sym_pattern_bilateral', 'bilateral mirror') : (d.symPatternMode || (d.symMirrorOnly ? 'kaleidoscope' : 'rotate')) === 'kaleidoscope' ? __alloT('stem.artstudio.a11y_sym_pattern_kaleidoscope', 'kaleidoscope') : __alloT('stem.artstudio.a11y_sym_pattern_rotational', 'rotational')), value2: ((d.symStrokeMode || 'freehand') === 'dots' ? __alloT('stem.artstudio.a11y_sym_stroke_dots', 'dot stamps') : (d.symStrokeMode || 'freehand') === 'line' ? __alloT('stem.artstudio.a11y_sym_stroke_line', 'straight lines') : (d.symStrokeMode || 'freehand') === 'eraser' ? __alloT('stem.artstudio.a11y_sym_stroke_eraser', 'symmetric erasing') : __alloT('stem.artstudio.a11y_sym_stroke_freehand', 'continuous freehand')), value3: (d.symBlendMode === 'glow' ? __alloT('stem.artstudio.a11y_blend_glow', 'glow') : __alloT('stem.artstudio.a11y_blend_normal', 'normal')), value4: Math.round((isFinite(Number(d.symCenterX)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterX))) : 0.5) * 100), value5: Math.round((isFinite(Number(d.symCenterY)) ? Math.max(0.1, Math.min(0.9, Number(d.symCenterY))) : 0.5) * 100) }),
+-                  'aria-describedby': "artstudio-symmetry-touch-help artstudio-symmetry-keyboard-help",
+-                  'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home Enter Space Escape Control+Z Meta+Z Control+Shift+Z Meta+Shift+Z Control+Y Meta+Y",
++                  'aria-describedby': "artstudio-symmetry-touch-help artstudio-symmetry-keyboard-help artstudio-symmetry-navigation-help",
++                  'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Shift+ArrowUp Shift+ArrowDown Shift+ArrowLeft Shift+ArrowRight Alt+ArrowUp Alt+ArrowDown Alt+ArrowLeft Alt+ArrowRight Home End Enter Space Escape Control+Z Meta+Z Control+Shift+Z Meta+Shift+Z Control+Y Meta+Y",
+                   key: 'sym-' + (d.symmetryClear || 0),
+                   className: "relative z-0 block max-w-full flex-shrink-0 cursor-crosshair rounded-xl border-2 border-pink-200 bg-transparent shadow-lg focus-visible:ring-4 focus-visible:ring-cyan-300 focus-visible:ring-offset-2 focus-visible:ring-offset-slate-900",
+-                  style: { '--symmetry-side':symmetryFit+'px',width:symmetryFit,height:symmetryFit, background: 'transparent', touchAction: d.symmetryTouchMode === 'draw' ? 'none' : 'pan-y' } }),
++                  style: { '--symmetry-side':Math.round(symmetryFit*symmetryZoom)+'px',width:Math.round(symmetryFit*symmetryZoom),height:Math.round(symmetryFit*symmetryZoom), background: 'transparent', touchAction: symmetryNavigation==='pan' || d.symmetryTouchMode === 'draw' ? 'none' : 'pan-y' } }),
+                 d.symShowGuides === false ? null : (function() {
+                   var guidePattern = ['rotate', 'kaleidoscope', 'bilateral'].indexOf(d.symPatternMode) !== -1 ? d.symPatternMode : (d.symMirrorOnly ? 'kaleidoscope' : 'rotate');
+                   var guideFolds = Math.max(2, Math.min(24, parseInt(d.symmetryFolds, 10) || 6));

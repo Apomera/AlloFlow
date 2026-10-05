@@ -1,0 +1,38 @@
+{
+  "checks": [
+    "The water field guide opens a close view of the measured jug and empty pot without filling or advancing time.",
+    "A level carry and a cancelled tipped jug return all preview water, with no food, heat or time changes.",
+    "Wrong cookware and sideways tipping do not fill the pasta pot.",
+    "The real release location is checked again so a previously ready tip cannot fill after moving away.",
+    "A completed jug carry fills the exact two-serving recipe measure once, stays cool until heated and restores on reload.",
+    "Grabbing the jug from another cooking mode selects Move while keeping the camera and canvas steady.",
+    "Filled, heated, cooking and drained pots reject another jug transfer without replacing water or resetting temperature.",
+    "The jug route opens and focuses the equivalent keyboard fill action without performing it automatically.",
+    "The sauce quest progresses through a real jug fill, burner controls and the recorded tray handoff while tool launches alone create no cooking evidence.",
+    "A checked pasta batch routes to native pot-and-colander draining and retains its equivalent keyboard hold control.",
+    "A ready sauce quest opens the drained-pasta colander handoff and focuses its correct keyboard combine equivalent.",
+    "Missing garlic routes to mincing, then its actual bowl and keyboard transfer before the quest offers combining.",
+    "Real phone pickup, carry, tip and release fills the exact four-serving mushroom water measure.",
+    "Real phone pickup, carry, tip and release fills the exact four-serving tomato water measure.",
+    "Touch cancellation, blur, external cooking changes and resize return fresh water without a stray fill action.",
+    "The water guide and interaction fit compact screens and pass desktop, phone and forced-color accessibility scans.",
+    "Finished and replay cooks allow observation while fresh-water transfers stay locked.",
+    "Graphics-context loss returns the preview jug and leaves pot filling usable through existing controls."
+  ],
+  "errors": [],
+  "accessibility": [
+    {
+      "name": "Desktop measured water and field guide",
+      "violations": []
+    },
+    {
+      "name": "390px fresh-water interaction",
+      "violations": []
+    },
+    {
+      "name": "320px forced colors",
+      "violations": []
+    }
+  ],
+  "pass": true
+}

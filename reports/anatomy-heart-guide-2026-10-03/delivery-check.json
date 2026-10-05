@@ -1,0 +1,517 @@
+{
+  "date": "2026-10-03",
+  "sourceSha256": "9e383a1448ed155a71ed5734909e557657387c1ab5f495f7fe5d959bb1bb4f98",
+  "runtimeMirrorsIdentical": true,
+  "syntaxPassed": true,
+  "onlyHeartRendererAndScopedCssChanged": true,
+  "authoredAtlasData": {
+    "characters": 309592,
+    "sha256": "a54731f78e7c82243e53fe231eae3548233ab62d66c27a81493251c4f1394b87",
+    "unchanged": true
+  },
+  "originalNarrativesUnchanged": 8,
+  "originalHeartPathsRetained": 6,
+  "catalogs": {
+    "pairs": 4,
+    "englishKeys": 69,
+    "nativeTranslations": 207,
+    "registeredValues": 552,
+    "heartValuesAndAnatomyNamespaceIdentical": true,
+    "unrelatedBytesPreserved": true,
+    "preExistingEnglishDifference": "39 stem.perception keys; preserved independently in each file",
+    "currentScopedCheck": {
+      "checkedAt": "2026-10-03T18:43:39.258Z",
+      "success": true,
+      "onlyOffScopeChanges": true,
+      "registeredValues": 552,
+      "files": [
+        {
+          "path": "ui_strings.js",
+          "testedSha256": "baca3a35fe9421bd7d4666280be1062118e616a32b7b0ef6bae70262066e6038",
+          "currentSha256": "48d09b0027786260f682e546916430ae4c5a12a9b887ac112feb36c4470bd70f",
+          "anatomyNamespaceSha256": "50c04d63bc3563c5d966248d871108cca35fe0b4d462efad0bb71f8ab85a0e98",
+          "anatomyNamespaceUnchanged": true,
+          "heartValuesUnchanged": true,
+          "registeredKeys": 69,
+          "offScopeDifferences": [
+            {
+              "path": "stem.bridgelab.paired_interval_scope",
+              "after": "A is the selected notebook reference; B is the current experiment. Both use the pinned and inspected times shown here."
+            },
+            {
+              "path": "stem.bridgelab.paired_interval_title",
+              "after": "Compare energy between these moments"
+            },
+            {
+              "path": "stem.dinolab.find_plate_group",
+              "after": "Three reference views of the exposed fragment"
+            },
+            {
+              "path": "stem.dinolab.find_plate_preview_label",
+              "after": "{view} reference preview."
+            },
+            {
+              "path": "stem.dinolab.find_plate_caption",
+              "after": "The three previews show {coord} with {look}, using the same framing."
+            },
+            {
+              "path": "stem.dinolab.find_plate_hint",
+              "after": "Compare how one fragment’s outline changes with viewpoint. Looking from another direction can reveal features hidden by the first view."
+            },
+            {
+              "path": "stem.dinolab.find_plate_fallback",
+              "after": "Use the view buttons to inspect the fragment in 3D when previews are unavailable."
+            }
+          ]
+        },
+        {
+          "path": "desktop/web-app/public/ui_strings.js",
+          "testedSha256": "63e5663b394fd458b2af8630e3e2e104a65f389055c7646fba50ecb7f22228b2",
+          "currentSha256": "48d09b0027786260f682e546916430ae4c5a12a9b887ac112feb36c4470bd70f",
+          "anatomyNamespaceSha256": "50c04d63bc3563c5d966248d871108cca35fe0b4d462efad0bb71f8ab85a0e98",
+          "anatomyNamespaceUnchanged": true,
+          "heartValuesUnchanged": true,
+          "registeredKeys": 69,
+          "offScopeDifferences": [
+            {
+              "path": "stem.perception.close_study_review",
+              "after": "Close study review"
+            },
+            {
+              "path": "stem.perception.difference_from_reference",
+              "after": "Difference from reference"
+            },
+            {
+              "path": "stem.perception.end_repeated_study",
+              "after": "End repeated study"
+            },
+            {
+              "path": "stem.perception.match_range",
+              "after": "Match range"
+            },
+            {
+              "path": "stem.perception.median_difference",
+              "after": "Median difference"
+            },
+            {
+              "path": "stem.perception.median_match",
+              "after": "Median match"
+            },
+            {
+              "path": "stem.perception.record_match",
+              "after": "Record match"
+            },
+            {
+              "path": "stem.perception.recorded_match",
+              "after": "Recorded match"
+            },
+            {
+              "path": "stem.perception.repeat_saved_settings",
+              "after": "Repeat these settings"
+            },
+            {
+              "path": "stem.perception.repeated_study",
+              "after": "Repeated matching study"
+            },
+            {
+              "path": "stem.perception.reveal_saved_study",
+              "after": "Reveal saved study"
+            },
+            {
+              "path": "stem.perception.reveal_study_results",
+              "after": "Reveal study results"
+            },
+            {
+              "path": "stem.perception.review_study",
+              "after": "Review study"
+            },
+            {
+              "path": "stem.perception.rgb_steps",
+              "after": "RGB-code steps"
+            },
+            {
+              "path": "stem.perception.saved_study_hidden",
+              "after": "Three matches are saved. Reveal this study to review its drawing values together."
+            },
+            {
+              "path": "stem.perception.saved_study_revealed",
+              "after": "Saved study drawing values revealed."
+            },
+            {
+              "path": "stem.perception.saved_study_review",
+              "after": "Saved study review"
+            },
+            {
+              "path": "stem.perception.saved_trial_number",
+              "after": "Repeated study · trial {trial} of 3"
+            },
+            {
+              "path": "stem.perception.start_three_matches",
+              "after": "Start three matches"
+            },
+            {
+              "path": "stem.perception.starting_value",
+              "after": "Starting value"
+            },
+            {
+              "path": "stem.perception.study_all_recorded",
+              "after": "All three matches are recorded. Reveal the results, or end the study to return to free matching."
+            },
+            {
+              "path": "stem.perception.study_complete",
+              "after": "Three matches recorded. Reveal the study results when you are ready."
+            },
+            {
+              "path": "stem.perception.study_ended",
+              "after": "Repeated study ended. Recorded matches remain in your notebook."
+            },
+            {
+              "path": "stem.perception.study_expired",
+              "after": "The experiment or notebook changed. The repeated study ended; recorded matches remain in the notebook."
+            },
+            {
+              "path": "stem.perception.study_frozen_hint",
+              "after": "Surrounding settings stay fixed during this study. The notebook and pinned view return after recording or ending the study."
+            },
+            {
+              "path": "stem.perception.study_group_conflict",
+              "after": "These matches have different settings or duplicate trial numbers. Review them individually or repeat the settings; they cannot form one study summary."
+            },
+            {
+              "path": "stem.perception.study_incomplete_group",
+              "after": "{count} of 3 matches remain in this notebook. Review individual observations or repeat their settings to make a new study."
+            },
+            {
+              "path": "stem.perception.study_next_match",
+              "after": "Match {trial} of 3. Adjust the comparison, choose your impression, then record it."
+            },
+            {
+              "path": "stem.perception.study_notebook_paused",
+              "after": "Notebook observations are hidden while you make these matches. They return after recording all three matches or ending the study."
+            },
+            {
+              "path": "stem.perception.study_reference_value",
+              "after": "Fixed reference: {value} {unit}."
+            },
+            {
+              "path": "stem.perception.study_results_hidden",
+              "after": "Three matches recorded. Use Reveal study results in the controls to see their drawing values, median, and range."
+            },
+            {
+              "path": "stem.perception.study_results_revealed",
+              "after": "All three study matches are revealed."
+            },
+            {
+              "path": "stem.perception.study_review_opened",
+              "after": "Saved study opened for review."
+            },
+            {
+              "path": "stem.perception.study_scene_progress",
+              "after": "{count} of 3 matches recorded. Make each match by eye with the same surroundings."
+            },
+            {
+              "path": "stem.perception.study_start_hint",
+              "after": "Try three separate matches with the reference and surroundings held fixed. Starting positions vary; numbers stay hidden until all three are recorded."
+            },
+            {
+              "path": "stem.perception.study_summary_hint",
+              "after": "The median is the middle of your three matches; the range spans their lowest and highest values. These describe this small set of drawing matches, not a score. Try another study with different surroundings to compare your impressions."
+            },
+            {
+              "path": "stem.perception.study_trial_progress",
+              "after": "Match {trial} of 3. Adjust the comparison and choose an impression below. Your note is saved with this match; the next match starts with a blank note."
+            },
+            {
+              "path": "stem.perception.three_recorded_matches",
+              "after": "Three recorded matches"
+            },
+            {
+              "path": "stem.perception.trial_label",
+              "after": "Trial"
+            },
+            {
+              "path": "stem.bridgelab.paired_interval_scope",
+              "after": "A is the selected notebook reference; B is the current experiment. Both use the pinned and inspected times shown here."
+            },
+            {
+              "path": "stem.bridgelab.paired_interval_title",
+              "after": "Compare energy between these moments"
+            },
+            {
+              "path": "stem.dinolab.find_plate_group",
+              "after": "Three reference views of the exposed fragment"
+            },
+            {
+              "path": "stem.dinolab.find_plate_preview_label",
+              "after": "{view} reference preview."
+            },
+            {
+              "path": "stem.dinolab.find_plate_caption",
+              "after": "The three previews show {coord} with {look}, using the same framing."
+            },
+            {
+              "path": "stem.dinolab.find_plate_hint",
+              "after": "Compare how one fragment’s outline changes with viewpoint. Looking from another direction can reveal features hidden by the first view."
+            },
+            {
+              "path": "stem.dinolab.find_plate_fallback",
+              "after": "Use the view buttons to inspect the fragment in 3D when previews are unavailable."
+            }
+          ]
+        },
+        {
+          "path": "lang/french.js",
+          "testedSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+          "currentSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+          "anatomyNamespaceSha256": "989b3eef57d1d8fd3855e2890d79f00a98b6cda62c29623e914370acfae263e5",
+          "anatomyNamespaceUnchanged": true,
+          "heartValuesUnchanged": true,
+          "registeredKeys": 69,
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/lang/french.js",
+          "testedSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+          "currentSha256": "b2900e1acb576d06493be1511ad2ef8e65a3f59fcd64194f8870ebc96dc11cdf",
+          "anatomyNamespaceSha256": "989b3eef57d1d8fd3855e2890d79f00a98b6cda62c29623e914370acfae263e5",
+          "anatomyNamespaceUnchanged": true,
+          "heartValuesUnchanged": true,
+          "registeredKeys": 69,
+          "offScopeDifferences": []
+        },
+        {
+          "path": "lang/spanish_latin_america.js",
+          "testedSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+          "currentSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+          "anatomyNamespaceSha256": "468e1f63bc12ab15161e39794177db6615ad2d680dd0d777d355d20dd5c61506",
+          "anatomyNamespaceUnchanged": true,
+          "heartValuesUnchanged": true,
+          "registeredKeys": 69,
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+          "testedSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+          "currentSha256": "43062f5619a14eed7699af8d6778d009c3b0d38fd25109274310d411cb0e33a7",
+          "anatomyNamespaceSha256": "468e1f63bc12ab15161e39794177db6615ad2d680dd0d777d355d20dd5c61506",
+          "anatomyNamespaceUnchanged": true,
+          "heartValuesUnchanged": true,
+          "registeredKeys": 69,
+          "offScopeDifferences": []
+        },
+        {
+          "path": "lang/arabic.js",
+          "testedSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+          "currentSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+          "anatomyNamespaceSha256": "f5fa7ac01f74529120b2f1a83bcf0c991a433ad3b2c3e7b325465e5fadb14191",
+          "anatomyNamespaceUnchanged": true,
+          "heartValuesUnchanged": true,
+          "registeredKeys": 69,
+          "offScopeDifferences": []
+        },
+        {
+          "path": "desktop/web-app/public/lang/arabic.js",
+          "testedSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+          "currentSha256": "fc753e0bd37db0f805ac62af952f516c1305731ffad0a62caa984e5d55b6c13e",
+          "anatomyNamespaceSha256": "f5fa7ac01f74529120b2f1a83bcf0c991a433ad3b2c3e7b325465e5fadb14191",
+          "anatomyNamespaceUnchanged": true,
+          "heartValuesUnchanged": true,
+          "registeredKeys": 69,
+          "offScopeDifferences": []
+        }
+      ],
+      "pairs": [
+        {
+          "path": "ui_strings.js",
+          "heartValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        },
+        {
+          "path": "lang/french.js",
+          "heartValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        },
+        {
+          "path": "lang/spanish_latin_america.js",
+          "heartValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        },
+        {
+          "path": "lang/arabic.js",
+          "heartValuesIdentical": true,
+          "anatomyNamespaceIdentical": true,
+          "fullFilesIdentical": true
+        }
+      ]
+    },
+    "currentFullFilePairsIdentical": true
+  },
+  "focusedTests": {
+    "passed": 404,
+    "heart": 114,
+    "alveolus": 108,
+    "kidney": 74,
+    "gallery": 64,
+    "scale": 28,
+    "selectedScience": 16,
+    "unselectedScienceSkipped": 139
+  },
+  "browser": {
+    "run": "runs/browser-9e383a14-01",
+    "journeys": 2,
+    "accessibilityScans": 5,
+    "violations": 0,
+    "pageErrors": 0,
+    "horizontalOverflow": false,
+    "markerIntersections": 0,
+    "minTextContrast": 6.4700447145121895,
+    "minNumericMarkerContrast": 7.562998081458594,
+    "minControlHeight": 48.390625,
+    "minControlWidth": 103.53125,
+    "minNumericMarkerSize": 15.299999999999999,
+    "normalHtmlText": 16,
+    "largerHtmlText": 17,
+    "oxygenSymbolsLtrIsolated": true,
+    "independentlyReviewedCaptures": [
+      {
+        "name": "desktop-heart-clinical-step-4.png",
+        "sha256": "5b071bfab32a310048e5c2c6feb8a469370748625fe25178c38af965c2ca895d"
+      },
+      {
+        "name": "desktop-light-heart-guide.png",
+        "sha256": "6c781b04b9b5fae6599df435f9025d66aad4cb53a7e3e350b5f336a0e420c887"
+      },
+      {
+        "name": "phone-light-heart-guide.png",
+        "sha256": "cf9abc2f4aae3222411ef58d31e3a7795e4d0842e2299f8e669c6355356af815"
+      },
+      {
+        "name": "phone-dark-heart-guide.png",
+        "sha256": "9d66779f525cc181cf7122aac35818a6509be5b0d8ade4bf5efd8252f5968bd9"
+      },
+      {
+        "name": "phone-arabic-dark-larger-heart-guide.png",
+        "sha256": "9fc9263fa73993ca46e485340066ad73878fe3d5c45339f2a3bbbec38528e926"
+      },
+      {
+        "name": "phone-forced-colors-heart-guide.png",
+        "sha256": "7152f6b444d02fe8b4da11ce3f480a32d271565dd1f7823f6984962be8ef49ca"
+      }
+    ]
+  },
+  "evidence": [
+    {
+      "name": "heart-guide-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "sha256": "e381ddd83b368e7e6f8ca557e6a4c26b8a083e69d9c565345886bf12998bcb33"
+    },
+    {
+      "name": "heart-guide-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "sha256": "939cf392fad075e11623ffb958ad1f16a59d2cadc4c3c4b6aff2fed3d2a13370"
+    },
+    {
+      "name": "alveolus-guide-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "sha256": "9fbb4855f59fe2200df14c74171b6b2e5e03a55a37ae9a375446ead508f47720"
+    },
+    {
+      "name": "alveolus-guide-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "sha256": "94165c1bab0d858f9b860bbb11fe0e8c31f2b7e5467ea553a30a43e94b50dabc"
+    },
+    {
+      "name": "kidney-guide-regression-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "sha256": "ed48981f0e3c5965d66588c4f8228bc89cd157648a2c84e988fed05b1e1f2399"
+    },
+    {
+      "name": "kidney-guide-regression-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "sha256": "8638d362dc94d7395329b2d16a4109e7cf7d53958415816b75b89e0dbf1dbb49"
+    },
+    {
+      "name": "lens-gallery-regression-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "sha256": "ba4fcb10e7eafc10d1480430d78ccc26c7a0f48ca59d79090cbf178debcceae2"
+    },
+    {
+      "name": "lens-gallery-regression-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "sha256": "54f29888ad6f25686655efb4aa6cbe59920180b0201cc7ad2b7732e0cdc2656a"
+    },
+    {
+      "name": "scale-navigation-regression-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "sha256": "02ae87affc42648f99757e3790e1a7a07d0186c3a365859bc78e5c763d515779"
+    },
+    {
+      "name": "scale-navigation-regression-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "sha256": "c67ddcaa1d13de1ab31c86e0d3489889d0cbe91f2169eeaa2a4fd7988448de60"
+    },
+    {
+      "name": "heart-existing-science-units-9e383a14-2026-10-03T18-18-05-553Z-proof.json",
+      "sha256": "55688fb49574244608fe28c3cfd55d1c09d6681e0a8847e993e7ab0b90baff80"
+    },
+    {
+      "name": "heart-existing-science-units-9e383a14-2026-10-03T18-18-05-553Z.json",
+      "sha256": "eb95c7f0920284f0b6f8b0b7b60693c1c8e12c82ede55bc219da5c9f25aded23"
+    },
+    {
+      "name": "units-final-9e383a14-summary.json",
+      "sha256": "9d1620aeef476cd14584f11013b6b8a99ed41377921a5249c7fe83d14eaad44a"
+    },
+    {
+      "name": "source-scope-proof.json",
+      "sha256": "622405d0ac73bef22c98d169b4ba4e18244e824f268d65cd686117c1084f0e0e"
+    },
+    {
+      "name": "catalog-validation.json",
+      "sha256": "d5a49ab18890819b3103f219aec68f410cc1230edbf8f76903572e8466e14273"
+    },
+    {
+      "name": "catalog-readback.json",
+      "sha256": "e55a179e0eb2fa5e76425d80266628f820abb08e6a33a53c555962c2c4b7bf01"
+    },
+    {
+      "name": "catalog-concurrent-change-audit.json",
+      "sha256": "1c7c794da40f4612111e9c5d6558102bbbd0ccd201d032858335539583fb5f19"
+    },
+    {
+      "name": "legacy-assertion-patch.json",
+      "sha256": "db2641bb3704f83debd80376ae82944c1788edf7c6a8c0d07bdcb580426a1122"
+    },
+    {
+      "name": "symbol-direction-refinement.json",
+      "sha256": "3344472152761c51c84b48d7f9b1c8afb9052ed780f28c6f9e882c19b1ffe706"
+    },
+    {
+      "name": "git-read-only-check.json",
+      "sha256": "ec2ed78cb2c72ae81b035854789af1bda0f898faa49810caddfa04448ef496fe"
+    },
+    {
+      "name": "README.md",
+      "sha256": "785ab1eab98bb8e45fbbf9a69cb26e05969a54a1117ba1801882f9baf4d04a67"
+    },
+    {
+      "name": "runs/browser-9e383a14-01/runner-proof.json",
+      "sha256": "2b584eb727501e6eb4460571e7d59442ce2ca272302712682e782e8659d60755"
+    },
+    {
+      "name": "runs/browser-9e383a14-01/browser-validation.json",
+      "sha256": "da3270638323ba20673bd5554e3f8c02a61c6b6fc390bdde449491030f2102e6"
+    },
+    {
+      "name": "runs/browser-9e383a14-01/playwright-results.json",
+      "sha256": "84c90fdbf35410460b53c01a46d2de4344be8e55e260bc8de519a6a96aa65358"
+    },
+    {
+      "name": "runs/browser-9e383a14-01/browser-review-summary.json",
+      "sha256": "fa5d2322603060312a23aff4175621a18118c115a92f8e6c6a20e2f58b47ac36"
+    },
+    {
+      "name": "runs/browser-9e383a14-01/independent-visual-review.json",
+      "sha256": "c8fe8af9c176335e95efdce125da62f5f25bc0194edba38f71c87e1029a35f4a"
+    }
+  ],
+  "completed": true,
+  "git": {
+    "readOnlyChecksPassed": true,
+    "indexUnchanged": true,
+    "scopedStagedPaths": []
+  }
+}

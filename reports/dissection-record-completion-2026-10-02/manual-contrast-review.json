@@ -1,0 +1,10 @@
+{
+  "sourceSha256": "d4139aac60f4124a19f03738e9d20156d81ec4b308aeefef8d7facf610240977",
+  "audit": "forced-colors-axe.json",
+  "rule": "color-contrast",
+  "targets": ["button[data-directory-context-action=\"record\"]", ".diss-directory-index"],
+  "capture": "forced-colors-unfinished.png",
+  "renderedAppearance": "Black text on white backgrounds; action label and result number are readable; keyboard focus ring is visible.",
+  "visualReview": "No visibility issue found in the rendered forced-color capture.",
+  "automatedIncompleteResultRetained": true
+}

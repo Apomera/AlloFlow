@@ -1,0 +1,92 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/perception_lab_study_report.test.js
+[PureHelpers] 7 helpers registered
+
+ ❯ tests/perception_lab_study_report.test.js (78 tests | 22 failed) 16326ms
+     ✓ withholds all report data for a missing group in undefined input 9ms
+     ✓ withholds all report data for a missing group in null input 4ms
+     ✓ withholds all report data for a missing group in empty input 1ms
+     ✓ withholds all report data for a missing group in empty notebook input 1ms
+     ✓ requires all three retained records when only 1 remain 2ms
+     ✓ requires all three retained records when only 2 remain 1ms
+     ✓ returns a private conflict result for duplicate trial 2ms
+     ✓ returns a private conflict result for different surroundings 1ms
+     ✓ returns a private conflict result for different reference 1ms
+     ✓ returns a private conflict result for different context 1ms
+     ✓ returns a private conflict result for different order 1ms
+     ✓ returns a private conflict result for missing impression 2ms
+     ✓ returns a private conflict result for mixed experiments 2ms
+     ✓ returns a private conflict result for extra retained member 1ms
+     ✓ withholds model and summary data for all hidden 1ms
+     ✓ withholds model and summary data for first revealed 1ms
+     ✓ withholds model and summary data for last hidden 1ms
+     ✓ withholds model and summary data for first hidden 2ms
+     ✓ returns a detached complete 'brightness' study in actual trial order 5ms
+     ✓ returns a detached complete 'ebbinghaus' study in actual trial order 3ms
+     ✓ returns a detached complete 'mullerLyer' study in actual trial order 3ms
+     ✓ treats a omitted second ID as a single report and trims the first ID 1ms
+     ✓ treats a empty second ID as a single report and trims the first ID 1ms
+     ✓ treats a whitespace second ID as a single report and trims the first ID 1ms
+     ✓ treats a nontext second ID as a single report and trims the first ID 1ms
+     ✓ bounds incoming group identifiers to the same normalized 96-character identity 1ms
+     ✓ preserves the exact pair gate for same group without leaking either study 3ms
+     ✓ preserves the exact pair gate for unknown first without leaking either study 2ms
+     ✓ preserves the exact pair gate for unknown second without leaking either study 3ms
+     ✓ preserves the exact pair gate for partial first without leaking either study 5ms
+     ✓ preserves the exact pair gate for partial second without leaking either study 3ms
+     ✓ preserves the exact pair gate for hidden first without leaking either study 2ms
+     ✓ preserves the exact pair gate for hidden second without leaking either study 2ms
+     ✓ preserves the exact pair gate for different experiments without leaking either study 2ms
+     ✓ preserves the exact pair gate for different fixed references without leaking either study 1ms
+     ✓ preserves the exact pair gate for conflicted second without leaking either study 1ms
+     ✓ returns separate 'brightness' snapshots and the actual A/B comparison without pooling their matches 94ms
+     ✓ returns separate 'ebbinghaus' snapshots and the actual A/B comparison without pooling their matches 14ms
+     ✓ returns separate 'mullerLyer' snapshots and the actual A/B comparison without pooling their matches 2ms
+     × exports every actual 'brightness' saved trial and its full metadata as a self-contained HTML file 1462ms
+     × exports every actual 'ebbinghaus' saved trial and its full metadata as a self-contained HTML file 1897ms
+     × exports every actual 'mullerLyer' saved trial and its full metadata as a self-contained HTML file 1002ms
+     × escapes a full 500-character saved note as literal text without creating executable or network elements 1582ms
+     × exports three actual matches with full guides independently of the selected preview trial and hidden preview guides 1336ms
+     ✓ offers no study export control for a hidden group 281ms
+     ✓ offers no study export control for a mixed reveal group  679ms
+     ✓ offers no study export control for a partial group  511ms
+     ✓ offers no study export control for a conflict group 161ms
+     × adds the single-report action only after an explicit saved-study reveal 202ms
+     × exports separate A and B 'brightness' sections with all six actual drawings and native geometry 769ms
+     × exports separate A and B 'ebbinghaus' sections with all six actual drawings and native geometry 468ms
+     × exports separate A and B 'mullerLyer' sections with all six actual drawings and native geometry 342ms
+     × withholds the comparison action until both complete studies are explicitly revealed 350ms
+     ✓ does not offer a comparison report for a partial study even when its retained members are revealed 125ms
+     ✓ does not offer a comparison report for a conflicted study even when its retained members are revealed 89ms
+     ✓ does not offer a comparison report for a different experiment even when its retained members are revealed 216ms
+     ✓ does not offer a comparison report for a different reference even when its retained members are revealed 222ms
+     ✓ removes study and comparison export controls when notebook edits invalidate the selected source  371ms
+     × removes report controls across learner profiles and exports only a newly reviewed valid source 214ms
+     × offers an active 'brightness' report only after three matches and explicit reveal 284ms
+     × offers an active 'ebbinghaus' report only after three matches and explicit reveal 252ms
+     × offers an active 'mullerLyer' report only after three matches and explicit reveal 141ms
+     ✓ cleans the temporary anchor and revokes the successful download URL after the download starts 94ms
+     ✓ announces HTML creation failure, cleans allocated resources, and preserves all workspace data 122ms
+     ✓ announces Blob creation failure, cleans allocated resources, and preserves all workspace data  419ms
+     ✓ announces URL creation failure, cleans allocated resources, and preserves all workspace data 100ms
+     ✓ announces download start failure, cleans allocated resources, and preserves all workspace data 79ms
+     × carries the appropriate A/B interpretation cautions for identical surroundings 125ms
+     × carries the appropriate A/B interpretation cautions for one active setting 108ms
+     × carries the appropriate A/B interpretation cautions for multiple active settings 129ms
+     × carries the appropriate A/B interpretation cautions for inactive setting 328ms
+     × carries the appropriate A/B interpretation cautions for different starts 131ms
+     × carries the appropriate A/B interpretation cautions for inactive setting and different starts 276ms
+     × includes localized labels, literal translated HTML, valid language and direction metadata 628ms
+     × omits invalid saved timestamps while keeping the actual trial note, start, match and geometry 102ms
+     ✓ replans at click time after a current notebook mutation with a removed trial before allocating any report resource 167ms
+     ✓ replans at click time after a current notebook mutation with a revoked reveal before allocating any report resource 215ms
+     ✓ replans at click time after a current notebook mutation with a conflicting trial before allocating any report resource 145ms
+
+ Test Files  1 failed (1)
+      Tests  22 failed | 56 passed (78)
+   Start at  18:48:19
+   Duration  58.12s (transform 1.39s, setup 595ms, import 1.34s, tests 16.33s, environment 34.18s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/artstudio-workspace/perception-study-report/study-report-focused-results.json

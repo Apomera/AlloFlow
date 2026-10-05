@@ -1,0 +1,300 @@
+{
+  "date": "2026-10-04",
+  "result": "passed",
+  "parent": "01e7ce57b6d44953f7d06cc7676a77b17b597b46",
+  "commitBranch": "codex/firstresponse-lip-contours",
+  "production": {
+    "sourceSha256": "598da922cb3aff31e35c8ce28b516d6e6495e7a5aedd8b02cbd1d575e1d420f5",
+    "mirrorsMatch": true,
+    "changedRegion": "mouth and lips",
+    "uiCopyChanges": 0,
+    "catalogChanges": 0,
+    "meshNamesRetained": true,
+    "meshOriginsRetained": true,
+    "answerTargetsRetained": true
+  },
+  "unitTests": {
+    "passed": 269,
+    "files": 4,
+    "fullRunPassed": 269,
+    "fullRunFailed": 0,
+    "cleanFirstRun": true,
+    "exit": {
+      "exitCode": 0,
+      "changedInputs": [],
+      "inputHashesVerified": 36,
+      "seconds": 32.71
+    },
+    "suites": {
+      "firstresponse_lip_surfaces": 21,
+      "firstresponse_depth_explorer": 115,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    },
+    "coverage": [
+      "closed connected outward lip topology",
+      "finite unit normals and smooth welded seams",
+      "bilateral surface symmetry",
+      "shallow relief and tapered corners measured against skull triangles",
+      "visible fitted mouth seam",
+      "head tilt and unchanged local lip shapes",
+      "distinct opaque app contrast materials"
+    ]
+  },
+  "browserTests": {
+    "passed": 2,
+    "files": 1,
+    "workers": 1,
+    "retries": 0,
+    "cleanFirstRun": true,
+    "renderer": "Chromium WebGL with ANGLE SwiftShader",
+    "exit": {
+      "exitCode": 0,
+      "changedInputs": [],
+      "inputHashesVerified": 36,
+      "seconds": 106.822
+    },
+    "nativeGeometrySamples": 8,
+    "desktopAges": [
+      "adult",
+      "child",
+      "infant"
+    ],
+    "desktopRecoveryPhases": [
+      0,
+      8
+    ],
+    "phoneWidth": 320,
+    "coverage": [
+      "actual rendered scene and perspective camera",
+      "all face feature vertices remain framed",
+      "native keyboard view controls",
+      "inspection after the recovery turn",
+      "learner state retention",
+      "text spacing",
+      "forced colors",
+      "app contrast",
+      "axe accessibility and runtime checks",
+      "one live app-created WebGL context",
+      "context cleanup after unmount"
+    ],
+    "note": "The browser fixture captures the scene and perspective camera together after successful native renders. It retains its successful probe snapshot and uses native animation frames and view controls."
+  },
+  "geometry": {
+    "lipSampling": {
+      "widthSegments": 48,
+      "heightSegments": 24
+    },
+    "outwardTrianglesPerLip": 2208,
+    "closedVolumes": true,
+    "fittedToActualSkull": true,
+    "taperedCorners": true,
+    "shallowRelief": true,
+    "fittedSeamRadius": 0.0018,
+    "smoothUpperLipDip": true,
+    "minimumFaceFacing": 0.9276936431439765,
+    "maximumProjectedFeatureExtent": 0.7540482241853891
+  },
+  "skullAndRigAudit": {
+    "status": "passed",
+    "reference": "01e7ce57b6d44953f7d06cc7676a77b17b597b46",
+    "sourceSha256": "598da922cb3aff31e35c8ce28b516d6e6495e7a5aedd8b02cbd1d575e1d420f5",
+    "desktopMirrorSha256": "598da922cb3aff31e35c8ce28b516d6e6495e7a5aedd8b02cbd1d575e1d420f5",
+    "counts": {
+      "poses": 6,
+      "skullGeometryMatches": 6,
+      "worldMatrixMatches": 18
+    },
+    "outsideMouthBlock": {
+      "unchanged": true,
+      "prefixSha256": "ddc6b1ae1de53affb62a84a1baec7607d5d69e8ebf73644f98c77b50169ef3ae",
+      "suffixSha256": "b23897dbefd5abcc01f9b6f3df91156316ef3811dc2846a8735b0e0c9a11c1ff",
+      "oldBlockBytes": 415,
+      "newBlockBytes": 1441,
+      "markersUnique": true
+    },
+    "baselineManifestSha256": "6ff8f211649089a3a92b9f22b818b49893e80cede628d1f0ecc7466649497345",
+    "auditManifestSha256": "413b6cc6a70ec51a4007b4d6d61ed57e31ebeaef2d3b5c0100e5860cb48858cc",
+    "threeSha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "snapshots": [
+      {
+        "age": "adult",
+        "phase": 0,
+        "skullGeometrySha256": "9b432d18c7d19611f7490f34fe9f2a0cdc283deadbe9bcbcab64f49529ddb609",
+        "matrixBytesSha256": {
+          "head": "4786f10e98128a289ab71bd9ecd617c33a50e32af639830b30bd39b0b163ae41",
+          "body": "95cf4a299745566f174041e14e892efcfc00a36eb18586d9100dee1019137bbf",
+          "pivot": "e3403747c2b78d45394b0d89d3c2f813e9556d2cb86b01320da582f4afad8abc"
+        },
+        "matchesRecordedBaseline": true,
+        "matchesRegeneratedParent": true
+      },
+      {
+        "age": "adult",
+        "phase": 8,
+        "skullGeometrySha256": "9b432d18c7d19611f7490f34fe9f2a0cdc283deadbe9bcbcab64f49529ddb609",
+        "matrixBytesSha256": {
+          "head": "b457d71699c74820fa8e4b161a8c3c500fea6bb7c1573b062c9bd9fe54191275",
+          "body": "a6bc2cc43d0689f46b112e317f115e7ff271ccf5378e0cda909f6487aa2b011a",
+          "pivot": "b44a2099257a15bc41e3c2f48fc9d32d9191f1025a1f65bdb565ac0373fc72da"
+        },
+        "matchesRecordedBaseline": true,
+        "matchesRegeneratedParent": true
+      },
+      {
+        "age": "child",
+        "phase": 0,
+        "skullGeometrySha256": "b47683f451b7ea57a5055bef74a557f2bbef6a47e6b2b1d9273dfdca0a73ec86",
+        "matrixBytesSha256": {
+          "head": "a5862d7199e4999f48f95d7bb9fff777003888c2c280abeba8e9119d08d7df66",
+          "body": "952e738fef01288a35c31cbf3d60643fa9b67330abe82fb2c7cf804bab297a10",
+          "pivot": "88317a8975d977ee34c48bafb61e485cbe789c04357bc019be80db9813da92ab"
+        },
+        "matchesRecordedBaseline": true,
+        "matchesRegeneratedParent": true
+      },
+      {
+        "age": "child",
+        "phase": 8,
+        "skullGeometrySha256": "b47683f451b7ea57a5055bef74a557f2bbef6a47e6b2b1d9273dfdca0a73ec86",
+        "matrixBytesSha256": {
+          "head": "1690079f0823bc63b56595af80998163641643cd0c0c646001bdf891e42d9745",
+          "body": "24b06d22628a7eeb38f3a9059d4f98b41ae87e47e9ba0e00e59429195aa275fb",
+          "pivot": "f447692cd68bb9ede540ca4cff7dfadfb851970eff48237b38069891633a5f16"
+        },
+        "matchesRecordedBaseline": true,
+        "matchesRegeneratedParent": true
+      },
+      {
+        "age": "infant",
+        "phase": 0,
+        "skullGeometrySha256": "efc3a1cce5ff0d9182313066830d1289d3379e103d19710425afcdec7d0a8b6f",
+        "matrixBytesSha256": {
+          "head": "682ff72e9b2d083c7778b3e318125674a7d799eba3ff52985ae3d6becb6205cd",
+          "body": "ec9b999a3a24472fdc02a115898ddaf27dda759bf1748a787b14f0dac0c3f9be",
+          "pivot": "98600975dbf59e437aeaa45e037d86eb5f6fdd36ad0053aa58dc4dcde0c6b3a3"
+        },
+        "matchesRecordedBaseline": true,
+        "matchesRegeneratedParent": true
+      },
+      {
+        "age": "infant",
+        "phase": 8,
+        "skullGeometrySha256": "efc3a1cce5ff0d9182313066830d1289d3379e103d19710425afcdec7d0a8b6f",
+        "matrixBytesSha256": {
+          "head": "5cf23525e9c3bc9c51a8c674c91157c52344eb9e1e6aa27c720e5412f34e5fc9",
+          "body": "70c42ce14f147f574e53684f4d32ba2e9e7b6dfb0aa871f54ab4bd96a02b49ee",
+          "pivot": "5cb5fb035f53f6093e145e71bc5843360937fdde4c07ea35944f07adc9fa93eb"
+        },
+        "matchesRecordedBaseline": true,
+        "matchesRegeneratedParent": true
+      }
+    ]
+  },
+  "screenshots": {
+    "reviewed": 8,
+    "reviewedFiles": [
+      "adult-lip-contours-before-recovery.png",
+      "adult-lip-contours-after-recovery.png",
+      "child-lip-contours-before-recovery.png",
+      "child-lip-contours-after-recovery.png",
+      "infant-lip-contours-before-recovery.png",
+      "infant-lip-contours-after-recovery.png",
+      "phone-lip-contours.png",
+      "phone-lip-contours-app-contrast.png"
+    ],
+    "reviewedHashes": {
+      "adult-lip-contours-before-recovery.png": "97dd0d57138936d313f3095e66cd7620bc73776f61ddb026ef8b2dd45ed4da5c",
+      "adult-lip-contours-after-recovery.png": "978113300878cb4e02f79c202ed0d716803708174c7e5d3d01ffc457b52a6cc1",
+      "child-lip-contours-before-recovery.png": "a508f57172d2a7e280da5e3e10d232a94cadab048f44e4d956cec749e79d3041",
+      "child-lip-contours-after-recovery.png": "e52236c0b78d1d335c969a365c8d7c1bb6faa123c215b43b7e6cd6c2fe448dd1",
+      "infant-lip-contours-before-recovery.png": "82b893924628ac3d0ffd4676be9f984f4dcfa6462727cf74938cc3a71838131c",
+      "infant-lip-contours-after-recovery.png": "6994ddb845e1054cca9e17705f80013b35dc712470975a175998fa5d26b41231",
+      "phone-lip-contours.png": "376ab886e29784229ee2f1c0e2fd9db20a8dc0f251a82a6e434fd885b7bacab7",
+      "phone-lip-contours-app-contrast.png": "d1ab681f6d69e7b7ca8a003758115173b48db2d82f4a2860eaaaee433f7a1042"
+    },
+    "note": "All six age and recovery captures and both phone captures were visually reviewed. Their reviewed byte hashes remain unchanged."
+  },
+  "sharedViewer": {
+    "baseline": "committed parent",
+    "sha256": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+    "modified": false,
+    "liveAudit": {
+      "result": "passed",
+      "reference": "01e7ce57b6d44953f7d06cc7676a77b17b597b46",
+      "testedBaselineSha256": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+      "testedWorktreeModuleSha256": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+      "currentLiveRootSha256": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1",
+      "currentLiveMirrorSha256": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1",
+      "bayViewerBytes": 51249,
+      "bayViewerSha256": "22fc37f217d4302a362ae51f4f961957d410999e1abc5b4396d36df35158a92d",
+      "bayViewerMatchesTested": true,
+      "completeCanonicalRemainderMatches": true,
+      "canonicalSha256": "32d9d3e760741c31619d46cdbe90566513f8c33bc3b6a59b29ae63c68cc7ef05",
+      "excludedPeerRegions": 5,
+      "peerRegionsReferenceFirstResponse": false,
+      "note": "Only the explicit Beehive persistence helper and four exact Perception catalog/allowlist entries are excluded. The complete remaining shared module is byte-identical to the tested committed parent."
+    },
+    "bayViewerMatchesTested": true,
+    "completeCanonicalRemainderMatches": true,
+    "canonicalSha256": "32d9d3e760741c31619d46cdbe90566513f8c33bc3b6a59b29ae63c68cc7ef05"
+  },
+  "inputCount": 36,
+  "inputManifestsMatch": true,
+  "inputManifestHashes": {
+    "units": "70bdda3a60aca571ec216cd89bf06359a83f665eef5dbc63f6a6b5aa3f5903bb",
+    "browser": "70bdda3a60aca571ec216cd89bf06359a83f665eef5dbc63f6a6b5aa3f5903bb"
+  },
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "598da922cb3aff31e35c8ce28b516d6e6495e7a5aedd8b02cbd1d575e1d420f5",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "598da922cb3aff31e35c8ce28b516d6e6495e7a5aedd8b02cbd1d575e1d420f5",
+    "stem_lab/stem_lab_module.js": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+    "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "tests/helpers/firstresponse_pose_probe.js": "2faafa6bc208b440f23ea9680351d65c43ad2a5b5e962e597a48157bef4ac672",
+    "tests/helpers/stem_widgets_smoke_harness.js": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+    "tests/e2e/firstresponse-lip-contours.spec.ts": "ce782c7a40c534a54cd8e6aabbc9ae2e244090405f6c6256aed4103e920f1839",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "tests/e2e/helpers/png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "playwright.config.ts": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587",
+    "reports/firstresponse-depth-comparison/playwright-software.config.ts": "a3ab365e61b809e8d1cde1c47de6d88940be0d902aafc70d56dce7a3bffe01ec",
+    "reports/firstresponse-lip-contours/playwright.config.ts": "7df776f937ef7af1b9e2ca920f457f9d6977801ae09b8a321a95d71ed376b868",
+    "vendor/three-r128/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "desktop/web-app/node_modules/react/umd/react.production.min.js": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+    "node_modules/axe-core/axe.min.js": "66a8aaa95a8b044a7fd74a5435873bf04ff65a1ca75567c921b7509742085a14",
+    "app/static/css/main.11e7c75d.css": "800ee18e70d600ea7202d64b0f2a04fa6dc88bbee8fa739c69585d7e79b825df",
+    "ui_strings.js": "8d5c08ca80b6c9b6b10b4e920c2115363c25e0ea5f308740950ca3aef90531dd",
+    "desktop/web-app/public/ui_strings.js": "8d5c08ca80b6c9b6b10b4e920c2115363c25e0ea5f308740950ca3aef90531dd",
+    "tests/firstresponse_lip_surfaces.test.js": "4ab8f4721608f846df69c1ae1b18b612fcf84c2ae995b8fbdf16f10fdc9fa883",
+    "tests/firstresponse_depth_explorer.test.js": "8d95fe9bf754bf6029adb91a4f7b2339700cfa315144a77b90123018244132b0",
+    "tests/firstresponse_body_3d.test.js": "fb90737f362657b15e303ce946bda19f84ef9c1a02ac4f57fb6a1338cc403111",
+    "tests/stem_firstresponse_hook_order.test.js": "50bac19e05d1cb634cdbe7e1ef3927ff730bb9838be311cf01feb2bd58373dc0",
+    "reports/firstresponse-3d-explorer/ui-strings.delta.json": "af5167a3b763ad757171ddb6cfc28ed2fc92a9c53c0c73da074e0f010fac76d1",
+    "reports/firstresponse-cycle-inspector/ui-strings.delta.json": "044a8abf77bdc33033e15e8c7cafcb6838fde3974d484586578fe3126aee0194",
+    "reports/firstresponse-depth-comparison/ui-strings.delta.json": "b84768a2cf0a492aa0a56487348ea8f861c20b11a1c213660a815ec39d32de8f",
+    "reports/firstresponse-prediction-activity/ui-strings.delta.json": "4aad90de61b0ea7c428dd44963c100c9d2bae44831749b078fc2535f0d5dc8dc",
+    "reports/firstresponse-chest-inspection/ui-strings.delta.json": "0d7d4e881cc81f5c8b7874a6257d1f648393db5bcd9b9562843199a4f90e86ac",
+    "reports/firstresponse-child-hands/ui-strings.delta.json": "2811f733315fa320b704f3bec452b87d330271925f782ff84526c182c4881b78",
+    "reports/firstresponse-visual-markers/ui-strings.delta.json": "4051afa01b271edbdbc74c1c1067c9b30c9f1c433a31cae5d2f0efa8a8d9e264",
+    "reports/firstresponse-manikin-realism/ui-strings.delta.json": "ec587b40a466283602e1f26f022657a47e6716f5ba98be591d878eee3a05fdac",
+    "reports/firstresponse-recovery-review/ui-strings.delta.json": "4b815a66fee3b3707f8b6c1e8a80924c909afc3cbab556d200762f6ac2228d57",
+    "reports/firstresponse-arm-posture/ui-strings.delta.json": "b9afca037d5c0fa14bfddbe1aa010145f48e4f05d1e8934b8030915f089d9b62",
+    "reports/firstresponse-arm-guides/ui-strings.delta.json": "680b3e875103441ea87e88756b0e90f89a141a452c12361e38e4aaf5d1637abd"
+  },
+  "limits": "Browser evidence covers software rendering and interaction. Hardware performance remains unmeasured.",
+  "retainedLocalEvidence": [
+    "units.log",
+    "units-exit.json",
+    "browser.log",
+    "browser-exit.json",
+    ".units-inputs.json",
+    ".browser-inputs.json",
+    ".reviewed.json",
+    ".head-baseline-inputs.json",
+    ".skull-and-rig-audit-inputs.json",
+    ".live-viewer-audit-inputs.json",
+    "geometry-metrics.json"
+  ]
+}

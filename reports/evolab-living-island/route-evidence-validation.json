@@ -1,0 +1,140 @@
+{
+  "date": "2026-10-05",
+  "feature": "Interactive directed sea routes and recorded two-species inheritance evidence",
+  "sourceSha256": "0d7d7f3a0fc31f07ab1c252bebdb95a791aa85b2b4695e73836814f2303badd0",
+  "sourceBytes": 2088516,
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "noCommitByUserRequest": true,
+  "deployed": false,
+  "preview": {
+    "url": "http://127.0.0.1:56559/?preview=archipelago",
+    "sourceSha256": "0d7d7f3a0fc31f07ab1c252bebdb95a791aa85b2b4695e73836814f2303badd0",
+    "sourceMirrorsIdentical": true,
+    "sourceLineEndings": "LF",
+    "servedSourceMatches": true,
+    "assets": [
+      {
+        "path": "/",
+        "status": 200,
+        "bytes": 1129
+      },
+      {
+        "path": "/evolab.js",
+        "status": 200,
+        "bytes": 2088516
+      },
+      {
+        "path": "/app.css",
+        "status": 200,
+        "bytes": 625027
+      },
+      {
+        "path": "/react.js",
+        "status": 200,
+        "bytes": 10751
+      },
+      {
+        "path": "/react-dom.js",
+        "status": 200,
+        "bytes": 131835
+      },
+      {
+        "path": "/three.js",
+        "status": 200,
+        "bytes": 603445
+      }
+    ]
+  },
+  "changes": [
+    "An improved coast-and-contour map exposes all six directed routes with keyboard-selectable map controls and a native selector; reversing a route changes the source and actual evidence.",
+    "Bird and plant cards distinguish captured individual crossing probabilities, expected source-cohort crossings, actual arrivals, arrivals that reproduced and actual marker copies in newborns.",
+    "Actual migrant selectors lead to the existing ancestry and offspring inspector without changing the recorded generation.",
+    "Five-cohort tables separately show source residents, selected-route arrivals, previous destination residents, the destination breeding pool after all crossings, and actual newborns.",
+    "The destination bridge opens the existing partner selection microscope at the destination island while preserving route evidence and notes.",
+    "G0 is a founding baseline with undefined crossing odds and outcomes; an explicit action records the first round or visits an existing one.",
+    "Bounded route/round drafts retain selected actual arrivals and explanations for the most recent 12 views; queued future conditions never change recorded evidence.",
+    "Separate Learning Journal entries and full precision JSON exports carry both species, captured settings, source checkpoint, selected arrivals, explanation and deterministic replay instructions.",
+    "Evidence calculations are lazy, use no biological random draws and leave the engine and next random future unchanged."
+  ],
+  "validation": {
+    "distinctModelComponentAndRenderChecks": 81,
+    "modelComponent": {
+      "passed": 79,
+      "files": 9,
+      "log": "route-units-final.log",
+      "coverage": [
+        "Ten new route checks reconstruct all directed routes, source cohorts, captured distance/species odds and actual newborn marker transmissions.",
+        "Route outcomes reconcile with destination totals and exclusive movement; arrivals, contributing parents and inherited copies remain distinct.",
+        "G0, zero dispersal, empty and singleton cohorts, malformed contexts, queued settings and RNG preservation.",
+        "Existing two-species model, partner microscope, repeated research futures, generation stories, gene flow, connection timeline and caseboard regressions."
+      ]
+    },
+    "renderGoldens": {
+      "passed": 2,
+      "log": "route-goldens-final.log",
+      "scope": "Only the two EvoLab digest entries were updated after the CSS addition; default structure remains 49 buttons, 6 inputs and 1 SVG."
+    },
+    "browser": {
+      "distinctPassedScenarios": 9,
+      "logs": [
+        "route-browser-final.log",
+        "route-browser-phone-final.log"
+      ],
+      "resumedRun": "The interrupted aggregate completed eight scenarios. Its worker was no longer running; only the remaining phone route scenario was rerun and passed.",
+      "coverage": [
+        "Exact route scalars, full exported evidence and checkpoint replay, both species’ five displayed cohort rows, and actual migrant origin/offspring inspection.",
+        "Destination partner bridge changes the main island and focuses its microscope while preserving captured route, selection, draft, generation and world.",
+        "Scoped route/round notes and separate journal entries survive switching routes, history, collapse and remount; recorded evidence ignores queued settings.",
+        "Six directed map controls, native selectors and actions work by keyboard. Explicit G0 advance matches the unchanged engine.",
+        "Real drawn desktop WebGL scene; reduced-motion/no-WebGL phone with zero axe WCAG 2 A/AA and 2.1 AA violations, no horizontal page overflow and 44px action buttons.",
+        "Seven existing archipelago, partner microscope and repeated private research browser journeys passed."
+      ]
+    },
+    "visualReview": [
+      "Desktop and phone route screenshots inspected; highlighted directed crossing, readable probability/expectation/outcome separation, stacked phone species cards and usable native controls."
+    ],
+    "translationDeltaPrepared": true,
+    "sharedTranslationCatalogApplied": false
+  },
+  "scientificBoundaries": [
+    "The map, distance matrix, species and dispersal coefficients are fictional teaching assumptions, not measured Galapagos dispersal rates or a full ecological forecast.",
+    "With dispersal enabled, shorter routes have higher individual odds; when the captured migration scale is zero all route odds are zero.",
+    "Expected crossings are source N at G-1 multiplied by the selected-route probability, not a guarantee of integer arrivals. The source changes when a route is reversed.",
+    "Both outgoing routes and staying are mutually exclusive destinations from one dispersal draw and their probabilities sum to one.",
+    "Actual movement carries copies into the destination pool; realized newborn contribution is reconstructed from actual parent identities and independently sampled marker slots.",
+    "Transmitted copies can exceed arrivals, and an arrival may leave no copies in the newborn cohort. Copies are not distinct offspring counts.",
+    "The destination pool includes residents who stayed and migrants from both other islands. Parent origin refers to the previous generation rather than ultimate ancestry.",
+    "One neutral marker’s p and H=2p(1-p) do not measure genome-wide diversity; empty cohorts have undefined means, frequencies and H.",
+    "G0 has no recorded dispersal round or captured crossing odds. Future settings do not become historical G0 evidence.",
+    "A route observation alone does not establish coevolution or the causal effect of geography; the existing controlled repeated research study provides broader comparisons."
+  ],
+  "scienceReferences": [
+    {
+      "title": "UC Berkeley Understanding Evolution: Gene flow",
+      "url": "https://evolution.berkeley.edu/evolution-101/mechanisms-the-processes-of-evolution/gene-flow/"
+    }
+  ],
+  "artifacts": [
+    {
+      "path": "tests/evolab_route_evidence.test.js",
+      "bytes": 12943,
+      "sha256": "2af198dd9e0636f6e353453e933d280d8f0166d28a988abaf3f889610dc7e104"
+    },
+    {
+      "path": "tests/e2e/evolab-route-evidence.spec.ts",
+      "bytes": 19813,
+      "sha256": "e79bfd6e32d7523aca9894c4262582157a7d4d57cff3305575a481d0aa26a26d"
+    },
+    {
+      "path": "reports/evolab-living-island/route-evidence-desktop.png",
+      "bytes": 203576,
+      "sha256": "a55f022182e450c464b5eed9bf3fdf78e406ebfd15172232afaadfd4182d9029"
+    },
+    {
+      "path": "reports/evolab-living-island/route-evidence-phone.png",
+      "bytes": 161496,
+      "sha256": "f24c9d4d638bd3c4e4b79adb36601bd935975e6a82e4d27a1b99bd090b9fa8e4"
+    }
+  ]
+}

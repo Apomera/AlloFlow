@@ -634,6 +634,11 @@ const MODULES = [
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
     },
     {
+        name: 'MaineSldPractice',
+        filename: 'maine_sld_practice_module.js',
+        cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
+    },
+    {
         name: 'WordSoundsModal',
         filename: 'word_sounds_module.js',
         cdnBase: 'https://cdn.jsdelivr.net/gh/Apomera/AlloFlow'
@@ -1510,6 +1515,7 @@ const PLUGIN_FILES = [
     'stem_lab/stem_tool_skatelab.js',
     'stem_lab/stem_tool_statslab.js',
     'stem_lab/stem_tool_optics.js',
+    'stem_lab/stem_tool_perception.js',
     'stem_lab/stem_tool_astronomy.js',
     'stem_lab/stem_tool_bridgelab.js',
     'stem_lab/stem_tool_microbiology.js',
@@ -2437,6 +2443,9 @@ let replacementCount = 0;
 
 // Contract modules pinned by content hash (see EXCEPTION note below).
 const CONTENT_HASH_PINNED = new Set([
+    'studio_response_module.js',
+    'maine_sld_practice_module.js',
+    'admin_hub_module.js',
     'host_handlers_module.js',
     'allo_command_context_module.js',
     'view_canvas_recovery_dialog_module.js',

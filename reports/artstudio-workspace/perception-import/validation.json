@@ -1,0 +1,146 @@
+{
+  "date": "2026-10-04",
+  "enhancement": "Preview and reopen version-1 notebook JSON without eviction, preserving groups, copies, reveal states, drawing drafts, and pinned comparisons; undo only this import.",
+  "sourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
+  "pluginMirrorSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
+  "pluginMirrorIdentical": true,
+  "tests": {
+    "currentSourceRuns": [
+      {
+        "file": "reports/artstudio-workspace/perception-import/import-focused-results.json",
+        "success": true,
+        "passed": 89,
+        "failed": 0,
+        "testFiles": [
+          "perception_lab_notebook_import.test.js"
+        ],
+        "sourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
+        "provenance": "Root source stayed unchanged during final test runs; browser runs also record this loaded and final source hash."
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-import/existing-perception-results.json",
+        "success": true,
+        "passed": 241,
+        "failed": 0,
+        "testFiles": [
+          "perception_lab_experiments.test.js",
+          "perception_lab_guided_study.test.js",
+          "perception_lab_matching.test.js",
+          "perception_lab_notebook.test.js",
+          "perception_lab_repeat_notebook.test.js",
+          "perception_lab_repeat_study.test.js",
+          "perception_lab_study_comparison.test.js"
+        ],
+        "sourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
+        "provenance": "Root source stayed unchanged during final test runs; browser runs also record this loaded and final source hash."
+      }
+    ],
+    "uniquePassed": 330,
+    "files": 8,
+    "failed": 0,
+    "finalVitestRunsCompleted": true,
+    "historicalDiagnostics": [
+      "reports/artstudio-workspace/perception-import/existing-perception-temp-failure-results.json",
+      "reports/artstudio-workspace/perception-import/import-focused-initial-results.json",
+      "reports/artstudio-workspace/perception-import/import-focused-private-cache-results.json"
+    ],
+    "diagnosticNote": "The initial existing run executed zero tests because an atomic cache rename in the sandbox temp folder failed. A private writable TEMP/TMP folder resolved it. The new suite corrected one old copy expectation; a later default-timeout run suspended React act and contaminated subsequent mounts. Final runs use 30-second test timeouts and retain every behavioral assertion, dependency, and product source."
+  },
+  "browser": {
+    "aggregateEvidence": "reports/artstudio-workspace/perception-import/browser-regression-results.json",
+    "currentSourceRuns": [
+      {
+        "file": "reports/artstudio-workspace/perception-import/import-browser-results.json",
+        "groups": 37,
+        "errors": [],
+        "sourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
+        "loadedSourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
+        "finalSourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c"
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-import/guided-regression/guided-browser-results.json",
+        "groups": 25,
+        "errors": [],
+        "sourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
+        "loadedSourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
+        "finalSourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c"
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-import/comparison-regression/comparison-browser-results.json",
+        "groups": 23,
+        "errors": [],
+        "sourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
+        "loadedSourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c",
+        "finalSourceSHA256": "5acd75e396e04a57d3c32532246c617908648acc2874733edaa97a79dec9013c"
+      }
+    ],
+    "passedGroups": 85,
+    "errors": [],
+    "responsiveWidths": [
+      320,
+      390,
+      768,
+      1280,
+      1600
+    ],
+    "textScalePercent": 200,
+    "minimumControlPixels": 44,
+    "themes": [
+      "dark",
+      "contrast",
+      "forced-light",
+      "forced-dark",
+      "forced-contrast"
+    ],
+    "previewsReviewed": [
+      "reports/artstudio-workspace/perception-import/import-preview-panel-390.png",
+      "reports/artstudio-workspace/perception-import/import-dark-panel.png",
+      "reports/artstudio-workspace/perception-import/import-forced-dark-panel.png",
+      "reports/artstudio-workspace/perception-import/import-large-text.png"
+    ],
+    "historicalDiagnostics": [
+      "reports/artstudio-workspace/perception-import/import-browser-before-multiplicity-fix-results.json",
+      "reports/artstudio-workspace/perception-import/import-browser-before-undo-wait-failure.json",
+      "reports/artstudio-workspace/perception-import/import-focused-launcher-failure.json"
+    ],
+    "diagnosticNote": "Initial evidence is retained separately. A counted duplicate matcher fixed incoming-copy multiplicity; a browser timing wait was added before a post-commit Undo action, preserving assertions. Final passing runs are on the current source."
+  },
+  "discovery": {
+    "perceptionEnglishKeys": 305,
+    "metadataParity": true,
+    "englishMirror": true,
+    "indexMirror": true,
+    "indexedTools": 151,
+    "changedExistingIndexRecordCount": 0,
+    "changedIndexFields": {},
+    "perceptionDeepLink": true,
+    "redirectMirror": true
+  },
+  "integration": {
+    "mainJSXParses": 3,
+    "mainMirrors": true,
+    "hubMirror": true,
+    "englishMirror": true,
+    "newArtEnglishKeys": 26,
+    "perceptionCatalogCategory": "Learning & Behavioral Science",
+    "startupLoader": true,
+    "deepLinkFileLoader": true,
+    "pluginFallback": true
+  },
+  "independentReview": {
+    "multiplicityEngineCases": 32,
+    "remainingMaterialFindings": 0
+  },
+  "checks": {
+    "syntax": true,
+    "scopedWhitespace": true,
+    "reportLinks": true,
+    "stagedFiles": [],
+    "committedByThisTask": false
+  },
+  "behaviorLimits": [
+    "Accepts only the existing Perception notebook v1 schema and at most 24 canonical observations in a file no larger than 512 KiB.",
+    "Capacity overflow disables Add; no existing or incoming record is silently evicted.",
+    "Undo import lasts until the notebook changes. It restores only notebook records, preserving later drawing edits."
+  ]
+}

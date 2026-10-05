@@ -1,0 +1,75 @@
+{
+  "sourceSha256": "e13900bcf029704f9f480f9e23a930297e3c527726ee41591619b79e02012f31",
+  "file": "tests/anatomy_lab_science.test.js",
+  "beforeSha256": "8c9c8d81b0d6faa096c9a52f7370271e78890deb0ebe9d850dc910ad6f166d91",
+  "afterSha256": "6cbdd4db7db9f9021cde24726ee2aa584707931c4ca8506f8074b97e72fc3f39",
+  "exactReversalPassed": true,
+  "exactChanges": 7,
+  "changes": [
+    {
+      "name": "Named body, organ and lobule figures replace the combined SVG title",
+      "from": "    expect(open).toContain('Body-to-liver-to-lobule Scale Bridge diagram');",
+      "to": "    const root = document.createElement('div'); root.innerHTML = open;\n    const figures = [...root.querySelectorAll('figure[data-anatomy-liver-scale]')];\n    expect(figures.map(figure => figure.getAttribute('data-anatomy-liver-scale'))).toEqual(['body', 'organ', 'lobule']);\n    figures.forEach(figure => {\n      const svg = figure.querySelector('svg[role=\"img\"]'); expect(svg).not.toBeNull();\n      const names = svg.getAttribute('aria-labelledby').trim().split(/\\s+/); expect(names).toHaveLength(2);\n      names.forEach(id => expect(figure.querySelector('[id=\"' + id + '\"]').textContent.trim()).toBeTruthy());\n      [...svg.querySelectorAll('text')].forEach(marker => expect(marker.textContent.trim()).toMatch(/^\\d+$/));\n      expect(figure.querySelector('figcaption ol')).not.toBeNull();\n    });",
+      "occurrences": 1
+    },
+    {
+      "name": "Readable structure keys replace all-caps headings and case-specific embedded SVG words",
+      "from": "    expect(open).toContain('BODY LOCATION');\n    expect(open).toContain('MICROANATOMY');\n    expect(open).toContain('portal vein');\n    expect(open).toContain('hepatic artery');\n    expect(open).toContain('central vein');\n    expect(open).toContain('bile duct');",
+      "to": "    expect(figures[0].querySelector('figcaption').textContent.toLowerCase()).toContain('right upper abdomen');\n    const organKey = figures[1].querySelector('figcaption').textContent.toLowerCase();\n    ['portal vein', 'hepatic artery', 'hepatic vein'].forEach(label => expect(organKey).toContain(label));\n    const lobuleKey = figures[2].querySelector('figcaption').textContent.toLowerCase();\n    ['portal triad', 'hepatocytes', 'central vein', 'sinusoids', 'bile canaliculi', 'bile duct'].forEach(label => expect(lobuleKey).toContain(label));",
+      "occurrences": 1
+    },
+    {
+      "name": "Native flow action and paused status replace hidden English name and exact class serialization",
+      "from": "    expect(html).toContain('class=\"anatomy-atlas is-paused\"');\n    expect(html).toContain('aria-label=\"Play liver-flow animation\"');",
+      "to": "    const root = document.createElement('div'); root.innerHTML = html;\n    const atlas = root.querySelector('[data-anatomy-atlas=\"liver\"]');\n    expect(atlas.classList.contains('is-paused')).toBe(true);\n    expect(atlas.querySelector('[data-anatomy-liver-flow]').textContent).toBe('Play flow');\n    expect(atlas.querySelector('.anatomy-liver-playback').textContent).toBe('Flow paused');",
+      "occurrences": 1
+    },
+    {
+      "name": "Include Liver in native focus and clinical control assertions",
+      "from": "if (diagram.id === 'heart' || diagram.id === 'kidneys' || diagram.id === 'alveoli' || diagram.id === 'patella' || diagram.id === 'biceps')",
+      "to": "if (diagram.id === 'heart' || diagram.id === 'kidneys' || diagram.id === 'alveoli' || diagram.id === 'patella' || diagram.id === 'biceps' || diagram.id === 'liver')",
+      "occurrences": 3
+    },
+    {
+      "name": "Readable fibrosis narrative replaces tiny clinical SVG wording",
+      "from": "clinicalId: 'hepatic_fibrosis', title: 'Hepatic fibrosis', visual: 'fibrotic bands distort sinusoidal flow'",
+      "to": "clinicalId: 'hepatic_fibrosis', title: 'Hepatic fibrosis', visual: 'Collagen bands distort lobule architecture and narrow sinusoidal pathways.'",
+      "occurrences": 1
+    }
+  ],
+  "unchangedFixtures": [
+    {
+      "path": "tests/anatomy_learning_continuity.test.js",
+      "sha256": "0a3b88ba73dd8cf55fbcb08ccf3b7b31aee724aa0bc30f94e6a3d59ea0e01ce9"
+    },
+    {
+      "path": "tests/anatomy_atlas_muted_layers.test.js",
+      "sha256": "f20a4a9b991c81d6850285ad4ca09d3bec94d8a50c37077923982dfc766ba563"
+    },
+    {
+      "path": "tests/anatomy_muscle_guide.test.js",
+      "sha256": "c45ba8a74bff3ec378dde03e97a1892acc854e6a501fca0342e06c3e79ae3a43"
+    },
+    {
+      "path": "tests/anatomy_knee_guide.test.js",
+      "sha256": "45af941d2ee92c00e8ea02d33be570f62fd8eaa98a695695c4b46f372efb487c"
+    },
+    {
+      "path": "tests/anatomy_heart_guide.test.js",
+      "sha256": "2011a5cb781f99a39657a983fae57b8e2791fb40dfd03825acdde09ad2c7ff7f"
+    },
+    {
+      "path": "tests/anatomy_alveolus_guide.test.js",
+      "sha256": "f5c9faa7a801568bd959b83abda67b477d8c05b28f77a992fc0750dba167db58"
+    },
+    {
+      "path": "tests/anatomy_kidney_guide.test.js",
+      "sha256": "9b3a3d7e59dfad53c6c52b12d668acdd1b5d08a2ff13dfa919b000227fbe5d44"
+    },
+    {
+      "path": "tests/anatomy_lens_gallery_navigation.test.js",
+      "sha256": "e0db13cb01d85c1e6e56cd57394fb198f8aaea38cec6e27fae335229e0803cad"
+    }
+  ],
+  "candidateEvidence": "reports/anatomy-liver-guide-2026-10-04/legacy-candidate-e13900bc-2026-10-04T23-07-10-705Z-proof.json"
+}

@@ -1,0 +1,599 @@
+{
+  "sourceSha256": "b26e879e306971a788566309ea83d2550e1e49ac41f4d80eb921cb4b492351fb",
+  "scriptSha256": "2dd90525b0e22144f1a1b1e69f0d27fe7df7c1bfe8cfcd76835ed02e5d59d5f1",
+  "errors": [],
+  "workflows": [
+    {
+      "name": "Keyboard preview and Undo/Redo restore the shown values; a new edit clears Redo; open disclosure and notebook remain intact"
+    },
+    {
+      "name": "Both actions preview the latest saved setup and accurate counts; experiment restoration preserves notes, explanation, reference, lessons and probes"
+    }
+  ],
+  "views": [
+    {
+      "name": "desktop-collapsed",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 844,
+        "scrollWidth": 844,
+        "values": [],
+        "tables": [],
+        "open": false
+      },
+      "axeViolations": [],
+      "file": "desktop-collapsed.png",
+      "sha256": "82b115037f7c4c615474781955ea87b158308bf0fd6c6fc1563e5b77e157b400"
+    },
+    {
+      "name": "phone-empty-history",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 338,
+        "scrollWidth": 338,
+        "values": [],
+        "tables": [],
+        "open": true
+      },
+      "axeViolations": [],
+      "file": "phone-empty-history.png",
+      "sha256": "8c1bb5939ffad091e24516542a04963d29f0079ce4f71a281df2296d1cc6ef5f"
+    },
+    {
+      "name": "desktop-edit-preview",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 844,
+        "scrollWidth": 844,
+        "values": [
+          {
+            "text": "3.3 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "1 V",
+            "direction": "ltr"
+          }
+        ],
+        "tables": [
+          {
+            "width": 806,
+            "scrollWidth": 806
+          }
+        ],
+        "open": true
+      },
+      "axeViolations": [],
+      "file": "desktop-edit-preview.png",
+      "sha256": "7f1c8c6decacf6beb9422856a3a7b2cd8eac8f216015bd1b8d63630f758fd2a3"
+    },
+    {
+      "name": "desktop-both-actions",
+      "width": 1280,
+      "geometry": {
+        "viewport": 1280,
+        "pageWidth": 1280,
+        "width": 844,
+        "scrollWidth": 844,
+        "values": [
+          {
+            "text": "3.3 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "1 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "25 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "7 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "15000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "220 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "330 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "20000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "100",
+            "direction": "ltr"
+          },
+          {
+            "text": "80",
+            "direction": "ltr"
+          },
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "75 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "9 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "22000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "220 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "470 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "4700 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "100",
+            "direction": "ltr"
+          },
+          {
+            "text": "120",
+            "direction": "ltr"
+          }
+        ],
+        "tables": [
+          {
+            "width": 397,
+            "scrollWidth": 397
+          },
+          {
+            "width": 397,
+            "scrollWidth": 397
+          }
+        ],
+        "open": true
+      },
+      "axeViolations": [],
+      "file": "desktop-both-actions.png",
+      "sha256": "79d6b5d4cb1f9f9dd591e85d0598075992e4103efbc162c83a436c1b769ea90e"
+    },
+    {
+      "name": "small-phone-both-actions",
+      "width": 320,
+      "geometry": {
+        "viewport": 320,
+        "pageWidth": 320,
+        "width": 268,
+        "scrollWidth": 268,
+        "values": [
+          {
+            "text": "3.3 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "1 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "25 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "7 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "15000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "220 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "330 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "20000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "100",
+            "direction": "ltr"
+          },
+          {
+            "text": "80",
+            "direction": "ltr"
+          },
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "75 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "9 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "22000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "220 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "470 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "4700 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "100",
+            "direction": "ltr"
+          },
+          {
+            "text": "120",
+            "direction": "ltr"
+          }
+        ],
+        "tables": [
+          {
+            "width": 242,
+            "scrollWidth": 242
+          },
+          {
+            "width": 242,
+            "scrollWidth": 242
+          }
+        ],
+        "open": true
+      },
+      "axeViolations": [],
+      "file": "small-phone-both-actions.png",
+      "sha256": "b0ba6d9b1f2f4ef7e287ea709164a2e2ff093ce2b5df25b34f2fe31a5ecb0bd6"
+    },
+    {
+      "name": "forced-colors",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 338,
+        "scrollWidth": 338,
+        "values": [
+          {
+            "text": "3.3 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "1 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "25 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "7 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "15000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "220 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "330 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "20000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "100",
+            "direction": "ltr"
+          },
+          {
+            "text": "80",
+            "direction": "ltr"
+          },
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "75 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "9 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "22000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "220 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "470 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "4700 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "100",
+            "direction": "ltr"
+          },
+          {
+            "text": "120",
+            "direction": "ltr"
+          }
+        ],
+        "tables": [
+          {
+            "width": 312,
+            "scrollWidth": 312
+          },
+          {
+            "width": 312,
+            "scrollWidth": 312
+          }
+        ],
+        "open": true
+      },
+      "axeViolations": [],
+      "file": "forced-colors.png",
+      "sha256": "b352ebe5a6f325ec5f5b2e6801dc879c28501a00f538206e0e510db0b866e535"
+    },
+    {
+      "name": "rtl-preview",
+      "width": 390,
+      "geometry": {
+        "viewport": 390,
+        "pageWidth": 390,
+        "width": 338,
+        "scrollWidth": 338,
+        "values": [
+          {
+            "text": "3.3 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "1 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "25 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "7 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "15000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "220 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "330 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "20000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "100",
+            "direction": "ltr"
+          },
+          {
+            "text": "80",
+            "direction": "ltr"
+          },
+          {
+            "text": "50 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "75 / 100",
+            "direction": "ltr"
+          },
+          {
+            "text": "5 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "9 V",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "22000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "220 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "470 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "10000 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "4700 Ω",
+            "direction": "ltr"
+          },
+          {
+            "text": "100",
+            "direction": "ltr"
+          },
+          {
+            "text": "120",
+            "direction": "ltr"
+          }
+        ],
+        "tables": [
+          {
+            "width": 312,
+            "scrollWidth": 312
+          },
+          {
+            "width": 312,
+            "scrollWidth": 312
+          }
+        ],
+        "open": true
+      },
+      "axeViolations": [],
+      "file": "rtl-preview.png",
+      "sha256": "477b79b8320a0231ac96a7a1b452710914502212a6d29ca579f6e4a3617efacc"
+    }
+  ],
+  "passed": true,
+  "browserClosed": true
+}

@@ -1,0 +1,1331 @@
+{
+  "completedAt": "2026-10-05T01:20:32.172Z",
+  "completedClientDate": "2026-10-04",
+  "runtimeSha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522",
+  "runtimeBytes": 2445119,
+  "baselineSha256": "d6d5f4ab11cd11b0d3f6c93bf6d88bba9ff5813a6cadd1805a63af55edb79bc9",
+  "sourcePublicExactLF": true,
+  "modelVersion": "2026.10-stock-feedback",
+  "modelAndFrozenConstructionUnchanged": true,
+  "modelSectionSha256": "6a50337dd8dff672518756a0246156e79f84cf19327639f25f0525c27a7bad2a",
+  "originalCaptureAndAppendPreservation": {
+    "measurementConstruction": {
+      "unchanged": true,
+      "sha256": "43f43d8c1764dbf6dd79ffd17a060259551ad68fec7346e77f1b126805799df5"
+    },
+    "citationAppendHelper": {
+      "unchanged": true,
+      "sha256": "22da67740686c78a6d16e40dc4171138f5022c2d162a4781f29f9f8947ca3bfd"
+    },
+    "captureReadinessHelper": {
+      "unchanged": true,
+      "sha256": "0c25be45338f82964bb3d6eaf9c8df127cf18c175c9f30fc2d2e56ec22dfd78a"
+    },
+    "captureAndAppendHandlers": {
+      "unchanged": true,
+      "sha256": "e7a18bda15823d166e85411095a8f3f350375bead70c9c9b246beab3ed072bef"
+    }
+  },
+  "sourceTransition": {
+    "preservedEarlierCandidate": {
+      "file": "before-forced-color-fix-source.js",
+      "bytes": 2444476,
+      "sha256": "8664eb81b13a3ab335f35f5260f60ee38438a3edce05d15f05c11d530f9d83cd",
+      "earlierNativeRuntimeObserved": true
+    },
+    "reason": "The first actual browser attempt found a forced-color contrast violation. One scoped portfolio system-color CSS block was corrected; all executable merge logic was retained, and all 167 selected native cases were repeated on final source.",
+    "earlierCandidatePassesCountTowardFinal": false
+  },
+  "tests": {
+    "distinctPassed": 167,
+    "files": 10,
+    "existingObligationsPassed": 147,
+    "unchangedPriorCases": 144,
+    "intentionalPolicyUpdates": [
+      {
+        "file": "aquaculture_archive_integrity.test.js",
+        "previousName": "Aquaculture exact archive actions and backup integrity treats __proto__ and constructor as literal archive IDs without losing current or incoming originals",
+        "currentName": "Aquaculture exact archive actions and backup integrity treats __proto__ and constructor as literal archive IDs without losing current or incoming originals",
+        "reason": "Retain the different incoming __proto__ original; five records instead of four, with every current original unchanged."
+      },
+      {
+        "file": "aquaculture_archive_integrity.test.js",
+        "previousName": "Aquaculture exact archive actions and backup integrity preserves existing-ID import policy and twelve duplicate originals across repeated idempotent imports",
+        "currentName": "Aquaculture exact archive actions and backup integrity keeps twelve original occurrences for identical imports and rejects an additional distinct same-ID original",
+        "reason": "A different same-ID original must count toward capacity; exact canonical copies remain idempotent at twelve."
+      },
+      {
+        "file": "aquaculture_guided_questions.test.js",
+        "previousName": "Aquaculture guided questions and backup integrity merges backups without silently replacing duplicate records or evicting records beyond capacity",
+        "currentName": "Aquaculture guided questions and backup integrity merges backups without silently replacing duplicate records or evicting records beyond capacity",
+        "reason": "Reject a different same-ID thirteenth original; use an actual exact original for the full-log no-op case."
+      }
+    ],
+    "newPassed": 20,
+    "authorTestSha256": "f1c085f256664b62f8566330f730da59b99a8e1ff63fe49dfc8b8e5aca0a44ac",
+    "revisedTests": [
+      {
+        "file": "aquaculture_archive_integrity.test.js",
+        "sha256": "90e274752851a5e88f4816a48e56b0b1d632ea8abcd6b7581c60c4b97824a3e9",
+        "authorFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_archive_integrity_union_revised.test.js"
+      },
+      {
+        "file": "aquaculture_guided_questions.test.js",
+        "sha256": "b09970cec6b793fe9234ffe39f75455edca34a5d315ba49acec17148cfc828d3",
+        "authorFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_guided_questions_union_revised.test.js"
+      }
+    ],
+    "priorManifestSha256": "13ff862ab45d426bf9b68d192ba8a5391afe30622762c29a5c479cbb9449bf90",
+    "full269PriorSuiteRepeated": false,
+    "attempts": [
+      {
+        "result": "native/batch-2-tests.json",
+        "log": "native/batch-2-tests.log",
+        "startedAt": "2026-10-05T00:32:26.280Z",
+        "runtimeSha256": "8664eb81b13a3ab335f35f5260f60ee38438a3edce05d15f05c11d530f9d83cd",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_evidence_recovery.test.js",
+            "sha256": "3ff43bab63f37b41346e72cc497654362879139c59e267b78e35b19616b684fc",
+            "source": "validated-tests/aquaculture_evidence_recovery.test.js"
+          },
+          {
+            "file": "aquaculture_learning_runtime.test.js",
+            "sha256": "9063d0e67747fffaac91959f444f1003cfe952ac7551e6b72d33c0545a38ae20",
+            "source": "validated-tests/aquaculture_learning_runtime.test.js"
+          },
+          {
+            "file": "aquaculture_measurement_notebook.test.js",
+            "sha256": "99979165383f3b4116393366402cc21b4e7bd2438425bd99e5f3b1d7f32057c1",
+            "source": "validated-tests/aquaculture_measurement_notebook.test.js"
+          },
+          {
+            "file": "aquaculture_evidence_save_readiness.test.js",
+            "sha256": "1e27cc1752e6e630c54f597501ec4ff6b61247875eb3868515a013a07a550723",
+            "source": "validated-tests/aquaculture_evidence_save_readiness.test.js"
+          }
+        ],
+        "cases": 44,
+        "passed": 44,
+        "failed": 0,
+        "pending": 0,
+        "nativeSuccess": true,
+        "contributesFinalPasses": false,
+        "failureAssertions": [],
+        "correctionNote": null
+      },
+      {
+        "result": "native/batch-3-tests.json",
+        "log": "native/batch-3-tests.log",
+        "startedAt": "2026-10-05T00:33:33.380Z",
+        "runtimeSha256": "8664eb81b13a3ab335f35f5260f60ee38438a3edce05d15f05c11d530f9d83cd",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_measurement_recovery.test.js",
+            "sha256": "17290fc7af75449f2331ec29bb6c411a816ccf3892626fde3d13920600e98571",
+            "source": "validated-tests/aquaculture_measurement_recovery.test.js"
+          }
+        ],
+        "cases": 26,
+        "passed": 26,
+        "failed": 0,
+        "pending": 0,
+        "nativeSuccess": true,
+        "contributesFinalPasses": false,
+        "failureAssertions": [],
+        "correctionNote": null
+      },
+      {
+        "result": "native/batch-5-tests.json",
+        "log": "native/batch-5-tests.log",
+        "startedAt": "2026-10-05T00:40:51.325Z",
+        "runtimeSha256": "8664eb81b13a3ab335f35f5260f60ee38438a3edce05d15f05c11d530f9d83cd",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_backup_union.test.js",
+            "sha256": "ecf68b55b5462716b6bc6f125ad35e1c84dd72ef09cc57cef6cf6b73a11628c5",
+            "source": "originals/native-initial-executed.test.js"
+          }
+        ],
+        "cases": 20,
+        "passed": 19,
+        "failed": 1,
+        "pending": 0,
+        "nativeSuccess": false,
+        "contributesFinalPasses": false,
+        "failureAssertions": [
+          {
+            "file": "aquaculture_backup_union.test.js",
+            "name": "Aquaculture complete-original backup union clears the prior summary before rejecting a raw thirteen-record backup while preserving both recovery controls and current work",
+            "status": "failed",
+            "run": "batch-5-tests.json",
+            "failureMessages": [
+              "AssertionError: expected '{\"region\":\"maine\",\"completedMissions\"…' to be '{\"region\":\"maine\",\"completedMissions\"…' // Object.is equality\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aquaculture_backup_union.test.js:192:116\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ],
+        "correctionNote": "Actual 19/20 assertion failure compared storage across ordinary Home/Ecosystem navigation. Corrected the test to capture exact bytes immediately around import dispatch; workspace and both recovery assertions retained. Exact executed ecf source is preserved."
+      },
+      {
+        "result": "native/batch-5-tests-final.json",
+        "log": "native/batch-5-tests-final.log",
+        "startedAt": "2026-10-05T00:43:34.371Z",
+        "runtimeSha256": "8664eb81b13a3ab335f35f5260f60ee38438a3edce05d15f05c11d530f9d83cd",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_backup_union.test.js",
+            "sha256": "2c0f7fce48983eed8d405cb072fbefc41b19000e91668fd9aa6d0442b5baa917",
+            "source": "originals/native-second-executed.test.js"
+          }
+        ],
+        "cases": 20,
+        "passed": 19,
+        "failed": 1,
+        "pending": 0,
+        "nativeSuccess": false,
+        "contributesFinalPasses": false,
+        "failureAssertions": [
+          {
+            "file": "aquaculture_backup_union.test.js",
+            "name": "Aquaculture complete-original backup union clears the prior summary before rejecting a raw thirteen-record backup while preserving both recovery controls and current work",
+            "status": "failed",
+            "run": "batch-5-tests-final.json",
+            "failureMessages": [
+              "AssertionError: expected [ …(2) ] to deeply equal [ …(2) ]\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aquaculture_backup_union.test.js:196:64\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1903:20"
+            ]
+          }
+        ],
+        "correctionNote": "Actual 19/20 archive-order assertion failure used an Undo baseline captured before its preparatory successful import. Corrected the fixture to capture the actual post-import savedAt-desc order; every exact original/draft/recovery check retained. Exact executed 2c source is preserved."
+      },
+      {
+        "result": "native/batch-5-tests-accepted.json",
+        "log": "native/batch-5-tests-accepted.log",
+        "startedAt": "2026-10-05T00:46:00.754Z",
+        "runtimeSha256": "8664eb81b13a3ab335f35f5260f60ee38438a3edce05d15f05c11d530f9d83cd",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_backup_union.test.js",
+            "sha256": "f1c085f256664b62f8566330f730da59b99a8e1ff63fe49dfc8b8e5aca0a44ac",
+            "source": "validated-tests/aquaculture_backup_union.test.js"
+          }
+        ],
+        "cases": 20,
+        "passed": 20,
+        "failed": 0,
+        "pending": 0,
+        "nativeSuccess": true,
+        "contributesFinalPasses": false,
+        "failureAssertions": [],
+        "correctionNote": null
+      },
+      {
+        "result": "native/batch-1-tests.json",
+        "log": "native/batch-1-tests.log",
+        "startedAt": "2026-10-05T00:48:24.845Z",
+        "runtimeSha256": "8664eb81b13a3ab335f35f5260f60ee38438a3edce05d15f05c11d530f9d83cd",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_saved_investigations.test.js",
+            "sha256": "a6a904cbfaa2f5d2c348466e3ff8c9400cb567c2a8a43dbb2b2cdb9930414504",
+            "source": "validated-tests/aquaculture_saved_investigations.test.js"
+          },
+          {
+            "file": "aquaculture_saved_comparison.test.js",
+            "sha256": "6d7126510bcc9dc06f86537bd6e7fe3425f3d7d2007cdec0d8ecb7eff59eaedb",
+            "source": "validated-tests/aquaculture_saved_comparison.test.js"
+          },
+          {
+            "file": "aquaculture_guided_questions.test.js",
+            "sha256": "b09970cec6b793fe9234ffe39f75455edca34a5d315ba49acec17148cfc828d3",
+            "source": "validated-tests/aquaculture_guided_questions.test.js"
+          }
+        ],
+        "cases": 47,
+        "passed": 47,
+        "failed": 0,
+        "pending": 0,
+        "nativeSuccess": true,
+        "contributesFinalPasses": false,
+        "failureAssertions": [],
+        "correctionNote": null
+      },
+      {
+        "result": "native/batch-4-tests.json",
+        "log": "native/batch-4-tests.log",
+        "startedAt": "2026-10-05T00:50:15.225Z",
+        "runtimeSha256": "8664eb81b13a3ab335f35f5260f60ee38438a3edce05d15f05c11d530f9d83cd",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_archive_integrity.test.js",
+            "sha256": "90e274752851a5e88f4816a48e56b0b1d632ea8abcd6b7581c60c4b97824a3e9",
+            "source": "validated-tests/aquaculture_archive_integrity.test.js"
+          }
+        ],
+        "cases": 30,
+        "passed": 30,
+        "failed": 0,
+        "pending": 0,
+        "nativeSuccess": true,
+        "contributesFinalPasses": false,
+        "failureAssertions": [],
+        "correctionNote": null
+      },
+      {
+        "result": "native/final-batch-1.json",
+        "log": "native/final-batch-1.log",
+        "startedAt": "2026-10-05T01:02:24.010Z",
+        "runtimeSha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_saved_investigations.test.js",
+            "sha256": "a6a904cbfaa2f5d2c348466e3ff8c9400cb567c2a8a43dbb2b2cdb9930414504",
+            "source": "validated-tests/aquaculture_saved_investigations.test.js"
+          },
+          {
+            "file": "aquaculture_saved_comparison.test.js",
+            "sha256": "6d7126510bcc9dc06f86537bd6e7fe3425f3d7d2007cdec0d8ecb7eff59eaedb",
+            "source": "validated-tests/aquaculture_saved_comparison.test.js"
+          },
+          {
+            "file": "aquaculture_guided_questions.test.js",
+            "sha256": "b09970cec6b793fe9234ffe39f75455edca34a5d315ba49acec17148cfc828d3",
+            "source": "validated-tests/aquaculture_guided_questions.test.js"
+          }
+        ],
+        "cases": 47,
+        "passed": 46,
+        "failed": 1,
+        "pending": 0,
+        "nativeSuccess": false,
+        "contributesFinalPasses": true,
+        "failureAssertions": [
+          {
+            "file": "aquaculture_guided_questions.test.js",
+            "name": "Aquaculture guided questions and backup integrity makes oxygen-buffer a reproducible one-input investigation without replacing the previous draft",
+            "status": "failed",
+            "run": "final-batch-1.json",
+            "failureMessages": [
+              "Error: STACK_TRACE_ERROR\n    at beforeEach (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:719:26)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aquaculture_guided_questions.test.js:18:3\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:40\n    at runWithSuite (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2258:8)\n    at Object.collect (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:10)\n    at Object.collect (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1893:54)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2462:26\n    at collectTests (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)\n    at startTests (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:3277:17)"
+            ]
+          }
+        ],
+        "correctionNote": "Actual final-source 46/47 failure in guided oxygen-buffer beforeEach reported STACK_TRACE_ERROR at 22406.8798 ms. The raw log does not identify a timeout cause. Complete batch rechecked with identical source/tests and normal test/hook limits; this failed execution remains in assertion history."
+      },
+      {
+        "result": "native/final-batch-1-recheck.json",
+        "log": "native/final-batch-1-recheck.log",
+        "startedAt": "2026-10-05T01:08:17.012Z",
+        "runtimeSha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_saved_investigations.test.js",
+            "sha256": "a6a904cbfaa2f5d2c348466e3ff8c9400cb567c2a8a43dbb2b2cdb9930414504",
+            "source": "validated-tests/aquaculture_saved_investigations.test.js"
+          },
+          {
+            "file": "aquaculture_saved_comparison.test.js",
+            "sha256": "6d7126510bcc9dc06f86537bd6e7fe3425f3d7d2007cdec0d8ecb7eff59eaedb",
+            "source": "validated-tests/aquaculture_saved_comparison.test.js"
+          },
+          {
+            "file": "aquaculture_guided_questions.test.js",
+            "sha256": "b09970cec6b793fe9234ffe39f75455edca34a5d315ba49acec17148cfc828d3",
+            "source": "validated-tests/aquaculture_guided_questions.test.js"
+          }
+        ],
+        "cases": 47,
+        "passed": 46,
+        "failed": 1,
+        "pending": 0,
+        "nativeSuccess": false,
+        "contributesFinalPasses": true,
+        "failureAssertions": [
+          {
+            "file": "aquaculture_guided_questions.test.js",
+            "name": "Aquaculture guided questions and backup integrity merges backups without silently replacing duplicate records or evicting records beyond capacity",
+            "status": "failed",
+            "run": "final-batch-1-recheck.json",
+            "failureMessages": [
+              "Error: STACK_TRACE_ERROR\n    at beforeEach (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:719:26)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aquaculture_guided_questions.test.js:18:3\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:40\n    at runWithSuite (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2258:8)\n    at Object.collect (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:10)\n    at Object.collect (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1893:54)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2462:26\n    at collectTests (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)\n    at startTests (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:3277:17)"
+            ]
+          }
+        ],
+        "correctionNote": "Actual unchanged full-batch recheck passed 46/47 and failed a different guided-question beforeEach (backup capacity policy), reported STACK_TRACE_ERROR. Retained as a separate actual setup failure with no inferred cause. A later isolated guided file executed all five cases with unchanged source, tests and limits."
+      },
+      {
+        "result": "native/guided-setup-diagnostics.json",
+        "log": "native/guided-setup-diagnostics.log",
+        "startedAt": "2026-10-05T01:12:28.007Z",
+        "runtimeSha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_guided_questions.test.js",
+            "sha256": "b09970cec6b793fe9234ffe39f75455edca34a5d315ba49acec17148cfc828d3",
+            "source": "validated-tests/aquaculture_guided_questions.test.js"
+          }
+        ],
+        "cases": 5,
+        "passed": 5,
+        "failed": 0,
+        "pending": 0,
+        "nativeSuccess": true,
+        "contributesFinalPasses": true,
+        "failureAssertions": [],
+        "correctionNote": "All five guided-question cases actually passed in a clean single-file worker, with default plus JSON reporters and unchanged source/tests/time limits. These five latest executed assertions resolve earlier setup failures; no synthetic combined result or skipped-case credit."
+      },
+      {
+        "result": "native/final-batch-2.json",
+        "log": "native/final-batch-2.log",
+        "startedAt": "2026-10-05T01:15:20.886Z",
+        "runtimeSha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_evidence_recovery.test.js",
+            "sha256": "3ff43bab63f37b41346e72cc497654362879139c59e267b78e35b19616b684fc",
+            "source": "validated-tests/aquaculture_evidence_recovery.test.js"
+          },
+          {
+            "file": "aquaculture_learning_runtime.test.js",
+            "sha256": "9063d0e67747fffaac91959f444f1003cfe952ac7551e6b72d33c0545a38ae20",
+            "source": "validated-tests/aquaculture_learning_runtime.test.js"
+          },
+          {
+            "file": "aquaculture_measurement_notebook.test.js",
+            "sha256": "99979165383f3b4116393366402cc21b4e7bd2438425bd99e5f3b1d7f32057c1",
+            "source": "validated-tests/aquaculture_measurement_notebook.test.js"
+          },
+          {
+            "file": "aquaculture_evidence_save_readiness.test.js",
+            "sha256": "1e27cc1752e6e630c54f597501ec4ff6b61247875eb3868515a013a07a550723",
+            "source": "validated-tests/aquaculture_evidence_save_readiness.test.js"
+          }
+        ],
+        "cases": 44,
+        "passed": 44,
+        "failed": 0,
+        "pending": 0,
+        "nativeSuccess": true,
+        "contributesFinalPasses": true,
+        "failureAssertions": [],
+        "correctionNote": null
+      },
+      {
+        "result": "native/final-batch-3.json",
+        "log": "native/final-batch-3.log",
+        "startedAt": "2026-10-05T01:18:14.514Z",
+        "runtimeSha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_measurement_recovery.test.js",
+            "sha256": "17290fc7af75449f2331ec29bb6c411a816ccf3892626fde3d13920600e98571",
+            "source": "validated-tests/aquaculture_measurement_recovery.test.js"
+          }
+        ],
+        "cases": 26,
+        "passed": 26,
+        "failed": 0,
+        "pending": 0,
+        "nativeSuccess": true,
+        "contributesFinalPasses": true,
+        "failureAssertions": [],
+        "correctionNote": null
+      },
+      {
+        "result": "native/final-batch-4.json",
+        "log": "native/final-batch-4.log",
+        "startedAt": "2026-10-05T01:18:50.432Z",
+        "runtimeSha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_archive_integrity.test.js",
+            "sha256": "90e274752851a5e88f4816a48e56b0b1d632ea8abcd6b7581c60c4b97824a3e9",
+            "source": "validated-tests/aquaculture_archive_integrity.test.js"
+          }
+        ],
+        "cases": 30,
+        "passed": 30,
+        "failed": 0,
+        "pending": 0,
+        "nativeSuccess": true,
+        "contributesFinalPasses": true,
+        "failureAssertions": [],
+        "correctionNote": null
+      },
+      {
+        "result": "native/final-batch-5.json",
+        "log": "native/final-batch-5.log",
+        "startedAt": "2026-10-05T01:19:20.944Z",
+        "runtimeSha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522",
+        "testSnapshots": [
+          {
+            "file": "aquaculture_backup_union.test.js",
+            "sha256": "f1c085f256664b62f8566330f730da59b99a8e1ff63fe49dfc8b8e5aca0a44ac",
+            "source": "validated-tests/aquaculture_backup_union.test.js"
+          }
+        ],
+        "cases": 20,
+        "passed": 20,
+        "failed": 0,
+        "pending": 0,
+        "nativeSuccess": true,
+        "contributesFinalPasses": true,
+        "failureAssertions": [],
+        "correctionNote": null
+      }
+    ],
+    "startupOnlyLogs": [],
+    "finalSourceAndTestFailures": [
+      {
+        "file": "aquaculture_guided_questions.test.js",
+        "name": "Aquaculture guided questions and backup integrity makes oxygen-buffer a reproducible one-input investigation without replacing the previous draft",
+        "status": "failed",
+        "run": "final-batch-1.json",
+        "failureMessages": [
+          "Error: STACK_TRACE_ERROR\n    at beforeEach (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:719:26)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aquaculture_guided_questions.test.js:18:3\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:40\n    at runWithSuite (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2258:8)\n    at Object.collect (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:10)\n    at Object.collect (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1893:54)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2462:26\n    at collectTests (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)\n    at startTests (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:3277:17)"
+        ]
+      },
+      {
+        "file": "aquaculture_guided_questions.test.js",
+        "name": "Aquaculture guided questions and backup integrity merges backups without silently replacing duplicate records or evicting records beyond capacity",
+        "status": "failed",
+        "run": "final-batch-1-recheck.json",
+        "failureMessages": [
+          "Error: STACK_TRACE_ERROR\n    at beforeEach (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:719:26)\n    at C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/aquaculture_guided_questions.test.js:18:3\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:40\n    at runWithSuite (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2258:8)\n    at Object.collect (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1889:10)\n    at Object.collect (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:1893:54)\n    at processTicksAndRejections (node:internal/process/task_queues:103:5)\n    at file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2462:26\n    at collectTests (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:2433:3)\n    at startTests (file:///C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/node_modules/@vitest/runner/dist/chunk-artifact.js:3277:17)"
+        ]
+      }
+    ],
+    "strategy": "Five serial focused native batches. Only latest executed assertions on final runtime and final test-source hashes count. Earlier fixture attempts, startup logs and filtered skips cannot manufacture final passes.",
+    "oneWorker": true,
+    "defaultTimeoutMs": 30000,
+    "existingShorterLimitsUnchanged": true,
+    "automaticRetries": 0,
+    "runnerSha256": "eac53c96917e644e3b9882377a24891e1dfb2fee5decf8aab0b9b67819f75ade",
+    "artifacts": [
+      {
+        "file": "native/batch-1-tests.json",
+        "bytes": 21939,
+        "sha256": "2a0a11ee9df994b786e8cf2fde86742c32bfa35999dd1380bc934cd5045975b2"
+      },
+      {
+        "file": "native/batch-1-tests.log",
+        "bytes": 1113,
+        "sha256": "30e31222e8c0fa2990ea1add716f8a937a8f82285fe8d6da368d8b434a8fd7ac"
+      },
+      {
+        "file": "native/batch-2-tests.json",
+        "bytes": 19146,
+        "sha256": "cdae99f30244a63e6deab8c48b3bb3e1c6130cd0792bc1361971bff04c049fcd"
+      },
+      {
+        "file": "native/batch-2-tests.log",
+        "bytes": 1304,
+        "sha256": "2764e5426a191f1bc1cd894f8ed4ae83dbff7924a1f1f3d5b94eded4ed211b96"
+      },
+      {
+        "file": "native/batch-3-tests.json",
+        "bytes": 11311,
+        "sha256": "b84d2086bf71d8c847639725228b44f34429e72a4408ff1dd0027674a1547f1c"
+      },
+      {
+        "file": "native/batch-3-tests.log",
+        "bytes": 763,
+        "sha256": "a2d1cc595111489704526a06a514edb7a9139421a29a49d4ce9538ab5ae030cd"
+      },
+      {
+        "file": "native/batch-4-tests.json",
+        "bytes": 14464,
+        "sha256": "22669728f5c9b3febcff6fe641eb99b2f2a9d434a41744caa894dec0be8f9b78"
+      },
+      {
+        "file": "native/batch-4-tests.log",
+        "bytes": 757,
+        "sha256": "7bb36dd36ced07a0ff6ad19e20e74119a78bc4bb23850351b99a1f9044158ebc"
+      },
+      {
+        "file": "native/batch-5-tests-accepted.json",
+        "bytes": 9313,
+        "sha256": "7cf99e3e11bd7f4d2d8a0d61e437804fb6b9019410859828a0b2ead2695c4d94"
+      },
+      {
+        "file": "native/batch-5-tests-accepted.log",
+        "bytes": 765,
+        "sha256": "e049a15969559bd3643bdac6a8e4f812c49de8a342e265e530ba7a2b4d6aaca4"
+      },
+      {
+        "file": "native/batch-5-tests-final.json",
+        "bytes": 9610,
+        "sha256": "11df3d2d7b81ffc88d4749af5469618b4df2c037cb5064a0250d02290034460a"
+      },
+      {
+        "file": "native/batch-5-tests-final.log",
+        "bytes": 759,
+        "sha256": "b982e9140d23f61a658642c06f24dca0e848f7d950c75a80e092c25edd123a2d"
+      },
+      {
+        "file": "native/batch-5-tests.json",
+        "bytes": 9724,
+        "sha256": "b63d1542ee4cbaa4017e58c899dc006d6df928fac3d66e0cd10f8cba556ca914"
+      },
+      {
+        "file": "native/batch-5-tests.log",
+        "bytes": 747,
+        "sha256": "ff7defc91d67457cbfa3d50e0b661a49cc6aa6236969320a3d3dd95704b899bb"
+      },
+      {
+        "file": "native/final-batch-1-recheck.json",
+        "bytes": 23208,
+        "sha256": "efd297cddb6818e1c36be65d6d06bac3ec7da0f089b27c6689f44aef0a8d630c"
+      },
+      {
+        "file": "native/final-batch-1-recheck.log",
+        "bytes": 1129,
+        "sha256": "13401616cee174623b4fd0dbd0a398b80b5c816c463e221b251914e8996605db"
+      },
+      {
+        "file": "native/final-batch-1.json",
+        "bytes": 23234,
+        "sha256": "4e0935cd63970748c0d9ee2e8192e56fc3308dc7e4c31ebc11c521bf57478b90"
+      },
+      {
+        "file": "native/final-batch-1.log",
+        "bytes": 1113,
+        "sha256": "b5200855974a0f784afcfc242ef54e536d17cf79b734099a2fa5f9cf0059fba7"
+      },
+      {
+        "file": "native/final-batch-2.json",
+        "bytes": 19188,
+        "sha256": "f54d84824fec826f5c6cc6e0236e9cba196af60f4fbf6c8f63e7d75d383cb264"
+      },
+      {
+        "file": "native/final-batch-2.log",
+        "bytes": 1304,
+        "sha256": "497269d9f915cdbf38becafa195814bae9cd34ab554a295a676fdc774ab20304"
+      },
+      {
+        "file": "native/final-batch-3.json",
+        "bytes": 11298,
+        "sha256": "7a7ac7c1ad3b4a0d2a006891f684a283ac0022572ff9e0a210747766997bc3d9"
+      },
+      {
+        "file": "native/final-batch-3.log",
+        "bytes": 763,
+        "sha256": "4178b2a50fb298b5873fd9147030f7fae5a52ed98666697bb676177a8e3759dd"
+      },
+      {
+        "file": "native/final-batch-4.json",
+        "bytes": 14460,
+        "sha256": "f490375bbd6cf8b7b2e37267ff94bcff21d6d59cf029b4662997349bbf183b47"
+      },
+      {
+        "file": "native/final-batch-4.log",
+        "bytes": 757,
+        "sha256": "35b078f85665ce29fd5166dd3a5c5cb03339673b1f07fe704dfbc3e1275b39e3"
+      },
+      {
+        "file": "native/final-batch-5.json",
+        "bytes": 9341,
+        "sha256": "929386e59e215c74df581df33f74bca3cb4839ec2416524bd84a813d9a0a66b9"
+      },
+      {
+        "file": "native/final-batch-5.log",
+        "bytes": 747,
+        "sha256": "6c8f9ead149573dcc683eb44dbabd88dfffc8409c1968454415c9994f2d3cedd"
+      },
+      {
+        "file": "native/guided-setup-diagnostics.json",
+        "bytes": 2808,
+        "sha256": "db8a4e9ce09e0a3d7bc4464442370ac24611fc3437656be95b34299a4e2eb60c"
+      },
+      {
+        "file": "native/guided-setup-diagnostics.log",
+        "bytes": 1746,
+        "sha256": "95d2374f176a17c378e71eaaedc6746a28675bb14fcef47405b5596f022db129"
+      }
+    ]
+  },
+  "browser": {
+    "runtimeSha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522",
+    "startedAt": "2026-10-05T01:00:05.460Z",
+    "authorHarnessSha256": "27c4241037ff9aaa16cbf4235f76d6e24995c474848a6cb9d40e165cc7905310",
+    "groups": 5,
+    "resultEntries": 5,
+    "screenshots": 26,
+    "axeScans": 16,
+    "violations": 0,
+    "incompleteScans": 8,
+    "incompleteRules": [
+      "color-contrast"
+    ],
+    "incompleteDetails": [
+      {
+        "file": "desktop-same-id-added-1280-axe.json",
+        "incomplete": [
+          "color-contrast"
+        ]
+      },
+      {
+        "file": "device-failure-both-recoveries-390-axe.json",
+        "incomplete": [
+          "color-contrast"
+        ]
+      },
+      {
+        "file": "device-save-rejected-summary-390-axe.json",
+        "incomplete": [
+          "color-contrast"
+        ]
+      },
+      {
+        "file": "draft-kept-summary-390-axe.json",
+        "incomplete": [
+          "color-contrast"
+        ]
+      },
+      {
+        "file": "draft-restored-summary-390-axe.json",
+        "incomplete": [
+          "color-contrast"
+        ]
+      },
+      {
+        "file": "full-log-variant-rejection-320-axe.json",
+        "incomplete": [
+          "color-contrast"
+        ]
+      },
+      {
+        "file": "phone-repeat-no-op-390-axe.json",
+        "incomplete": [
+          "color-contrast"
+        ]
+      },
+      {
+        "file": "raw-thirteen-rejection-390-axe.json",
+        "incomplete": [
+          "color-contrast"
+        ]
+      }
+    ],
+    "runnerSha256": "aa040c8edba2ff05cf777624c62508a8a34ec5e5aa28da79c0a33a4f0a3218e1",
+    "scope": "Backup import summary, archive preservation/capacity and related draft/recovery controls, not the entire app.",
+    "manualReview": {
+      "rootAccepted": true,
+      "independentAccepted": true,
+      "suppliedBy": "Explicit manual-acceptance.json and AQUACULTURE_MANUAL_ACCEPTANCE=confirmed"
+    },
+    "artifacts": [
+      {
+        "file": "browser/actual-model-fixtures.json",
+        "bytes": 18187,
+        "sha256": "b5217e25a0a3fd88e765bba363754f029e16515f3c4739abd612e77b190c0e9d"
+      },
+      {
+        "file": "browser/desktop-same-id-added-1280-axe.json",
+        "bytes": 66,
+        "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+      },
+      {
+        "file": "browser/desktop-same-id-added-1280-forced-colors-axe.json",
+        "bytes": 42,
+        "sha256": "c9062adb6dd8206f866ab7af94f0ca38524b7f2478f9d3d0ade0b62405b121a5"
+      },
+      {
+        "file": "browser/desktop-same-id-added-1280-portfolio-forced-colors.png",
+        "bytes": 11901,
+        "sha256": "731bfbd42898bdcd006371660a3919f8584fd00f5d0e23a70e425c2259aac5c0"
+      },
+      {
+        "file": "browser/desktop-same-id-added-1280-portfolio.png",
+        "bytes": 19123,
+        "sha256": "5cfdfb4797cbf6b23467d6e9d636e228158ea5edbcc099dd489d9a46c3dbf8f2"
+      },
+      {
+        "file": "browser/desktop-same-id-added-1280-summary-forced-colors.png",
+        "bytes": 3489,
+        "sha256": "46f34c292176e99debd1d44353fcb64cacdb7378d5949c19adf4843effda95e9"
+      },
+      {
+        "file": "browser/desktop-same-id-added-1280-summary.png",
+        "bytes": 4997,
+        "sha256": "20750e03557dbedf2f537c651b0ccfb1d5ee21205a68befecbf534608fce8546"
+      },
+      {
+        "file": "browser/device-failure-both-recoveries-390-archive-forced-colors.png",
+        "bytes": 21974,
+        "sha256": "3507d1a69643573cef7dd3dd9272a887fa6332801011be827ecec2d0b9c9f549"
+      },
+      {
+        "file": "browser/device-failure-both-recoveries-390-archive.png",
+        "bytes": 35246,
+        "sha256": "6c09301f99313529ad354a692c081b5048347c5e20968dfd111e13502e2e5bd4"
+      },
+      {
+        "file": "browser/device-failure-both-recoveries-390-axe.json",
+        "bytes": 66,
+        "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+      },
+      {
+        "file": "browser/device-failure-both-recoveries-390-focus-paint.json",
+        "bytes": 137,
+        "sha256": "b0b4cdc9bdcf2f733f235b89465a2da50bce0b31d251560a89d2efe56b11983b"
+      },
+      {
+        "file": "browser/device-failure-both-recoveries-390-forced-colors-axe.json",
+        "bytes": 42,
+        "sha256": "c9062adb6dd8206f866ab7af94f0ca38524b7f2478f9d3d0ade0b62405b121a5"
+      },
+      {
+        "file": "browser/device-failure-both-recoveries-390-undo-forced-colors.png",
+        "bytes": 3443,
+        "sha256": "2502fb3173ff874e1caf0c04c1468c2d1c73afcd94ec2acf7e97c8e1ab3522e3"
+      },
+      {
+        "file": "browser/device-failure-both-recoveries-390-undo.png",
+        "bytes": 5019,
+        "sha256": "f1ad95eb9cd38068254acc36ffc6babc2fcac30301c1507f2e9a650f4bd1d8a0"
+      },
+      {
+        "file": "browser/device-save-rejected-summary-390-axe.json",
+        "bytes": 66,
+        "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+      },
+      {
+        "file": "browser/device-save-rejected-summary-390-forced-colors-axe.json",
+        "bytes": 42,
+        "sha256": "c9062adb6dd8206f866ab7af94f0ca38524b7f2478f9d3d0ade0b62405b121a5"
+      },
+      {
+        "file": "browser/device-save-rejected-summary-390-portfolio-forced-colors.png",
+        "bytes": 8221,
+        "sha256": "2e17905e32dc7d7e36fcd655c0c8ee4c8d6219f029617fee60901ea580df6f58"
+      },
+      {
+        "file": "browser/device-save-rejected-summary-390-portfolio.png",
+        "bytes": 11701,
+        "sha256": "5a47d7a19f4a7571463e0e04cf06ed90615a960b9c361ab8e63161a1a1cb9710"
+      },
+      {
+        "file": "browser/draft-kept-summary-390-axe.json",
+        "bytes": 66,
+        "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+      },
+      {
+        "file": "browser/draft-kept-summary-390-forced-colors-axe.json",
+        "bytes": 42,
+        "sha256": "c9062adb6dd8206f866ab7af94f0ca38524b7f2478f9d3d0ade0b62405b121a5"
+      },
+      {
+        "file": "browser/draft-kept-summary-390-portfolio-forced-colors.png",
+        "bytes": 11384,
+        "sha256": "0a1a3c89a09cff85c2eb4d820e91e4f9202a90b69b1335fe26b4510289f5bca8"
+      },
+      {
+        "file": "browser/draft-kept-summary-390-portfolio.png",
+        "bytes": 17212,
+        "sha256": "ee86bab2f0de07a9584a71d55bf5e4e93264d9f004340196599bd2aa764f08eb"
+      },
+      {
+        "file": "browser/draft-kept-summary-390-summary-forced-colors.png",
+        "bytes": 2898,
+        "sha256": "a22c7fbb23f5133d1b5f29fe1d1b6fc7017d0122277dba216679202acc97fe3c"
+      },
+      {
+        "file": "browser/draft-kept-summary-390-summary.png",
+        "bytes": 4154,
+        "sha256": "3437d4549e6424baf2c183ba07a6da76736df39af005ba2ee9db1675c50f414e"
+      },
+      {
+        "file": "browser/draft-restored-summary-390-axe.json",
+        "bytes": 66,
+        "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+      },
+      {
+        "file": "browser/draft-restored-summary-390-forced-colors-axe.json",
+        "bytes": 42,
+        "sha256": "c9062adb6dd8206f866ab7af94f0ca38524b7f2478f9d3d0ade0b62405b121a5"
+      },
+      {
+        "file": "browser/draft-restored-summary-390-portfolio-forced-colors.png",
+        "bytes": 11467,
+        "sha256": "e7c2f9ca99f2a409ee0c2c0fd8cef024dda1050daa942f0e0fa3afe40b00ab7d"
+      },
+      {
+        "file": "browser/draft-restored-summary-390-portfolio.png",
+        "bytes": 17283,
+        "sha256": "46208fe6479eb248651bec6b0b57347b536ba784bfdde6767f7c4b936418a808"
+      },
+      {
+        "file": "browser/draft-restored-summary-390-summary-forced-colors.png",
+        "bytes": 2949,
+        "sha256": "ccffa1a6841f643b4c7a80ea34946fa72466d27b1fd613a241d74db94342ecc2"
+      },
+      {
+        "file": "browser/draft-restored-summary-390-summary.png",
+        "bytes": 4298,
+        "sha256": "642ab1857c2404aeba39baec3023dabbf4efb8deae89382df4ddb25e359cb7f7"
+      },
+      {
+        "file": "browser/execution.log",
+        "bytes": 2367,
+        "sha256": "04ecd42d9ce96a3a4affa95c32e0577316ae3f610000d98641a4a4883bc62b23"
+      },
+      {
+        "file": "browser/full-log-variant-rejected-rejection.json",
+        "bytes": 259680,
+        "sha256": "d72fd5c67965a201aa0033425ef50a87777b5915ab3d655dc5ff7d61e69205c8"
+      },
+      {
+        "file": "browser/full-log-variant-rejection-320-axe.json",
+        "bytes": 66,
+        "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+      },
+      {
+        "file": "browser/full-log-variant-rejection-320-forced-colors-axe.json",
+        "bytes": 42,
+        "sha256": "c9062adb6dd8206f866ab7af94f0ca38524b7f2478f9d3d0ade0b62405b121a5"
+      },
+      {
+        "file": "browser/full-log-variant-rejection-320-portfolio-forced-colors.png",
+        "bytes": 10452,
+        "sha256": "7122b6c865b1c4cb343e36a9c27df4fc01ce6506620428c593412e9875bc4243"
+      },
+      {
+        "file": "browser/full-log-variant-rejection-320-portfolio.png",
+        "bytes": 15396,
+        "sha256": "443def1b6c2a7b2cf100bda911995c2b52893f42a69e29561888c15845387f06"
+      },
+      {
+        "file": "browser/identical-copy-max-count-plan.json",
+        "bytes": 17891,
+        "sha256": "2faf336c9014bd698b94fc1acfe6fda3011054b9250dfa88fcf72d66206ffebb"
+      },
+      {
+        "file": "browser/identical-copy-repeat-no-op-plan.json",
+        "bytes": 17891,
+        "sha256": "3e21687600511cbe9fac6b5960f78ce4d80b69854eca17b9e1036efb5fc5c13d"
+      },
+      {
+        "file": "browser/imported-second-original.html",
+        "bytes": 9888,
+        "sha256": "f63f87bac6304640fa1057a58d4a7dd8b38ccb02414ae090bbd1e775c7f507b4"
+      },
+      {
+        "file": "browser/new-attempt-clears-old-summary-rejection.json",
+        "bytes": 52997,
+        "sha256": "63ae64967d381955f0c20fb742f8aacc1b9e9592c2d0e264d1b191ddb2dbebd4"
+      },
+      {
+        "file": "browser/phone-repeat-no-op-390-axe.json",
+        "bytes": 66,
+        "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+      },
+      {
+        "file": "browser/phone-repeat-no-op-390-forced-colors-axe.json",
+        "bytes": 42,
+        "sha256": "c9062adb6dd8206f866ab7af94f0ca38524b7f2478f9d3d0ade0b62405b121a5"
+      },
+      {
+        "file": "browser/phone-repeat-no-op-390-portfolio-forced-colors.png",
+        "bytes": 11372,
+        "sha256": "1adce84df75ea000a2926fd838cce214fae9205fa559c643dfe0de471e58d02d"
+      },
+      {
+        "file": "browser/phone-repeat-no-op-390-portfolio.png",
+        "bytes": 17204,
+        "sha256": "0d8b70dbcf74c695115723d28f56222f71a46d27d85c736283b45d83ba9c6a78"
+      },
+      {
+        "file": "browser/phone-repeat-no-op-390-summary-forced-colors.png",
+        "bytes": 2853,
+        "sha256": "48668242b056c17417cb6dcc7b84030a6121e2c89e3348f6854d7ea1b97c4b60"
+      },
+      {
+        "file": "browser/phone-repeat-no-op-390-summary.png",
+        "bytes": 4107,
+        "sha256": "dd03a4d6ce6f417431e039508c58c51dbbf798fdf9d51d47c1acab8a4ec49c82"
+      },
+      {
+        "file": "browser/raw-thirteen-input.json",
+        "bytes": 91232,
+        "sha256": "21e7f38642e137730a93cb02c73d475e2cba44cb2afb12d4ed3f61f6e9fcbef3"
+      },
+      {
+        "file": "browser/raw-thirteen-rejected-before-clipping-rejection.json",
+        "bytes": 4350,
+        "sha256": "b916ec274646b2a5e6754d24a2bda8d3fe79d08da142396342ee1c2b2d115f54"
+      },
+      {
+        "file": "browser/raw-thirteen-rejection-390-axe.json",
+        "bytes": 66,
+        "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+      },
+      {
+        "file": "browser/raw-thirteen-rejection-390-forced-colors-axe.json",
+        "bytes": 42,
+        "sha256": "c9062adb6dd8206f866ab7af94f0ca38524b7f2478f9d3d0ade0b62405b121a5"
+      },
+      {
+        "file": "browser/raw-thirteen-rejection-390-portfolio-forced-colors.png",
+        "bytes": 9790,
+        "sha256": "5f9bb0111593b9836e265b631071b1fd962a3c6d4a4b209631058d63c9c10c88"
+      },
+      {
+        "file": "browser/raw-thirteen-rejection-390-portfolio.png",
+        "bytes": 15048,
+        "sha256": "00c152105633fd817eca32b9412998824224426695d91558e9d74d7079cc7dc6"
+      },
+      {
+        "file": "browser/rejected-import-keeps-recoveries-rejection.json",
+        "bytes": 27278,
+        "sha256": "28744bb56824307cf73ddad6c6ac56eeab2f6b236dcd8776a8c254214d9f584b"
+      },
+      {
+        "file": "browser/results.json",
+        "bytes": 2525,
+        "sha256": "cd1a548b96845a8bafb43081d9dc6c9465d6b1c0f7ee37c375ff7a5811cd4ad1"
+      },
+      {
+        "file": "browser/same-id-different-original-plan.json",
+        "bytes": 18031,
+        "sha256": "1b16c29c53f6968faea678030138c25fbcccb92e53aacbdd0d06cdea72b10527"
+      },
+      {
+        "file": "browser/same-id-repeat-no-op-plan.json",
+        "bytes": 18031,
+        "sha256": "6f7bd5c9fc93493ff25e89662334f1a0297674337f9898e5b30b3341e67f8b76"
+      },
+      {
+        "file": "browser/successful-import-clears-recoveries-plan.json",
+        "bytes": 9552,
+        "sha256": "38e74112e1df0e80210633e5c755a84bb07d0d2c59610a24abbf032e71dba333"
+      },
+      {
+        "file": "browser/unfinished-draft-kept-plan.json",
+        "bytes": 3586,
+        "sha256": "725514104ff09696a743069f4811a6340342dda9c5bd952c26d9f85d2e04050c"
+      },
+      {
+        "file": "browser/untouched-draft-restored-plan.json",
+        "bytes": 2276,
+        "sha256": "66f029824930f7b899ac6955e0b8e50e5a05a89c57e86c791edd413855198fb8"
+      }
+    ],
+    "retainedActualAttempts": [
+      {
+        "directory": "browser-attempts/backup-union-browser-failed-forced-color-contrast",
+        "runtimeSha256": "8664eb81b13a3ab335f35f5260f60ee38438a3edce05d15f05c11d530f9d83cd",
+        "startedAt": "2026-10-05T00:51:59.004Z",
+        "authorHarnessSha256": "27c4241037ff9aaa16cbf4235f76d6e24995c474848a6cb9d40e165cc7905310",
+        "status": "failed",
+        "completedGroups": 0,
+        "resultEntries": 0,
+        "axeScans": 2,
+        "scanDiagnostics": [
+          {
+            "file": "desktop-same-id-added-1280-axe.json",
+            "violations": [],
+            "incomplete": [
+              "color-contrast"
+            ]
+          },
+          {
+            "file": "desktop-same-id-added-1280-forced-colors-axe.json",
+            "violations": [
+              {
+                "id": "color-contrast",
+                "affectedNodes": 5
+              }
+            ],
+            "incomplete": []
+          }
+        ],
+        "screenshots": 2,
+        "nativeError": "Error: desktop-same-id-added-1280-forced-colors scoped WCAG A/AA: [{\"id\":\"color-contrast\",\"impact\":\"serious\",\"nodes\":[{\"target\":[\".aq-portfolio-tools > summary\"],\"summary\":\"Fix any of the following:\\n  Element has insufficient color contrast of 1.04 (foreground color: #f8fafc, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1\"},{\"target\":[\"#aq-portfolio-help\"],\"summary\":\"Fix any of the following:\\n  Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 8.6pt (11.5px), font weight: normal). Expected contrast ratio of 4.5:1\"},{\"target\":[\"div:nth-child(2) > label\"],\"summary\":\"Fix any of the following:\\n  Element has insufficient color contrast of 1.04 (foreground color: #f8fafc, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1\"},{\"target\":[\"div > div[role=\\\"status\\\"][aria-live=\\\"polite\\\"]\"],\"summary\":\"Fix any of the following:\\n  Element has insufficient color contrast of 1.21 (foreground color: #bbf7d0, background color: #ffffff, font size: 8.6pt (11.5px), font weight: bold). Expected contrast ratio of 4.5:1\"},{\"target\":[\"p[data-testid=\\\"aq-learning-import-summary\\\"]\"],\"summary\":\"Fix any of the following:\\n  Element has insufficient color contrast of 1.22 (foreground color: #dbeafe, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1\"}]}]\nExpected: 0\nActual: 1\n    at assert (C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_backup_union_browser.cjs:33:47)\n    at equal (C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_backup_union_browser.cjs:34:33)\n    at portfolioAudit (C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_backup_union_browser.cjs:134:89)\n    at async portfolioVisual (C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_backup_union_browser.cjs:145:95)\n    at async C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_backup_union_browser.cjs:163:172",
+        "contributesFinalPassesScansOrScreenshots": false,
+        "correctionNote": "Actual first browser run stopped before group completion: 2 scans, 2 PNGs, forced-color color-contrast violation affecting 5 portfolio text nodes. Added one scoped 643-byte system-color CSS block; executable logic unchanged. Final browser and all selected native batches rerun on d4 source.",
+        "artifacts": [
+          {
+            "file": "browser-attempts/backup-union-browser-failed-forced-color-contrast/actual-model-fixtures.json",
+            "bytes": 18187,
+            "sha256": "b5217e25a0a3fd88e765bba363754f029e16515f3c4739abd612e77b190c0e9d"
+          },
+          {
+            "file": "browser-attempts/backup-union-browser-failed-forced-color-contrast/desktop-same-id-added-1280-axe.json",
+            "bytes": 66,
+            "sha256": "974efee771038b1547eef24d73bce7d5f736995a535ea540cf8286647d4af2a7"
+          },
+          {
+            "file": "browser-attempts/backup-union-browser-failed-forced-color-contrast/desktop-same-id-added-1280-forced-colors-axe.json",
+            "bytes": 1830,
+            "sha256": "a90dbec6979613ea2ab08968fe3a5a66c5ef63f9a75fed0c74cbf13349016128"
+          },
+          {
+            "file": "browser-attempts/backup-union-browser-failed-forced-color-contrast/desktop-same-id-added-1280-portfolio.png",
+            "bytes": 19123,
+            "sha256": "5cfdfb4797cbf6b23467d6e9d636e228158ea5edbcc099dd489d9a46c3dbf8f2"
+          },
+          {
+            "file": "browser-attempts/backup-union-browser-failed-forced-color-contrast/desktop-same-id-added-1280-summary.png",
+            "bytes": 4997,
+            "sha256": "20750e03557dbedf2f537c651b0ccfb1d5ee21205a68befecbf534608fce8546"
+          },
+          {
+            "file": "browser-attempts/backup-union-browser-failed-forced-color-contrast/executed-browser.cjs",
+            "bytes": 34784,
+            "sha256": "27c4241037ff9aaa16cbf4235f76d6e24995c474848a6cb9d40e165cc7905310"
+          },
+          {
+            "file": "browser-attempts/backup-union-browser-failed-forced-color-contrast/executed-browser.sha256",
+            "bytes": 65,
+            "sha256": "a65f48eeceafce1bdd610f6d1cf50b01f6131b43ec3705eb435f9afdf5dac4ba"
+          },
+          {
+            "file": "browser-attempts/backup-union-browser-failed-forced-color-contrast/execution.log",
+            "bytes": 2287,
+            "sha256": "a27c6c5acc2791035a873edb0e0799afc7b9d055e64b6127b8226c412f041eb2"
+          },
+          {
+            "file": "browser-attempts/backup-union-browser-failed-forced-color-contrast/results.json",
+            "bytes": 2262,
+            "sha256": "a12c68fe025f1fd6cb464e4418b7e45527cb33a85a8ac28321ed89ee541b7ac7"
+          },
+          {
+            "file": "browser-attempts/backup-union-browser-failed-forced-color-contrast/same-id-different-original-plan.json",
+            "bytes": 18031,
+            "sha256": "0d4b133cd00d7229d984a121b3335fbb7bd6bb882fc5e599688a40f9594dace0"
+          }
+        ],
+        "executedAuthorSource": "browser-attempts/backup-union-browser-failed-forced-color-contrast/executed-browser.cjs"
+      }
+    ],
+    "deliveredPreviews": [
+      {
+        "source": "browser/desktop-same-id-added-1280-portfolio.png",
+        "output": "C:/Users/cabba/Documents/Codex/2026-10-02/please/outputs/aquaculture-backup-union-desktop.png",
+        "bytes": 19123,
+        "sha256": "5cfdfb4797cbf6b23467d6e9d636e228158ea5edbcc099dd489d9a46c3dbf8f2"
+      },
+      {
+        "source": "browser/phone-repeat-no-op-390-portfolio.png",
+        "output": "C:/Users/cabba/Documents/Codex/2026-10-02/please/outputs/aquaculture-backup-union-phone.png",
+        "bytes": 17204,
+        "sha256": "0d8b70dbcf74c695115723d28f56222f71a46d27d85c736283b45d83ba9c6a78"
+      },
+      {
+        "source": "browser/desktop-same-id-added-1280-portfolio-forced-colors.png",
+        "output": "C:/Users/cabba/Documents/Codex/2026-10-02/please/outputs/aquaculture-backup-union-forced-colors.png",
+        "bytes": 11901,
+        "sha256": "731bfbd42898bdcd006371660a3919f8584fd00f5d0e23a70e425c2259aac5c0"
+      },
+      {
+        "source": "browser/device-failure-both-recoveries-390-undo-forced-colors.png",
+        "output": "C:/Users/cabba/Documents/Codex/2026-10-02/please/outputs/aquaculture-backup-union-recovery.png",
+        "bytes": 3443,
+        "sha256": "2502fb3173ff874e1caf0c04c1468c2d1c73afcd94ec2acf7e97c8e1ab3522e3"
+      }
+    ]
+  },
+  "originals": {
+    "notes": [
+      {
+        "file": "authored-backup-union-before-review.test.js",
+        "executed": false,
+        "reason": "Unexecuted author draft required deep-clone reference inequality beyond the canonical-array helper contract; removed only those two reference assertions before first execution while retaining deep-freeze/input equality checks."
+      },
+      {
+        "file": "authored-browser-before-review.cjs",
+        "executed": false,
+        "reason": "Unexecuted author draft had an incomplete helper prefix because extraction matched an inner async axe callback. Root restored the complete previously accepted 409 helper prefix before any browser execution; five new workflow bodies retained."
+      },
+      {
+        "file": "native-initial-executed.test.js",
+        "executed": true,
+        "reason": "Exact ecf source executed in first new suite attempt; actual import byte-boundary assertion failure retained."
+      },
+      {
+        "file": "native-second-executed.test.js",
+        "executed": true,
+        "reason": "Exact 2c source executed in second new suite attempt; actual Undo fixture-order assertion failure retained."
+      },
+      {
+        "file": "aquaculture_archive_integrity.test.js",
+        "executed": true,
+        "reason": "Accepted prior pass12 test source preserved before the two declared backup-policy assertion changes; not executed in pass13."
+      },
+      {
+        "file": "aquaculture_guided_questions.test.js",
+        "executed": true,
+        "reason": "Accepted prior pass12 test source preserved before the one declared backup-policy assertion change; not executed in pass13."
+      },
+      {
+        "file": "before-forced-color-fix-source.js",
+        "executed": true,
+        "reason": "Exact 866 runtime used by all initial native attempts and the actual first forced-color browser failure; it supplies no final d4 pass credit."
+      }
+    ],
+    "artifacts": [
+      {
+        "file": "originals/aquaculture_archive_integrity.test.js",
+        "bytes": 38170,
+        "sha256": "b2f33f5f6367095a8a230fefea89bc292de5350c5176251985c07eec19f36789"
+      },
+      {
+        "file": "originals/aquaculture_guided_questions.test.js",
+        "bytes": 7493,
+        "sha256": "867b2f6b97bc26838906f634e1deb55f6407e0a9c1e8070b1546fbbe197bd869"
+      },
+      {
+        "file": "originals/authored-backup-union-before-review.test.js",
+        "bytes": 23642,
+        "sha256": "9055b43c6568de508f8683854ae65fed6eabb4ca44bc6e49139ac6ed53de49cd"
+      },
+      {
+        "file": "originals/authored-browser-before-review.cjs",
+        "bytes": 28399,
+        "sha256": "eec046ef20dd12ef17f7f229925007ad4f875b3e00641ee620fe57536e5f6ea2"
+      },
+      {
+        "file": "originals/native-initial-executed.test.js",
+        "bytes": 23505,
+        "sha256": "ecf68b55b5462716b6bc6f125ad35e1c84dd72ef09cc57cef6cf6b73a11628c5"
+      },
+      {
+        "file": "originals/native-second-executed.test.js",
+        "bytes": 23713,
+        "sha256": "2c0f7fce48983eed8d405cb072fbefc41b19000e91668fd9aa6d0442b5baa917"
+      }
+    ],
+    "unexecutedDraftsDoNotCountAsFailedAttempts": true
+  },
+  "backupPolicy": {
+    "union": "For each full canonical-record signature, keep the maximum occurrence count present in either archive, rather than add identical copies across imports.",
+    "sameIdDifferentOriginalsPreserved": true,
+    "rawOverCapacityRejectedBeforeSanitizerClipping": true,
+    "capacity": 12,
+    "summaryAppearsOnlyAfterSuccessfulDeviceSave": true,
+    "mergeLearningPortfolioRemainsStateOnly": true,
+    "schemaVersionUnchanged": true,
+    "inheritedLimit": "An arbitrary hand-edited archive-only workspace may adopt its sanitized draft. Complete draft-only backups generated by the tool remain supported."
+  },
+  "staticArtifacts": [
+    {
+      "file": "manual-acceptance.json",
+      "bytes": 8033,
+      "sha256": "1b67e582b4e83b609d58085b032fd1fc1d3fe67c266d54785e710dd1399a1bef"
+    },
+    {
+      "file": "prior-accepted-resolved-tests.json",
+      "bytes": 100457,
+      "sha256": "13ff862ab45d426bf9b68d192ba8a5391afe30622762c29a5c479cbb9449bf90"
+    },
+    {
+      "file": "baseline-source.js",
+      "bytes": 2440499,
+      "sha256": "d6d5f4ab11cd11b0d3f6c93bf6d88bba9ff5813a6cadd1805a63af55edb79bc9"
+    },
+    {
+      "file": "final-source.js",
+      "bytes": 2445119,
+      "sha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522"
+    },
+    {
+      "file": "backup-union-browser-qa.cjs",
+      "bytes": 34814,
+      "sha256": "104de12154e6f6dd4861274132dfcfb8115126e508e5ce7be27921dcd6880502"
+    },
+    {
+      "file": "executed-backup-union-browser.cjs",
+      "bytes": 34784,
+      "sha256": "27c4241037ff9aaa16cbf4235f76d6e24995c474848a6cb9d40e165cc7905310"
+    },
+    {
+      "file": "executed-native-runner.cjs",
+      "bytes": 2879,
+      "sha256": "eac53c96917e644e3b9882377a24891e1dfb2fee5decf8aab0b9b67819f75ade"
+    },
+    {
+      "file": "executed-browser-runner.cjs",
+      "bytes": 1603,
+      "sha256": "aa040c8edba2ff05cf777624c62508a8a34ec5e5aa28da79c0a33a4f0a3218e1"
+    },
+    {
+      "file": "before-forced-color-fix-source.js",
+      "bytes": 2444476,
+      "sha256": "8664eb81b13a3ab335f35f5260f60ee38438a3edce05d15f05c11d530f9d83cd"
+    },
+    {
+      "file": "validated-tests/aquaculture_saved_investigations.test.js",
+      "bytes": 33798,
+      "sha256": "a6a904cbfaa2f5d2c348466e3ff8c9400cb567c2a8a43dbb2b2cdb9930414504"
+    },
+    {
+      "file": "validated-tests/aquaculture_saved_comparison.test.js",
+      "bytes": 37243,
+      "sha256": "6d7126510bcc9dc06f86537bd6e7fe3425f3d7d2007cdec0d8ecb7eff59eaedb"
+    },
+    {
+      "file": "validated-tests/aquaculture_guided_questions.test.js",
+      "bytes": 7713,
+      "sha256": "b09970cec6b793fe9234ffe39f75455edca34a5d315ba49acec17148cfc828d3"
+    },
+    {
+      "file": "validated-tests/aquaculture_evidence_recovery.test.js",
+      "bytes": 11478,
+      "sha256": "3ff43bab63f37b41346e72cc497654362879139c59e267b78e35b19616b684fc"
+    },
+    {
+      "file": "validated-tests/aquaculture_learning_runtime.test.js",
+      "bytes": 12180,
+      "sha256": "9063d0e67747fffaac91959f444f1003cfe952ac7551e6b72d33c0545a38ae20"
+    },
+    {
+      "file": "validated-tests/aquaculture_measurement_notebook.test.js",
+      "bytes": 30926,
+      "sha256": "99979165383f3b4116393366402cc21b4e7bd2438425bd99e5f3b1d7f32057c1"
+    },
+    {
+      "file": "validated-tests/aquaculture_evidence_save_readiness.test.js",
+      "bytes": 27979,
+      "sha256": "1e27cc1752e6e630c54f597501ec4ff6b61247875eb3868515a013a07a550723"
+    },
+    {
+      "file": "validated-tests/aquaculture_measurement_recovery.test.js",
+      "bytes": 34752,
+      "sha256": "17290fc7af75449f2331ec29bb6c411a816ccf3892626fde3d13920600e98571"
+    },
+    {
+      "file": "validated-tests/aquaculture_archive_integrity.test.js",
+      "bytes": 38451,
+      "sha256": "90e274752851a5e88f4816a48e56b0b1d632ea8abcd6b7581c60c4b97824a3e9"
+    },
+    {
+      "file": "validated-tests/aquaculture_backup_union.test.js",
+      "bytes": 23861,
+      "sha256": "f1c085f256664b62f8566330f730da59b99a8e1ff63fe49dfc8b8e5aca0a44ac"
+    }
+  ],
+  "git": {
+    "ownScopeStaged": false,
+    "committed": false,
+    "pushed": false,
+    "deployed": false,
+    "fullHostOrInstallerBuild": false
+  },
+  "generatedDocumentArtifacts": [
+    {
+      "file": "README.md",
+      "bytes": 9726,
+      "sha256": "0a6ba24373f170186e5f9083cf1c9818abc31ecdd0ade4d3cdea23454226bf60"
+    },
+    {
+      "file": "resolved-tests.json",
+      "bytes": 141497,
+      "sha256": "4ad55fc3942a1413b793dbdc1478863193728df07d17e475a02433394deaf20a"
+    }
+  ],
+  "deliveredReport": {
+    "path": "C:/Users/cabba/Documents/Codex/2026-10-02/please/outputs/aquaculture-backup-union-report.md",
+    "bytes": 14238,
+    "sha256": "f8c9476a9a10e51684a2351b1fa4b9ba54d1e0bd69edaf0c3fc51af550a211f9"
+  }
+}

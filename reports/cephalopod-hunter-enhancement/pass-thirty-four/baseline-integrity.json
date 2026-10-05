@@ -1,0 +1,9 @@
+{
+  "sourceSHA256": "ad1970ff112df529cc9115e0fbd69061c80393af9570aba38fa05b1c9cb6b91c",
+  "mirrors": {
+    "stem_lab/stem_tool_cephalopodlab.js": "ad1970ff112df529cc9115e0fbd69061c80393af9570aba38fa05b1c9cb6b91c",
+    "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js": "ad1970ff112df529cc9115e0fbd69061c80393af9570aba38fa05b1c9cb6b91c",
+    "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js": "ad1970ff112df529cc9115e0fbd69061c80393af9570aba38fa05b1c9cb6b91c",
+    "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js": "ad1970ff112df529cc9115e0fbd69061c80393af9570aba38fa05b1c9cb6b91c"
+  }
+}

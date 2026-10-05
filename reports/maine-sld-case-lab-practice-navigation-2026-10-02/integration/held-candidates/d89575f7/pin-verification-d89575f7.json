@@ -1,0 +1,39 @@
+{
+  "verifiedAt": "2026-10-02T21:16:49.638Z",
+  "moduleHash": "d89575f7776b204588fb096c343622346bf21b8330c98bf2286d74c59aba8821",
+  "modulePin": "d89575f7",
+  "moduleFiles": [
+    "maine_sld_practice_module.js",
+    "desktop/web-app/public/maine_sld_practice_module.js",
+    "desktop/app-build/maine_sld_practice_module.js",
+    "desktop/web-app/build/maine_sld_practice_module.js"
+  ],
+  "hosts": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "beforePin": "ace588ae",
+      "finalPin": "d89575f7",
+      "beforeSha256": "999519429f7cc27477b3e811fb2dee3f4275053cb227a1d079a3d824ab101318",
+      "afterSha256": "a7cc5566ce838e9904128683190780c53c64eb56aa90f3d61fffc269cb0bd882",
+      "unrelatedCurrentBytesPreserved": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "beforePin": "ace588ae",
+      "finalPin": "d89575f7",
+      "beforeSha256": "999519429f7cc27477b3e811fb2dee3f4275053cb227a1d079a3d824ab101318",
+      "afterSha256": "a7cc5566ce838e9904128683190780c53c64eb56aa90f3d61fffc269cb0bd882",
+      "unrelatedCurrentBytesPreserved": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "beforePin": "ace588ae",
+      "finalPin": "d89575f7",
+      "beforeSha256": "999519429f7cc27477b3e811fb2dee3f4275053cb227a1d079a3d824ab101318",
+      "afterSha256": "a7cc5566ce838e9904128683190780c53c64eb56aa90f3d61fffc269cb0bd882",
+      "unrelatedCurrentBytesPreserved": true
+    }
+  ],
+  "allBeforeCopiesVerifiedBeforeFirstHostWrite": true,
+  "atomicHostReplacements": true
+}

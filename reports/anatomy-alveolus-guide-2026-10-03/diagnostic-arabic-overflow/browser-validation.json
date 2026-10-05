@@ -1,0 +1,993 @@
+{
+  "metadata": {
+    "sourceLfSha256": "d87b46bb3ddaa1ddca1be6797687065776d4c1421b811915e639a0ceda4e3f1e",
+    "sourceRawSha256": "d87b46bb3ddaa1ddca1be6797687065776d4c1421b811915e639a0ceda4e3f1e",
+    "mirrorsEqual": true,
+    "startedAt": "2026-10-03T16:18:49.934Z",
+    "finishedSourceLfSha256": "d87b46bb3ddaa1ddca1be6797687065776d4c1421b811915e639a0ceda4e3f1e",
+    "finishedMirrorsEqual": true,
+    "finishedAt": "2026-10-03T16:19:31.261Z"
+  },
+  "display": {
+    "errors": [],
+    "steps": [],
+    "scans": [
+      {
+        "view": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark",
+          "name": "phone-arabic-dark-larger"
+        },
+        "boxes": [
+          {
+            "tag": "SECTION",
+            "scale": null,
+            "client": 264,
+            "scroll": 276,
+            "left": 26,
+            "right": 292
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "overview",
+            "client": 238,
+            "scroll": 238,
+            "left": 39,
+            "right": 279
+          },
+          {
+            "tag": "FIGURE",
+            "scale": "barrier",
+            "client": 238,
+            "scroll": 238,
+            "left": 39,
+            "right": 279
+          }
+        ],
+        "dimensions": {
+          "width": 320,
+          "scroll": 320
+        },
+        "violations": []
+      }
+    ],
+    "styles": [
+      {
+        "view": {
+          "width": 320,
+          "locale": "ar",
+          "reading": true,
+          "theme": "dark",
+          "name": "phone-arabic-dark-larger"
+        },
+        "metrics": [
+          {
+            "tag": "H5",
+            "className": "",
+            "text": "تبادل الغازات في الحويصلات الهوائية",
+            "font": 24,
+            "width": 240,
+            "height": 67.1875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "استكشف الحويصلة الهوائية والشعيرة الدموية، ثم ألقِ نظرة أقرب على الحاجز بين الهواء والدم.",
+            "font": 17,
+            "width": 240,
+            "height": 86.671875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "تشغيل حركة التبادل",
+            "font": 17,
+            "width": 136.640625,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-playback",
+            "text": "التبادل متوقف مؤقتًا",
+            "font": 17,
+            "width": 141.40625,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "إخفاء المنظور السريري",
+            "font": 17,
+            "width": 161.0625,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "1. التهويةيدخل الهواء المتجدد إلى الحويصلة",
+            "font": 17,
+            "width": 240,
+            "height": 88.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "1. التهوية",
+            "font": 20,
+            "width": 210,
+            "height": 32,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "يدخل الهواء المتجدد إلى الحويصلة",
+            "font": 17,
+            "width": 210,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "2. انتشار الأكسجينمن الحويصلة إلى الدم",
+            "font": 17,
+            "width": 240,
+            "height": 88.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. انتشار الأكسجين",
+            "font": 20,
+            "width": 210,
+            "height": 32,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "من الحويصلة إلى الدم",
+            "font": 17,
+            "width": 210,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(8, 47, 73)",
+            "ratio": 8.323993060182987,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "3. ثاني أكسيد الكربونمن الدم إلى الحويصلة",
+            "font": 17,
+            "width": 240,
+            "height": 88.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "3. ثاني أكسيد الكربون",
+            "font": 20,
+            "width": 210,
+            "height": 32,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "من الدم إلى الحويصلة",
+            "font": 17,
+            "width": 210,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "4. استمرار النقليغادر الدم ويخرج الغاز مع الزفير",
+            "font": 17,
+            "width": 240,
+            "height": 88.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "4. استمرار النقل",
+            "font": 20,
+            "width": 210,
+            "height": 32,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "يغادر الدم ويخرج الغاز مع الزفير",
+            "font": 17,
+            "width": 210,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "الخطوة السابقة",
+            "font": 17,
+            "width": 115,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "الخطوة التالية",
+            "font": 17,
+            "width": 115,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-atlas-step-position",
+            "text": "الخطوة 2 من 4",
+            "font": 17,
+            "width": 108.140625,
+            "height": 36.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "2. انتشار الأكسجين",
+            "font": 20,
+            "width": 212,
+            "height": 32,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "ينتشر الأكسجين مع تدرج ضغطه الجزئي عبر الظهارة السنخية من النوع الأول والطبقة الخلالية الرقيقة وبطانة الشعيرة الدموية، ثم يرتبط بالهيموغلوبين.",
+            "font": 17,
+            "width": 212,
+            "height": 173.34375,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "ما يجب التركيز عليه في هذه الخطوة",
+            "font": 17,
+            "width": 212,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "خلية من النوع الأول · الحاجز بين الهواء والدم · الهيموغلوبين",
+            "font": 17,
+            "width": 212,
+            "height": 57.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-alveolus-marker-help",
+            "text": "طابق العلامات المرقّمة مع دليل البنى.",
+            "font": 17,
+            "width": 240,
+            "height": 57.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": false
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "1. الحويصلة الهوائية والشعيرة الدموية",
+            "font": 20,
+            "width": 218,
+            "height": 64,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "المجرى الهوائي النهائي",
+            "font": 17,
+            "width": 156.9375,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "الحيز الهوائي للحويصلة",
+            "font": 17,
+            "width": 161.203125,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "الشعيرة الدموية الرئوية",
+            "font": 17,
+            "width": 161.203125,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "الخطوة الحالية",
+            "font": 17,
+            "width": 79.90625,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "H6",
+            "className": "",
+            "text": "2. الحاجز بين الهواء والدم",
+            "font": 20,
+            "width": 218,
+            "height": 32,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "1",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "الهواء السنخي",
+            "font": 17,
+            "width": 96.921875,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "2",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "المادة الخافضة للتوتر السطحي",
+            "font": 17,
+            "width": 200,
+            "height": 57.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "3",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "خلية سنخية من النوع الأول",
+            "font": 17,
+            "width": 181.875,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "الخطوة الحالية",
+            "font": 17,
+            "width": 79.90625,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "4",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "حيز خلالي رقيق",
+            "font": 17,
+            "width": 104.421875,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "الخطوة الحالية",
+            "font": 17,
+            "width": 79.90625,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "5",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "بطانة الشعيرة الدموية",
+            "font": 17,
+            "width": 154.109375,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "الخطوة الحالية",
+            "font": 17,
+            "width": 79.90625,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-key-number",
+            "text": "6",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "BDI",
+            "className": "",
+            "text": "كرية دم حمراء · الهيموغلوبين",
+            "font": 17,
+            "width": 198.34375,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 14.481508292066573,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-current",
+            "text": "الخطوة الحالية",
+            "font": 17,
+            "width": 79.90625,
+            "height": 28.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": true
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "A",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(3, 105, 161)",
+            "ratio": 5.933638668604332,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "تدفق الهواء",
+            "font": 17,
+            "width": 78.46875,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "O",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(185, 28, 28)",
+            "ratio": 6.4700447145121895,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "الأكسجين",
+            "font": 17,
+            "width": 65.296875,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "anatomy-alveolus-flow-symbol",
+            "text": "C",
+            "font": 17,
+            "width": 28,
+            "height": 28,
+            "foreground": "rgb(255, 255, 255)",
+            "background": "rgb(29, 78, 216)",
+            "ratio": 6.701618401398807,
+            "key": false
+          },
+          {
+            "tag": "SPAN",
+            "className": "",
+            "text": "ثاني أكسيد الكربون",
+            "font": 17,
+            "width": 131.390625,
+            "height": 28.890625,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "الوذمة الرئوية",
+            "font": 17,
+            "width": 95.546875,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "يتراكم السائل حول الحاجز بين الهواء والدم ويزيد مسافة الانتشار.",
+            "font": 17,
+            "width": 208,
+            "height": 86.671875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "الأثر الوظيفي",
+            "font": 17,
+            "width": 92.703125,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "يتأثر انتقال الأكسجين قبل أن يصبح طرح ثاني أكسيد الكربون محدودًا بشدة.",
+            "font": 17,
+            "width": 208,
+            "height": 86.671875,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "anatomy-clinical-note",
+            "text": "مقارنة تعليمية فقط — وليست عرضًا تشخيصيًا.",
+            "font": 17,
+            "width": 208,
+            "height": 83.78125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "P",
+            "className": "",
+            "text": "العودة إلى الدورة الدموية: تتبّع الدم الرئوي المؤكسج العائد عبر الجانب الأيسر من القلب قبل توزيعه في أنحاء الجسم.",
+            "font": 17,
+            "width": 212,
+            "height": 144.453125,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "STRONG",
+            "className": "",
+            "text": "العودة إلى الدورة الدموية:",
+            "font": 17,
+            "width": 181.921875,
+            "height": 22,
+            "foreground": "rgb(226, 232, 240)",
+            "background": "rgb(30, 41, 59)",
+            "ratio": 11.86643256027928,
+            "key": false
+          },
+          {
+            "tag": "BUTTON",
+            "className": "",
+            "text": "العودة إلى التدفق القلبي",
+            "font": 17,
+            "width": 159.6875,
+            "height": 50.890625,
+            "foreground": "rgb(125, 211, 252)",
+            "background": "rgb(15, 23, 42)",
+            "ratio": 10.707573037713438,
+            "key": false
+          }
+        ],
+        "diagrams": [
+          {
+            "scale": "overview",
+            "width": 204,
+            "height": 144.390625,
+            "texts": [
+              {
+                "text": "1",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 87.84164428710938,
+                  "right": 94.93539428710938,
+                  "top": 6080.65869140625,
+                  "bottom": 6100.65869140625
+                }
+              },
+              {
+                "text": "2",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 178.66665649414062,
+                  "right": 187.6666717529297,
+                  "top": 6115.037109375,
+                  "bottom": 6135.037109375
+                }
+              },
+              {
+                "text": "3",
+                "font": 32,
+                "effectiveFont": 14.668253968253968,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 100.74156188964844,
+                  "right": 109.74156188964844,
+                  "top": 6190.67041015625,
+                  "bottom": 6210.67041015625
+                }
+              }
+            ],
+            "intersections": []
+          },
+          {
+            "scale": "barrier",
+            "width": 204,
+            "height": 193.875,
+            "texts": [
+              {
+                "text": "1",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 235.84361267089844,
+                  "right": 243.99986267089844,
+                  "top": 6547.66015625,
+                  "bottom": 6569.66015625
+                }
+              },
+              {
+                "text": "2",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(15, 23, 42)",
+                "background": "rgb(255, 255, 255)",
+                "ratio": 17.85253496299567,
+                "box": {
+                  "left": 67.12303924560547,
+                  "right": 77.232421875,
+                  "top": 6566.20458984375,
+                  "bottom": 6588.20458984375
+                }
+              },
+              {
+                "text": "3",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 234.86700439453125,
+                  "right": 244.9763641357422,
+                  "top": 6583.90625,
+                  "bottom": 6605.90625
+                }
+              },
+              {
+                "text": "4",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 66.943359375,
+                  "right": 77.943359375,
+                  "top": 6599.921875,
+                  "bottom": 6621.921875
+                }
+              },
+              {
+                "text": "5",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 234.86700439453125,
+                  "right": 244.9763641357422,
+                  "top": 6618.46630859375,
+                  "bottom": 6640.46630859375
+                }
+              },
+              {
+                "text": "6",
+                "font": 20,
+                "effectiveFont": 16.858695652173914,
+                "foreground": "rgb(255, 255, 255)",
+                "background": "rgb(7, 89, 133)",
+                "ratio": 7.562998081458594,
+                "box": {
+                  "left": 234.86700439453125,
+                  "right": 244.9763641357422,
+                  "top": 6653.86962890625,
+                  "bottom": 6675.86962890625
+                }
+              }
+            ],
+            "intersections": []
+          }
+        ]
+      }
+    ],
+    "captures": [],
+    "currentDisplay": {
+      "width": 320,
+      "locale": "ar",
+      "reading": true,
+      "theme": "dark",
+      "name": "phone-arabic-dark-larger"
+    }
+  },
+  "diagnostics": [
+    "diagnostic-Alveolar-overview-and-barrier-keys-remain-readable-across-desktop-320px-phones-Arabic-larger-text-an.png"
+  ]
+}

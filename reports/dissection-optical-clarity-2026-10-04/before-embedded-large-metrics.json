@@ -1,0 +1,105 @@
+{
+  "width": 152,
+  "client": 150,
+  "scroll": 150,
+  "buttons": [
+    {
+      "text": "surface",
+      "width": 75.484375,
+      "height": 38.15625,
+      "font": 16,
+      "clipped": false,
+      "border": 1,
+      "underline": "none",
+      "pressed": "false"
+    },
+    {
+      "text": "structure",
+      "width": 89.9375,
+      "height": 38.15625,
+      "font": 16,
+      "clipped": false,
+      "border": 1,
+      "underline": "none",
+      "pressed": "true"
+    },
+    {
+      "text": "deep",
+      "width": 56.46875,
+      "height": 38.15625,
+      "font": 16,
+      "clipped": false,
+      "border": 1,
+      "underline": "none",
+      "pressed": "false"
+    },
+    {
+      "text": "2x",
+      "width": 37.53125,
+      "height": 38.15625,
+      "font": 16,
+      "clipped": false,
+      "border": 1,
+      "underline": "none",
+      "pressed": "false"
+    },
+    {
+      "text": "4x",
+      "width": 37.875,
+      "height": 38.15625,
+      "font": 16,
+      "clipped": false,
+      "border": 1,
+      "underline": "none",
+      "pressed": "true"
+    },
+    {
+      "text": "6x",
+      "width": 37.53125,
+      "height": 38.15625,
+      "font": 16,
+      "clipped": false,
+      "border": 1,
+      "underline": "none",
+      "pressed": "false"
+    }
+  ],
+  "text": [
+    {
+      "text": "Optical inspection · Resolved",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Nictitating Membrane. Detail: structure boundaries. Ideal focus: surface. Illumination: Balanced illumination at 60%; glare risk 0%. Set focus depth to surface for this structure.",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "83%",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Focus plane",
+      "font": 14.4,
+      "clipped": false
+    },
+    {
+      "text": "Resolved 0",
+      "font": 14.4,
+      "clipped": false
+    },
+    {
+      "text": "Soft 3",
+      "font": 14.4,
+      "clipped": false
+    },
+    {
+      "text": "Unresolved 0",
+      "font": 14.4,
+      "clipped": false
+    }
+  ],
+  "columns": "none"
+}

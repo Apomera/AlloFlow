@@ -1,0 +1,25 @@
+{
+  "mode": "navigation",
+  "started": "2026-10-05T02:05:53.218Z",
+  "sourceSHA": "c3ba3189fce6d0bd1eda77179c2c8345e7fa970817391925ac83080e45c5e17c",
+  "mirrorSHA": "c3ba3189fce6d0bd1eda77179c2c8345e7fa970817391925ac83080e45c5e17c",
+  "specSHA": "b14a6a17094ebd0f2154e3b73e0ce13e0d255dd52c525acb21d25102745cf835",
+  "args": [
+    "node_modules/@playwright/test/cli.js",
+    "test",
+    "tests/e2e/dissection-next-action-clarity.spec.ts",
+    "--project=chromium",
+    "--workers=1",
+    "--retries=0",
+    "--reporter=list,json",
+    "--output=C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-improving-interactivity-engagement-and\\dissection-optical-2026-10-04\\navigation\\test-results",
+    "--timeout=240000"
+  ],
+  "canonical": true,
+  "navigationSHA": "bf7fbdccbb2f7f83066bd99c15531dff73dd46d589d0480fa66565ea4de86b5f",
+  "runnerPID": 31840,
+  "testPID": 29704,
+  "finished": "2026-10-05T02:08:11.556Z",
+  "exitCode": 0,
+  "signal": null
+}

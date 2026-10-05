@@ -5,11 +5,147 @@ import vm from 'node:vm';
 const source = readFileSync('stem_lab/stem_tool_bridgelab.js', 'utf8');
 const sandbox = { window: { StemLab: { registerTool() {} } }, console };
 vm.runInNewContext(source.replace("window.StemLab.registerTool('bridgeLab', {", `
-  window.seismicModel = { bridgeSeismicResponse, bridgeSeismicSample, bridgeSeismicForces, bridgeSeismicForceFrame, bridgeSeismicOrbitFrame, bridgeSeismicOrbitLimit, bridgeSeismicOrbitChart, bridgeSeismicOrbitTrail, bridgeSeismicTrials, bridgeSeismicTimeline, bridgeSeismicComparison, bridgeSeismicScanPoint, bridgeSeismicScanSummary, BRIDGE_RESPONSE_ARCHETYPES };
+  window.seismicModel = { bridgeSeismicPowerHistory, bridgeComparisonPercentText, bridgeRecordedNumberText, bridgeSeismicResponse, bridgeSeismicSample, bridgeSeismicEnergyInterval, bridgeSeismicEnergyQuestions, bridgeSeismicEnergyQuestionId, bridgeSeismicIntervalBudget, bridgeSeismicForces, bridgeSeismicForceFrame, bridgeSeismicOrbitFrame, bridgeSeismicOrbitLimit, bridgeSeismicOrbitChart, bridgeSeismicOrbitTrail, bridgeSeismicTrials, bridgeSeismicInvestigation, bridgeSeismicTimeline, bridgeSeismicComparison, bridgeSeismicScanPoint, bridgeSeismicScanSummary, BRIDGE_RESPONSE_ARCHETYPES };
   window.StemLab.registerTool('bridgeLab', {`), sandbox);
 const { bridgeSeismicResponse: response, bridgeSeismicSample: sample, BRIDGE_RESPONSE_ARCHETYPES: archetypes } = sandbox.window.seismicModel;
 
 describe('Bridge Lab illustrative seismic response', () => {
+  it('rate history clips fractional endpoints, orders shading chronologically and preserves recorded totals',()=>{
+    const h=sandbox.window.seismicModel,r=response(),before=JSON.stringify(r),a=h.bridgeSeismicPowerHistory(r,6.123,10.456),b=h.bridgeSeismicPowerHistory(r,10.456,6.123),q=h.bridgeSeismicEnergyInterval(r,6.123,10.456);
+    expect(a.interval.startTimeS).toBe(6.123);expect(a.interval.endTimeS).toBe(10.456);expect(a.rangeWPerKg).toBe(b.rangeWPerKg);expect(a.curves.map(c=>c.line)).toEqual(b.curves.map(c=>c.line));expect(a.curves.map(c=>c.areas)).toEqual(b.curves.map(c=>c.areas));
+    expect(a.curves.map(c=>c.totalJPerKg)).toEqual([q.inputJPerKg,q.dissipatedJPerKg]);for(const curve of a.curves){expect(curve.pinValueWPerKg).toBe(sample(r,6.123)[curve.field]);expect(curve.inspectedValueWPerKg).toBe(sample(r,10.456)[curve.field]);expect(curve.pinValueWPerKg).toBe(b.curves.find(c=>c.id===curve.id).inspectedValueWPerKg);for(const area of curve.areas){expect(area.startTimeS).toBeGreaterThanOrEqual(6.123);expect(area.endTimeS).toBeLessThanOrEqual(10.456);expect(area.endTimeS).toBeGreaterThan(area.startTimeS);expect(area.vertices.every(p=>area.sign*p.value>=0)).toBe(true);expect(area.path).not.toMatch(/NaN|Infinity/);}}
+    expect(JSON.stringify(r)).toBe(before);expect(h.bridgeSeismicPowerHistory(null,0,1)).toBeNull();
+  });
+  it('rate history detail fits fractional and short windows on a shared A/B scale without changing totals',()=>{
+    const h=sandbox.window.seismicModel,a=response(),b=response({dampingRatio:0.2}),q=h.bridgeSeismicPowerHistory(a,6.123,10.456,b,true),other=h.bridgeSeismicPowerHistory(b,10.456,6.123,a,true),event=h.bridgeSeismicPowerHistory(a,6.123,10.456,b);
+    expect(q.detail).toBe(true);expect(q.plotStartTimeS).toBe(6.123);expect(q.plotEndTimeS).toBe(10.456);expect(q.startX).toBe(12);expect(q.endX).toBe(288);expect(q.shakingEndX).toBeNull();expect(q.rangeWPerKg).toBe(other.rangeWPerKg);expect(q.curves.map(c=>c.totalJPerKg)).toEqual(event.curves.map(c=>c.totalJPerKg));for(const curve of q.curves){expect(curve.plottedPoints[0].timeS).toBe(6.123);expect(curve.plottedPoints.at(-1).timeS).toBe(10.456);expect(curve.plottedPoints.length).toBeLessThan(curve.points.length);for(const coordinate of curve.line.split(' ')){const [x,y]=coordinate.split(',').map(Number);expect(x).toBeGreaterThanOrEqual(12);expect(x).toBeLessThanOrEqual(288);expect(y).toBeGreaterThanOrEqual(12);expect(y).toBeLessThanOrEqual(124);}}
+    const window=h.bridgeSeismicEnergyQuestions(a).returning,small=h.bridgeSeismicPowerHistory(a,window.startTimeS,window.endTimeS,null,true);expect(small.rangeWPerKg).toBeLessThan(event.rangeWPerKg);expect(Math.abs(small.curves[0].pinX-small.curves[0].inspectedX)).toBe(276);expect(small.curves[0].areas.some(area=>area.sign<0)).toBe(true);
+    const zero=h.bridgeSeismicPowerHistory(a,7.217,7.217,b,true);expect(zero.detail).toBe(false);expect(zero.plotStartTimeS).toBe(0);expect(zero.plotEndTimeS).toBe(24);expect(zero.curves.every(c=>c.areas.length===0)).toBe(true);
+  });
+  it('rate history splits signed shading at an interpolated zero without converting net work into gross input',()=>{
+    const point=(timeS,inputPowerWPerKg,inputJPerKg)=>({timeS,inputPowerWPerKg,dampingPowerWPerKg:1,inputJPerKg,dissipatedJPerKg:timeS,kineticJPerKg:0,strainJPerKg:0,storedJPerKg:0});
+    const synthetic={durationS:24,shakingDurationS:16,samples:[point(0,2,0),point(24,-2,0)]},q=sandbox.window.seismicModel.bridgeSeismicPowerHistory(synthetic,6,18),input=q.curves[0],loss=q.curves[1];
+    expect(input.areas.map(a=>a.sign)).toEqual([1,-1]);expect(input.areas.map(a=>[a.startTimeS,a.endTimeS])).toEqual([[6,12],[12,18]]);expect(input.areas[0].vertices.at(-1)).toEqual({timeS:12,value:0});expect(input.totalJPerKg).toBe(0);expect(loss.areas.map(a=>a.sign)).toEqual([1]);expect(loss.totalJPerKg).toBe(12);
+    // A zero crossing can round to either endpoint. Keep every positive span,
+    // while excluding zero-duration polygons without a numerical cutoff.
+    for (const [start, end, expectedSign] of [[1e-30, -1, -1], [1, -1e-30, 1]]) {
+      const fixture={durationS:24,shakingDurationS:16,samples:[point(1,start,0),point(2,end,0)]};
+      for(const detail of [false,true]) {
+        const curve=sandbox.window.seismicModel.bridgeSeismicPowerHistory(fixture,1,2,null,detail).curves[0];
+        expect(curve.areas).toHaveLength(1);expect(curve.areas[0].sign).toBe(expectedSign);
+        expect(curve.areas[0].startTimeS).toBe(1);expect(curve.areas[0].endTimeS).toBe(2);
+        expect(curve.intervalPoints.map(p=>p.value)).toEqual([start,end]);
+        expect(curve.totalJPerKg).toBe(0);
+      }
+    }
+  });
+  it('rate history uses event bounds from both trials before a zero fallback and scales power quadratically',()=>{
+    const h=sandbox.window.seismicModel,a=response({intensityG:0.12}),tiny=response({intensityG:0.000001}),zero=response({intensityG:0}),ratio=0.000001/0.12,ordinary=h.bridgeSeismicPowerHistory(a,7.217,12.319),small=h.bridgeSeismicPowerHistory(tiny,7.217,12.319);
+    expect(small.rangeWPerKg/ordinary.rangeWPerKg).toBeCloseTo(ratio*ratio,18);expect(small.rangeWPerKg).toBeLessThan(0.001);for(const [index,curve] of small.curves.entries())for(let i=0;i<curve.points.length;i+=37)expect(curve.points[i].value/small.rangeWPerKg).toBeCloseTo(ordinary.curves[index].points[i].value/ordinary.rangeWPerKg,10);
+    for(const [selected,other] of [[zero,tiny],[tiny,zero]])expect(h.bridgeSeismicPowerHistory(selected,0,24,other).rangeWPerKg).toBe(small.rangeWPerKg);for(const [selected,other] of [[a,tiny],[tiny,a]]){const q=h.bridgeSeismicPowerHistory(selected,16,24,other);expect(q.rangeWPerKg).toBe(ordinary.rangeWPerKg);expect(q.curves.every(c=>c.points.every(p=>Math.abs(p.value)<=q.rangeWPerKg))).toBe(true);}
+    const empty=h.bridgeSeismicPowerHistory(zero,0,24,zero);expect(empty.maximumWPerKg).toBe(0);expect(empty.rangeWPerKg).toBeGreaterThan(0);expect(empty.curves.every(c=>c.areas.length===0&&c.totalJPerKg===0)).toBe(true);
+  });
+  it('rate history distinguishes coincident endpoints from a nonzero instantaneous rate',()=>{
+    const q=sandbox.window.seismicModel.bridgeSeismicPowerHistory(response(),7.217,7.217);expect(q.interval.durationS).toBe(0);expect(q.startX).toBe(q.endX);expect(q.curves.every(c=>c.areas.length===0&&c.totalJPerKg===0)).toBe(true);expect(q.curves.some(c=>c.pinValueWPerKg!==0)).toBe(true);for(const c of q.curves){expect(c.pinValueWPerKg).toBe(c.inspectedValueWPerKg);expect(c.pinX).toBe(c.inspectedX);expect(c.pinY).toBe(c.inspectedY);}
+  });
+  it('rate history keeps settling, negative net work and zero damping consistent with accumulated history',()=>{
+    const h=sandbox.window.seismicModel,r=response(),settling=h.bridgeSeismicPowerHistory(r,16,24),returning=h.bridgeSeismicEnergyQuestions(r).returning,negative=h.bridgeSeismicPowerHistory(r,returning.startTimeS,returning.endTimeS);
+    expect(settling.curves[0].totalJPerKg).toBe(0);expect(settling.curves[0].areas).toHaveLength(0);expect(settling.curves[1].totalJPerKg).toBeGreaterThan(0);expect(settling.curves[1].areas.every(a=>a.sign===1)).toBe(true);expect(negative.curves[0].totalJPerKg).toBeLessThan(0);expect(negative.curves[0].areas.some(a=>a.sign===-1)).toBe(true);
+    const undamped=h.bridgeSeismicPowerHistory(response({dampingRatio:0}),0,24);expect(undamped.curves[1].totalJPerKg).toBe(0);expect(undamped.curves[1].areas).toHaveLength(0);expect(undamped.curves[1].points.every(p=>p.value===0)).toBe(true);
+  });
+  it('comparison percent text preserves tiny signed changes while retaining true-zero and ordinary formatting',()=>{
+    const f=sandbox.window.seismicModel.bridgeComparisonPercentText;expect(f(0)).toBe('0.0%');expect(f(-0)).toBe('0.0%');expect(f(0.0000025)).toBe('+2.50e-6%');expect(f(-0.0000025)).toBe('-2.50e-6%');expect(f(0.075)).toBe('+7.50e-2%');expect(f(-0.1)).toBe('-0.1%');expect(f(25)).toBe('+25.0%');
+  });
+  it('recorded number formatting preserves tiny signed values and distinguishes true zero',()=>{
+    const format=sandbox.window.seismicModel.bridgeRecordedNumberText;
+    expect(format(0)).toBe('0.000');expect(format(-0)).toBe('0.000');expect(format(0.0000025)).toBe('2.50e-6');expect(format(-0.0000025)).toBe('-2.50e-6');expect(format(1e-15)).toBe('1.00e-15');expect(format(-1e-15)).toBe('-1.00e-15');expect(format(0.001)).toBe('0.001');expect(format(-0.001)).toBe('-0.001');expect(format(2.37)).toBe('2.370');
+  });
+  it('notebook inspection metadata accepts only supported numeric pins and excludes cached answers',()=>{
+    const validate=sandbox.window.seismicModel.bridgeSeismicInvestigation;
+    const source=Object.freeze({version:'bridge-energy-investigation-v1',pinTimeS:7.217,answers:{input:999999},question:'fake'}),copy=validate(source);
+    expect(copy).toEqual({version:'bridge-energy-investigation-v1',pinTimeS:7.217});expect(copy).not.toBe(source);expect(source.answers.input).toBe(999999);
+    for(const pinTimeS of [0,24])expect(validate({version:source.version,pinTimeS})).toEqual({version:source.version,pinTimeS});
+    for(const pinTimeS of [undefined,null,'16',true,-1,24.001,NaN,Infinity])expect(validate({version:source.version,pinTimeS})).toBeNull();
+    for(const value of [null,undefined,{},[],{version:'future',pinTimeS:16}])expect(validate(value)).toBeNull();
+  });
+  it('guided energy windows retain the physical inputs and locate real exchange and removal intervals',()=>{
+    const questions=sandbox.window.seismicModel.bridgeSeismicEnergyQuestions,id=sandbox.window.seismicModel.bridgeSeismicEnergyQuestionId;
+    for(const mode of archetypes)for(const dampingRatio of [0,0.05,0.4]){
+      const r=response({archetype:mode.id,dampingRatio}),settings=JSON.stringify(r.settings),q=questions(r);
+      expect(q.shaking).toMatchObject({startTimeS:0,endTimeS:16});expect(q.settling).toMatchObject({startTimeS:16,endTimeS:24});
+      expect(q.exchange.startTimeS).toBeGreaterThanOrEqual(16);expect(q.exchange.endTimeS).toBeGreaterThan(q.exchange.startTimeS);
+      expect(Math.abs(sample(r,q.exchange.startTimeS).velocityMps)).toBeLessThan(1e-10);expect(Math.abs(sample(r,q.exchange.endTimeS).relativeM)).toBeLessThan(1e-10);
+      if(q.returning)expect(sandbox.window.seismicModel.bridgeSeismicEnergyInterval(r,q.returning.startTimeS,q.returning.endTimeS).inputJPerKg).toBeLessThan(0);
+      for(const [name,window] of Object.entries(q))if(window){expect(id(q,window.startTimeS,window.endTimeS)).toBe(name);expect(id(q,window.endTimeS,window.startTimeS)).toBe(name);}
+      expect(id(q,7.217,12.319)).toBe('');expect(JSON.stringify(r.settings)).toBe(settings);
+    }
+    expect(questions(response()).returning).not.toBeNull();
+  });
+  it('zero shaking provides boundary questions while keeping nonexistent cycle and ground-removal windows unavailable',()=>{
+    const q=sandbox.window.seismicModel.bridgeSeismicEnergyQuestions(response({intensityG:0}));
+    expect(q.shaking.endTimeS).toBe(16);expect(q.settling.endTimeS).toBe(24);expect(q.exchange).toBeNull();expect(q.returning).toBeNull();
+    expect(Object.values(sandbox.window.seismicModel.bridgeSeismicEnergyQuestions(null)).every(value=>value===null)).toBe(true);
+  });
+  it('signed energy budget accounts for initial energy, additions, dissipation and energy removed by ground on a shared scale',()=>{
+    const helpers=sandbox.window.seismicModel,r=response(),other=response({dampingRatio:0.2});
+    for(const window of Object.values(helpers.bridgeSeismicEnergyQuestions(r)).filter(Boolean)){
+      const q=helpers.bridgeSeismicEnergyInterval(r,window.startTimeS,window.endTimeS),b=helpers.bridgeSeismicIntervalBudget(q);
+      expect(b.availableJPerKg).toBeCloseTo(q.earlier.storedJPerKg+Math.max(0,q.inputJPerKg),12);
+      expect(b.accountedJPerKg).toBeCloseTo(q.later.storedJPerKg+q.dissipatedJPerKg+Math.max(0,-q.inputJPerKg),12);
+      expect(b.availableJPerKg-b.accountedJPerKg).toBeCloseTo(q.balanceErrorJPerKg,10);
+      expect(b.addedJPerKg*b.returnedJPerKg).toBe(0);expect(b.returnedJPerKg).toBe(Math.max(0,-q.inputJPerKg));
+      expect(b.scaleJPerKg).toBeGreaterThanOrEqual(Math.max(b.availableJPerKg,b.accountedJPerKg));
+      const p=helpers.bridgeSeismicEnergyInterval(other,window.startTimeS,window.endTimeS);
+      expect(helpers.bridgeSeismicIntervalBudget(q,p).scaleJPerKg).toBe(helpers.bridgeSeismicIntervalBudget(p,q).scaleJPerKg);
+    }
+    const zero=helpers.bridgeSeismicIntervalBudget(helpers.bridgeSeismicEnergyInterval(response({intensityG:0}),16,24));
+    expect(zero.availableJPerKg+zero.accountedJPerKg).toBe(0);expect(zero.scaleJPerKg).toBeGreaterThan(0);
+  });
+  const interval=sandbox.window.seismicModel.bridgeSeismicEnergyInterval;
+  it('interval accounting preserves work-energy balance for interpolated endpoints across modes and damping',()=>{
+    for(const mode of archetypes)for(const dampingRatio of [0,0.05,0.4]){
+      const r=response({archetype:mode.id,dampingRatio,intensityG:0.5,groundFrequencyHz:mode.naturalFrequencyHz});
+      for(const [a,b] of [[0,7.217],[7.217,12.319],[15.913,16.127],[16,23.817]]){
+        const q=interval(r,a,b), first=sample(r,a),last=sample(r,b);
+        expect(q.inputJPerKg).toBeCloseTo(last.inputJPerKg-first.inputJPerKg,12);
+        expect(q.dissipatedJPerKg).toBeGreaterThanOrEqual(0);
+        expect(q.kineticChangeJPerKg+q.elasticChangeJPerKg).toBeCloseTo(q.storedChangeJPerKg,10);
+        expect(q.balanceErrorJPerKg).toBeCloseTo(last.energyBalanceErrorJPerKg-first.energyBalanceErrorJPerKg,9);
+        expect(Math.abs(q.balanceErrorJPerKg)).toBeLessThan(1e-5*Math.max(1,r.peaks.storedJPerKg));
+      }
+    }
+  });
+  it('free-vibration intervals transfer stored energy into damping loss with no further input',()=>{
+    const r=response({dampingRatio:0.2});const q=interval(r,16,21.317);
+    expect(q.inputJPerKg).toBe(0);expect(q.storedChangeJPerKg).toBeLessThan(0);expect(q.dissipatedJPerKg).toBeGreaterThan(0);
+    expect(q.dissipatedJPerKg).toBeCloseTo(-q.storedChangeJPerKg,8);
+  });
+  it('undamped free vibration exchanges kinetic and elastic energy without damping loss',()=>{
+    const r=response({dampingRatio:0}),q=interval(r,16.137,16.419);
+    expect(q.inputJPerKg).toBe(0);expect(q.dissipatedJPerKg).toBe(0);
+    expect(Math.abs(q.kineticChangeJPerKg)).toBeGreaterThan(0.01);
+    expect(q.kineticChangeJPerKg).toBeCloseTo(-q.elasticChangeJPerKg,6);
+  });
+  it('intervals order time chronologically and return no changes for equal frames',()=>{
+    const r=response(),forward=interval(r,7.217,18.319),reverse=interval(r,18.319,7.217);
+    for(const key of ['startTimeS','endTimeS','durationS','inputJPerKg','dissipatedJPerKg','storedChangeJPerKg','balanceErrorJPerKg'])expect(reverse[key]).toBe(forward[key]);
+    expect(reverse.pinTimeS).toBe(18.319);expect(reverse.frameTimeS).toBe(7.217);
+    const zero=interval(r,7.217,7.217);for(const key of ['durationS','inputJPerKg','dissipatedJPerKg','kineticChangeJPerKg','elasticChangeJPerKg','storedChangeJPerKg','balanceErrorJPerKg'])expect(zero[key]).toBe(0);
+  });
+  it('intervals clamp or reject malformed times consistently with replay sampling and support zero shaking',()=>{
+    const r=response({intensityG:0});expect(interval(null,0,1)).toBeNull();
+    const q=interval(r,-4,99);expect(q.startTimeS).toBe(0);expect(q.endTimeS).toBe(24);
+    expect(q.inputJPerKg+q.dissipatedJPerKg+q.storedChangeJPerKg).toBe(0);
+    for(const bad of [NaN,Infinity,undefined,null,'',{},[]])expect(interval(r,bad,7.217).pinTimeS).toBe(0);
+  });
+  it('negative interval input work is retained rather than converted into energy added',()=>{
+    const r=response({dampingRatio:0.05});let negative=null;
+    for(let i=1;i<r.samples.length && r.samples[i].timeS<16;i++){
+      const q=interval(r,r.samples[i-1].timeS,r.samples[i].timeS);if(q.inputJPerKg < -1e-5){negative=q;break;}
+    }
+    expect(negative).not.toBeNull();expect(negative.storedChangeJPerKg).toBeLessThan(0);
+    expect(negative.inputJPerKg-negative.dissipatedJPerKg).toBeCloseTo(negative.storedChangeJPerKg,7);
+  });
   it('force lens preserves Newton balance and bounds every force across the complete event', () => {
     const frame = sandbox.window.seismicModel.bridgeSeismicForceFrame;
     for (const mode of archetypes) for (const dampingRatio of [0, 0.05, 0.4]) {

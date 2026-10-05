@@ -38,7 +38,7 @@
   }
 
   var PROTO = 'ds1';
-  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds5-partition-consent';
+  var DEFAULT_BRIDGE_URL = 'https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds6-media-removal-intent';
   var NS_RE = /^[a-z0-9_.-]{1,64}$/i;
   var REQUEST_TIMEOUT_MS = 8000;
   var CONNECT_TIMEOUT_MS = 12000;
@@ -255,6 +255,11 @@
       (typeof workspace.inputText === 'string' && workspace.inputText.trim())
       || (typeof workspace.sourceTopic === 'string' && workspace.sourceTopic.trim())
       || hasMeaningfulRecoveryDraft(workspace.builderDraft)
+      || (Array.isArray(workspace.units) && workspace.units.length > 0)
+      || (Array.isArray(workspace.profiles) && workspace.profiles.length > 0)
+      || hasMeaningfulRecoveryDraft(workspace.guidedProgress)
+      || hasMeaningfulRecoveryDraft(workspace.projectState)
+      || hasMeaningfulRecoveryDraft(workspace.wordSoundsState)
     ));
     if (!workspace || !history || (!history.length && !meaningfulDraft)) {
       if (strict) throw recoveryError('allo/recovery-mutation-invalid', 'Recovery snapshot is empty.');
@@ -388,9 +393,17 @@
   }
   function stripRecoveryMedia(snapshot, reason) {
     reason = reason || 'user-remove-media';
-    var manifest = Array.isArray(snapshot.omittedAssetManifest)
-      ? snapshot.omittedAssetManifest.slice(0, 500)
-      : [];
+    var sourceManifest = Array.isArray(snapshot.omittedAssetManifest) ? snapshot.omittedAssetManifest : [];
+    var manifest = sourceManifest.slice(0, 500);
+    if (!manifest.some(function (entry) { return entry && entry.reason === 'user-remove-media'; })) {
+      for (var removalIndex = 500; removalIndex < sourceManifest.length; removalIndex++) {
+        var explicitRemoval = sourceManifest[removalIndex];
+        if (explicitRemoval && explicitRemoval.reason === 'user-remove-media') {
+          manifest[499] = explicitRemoval;
+          break;
+        }
+      }
+    }
     var seen = Object.create(null);
     manifest.forEach(function (entry) {
       seen[String(entry && entry.path || '') + '\u0000' + String(entry && entry.kind || '') + '\u0000' + String(entry && entry.reason || '')] = true;
@@ -402,6 +415,10 @@
       seen[key] = true;
       omitted += 1;
       if (manifest.length < 500) manifest.push(entry);
+      else if (entry.reason === 'user-remove-media'
+          && !manifest.some(function (item) { return item && item.reason === 'user-remove-media'; })) {
+        manifest[499] = entry;
+      }
     }
     function visit(value, path) {
       if (typeof value === 'string') {

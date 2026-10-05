@@ -1,0 +1,138 @@
+{
+  "client": 318,
+  "scroll": 318,
+  "controls": [
+    {
+      "text": null,
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "text": "All inspected (4)",
+      "height": 67.59375,
+      "clipped": false
+    },
+    {
+      "text": "Finish records (3)",
+      "height": 67.59375,
+      "clipped": false
+    },
+    {
+      "text": "Low confidence (1)",
+      "height": 48.78125,
+      "clipped": false
+    },
+    {
+      "text": "Read observations in a larger view",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "text": "Copy summary",
+      "height": 67.59375,
+      "clipped": false
+    },
+    {
+      "text": "Download text",
+      "height": 67.59375,
+      "clipped": false
+    },
+    {
+      "text": "Select summary",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "text": "Choose confidence: Dorsal Skin",
+      "height": 48,
+      "clipped": false
+    },
+    {
+      "text": "Write evidence note: Ventral Skin",
+      "height": 67.59375,
+      "clipped": false
+    },
+    {
+      "text": "Open observation record: Tympanic Membrane",
+      "height": 67.59375,
+      "clipped": false
+    },
+    {
+      "text": "Review note: Nictitating Membrane",
+      "height": 67.59375,
+      "clipped": false
+    }
+  ],
+  "text": [
+    {
+      "text": "All inspected",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "(4)",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Finish records",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "(3)",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Low confidence",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "(1)",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Dorsal Skin",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Add a confidence rating",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Ventral Skin",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Add an evidence note",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Tympanic Membrane",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Note and confidence needed",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Nictitating Membrane",
+      "font": 16,
+      "clipped": false
+    },
+    {
+      "text": "Note and confidence recorded",
+      "font": 16,
+      "clipped": false
+    }
+  ]
+}

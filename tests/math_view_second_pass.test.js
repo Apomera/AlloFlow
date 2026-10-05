@@ -1151,3 +1151,27 @@ describe('MathView generated-answer review boundary', () => {
     expect(answer.props.disabled).toBe(false);
   });
 });
+
+
+describe('Math grading failure recovery', () => {
+  it.each([true, false])('keeps an ungraded error visible and retries saved work (source=%s)', fromSource => {
+    const { MathView } = loadMathView({ fromSource });
+    const retry = vi.fn();
+    const tree = MathView({
+      generatedContent: artifact(), t: () => '',
+      studentResponses: { r: { p: 'I added two and two' } },
+      mathCheckResults: { r: { p: { verdict: 'error', checked: false, checking: false, score: 0, feedback: 'Could not evaluate - please try again.', xpEarned: 0 } } },
+      handleStudentInput: vi.fn(), handleCheckMathWork: retry,
+    });
+    const alert = findNode(tree, node => node.props?.role === 'alert' && nodeText(node).includes('Your work has not been graded.'));
+    expect(nodeText(alert)).toContain('Could not evaluate - please try again.');
+    expect(nodeText(alert)).not.toMatch(/0%|XP/);
+    const textarea = findNode(tree, node => node.type === 'textarea' && String(node.props?.id || '').startsWith('math-response-'));
+    expect(textarea.props.value).toBe('I added two and two');
+    expect(textarea.props.disabled).not.toBe(true);
+    const button = findNode(tree, node => node.type === 'button' && nodeText(node).includes('Try checking again'));
+    expect(button.props.disabled).toBe(false);
+    button.props.onClick();
+    expect(retry).toHaveBeenCalledWith('r', 'p', 'What is 2 + 2?', '4', [], 'I added two and two');
+  });
+});

@@ -1,0 +1,55 @@
+{
+  "schema": "galaxy-black-hole-experiments",
+  "version": 1,
+  "model": "Nonrotating Schwarzschild center paths; illustrative tidal deformation",
+  "comparison": {
+    "blackHoleDropObject": "probe",
+    "blackHoleMassMode": "stellar",
+    "blackHoleReleaseRadius": 5,
+    "blackHoleSideways": 1,
+    "blackHoleRadialVelocity": 0,
+    "blackHoleLaunchAngle": 0
+  },
+  "experiments": [
+    {
+      "id": "bh_mupzqblp_f9dutxi",
+      "number": 1,
+      "note": "Plain <script>note text</script>",
+      "settings": {
+        "blackHoleDropObject": "probe",
+        "blackHoleMassMode": "stellar",
+        "blackHoleReleaseRadius": 5,
+        "blackHoleSideways": 0,
+        "blackHoleRadialVelocity": 0,
+        "blackHoleLaunchAngle": 0
+      },
+      "title": "Capture control",
+      "prediction": {
+        "outcome": "captured",
+        "minimumRadius": 1,
+        "maximumRadius": 5,
+        "closestTime": 6.740173585403649
+      }
+    },
+    {
+      "id": "bh_mupzqc55_9874zx1",
+      "number": 2,
+      "note": "Circular center path",
+      "settings": {
+        "blackHoleDropObject": "probe",
+        "blackHoleMassMode": "stellar",
+        "blackHoleReleaseRadius": 5,
+        "blackHoleSideways": 1,
+        "blackHoleRadialVelocity": 0,
+        "blackHoleLaunchAngle": 0
+      },
+      "title": "Orbit branch",
+      "prediction": {
+        "outcome": "orbit",
+        "minimumRadius": 5,
+        "maximumRadius": 5,
+        "closestTime": 0
+      }
+    }
+  ]
+}

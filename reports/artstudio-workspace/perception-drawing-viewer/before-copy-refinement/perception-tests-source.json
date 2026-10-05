@@ -1,0 +1,28 @@
+{
+  "sourceBeforeSHA256": "6d9123e6ee0878001a8fa0b1e9cb7b50c1124da003c8140fe4ab1b13a3e44dd7",
+  "sourceAfterSHA256": "6d9123e6ee0878001a8fa0b1e9cb7b50c1124da003c8140fe4ab1b13a3e44dd7",
+  "expectedSourceSHA256": "6d9123e6ee0878001a8fa0b1e9cb7b50c1124da003c8140fe4ab1b13a3e44dd7",
+  "exitCode": 1,
+  "signal": null,
+  "error": null,
+  "testFiles": [
+    "tests/perception_lab_experiments.test.js",
+    "tests/perception_lab_matching.test.js",
+    "tests/perception_lab_notebook.test.js",
+    "tests/perception_lab_repeat_notebook.test.js",
+    "tests/perception_lab_repeat_study.test.js",
+    "tests/perception_lab_study_comparison.test.js",
+    "tests/perception_lab_guided_study.test.js",
+    "tests/perception_lab_notebook_import.test.js",
+    "tests/perception_lab_notebook_finder.test.js",
+    "tests/perception_lab_recorded_preview.test.js",
+    "tests/perception_lab_study_report.test.js",
+    "tests/perception_lab_notebook_capacity.test.js",
+    "tests/perception_lab_drawing_viewer.test.js"
+  ],
+  "privateTemp": "C:/Users/cabba/Documents/Codex/2026-09-29/please-keep-going-you-re-doing/drawing-viewer-vitest-temp",
+  "workers": 1,
+  "pool": "forks",
+  "testTimeout": 30000,
+  "hookTimeout": 30000
+}

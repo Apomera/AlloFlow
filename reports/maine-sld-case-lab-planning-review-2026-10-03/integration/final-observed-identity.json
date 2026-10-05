@@ -1,0 +1,36 @@
+{
+  "observedAt": "2026-10-03T18:08:20.728Z",
+  "testedHostSha256": "7aa905b2c32795470cd16176df97926450807c86c95f1e237d7945a89b2889c9",
+  "observedHostHashes": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "7aa905b2c32795470cd16176df97926450807c86c95f1e237d7945a89b2889c9",
+      "matchesTestedSnapshot": true,
+      "observedMaineLoaderPins": [
+        "606ce307"
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "7aa905b2c32795470cd16176df97926450807c86c95f1e237d7945a89b2889c9",
+      "matchesTestedSnapshot": true,
+      "observedMaineLoaderPins": [
+        "606ce307"
+      ]
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "7aa905b2c32795470cd16176df97926450807c86c95f1e237d7945a89b2889c9",
+      "matchesTestedSnapshot": true,
+      "observedMaineLoaderPins": [
+        "606ce307"
+      ]
+    }
+  ],
+  "currentHostThreeCopyParity": true,
+  "currentHostsHaveReviewedLoaderPin": true,
+  "moduleHash": "606ce30776177cc8faeb8d520f09ac15151b584eb8b09be9c25829f3883e5779",
+  "moduleFourCopyParity": true,
+  "boundedSnapshotRetained": true,
+  "rebuildPerformed": false
+}

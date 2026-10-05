@@ -1,0 +1,26 @@
+{
+  "passed": false,
+  "checks": [
+    {
+      "expandedPaper": {
+        "x": 159,
+        "y": 104,
+        "width": 810,
+        "height": 810
+      },
+      "detailPaper": {
+        "x": -651,
+        "y": -710,
+        "width": 2430,
+        "height": 2430
+      },
+      "fixedBacking": [
+        1024,
+        1024
+      ],
+      "zoomDoesNotPaint": true
+    }
+  ],
+  "errors": [],
+  "failure": "AssertionError [ERR_ASSERTION]: The expression evaluated to a falsy value:\n\n  assert(Math.abs(endScroll.x - endScroll.maxX) < 1 && Math.abs(endScroll.y - endScroll.maxY) < 1)\n"
+}

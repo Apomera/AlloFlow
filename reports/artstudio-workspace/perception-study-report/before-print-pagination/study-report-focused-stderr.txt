@@ -1,0 +1,185 @@
+stderr | tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > announces Blob creation failure, cleans allocated resources, and preserves all workspace data
+[vitest] The Blob mock did not use 'function' or 'class' in its implementation, see https://vitest.dev/api/vi#vi-spyon for examples.
+
+
+⎯⎯⎯⎯⎯⎯ Failed Tests 10 ⎯⎯⎯⎯⎯⎯⎯
+
+ FAIL  tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > exports every actual 'brightness' saved trial and its full metadata as a self-contained HTML file
+AssertionError: expected [ [ 'Median match', '134 RGB' ], …(2) ] to deeply equal [ [ 'Median match', …(1) ], …(2) ]
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  [
+    [
+      "Median match",
+-     "134 RGB-code steps",
++     "134 RGB",
+    ],
+    [
+      "Match range",
+      "121–146 (25 RGB-code steps)",
+    ],
+
+ ❯ expectStudyDrawings tests/perception_lab_study_report.test.js:143:19
+    141|   const values = members.map(record => record.model.matchValue).sort((…
+    142|   const summary = [...section.querySelectorAll('[data-perception-repor…
+    143|   expect(summary).toEqual([
+       |                   ^
+    144|     ['Median match', median + ' ' + unit], ['Match range', values[0] +…
+    145|     ['Median difference', signed(median - mode.reference) + ' ' + unit…
+ ❯ tests/perception_lab_study_report.test.js:254:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[1/10]⎯
+
+ FAIL  tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > exports three actual matches with full guides independently of the selected preview trial and hidden preview guides
+AssertionError: expected [ [ 'Median match', '134 RGB' ], …(2) ] to deeply equal [ [ 'Median match', …(1) ], …(2) ]
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  [
+    [
+      "Median match",
+-     "134 RGB-code steps",
++     "134 RGB",
+    ],
+    [
+      "Match range",
+      "121–146 (25 RGB-code steps)",
+    ],
+
+ ❯ expectStudyDrawings tests/perception_lab_study_report.test.js:143:19
+    141|   const values = members.map(record => record.model.matchValue).sort((…
+    142|   const summary = [...section.querySelectorAll('[data-perception-repor…
+    143|   expect(summary).toEqual([
+       |                   ^
+    144|     ['Median match', median + ' ' + unit], ['Match range', values[0] +…
+    145|     ['Median difference', signed(median - mode.reference) + ' ' + unit…
+ ❯ tests/perception_lab_study_report.test.js:280:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[2/10]⎯
+
+ FAIL  tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > exports separate A and B 'brightness' sections with all six actual drawings and native geometry
+AssertionError: expected [ [ 'Median match', '134 RGB' ], …(2) ] to deeply equal [ [ 'Median match', …(1) ], …(2) ]
+
+- Expected
++ Received
+
+@@ -1,9 +1,9 @@
+  [
+    [
+      "Median match",
+-     "134 RGB-code steps",
++     "134 RGB",
+    ],
+    [
+      "Match range",
+      "121–146 (25 RGB-code steps)",
+    ],
+
+ ❯ expectStudyDrawings tests/perception_lab_study_report.test.js:143:19
+    141|   const values = members.map(record => record.model.matchValue).sort((…
+    142|   const summary = [...section.querySelectorAll('[data-perception-repor…
+    143|   expect(summary).toEqual([
+       |                   ^
+    144|     ['Median match', median + ' ' + unit], ['Match range', values[0] +…
+    145|     ['Median difference', signed(median - mode.reference) + ' ' + unit…
+ ❯ tests/perception_lab_study_report.test.js:318:5
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[3/10]⎯
+
+ FAIL  tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > cleans the temporary anchor and revokes the successful download URL after the download starts
+AssertionError: expected "vi.fn()" to not be called at all, but actually been called 1 times
+
+Received:
+
+  1st vi.fn() call:
+
+    Array [
+      "blob:perception-study-report",
+    ]
+
+
+Number of calls: 1
+
+ ❯ tests/perception_lab_study_report.test.js:394:34
+    392|     await act(async () => reportButton('review').click());
+    393|     expect(downloads.downloads).toHaveLength(1); expect(document.query…
+    394|     expect(downloads.revoke).not.toHaveBeenCalled();
+       |                                  ^
+    395|     await act(async () => vi.runOnlyPendingTimers()); expect(downloads…
+    396|   });
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[4/10]⎯
+
+ FAIL  tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > carries the appropriate A/B interpretation cautions for identical surroundings
+ FAIL  tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > carries the appropriate A/B interpretation cautions for one active setting
+ FAIL  tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > carries the appropriate A/B interpretation cautions for multiple active settings
+ FAIL  tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > carries the appropriate A/B interpretation cautions for inactive setting
+AssertionError: expected [ [ 'Recorded matches', …(2) ], …(4) ] to deeply equal [ [ 'Recorded matches', …(2) ], …(4) ]
+
+- Expected
++ Received
+
+@@ -9,12 +9,12 @@
+      "16, 240, 109",
+      "16, 240, 109",
+    ],
+    [
+      "Median match",
+-     "134 RGB-code steps",
+-     "153 RGB-code steps",
++     "134 RGB",
++     "153 RGB",
+    ],
+    [
+      "Match range",
+      "121–146",
+      "140–165",
+
+ ❯ tests/perception_lab_study_report.test.js:430:25
+    428|     expect([...comparison.querySelectorAll('[data-perception-report-wa…
+    429|     const summaryRows = tableRows(comparison.querySelector('table'));
+    430|     expect(summaryRows).toEqual([
+       |                         ^
+    431|       ['Recorded matches', '121, 134, 146', '140, 153, 165'],
+    432|       ['Starting positions', '16, 240, 109', changeStarts ? '16, 240, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[5/10]⎯
+
+ FAIL  tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > carries the appropriate A/B interpretation cautions for different starts
+ FAIL  tests/perception_lab_study_report.test.js > Perception portable HTML report downloads > carries the appropriate A/B interpretation cautions for inactive setting and different starts
+AssertionError: expected [ [ 'Recorded matches', …(2) ], …(4) ] to deeply equal [ [ 'Recorded matches', …(2) ], …(4) ]
+
+- Expected
++ Received
+
+@@ -9,12 +9,12 @@
+      "16, 240, 109",
+      "16, 240, 100",
+    ],
+    [
+      "Median match",
+-     "134 RGB-code steps",
+-     "153 RGB-code steps",
++     "134 RGB",
++     "153 RGB",
+    ],
+    [
+      "Match range",
+      "121–146",
+      "140–165",
+
+ ❯ tests/perception_lab_study_report.test.js:430:25
+    428|     expect([...comparison.querySelectorAll('[data-perception-report-wa…
+    429|     const summaryRows = tableRows(comparison.querySelector('table'));
+    430|     expect(summaryRows).toEqual([
+       |                         ^
+    431|       ['Recorded matches', '121, 134, 146', '140, 153, 165'],
+    432|       ['Starting positions', '16, 240, 109', changeStarts ? '16, 240, …
+
+⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯⎯[6/10]⎯
+

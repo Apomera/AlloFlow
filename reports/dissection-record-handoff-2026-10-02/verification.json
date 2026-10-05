@@ -1,0 +1,133 @@
+{
+  "sourceSha256": "134f55e1737b8e0a8efadb7b61d7204b252cef9117fbc04526f4b2dc6bf9b064",
+  "prePassSourceSha256": "49121c0ae1b224c7805c9ddf1c91d9679c2c886ef45cde3a13bceb8cbec4722f",
+  "mirrorByteIdentical": true,
+  "syntax": "valid",
+  "lineEndings": "LF",
+  "browser": {
+    "newCasesPassed": 14,
+    "previousCasesPassed": 14,
+    "totalChecksPassed": 28,
+    "runs": [
+      {
+        "file": "browser-results.json",
+        "stats": {
+          "startTime": "2026-10-02T15:11:54.017Z",
+          "duration": 135334.583,
+          "expected": 14,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      },
+      {
+        "file": "previous-browser-results.json",
+        "stats": {
+          "startTime": "2026-10-02T19:46:00.461Z",
+          "duration": 232751.06900000002,
+          "expected": 14,
+          "skipped": 0,
+          "unexpected": 0,
+          "flaky": 0
+        }
+      }
+    ],
+    "initialRun": {
+      "file": "browser-initial-results.json",
+      "reason": "The first 13-case run passed 12 cases. A journey fixture referenced Some evidence instead of the existing Somewhat sure rating label. The two selectors were corrected and an explicit structure-trace preservation case was added before rerunning the full suite."
+    },
+    "previousRunDiagnostics": {
+      "initialFile": "previous-browser-initial-results.json",
+      "initialPassed": 13,
+      "initialFailed": 1,
+      "guidedFollowupFile": "guided-browser-results.json",
+      "guidedFollowupPassed": 1,
+      "reason": "The initial worker stalled before its guided-route case completed and was stopped after verifying its process identity. That case then passed unchanged in isolation, followed by a complete group rerun. The cause of the stall is unconfirmed."
+    }
+  },
+  "unit": {
+    "passed": 349,
+    "total": 349,
+    "failed": 0,
+    "runs": [
+      "unit-core-results.json",
+      "unit-broad-results.json"
+    ],
+    "suites": [
+      {
+        "name": "dissection_canvas_loop.test.js",
+        "passed": 3
+      },
+      {
+        "name": "dissection_reference_workbench.test.js",
+        "passed": 149
+      },
+      {
+        "name": "dissection_workspace_bands.test.js",
+        "passed": 106
+      },
+      {
+        "name": "dissection_lab_improvements.test.js",
+        "passed": 91
+      }
+    ],
+    "initialRunDiagnostics": {
+      "file": "unit-core-initial-results.json",
+      "reportedPassed": 106,
+      "expectedTotal": 258,
+      "resolution": "The initial report contained only the workspace-band suite and was incomplete. The complete core group subsequently passed all 258 tests with the original assertions and time limits. The cause of the incomplete initial run is unconfirmed."
+    }
+  },
+  "layouts": [
+    {
+      "name": "phone",
+      "clientWidth": 286,
+      "scrollWidth": 286,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "clippedTargets": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "tablet",
+      "clientWidth": 734,
+      "scrollWidth": 734,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "clippedTargets": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "desktop",
+      "clientWidth": 302,
+      "scrollWidth": 302,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "clippedTargets": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "embedded-large",
+      "clientWidth": 284,
+      "scrollWidth": 284,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 16,
+      "clippedText": 0,
+      "clippedTargets": 0,
+      "axeViolations": 0
+    },
+    {
+      "name": "forced-colors",
+      "clientWidth": 356,
+      "scrollWidth": 356,
+      "minimumTargetHeight": 48,
+      "minimumFontSize": 14,
+      "clippedText": 0,
+      "clippedTargets": 0,
+      "axeViolations": 0
+    }
+  ]
+}

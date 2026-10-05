@@ -1,0 +1,16 @@
+{
+  "name": "landscape-fullscreen-launcher",
+  "button": "Nebula passage\nSweep past blue filaments and turn toward the violet cloud\n40 seconds at standard pace",
+  "box": {
+    "x": 258,
+    "y": 71.359375,
+    "width": 276,
+    "height": 96.796875
+  },
+  "body": {
+    "x": 245,
+    "y": 73,
+    "width": 302,
+    "height": 94
+  }
+}

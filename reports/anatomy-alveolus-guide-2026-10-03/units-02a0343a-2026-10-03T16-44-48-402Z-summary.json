@@ -1,0 +1,37 @@
+{
+  "runId": "02a0343a-2026-10-03T16-44-48-402Z",
+  "sourceSha256": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+  "passed": 37,
+  "failed": 0,
+  "skipped": 146,
+  "stages": [
+    {
+      "stage": "scale-navigation-regression-units",
+      "report": "reports/anatomy-alveolus-guide-2026-10-03/scale-navigation-regression-units-02a0343a-2026-10-03T16-44-48-402Z.json",
+      "proof": "reports/anatomy-alveolus-guide-2026-10-03/scale-navigation-regression-units-02a0343a-2026-10-03T16-44-48-402Z-proof.json",
+      "passed": 28,
+      "failed": 0,
+      "skipped": 0,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    },
+    {
+      "stage": "alveolus-existing-science-units",
+      "report": "reports/anatomy-alveolus-guide-2026-10-03/alveolus-existing-science-units-02a0343a-2026-10-03T16-44-48-402Z.json",
+      "proof": "reports/anatomy-alveolus-guide-2026-10-03/alveolus-existing-science-units-02a0343a-2026-10-03T16-44-48-402Z-proof.json",
+      "passed": 9,
+      "failed": 0,
+      "skipped": 146,
+      "exitCode": 0,
+      "sourceUnchanged": true,
+      "fixturesMatchPins": true,
+      "mirrorsIdentical": true,
+      "missingRequiredCases": [],
+      "firstFailure": null
+    }
+  ]
+}

@@ -1,0 +1,158 @@
+{
+  "date": "2026-10-04",
+  "sourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246",
+  "pluginMirrorSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246",
+  "pluginMirrorIdentical": true,
+  "suites": [
+    {
+      "suite": "recorded-preview",
+      "file": "reports/artstudio-workspace/perception-recorded-preview/recorded-preview-browser-results.json",
+      "expectedGroups": 42,
+      "groups": 42,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246",
+      "finalSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246"
+    },
+    {
+      "suite": "finder",
+      "file": "reports/artstudio-workspace/perception-recorded-preview/finder-regression/finder-browser-results.json",
+      "expectedGroups": 26,
+      "groups": 26,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246",
+      "finalSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246"
+    },
+    {
+      "suite": "guided",
+      "file": "reports/artstudio-workspace/perception-recorded-preview/guided-regression/guided-browser-results.json",
+      "expectedGroups": 25,
+      "groups": 25,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246",
+      "finalSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246"
+    },
+    {
+      "suite": "comparison",
+      "file": "reports/artstudio-workspace/perception-recorded-preview/comparison-regression/comparison-browser-results.json",
+      "expectedGroups": 23,
+      "groups": 23,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246",
+      "finalSourceSHA256": "abd25afe2a0039b39a70323f06405417e0dfcf14e191e4fff2f59547a066e246"
+    }
+  ],
+  "passedBrowserGroups": 116,
+  "errors": [],
+  "assertionPreservation": [
+    {
+      "suite": "finder",
+      "expectedGroups": 26,
+      "original": "dev-tools/perception_lab_finder_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_recorded_preview_finder_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-finder",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-recorded-preview/finder-regression",
+      "result": "finder-browser-results.json",
+      "exactTextEqualityAfterReversingOnlyOutputDirectoryReplacement": true,
+      "assertionsRemovedOrAltered": 0,
+      "originalSHA256": "41206a8fe416b69a6cf457eb614ef564076dac01eef98c4f68ed069e4d0da640",
+      "adaptedSHA256": "9886e612c4491be609be237ccbc7fd30602fe7738bd7ffa66cdc8294cf9e63bb"
+    },
+    {
+      "suite": "guided",
+      "expectedGroups": 25,
+      "original": "dev-tools/perception_lab_guided_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_recorded_preview_guided_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-guided",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-recorded-preview/guided-regression",
+      "result": "guided-browser-results.json",
+      "exactTextEqualityAfterReversingOnlyOutputDirectoryReplacement": true,
+      "assertionsRemovedOrAltered": 0,
+      "originalSHA256": "bda693817a1f40a8ef98a91d3480616ba8d32ae05962a08e6ad9a07cd5c6f3f0",
+      "adaptedSHA256": "47ba1cbe151655df9e844e6a3d481381d43089203e3141f3e905f5dfa1e71fdb"
+    },
+    {
+      "suite": "comparison",
+      "expectedGroups": 23,
+      "original": "dev-tools/perception_lab_study_compare_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_recorded_preview_comparison_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-compare",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-recorded-preview/comparison-regression",
+      "result": "comparison-browser-results.json",
+      "exactTextEqualityAfterReversingOnlyOutputDirectoryReplacement": true,
+      "assertionsRemovedOrAltered": 0,
+      "originalSHA256": "3c130e4942a3fa21be0b7e26ec12008300f7199eb9cecc77f93cf9795e8aca0e",
+      "adaptedSHA256": "46b70f35abca72734680e3cace32ecade7e3212c10e08e7607ca9bc8a9e9241e"
+    }
+  ],
+  "priorReportsPreserved": true,
+  "diagnosticHistory": [
+    {
+      "directory": "previous-2026-10-04T19-01-30-786Z",
+      "classification": "New QA initially assumed an external notebook edit kept reviewed A open. Existing notebook revision guard closes the review; aligned QA requires stale previews removed and reopened review to use fresh models. No product change was made."
+    }
+  ],
+  "guidedCompletionDiagnostic": {
+    "firstUnchangedAttempt": "reports/artstudio-workspace/perception-recorded-preview/guided-regression/guided-browser-first-attempt-failure.json",
+    "secondUnchangedAttempt": "reports/artstudio-workspace/perception-recorded-preview/guided-regression/guided-browser-second-attempt-failure.json",
+    "earlierFailures": "Immediate active-panel count was 1 after third record, first Ebbinghaus then brightness. No runtime errors were reported. Both original failures are preserved.",
+    "diagnosticSuite": "reports/artstudio-workspace/perception-recorded-preview/guided-diagnostic/guided-browser-results.json",
+    "diagnosticGroups": 25,
+    "diagnosticAssertionRelaxed": false,
+    "completionDiagnostics": [
+      {
+        "experiment": "brightness",
+        "file": "reports/artstudio-workspace/perception-recorded-preview/guided-diagnostic/brightness-completion-timing.json",
+        "activeCountAtPriorAssertion": 0,
+        "savedTrialCount": 3,
+        "immediateActiveCount": 0,
+        "afterCommitPaintActiveCount": 0,
+        "immediateSelectedReview": "baseline",
+        "afterCommitPaintSelectedReview": "baseline",
+        "guidedCompletionAnnouncement": "Three new matches recorded. The baseline and new study are selected for comparison. Reveal each study separately when you are ready."
+      },
+      {
+        "experiment": "ebbinghaus",
+        "file": "reports/artstudio-workspace/perception-recorded-preview/guided-diagnostic/ebbinghaus-completion-timing.json",
+        "activeCountAtPriorAssertion": 0,
+        "savedTrialCount": 3,
+        "immediateActiveCount": 0,
+        "afterCommitPaintActiveCount": 0,
+        "immediateSelectedReview": "baseline",
+        "afterCommitPaintSelectedReview": "baseline",
+        "guidedCompletionAnnouncement": "Three new matches recorded. The baseline and new study are selected for comparison. Reveal each study separately when you are ready."
+      },
+      {
+        "experiment": "mullerLyer",
+        "file": "reports/artstudio-workspace/perception-recorded-preview/guided-diagnostic/mullerLyer-completion-timing.json",
+        "activeCountAtPriorAssertion": 0,
+        "savedTrialCount": 3,
+        "immediateActiveCount": 0,
+        "afterCommitPaintActiveCount": 0,
+        "immediateSelectedReview": "baseline",
+        "afterCommitPaintSelectedReview": "baseline",
+        "guidedCompletionAnnouncement": "Three new matches recorded. The baseline and new study are selected for comparison. Reveal each study separately when you are ready."
+      }
+    ],
+    "finalUnchangedRegressionPassed": true,
+    "causeReproducedInDiagnostic": false,
+    "limitation": "The diagnostic did not reproduce the two earlier immediate-count failures. Final prior regression passes with all original assertions unchanged."
+  },
+  "importRegressionNotRepeated": "No import handler, store, or notebook schema changes; parent verified imports through current unit coverage.",
+  "execution": {
+    "permissions": "default sandbox",
+    "installedBrowserCache": "C:/Users/cabba/AppData/Local/ms-playwright",
+    "regressions": "serial",
+    "nativeDownloadsRequired": false
+  },
+  "visualReview": [
+    "recorded-preview-review-panel-390.png",
+    "recorded-preview-a-panel-390.png",
+    "recorded-preview-forced-dark-b-panel.png",
+    "recorded-preview-large-text.png",
+    "recorded-preview-large-text-inspection-crop.png"
+  ]
+}

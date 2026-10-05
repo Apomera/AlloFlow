@@ -14,8 +14,11 @@ module.exports = { buildLiveAacModule };
 if (require.main === module) {
   if (!fs.existsSync(SOURCE)) { console.error('Source not found:', SOURCE); process.exit(1); }
   const output = buildLiveAacModule(fs.readFileSync(SOURCE, 'utf8'));
-  fs.writeFileSync(OUTPUT, output, 'utf8');
   fs.mkdirSync(path.dirname(PUBLIC), { recursive: true });
-  fs.writeFileSync(PUBLIC, output, 'utf8');
+  for (const target of [OUTPUT, PUBLIC]) {
+    const temporary = target + '.build-' + process.pid + '.tmp';
+    fs.writeFileSync(temporary, output, 'utf8');
+    fs.renameSync(temporary, target);
+  }
   console.log('Built live_aac_module.js and public mirror (' + Buffer.byteLength(output) + ' bytes)');
 }

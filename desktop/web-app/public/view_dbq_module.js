@@ -84,6 +84,12 @@ function dbqPrintSourceUrl(value) {
     return '';
   }
 }
+function dbqTrustedSourceUrl(doc) {
+  const provenance = doc && doc.sourceProvenance;
+  if (!provenance || provenance.version !== 1 || !['supplied', 'supplied-link', 'retrieved'].includes(provenance.origin) || !provenance.recordId) return '';
+  const captured = dbqPrintSourceUrl(provenance.url);
+  return captured && captured === dbqPrintSourceUrl(doc.sourceUrl) ? captured : '';
+}
 // Generated excerpts are not all quotations. Unknown kinds never read as verbatim.
 function dbqExcerptKind(doc) {
   const kind = String(doc && doc.excerptKind || '').trim().toLowerCase();
@@ -177,7 +183,10 @@ function DbqView(props) {
   var callTTS = props.callTTS;
   var selectedVoice = props.selectedVoice;
   const dbqData = generatedContent.data;
-  const docs = dbqNormalizeDocs(dbqData.documents);
+  const docs = dbqNormalizeDocs(dbqData.documents).map(doc => ({
+    ...doc,
+    sourceUrl: dbqTrustedSourceUrl(doc)
+  }));
   const docIdSet = new Set(docs.map(doc => doc.id));
   const knownDocIds = ids => (Array.isArray(ids) ? ids : []).map(String).filter(id => docIdSet.has(id));
   const rubric = dbqData.rubric || [];
@@ -357,7 +366,10 @@ function DbqView(props) {
   // whole resource instead of being clipped by the shell.
   return /*#__PURE__*/React.createElement("div", {
     className: "space-y-0 max-w-5xl mx-auto h-full min-h-0 flex flex-col overflow-y-auto overflow-x-hidden"
-  }, !callGemini && /*#__PURE__*/React.createElement("p", {
+  }, dbqData.sourceDisclosure && /*#__PURE__*/React.createElement("p", {
+    role: "status",
+    className: "text-sm rounded-lg border border-slate-300 p-3 mb-3"
+  }, dbqData.sourceDisclosure, dbqData.documentCount && dbqData.documentCount.actual !== dbqData.documentCount.requested ? ' Requested ' + dbqData.documentCount.requested + ' documents; available ' + dbqData.documentCount.actual + '.' : ''), !callGemini && /*#__PURE__*/React.createElement("p", {
     role: "status",
     className: "text-sm bg-slate-50 border border-slate-300 rounded-lg p-3 mb-3"
   }, "AI feedback is unavailable in this session. You can keep reading, writing, and using the rubric."), /*#__PURE__*/React.createElement("div", {
@@ -428,9 +440,9 @@ function DbqView(props) {
                                             </div>
                                             ${(() => {
           const kindLabel = dbqExcerptLabel(dbqExcerptKind(doc), t);
-          return '<p style="font-size:11px;color:#334155;padding:8px 16px 0;margin:0"><strong>' + dbqEscapePrintText(kindLabel.badge) + ':</strong> ' + dbqEscapePrintText(kindLabel.note) + '</p>' + (doc.source ? '<p style="font-size:11px;color:#64748b;padding:4px 16px 0;margin:0;font-style:italic">' + dbqEscapePrintText(kindLabel.prefix) + ' ' + dbqEscapePrintText(doc.source) + '</p>' : '');
+          return '<p style="font-size:11px;color:#334155;padding:8px 16px 0;margin:0"><strong>' + dbqEscapePrintText(kindLabel.badge) + ':</strong> ' + dbqEscapePrintText(kindLabel.note + (doc.sameSourceExcerpts ? ' This is one of several excerpts from the same source.' : '')) + '</p>' + (doc.source ? '<p style="font-size:11px;color:#64748b;padding:4px 16px 0;margin:0;font-style:italic">' + dbqEscapePrintText(kindLabel.prefix) + ' ' + dbqEscapePrintText(doc.source) + '</p>' : '');
         })()}
-                                            ${dbqPrintSourceUrl(doc.sourceUrl) ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + dbqEscapePrintText(dbqPrintSourceUrl(doc.sourceUrl)) + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 View Original Source (' + (() => {
+                                            ${dbqTrustedSourceUrl(doc) ? '<p style="font-size:11px;padding:4px 16px 0;margin:0"><a href="' + dbqEscapePrintText(dbqTrustedSourceUrl(doc)) + '" style="color:#4f46e5;font-weight:700;text-decoration:none">🔗 View Original Source (' + (() => {
           try {
             return new URL(doc.sourceUrl).hostname;
           } catch {
@@ -693,11 +705,11 @@ function DbqView(props) {
     }, /*#__PURE__*/React.createElement("span", {
       "data-dbq-excerpt-kind": dbqExcerptKind(activeDoc),
       className: "inline-block mr-2 px-2 py-0.5 rounded-full border border-cyan-700 bg-cyan-50 text-cyan-900 text-[11px] font-bold not-italic"
-    }, kindLabel.badge), kindLabel.note), activeDoc.source && /*#__PURE__*/React.createElement("p", {
+    }, kindLabel.badge), kindLabel.note, activeDoc.sameSourceExcerpts && ' This is one of several excerpts from the same source.'), activeDoc.source && /*#__PURE__*/React.createElement("p", {
       className: "text-xs text-slate-600 italic"
     }, kindLabel.prefix, " ", activeDoc.source));
-  })(), dbqPrintSourceUrl(activeDoc.sourceUrl) && /*#__PURE__*/React.createElement("a", {
-    href: dbqPrintSourceUrl(activeDoc.sourceUrl),
+  })(), dbqTrustedSourceUrl(activeDoc) && /*#__PURE__*/React.createElement("a", {
+    href: dbqTrustedSourceUrl(activeDoc),
     target: "_blank",
     rel: "noopener noreferrer",
     className: "inline-flex items-center gap-1.5 px-3 py-1.5 mb-3 bg-indigo-50 border border-indigo-200 rounded-lg text-xs font-bold text-indigo-700 hover:bg-indigo-100 transition-colors no-underline"

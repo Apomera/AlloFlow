@@ -66,7 +66,7 @@ describe('beehive — simulation modes render without throwing', () => {
       expect(html).toContain('data-beehive-hero="true"');
       expect(html).toContain('data-beehive-mode-switcher="true"');
       expect(html).toContain('data-beehive-mode-tab=');
-      expect(html).toContain('data-beehive-visual-version="46"');
+      expect(html).toContain('data-beehive-visual-version="50"');
       expect(html).toContain('data-beehive-theme=');
       expect(html).toContain('data-beehive-mode-signal="true"');
       expect(html).toContain('data-beehive-pulse="true"');
@@ -102,8 +102,8 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(keeper).toContain('Pause motion');
     expect(keeper).toContain('data-beehive-stage-chip="beekeeper"');
     expect(keeper).toContain('Live apiary');
-    expect(keeper).toContain('Colony health');
-    expect(keeper).toContain('Honey stores');
+    expect(keeper).toContain('Model health score');
+    expect(keeper).toContain('Combined food');
     expect(keeper).toContain('Worker force');
     expect(keeper).toContain('data-beehive-scene-hud="true"');
     expect(keeper).toContain('data-beehive-scene-actions="true"');
@@ -132,7 +132,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(keeper).toContain('aria-label="Export colony report"');
     expect(keeper).toContain('Hive');
     expect(keeper).toContain('data-beehive-coach-action="next-day"');
-    expect(keeper).toContain('Recommended action');
+    expect(keeper).toContain('Next step');
     expect(keeper).toContain('Advance one day and refresh actions');
     expect(keeper).toContain('aria-keyshortcuts="N"');
     expect(keeper).toContain('data-beehive-cause-effect="true"');
@@ -279,7 +279,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(keeper).toContain('All action points spent');
     expect(keeper).toContain('data-management-cost="1 AP"');
     expect(keeper).toContain('data-management-cost-badge="Feed"');
-    expect(keeper).toContain('+5 lb syrup / +5 morale');
+    expect(keeper).toContain('+5 lb syrup · up to +5 stability');
     expect(keeper).toContain('data-conservation-impact="plant_wildflowers"');
     expect(keeper).toContain('data-conservation-preview="plant_wildflowers"');
     expect(keeper).toContain('Impact: Habitat +10 | Foraging +5');
@@ -333,7 +333,7 @@ describe('beehive — simulation modes render without throwing', () => {
     expect(html).toContain('Experience path');
 
     const modeIndex = html.indexOf('data-beehive-mode-switcher');
-    const focusIndex = html.indexOf('Play focus');
+    const focusIndex = html.indexOf('data-beehive-play-coach');
     const briefIndex = html.indexOf('data-beehive-learning-brief');
     const journeyIndex = html.indexOf('data-beehive-journey-disclosure');
     const canvasIndex = html.indexOf('data-beehive-canvas');

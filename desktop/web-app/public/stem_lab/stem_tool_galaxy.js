@@ -126,6 +126,35 @@ window.StemLab = window.StemLab || {
   }
   // END GALAXY ROTATION INVESTIGATION
 
+  // BEGIN GALAXY RADIUS GUIDES
+  // Radius guides share the chart's disk scale. They mark locations, not orbits.
+  function galaxyRotationGuideSpec(data) {
+    data = data || {};
+    var shape = data.galaxyType || 'barredSpiral';
+    var supported = shape === 'barredSpiral' || shape === 'grandDesign';
+    var selected = data.selectedStarMeasurement, selectedRadius = selected && typeof selected.radiusNorm === 'number' && Number.isFinite(selected.radiusNorm) && selected.radiusNorm >= 0 ? selected.radiusNorm * GALAXY_DISK_RADIUS_KPC : 0;
+    var manual = typeof data.rotationProbeRadius === 'number' && Number.isFinite(data.rotationProbeRadius);
+    var following = !manual && selectedRadius >= .6 && selectedRadius <= GALAXY_DISK_RADIUS_KPC;
+    var radius = galaxyRotationProbeRadius(data.rotationProbeRadius, following ? selectedRadius : GALAXY_ROTATION_REFERENCE_KPC);
+    var enabled = data.rotationGuides !== false;
+    var visible = supported && enabled && (data.simMode || 'galaxy') === 'galaxy' && !data.quizMode && !data.webglError && data.galaxyControlPanel === 'motion';
+    var radii = galaxyRotationSamples(data.rotationSamples).map(function(sample) { return sample.radiusKpc; });
+    return { enabled: enabled, supported: supported, visible: visible, radiusKpc: radius, followingStar: following, savedRadii: radii,
+      // A saved ring almost coincident with the probe would obscure its solid key.
+      displayedSavedRadii: radii.filter(function(r) { return Math.abs(r - radius) > .050000001; }) };
+  }
+  function galaxyRadiusGuideSegments() {
+    var count = 96, positions = new Float32Array(count * 6);
+    for (var i = 0; i < count; i++) {
+      var a = i / count * Math.PI * 2, b = (i + .58) / count * Math.PI * 2;
+      positions[i * 6] = Math.cos(a); positions[i * 6 + 2] = Math.sin(a);
+      positions[i * 6 + 3] = Math.cos(b); positions[i * 6 + 5] = Math.sin(b);
+    }
+    return positions;
+  }
+  // END GALAXY RADIUS GUIDES
+
+
 
   // BEGIN BLACK HOLE EXPERIMENT MODEL
   // Timelike Schwarzschild geodesics, r in Schwarzschild radii, c = 1.
@@ -7882,6 +7911,42 @@ if (!window._galaxyHasLoadedOnce) {
             }
             updateSelectionReticleSize(0.5);
             var selectionTarget = null;
+            // Fixed geometry is reused while dragging the radius slider.
+            var radiusGuideGroup = new THREE.Group(); radiusGuideGroup.name = 'galaxyRadiusGuides'; radiusGuideGroup.visible = false; scene.add(radiusGuideGroup);
+            var radiusGuideProbeGeometry = new THREE.RingGeometry(.994, 1.006, 160);
+            var radiusGuideBackingGeometry = new THREE.RingGeometry(.985, 1.015, 160);
+            var radiusGuideProbeMaterial = new THREE.MeshBasicMaterial({ color: 0x22d3ee, transparent: true, opacity: .92, depthWrite: false, depthTest: false, side: THREE.DoubleSide, blending: THREE.NormalBlending, toneMapped: false });
+            var radiusGuideBackingMaterial = new THREE.MeshBasicMaterial({ color: 0x020617, transparent: true, opacity: .8, depthWrite: false, depthTest: false, side: THREE.DoubleSide, blending: THREE.NormalBlending, toneMapped: false });
+            var radiusGuideProbe = new THREE.Mesh(radiusGuideProbeGeometry, radiusGuideProbeMaterial), radiusGuideBacking = new THREE.Mesh(radiusGuideBackingGeometry, radiusGuideBackingMaterial);
+            radiusGuideProbe.name = 'rotationProbeRadius'; radiusGuideBacking.name = 'rotationProbeRadiusBacking';
+            [radiusGuideBacking, radiusGuideProbe].forEach(function(mesh, i) { mesh.rotation.x = -Math.PI / 2; mesh.position.y = .014; mesh.renderOrder = 16 + i; radiusGuideGroup.add(mesh); });
+            var radiusGuideSavedGeometry = new THREE.BufferGeometry(); radiusGuideSavedGeometry.setAttribute('position', new THREE.BufferAttribute(galaxyRadiusGuideSegments(), 3));
+            var radiusGuideSavedMaterial = new THREE.LineBasicMaterial({ color: 0xf8fafc, transparent: true, opacity: .68, depthWrite: false, depthTest: false, blending: THREE.NormalBlending, toneMapped: false });
+            var radiusGuideSaved = [];
+            for (var guideIndex = 0; guideIndex < GALAXY_ROTATION_SAMPLE_LIMIT; guideIndex++) {
+              var guideRing = new THREE.LineSegments(radiusGuideSavedGeometry, radiusGuideSavedMaterial); guideRing.name = 'savedRotationRadius'; guideRing.position.y = .016; guideRing.renderOrder = 16; guideRing.visible = false; radiusGuideGroup.add(guideRing); radiusGuideSaved.push(guideRing);
+            }
+            var radiusGuideSpec = null;
+            function updateRadiusGuideVisibility() { radiusGuideGroup.visible = !!(radiusGuideSpec && radiusGuideSpec.visible && isSpiralMorphology && !galaxyFocusActive); }
+            canvasEl._galaxySetRadiusGuides = function(spec) {
+              if (!spec) return;
+              // Read the canonical spec from React. Each saved radius has a stable
+              // slot; scaling it changes no star geometry, camera or selection.
+              radiusGuideSpec = spec;
+              var norm = spec.radiusKpc / GALAXY_DISK_RADIUS_KPC;
+              radiusGuideProbe.scale.set(norm, norm, norm); radiusGuideBacking.scale.set(norm, norm, norm);
+              radiusGuideSaved.forEach(function(ring, i) {
+                var radius = spec.displayedSavedRadii[i]; ring.visible = typeof radius === 'number';
+                if (ring.visible) { var scale = radius / GALAXY_DISK_RADIUS_KPC; ring.scale.set(scale, scale, scale); ring.userData.radiusKpc = radius; }
+              });
+              updateRadiusGuideVisibility();
+            };
+            canvasEl._galaxyGetRadiusGuideState = function() {
+              return { visible: radiusGuideGroup.visible, probeRadiusKpc: radiusGuideSpec ? radiusGuideSpec.radiusKpc : null, probeScale: radiusGuideProbe.scale.x,
+                followingStar: !!(radiusGuideSpec && radiusGuideSpec.followingStar), savedRadii: radiusGuideSpec ? radiusGuideSpec.savedRadii.slice() : [],
+                displayedSavedRadii: radiusGuideSaved.filter(function(ring) { return ring.visible; }).map(function(ring) { return { radiusKpc: ring.userData.radiusKpc, scale: ring.scale.x }; }), geometryCount: 3, slotCount: radiusGuideSaved.length };
+            };
+            canvasEl._galaxySetRadiusGuides(galaxyRuntimeRef.current.rotationGuideSpec);
             var measurementRulerGroup = new THREE.Group(); measurementRulerGroup.name = 'galactocentricMeasurementRuler'; measurementRulerGroup.visible = false; scene.add(measurementRulerGroup);
             var measurementRulerGeometry = new THREE.BufferGeometry(); measurementRulerGeometry.setAttribute('position', new THREE.BufferAttribute(new Float32Array(6), 3));
             var measurementRulerMaterial = new THREE.LineBasicMaterial({ color: 0x67e8f9, transparent: true, opacity: 0.6, depthWrite: false, depthTest: false, blending: THREE.NormalBlending });
@@ -8402,7 +8467,7 @@ if (!window._galaxyHasLoadedOnce) {
                 galaxyFocusActive = true;
                 galaxyFocusFrame.setAttribute('data-galaxy-focus', 'true');
                 galaxyFsHideExitPill();
-                galaxyFocusAnnotations = [gridGroup, labelGroup, selectionMarker, selectionHalo, measurementRulerGroup, orbitalMechanicsGroup].map(function (node) { var saved = { node: node, visible: node.visible }; node.visible = false; return saved; });
+                galaxyFocusAnnotations = [gridGroup, labelGroup, selectionMarker, selectionHalo, measurementRulerGroup, orbitalMechanicsGroup, radiusGuideGroup].map(function (node) { var saved = { node: node, visible: node.visible }; node.visible = false; return saved; });
                 // Suspend surrounding controls without changing their previous inert state.
                 galaxyFocusInert = [];
                 for (var branch = galaxyFocusFrame; branch && branch.parentElement; branch = branch.parentElement) {
@@ -8422,7 +8487,7 @@ if (!window._galaxyHasLoadedOnce) {
                 galaxyFocusFrame.removeEventListener('pointermove', galaxyFocusReveal);
                 galaxyFocusFrame.removeEventListener('pointerdown', galaxyFocusReveal);
                 galaxyFocusFrame.removeEventListener('focusin', galaxyFocusReveal);
-                galaxyFocusAnnotations.forEach(function (saved) { saved.node.visible = saved.visible; }); galaxyFocusAnnotations = [];
+                galaxyFocusAnnotations.forEach(function (saved) { saved.node.visible = saved.visible; }); galaxyFocusAnnotations = []; updateRadiusGuideVisibility();
                 galaxyFocusInert.forEach(function (node) { node.removeAttribute('inert'); }); galaxyFocusInert = [];
                 if (galaxyFocusOwnedFullscreen) galaxyFsExitCss(); else if (galaxyCssFullscreen) galaxyFsShowExitPill();
                 galaxyFocusOwnedFullscreen = false;
@@ -9413,6 +9478,7 @@ if (!window._galaxyHasLoadedOnce) {
               if (renderer.renderLists && renderer.renderLists.dispose) renderer.renderLists.dispose();
               renderer.dispose();
               if (!preserveContext && renderer.forceContextLoss) renderer.forceContextLoss();
+              canvasEl._galaxySetRadiusGuides = null; canvasEl._galaxyGetRadiusGuideState = null; radiusGuideSpec = null;
               canvasEl._galaxyCleanup = null;
 
             };
@@ -9440,6 +9506,13 @@ if (!window._galaxyHasLoadedOnce) {
           var rotationProbeSaved = rotationSamples.some(function(sample) { return sample.radiusKpc === rotationSampleRadius; });
           var rotationSampleTrend = galaxyRotationSampleTrend(rotationSamples, rotMode);
           rotationInvestigationLive.current = { samples: rotationSamples, note: rotationInvestigationNote };
+          var rotationGuideSpec = galaxyRotationGuideSpec(d);
+          galaxyRuntimeRef.current.rotationGuideSpec = rotationGuideSpec;
+          var rotationGuideKey = JSON.stringify(rotationGuideSpec);
+          React.useEffect(function() {
+            var cv = galaxyCanvasActive.current;
+            if (cv && cv._galaxySetRadiusGuides) cv._galaxySetRadiusGuides(galaxyRuntimeRef.current.rotationGuideSpec);
+          }, [rotationGuideKey, galaxySceneReady]);
           function rotationModelName(model) {
             return model === 'flat' ? __alloT('stem.galaxy.comparison_flat', 'Flat model') : model === 'keplerian' ? __alloT('stem.galaxy.comparison_visible', 'Compact visible') : __alloT('stem.galaxy.comparison_rigid', 'Rigid toy');
           }
@@ -11237,7 +11310,7 @@ if (!window._galaxyHasLoadedOnce) {
                 ),
                 // Held back until the scene exists — announcing "drag to orbit" to a
                 // screen reader while the canvas is still empty is just wrong.
-                galaxySceneReady && React.createElement("div", { "data-galaxy-status": "true", className: galaxyHudHidden ? "sr-only" : "absolute bottom-3 left-3 max-w-[calc(100%_-_5.5rem)] rounded-full border border-white/15 bg-slate-950/85 px-3 py-2 text-xs font-bold text-slate-100 shadow-lg backdrop-blur-md pointer-events-none" }, selStar ? __alloT('stem.galaxy.status_chip_focused', 'Focused on {name} · drag or use arrow keys to orbit').replace('{name}', selStar.label) : selNeb ? __alloT('stem.galaxy.status_chip_focused', 'Focused on {name} · drag or use arrow keys to orbit').replace('{name}', selNeb.name) : __alloT('stem.galaxy.status_chip_help', 'Drag or use arrows to orbit · scroll, pinch, or +/- to zoom · [ ] selects stars')),
+                galaxySceneReady && React.createElement("div", { "data-galaxy-status": "true", className: galaxyHudHidden ? "sr-only" : "absolute bottom-3 left-3 max-w-[calc(100%_-_5.5rem)] rounded-full border border-white/15 bg-slate-950/85 px-3 py-2 text-xs font-bold text-slate-100 shadow-lg backdrop-blur-md pointer-events-none" }, rotationGuideSpec.visible && !selStar && !selNeb ? __alloT('stem.galaxy.radius_guides_probe', 'Probe ring') + ': ' + rotationGuideSpec.radiusKpc.toFixed(1) + ' kpc · ' + __alloT('stem.galaxy.radius_guides_saved', '{count} saved radii').replace('{count}', rotationGuideSpec.savedRadii.length) + ' '  : selStar ? __alloT('stem.galaxy.status_chip_focused', 'Focused on {name} · drag or use arrow keys to orbit').replace('{name}', selStar.label) : selNeb ? __alloT('stem.galaxy.status_chip_focused', 'Focused on {name} · drag or use arrow keys to orbit').replace('{name}', selNeb.name) : __alloT('stem.galaxy.status_chip_help', 'Drag or use arrows to orbit · scroll, pinch, or +/- to zoom · [ ] selects stars')),
                 // Scale info overlay
 
                 !galaxyHudHidden && layers.grid && React.createElement("div", { className: "absolute bottom-3 right-16 bg-slate-950/70 backdrop-blur-md rounded-lg px-2.5 py-2 text-xs text-white/85 border border-blue-200/15 shadow-xl" },
@@ -11696,6 +11769,14 @@ if (!window._galaxyHasLoadedOnce) {
                     React.createElement('div',{'data-galaxy-rotation-legend':true,className:'mt-2 flex flex-wrap gap-x-3 gap-y-1.5 text-[11px] text-slate-200'},
                       ['keplerian','flat','rigid'].map(function(model){return React.createElement('span',{key:model,className:'inline-flex items-center gap-1.5'},React.createElement('span',{'aria-hidden':true,style:{display:'inline-block',width:20,borderTop:'2px '+(model==='flat'?'solid':model==='keplerian'?'dashed':'dotted')+' '+(model==='flat'?'#22d3ee':model==='keplerian'?'#fbbf24':'#c4b5fd')} }),rotationModelLabel(model));}),
                       rotationSamples.length > 0 && React.createElement('span', { className: 'inline-flex items-center gap-1.5' }, React.createElement('span', { 'aria-hidden': true, style: { width: 9, height: 9, border: '1.5px solid #f8fafc', transform: 'rotate(45deg)', margin: '0 5px' } }), __alloT('stem.galaxy.rotation_book_markers', 'Saved radii on the active model'))
+                    ),
+                    !d.webglError && React.createElement('div', { 'data-galaxy-radius-guide-controls': true, className: 'mt-3 rounded-lg border border-cyan-200/20 bg-white/[0.04] p-2.5' },
+                      React.createElement('div', { className: 'flex flex-wrap gap-2' },
+                        React.createElement('button', { type: 'button', 'data-galaxy-radius-guide-toggle': true, disabled: !galaxySceneReady, 'aria-pressed': rotationGuideSpec.enabled, 'aria-describedby': 'galaxy-radius-guides-help', onClick: function() { upd('rotationGuides', !rotationGuideSpec.enabled); }, className: 'min-h-[44px] rounded-lg border border-cyan-300/40 px-3 py-2 text-[11px] font-bold text-cyan-100 disabled:opacity-50' }, __alloT('stem.galaxy.radius_guides_toggle', 'Show radius guides')),
+                        React.createElement('button', { type: 'button', 'data-galaxy-radius-guide-face': true, disabled: !galaxySceneReady, 'aria-pressed': galaxySceneReady && galaxyCameraFeedback.angle === 'face', onClick: function() { var cv = galaxyCanvasActive.current; if (cv && cv._galaxySetViewAngle) cv._galaxySetViewAngle('face'); }, className: 'min-h-[44px] rounded-lg border border-slate-500 px-3 py-2 text-[11px] font-bold text-slate-200 disabled:opacity-50' }, __alloT('stem.galaxy.radius_guides_face', 'View disk from above'))
+                      ),
+                      React.createElement('p', { id: 'galaxy-radius-guides-help', className: 'mt-2 text-[11px] leading-relaxed text-slate-300' }, __alloT('stem.galaxy.radius_guides_help', 'Solid cyan ring: probe. Dashed white rings: saved radii. Guides mark distance from the center in the disk plane; they are not individual star orbits.')),
+                      React.createElement('p', { 'data-galaxy-radius-guide-status': true, className: 'mt-1 text-[11px] leading-relaxed text-cyan-100' }, !galaxySceneReady ? __alloT('stem.galaxy.radius_guides_loading', 'Radius guides will be ready when the 3D scene loads.') : rotationGuideSpec.enabled ? __alloT('stem.galaxy.radius_guides_visible', 'Radius guides appear while Motion is open. Focus view temporarily hides them.') : __alloT('stem.galaxy.radius_guides_hidden', 'Radius guides are hidden. Your probe and saved radii are kept.'))
                     ),
                     React.createElement('p',{id:'galaxy-rotation-probe-help',className:'mt-1 text-[11px] leading-relaxed text-slate-300'},__alloT('stem.galaxy.rotation_probe_help', "Click or drag the chart, or use the radius slider. Hold one radius while switching models.")),
                     React.createElement('div',{className:'mt-2 flex flex-wrap items-center justify-between gap-2'},

@@ -1,0 +1,50 @@
+{
+  "inspectionOnly": true,
+  "manifestKeys": [
+    "generated",
+    "handlers",
+    "deps",
+    "bytesMoved",
+    "useCallbackHandlers",
+    "waves",
+    "unextracted"
+  ],
+  "comparisons": [
+    {
+      "name": "handleNodeClick-shim",
+      "preexisting": true,
+      "current": true,
+      "beforeLine": 21250,
+      "currentLine": 21255
+    },
+    {
+      "name": "handleAddManualNode-shim",
+      "preexisting": true,
+      "current": true,
+      "beforeLine": 21261,
+      "currentLine": 21266
+    },
+    {
+      "name": "handleResetLayout-shim",
+      "preexisting": true,
+      "current": true,
+      "beforeLine": 21310,
+      "currentLine": 21315
+    },
+    {
+      "name": "organizer-layout-persistence-effects",
+      "unchangedFromBefore": true,
+      "beforeLine": 21190,
+      "currentLine": 21195,
+      "normalizedSha256": "44b982a81f67a7ca006929385a60d73ca26ca66a5ab5c666951b5b7b3a81f309"
+    },
+    {
+      "name": "resource-mutation-handler",
+      "unchangedFromBefore": true,
+      "beforeLine": 8159,
+      "currentLine": 8231,
+      "normalizedSha256": "3a138cb101ceebf2b4343e1fa28062e152e2509074f7fefe9ce172c63d2f62f4"
+    }
+  ],
+  "remainingBareUpdaterCalls": 0
+}

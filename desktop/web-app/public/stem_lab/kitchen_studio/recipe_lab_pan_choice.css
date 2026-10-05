@@ -1,0 +1,32 @@
+.pan-choice-lesson{margin:1rem 0;border:1px solid #c6cdb8;border-radius:16px;background:#fcfbf4;color:#254834;overflow:hidden}
+.pan-choice-lesson>summary{display:flex;align-items:center;justify-content:space-between;gap:.75rem;cursor:pointer;padding:1rem 1.1rem;background:#ecf0df;list-style:none}
+.pan-choice-lesson>summary::before{content:'▸';flex:0 0 auto;color:#466b50;font-size:1.25rem}
+.pan-choice-lesson[open]>summary::before{content:'▾'}
+.pan-choice-lesson>summary>span:first-of-type{flex:1;min-width:0}
+.pan-choice-lesson>summary strong{display:block;font-size:1.08rem;line-height:1.35}
+.pan-choice-lesson>summary small{display:block;font-size:.82rem;margin-top:.3rem;color:#4d6651;line-height:1.4}
+#panChoiceSummary{padding:.35rem .6rem;border:1px solid #91a587;border-radius:999px;font-size:.82rem;white-space:nowrap;background:#faf9ec}
+.pan-choice-body{padding:1rem 1.1rem}.pan-choice-body p{margin:.45rem 0 .75rem;line-height:1.55;font-size:.95rem}
+.pan-choice-comparison{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:.8rem;margin:1rem 0}
+.pan-choice-card{border:1px solid #c9cbb5;border-radius:12px;padding:.85rem;background:#f7f4e8;min-width:0;display:flex;flex-direction:column}
+.pan-choice-card[data-selected=true]{border:2px solid #577c56;padding:calc(.85rem - 1px);background:#eff3e5}
+.pan-choice-card-heading{display:flex;align-items:center;justify-content:space-between;gap:.35rem;flex-wrap:wrap}
+.pan-choice-card h3{margin:0;font-size:1rem;line-height:1.4}.pan-choice-card-heading span{font-size:.76rem;font-weight:700;color:#486749}
+.pan-choice-card svg{display:block;width:100%;max-width:255px;align-self:center;height:auto;margin:.2rem 0}
+.pan-choice-spacing{display:block;font-size:.9rem}.pan-choice-card p{font-size:.86rem;margin:.4rem 0;line-height:1.5}.pan-choice-card .pan-choice-tradeoff{color:#526450;border-top:1px solid #d4d5c4;padding-top:.5rem}
+.pan-choice-card button{margin-top:auto;padding:.6rem .65rem;width:100%;line-height:1.35;min-height:44px;font-size:.85rem}
+.pan-choice-batch{font-weight:700}.pan-choice-body .pan-choice-model{font-size:.8rem;color:#5b6857}
+.pan-choice-actions{display:flex;gap:.55rem;flex-wrap:wrap;margin:.9rem 0}.pan-choice-actions button{min-height:44px;flex:1 1 145px;padding:.6rem .8rem;line-height:1.35}
+#panChoiceKeyboardPanel{border:1px solid #afc29f;border-radius:12px;padding:.9rem;margin-top:1rem;background:#fffdf7}
+#panChoiceKeyboardPanel h3{margin:.1rem 0 .65rem;font-size:1.05rem}#panChoiceKeyboardPanel label{display:block;font-size:.9rem;font-weight:700;margin-bottom:.35rem}
+#panChoiceSelect{max-width:100%;width:100%;min-height:44px;border:1px solid #859b7c;border-radius:7px;padding:.5rem;color:#244635;background:#fffdf6}
+#panChoiceControl{display:block;width:100%;height:auto;background:#f0f2e3;border:1px solid #c5cfb8;border-radius:10px;margin:.75rem 0;outline-offset:4px}#panChoiceControl text{font-size:14px;font-family:inherit}
+#panChoiceKeys{font-size:.85rem}.pan-choice-status{border-left:4px solid #648962;background:#edf3e5;padding:.7rem .8rem;min-height:2.8rem}
+.pan-choice-body .pan-choice-receipt{font-size:.82rem;color:#51684e}.pan-choice-science{padding:.9rem;border-radius:11px;background:#f0edda;border:1px solid #d5d3b9;margin-top:1rem}.pan-choice-science strong{font-size:.95rem}.pan-choice-science p{font-size:.86rem}
+.pan-choice-lesson button:focus-visible,.pan-choice-lesson select:focus-visible,.pan-choice-lesson summary:focus-visible,#panChoiceControl:focus-visible{outline:3px solid #785724;outline-offset:3px}
+.pan-choice-lesson [hidden]{display:none!important}
+@media(max-width:520px){.pan-choice-lesson>summary{padding:.85rem .7rem;gap:.4rem;flex-wrap:wrap}.pan-choice-lesson>summary strong{font-size:1rem}.pan-choice-lesson>summary small{font-size:.76rem}#panChoiceSummary{font-size:.75rem}.pan-choice-body{padding:.8rem .7rem}.pan-choice-comparison{gap:.45rem}.pan-choice-card{padding:.6rem}.pan-choice-card[data-selected=true]{padding:calc(.6rem - 1px)}.pan-choice-card h3{font-size:.93rem}.pan-choice-card p{font-size:.82rem}.pan-choice-card-heading span{font-size:.7rem}.pan-choice-card button{font-size:.8rem;padding:.5rem .3rem}.pan-choice-actions button{flex-basis:130px;font-size:.86rem}.pan-choice-body p{font-size:.88rem}#panChoiceKeyboardPanel{padding:.7rem}}
+@media(max-width:360px){.pan-choice-comparison{grid-template-columns:1fr}.pan-choice-card svg{max-width:205px}.pan-choice-card p{font-size:.86rem}}
+@media(forced-colors:active){.pan-choice-lesson,.pan-choice-card,.pan-choice-science,#panChoiceKeyboardPanel,#panChoiceControl,#panChoiceSelect,.pan-choice-status,#panChoiceSummary{border:1px solid CanvasText;color:CanvasText;background:Canvas}.pan-choice-card[data-selected=true]{border:2px solid Highlight}.pan-choice-lesson>summary,.pan-choice-model,.pan-choice-card .pan-choice-tradeoff,.pan-choice-receipt{color:CanvasText;background:Canvas}.pan-choice-card svg,#panChoiceControl{forced-color-adjust:none}.pan-choice-lesson button:focus-visible,.pan-choice-lesson select:focus-visible,.pan-choice-lesson summary:focus-visible,#panChoiceControl:focus-visible{outline-color:Highlight}}
+@media(prefers-reduced-motion:reduce){.pan-choice-lesson *{animation:none!important;transition:none!important;scroll-behavior:auto!important}}
+@media(max-width:650px){.kitchen-gesture-coach[data-tool="pan-choice"]{top:auto;bottom:9px}.kitchen-gesture-coach[data-tool="pan-choice"] #gestureDetail{display:none}}

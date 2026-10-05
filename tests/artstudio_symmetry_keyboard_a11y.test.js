@@ -83,7 +83,8 @@ describe('Art Studio Symmetry keyboard accessibility', () => {
     });
 
     expect(html).toContain('hold Shift with an Arrow key to draw a line');
-    expect(html).toContain('aria-describedby="artstudio-symmetry-touch-help artstudio-symmetry-keyboard-help"');
+    expect(html).toContain('aria-describedby="artstudio-symmetry-touch-help artstudio-symmetry-keyboard-help artstudio-symmetry-navigation-help"');
+    expect(html).toContain('id="artstudio-symmetry-navigation-help"');
     expect(html).toContain('Shift+ArrowUp');
     expect(html).toContain('focus-visible:ring-4');
     expect(html).toContain('Dot stamp stroke mode');

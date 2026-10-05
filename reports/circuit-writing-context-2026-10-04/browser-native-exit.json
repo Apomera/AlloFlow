@@ -1,0 +1,12 @@
+{
+  "sessionId": 60919,
+  "toolChunk": "6a455c",
+  "completed": true,
+  "exitCode": 0,
+  "observedResult": {
+    "passed": true,
+    "views": 6,
+    "workflows": 3,
+    "screenshots": 8
+  }
+}

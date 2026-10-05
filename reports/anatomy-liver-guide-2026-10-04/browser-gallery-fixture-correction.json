@@ -1,0 +1,21 @@
+{
+  "beforeSha256": "6ad0dcbbc3d15124da534336a3f0d92017b09a116d6490ae28b65e443d66ae8d",
+  "afterSha256": "b9a830ec8b8aa6214080a42f96a0d5a6747288b32af0a323598b22355673b655",
+  "fixture": "tests/e2e/anatomy-liver-guide.spec.ts",
+  "scratchFixture": "C:/Users/cabba/Documents/Codex/2026-09-29/new-chat-4/anatomy-liver-guide.spec.ts",
+  "changeCount": 1,
+  "replacement": {
+    "before": "const saved=work(await state(page)),tools=page.locator('[data-anatomy-learning-tools]');if(!await tools.evaluate(e=>(e as HTMLDetailsElement).open))await tools.locator('summary').click();await tools.locator('button[data-scale-stage=\"tissue\"]').click();",
+    "after": "const saved=work(await state(page));await page.locator('[data-anatomy-lens-toggle]').click();"
+  },
+  "exactReverseRestoresInstalledFixture": true,
+  "unrelatedFixtureBytesUnchanged": true,
+  "sourceRuntimeEdited": false,
+  "unitFixturesEdited": false,
+  "reason": "The selected Liver has a direct tissue destination; the explicit Anatomy Lens toggle opens the gallery required by this journey.",
+  "observedRun": "reports/anatomy-liver-guide-2026-10-04/runs/English-probe-e13900bc-01",
+  "createdAt": "2026-10-04T23:15:24.270Z",
+  "applied": true,
+  "sourceSha256": "ad5d13a05d34e5c6a6de852e8dbe7a1a266df6c6dd9e2f8a9d09654145c64aa1",
+  "readbackPassed": true
+}

@@ -1,0 +1,22 @@
+{
+  "review_fix_fixed": "{count} fixed",
+  "review_fix_requested": "audio requested for {count} (arrives in the background)",
+  "review_fix_unchanged": "{count} unchanged",
+  "review_fix_empty": "Nothing to do.",
+  "review_fix_stalled": "{summary} Stopped early after several words stayed unchanged. Try again later, or edit those words by hand.",
+  "review_fix_retry": "{summary} Try again, or edit those words by hand.",
+  "review_pack_stopped": " The last packing run was cut short by a rate limit. Re-prepare in setup, or use the Kokoro local voice.",
+  "review_pack_recovered": " The last packing run hit a rate limit and recovered, so some audio may be missing.",
+  "review_pack_silent": " Student devices may lack audio for these words or use a fallback voice; re-prepare the pack in setup.",
+  "review_gap_audio": "Words without portable audio: {count}.{note}",
+  "review_gap_runtime_audio": "Words whose audio failed to load in this session: {count}",
+  "review_gap_rhyme": "Without a rhyme answer (board is built on-device): {count}",
+  "review_gap_task": "Words without a Sound Swap answer: {count}. Unverified tasks are unavailable to students; choose another activity or review the task.",
+  "review_gap_images": "Read & Match pictures missing: {count}",
+  "review_gap_sentence_audio": "Words whose sentence or story read-back audio did not pack: {count}. On student devices the read-back will be missing or fall back to a lower-quality voice; re-prepare the pack in setup.",
+  "review_gap_tiles": "Picture the Sentence tiles without a picture: {count}. The tray waits for every picture, so these items stall on student devices; re-prepare the pack in setup.",
+  "review_gap_unverified": "Words with generated rhymes or family members outside the K-2 word lists: {count}. Examples: {words}. Worth a look before teaching them.",
+  "review_gap_edited": "Words edited since preparation (boards rebuild from your edits): {count}",
+  "review_gap_phonemes": "With sounds estimated from spelling: {count}",
+  "review_missing_audio": "Words missing audio: {count}"
+}

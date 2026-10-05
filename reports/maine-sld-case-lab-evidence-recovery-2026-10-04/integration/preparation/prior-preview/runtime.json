@@ -1,0 +1,39 @@
+{
+  "startedAt": "2026-10-04T03:46:27.384Z",
+  "pid": 19880,
+  "baseUrl": "http://127.0.0.1:65063",
+  "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+  "moduleSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+  "bundleSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+  "sourceSha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+  "pureHttpServe": true,
+  "immutablePrimaryAssetsPreloadedBeforeListen": true,
+  "preloadedAssets": [
+    {
+      "file": "index.html",
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+      "bytes": 588
+    },
+    {
+      "file": "host.css",
+      "sha256": "58a85c127571ce1dbda03af6ac60d44788a0b69689f709d5470c094bba92f84c",
+      "bytes": 235942
+    },
+    {
+      "file": "host.bundle.js",
+      "sha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd",
+      "bytes": 1976991
+    },
+    {
+      "file": "maine_sld_practice_module.js",
+      "sha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+      "bytes": 189988
+    }
+  ],
+  "ownedHelperPath": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide_layout_integration.cjs",
+  "ownedHelperSha256": "b170417c2a4f85bd41ed18b2ab63e187eddd924722bbdad8165ed6d409fbeb0e",
+  "launchArguments": [
+    "serve",
+    "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc"
+  ]
+}

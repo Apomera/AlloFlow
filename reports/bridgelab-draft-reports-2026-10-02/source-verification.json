@@ -1,0 +1,10 @@
+{
+  "syntax": "passed",
+  "sourceMirrors": "identical",
+  "sourceSha256": "977328a92dbd9db30f056f09432231234fccbdcbb7312db84cefe6d41931f1aa",
+  "matchingEnglishKeys": 1163,
+  "focusedUnitChecksPassed": 13,
+  "unitChecksSkipped": 121,
+  "browserChecksPassed": 5,
+  "commit": "not created; changes left uncommitted"
+}

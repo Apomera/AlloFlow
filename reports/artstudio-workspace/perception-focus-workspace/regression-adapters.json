@@ -1,0 +1,42 @@
+[
+  {
+    "original": "dev-tools/perception_lab_paired_viewer_qa.cjs",
+    "adapted": "dev-tools/.cache/perception_focus_paired_viewer_regression.cjs",
+    "previousOutputDirectory": "reports/artstudio-workspace/perception-paired-viewer",
+    "newOutputDirectory": "reports/artstudio-workspace/perception-focus-workspace/paired-viewer-regression",
+    "originalSHA256": "257edb7244a5c576f5d95b4f5bebe3620253e4a08fdb413f90928c6a8ba60b46",
+    "adaptedSHA256": "deef0168a393b08946405ed8de97c1abb3afc0cf8a55f06c2090ad772cbb4ced",
+    "exactOutputOnly": true,
+    "assertionsChanged": 0
+  },
+  {
+    "original": "dev-tools/perception_lab_drawing_viewer_qa.cjs",
+    "adapted": "dev-tools/.cache/perception_focus_drawing_viewer_regression.cjs",
+    "previousOutputDirectory": "reports/artstudio-workspace/perception-drawing-viewer",
+    "newOutputDirectory": "reports/artstudio-workspace/perception-focus-workspace/drawing-viewer-regression",
+    "originalSHA256": "49f2e3bb18a290b991f30028c86d4a065c0819bf3e099fc5f8ca8aa659b2bd31",
+    "adaptedSHA256": "fb0b6530fed643d656e8103409351ae598d38d444e52f566636146897e23203b",
+    "exactOutputOnly": true,
+    "assertionsChanged": 0
+  },
+  {
+    "original": "dev-tools/perception_lab_recorded_preview_qa.cjs",
+    "adapted": "dev-tools/.cache/perception_focus_recorded_preview_regression.cjs",
+    "previousOutputDirectory": "reports/artstudio-workspace/perception-recorded-preview",
+    "newOutputDirectory": "reports/artstudio-workspace/perception-focus-workspace/recorded-preview-regression",
+    "originalSHA256": "cdf23a119c076347984d4e840b58f5c96a3cd632b147eff3126db77dcf8b6f4e",
+    "adaptedSHA256": "3240620e73779d45d3abf548af650a5fa8190bbb0b8c71a4f5d3e7c4e31d5fdd",
+    "exactOutputOnly": true,
+    "assertionsChanged": 0
+  },
+  {
+    "original": "dev-tools/perception_lab_visual_presentation_qa.cjs",
+    "adapted": "dev-tools/.cache/perception_focus_visual_presentation_regression.cjs",
+    "previousOutputDirectory": "reports/artstudio-workspace/perception-visual-presentation",
+    "newOutputDirectory": "reports/artstudio-workspace/perception-focus-workspace/visual-presentation-regression",
+    "originalSHA256": "c1fec6337b3c6f909bdb7ba417deae0e6a8647f02aaa96eb026601eabe1ce716",
+    "adaptedSHA256": "741ebd374e32f13f2296d0e0b5511401322ffe2bc63d112a6fa5228cd35d7493",
+    "exactOutputOnly": true,
+    "assertionsChanged": 0
+  }
+]

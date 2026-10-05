@@ -1,0 +1,29 @@
+{
+  "keyboardSeeking": true,
+  "tapSeeking": true,
+  "rtlAxis": true,
+  "inspectionPausesPlayback": true,
+  "viewPreservation": true,
+  "orbitAndEscapeShapes": true,
+  "centerCapture": true,
+  "layouts": [
+    {
+      "width": 1440,
+      "overflow": false,
+      "debrisRangeSynchronized": true,
+      "rewindExact": true
+    },
+    {
+      "width": 390,
+      "overflow": false,
+      "debrisRangeSynchronized": true,
+      "rewindExact": true
+    },
+    {
+      "width": 320,
+      "overflow": false,
+      "debrisRangeSynchronized": true,
+      "rewindExact": true
+    }
+  ]
+}

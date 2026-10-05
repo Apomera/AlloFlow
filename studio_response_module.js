@@ -262,8 +262,9 @@
     const [previewResponse, setPreviewResponse] = React.useState(null);
     const [backupMessage, setBackupMessage] = React.useState('');
     const backupInput = React.useRef(null);
+    const restoreAttemptOwner = React.useRef(null);
     const mounted = React.useRef(true);
-    React.useEffect(() => { mounted.current = true; return () => { mounted.current = false; }; }, []);
+    React.useEffect(() => { mounted.current = true; return () => { mounted.current = false; restoreAttemptOwner.current = null; }; }, []);
     const previewOwner = React.useRef('');
     const scope = String(resource.id) + ':' + String(viewProps.activeProfileId || '');
     const response = isTeacherMode ? (preview ? ((previewOwner.current === scope ? previewResponse : null) || emptyResponse(resource)) : null) : studentResponses?.[resource.id]?.studio;
@@ -317,15 +318,21 @@
     };
     const restore = async event => {
       const file = event.target.files?.[0]; event.target.value = ''; if (!file) return;
+      // A newer selection owns completion even when its file is invalid.
+      const attempt = {};
+      restoreAttemptOwner.current = attempt;
       const startingResource = resource.id, startingResponse = current.current.response, startingIdentity = current.current.identity;
+      const isCurrentAttempt = () => mounted.current && restoreAttemptOwner.current === attempt
+        && current.current.identity === startingIdentity && current.current.resource.id === startingResource && !current.current.isTeacherMode;
       try {
         if (file.size > maxBackupBytes) throw new Error('Backup too large');
-        const data = readBackup(resource, JSON.parse(await file.text()), startingResponse);
-        if (!mounted.current || current.current.identity !== startingIdentity || current.current.resource.id !== startingResource || current.current.isTeacherMode) return;
+        const serialized = await file.text();
+        if (!isCurrentAttempt()) return;
+        const data = readBackup(resource, JSON.parse(serialized), startingResponse);
         if (current.current.response !== startingResponse) throw new Error('Work changed during restore');
         current.current.onResponseChange(startingResource, data);
-        setBackupMessage(tr('backup_restored', 'Backup restored to this workspace. Check the save status before leaving.'));
-      } catch (_) { if (mounted.current) setBackupMessage(tr('backup_invalid', 'Choose a text backup downloaded from this resource. Your current work has not changed.')); }
+        if (isCurrentAttempt()) setBackupMessage(tr('backup_restored', 'Backup restored to this workspace. Check the save status before leaving.'));
+      } catch (_) { if (isCurrentAttempt()) setBackupMessage(tr('backup_invalid', 'Choose a text backup downloaded from this resource. Your current work has not changed.')); }
     };
     return React.createElement(React.Fragment, null,
       React.createElement('div', { className: 'mb-3 flex flex-wrap items-center gap-3', role: 'region', 'aria-label': tr('mode_label', 'Workspace mode'), 'aria-live': 'polite' },

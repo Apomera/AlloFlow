@@ -97,19 +97,21 @@ describe('Word Sounds live audio delivery hardening', () => {
     // The live-push pack sanitizer (including safePortableTtsAssets) moved from
     // the host monolith into live_aac during the 2026-08-22 modularization.
     const liveAac = readFileSync('live_aac_source.jsx', 'utf8');
-    expect(liveAac).toContain('const safePortableTtsAssets = (value) => {');
+    expect(liveAac).toContain('const safePortableTtsAssets = (value, omittedKeys) => {');
     expect(liveAac).toContain('if (safeAssets) packedWord._ttsAssets = safeAssets;');
     expect(liveAac).toContain('if (requiredKeys) packedWord._ttsRequiredKeys = requiredKeys;');
     for (const shell of [anti, app]) {
       expect(shell).toContain('_alloHostHandlers().requestWordSoundsAudioConfirmation(...__a)');
       expect(shell).toContain('_alloHostHandlers().handleWordSoundsPreparedAudioRetry(...__a)');
       const source = shell + '\n' + hostHandlers;
-      expect(source).toContain("title: t('word_sounds.audio_preflight_title') || 'Some activity audio is not ready'");
-      expect(source).toContain("t('word_sounds.audio_preflight_message_send'");
-      expect(source).toContain("t('word_sounds.audio_preflight_detail_more'");
-      expect(source).toContain("t('word_sounds.audio_preflight_send_anyway')");
-      expect(source).toContain("cancelText: t('word_sounds.audio_preflight_review') || 'Review audio'");
-      expect(source).toContain('onCancel: reviewAudio');
+      expect(source).toContain("title: preflightLabel('readiness_preflight_title', 'Audio readiness is not confirmed')");
+      expect(source).toContain("preflightLabel(actionLabel === 'send' ? 'readiness_preflight_send' : 'readiness_preflight_start',");
+      expect(source).toContain('Required audio has not been verified for student delivery. App audio banks and device cache do not travel with this pack.');
+      expect(source).toContain("preflightLabel('readiness_preflight_detail', 'Unchecked or unavailable: {clips}{more}'");
+      expect(source).toContain("preflightLabel('readiness_preflight_unknown', 'Run Check prepared audio in the lesson preview and review any remaining dependencies before sharing.')");
+      expect(source).toContain("preflightLabel('audio_preflight_send_anyway', 'Send anyway')");
+      expect(source).toContain("cancelText: preflightLabel('audio_preflight_review', 'Review audio')");
+      expect(source).toContain('onCancel: () => { if (resolved) return; resolved = true; reviewAudio(); }');
       expect(source).toContain("const reviewAudio = typeof onReview === 'function' ? onReview : () => {");
       expect(source).toContain('requestIncompleteAudioConfirmation: (_coverage, onConfirm)');
       expect(source).toContain('setWordSoundsAutoReview(true);');
@@ -119,7 +121,7 @@ describe('Word Sounds live audio delivery hardening', () => {
     }
   });
 
-  it('keeps the deployed app copies on the same coverage contract', () => {
+  it('preserves held app copies on the legacy structural coverage contract', () => {
     const antiCoverage = loadCoverageHelper(anti);
     const appCoverage = loadCoverageHelper(app);
     const resource = {

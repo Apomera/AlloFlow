@@ -1,0 +1,230 @@
+{
+  "passed": true,
+  "scope": "Canonical client and bridge, native nested cross-origin iframe, postMessage, consent and IndexedDB in one isolated Chromium context. Two initial atomic recovery saves and second-origin restoration; five history-empty meaningful draft roundtrips; actual removeMedia mutation at a 500-entry omission cap and fresh-client restoration. Same synthetic top-level site with two different client origins. No real Google Canvas session, full App shell, hosted CDN request, physical device restart or manual screen-reader certification.",
+  "runner": {
+    "file": "reports/classroom-reliability-followup-2026-10-03/accessibility/bridge-acceptance.cjs",
+    "sha256": "b6bd8dc0a5fd446d3e51e6ccad7ee99eeb51cc11f95594e02be647f3be12caa0",
+    "bytes": 22185
+  },
+  "bridgeUrl": "https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds6-media-removal-intent",
+  "sources": {
+    "allo_device_storage_module.js": {
+      "sha256": "dae0b944581716cba45829f8b818def940af66b9be0bf5f6064ca64d375cada3",
+      "bytes": 68630
+    },
+    "storage_bridge.html": {
+      "sha256": "242eed10662190d15f7ef4ca6a0a247f8375c5b900b2a7f7250b560b96b88a57",
+      "bytes": 53333
+    }
+  },
+  "routedRequests": [
+    {
+      "origin": "https://classroom-reliability.test",
+      "path": "/session-1",
+      "search": "",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "origin": "https://first.classroom-client.test",
+      "path": "/",
+      "search": "",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "origin": "https://first.classroom-client.test",
+      "path": "/allo_device_storage_module.js",
+      "search": "",
+      "contentType": "application/javascript; charset=utf-8"
+    },
+    {
+      "origin": "https://alloflow-cdn.pages.dev",
+      "path": "/storage_bridge.html",
+      "search": "?v=ds6-media-removal-intent",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "origin": "https://classroom-reliability.test",
+      "path": "/session-2",
+      "search": "",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "origin": "https://second.classroom-client.test",
+      "path": "/",
+      "search": "",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "origin": "https://second.classroom-client.test",
+      "path": "/allo_device_storage_module.js",
+      "search": "",
+      "contentType": "application/javascript; charset=utf-8"
+    },
+    {
+      "origin": "https://alloflow-cdn.pages.dev",
+      "path": "/storage_bridge.html",
+      "search": "?v=ds6-media-removal-intent",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "origin": "https://classroom-reliability.test",
+      "path": "/session-1",
+      "search": "",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "origin": "https://first.classroom-client.test",
+      "path": "/",
+      "search": "",
+      "contentType": "text/html; charset=utf-8"
+    },
+    {
+      "origin": "https://first.classroom-client.test",
+      "path": "/allo_device_storage_module.js",
+      "search": "",
+      "contentType": "application/javascript; charset=utf-8"
+    },
+    {
+      "origin": "https://alloflow-cdn.pages.dev",
+      "path": "/storage_bridge.html",
+      "search": "?v=ds6-media-removal-intent",
+      "contentType": "text/html; charset=utf-8"
+    }
+  ],
+  "blockedRequests": [],
+  "pageErrors": [],
+  "runtime": {
+    "node": "v24.11.1",
+    "playwright": "1.60.0",
+    "chromium": "148.0.7778.96"
+  },
+  "consent": {
+    "shown": true,
+    "nativeKeyboardApproved": true,
+    "backgroundFrameHiddenAfterApproval": true,
+    "status": {
+      "backend": "bridge-iframe",
+      "connected": true,
+      "queuedWrites": 0,
+      "bridgeUrl": "https://alloflow-cdn.pages.dev/storage_bridge.html?v=ds6-media-removal-intent"
+    }
+  },
+  "twoSaves": [
+    {
+      "revision": 1,
+      "acknowledged": true,
+      "historyCount": 1,
+      "recoveryCount": 1
+    },
+    {
+      "revision": 2,
+      "acknowledged": true,
+      "historyCount": 2,
+      "recoveryCount": 2
+    }
+  ],
+  "nativeCommittedRead": {
+    "historyRevision": 2,
+    "historyCount": 2,
+    "recoveryCount": 2
+  },
+  "freshClientRestore": {
+    "origin": "https://second.classroom-client.test",
+    "historyRevision": 2,
+    "historyCount": 2,
+    "recoveryCount": 2,
+    "approvalPromptRepeated": false,
+    "backend": "bridge-iframe"
+  },
+  "draftOnlyRoundTrips": [
+    {
+      "id": "synthetic-draft-wordSoundsState",
+      "field": "wordSoundsState",
+      "acknowledged": true,
+      "resourceCount": 0,
+      "historyCount": 0,
+      "snapshotCount": 3,
+      "pinned": false,
+      "exactWorkspaceReadBack": true
+    },
+    {
+      "id": "synthetic-draft-units",
+      "field": "units",
+      "acknowledged": true,
+      "resourceCount": 0,
+      "historyCount": 0,
+      "snapshotCount": 4,
+      "pinned": false,
+      "exactWorkspaceReadBack": true
+    },
+    {
+      "id": "synthetic-draft-profiles",
+      "field": "profiles",
+      "acknowledged": true,
+      "resourceCount": 0,
+      "historyCount": 0,
+      "snapshotCount": 5,
+      "pinned": true,
+      "exactWorkspaceReadBack": true
+    },
+    {
+      "id": "synthetic-draft-projectState",
+      "field": "projectState",
+      "acknowledged": true,
+      "resourceCount": 0,
+      "historyCount": 0,
+      "snapshotCount": 6,
+      "pinned": false,
+      "exactWorkspaceReadBack": true
+    },
+    {
+      "id": "synthetic-draft-guidedProgress",
+      "field": "guidedProgress",
+      "acknowledged": true,
+      "resourceCount": 0,
+      "historyCount": 0,
+      "snapshotCount": 7,
+      "pinned": false,
+      "exactWorkspaceReadBack": true
+    }
+  ],
+  "explicitMediaRemovalAtCap": {
+    "id": "synthetic-media-removal-at-cap",
+    "beforeManifestCount": 500,
+    "initialEmbeddedMediaReadBack": true,
+    "acknowledged": true,
+    "reason": "media-removed",
+    "afterManifestCount": 500,
+    "omittedAssets": 502,
+    "actualRemovalEntry": {
+      "path": "snapshot.workspace.history[0].data.image",
+      "kind": "image/png",
+      "approximateBytes": 20,
+      "reason": "user-remove-media"
+    },
+    "embeddedMediaRemoved": true,
+    "exactStoreReadBack": true,
+    "textPreserved": true,
+    "remoteLinksPreserved": true,
+    "pinned": true,
+    "snapshotCount": 8
+  },
+  "extendedNativeCommittedRead": {
+    "recoveryCount": 8,
+    "draftCount": 5,
+    "exactDraftWorkspaces": true,
+    "exactCappedRemovalSnapshot": true
+  },
+  "freshExtendedRestore": {
+    "origin": "https://first.classroom-client.test",
+    "recoveryCount": 8,
+    "draftCount": 5,
+    "exactDraftWorkspaces": true,
+    "exactCappedRemovalSnapshot": true,
+    "actualRemovalEntry": true,
+    "preservedTextAndRemoteLinks": true,
+    "approvalPromptRepeated": false,
+    "backend": "bridge-iframe"
+  },
+  "completedAt": "2026-10-03T15:16:00.925Z"
+}

@@ -1,0 +1,21 @@
+'use strict';
+const fs = require('node:fs'), path = require('node:path'), crypto = require('node:crypto'), cp = require('node:child_process');
+const root = path.resolve(__dirname, '../..');
+const files = ['AlloFlowANTI.txt', 'desktop/web-app/src/AlloFlowANTI.txt', 'desktop/web-app/src/App.jsx', 'host_handlers_source.jsx', 'host_handlers_module.js', 'desktop/web-app/public/host_handlers_module.js', 'dev-tools/host_handlers_wave3_manifest.json', 'allo_device_vault_module.js', 'desktop/web-app/public/allo_device_vault_module.js'];
+const inputs = ['_build_first_wave_view_modules.js', 'word_sounds_readiness_contract.js', 'allo_crypto_module.js', 'allo_recovery_vault_integration_module.js'];
+const sha = b => crypto.createHash('sha256').update(b).digest('hex');
+const destination = path.join(__dirname, 'before');
+if (fs.existsSync(path.join(__dirname, 'initial.json'))) throw Error('Preserve initial receipt');
+const records = files.map(file => {
+  const raw = fs.readFileSync(path.join(root, file)), out = path.join(destination, file);
+  fs.mkdirSync(path.dirname(out), { recursive: true }); fs.writeFileSync(out, raw);
+  return { file, sha256: sha(raw), bytes: raw.length, crlf: raw.toString().includes('\r\n') };
+});
+const runGit = args => cp.execFileSync('git', args, { cwd: root, encoding: 'utf8', windowsHide: true }).trim();
+const receipt = { startedAt: new Date().toISOString(), head: runGit(['rev-parse', 'HEAD']), files: records, inputs: inputs.map(file => ({ file, sha256: sha(fs.readFileSync(path.join(root, file))) })), index: runGit(['ls-files', '-s', '--', ...files]) };
+fs.writeFileSync(path.join(__dirname, 'initial.json'), JSON.stringify(receipt, null, 2) + '\n');
+const handoff = path.join(root, 'AGENT_HANDOFF.md');
+const entry = '\r\n- 2026-10-04 | Codex classroom vault lifecycle enhancements | IN PROGRESS. Root owns narrow confirmed backup binding, startup recovery cancellation, shared controller initialization and any proven in-controller session ownership fixes; canonical/desktop hosts, HostHandlers source/root/public/manifest, and vault root/public only. Agents author report-local evidence; root alone integrates and runs serial checks/browser. Preserve previous recovery fixes and all shared work/index; no staging, commit, push, deployment or full app build. Report: reports/classroom-vault-lifecycle-enhancements-2026-10-04/.\r\n';
+if (fs.readFileSync(handoff, 'utf8').includes('Codex classroom vault lifecycle enhancements | IN PROGRESS')) throw Error('Duplicate ownership');
+fs.appendFileSync(handoff, entry);
+console.log(JSON.stringify({ preserved: records.length, head: receipt.head, report: path.relative(root, __dirname) }));

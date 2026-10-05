@@ -4,7 +4,7 @@ import { createRequire } from 'node:module';
 
 const require = createRequire(import.meta.url);
 const THREE = require('../vendor/three-r128/three.min.js');
-const source = readFileSync('stem_lab/stem_tool_cephalopodlab.js', 'utf8');
+const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', 'utf8');
 const phaseStart = source.indexOf('// Render reach after prey movement/contact');
 const phaseEnd = source.indexOf('// ─── Moray eel AI', phaseStart);
 if (phaseStart < 0 || phaseEnd <= phaseStart) throw new Error('Could not locate the live strike render step');
@@ -70,5 +70,50 @@ describe('Cephalopod Hunter squid strike clock', () => {
     expect(step(1200).strike).toBe(1);
     expect(step(1400).strike).toBeGreaterThan(0);
     expect(step(1650).strike).toBe(0);
+  });
+
+  it('prepares an accepted squid strike while keeping contact at 200 ms and clearing all coordination at 650 ms', () => {
+    const { state, step } = fixture();
+    const initial = step(1000);
+    expect(initial.strike).toBe(0);
+    expect(initial.strikePreparation).toBe(0);
+    expect(initial.strikeBrace).toBe(0);
+    const prepared = step(1040);
+    expect(prepared.strike).toBe(0);
+    expect(prepared.strikePreparation).toBeGreaterThan(0);
+    expect(prepared.strikeBrace).toBeGreaterThan(0);
+    expect(prepared.strikeAim).not.toBeNull();
+    expect(step(1199.999).strike).toBeLessThan(1);
+    expect(step(1200).strike).toBe(1);
+    expect(step(1260).strike).toBe(1);
+    const recovering = step(1649.999);
+    expect(recovering.strike).toBeGreaterThan(0);
+    expect(recovering.strikeBrace).toBeGreaterThan(0);
+    for (const now of [1650, 1650.001, 1900]) {
+      const neutral = step(now);
+      expect(neutral.strike).toBe(0);
+      expect(neutral.strikePreparation).toBe(0);
+      expect(neutral.strikeBrace).toBe(0);
+      expect(neutral.strikeAim).toBeNull();
+      expect(state.visual).toBeNull();
+    }
+  });
+
+  it('does not add preparation or brace from a meal-only event or revive them when a meal occurs during recovery', () => {
+    const mealOnly = fixture('humboldtSquid', false);
+    mealOnly.state.gameState.lastStrikeAt = 2000;
+    for (const now of [2000, 2040, 2200, 2500]) {
+      const neutral = mealOnly.step(now);
+      expect(neutral.strike).toBe(0); expect(neutral.strikePreparation).toBe(0); expect(neutral.strikeBrace).toBe(0); expect(neutral.strikeAim).toBeNull();
+    }
+    const active = fixture();
+    const recovery = active.step(1500);
+    active.state.gameState.lastStrikeAt = 1500;
+    const later = active.step(1600);
+    expect(later.strike).toBeLessThan(recovery.strike);
+    expect(later.strikeBrace).toBeLessThan(recovery.strikeBrace);
+    expect(later.strikePreparation).toBe(0);
+    const neutral = active.step(1650);
+    expect(neutral.strike).toBe(0); expect(neutral.strikeBrace).toBe(0); expect(neutral.strikePreparation).toBe(0);
   });
 });

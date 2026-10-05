@@ -1,0 +1,30 @@
+{
+  "sourceSha256": "44b41d2f3ce4440416e53dae3babaf063455504080b82a59644ec1c4bc48f116",
+  "sourceBytes": 1323476,
+  "canonicalPublicIdentical": true,
+  "syntaxChecks": "passed",
+  "scopedDiffCheck": "passed",
+  "integrationOperations": 4,
+  "exactBaselineRecoveredInMemory": true,
+  "baselineSha256": "3314c07bc96271cb7eea1bcb5bb70ede100ecf28013b7237304c4e41176ad5b5",
+  "baselineBytes": 1309695,
+  "priorTestFilesUnchanged": true,
+  "scopedIndexUnchanged": true,
+  "newTestsUnstaged": true,
+  "unitUniqueChecks": 55,
+  "unitFiles": {
+    "moonmission_descent_prediction_charts.test.js": 15,
+    "moonmission_descent_prediction_physics.test.js": 32,
+    "moonmission_descent_prediction_visuals.test.js": 8
+  },
+  "newUnitChecks": 15,
+  "unitReport": "unit-final.json",
+  "unitReportSuccess": true,
+  "unitExitCapture": "Final report completed successfully; process session was unavailable after environment refresh.",
+  "initialUnitHistory": "53 passed, 2 failed. The root close-view status attribute collided with the close-view figure selector. Status attribute renamed; both DOM assertions and all other checks then passed.",
+  "staged": false,
+  "committed": false,
+  "pushed": false,
+  "deployed": false,
+  "fullHostBuildRun": false
+}

@@ -1,0 +1,282 @@
+{
+  "version": 1,
+  "baselineSHA": "f2ef9cbc4c1a9899703bad86da73d2553704bb3953428cdac1b47098a8af3450",
+  "sourceSHA": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963",
+  "guardCount": 9,
+  "reverseByteExact": true,
+  "mirrors": {
+    "stem_lab/stem_tool_cephalopodlab.js": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963",
+    "desktop/web-app/public/stem_lab/stem_tool_cephalopodlab.js": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963",
+    "desktop/app-build/stem_lab/stem_tool_cephalopodlab.js": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963",
+    "desktop/web-app/build/stem_lab/stem_tool_cephalopodlab.js": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963"
+  },
+  "randomContainingLinesUnchanged": true,
+  "resourceConstructorTokensUnchanged": true,
+  "habitatMeasurementReportSHA": "a48b2d6b73325759426efba8e19142036cc95859ee7a1d0ce98737b2e42370a6",
+  "grass": {
+    "actors": 80,
+    "instancesPerActor": 7,
+    "totalInstances": 560,
+    "budgetPerActor": {
+      "vertices": 33,
+      "triangles": 40,
+      "attributes": {
+        "position": {
+          "vertices": 33,
+          "itemSize": 3,
+          "arrayType": "Float32Array",
+          "bytes": 396
+        },
+        "color": {
+          "vertices": 33,
+          "itemSize": 3,
+          "arrayType": "Float32Array",
+          "bytes": 396
+        },
+        "uv": {
+          "vertices": 33,
+          "itemSize": 2,
+          "arrayType": "Float32Array",
+          "bytes": 264
+        },
+        "normal": {
+          "vertices": 33,
+          "itemSize": 3,
+          "arrayType": "Float32Array",
+          "bytes": 396
+        }
+      },
+      "index": {
+        "indices": 120,
+        "arrayType": "Uint16Array",
+        "bytes": 240
+      },
+      "geometryBytes": 1692
+    },
+    "totalOwnedGeometryBytes": 135360,
+    "area": {
+      "pairedSurface": 14.251389389836243,
+      "liveSurface": 16.04196733424562,
+      "aggregateSurfaceRatio": 1.1256423423309432,
+      "aggregateSurfaceGainPercent": 12.564234233094318,
+      "pairedBroadsideProjection": 13.853673284321557,
+      "liveBroadsideProjection": 15.609621557292037,
+      "aggregateProjectedRatio": 1.1267496523797567,
+      "aggregateProjectedGainPercent": 12.674965237975666,
+      "perVariantSurfaceRatios": {
+        "min": 1.0860446491287787,
+        "max": 1.1614937366171458,
+        "mean": 1.124927354399163
+      },
+      "perVariantProjectedRatios": {
+        "min": 1.08622904365294,
+        "max": 1.1637064070966836,
+        "mean": 1.126193545846155
+      },
+      "definition": "True one-sheet triangle area sums cross-product magnitudes/2. Broadside projection sums abs(cross.z)/2, projecting the authored folded blade onto localXY. It counts per-triangle material coverage, not the occlusion-unioned silhouette, screen pixels or raster overdraw."
+    },
+    "upperWidths": {
+      "rows": [
+        6,
+        7,
+        8,
+        9
+      ],
+      "pairedWidthSum": 30.18294670380903,
+      "liveWidthSum": 42.22369743676258,
+      "aggregateRatio": 1.3989256201891656,
+      "allRowRatios": {
+        "min": 1.1386841842655984,
+        "max": 1.9918724161105699,
+        "mean": 1.460761859827079
+      },
+      "perVariantUpperAggregateRatios": {
+        "min": 1.2757444004365655,
+        "max": 1.5271486676252437,
+        "mean": 1.399114889017144
+      },
+      "perRow": {
+        "6": {
+          "min": 1.1386841842655984,
+          "max": 1.27736846919319,
+          "mean": 1.230099573717521
+        },
+        "7": {
+          "min": 1.258239516047681,
+          "max": 1.516479177691295,
+          "mean": 1.407689761136775
+        },
+        "8": {
+          "min": 1.3561201024362124,
+          "max": 1.7122406074056449,
+          "mean": 1.5296869607167256
+        },
+        "9": {
+          "min": 1.4959357442971215,
+          "max": 1.9918724161105699,
+          "mean": 1.675571143737296
+        }
+      }
+    },
+    "trueBoundingBoxesUnchanged": true,
+    "startupMath": {
+      "description": "Per grass actor: one33vertex Float32 X/Z-extrema scan and nine interior-row scalar profile/edge passes. Wrapped Math counters measure actual live-minus-paired factory calls; ordinary scalar arithmetic/comparisons and Three internals are outside these counters. Original final normals/box/sphere construction remains.",
+      "actors": 80,
+      "measuredGrassFactoryCalls": {
+        "live": {
+          "sin": 15520,
+          "cos": 2640,
+          "pow": 1600,
+          "sqrt": 720,
+          "fround": 8160,
+          "min": 8596,
+          "max": 9476,
+          "abs": 2640
+        },
+        "paired": {
+          "sin": 14080,
+          "cos": 2640,
+          "pow": 880,
+          "sqrt": 0,
+          "fround": 0,
+          "min": 0,
+          "max": 880,
+          "abs": 2640
+        }
+      },
+      "measuredAdditionalGrassCalls": {
+        "sin": 1440,
+        "cos": 0,
+        "pow": 720,
+        "sqrt": 720,
+        "fround": 8160,
+        "min": 8596,
+        "max": 8596,
+        "abs": 0
+      },
+      "measuredAdditionalCallsPerGrass": {
+        "sin": 18,
+        "cos": 0,
+        "pow": 9,
+        "sqrt": 9,
+        "fround": 102,
+        "min": 107.45,
+        "max": 107.45,
+        "abs": 0
+      },
+      "kelpFactoryCalls": {
+        "live": {
+          "sin": 16600,
+          "cos": 7125,
+          "pow": 1175,
+          "sqrt": 200,
+          "fround": 0,
+          "min": 2100,
+          "max": 475,
+          "abs": 1425
+        },
+        "paired": {
+          "sin": 16600,
+          "cos": 7125,
+          "pow": 1175,
+          "sqrt": 200,
+          "fround": 0,
+          "min": 2100,
+          "max": 475,
+          "abs": 1425
+        }
+      },
+      "additionalScratchArraysInProduction": 0,
+      "maximumVisitedEdgeVerticesPerActor": 18,
+      "maximumEditedScalarsPerActor": 36,
+      "perFrameAddedWork": 0,
+      "counterInstrumentation": "Math wrappers/counters are report-script instrumentation only; they are not injected into production."
+    }
+  },
+  "kelp": {
+    "actors": 25,
+    "budgetPerActor": {
+      "vertices": 277,
+      "triangles": 424,
+      "attributes": {
+        "position": {
+          "vertices": 277,
+          "itemSize": 3,
+          "arrayType": "Float32Array",
+          "bytes": 3324
+        },
+        "color": {
+          "vertices": 277,
+          "itemSize": 3,
+          "arrayType": "Float32Array",
+          "bytes": 3324
+        },
+        "uv": {
+          "vertices": 277,
+          "itemSize": 2,
+          "arrayType": "Float32Array",
+          "bytes": 2216
+        },
+        "normal": {
+          "vertices": 277,
+          "itemSize": 3,
+          "arrayType": "Float32Array",
+          "bytes": 3324
+        }
+      },
+      "index": {
+        "indices": 1272,
+        "arrayType": "Uint16Array",
+        "bytes": 2544
+      },
+      "geometryBytes": 14732
+    },
+    "totalOwnedGeometryBytes": 368300,
+    "allBuffersMetadataBoundsUnchanged": true
+  },
+  "plantMotion": {
+    "utf8Bytes": 3165,
+    "sha256": "882d149a340b29666888686adcc3ca34302d71c4f212e20647f9dceb95d1ab1b",
+    "matchesBaseline": true,
+    "includes": "Entire shadeCLHuntPlantFlex/createCLHuntPlantFlex/updateCLHuntPlantFlex region"
+  },
+  "moonJelly": {
+    "actors": 5,
+    "perActor": {
+      "meshes": 8,
+      "geometries": 8,
+      "materials": 8,
+      "vertices": 1721,
+      "triangles": 2970,
+      "rawGeometryBytes": 79776
+    },
+    "bellVertices": 481,
+    "additionalPerFrameWork": "Per existing bell vertex: positive-Y conditional, clamped weight and axial scalar multiply/subtraction. Existing normal rebuild retains its loops; no added per-frame allocations, trigonometric calls or buffer objects.",
+    "radialPositionsRimRestAnatomyAndFramesExact": true
+  },
+  "vampireGuidance": {
+    "actualFoodActors": 28,
+    "Observe": "Copies and sorts actual snow actors on user action, retaining simulation array order",
+    "additionalEventWork": "One28-entry array copy for Observe and diet branches for guidance/help; gathering thresholds, scoring, RNG and actor order unchanged"
+  },
+  "addedResources": {
+    "meshes": 0,
+    "vertices": 0,
+    "triangles": 0,
+    "geometryBytes": 0,
+    "materials": 0,
+    "textures": 0,
+    "uniforms": 0,
+    "shaders": 0,
+    "lights": 0,
+    "renderPasses": 0
+  },
+  "limits": [
+    "Grass remains opaque DoubleSide Standard. Fuller leaf material covers more projected area; unchanged geometry byte/triangle budgets do not imply unchanged raster workload, pixel coverage or neighbor occlusion.",
+    "Broadside localXY projection is a controlled triangle measure. World yaw, seven overlapping instance poses, shader flex, camera, visibility and shadows determine real screen coverage; matched native captures decide appearance.",
+    "Pinned extremes can constrain local edges. CPU geometry/winding/normal tests and independent image review must establish acceptable shape before final acceptance.",
+    "No hardware FPS, reduced fragment cost, alpha/transparency or new gameplay behavior is claimed.",
+    "Jelly adds per-frame scalar arithmetic; unchanged resources do not imply zero added CPU work",
+    "No target-device frame-rate claim; browser budgets were increased only for three long diagnostic cases"
+  ]
+}

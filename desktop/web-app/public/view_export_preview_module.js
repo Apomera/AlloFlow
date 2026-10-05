@@ -3678,7 +3678,8 @@ function _builderReadingAccessReview(history, exportConfig) {
     dbq: "includeDbq",
     "lesson-plan": "includeLessonPlan",
     "udl-advice": "includeUdlAdvice",
-    brainstorm: "includeBrainstorm"
+    brainstorm: "includeBrainstorm",
+    "concept-sort": "includeConceptSort"
   };
   const selected = source.filter((item) => {
     if (!item) return false;
@@ -3745,6 +3746,7 @@ function _builderResourceOptions(history, t) {
     ["includeSimplified", "\u{1F4D6} Adapted Text", "simplified"],
     ["includeGlossary", "\u{1F4DA} Glossary", "glossary"],
     ["includeQuiz", "\u2753 Quiz", "quiz"],
+    ["includeConceptSort", translate("concept_sort.title") || "Concept Sort", "concept-sort"],
     ["includeOutline", "\u{1F5C2}\uFE0F Graphic Organizer", "outline"],
     ["includeFaq", "\u{1F4AC} FAQ", "faq"],
     ["includeMemoryAid", translate("sidebar.tool_memory_aid") || "Memory Aid Studio", "memory-aid"],
@@ -3761,7 +3763,7 @@ function _builderResourceOptions(history, t) {
   return entries.filter(([, , type]) => types.has(type));
 }
 function _builderResourceIncluded(config, key) {
-  return ["includeMemoryAid", "includeAppliedChallenge", "includeOriginalReading"].includes(key) ? config?.[key] !== false : !!config?.[key];
+  return ["includeMemoryAid", "includeAppliedChallenge", "includeOriginalReading", "includeConceptSort"].includes(key) ? config?.[key] !== false : !!config?.[key];
 }
 function _builderBulkResourceUpdate(history, config, t) {
   const available = _builderResourceOptions(history, t);

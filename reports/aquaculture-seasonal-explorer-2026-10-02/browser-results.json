@@ -1,0 +1,53 @@
+[
+  {
+    "width": 1280,
+    "checks": [
+      "month keyboard",
+      "event timing",
+      "7 metrics",
+      "preview purity",
+      "baseline capture/retention",
+      "draft preservation",
+      "CSV download",
+      "save/reload",
+      "reflow",
+      "scoped axe"
+    ],
+    "axeViolations": 0,
+    "errors": []
+  },
+  {
+    "width": 390,
+    "checks": [
+      "month keyboard",
+      "event timing",
+      "7 metrics",
+      "preview purity",
+      "baseline capture/retention",
+      "draft preservation",
+      "CSV download",
+      "save/reload",
+      "reflow",
+      "scoped axe"
+    ],
+    "axeViolations": 0,
+    "errors": []
+  },
+  {
+    "width": 320,
+    "checks": [
+      "month keyboard",
+      "event timing",
+      "7 metrics",
+      "preview purity",
+      "baseline capture/retention",
+      "draft preservation",
+      "CSV download",
+      "save/reload",
+      "reflow",
+      "scoped axe"
+    ],
+    "axeViolations": 0,
+    "errors": []
+  }
+]

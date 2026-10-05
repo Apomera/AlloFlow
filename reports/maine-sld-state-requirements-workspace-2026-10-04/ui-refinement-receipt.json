@@ -1,0 +1,11 @@
+{
+  "beforeSha256": "d89b072546669209af3e4d7f44b1b8372637290e3d620bfe95106d62814bcf1e",
+  "afterSha256": "8fe6a868b7fb3c6e119e6fc9cd1ddd1daaecf8bde66af715703d6829a567ee9d",
+  "scope": [
+    "deferredfocusguards",
+    "keyboardscrollregions",
+    "documentprovenance",
+    "markdownaccept",
+    "metadatawrapping"
+  ]
+}

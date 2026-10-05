@@ -1,0 +1,405 @@
+{
+  "date": "2026-10-03",
+  "scope": "Watercolor precision keyboard drawing, brush visibility, and isolated navigation gestures",
+  "passed": true,
+  "committed": false,
+  "stagedByThisPass": false,
+  "baselineSha256": "d5b9cb13a0c9a1de749bf760909bd222e65aedac06bfd40f72386eac1b4d5593",
+  "sourceSha256": "a78a088c66a7c420ecb8b3e3b4256370d388975c9caec07623da3a3773aef2ea",
+  "tests": {
+    "passed": 507,
+    "files": 34,
+    "newPrecisionCases": 35,
+    "runs": [
+      {
+        "passed": 507,
+        "files": 34,
+        "log": "watercolor-precision-regression.txt",
+        "workerStartupErrors": 0,
+        "startupFailures": [],
+        "suiteFiles": [
+          {
+            "file": "tests/artstudio_watercolor_precision.test.js",
+            "passed": 35
+          },
+          {
+            "file": "tests/artstudio_watercolor_engine.test.js",
+            "passed": 40
+          },
+          {
+            "file": "tests/artstudio_watercolor_lifting.test.js",
+            "passed": 12
+          },
+          {
+            "file": "tests/artstudio_symmetry_workspace.test.js",
+            "passed": 15
+          },
+          {
+            "file": "tests/artstudio_touch_motion_third_pass.test.js",
+            "passed": 13
+          },
+          {
+            "file": "tests/artstudio_watercolor_navigation.test.js",
+            "passed": 19
+          },
+          {
+            "file": "tests/artstudio_pixel_keyboard_a11y.test.js",
+            "passed": 39
+          },
+          {
+            "file": "tests/artstudio_pixel_colors.test.js",
+            "passed": 14
+          },
+          {
+            "file": "tests/artstudio_process_titles_i18n.test.js",
+            "passed": 2
+          },
+          {
+            "file": "tests/artstudio_artwork_roundtrip.test.js",
+            "passed": 10
+          },
+          {
+            "file": "tests/artstudio_pixel_tiling_workflows.test.js",
+            "passed": 28
+          },
+          {
+            "file": "tests/artstudio_canvas_context_guards.test.js",
+            "passed": 9
+          },
+          {
+            "file": "tests/artstudio_symmetry_navigation.test.js",
+            "passed": 26
+          },
+          {
+            "file": "tests/artstudio_pixel_import_workflows.test.js",
+            "passed": 10
+          },
+          {
+            "file": "tests/artstudio_pixel_export_workflows.test.js",
+            "passed": 25
+          },
+          {
+            "file": "tests/artstudio_capture_ownership_pass2.test.js",
+            "passed": 4
+          },
+          {
+            "file": "tests/artstudio_pointer_completion_pass3.test.js",
+            "passed": 5
+          },
+          {
+            "file": "tests/artstudio_semantics_a11y.test.js",
+            "passed": 10
+          },
+          {
+            "file": "tests/artstudio_pixel_layer_workflows.test.js",
+            "passed": 15
+          },
+          {
+            "file": "tests/artstudio_symmetry_keyboard_a11y.test.js",
+            "passed": 13
+          },
+          {
+            "file": "tests/artstudio_sr_announcements_i18n.test.js",
+            "passed": 7
+          },
+          {
+            "file": "tests/artstudio_pixel_selection_editing.test.js",
+            "passed": 21
+          },
+          {
+            "file": "tests/artstudio_aria_labels_i18n.test.js",
+            "passed": 9
+          },
+          {
+            "file": "tests/artstudio_pixel_appearance_workflows.test.js",
+            "passed": 8
+          },
+          {
+            "file": "tests/artstudio_touch_target_floor.test.js",
+            "passed": 3
+          },
+          {
+            "file": "tests/artstudio_remaining_touch_fourth_pass.test.js",
+            "passed": 10
+          },
+          {
+            "file": "tests/artstudio_pixel_export.test.js",
+            "passed": 39
+          },
+          {
+            "file": "tests/artstudio_pixel_import.test.js",
+            "passed": 15
+          },
+          {
+            "file": "tests/artstudio_toast_keys_i18n.test.js",
+            "passed": 7
+          },
+          {
+            "file": "tests/artstudio_pixel_layers.test.js",
+            "passed": 12
+          },
+          {
+            "file": "tests/artstudio_paused_loops_idle.test.js",
+            "passed": 3
+          },
+          {
+            "file": "tests/artstudio_watercolor_mixing.test.js",
+            "passed": 5
+          },
+          {
+            "file": "tests/artstudio_hostile_saved_state.test.js",
+            "passed": 5
+          },
+          {
+            "file": "tests/artstudio_pixel_appearance.test.js",
+            "passed": 19
+          }
+        ]
+      }
+    ],
+    "unresolvedFailures": 0,
+    "focused": {
+      "passed": 54,
+      "files": 2,
+      "log": "watercolor-precision-focused.txt",
+      "workerStartupErrors": 0,
+      "startupFailures": [],
+      "suiteFiles": [
+        {
+          "file": "tests/artstudio_watercolor_precision.test.js",
+          "passed": 35
+        },
+        {
+          "file": "tests/artstudio_watercolor_navigation.test.js",
+          "passed": 19
+        }
+      ]
+    },
+    "semantics": {
+      "passed": 10,
+      "files": 1,
+      "log": "watercolor-precision-semantics-recheck.txt",
+      "workerStartupErrors": 0,
+      "startupFailures": [],
+      "suiteFiles": [
+        {
+          "file": "tests/artstudio_semantics_a11y.test.js",
+          "passed": 10
+        }
+      ]
+    },
+    "pool": "threads",
+    "repositoryBudgetsChanged": false,
+    "transientTestTimeoutMs": 120000,
+    "initialEvidence": [
+      "watercolor-precision-focused-initial.txt",
+      "watercolor-precision-focused-overlay-fixture.txt",
+      "watercolor-precision-focused-before-shortcuts.txt",
+      "watercolor-precision-focused-navigation-timeout.txt",
+      "watercolor-precision-regression-initial.txt"
+    ],
+    "runtimeRecovery": "An existing zoom-navigation case exceeded 60 seconds during host slowdown; the final run used a temporary limit of 120 seconds, with every assertion retained.",
+    "semanticsRecovery": "The existing semantics assertion required old contiguous shortcut ordering. It now verifies required commands on the Watercolor canvas attribute, including new precision and completion shortcuts. Its ten-case recheck passed before the full selected regression rerun.",
+    "startupRecovery": "The final broad run completed cleanly."
+  },
+  "browser": {
+    "passed": true,
+    "results": "watercolor-precision-browser-results.json",
+    "harness": "Standalone Chromium, actual mouse/keyboard input, synthetic primary pen/touch navigation paths, clean PNG downloads and real IndexedDB",
+    "physicalStylusTested": false,
+    "packagedDesktopTested": false,
+    "visualPreviewsInspected": true,
+    "checks": [
+      {
+        "expandedPaper": {
+          "x": 159,
+          "y": 104,
+          "width": 810,
+          "height": 810
+        },
+        "detailPaper": {
+          "x": -651,
+          "y": -710,
+          "width": 2430,
+          "height": 2430
+        },
+        "fixedBacking": [
+          1024,
+          1024
+        ],
+        "zoomDoesNotPaint": true
+      },
+      {
+        "precision": {
+          "fineStepCells": 1,
+          "normalStepCells": 3.7125000000000057,
+          "acceleratedStepCells": 14.849999999999994
+        },
+        "cornerReveal": {
+          "home": {
+            "x": 22,
+            "y": 104
+          },
+          "end": {
+            "x": 1093.34375,
+            "y": 905.34375
+          }
+        },
+        "minimalRevealDoesNotScrollVisibleBrush": true,
+        "outerScrollUnchanged": true,
+        "noPaintOrUndoEntry": true
+      },
+      {
+        "maximumBrushNavigation": [
+          {
+            "brush": "Mop",
+            "size": 80,
+            "oversizedInteriorCenterVisible": true,
+            "cornerScrollExtentStable": true,
+            "outlineDimensions": [
+              1177.25,
+              1177.25
+            ]
+          },
+          {
+            "brush": "Wash",
+            "size": 80,
+            "oversizedInteriorCenterVisible": true,
+            "cornerScrollExtentStable": true,
+            "outlineDimensions": [
+              1200.484375,
+              1200.484375
+            ]
+          }
+        ],
+        "cursorLayerClippedToSheet": true,
+        "canvasFocusRingUnclipped": true,
+        "noPaintFromBrushViewChanges": true
+      },
+      {
+        "keyboardOutlinePersistsAfterHoverLeave": true,
+        "blurHidesOutline": true,
+        "paintHelpAndShortcutsDescribePrecision": true
+      },
+      {
+        "pointerFocusDoesNotJumpToKeyboardCursor": true,
+        "keyboardDabEndsPointerStroke": true,
+        "latePointerDoesNotPaint": true,
+        "separateUndoEntries": {
+          "strokeError": 0.000019073486328125,
+          "baselineError": 0.000019073486328125,
+          "redoError": 0.000019073486328125
+        }
+      },
+      {
+        "capturedPanYieldsToKeyboard": true,
+        "panArrowCSSPixels": 48,
+        "panHomeEndReachEdges": true,
+        "panEnterSpaceDoesNotPaint": true,
+        "panHelpAndShortcutsMatchMode": true
+      },
+      {
+        "syntheticPrimaryPenTouchPan": [
+          {
+            "pointerType": "pen",
+            "ownedPanDelta": [
+              30,
+              20
+            ],
+            "otherPointerIgnored": true,
+            "keyboardEndsPan": true,
+            "latePointerIgnored": true
+          },
+          {
+            "pointerType": "touch",
+            "ownedPanDelta": [
+              30,
+              20
+            ],
+            "otherPointerIgnored": true,
+            "keyboardEndsPan": true,
+            "latePointerIgnored": true
+          }
+        ],
+        "physicalStylusHardwareTested": false
+      },
+      {
+        "escapeEndsCapturedPan": true,
+        "escapePreservesCompletedStrokeAsOneUndo": true,
+        "escapeHidesBrush": true,
+        "latePointerReleaseIgnored": true
+      },
+      {
+        "cleanFullSheetExport": {
+          "dimensions": [
+            1024,
+            1024
+          ],
+          "exactCaptureBytes": true,
+          "atZoom": "300%",
+          "excludesDOMBrush": true
+        }
+      },
+      {
+        "savedStudy": {
+          "wetPaintRecoveredMaxCellError": 0,
+          "viewResetToFitPaint": true,
+          "viewAbsentFromSavedArtwork": true,
+          "originalUnchanged": true,
+          "realIndexedDBOrigin": "http://localhost:47839"
+        }
+      },
+      {
+        "phoneWidth": 320,
+        "controlHeights": [
+          44,
+          44,
+          44,
+          44
+        ],
+        "viewportStaysFixed": true,
+        "noHorizontalOverflow": true,
+        "keyboardCursorFollowsViewport": true,
+        "outerScrollUnchanged": true,
+        "endCursorCenter": {
+          "x": 297.625,
+          "y": 559.515625
+        }
+      },
+      {
+        "phoneWidth": 390,
+        "controlHeights": [
+          44,
+          44,
+          44,
+          44
+        ],
+        "viewportStaysFixed": true,
+        "noHorizontalOverflow": true,
+        "keyboardCursorFollowsViewport": true,
+        "outerScrollUnchanged": true,
+        "endCursorCenter": {
+          "x": 366.53125,
+          "y": 356.03125
+        }
+      }
+    ]
+  },
+  "review": {
+    "resolvedIssues": [
+      "Brush outlines could enlarge the sheet scroll range at paper corners; an independently clipped overlay now prevents overflow while retaining the canvas focus ring.",
+      "Paint and Pan now advertise only their active keyboard shortcuts."
+    ],
+    "remainingFindings": 0
+  },
+  "englishAdditions": [
+    "watercolor_precision_keyboard",
+    "watercolor_pan_keyboard",
+    "watercolor_cursor_position"
+  ],
+  "existingEnglishPreserved": true,
+  "mirrorsMatch": true,
+  "syntaxChecksPassed": true,
+  "spectralBuildCheckPassed": true,
+  "scopedWhitespaceChecksPassed": true
+}

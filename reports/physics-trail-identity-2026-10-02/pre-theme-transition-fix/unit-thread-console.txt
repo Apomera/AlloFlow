@@ -1,0 +1,27 @@
+Captured excerpt from the real Vitest output returned by exec session 48774.
+The JSON result serializes this timeout as STACK_TRACE_ERROR.
+
+ FAIL  tests/physics_drag_integrator.test.js > no STEM tool has a `return` split from its expression by a comment > scans every stem_lab/stem_tool_*.js
+Error: Test timed out in 180000ms.
+If this is a long-running test, pass a timeout value as the last argument or configure it globally with "testTimeout".
+ ❯ tests/physics_drag_integrator.test.js:75:3
+
+Unhandled Error
+Error: [vitest-pool]: Failed to start threads worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/physics_recorded_flights.test.js.
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+
+Unhandled Error
+Error: [vitest-pool]: Failed to start threads worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/physics_investigation_ui.test.js.
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+
+Unhandled Error
+Error: [vitest-pool]: Failed to start threads worker for test files C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/physics_apex_recording.test.js.
+Caused by: Error: [vitest-pool-runner]: Timeout waiting for worker to respond
+
+ Test Files  1 failed | 17 passed (18)
+      Tests  1 failed | 288 passed (289)
+     Errors  3 errors
+   Start at  21:37:35
+   Duration  796.29s (transform 1.05s, setup 7.82s, import 5.31s, tests 375.84s, environment 168.50s)
+
+Source and mirror stable; 51 historical captures unchanged.

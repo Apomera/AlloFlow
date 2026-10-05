@@ -24,6 +24,7 @@ if (!fs.existsSync(SOURCE)) {
     process.exit(1);
 }
 
+const readinessSource = fs.readFileSync(path.join(ROOT, 'word_sounds_readiness_contract.js'), 'utf-8');
 const source = fs.readFileSync(SOURCE, 'utf-8');
 
 const entry = `
@@ -74,6 +75,7 @@ var _lazyIcon = function (name) {
 };
 var AlertCircle = _lazyIcon('AlertCircle');
 var RefreshCw = _lazyIcon('RefreshCw');
+${readinessSource}
 ${compiled}
 window.AlloModules = window.AlloModules || {};
 window.AlloModules.ModuleScopeExtras = {

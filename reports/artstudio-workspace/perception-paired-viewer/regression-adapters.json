@@ -1,0 +1,22 @@
+[
+  {
+    "original": "dev-tools/perception_lab_drawing_viewer_qa.cjs",
+    "adapted": "dev-tools/.cache/perception_paired_drawing_viewer_regression.cjs",
+    "previousOutputDirectory": "reports/artstudio-workspace/perception-drawing-viewer",
+    "newOutputDirectory": "reports/artstudio-workspace/perception-paired-viewer/drawing-viewer-regression",
+    "originalSHA256": "49f2e3bb18a290b991f30028c86d4a065c0819bf3e099fc5f8ca8aa659b2bd31",
+    "adaptedSHA256": "07fb67d95eda847764ece233d31c53e0eaf47c2f0f7ef7c7151d06eba9c08f9d",
+    "exactOutputOnly": true,
+    "assertionsChanged": 0
+  },
+  {
+    "original": "dev-tools/perception_lab_recorded_preview_qa.cjs",
+    "adapted": "dev-tools/.cache/perception_paired_recorded_preview_regression.cjs",
+    "previousOutputDirectory": "reports/artstudio-workspace/perception-recorded-preview",
+    "newOutputDirectory": "reports/artstudio-workspace/perception-paired-viewer/recorded-preview-regression",
+    "originalSHA256": "cdf23a119c076347984d4e840b58f5c96a3cd632b147eff3126db77dcf8b6f4e",
+    "adaptedSHA256": "1a0703e8c9e5f795494e35f7bb31bc3d080fb89cff99a365dc6164a92b07ad0d",
+    "exactOutputOnly": true,
+    "assertionsChanged": 0
+  }
+]

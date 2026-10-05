@@ -1,0 +1,100 @@
+/* Keep the objects and the shared clock close to the selected action. */
+#sceneToolTray{padding:12px 18px;border-bottom:1px solid #d2ddc8;background:#fffdf6;color:#244535}
+.kitchen-tool-tray .kitchen-tool-groups{display:flex;flex-wrap:nowrap;gap:6px;margin:0 0 9px;padding:0;border:0;overflow-x:auto;scrollbar-width:thin;max-width:100%}
+.kitchen-tool-tray .kitchen-tool-groups button{flex:0 0 auto;min-height:44px;padding:9px 13px;font-size:13px;white-space:nowrap;border:1px solid #b8c9aa;border-radius:9px;background:#f5f6ec}
+.kitchen-tool-tray .kitchen-tool-groups button[aria-pressed=true]{background:#315f45;color:#fffdf4;border-color:#315f45}
+.kitchen-tool-tray .kitchen-tool-context{display:flex;flex-wrap:wrap;align-items:center;gap:6px 10px;margin:0;padding:0;min-width:0}
+.kitchen-tool-tray .kitchen-tool-context>strong{font-size:15px;line-height:1.4}
+.kitchen-tool-tray .kitchen-tool-context>span{font-size:12px;line-height:1.35;padding:3px 7px;border-radius:6px}
+.kitchen-tool-tray .kitchen-tool-context>p{flex-basis:100%;width:100%;font-size:13px;line-height:1.45;margin:0;max-width:900px}
+.kitchen-tool-current{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:3px 10px;align-items:center;width:100%}
+.kitchen-tool-current>strong{grid-column:1;font-size:15px;line-height:1.4}
+.kitchen-tool-current>span{grid-column:1;font-size:12px;line-height:1.35;padding:3px 7px;border:1px solid #acc19b;border-radius:6px;width:max-content;max-width:100%;color:#31573b;background:#eef4e3}
+.kitchen-tool-current>span[data-ready=false]{border-color:#c6a677;color:#715124;background:#fff2d8}
+.kitchen-tool-current>#sceneChooseTool{grid-column:2;grid-row:1/3}
+#sceneChooseTool{min-height:44px;font-size:13px;padding:8px 13px;white-space:normal}
+.kitchen-tool-tray-header{display:flex;align-items:center;justify-content:space-between;gap:12px;margin-bottom:8px}
+.kitchen-tool-tray-header>div{min-width:0;flex:1}
+#sceneWorkspaceClock{background:#eef3e5;border-bottom:1px solid #c6d4bb;color:#264e39}
+#sceneWorkspaceClock .time-controls{display:flex;align-items:center;flex-wrap:wrap;gap:8px;margin:0;padding:10px 18px;background:transparent}
+#sceneWorkspaceClock .time-controls>div{display:flex;align-items:baseline;gap:8px;flex:1 1 150px;min-width:0}
+#sceneWorkspaceClock #clock{font-size:25px;font-variant-numeric:tabular-nums;line-height:1.15}
+#sceneWorkspaceClock #clockStatus{font-size:12px;line-height:1.4;color:#36573d}
+#sceneWorkspaceClock button{min-height:44px;padding:9px 12px;font-size:13px;white-space:normal}
+#sceneClockSettings{flex:0 1 auto;border:1px solid #a7bb96;border-radius:8px;min-width:0;background:#fffdf5}
+#sceneClockSettings>summary{min-height:44px;padding:10px 12px;font-size:13px;line-height:1.5;cursor:pointer;list-style:revert}
+#sceneClockSettings[open]{flex-basis:100%}
+#sceneClockSettings label{display:inline-flex;flex-direction:column;width:min(200px,calc(50% - 22px));max-width:none;margin:0 10px 12px;font-size:13px;gap:4px}
+#sceneClockSettings select{font-size:14px;min-height:44px;max-width:100%;width:100%;margin:0}
+#sceneRecordedClock{padding:11px 18px;font-size:14px;line-height:1.5;font-variant-numeric:tabular-nums}
+#sceneToolDrawer{border:0;border-top:1px solid #c9d6bc;border-bottom:1px solid #c9d6bc;background:#fafbf1;margin:0;color:#284d37}
+#sceneToolDrawer>summary{display:flex;align-items:center;justify-content:space-between;gap:8px;min-height:48px;padding:11px 18px;font-size:14px;font-weight:700;cursor:pointer;list-style:none}
+#sceneToolDrawer>summary::after{content:'+';font-size:21px;font-weight:500;line-height:1}
+#sceneToolDrawer[open]>summary::after{content:'−'}
+#sceneToolDrawer .scene-direct-tools{border:0;background:#fffdf6;padding-top:0}
+#sceneToolDrawer .kitchen-tool-shelf{display:block;padding:0 18px 12px}
+#sceneToolDrawer .kitchen-tool-cards{display:grid;grid-template-columns:repeat(auto-fit,minmax(155px,1fr));gap:8px}
+#sceneToolDrawer .kitchen-tool-cards button{min-height:76px;align-items:flex-start;padding:11px;border-radius:10px;max-width:100%;white-space:normal}
+#sceneToolDrawer .kitchen-tool-cards strong{font-size:14px;line-height:1.35}
+#sceneToolDrawer .kitchen-tool-cards small{font-size:12px;line-height:1.4;margin-top:3px}
+.kitchen-tool-readiness{display:block;margin-top:5px;font-size:11px;line-height:1.35;color:#395c3d}
+#sceneToolDrawer button[aria-pressed=true] .kitchen-tool-readiness{color:inherit}
+#sceneToolDrawer [data-ready=false] .kitchen-tool-readiness{color:#76521f}
+#sceneToolDrawer button[aria-pressed=true][data-ready=false] .kitchen-tool-readiness{color:inherit}
+#sceneToolDrawer .kitchen-tool-options{display:flex;flex-wrap:wrap;align-items:flex-end;width:100%;padding:0 18px 12px;gap:10px}
+#sceneToolDrawer .kitchen-tool-options label{max-width:420px;flex:1;min-width:0;font-size:13px}
+#sceneToolDrawer .kitchen-tool-options select{min-height:44px;font-size:14px;padding:9px;width:100%}
+#sceneToolDrawer .kitchen-tool-options button{min-height:44px;font-size:13px;white-space:normal}
+#sceneReturnToKitchen{min-height:44px;margin:0;font-size:13px;padding:9px 13px;background:#315f45;border-color:#315f45;color:#fffdf4}
+#sceneToolDrawer #sceneGestureGuide{display:block;font-size:13px;padding:0 18px 12px}
+#sceneToolDrawer #sceneGestureGuide>summary{min-height:44px;padding:9px 0;font-size:13px;line-height:1.6}
+#sceneToolDrawer #sceneToolHelp{font-size:13px;line-height:1.5}
+#sceneToolDrawer .rack-launch p,#sceneToolDrawer .object-pickup-launch p{font-size:13px;line-height:1.5}
+#sceneToolDrawer .rack-launch small,#sceneToolDrawer .object-pickup-launch small{font-size:12px;line-height:1.5}
+#kitchenStage .camera-row{display:flex;align-items:center;flex-wrap:wrap;gap:8px;padding:10px 18px;font-size:12px}
+#kitchenStage .camera-row>span{font-size:12px;line-height:1.45;flex:1 1 220px}
+#kitchenStage .camera-row>div{display:flex;align-items:flex-start;flex-wrap:wrap;gap:7px;min-width:0}
+#kitchenStage .camera-row button{min-height:44px;padding:9px 11px;font-size:12px}
+#sceneMoreViews{max-width:100%;min-width:0;border:1px solid #b9c9ab;border-radius:8px;background:#f9fbf2}
+#sceneMoreViews>summary{min-height:44px;padding:10px 12px;font-size:12px;line-height:1.5;cursor:pointer}
+#sceneMoreViews[open]{flex:1 1 100%}
+#sceneMoreViews>div{display:flex;flex-wrap:wrap;gap:6px;padding:0 9px 10px}
+#sceneToolTray button:focus-visible,#sceneToolDrawer summary:focus-visible,#sceneMoreViews summary:focus-visible,#sceneClockSettings summary:focus-visible{outline:3px solid #78562c;outline-offset:3px}
+#expandedKitchen{width:min(1540px,calc(100vw - 24px));max-height:calc(100dvh - 24px);border-radius:14px;scroll-padding-top:80px}
+#expandedKitchen .scene-heading{position:static;padding:12px 18px;align-items:center;gap:12px;min-height:74px}
+#expandedKitchen .scene-heading .eyebrow{margin:0 0 3px;font-size:10px}
+#expandedKitchen .scene-heading h2{font-size:18px;line-height:1.25;margin:0}
+#expandedKitchen .kitchen-heading-actions button{min-height:44px;padding:8px 12px;font-size:13px}
+#expandedKitchen #recipeScene{height:clamp(320px,52dvh,580px);min-height:280px}
+#expandedKitchen #sceneWorkspaceClock{position:sticky;top:0;z-index:5}
+#expandedKitchen #sceneToolDrawer .kitchen-tool-shelf{display:block}
+#expandedKitchen .replay-launch:has(button[hidden]){display:none}
+#expandedKitchen .kitchen-action-feedback #sceneActionStatus{font-size:13px;line-height:1.45}
+.kitchen-gesture-coach>strong{font-size:14px;line-height:1.4}
+.kitchen-gesture-coach>p{font-size:13px;line-height:1.45}
+.kitchen-gesture-coach .gesture-heading{font-size:11px}
+.kitchen-gesture-coach .gesture-exit{font-size:12px;line-height:1.4}
+[hidden]{display:none!important}
+@media(max-width:650px){
+  #sceneToolTray{padding:9px 12px}.kitchen-tool-tray .kitchen-tool-groups{gap:5px;margin-bottom:8px}.kitchen-tool-tray .kitchen-tool-groups button{flex:0 0 auto;min-width:0;font-size:12px;padding:9px 11px}
+  .kitchen-tool-tray .kitchen-tool-context>strong,.kitchen-tool-current>strong{font-size:14px}.kitchen-tool-tray .kitchen-tool-context>p{font-size:13px;line-height:1.4}.kitchen-tool-tray .kitchen-tool-context>span,.kitchen-tool-current>span{font-size:11px}
+  #sceneChooseTool{font-size:12px;padding:8px 10px}.kitchen-tool-tray-header{gap:8px;margin-bottom:6px}
+  #sceneWorkspaceClock .time-controls{padding:8px 12px;gap:6px;display:grid;grid-template-columns:minmax(0,1fr) auto auto}
+  #sceneWorkspaceClock .time-controls>div{grid-column:1;display:block}#sceneWorkspaceClock #clock{font-size:24px}#sceneWorkspaceClock #clockStatus{display:block;font-size:10px;line-height:1.35}
+  #sceneWorkspaceClock #play{grid-column:2;font-size:12px;padding:8px 10px}#sceneWorkspaceClock #advance{grid-column:3;max-width:126px;font-size:12px;padding:8px 10px}
+  #sceneClockSettings{grid-column:1/-1}#sceneClockSettings>summary{min-height:44px;padding:10px;font-size:12px;line-height:1.5}#sceneClockSettings label{font-size:12px}
+  #sceneToolDrawer>summary{padding:10px 12px}#sceneToolDrawer .kitchen-tool-shelf{padding:0 12px 10px}#sceneToolDrawer .kitchen-tool-cards{grid-template-columns:repeat(2,minmax(0,1fr));gap:6px}
+  #sceneToolDrawer .kitchen-tool-cards button{padding:9px;min-height:85px}#sceneToolDrawer .kitchen-tool-cards strong{font-size:13px}#sceneToolDrawer .kitchen-tool-cards small{font-size:12px}
+  #sceneToolDrawer .kitchen-tool-options{padding:0 12px 10px}#sceneToolDrawer .kitchen-tool-options label{flex:1 1 180px}#sceneToolDrawer .kitchen-tool-options button{flex:1 1 115px;max-width:none}#sceneToolDrawer #sceneGestureGuide{padding:0 12px 10px}#sceneReturnToKitchen{margin:0}
+  #kitchenStage .camera-row{padding:9px 12px}#kitchenStage .camera-row>div{width:100%;display:flex}#kitchenStage .camera-row>span{flex-basis:100%}
+  #sceneMoreViews>div{display:grid;grid-template-columns:repeat(3,minmax(0,1fr))}#sceneMoreViews button{font-size:12px;padding:7px;white-space:normal}
+  #expandedKitchen{width:calc(100vw - 12px);max-height:calc(100dvh - 12px);scroll-padding-top:130px}#expandedKitchen .scene-heading{padding:9px 12px;gap:8px;min-height:70px}
+  #expandedKitchen .scene-heading h2{font-size:15px}#expandedKitchen .scene-heading .eyebrow{font-size:9px;letter-spacing:.09em}#expandedKitchen .kitchen-heading-actions{flex-wrap:nowrap;gap:5px;align-items:center}
+  #expandedKitchen .kitchen-heading-actions button{font-size:11px;max-width:99px;padding:8px;line-height:1.35}#expandedKitchen #recipeScene{height:clamp(300px,42dvh,390px)}
+  .kitchen-gesture-coach>strong{font-size:14px}.kitchen-gesture-coach>p{font-size:12px}.kitchen-gesture-coach .gesture-exit{font-size:11px}.kitchen-gesture-coach .gesture-heading{font-size:10px}
+}
+@media(max-width:360px){#sceneWorkspaceClock .time-controls{grid-template-columns:minmax(0,1fr) auto}#sceneWorkspaceClock .time-controls>div{grid-column:1}#sceneWorkspaceClock #play{grid-column:2}#sceneWorkspaceClock #advance{grid-column:1/-1;max-width:none}#expandedKitchen #recipeScene{height:clamp(280px,38dvh,340px)}#sceneToolDrawer .kitchen-tool-cards svg{width:19px;height:19px}}
+@media(max-height:700px) and (max-width:650px){#expandedKitchen #recipeScene{height:280px}#expandedKitchen .scene-heading{min-height:62px}#expandedKitchen #sceneToolTray{padding-top:6px;padding-bottom:6px}}
+@media(forced-colors:active){#sceneToolTray,#sceneWorkspaceClock,#sceneToolDrawer,#sceneMoreViews,#sceneClockSettings,.kitchen-tool-current>span,.kitchen-tool-current>span[data-ready=false]{background:Canvas;color:CanvasText;border-color:CanvasText}.kitchen-tool-tray .kitchen-tool-groups button,#sceneReturnToKitchen{background:ButtonFace;color:ButtonText;border-color:ButtonText}.kitchen-tool-tray .kitchen-tool-groups button[aria-pressed=true]{outline:2px solid Highlight;outline-offset:-3px;background:ButtonFace;color:ButtonText}.kitchen-tool-readiness,#sceneToolDrawer [data-ready=false] .kitchen-tool-readiness,#sceneWorkspaceClock #clockStatus{color:CanvasText}#sceneToolTray button:focus-visible,#sceneToolDrawer summary:focus-visible,#sceneMoreViews summary:focus-visible,#sceneClockSettings summary:focus-visible{outline-color:Highlight}}
+@media(prefers-reduced-motion:reduce){#sceneToolTray,#sceneToolDrawer,#sceneMoreViews,#sceneWorkspaceClock{scroll-behavior:auto}}
+@media print{#sceneToolTray,#sceneToolDrawer,#sceneMoreViews,#sceneClockSettings{display:none}#sceneWorkspaceClock{position:static!important}}

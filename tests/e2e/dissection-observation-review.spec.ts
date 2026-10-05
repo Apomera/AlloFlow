@@ -155,7 +155,7 @@ test('searching saved notes filters counts and exported contents while preservin
   await search.fill('INTERNAL curved');
   await expect(panel.locator('[data-observation-entry]')).toHaveCount(1);
   await expect(panel.locator('[data-observation-filter="all"]')).toHaveText('All inspected (1)');
-  await expect(panel.locator('[data-observation-filter="unfinished"]')).toHaveText('Needs notes (0)');
+  await expect(panel.locator('[data-observation-filter="unfinished"]')).toHaveText('Finish records (0)');
   await expect(panel.locator('[data-observation-note-match]')).toHaveText('Search words appear in your saved note.');
   await expect(panel.locator('[data-observation-locked]')).toBeVisible();
   await expect(panel.locator('[data-observation-entry] button')).toHaveCount(0);

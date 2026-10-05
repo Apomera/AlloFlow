@@ -1,0 +1,886 @@
+{
+  "sourceSha256": "711738efbb3fca5af72d26a4ae87862985ad5aa4b20690f58761eaf5fb3e393e",
+  "coasts": [
+    {
+      "initial": {
+        "alt": 3,
+        "vVel": -40,
+        "hVel": -13.333333333333334,
+        "fuel": 0,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "contactTime": 0.07488615959882736,
+      "steps": 5,
+      "maxAbsoluteEnergyErrorJPerKg": 2.9497300602088217e-8
+    },
+    {
+      "initial": {
+        "alt": 3,
+        "vVel": -9,
+        "hVel": -3,
+        "fuel": 110,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "contactTime": 0.3238697980841002,
+      "steps": 20,
+      "maxAbsoluteEnergyErrorJPerKg": 3.023771455445967e-9
+    },
+    {
+      "initial": {
+        "alt": 3,
+        "vVel": 20,
+        "hVel": 6.666666666666667,
+        "fuel": 110,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "contactTime": 24.78205232570492,
+      "steps": 1487,
+      "maxAbsoluteEnergyErrorJPerKg": 6.490040505013894e-9
+    },
+    {
+      "initial": {
+        "alt": 300,
+        "vVel": -40,
+        "hVel": -13.333333333333334,
+        "fuel": 0,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "contactTime": 6.612570700049519,
+      "steps": 397,
+      "maxAbsoluteEnergyErrorJPerKg": 2.0174638848402537e-8
+    },
+    {
+      "initial": {
+        "alt": 300,
+        "vVel": -9,
+        "hVel": -3,
+        "fuel": 110,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "contactTime": 14.463763239979563,
+      "steps": 868,
+      "maxAbsoluteEnergyErrorJPerKg": 1.5783029994054232e-8
+    },
+    {
+      "initial": {
+        "alt": 300,
+        "vVel": 20,
+        "hVel": 6.666666666666667,
+        "fuel": 110,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "contactTime": 35.154846313097714,
+      "steps": 2110,
+      "maxAbsoluteEnergyErrorJPerKg": 1.579633135406766e-8
+    },
+    {
+      "initial": {
+        "alt": 5000,
+        "vVel": -40,
+        "hVel": -13.333333333333334,
+        "fuel": 0,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "contactTime": 57.70258753845826,
+      "steps": 3463,
+      "maxAbsoluteEnergyErrorJPerKg": 2.620909071993083e-7
+    },
+    {
+      "initial": {
+        "alt": 5000,
+        "vVel": -9,
+        "hVel": -3,
+        "fuel": 110,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "contactTime": 73.28284020772021,
+      "steps": 4397,
+      "maxAbsoluteEnergyErrorJPerKg": 2.619226506794803e-7
+    },
+    {
+      "initial": {
+        "alt": 5000,
+        "vVel": 20,
+        "hVel": 6.666666666666667,
+        "fuel": 110,
+        "thrust": 0,
+        "tilt": 0,
+        "x": 0,
+        "elapsed": 0
+      },
+      "contactTime": 92.01930548103593,
+      "steps": 5522,
+      "maxAbsoluteEnergyErrorJPerKg": 2.620527084218338e-7
+    }
+  ],
+  "derivativeCases": [
+    {
+      "fuel": 0.05,
+      "thrust": 0,
+      "tilt": -0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -4.547473508864641e-7,
+      "absoluteErrorWPerKg": 4.547473508864641e-7
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0,
+      "tilt": -0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0,
+      "tilt": -0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0,
+      "tilt": 0,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -4.547473508864641e-7,
+      "absoluteErrorWPerKg": 4.547473508864641e-7
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0,
+      "tilt": 0,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0,
+      "tilt": 0,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0,
+      "tilt": 0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -4.547473508864641e-7,
+      "absoluteErrorWPerKg": 4.547473508864641e-7
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0,
+      "tilt": 0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0,
+      "tilt": 0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0.4,
+      "tilt": -0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -64.22121811077146,
+      "finiteDifferencePowerWPerKg": -64.2212094135175,
+      "absoluteErrorWPerKg": 0.000008697253960576745
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0.4,
+      "tilt": -0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 10.980275158889919,
+      "finiteDifferencePowerWPerKg": 10.980275419569807,
+      "absoluteErrorWPerKg": 2.6067988834199696e-7
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0.4,
+      "tilt": -0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 61.11460400533084,
+      "finiteDifferencePowerWPerKg": 61.11459833846311,
+      "absoluteErrorWPerKg": 0.0000056668677288485014
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0.4,
+      "tilt": 0,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -80.055011435998,
+      "finiteDifferencePowerWPerKg": -80.05500149010913,
+      "absoluteErrorWPerKg": 0.000009945888862716856
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0.4,
+      "tilt": 0,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0.0000011368683772161603,
+      "absoluteErrorWPerKg": 0.0000011368683772161603
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0.4,
+      "tilt": 0,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 53.37000762399867,
+      "finiteDifferencePowerWPerKg": 53.370003115560394,
+      "absoluteErrorWPerKg": 0.000004508438273376214
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0.4,
+      "tilt": 0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -86.18176842855131,
+      "finiteDifferencePowerWPerKg": -86.18175752417301,
+      "absoluteErrorWPerKg": 0.000010904378299869677
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0.4,
+      "tilt": 0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": -10.980275158889919,
+      "finiteDifferencePowerWPerKg": -10.980272463712026,
+      "absoluteErrorWPerKg": 0.00000269517789242002
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 0.4,
+      "tilt": 0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 39.154053687551006,
+      "finiteDifferencePowerWPerKg": 39.1540502278076,
+      "absoluteErrorWPerKg": 0.0000034597434037664243
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 1,
+      "tilt": -0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -160.55304527692866,
+      "finiteDifferencePowerWPerKg": -160.5530351298512,
+      "absoluteErrorWPerKg": 0.000010147077460942455
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 1,
+      "tilt": -0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 27.4506878972248,
+      "finiteDifferencePowerWPerKg": 27.45070582932385,
+      "absoluteErrorWPerKg": 0.000017932099051876094
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 1,
+      "tilt": -0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 152.7865100133271,
+      "finiteDifferencePowerWPerKg": 152.78653290806687,
+      "absoluteErrorWPerKg": 0.00002289473977157286
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 1,
+      "tilt": 0,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -200.13752858999501,
+      "finiteDifferencePowerWPerKg": -200.13752055092482,
+      "absoluteErrorWPerKg": 0.00000803907019530925
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 1,
+      "tilt": 0,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0.000016825651982799172,
+      "absoluteErrorWPerKg": 0.000016825651982799172
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 1,
+      "tilt": 0,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 133.42501905999666,
+      "finiteDifferencePowerWPerKg": 133.4250409854576,
+      "absoluteErrorWPerKg": 0.000021925460941929487
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 1,
+      "tilt": 0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -215.45442107137828,
+      "finiteDifferencePowerWPerKg": -215.45441313719493,
+      "absoluteErrorWPerKg": 0.000007934183344104895
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 1,
+      "tilt": 0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": -27.4506878972248,
+      "finiteDifferencePowerWPerKg": -27.45067240539356,
+      "absoluteErrorWPerKg": 0.00001549183123827902
+    },
+    {
+      "fuel": 0.05,
+      "thrust": 1,
+      "tilt": 0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 97.88513421887751,
+      "finiteDifferencePowerWPerKg": 97.88515490072314,
+      "absoluteErrorWPerKg": 0.00002068184562631359
+    },
+    {
+      "fuel": 110,
+      "thrust": 0,
+      "tilt": -0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -4.547473508864641e-7,
+      "absoluteErrorWPerKg": 4.547473508864641e-7
+    },
+    {
+      "fuel": 110,
+      "thrust": 0,
+      "tilt": -0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 110,
+      "thrust": 0,
+      "tilt": -0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 110,
+      "thrust": 0,
+      "tilt": 0,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -4.547473508864641e-7,
+      "absoluteErrorWPerKg": 4.547473508864641e-7
+    },
+    {
+      "fuel": 110,
+      "thrust": 0,
+      "tilt": 0,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 110,
+      "thrust": 0,
+      "tilt": 0,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 110,
+      "thrust": 0,
+      "tilt": 0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -4.547473508864641e-7,
+      "absoluteErrorWPerKg": 4.547473508864641e-7
+    },
+    {
+      "fuel": 110,
+      "thrust": 0,
+      "tilt": 0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 110,
+      "thrust": 0,
+      "tilt": 0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 110,
+      "thrust": 0.4,
+      "tilt": -0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -60.569245028920264,
+      "finiteDifferencePowerWPerKg": -60.5692343924602,
+      "absoluteErrorWPerKg": 0.000010636460061164144
+    },
+    {
+      "fuel": 110,
+      "thrust": 0.4,
+      "tilt": -0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 10.355876081899199,
+      "finiteDifferencePowerWPerKg": 10.355875701861805,
+      "absoluteErrorWPerKg": 3.800373935547441e-7
+    },
+    {
+      "fuel": 110,
+      "thrust": 0.4,
+      "tilt": -0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 57.63929015577884,
+      "finiteDifferencePowerWPerKg": 57.63928129454143,
+      "absoluteErrorWPerKg": 0.000008861237404289568
+    },
+    {
+      "fuel": 110,
+      "thrust": 0.4,
+      "tilt": 0,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -75.50264143380835,
+      "finiteDifferencePowerWPerKg": -75.50262807853869,
+      "absoluteErrorWPerKg": 0.000013355269658177349
+    },
+    {
+      "fuel": 110,
+      "thrust": 0.4,
+      "tilt": 0,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0.0000011368683772161603,
+      "absoluteErrorWPerKg": 0.0000011368683772161603
+    },
+    {
+      "fuel": 110,
+      "thrust": 0.4,
+      "tilt": 0,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 50.335094289205564,
+      "finiteDifferencePowerWPerKg": 50.33508659835206,
+      "absoluteErrorWPerKg": 0.000007690853500719186
+    },
+    {
+      "fuel": 110,
+      "thrust": 0.4,
+      "tilt": 0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -81.28099719271866,
+      "finiteDifferencePowerWPerKg": -81.28098306769971,
+      "absoluteErrorWPerKg": 0.000014125018950039703
+    },
+    {
+      "fuel": 110,
+      "thrust": 0.4,
+      "tilt": 0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": -10.355876081899199,
+      "finiteDifferencePowerWPerKg": -10.355873200751375,
+      "absoluteErrorWPerKg": 0.0000028811478234302967
+    },
+    {
+      "fuel": 110,
+      "thrust": 0.4,
+      "tilt": 0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 36.927537991980444,
+      "finiteDifferencePowerWPerKg": 36.92753261930193,
+      "absoluteErrorWPerKg": 0.000005372678515414009
+    },
+    {
+      "fuel": 110,
+      "thrust": 1,
+      "tilt": -0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -151.42311257230065,
+      "finiteDifferencePowerWPerKg": -151.4230971224606,
+      "absoluteErrorWPerKg": 0.00001544984004908656
+    },
+    {
+      "fuel": 110,
+      "thrust": 1,
+      "tilt": -0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 25.889690204747996,
+      "finiteDifferencePowerWPerKg": 25.88970482975128,
+      "absoluteErrorWPerKg": 0.000014625003284862714
+    },
+    {
+      "fuel": 110,
+      "thrust": 1,
+      "tilt": -0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 144.0982253894471,
+      "finiteDifferencePowerWPerKg": 144.098240070889,
+      "absoluteErrorWPerKg": 0.000014681441911079673
+    },
+    {
+      "fuel": 110,
+      "thrust": 1,
+      "tilt": 0,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -188.75660358452086,
+      "finiteDifferencePowerWPerKg": -188.75658861361444,
+      "absoluteErrorWPerKg": 0.00001497090642033072
+    },
+    {
+      "fuel": 110,
+      "thrust": 1,
+      "tilt": 0,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0.00001432454155292362,
+      "absoluteErrorWPerKg": 0.00001432454155292362
+    },
+    {
+      "fuel": 110,
+      "thrust": 1,
+      "tilt": 0,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 125.8377357230139,
+      "finiteDifferencePowerWPerKg": 125.83774969243677,
+      "absoluteErrorWPerKg": 0.00001396942286646663
+    },
+    {
+      "fuel": 110,
+      "thrust": 1,
+      "tilt": 0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -203.20249298179667,
+      "finiteDifferencePowerWPerKg": -203.2024776781327,
+      "absoluteErrorWPerKg": 0.000015303663957411118
+    },
+    {
+      "fuel": 110,
+      "thrust": 1,
+      "tilt": 0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": -25.889690204747996,
+      "finiteDifferencePowerWPerKg": -25.88967549854715,
+      "absoluteErrorWPerKg": 0.000014706200847314221
+    },
+    {
+      "fuel": 110,
+      "thrust": 1,
+      "tilt": 0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 92.31884497995111,
+      "finiteDifferencePowerWPerKg": 92.3188595152169,
+      "absoluteErrorWPerKg": 0.000014535265790982521
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0,
+      "tilt": -0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -4.547473508864641e-7,
+      "absoluteErrorWPerKg": 4.547473508864641e-7
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0,
+      "tilt": -0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0,
+      "tilt": -0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0,
+      "tilt": 0,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -4.547473508864641e-7,
+      "absoluteErrorWPerKg": 4.547473508864641e-7
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0,
+      "tilt": 0,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0,
+      "tilt": 0,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0,
+      "tilt": 0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -4.547473508864641e-7,
+      "absoluteErrorWPerKg": 4.547473508864641e-7
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0,
+      "tilt": 0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0,
+      "tilt": 0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": 0,
+      "absoluteErrorWPerKg": 0
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0.4,
+      "tilt": -0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -7.632627413558064,
+      "finiteDifferencePowerWPerKg": -7.632633241883013,
+      "absoluteErrorWPerKg": 0.00000582832494977481
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0.4,
+      "tilt": -0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 1.3049946988174166,
+      "finiteDifferencePowerWPerKg": 1.3049952940491494,
+      "absoluteErrorWPerKg": 5.952317327917456e-7
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0.4,
+      "tilt": -0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 7.263409440401071,
+      "finiteDifferencePowerWPerKg": 7.263413863256574,
+      "absoluteErrorWPerKg": 0.000004422855502284051
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0.4,
+      "tilt": 0,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -9.514457882520576,
+      "finiteDifferencePowerWPerKg": -9.514464636595221,
+      "absoluteErrorWPerKg": 0.000006754074645343167
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0.4,
+      "tilt": 0,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -2.2737367544323206e-7,
+      "absoluteErrorWPerKg": 2.2737367544323206e-7
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0.4,
+      "tilt": 0,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 6.342971921680384,
+      "finiteDifferencePowerWPerKg": 6.342975666484563,
+      "absoluteErrorWPerKg": 0.0000037448041787513375
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0.4,
+      "tilt": 0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -10.242616811192898,
+      "finiteDifferencePowerWPerKg": -10.242623829981312,
+      "absoluteErrorWPerKg": 0.000007018788414470123
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0.4,
+      "tilt": 0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": -1.3049946988174166,
+      "finiteDifferencePowerWPerKg": -1.3049957487965003,
+      "absoluteErrorWPerKg": 0.0000010499790836782097
+    },
+    {
+      "fuel": 4000,
+      "thrust": 0.4,
+      "tilt": 0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 4.653420042766237,
+      "finiteDifferencePowerWPerKg": 4.653422820410924,
+      "absoluteErrorWPerKg": 0.000002777644686702274
+    },
+    {
+      "fuel": 4000,
+      "thrust": 1,
+      "tilt": -0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -19.081568533895158,
+      "finiteDifferencePowerWPerKg": -19.081572645518463,
+      "absoluteErrorWPerKg": 0.000004111623304936529
+    },
+    {
+      "fuel": 4000,
+      "thrust": 1,
+      "tilt": -0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 3.2624867470435417,
+      "finiteDifferencePowerWPerKg": 3.2624870982544962,
+      "absoluteErrorWPerKg": 3.51210954541159e-7
+    },
+    {
+      "fuel": 4000,
+      "thrust": 1,
+      "tilt": -0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 18.158523601002674,
+      "finiteDifferencePowerWPerKg": 18.15852692743647,
+      "absoluteErrorWPerKg": 0.0000033264337950811296
+    },
+    {
+      "fuel": 4000,
+      "thrust": 1,
+      "tilt": 0,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -23.786144706301435,
+      "finiteDifferencePowerWPerKg": -23.786149995430605,
+      "absoluteErrorWPerKg": 0.0000052891291701939736
+    },
+    {
+      "fuel": 4000,
+      "thrust": 1,
+      "tilt": 0,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": 0,
+      "finiteDifferencePowerWPerKg": -4.547473508864641e-7,
+      "absoluteErrorWPerKg": 4.547473508864641e-7
+    },
+    {
+      "fuel": 4000,
+      "thrust": 1,
+      "tilt": 0,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 15.857429804200958,
+      "finiteDifferencePowerWPerKg": 15.857432117627468,
+      "absoluteErrorWPerKg": 0.000002313426509914507
+    },
+    {
+      "fuel": 4000,
+      "thrust": 1,
+      "tilt": 0.35,
+      "vVel": -30,
+      "specificEnginePowerWPerKg": -25.606542027982243,
+      "finiteDifferencePowerWPerKg": -25.606547751522157,
+      "absoluteErrorWPerKg": 0.000005723539914015419
+    },
+    {
+      "fuel": 4000,
+      "thrust": 1,
+      "tilt": 0.35,
+      "vVel": 0,
+      "specificEnginePowerWPerKg": -3.2624867470435417,
+      "finiteDifferencePowerWPerKg": -3.2624877803755226,
+      "absoluteErrorWPerKg": 0.0000010333319808708552
+    },
+    {
+      "fuel": 4000,
+      "thrust": 1,
+      "tilt": 0.35,
+      "vVel": 20,
+      "specificEnginePowerWPerKg": 11.633550106915592,
+      "finiteDifferencePowerWPerKg": 11.633551821432775,
+      "absoluteErrorWPerKg": 0.0000017145171824495264
+    }
+  ],
+  "workBalance": {
+    "duration": 12.008333333333292,
+    "steps": 1441,
+    "integratedPowerJPerKg": -116.05643934233835,
+    "measuredEnergyChangeJPerKg": -116.06026482177072,
+    "maxAbsoluteErrorJPerKg": 0.0038254794323648866
+  },
+  "geometry": {
+    "samples": 26,
+    "maxRoundTripErrorJPerKg": 4.547473508864641e-13,
+    "futureSamplesCannotChangeScaleOrCurves": true,
+    "stateAndRecordingUnchanged": true
+  },
+  "maxCoastErrorJPerKg": 2.620909071993083e-7,
+  "maxDerivativeErrorWPerKg": 0.00002289473977157286
+}

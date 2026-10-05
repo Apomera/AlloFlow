@@ -1,0 +1,9 @@
+{
+  "source": "recorded-preview-large-text.png",
+  "inspectionCrop": "recorded-preview-large-text-inspection-crop.png",
+  "sourceDimensions": { "width": 1600, "height": 14437 },
+  "crop": { "x": 0, "y": 3900, "width": 1600, "height": 2600 },
+  "purpose": "Inspect the actual Muller-Lyer recorded-trial preview and full note at 200 percent text without reducing the entire long notebook screenshot.",
+  "pixelsModified": false,
+  "fullScreenshotPreserved": true
+}

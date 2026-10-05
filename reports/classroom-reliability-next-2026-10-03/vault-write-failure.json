@@ -1,0 +1,15 @@
+{
+  "passed": true,
+  "completedAt": "2026-10-04T02:20:42.527Z",
+  "actualGeneratedHandler": true,
+  "actualWordPredicate": true,
+  "actualQuotaFallback": true,
+  "builderAndWriteAttempted": true,
+  "preservedWorkspace": true,
+  "lockAndClearBlocked": true,
+  "guardsReleased": true,
+  "controlledBoundaries": [
+    "builder snapshot",
+    "storage rejection"
+  ]
+}

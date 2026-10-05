@@ -2,13 +2,13 @@ import { beforeEach, describe, expect, it } from 'vitest';
 import { loadTool, resetStemLab } from './helpers/stem_widgets_smoke_harness.js';
 
 const FILE = 'stem_lab/stem_tool_moonmission.js';
-const MODERN = Object.freeze({
+let MODERN = Object.freeze({
   modelVersion: 1, completed: true, outcome: 'nominal', angle: -6.5, peakG: 6.8,
   peakHeatFlux: 2300000, heatLoad: 160000000, duration: 725.4, downrange: 1850000,
   splashSpeed: 9.3, terminal: 'splash',
 });
 let P;
-beforeEach(() => { resetStemLab(); loadTool(FILE, 'moonMission'); P = window.MoonMissionPure; });
+beforeEach(() => { resetStemLab(); loadTool(FILE, 'moonMission'); P = window.MoonMissionPure; MODERN = P.entryRecordedResult(P.entryProfile(-6.5)); });
 
 describe('compact physical entry saves', () => {
   it('keeps finite physical measurements without retaining unknown or bulky saved data', () => {
@@ -58,7 +58,8 @@ describe('compact physical entry saves', () => {
       entryAttempts: Array.from({ length: 8 }, (_, i) => ({ ...MODERN, downrange: i })),
       entryAwardedXP: 100, entryCompletionAwarded: 'false', entryPlaybackRate: '60' };
     const clean = P.cleanEntryState(raw);
-    expect(clean.entryRun).toEqual({ version: 1, angle: -6.5, time: 2400, recovery: 0, recorded: false });
+    // An unverified terminal clock restarts instead of automatically recording.
+    expect(clean.entryRun).toEqual({ version: 1, angle: -6.5, time: 0, recovery: 0, recorded: false });
     expect(clean.entryAttempts.map(a => a.downrange)).toEqual([3, 4, 5, 6, 7]);
     expect(clean.entryAwardedXP).toBe(25);
     expect(clean.entryCompletionAwarded).toBe(false);
@@ -98,7 +99,7 @@ describe('compact physical entry saves', () => {
   it('reports physical units and keeps skip-outs and incomplete runs distinct from splashdown', () => {
     const summary = P.flightSummary({ entryOutcome: MODERN });
     expect(summary.entry).toEqual(MODERN);
-    expect(P.flightReport(summary)).toContain('Entry model: 725.4 s, 1850 km downrange, peak heat flux 2.30 MW/m², heat load 160.0 MJ/m²; splashdown at 9.3 m/s.');
+    expect(P.flightReport(summary)).toContain('Entry model: ' + MODERN.duration.toFixed(1) + ' s, ' + (MODERN.downrange / 1000).toFixed(0) + ' km downrange, peak heat flux ' + (MODERN.peakHeatFlux / 1e6).toFixed(2) + ' MW/m², heat load ' + (MODERN.heatLoad / 1e6).toFixed(1) + ' MJ/m²; splashdown at ' + MODERN.splashSpeed.toFixed(1) + ' m/s.');
     for (const outcome of ['skip', 'incomplete']) {
       const saved = P.flightSummary({ entryOutcome: { ...MODERN, outcome, terminal: outcome, splashSpeed: null } });
       const report = P.flightReport(saved);

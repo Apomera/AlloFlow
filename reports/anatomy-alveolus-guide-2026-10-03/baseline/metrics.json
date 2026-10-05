@@ -1,0 +1,1665 @@
+{
+  "sourceLfSha256": "9faaef017b8cff11cf5d0968334e861a84a34994415c4be2d67dc32e7af358fc",
+  "startedAt": "2026-10-03T15:14:11.575Z",
+  "errors": [],
+  "views": [
+    {
+      "width": 1280,
+      "theme": "light",
+      "clinical": false,
+      "name": "desktop-light",
+      "texts": [
+        {
+          "text": "ALVEOLAR",
+          "font": 13,
+          "effectiveFont": 12.268749999999999,
+          "box": {
+            "x": 787.3093872070312,
+            "y": 1317.262451171875,
+            "width": 66.40911865234375,
+            "height": 16
+          }
+        },
+        {
+          "text": "AIR SPACE",
+          "font": 13,
+          "effectiveFont": 12.268749999999999,
+          "box": {
+            "x": 787.7078247070312,
+            "y": 1334.25,
+            "width": 65.20526123046875,
+            "height": 16
+          }
+        },
+        {
+          "text": "terminal airway",
+          "font": 9,
+          "effectiveFont": 8.49375,
+          "box": {
+            "x": 615.1171875,
+            "y": 1288.231201171875,
+            "width": 66.7523193359375,
+            "height": 11
+          }
+        },
+        {
+          "text": "PULMONARY CAPILLARY",
+          "font": 11,
+          "effectiveFont": 10.38125,
+          "box": {
+            "x": 770.4500122070312,
+            "y": 1495.7437744140625,
+            "width": 129.0611572265625,
+            "height": 14
+          }
+        },
+        {
+          "text": "AIR-BLOOD BARRIER",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 1022.7593994140625,
+            "y": 1242.875,
+            "width": 99.3990478515625,
+            "height": 12
+          }
+        },
+        {
+          "text": "alveolar air",
+          "font": 9,
+          "effectiveFont": 8.49375,
+          "box": {
+            "x": 1048.1656494140625,
+            "y": 1276.90625,
+            "width": 48.3245849609375,
+            "height": 11
+          }
+        },
+        {
+          "text": "surfactant",
+          "font": 7,
+          "effectiveFont": 6.60625,
+          "box": {
+            "x": 1104.440673828125,
+            "y": 1300.612548828125,
+            "width": 34.5989990234375,
+            "height": 9
+          }
+        },
+        {
+          "text": "type I alveolar cell",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 1037.6890869140625,
+            "y": 1315.65625,
+            "width": 69.6458740234375,
+            "height": 10
+          }
+        },
+        {
+          "text": "thin interstitium",
+          "font": 7,
+          "effectiveFont": 6.60625,
+          "box": {
+            "x": 1083.315673828125,
+            "y": 1330.8125,
+            "width": 55.205322265625,
+            "height": 9
+          }
+        },
+        {
+          "text": "capillary endothelium",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 1031.2125244140625,
+            "y": 1345.856201171875,
+            "width": 82.7635498046875,
+            "height": 10
+          }
+        },
+        {
+          "text": "RBC",
+          "font": 9,
+          "effectiveFont": 8.49375,
+          "box": {
+            "x": 1064.1734619140625,
+            "y": 1390.15625,
+            "width": 17.0155029296875,
+            "height": 11
+          }
+        },
+        {
+          "text": "alveolus expands · fresh air enters",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 682.5640258789062,
+            "y": 1240.15625,
+            "width": 128.3951416015625,
+            "height": 10
+          }
+        },
+        {
+          "text": "O2 binds hemoglobin",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 1066.7952880859375,
+            "y": 1406.2562255859375,
+            "width": 80.8695068359375,
+            "height": 10
+          }
+        },
+        {
+          "text": "CO2 enters alveolar air",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 1067.2593994140625,
+            "y": 1256.199951171875,
+            "width": 86.048095703125,
+            "height": 10
+          }
+        },
+        {
+          "text": "oxygenated blood leaves",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 851.546875,
+            "y": 1480.8125,
+            "width": 94.31689453125,
+            "height": 10
+          }
+        },
+        {
+          "text": "oxygen",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 601.75,
+            "y": 1494.856201171875,
+            "width": 32.7060546875,
+            "height": 12
+          }
+        },
+        {
+          "text": "carbon dioxide",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 667.8125,
+            "y": 1494.856201171875,
+            "width": 67.09228515625,
+            "height": 12
+          }
+        }
+      ],
+      "intersections": [],
+      "html": [
+        {
+          "tag": "H5",
+          "text": "Alveolus and capillary regional atlas",
+          "font": 13,
+          "width": 400.015625,
+          "height": 19.5,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 7.562998081458594
+        },
+        {
+          "tag": "P",
+          "text": "Trace ventilation, diffusion across the thin air-blood barrier, and capillary transport.",
+          "font": 11,
+          "width": 400.015625,
+          "height": 15.9375,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 4.758842787868666
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Play exchange",
+          "font": 11,
+          "width": 95.84375,
+          "height": 30.5,
+          "foreground": "rgb(3, 105, 161)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 5.933638668604332
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Clinical lens",
+          "font": 11,
+          "width": 82.828125,
+          "height": 30.5,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 8.98260576557149
+        },
+        {
+          "tag": "SPAN",
+          "text": "Conducting airway",
+          "font": 11,
+          "width": 173.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 4.758842787868666
+        },
+        {
+          "tag": "SPAN",
+          "text": "Air-blood barrier",
+          "font": 11,
+          "width": 173.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 4.758842787868666
+        },
+        {
+          "tag": "SPAN",
+          "text": "Capillary blood",
+          "font": 11,
+          "width": 173.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Visual key",
+          "font": 11,
+          "width": 54.9375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "A",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(14, 165, 233)",
+          "ratio": 2.771412229141218
+        },
+        {
+          "tag": "SPAN",
+          "text": "airflow",
+          "font": 11,
+          "width": 38.765625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 7.577663953533317
+        },
+        {
+          "tag": "SPAN",
+          "text": "O",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(220, 38, 38)",
+          "ratio": 4.829404522659002
+        },
+        {
+          "tag": "SPAN",
+          "text": "oxygen",
+          "font": 11,
+          "width": 40.234375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 7.577663953533317
+        },
+        {
+          "tag": "SPAN",
+          "text": "C",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(37, 99, 235)",
+          "ratio": 5.168555560022562
+        },
+        {
+          "tag": "SPAN",
+          "text": "carbon dioxide",
+          "font": 11,
+          "width": 81.265625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 7.577663953533317
+        },
+        {
+          "tag": "SPAN",
+          "text": "Current structures",
+          "font": 11,
+          "width": 98.875,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Terminal airway",
+          "font": 11,
+          "width": 97.453125,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 7.577663953533317
+        },
+        {
+          "tag": "SPAN",
+          "text": "Alveolar air space",
+          "font": 11,
+          "width": 106.21875,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 7.577663953533317
+        },
+        {
+          "tag": "SPAN",
+          "text": "Ventilation",
+          "font": 11,
+          "width": 70.140625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 7.577663953533317
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1. VentilationFresh air enters alveolus",
+          "font": 11,
+          "width": 147,
+          "height": 45.5,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 7.094569638887048
+        },
+        {
+          "tag": "SPAN",
+          "text": "1. Ventilation",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 7.094569638887048
+        },
+        {
+          "tag": "SPAN",
+          "text": "Fresh air enters alveolus",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 7.094569638887048
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2. Oxygen diffusionAlveolus to blood",
+          "font": 11,
+          "width": 147,
+          "height": 45.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "2. Oxygen diffusion",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Alveolus to blood",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3. Carbon dioxideBlood to alveolus",
+          "font": 11,
+          "width": 147,
+          "height": 45.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "3. Carbon dioxide",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Blood to alveolus",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4. Transport onwardBlood leaves; gas exhales",
+          "font": 11,
+          "width": 147,
+          "height": 45.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "4. Transport onward",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Blood leaves; gas exhales",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Step 1 of 4",
+          "font": 11,
+          "width": 71.140625,
+          "height": 21.9375,
+          "foreground": "rgb(12, 74, 110)",
+          "background": "rgba(255, 255, 255, 0.82)",
+          "ratio": 9.458172533681237
+        },
+        {
+          "tag": "STRONG",
+          "text": "1. Ventilation",
+          "font": 11,
+          "width": 68.8125,
+          "height": 16.5,
+          "foreground": "rgb(12, 74, 110)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 8.872362914029607
+        },
+        {
+          "tag": "SPAN",
+          "text": "Inhalation refreshes alveolar air. Oxygen partial pressure becomes higher in the alveolus than in the arriving pulmonary capillary blood.",
+          "font": 11,
+          "width": 426.046875,
+          "height": 31.875,
+          "foreground": "rgb(12, 74, 110)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 8.872362914029607
+        },
+        {
+          "tag": "P",
+          "text": "Return to circulation: follow oxygenated pulmonary blood back through the left heart before systemic delivery.",
+          "font": 11,
+          "width": 457.5,
+          "height": 30.78125,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 7.577663953533317
+        },
+        {
+          "tag": "STRONG",
+          "text": "Return to circulation:",
+          "font": 11,
+          "width": 112.421875,
+          "height": 15,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Return to cardiac flow",
+          "font": 11,
+          "width": 140.5,
+          "height": 36,
+          "foreground": "rgb(159, 18, 57)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 8.015910591562179
+        }
+      ],
+      "pageWidth": 1280,
+      "pageScroll": 1280,
+      "atlasWidth": 630,
+      "atlasScroll": 630
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "clinical": false,
+      "name": "phone-dark",
+      "texts": [
+        {
+          "text": "ALVEOLAR",
+          "font": 13,
+          "effectiveFont": 4.8343750000000005,
+          "box": {
+            "x": 129.38436889648438,
+            "y": 2113.27490234375,
+            "width": 27.22314453125,
+            "height": 6
+          }
+        },
+        {
+          "text": "AIR SPACE",
+          "font": 13,
+          "effectiveFont": 4.8343750000000005,
+          "box": {
+            "x": 129.54843139648438,
+            "y": 2119.96875,
+            "width": 26.53680419921875,
+            "height": 6
+          }
+        },
+        {
+          "text": "terminal airway",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 61.5546875,
+            "y": 2101.25927734375,
+            "width": 27.900161743164062,
+            "height": 5
+          }
+        },
+        {
+          "text": "PULMONARY CAPILLARY",
+          "font": 11,
+          "effectiveFont": 4.090625,
+          "box": {
+            "x": 123.34530639648438,
+            "y": 2183.815673828125,
+            "width": 51.09532165527344,
+            "height": 5
+          }
+        },
+        {
+          "text": "AIR-BLOOD BARRIER",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 222.19061279296875,
+            "y": 2083.78125,
+            "width": 39.958587646484375,
+            "height": 5
+          }
+        },
+        {
+          "text": "alveolar air",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 232.1828155517578,
+            "y": 2096.796875,
+            "width": 20.044036865234375,
+            "height": 5
+          }
+        },
+        {
+          "text": "RBC",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 238.08905029296875,
+            "y": 2141.421875,
+            "width": 8.585968017578125,
+            "height": 5
+          }
+        },
+        {
+          "text": "alveolus expands · fresh air enters",
+          "font": 8,
+          "effectiveFont": 2.975,
+          "box": {
+            "x": 88.15155792236328,
+            "y": 2082.921875,
+            "width": 51.540611267089844,
+            "height": 4
+          }
+        },
+        {
+          "text": "oxygen",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 55.875,
+            "y": 2183.07177734375,
+            "width": 14.506790161132812,
+            "height": 5
+          }
+        },
+        {
+          "text": "carbon dioxide",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 81.90625,
+            "y": 2183.07177734375,
+            "width": 28.035194396972656,
+            "height": 5
+          }
+        }
+      ],
+      "intersections": [],
+      "html": [
+        {
+          "tag": "H5",
+          "text": "Alveolus and capillary regional atlas",
+          "font": 13,
+          "width": 240,
+          "height": 19.5,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3605103122745525
+        },
+        {
+          "tag": "P",
+          "text": "Trace ventilation, diffusion across the thin air-blood barrier, and capillary transport.",
+          "font": 11,
+          "width": 240,
+          "height": 31.875,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 3.751444575665684
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Play exchange",
+          "font": 11,
+          "width": 95.84375,
+          "height": 30.5,
+          "foreground": "rgb(3, 105, 161)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 5.933638668604332
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Clinical lens",
+          "font": 11,
+          "width": 82.828125,
+          "height": 30.5,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 8.98260576557149
+        },
+        {
+          "tag": "SPAN",
+          "text": "Conducting airway",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 4.758842787868666
+        },
+        {
+          "tag": "SPAN",
+          "text": "Air-blood barrier",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 4.758842787868666
+        },
+        {
+          "tag": "SPAN",
+          "text": "Capillary blood",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Visual key",
+          "font": 11,
+          "width": 54.9375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 1.7240920661223322
+        },
+        {
+          "tag": "SPAN",
+          "text": "A",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(14, 165, 233)",
+          "ratio": 2.771412229141218
+        },
+        {
+          "tag": "SPAN",
+          "text": "airflow",
+          "font": 11,
+          "width": 38.765625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "SPAN",
+          "text": "O",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(220, 38, 38)",
+          "ratio": 4.829404522659002
+        },
+        {
+          "tag": "SPAN",
+          "text": "oxygen",
+          "font": 11,
+          "width": 40.234375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "SPAN",
+          "text": "C",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(37, 99, 235)",
+          "ratio": 5.168555560022562
+        },
+        {
+          "tag": "SPAN",
+          "text": "carbon dioxide",
+          "font": 11,
+          "width": 81.265625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "SPAN",
+          "text": "Current structures",
+          "font": 11,
+          "width": 98.875,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 1.7240920661223322
+        },
+        {
+          "tag": "SPAN",
+          "text": "Terminal airway",
+          "font": 11,
+          "width": 97.453125,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "SPAN",
+          "text": "Alveolar air space",
+          "font": 11,
+          "width": 106.21875,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "SPAN",
+          "text": "Ventilation",
+          "font": 11,
+          "width": 70.140625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1. VentilationFresh air enters alveolus",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 7.094569638887048
+        },
+        {
+          "tag": "SPAN",
+          "text": "1. Ventilation",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 7.094569638887048
+        },
+        {
+          "tag": "SPAN",
+          "text": "Fresh air enters alveolus",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 7.094569638887048
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2. Oxygen diffusionAlveolus to blood",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "2. Oxygen diffusion",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Alveolus to blood",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3. Carbon dioxideBlood to alveolus",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "3. Carbon dioxide",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Blood to alveolus",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4. Transport onwardBlood leaves; gas exhales",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "4. Transport onward",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Blood leaves; gas exhales",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Step 1 of 4",
+          "font": 11,
+          "width": 71.140625,
+          "height": 21,
+          "foreground": "rgb(12, 74, 110)",
+          "background": "rgba(255, 255, 255, 0.82)",
+          "ratio": 9.458172533681237
+        },
+        {
+          "tag": "STRONG",
+          "text": "1. Ventilation",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(12, 74, 110)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 8.872362914029607
+        },
+        {
+          "tag": "SPAN",
+          "text": "Inhalation refreshes alveolar air. Oxygen partial pressure becomes higher in the alveolus than in the arriving pulmonary capillary blood.",
+          "font": 11,
+          "width": 193.671875,
+          "height": 87,
+          "foreground": "rgb(12, 74, 110)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 8.872362914029607
+        },
+        {
+          "tag": "P",
+          "text": "Return to circulation: follow oxygenated pulmonary blood back through the left heart before systemic delivery.",
+          "font": 11,
+          "width": 240,
+          "height": 46.171875,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "STRONG",
+          "text": "Return to circulation:",
+          "font": 11,
+          "width": 112.421875,
+          "height": 15,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 1.7240920661223322
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Return to cardiac flow",
+          "font": 11,
+          "width": 140.5,
+          "height": 36,
+          "foreground": "rgb(159, 18, 57)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 8.015910591562179
+        }
+      ],
+      "pageWidth": 320,
+      "pageScroll": 320,
+      "atlasWidth": 264,
+      "atlasScroll": 264
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "clinical": true,
+      "name": "phone-dark-clinical-step-2",
+      "texts": [
+        {
+          "text": "ALVEOLAR",
+          "font": 13,
+          "effectiveFont": 4.8343750000000005,
+          "box": {
+            "x": 129.38436889648438,
+            "y": 326.2749938964844,
+            "width": 27.22314453125,
+            "height": 6
+          }
+        },
+        {
+          "text": "AIR SPACE",
+          "font": 13,
+          "effectiveFont": 4.8343750000000005,
+          "box": {
+            "x": 129.54843139648438,
+            "y": 332.96875,
+            "width": 26.53680419921875,
+            "height": 6
+          }
+        },
+        {
+          "text": "terminal airway",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 61.5546875,
+            "y": 314.2593688964844,
+            "width": 27.900161743164062,
+            "height": 5
+          }
+        },
+        {
+          "text": "PULMONARY CAPILLARY",
+          "font": 11,
+          "effectiveFont": 4.090625,
+          "box": {
+            "x": 123.34530639648438,
+            "y": 396.81561279296875,
+            "width": 51.09532165527344,
+            "height": 5
+          }
+        },
+        {
+          "text": "AIR-BLOOD BARRIER",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 222.19061279296875,
+            "y": 296.78125,
+            "width": 39.958587646484375,
+            "height": 5
+          }
+        },
+        {
+          "text": "alveolar air",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 232.1828155517578,
+            "y": 309.796875,
+            "width": 20.044036865234375,
+            "height": 5
+          }
+        },
+        {
+          "text": "RBC",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 238.08905029296875,
+            "y": 354.421875,
+            "width": 8.585968017578125,
+            "height": 5
+          }
+        },
+        {
+          "text": "O2 binds hemoglobin",
+          "font": 8,
+          "effectiveFont": 2.975,
+          "box": {
+            "x": 239.5437469482422,
+            "y": 361.37188720703125,
+            "width": 33.45185852050781,
+            "height": 4
+          }
+        },
+        {
+          "text": "fluid thickens the diffusion path",
+          "font": 8,
+          "effectiveFont": 2.975,
+          "box": {
+            "x": 217.15780639648438,
+            "y": 379.22186279296875,
+            "width": 48.231353759765625,
+            "height": 4
+          }
+        },
+        {
+          "text": "oxygen",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 55.875,
+            "y": 396.0718688964844,
+            "width": 14.506790161132812,
+            "height": 5
+          }
+        },
+        {
+          "text": "carbon dioxide",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 81.90625,
+            "y": 396.0718688964844,
+            "width": 28.035194396972656,
+            "height": 5
+          }
+        }
+      ],
+      "intersections": [],
+      "html": [
+        {
+          "tag": "H5",
+          "text": "Alveolus and capillary regional atlas",
+          "font": 13,
+          "width": 240,
+          "height": 19.5,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3605103122745525
+        },
+        {
+          "tag": "P",
+          "text": "Trace ventilation, diffusion across the thin air-blood barrier, and capillary transport.",
+          "font": 11,
+          "width": 240,
+          "height": 31.875,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 3.751444575665684
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Play exchange",
+          "font": 11,
+          "width": 95.84375,
+          "height": 30.5,
+          "foreground": "rgb(3, 105, 161)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 5.933638668604332
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Hide clinical",
+          "font": 11,
+          "width": 85,
+          "height": 30.5,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 8.98260576557149
+        },
+        {
+          "tag": "SPAN",
+          "text": "Conducting airway",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 4.758842787868666
+        },
+        {
+          "tag": "SPAN",
+          "text": "Air-blood barrier",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 4.758842787868666
+        },
+        {
+          "tag": "SPAN",
+          "text": "Capillary blood",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgba(255, 255, 255, 0.72)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Visual key",
+          "font": 11,
+          "width": 54.9375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 1.7240920661223322
+        },
+        {
+          "tag": "SPAN",
+          "text": "A",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(14, 165, 233)",
+          "ratio": 2.771412229141218
+        },
+        {
+          "tag": "SPAN",
+          "text": "airflow",
+          "font": 11,
+          "width": 38.765625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "SPAN",
+          "text": "O",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(220, 38, 38)",
+          "ratio": 4.829404522659002
+        },
+        {
+          "tag": "SPAN",
+          "text": "oxygen",
+          "font": 11,
+          "width": 40.234375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "SPAN",
+          "text": "C",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(37, 99, 235)",
+          "ratio": 5.168555560022562
+        },
+        {
+          "tag": "SPAN",
+          "text": "carbon dioxide",
+          "font": 11,
+          "width": 81.265625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "SPAN",
+          "text": "Current structures",
+          "font": 11,
+          "width": 98.875,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 1.7240920661223322
+        },
+        {
+          "tag": "SPAN",
+          "text": "Type I cell",
+          "font": 11,
+          "width": 64.875,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "SPAN",
+          "text": "Air-blood barrier",
+          "font": 11,
+          "width": 102.609375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "SPAN",
+          "text": "Hemoglobin",
+          "font": 11,
+          "width": 77.171875,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "STRONG",
+          "text": "Pulmonary edema",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "SPAN",
+          "text": "Fluid accumulates around the air-blood barrier and increases diffusion distance.",
+          "font": 11,
+          "width": 216,
+          "height": 30.78125,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "STRONG",
+          "text": "Functional consequence",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "SPAN",
+          "text": "Oxygen transfer is impaired before carbon-dioxide removal becomes severely limited.",
+          "font": 11,
+          "width": 216,
+          "height": 30.78125,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "SPAN",
+          "text": "Educational comparison only — not a diagnostic view.",
+          "font": 11,
+          "width": 216,
+          "height": 30.78125,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(245, 243, 255)",
+          "ratio": 4.338870900382048
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1. VentilationFresh air enters alveolus",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "1. Ventilation",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Fresh air enters alveolus",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2. Oxygen diffusionAlveolus to blood",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 7.094569638887048
+        },
+        {
+          "tag": "SPAN",
+          "text": "2. Oxygen diffusion",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 7.094569638887048
+        },
+        {
+          "tag": "SPAN",
+          "text": "Alveolus to blood",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(7, 89, 133)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 7.094569638887048
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3. Carbon dioxideBlood to alveolus",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "3. Carbon dioxide",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Blood to alveolus",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4. Transport onwardBlood leaves; gas exhales",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "4. Transport onward",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Blood leaves; gas exhales",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Step 2 of 4",
+          "font": 11,
+          "width": 72.40625,
+          "height": 21,
+          "foreground": "rgb(12, 74, 110)",
+          "background": "rgba(255, 255, 255, 0.82)",
+          "ratio": 9.458172533681237
+        },
+        {
+          "tag": "STRONG",
+          "text": "2. Oxygen diffusion",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(12, 74, 110)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 8.872362914029607
+        },
+        {
+          "tag": "SPAN",
+          "text": "Oxygen diffuses down its partial-pressure gradient across the type I alveolar epithelium, thin interstitial layer, and capillary endothelium, then binds to hemoglobin.",
+          "font": 11,
+          "width": 200.796875,
+          "height": 111,
+          "foreground": "rgb(12, 74, 110)",
+          "background": "rgb(240, 249, 255)",
+          "ratio": 8.872362914029607
+        },
+        {
+          "tag": "P",
+          "text": "Return to circulation: follow oxygenated pulmonary blood back through the left heart before systemic delivery.",
+          "font": 11,
+          "width": 240,
+          "height": 46.171875,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 2.3559417615334315
+        },
+        {
+          "tag": "STRONG",
+          "text": "Return to circulation:",
+          "font": 11,
+          "width": 112.421875,
+          "height": 15,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(15, 23, 42)",
+          "ratio": 1.7240920661223322
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Return to cardiac flow",
+          "font": 11,
+          "width": 140.5,
+          "height": 36,
+          "foreground": "rgb(159, 18, 57)",
+          "background": "rgb(255, 255, 255)",
+          "ratio": 8.015910591562179
+        }
+      ],
+      "pageWidth": 320,
+      "pageScroll": 320,
+      "atlasWidth": 264,
+      "atlasScroll": 264
+    }
+  ],
+  "stepWhilePaused": {
+    "playingAfter": true
+  },
+  "finishedSourceLfSha256": "9faaef017b8cff11cf5d0968334e861a84a34994415c4be2d67dc32e7af358fc",
+  "finishedAt": "2026-10-03T15:14:13.439Z"
+}

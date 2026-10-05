@@ -1,0 +1,186 @@
+[
+  [
+    "var beacon=NEBULA_BEACONS[id]||NEBULA_BEACONS.overview,dx=",
+    "var beacon=Object.prototype.hasOwnProperty.call(NEBULA_BEACONS,id)?NEBULA_BEACONS[id]:NEBULA_BEACONS.overview,dx="
+  ],
+  [
+    "  function inspectionLimit(id)",
+    "  // A user-selected passage keeps the same cloud coordinates throughout travel.\n  // Free-travel distance counts manual movement, independently of guided courses.\n  function nebulaPassage(start,id){\n    var from=nebulaPose(start),key=Object.prototype.hasOwnProperty.call(NEBULA_BEACONS,id)?id:'overview',to=nebulaBeacon(key,from);\n    return {id:key,from:from,to:to,progress:0,duration:clamp(Math.hypot(to.x-from.x,to.y-from.y,to.z-from.z)/.85,2,12)};\n  }\n  function nebulaPassagePose(route,progress){\n    if(!route||!route.from||!route.to)return nebulaPose();\n    var from=nebulaPose(route.from),to=nebulaPose(route.to),t=typeof progress==='number'&&isFinite(progress)?clamp(progress,0,1):0;\n    if(t===0)return from;if(t===1){to.travel=from.travel;return to;}\n    var ease=t*t*t*(t*(t*6-15)+10),distance=Math.hypot(to.x-from.x,to.y-from.y,to.z-from.z),turn=((to.heading-from.heading+540)%360)-180;\n    return nebulaPose({x:from.x+(to.x-from.x)*ease,y:from.y+(to.y-from.y)*ease+Math.sin(ease*Math.PI)*Math.min(.7,distance*.06),z:from.z+(to.z-from.z)*ease,heading:from.heading+turn*ease,pitch:from.pitch+(to.pitch-from.pitch)*ease,travel:from.travel});\n  }\n  function inspectionLimit(id)"
+  ],
+  [
+    "var nebulaPosition=null,nebulaRestore=null,nebulaSession=false,nebulaLast=0,nebulaLastHud=0;",
+    "var nebulaPosition=null,nebulaRestore=null,nebulaSession=false,nebulaLast=0,nebulaLastHud=0,nebulaCourse=null,nebulaCourseNotice='';"
+  ],
+  [
+    "function stopAir(){airKeys={};airButtons={};airMoving=false;airLast=0;}",
+    "function courseRunning(){return !!nebulaCourse&&!nebulaCourse.paused&&nebulaCourse.progress<1;}\n    function courseNotice(){\n      var status=nebulaCourse?(nebulaCourse.progress>=1?'arrived':nebulaCourse.paused?'paused':'moving'):'idle',key=status+':'+(nebulaCourse?nebulaCourse.id:'');\n      if(key!==nebulaCourseNotice){nebulaCourseNotice=key;pick('orion-nebula','nebula-course',{id:nebulaCourse&&nebulaCourse.id,state:status});}\n    }\n    function clearNebulaCourse(){if(!nebulaCourse)return;nebulaCourse=null;nebulaLast=nebulaLastHud=0;courseNotice();}\n    function stopAir(){airKeys={};airButtons={};airMoving=false;airLast=nebulaLast=0;if(courseRunning()){nebulaCourse.paused=true;nebulaLastHud=0;courseNotice();}}"
+  ],
+  [
+    "function resetAir(){stopAir();if(nebulaReady())",
+    "function resetAir(){stopAir();clearNebulaCourse();if(nebulaReady())"
+  ],
+  [
+    "function visitNebula(id){if(!nebulaReady()||!Object.prototype.hasOwnProperty.call(NEBULA_BEACONS,id))return;stopAir();nebulaPosition=nebulaBeacon(id,nebulaPosition);nebulaRestore=null;nebulaSession=true;nebulaLastHud=0;invalidate();}",
+    "function visitNebula(id){\n      if(!nebulaReady()||!Object.prototype.hasOwnProperty.call(NEBULA_BEACONS,id))return;\n      stopAir();nebulaCourse=nebulaPassage(nebulaPosition,id);nebulaCourse.paused=false;\n      if(read().reduceMotion){nebulaCourse.progress=1;nebulaPosition=nebulaPassagePose(nebulaCourse,1);}\n      nebulaRestore=null;nebulaSession=true;nebulaLast=performance.now();nebulaLastHud=0;courseNotice();invalidate();\n    }\n    function resumeNebula(){if(!nebulaReady()||!nebulaCourse||nebulaCourse.progress>=1)return;stopAir();nebulaCourse.paused=false;nebulaLast=performance.now();nebulaLastHud=0;courseNotice();invalidate();}"
+  ],
+  [
+    "if(nebulaReady()){nebulaPosition=nebulaPosition||nebulaPose();for(var j=0;j<10;j++)",
+    "if(nebulaReady()){clearNebulaCourse();nebulaPosition=nebulaPosition||nebulaPose();for(var j=0;j<10;j++)"
+  ],
+  [
+    "airButtons[direction]=!!pressed;airLast=nebulaLast=performance.now();invalidate();",
+    "if(pressed&&nebulaReady())clearNebulaCourse();airButtons[direction]=!!pressed;airLast=nebulaLast=performance.now();invalidate();"
+  ],
+  [
+    "if(nebulaReady()){nebulaPosition=nebulaPose(nebulaPosition);nebulaPosition.heading=",
+    "if(nebulaReady()){if(horizontal||vertical)clearNebulaCourse();nebulaPosition=nebulaPose(nebulaPosition);nebulaPosition.heading="
+  ],
+  [
+    "ev.preventDefault();ev.stopPropagation();if(ev.repeat)return;airKeys[code]=true;",
+    "ev.preventDefault();ev.stopPropagation();if(ev.repeat)return;if(nebulaReady()&&code!=='ShiftLeft'&&code!=='ShiftRight')clearNebulaCourse();airKeys[code]=true;"
+  ],
+  [
+    "stopAir();nebulaSession=false;nebulaPosition=null;nebulaRestore=null;",
+    "stopAir();clearNebulaCourse();nebulaSession=false;nebulaPosition=null;nebulaRestore=null;"
+  ],
+  [
+    "nebulaSession=false;nebulaLast=0;nebulaLastHud=0;",
+    "clearNebulaCourse();nebulaSession=false;nebulaLast=0;nebulaLastHud=0;"
+  ],
+  [
+    "\n      delete canvas.dataset.atlasNebulaInside;delete canvas.dataset.atlasNebulaPosition;delete canvas.dataset.atlasNebulaMoving;\n",
+    "\n      delete canvas.dataset.atlasNebulaInside;delete canvas.dataset.atlasNebulaPosition;delete canvas.dataset.atlasNebulaMoving;delete canvas.dataset.atlasNebulaCourse;delete canvas.dataset.atlasNebulaProgress;\n"
+  ],
+  [
+    "\n        delete canvas.dataset.atlasNebulaInside;delete canvas.dataset.atlasNebulaPosition;delete canvas.dataset.atlasNebulaMoving;\n",
+    "\n        delete canvas.dataset.atlasNebulaInside;delete canvas.dataset.atlasNebulaPosition;delete canvas.dataset.atlasNebulaMoving;delete canvas.dataset.atlasNebulaCourse;delete canvas.dataset.atlasNebulaProgress;\n"
+  ],
+  [
+    "restore:function(view){stopAir();nebulaRestore=",
+    "restore:function(view){stopAir();clearNebulaCourse();nebulaRestore="
+  ],
+  [
+    "canvas.removeEventListener('keydown',airKeyDown);canvas.removeEventListener('blur',airBlur);window.removeEventListener('keyup',airKeyUp);window.removeEventListener('blur',airBlur);stopAir();",
+    "canvas.removeEventListener('keydown',airKeyDown);canvas.removeEventListener('blur',airBlur);window.removeEventListener('keyup',airKeyUp);window.removeEventListener('blur',airBlur);stopAir();nebulaCourse=null;"
+  ],
+  [
+    "nebulaVisit:visitNebula,flightMove:",
+    "nebulaVisit:visitNebula,nebulaResume:resumeNebula,flightMove:"
+  ],
+  [
+    "if(dirty||state.motion||cameraSettling||airMoving)paint();if(state.motion||cameraSettling||airMoving)schedule();",
+    "if(dirty||state.motion||cameraSettling||airMoving||courseRunning())paint();if(state.motion||cameraSettling||airMoving||courseRunning())schedule();"
+  ],
+  [
+    "    function paintNebulaNavigation(root,state,now){\n      if(!nebulaSession||nebulaRestore){nebulaPosition=nebulaPose(nebulaRestore);nebulaRestore=null;nebulaSession=true;nebulaLast=now;}\n      var input=airInput();airMoving=!!(input.forward||input.side||input.lift);\n      var seconds=nebulaLast?Math.min(.05,Math.max(0,(now-nebulaLast)/1000)):0;nebulaLast=now;\n      nebulaPosition=nebulaAdvance(nebulaPosition,input,seconds,Math.min(2,(state.nebulaSpeed||.8)*(airKeys.ShiftLeft||airKeys.ShiftRight?2.5:1)));\n      camera.position.set(nebulaPosition.x/NEBULA_SPAN,nebulaPosition.y/NEBULA_SPAN,nebulaPosition.z/NEBULA_SPAN);root.userData.model.localToWorld(camera.position);\n      var heading=nebulaPosition.heading*Math.PI/180;\n      lightView.set(Math.sin(heading)*Math.cos(nebulaPosition.pitch),Math.sin(nebulaPosition.pitch),-Math.cos(heading)*Math.cos(nebulaPosition.pitch)).transformDirection(root.userData.model.matrixWorld);\n      cameraAim.copy(camera.position).add(lightView);cameraSettling=false;\n      canvas.dataset.atlasNebulaInside='active';canvas.dataset.atlasNebulaPosition=JSON.stringify(nebulaPosition);canvas.dataset.atlasNebulaMoving=airMoving?'true':'false';\n      var panel=airHud&&airHud();if(!panel||airMoving&&now-nebulaLastHud<120)return;nebulaLastHud=now;\n      var cluster=NEBULA_BEACONS.overview.aim,range=Math.hypot(nebulaPosition.x-cluster[0],nebulaPosition.y-cluster[1],nebulaPosition.z-cluster[2]),edge=Math.max(Math.abs(nebulaPosition.x),Math.abs(nebulaPosition.y),Math.abs(nebulaPosition.z))>=16.799;\n      var values={distance:range.toFixed(2)+' ly',travel:nebulaPosition.travel.toFixed(2)+' ly',height:(nebulaPosition.y>=0?'+':'')+nebulaPosition.y.toFixed(2)+' ly',status:edge?panel.dataset.nebulaEdge:airMoving?panel.dataset.nebulaMoving:panel.dataset.nebulaReady,light:panel.dataset.nebulaLight.replace('{n}',nebulaPosition.travel.toFixed(2))};\n      panel.querySelectorAll('[data-nebula-stat]').forEach(function(node){var value=values[node.dataset.nebulaStat];if(value!==undefined&&node.textContent!==value)node.textContent=value;});\n      var point=panel.querySelector('[data-nebula-map-point]');if(point)point.setAttribute('transform','translate('+(100+nebulaPosition.x/33.6*200)+','+(100+nebulaPosition.z/33.6*200)+') rotate('+nebulaPosition.heading+')');\n    }\n",
+    "    function paintNebulaNavigation(root,state,now){\n      if(!nebulaSession||nebulaRestore){nebulaPosition=nebulaPose(nebulaRestore);nebulaRestore=null;nebulaSession=true;nebulaLast=now;}\n      var input=airInput();airMoving=!!(input.forward||input.side||input.lift);\n      var elapsed=nebulaLast?Math.max(0,(now-nebulaLast)/1000):0;nebulaLast=now;\n      if(airMoving)clearNebulaCourse();\n      if(nebulaCourse&&nebulaCourse.progress<1&&state.reduceMotion){nebulaCourse.progress=1;nebulaPosition=nebulaPassagePose(nebulaCourse,1);courseNotice();}\n      if(courseRunning()){\n        nebulaCourse.progress=Math.min(1,nebulaCourse.progress+Math.min(.15,elapsed)/nebulaCourse.duration*(state.nebulaSpeed||.8)/.8);\n        nebulaPosition=nebulaPassagePose(nebulaCourse,nebulaCourse.progress);courseNotice();\n      }else if(airMoving)nebulaPosition=nebulaAdvance(nebulaPosition,input,Math.min(.05,elapsed),Math.min(2,(state.nebulaSpeed||.8)*(airKeys.ShiftLeft||airKeys.ShiftRight?2.5:1)));\n      camera.position.set(nebulaPosition.x/NEBULA_SPAN,nebulaPosition.y/NEBULA_SPAN,nebulaPosition.z/NEBULA_SPAN);root.userData.model.localToWorld(camera.position);\n      var heading=nebulaPosition.heading*Math.PI/180;\n      lightView.set(Math.sin(heading)*Math.cos(nebulaPosition.pitch),Math.sin(nebulaPosition.pitch),-Math.cos(heading)*Math.cos(nebulaPosition.pitch)).transformDirection(root.userData.model.matrixWorld);\n      cameraAim.copy(camera.position).add(lightView);cameraSettling=false;\n      canvas.dataset.atlasNebulaInside='active';canvas.dataset.atlasNebulaPosition=JSON.stringify(nebulaPosition);canvas.dataset.atlasNebulaMoving=airMoving||courseRunning()?'true':'false';\n      if(nebulaCourse){canvas.dataset.atlasNebulaCourse=nebulaCourse.progress>=1?'arrived':nebulaCourse.paused?'paused':'moving';canvas.dataset.atlasNebulaProgress=String(nebulaCourse.progress);}\n      else{delete canvas.dataset.atlasNebulaCourse;delete canvas.dataset.atlasNebulaProgress;}\n      var panel=airHud&&airHud();if(!panel||(airMoving||courseRunning())&&now-nebulaLastHud<120)return;nebulaLastHud=now;\n      var cluster=NEBULA_BEACONS.overview.aim,range=Math.hypot(nebulaPosition.x-cluster[0],nebulaPosition.y-cluster[1],nebulaPosition.z-cluster[2]),edge=Math.max(Math.abs(nebulaPosition.x),Math.abs(nebulaPosition.y),Math.abs(nebulaPosition.z))>=16.799;\n      var status=nebulaCourse?panel.dataset['nebula'+(nebulaCourse.progress>=1?'Arrived':nebulaCourse.paused?'Paused':'Passage')]:edge?panel.dataset.nebulaEdge:airMoving?panel.dataset.nebulaMoving:panel.dataset.nebulaReady;\n      var values={distance:range.toFixed(2)+' ly',travel:nebulaPosition.travel.toFixed(2)+' ly',height:(nebulaPosition.y>=0?'+':'')+nebulaPosition.y.toFixed(2)+' ly',status:status,light:panel.dataset.nebulaLight.replace('{n}',nebulaPosition.travel.toFixed(2))};\n      if(nebulaCourse){var remaining=Math.hypot(nebulaPosition.x-nebulaCourse.to.x,nebulaPosition.y-nebulaCourse.to.y,nebulaPosition.z-nebulaCourse.to.z);values.remaining=panel.dataset.nebulaRemaining.replace('{n}',remaining.toFixed(2));}\n      panel.querySelectorAll('[data-nebula-stat]').forEach(function(node){var value=values[node.dataset.nebulaStat];if(value!==undefined&&node.textContent!==value)node.textContent=value;});\n      var point=panel.querySelector('[data-nebula-map-point]');if(point)point.setAttribute('transform','translate('+(100+nebulaPosition.x/33.6*200)+','+(100+nebulaPosition.z/33.6*200)+') rotate('+nebulaPosition.heading+')');\n      var path=panel.querySelector('[data-nebula-course-path]');if(path){path.setAttribute('visibility',nebulaCourse?'visible':'hidden');if(nebulaCourse)path.setAttribute('d','M'+(100+nebulaCourse.from.x/33.6*200)+','+(100+nebulaCourse.from.z/33.6*200)+' L'+(100+nebulaCourse.to.x/33.6*200)+','+(100+nebulaCourse.to.z/33.6*200));}\n      var progress=panel.querySelector('[data-nebula-progress]');if(progress&&nebulaCourse){var percent=Math.round(nebulaCourse.progress*100);progress.setAttribute('aria-valuenow',String(percent));var fill=progress.firstElementChild;if(fill)fill.style.width=percent+'%';}\n    }\n"
+  ],
+  [
+    "var _nebulaStation=React.useState('overview');var nebulaStation=_nebulaStation[0],setNebulaStation=_nebulaStation[1];",
+    "var _nebulaStation=React.useState('overview');var nebulaStation=_nebulaStation[0],setNebulaStation=_nebulaStation[1];\n      var _nebulaCourseState=React.useState('idle');var nebulaCourseState=_nebulaCourseState[0],setNebulaCourseState=_nebulaCourseState[1];"
+  ],
+  [
+    "function enterNebula(){arriveNow();stopJourney();setNebulaStation('overview');",
+    "function enterNebula(){arriveNow();stopJourney();setNebulaCourseState('idle');setNebulaStation('overview');"
+  ],
+  [
+    "function leaveNebula(){if(atlasRef.current)atlasRef.current.flightBrake();setNebulaInside(false);",
+    "function leaveNebula(){if(atlasRef.current)atlasRef.current.flightBrake();setNebulaCourseState('idle');setNebulaInside(false);"
+  ],
+  [
+    "if(part==='nebula-reset'){setNebulaStation('overview');return;}",
+    "if(part==='nebula-reset'){setNebulaStation('overview');return;}if(part==='nebula-course'){setNebulaCourseState(point.state);if(point.id)setNebulaStation(point.id);return;}"
+  ],
+  [
+    "      function nebulaNavigator(){",
+    "      function focusNebulaCamera(){var cv=atlasCanvasRef.current;if(cv){var rect=cv.getBoundingClientRect();if(rect.top<0||rect.bottom>window.innerHeight)cv.scrollIntoView({block:'center',behavior:'auto'});cv.focus({preventScroll:true});}}\n      function nebulaNavigator(){"
+  ],
+  [
+    "'data-nebula-ready':S('atlas_nebula_nav_ready'",
+    "'data-nebula-passage':S('atlas_nebula_passage_moving', 'Following the cloud passage'),'data-nebula-paused':S('atlas_nebula_passage_paused', 'Passage paused · explore or resume'),'data-nebula-arrived':S('atlas_nebula_passage_arrived', 'Viewpoint reached · explore freely'),'data-nebula-remaining':S('atlas_nebula_passage_remaining', '{n} ly to viewpoint'),\n          'data-nebula-ready':S('atlas_nebula_nav_ready'"
+  ],
+  [
+    "              h('g',{'data-nebula-map-point':true}",
+    "              h('path',{'data-nebula-course-path':true,visibility:'hidden',fill:'none',stroke:'#efc598',strokeWidth:2,strokeDasharray:'3 3'}),\n              h('g',{'data-nebula-map-point':true}"
+  ],
+  [
+    "onClick:function(){setNebulaStation(stop[0]);if(atlasRef.current)atlasRef.current.nebulaVisit(stop[0]);}",
+    "onClick:function(){setNebulaStation(stop[0]);focusNebulaCamera();if(atlasRef.current)atlasRef.current.nebulaVisit(stop[0]);}"
+  ],
+  [
+    "          h('p',{className:'sx-nebula-brief'",
+    "          h('div',{className:'sx-nebula-course',hidden:nebulaCourseState==='idle'},\n            h('div',null,h('span',null,S('atlas_nebula_passage_label', 'Cloud passage')),h('output',{'data-nebula-stat':'remaining','aria-live':'off'},'—')),\n            h('div',{className:'sx-nebula-progress','data-nebula-progress':true,role:'progressbar','aria-label':S('atlas_nebula_passage_progress', 'Progress to interior viewpoint'),'aria-valuemin':0,'aria-valuemax':100,'aria-valuenow':0},h('span',null)),\n            nebulaCourseState==='paused'?h('button',{type:'button',onClick:function(){focusNebulaCamera();if(atlasRef.current)atlasRef.current.nebulaResume();}},S('atlas_nebula_passage_resume', 'Resume passage')):null),\n          h('p',{className:'sx-nebula-brief'"
+  ],
+  [
+    "          h('p',{className:'sx-nebula-help',id:descId+'-nebula-help'},S('atlas_nebula_nav_help'",
+    "          h('p',{className:'sx-nebula-help'},S('atlas_nebula_passage_help', 'Choose a viewpoint to follow a passage through the cloud. Brake pauses the course. Moving or looking takes control; saved observations reopen at your exact position.')),\n          h('p',{className:'sx-nebula-help',id:descId+'-nebula-help'},S('atlas_nebula_nav_help'"
+  ],
+  [
+    ".sx-nebula-brief{grid-column:",
+    ".sx-nebula-course{grid-column:1/-1;display:grid;grid-template-columns:minmax(120px,1fr) minmax(90px,2fr) auto;gap:10px;align-items:center;padding:8px 10px;border:1px solid #676076;border-radius:8px;background:#141c2b}.sx-nebula-course[hidden]{display:none}.sx-nebula-course>div:first-child{display:flex;flex-direction:column;gap:3px;font-size:10px;color:#d5c6b8}.sx-nebula-course output{font:11px ui-monospace,monospace;color:#e8e1d6}.sx-nebula-progress{height:4px;overflow:hidden;border-radius:4px;background:#515064}.sx-nebula-progress>span{display:block;width:0;height:100%;background:#e9c29d}.sx-nebula-course button{padding:5px 9px}.sx-nebula-brief{grid-column:"
+  ],
+  [
+    ".sx-stage.sx-stage-space{height:1080px}",
+    ".sx-stage.sx-stage-space{height:1200px}"
+  ],
+  [
+    ".sx-nebula-actions button{flex:1;",
+    ".sx-nebula-course{grid-template-columns:1fr 1fr;gap:8px}.sx-nebula-course button{grid-column:1/-1}.sx-nebula-actions button{flex:1;"
+  ],
+  [
+    "        var n=noise(px*9+4,py*9+3,pz*9+5)*.40+noise(px*25+8,py*25+1,pz*25+9)*.31+noise(px*60+6,py*60+9,pz*60+7)*.21+noise(px*110,py*110+5,pz*110)*.08;\n        var radius=Math.sqrt(Math.pow(px/.49,2)+Math.pow((py+.015)/.34,2)+Math.pow(pz/.29,2));\n        var envelope=(1-smooth(.68,1.05,radius))*(.4+Math.exp(-radius*radius*2));\n        var cavityDistance=Math.sqrt(Math.pow((px+.01)/1.12,2)+Math.pow(py-.025,2)+Math.pow((pz-.16)*.92,2));\n        var cavity=smooth(.17,.25,cavityDistance);\n        var bar=Math.exp(-Math.pow((py+.16-.22*px)/.048,2)-Math.pow((px-.15)/.25,2)-Math.pow((pz-.025)/.13,2));\n        var gas=envelope*Math.pow(Math.max(0,n-.28)*2.3,2.1)*(.035+.965*cavity)+bar*(.15+n)*1.2;\n        var ridge=Math.exp(-Math.pow((py-.135+.36*px)/.07,2)-Math.pow((px+.15)/.25,2)-Math.pow((pz-.11)/.08,2));\n        var dust=ridge*(.25+Math.pow(n,2)*1.7)+envelope*Math.pow(Math.max(0,n-.52),2)*3;\n        var cool=clamp(Math.exp(-Math.pow(cavityDistance/.31,2))*1.5,0,1);\n",
+    "        // Bake folded sheets and ridged detail once, rather than evaluating\n        // trigonometric grain at every ray-march sample on every frame.\n        var coarse=noise(px*9+4,py*9+3,pz*9+5),warp=(coarse-.5)*.065;\n        var structure=noise((px+warp)*25+8,(py-warp)*25+1,(pz+warp)*25+9),detail=noise((px+warp)*57+6,(py-warp)*38+9,pz*62+7),fine=noise(px*110,py*110+5,pz*110);\n        var n=coarse*.40+structure*.31+detail*.21+fine*.08;\n        var threads=Math.pow(1-Math.abs(detail*2-1),7)*(.4+structure),knots=smooth(.48,.75,structure);\n        var radius=Math.sqrt(Math.pow(px/.49,2)+Math.pow((py+.015)/.34,2)+Math.pow(pz/.29,2));\n        var envelope=(1-smooth(.68,1.05,radius))*(.4+Math.exp(-radius*radius*2));\n        var cavityDistance=Math.sqrt(Math.pow((px+.01)/1.12,2)+Math.pow(py-.025,2)+Math.pow((pz-.16)*.92,2));\n        var cavity=smooth(.18,.25,cavityDistance+warp*.35);\n        var wall=Math.exp(-Math.pow((cavityDistance-.212+warp*.35)/.023,2))*envelope;\n        var bar=Math.exp(-Math.pow((py+.16-.22*px+warp*.45)/.027,2)-Math.pow((px-.15)/.25,2)-Math.pow((pz-.025)/.13,2));\n        var gas=envelope*Math.pow(Math.max(0,n-.34)*2.7,2.1)*(.006+.994*cavity)*(.35+threads*1.8)+wall*(.15+threads*.8)+bar*(.16+threads*.7+knots*.3);\n        var ridge=Math.exp(-Math.pow((py-.135+.36*px+warp*.55)/.039,2)-Math.pow((px+.15)/.25,2)-Math.pow((pz-.11)/.08,2));\n        var dust=ridge*(.32+knots*.95+threads*.5)+envelope*Math.pow(Math.max(0,n-.53),2)*4;\n        var cool=clamp(Math.exp(-Math.pow(cavityDistance/.265,2))*1.6-bar*.6,0,1);\n        var stellarDistance=Math.hypot(px+.006,py-.014,pz-.135);\n        var illumination=clamp((.12+Math.exp(-stellarDistance*stellarDistance*13)*.6+wall*.5+bar*.65)/(1+dust*1.3),0,1);\n"
+  ],
+  [
+    "data[i+2]=Math.round(clamp(dust*edge,0,1)*255);data[i+3]=255;",
+    "data[i+2]=Math.round(clamp(dust*edge,0,1)*255);data[i+3]=Math.round(illumination*255);"
+  ],
+  [
+    "        'float cloudGrain(vec3 p){return .5+.5*sin(p.x+sin(p.z*.73))*sin(p.y*.87+sin(p.x*.59))*sin(p.z*.93+sin(p.y*.67));}',\n",
+    ""
+  ],
+  [
+    "'vec3 field(vec3 p){if(any(lessThan(p,vec3(-.5)))||any(greaterThan(p,vec3(.5))))return vec3(0.);vec3 q=(p+.5)*95.;float z=floor(q.z),next=min(z+1.,95.);vec2 a=(vec2(mod(z,12.),floor(z/12.))*96.+q.xy+.5)/vec2(1152.,768.);vec2 b=(vec2(mod(next,12.),floor(next/12.))*96.+q.xy+.5)/vec2(1152.,768.);vec3 f=mix(texture2D(uVolume,a).rgb,texture2D(uVolume,b).rgb,fract(q.z));float fine=.82+.36*(cloudGrain(p*135.)*.7+cloudGrain(p*310.)*.3);f.r*=fine;f.b*=fine;return f;}',",
+    "'vec4 field(vec3 p){if(any(lessThan(p,vec3(-.5)))||any(greaterThan(p,vec3(.5))))return vec4(0.);vec3 q=(p+.5)*95.;float z=floor(q.z),next=min(z+1.,95.);vec2 a=(vec2(mod(z,12.),floor(z/12.))*96.+q.xy+.5)/vec2(1152.,768.);vec2 b=(vec2(mod(next,12.),floor(next/12.))*96.+q.xy+.5)/vec2(1152.,768.);return mix(texture2D(uVolume,a),texture2D(uVolume,b),fract(q.z));}',"
+  ],
+  [
+    "float extinction(vec3 f){return f.r*4.5+f.b*11.;}",
+    "float extinction(vec4 f){return f.r*5.5+f.b*16.;}"
+  ],
+  [
+    "for(int i=0;i<64;i++){vec3 f=field(p);float alpha=1.-exp(-extinction(f)*stepSize*uCloud);vec3 color=mix(vec3(1.10,.22,.16),vec3(.12,.54,.78),smoothstep(.38,.9,f.g));float glow=f.r/(f.r+f.b*2.8+.001);color=color*(1.4+f.r*2.8)*glow+vec3(.018,.012,.023)*(1.-glow);",
+    "for(int i=0;i<64;i++){vec4 f=field(p);float alpha=1.-exp(-extinction(f)*stepSize*uCloud);vec3 color=mix(vec3(1.25,.15,.08),vec3(.075,.42,.85),smoothstep(.45,.88,f.g));float glow=f.r/(f.r+f.b*3.5+.001);color=color*(.35+f.a*2.8+f.r*.65)*glow+vec3(.012,.008,.017)*(1.-glow);"
+  ],
+  [
+    "var rng=random(742),positions=[],sizes=[],colors=[];",
+    "var rng=random(742),positions=[],sizes=[],colors=[],energies=[],halos=[];"
+  ],
+  [
+    "sizes.push(.040-index*.004);colors.push(1.4,1.9,2.5);",
+    "sizes.push(.040-index*.004);colors.push(1.4,1.9,2.5);energies.push(1.4-index*.13);halos.push(1);"
+  ],
+  [
+    "var warm=rng();colors.push(.8+warm*.6,.85+warm*.3,1.3-warm*.6);",
+    "var warm=rng();colors.push(.8+warm*.6,.85+warm*.3,1.3-warm*.6);energies.push(.24+warm*warm*.55);halos.push(warm>.94?.18:0);"
+  ],
+  [
+    "starsGeo.setAttribute('color',new T.Float32BufferAttribute(colors,3));",
+    "starsGeo.setAttribute('color',new T.Float32BufferAttribute(colors,3));starsGeo.setAttribute('aEnergy',new T.Float32BufferAttribute(energies,1));starsGeo.setAttribute('aHalo',new T.Float32BufferAttribute(halos,1));"
+  ],
+  [
+    "      var starsMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,vertexColors:true,uniforms:{uVolume:volume,uEye:eye,uDirection:direction,uOrthographic:orthographic,uCloud:reveal,uViewport:viewport,uOpacity:{value:1}},\n        vertexShader:[sampleGLSL,'uniform float uViewport;attribute float aSize;varying vec3 vColor;varying float vVisibility;',\n          'void main(){vec3 direction=normalize(mix(normalize(uEye-position),-uDirection,uOrthographic)),inv=1./(direction+vec3(.000001)),a=(-.5-position)*inv,b=(.5-position)*inv,far=max(a,b);float distance=min(length(uEye-position),max(0.,min(far.x,min(far.y,far.z))));float stepSize=distance/16.,depth=0.;for(int i=0;i<16;i++){depth+=extinction(field(position+direction*(float(i)+.5)*stepSize))*stepSize;}vVisibility=exp(-depth*uCloud);vColor=color;vec4 mv=modelViewMatrix*vec4(position,1.);float scale=length(modelViewMatrix[0].xyz),projection=mix(projectionMatrix[1][1]*.5/max(.01,-mv.z),projectionMatrix[1][1]*.5,uOrthographic);gl_PointSize=clamp(aSize*scale*uViewport*projection,1.,42.);gl_Position=projectionMatrix*mv;}'\n        ].join('\\n'),\n        fragmentShader:['uniform float uOpacity;varying vec3 vColor;varying float vVisibility;void main(){vec2 p=gl_PointCoord-.5;float r=length(p);if(r>.5)discard;float core=exp(-r*r*120.),halo=exp(-r*r*16.)*.14;float rays=(exp(-abs(p.x)*110.-abs(p.y)*10.)+exp(-abs(p.y)*110.-abs(p.x)*10.))*.12;gl_FragColor=vec4(vColor,(core+halo+rays)*vVisibility*uOpacity);'].concat(finish).join('\\n')}));\n",
+    "      var starsMat=track(new T.ShaderMaterial({transparent:true,depthWrite:false,blending:T.AdditiveBlending,vertexColors:true,uniforms:{uVolume:volume,uEye:eye,uDirection:direction,uOrthographic:orthographic,uCloud:reveal,uViewport:viewport,uOpacity:{value:1}},\n        vertexShader:[sampleGLSL,'uniform float uViewport;attribute float aSize;attribute float aEnergy;attribute float aHalo;varying vec3 vColor;varying float vVisibility;varying float vEnergy;varying float vHalo;',\n          'void main(){vec3 direction=normalize(mix(normalize(uEye-position),-uDirection,uOrthographic)),inv=1./(direction+vec3(.000001)),a=(-.5-position)*inv,b=(.5-position)*inv,far=max(a,b);float distance=min(length(uEye-position),max(0.,min(far.x,min(far.y,far.z))));float stepSize=distance/16.,depth=0.;for(int i=0;i<16;i++){depth+=extinction(field(position+direction*(float(i)+.5)*stepSize))*stepSize;}vVisibility=exp(-depth*uCloud);vColor=color;vec4 mv=modelViewMatrix*vec4(position,1.);float scale=length(modelViewMatrix[0].xyz),projection=mix(projectionMatrix[1][1]*.5/max(.01,-mv.z),projectionMatrix[1][1]*.5,uOrthographic);float diameter=aSize*scale*uViewport*projection;gl_PointSize=clamp(diameter,1.,42.);vEnergy=aEnergy*min(1.,diameter*diameter);vHalo=aHalo;gl_Position=projectionMatrix*mv;}'\n        ].join('\\n'),\n        fragmentShader:['uniform float uOpacity;varying vec3 vColor;varying float vVisibility;varying float vEnergy;varying float vHalo;void main(){vec2 p=gl_PointCoord-.5;float r=length(p);if(r>.5)discard;float core=exp(-r*r*120.),halo=exp(-r*r*16.)*.20*vHalo;float rays=(exp(-abs(p.x)*110.-abs(p.y)*10.)+exp(-abs(p.y)*110.-abs(p.x)*10.))*.10*vHalo;gl_FragColor=vec4(vColor,(core+halo+rays)*vEnergy*vVisibility*uOpacity);'].concat(finish).join('\\n')}));\n"
+  ],
+  [
+    "    function courseNotice(){\n      var status=",
+    "    function courseNotice(){\n      if(disposed)return;\n      var status="
+  ],
+  [
+    "heading:((value.heading%360)+360)%360,pitch:clamp(value.pitch,-1.2,1.2)",
+    "heading:value.heading>=0&&value.heading<360?value.heading:((value.heading%360)+360)%360,pitch:clamp(value.pitch,-1.2,1.2)"
+  ],
+  [
+    "@media(forced-colors:active){.sx-nebula-console{background:Canvas;color:CanvasText;",
+    "@media(forced-colors:active){.sx-nebula-course{background:Canvas;border-color:CanvasText}.sx-nebula-progress{background:GrayText}.sx-nebula-progress>span{background:Highlight}.sx-nebula-console{background:Canvas;color:CanvasText;"
+  ]
+]

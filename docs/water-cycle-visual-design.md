@@ -223,3 +223,41 @@ The selected score and its change from the previous recorded year are shown besi
 Feedback belongs to the campaign seed, component, score, year and recorded values. Changing that context clears old feedback. The history is also available in **Compare completed years** during annual review and subsequent planning years. Inspection preserves the campaign calculations, actions, hours, events, saved snapshots, outcomes and rewards.
 
 See [Steward history review](../reports/watercycle-steward-history/README.md) for native interactions, before/after captures and verification of the recorded values and campaign behavior.
+
+## Look inside the ground
+
+The Land pathways chapter and groundwater Check investigations offer a native **Look inside the ground** disclosure. Three inspection choices connect a cutaway to a magnified pore diagram: soil pore water, the water table and groundwater pores. Solid grains have hatch marks, air has open spaces, and liquid occupies spaces around grains. HTML labels stay readable as the diagrams adapt to narrow panels.
+
+The soil view shows air and water together. The boundary view identifies a schematic water table and explains the capillary fringe, where pores above the boundary can also be saturated or nearly saturated. The groundwater view illustrates connected water-filled pores and a possible flow direction. Layer depths, grain sizes and arrows are illustrative. These distinctions follow the [USGS explanation of groundwater zones](https://pubs.usgs.gov/circ/circ1186/html/gen_facts.html) and its [groundwater education guidance](https://water.usgs.gov/outreach/Posters/groundwater/middle_school/Page2.html).
+
+**Check the distinction** asks whether water in soil establishes groundwater recharge. Its feedback is unscored and distinguishes entering soil from adding water to groundwater. Explorer and Check keep separate inspection records; Check feedback belongs to the full canonical investigation identity. Selecting a part focuses its explanation, and interpreting the evidence focuses the feedback heading.
+
+The live 2D cutaway now shows a small liquid fill within its upper soil pores alongside air. This changes the illustration. The live parcel, route calculations, water-table placement, timing, camera, condition settings, writing and reward handlers retain their existing behavior.
+
+See [groundwater lens review](../reports/watercycle-groundwater-lens/README.md) for captures, native interactions and verification.
+
+## Compare three Storm moments
+
+The Storm lifecycle panel offers a native **Compare three moments** disclosure. Developing, Mature and Weakening cards show the existing model at positions 16, 52 and 86 with the same weather setup. A ground-response choice selects snow or pellets, surface glaze, hail buildup, puddling or runoff. Each card pairs falling activity with the selected response; solid and hatched bars distinguish the two tracks. Readable HTML labels accompany schematic cloud and precipitation symbols.
+
+Choosing a card inspects its explanation. The timeline above continues to control the live chamber. Weather edits recompute all three fixed snapshots; the cards do not preserve earlier weather conditions. The positions describe an illustrative sequence rather than elapsed minutes. The ordinary-cell context links to the [NWS lifecycle guide](https://www.weather.gov/spotterguide/life), while the wording also accommodates gentle rain, winter precipitation, clear conditions and virga.
+
+**Read the changing signals** is an optional, unscored question about the displayed Mature and Weakening readings. Feedback uses the rounded values actually shown, accepts displayed ties, and explicitly describes zero ground response. Inspecting another card or selecting the same metric preserves feedback. Changing the metric or modeled setup clears an old answer. Saved metadata must match the complete normalized setup and readings, including the resolved middle-level temperature.
+
+Each track is an independent qualitative index from 0 to 100. The indices are not water amounts, depth, discharge or hazard estimates, and their values should not be added. Ground effects include the model's separate exposure approximation for the fixed setup. Real drainage, melting, evaporation and soil storage can alter surface effects. Lightning wording and symbols appear only when supported by the modeled setup.
+
+The lifecycle and comparison use larger labels, controls at least 44px tall, visible keyboard focus and explicit light, dark and system colors. The ground-response menu keeps focus for repeated keyboard choices; stage and answer buttons focus their explanation headings. Cards respond to the available panel width. Storm columns also stack in narrow embedded panels, independently of the browser width. Snapshot inspection keeps its own state and preserves the precipitation calculations, live timeline, mounted scenes, saved writing, experiment records and rewards.
+
+See [Storm moments review](../reports/watercycle-storm-moments/README.md) for captures, native interactions and verification.
+
+## Inspect air temperature and the falling particle
+
+The Storm temperature controls offer **Inspect the falling particle**. Cloud base, Middle air and Near surface choices pair an actual model temperature with its existing particle cue. Readable HTML labels accompany a schematic temperature path, a selected marker and the model's 0°C crossings. Cold air and warm air describe the air, while the separate particle reading describes the modeled water.
+
+The surface explanation distinguishes liquid freezing on contact from ice pellets that have already frozen in the air. This follows the [NWS explanation of freezing rain and sleet](https://www.weather.gov/rnk/measure_icing). A freezing-rain cue is called supercooled only when the displayed air temperature is below zero. Virga identifies evaporation aloft without inventing a liquid or ice state, clear conditions show no sustained falling particle, and hail stays a schematic solid-ice cue.
+
+**Check the particle cue** is optional and unscored. Selecting a level focuses its explanation; answering focuses feedback. A new level or changed weather clears the old answer. Selecting the same level and advancing the live timeline preserve feedback. Inspection writes only its own metadata and keeps the original precipitation calculations, playback, mounted scenes, writing and rewards.
+
+The component responds to its available panel width, with labels at least 13px, controls at least 44px tall and explicit light, dark and system colors. Three significant digits preserve the sign of temperatures close to zero. Relative levels, clamped crossing positions and transition bands remain illustrative; the diagram does not imply measured altitudes, fall times or instantaneous changes of state.
+
+See [thermal layer review](../reports/watercycle-thermal-layer-inspector/README.md) for captures, native interactions and verification.

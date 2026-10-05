@@ -174,10 +174,10 @@ describe('Dino Lab — render invariants (the science a student actually sees)',
     expect(html).toMatch(/Microraptor/);
   });
 
-  it('the Ecosystems tab groups a real formation into hunters and plant-eaters', () => {
+  it('the Ecosystems tab groups a real formation by catalog diet', () => {
     const html = renderTab('ecosystem');
     expect(html).toMatch(/Morrison Formation/);
-    expect(html).toMatch(/Hunters/);
+    expect(html).toMatch(/Animal-eaters/);
     expect(html).toMatch(/Plant-eaters/);
   });
 

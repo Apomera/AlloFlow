@@ -1,0 +1,94 @@
+{
+  "initialInvocationExitCode": 1,
+  "initialInvocationStats": {
+    "startTime": "2026-10-03T00:49:35.115Z",
+    "duration": 587571.078,
+    "expected": 0,
+    "skipped": 5,
+    "unexpected": 1,
+    "flaky": 0
+  },
+  "reason": "Unchanged beforeAll hook exceeded 120000ms; one body did not begin and five targets did not run.",
+  "activityAssertionsOrCapturesExecuted": false,
+  "timeoutMs": 120000,
+  "automaticRetries": 0,
+  "unchangedRerunPending": true,
+  "reads": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "bytes": 2843199,
+      "sha256": "55ec122ff1687858830fd7949039ce1d3c9799ee0a3f7a70bf63f61816b4633c",
+      "durationMs": 656.0
+    },
+    {
+      "file": "maine_sld_practice_module.js",
+      "bytes": 177713,
+      "sha256": "f34e2d1d87c6141cf84c8c2fbcabb063fbef45b1151cd6357af232fbce22b9e5",
+      "durationMs": 16.0
+    },
+    {
+      "file": "maine_sld_case_data.json",
+      "bytes": 91506,
+      "sha256": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e",
+      "durationMs": 0.0
+    },
+    {
+      "file": "tests/e2e/maine-sld-practice.spec.ts",
+      "bytes": 114256,
+      "sha256": "430a7a9d63172cbc16200bbec3dca13762073b576efd835d71dc3f5752c722aa",
+      "durationMs": 0.0
+    }
+  ],
+  "http": [
+    {
+      "path": "/app/",
+      "status": 200,
+      "bytes": 588,
+      "sha256": "4ded475d91c15f6680cc4a45eab76c4f1f13b8f2e77174e044fd8bc2228ff1e5",
+      "durationMs": 1750.0
+    },
+    {
+      "path": "/maine_sld_practice_module.js",
+      "status": 200,
+      "bytes": 177713,
+      "sha256": "f34e2d1d87c6141cf84c8c2fbcabb063fbef45b1151cd6357af232fbce22b9e5",
+      "durationMs": 16.0
+    }
+  ],
+  "preparationTemp": [
+    {
+      "directory": "C:\\Users\\cabba\\AppData\\Local\\Temp\\maine-sld-browser-2g5Z6e",
+      "files": [
+        {
+          "file": "host.html",
+          "bytes": 7603
+        },
+        {
+          "file": "input.css",
+          "bytes": 59
+        },
+        {
+          "file": "tailwind.css",
+          "bytes": 70729
+        }
+      ]
+    },
+    {
+      "directory": "C:\\Users\\cabba\\AppData\\Local\\Temp\\maine-sld-browser-iwAFxn",
+      "files": [
+        {
+          "file": "host.html",
+          "bytes": 7603
+        },
+        {
+          "file": "input.css",
+          "bytes": 59
+        },
+        {
+          "file": "tailwind.css",
+          "bytes": 70729
+        }
+      ]
+    }
+  ]
+}

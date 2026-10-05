@@ -1688,7 +1688,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
       }
       mathContextPrompt += `Grade Level: ${gradeLevel}\n`;
       if (!problemToSolve.trim()) {
-          console.error('[MATH] Empty input — nothing to generate');
+          console.warn('[MATH] Empty input — nothing to generate');
           addToast('Please enter a topic or problem first', 'error');
           return;
       }
@@ -1838,10 +1838,10 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
                 }
               `;
           }
-          console.error('[MATH] Sending prompt to Gemini, mode:', effectiveMode, 'subject:', mathSubject);
+          console.debug('[MATH] Sending prompt to Gemini, mode:', effectiveMode, 'subject:', mathSubject);
           const result = await callGemini(prompt, true);
           if (!isCurrentMathGeneration()) return;
-          console.error('[MATH] Raw Gemini result length:', result?.length, 'first 200 chars:', result?.substring(0, 200));
+          console.debug('[MATH] Raw Gemini result length:', result?.length, 'first 200 chars:', result?.substring(0, 200));
           let rawContent;
           let cleaned;
           try {
@@ -1883,7 +1883,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
             warnLog(`Math verification: ${mismatchCount} answer(s) need review because the answer and expression disagree`);
           }
           if (verifiedCount > 0) {
-            console.error('[MATH] ' +`Math verification: ${verifiedCount}/${normalizedContent.problems.length} answers computationally verified ✓`);
+            console.debug('[MATH] ' +`Math verification: ${verifiedCount}/${normalizedContent.problems.length} answers computationally verified ✓`);
           }
           const newItem = {
               id: mathResourceId,
@@ -1924,7 +1924,7 @@ const handleGenerateMath = async (inputOverride = null, switchView = true, modeO
               addToast('📸 Auto-captured ' + newSnaps.length + ' manipulative snapshot(s)', 'info');
             }
           }
-          console.error('[MATH] Success! Problems generated:', normalizedContent.problems?.length);
+          console.debug('[MATH] Success! Problems generated:', normalizedContent.problems?.length);
           try { const p = normalizedContent.preparation; addToast(p.status === 'ready' ? _safeMathGenerationTranslation(t, 'math.success_toast', 'Math activity generated.') : p.requested + ' requested, ' + p.ready + ' ready, ' + p.reviewRequired + ' need review; ' + Math.max(0, p.requested - p.accepted) + ' missing.', p.status === 'ready' ? 'success' : 'warning'); } catch (_) {}
           try { flyToElement('tour-tool-math'); } catch (_) {}
       } catch (e) {

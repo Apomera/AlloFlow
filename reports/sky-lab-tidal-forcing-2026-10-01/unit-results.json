@@ -1,0 +1,2038 @@
+{
+  "success": true,
+  "numTotalTests": 165,
+  "numPassedTests": 165,
+  "numFailedTests": 0,
+  "testResults": [
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T00:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T00:00:00Z'",
+          "duration": 138.18699999997625,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T04:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T04:00:00Z'",
+          "duration": 1.6252000000094995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T11:30:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T11:30:00Z'",
+          "duration": 1.1638000000384636,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T14:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T14:00:00Z'",
+          "duration": 1.1192999999620952,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T18:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T18:00:00Z'",
+          "duration": 1.0753000000258908,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T22:45:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Portland, Maine' on '2026-09-27T22:45:00Z'",
+          "duration": 0.9725000000325963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T00:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T00:00:00Z'",
+          "duration": 0.7870000000111759,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T04:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T04:00:00Z'",
+          "duration": 0.8185999999986961,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T08:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T08:00:00Z'",
+          "duration": 1.0319000000017695,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T12:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T12:00:00Z'",
+          "duration": 1.0793999999877997,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T16:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T16:00:00Z'",
+          "duration": 0.8390000000363216,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T20:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Sydney, Australia' on '2026-01-15T20:00:00Z'",
+          "duration": 0.7558999999891967,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T00:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T00:00:00Z'",
+          "duration": 0.8011999999871477,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T04:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T04:00:00Z'",
+          "duration": 0.533400000014808,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T08:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T08:00:00Z'",
+          "duration": 0.47860000003129244,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T12:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T12:00:00Z'",
+          "duration": 0.9008000000030734,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T16:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T16:00:00Z'",
+          "duration": 0.6830999999656342,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T20:00:00Z'",
+          "status": "passed",
+          "title": "matches NASA/JPL Horizons airless Moon position at 'Equator, Ecuador' on '2024-04-08T20:00:00Z'",
+          "duration": 0.5354999999981374,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer removes the roughly one-degree displacement in both near-horizon reference cases",
+          "status": "passed",
+          "title": "removes the roughly one-degree displacement in both near-horizon reference cases",
+          "duration": 3.122399999992922,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer has the expected geometric correction at the horizon and none at the zenith",
+          "status": "passed",
+          "title": "has the expected geometric correction at the horizon and none at the zenith",
+          "duration": 0.9905000000144355,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer stays finite across both poles, the equator, and the right-ascension seam",
+          "status": "passed",
+          "title": "stays finite across both poles, the equator, and the right-ascension seam",
+          "duration": 74.39600000000792,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Moon position at the observer"
+          ],
+          "fullName": "Moon position at the observer uses the corrected center for both the 3D sky and saved Moon visibility tracks",
+          "status": "passed",
+          "title": "uses the corrected center for both the 3D sky and saved Moon visibility tracks",
+          "duration": 84.163899999985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Reference stars share the catalog coordinate epoch"
+          ],
+          "fullName": "Reference stars share the catalog coordinate epoch keeps reference-star sky positions aligned with the precessed fallback catalog",
+          "status": "passed",
+          "title": "keeps reference-star sky positions aligned with the precessed fallback catalog",
+          "duration": 119.34950000001118,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Reference stars share the catalog coordinate epoch"
+          ],
+          "fullName": "Reference stars share the catalog coordinate epoch uses the bundled HYG J2000 Polaris coordinates in the built-in reference list",
+          "status": "passed",
+          "title": "uses the bundled HYG J2000 Polaris coordinates in the built-in reference list",
+          "duration": 85.58069999999134,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790904998244,
+      "endTime": 1790904998767.5808,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/astronomy_lunar_parallax.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory maps the continuous synodic month to the eight named phase anchors",
+          "status": "passed",
+          "title": "maps the continuous synodic month to the eight named phase anchors",
+          "duration": 678.472299999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory clamps the pure continuous model to its supported 0-29.53 day interval",
+          "status": "passed",
+          "title": "clamps the pure continuous model to its supported 0-29.53 day interval",
+          "duration": 166.88839999999618,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory migrates a legacy phase index to the matching continuous lunar age",
+          "status": "passed",
+          "title": "migrates a legacy phase index to the matching continuous lunar age",
+          "duration": 8670.358200000017,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory recovers malformed Observatory state with Telescope view and safe overlay defaults",
+          "status": "passed",
+          "title": "recovers malformed Observatory state with Telescope view and safe overlay defaults",
+          "duration": 4527.242900000012,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory clamps persisted lunar ages at both ends of the slider",
+          "status": "passed",
+          "title": "clamps persisted lunar ages at both ends of the slider",
+          "duration": 5115.435300000012,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory renders a true 0-29.53 day slider with a continuous accessible readout",
+          "status": "passed",
+          "title": "renders a true 0-29.53 day slider with a continuous accessible readout",
+          "duration": 1401.99059999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory uses named, mutually exclusive view controls and five independent overlay toggles",
+          "status": "passed",
+          "title": "uses named, mutually exclusive view controls and five independent overlay toggles",
+          "duration": 2085.1465000000026,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory shows camera controls for the active view and keeps playback updates quiet",
+          "status": "passed",
+          "title": "shows camera controls for the active view and keeps playback updates quiet",
+          "duration": 4735.837399999989,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory bundles substantive NASA LROC and LOLA texture assets and wires their provenance",
+          "status": "passed",
+          "title": "bundles substantive NASA LROC and LOLA texture assets and wires their provenance",
+          "duration": 1032.2608999999939,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory keeps a continuous, responsive SVG fallback available while WebGL loads",
+          "status": "passed",
+          "title": "keeps a continuous, responsive SVG fallback available while WebGL loads",
+          "duration": 1388.5901000000013,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory publishes complete Telescope and Orbit accessibility contracts",
+          "status": "passed",
+          "title": "publishes complete Telescope and Orbit accessibility contracts",
+          "duration": 5183.75900000002,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory classifies central and missed lunar eclipses with true physical proportions",
+          "status": "passed",
+          "title": "classifies central and missed lunar eclipses with true physical proportions",
+          "duration": 12.21129999999539,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Moon Phase Observatory"
+          ],
+          "fullName": "Astronomy Moon Phase Observatory renders seven keyboard-accessible eclipse contacts and labeled shadow regions",
+          "status": "passed",
+          "title": "renders seven keyboard-accessible eclipse contacts and labeled shadow regions",
+          "duration": 3653.850199999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790904887196,
+      "endTime": 1790904925969.85,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/astronomy_moon_observatory.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Astronomy table accessibility"
+          ],
+          "fullName": "Astronomy table accessibility assigns column scope to magnitude and seasonal-sky headers",
+          "status": "passed",
+          "title": "assigns column scope to magnitude and seasonal-sky headers",
+          "duration": 425.9322000000393,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy table accessibility"
+          ],
+          "fullName": "Astronomy table accessibility keeps source and public mirrors identical",
+          "status": "passed",
+          "title": "keeps source and public mirrors identical",
+          "duration": 133.67950000002747,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790905020578,
+      "endTime": 1790905021137.6794,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/astronomy_tables_a11y.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Astronomy UI state resilience"
+          ],
+          "fullName": "Astronomy UI state resilience recovers an invalid restored tab to Tonight with a complete tab-panel relationship",
+          "status": "passed",
+          "title": "recovers an invalid restored tab to Tonight with a complete tab-panel relationship",
+          "duration": 1271.2477000000072,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy UI state resilience"
+          ],
+          "fullName": "Astronomy UI state resilience keeps one tab in the roving keyboard sequence",
+          "status": "passed",
+          "title": "keeps one tab in the roving keyboard sequence",
+          "duration": 726.887899999987,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy UI state resilience"
+          ],
+          "fullName": "Astronomy UI state resilience normalizes a malformed observing list before rendering the printable kit",
+          "status": "passed",
+          "title": "normalizes a malformed observing list before rendering the printable kit",
+          "duration": 731.1294000000053,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy UI state resilience"
+          ],
+          "fullName": "Astronomy UI state resilience does not accept forged or incomplete quiz completion state",
+          "status": "passed",
+          "title": "does not accept forged or incomplete quiz completion state",
+          "duration": 196.8408999999956,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy UI state resilience"
+          ],
+          "fullName": "Astronomy UI state resilience recomputes a submitted score from canonical answers",
+          "status": "passed",
+          "title": "recomputes a submitted score from canonical answers",
+          "duration": 99.38790000000154,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy keyboard navigation contract"
+          ],
+          "fullName": "Astronomy keyboard navigation contract implements Arrow, Home, and End navigation through one validated activation path",
+          "status": "passed",
+          "title": "implements Arrow, Home, and End navigation through one validated activation path",
+          "duration": 89.9881000000023,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Sky Map resilience"
+          ],
+          "fullName": "Astronomy Sky Map resilience recovers non-finite restored time offsets without leaking invalid diagram values",
+          "status": "passed",
+          "title": "recovers non-finite restored time offsets without leaking invalid diagram values",
+          "duration": 144.32880000000296,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Sky Map resilience"
+          ],
+          "fullName": "Astronomy Sky Map resilience clamps restored time travel to the supported one-year window",
+          "status": "passed",
+          "title": "clamps restored time travel to the supported one-year window",
+          "duration": 85.96950000000652,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Sky Map resilience"
+          ],
+          "fullName": "Astronomy Sky Map resilience links the sky diagram to a visible orientation and altitude guide",
+          "status": "passed",
+          "title": "links the sky diagram to a visible orientation and altitude guide",
+          "duration": 81.38339999999152,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Sky Map resilience"
+          ],
+          "fullName": "Astronomy Sky Map resilience uses pressed state only for location and Now toggles",
+          "status": "passed",
+          "title": "uses pressed state only for location and Now toggles",
+          "duration": 105.48309999999765,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy observing-plan workflow"
+          ],
+          "fullName": "Astronomy observing-plan workflow exposes constellation selection and saved state as separate pressed controls",
+          "status": "passed",
+          "title": "exposes constellation selection and saved state as separate pressed controls",
+          "duration": 147.78069999998843,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy observing-plan workflow"
+          ],
+          "fullName": "Astronomy observing-plan workflow offers a clear save action for an unsaved selected target",
+          "status": "passed",
+          "title": "offers a clear save action for an unsaved selected target",
+          "duration": 244.61419999999634,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy observing-plan workflow"
+          ],
+          "fullName": "Astronomy observing-plan workflow deduplicates the observing plan and provides accessible workflow actions",
+          "status": "passed",
+          "title": "deduplicates the observing plan and provides accessible workflow actions",
+          "duration": 621.6095000000059,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy observing-plan workflow"
+          ],
+          "fullName": "Astronomy observing-plan workflow explains an empty printable kit instead of silently omitting the target section",
+          "status": "passed",
+          "title": "explains an empty printable kit instead of silently omitting the target section",
+          "duration": 102.68009999999776,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy observing-plan workflow"
+          ],
+          "fullName": "Astronomy observing-plan workflow recovers malformed Bortle state and exposes the active class",
+          "status": "passed",
+          "title": "recovers malformed Bortle state and exposes the active class",
+          "duration": 175.78679999998712,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy observing-plan workflow"
+          ],
+          "fullName": "Astronomy observing-plan workflow centralizes observing-list updates and validates Bortle state",
+          "status": "passed",
+          "title": "centralizes observing-list updates and validates Bortle state",
+          "duration": 76.35229999999865,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy AI question resilience"
+          ],
+          "fullName": "Astronomy AI question resilience normalizes malformed restored input and response values",
+          "status": "passed",
+          "title": "normalizes malformed restored input and response values",
+          "duration": 95.65810000000056,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy AI question resilience"
+          ],
+          "fullName": "Astronomy AI question resilience recovers a request that was interrupted before state was restored",
+          "status": "passed",
+          "title": "recovers a request that was interrupted before state was restored",
+          "duration": 16.821899999995367,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy AI question resilience"
+          ],
+          "fullName": "Astronomy AI question resilience announces an available answer and provides a clear action",
+          "status": "passed",
+          "title": "announces an available answer and provides a clear action",
+          "duration": 82.48649999999907,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy AI question resilience"
+          ],
+          "fullName": "Astronomy AI question resilience guards async responses with a request token and supports keyboard submission",
+          "status": "passed",
+          "title": "guards async responses with a request token and supports keyboard submission",
+          "duration": 143.33870000000752,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy diagram state resilience"
+          ],
+          "fullName": "Astronomy diagram state resilience recovers a malformed Moon phase without crashing the diagram",
+          "status": "passed",
+          "title": "recovers a malformed Moon phase without crashing the diagram",
+          "duration": 744.9802000000054,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy diagram state resilience"
+          ],
+          "fullName": "Astronomy diagram state resilience describes the full Moon diagram without calling it waning",
+          "status": "passed",
+          "title": "describes the full Moon diagram without calling it waning",
+          "duration": 125.0396999999939,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy diagram state resilience"
+          ],
+          "fullName": "Astronomy diagram state resilience recovers an invalid season month and keeps orbit geometry finite",
+          "status": "passed",
+          "title": "recovers an invalid season month and keeps orbit geometry finite",
+          "duration": 31.683600000003935,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy diagram state resilience"
+          ],
+          "fullName": "Astronomy diagram state resilience normalizes malformed H-R lab controls, writing, and log state",
+          "status": "passed",
+          "title": "normalizes malformed H-R lab controls, writing, and log state",
+          "duration": 186.4950000000099,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy diagram state resilience"
+          ],
+          "fullName": "Astronomy diagram state resilience filters forged observations and labels valid H-R records clearly",
+          "status": "passed",
+          "title": "filters forged observations and labels valid H-R records clearly",
+          "duration": 21.20679999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy diagram state resilience"
+          ],
+          "fullName": "Astronomy diagram state resilience connects H-R controls, prompt disclosure, and bounded writing fields",
+          "status": "passed",
+          "title": "connects H-R controls, prompt disclosure, and bounded writing fields",
+          "duration": 214.14370000000054,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy eclipse simulator resilience"
+          ],
+          "fullName": "Astronomy eclipse simulator resilience recovers malformed phase and mode state without invalid SVG geometry",
+          "status": "passed",
+          "title": "recovers malformed phase and mode state without invalid SVG geometry",
+          "duration": 742.0423999999912,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy eclipse simulator resilience"
+          ],
+          "fullName": "Astronomy eclipse simulator resilience draws a partial solar eclipse as an off-center crossing",
+          "status": "passed",
+          "title": "draws a partial solar eclipse as an off-center crossing",
+          "duration": 127.87240000000747,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy eclipse simulator resilience"
+          ],
+          "fullName": "Astronomy eclipse simulator resilience announces a total lunar eclipse at maximum alignment",
+          "status": "passed",
+          "title": "announces a total lunar eclipse at maximum alignment",
+          "duration": 72.87110000000393,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy eclipse simulator resilience"
+          ],
+          "fullName": "Astronomy eclipse simulator resilience distinguishes partial and penumbral lunar contacts",
+          "status": "passed",
+          "title": "distinguishes partial and penumbral lunar contacts",
+          "duration": 83.79520000000775,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy eclipse simulator resilience"
+          ],
+          "fullName": "Astronomy eclipse simulator resilience provides lifecycle-safe animation and maximum-alignment controls",
+          "status": "passed",
+          "title": "provides lifecycle-safe animation and maximum-alignment controls",
+          "duration": 128.11030000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy meteor simulator resilience"
+          ],
+          "fullName": "Astronomy meteor simulator resilience recovers malformed shower and simulator state to a coherent Perseids view",
+          "status": "passed",
+          "title": "recovers malformed shower and simulator state to a coherent Perseids view",
+          "duration": 99.99079999999958,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy meteor simulator resilience"
+          ],
+          "fullName": "Astronomy meteor simulator resilience clamps extreme controls and wraps restored animation frames",
+          "status": "passed",
+          "title": "clamps extreme controls and wraps restored animation frames",
+          "duration": 129.21949999999197,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy meteor simulator resilience"
+          ],
+          "fullName": "Astronomy meteor simulator resilience moves the radiant above a fixed horizon as altitude increases",
+          "status": "passed",
+          "title": "moves the radiant above a fixed horizon as altitude increases",
+          "duration": 85.25230000000738,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy meteor simulator resilience"
+          ],
+          "fullName": "Astronomy meteor simulator resilience allows a realistic zero-streak sample under poor observing conditions",
+          "status": "passed",
+          "title": "allows a realistic zero-streak sample under poor observing conditions",
+          "duration": 66.49579999998969,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy meteor simulator resilience"
+          ],
+          "fullName": "Astronomy meteor simulator resilience provides lifecycle-safe playback, bounded stepping, and reset controls",
+          "status": "passed",
+          "title": "provides lifecycle-safe playback, bounded stepping, and reset controls",
+          "duration": 233.5442000000039,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy star catalog resilience"
+          ],
+          "fullName": "Astronomy star catalog resilience recovers malformed restored filters and shows the complete catalog",
+          "status": "passed",
+          "title": "recovers malformed restored filters and shows the complete catalog",
+          "duration": 425.5648000000074,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy star catalog resilience"
+          ],
+          "fullName": "Astronomy star catalog resilience searches constellation and spectral-class metadata safely",
+          "status": "passed",
+          "title": "searches constellation and spectral-class metadata safely",
+          "duration": 310.72359999999753,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy star catalog resilience"
+          ],
+          "fullName": "Astronomy star catalog resilience does not call a 5,000-light-year subset the complete catalog",
+          "status": "passed",
+          "title": "does not call a 5,000-light-year subset the complete catalog",
+          "duration": 309.35169999999925,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy star catalog resilience"
+          ],
+          "fullName": "Astronomy star catalog resilience provides an actionable empty state and clear-filter workflow",
+          "status": "passed",
+          "title": "provides an actionable empty state and clear-filter workflow",
+          "duration": 84.18869999999879,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy star catalog resilience"
+          ],
+          "fullName": "Astronomy star catalog resilience exposes bounded search and semantic result-list relationships",
+          "status": "passed",
+          "title": "exposes bounded search and semantic result-list relationships",
+          "duration": 125.33820000001288,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy gravitational lens resilience"
+          ],
+          "fullName": "Astronomy gravitational lens resilience recovers malformed restored state without invalid SVG geometry",
+          "status": "passed",
+          "title": "recovers malformed restored state without invalid SVG geometry",
+          "duration": 18409.06610000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy gravitational lens resilience"
+          ],
+          "fullName": "Astronomy gravitational lens resilience clamps and snaps legacy mass and alignment controls to supported values",
+          "status": "passed",
+          "title": "clamps and snaps legacy mass and alignment controls to supported values",
+          "duration": 15433.21179999999,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy gravitational lens resilience"
+          ],
+          "fullName": "Astronomy gravitational lens resilience narrates the connected finite-source ring and separated-image states",
+          "status": "passed",
+          "title": "narrates the connected finite-source ring and separated-image states",
+          "duration": 14454.243399999992,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy gravitational lens resilience"
+          ],
+          "fullName": "Astronomy gravitational lens resilience keeps the maximum-mass images on the fixed angular scale",
+          "status": "passed",
+          "title": "keeps the maximum-mass images on the fixed angular scale",
+          "duration": 4682.1918000000005,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy gravitational lens resilience"
+          ],
+          "fullName": "Astronomy gravitational lens resilience provides semantic controls, diagram relationships and recovery actions",
+          "status": "passed",
+          "title": "provides semantic controls, diagram relationships and recovery actions",
+          "duration": 4458.267500000016,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy dark-matter explorer resilience"
+          ],
+          "fullName": "Astronomy dark-matter explorer resilience recovers malformed restored topics to a visibly selected rotation-curves tab",
+          "status": "passed",
+          "title": "recovers malformed restored topics to a visibly selected rotation-curves tab",
+          "duration": 539.5350000000035,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy dark-matter explorer resilience"
+          ],
+          "fullName": "Astronomy dark-matter explorer resilience keeps the selected topic, tab, and panel relationship coherent",
+          "status": "passed",
+          "title": "keeps the selected topic, tab, and panel relationship coherent",
+          "duration": 267.43230000001495,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy dark-matter explorer resilience"
+          ],
+          "fullName": "Astronomy dark-matter explorer resilience adds an accessible cosmic-energy-budget diagram and readable legend",
+          "status": "passed",
+          "title": "adds an accessible cosmic-energy-budget diagram and readable legend",
+          "duration": 274.8104999999923,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy dark-matter explorer resilience"
+          ],
+          "fullName": "Astronomy dark-matter explorer resilience supports roving focus and arrow, Home, and End keyboard navigation",
+          "status": "passed",
+          "title": "supports roving focus and arrow, Home, and End keyboard navigation",
+          "duration": 314.3797000000195,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy cosmic-inflation explorer resilience"
+          ],
+          "fullName": "Astronomy cosmic-inflation explorer resilience recovers malformed restored topics to a coherent selected tab and panel",
+          "status": "passed",
+          "title": "recovers malformed restored topics to a coherent selected tab and panel",
+          "duration": 699.6008000000147,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy cosmic-inflation explorer resilience"
+          ],
+          "fullName": "Astronomy cosmic-inflation explorer resilience keeps valid topic selection and panel labelling synchronized",
+          "status": "passed",
+          "title": "keeps valid topic selection and panel labelling synchronized",
+          "duration": 267.1671999999962,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy cosmic-inflation explorer resilience"
+          ],
+          "fullName": "Astronomy cosmic-inflation explorer resilience renders a responsive, narrated inflation schematic without invalid geometry",
+          "status": "passed",
+          "title": "renders a responsive, narrated inflation schematic without invalid geometry",
+          "duration": 316.62409999998636,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy cosmic-inflation explorer resilience"
+          ],
+          "fullName": "Astronomy cosmic-inflation explorer resilience supports roving focus and complete keyboard tab navigation",
+          "status": "passed",
+          "title": "supports roving focus and complete keyboard tab navigation",
+          "duration": 407.1335999999719,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy black-hole information explorer resilience"
+          ],
+          "fullName": "Astronomy black-hole information explorer resilience recovers malformed restored topics to a coherent classical tab and panel",
+          "status": "passed",
+          "title": "recovers malformed restored topics to a coherent classical tab and panel",
+          "duration": 628.4829000000027,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy black-hole information explorer resilience"
+          ],
+          "fullName": "Astronomy black-hole information explorer resilience keeps valid topic selection and panel labelling synchronized",
+          "status": "passed",
+          "title": "keeps valid topic selection and panel labelling synchronized",
+          "duration": 574.9445000000123,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy black-hole information explorer resilience"
+          ],
+          "fullName": "Astronomy black-hole information explorer resilience renders a responsive and narrated Page-curve comparison",
+          "status": "passed",
+          "title": "renders a responsive and narrated Page-curve comparison",
+          "duration": 545.359999999986,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy black-hole information explorer resilience"
+          ],
+          "fullName": "Astronomy black-hole information explorer resilience supports roving focus and complete keyboard topic navigation",
+          "status": "passed",
+          "title": "supports roving focus and complete keyboard topic navigation",
+          "duration": 423.84330000000773,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy gravitational-wave explorer resilience"
+          ],
+          "fullName": "Astronomy gravitational-wave explorer resilience recovers malformed restored topics to a coherent prediction tab and panel",
+          "status": "passed",
+          "title": "recovers malformed restored topics to a coherent prediction tab and panel",
+          "duration": 649.9717999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy gravitational-wave explorer resilience"
+          ],
+          "fullName": "Astronomy gravitational-wave explorer resilience keeps valid topic selection and panel labelling synchronized",
+          "status": "passed",
+          "title": "keeps valid topic selection and panel labelling synchronized",
+          "duration": 482.6853000000119,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy gravitational-wave explorer resilience"
+          ],
+          "fullName": "Astronomy gravitational-wave explorer resilience renders a responsive and narrated interferometer schematic",
+          "status": "passed",
+          "title": "renders a responsive and narrated interferometer schematic",
+          "duration": 360.82829999999376,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy gravitational-wave explorer resilience"
+          ],
+          "fullName": "Astronomy gravitational-wave explorer resilience supports roving focus and complete keyboard topic navigation",
+          "status": "passed",
+          "title": "supports roving focus and complete keyboard topic navigation",
+          "duration": 540.659799999994,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy pulsar explorer resilience"
+          ],
+          "fullName": "Astronomy pulsar explorer resilience recovers malformed restored topics to a coherent discovery tab and panel",
+          "status": "passed",
+          "title": "recovers malformed restored topics to a coherent discovery tab and panel",
+          "duration": 574.2054999999818,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy pulsar explorer resilience"
+          ],
+          "fullName": "Astronomy pulsar explorer resilience keeps valid topic selection and panel labelling synchronized",
+          "status": "passed",
+          "title": "keeps valid topic selection and panel labelling synchronized",
+          "duration": 396.3702999999805,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy pulsar explorer resilience"
+          ],
+          "fullName": "Astronomy pulsar explorer resilience renders a responsive and narrated pulsar lighthouse schematic",
+          "status": "passed",
+          "title": "renders a responsive and narrated pulsar lighthouse schematic",
+          "duration": 441.81609999999637,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy pulsar explorer resilience"
+          ],
+          "fullName": "Astronomy pulsar explorer resilience supports roving focus and complete keyboard topic navigation",
+          "status": "passed",
+          "title": "supports roving focus and complete keyboard topic navigation",
+          "duration": 539.0149999999849,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Cosmic Calendar resilience"
+          ],
+          "fullName": "Astronomy Cosmic Calendar resilience recovers malformed restored events to a coherent January 1 tab and panel",
+          "status": "passed",
+          "title": "recovers malformed restored events to a coherent January 1 tab and panel",
+          "duration": 604.7280000000028,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Cosmic Calendar resilience"
+          ],
+          "fullName": "Astronomy Cosmic Calendar resilience keeps valid event selection and panel labelling synchronized",
+          "status": "passed",
+          "title": "keeps valid event selection and panel labelling synchronized",
+          "duration": 440.4348999999929,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Cosmic Calendar resilience"
+          ],
+          "fullName": "Astronomy Cosmic Calendar resilience renders a responsive, narrated timeline with a final-minute zoom",
+          "status": "passed",
+          "title": "renders a responsive, narrated timeline with a final-minute zoom",
+          "duration": 468.1098999999813,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Cosmic Calendar resilience"
+          ],
+          "fullName": "Astronomy Cosmic Calendar resilience supports roving focus and complete keyboard event navigation",
+          "status": "passed",
+          "title": "supports roving focus and complete keyboard event navigation",
+          "duration": 628.9812999999849,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Messier catalog resilience"
+          ],
+          "fullName": "Astronomy Messier catalog resilience recovers malformed restored filters without crashing or leaking values",
+          "status": "passed",
+          "title": "recovers malformed restored filters without crashing or leaking values",
+          "duration": 709.324099999998,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Messier catalog resilience"
+          ],
+          "fullName": "Astronomy Messier catalog resilience treats a Messier identifier as an exact match rather than a substring",
+          "status": "passed",
+          "title": "treats a Messier identifier as an exact match rather than a substring",
+          "duration": 227.03620000000228,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Messier catalog resilience"
+          ],
+          "fullName": "Astronomy Messier catalog resilience searches descriptive metadata and supports composite and other types",
+          "status": "passed",
+          "title": "searches descriptive metadata and supports composite and other types",
+          "duration": 701.2744999999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Messier catalog resilience"
+          ],
+          "fullName": "Astronomy Messier catalog resilience provides an actionable empty state and clear-filter workflow",
+          "status": "passed",
+          "title": "provides an actionable empty state and clear-filter workflow",
+          "duration": 376.47299999999814,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy Messier catalog resilience"
+          ],
+          "fullName": "Astronomy Messier catalog resilience exposes labelled filters and semantic result relationships",
+          "status": "passed",
+          "title": "exposes labelled filters and semantic result relationships",
+          "duration": 531.3424999999988,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy telescope simulator resilience"
+          ],
+          "fullName": "Astronomy telescope simulator resilience recovers malformed restored optics without invalid calculations or SVG",
+          "status": "passed",
+          "title": "recovers malformed restored optics without invalid calculations or SVG",
+          "duration": 453.12630000000354,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy telescope simulator resilience"
+          ],
+          "fullName": "Astronomy telescope simulator resilience clamps and snaps restored optical controls to supported values",
+          "status": "passed",
+          "title": "clamps and snaps restored optical controls to supported values",
+          "duration": 623.5806999999913,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy telescope simulator resilience"
+          ],
+          "fullName": "Astronomy telescope simulator resilience warns when magnification exceeds the approximate useful limit",
+          "status": "passed",
+          "title": "warns when magnification exceeds the approximate useful limit",
+          "duration": 143.8698999999906,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy telescope simulator resilience"
+          ],
+          "fullName": "Astronomy telescope simulator resilience keeps telescope design tabs, panel labels, and diagrams synchronized",
+          "status": "passed",
+          "title": "keeps telescope design tabs, panel labels, and diagrams synchronized",
+          "duration": 196.29810000001453,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Astronomy telescope simulator resilience"
+          ],
+          "fullName": "Astronomy telescope simulator resilience provides described controls, live results, performance grouping, and reset",
+          "status": "passed",
+          "title": "provides described controls, live results, performance grouping, and reset",
+          "duration": 219.78220000001602,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790904780058,
+      "endTime": 1790904862807.7822,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/astronomy_ui_resilience.test.js"
+    },
+    {
+      "assertionResults": [
+        {
+          "ancestorTitles": [
+            "Published tidal inputs"
+          ],
+          "fullName": "Published tidal inputs pins four primary source snapshots with normalized checksums",
+          "status": "passed",
+          "title": "pins four primary source snapshots with normalized checksums",
+          "duration": 756.2212999999974,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Published tidal inputs"
+          ],
+          "fullName": "Published tidal inputs uses JPL DE440 parameters with consistent cubic-kilometre units",
+          "status": "passed",
+          "title": "uses JPL DE440 parameters with consistent cubic-kilometre units",
+          "duration": 44.339599999999336,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Published tidal inputs"
+          ],
+          "fullName": "Published tidal inputs retains the NASA mean distance definitions rather than extreme orbit claims",
+          "status": "passed",
+          "title": "retains the NASA mean distance definitions rather than extreme orbit claims",
+          "duration": 6.741199999996752,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Published tidal inputs"
+          ],
+          "fullName": "Published tidal inputs returns independent reference objects",
+          "status": "passed",
+          "title": "returns independent reference objects",
+          "duration": 4.066700000003038,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry reinforces lunar and solar terms at starting phase 0",
+          "status": "passed",
+          "title": "reinforces lunar and solar terms at starting phase 0",
+          "duration": 1.8160999999963678,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry reinforces lunar and solar terms at starting phase 0.5",
+          "status": "passed",
+          "title": "reinforces lunar and solar terms at starting phase 0.5",
+          "duration": 1.0443000000013853,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry reinforces lunar and solar terms at starting phase 1",
+          "status": "passed",
+          "title": "reinforces lunar and solar terms at starting phase 1",
+          "duration": 0.8258000000059837,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry partly cancels at quarter phase 0.25",
+          "status": "passed",
+          "title": "partly cancels at quarter phase 0.25",
+          "duration": 1.0817000000024564,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry partly cancels at quarter phase 0.75",
+          "status": "passed",
+          "title": "partly cancels at quarter phase 0.75",
+          "duration": 1.0377999999982421,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry shows Earth-view illumination for phase 0",
+          "status": "passed",
+          "title": "shows Earth-view illumination for phase 0",
+          "duration": 1.1801000000050408,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry shows Earth-view illumination for phase 0.25",
+          "status": "passed",
+          "title": "shows Earth-view illumination for phase 0.25",
+          "duration": 0.652700000006007,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry shows Earth-view illumination for phase 0.5",
+          "status": "passed",
+          "title": "shows Earth-view illumination for phase 0.5",
+          "duration": 0.49809999999706633,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry shows Earth-view illumination for phase 0.75",
+          "status": "passed",
+          "title": "shows Earth-view illumination for phase 0.75",
+          "duration": 0.5014000000010128,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry uses inverse-cube lunar forcing while solar forcing is independent of lunar distance",
+          "status": "passed",
+          "title": "uses inverse-cube lunar forcing while solar forcing is independent of lunar distance",
+          "duration": 1.5210000000006403,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry keeps different solar and lunar periods and advances the Moon over 48 hours",
+          "status": "passed",
+          "title": "keeps different solar and lunar periods and advances the Moon over 48 hours",
+          "duration": 121.46540000000095,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry conserves the two contributions in all plotted time and spatial samples",
+          "status": "passed",
+          "title": "conserves the two contributions in all plotted time and spatial samples",
+          "duration": 295.2986000000019,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry gives the same two-lobe pattern at opposite spatial angles",
+          "status": "passed",
+          "title": "gives the same two-lobe pattern at opposite spatial angles",
+          "duration": 89.48370000000432,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry omits the solar contribution throughout a Moon-only experiment",
+          "status": "passed",
+          "title": "omits the solar contribution throughout a Moon-only experiment",
+          "duration": 166.49529999999504,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Tidal harmonics and linked geometry"
+          ],
+          "fullName": "Tidal harmonics and linked geometry keeps all permitted cases inside a fixed scale and exaggerated shapes outside Earth",
+          "status": "passed",
+          "title": "keeps all permitted cases inside a fixed scale and exaggerated shapes outside Earth",
+          "duration": 27205.418099999995,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars null",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars null",
+          "duration": 7.913200000002689,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars true",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars true",
+          "duration": 0.8084999999991851,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars false",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars false",
+          "duration": 0.4982000000018161,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars undefined",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars undefined",
+          "duration": 0.5244999999995343,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars {}",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars {}",
+          "duration": 0.46499999999650754,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars \"\"",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars \"\"",
+          "duration": 0.48489999999583233,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars \" \"",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars \" \"",
+          "duration": 0.43540000000211876,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars \"bad\"",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars \"bad\"",
+          "duration": 0.6987999999983003,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars null",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars null",
+          "duration": 1.3584000000046217,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars null",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars null",
+          "duration": 2.176899999998568,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics recovers malformed numeric scalars null",
+          "status": "passed",
+          "title": "recovers malformed numeric scalars null",
+          "duration": 288.3323999999993,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics accepts finite numeric strings and clamps only numeric outliers",
+          "status": "passed",
+          "title": "accepts finite numeric strings and clamps only numeric outliers",
+          "duration": 3.586799999997311,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics requires a boolean solar toggle and leaves saved investigations unchanged",
+          "status": "passed",
+          "title": "requires a boolean solar toggle and leaves saved investigations unchanged",
+          "duration": 3.433900000003632,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics exposes three labeled native sliders, a graph slider and a live alignment status",
+          "status": "passed",
+          "title": "exposes three labeled native sliders, a graph slider and a live alignment status",
+          "duration": 51028.22140000001,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics links metric and selected chart values to the same evaluated model",
+          "status": "passed",
+          "title": "links metric and selected chart values to the same evaluated model",
+          "duration": 22603.869399999996,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics provides semantic published inputs, primary sources and clear limits",
+          "status": "passed",
+          "title": "provides semantic published inputs, primary sources and clear limits",
+          "duration": 25877.638800000015,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Saved input recovery and clear UI semantics"
+          ],
+          "fullName": "Saved input recovery and clear UI semantics preserves the original tide topics and corrects the universal two-tides claim",
+          "status": "passed",
+          "title": "preserves the original tide topics and corrects the universal two-tides claim",
+          "duration": 23494.163,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Offscreen Moon GPU work"
+          ],
+          "fullName": "Offscreen Moon GPU work skips GPU work for a hidden page and retains the next frame callback",
+          "status": "passed",
+          "title": "skips GPU work for a hidden page and retains the next frame callback",
+          "duration": 2.2789000000047963,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Offscreen Moon GPU work"
+          ],
+          "fullName": "Offscreen Moon GPU work skips GPU work for a detached canvas and retains the next frame callback",
+          "status": "passed",
+          "title": "skips GPU work for a detached canvas and retains the next frame callback",
+          "duration": 1.3747000000148546,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Offscreen Moon GPU work"
+          ],
+          "fullName": "Offscreen Moon GPU work skips GPU work for a zero width and retains the next frame callback",
+          "status": "passed",
+          "title": "skips GPU work for a zero width and retains the next frame callback",
+          "duration": 0.4597000000067055,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Offscreen Moon GPU work"
+          ],
+          "fullName": "Offscreen Moon GPU work skips GPU work for a zero height and retains the next frame callback",
+          "status": "passed",
+          "title": "skips GPU work for a zero height and retains the next frame callback",
+          "duration": 0.3782999999821186,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Offscreen Moon GPU work"
+          ],
+          "fullName": "Offscreen Moon GPU work skips GPU work for a above viewport and retains the next frame callback",
+          "status": "passed",
+          "title": "skips GPU work for a above viewport and retains the next frame callback",
+          "duration": 0.34949999998207204,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Offscreen Moon GPU work"
+          ],
+          "fullName": "Offscreen Moon GPU work skips GPU work for a below viewport and retains the next frame callback",
+          "status": "passed",
+          "title": "skips GPU work for a below viewport and retains the next frame callback",
+          "duration": 0.3695000000006985,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Offscreen Moon GPU work"
+          ],
+          "fullName": "Offscreen Moon GPU work skips GPU work for a left of viewport and retains the next frame callback",
+          "status": "passed",
+          "title": "skips GPU work for a left of viewport and retains the next frame callback",
+          "duration": 0.3570999999938067,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Offscreen Moon GPU work"
+          ],
+          "fullName": "Offscreen Moon GPU work skips GPU work for a right of viewport and retains the next frame callback",
+          "status": "passed",
+          "title": "skips GPU work for a right of viewport and retains the next frame callback",
+          "duration": 0.3329999999841675,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Offscreen Moon GPU work"
+          ],
+          "fullName": "Offscreen Moon GPU work keeps the latest model input while the canvas is outside the viewport",
+          "status": "passed",
+          "title": "keeps the latest model input while the canvas is outside the viewport",
+          "duration": 0.8616000000038184,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        },
+        {
+          "ancestorTitles": [
+            "Standard pointer movement"
+          ],
+          "fullName": "Standard pointer movement accepts a held primary pointer move whose button transition value is minus one",
+          "status": "passed",
+          "title": "accepts a held primary pointer move whose button transition value is minus one",
+          "duration": 4.8659999999981665,
+          "failureMessages": [],
+          "meta": {},
+          "tags": []
+        }
+      ],
+      "startTime": 1790905192989,
+      "endTime": 1790905345017.8616,
+      "status": "passed",
+      "message": "",
+      "name": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/astronomy_tidal_forcing.test.js"
+    }
+  ],
+  "acceptedReports": [
+    "unit-extended-results.json (119 regression cases)",
+    "unit-tidal-rerun-results.json (45 tide and Moon visibility cases)",
+    "unit-pointer-results.json (1 pointer movement case)"
+  ]
+}

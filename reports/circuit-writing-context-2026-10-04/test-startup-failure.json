@@ -1,0 +1,19 @@
+{
+  "sessionId": 82830,
+  "toolChunk": "920941",
+  "exitCode": 1,
+  "failure": "FATAL ERROR: NewSpace::EnsureCurrentCapacity Allocation failed - JavaScript heap out of memory",
+  "phase": "Test runner startup; no test results or JSON report produced",
+  "memoryInspectionToolChunk": "be2a41",
+  "freePhysicalMemoryKiB": 401616,
+  "freeVirtualMemoryKiB": 329484,
+  "recovery": "Closed Chromium after its successful browser checks, then retried with --max-old-space-size=256 --max-semi-space-size=2 and one worker.",
+  "targetedRetry": {
+    "sessionId": 13182,
+    "toolChunk": "4d5a44",
+    "exitCode": 0,
+    "passedTests": 13,
+    "failedTests": 0,
+    "report": "targeted-tests.json"
+  }
+}

@@ -1,0 +1,387 @@
+{
+  "status": "PASS",
+  "completedAt": "2026-10-04T02:34:55.041767+00:00",
+  "scenarioCount": 5,
+  "distinctTargetedScenarios": 5,
+  "passed": 5,
+  "moduleScenariosPassed": 4,
+  "hostScenarioPassed": 1,
+  "newScenarios": 2,
+  "retainedScenarios": 3,
+  "retainedOriginalScenarios": 31,
+  "availableScenariosAfterAddition": 33,
+  "original31PrefixBytePreserved": true,
+  "original31Sha256": "1444827ef5f968cdcae9de2fd31171e33f671dd6eaa304fb9e718df5e1f4d3ec",
+  "original31Bytes": 137888,
+  "workers": 1,
+  "automaticRetries": 0,
+  "timeoutMs": 120000,
+  "normalTracePolicy": "retain-on-failure",
+  "finalModuleInvocation": {
+    "name": "prepared-module-four-07",
+    "stats": {
+      "startTime": "2026-10-04T02:26:13.953Z",
+      "duration": 76385.351,
+      "expected": 4,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "tests": [
+      {
+        "title": "participant planning review keeps all five case reflections and discussion tasks separate from the guide through reset restoration and reload",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 25259,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "title": "planning reflection edits return by keyboard and contextual writing feedback remains bounded without persisting navigation state",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 22757,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "title": "session save warning preserves open work and focus across blocked access quota failure recovery and explicit retries",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 5610,
+            "retry": 0
+          }
+        ]
+      },
+      {
+        "title": "expired tab work can be recovered while optional guide reflection stays in existing notes for all five cases and native feedback announces transitions once",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 7880,
+            "retry": 0
+          }
+        ]
+      }
+    ],
+    "exitCode": 0,
+    "resultSha256": "f2019cba5eb3b89677412d064711f1263546b196d64ff21150be6314edf247d1",
+    "runCommand": "prepared-module-four-07/run-command.ps1",
+    "resultFile": "prepared-module-four-07/result.json",
+    "logFile": "prepared-module-four-07/run.log",
+    "preparedAssetValidation": true,
+    "supplementalSpecSha256": "18b8f762188431ebecee59e57bee88db6161365c9c0fc5e5440aedce8c5f776b",
+    "originalBodiesBytePreserved": true,
+    "manifestFile": "prepared-module-four-07/prepared-asset-manifest.json",
+    "manifestSha256": "ae3e774d7bbf3b063308f12398e98a677dba5a4b1e4ac8b0d061ce29457c4ebe",
+    "setupBytePreservationFile": "prepared-module-four-07/setup-byte-preservation.json",
+    "supplementalSpecDiff": "prepared-module-four-07/supplemental-spec.diff",
+    "gateMutationProofFile": "prepared-module-four-07/prepared-gate-mutation-proof.json",
+    "helperSourceFile": "prepared-module-four-07/prepare-helper.py",
+    "helperSourceSha256": "d488377008c58ce4dc43186c1c07bc27e73278557d6779f81401b8495871b62b"
+  },
+  "finalHostInvocation": {
+    "name": "prepared-host-only-02",
+    "stats": {
+      "startTime": "2026-10-04T02:29:56.601Z",
+      "duration": 133009.871,
+      "expected": 1,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "tests": [
+      {
+        "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+        "status": "expected",
+        "results": [
+          {
+            "status": "passed",
+            "durationMs": 79368,
+            "retry": 0
+          }
+        ]
+      }
+    ],
+    "exitCode": 0,
+    "resultSha256": "a2f35da16602167b61adfcdab97be169fbdbccb39f745180deaf7c68a30f58ca",
+    "runCommand": "prepared-host-only-02/run-command.ps1",
+    "resultFile": "prepared-host-only-02/result.json",
+    "logFile": "prepared-host-only-02/run.log",
+    "preparedAssetValidation": true,
+    "supplementalSpecSha256": "18b8f762188431ebecee59e57bee88db6161365c9c0fc5e5440aedce8c5f776b",
+    "originalBodiesBytePreserved": true,
+    "manifestFile": "prepared-host-only-02/prepared-asset-manifest.json",
+    "manifestSha256": "ae3e774d7bbf3b063308f12398e98a677dba5a4b1e4ac8b0d061ce29457c4ebe",
+    "setupBytePreservationFile": "prepared-host-only-02/setup-byte-preservation.json",
+    "supplementalSpecDiff": "prepared-host-only-02/supplemental-spec.diff",
+    "gateMutationProofFile": "prepared-host-only-02/prepared-gate-mutation-proof.json",
+    "helperSourceFile": "prepared-host-only-02/prepare-helper.py",
+    "helperSourceSha256": "d488377008c58ce4dc43186c1c07bc27e73278557d6779f81401b8495871b62b"
+  },
+  "moduleSha256": "8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a",
+  "sourceSha256": "6c59be34f6c400164b12093f8c5b54380c97212c3356f0e61cdf36891488f741",
+  "browserTestSha256": "32341725cd74244a0f50c9fb149b500bea68fcc179f5de41ba4d862e499014b8",
+  "browserSpecSha256": "32341725cd74244a0f50c9fb149b500bea68fcc179f5de41ba4d862e499014b8",
+  "testedHostSourceSha256": "e3154edcba1aa5c418c8d658e051c304cad1a615eb1a769f27c06616bc42dbfb",
+  "testedHostBundleSha256": "e2a7756ffa68efabd9dc5e6c3906c824d905bdd3591271100241c01414a01882",
+  "sourceHostBaseUrl": "http://127.0.0.1:65063/app",
+  "exactServedSnapshotVerified": true,
+  "sharedHostObservation": {
+    "observedAt": "2026-10-04T02:30:37.0126545Z",
+    "testedHostSha256": "e3154edcba1aa5c418c8d658e051c304cad1a615eb1a769f27c06616bc42dbfb",
+    "observedHostHashes": [
+      {
+        "file": "AlloFlowANTI.txt",
+        "sha256": "2d73c4265d0617f815e3bdd2fad9243e94af27034629700a5aa0c00fdc31d442",
+        "matchesTestedSnapshot": false
+      },
+      {
+        "file": "desktop/web-app/src/AlloFlowANTI.txt",
+        "sha256": "2d73c4265d0617f815e3bdd2fad9243e94af27034629700a5aa0c00fdc31d442",
+        "matchesTestedSnapshot": false
+      },
+      {
+        "file": "desktop/web-app/src/App.jsx",
+        "sha256": "2d73c4265d0617f815e3bdd2fad9243e94af27034629700a5aa0c00fdc31d442",
+        "matchesTestedSnapshot": false
+      }
+    ],
+    "currentHostThreeCopyParity": true,
+    "currentSourcesMatchTestedSnapshot": false,
+    "moduleHash": "8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a",
+    "observedModuleHashes": [
+      {
+        "file": "maine_sld_practice_module.js",
+        "sha256": "8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a"
+      },
+      {
+        "file": "desktop/web-app/public/maine_sld_practice_module.js",
+        "sha256": "8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a"
+      },
+      {
+        "file": "desktop/app-build/maine_sld_practice_module.js",
+        "sha256": "8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a"
+      },
+      {
+        "file": "desktop/web-app/build/maine_sld_practice_module.js",
+        "sha256": "8771e0b351b088fe301060ffb8ce6be5ad6bb2df8504c8b5dc1ef2cf5927ca3a"
+      }
+    ],
+    "moduleFourCopyParity": true,
+    "activitySourceSha256": "6c59be34f6c400164b12093f8c5b54380c97212c3356f0e61cdf36891488f741",
+    "activitySourceMatchesFreeze": true,
+    "runtimePid": 19372,
+    "managedSessionId": 6860,
+    "boundedSnapshotRetained": true,
+    "rebuildPerformed": false,
+    "observationMethod": "File hashes after exact restart HTTP verification",
+    "hostTestPassClaimed": false,
+    "validationContext": "No completed final host scenario has been reported; unchanged beforeAll/tool routing failures are tracked by the validation owner"
+  },
+  "axeScans": 4,
+  "axeViolations": 0,
+  "accessibilityScanCount": 4,
+  "accessibilityScans": [
+    {
+      "file": "prepared-module-four-07/browser/axe-optional-guide-reflection-1366-light.json",
+      "violations": 0
+    },
+    {
+      "file": "prepared-module-four-07/browser/axe-planning-review-320-dark.json",
+      "violations": 0
+    },
+    {
+      "file": "prepared-module-four-07/browser/axe-planning-review-returned-1366-light.json",
+      "violations": 0
+    },
+    {
+      "file": "prepared-module-four-07/browser/axe-save-warning-320-dark.json",
+      "violations": 0
+    }
+  ],
+  "representativeScreenshots": [
+    {
+      "file": "prepared-module-four-07/browser/save-warning-open-note-320-dark.png",
+      "description": "Persistent storage warning and active open note at 320px dark."
+    },
+    {
+      "file": "prepared-module-four-07/browser/save-warning-landscape-844x390-dark.png",
+      "description": "Persistent recovery actions and usable writing area in the 844x390 dark landscape viewport."
+    },
+    {
+      "file": "prepared-module-four-07/browser/save-warning-desktop-open-work-1366-dark.png",
+      "description": "Desktop dark open activity with persistent immediate download and retry actions."
+    },
+    {
+      "file": "prepared-module-four-07/browser/optional-guide-reflection-marisol-1366-light.png",
+      "description": "Healthy desktop light Marisol reviewed guide with the optional existing-note reflection prompt."
+    },
+    {
+      "file": "prepared-module-four-07/browser/planning-return-exact-multilingual-320-dark.png",
+      "description": "Exact keyboard return to the multilingual reflection edit action in the narrow dark planning review."
+    },
+    {
+      "file": "late-quota-visibility-02/late-quota-active-writer-320x844-dark.png",
+      "description": "Final late-quota warning with the complete focused writer visible at 320x844, without manual post-failure scrolling."
+    },
+    {
+      "file": "late-quota-visibility-02/late-quota-active-writer-844x390-dark.png",
+      "description": "Final landscape late-quota warning with the complete writer and focus outline above the footer after the app moves only the writing area by 17 pixels."
+    }
+  ],
+  "attempts": [
+    {
+      "name": "module-four-01",
+      "browserInvocationStarted": false,
+      "preparationOnly": true
+    },
+    {
+      "name": "module-four-02",
+      "browserInvocationStarted": true,
+      "stats": {
+        "startTime": "2026-10-03T18:55:20.760Z",
+        "duration": 137476.095,
+        "expected": 0,
+        "skipped": 3,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "name": "module-four-03",
+      "browserInvocationStarted": true,
+      "stats": {
+        "startTime": "2026-10-03T19:33:21.365Z",
+        "duration": 132674.935,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "name": "module-four-04",
+      "browserInvocationStarted": true,
+      "stats": {
+        "startTime": "2026-10-03T19:50:05.916Z",
+        "duration": 210420.46000000002,
+        "expected": 0,
+        "skipped": 3,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "name": "module-four-05",
+      "browserInvocationStarted": true,
+      "stats": {
+        "startTime": "2026-10-04T01:42:05.883Z",
+        "duration": 576396.054,
+        "expected": 0,
+        "skipped": 3,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "name": "prepared-host-only-02",
+      "browserInvocationStarted": true,
+      "stats": {
+        "startTime": "2026-10-04T02:29:56.601Z",
+        "duration": 133009.871,
+        "expected": 1,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "name": "prepared-module-four-06",
+      "browserInvocationStarted": true,
+      "stats": {
+        "startTime": "2026-10-04T02:09:22.065Z",
+        "duration": 336522.196,
+        "expected": 0,
+        "skipped": 3,
+        "unexpected": 1,
+        "flaky": 0
+      },
+      "errors": []
+    },
+    {
+      "name": "prepared-module-four-07",
+      "browserInvocationStarted": true,
+      "stats": {
+        "startTime": "2026-10-04T02:26:13.953Z",
+        "duration": 76385.351,
+        "expected": 4,
+        "skipped": 0,
+        "unexpected": 0,
+        "flaky": 0
+      },
+      "errors": []
+    }
+  ],
+  "lateQuotaCaptureOnlyProbe": {
+    "file": "late-quota-visibility-02/capture-evidence.json",
+    "passed": true,
+    "viewports": 2,
+    "selectionAndFocusPreserved": true,
+    "manualScrollAfterFailure": false,
+    "landscapeMainScrollAdjustmentPx": 17,
+    "earlierClippedProbe": "late-quota-visibility-01/capture-evidence.json"
+  },
+  "visualReviewPending": false,
+  "fullSuiteCoreAndPrintRerun": false,
+  "preRunContractRefinement": "spec-contract-refinement.json",
+  "initialPreparationFailure": "module-four-02/preparation-failure-audit.json",
+  "preparationReadiness": "preparation-readiness-01/preparation-readiness.json",
+  "preparationFailures": [
+    "module-four-02/preparation-failure-audit.json",
+    "module-four-04/preparation-failure-audit.json"
+  ],
+  "originalFailedBeforeBodiesInvocations": [
+    "module-four-02",
+    "module-four-04",
+    "module-four-05"
+  ],
+  "preparedAssetValidation": true,
+  "validationMethod": "unchanged test bodies with hash-verified prebuilt stylesheet setup",
+  "supplementalSpecSha256": "18b8f762188431ebecee59e57bee88db6161365c9c0fc5e5440aedce8c5f776b",
+  "originalBodiesBytePreserved": true,
+  "preparedAssetManifest": "prepared-module-four-07/prepared-asset-manifest.json",
+  "preparedSetupBytePreservation": "prepared-module-four-07/setup-byte-preservation.json",
+  "preparedSpecDiff": "prepared-module-four-07/supplemental-spec.diff",
+  "preparedGateMutationProof": "prepared-module-four-07/prepared-gate-mutation-proof.json",
+  "preparedHelperSourceSha256": "d488377008c58ce4dc43186c1c07bc27e73278557d6779f81401b8495871b62b",
+  "preparedHelperSourceFile": "prepared-module-four-07/prepare-helper.py",
+  "preparedHelperSerializationFailure": "prepared-module-four-06/manifest-byte-diagnostic.json",
+  "preparedRejectedBeforeBodiesInvocations": [
+    "prepared-module-four-06"
+  ],
+  "preparedCssSha256": "b104c6faca4db538b15c97b19fb5176ffa02308a82f3a3c5e3df8d0c3537b163",
+  "lateQuotaProbePreparedCssSha256": "bf46f293143747dd4fdc476d5b5aebed4a991d07cfcf712673eaf6a457bb92db",
+  "preparationReadinessProbes": [
+    "preparation-readiness-01/preparation-readiness.json",
+    "preparation-readiness-02/preparation-readiness.json"
+  ],
+  "secondPreparationReadinessPassed": false,
+  "secondPreparationReadinessCliDurationMs": 472883.937,
+  "preparationFailureInterpretation": "Original 02, 04 and 05 timed out in unchanged beforeAll before any activity body. Exact slow Tailwind setup is evidenced; its underlying environmental cause is not established. Prepared 06 correctly rejected a helper LF/CRLF manifest serialization mismatch before bodies; corrected prepared runs preserve all test bodies and limits.",
+  "independentVisualReviewReport": "../source-and-layout-review.md"
+}

@@ -1,0 +1,174 @@
+{
+  "date": "2026-10-04",
+  "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "pluginMirrorSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "pluginMirrorIdentical": true,
+  "suites": [
+    {
+      "suite": "notebook-capacity",
+      "file": "reports/artstudio-workspace/perception-notebook-capacity/notebook-capacity-browser-results.json",
+      "expectedGroups": 67,
+      "groups": 67,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+      "finalSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+    },
+    {
+      "suite": "import",
+      "file": "reports/artstudio-workspace/perception-notebook-capacity/import-regression/import-browser-results.json",
+      "expectedGroups": 37,
+      "groups": 37,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+      "finalSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+    },
+    {
+      "suite": "finder",
+      "file": "reports/artstudio-workspace/perception-notebook-capacity/finder-regression/finder-browser-results.json",
+      "expectedGroups": 26,
+      "groups": 26,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+      "finalSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+    },
+    {
+      "suite": "guided",
+      "file": "reports/artstudio-workspace/perception-notebook-capacity/guided-regression/guided-browser-results.json",
+      "expectedGroups": 25,
+      "groups": 25,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+      "finalSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+    },
+    {
+      "suite": "recorded-preview",
+      "file": "reports/artstudio-workspace/perception-notebook-capacity/recorded-preview-regression/recorded-preview-browser-results.json",
+      "expectedGroups": 42,
+      "groups": 42,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+      "finalSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+    },
+    {
+      "suite": "comparison",
+      "file": "reports/artstudio-workspace/perception-notebook-capacity/comparison-regression/comparison-browser-results.json",
+      "expectedGroups": 23,
+      "groups": 23,
+      "passed": true,
+      "errors": [],
+      "loadedSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+      "finalSourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+    }
+  ],
+  "passedBrowserGroups": 220,
+  "errors": [],
+  "assertionPreservation": [
+    {
+      "suite": "import",
+      "expectedGroups": 37,
+      "original": "dev-tools/perception_lab_import_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_notebook_capacity_import_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-import",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-notebook-capacity/import-regression",
+      "result": "import-browser-results.json",
+      "originalSHA256": "aba4cf2f942d59dc19c319293d3f6cda9b2d4b317688d2439640502eb1b4665b",
+      "adaptedSHA256": "e0d4c3497f8decc59d0c125b8e62830a2cdc58016e6dd4c63176276dca309679",
+      "originalFileUnchanged": true,
+      "exactTextEqualityAfterReversingDocumentedChanges": true,
+      "exactOutputOnlyTextEquality": true,
+      "unrelatedAssertionsRemovedOrAltered": 0,
+      "assertionsRemovedOrAltered": 0
+    },
+    {
+      "suite": "finder",
+      "expectedGroups": 26,
+      "original": "dev-tools/perception_lab_finder_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_notebook_capacity_finder_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-finder",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-notebook-capacity/finder-regression",
+      "result": "finder-browser-results.json",
+      "originalSHA256": "41206a8fe416b69a6cf457eb614ef564076dac01eef98c4f68ed069e4d0da640",
+      "adaptedSHA256": "6145a3699e49075d98900df9d25c4f271f7b43a9720efb0dc3c8f85afb5c760e",
+      "originalFileUnchanged": true,
+      "exactTextEqualityAfterReversingDocumentedChanges": true,
+      "exactOutputOnlyTextEquality": true,
+      "unrelatedAssertionsRemovedOrAltered": 0,
+      "assertionsRemovedOrAltered": 0
+    },
+    {
+      "suite": "guided",
+      "expectedGroups": 25,
+      "original": "dev-tools/perception_lab_guided_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_notebook_capacity_guided_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-guided",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-notebook-capacity/guided-regression",
+      "result": "guided-browser-results.json",
+      "originalSHA256": "bda693817a1f40a8ef98a91d3480616ba8d32ae05962a08e6ad9a07cd5c6f3f0",
+      "adaptedSHA256": "ee9fdd0ae0bd4bdc9230172169b5a990084a656faeb28b0c8755bc8c71557897",
+      "originalFileUnchanged": true,
+      "exactTextEqualityAfterReversingDocumentedChanges": true,
+      "exactOutputOnlyTextEquality": true,
+      "unrelatedAssertionsRemovedOrAltered": 0,
+      "assertionsRemovedOrAltered": 0
+    },
+    {
+      "suite": "recorded-preview",
+      "expectedGroups": 42,
+      "original": "dev-tools/perception_lab_recorded_preview_qa.cjs",
+      "adapted": "dev-tools/.cache/perception_notebook_capacity_recorded_preview_regression.cjs",
+      "previousOutputDirectory": "reports/artstudio-workspace/perception-recorded-preview",
+      "newOutputDirectory": "reports/artstudio-workspace/perception-notebook-capacity/recorded-preview-regression",
+      "result": "recorded-preview-browser-results.json",
+      "originalSHA256": "cdf23a119c076347984d4e840b58f5c96a3cd632b147eff3126db77dcf8b6f4e",
+      "adaptedSHA256": "bd150121e3b5038840f465738303be711bbdaf50b555d2ef5ead26b52937bd22",
+      "originalFileUnchanged": true,
+      "exactTextEqualityAfterReversingDocumentedChanges": true,
+      "exactOutputOnlyTextEquality": true,
+      "unrelatedAssertionsRemovedOrAltered": 0,
+      "assertionsRemovedOrAltered": 0
+    }
+  ],
+  "comparisonContractUpdate": {
+    "suite": "comparison",
+    "expectedGroups": 23,
+    "original": "dev-tools/perception_lab_study_compare_qa.cjs",
+    "adapted": "dev-tools/.cache/perception_notebook_capacity_comparison_regression.cjs",
+    "previousOutputDirectory": "reports/artstudio-workspace/perception-compare",
+    "newOutputDirectory": "reports/artstudio-workspace/perception-notebook-capacity/comparison-regression",
+    "result": "comparison-browser-results.json",
+    "intentionalCapacityContractUpdate": true,
+    "originalSHA256": "3c130e4942a3fa21be0b7e26ec12008300f7199eb9cecc77f93cf9795e8aca0e",
+    "adaptedSHA256": "6e540c8bcfb2a62fff5410371a66d5faeb851720cbe8a5bdf75e15d6c0229b63",
+    "originalFileUnchanged": true,
+    "exactTextEqualityAfterReversingDocumentedChanges": true,
+    "exactOutputOnlyTextEquality": false,
+    "unrelatedAssertionsRemovedOrAltered": 0,
+    "intentionalContractBlocksReplaced": 1,
+    "reason": "A full notebook now refuses Save rather than evicting its oldest record; the prior pair-eviction expectation is obsolete.",
+    "replacedOriginalBlock": "    assert.equal((await state()).studies.length, 24);\n    await button('Save observation').click();\n    assert.equal((await state()).studies.length, 24); assert(!(await state()).studies.some(record => record.id === 'study-a-1'));\n    await noResults(); assert.equal((await enginePair()).status, 'incomplete');\n    checks.push({ capEvictionInvalidatesPair: true, noCachedAggregateAfterEviction: true });",
+    "replacementCapacityBlock": "    assert.equal((await state()).studies.length, 24); const fullNotebookBefore = await state();\n    assert(await button('Save observation').isDisabled(), 'A full notebook must disable Save without evicting an observation.');\n    await button('Save observation').evaluate(node => node.click());\n    assert.deepEqual(await state(), fullNotebookBefore); assert((await state()).studies.some(record => record.id === 'study-a-1'));\n    assert.equal(await results().count(), 1); assert.equal((await enginePair()).status, 'ready');\n    checks.push({ fullNotebookDisablesSaveWithoutEviction: true, allOriginalRecordsAndReadyPairPreserved: true });"
+  },
+  "priorReportsPreserved": true,
+  "earlierRunDirectories": [],
+  "regressionScope": "Notebook import, finder, ordinary guided studies, recorded previews, and saved-study comparison cover notebook mutation and group identity. The report builder/schema are unchanged; new capacity QA inspects restored comparison HTML in memory. No PDFs or native download transfers are needed.",
+  "execution": {
+    "permissions": "default sandbox",
+    "installedBrowserCache": "C:/Users/cabba/AppData/Local/ms-playwright",
+    "regressions": "serial",
+    "nativeDownloadsRequired": false,
+    "PDFOperation": "none"
+  },
+  "visualReview": {
+    "reviewedScreenshots": [
+      "delete-preview-panel-390.png",
+      "delete-preview-forced-dark-panel.png",
+      "delete-preview-large-text-panel.png"
+    ],
+    "findings": "Phone layout, forced-dark system palette and 200% dark text show the study title, retained count, explanation and both actions clearly, with no clipping or overlap."
+  }
+}

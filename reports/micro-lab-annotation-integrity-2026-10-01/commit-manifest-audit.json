@@ -1,0 +1,50 @@
+{
+  "mode": "prepared",
+  "passed": true,
+  "parent": "e8d3045f2c14117b7264f73b100c887b49eb181c",
+  "tree": "8f0a7d83f70329b5692d20cd9f39acfeba26b0cc",
+  "changedFiles": 90,
+  "sealedFiles": 88,
+  "sourceSha256": "468efedbbe19d147c15af70184650fab8db3b90a8103d0c64738eafee2574165",
+  "unitPassed": 723,
+  "browserPassed": 49,
+  "workingFilesMatchSealedInputs": true,
+  "registries": [
+    {
+      "file": "ui_strings.js",
+      "added": [
+        "investigation_selection_unavailable",
+        "resistance_observation_summary",
+        "resistance_observed_decrease",
+        "resistance_observed_extinction",
+        "resistance_observed_increase",
+        "resistance_observed_similar",
+        "resistance_restored_completed_without_prediction",
+        "resistance_restored_without_prediction",
+        "resistance_selection_unavailable"
+      ],
+      "removed": 0,
+      "changedExisting": 0,
+      "outsideBytesUnchanged": true,
+      "totalMicroKeys": 2006
+    },
+    {
+      "file": "desktop/web-app/public/ui_strings.js",
+      "added": [
+        "investigation_selection_unavailable",
+        "resistance_observation_summary",
+        "resistance_observed_decrease",
+        "resistance_observed_extinction",
+        "resistance_observed_increase",
+        "resistance_observed_similar",
+        "resistance_restored_completed_without_prediction",
+        "resistance_restored_without_prediction",
+        "resistance_selection_unavailable"
+      ],
+      "removed": 0,
+      "changedExisting": 0,
+      "outsideBytesUnchanged": true,
+      "totalMicroKeys": 2006
+    }
+  ]
+}

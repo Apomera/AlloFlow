@@ -63,7 +63,16 @@ describe('layer 1 — linguistic anchor data (window.__alloAnchor)', () => {
 describe('layer 2 — render behavior per activity', () => {
   for (const activity of ACTIVITIES) {
     it(`activity "${activity}" renders identically (snapshot)`, () => {
-      expect(renderActivity(activity)).toMatchSnapshot();
+      const rendered = renderActivity(activity);
+      // SSR does not run the effects that load reviewed prepared boards.
+      // Pin the current safe initial render rather than inventing playable tasks.
+      if (activity === 'manipulation') {
+        expect(rendered).toContain('<p role="status" class="text-center text-slate-700 text-sm py-6">Sound Swap is unavailable');
+        expect(rendered).not.toContain('Loading task');
+      } else if (activity === 'read_sentence' || activity === 'read_passage') {
+        expect(rendered).toContain('<p role="status" class="text-slate-700 text-sm font-semibold italic">Preparing your sentence...</p>');
+      }
+      expect(rendered).toMatchSnapshot();
     });
   }
 

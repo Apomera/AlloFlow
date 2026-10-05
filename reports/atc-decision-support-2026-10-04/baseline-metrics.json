@@ -1,0 +1,167 @@
+{
+  "pages": [
+    {
+      "width": 1440,
+      "scrollWidth": 1440,
+      "totalHeight": 1529,
+      "controlTop": 764,
+      "controlHeight": 293.5,
+      "radarTop": 542.5,
+      "radarHeight": 638,
+      "selectedText": "TRAIN101\n\nInbound · Heading 270° · Fuel 80.0 min\n\nAssign runway\nClear approach\nSet heading\nSet speed\nHold\nGo around\nDescend 1,000 ft\nClimb 1,000 ft",
+      "buttons": [
+        {
+          "text": "Assign runway",
+          "width": 247.9375,
+          "height": 44
+        },
+        {
+          "text": "Clear approach",
+          "width": 247.953125,
+          "height": 44
+        },
+        {
+          "text": "Set heading",
+          "width": 247.9375,
+          "height": 44
+        },
+        {
+          "text": "Set speed",
+          "width": 247.953125,
+          "height": 44
+        },
+        {
+          "text": "Hold",
+          "width": 247.9375,
+          "height": 44
+        },
+        {
+          "text": "Go around",
+          "width": 247.953125,
+          "height": 44
+        },
+        {
+          "text": "Descend 1,000 ft",
+          "width": 247.9375,
+          "height": 44
+        },
+        {
+          "text": "Climb 1,000 ft",
+          "width": 247.953125,
+          "height": 44
+        }
+      ],
+      "entry": "TRAIN101\n\nInbound · Heading 270° · Fuel 80.0 min\n\nAssign runway\nClear approach\nSet heading\nSet speed\nHold\nGo around\nDescend 1,000 ft\nClimb 1,000 ft\n\nTRAIN101\n\nHeading (0–360°)\nSend instruction\nCancel",
+      "focus": "atc-command-value"
+    },
+    {
+      "width": 390,
+      "scrollWidth": 390,
+      "totalHeight": 2269,
+      "controlTop": 1286.390625,
+      "controlHeight": 293.5,
+      "radarTop": 600.390625,
+      "radarHeight": 330,
+      "selectedText": "TRAIN101\n\nInbound · Heading 270° · Fuel 80.0 min\n\nAssign runway\nClear approach\nSet heading\nSet speed\nHold\nGo around\nDescend 1,000 ft\nClimb 1,000 ft",
+      "buttons": [
+        {
+          "text": "Assign runway",
+          "width": 147,
+          "height": 44
+        },
+        {
+          "text": "Clear approach",
+          "width": 147,
+          "height": 44
+        },
+        {
+          "text": "Set heading",
+          "width": 147,
+          "height": 44
+        },
+        {
+          "text": "Set speed",
+          "width": 147,
+          "height": 44
+        },
+        {
+          "text": "Hold",
+          "width": 147,
+          "height": 44
+        },
+        {
+          "text": "Go around",
+          "width": 147,
+          "height": 44
+        },
+        {
+          "text": "Descend 1,000 ft",
+          "width": 147,
+          "height": 44
+        },
+        {
+          "text": "Climb 1,000 ft",
+          "width": 147,
+          "height": 44
+        }
+      ],
+      "entry": "TRAIN101\n\nInbound · Heading 270° · Fuel 80.0 min\n\nAssign runway\nClear approach\nSet heading\nSet speed\nHold\nGo around\nDescend 1,000 ft\nClimb 1,000 ft\n\nTRAIN101\n\nHeading (0–360°)\nSend instruction\nCancel",
+      "focus": "atc-command-value"
+    },
+    {
+      "width": 320,
+      "scrollWidth": 320,
+      "totalHeight": 2423,
+      "controlTop": 1347.890625,
+      "controlHeight": 325.5,
+      "radarTop": 692.890625,
+      "radarHeight": 260,
+      "selectedText": "TRAIN101\n\nInbound · Heading 270° · Fuel 80.0 min\n\nAssign runway\nClear approach\nSet heading\nSet speed\nHold\nGo around\nDescend 1,000 ft\nClimb 1,000 ft",
+      "buttons": [
+        {
+          "text": "Assign runway",
+          "width": 112,
+          "height": 60
+        },
+        {
+          "text": "Clear approach",
+          "width": 112,
+          "height": 60
+        },
+        {
+          "text": "Set heading",
+          "width": 112,
+          "height": 44
+        },
+        {
+          "text": "Set speed",
+          "width": 112,
+          "height": 44
+        },
+        {
+          "text": "Hold",
+          "width": 112,
+          "height": 44
+        },
+        {
+          "text": "Go around",
+          "width": 112,
+          "height": 44
+        },
+        {
+          "text": "Descend 1,000 ft",
+          "width": 112,
+          "height": 60
+        },
+        {
+          "text": "Climb 1,000 ft",
+          "width": 112,
+          "height": 60
+        }
+      ],
+      "entry": "TRAIN101\n\nInbound · Heading 270° · Fuel 80.0 min\n\nAssign runway\nClear approach\nSet heading\nSet speed\nHold\nGo around\nDescend 1,000 ft\nClimb 1,000 ft\n\nTRAIN101\n\nHeading (0–360°)\nSend instruction\nCancel",
+      "focus": "atc-command-value"
+    }
+  ],
+  "errors": []
+}

@@ -1,0 +1,27 @@
+{
+  "file": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e/dissection-physiology-cohesion.spec.ts",
+  "before": "c8123667bea60e106dba528c7937fa6481677c088eef91f91fd35614786269ec",
+  "after": "8fe22baa94ef274d25abb0b850974cc3f95ad861698609111850b28cadc3b7c5",
+  "edits": [
+    {
+      "old": "'reports/dissection-physiology-cohesion-2026-10-04'",
+      "new": "'reports/dissection-physiology-cohesion-2026-10-05'"
+    },
+    {
+      "old": "fetalPig: ['Digestive', 'Respiratory', 'Excretory', 'Endocrine']",
+      "new": "pig: ['Digestive', 'Respiratory', 'Excretory', 'Endocrine']"
+    },
+    {
+      "old": "this.fillStyle === '#a3e635' && y >",
+      "new": "this.fillStyle === '#a3e635' && x > 26 && y >"
+    },
+    {
+      "old": "await update(page, { systemPlaybackPaused: true }); await expect(pathway(page).getByRole('button', { name: 'Resume', exact: true })).toBeVisible();",
+      "new": "await pathway(page).getByRole('button', { name: 'Pause', exact: true }).focus(); await page.keyboard.press('Enter'); await expect(pathway(page).getByRole('button', { name: 'Resume', exact: true })).toBeFocused();"
+    },
+    {
+      "old": "await update(page, { systemPlaybackPaused: false }); await canvasReady(page);",
+      "new": "await pathway(page).getByRole('button', { name: 'Resume', exact: true }).focus(); await page.keyboard.press('Space'); await expect(pathway(page).getByRole('button', { name: 'Pause', exact: true })).toBeFocused(); await canvasReady(page);"
+    }
+  ]
+}

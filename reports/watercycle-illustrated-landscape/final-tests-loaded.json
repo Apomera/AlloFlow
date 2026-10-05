@@ -1,0 +1,27 @@
+{
+  "pid": 33964,
+  "loadedAt": "2026-10-05T02:38:14.015Z",
+  "completedAt": "2026-10-05T02:38:14.271Z",
+  "loadedRuntimes": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "141a0381080552bfaa7f18271f5a9abd17993ad4b5123111c5957dc4ea389bf8",
+      "bytes": 3144075
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "141a0381080552bfaa7f18271f5a9abd17993ad4b5123111c5957dc4ea389bf8",
+      "bytes": 3144075
+    }
+  ],
+  "loadedBaseline": {
+    "path": "reports/watercycle-illustrated-landscape/baseline-runtime.js",
+    "sha256": "8d288e8531135d36d0928eb1073d47a02f3290dfa60a779e4191e7ced1423230",
+    "bytes": 3139939
+  },
+  "loadedTest": {
+    "path": "tests/watercycle_illustrated_landscape.test.js",
+    "sha256": "ff72c81d44b01c4f4babf26c9eebbb9079760fa86f4a489f2e9d8b03ca154295",
+    "bytes": 11533
+  }
+}

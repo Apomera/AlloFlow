@@ -1,0 +1,43 @@
+{
+  "passed": true,
+  "reviewer": "root",
+  "reviewedAtOriginalResolution": true,
+  "sourceSha256": "5074437464753808786898645761149063f96f7a2d4bb610cad8f0a09c3bb7c4",
+  "scriptSha256": "4d17423d7435ccb2b6639b4af2f60c6067483b8c645d7fc492261c4a7c1affb9",
+  "browserResultsSha256": "1d84c6261829a45ce690b214ac551c8706593c7a1cfd444ee0299eb5e7475fb1",
+  "reviewed": [
+    "different-probes-comparison-context-1280.png",
+    "manual-comparison-context-390.png",
+    "sensor-comparison-context-320.png",
+    "same-input-reversed-probes-context-320.png",
+    "translated-context-200pct-text-320.png",
+    "forced-colors-comparison-context-320.png",
+    "rtl-translated-comparison-context-320.png",
+    "missing-selection-recovery-320.png",
+    "write-from-evidence-actions-320.png",
+    "focused-own-explanation-320.png",
+    "rtl-chart-and-metric-readings-320.png"
+  ],
+  "screenshotSha256": {
+    "different-probes-comparison-context-1280.png": "8badb870f2e9244826ca8d06dbf688c268b506e5803611a335e7bde8df20855b",
+    "manual-comparison-context-390.png": "47775baf2a86009118d3546b63a6887e285d979f11eb9d1b4fe5aba19a6b5b6e",
+    "sensor-comparison-context-320.png": "98893020cde4e4cd5324c231435200d17acc9c1759252533bdae5573669dc654",
+    "same-input-reversed-probes-context-320.png": "d1783393fbea896150143789d240ba60ff10e2416ee6d035318d6df6bfc33196",
+    "translated-context-200pct-text-320.png": "8ffb0e149b308828781d3c8fbd7bf0468c0a7fba616df7caba6965c74478bcae",
+    "forced-colors-comparison-context-320.png": "120a3423884fc57f79ff01eeb01b9762d1980cf128a6c9dc0a4ccf7fb320b3f4",
+    "rtl-translated-comparison-context-320.png": "296d314a692e6d8894cae77a6047e68a838dd298e6bba94ee1c0d861bef98bcf",
+    "missing-selection-recovery-320.png": "8fd52083dd813fd5aafe6792f9db4c0cb98432111e0cf18e0024c6b72ab6d3cb",
+    "write-from-evidence-actions-320.png": "db13a33299f28b962a88570557c235d75415cf2ea6d48135e97f665eaf2b0014",
+    "focused-own-explanation-320.png": "24910a557758d211cec449eb458bd51ae36b9c1bd10bcabc9ef0adf236bb3f55",
+    "rtl-chart-and-metric-readings-320.png": "e599c7decb1848c4b63c9afde9da6a22625774aacd650772fa4a30c87a0c319b"
+  },
+  "materialIssues": [],
+  "findings": [
+    "Complete selected observation captions remain readable below the clipped native dropdowns at phone widths. Input/light and ordered probe context are clear.",
+    "The doubled-text capture shows the full enlarged selector captions and comparison guidance within the narrow container. Longer translated probe labels wrap without hiding their nodes.",
+    "Forced-colors captions, controls and status remain readable with visible outlines.",
+    "RTL caption quantities retain their direction. The separate reading detail shows number-before-unit lamp current, microamp values, metric differences and signed probe voltages.",
+    "Missing selection shows an explicit choose prompt and recovery notice; the remaining caption reflects its current observation number.",
+    "The own-writing button has a clear visible focus ring. The existing expanded explanation field receives focus while retaining authored text and its scroll position."
+  ]
+}

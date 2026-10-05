@@ -2,14 +2,20 @@ import { describe, expect, it } from 'vitest';
 import { readFileSync } from 'node:fs';
 import { createRequire } from 'node:module';
 import { createHash } from 'node:crypto';
+import { restoreCLSquidFinReference } from './helpers/cephalopod_squid_fin_reference.js';
 
 const require = createRequire(import.meta.url);
 const THREE = require('../vendor/three-r128/three.min.js');
-const source = readFileSync('stem_lab/stem_tool_cephalopodlab.js', 'utf8');
+const source = readFileSync(process.env.CEPHALOPOD_MODEL_SOURCE || 'stem_lab/stem_tool_cephalopodlab.js', 'utf8').replace(/\r\n/g, '\n');
 const start = source.indexOf('function createCLHuntAnimal(');
 const end = source.indexOf('// Compact, individually owned prey rig.', start);
 if (start < 0 || end <= start) throw new Error('Could not locate the actual animal rig');
 const build = new Function('T', 'species', 'Math', source.slice(start, end) + ';return createCLHuntAnimal(T,species);');
+// Pass30 reverses only the exact accepted Humboldt fin roll for this older protected fingerprint.
+// All live geometry/material/motion assertions still use the actual production build.
+const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+const protectedBuild=new Function('T','species','Math',restoreCLSquidFinReference(restorePass42AnimalSource(source.slice(start,end)))+';return createCLHuntAnimal(T,species);');
+
 const noRigRandom = Object.assign(Object.create(Math), {
   random() { throw new Error('Rig geometry or animation consumed the dive RNG'); },
 });
@@ -236,7 +242,7 @@ describe('Cephalopod squid arm and feeding-club detail', () => {
       "nautilus": "e2a1387b0fbb9f577e089f0edc0cf7aed2cc97f86014a7ac3e993e2d897bd15d"
 };
     for (const [id, fingerprint] of Object.entries(baselines)) {
-      const animal = rig(id);
+      const animal = protectedBuild(THREE, { id, bodyColor: 0xbc6048 }, noRigRandom);
       for (const [time, jet, strike] of [[1, false, 0], [1.1, true, 0], [1.2, false, .65]]) animal.update(time, .05, state({ moving: true, jet, strike, camo: .4, substrate: 'rock' }));
       const changed = ['cuttlefish', 'bobtailSquid', 'dumboOcto', 'vampireSquid', 'commonOcto', 'blueRinged', 'mimicOcto', 'giantPacific', 'caribReef', 'coconutOcto'].includes(id);
       const preserved = geometrySnapshot(animal).filter(row => !(changed && /^cl-(eye-rim|iris|pupil|eye-highlight|eye-lid)$/.test(row[0])));

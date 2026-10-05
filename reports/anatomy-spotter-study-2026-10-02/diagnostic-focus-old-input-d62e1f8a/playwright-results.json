@@ -1,0 +1,282 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/anatomy-spotter-study-2026-10-02/test-results",
+        "repeatEach": 1,
+        "retries": 1,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "anatomy-spotter-study.spec.ts",
+      "file": "anatomy-spotter-study.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "A real wrong Spotter answer returns from a reloaded structure study with its round, navigation and newer notes intact",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 8623,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:15:50.384Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8eb25d9e17a482b9840c-f02acdef2333caceb93c",
+          "file": "anatomy-spotter-study.spec.ts",
+          "line": 61,
+          "column": 5
+        },
+        {
+          "title": "A paused unanswered Spotter permits normal Explore names and canvas selection, then resumes the same unanswered round",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3246,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:15:59.756Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8eb25d9e17a482b9840c-1c94f8a1d3bcf60e0ed3",
+          "file": "anatomy-spotter-study.spec.ts",
+          "line": 72,
+          "column": 5
+        },
+        {
+          "title": "Study and return effects respect deliberate focus, and a superseded round cannot use its saved study origin",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 18646,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#anatomy-global-search-input')\nExpected: focused\nReceived: inactive\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#anatomy-global-search-input')\u001b[22m\n\u001b[2m    32 × locator resolved to <input value=\"\" type=\"text\" role=\"combobox\" maxlength=\"200\" aria-expanded=\"false\" aria-autocomplete=\"list\" id=\"anatomy-global-search-input\" placeholder=\"Search all systems…\" aria-labelledby=\"anatomy-explorer-search-label\" aria-label=\"Search anatomical structures across all systems\" title=\"Search by structure name, common name, or ontology ID\" class=\"w-full px-3 py-1.5 text-xs text-slate-900 bg-white border border-slate-500 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none\"/>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#anatomy-global-search-input')\nExpected: focused\nReceived: inactive\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#anatomy-global-search-input')\u001b[22m\n\u001b[2m    32 × locator resolved to <input value=\"\" type=\"text\" role=\"combobox\" maxlength=\"200\" aria-expanded=\"false\" aria-autocomplete=\"list\" id=\"anatomy-global-search-input\" placeholder=\"Search all systems…\" aria-labelledby=\"anatomy-explorer-search-label\" aria-label=\"Search anatomical structures across all systems\" title=\"Search by structure name, common name, or ontology ID\" class=\"w-full px-3 py-1.5 text-xs text-slate-900 bg-white border border-slate-500 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none\"/>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts:84:343",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts",
+                      "column": 343,
+                      "line": 84
+                    },
+                    "snippet": "  82 | test('Study and return effects respect deliberate focus, and a superseded round cannot use its saved study origin',async({page})=>{\n  83 |   const record=recordFor(page,'guardedFocus');await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1280,height:1000});await mount(page,base);const initial=await wrongAnswer(page),saved=snapshot(initial);\n> 84 |   await page.evaluate(()=>{const button=document.querySelector('[data-anatomy-spotter-study]') as HTMLButtonElement;button.focus();button.click();(document.querySelector('#anatomy-global-search-input') as HTMLInputElement).focus();});await expect(page.locator(origin)).toBeVisible();await expect(page.locator('#anatomy-global-search-input')).toBeFocused();await page.waitForTimeout(80);await expect(page.locator('#anatomy-global-search-input')).toBeFocused();await sameWork(page,saved,record,'deliberate focus after study');\n     |                                                                                                                                                                                                                                                                                                                                                       ^\n  85 |   await page.evaluate(()=>{const button=document.querySelector('[data-anatomy-spotter-study-return]') as HTMLButtonElement;button.focus();button.click();(document.querySelector('#anatomy-global-search-input') as HTMLInputElement).focus();});await expect(page.locator(feedback)).toBeVisible();await page.waitForTimeout(80);await expect(page.locator('#anatomy-global-search-input')).toBeFocused();await sameWork(page,saved,record,'deliberate focus after return');\n  86 |   await study(page);const away=await state(page);await harness.destroy(page);await mount(page,{...away,_spotterSerial:away._spotterSerial+1});await expect(page.locator(origin)).toHaveCount(0);await expect(page.locator('[data-anatomy-spotter-study-return]')).toHaveCount(0);expect((await state(page))._activeTab).toBe('explore');expect((await state(page)).selectedStructure).toBe(initial._spotterTarget);expect((await state(page))._spotterTotal).toBe(initial._spotterTotal);expect(record.errors).toEqual([]);\n  87 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts",
+                        "column": 343,
+                        "line": 84
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoBeFocused\u001b[2m(\u001b[22m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('#anatomy-global-search-input')\nExpected: focused\nReceived: inactive\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toBeFocused\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('#anatomy-global-search-input')\u001b[22m\n\u001b[2m    32 × locator resolved to <input value=\"\" type=\"text\" role=\"combobox\" maxlength=\"200\" aria-expanded=\"false\" aria-autocomplete=\"list\" id=\"anatomy-global-search-input\" placeholder=\"Search all systems…\" aria-labelledby=\"anatomy-explorer-search-label\" aria-label=\"Search anatomical structures across all systems\" title=\"Search by structure name, common name, or ontology ID\" class=\"w-full px-3 py-1.5 text-xs text-slate-900 bg-white border border-slate-500 rounded-lg focus:ring-2 focus:ring-rose-300 outline-none\"/>\u001b[22m\n\u001b[2m       - unexpected value \"inactive\"\u001b[22m\n\n\n  82 | test('Study and return effects respect deliberate focus, and a superseded round cannot use its saved study origin',async({page})=>{\n  83 |   const record=recordFor(page,'guardedFocus');await page.emulateMedia({reducedMotion:'reduce'});await page.setViewportSize({width:1280,height:1000});await mount(page,base);const initial=await wrongAnswer(page),saved=snapshot(initial);\n> 84 |   await page.evaluate(()=>{const button=document.querySelector('[data-anatomy-spotter-study]') as HTMLButtonElement;button.focus();button.click();(document.querySelector('#anatomy-global-search-input') as HTMLInputElement).focus();});await expect(page.locator(origin)).toBeVisible();await expect(page.locator('#anatomy-global-search-input')).toBeFocused();await page.waitForTimeout(80);await expect(page.locator('#anatomy-global-search-input')).toBeFocused();await sameWork(page,saved,record,'deliberate focus after study');\n     |                                                                                                                                                                                                                                                                                                                                                       ^\n  85 |   await page.evaluate(()=>{const button=document.querySelector('[data-anatomy-spotter-study-return]') as HTMLButtonElement;button.focus();button.click();(document.querySelector('#anatomy-global-search-input') as HTMLInputElement).focus();});await expect(page.locator(feedback)).toBeVisible();await page.waitForTimeout(80);await expect(page.locator('#anatomy-global-search-input')).toBeFocused();await sameWork(page,saved,record,'deliberate focus after return');\n  86 |   await study(page);const away=await state(page);await harness.destroy(page);await mount(page,{...away,_spotterSerial:away._spotterSerial+1});await expect(page.locator(origin)).toHaveCount(0);await expect(page.locator('[data-anatomy-spotter-study-return]')).toHaveCount(0);expect((await state(page))._activeTab).toBe('explore');expect((await state(page)).selectedStructure).toBe(initial._spotterTarget);expect((await state(page))._spotterTotal).toBe(initial._spotterTotal);expect(record.errors).toEqual([]);\n  87 | });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts:84:343"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:16:03.028Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-spotter-study-2026-10-02\\test-results\\anatomy-spotter-study-Stud-79042--use-its-saved-study-origin-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-spotter-study-2026-10-02\\test-results\\anatomy-spotter-study-Stud-79042--use-its-saved-study-origin-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\anatomy-spotter-study-2026-10-02\\test-results\\anatomy-spotter-study-Stud-79042--use-its-saved-study-origin-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\anatomy-spotter-study.spec.ts",
+                    "column": 343,
+                    "line": 84
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "8eb25d9e17a482b9840c-23573cbbce2a67d91d41",
+          "file": "anatomy-spotter-study.spec.ts",
+          "line": 82,
+          "column": 5
+        },
+        {
+          "title": "Spotter explains cumulative answer counts and separates the chosen function from the marked structure",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:17:14.599Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "8eb25d9e17a482b9840c-f6c3216df7d254369f91",
+          "file": "anatomy-spotter-study.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "Spotter feedback and study context are readable on desktop, 320px phone, Arabic larger text and all display themes",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 300000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": -1,
+                  "parallelIndex": -1,
+                  "status": "skipped",
+                  "duration": 0,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T23:17:14.599Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "skipped"
+            }
+          ],
+          "id": "8eb25d9e17a482b9840c-fb35b87cb344ea888f25",
+          "file": "anatomy-spotter-study.spec.ts",
+          "line": 104,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T23:15:49.157Z",
+    "duration": 85656.60800000001,
+    "expected": 2,
+    "skipped": 2,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

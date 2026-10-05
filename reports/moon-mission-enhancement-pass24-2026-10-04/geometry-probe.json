@@ -1,0 +1,21 @@
+{
+  "sourceSha256": "c261c4bbb7fd7ee719164628a0bdf92c1e797d7ff58453943b9dcc5169e75a54",
+  "rayProjectionCases": 675,
+  "maxPlaneResidualSceneUnits": 1.4210854715202004e-14,
+  "maxIncidentRayCrossErrorSceneUnits": 3.510820102043951e-14,
+  "maxSunScaleDifferenceSceneUnits": 6.51223174224333e-14,
+  "supportCases": 5781,
+  "maxMinimumPadClearanceErrorPixels": 5.684341886080802e-14,
+  "receivingSurface": "Actual terrain and rocks in both WebGL tiers; low-power/reduced-motion uses one merged caster and a 256-pixel depth map.",
+  "sunDirection": {
+    "x": -700,
+    "y": 260,
+    "z": 360
+  },
+  "physicalAltitudeCompressedInScene": true,
+  "flightIntegratorChanged": false,
+  "sources": [
+    "https://www.nasa.gov/wp-content/uploads/static/history/alsj/a11/a11.summary.html",
+    "https://svs.gsfc.nasa.gov/3620/"
+  ]
+}

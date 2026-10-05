@@ -1,0 +1,4867 @@
+{
+  "sourceHash": "2aefa6899647099c0ca62b80d529675f30c0bcf979e538f4748c6ab5e5036ffc",
+  "uiHash": "c62192550355331eff8b825d2daf25b72a1e30d71d1b377186919f2aa710621c",
+  "completed": true,
+  "checks": [
+    "Nebula passage metadata, both generated emission regions, and all six existing Halo clusters are selectable",
+    "normal keyboard launch starts Free exploration, resets the journey, and keeps physics and quality preferences",
+    "the real curved passage visibly traverses layered emission regions and the paused view freezes both pixels and elapsed travel",
+    "native free look keeps the authored route moving with independent gaze, and Follow flyby view restores the camera aim",
+    "native Slow and Fast pacing controls change the real flyby rate without changing physics",
+    "the renderer completes once, pauses at the final violet nebula reveal, and presents a real journey checkpoint",
+    "completed controls expose a native Replay flyby action that begins a fresh route",
+    "fullscreen keyboard launch explicitly switches Einstein’s light chase to Free exploration",
+    "ending the flyby from its native controls pauses the real camera and clears the route",
+    "restoring an ordinary saved view clears the flyby and always returns paused",
+    "both emission-region destinations pause at their real viewing radius and camera orbits retain that radius",
+    "both cloud overlooks reset the journey and restore identical paused views through native normal and fullscreen controls",
+    "same-pose cloud pixels, all three region point bytes, shader programs, both texture atlas bytes, Halo metadata, and relativity math match the enhanced 24 renderer",
+    "closing releases both textures and reopening starts a working flyby with native normal pace/end controls and the same resource count",
+    "phone normal/fullscreen native keyboard launches, pace controls, and end controls remain reachable without overflow",
+    "landscape normal/fullscreen native keyboard launches, pace controls, and end controls remain reachable without overflow"
+  ],
+  "captures": [
+    {
+      "name": "start",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "0c66b361b667695bbac0dab6c6e64dd9d8ec06804c952978e4355d4ec0162fed",
+      "stats": {
+        "mean": 6.699875674721734,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.19199361453920305,
+        "colorFraction": 0.13413853292283942,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -13.997014839079055,
+            5.999502194798918,
+            3.00497526813488
+          ],
+          "yaw": 0.6383214931676182,
+          "pitch": -0.20435994546229458,
+          "distanceLy": 0.005829079091065425,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.0020831999999999878,
+        "elapsedSeconds": 0.08332799999999951,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "depart",
+        "rate": 1
+      }
+    },
+    {
+      "name": "blue-approach",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "8ea65d212c78ab81f320e94358d6cac915991f675e7cb270613112edc0d1cc1b",
+      "stats": {
+        "mean": 6.984389190323376,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.22827145225376944,
+        "colorFraction": 0.20475576489575384,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0.6622410548182125,
+            2.9961865010764726,
+            22.507061360635966
+          ],
+          "yaw": 0.642424112938845,
+          "pitch": -0.3199826448012458,
+          "distanceLy": 24.747505837447616,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.20957660000000003,
+        "elapsedSeconds": 8.383064000000001,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "filaments",
+        "rate": 2
+      }
+    },
+    {
+      "name": "blue-filaments",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "b2578cf826ef97978f8b1ae9abf4a727ce1dcd8b384a02c29ad0cc6584f549f9",
+      "stats": {
+        "mean": 6.218907293279979,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.19742301046408617,
+        "colorFraction": 0.17659132173775755,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            9.638942616740335,
+            2.7274466505912667,
+            26.914356315756663
+          ],
+          "yaw": 0.0012815055332699998,
+          "pitch": -0.562883727646152,
+          "distanceLy": 34.78485897264155,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.34956730000000025,
+        "elapsedSeconds": 13.98269200000001,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "filaments",
+        "rate": 2
+      }
+    },
+    {
+      "name": "blue-pass",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "79164ef75025344af77fd4ec81290194da4e201e59ce073c6b91e5b1f1393cda",
+      "stats": {
+        "mean": 5.192746784897055,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.16831127367137683,
+        "colorFraction": 0.1414712873545071,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            17.088517406841575,
+            4.884172074198912,
+            34.5259412593463
+          ],
+          "yaw": 4.805034748732707,
+          "pitch": -0.6664788523137234,
+          "distanceLy": 45.85272302662043,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.5537277,
+        "elapsedSeconds": 22.149108000000002,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "passage",
+        "rate": 2
+      }
+    },
+    {
+      "name": "nebula-paused",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "79164ef75025344af77fd4ec81290194da4e201e59ce073c6b91e5b1f1393cda",
+      "stats": {
+        "mean": 5.192746784897055,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.16831127367137683,
+        "colorFraction": 0.1414712873545071,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            17.088517406841575,
+            4.884172074198912,
+            34.5259412593463
+          ],
+          "yaw": 4.805034748732707,
+          "pitch": -0.6664788523137234,
+          "distanceLy": 45.85272302662043,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.5537277,
+        "elapsedSeconds": 22.149108000000002,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "passage",
+        "rate": 2
+      }
+    },
+    {
+      "name": "manual-look",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "65d3f1e2d4fd69c5dc4bff913881c72ba3d16ddc09ae026c2cf95a8a8f9e43f0",
+      "stats": {
+        "mean": 5.094597577376645,
+        "clippedWhiteFraction": 0.00002631371207536247,
+        "luminousFraction": 0.1553035286687893,
+        "colorFraction": 0.09231727319773,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            14.294023458888233,
+            7.293144654218294,
+            43.06802239720541
+          ],
+          "yaw": 4.922736557845685,
+          "pitch": -0.5487770432007444,
+          "distanceLy": 55.46083686567133,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.6345577,
+        "elapsedSeconds": 25.382308,
+        "durationSeconds": 40,
+        "autoLook": false,
+        "phase": "turn",
+        "rate": 2
+      }
+    },
+    {
+      "name": "follow-restored",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "b83d58ea5756f44f9708f672aff6b501224c36aa5087b54425d5855747b94bbc",
+      "stats": {
+        "mean": 5.737332429889018,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.19437939110070257,
+        "colorFraction": 0.10021138682033874,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            14.294023458888233,
+            7.293144654218294,
+            43.06802239720541
+          ],
+          "yaw": -1.1966045866012138,
+          "pitch": -0.32756297857819744,
+          "distanceLy": 55.46083686567133,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.6345577,
+        "elapsedSeconds": 25.382308,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "turn",
+        "rate": 2
+      }
+    },
+    {
+      "name": "between-clouds",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "b83d58ea5756f44f9708f672aff6b501224c36aa5087b54425d5855747b94bbc",
+      "stats": {
+        "mean": 5.737332429889018,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.19437939110070257,
+        "colorFraction": 0.10021138682033874,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            14.294023458888233,
+            7.293144654218294,
+            43.06802239720541
+          ],
+          "yaw": -1.1966045866012138,
+          "pitch": -0.32756297857819744,
+          "distanceLy": 55.46083686567133,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.6345577,
+        "elapsedSeconds": 25.382308,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "turn",
+        "rate": 2
+      }
+    },
+    {
+      "name": "violet-reveal",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "0ecdc3afe4253d8f905c7c1660b1fe3bdb059b1beb82506a5f1b409a5d9d70ef",
+      "stats": {
+        "mean": 5.824590142880251,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.1588646510363217,
+        "colorFraction": 0.07541509880798884,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -18.169284665305756,
+            21.80985379669043,
+            61.15674979626011
+          ],
+          "yaw": 6.063171140111159,
+          "pitch": -0.4296440892784191,
+          "distanceLy": 97.86974941422514,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.8420426999999993,
+        "elapsedSeconds": 33.68170799999997,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "reveal",
+        "rate": 2
+      }
+    },
+    {
+      "name": "completed",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "4717c7bceaa9cadfbadb0e0c40ce119a8a9eb6cac53a3b4517072acd21dac44e",
+      "stats": {
+        "mean": 5.912488573705152,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.17348630371286478,
+        "colorFraction": 0.09259795279320053,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -25,
+            29,
+            56
+          ],
+          "yaw": 0.1088384853470874,
+          "pitch": -0.5842927881665522,
+          "distanceLy": 109.12428901563214,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "flyby": {
+        "active": false,
+        "completed": true,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 1,
+        "elapsedSeconds": 40,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "complete",
+        "rate": 2
+      }
+    },
+    {
+      "name": "cancel-before",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "592901b91f5e8d393d991b69e34bb950dd1d7b5ff7ddaffc97382e4fefca8b32",
+      "stats": {
+        "mean": 6.872378743777819,
+        "clippedWhiteFraction": 0.00009648361094299573,
+        "luminousFraction": 0.1955635081440939,
+        "colorFraction": 0.14162039838960083,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -11.023451965798364,
+            5.3047142534629295,
+            7.904466940873479
+          ],
+          "yaw": 0.6497419380993854,
+          "pitch": -0.21480797783599587,
+          "distanceLy": 5.779943901601712,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.0733302000000003,
+        "elapsedSeconds": 2.933208000000012,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "depart",
+        "rate": 2
+      }
+    },
+    {
+      "name": "blue-nebula-arrival",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "6b493f0ac6d81c536149979d59300d512a4146f705ee40be4adc65fa61040cad",
+      "stats": {
+        "mean": 7.271863319558536,
+        "clippedWhiteFraction": 0.00002631371207536247,
+        "luminousFraction": 0.2432965818488014,
+        "colorFraction": 0.19144979782297888,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            29,
+            -2,
+            34
+          ],
+          "yaw": -1.5707963267948966,
+          "pitch": 0,
+          "distanceLy": 11.99999999999997,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": false,
+        "completed": false,
+        "id": null,
+        "name": null,
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 0,
+        "autoLook": false,
+        "phase": null,
+        "rate": 2
+      }
+    },
+    {
+      "name": "blue-nebula-orbit",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "a7a94f8a92ccf09970a1ec7050650dcd07b625a378b12c6511581045f9c69486",
+      "stats": {
+        "mean": 7.278511277175925,
+        "clippedWhiteFraction": 0.00002631371207536247,
+        "luminousFraction": 0.24370883000464877,
+        "colorFraction": 0.19178310484260014,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            28.999725932670938,
+            -2,
+            33.89529747830279
+          ],
+          "yaw": -1.5655611767969546,
+          "pitch": 0,
+          "distanceLy": 12.104702999958807,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": false,
+        "completed": false,
+        "id": null,
+        "name": null,
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 0,
+        "autoLook": false,
+        "phase": null,
+        "rate": 2
+      }
+    },
+    {
+      "name": "violet-nebula-arrival",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "f73c2576cbe529f3a54d272016d6013381bfdf935241b31fc6db51dbcfb3c358",
+      "stats": {
+        "mean": 5.879266017589709,
+        "clippedWhiteFraction": 0.00002631371207536247,
+        "luminousFraction": 0.17459147962003,
+        "colorFraction": 0.08960696085396767,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            9.999999999999996,
+            11,
+            83
+          ],
+          "yaw": -1.5707963267948966,
+          "pitch": 0,
+          "distanceLy": 12.00000000000001,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "flyby": {
+        "active": false,
+        "completed": false,
+        "id": null,
+        "name": null,
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 0,
+        "autoLook": false,
+        "phase": null,
+        "rate": 2
+      }
+    },
+    {
+      "name": "violet-nebula-orbit",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "1f9caed8688f413243d354b05b1e0bab12e0e55128ec24db3453b4a40c1f2797",
+      "stats": {
+        "mean": 5.889732580755857,
+        "clippedWhiteFraction": 0,
+        "luminousFraction": 0.17314422545588506,
+        "colorFraction": 0.0892561113596295,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            9.988292700949193,
+            11,
+            82.13447699140903
+          ],
+          "yaw": -1.5437454338116514,
+          "pitch": 0,
+          "distanceLy": 12.865628575463866,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "flyby": {
+        "active": false,
+        "completed": false,
+        "id": null,
+        "name": null,
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 0,
+        "autoLook": false,
+        "phase": null,
+        "rate": 2
+      }
+    },
+    {
+      "name": "blue-nebula-overlook",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "19fb0159d36b966e68be3217828abf013ad658bd0216964859efe4337c791f1c",
+      "stats": {
+        "mean": 6.579568521776755,
+        "clippedWhiteFraction": 0.00004385618679227079,
+        "luminousFraction": 0.16606583690761256,
+        "colorFraction": 0.11713110368479682,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -12,
+            12,
+            14
+          ],
+          "yaw": 0.8097835725701668,
+          "pitch": -0.4497596130698391,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": false,
+        "completed": false,
+        "id": null,
+        "name": null,
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 0,
+        "autoLook": false,
+        "phase": null,
+        "rate": 2
+      }
+    },
+    {
+      "name": "violet-nebula-overlook",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "a4c6993ff305ee6f68cae67287c4ec9a40c59caf9acdcd02391a3252cb116d59",
+      "stats": {
+        "mean": 5.825534261325221,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.17281968967362227,
+        "colorFraction": 0.0967555193011078,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 65,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -36,
+            29,
+            52
+          ],
+          "yaw": 0.4241944079037667,
+          "pitch": -0.48672047552790526,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "violet-nebula"
+      },
+      "flyby": {
+        "active": false,
+        "completed": false,
+        "id": null,
+        "name": null,
+        "progress": 0,
+        "elapsedSeconds": 0,
+        "durationSeconds": 0,
+        "autoLook": false,
+        "phase": null,
+        "rate": 2
+      }
+    },
+    {
+      "name": "reopened-start",
+      "width": 1280,
+      "height": 800,
+      "pixelHash": "2994f0494fe3b1ca151e1786084c93d5ab497b3800d6014f13a657e822740505",
+      "stats": {
+        "mean": 6.700716808316449,
+        "clippedWhiteFraction": 0.000008771237358454156,
+        "luminousFraction": 0.19199361453920305,
+        "colorFraction": 0.13405959178661334,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -13.999880496989787,
+            5.999980082385356,
+            3.0001991716836796
+          ],
+          "yaw": 0.6383198418055507,
+          "pitch": -0.20435799392195608,
+          "distanceLy": 0.0002333656702668796,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.0004158499999999549,
+        "elapsedSeconds": 0.016633999999998195,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "depart",
+        "rate": 0.5
+      }
+    },
+    {
+      "name": "phone-fullscreen-start",
+      "width": 320,
+      "height": 740,
+      "pixelHash": "425d020fc64bec1d5775ff003702cc709d44aeb5d58c12e0bcb73ba87ea0b73a",
+      "stats": {
+        "mean": 10.407922138556238,
+        "clippedWhiteFraction": 0.00011351167278368459,
+        "luminousFraction": 0.28953044004691814,
+        "colorFraction": 0.26871996670324266,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -13.994966148292832,
+            5.999160233299902,
+            3.008389752525503
+          ],
+          "yaw": 0.638325559907579,
+          "pitch": -0.2043647504571308,
+          "distanceLy": 0.009829107626606898,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.0027075000000000736,
+        "elapsedSeconds": 0.10830000000000294,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "depart",
+        "rate": 0.5
+      }
+    },
+    {
+      "name": "landscape-fullscreen-start",
+      "width": 568,
+      "height": 320,
+      "pixelHash": "f0deafd204e5aafa118459b2ec9c59e0de88ae12774f953e90c00ade8ad83803",
+      "stats": {
+        "mean": 8.125498986716222,
+        "clippedWhiteFraction": 0.00009837678307919331,
+        "luminousFraction": 0.2363994097393015,
+        "colorFraction": 0.16999508116084605,
+        "max": 255
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -13.597473530197048,
+            5.9280723430402364,
+            3.6707178658340394
+          ],
+          "yaw": 0.6399056212670082,
+          "pitch": -0.20615050808364718,
+          "distanceLy": 0.7855603241761164,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.025000100000000018,
+        "elapsedSeconds": 1.0000040000000008,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "depart",
+        "rate": 0.5
+      }
+    }
+  ],
+  "comparisons": [
+    {
+      "name": "cloud-wide",
+      "pixelHash": "ce4932eb9221caa11fa2e338613aec5f02d68bfc4312aa36cfa1fe7ef6c8aab0",
+      "difference": {
+        "meanAbsolute": 0,
+        "changedFraction": 0
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            0,
+            0,
+            0
+          ],
+          "yaw": 0.25877089196369774,
+          "pitch": -0.0568038385835116,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      }
+    },
+    {
+      "name": "cloud-front",
+      "pixelHash": "165838b7bc946f4d8b97cfa108b6a409e4a9e3bf0b8ff59e2338ff75eab7e780",
+      "difference": {
+        "meanAbsolute": 0,
+        "changedFraction": 0
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 50,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            13,
+            -7,
+            24
+          ],
+          "yaw": 5.902678930067221,
+          "pitch": 0.4346312457422351,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      }
+    },
+    {
+      "name": "cloud-side",
+      "pixelHash": "2bc2a7ead4b480ca9a57c44c6f5f002e9652dfbfc831de60a97bf948c4f6e057",
+      "difference": {
+        "meanAbsolute": 0,
+        "changedFraction": 0
+      },
+      "snapshot": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 60,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            21,
+            4,
+            38
+          ],
+          "yaw": 4.3906384259880475,
+          "pitch": -0.4429110440736389,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": null
+      }
+    }
+  ],
+  "errors": [],
+  "graphics": [
+    {
+      "name": "start",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "blue-approach",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "blue-filaments",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "blue-pass",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "nebula-paused",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "manual-look",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "follow-restored",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "between-clouds",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "violet-reveal",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "completed",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "cancel-before",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "blue-nebula-arrival",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "blue-nebula-orbit",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "violet-nebula-arrival",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "violet-nebula-orbit",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "blue-nebula-overlook",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "violet-nebula-overlook",
+      "errors": [
+        0
+      ]
+    },
+    {
+      "name": "reopened-start",
+      "errors": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "phone-fullscreen-start",
+      "errors": [
+        0,
+        0
+      ]
+    },
+    {
+      "name": "landscape-fullscreen-start",
+      "errors": [
+        0,
+        0
+      ]
+    }
+  ],
+  "accessibility": [
+    {
+      "name": "desktop-paused-controls",
+      "violations": []
+    },
+    {
+      "name": "desktop-completion",
+      "violations": []
+    },
+    {
+      "name": "blue-nebula-destination-controls",
+      "violations": []
+    },
+    {
+      "name": "violet-nebula-destination-controls",
+      "violations": []
+    },
+    {
+      "name": "phone-normal-launcher",
+      "violations": []
+    },
+    {
+      "name": "phone-normal-controls",
+      "violations": []
+    },
+    {
+      "name": "phone-fullscreen-controls",
+      "violations": []
+    },
+    {
+      "name": "landscape-normal-launcher",
+      "violations": []
+    },
+    {
+      "name": "landscape-normal-controls",
+      "violations": []
+    },
+    {
+      "name": "landscape-fullscreen-controls",
+      "violations": []
+    }
+  ],
+  "layouts": [
+    {
+      "name": "phone",
+      "viewport": {
+        "width": 320,
+        "height": 740
+      },
+      "box": {
+        "x": 42,
+        "y": 321.234375,
+        "width": 236,
+        "height": 96.796875
+      },
+      "fullscreenBox": {
+        "x": 44,
+        "y": 328.359375,
+        "width": 232,
+        "height": 96.796875
+      },
+      "shell": {
+        "x": 12,
+        "y": 60,
+        "width": 296,
+        "height": 530
+      }
+    },
+    {
+      "name": "landscape",
+      "viewport": {
+        "width": 568,
+        "height": 320
+      },
+      "box": {
+        "x": 42,
+        "y": -0.203125,
+        "width": 484,
+        "height": 81.796875
+      },
+      "fullscreenBox": {
+        "x": 258,
+        "y": 71.359375,
+        "width": 276,
+        "height": 96.796875
+      },
+      "shell": {
+        "x": 236,
+        "y": 12,
+        "width": 320,
+        "height": 164
+      }
+    }
+  ],
+  "progressSamples": [
+    {
+      "name": "blue-approach",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.20957660000000003,
+        "elapsedSeconds": 8.383064000000001,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "filaments",
+        "rate": 2
+      },
+      "position": [
+        0.6622410548182125,
+        2.9961865010764726,
+        22.507061360635966
+      ],
+      "distanceLy": 24.747505837447616
+    },
+    {
+      "name": "blue-filaments",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.34956730000000025,
+        "elapsedSeconds": 13.98269200000001,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "filaments",
+        "rate": 2
+      },
+      "position": [
+        9.638942616740335,
+        2.7274466505912667,
+        26.914356315756663
+      ],
+      "distanceLy": 34.78485897264155
+    },
+    {
+      "name": "blue-pass",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.5537277,
+        "elapsedSeconds": 22.149108000000002,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "passage",
+        "rate": 2
+      },
+      "position": [
+        17.088517406841575,
+        4.884172074198912,
+        34.5259412593463
+      ],
+      "distanceLy": 45.85272302662043
+    },
+    {
+      "name": "between-clouds",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.6345577,
+        "elapsedSeconds": 25.382308,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "turn",
+        "rate": 2
+      },
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ],
+      "distanceLy": 55.46083686567133
+    },
+    {
+      "name": "violet-reveal",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.8420426999999993,
+        "elapsedSeconds": 33.68170799999997,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "reveal",
+        "rate": 2
+      },
+      "position": [
+        -18.169284665305756,
+        21.80985379669043,
+        61.15674979626011
+      ],
+      "distanceLy": 97.86974941422514
+    },
+    {
+      "name": "cancel-before",
+      "flyby": {
+        "active": true,
+        "completed": false,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 0.0733302000000003,
+        "elapsedSeconds": 2.933208000000012,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "depart",
+        "rate": 2
+      },
+      "position": [
+        -11.023451965798364,
+        5.3047142534629295,
+        7.904466940873479
+      ],
+      "distanceLy": 5.779943901601712
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0.0020831999999999878,
+      "elapsedSeconds": 0.08332799999999951,
+      "position": [
+        -13.997014839079055,
+        5.999502194798918,
+        3.00497526813488
+      ]
+    },
+    {
+      "progress": 0.0020831999999999878,
+      "elapsedSeconds": 0.08332799999999951,
+      "position": [
+        -13.997014839079055,
+        5.999502194798918,
+        3.00497526813488
+      ]
+    },
+    {
+      "progress": 0.0020831999999999878,
+      "elapsedSeconds": 0.08332799999999951,
+      "position": [
+        -13.997014839079055,
+        5.999502194798918,
+        3.00497526813488
+      ]
+    },
+    {
+      "progress": 0.0020831999999999878,
+      "elapsedSeconds": 0.08332799999999951,
+      "position": [
+        -13.997014839079055,
+        5.999502194798918,
+        3.00497526813488
+      ]
+    },
+    {
+      "progress": 0.0020831999999999878,
+      "elapsedSeconds": 0.08332799999999951,
+      "position": [
+        -13.997014839079055,
+        5.999502194798918,
+        3.00497526813488
+      ]
+    },
+    {
+      "progress": 0.0020831999999999878,
+      "elapsedSeconds": 0.08332799999999951,
+      "position": [
+        -13.997014839079055,
+        5.999502194798918,
+        3.00497526813488
+      ]
+    },
+    {
+      "progress": 0.0020831999999999878,
+      "elapsedSeconds": 0.08332799999999951,
+      "position": [
+        -13.997014839079055,
+        5.999502194798918,
+        3.00497526813488
+      ]
+    },
+    {
+      "progress": 0.0020831999999999878,
+      "elapsedSeconds": 0.08332799999999951,
+      "position": [
+        -13.997014839079055,
+        5.999502194798918,
+        3.00497526813488
+      ]
+    },
+    {
+      "progress": 0.0020831999999999878,
+      "elapsedSeconds": 0.08332799999999951,
+      "position": [
+        -13.997014839079055,
+        5.999502194798918,
+        3.00497526813488
+      ]
+    },
+    {
+      "progress": 0.015411599999999956,
+      "elapsedSeconds": 0.6164639999999982,
+      "position": [
+        -13.84261165700578,
+        5.973008091141646,
+        3.262304223030265
+      ]
+    },
+    {
+      "progress": 0.02875160000000001,
+      "elapsedSeconds": 1.1500640000000004,
+      "position": [
+        -13.473603187335728,
+        5.904103700142968,
+        3.8769737305480505
+      ]
+    },
+    {
+      "progress": 0.048746599999999994,
+      "elapsedSeconds": 1.9498639999999998,
+      "position": [
+        -12.57774456953909,
+        5.708988389628491,
+        5.363779366590981
+      ]
+    },
+    {
+      "progress": 0.05041659999999998,
+      "elapsedSeconds": 2.016663999999999,
+      "position": [
+        -12.486603004023198,
+        5.687269860311703,
+        5.514359180066254
+      ]
+    },
+    {
+      "progress": 0.09124159999999998,
+      "elapsedSeconds": 3.649663999999999,
+      "position": [
+        -9.649571598605501,
+        4.910076115426491,
+        10.084434027398972
+      ]
+    },
+    {
+      "progress": 0.09791159999999996,
+      "elapsedSeconds": 3.9164639999999986,
+      "position": [
+        -9.09700243170074,
+        4.747866186350687,
+        10.938643200778522
+      ]
+    },
+    {
+      "progress": 0.14541159999999995,
+      "elapsedSeconds": 5.816463999999998,
+      "position": [
+        -4.761989432820936,
+        3.584568362375747,
+        17.031999668118257
+      ]
+    },
+    {
+      "progress": 0.17041159999999994,
+      "elapsedSeconds": 6.816463999999998,
+      "position": [
+        -2.421084622942551,
+        3.1660919285598537,
+        19.745255765180698
+      ]
+    },
+    {
+      "progress": 0.18374659999999998,
+      "elapsedSeconds": 7.349863999999999,
+      "position": [
+        -1.2530080839490927,
+        3.0465560473657853,
+        20.90983147005595
+      ]
+    },
+    {
+      "progress": 0.19624159999999996,
+      "elapsedSeconds": 7.849663999999999,
+      "position": [
+        -0.2675289794079325,
+        3.0022040764643867,
+        21.781870887365987
+      ]
+    },
+    {
+      "progress": 0.20957660000000003,
+      "elapsedSeconds": 8.383064000000001,
+      "position": [
+        0.6622410548182125,
+        2.9961865010764726,
+        22.507061360635966
+      ]
+    },
+    {
+      "progress": 0.20957660000000003,
+      "elapsedSeconds": 8.383064000000001,
+      "position": [
+        0.6622410548182125,
+        2.9961865010764726,
+        22.507061360635966
+      ]
+    },
+    {
+      "progress": 0.20957660000000003,
+      "elapsedSeconds": 8.383064000000001,
+      "position": [
+        0.6622410548182125,
+        2.9961865010764726,
+        22.507061360635966
+      ]
+    },
+    {
+      "progress": 0.20957660000000003,
+      "elapsedSeconds": 8.383064000000001,
+      "position": [
+        0.6622410548182125,
+        2.9961865010764726,
+        22.507061360635966
+      ]
+    },
+    {
+      "progress": 0.20957660000000003,
+      "elapsedSeconds": 8.383064000000001,
+      "position": [
+        0.6622410548182125,
+        2.9961865010764726,
+        22.507061360635966
+      ]
+    },
+    {
+      "progress": 0.2279073000000002,
+      "elapsedSeconds": 9.116292000000008,
+      "position": [
+        1.929556917914391,
+        2.9692370961159633,
+        23.355998299882767
+      ]
+    },
+    {
+      "progress": 0.2379073000000002,
+      "elapsedSeconds": 9.516292000000009,
+      "position": [
+        2.6182208687644017,
+        2.9452381391243136,
+        23.75552755847314
+      ]
+    },
+    {
+      "progress": 0.26040730000000023,
+      "elapsedSeconds": 10.41629200000001,
+      "position": [
+        4.149628703829421,
+        2.8748901770974102,
+        24.5122979712764
+      ]
+    },
+    {
+      "progress": 0.26123730000000017,
+      "elapsedSeconds": 10.449492000000006,
+      "position": [
+        4.205440505235039,
+        2.8720255397380874,
+        24.5369838496157
+      ]
+    },
+    {
+      "progress": 0.29373730000000026,
+      "elapsedSeconds": 11.74949200000001,
+      "position": [
+        6.3363677085289405,
+        2.7627860232263375,
+        25.38989136337057
+      ]
+    },
+    {
+      "progress": 0.3254023000000003,
+      "elapsedSeconds": 13.016092000000013,
+      "position": [
+        8.279680924456006,
+        2.7046188893315035,
+        26.18319207918899
+      ]
+    },
+    {
+      "progress": 0.34956730000000025,
+      "elapsedSeconds": 13.98269200000001,
+      "position": [
+        9.638942616740335,
+        2.7274466505912667,
+        26.914356315756663
+      ]
+    },
+    {
+      "progress": 0.34956730000000025,
+      "elapsedSeconds": 13.98269200000001,
+      "position": [
+        9.638942616740335,
+        2.7274466505912667,
+        26.914356315756663
+      ]
+    },
+    {
+      "progress": 0.34956730000000025,
+      "elapsedSeconds": 13.98269200000001,
+      "position": [
+        9.638942616740335,
+        2.7274466505912667,
+        26.914356315756663
+      ]
+    },
+    {
+      "progress": 0.34956730000000025,
+      "elapsedSeconds": 13.98269200000001,
+      "position": [
+        9.638942616740335,
+        2.7274466505912667,
+        26.914356315756663
+      ]
+    },
+    {
+      "progress": 0.34956730000000025,
+      "elapsedSeconds": 13.98269200000001,
+      "position": [
+        9.638942616740335,
+        2.7274466505912667,
+        26.914356315756663
+      ]
+    },
+    {
+      "progress": 0.3620677000000004,
+      "elapsedSeconds": 14.482708000000015,
+      "position": [
+        10.287533109889694,
+        2.7674522447660843,
+        27.360317341405118
+      ]
+    },
+    {
+      "progress": 0.3628977000000003,
+      "elapsedSeconds": 14.515908000000012,
+      "position": [
+        10.32913834342425,
+        2.770798454354226,
+        27.391667984087082
+      ]
+    },
+    {
+      "progress": 0.3812327000000003,
+      "elapsedSeconds": 15.249308000000013,
+      "position": [
+        11.200445685179766,
+        2.8655887145326693,
+        28.13796502187578
+      ]
+    },
+    {
+      "progress": 0.40623270000000034,
+      "elapsedSeconds": 16.249308000000013,
+      "position": [
+        12.248762952855616,
+        3.0500277296633516,
+        29.29088066047691
+      ]
+    },
+    {
+      "progress": 0.4278977000000001,
+      "elapsedSeconds": 17.115908000000005,
+      "position": [
+        13.078584836036203,
+        3.2227918300399208,
+        30.161019388027306
+      ]
+    },
+    {
+      "progress": 0.4645627000000001,
+      "elapsedSeconds": 18.582508000000004,
+      "position": [
+        14.386101166454571,
+        3.5307444877686773,
+        31.29626203611481
+      ]
+    },
+    {
+      "progress": 0.46706270000000005,
+      "elapsedSeconds": 18.682508000000002,
+      "position": [
+        14.47271319594329,
+        3.5536735371831893,
+        31.364967826387588
+      ]
+    },
+    {
+      "progress": 0.5012327,
+      "elapsedSeconds": 20.049308,
+      "position": [
+        15.651075915050669,
+        3.9239603384791204,
+        32.305460709520865
+      ]
+    },
+    {
+      "progress": 0.5412327,
+      "elapsedSeconds": 21.649308,
+      "position": [
+        16.867035745455862,
+        4.608192228348566,
+        33.83761160621235
+      ]
+    },
+    {
+      "progress": 0.5537277,
+      "elapsedSeconds": 22.149108000000002,
+      "position": [
+        17.088517406841575,
+        4.884172074198912,
+        34.5259412593463
+      ]
+    },
+    {
+      "progress": 0.5537277,
+      "elapsedSeconds": 22.149108000000002,
+      "position": [
+        17.088517406841575,
+        4.884172074198912,
+        34.5259412593463
+      ]
+    },
+    {
+      "progress": 0.5537277,
+      "elapsedSeconds": 22.149108000000002,
+      "position": [
+        17.088517406841575,
+        4.884172074198912,
+        34.5259412593463
+      ]
+    },
+    {
+      "progress": 0.5537277,
+      "elapsedSeconds": 22.149108000000002,
+      "position": [
+        17.088517406841575,
+        4.884172074198912,
+        34.5259412593463
+      ]
+    },
+    {
+      "progress": 0.5537277,
+      "elapsedSeconds": 22.149108000000002,
+      "position": [
+        17.088517406841575,
+        4.884172074198912,
+        34.5259412593463
+      ]
+    },
+    {
+      "progress": 0.5537277,
+      "elapsedSeconds": 22.149108000000002,
+      "position": [
+        17.088517406841575,
+        4.884172074198912,
+        34.5259412593463
+      ]
+    },
+    {
+      "progress": 0.5537277,
+      "elapsedSeconds": 22.149108000000002,
+      "position": [
+        17.088517406841575,
+        4.884172074198912,
+        34.5259412593463
+      ]
+    },
+    {
+      "progress": 0.5662277,
+      "elapsedSeconds": 22.649108000000002,
+      "position": [
+        17.198163855247074,
+        5.174755244153348,
+        35.32254557899167
+      ]
+    },
+    {
+      "progress": 0.5762277,
+      "elapsedSeconds": 23.049108,
+      "position": [
+        17.209558372416357,
+        5.413360379847738,
+        36.0343783109054
+      ]
+    },
+    {
+      "progress": 0.6037277000000001,
+      "elapsedSeconds": 24.149108000000002,
+      "position": [
+        16.921801808021915,
+        6.101617845059906,
+        38.37096360111574
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6345577,
+      "elapsedSeconds": 25.382308,
+      "position": [
+        14.294023458888233,
+        7.293144654218294,
+        43.06802239720541
+      ]
+    },
+    {
+      "progress": 0.6420527,
+      "elapsedSeconds": 25.682108,
+      "position": [
+        13.163922095971554,
+        7.6489459939466595,
+        44.472496554904005
+      ]
+    },
+    {
+      "progress": 0.6687226999999997,
+      "elapsedSeconds": 26.748907999999986,
+      "position": [
+        8.093600648871307,
+        9.100673654978078,
+        49.73664492313681
+      ]
+    },
+    {
+      "progress": 0.6878876999999998,
+      "elapsedSeconds": 27.51550799999999,
+      "position": [
+        3.8676544510033724,
+        10.326239908370695,
+        53.41787092582365
+      ]
+    },
+    {
+      "progress": 0.7137176999999996,
+      "elapsedSeconds": 28.548707999999984,
+      "position": [
+        -1.828972525488053,
+        12.209217063153043,
+        57.642171396286265
+      ]
+    },
+    {
+      "progress": 0.7145526999999998,
+      "elapsedSeconds": 28.58210799999999,
+      "position": [
+        -2.003392007417405,
+        12.273844173755663,
+        57.757565516748684
+      ]
+    },
+    {
+      "progress": 0.7462176999999997,
+      "elapsedSeconds": 29.848707999999984,
+      "position": [
+        -7.535406976774315,
+        14.73611111507149,
+        60.81718163721549
+      ]
+    },
+    {
+      "progress": 0.7695476999999994,
+      "elapsedSeconds": 30.781907999999977,
+      "position": [
+        -10.287226431577096,
+        16.364837662300296,
+        61.687455777587914
+      ]
+    },
+    {
+      "progress": 0.7820476999999993,
+      "elapsedSeconds": 31.281907999999973,
+      "position": [
+        -11.755214364102343,
+        17.2782591282455,
+        61.94298193636472
+      ]
+    },
+    {
+      "progress": 0.7895476999999993,
+      "elapsedSeconds": 31.58190799999997,
+      "position": [
+        -12.627902382198268,
+        17.837938652189248,
+        62.02290582516928
+      ]
+    },
+    {
+      "progress": 0.8145476999999992,
+      "elapsedSeconds": 32.58190799999997,
+      "position": [
+        -15.425985588372303,
+        19.737187291357337,
+        61.89615373376276
+      ]
+    },
+    {
+      "progress": 0.8162126999999995,
+      "elapsedSeconds": 32.64850799999998,
+      "position": [
+        -15.603662998010321,
+        19.864193800815286,
+        61.86745810646403
+      ]
+    },
+    {
+      "progress": 0.8420426999999993,
+      "elapsedSeconds": 33.68170799999997,
+      "position": [
+        -18.169284665305756,
+        21.80985379669043,
+        61.15674979626011
+      ]
+    },
+    {
+      "progress": 0.8420426999999993,
+      "elapsedSeconds": 33.68170799999997,
+      "position": [
+        -18.169284665305756,
+        21.80985379669043,
+        61.15674979626011
+      ]
+    },
+    {
+      "progress": 0.8420426999999993,
+      "elapsedSeconds": 33.68170799999997,
+      "position": [
+        -18.169284665305756,
+        21.80985379669043,
+        61.15674979626011
+      ]
+    },
+    {
+      "progress": 0.8420426999999993,
+      "elapsedSeconds": 33.68170799999997,
+      "position": [
+        -18.169284665305756,
+        21.80985379669043,
+        61.15674979626011
+      ]
+    },
+    {
+      "progress": 0.8553812999999989,
+      "elapsedSeconds": 34.21525199999996,
+      "position": [
+        -19.33530200855938,
+        22.779627912935073,
+        60.63887810622369
+      ]
+    },
+    {
+      "progress": 0.8620462999999988,
+      "elapsedSeconds": 34.481851999999954,
+      "position": [
+        -19.874303535757814,
+        23.250932544243913,
+        60.35515332799755
+      ]
+    },
+    {
+      "progress": 0.8987112999999983,
+      "elapsedSeconds": 35.94845199999993,
+      "position": [
+        -22.31708353331908,
+        25.63005239091958,
+        58.6852133326301
+      ]
+    },
+    {
+      "progress": 0.9345412999999978,
+      "elapsedSeconds": 37.38165199999991,
+      "position": [
+        -23.899140385264147,
+        27.479474833760204,
+        57.224846989372786
+      ]
+    },
+    {
+      "progress": 0.9445412999999977,
+      "elapsedSeconds": 37.78165199999991,
+      "position": [
+        -24.210984917864227,
+        27.886307491183377,
+        56.896659851852604
+      ]
+    },
+    {
+      "progress": 0.9753762999999976,
+      "elapsedSeconds": 39.015051999999905,
+      "position": [
+        -24.843113519458306,
+        28.76767743557589,
+        56.18621428704298
+      ]
+    },
+    {
+      "progress": 0.9953712999999977,
+      "elapsedSeconds": 39.81485199999991,
+      "position": [
+        -24.994354117409454,
+        28.991535157286876,
+        56.00677238238152
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0.0016650000000001455,
+      "elapsedSeconds": 0.06660000000000582,
+      "position": [
+        -13.998090878864362,
+        5.999681699270319,
+        3.003181868541951
+      ]
+    },
+    {
+      "progress": 0.0016650000000001455,
+      "elapsedSeconds": 0.06660000000000582,
+      "position": [
+        -13.998090878864362,
+        5.999681699270319,
+        3.003181868541951
+      ]
+    },
+    {
+      "progress": 0.0016650000000001455,
+      "elapsedSeconds": 0.06660000000000582,
+      "position": [
+        -13.998090878864362,
+        5.999681699270319,
+        3.003181868541951
+      ]
+    },
+    {
+      "progress": 0.0016650000000001455,
+      "elapsedSeconds": 0.06660000000000582,
+      "position": [
+        -13.998090878864362,
+        5.999681699270319,
+        3.003181868541951
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0.0025002000000000405,
+      "elapsedSeconds": 0.10000800000000162,
+      "position": [
+        -13.995705040253553,
+        5.999283597195701,
+        3.0071582660454537
+      ]
+    },
+    {
+      "progress": 0.0025002000000000405,
+      "elapsedSeconds": 0.10000800000000162,
+      "position": [
+        -13.995705040253553,
+        5.999283597195701,
+        3.0071582660454537
+      ]
+    },
+    {
+      "progress": 0.0025002000000000405,
+      "elapsedSeconds": 0.10000800000000162,
+      "position": [
+        -13.995705040253553,
+        5.999283597195701,
+        3.0071582660454537
+      ]
+    },
+    {
+      "progress": 0.0025002000000000405,
+      "elapsedSeconds": 0.10000800000000162,
+      "position": [
+        -13.995705040253553,
+        5.999283597195701,
+        3.0071582660454537
+      ]
+    },
+    {
+      "progress": 0.0025002000000000405,
+      "elapsedSeconds": 0.10000800000000162,
+      "position": [
+        -13.995705040253553,
+        5.999283597195701,
+        3.0071582660454537
+      ]
+    },
+    {
+      "progress": 0.0025002000000000405,
+      "elapsedSeconds": 0.10000800000000162,
+      "position": [
+        -13.995705040253553,
+        5.999283597195701,
+        3.0071582660454537
+      ]
+    },
+    {
+      "progress": 0.014165200000000183,
+      "elapsedSeconds": 0.5666080000000073,
+      "position": [
+        -13.866550849210196,
+        5.977210244204179,
+        3.2224093407127725
+      ]
+    },
+    {
+      "progress": 0.03833020000000033,
+      "elapsedSeconds": 1.5332080000000132,
+      "position": [
+        -13.091547065323198,
+        5.825287124258019,
+        4.5123067564205535
+      ]
+    },
+    {
+      "progress": 0.051665200000000175,
+      "elapsedSeconds": 2.066608000000007,
+      "position": [
+        -12.416957953018038,
+        5.670471711309368,
+        5.629315967336325
+      ]
+    },
+    {
+      "progress": 0.06499520000000045,
+      "elapsedSeconds": 2.599808000000018,
+      "position": [
+        -11.598499959031606,
+        5.461594832544339,
+        6.972049707544439
+      ]
+    },
+    {
+      "progress": 0.0733302000000003,
+      "elapsedSeconds": 2.933208000000012,
+      "position": [
+        -11.023451965798364,
+        5.3047142534629295,
+        7.904466940873479
+      ]
+    },
+    {
+      "progress": 0.0733302000000003,
+      "elapsedSeconds": 2.933208000000012,
+      "position": [
+        -11.023451965798364,
+        5.3047142534629295,
+        7.904466940873479
+      ]
+    },
+    {
+      "progress": 0.0733302000000003,
+      "elapsedSeconds": 2.933208000000012,
+      "position": [
+        -11.023451965798364,
+        5.3047142534629295,
+        7.904466940873479
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0.0033299999999995633,
+      "elapsedSeconds": 0.13319999999998253,
+      "position": [
+        -13.992398222033716,
+        5.998731232706654,
+        3.012669628842731
+      ]
+    },
+    {
+      "progress": 0.0033299999999995633,
+      "elapsedSeconds": 0.13319999999998253,
+      "position": [
+        -13.992398222033716,
+        5.998731232706654,
+        3.012669628842731
+      ]
+    },
+    {
+      "progress": 0.0033299999999995633,
+      "elapsedSeconds": 0.13319999999998253,
+      "position": [
+        -13.992398222033716,
+        5.998731232706654,
+        3.012669628842731
+      ]
+    },
+    {
+      "progress": 0.0033299999999995633,
+      "elapsedSeconds": 0.13319999999998253,
+      "position": [
+        -13.992398222033716,
+        5.998731232706654,
+        3.012669628842731
+      ]
+    },
+    {
+      "progress": 0.004994999999998981,
+      "elapsedSeconds": 0.19979999999995926,
+      "position": [
+        -13.982972787758365,
+        5.997153088465698,
+        3.0283786747028754
+      ]
+    },
+    {
+      "progress": 0.03665999999999912,
+      "elapsedSeconds": 1.4663999999999646,
+      "position": [
+        -13.164695565959999,
+        5.840920031718,
+        4.390783458010098
+      ]
+    },
+    {
+      "progress": 0.03999499999999897,
+      "elapsedSeconds": 1.5997999999999588,
+      "position": [
+        -13.016023182166686,
+        5.808891555907678,
+        4.6377071989459155
+      ]
+    },
+    {
+      "progress": 0.03999499999999897,
+      "elapsedSeconds": 1.5997999999999588,
+      "position": [
+        -13.016023182166686,
+        5.808891555907678,
+        4.6377071989459155
+      ]
+    },
+    {
+      "progress": 0.03999499999999897,
+      "elapsedSeconds": 1.5997999999999588,
+      "position": [
+        -13.016023182166686,
+        5.808891555907678,
+        4.6377071989459155
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0.0008320999999996274,
+      "elapsedSeconds": 0.033283999999985096,
+      "position": [
+        -13.999522080300311,
+        5.999920339579377,
+        3.000796532832543
+      ]
+    },
+    {
+      "progress": 0.0008320999999996274,
+      "elapsedSeconds": 0.033283999999985096,
+      "position": [
+        -13.999522080300311,
+        5.999920339579377,
+        3.000796532832543
+      ]
+    },
+    {
+      "progress": 0.0008320999999996274,
+      "elapsedSeconds": 0.033283999999985096,
+      "position": [
+        -13.999522080300311,
+        5.999920339579377,
+        3.000796532832543
+      ]
+    },
+    {
+      "progress": 0.0008320999999996274,
+      "elapsedSeconds": 0.033283999999985096,
+      "position": [
+        -13.999522080300311,
+        5.999920339579377,
+        3.000796532832543
+      ]
+    },
+    {
+      "progress": 0.0008320999999996274,
+      "elapsedSeconds": 0.033283999999985096,
+      "position": [
+        -13.999522080300311,
+        5.999920339579377,
+        3.000796532832543
+      ]
+    },
+    {
+      "progress": 0.0008320999999996274,
+      "elapsedSeconds": 0.033283999999985096,
+      "position": [
+        -13.999522080300311,
+        5.999920339579377,
+        3.000796532832543
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0.0004158499999999549,
+      "elapsedSeconds": 0.016633999999998195,
+      "position": [
+        -13.999880496989787,
+        5.999980082385356,
+        3.0001991716836796
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0.003332775000000038,
+      "elapsedSeconds": 0.1333110000000015,
+      "position": [
+        -13.992385604576944,
+        5.998729123805231,
+        3.012690657931857
+      ]
+    },
+    {
+      "progress": 0.006456524999999966,
+      "elapsedSeconds": 0.25826099999999863,
+      "position": [
+        -13.971661667455704,
+        5.995251928877027,
+        3.0472304972721833
+      ]
+    },
+    {
+      "progress": 0.015624024999999892,
+      "elapsedSeconds": 0.6249609999999957,
+      "position": [
+        -13.838344463286413,
+        5.972255478127195,
+        3.26941540625713
+      ]
+    },
+    {
+      "progress": 0.01624902499999989,
+      "elapsedSeconds": 0.6499609999999956,
+      "position": [
+        -13.825470465467474,
+        5.969978345653957,
+        3.290869369033251
+      ]
+    },
+    {
+      "progress": 0.022081524999999963,
+      "elapsedSeconds": 0.8832609999999985,
+      "position": [
+        -13.683209448742689,
+        5.944174985112459,
+        3.527906061617132
+      ]
+    },
+    {
+      "progress": 0.022081524999999963,
+      "elapsedSeconds": 0.8832609999999985,
+      "position": [
+        -13.683209448742689,
+        5.944174985112459,
+        3.527906061617132
+      ]
+    },
+    {
+      "progress": 0.022081524999999963,
+      "elapsedSeconds": 0.8832609999999985,
+      "position": [
+        -13.683209448742689,
+        5.944174985112459,
+        3.527906061617132
+      ]
+    },
+    {
+      "progress": 0.022081524999999963,
+      "elapsedSeconds": 0.8832609999999985,
+      "position": [
+        -13.683209448742689,
+        5.944174985112459,
+        3.527906061617132
+      ]
+    },
+    {
+      "progress": 0.022081524999999963,
+      "elapsedSeconds": 0.8832609999999985,
+      "position": [
+        -13.683209448742689,
+        5.944174985112459,
+        3.527906061617132
+      ]
+    },
+    {
+      "progress": 0.022081524999999963,
+      "elapsedSeconds": 0.8832609999999985,
+      "position": [
+        -13.683209448742689,
+        5.944174985112459,
+        3.527906061617132
+      ]
+    },
+    {
+      "progress": 0.022081524999999963,
+      "elapsedSeconds": 0.8832609999999985,
+      "position": [
+        -13.683209448742689,
+        5.944174985112459,
+        3.527906061617132
+      ]
+    },
+    {
+      "progress": 0.022081524999999963,
+      "elapsedSeconds": 0.8832609999999985,
+      "position": [
+        -13.683209448742689,
+        5.944174985112459,
+        3.527906061617132
+      ]
+    },
+    {
+      "progress": 0.022081524999999963,
+      "elapsedSeconds": 0.8832609999999985,
+      "position": [
+        -13.683209448742689,
+        5.944174985112459,
+        3.527906061617132
+      ]
+    },
+    {
+      "progress": 0.022081524999999963,
+      "elapsedSeconds": 0.8832609999999985,
+      "position": [
+        -13.683209448742689,
+        5.944174985112459,
+        3.527906061617132
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0.0027075000000000736,
+      "elapsedSeconds": 0.10830000000000294,
+      "position": [
+        -13.994966148292832,
+        5.999160233299902,
+        3.008389752525503
+      ]
+    },
+    {
+      "progress": 0.0027075000000000736,
+      "elapsedSeconds": 0.10830000000000294,
+      "position": [
+        -13.994966148292832,
+        5.999160233299902,
+        3.008389752525503
+      ]
+    },
+    {
+      "progress": 0.0027075000000000736,
+      "elapsedSeconds": 0.10830000000000294,
+      "position": [
+        -13.994966148292832,
+        5.999160233299902,
+        3.008389752525503
+      ]
+    },
+    {
+      "progress": 0.0027075000000000736,
+      "elapsedSeconds": 0.10830000000000294,
+      "position": [
+        -13.994966148292832,
+        5.999160233299902,
+        3.008389752525503
+      ]
+    },
+    {
+      "progress": 0.0027075000000000736,
+      "elapsedSeconds": 0.10830000000000294,
+      "position": [
+        -13.994966148292832,
+        5.999160233299902,
+        3.008389752525503
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "position": [
+        -14,
+        6,
+        3
+      ]
+    },
+    {
+      "progress": 0.0029163499999998754,
+      "elapsedSeconds": 0.11665399999999501,
+      "position": [
+        -13.994162925892411,
+        5.999026090282941,
+        3.009728456347435
+      ]
+    },
+    {
+      "progress": 0.01208259999999973,
+      "elapsedSeconds": 0.4833039999999892,
+      "position": [
+        -13.902314334993145,
+        5.983424112773303,
+        3.1628071182216018
+      ]
+    },
+    {
+      "progress": 0.01833259999999973,
+      "elapsedSeconds": 0.7333039999999892,
+      "position": [
+        -13.779200624426858,
+        5.9617139226299445,
+        3.3679723302389593
+      ]
+    },
+    {
+      "progress": 0.021248849999999948,
+      "elapsedSeconds": 0.8499539999999979,
+      "position": [
+        -13.7059200350247,
+        5.948371843485011,
+        3.490070638330963
+      ]
+    },
+    {
+      "progress": 0.025000100000000018,
+      "elapsedSeconds": 1.0000040000000008,
+      "position": [
+        -13.597473530197048,
+        5.9280723430402364,
+        3.6707178658340394
+      ]
+    },
+    {
+      "progress": 0.025000100000000018,
+      "elapsedSeconds": 1.0000040000000008,
+      "position": [
+        -13.597473530197048,
+        5.9280723430402364,
+        3.6707178658340394
+      ]
+    },
+    {
+      "progress": 0.025000100000000018,
+      "elapsedSeconds": 1.0000040000000008,
+      "position": [
+        -13.597473530197048,
+        5.9280723430402364,
+        3.6707178658340394
+      ]
+    },
+    {
+      "progress": 0.025000100000000018,
+      "elapsedSeconds": 1.0000040000000008,
+      "position": [
+        -13.597473530197048,
+        5.9280723430402364,
+        3.6707178658340394
+      ]
+    },
+    {
+      "progress": 0.025000100000000018,
+      "elapsedSeconds": 1.0000040000000008,
+      "position": [
+        -13.597473530197048,
+        5.9280723430402364,
+        3.6707178658340394
+      ]
+    }
+  ],
+  "baseline": {
+    "sourceHash": "f0896bd0e971c962c4f5b6743b946cdedf13f8e78ca2d8ad24adf31a5b30c295",
+    "uiHash": "87b6b0e935e78cdede9ed36d2da59351c0efec28d8c573ff86e78e4c06cb34e3",
+    "captures": [
+      {
+        "name": "cloud-wide",
+        "width": 1280,
+        "height": 800,
+        "pixelHash": "ce4932eb9221caa11fa2e338613aec5f02d68bfc4312aa36cfa1fe7ef6c8aab0",
+        "stats": {
+          "mean": 7.235338664487485,
+          "clippedWhiteFraction": 0.000035084949433816626,
+          "luminousFraction": 0.24746291959406713,
+          "colorFraction": 0.18076643072038173,
+          "max": 255
+        },
+        "snapshot": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 60,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              0,
+              0,
+              0
+            ],
+            "yaw": 0.25877089196369774,
+            "pitch": -0.0568038385835116,
+            "distanceLy": 0,
+            "universeYears": 0,
+            "travelerYears": 0
+          },
+          "targetId": null
+        }
+      },
+      {
+        "name": "cloud-front",
+        "width": 1280,
+        "height": 800,
+        "pixelHash": "165838b7bc946f4d8b97cfa108b6a409e4a9e3bf0b8ff59e2338ff75eab7e780",
+        "stats": {
+          "mean": 5.6203076143075,
+          "clippedWhiteFraction": 0.000017542474716908313,
+          "luminousFraction": 0.19135331421203589,
+          "colorFraction": 0.20653632607952005,
+          "max": 255
+        },
+        "snapshot": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 50,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              13,
+              -7,
+              24
+            ],
+            "yaw": 5.902678930067221,
+            "pitch": 0.4346312457422351,
+            "distanceLy": 0,
+            "universeYears": 0,
+            "travelerYears": 0
+          },
+          "targetId": null
+        }
+      },
+      {
+        "name": "cloud-side",
+        "width": 1280,
+        "height": 800,
+        "pixelHash": "2bc2a7ead4b480ca9a57c44c6f5f002e9652dfbfc831de60a97bf948c4f6e057",
+        "stats": {
+          "mean": 5.674664959778128,
+          "clippedWhiteFraction": 0.00002631371207536247,
+          "luminousFraction": 0.203194484645949,
+          "colorFraction": 0.1856870948784745,
+          "max": 255
+        },
+        "snapshot": {
+          "version": 1,
+          "settings": {
+            "mode": "explore",
+            "region": "neighborhood",
+            "beta": 0.9,
+            "compareRest": false,
+            "fov": 60,
+            "exposure": 1,
+            "quality": "auto"
+          },
+          "state": {
+            "position": [
+              21,
+              4,
+              38
+            ],
+            "yaw": 4.3906384259880475,
+            "pitch": -0.4429110440736389,
+            "distanceLy": 0,
+            "universeYears": 0,
+            "travelerYears": 0
+          },
+          "targetId": null
+        }
+      }
+    ],
+    "regions": {
+      "neighborhood": {
+        "count": 19203,
+        "hash": "357c06122c25540fcbc1d87d29f3c8fc5c362c2257ff56bb3be61efe0709b448"
+      },
+      "galaxy": {
+        "count": 36400,
+        "hash": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab"
+      },
+      "cosmic": {
+        "count": 41470,
+        "hash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85"
+      }
+    },
+    "shaderHash": "edabbf078ab6dbfed388aa01a57754a78557f2706c3bfa23772ec235c201c78d",
+    "math": {
+      "gamma": 7.088812050083356,
+      "aberrate": [
+        0.03703375788910289,
+        -0.018516878944551445,
+        0.9991424452853377
+      ],
+      "spectrum": {
+        "angleDeg": 20.561888495621638,
+        "doppler": 1.9305897064531514,
+        "observedNm": 284.88704677207215,
+        "band": "ultraviolet"
+      },
+      "clock": {
+        "shipSeconds": 2,
+        "starSeconds": 14.177624100166712,
+        "horizontalLightSeconds": 14.035847859165045,
+        "photonPathLightSeconds": 14.177624100166712
+      }
+    },
+    "halo": {
+      "id": "halo",
+      "name": "Halo flyby",
+      "region": "galaxy",
+      "durationSeconds": 36,
+      "position": [
+        3957.7186846376026,
+        27436.312283454703,
+        -23854.48402140951
+      ],
+      "aim": [
+        23665.618022678005,
+        436.3122834547021,
+        -21488.326021261044
+      ],
+      "fov": 60,
+      "targetId": "halo-cluster-2"
+    },
+    "atlases": [
+      {
+        "width": 2048,
+        "height": 512,
+        "hash": "3135bffe25b58c296e91078ab00b7218322ba89fd9d80f4d998e65cbe4579d71"
+      },
+      {
+        "width": 512,
+        "height": 128,
+        "hash": "ef4e883442608eecfaf0f0ad892c750a5c91699fa6b43506761ae01ac8a8aa86"
+      }
+    ]
+  },
+  "served": [
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/stem_tool_universe.js",
+      "status": 200,
+      "hash": "c62192550355331eff8b825d2daf25b72a1e30d71d1b377186919f2aa710621c"
+    },
+    {
+      "url": "http://127.0.0.1:3187/stem_lab/universe_flight_scene.js",
+      "status": 200,
+      "hash": "2aefa6899647099c0ca62b80d529675f30c0bcf979e538f4748c6ab5e5036ffc"
+    }
+  ],
+  "catalog": {
+    "flybys": [
+      {
+        "id": "halo",
+        "name": "Halo flyby",
+        "region": "galaxy",
+        "durationSeconds": 36,
+        "position": [
+          3957.7186846376026,
+          27436.312283454703,
+          -23854.48402140951
+        ],
+        "aim": [
+          23665.618022678005,
+          436.3122834547021,
+          -21488.326021261044
+        ],
+        "fov": 60,
+        "targetId": "halo-cluster-2"
+      },
+      {
+        "id": "nebula",
+        "name": "Nebula passage",
+        "region": "neighborhood",
+        "durationSeconds": 40,
+        "position": [
+          -14,
+          6,
+          3
+        ],
+        "aim": [
+          9,
+          -2,
+          34
+        ],
+        "fov": 64,
+        "targetId": "blue-nebula"
+      }
+    ],
+    "landmarks": [
+      {
+        "id": "amber-star",
+        "name": "Amber star",
+        "kind": "Generated star",
+        "description": "A warm-colored model star close enough to show clear parallax as you move.",
+        "position": [
+          -3.1,
+          1,
+          8.5
+        ],
+        "arrivalRadiusLy": 0.6
+      },
+      {
+        "id": "blue-star",
+        "name": "Blue star",
+        "kind": "Generated star",
+        "description": "A blue-white model star. Compare its apparent direction and frequency shift at different traveler speeds.",
+        "position": [
+          4.3,
+          -2.2,
+          16
+        ],
+        "arrivalRadiusLy": 0.8
+      },
+      {
+        "id": "pale-star",
+        "name": "Pale star",
+        "kind": "Generated star",
+        "description": "A more distant model star for comparing perspective and changing lines of sight.",
+        "position": [
+          0.65,
+          2.4,
+          24
+        ],
+        "arrivalRadiusLy": 1
+      },
+      {
+        "id": "blue-nebula",
+        "name": "Blue emission region",
+        "kind": "Generated emission region",
+        "description": "A nearby model of layered glowing filaments. Its colors and brightness are illustrative; the gaps represent reduced emission, not measured dust extinction.",
+        "position": [
+          9,
+          -2,
+          34
+        ],
+        "arrivalRadiusLy": 20
+      },
+      {
+        "id": "violet-nebula",
+        "name": "Violet emission region",
+        "kind": "Generated emission region",
+        "description": "A larger generated cloud beyond the blue region. Move sideways to compare foreground filaments with the distant stellar background.",
+        "position": [
+          -22,
+          11,
+          83
+        ],
+        "arrivalRadiusLy": 32
+      },
+      {
+        "id": "galactic-center",
+        "name": "Galactic center",
+        "kind": "Generated galactic region",
+        "description": "The central bulge of this spiral model. The approach stops outside the bright central region.",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "arrivalRadiusLy": 18000
+      },
+      {
+        "id": "inner-arm",
+        "name": "Inner spiral arm",
+        "kind": "Generated galactic region",
+        "description": "A survey point within a spiral arm, where the disk has visible thickness and depth.",
+        "position": [
+          -20170,
+          10020,
+          -4410
+        ],
+        "arrivalRadiusLy": 3500
+      },
+      {
+        "id": "disk-edge",
+        "name": "Outer disk",
+        "kind": "Generated galactic region",
+        "description": "A survey point near the outer edge of the tilted disk. Look back toward the central bulge.",
+        "position": [
+          48795,
+          -10911,
+          0
+        ],
+        "arrivalRadiusLy": 5500
+      },
+      {
+        "id": "halo-cluster-1",
+        "name": "Halo cluster 1",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -17660.331241842043,
+          3506.9839554694113,
+          12033.859063679367
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-2",
+        "name": "Halo cluster 2",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          23665.618022678005,
+          436.3122834547021,
+          -21488.326021261044
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-3",
+        "name": "Halo cluster 3",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -29510.866276313078,
+          14665.382399636474,
+          -15589.59045947007
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-4",
+        "name": "Halo cluster 4",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          11661.460338228979,
+          -2839.259820481433,
+          24838.4570062577
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-5",
+        "name": "Halo cluster 5",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          23702.930351504907,
+          -17726.14860298719,
+          22999.01624975562
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-6",
+        "name": "Halo cluster 6",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -15336.802827919615,
+          -18178.77291197568,
+          -9814.005014892553
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "near-galaxy",
+        "name": "Nearby spiral",
+        "kind": "Generated galaxy",
+        "description": "The foreground spiral in this generated galaxy group. Its luminous points represent collective starlight.",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "arrivalRadiusLy": 360000
+      },
+      {
+        "id": "companion-galaxy",
+        "name": "Companion spiral",
+        "kind": "Generated galaxy",
+        "description": "A second spiral beyond the foreground galaxy. These positions form a teaching model, not a mapped catalog.",
+        "position": [
+          -480000,
+          190000,
+          1300000
+        ],
+        "arrivalRadiusLy": 330000
+      },
+      {
+        "id": "distant-galaxy",
+        "name": "Distant spiral",
+        "kind": "Generated galaxy",
+        "description": "A more distant spiral among the model filaments. Watch the nearer galaxies separate as you approach.",
+        "position": [
+          2100000,
+          -800000,
+          4200000
+        ],
+        "arrivalRadiusLy": 300000
+      },
+      {
+        "id": "golden-elliptical",
+        "name": "Golden elliptical",
+        "kind": "Generated galaxy",
+        "description": "A smooth, warm-colored galaxy model with a broad stellar halo. Compare its shape with the neighboring spirals.",
+        "position": [
+          800000,
+          550000,
+          850000
+        ],
+        "arrivalRadiusLy": 250000
+      }
+    ],
+    "galaxy": [
+      {
+        "id": "galactic-center",
+        "name": "Galactic center",
+        "kind": "Generated galactic region",
+        "description": "The central bulge of this spiral model. The approach stops outside the bright central region.",
+        "position": [
+          0,
+          0,
+          0
+        ],
+        "arrivalRadiusLy": 18000
+      },
+      {
+        "id": "inner-arm",
+        "name": "Inner spiral arm",
+        "kind": "Generated galactic region",
+        "description": "A survey point within a spiral arm, where the disk has visible thickness and depth.",
+        "position": [
+          -20170,
+          10020,
+          -4410
+        ],
+        "arrivalRadiusLy": 3500
+      },
+      {
+        "id": "disk-edge",
+        "name": "Outer disk",
+        "kind": "Generated galactic region",
+        "description": "A survey point near the outer edge of the tilted disk. Look back toward the central bulge.",
+        "position": [
+          48795,
+          -10911,
+          0
+        ],
+        "arrivalRadiusLy": 5500
+      },
+      {
+        "id": "halo-cluster-1",
+        "name": "Halo cluster 1",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -17660.331241842043,
+          3506.9839554694113,
+          12033.859063679367
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-2",
+        "name": "Halo cluster 2",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          23665.618022678005,
+          436.3122834547021,
+          -21488.326021261044
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-3",
+        "name": "Halo cluster 3",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -29510.866276313078,
+          14665.382399636474,
+          -15589.59045947007
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-4",
+        "name": "Halo cluster 4",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          11661.460338228979,
+          -2839.259820481433,
+          24838.4570062577
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-5",
+        "name": "Halo cluster 5",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          23702.930351504907,
+          -17726.14860298719,
+          22999.01624975562
+        ],
+        "arrivalRadiusLy": 600
+      },
+      {
+        "id": "halo-cluster-6",
+        "name": "Halo cluster 6",
+        "kind": "Generated stellar group",
+        "description": "A compact generated group of warm stars in the spiral model’s halo. Its position and members are illustrative teaching scenery.",
+        "position": [
+          -15336.802827919615,
+          -18178.77291197568,
+          -9814.005014892553
+        ],
+        "arrivalRadiusLy": 600
+      }
+    ]
+  },
+  "launches": [
+    {
+      "args": [
+        "nebula"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090455,
+          "pitch": -0.20435795397056333,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090458,
+          "pitch": -0.20435795397056328,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "args": [
+        "nebula"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090455,
+          "pitch": -0.20435795397056333,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090458,
+          "pitch": -0.20435795397056328,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "args": [
+        "nebula"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090455,
+          "pitch": -0.20435795397056333,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090458,
+          "pitch": -0.20435795397056328,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "args": [
+        "nebula"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090455,
+          "pitch": -0.20435795397056333,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090458,
+          "pitch": -0.20435795397056328,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "args": [
+        "nebula"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090455,
+          "pitch": -0.20435795397056333,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090458,
+          "pitch": -0.20435795397056328,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "args": [
+        "nebula"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090455,
+          "pitch": -0.20435795397056333,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090458,
+          "pitch": -0.20435795397056328,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "args": [
+        "nebula"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090455,
+          "pitch": -0.20435795397056333,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090458,
+          "pitch": -0.20435795397056328,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "args": [
+        "nebula"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090455,
+          "pitch": -0.20435795397056333,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090458,
+          "pitch": -0.20435795397056328,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    },
+    {
+      "args": [
+        "nebula"
+      ],
+      "before": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090455,
+          "pitch": -0.20435795397056333,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      },
+      "accepted": true,
+      "after": {
+        "version": 1,
+        "settings": {
+          "mode": "explore",
+          "region": "neighborhood",
+          "beta": 0.9,
+          "compareRest": false,
+          "fov": 64,
+          "exposure": 1,
+          "quality": "auto"
+        },
+        "state": {
+          "position": [
+            -14,
+            6,
+            3
+          ],
+          "yaw": 0.6383198080090458,
+          "pitch": -0.20435795397056328,
+          "distanceLy": 0,
+          "universeYears": 0,
+          "travelerYears": 0
+        },
+        "targetId": "blue-nebula"
+      }
+    }
+  ],
+  "travelDifference": {
+    "meanAbsolute": 5.817789238860805,
+    "changedFraction": 0.37117245129770454
+  },
+  "depthDifference": {
+    "meanAbsolute": 4.200785318118476,
+    "changedFraction": 0.32424633142997483
+  },
+  "revealDifference": {
+    "meanAbsolute": 4.811131869706075,
+    "changedFraction": 0.3506214421668465
+  },
+  "completion": {
+    "snapshot": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "neighborhood",
+        "beta": 0.9,
+        "compareRest": false,
+        "fov": 64,
+        "exposure": 1,
+        "quality": "auto"
+      },
+      "state": {
+        "position": [
+          -25,
+          29,
+          56
+        ],
+        "yaw": 0.1088384853470874,
+        "pitch": -0.5842927881665522,
+        "distanceLy": 109.12428901563214,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": "violet-nebula"
+    },
+    "info": {
+      "distanceLy": 109.12428901563214,
+      "universeYears": 0,
+      "travelerYears": 0,
+      "position": [
+        -25,
+        29,
+        56
+      ],
+      "yaw": 0.1088384853470874,
+      "pitch": -0.5842927881665522,
+      "running": false,
+      "target": {
+        "id": "violet-nebula",
+        "name": "Violet emission region",
+        "distanceLy": 32.58834147360065,
+        "coincident": false,
+        "guide": {
+          "screen": [
+            0.5007582226795658,
+            0.5007060439849829
+          ],
+          "inView": true,
+          "angleDeg": 0.10050823942473552,
+          "behind": false,
+          "sector": "lower-right",
+          "arrowDeg": 30.198947457447762,
+          "edge": [
+            0.9,
+            0.8724731554519689
+          ]
+        },
+        "screen": [
+          0.5007582226795658,
+          0.5007060439849829
+        ],
+        "inView": true,
+        "doppler": 1,
+        "restAngleDeg": 34.05328595531461,
+        "apparentAngleDeg": 34.05328595531461
+      },
+      "navigation": {
+        "active": false,
+        "targetId": null,
+        "completed": false,
+        "alreadyWithin": false,
+        "remainingLy": 0,
+        "arrivalRadiusLy": 0,
+        "estimatedSeconds": 0,
+        "progress": 0
+      },
+      "flyby": {
+        "active": false,
+        "completed": true,
+        "id": "nebula",
+        "name": "Nebula passage",
+        "progress": 1,
+        "elapsedSeconds": 40,
+        "durationSeconds": 40,
+        "autoLook": true,
+        "phase": "complete",
+        "rate": 2
+      },
+      "orbit": {
+        "active": false,
+        "targetId": null
+      },
+      "motion": {
+        "smoothTravel": true,
+        "paceLyPerSecond": 0,
+        "targetLyPerSecond": 0.38409044412331594,
+        "kind": "free"
+      },
+      "framing": {
+        "canLeft": true,
+        "canCenter": true,
+        "canRight": true,
+        "canUndo": false,
+        "placement": null
+      },
+      "trail": [
+        [
+          -14,
+          6,
+          3
+        ],
+        [
+          -13.997014839079055,
+          5.999502194798918,
+          3.00497526813488
+        ],
+        [
+          -13.84261165700578,
+          5.973008091141646,
+          3.262304223030265
+        ],
+        [
+          -13.473603187335728,
+          5.904103700142968,
+          3.8769737305480505
+        ],
+        [
+          -12.57774456953909,
+          5.708988389628491,
+          5.363779366590981
+        ],
+        [
+          -12.486603004023198,
+          5.687269860311703,
+          5.514359180066254
+        ],
+        [
+          -9.649571598605501,
+          4.910076115426491,
+          10.084434027398972
+        ],
+        [
+          -9.09700243170074,
+          4.747866186350687,
+          10.938643200778522
+        ],
+        [
+          -4.761989432820936,
+          3.584568362375747,
+          17.031999668118257
+        ],
+        [
+          -2.421084622942551,
+          3.1660919285598537,
+          19.745255765180698
+        ],
+        [
+          -1.2530080839490927,
+          3.0465560473657853,
+          20.90983147005595
+        ],
+        [
+          -0.2675289794079325,
+          3.0022040764643867,
+          21.781870887365987
+        ],
+        [
+          0.6622410548182125,
+          2.9961865010764726,
+          22.507061360635966
+        ],
+        [
+          1.929556917914391,
+          2.9692370961159633,
+          23.355998299882767
+        ],
+        [
+          2.6182208687644017,
+          2.9452381391243136,
+          23.75552755847314
+        ],
+        [
+          4.149628703829421,
+          2.8748901770974102,
+          24.5122979712764
+        ],
+        [
+          4.205440505235039,
+          2.8720255397380874,
+          24.5369838496157
+        ],
+        [
+          6.3363677085289405,
+          2.7627860232263375,
+          25.38989136337057
+        ],
+        [
+          8.279680924456006,
+          2.7046188893315035,
+          26.18319207918899
+        ],
+        [
+          9.638942616740335,
+          2.7274466505912667,
+          26.914356315756663
+        ],
+        [
+          10.287533109889694,
+          2.7674522447660843,
+          27.360317341405118
+        ],
+        [
+          10.32913834342425,
+          2.770798454354226,
+          27.391667984087082
+        ],
+        [
+          11.200445685179766,
+          2.8655887145326693,
+          28.13796502187578
+        ],
+        [
+          12.248762952855616,
+          3.0500277296633516,
+          29.29088066047691
+        ],
+        [
+          13.078584836036203,
+          3.2227918300399208,
+          30.161019388027306
+        ],
+        [
+          14.386101166454571,
+          3.5307444877686773,
+          31.29626203611481
+        ],
+        [
+          14.47271319594329,
+          3.5536735371831893,
+          31.364967826387588
+        ],
+        [
+          15.651075915050669,
+          3.9239603384791204,
+          32.305460709520865
+        ],
+        [
+          16.867035745455862,
+          4.608192228348566,
+          33.83761160621235
+        ],
+        [
+          17.088517406841575,
+          4.884172074198912,
+          34.5259412593463
+        ],
+        [
+          17.198163855247074,
+          5.174755244153348,
+          35.32254557899167
+        ],
+        [
+          17.209558372416357,
+          5.413360379847738,
+          36.0343783109054
+        ],
+        [
+          16.921801808021915,
+          6.101617845059906,
+          38.37096360111574
+        ],
+        [
+          14.294023458888233,
+          7.293144654218294,
+          43.06802239720541
+        ],
+        [
+          13.163922095971554,
+          7.6489459939466595,
+          44.472496554904005
+        ],
+        [
+          8.093600648871307,
+          9.100673654978078,
+          49.73664492313681
+        ],
+        [
+          3.8676544510033724,
+          10.326239908370695,
+          53.41787092582365
+        ],
+        [
+          -1.828972525488053,
+          12.209217063153043,
+          57.642171396286265
+        ],
+        [
+          -2.003392007417405,
+          12.273844173755663,
+          57.757565516748684
+        ],
+        [
+          -7.535406976774315,
+          14.73611111507149,
+          60.81718163721549
+        ],
+        [
+          -10.287226431577096,
+          16.364837662300296,
+          61.687455777587914
+        ],
+        [
+          -11.755214364102343,
+          17.2782591282455,
+          61.94298193636472
+        ],
+        [
+          -12.627902382198268,
+          17.837938652189248,
+          62.02290582516928
+        ],
+        [
+          -15.425985588372303,
+          19.737187291357337,
+          61.89615373376276
+        ],
+        [
+          -15.603662998010321,
+          19.864193800815286,
+          61.86745810646403
+        ],
+        [
+          -18.169284665305756,
+          21.80985379669043,
+          61.15674979626011
+        ],
+        [
+          -19.33530200855938,
+          22.779627912935073,
+          60.63887810622369
+        ],
+        [
+          -19.874303535757814,
+          23.250932544243913,
+          60.35515332799755
+        ],
+        [
+          -22.31708353331908,
+          25.63005239091958,
+          58.6852133326301
+        ],
+        [
+          -23.899140385264147,
+          27.479474833760204,
+          57.224846989372786
+        ],
+        [
+          -24.210984917864227,
+          27.886307491183377,
+          56.896659851852604
+        ],
+        [
+          -24.843113519458306,
+          28.76767743557589,
+          56.18621428704298
+        ],
+        [
+          -24.994354117409454,
+          28.991535157286876,
+          56.00677238238152
+        ],
+        [
+          -25,
+          29,
+          56
+        ]
+      ],
+      "cameraMoves": 0
+    },
+    "event": {
+      "message": "Nebula passage complete. Travel is paused outside the violet emission region; look around or explore another destination.",
+      "detail": {
+        "kind": "flyby",
+        "region": "neighborhood",
+        "mode": "explore",
+        "position": [
+          -25,
+          29,
+          56
+        ],
+        "targetId": "violet-nebula",
+        "targetName": "Violet emission region",
+        "routeId": "nebula",
+        "routeName": "Nebula passage"
+      }
+    }
+  },
+  "replayLaunch": {
+    "args": [
+      "nebula"
+    ],
+    "before": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "neighborhood",
+        "beta": 0.9,
+        "compareRest": false,
+        "fov": 64,
+        "exposure": 1,
+        "quality": "auto"
+      },
+      "state": {
+        "position": [
+          -14,
+          6,
+          3
+        ],
+        "yaw": 0.6383198080090455,
+        "pitch": -0.20435795397056333,
+        "distanceLy": 0,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": "blue-nebula"
+    },
+    "accepted": true,
+    "after": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "neighborhood",
+        "beta": 0.9,
+        "compareRest": false,
+        "fov": 64,
+        "exposure": 1,
+        "quality": "auto"
+      },
+      "state": {
+        "position": [
+          -14,
+          6,
+          3
+        ],
+        "yaw": 0.6383198080090458,
+        "pitch": -0.20435795397056328,
+        "distanceLy": 0,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": "blue-nebula"
+    }
+  },
+  "canceled": {
+    "snapshot": {
+      "version": 1,
+      "settings": {
+        "mode": "explore",
+        "region": "neighborhood",
+        "beta": 0.9,
+        "compareRest": false,
+        "fov": 64,
+        "exposure": 1,
+        "quality": "auto"
+      },
+      "state": {
+        "position": [
+          -11.023451965798364,
+          5.3047142534629295,
+          7.904466940873479
+        ],
+        "yaw": 0.6497419380993854,
+        "pitch": -0.21480797783599587,
+        "distanceLy": 5.779943901601712,
+        "universeYears": 0,
+        "travelerYears": 0
+      },
+      "targetId": "blue-nebula"
+    },
+    "flyby": {
+      "active": false,
+      "completed": false,
+      "id": null,
+      "name": null,
+      "progress": 0,
+      "elapsedSeconds": 0,
+      "durationSeconds": 0,
+      "autoLook": false,
+      "phase": null,
+      "rate": 2
+    }
+  },
+  "nebulaNavigation": [
+    {
+      "id": "blue-nebula",
+      "separation": 20,
+      "orbitRadius": 20
+    },
+    {
+      "id": "violet-nebula",
+      "separation": 31.999999999999996,
+      "orbitRadius": 32
+    }
+  ],
+  "regions": {
+    "neighborhood": {
+      "count": 19203,
+      "hash": "357c06122c25540fcbc1d87d29f3c8fc5c362c2257ff56bb3be61efe0709b448"
+    },
+    "galaxy": {
+      "count": 36400,
+      "hash": "f5dbc73e3ae0b2751dcf15f6fffce2753ae4994b089c62d020975e414889b2ab"
+    },
+    "cosmic": {
+      "count": 41470,
+      "hash": "156c66d7c6805406f2d231fb18affab8e613952ec32b5fdf9e9e805104966b85"
+    }
+  },
+  "shaderHash": "edabbf078ab6dbfed388aa01a57754a78557f2706c3bfa23772ec235c201c78d",
+  "math": {
+    "gamma": 7.088812050083356,
+    "aberrate": [
+      0.03703375788910289,
+      -0.018516878944551445,
+      0.9991424452853377
+    ],
+    "spectrum": {
+      "angleDeg": 20.561888495621638,
+      "doppler": 1.9305897064531514,
+      "observedNm": 284.88704677207215,
+      "band": "ultraviolet"
+    },
+    "clock": {
+      "shipSeconds": 2,
+      "starSeconds": 14.177624100166712,
+      "horizontalLightSeconds": 14.035847859165045,
+      "photonPathLightSeconds": 14.177624100166712
+    }
+  },
+  "atlases": [
+    {
+      "width": 2048,
+      "height": 512,
+      "hash": "3135bffe25b58c296e91078ab00b7218322ba89fd9d80f4d998e65cbe4579d71"
+    },
+    {
+      "width": 512,
+      "height": 128,
+      "hash": "ef4e883442608eecfaf0f0ad892c750a5c91699fa6b43506761ae01ac8a8aa86"
+    }
+  ],
+  "disposal": [
+    {
+      "created": 2,
+      "deleted": 2,
+      "live": 0
+    }
+  ],
+  "gpuDisposal": [
+    {
+      "buffersCreated": 2,
+      "buffersDeleted": 2,
+      "buffersLive": 0,
+      "programsCreated": 2,
+      "programsDeleted": 2,
+      "programsLiveBeforeUnbind": 1,
+      "programsPendingDeletion": 1,
+      "programsLive": 0
+    }
+  ],
+  "reopenedResources": {
+    "created": 2,
+    "deleted": 0,
+    "live": 2
+  },
+  "reopenedGPU": {
+    "buffersCreated": 2,
+    "buffersLive": 2,
+    "programsCreated": 2,
+    "programsLive": 2
+  }
+}

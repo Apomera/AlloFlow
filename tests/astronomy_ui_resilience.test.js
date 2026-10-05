@@ -586,9 +586,9 @@ describe('Astronomy cosmic-inflation explorer resilience', () => {
 
   it('renders a responsive, narrated inflation schematic without invalid geometry', () => {
     const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
-    expect(html).toContain('id="astronomy-inflation-diagram" viewBox="0 0 600 180" role="img"');
+    expect(html).toContain('id="astronomy-inflation-diagram" viewBox="0 0 360 350" role="img"');
     expect(html).toContain('aria-labelledby="astronomy-inflation-title astronomy-inflation-desc"');
-    expect(html).toContain('A tiny causally connected patch expands exponentially');
+    expect(html).toContain('Exponential expansion stretches an illustrative pattern');
     expect(html).toContain('Conceptual diagram');
     expect(html).not.toMatch(/<(?:circle|ellipse)[^>]+r[xy]?="-/);
   });
@@ -766,18 +766,18 @@ describe('Astronomy Cosmic Calendar resilience', () => {
     });
     expect(html).toContain('id="astronomy-cc-tab-agriculture"');
     expect(html).toContain('id="astronomy-cc-panel" role="tabpanel" aria-labelledby="astronomy-cc-tab-agriculture"');
-    expect(html).toContain('December 31, 11:59:30 PM');
+    expect(html).toContain('December 31, 11:59:32.57 PM');
     expect(html).toContain('role="tablist" aria-label="Cosmic Calendar events"');
   });
 
   it('renders a responsive, narrated timeline with a final-minute zoom', () => {
     const html = renderAstronomy({ tab: 'galaxies', observingList: [] });
-    expect(html).toContain('id="astronomy-cosmic-calendar-diagram" viewBox="0 0 600 250" role="img"');
+    expect(html).toContain('id="astronomy-cosmic-calendar-diagram" viewBox="0 0 360 270" role="img"');
     expect(html).toContain('aria-labelledby="astronomy-cc-title astronomy-cc-desc"');
-    expect(html).toContain('The lower timeline zooms into the final cosmic minute');
-    expect(html).toContain('Zoom: final cosmic minute');
-    expect(html).toContain('agriculture (~30 s before midnight)');
-    expect(html).toContain('events in the final seconds overlap on a full-year timeline');
+    expect(html).toContain('All markers use the same linear conversion');
+    expect(html).toContain('Final cosmic minute');
+    expect(html).toContain('cosmic s before end');
+    expect(html).toContain('Recent events cluster at the year');
   });
 
   it('supports roving focus and complete keyboard event navigation', () => {

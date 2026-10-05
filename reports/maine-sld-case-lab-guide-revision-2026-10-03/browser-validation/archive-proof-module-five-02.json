@@ -1,0 +1,153 @@
+{
+  "method": "non-destructive copies with byte verification; existing evidence must match",
+  "attempts": [
+    "module-five-02"
+  ],
+  "files": [
+    {
+      "path": "module-five-02/artifacts/.last-run.json",
+      "bytes": 45,
+      "sha256": "91d1c43004802cd49950d78eb11c8fa7d05da8ffffe219a8b13b2f561bc00903"
+    },
+    {
+      "path": "module-five-02/browser/axe-full-review-returned-1366-light.json",
+      "bytes": 174,
+      "sha256": "591150f6e3cf14675a9b97fb4bb9612fda2d12b8ac8e718b68bc449fa540c571"
+    },
+    {
+      "path": "module-five-02/browser/axe-guide-revision-editor-844x390-dark.json",
+      "bytes": 219,
+      "sha256": "231532eb8d5b9277cfd8561b703af5c3232ee97a0ff6f3b941db9e6ce4c2968f"
+    },
+    {
+      "path": "module-five-02/browser/axe-guide-revision-returned-320-dark.json",
+      "bytes": 234,
+      "sha256": "7c08f0386a12bcebe287c8ab5a53e1de9c8375ad798efa998943de5e5eebec3b"
+    },
+    {
+      "path": "module-five-02/browser/axe-save-warning-320-dark.json",
+      "bytes": 187,
+      "sha256": "388c63533297ddb3615529867b34bfca89033abecd33c212b09a05861067e1de"
+    },
+    {
+      "path": "module-five-02/browser/browser-candidate.json",
+      "bytes": 290,
+      "sha256": "1e2cb05f80d1c186d27fedb8008870b8e7e1233bf0a161f2c002d67d45a0f266"
+    },
+    {
+      "path": "module-five-02/browser/full-review-evidence-detour-return-390-light.png",
+      "bytes": 48885,
+      "sha256": "21be1cf5922594ae7d059408d9fe4071b23c4d8cb700b40abc7a5e84aa15e9c2"
+    },
+    {
+      "path": "module-five-02/browser/full-review-navigation-context-worksheet.json",
+      "bytes": 5843,
+      "sha256": "da6ee67122ef0a73f8c2aa84bea4a6a810f6b0c94df1e98b5eb76a4d9ea56776"
+    },
+    {
+      "path": "module-five-02/browser/full-review-returned-controls-1366-light.png",
+      "bytes": 82656,
+      "sha256": "1a3fd39b612d86893c6bb5005b3c06d28fa4e11b3a6946985a7dc626369d6fc3"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-active-origin-worksheet.json",
+      "bytes": 6171,
+      "sha256": "a83d84494e7d0925f57b6bebc5c661bfe8d308f0d7028e9d3a6ebb6d1aceeb56"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-all-five-participant-worksheet.json",
+      "bytes": 12932,
+      "sha256": "f57d7858f02ad366698186ded9c77b405c7cfac59612141ed6e3de2e3c418da7"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-blank-q5-marisol-320-light.png",
+      "bytes": 38363,
+      "sha256": "24babd8bbef642985e42aef15017e3cb0ed77c7be04947e1c7c502914308a20f"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-blank-q6-marisol-320-light.png",
+      "bytes": 37709,
+      "sha256": "b617713e0d3e921f7aac329d673a9956a8a4a11cd603f685364ea49b32d3c0e9"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-cleanup-seed.json",
+      "bytes": 5216,
+      "sha256": "f397453f2f8afddee1860b7e6d567d17003d1896e70c48fd17735bbd02855379"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-initial-worksheet.json",
+      "bytes": 5213,
+      "sha256": "8b43b56da391da7eced6b65fa98e7387a29831f8c0640f098e6baf70b283183c"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-links-390-light.png",
+      "bytes": 45319,
+      "sha256": "35b7c9614bb4730d9c67eb19a68d1f3196c90d6fb62ae6a342bbda312ab58aac"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-returned-marisol-q8-1366-light.png",
+      "bytes": 93665,
+      "sha256": "de6eea8c0334133e46ffd04ac6b9ca5b04c4d56020dd7590643c62b436d3085b"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-returned-marisol-q9-320-dark.png",
+      "bytes": 42815,
+      "sha256": "175d756327bb73c31c9985d967b3d556d4762ca6a994c761d13330d03ff419d4"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-taylor-q9-editor-geometry.json",
+      "bytes": 442,
+      "sha256": "142455327289b05afbb0828437eef3761679728850bdbc40643a5e2f746d1049"
+    },
+    {
+      "path": "module-five-02/browser/guide-revision-writing-taylor-q9-844x390-dark.png",
+      "bytes": 42073,
+      "sha256": "93849d5856a5b902456ee1fadb4b58b0569ade45097a1d09ee75766b12df4d45"
+    },
+    {
+      "path": "module-five-02/browser/save-warning-all-five-open-work.json",
+      "bytes": 5744,
+      "sha256": "caee01735a0e1f6d0b47fead6836c722c94363dc0edb4c5d5eb77bb9740545f7"
+    },
+    {
+      "path": "module-five-02/browser/save-warning-desktop-open-work-1366-dark.png",
+      "bytes": 87235,
+      "sha256": "35e8711c2e0100283b9c394862b6c57e1884cc551a2cd551378afea3819989a4"
+    },
+    {
+      "path": "module-five-02/browser/save-warning-landscape-844x390-dark.png",
+      "bytes": 35991,
+      "sha256": "ad3fa001cf0ed3ad5220205424355eeaeeb6bdeacbbd08fc175790be907ad083"
+    },
+    {
+      "path": "module-five-02/browser/save-warning-open-note-320-dark.png",
+      "bytes": 42685,
+      "sha256": "61d8c32b3ad5ee34234c4e18fb773284bc063fb1268184156176e515ee557457"
+    },
+    {
+      "path": "module-five-02/result.json",
+      "bytes": 7457,
+      "sha256": "61ae565833da15ed350250d27dcbc4097577d54f0ce3aaf2672d8b60aeb5c251"
+    },
+    {
+      "path": "module-five-02/run-command.ps1",
+      "bytes": 1794,
+      "sha256": "cee7ef87a3a1b5f3b18dfbfbe505e26106f74e5def3885806925fa7db4cce542"
+    },
+    {
+      "path": "module-five-02/run-identity.json",
+      "bytes": 2029,
+      "sha256": "1d654d1e65d32726638fc39b0bd0accd0ce05b845010dcbced3c434ed1b684f1"
+    },
+    {
+      "path": "module-five-02/run.log",
+      "bytes": 1443,
+      "sha256": "07023c76059db225df9afdb3d2a47c9e4ad507ecf40021016fd884db7304ee03"
+    },
+    {
+      "path": "module-five-02/runner-helper.py",
+      "bytes": 4093,
+      "sha256": "6a6353c9312f15e046f3ce0c7188976a6956d5e998b27ea8b1ff2b3b6b12c2ee"
+    }
+  ]
+}

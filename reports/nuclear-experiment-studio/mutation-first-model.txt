@@ -1,0 +1,54 @@
+
+Running 1 test using 1 worker
+
+  x  1 [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1387:5 › guided first discovery records two readings on one scale and keeps keyboard progress (23.6s)
+
+
+  1) [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1387:5 › guided first discovery records two readings on one scale and keeps keyboard progress 
+
+    Error: expect(locator).toHaveText(expected) failed
+
+    Locator:  locator('[data-ns-first-chart]').locator('[data-ns-first-bar="2"] > strong')
+    Expected: "25%"
+    Received: "50%"
+    Timeout:  15000ms
+
+    Call log:
+      - Expect "toHaveText" with timeout 15000ms
+      - waiting for locator('[data-ns-first-chart]').locator('[data-ns-first-bar="2"] > strong')
+        31 × locator resolved to <strong>50%</strong>
+           - unexpected value "50%"
+
+
+      1418 |   await expect(heading).toBeFocused();
+      1419 |   const chart = page.locator('[data-ns-first-chart]');
+    > 1420 |   await expect(chart.locator('[data-ns-first-bar="2"] > strong')).toHaveText('25%');
+           |                                                                   ^
+      1421 |   await expect(chart.locator('[data-ns-first-bar="1"] > strong')).toHaveText('100%');
+      1422 |   await expect(chart).toHaveAttribute('aria-label', 'Saved readings on a shared 0 to 100% scale: 1 m, 100%; 2 m, 25%. The source output stayed fixed.');
+      1423 |   const bars = await chart.locator('.ns-case-fill').evaluateAll(nodes => nodes.map(node => ({ width: (node as HTMLElement).style.width, rendered: node.getBoundingClientRect().width, track: node.parentElement!.getBoundingClientRect().width })));
+        at C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1420:67
+
+    attachment #1: screenshot (image/png) ──────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-first-model\43-nuclearlab-experiment-s-0f0db-and-keeps-keyboard-progress-chromium\test-failed-1.png
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+    Error Context: reports\nuclear-experiment-studio\mutation-first-model\43-nuclearlab-experiment-s-0f0db-and-keeps-keyboard-progress-chromium\error-context.md
+
+    Error Context: reports\nuclear-experiment-studio\mutation-first-model\43-nuclearlab-experiment-s-0f0db-and-keeps-keyboard-progress-chromium\error-context.md
+
+    attachment #4: trace (application/zip) ─────────────────────────────────────────────────────────
+    reports\nuclear-experiment-studio\mutation-first-model\43-nuclearlab-experiment-s-0f0db-and-keeps-keyboard-progress-chromium\trace.zip
+    Usage:
+
+        npx playwright show-trace reports\nuclear-experiment-studio\mutation-first-model\43-nuclearlab-experiment-s-0f0db-and-keeps-keyboard-progress-chromium\trace.zip
+
+    ────────────────────────────────────────────────────────────────────────────────────────────────
+
+  1 failed
+    [chromium] › tests\e2e\43-nuclearlab-experiment-studio.spec.ts:1387:5 › guided first discovery records two readings on one scale and keeps keyboard progress 
+(node:55864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+(node:55864) Warning: The 'NO_COLOR' env is ignored due to the 'FORCE_COLOR' env being set.
+(Use `node --trace-warnings ...` to show where the warning was created)
+[stem_gl_harness] STEM_GL_SUBSTITUTE is serving C:\Users\cabba\OneDrive\Desktop\UDL-Tool-Updated\scratch\nuclear-engagement\incorrect-first-model.js in place of stem_lab/stem_tool_nuclearlab.js

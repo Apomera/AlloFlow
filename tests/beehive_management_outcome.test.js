@@ -17,7 +17,7 @@ describe('Beehive Beekeeper outcome-quality feedback', () => {
     });
 
     expect(html).toContain('data-management-outcome="protective"');
-    expect(html).toContain('Protective outcome');
+    expect(html).toContain('Benefits recorded');
     expect(html).toContain('1 beneficial change recorded');
     expect(html).toContain('data-management-outcome-detail="true"');
   });
@@ -38,7 +38,7 @@ describe('Beehive Beekeeper outcome-quality feedback', () => {
     });
 
     expect(html).toContain('data-management-outcome="mixed"');
-    expect(html).toContain('Mixed trade-off');
+    expect(html).toContain('Benefits and costs');
     expect(html).toContain('1 intended benefit and 1 trade-off');
     expect(html).toContain('Varroa');
   });

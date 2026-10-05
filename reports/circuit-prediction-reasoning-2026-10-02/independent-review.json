@@ -1,0 +1,8 @@
+{
+  "reviewer": "circuit_journey",
+  "passed": true,
+  "sourceSha256": "b207d09a0e834d5abeae5fba88f8303e3e457189ba58088677af6f05e3d543fa",
+  "scope": "Normalized lesson stage, prediction copy and translation fallbacks, unchanged tested copy, reused writing DOM and saved draft, optional writing and existing Test gating, pre-test journey completion, absence of state/effect/focus/model/history/privacy changes.",
+  "lines": [3589, 3590, 3591, 3629, 3636, 3637],
+  "materialIssues": []
+}

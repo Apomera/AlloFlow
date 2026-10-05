@@ -1,0 +1,145 @@
+{
+  "sourceFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\integrated-r2\\AlloFlowANTI.txt",
+  "sourceSha256": "bf04ef84511debcce64d084cc539e2e09619b3e0fa11de2cb70beb8e29d5bd7a",
+  "completedAt": "2026-10-04T16:04:59.240Z",
+  "actualEffect": true,
+  "actualClears": true,
+  "passed": false,
+  "cases": [
+    {
+      "name": "firebase: current assignment succeeds",
+      "passed": true
+    },
+    {
+      "name": "firebase: history clear retires late successful entry",
+      "passed": true
+    },
+    {
+      "name": "firebase: history clear suppresses late error feedback",
+      "passed": true
+    },
+    {
+      "name": "firebase: history clear suppresses late authoritative policy update",
+      "passed": true
+    },
+    {
+      "name": "firebase: canvas clear retires late successful entry",
+      "passed": true
+    },
+    {
+      "name": "firebase: canvas clear suppresses late error feedback",
+      "passed": true
+    },
+    {
+      "name": "firebase: canvas clear suppresses late authoritative policy update",
+      "passed": true
+    },
+    {
+      "name": "firebase: unmount suppresses late history commit",
+      "passed": true
+    },
+    {
+      "name": "firebase: unmount suppresses late authoritative policy update",
+      "passed": true
+    },
+    {
+      "name": "firebase: ordinary boot history hydration preserves entry ownership",
+      "passed": true
+    },
+    {
+      "name": "pack: current assignment succeeds",
+      "passed": true
+    },
+    {
+      "name": "pack: history clear retires late successful entry",
+      "passed": true
+    },
+    {
+      "name": "pack: history clear suppresses late error feedback",
+      "passed": true
+    },
+    {
+      "name": "pack: history clear suppresses late authoritative policy update",
+      "passed": true
+    },
+    {
+      "name": "pack: canvas clear retires late successful entry",
+      "passed": true
+    },
+    {
+      "name": "pack: canvas clear suppresses late error feedback",
+      "passed": true
+    },
+    {
+      "name": "pack: canvas clear suppresses late authoritative policy update",
+      "passed": true
+    },
+    {
+      "name": "pack: unmount suppresses late history commit",
+      "passed": true
+    },
+    {
+      "name": "pack: unmount suppresses late authoritative policy update",
+      "passed": true
+    },
+    {
+      "name": "pack: ordinary boot history hydration preserves entry ownership",
+      "passed": true
+    },
+    {
+      "name": "hosted: current assignment succeeds",
+      "passed": true
+    },
+    {
+      "name": "hosted: history clear retires late successful entry",
+      "passed": true
+    },
+    {
+      "name": "hosted: history clear suppresses late error feedback",
+      "passed": true
+    },
+    {
+      "name": "hosted: history clear suppresses late authoritative policy update",
+      "passed": true
+    },
+    {
+      "name": "hosted: canvas clear retires late successful entry",
+      "passed": true
+    },
+    {
+      "name": "hosted: canvas clear suppresses late error feedback",
+      "passed": true
+    },
+    {
+      "name": "hosted: canvas clear suppresses late authoritative policy update",
+      "passed": true
+    },
+    {
+      "name": "hosted: unmount suppresses late history commit",
+      "passed": true
+    },
+    {
+      "name": "hosted: unmount suppresses late authoritative policy update",
+      "passed": true
+    },
+    {
+      "name": "hosted: ordinary boot history hydration preserves entry ownership",
+      "passed": true
+    },
+    {
+      "name": "firebase: actual delayed Canvas boot protection preserves initial entry",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at Object.run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\assignment-audit\\entry-workspace-ownership.cjs:121:12)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\assignment-audit\\entry-workspace-ownership.cjs:131:39"
+    },
+    {
+      "name": "pack: actual delayed Canvas boot protection preserves initial entry",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at Object.run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\assignment-audit\\entry-workspace-ownership.cjs:121:12)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\assignment-audit\\entry-workspace-ownership.cjs:131:39"
+    },
+    {
+      "name": "hosted: actual delayed Canvas boot protection preserves initial entry",
+      "passed": false,
+      "error": "AssertionError [ERR_ASSERTION]: Expected values to be strictly equal:\n\n1 !== 0\n\n    at Object.run (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\assignment-audit\\entry-workspace-ownership.cjs:121:12)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\assignment-audit\\entry-workspace-ownership.cjs:131:39"
+    }
+  ]
+}

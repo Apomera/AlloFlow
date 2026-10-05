@@ -1,0 +1,28 @@
+PASS Desktop menu fits viewport
+PASS Menu tab keyboard moves and exposes active panel
+PASS Menu fits 390px viewport
+PASS Ops Lab fits 390px viewport
+PASS Lesson cards fit 390px viewport
+PASS Lesson detail fits 390px viewport
+PASS Menu fits 320px viewport
+PASS Ops Lab fits 320px viewport
+PASS Lesson cards fit 320px viewport
+PASS Lesson detail fits 320px viewport
+PASS Keyboard focus exits the radar with Tab
+PASS Pause freezes simulation time and aircraft
+PASS Aircraft strips and runway commands work with clicks
+PASS Heading entry receives keys without changing radar state
+PASS Paused radar remains painted after command entry
+PASS Paused playing UI has no serious/critical axe violations
+PASS Playing controls fit 390px viewport
+PASS Playing controls fit 320px viewport
+PASS Math challenge accepts exact zero and decimal answers
+PASS Math feedback UI has no serious/critical axe violations
+PASS Arrival-order ties use the Same time choice and count as solved
+PASS End shift creates debrief and persists totals once
+PASS Debrief has no serious/critical axe violations
+PASS Restart and a second end accumulate totals exactly once
+PASS Touch flight strips and commands are usable at 390px
+PASS Same-frame arrivals protect simple runway occupancy
+PASS Same-frame arrivals protect crossing runway occupancy
+PASS No uncaught browser errors

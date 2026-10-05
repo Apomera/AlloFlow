@@ -1,0 +1,41 @@
+{
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "nodes": [
+        {
+          "target": [
+            ".aq-portfolio-tools > summary"
+          ],
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.04 (foreground color: #f8fafc, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            "#aq-portfolio-help"
+          ],
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.48 (foreground color: #cbd5e1, background color: #ffffff, font size: 8.6pt (11.5px), font weight: normal). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            "div:nth-child(2) > label"
+          ],
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.04 (foreground color: #f8fafc, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            "div > div[role=\"status\"][aria-live=\"polite\"]"
+          ],
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.21 (foreground color: #bbf7d0, background color: #ffffff, font size: 8.6pt (11.5px), font weight: bold). Expected contrast ratio of 4.5:1"
+        },
+        {
+          "target": [
+            "p[data-testid=\"aq-learning-import-summary\"]"
+          ],
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.22 (foreground color: #dbeafe, background color: #ffffff, font size: 9.8pt (13px), font weight: normal). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    }
+  ],
+  "incomplete": []
+}

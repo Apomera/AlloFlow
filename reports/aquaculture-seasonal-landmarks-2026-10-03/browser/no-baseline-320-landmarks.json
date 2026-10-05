@@ -1,0 +1,64 @@
+{
+  "selection": {
+    "metricId": "oxygen",
+    "speciesId": "system"
+  },
+  "helper": {
+    "metric": {
+      "id": "oxygen",
+      "label": "Dissolved oxygen",
+      "unit": " mg/L",
+      "max": 20,
+      "shared": true,
+      "speciesId": "system",
+      "organism": null,
+      "deltaUnit": " mg/L"
+    },
+    "state": "ready",
+    "validMonths": 12,
+    "low": {
+      "value": 8.17,
+      "months": [
+        6
+      ]
+    },
+    "high": {
+      "value": 9.42,
+      "months": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "comparison": {
+      "state": "no-baseline",
+      "validMonths": 0,
+      "magnitude": null,
+      "months": []
+    }
+  },
+  "independent": {
+    "validMonths": 12,
+    "low": {
+      "value": 8.17,
+      "months": [
+        6
+      ]
+    },
+    "high": {
+      "value": 9.42,
+      "months": [
+        0,
+        1,
+        2,
+        3
+      ]
+    },
+    "comparison": {
+      "validMonths": 0,
+      "magnitude": null,
+      "months": []
+    }
+  }
+}

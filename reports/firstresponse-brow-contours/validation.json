@@ -1,0 +1,1044 @@
+{
+  "date": "2026-10-04",
+  "result": "passed",
+  "parent": "cfe4e9f6cc770b405f06d36708bf5d48d472a57a",
+  "commitBranch": "codex/firstresponse-brow-contours",
+  "production": {
+    "sourceSha256": "36cfc8be912c3baca4c6d6a6d60cc8dc8b2a059e884e59bd6358bacbae1f87d2",
+    "mirrorsMatch": true,
+    "changedRegion": "brow construction and call",
+    "uiCopyChanges": 0,
+    "catalogChanges": 0,
+    "namesRetained": true,
+    "identityOrigins": true,
+    "headPivotAttachment": true,
+    "answerTargetsRetained": true
+  },
+  "unitTests": {
+    "passed": 332,
+    "files": 7,
+    "fullRunPassed": 332,
+    "fullRunFailed": 0,
+    "cleanFirstRun": false,
+    "exit": {
+      "exitCode": 0,
+      "changedInputs": [],
+      "inputHashesVerified": 39,
+      "seconds": 113.712
+    },
+    "initialRun": {
+      "passed": 326,
+      "failed": 6,
+      "exit": {
+        "exitCode": 1,
+        "changedInputs": [],
+        "inputHashesVerified": 39,
+        "seconds": 246.215
+      },
+      "inputManifestSha256": "93f0c5d0e64baae4eea134e67822499f8b98f5e87f778a31f3abd8932d2c4d51",
+      "logSha256": "32d4b1d666a1f2f089611959bf1ffc56fb2ad9fb2c53e83fb95ba7a8b9ffedbf"
+    },
+    "reliefCorrection": {
+      "initialSourceSha256": "28d949fbbf5b15aafe0beee912c25e353cfea9722a551c4b1698806e6e9b736e",
+      "finalSourceSha256": "36cfc8be912c3baca4c6d6a6d60cc8dc8b2a059e884e59bd6358bacbae1f87d2",
+      "unitTestSha256": "1aaabe39645c5fac8e06093139c97b0b8e1ef84b87f46a1e0070a64af53dbe6e",
+      "unitAssertionsChanged": false,
+      "description": "Front relief increased from .004 to .0052 head profile units to keep the central brow visible above both skull facets. The buried boundary, dimensions, symmetry and all unit assertions remain unchanged."
+    },
+    "suites": {
+      "firstresponse_brow_surfaces": 21,
+      "firstresponse_nose_surfaces": 21,
+      "firstresponse_eyelid_surfaces": 21,
+      "firstresponse_lip_surfaces": 21,
+      "firstresponse_depth_explorer": 115,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    },
+    "coverage": [
+      "closed outward brow topology and finite continuous normals",
+      "exact bilateral positions and normals",
+      "shallow front relief and buried endpoints/perimeter against actual skull triangles",
+      "arched shape and tapered width",
+      "full vertex separation from lids and eye seams",
+      "head attachment and unchanged local geometry through recovery",
+      "opaque contrast and retained shape",
+      "retained nose, eyelid, lip, body, depth and hook behavior"
+    ]
+  },
+  "browserTests": {
+    "passed": 2,
+    "files": 1,
+    "workers": 1,
+    "retries": 0,
+    "cleanFirstRun": true,
+    "exit": {
+      "exitCode": 0,
+      "changedInputs": [],
+      "inputHashesVerified": 39,
+      "seconds": 342.454
+    },
+    "renderer": "Chromium WebGL with ANGLE SwiftShader",
+    "nativeGeometrySamples": 8,
+    "desktopAges": [
+      "adult",
+      "child",
+      "infant"
+    ],
+    "desktopRecoveryPhases": [
+      0,
+      8
+    ],
+    "phoneWidth": 320,
+    "coverage": [
+      "successful native rendered scene and perspective camera",
+      "all17 face features remain framed",
+      "actual brow geometry/material fingerprints and head-relative attachment",
+      "world movement after completed recovery and phone turn",
+      "keyboard camera controls",
+      "learner state retention",
+      "text spacing and forced colors",
+      "app contrast retains geometry and changes material",
+      "axe accessibility and runtime checks",
+      "one live app-created canvas/context",
+      "unmount context cleanup"
+    ]
+  },
+  "geometry": {
+    "sampling": {
+      "widthSegments": 64,
+      "heightSegments": 32,
+      "vertices": 2145,
+      "outwardTriangles": 3968
+    },
+    "browCount": 2,
+    "closedVolumes": true,
+    "actualSkullFacetFit": true,
+    "buriedPerimeter": true,
+    "mirroredGeometryAndNormals": true,
+    "shallowRelief": true,
+    "taperedWidth": true,
+    "nativeAgePosePairs": [
+      {
+        "age": "adult",
+        "browParts": [
+          {
+            "name": "fr-manikin-brow-left",
+            "geometryFingerprint": "327ea9c9",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":9266768,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":6,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          },
+          {
+            "name": "fr-manikin-brow-right",
+            "geometryFingerprint": "332522c9",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":9266768,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":6,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          }
+        ]
+      },
+      {
+        "age": "child",
+        "browParts": [
+          {
+            "name": "fr-manikin-brow-left",
+            "geometryFingerprint": "98cdd53d",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":9266768,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":6,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          },
+          {
+            "name": "fr-manikin-brow-right",
+            "geometryFingerprint": "9447a23d",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":9266768,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":6,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          }
+        ]
+      },
+      {
+        "age": "infant",
+        "browParts": [
+          {
+            "name": "fr-manikin-brow-left",
+            "geometryFingerprint": "f277d933",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":9266768,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":6,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          },
+          {
+            "name": "fr-manikin-brow-right",
+            "geometryFingerprint": "c0fcd793",
+            "materialFingerprint": "{\"type\":\"MeshPhongMaterial\",\"color\":9266768,\"opacity\":1,\"transparent\":false,\"side\":0,\"shininess\":6,\"specular\":2437435}",
+            "unchangedLocalShape": true,
+            "unchangedMaterial": true,
+            "fixedHeadAttachment": true,
+            "movedWithHead": true
+          }
+        ]
+      }
+    ],
+    "minimumFaceFacing": 0.9276936431439765,
+    "maximumProjectedFeatureExtent": 0.7533617852456925
+  },
+  "skullAndRigAudit": {
+    "status": "passed",
+    "reference": "cfe4e9f6cc770b405f06d36708bf5d48d472a57a",
+    "sourceSha256": "36cfc8be912c3baca4c6d6a6d60cc8dc8b2a059e884e59bd6358bacbae1f87d2",
+    "desktopMirrorSha256": "36cfc8be912c3baca4c6d6a6d60cc8dc8b2a059e884e59bd6358bacbae1f87d2",
+    "baselineSourceSha256": "f1d1d01d047e92bd4688a67f27f4593219e10a35d2953eee9f00588749658862",
+    "threeSha256": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "counts": {
+      "poses": 6,
+      "skullGeometryMatches": 6,
+      "worldMatrixMatches": 18,
+      "closedOutwardBrowShells": 12,
+      "unchangedFacialDetailMeshes": 132,
+      "skullPerimeterRays": 768
+    },
+    "outsideBrowBlocks": {
+      "unchanged": true,
+      "markersUnique": true,
+      "canonicalSourceSha256": "f1d1d01d047e92bd4688a67f27f4593219e10a35d2953eee9f00588749658862",
+      "helperBytes": 3680,
+      "replacedCall": {
+        "before": "      fittedFaceLine(brow,.002,.003,'fr-manikin-brow-'+id);",
+        "after": "      fittedBrow(brow,side,'fr-manikin-brow-'+id);"
+      }
+    },
+    "auditManifestSha256": "3bcdda24fab8cbc326c969d18d47d629d7df57e68244262d502590b0cb46af63",
+    "snapshots": [
+      {
+        "age": "adult",
+        "phase": 0,
+        "skullGeometrySha256": "9b432d18c7d19611f7490f34fe9f2a0cdc283deadbe9bcbcab64f49529ddb609",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "4786f10e98128a289ab71bd9ecd617c33a50e32af639830b30bd39b0b163ae41",
+          "fr-training-manikin": "95cf4a299745566f174041e14e892efcfc00a36eb18586d9100dee1019137bbf",
+          "fr-manikin-head-pivot": "e3403747c2b78d45394b0d89d3c2f813e9556d2cb86b01320da582f4afad8abc"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999215039033
+        },
+        "browParts": {
+          "fr-manikin-brow-left": {
+            "geometrySha256": "65ffd129bdabbb519e11ca2f20b15f1579c516e3a99d083574d9dbdc5e90935a",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.0000034530600269494414,
+            "minimumFaceNormalDot": 0.19321068160435395,
+            "minimumCoincidentNormalDot": 0.999999941727912,
+            "frontSignedGap": 0.0039002411434725104,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.0034769617860647417,
+              "maximumSignedGap": -0.0011999926842236885
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.0019366506702486463,
+              "maximumSignedSkullGap": -0.0012229834034942766,
+              "corners": [
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    -0.1589999943971634,
+                    0.20740880072116852,
+                    -0.13199999928474426
+                  ],
+                  "signedSkullGap": -0.0019366506702486463,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    -0.04600000008940697,
+                    0.2537933886051178,
+                    -0.14800000190734863
+                  ],
+                  "signedSkullGap": -0.0012229834034942766,
+                  "buried": true
+                }
+              ]
+            }
+          },
+          "fr-manikin-brow-right": {
+            "geometrySha256": "12bbc46ea8d71d6f4f3e80997a5a73316530e9469a70f0468332ca00740bc4e3",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.0000034530600269494414,
+            "minimumFaceNormalDot": 0.19321068160435395,
+            "minimumCoincidentNormalDot": 0.999999941727912,
+            "frontSignedGap": 0.003999990732490327,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.001285847549214042,
+              "maximumSignedGap": -0.0011999880329666424
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.0012000077367484707,
+              "maximumSignedSkullGap": -0.001200001314306559,
+              "corners": [
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    0.04600000008940697,
+                    0.2537933886051178,
+                    -0.14800000190734863
+                  ],
+                  "signedSkullGap": -0.0012000077367484707,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    0.1589999943971634,
+                    0.20740880072116852,
+                    -0.13199999928474426
+                  ],
+                  "signedSkullGap": -0.001200001314306559,
+                  "buried": true
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "age": "adult",
+        "phase": 8,
+        "skullGeometrySha256": "9b432d18c7d19611f7490f34fe9f2a0cdc283deadbe9bcbcab64f49529ddb609",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "b457d71699c74820fa8e4b161a8c3c500fea6bb7c1573b062c9bd9fe54191275",
+          "fr-training-manikin": "a6bc2cc43d0689f46b112e317f115e7ff271ccf5378e0cda909f6487aa2b011a",
+          "fr-manikin-head-pivot": "b44a2099257a15bc41e3c2f48fc9d32d9191f1025a1f65bdb565ac0373fc72da"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999215039033
+        },
+        "browParts": {
+          "fr-manikin-brow-left": {
+            "geometrySha256": "65ffd129bdabbb519e11ca2f20b15f1579c516e3a99d083574d9dbdc5e90935a",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.0000034530600269494414,
+            "minimumFaceNormalDot": 0.19321068160435395,
+            "minimumCoincidentNormalDot": 0.999999941727912,
+            "frontSignedGap": 0.003900241143472816,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.003476961786064645,
+              "maximumSignedGap": -0.0011999926842234667
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.0019366506702485633,
+              "maximumSignedSkullGap": -0.0012229834034941935,
+              "corners": [
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    -0.1589999943971634,
+                    0.20740880072116852,
+                    -0.13199999928474426
+                  ],
+                  "signedSkullGap": -0.0019366506702485633,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    -0.04600000008940697,
+                    0.2537933886051178,
+                    -0.14800000190734863
+                  ],
+                  "signedSkullGap": -0.0012229834034941935,
+                  "buried": true
+                }
+              ]
+            }
+          },
+          "fr-manikin-brow-right": {
+            "geometrySha256": "12bbc46ea8d71d6f4f3e80997a5a73316530e9469a70f0468332ca00740bc4e3",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.0000034530600269494414,
+            "minimumFaceNormalDot": 0.19321068160435395,
+            "minimumCoincidentNormalDot": 0.999999941727912,
+            "frontSignedGap": 0.003999990732490467,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.001285847549213834,
+              "maximumSignedGap": -0.0011999880329666426
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.0012000077367484293,
+              "maximumSignedSkullGap": -0.00120000131430649,
+              "corners": [
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    0.04600000008940697,
+                    0.2537933886051178,
+                    -0.14800000190734863
+                  ],
+                  "signedSkullGap": -0.0012000077367484293,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    0.1589999943971634,
+                    0.20740880072116852,
+                    -0.13199999928474426
+                  ],
+                  "signedSkullGap": -0.00120000131430649,
+                  "buried": true
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "age": "child",
+        "phase": 0,
+        "skullGeometrySha256": "b47683f451b7ea57a5055bef74a557f2bbef6a47e6b2b1d9273dfdca0a73ec86",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "a5862d7199e4999f48f95d7bb9fff777003888c2c280abeba8e9119d08d7df66",
+          "fr-training-manikin": "952e738fef01288a35c31cbf3d60643fa9b67330abe82fb2c7cf804bab297a10",
+          "fr-manikin-head-pivot": "88317a8975d977ee34c48bafb61e485cbe789c04357bc019be80db9813da92ab"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999115614493
+        },
+        "browParts": {
+          "fr-manikin-brow-left": {
+            "geometrySha256": "e5317d5582211a7eb05204347ddca1b93c614f80f80eb184039e89558cc176a8",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.000005251722879656055,
+            "minimumFaceNormalDot": 0.19289887689645402,
+            "minimumCoincidentNormalDot": 0.9999999417998118,
+            "frontSignedGap": 0.00308264550145809,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.002899166226377601,
+              "maximumSignedGap": -0.0012000120473914628
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.001877662291629199,
+              "maximumSignedSkullGap": -0.001383613522209499,
+              "corners": [
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    -0.18285000324249268,
+                    0.23621532320976257,
+                    -0.1518000066280365
+                  ],
+                  "signedSkullGap": -0.001877662291629199,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    -0.05290000140666962,
+                    0.28961366415023804,
+                    -0.17020000517368317
+                  ],
+                  "signedSkullGap": -0.001383613522209499,
+                  "buried": true
+                }
+              ]
+            }
+          },
+          "fr-manikin-brow-right": {
+            "geometrySha256": "39e951d2bb24dcced04818010d4bdb0efb5e7aba688d93e75b7a9db4224b1d09",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.000005251722879656055,
+            "minimumFaceNormalDot": 0.19289887689645402,
+            "minimumCoincidentNormalDot": 0.9999999417998118,
+            "frontSignedGap": 0.004000008199116535,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.0013525225872029522,
+              "maximumSignedGap": -0.001199986510408776
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.0012000095575578418,
+              "maximumSignedSkullGap": -0.0012000022527521282,
+              "corners": [
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    0.05290000140666962,
+                    0.28961366415023804,
+                    -0.17020000517368317
+                  ],
+                  "signedSkullGap": -0.0012000095575578418,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    0.18285000324249268,
+                    0.23621532320976257,
+                    -0.1518000066280365
+                  ],
+                  "signedSkullGap": -0.0012000022527521282,
+                  "buried": true
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "age": "child",
+        "phase": 8,
+        "skullGeometrySha256": "b47683f451b7ea57a5055bef74a557f2bbef6a47e6b2b1d9273dfdca0a73ec86",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "1690079f0823bc63b56595af80998163641643cd0c0c646001bdf891e42d9745",
+          "fr-training-manikin": "24b06d22628a7eeb38f3a9059d4f98b41ae87e47e9ba0e00e59429195aa275fb",
+          "fr-manikin-head-pivot": "f447692cd68bb9ede540ca4cff7dfadfb851970eff48237b38069891633a5f16"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999115614493
+        },
+        "browParts": {
+          "fr-manikin-brow-left": {
+            "geometrySha256": "e5317d5582211a7eb05204347ddca1b93c614f80f80eb184039e89558cc176a8",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.000005251722879656055,
+            "minimumFaceNormalDot": 0.19289887689645402,
+            "minimumCoincidentNormalDot": 0.9999999417998118,
+            "frontSignedGap": 0.0030826455014581404,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.0028991662263776847,
+              "maximumSignedGap": -0.0012000120473912282
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.0018776622916291822,
+              "maximumSignedSkullGap": -0.0013836135222093648,
+              "corners": [
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    -0.18285000324249268,
+                    0.23621532320976257,
+                    -0.1518000066280365
+                  ],
+                  "signedSkullGap": -0.0018776622916291822,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    -0.05290000140666962,
+                    0.28961366415023804,
+                    -0.17020000517368317
+                  ],
+                  "signedSkullGap": -0.0013836135222093648,
+                  "buried": true
+                }
+              ]
+            }
+          },
+          "fr-manikin-brow-right": {
+            "geometrySha256": "39e951d2bb24dcced04818010d4bdb0efb5e7aba688d93e75b7a9db4224b1d09",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.000005251722879656055,
+            "minimumFaceNormalDot": 0.19289887689645402,
+            "minimumCoincidentNormalDot": 0.9999999417998118,
+            "frontSignedGap": 0.004000008199116636,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.0013525225872025666,
+              "maximumSignedGap": -0.0011999865104086755
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.001200009557557758,
+              "maximumSignedSkullGap": -0.0012000022527520612,
+              "corners": [
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    0.05290000140666962,
+                    0.28961366415023804,
+                    -0.17020000517368317
+                  ],
+                  "signedSkullGap": -0.001200009557557758,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    0.18285000324249268,
+                    0.23621532320976257,
+                    -0.1518000066280365
+                  ],
+                  "signedSkullGap": -0.0012000022527520612,
+                  "buried": true
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "age": "infant",
+        "phase": 0,
+        "skullGeometrySha256": "efc3a1cce5ff0d9182313066830d1289d3379e103d19710425afcdec7d0a8b6f",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "682ff72e9b2d083c7778b3e318125674a7d799eba3ff52985ae3d6becb6205cd",
+          "fr-training-manikin": "ec9b999a3a24472fdc02a115898ddaf27dda759bf1748a787b14f0dac0c3f9be",
+          "fr-manikin-head-pivot": "98600975dbf59e437aeaa45e037d86eb5f6fdd36ad0053aa58dc4dcde0c6b3a3"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999272729312
+        },
+        "browParts": {
+          "fr-manikin-brow-left": {
+            "geometrySha256": "4f350d1d7cd345f8c8c7b76dad705813e46997a4c123d2e238e160465a165971",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.000009475121679239064,
+            "minimumFaceNormalDot": 0.06549747519020827,
+            "minimumCoincidentNormalDot": 0.9999999426248891,
+            "frontSignedGap": 0.0026344964174905335,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.002895745289196621,
+              "maximumSignedGap": -0.0011999953175810436
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.0014591160628569196,
+              "maximumSignedSkullGap": -0.0012789066771223365,
+              "corners": [
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    -0.22259999811649323,
+                    0.28461557626724243,
+                    -0.18479999899864197
+                  ],
+                  "signedSkullGap": -0.0014591160628569196,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    -0.06440000236034393,
+                    0.3496435880661011,
+                    -0.20720000565052032
+                  ],
+                  "signedSkullGap": -0.0012789066771223365,
+                  "buried": true
+                }
+              ]
+            }
+          },
+          "fr-manikin-brow-right": {
+            "geometrySha256": "64620a49ad6753e6575e29b4e1e9eadbb07e641cb7469455717c1ce68717ad1d",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.000009475121679239064,
+            "minimumFaceNormalDot": 0.06549747519020827,
+            "minimumCoincidentNormalDot": 0.9999999426248891,
+            "frontSignedGap": 0.004000005902685057,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.0013224087633850357,
+              "maximumSignedGap": -0.0011999879001442098
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.001199995777145366,
+              "maximumSignedSkullGap": -0.001199995171968312,
+              "corners": [
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    0.06440000236034393,
+                    0.3496435880661011,
+                    -0.20720000565052032
+                  ],
+                  "signedSkullGap": -0.001199995777145366,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    0.22259999811649323,
+                    0.28461557626724243,
+                    -0.18479999899864197
+                  ],
+                  "signedSkullGap": -0.001199995171968312,
+                  "buried": true
+                }
+              ]
+            }
+          }
+        }
+      },
+      {
+        "age": "infant",
+        "phase": 8,
+        "skullGeometrySha256": "efc3a1cce5ff0d9182313066830d1289d3379e103d19710425afcdec7d0a8b6f",
+        "matrixBytesSha256": {
+          "fr-manikin-head": "5cf23525e9c3bc9c51a8c674c91157c52344eb9e1e6aa27c720e5412f34e5fc9",
+          "fr-training-manikin": "70c42ce14f147f574e53684f4d32ba2e9e7b6dfb0aa871f54ab4bd96a02b49ee",
+          "fr-manikin-head-pivot": "5cb5fb035f53f6093e145e71bc5843360937fdde4c07ea35944f07adc9fa93eb"
+        },
+        "answerTargetNamesUnchanged": true,
+        "mirroredNormals": {
+          "checkedVertices": 2145,
+          "minimumDot": 0.9999999272729312
+        },
+        "browParts": {
+          "fr-manikin-brow-left": {
+            "geometrySha256": "4f350d1d7cd345f8c8c7b76dad705813e46997a4c123d2e238e160465a165971",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.000009475121679239064,
+            "minimumFaceNormalDot": 0.06549747519020827,
+            "minimumCoincidentNormalDot": 0.9999999426248891,
+            "frontSignedGap": 0.002634496417490534,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.0028957452891966,
+              "maximumSignedGap": -0.001199995317580893
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.0014591160628568984,
+              "maximumSignedSkullGap": -0.0012789066771223799,
+              "corners": [
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    -0.22259999811649323,
+                    0.28461557626724243,
+                    -0.18479999899864197
+                  ],
+                  "signedSkullGap": -0.0014591160628568984,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    -0.06440000236034393,
+                    0.3496435880661011,
+                    -0.20720000565052032
+                  ],
+                  "signedSkullGap": -0.0012789066771223799,
+                  "buried": true
+                }
+              ]
+            }
+          },
+          "fr-manikin-brow-right": {
+            "geometrySha256": "64620a49ad6753e6575e29b4e1e9eadbb07e641cb7469455717c1ce68717ad1d",
+            "vertices": 2145,
+            "triangles": 3968,
+            "openEdges": 0,
+            "nonmanifoldEdges": 0,
+            "inconsistentEdges": 0,
+            "connected": true,
+            "euler": 2,
+            "signedVolume": 0.000009475121679239064,
+            "minimumFaceNormalDot": 0.06549747519020827,
+            "minimumCoincidentNormalDot": 0.9999999426248891,
+            "frontSignedGap": 0.004000005902685101,
+            "perimeter": {
+              "samples": 64,
+              "minimumSignedGap": -0.0013224087633848635,
+              "maximumSignedGap": -0.0011999879001442315
+            },
+            "endpoints": {
+              "recipe": "All unique vertices at the actual geometry bounding-box minimum and maximum X; face-front native ray against actual skull triangles",
+              "units": "Head profile units, removing age/body scale",
+              "minimumSignedSkullGap": -0.0011999957771453662,
+              "maximumSignedSkullGap": -0.0011999951719683121,
+              "corners": [
+                {
+                  "vertexIndex": 1040,
+                  "localPosition": [
+                    0.06440000236034393,
+                    0.3496435880661011,
+                    -0.20720000565052032
+                  ],
+                  "signedSkullGap": -0.0011999957771453662,
+                  "buried": true
+                },
+                {
+                  "vertexIndex": 1072,
+                  "localPosition": [
+                    0.22259999811649323,
+                    0.28461557626724243,
+                    -0.18479999899864197
+                  ],
+                  "signedSkullGap": -0.0011999951719683121,
+                  "buried": true
+                }
+              ]
+            }
+          }
+        }
+      }
+    ]
+  },
+  "constructionDiagnostics": {
+    "description": "An analytic face fit left some perimeter vertices above actual skull facets. Native triangle fitting buried the joins; denser sphere sampling corrected local triangle/normal agreement. Diagnostic probes ran in memory before the full unit/browser validation.",
+    "analyticFitProbe": {
+      "sourceSha256": "fb7d25e52270aeda5a271e0655333718e30dee6263126d9decf042cf1d4ac42d",
+      "manifestSha256": "e2562ca1aede73f15b0da46c3511930f18b31be3c6492cd6a2d0d19bb261ab06",
+      "maximumSignedBoundaryGap": 0.0021024058711501536
+    },
+    "samplingProbe": {
+      "sourceSha256": "70238d574bd75102ce3f0c35f039135ac485354ad8824a08a3117004b59eb33b",
+      "manifestSha256": "a0cf067f3d2b1a98070cd7c3dec607585aba739cf500db921670e5437b4c66d2",
+      "chosen": {
+        "width": 64,
+        "height": 32,
+        "poses": [
+          {
+            "age": "adult",
+            "vertices": 2145,
+            "minimumFaceNormalDot": 0.19321068160435395,
+            "perimeter": [
+              -0.0034769617860647417,
+              -0.0011999926842236885
+            ]
+          },
+          {
+            "age": "child",
+            "vertices": 2145,
+            "minimumFaceNormalDot": 0.20746092131976962,
+            "perimeter": [
+              -0.002899166226377601,
+              -0.0012000120473914628
+            ]
+          },
+          {
+            "age": "infant",
+            "vertices": 2145,
+            "minimumFaceNormalDot": 0.10090114670298395,
+            "perimeter": [
+              -0.002895745289196621,
+              -0.0011999953175810436
+            ]
+          }
+        ]
+      }
+    }
+  },
+  "screenshots": {
+    "reviewed": 8,
+    "reviewedFiles": [
+      "adult-brow-contours-before-recovery.png",
+      "adult-brow-contours-after-recovery.png",
+      "child-brow-contours-before-recovery.png",
+      "child-brow-contours-after-recovery.png",
+      "infant-brow-contours-before-recovery.png",
+      "infant-brow-contours-after-recovery.png",
+      "phone-brow-contours.png",
+      "phone-brow-contours-app-contrast.png"
+    ],
+    "reviewedHashes": {
+      "adult-brow-contours-before-recovery.png": "195e9e17f1bb5e0a8cf525a1bc7b64f8a43e1e7a52d3f45df3ff8312971a6e01",
+      "adult-brow-contours-after-recovery.png": "cd852fcd4f88e7a36d5a9e604588a48ae64baa950cf183e828537de3964c09b8",
+      "child-brow-contours-before-recovery.png": "f05a27bc732cd3ba41cef4233202de1f37e868176c0a37da999cd2d2fddf56fd",
+      "child-brow-contours-after-recovery.png": "96594490c84849a1e05152eabccf0fece35bd4a863316ff884f856c23e13ee84",
+      "infant-brow-contours-before-recovery.png": "9e8558410e03924d7af1b591b1d1410d1e589e27d137d7ec3271e1444c7375ee",
+      "infant-brow-contours-after-recovery.png": "807dfa718cb59a21ec4a4f9cf28bea795a14e421e5ab7de5a1bc6a55e8c2f11e",
+      "phone-brow-contours.png": "b92b0056278aadaf53a16b46773bb43d93ecc52b85d6daf9bbf9ee14d1d530e9",
+      "phone-brow-contours-app-contrast.png": "1aad0d042ad1c0fe21183c304bd05cea526ee64f507a4b4e585379f482d1de98"
+    }
+  },
+  "sharedViewer": {
+    "baseline": "committed parent",
+    "sha256": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+    "modified": false,
+    "liveAudit": {
+      "result": "passed",
+      "reference": "cfe4e9f6cc770b405f06d36708bf5d48d472a57a",
+      "testedBaselineSha256": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+      "testedWorktreeModuleSha256": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+      "currentLiveRootSha256": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1",
+      "currentLiveMirrorSha256": "cf56996d420aa6112626c4979d4a8e3963c9b199bf31deebb3e29d3910227de1",
+      "bayViewerBytes": 51249,
+      "bayViewerSha256": "22fc37f217d4302a362ae51f4f961957d410999e1abc5b4396d36df35158a92d",
+      "bayViewerMatchesTested": true,
+      "completeCanonicalRemainderMatches": true,
+      "canonicalSha256": "32d9d3e760741c31619d46cdbe90566513f8c33bc3b6a59b29ae63c68cc7ef05",
+      "excludedPeerRegions": 5,
+      "peerRegionsReferenceFirstResponse": false,
+      "note": "Only the explicit Beehive persistence helper and four exact Perception catalog/allowlist entries are excluded. The complete remaining shared module is byte-identical to the tested committed parent."
+    }
+  },
+  "inputCount": 39,
+  "inputManifestsMatch": true,
+  "inputManifestHashes": {
+    "units": "5a4e52dc45ca1fed35013e1381f15b95adf4d97ad62dfa3864219de1d915b030",
+    "browser": "5a4e52dc45ca1fed35013e1381f15b95adf4d97ad62dfa3864219de1d915b030"
+  },
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "36cfc8be912c3baca4c6d6a6d60cc8dc8b2a059e884e59bd6358bacbae1f87d2",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "36cfc8be912c3baca4c6d6a6d60cc8dc8b2a059e884e59bd6358bacbae1f87d2",
+    "stem_lab/stem_lab_module.js": "76b4b8f537d10ec8f0b51206e8da1ae7fdf623f470c552eb2ea12c67ef11aafa",
+    "tests/setup.js": "f6100b28abec183cc8499663db55fc7688284c721504c5653fa7fc9f669da88e",
+    "vitest.config.js": "04b97bf606fc9425141ccad8396ef0da8e784b74e0ad88d8f586dee02af51b04",
+    "pure_helpers_module.js": "8c7a4a5331a048851d8d6e505d53a454665f50551675b1fca19bda04617e00a9",
+    "tests/helpers/firstresponse_pose_probe.js": "2faafa6bc208b440f23ea9680351d65c43ad2a5b5e962e597a48157bef4ac672",
+    "tests/helpers/stem_widgets_smoke_harness.js": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+    "tests/e2e/firstresponse-brow-contours.spec.ts": "220f4dbde74c1bab1da7349078451b993188865be892a139bf29d5460eaa2190",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "tests/e2e/helpers/png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "playwright.config.ts": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587",
+    "reports/firstresponse-depth-comparison/playwright-software.config.ts": "a3ab365e61b809e8d1cde1c47de6d88940be0d902aafc70d56dce7a3bffe01ec",
+    "reports/firstresponse-brow-contours/playwright.config.ts": "0ca997b3c0725d55475660c94a260af959e866e11dbf553eb8792161f5ec1856",
+    "vendor/three-r128/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "desktop/web-app/node_modules/react/umd/react.production.min.js": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+    "node_modules/axe-core/axe.min.js": "66a8aaa95a8b044a7fd74a5435873bf04ff65a1ca75567c921b7509742085a14",
+    "app/static/css/main.11e7c75d.css": "800ee18e70d600ea7202d64b0f2a04fa6dc88bbee8fa739c69585d7e79b825df",
+    "ui_strings.js": "8d5c08ca80b6c9b6b10b4e920c2115363c25e0ea5f308740950ca3aef90531dd",
+    "desktop/web-app/public/ui_strings.js": "8d5c08ca80b6c9b6b10b4e920c2115363c25e0ea5f308740950ca3aef90531dd",
+    "tests/firstresponse_brow_surfaces.test.js": "1aaabe39645c5fac8e06093139c97b0b8e1ef84b87f46a1e0070a64af53dbe6e",
+    "tests/firstresponse_nose_surfaces.test.js": "28ca8cdc32e6392dc0c5ded81074113ec0a8d810eb6999423644163740e45c3e",
+    "tests/firstresponse_eyelid_surfaces.test.js": "bba7ae631c812326a4ff3e1fca324443907f03cadb4471179558e9e58ec6f97a",
+    "tests/firstresponse_lip_surfaces.test.js": "4ab8f4721608f846df69c1ae1b18b612fcf84c2ae995b8fbdf16f10fdc9fa883",
+    "tests/firstresponse_depth_explorer.test.js": "8d95fe9bf754bf6029adb91a4f7b2339700cfa315144a77b90123018244132b0",
+    "tests/firstresponse_body_3d.test.js": "fb90737f362657b15e303ce946bda19f84ef9c1a02ac4f57fb6a1338cc403111",
+    "tests/stem_firstresponse_hook_order.test.js": "50bac19e05d1cb634cdbe7e1ef3927ff730bb9838be311cf01feb2bd58373dc0",
+    "reports/firstresponse-3d-explorer/ui-strings.delta.json": "af5167a3b763ad757171ddb6cfc28ed2fc92a9c53c0c73da074e0f010fac76d1",
+    "reports/firstresponse-cycle-inspector/ui-strings.delta.json": "044a8abf77bdc33033e15e8c7cafcb6838fde3974d484586578fe3126aee0194",
+    "reports/firstresponse-depth-comparison/ui-strings.delta.json": "b84768a2cf0a492aa0a56487348ea8f861c20b11a1c213660a815ec39d32de8f",
+    "reports/firstresponse-prediction-activity/ui-strings.delta.json": "4aad90de61b0ea7c428dd44963c100c9d2bae44831749b078fc2535f0d5dc8dc",
+    "reports/firstresponse-chest-inspection/ui-strings.delta.json": "0d7d4e881cc81f5c8b7874a6257d1f648393db5bcd9b9562843199a4f90e86ac",
+    "reports/firstresponse-child-hands/ui-strings.delta.json": "2811f733315fa320b704f3bec452b87d330271925f782ff84526c182c4881b78",
+    "reports/firstresponse-visual-markers/ui-strings.delta.json": "4051afa01b271edbdbc74c1c1067c9b30c9f1c433a31cae5d2f0efa8a8d9e264",
+    "reports/firstresponse-manikin-realism/ui-strings.delta.json": "ec587b40a466283602e1f26f022657a47e6716f5ba98be591d878eee3a05fdac",
+    "reports/firstresponse-recovery-review/ui-strings.delta.json": "4b815a66fee3b3707f8b6c1e8a80924c909afc3cbab556d200762f6ac2228d57",
+    "reports/firstresponse-arm-posture/ui-strings.delta.json": "b9afca037d5c0fa14bfddbe1aa010145f48e4f05d1e8934b8030915f089d9b62",
+    "reports/firstresponse-arm-guides/ui-strings.delta.json": "680b3e875103441ea87e88756b0e90f89a141a452c12361e38e4aaf5d1637abd"
+  },
+  "limits": "Browser evidence covers software rendering and interaction. Hardware performance remains unmeasured.",
+  "retainedLocalEvidence": [
+    "units-first.log",
+    "units-first-exit.json",
+    ".units-first-inputs.json",
+    ".skull-and-rig-before-relief-inputs.json",
+    "units.log",
+    "units-exit.json",
+    "browser.log",
+    "browser-exit.json",
+    ".units-inputs.json",
+    ".browser-inputs.json",
+    ".reviewed.json",
+    ".skull-and-rig-audit-inputs.json",
+    ".live-viewer-audit-inputs.json",
+    ".geometry-fit-probe-inputs.json",
+    ".sampling-probe-inputs.json",
+    "geometry-metrics.json"
+  ]
+}

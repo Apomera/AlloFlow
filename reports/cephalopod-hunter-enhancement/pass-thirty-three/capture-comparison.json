@@ -1,0 +1,222 @@
+{
+  "baselineSourceSHA256": "7c37f74fe6f091e7b0e24ec37af280ac3d578b522c3e0dd586e24b9310a6f963",
+  "currentSourceSHA256": "ad1970ff112df529cc9115e0fbd69061c80393af9570aba38fa05b1c9cb6b91c",
+  "scope": "Twelve matched nativeGL jelly pairs: three actual live pulse phases times side, oblique, phone viewport and underside. Same view sequence protects camera-dependent transform history. Earlier underside-only fixture and rejected probes remain raw diagnostics.",
+  "pairs": [
+    {
+      "image": "contracted-underside-gl.png",
+      "baselineSHA256": "ac231200594324e041fdc1d03a656d26e3c48cf75a849305bcae598bca5c5fb4",
+      "currentSHA256": "fd1bf211a6eb394aa1259d5a8068e488d2c5f8a86d8b02193f0271d9f30501c9",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 447,
+        "textures": 3,
+        "programs": 26,
+        "calls": 368,
+        "submittedTriangles": 190167
+      }
+    },
+    {
+      "image": "contracted-side-gl.png",
+      "baselineSHA256": "1b0a02f25e7061f767268ba625c30acf7162d1f776143af8b4f777df82a49985",
+      "currentSHA256": "73a0b57028c8f3ac0e9038fb971b5673ffa424b5d3c13541773b0f8e352c79a5",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 464,
+        "textures": 3,
+        "programs": 26,
+        "calls": 386,
+        "submittedTriangles": 204769
+      }
+    },
+    {
+      "image": "contracted-oblique-gl.png",
+      "baselineSHA256": "d3f038186f65e6c439fd832df82d7af860b7319ffe4937588ebe35d563595c82",
+      "currentSHA256": "29aba73f85cd2d7fd71a87c48a12ece54950610dd3583eaee4ae556d58626c71",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 472,
+        "textures": 3,
+        "programs": 26,
+        "calls": 374,
+        "submittedTriangles": 190661
+      }
+    },
+    {
+      "image": "contracted-phone-gl.png",
+      "baselineSHA256": "f33baea6fbc9a0c40185e1fc53563ee361338187b5431f37cb145a91138428e1",
+      "currentSHA256": "88f82d7e4ded1952797418ba807564cc2cb3eca1f05bf79bd492b7c96f90c098",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 472,
+        "textures": 3,
+        "programs": 26,
+        "calls": 202,
+        "submittedTriangles": 111505
+      }
+    },
+    {
+      "image": "expanded-underside-gl.png",
+      "baselineSHA256": "c31fcb0c1a3c45911ef419daf6aee607e76f50c596485fac31dc15b6ed3b4be8",
+      "currentSHA256": "468ef92181ec635d98352f856bd047b4bff19ad494e7563a7b46e36474fbae9b",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 472,
+        "textures": 3,
+        "programs": 26,
+        "calls": 368,
+        "submittedTriangles": 190167
+      }
+    },
+    {
+      "image": "expanded-side-gl.png",
+      "baselineSHA256": "a972dd65ba26fdb8373e9958028157b269f0df9ceeb13b2cd3b5ac6c17a7efe9",
+      "currentSHA256": "53c00430bb46eefbd1996cd5f0085f4a9b7b81c0f55e9f8861e52eb1888076c2",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 472,
+        "textures": 3,
+        "programs": 26,
+        "calls": 386,
+        "submittedTriangles": 204769
+      }
+    },
+    {
+      "image": "expanded-oblique-gl.png",
+      "baselineSHA256": "b19f0b00593477f9d926ab9e689d5a55435539b8c4f9eb45cc60f24147a44e6b",
+      "currentSHA256": "9d3002eed401f10d694bd96cba94b69db0b239631fa1f8d1e34bac89a259610c",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 472,
+        "textures": 3,
+        "programs": 26,
+        "calls": 374,
+        "submittedTriangles": 190661
+      }
+    },
+    {
+      "image": "expanded-phone-gl.png",
+      "baselineSHA256": "7c3aa08542ff8d5da2cf67e06f313b7371fa6f2c3a3d8bbc2b1829fb5edb5c6d",
+      "currentSHA256": "1317bae738ab3559ac24408e1b6a5fb895b189abf5cd423f6fa62c28d9f3d1fb",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 472,
+        "textures": 3,
+        "programs": 26,
+        "calls": 202,
+        "submittedTriangles": 111904
+      }
+    },
+    {
+      "image": "midpoint-underside-gl.png",
+      "baselineSHA256": "707eee374c384009bce282d664c68373d5aec3f93b704f08c476e5fcac2279c9",
+      "currentSHA256": "ea8988ec1dd81975d905b0a4ea403c8181ff1aa16956d9ca39b66f62cba469a8",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 472,
+        "textures": 3,
+        "programs": 26,
+        "calls": 368,
+        "submittedTriangles": 190167
+      }
+    },
+    {
+      "image": "midpoint-side-gl.png",
+      "baselineSHA256": "2148b332a39f7d650f6af401581b5799d48745d3295bc4038b859a15a2c24a03",
+      "currentSHA256": "e6892828c24dafa6ce2d5362364d7cdc786dc95cbbd3a008a41a94647fad6620",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 472,
+        "textures": 3,
+        "programs": 26,
+        "calls": 386,
+        "submittedTriangles": 204769
+      }
+    },
+    {
+      "image": "midpoint-oblique-gl.png",
+      "baselineSHA256": "248bd44fa0474401e5e3142396a23e8c3b1759159c4143e52acbe4e3635e5ada",
+      "currentSHA256": "b674140813179e9e70f551957c5a4555fd06708dfcbf1a5b5d86848f0a1d871c",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 472,
+        "textures": 3,
+        "programs": 26,
+        "calls": 374,
+        "submittedTriangles": 190661
+      }
+    },
+    {
+      "image": "midpoint-phone-gl.png",
+      "baselineSHA256": "0d5a40f4e88d67ecd32f635ac33d882a99b1e848f5fc20c9158cacadf09dc6c2",
+      "currentSHA256": "5fd49bf66a03c9ffb5d97063192876d8e2ba79a242a0291b73a64f32ffb3610c",
+      "fixtureExact": true,
+      "cameraExact": true,
+      "identicalToReviewedAcceptedProbe": true,
+      "nativeResources": {
+        "geometries": 472,
+        "textures": 3,
+        "programs": 26,
+        "calls": 202,
+        "submittedTriangles": 111904
+      }
+    }
+  ],
+  "reviewedProbeSourceSHA256": "d8cf8e7ddec6e8b47db41441e775a3130d2e106c737556e5786c77ca9efdcbbc",
+  "allFinalPixelsByteIdenticalToReviewedProbe": true,
+  "crownStepMetric": {
+    "scope": "Evidence only; fixed small interior sky-background crownROI in this contracted-side fixture, above anatomy and away from silhouette. Not a general perceptual or performance score.",
+    "baseline": {
+      "roi": {
+        "x": [
+          612,
+          628
+        ],
+        "y": [
+          232,
+          264
+        ]
+      },
+      "maximumAdjacentRowLuminanceStep": 12.116552941176423,
+      "stepsOverTwo": 5
+    },
+    "current": {
+      "roi": {
+        "x": [
+          612,
+          628
+        ],
+        "y": [
+          232,
+          264
+        ]
+      },
+      "maximumAdjacentRowLuminanceStep": 0.45876470588233076,
+      "stepsOverTwo": 0
+    }
+  },
+  "errors": [],
+  "leaks": []
+}

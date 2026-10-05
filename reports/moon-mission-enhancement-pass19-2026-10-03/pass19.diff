@@ -1,0 +1,170 @@
+--- accepted-pass18/stem_lab/stem_tool_moonmission.js
++++ pass19/stem_lab/stem_tool_moonmission.js
+@@ -1432,8 +1432,69 @@
+     return Object.freeze({main:main,detail:detail,window:window,zoom:detail?detail.scale/geo.scale:1});
+   }
+   function mmDescentVisualNumber(value) {return (value>0?'+':'')+value.toFixed(1);}
++  // Presentation landmarks are derived from the existing paths, never a new integration.
++  function mmDescentPredictionLandmarks(profile, visual) {
++    visual=visual||mmDescentPredictionVisuals(profile);if(!visual)return null;
++    function number(value,step,signed) {
++      var precision=step<1?2:1,unit='',n=value;
++      if(Math.abs(value)>=100000){n=value/1000;unit='k';precision=step<1000?2:1;}
++      var rounded=Number(n.toFixed(precision));
++      return (signed&&rounded>0?'+':'')+String(rounded)+unit;
++    }
++    function frame(name) {
++      var f=visual[name];if(!f)return null;
++      var vstep=f.verticalMetres/4,xstep=(f.rightMetres-f.leftMetres)/4;
++      var altitude=[],displacement=[];
++      for(var i=0;i<5;i++) {
++        var alt=f.maxAltitude-i*vstep,x=f.leftMetres+i*xstep;
++        altitude.push(Object.freeze({value:alt,coordinate:36+i*72,percent:10+i*20,label:number(alt,vstep,false)}));
++        displacement.push(Object.freeze({value:x,coordinate:36+i*132,percent:6+i*22,label:number(x,xstep,true)}));
++      }
++      var events={};['held','burn'].forEach(function(key){var s=profile[key].summary,visible=f[key+'EndVisible'];
++        var label=s.kind==='contact'?'● Contact':s.kind==='arrest'?'○ Arrest':s.kind==='already-arrested'?'○ Already arrested':'○ Time limit';
++        var elapsed=s.time>0&&s.time<.005?'<0.01':s.time.toFixed(s.time>0&&s.time<1?2:1);
++        events[key]=Object.freeze({kind:s.kind,visible:visible,label:visible?label:'… Outside view',
++          time:s.time,altitude:s.altitude,reading:elapsed+' s · '+s.altitude.toFixed(1)+' m',
++          context:visible?'Time from inspection · altitude':'Endpoint in surface view'});
++      });
++      var originX=300-f.centerX*f.scale;
++      return Object.freeze({altitude:Object.freeze(altitude),displacement:Object.freeze(displacement),
++        origin:Object.freeze({x:originX,visible:originX>=36&&originX<=564}),events:Object.freeze(events),
++        contact:profile.initial.contact===true});
++    }
++    return Object.freeze({main:frame('main'),detail:frame('detail')});
++  }
++  function mmSetDescentPredictionLandmarks(root,name,svg,marks) {
++    if(!marks)return;
++    ['altitude','displacement'].forEach(function(axis){marks[axis].forEach(function(tick,i){
++      var node=root.querySelector('[data-descent-ruler="'+name+'-'+axis+'"][data-tick="'+i+'"]');if(!node)return;
++      node.textContent=tick.label;node.dataset.value=String(tick.value);
++      var value=(Math.abs(tick.value)<.05?0:tick.value).toFixed(1);
++      node.title=(axis==='altitude'?'Altitude: ':'Displacement from inspected position: ')+value+' m';
++      node.setAttribute('aria-label',node.title);
++    });});
++    var origin=svg.querySelector('[data-descent-visual-origin]');if(origin){
++      origin.setAttribute('x1',String(marks.origin.x));origin.setAttribute('x2',String(marks.origin.x));origin.style.display=marks.origin.visible?'':'none';
++    }
++    var ruler=root.querySelector('[data-descent-visual-rulers="'+name+'"]');
++    if(ruler){ruler.style.maxWidth=marks.contact?'360px':'';ruler.style.margin=marks.contact?'0 auto':'';}
++    var caption=root.querySelector('[data-descent-visual-caption="'+name+'"]');
++    if(caption)caption.textContent=name==='main'?(marks.contact?'Contact inspection':'Surface reference'):'Braking close view';
++    var scale=root.querySelector('[data-descent-prediction-scale]');
++    if(name==='main'&&marks.contact&&scale)scale.textContent='Equal metre axes · '+Number(svg.dataset.horizontalSpan).toFixed(1)+' m across × '+
++      Number(svg.dataset.verticalSpan).toFixed(1)+' m high. Both paths end at the inspected contact position.';
++    ['held','burn'].forEach(function(key){var event=marks.events[key],badge=root.querySelector('[data-descent-event="'+name+'-'+key+'"]');if(!badge)return;
++      badge.dataset.endpoint=event.kind;badge.dataset.endpointVisible=String(event.visible);badge.dataset.time=String(event.time);badge.dataset.altitude=String(event.altitude);
++      badge.querySelector('[data-descent-event-label]').textContent=event.label;
++      badge.querySelector('[data-descent-event-reading]').textContent=event.reading;
++      badge.querySelector('[data-descent-event-context]').textContent=event.context;
++    });
++  }
++
+   function mmSetDescentPredictionVisuals(root, profile) {
+     var visual=mmDescentPredictionVisuals(profile);if(!visual) return;
++    var landmarks=mmDescentPredictionLandmarks(profile,visual);
++    root.dataset.descentPredictionInspectionContact=profile.initial.contact===true?'true':'false';
+     var detail=root.querySelector('[data-descent-prediction-detail]');if(detail)detail.style.display=visual.detail?'':'none';
+     root.dataset.descentPredictionDetailAvailable=visual.detail?'true':'false';
+     function text(selector,value){var node=root.querySelector(selector);if(node)node.textContent=value;}
+@@ -1442,9 +1503,9 @@
+       var svg=root.querySelector(name==='main'?'[data-descent-prediction-diagram]':'[data-descent-prediction-detail-diagram]');if(!svg)return;
+       attrs(svg,{'data-metre-scale':frame.scale,'data-altitude-min':frame.minAltitude,'data-altitude-max':frame.maxAltitude,
+         'data-horizontal-span':frame.rightMetres-frame.leftMetres,'data-vertical-span':frame.verticalMetres,'data-time-interval':frame.interval});
+-      attrs(svg,{'aria-label':(name==='main'?'Surface reference':'Braking close view')+'. Equal metre axes. Altitude '+frame.minAltitude.toFixed(1)+' to '+frame.maxAltitude.toFixed(1)+
++      attrs(svg,{'aria-label':(name==='main'?(profile.initial.contact?'Contact inspection':'Surface reference'):'Braking close view')+'. Equal metre axes. Altitude '+frame.minAltitude.toFixed(1)+' to '+frame.maxAltitude.toFixed(1)+
+         ' metres. Displacement '+mmDescentVisualNumber(frame.leftMetres)+' to '+mmDescentVisualNumber(frame.rightMetres)+
+-        ' metres. Solid cyan holds specified controls; dashed amber uses full thrust and centered tilt. Open endpoints are before contact; filled endpoints are contact.'});
++        ' metres. The solid path holds specified controls; the dashed path uses full thrust and centered tilt. A dotted vertical line marks the inspected ground position. Open endpoints are before contact; filled endpoints are contact.'});
+       text('[data-descent-visual-altitude="'+name+'"]','Altitude '+frame.minAltitude.toFixed(1)+'–'+frame.maxAltitude.toFixed(1)+' m ↑');
+       text('[data-descent-visual-track="'+name+'"]','Displacement '+mmDescentVisualNumber(frame.leftMetres)+' to '+mmDescentVisualNumber(frame.rightMetres)+' m →');
+       text('[data-descent-visual-timing="'+name+'"]',frame.interval>0?'Time dots every '+frame.interval.toFixed(frame.interval<1?2:frame.interval%1?1:0)+' s · chevrons show travel direction.':'No further forecast motion from this inspection.');
+@@ -1461,6 +1522,7 @@
+         var dots=svg.querySelectorAll('[data-descent-visual-time="'+key+'"]'),marks=frame[key+'Marks'];
+         for(var i=0;i<dots.length;i++){var mark=marks[i];dots[i].style.display=mark&&mark.visible?'':'none';if(mark)attrs(dots[i],{cx:mark.x,cy:mark.y,'data-time':mark.time});}
+       });
++      mmSetDescentPredictionLandmarks(root,name,svg,landmarks[name]);
+     });
+     var window=root.querySelector('[data-descent-prediction-detail-window]');if(window){window.style.display=visual.window?'':'none';if(visual.window)attrs(window,visual.window);}
+     if(visual.detail) {
+@@ -1477,15 +1539,23 @@
+       '[data-descent-visual-grid]{stroke:GrayText!important;}[data-descent-visual-case="held"] *{stroke:CanvasText!important;}'+
+       '[data-descent-visual-case="burn"] *{stroke:LinkText!important;}[data-descent-visual-time]{fill:CanvasText!important;}'+
+       '[data-descent-visual-end][data-endpoint="contact"]{fill:CanvasText!important;}[data-descent-visual-start]{fill:CanvasText!important;}'+
+-      '[data-descent-visual-ground] line,[data-descent-prediction-detail-window]{stroke:CanvasText!important;}[data-descent-visual-ground] rect{fill:Canvas!important;}}';
++      '[data-descent-visual-ground] line,[data-descent-visual-origin],[data-descent-prediction-detail-window]{stroke:CanvasText!important;}[data-descent-visual-ground] rect{fill:Canvas!important;}}';
++    forced+='@media(max-width:600px){[data-descent-prediction] [data-descent-ruler-minor]{display:none;}}';
+     function reading(id,label){return h('div',{key:id,style:{minWidth:0}},h('dt',{style:{color:'#cbd5e1'}},label),
+       h('dd',{'data-descent-prediction-value':id,style:{margin:0,fontWeight:700,color:'#f8fafc',fontSize:/-(endpoint|time|altitude)$/.test(id)?'14px':'12px',fontVariantNumeric:'tabular-nums'}},'—'));}
+     function chart(name) {var main=name==='main';
++      function ruler(axis,i){return h('span',{key:i,'data-descent-ruler':name+'-'+axis,'data-tick':i,
++        'data-descent-ruler-minor':axis==='displacement'&&(i===1||i===3)?true:undefined,
++        style:axis==='altitude'?{position:'absolute',right:'4px',top:(10+i*20)+'%',transform:'translateY(-50%)',fontSize:'12px',lineHeight:'16px',fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}:
++          {position:'absolute',left:(6+i*22)+'%',top:0,transform:i===0?'none':i===4?'translateX(-100%)':'translateX(-50%)',fontSize:'12px',lineHeight:'16px',fontVariantNumeric:'tabular-nums',whiteSpace:'nowrap'}},'—');}
+       return h('figure',main?{key:name,style:{margin:0,padding:'10px',border:'1px solid #475569',borderRadius:'10px',minWidth:0,background:'#081321'}}:
+         {key:name,'data-descent-prediction-detail':true,style:{display:'none',margin:0,padding:'10px',border:'1px solid #64748b',borderRadius:'10px',minWidth:0,background:'#081321'}},
+-        h('figcaption',{style:{fontSize:'14px',lineHeight:1.6,fontWeight:700,color:'#f8fafc',margin:'0 0 6px'}},main?'Surface reference':'Braking close view'),
++        h('figcaption',{'data-descent-visual-caption':name,style:{fontSize:'14px',lineHeight:1.6,fontWeight:700,color:'#f8fafc',margin:'0 0 6px'}},main?'Surface reference':'Braking close view'),
+         h('p',{'data-descent-visual-altitude':name,style:text},'↑ Altitude'),
+-        h('svg',Object.assign(main?{'data-descent-prediction-diagram':true}:{'data-descent-prediction-detail-diagram':true},
++        h('div',{'data-descent-visual-rulers':name,style:{minWidth:0}},
++          h('div',{style:{display:'grid',gridTemplateColumns:'52px minmax(0,1fr)',minWidth:0}},
++            h('div',{'data-descent-ruler-rail':name+'-altitude',style:{position:'relative',color:'#cbd5e1'}},[0,1,2,3,4].map(function(i){return ruler('altitude',i);})),
++            h('svg',Object.assign(main?{'data-descent-prediction-diagram':true}:{'data-descent-prediction-detail-diagram':true},
+           {viewBox:'0 0 600 360',preserveAspectRatio:'xMidYMid meet',role:'img','aria-label':main?'Projected paths on equal metre axes with the model surface at zero altitude.':'A cropped view of the same braking paths on equal metre axes.',
+             style:{display:'block',width:'100%',height:'auto',background:'#081321',borderRadius:'8px'}}),
+           h('rect',{x:36,y:36,width:528,height:288,fill:'none',stroke:'#475569',vectorEffect:'non-scaling-stroke','data-descent-visual-grid':true}),
+@@ -1494,6 +1564,7 @@
+             h('line',Object.assign(main&&i===2?{'data-descent-prediction-height-grid':true}:{},{x1:36,y1:36+i*72,x2:564,y2:36+i*72,vectorEffect:'non-scaling-stroke'})));}),
+           h('g',{'data-descent-visual-ground':true},h('rect',{x:36,y:324,width:528,height:12,fill:'#26394f'}),
+             h('line',{x1:36,y1:324,x2:564,y2:324,stroke:'#cbd5e1',strokeWidth:1.5,vectorEffect:'non-scaling-stroke'})),
++          h('line',{'data-descent-visual-origin':true,x1:300,y1:36,x2:300,y2:324,stroke:'#94a3b8',strokeDasharray:'1 4',vectorEffect:'non-scaling-stroke',style:{display:'none'}}),
+           h('svg',{x:36,y:36,width:528,height:288,viewBox:'36 36 528 288',preserveAspectRatio:'xMidYMid meet','data-descent-visual-viewport':name,'aria-hidden':'true',style:{overflow:'hidden'}},
+             main&&h('rect',{'data-descent-prediction-detail-window':true,x:0,y:0,width:0,height:0,fill:'#f8fafc',fillOpacity:.05,stroke:'#f8fafc',strokeDasharray:'4 3',vectorEffect:'non-scaling-stroke'}),
+             ['held','burn'].map(function(key){var color=key==='held'?'#67e8f9':'#fbbf24';return h('g',{key:key,'data-descent-visual-case':key},
+@@ -1503,7 +1574,17 @@
+           h('circle',Object.assign(main?{'data-descent-prediction-start':true}:{},{'data-descent-visual-start':true,cx:300,cy:36,r:4,fill:'#f8fafc'})),
+           ['held','burn'].map(function(key){var color=key==='held'?'#67e8f9':'#fbbf24';return h('g',{key:key,'data-descent-visual-case':key},
+               h('circle',{'data-descent-visual-ring':key,cx:300,cy:36,r:key==='held'?7:4,fill:'none',stroke:color,strokeWidth:1,vectorEffect:'non-scaling-stroke'}),
+-              h('circle',Object.assign(main?{'data-descent-prediction-end':key}:{},{'data-descent-visual-end':key,cx:300,cy:36,r:4,fill:'none',stroke:color,strokeWidth:2,vectorEffect:'non-scaling-stroke'})));})),
++              h('circle',Object.assign(main?{'data-descent-prediction-end':key}:{},{'data-descent-visual-end':key,cx:300,cy:36,r:4,fill:'none',stroke:color,strokeWidth:2,vectorEffect:'non-scaling-stroke'})));}))),
++          h('div',{'data-descent-ruler-rail':name+'-displacement',style:{position:'relative',height:'24px',marginLeft:'52px',color:'#cbd5e1'}},[0,1,2,3,4].map(function(i){return ruler('displacement',i);}))
++        ),
++        h('div',{style:{display:'grid',gridTemplateColumns:'repeat(2,minmax(0,1fr))',gap:'8px',margin:'4px 0 8px',minWidth:0}},
++          ['held','burn'].map(function(key){return h('div',{key:key,'data-descent-event':name+'-'+key,
++            style:{padding:'8px',border:'1px solid #475569',borderTop:'2px solid '+(key==='held'?'#67e8f9':'#fbbf24'),borderRadius:'6px',minWidth:0,fontSize:'12px',lineHeight:1.65,overflowWrap:'anywhere'}},
++            h('div',{style:{fontWeight:700,color:key==='held'?'#67e8f9':'#fbbf24'}},key==='held'?'Specified controls':'Full centered thrust'),
++            h('strong',{'data-descent-event-label':true,style:{display:'block',color:'#f8fafc'}},'—'),
++            h('div',{'data-descent-event-reading':true,style:{color:'#f8fafc',fontVariantNumeric:'tabular-nums'}},'—'),
++            h('div',{'data-descent-event-context':true,style:{color:'#cbd5e1'}},'Time from inspection · altitude'));})
++        ),
+         h('p',{'data-descent-visual-track':name,style:text},'Ground displacement →'),
+         h('p',{'data-descent-visual-timing':name,style:text},'Time marks use the same interval on both paths.'),
+         main?h('p',{'data-descent-prediction-scale':true,style:text},'Shared metre scale.'):
+@@ -1521,10 +1602,10 @@
+         h('p',{'data-descent-prediction-status':true,style:Object.assign({},text,{color:'#a5f3fc',padding:'10px',background:'#0c2538',borderLeft:'3px solid #67e8f9',borderRadius:'6px'})},'Predictions advance copies of the flight state.'),
+         h('div',{'data-descent-prediction-plot':true,style:{margin:'12px 0',minWidth:0}},
+           h('h4',{style:{fontSize:'14px',lineHeight:1.6,margin:'0 0 8px',color:'#f8fafc',fontWeight:700}},'Projected landing paths'),
+-          h('p',{style:text},h('span',{style:{color:'#67e8f9',fontWeight:700}},'Solid cyan · specified controls'),' · ',
+-            h('span',{style:{color:'#fbbf24',fontWeight:700}},'Dashed amber · full thrust, centered tilt')),
++          h('p',{style:text},h('span',{style:{color:'#67e8f9',fontWeight:700}},'Solid path · specified controls'),' · ',
++            h('span',{style:{color:'#fbbf24',fontWeight:700}},'Dashed path · full thrust, centered tilt')),
+           h('div',{'data-descent-prediction-charts':true,style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,320px),1fr))',alignItems:'start',gap:'12px',minWidth:0}},chart('main'),chart('detail')),
+-          h('p',{style:text},'Open circles: endpoint before contact. Filled circles: contact. A white dot marks the inspected position. The outlined box marks the close-view window when one is shown.')),
++          h('p',{style:text},'Open circles: endpoint before contact. Filled circles: contact. A dot marks the inspected position; the dotted vertical reference marks zero displacement from it. The outlined box marks the close-view window when one is shown.')),
+         h('div',{'data-descent-prediction-cases':true,style:{display:'grid',gridTemplateColumns:'repeat(auto-fit,minmax(min(100%,250px),1fr))',gap:'12px',minWidth:0}},
+           ['held','burn'].map(function(key){return h('section',{key:key,'data-descent-prediction-case':key,style:{padding:'12px',background:'#0f2034',border:'1px solid #475569',borderTop:'3px solid '+(key==='held'?'#67e8f9':'#fbbf24'),borderRadius:'8px',minWidth:0}},
+             h('h5',{'data-descent-prediction-label':key,style:{fontSize:'14px',lineHeight:1.6,margin:'0 0 8px',color:key==='held'?'#67e8f9':'#fbbf24',fontWeight:700}},key==='held'?'Hold specified controls':'Full thrust, center tilt'),
+@@ -1583,7 +1664,8 @@
+   try {window.MoonMissionPure=Object.assign(window.MoonMissionPure||{}, {
+     descentPredictionPhysics:MM_DESCENT_PREDICTION,cleanDescentPredictionState:mmCleanDescentPredictionState,
+     descentPredictionProfile:mmDescentPredictionProfile,descentPredictionGeometry:mmDescentPredictionGeometry,
+-    descentPredictionVisuals:mmDescentPredictionVisuals,descentPredictionView:mmDescentPredictionView,updateDescentPrediction:mmUpdateDescentPrediction});}catch(e){}
++    descentPredictionVisuals:mmDescentPredictionVisuals,
++    descentPredictionLandmarks: mmDescentPredictionLandmarks,descentPredictionView:mmDescentPredictionView,updateDescentPrediction:mmUpdateDescentPrediction});}catch(e){}
+ 
+   // Powered approach in a spherical, non-rotating lunar frame. The reference
+   // curves request motion; forces are capped and integrated, never assigned to

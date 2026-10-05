@@ -1,0 +1,1880 @@
+{
+  "mode": "baseline",
+  "pid": 67064,
+  "startedAt": "2026-10-02T22:56:14.984Z",
+  "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+  "sourceBytes": 3088929,
+  "publicHostSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+  "harnessSha256": "7f4ec7c4b7cf86eb9cbe384d96d6d8e965682232d776c6278a33a884e32721de",
+  "checks": [
+    {
+      "label": "Actual loaded script matches frozen input",
+      "passed": true,
+      "details": {
+        "count": 1,
+        "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+        "bytes": 3088929
+      }
+    },
+    {
+      "label": "Original thermal profile mounted desktop",
+      "passed": true
+    },
+    {
+      "label": "Baseline paused chamber desktop",
+      "passed": true
+    },
+    {
+      "label": "Original thermal profile mounted phone320",
+      "passed": true
+    },
+    {
+      "label": "Baseline paused chamber phone320",
+      "passed": true
+    },
+    {
+      "label": "Original thermal profile mounted dark",
+      "passed": true
+    },
+    {
+      "label": "Baseline paused chamber dark",
+      "passed": true
+    }
+  ],
+  "cases": [
+    {
+      "variant": "desktop",
+      "context": "original-thermal-profile",
+      "scope": {
+        "x": 786.4375,
+        "y": 667.015625,
+        "width": 336.5625,
+        "height": 246.421875,
+        "top": 667.015625,
+        "right": 1123,
+        "bottom": 913.4375,
+        "left": 786.4375
+      },
+      "scrollWidth": 335,
+      "clientWidth": 335,
+      "pageOverflow": false,
+      "text": [
+        {
+          "tag": "P",
+          "id": "",
+          "classes": "wc-precip-profile-hint",
+          "text": "Adjust the three temperatures. Each 0°C crossing becomes a visible phase-change layer, and the shaded band shows how far the drop falls through freezing air before it lands.",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              243.22,
+              250.06,
+              254.62
+            ]
+          ],
+          "minimumContrast": 7.195021638610293,
+          "fontSize": 9,
+          "fontWeight": "400",
+          "range": {
+            "x": 795.4375,
+            "y": 869.015625,
+            "width": 295.40625,
+            "height": 36.28125,
+            "top": 869.015625,
+            "right": 1090.84375,
+            "bottom": 905.296875,
+            "left": 795.4375
+          },
+          "clipped": false,
+          "html": "<p class=\"wc-precip-profile-hint\">Adjust the three temperatures. Each 0°C crossing becomes a visible phase-change layer, and the shaded band shows how far the drop falls through freezing air before it lands.</p>"
+        }
+      ],
+      "controls": [],
+      "svgs": [
+        {
+          "width": 320.5625,
+          "height": 190,
+          "bounds": {
+            "x": 20,
+            "y": 6.6631574630737305,
+            "width": 220,
+            "height": 165.189453125
+          },
+          "view": {
+            "x": 0,
+            "y": 0,
+            "width": 260,
+            "height": 176
+          },
+          "textCount": 11,
+          "hidden": null,
+          "patterns": 0,
+          "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\"><rect class=\"wc-profile-cold-zone\" x=\"26\" y=\"14\" width=\"103\" height=\"140\"></rect><rect class=\"wc-profile-warm-zone\" x=\"129\" y=\"14\" width=\"103\" height=\"140\"></rect><line class=\"wc-profile-freezing-line\" x1=\"129\" y1=\"14\" x2=\"129\" y2=\"154\"></line><g><line class=\"wc-profile-grid-line\" x1=\"70.14285714285714\" y1=\"14\" x2=\"70.14285714285714\" y2=\"154\"></line><text class=\"wc-profile-tick-label\" x=\"70.14285714285714\" y=\"170\" text-anchor=\"middle\">-20°</text></g><g><line class=\"wc-profile-grid-line\" x1=\"129\" y1=\"14\" x2=\"129\" y2=\"154\"></line><text class=\"wc-profile-tick-label\" x=\"129\" y=\"170\" text-anchor=\"middle\">0°</text></g><g><line class=\"wc-profile-grid-line\" x1=\"187.85714285714286\" y1=\"14\" x2=\"187.85714285714286\" y2=\"154\"></line><text class=\"wc-profile-tick-label\" x=\"187.85714285714286\" y=\"170\" text-anchor=\"middle\">20°</text></g><text class=\"wc-profile-zone-label\" x=\"31\" y=\"28\">FROZEN</text><text class=\"wc-profile-zone-label\" x=\"188\" y=\"28\">WARM</text><path class=\"wc-profile-temperature-line\" d=\"M137.8 22.0 L143.7 92.4 L170.2 150.0\"></path><g><line class=\"wc-profile-level-line\" x1=\"20\" y1=\"22\" x2=\"240\" y2=\"22\"></line><circle class=\"wc-profile-temperature-point\" cx=\"137.82857142857142\" cy=\"22\" r=\"5\"></circle><text class=\"wc-profile-level-label\" x=\"22\" y=\"15\">CLOUD</text><text class=\"wc-profile-point-value\" x=\"145.82857142857142\" y=\"26\" text-anchor=\"start\">3°C</text></g><g><line class=\"wc-profile-level-line\" x1=\"20\" y1=\"92.4\" x2=\"240\" y2=\"92.4\"></line><circle class=\"wc-profile-temperature-point\" cx=\"143.71428571428572\" cy=\"92.4\" r=\"5\"></circle><text class=\"wc-profile-level-label\" x=\"22\" y=\"85.4\">MIDDLE</text><text class=\"wc-profile-point-value\" x=\"151.71428571428572\" y=\"96.4\" text-anchor=\"start\">5°C</text></g><g><line class=\"wc-profile-level-line\" x1=\"20\" y1=\"150\" x2=\"240\" y2=\"150\"></line><circle class=\"wc-profile-temperature-point\" cx=\"170.2\" cy=\"150\" r=\"5\"></circle><text class=\"wc-profile-level-label\" x=\"22\" y=\"143\">SURFACE</text><text class=\"wc-profile-point-value\" x=\"178.2\" y=\"154\" text-anchor=\"start\">14°C</text></g></svg>"
+        }
+      ]
+    },
+    {
+      "variant": "desktop",
+      "context": "original-svg-labels",
+      "bounds": {
+        "x": 794.4375,
+        "y": 675.015625,
+        "width": 320.5625,
+        "height": 190,
+        "top": 675.015625,
+        "right": 1115,
+        "bottom": 865.015625,
+        "left": 794.4375
+      },
+      "scale": 1.2329326923076922,
+      "labels": [
+        {
+          "text": "-20°",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 880.4283447265625,
+            "y": 848.538330078125,
+            "width": 19.589111328125,
+            "height": 12,
+            "top": 848.538330078125,
+            "right": 900.0174560546875,
+            "bottom": 860.538330078125,
+            "left": 880.4283447265625
+          }
+        },
+        {
+          "text": "0°",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 948.8501586914062,
+            "y": 848.538330078125,
+            "width": 9.81744384765625,
+            "height": 12,
+            "top": 848.538330078125,
+            "right": 958.6676025390625,
+            "bottom": 860.538330078125,
+            "left": 948.8501586914062
+          }
+        },
+        {
+          "text": "20°",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 1009.4828491210938,
+            "y": 848.538330078125,
+            "width": 15.63494873046875,
+            "height": 12,
+            "top": 848.538330078125,
+            "right": 1025.1177978515625,
+            "bottom": 860.538330078125,
+            "left": 1009.4828491210938
+          }
+        },
+        {
+          "text": "FROZEN",
+          "fontSize": 8,
+          "effectiveFontSize": 9.863461538461538,
+          "bounds": {
+            "x": 847.84375,
+            "y": 696.242919921875,
+            "width": 37.0625,
+            "height": 11,
+            "top": 696.242919921875,
+            "right": 884.90625,
+            "bottom": 707.242919921875,
+            "left": 847.84375
+          }
+        },
+        {
+          "text": "WARM",
+          "fontSize": 8,
+          "effectiveFontSize": 9.863461538461538,
+          "bounds": {
+            "x": 1016.3323974609375,
+            "y": 696.242919921875,
+            "width": 32.7440185546875,
+            "height": 11,
+            "top": 696.242919921875,
+            "right": 1049.076416015625,
+            "bottom": 707.242919921875,
+            "left": 1016.3323974609375
+          }
+        },
+        {
+          "text": "CLOUD",
+          "fontSize": 8,
+          "effectiveFontSize": 9.863461538461538,
+          "bounds": {
+            "x": 837.1278076171875,
+            "y": 682.2088012695312,
+            "width": 32.82342529296875,
+            "height": 11,
+            "top": 682.2088012695312,
+            "right": 869.9512329101562,
+            "bottom": 693.2088012695312,
+            "left": 837.1278076171875
+          }
+        },
+        {
+          "text": "3°C",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 971.806396484375,
+            "y": 693.0838012695312,
+            "width": 16.5677490234375,
+            "height": 12,
+            "top": 693.0838012695312,
+            "right": 988.3741455078125,
+            "bottom": 705.0838012695312,
+            "left": 971.806396484375
+          }
+        },
+        {
+          "text": "MIDDLE",
+          "fontSize": 8,
+          "effectiveFontSize": 9.863461538461538,
+          "bounds": {
+            "x": 838.1278076171875,
+            "y": 758.2088012695312,
+            "width": 36.65625,
+            "height": 11,
+            "top": 758.2088012695312,
+            "right": 874.7840576171875,
+            "bottom": 769.2088012695312,
+            "left": 838.1278076171875
+          }
+        },
+        {
+          "text": "5°C",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 978.1602783203125,
+            "y": 769.0838012695312,
+            "width": 16.5677490234375,
+            "height": 12,
+            "top": 769.0838012695312,
+            "right": 994.72802734375,
+            "bottom": 781.0838012695312,
+            "left": 978.1602783203125
+          }
+        },
+        {
+          "text": "SURFACE",
+          "fontSize": 8,
+          "effectiveFontSize": 9.863461538461538,
+          "bounds": {
+            "x": 838.1278076171875,
+            "y": 820.390625,
+            "width": 41.578125,
+            "height": 11,
+            "top": 820.390625,
+            "right": 879.7059326171875,
+            "bottom": 831.390625,
+            "left": 838.1278076171875
+          }
+        },
+        {
+          "text": "14°C",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 1006.7528076171875,
+            "y": 831.265625,
+            "width": 21.47021484375,
+            "height": 12,
+            "top": 831.265625,
+            "right": 1028.2230224609375,
+            "bottom": 843.265625,
+            "left": 1006.7528076171875
+          }
+        }
+      ]
+    },
+    {
+      "variant": "phone320",
+      "context": "original-thermal-profile",
+      "scope": {
+        "x": 40,
+        "y": 3616.015625,
+        "width": 240,
+        "height": 220.1875,
+        "top": 3616.015625,
+        "right": 280,
+        "bottom": 3836.203125,
+        "left": 40
+      },
+      "scrollWidth": 238,
+      "clientWidth": 238,
+      "pageOverflow": false,
+      "text": [
+        {
+          "tag": "P",
+          "id": "",
+          "classes": "wc-precip-profile-hint",
+          "text": "Adjust the three temperatures. Each 0°C crossing becomes a visible phase-change layer, and the shaded band shows how far the drop falls through freezing air before it lands.",
+          "foreground": "rgb(71, 85, 105)",
+          "backgrounds": [
+            [
+              243.22,
+              250.06,
+              254.62
+            ]
+          ],
+          "minimumContrast": 7.195021638610293,
+          "fontSize": 9,
+          "fontWeight": "400",
+          "range": {
+            "x": 49,
+            "y": 3779.640625,
+            "width": 215.75,
+            "height": 48.421875,
+            "top": 3779.640625,
+            "right": 264.75,
+            "bottom": 3828.0625,
+            "left": 49
+          },
+          "clipped": false,
+          "html": "<p class=\"wc-precip-profile-hint\">Adjust the three temperatures. Each 0°C crossing becomes a visible phase-change layer, and the shaded band shows how far the drop falls through freezing air before it lands.</p>"
+        }
+      ],
+      "controls": [],
+      "svgs": [
+        {
+          "width": 224,
+          "height": 151.625,
+          "bounds": {
+            "x": 20,
+            "y": 6.874691486358643,
+            "width": 220,
+            "height": 165.4468231201172
+          },
+          "view": {
+            "x": 0,
+            "y": 0,
+            "width": 260,
+            "height": 176
+          },
+          "textCount": 11,
+          "hidden": null,
+          "patterns": 0,
+          "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\"><rect class=\"wc-profile-cold-zone\" x=\"26\" y=\"14\" width=\"103\" height=\"140\"></rect><rect class=\"wc-profile-warm-zone\" x=\"129\" y=\"14\" width=\"103\" height=\"140\"></rect><line class=\"wc-profile-freezing-line\" x1=\"129\" y1=\"14\" x2=\"129\" y2=\"154\"></line><g><line class=\"wc-profile-grid-line\" x1=\"70.14285714285714\" y1=\"14\" x2=\"70.14285714285714\" y2=\"154\"></line><text class=\"wc-profile-tick-label\" x=\"70.14285714285714\" y=\"170\" text-anchor=\"middle\">-20°</text></g><g><line class=\"wc-profile-grid-line\" x1=\"129\" y1=\"14\" x2=\"129\" y2=\"154\"></line><text class=\"wc-profile-tick-label\" x=\"129\" y=\"170\" text-anchor=\"middle\">0°</text></g><g><line class=\"wc-profile-grid-line\" x1=\"187.85714285714286\" y1=\"14\" x2=\"187.85714285714286\" y2=\"154\"></line><text class=\"wc-profile-tick-label\" x=\"187.85714285714286\" y=\"170\" text-anchor=\"middle\">20°</text></g><text class=\"wc-profile-zone-label\" x=\"31\" y=\"28\">FROZEN</text><text class=\"wc-profile-zone-label\" x=\"188\" y=\"28\">WARM</text><path class=\"wc-profile-temperature-line\" d=\"M137.8 22.0 L143.7 92.4 L170.2 150.0\"></path><g><line class=\"wc-profile-level-line\" x1=\"20\" y1=\"22\" x2=\"240\" y2=\"22\"></line><circle class=\"wc-profile-temperature-point\" cx=\"137.82857142857142\" cy=\"22\" r=\"5\"></circle><text class=\"wc-profile-level-label\" x=\"22\" y=\"15\">CLOUD</text><text class=\"wc-profile-point-value\" x=\"145.82857142857142\" y=\"26\" text-anchor=\"start\">3°C</text></g><g><line class=\"wc-profile-level-line\" x1=\"20\" y1=\"92.4\" x2=\"240\" y2=\"92.4\"></line><circle class=\"wc-profile-temperature-point\" cx=\"143.71428571428572\" cy=\"92.4\" r=\"5\"></circle><text class=\"wc-profile-level-label\" x=\"22\" y=\"85.4\">MIDDLE</text><text class=\"wc-profile-point-value\" x=\"151.71428571428572\" y=\"96.4\" text-anchor=\"start\">5°C</text></g><g><line class=\"wc-profile-level-line\" x1=\"20\" y1=\"150\" x2=\"240\" y2=\"150\"></line><circle class=\"wc-profile-temperature-point\" cx=\"170.2\" cy=\"150\" r=\"5\"></circle><text class=\"wc-profile-level-label\" x=\"22\" y=\"143\">SURFACE</text><text class=\"wc-profile-point-value\" x=\"178.2\" y=\"154\" text-anchor=\"start\">14°C</text></g></svg>"
+        }
+      ]
+    },
+    {
+      "variant": "phone320",
+      "context": "original-svg-labels",
+      "bounds": {
+        "x": 48,
+        "y": 3624.015625,
+        "width": 224,
+        "height": 151.625,
+        "top": 3624.015625,
+        "right": 272,
+        "bottom": 3775.640625,
+        "left": 48
+      },
+      "scale": 0.8615384615384616,
+      "labels": [
+        {
+          "text": "-20°",
+          "fontSize": 9,
+          "effectiveFontSize": 7.753846153846155,
+          "bounds": {
+            "x": 100.7139892578125,
+            "y": 3762.4716796875,
+            "width": 15.4423828125,
+            "height": 10,
+            "top": 3762.4716796875,
+            "right": 116.1563720703125,
+            "bottom": 3772.4716796875,
+            "left": 100.7139892578125
+          }
+        },
+        {
+          "text": "0°",
+          "fontSize": 9,
+          "effectiveFontSize": 7.753846153846155,
+          "bounds": {
+            "x": 154.31817626953125,
+            "y": 3762.4716796875,
+            "width": 8.6431884765625,
+            "height": 10,
+            "top": 3762.4716796875,
+            "right": 162.96136474609375,
+            "bottom": 3772.4716796875,
+            "left": 154.31817626953125
+          }
+        },
+        {
+          "text": "20°",
+          "fontSize": 9,
+          "effectiveFontSize": 7.753846153846155,
+          "bounds": {
+            "x": 203.70364379882812,
+            "y": 3762.4716796875,
+            "width": 12.286376953125,
+            "height": 10,
+            "top": 3762.4716796875,
+            "right": 215.99002075195312,
+            "bottom": 3772.4716796875,
+            "left": 203.70364379882812
+          }
+        },
+        {
+          "text": "FROZEN",
+          "fontSize": 8,
+          "effectiveFontSize": 6.892307692307693,
+          "bounds": {
+            "x": 74.7109375,
+            "y": 3641.1376953125,
+            "width": 29.64105224609375,
+            "height": 9,
+            "top": 3641.1376953125,
+            "right": 104.35198974609375,
+            "bottom": 3650.1376953125,
+            "left": 74.7109375
+          }
+        },
+        {
+          "text": "WARM",
+          "fontSize": 8,
+          "effectiveFontSize": 6.892307692307693,
+          "bounds": {
+            "x": 208.9673309326172,
+            "y": 3641.1376953125,
+            "width": 26.312515258789062,
+            "height": 9,
+            "top": 3641.1376953125,
+            "right": 235.27984619140625,
+            "bottom": 3650.1376953125,
+            "left": 208.9673309326172
+          }
+        },
+        {
+          "text": "CLOUD",
+          "fontSize": 8,
+          "effectiveFontSize": 6.892307692307693,
+          "bounds": {
+            "x": 65.95738983154297,
+            "y": 3629.938232421875,
+            "width": 26.817825317382812,
+            "height": 9,
+            "top": 3629.938232421875,
+            "right": 92.77521514892578,
+            "bottom": 3638.938232421875,
+            "left": 65.95738983154297
+          }
+        },
+        {
+          "text": "3°C",
+          "fontSize": 9,
+          "effectiveFontSize": 7.753846153846155,
+          "bounds": {
+            "x": 173.6363983154297,
+            "y": 3638.414794921875,
+            "width": 12.636474609375,
+            "height": 10,
+            "top": 3638.414794921875,
+            "right": 186.2728729248047,
+            "bottom": 3648.414794921875,
+            "left": 173.6363983154297
+          }
+        },
+        {
+          "text": "MIDDLE",
+          "fontSize": 8,
+          "effectiveFontSize": 6.892307692307693,
+          "bounds": {
+            "x": 66.95738220214844,
+            "y": 3690.588134765625,
+            "width": 29.265625,
+            "height": 9,
+            "top": 3690.588134765625,
+            "right": 96.22300720214844,
+            "bottom": 3699.588134765625,
+            "left": 66.95738220214844
+          }
+        },
+        {
+          "text": "5°C",
+          "fontSize": 9,
+          "effectiveFontSize": 7.753846153846155,
+          "bounds": {
+            "x": 178.70697021484375,
+            "y": 3699.064697265625,
+            "width": 12.636474609375,
+            "height": 10,
+            "top": 3699.064697265625,
+            "right": 191.34344482421875,
+            "bottom": 3709.064697265625,
+            "left": 178.70697021484375
+          }
+        },
+        {
+          "text": "SURFACE",
+          "fontSize": 8,
+          "effectiveFontSize": 6.892307692307693,
+          "bounds": {
+            "x": 66.95738220214844,
+            "y": 3740.2109375,
+            "width": 33.203125,
+            "height": 9,
+            "top": 3740.2109375,
+            "right": 100.16050720214844,
+            "bottom": 3749.2109375,
+            "left": 66.95738220214844
+          }
+        },
+        {
+          "text": "14°C",
+          "fontSize": 9,
+          "effectiveFontSize": 7.753846153846155,
+          "bounds": {
+            "x": 201.52456665039062,
+            "y": 3748.6875,
+            "width": 16.549331665039062,
+            "height": 10,
+            "top": 3748.6875,
+            "right": 218.0738983154297,
+            "bottom": 3758.6875,
+            "left": 201.52456665039062
+          }
+        }
+      ]
+    },
+    {
+      "variant": "dark",
+      "context": "original-thermal-profile",
+      "scope": {
+        "x": 786.4375,
+        "y": -1105.984375,
+        "width": 336.5625,
+        "height": 246.421875,
+        "top": -1105.984375,
+        "right": 1123,
+        "bottom": -859.5625,
+        "left": 786.4375
+      },
+      "scrollWidth": 335,
+      "clientWidth": 335,
+      "pageOverflow": false,
+      "text": [
+        {
+          "tag": "P",
+          "id": "",
+          "classes": "wc-precip-profile-hint",
+          "text": "Adjust the three temperatures. Each 0°C crossing becomes a visible phase-change layer, and the shaded band shows how far the drop falls through freezing air before it lands.",
+          "foreground": "rgb(203, 213, 225)",
+          "backgrounds": [
+            [
+              16.1,
+              51.32000000000001,
+              68.68
+            ]
+          ],
+          "minimumContrast": 8.91542253791546,
+          "fontSize": 9,
+          "fontWeight": "400",
+          "range": {
+            "x": 795.4375,
+            "y": -903.984375,
+            "width": 295.40625,
+            "height": 36.28125,
+            "top": -903.984375,
+            "right": 1090.84375,
+            "bottom": -867.703125,
+            "left": 795.4375
+          },
+          "clipped": false,
+          "html": "<p class=\"wc-precip-profile-hint\">Adjust the three temperatures. Each 0°C crossing becomes a visible phase-change layer, and the shaded band shows how far the drop falls through freezing air before it lands.</p>"
+        }
+      ],
+      "controls": [],
+      "svgs": [
+        {
+          "width": 320.5625,
+          "height": 190,
+          "bounds": {
+            "x": 20,
+            "y": 6.6631574630737305,
+            "width": 220,
+            "height": 165.189453125
+          },
+          "view": {
+            "x": 0,
+            "y": 0,
+            "width": 260,
+            "height": 176
+          },
+          "textCount": 11,
+          "hidden": null,
+          "patterns": 0,
+          "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\"><rect class=\"wc-profile-cold-zone\" x=\"26\" y=\"14\" width=\"103\" height=\"140\"></rect><rect class=\"wc-profile-warm-zone\" x=\"129\" y=\"14\" width=\"103\" height=\"140\"></rect><line class=\"wc-profile-freezing-line\" x1=\"129\" y1=\"14\" x2=\"129\" y2=\"154\"></line><g><line class=\"wc-profile-grid-line\" x1=\"70.14285714285714\" y1=\"14\" x2=\"70.14285714285714\" y2=\"154\"></line><text class=\"wc-profile-tick-label\" x=\"70.14285714285714\" y=\"170\" text-anchor=\"middle\">-20°</text></g><g><line class=\"wc-profile-grid-line\" x1=\"129\" y1=\"14\" x2=\"129\" y2=\"154\"></line><text class=\"wc-profile-tick-label\" x=\"129\" y=\"170\" text-anchor=\"middle\">0°</text></g><g><line class=\"wc-profile-grid-line\" x1=\"187.85714285714286\" y1=\"14\" x2=\"187.85714285714286\" y2=\"154\"></line><text class=\"wc-profile-tick-label\" x=\"187.85714285714286\" y=\"170\" text-anchor=\"middle\">20°</text></g><text class=\"wc-profile-zone-label\" x=\"31\" y=\"28\">FROZEN</text><text class=\"wc-profile-zone-label\" x=\"188\" y=\"28\">WARM</text><path class=\"wc-profile-temperature-line\" d=\"M137.8 22.0 L143.7 92.4 L170.2 150.0\"></path><g><line class=\"wc-profile-level-line\" x1=\"20\" y1=\"22\" x2=\"240\" y2=\"22\"></line><circle class=\"wc-profile-temperature-point\" cx=\"137.82857142857142\" cy=\"22\" r=\"5\"></circle><text class=\"wc-profile-level-label\" x=\"22\" y=\"15\">CLOUD</text><text class=\"wc-profile-point-value\" x=\"145.82857142857142\" y=\"26\" text-anchor=\"start\">3°C</text></g><g><line class=\"wc-profile-level-line\" x1=\"20\" y1=\"92.4\" x2=\"240\" y2=\"92.4\"></line><circle class=\"wc-profile-temperature-point\" cx=\"143.71428571428572\" cy=\"92.4\" r=\"5\"></circle><text class=\"wc-profile-level-label\" x=\"22\" y=\"85.4\">MIDDLE</text><text class=\"wc-profile-point-value\" x=\"151.71428571428572\" y=\"96.4\" text-anchor=\"start\">5°C</text></g><g><line class=\"wc-profile-level-line\" x1=\"20\" y1=\"150\" x2=\"240\" y2=\"150\"></line><circle class=\"wc-profile-temperature-point\" cx=\"170.2\" cy=\"150\" r=\"5\"></circle><text class=\"wc-profile-level-label\" x=\"22\" y=\"143\">SURFACE</text><text class=\"wc-profile-point-value\" x=\"178.2\" y=\"154\" text-anchor=\"start\">14°C</text></g></svg>"
+        }
+      ]
+    },
+    {
+      "variant": "dark",
+      "context": "original-svg-labels",
+      "bounds": {
+        "x": 794.4375,
+        "y": -1097.984375,
+        "width": 320.5625,
+        "height": 190,
+        "top": -1097.984375,
+        "right": 1115,
+        "bottom": -907.984375,
+        "left": 794.4375
+      },
+      "scale": 1.2329326923076922,
+      "labels": [
+        {
+          "text": "-20°",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 880.4283447265625,
+            "y": -924.461669921875,
+            "width": 19.589111328125,
+            "height": 12,
+            "top": -924.461669921875,
+            "right": 900.0174560546875,
+            "bottom": -912.461669921875,
+            "left": 880.4283447265625
+          }
+        },
+        {
+          "text": "0°",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 948.8501586914062,
+            "y": -924.461669921875,
+            "width": 9.81744384765625,
+            "height": 12,
+            "top": -924.461669921875,
+            "right": 958.6676025390625,
+            "bottom": -912.461669921875,
+            "left": 948.8501586914062
+          }
+        },
+        {
+          "text": "20°",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 1009.4828491210938,
+            "y": -924.461669921875,
+            "width": 15.63494873046875,
+            "height": 12,
+            "top": -924.461669921875,
+            "right": 1025.1177978515625,
+            "bottom": -912.461669921875,
+            "left": 1009.4828491210938
+          }
+        },
+        {
+          "text": "FROZEN",
+          "fontSize": 8,
+          "effectiveFontSize": 9.863461538461538,
+          "bounds": {
+            "x": 847.84375,
+            "y": -1076.757080078125,
+            "width": 37.0625,
+            "height": 11,
+            "top": -1076.757080078125,
+            "right": 884.90625,
+            "bottom": -1065.757080078125,
+            "left": 847.84375
+          }
+        },
+        {
+          "text": "WARM",
+          "fontSize": 8,
+          "effectiveFontSize": 9.863461538461538,
+          "bounds": {
+            "x": 1016.3323974609375,
+            "y": -1076.757080078125,
+            "width": 32.7440185546875,
+            "height": 11,
+            "top": -1076.757080078125,
+            "right": 1049.076416015625,
+            "bottom": -1065.757080078125,
+            "left": 1016.3323974609375
+          }
+        },
+        {
+          "text": "CLOUD",
+          "fontSize": 8,
+          "effectiveFontSize": 9.863461538461538,
+          "bounds": {
+            "x": 837.1278076171875,
+            "y": -1090.7911376953125,
+            "width": 32.82342529296875,
+            "height": 11,
+            "top": -1090.7911376953125,
+            "right": 869.9512329101562,
+            "bottom": -1079.7911376953125,
+            "left": 837.1278076171875
+          }
+        },
+        {
+          "text": "3°C",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 971.806396484375,
+            "y": -1079.9161376953125,
+            "width": 16.5677490234375,
+            "height": 12,
+            "top": -1079.9161376953125,
+            "right": 988.3741455078125,
+            "bottom": -1067.9161376953125,
+            "left": 971.806396484375
+          }
+        },
+        {
+          "text": "MIDDLE",
+          "fontSize": 8,
+          "effectiveFontSize": 9.863461538461538,
+          "bounds": {
+            "x": 838.1278076171875,
+            "y": -1014.7911987304688,
+            "width": 36.65625,
+            "height": 11,
+            "top": -1014.7911987304688,
+            "right": 874.7840576171875,
+            "bottom": -1003.7911987304688,
+            "left": 838.1278076171875
+          }
+        },
+        {
+          "text": "5°C",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 978.1602783203125,
+            "y": -1003.9161987304688,
+            "width": 16.5677490234375,
+            "height": 12,
+            "top": -1003.9161987304688,
+            "right": 994.72802734375,
+            "bottom": -991.9161987304688,
+            "left": 978.1602783203125
+          }
+        },
+        {
+          "text": "SURFACE",
+          "fontSize": 8,
+          "effectiveFontSize": 9.863461538461538,
+          "bounds": {
+            "x": 838.1278076171875,
+            "y": -952.609375,
+            "width": 41.578125,
+            "height": 11,
+            "top": -952.609375,
+            "right": 879.7059326171875,
+            "bottom": -941.609375,
+            "left": 838.1278076171875
+          }
+        },
+        {
+          "text": "14°C",
+          "fontSize": 9,
+          "effectiveFontSize": 11.09639423076923,
+          "bounds": {
+            "x": 1006.7528076171875,
+            "y": -941.734375,
+            "width": 21.47021484375,
+            "height": 12,
+            "top": -941.734375,
+            "right": 1028.2230224609375,
+            "bottom": -929.734375,
+            "left": 1006.7528076171875
+          }
+        }
+      ]
+    }
+  ],
+  "nativeActions": [],
+  "audits": [
+    {
+      "label": "Baseline thermal profile desktop",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                "text[x=\"70.14285714285714\"]"
+              ],
+              "html": "<text class=\"wc-profile-tick-label\" x=\"70.14285714285714\" y=\"170\" text-anchor=\"middle\">-20°</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-profile-tick-label[x=\"129\"][y=\"170\"]"
+              ],
+              "html": "<text class=\"wc-profile-tick-label\" x=\"129\" y=\"170\" text-anchor=\"middle\">0°</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"187.85714285714286\"]"
+              ],
+              "html": "<text class=\"wc-profile-tick-label\" x=\"187.85714285714286\" y=\"170\" text-anchor=\"middle\">20°</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"31\"]"
+              ],
+              "html": "<text class=\"wc-profile-zone-label\" x=\"31\" y=\"28\">FROZEN</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgOverlap",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it is overlapped by another element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"188\"]"
+              ],
+              "html": "<text class=\"wc-profile-zone-label\" x=\"188\" y=\"28\">WARM</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgOverlap",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it is overlapped by another element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[y=\"15\"]"
+              ],
+              "html": "<text class=\"wc-profile-level-label\" x=\"22\" y=\"15\">CLOUD</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"145.82857142857142\"]"
+              ],
+              "html": "<text class=\"wc-profile-point-value\" x=\"145.82857142857142\" y=\"26\" text-anchor=\"start\">3°C</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[y=\"85.4\"]"
+              ],
+              "html": "<text class=\"wc-profile-level-label\" x=\"22\" y=\"85.4\">MIDDLE</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"151.71428571428572\"]"
+              ],
+              "html": "<text class=\"wc-profile-point-value\" x=\"151.71428571428572\" y=\"96.4\" text-anchor=\"start\">5°C</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[y=\"143\"]"
+              ],
+              "html": "<text class=\"wc-profile-level-label\" x=\"22\" y=\"143\">SURFACE</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"178.2\"]"
+              ],
+              "html": "<text class=\"wc-profile-point-value\" x=\"178.2\" y=\"154\" text-anchor=\"start\">14°C</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "manualResolutions": []
+    },
+    {
+      "label": "Baseline thermal profile phone320",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                "text[x=\"70.14285714285714\"]"
+              ],
+              "html": "<text class=\"wc-profile-tick-label\" x=\"70.14285714285714\" y=\"170\" text-anchor=\"middle\">-20°</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-profile-tick-label[x=\"129\"][y=\"170\"]"
+              ],
+              "html": "<text class=\"wc-profile-tick-label\" x=\"129\" y=\"170\" text-anchor=\"middle\">0°</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"187.85714285714286\"]"
+              ],
+              "html": "<text class=\"wc-profile-tick-label\" x=\"187.85714285714286\" y=\"170\" text-anchor=\"middle\">20°</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"31\"]"
+              ],
+              "html": "<text class=\"wc-profile-zone-label\" x=\"31\" y=\"28\">FROZEN</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgOverlap",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it is overlapped by another element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"188\"]"
+              ],
+              "html": "<text class=\"wc-profile-zone-label\" x=\"188\" y=\"28\">WARM</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgOverlap",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it is overlapped by another element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[y=\"15\"]"
+              ],
+              "html": "<text class=\"wc-profile-level-label\" x=\"22\" y=\"15\">CLOUD</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"145.82857142857142\"]"
+              ],
+              "html": "<text class=\"wc-profile-point-value\" x=\"145.82857142857142\" y=\"26\" text-anchor=\"start\">3°C</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[y=\"85.4\"]"
+              ],
+              "html": "<text class=\"wc-profile-level-label\" x=\"22\" y=\"85.4\">MIDDLE</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"151.71428571428572\"]"
+              ],
+              "html": "<text class=\"wc-profile-point-value\" x=\"151.71428571428572\" y=\"96.4\" text-anchor=\"start\">5°C</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[y=\"143\"]"
+              ],
+              "html": "<text class=\"wc-profile-level-label\" x=\"22\" y=\"143\">SURFACE</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"178.2\"]"
+              ],
+              "html": "<text class=\"wc-profile-point-value\" x=\"178.2\" y=\"154\" text-anchor=\"start\">14°C</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "manualResolutions": []
+    },
+    {
+      "label": "Baseline thermal profile dark",
+      "violations": [],
+      "incomplete": [
+        {
+          "id": "color-contrast",
+          "impact": "serious",
+          "nodes": [
+            {
+              "target": [
+                "text[x=\"70.14285714285714\"]"
+              ],
+              "html": "<text class=\"wc-profile-tick-label\" x=\"70.14285714285714\" y=\"170\" text-anchor=\"middle\">-20°</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                ".wc-profile-tick-label[x=\"129\"][y=\"170\"]"
+              ],
+              "html": "<text class=\"wc-profile-tick-label\" x=\"129\" y=\"170\" text-anchor=\"middle\">0°</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"187.85714285714286\"]"
+              ],
+              "html": "<text class=\"wc-profile-tick-label\" x=\"187.85714285714286\" y=\"170\" text-anchor=\"middle\">20°</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"31\"]"
+              ],
+              "html": "<text class=\"wc-profile-zone-label\" x=\"31\" y=\"28\">FROZEN</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgOverlap",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it is overlapped by another element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"188\"]"
+              ],
+              "html": "<text class=\"wc-profile-zone-label\" x=\"188\" y=\"28\">WARM</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because it is overlapped by another element",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "bgOverlap",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because it is overlapped by another element"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[y=\"15\"]"
+              ],
+              "html": "<text class=\"wc-profile-level-label\" x=\"22\" y=\"15\">CLOUD</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"145.82857142857142\"]"
+              ],
+              "html": "<text class=\"wc-profile-point-value\" x=\"145.82857142857142\" y=\"26\" text-anchor=\"start\">3°C</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[y=\"85.4\"]"
+              ],
+              "html": "<text class=\"wc-profile-level-label\" x=\"22\" y=\"85.4\">MIDDLE</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"151.71428571428572\"]"
+              ],
+              "html": "<text class=\"wc-profile-point-value\" x=\"151.71428571428572\" y=\"96.4\" text-anchor=\"start\">5°C</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[y=\"143\"]"
+              ],
+              "html": "<text class=\"wc-profile-level-label\" x=\"22\" y=\"143\">SURFACE</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.0pt (8px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            },
+            {
+              "target": [
+                "text[x=\"178.2\"]"
+              ],
+              "html": "<text class=\"wc-profile-point-value\" x=\"178.2\" y=\"154\" text-anchor=\"start\">14°C</text>",
+              "summary": "Fix any of the following:\n  Element's background color could not be determined because element contains an image node",
+              "any": [
+                {
+                  "id": "color-contrast",
+                  "data": {
+                    "contrastRatio": 0,
+                    "fontSize": "6.8pt (9px)",
+                    "fontWeight": "bold",
+                    "messageKey": "imgNode",
+                    "expectedContrastRatio": "4.5:1"
+                  },
+                  "relatedNodes": [
+                    {
+                      "html": "<svg class=\"wc-precip-profile-chart\" viewBox=\"0 0 260 176\" role=\"img\" aria-label=\"Cloud base 3 degrees Celsius, Middle atmosphere 5 degrees Celsius, Surface 14 degrees Celsius. Above freezing through the column.\" preserveAspectRatio=\"xMidYMid meet\">",
+                      "target": [
+                        ".wc-precip-profile-chart"
+                      ]
+                    }
+                  ],
+                  "impact": "serious",
+                  "message": "Element's background color could not be determined because element contains an image node"
+                }
+              ],
+              "all": [],
+              "none": []
+            }
+          ]
+        }
+      ],
+      "manualResolutions": []
+    }
+  ],
+  "captures": [
+    {
+      "path": "baseline-profile-desktop.png",
+      "sha256": "fd1ce41c4c5a795985c6ea5aa459b76e21c2a92b6f842ebfe76871fd826ffffc",
+      "bytes": 13231,
+      "width": 337,
+      "height": 247,
+      "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "capturedAt": "2026-10-02T22:56:20.935Z",
+      "selector": ".wc-precip-profile-editor",
+      "variant": "desktop",
+      "context": "original-thermal-profile"
+    },
+    {
+      "path": "baseline-profile-phone320.png",
+      "sha256": "28cd7e27af5230a323c69541dad94c21c03b919d9a87f8a63b455aeced3741b4",
+      "bytes": 11245,
+      "width": 240,
+      "height": 221,
+      "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "capturedAt": "2026-10-02T22:56:24.083Z",
+      "selector": ".wc-precip-profile-editor",
+      "variant": "phone320",
+      "context": "original-thermal-profile"
+    },
+    {
+      "path": "baseline-profile-dark.png",
+      "sha256": "99516391d118fcf4822917c08d398ed775ab7dc15518b2fc94233450df2712b6",
+      "bytes": 13110,
+      "width": 337,
+      "height": 247,
+      "sourceSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "capturedAt": "2026-10-02T22:56:27.038Z",
+      "selector": ".wc-precip-profile-editor",
+      "variant": "dark",
+      "context": "original-thermal-profile"
+    }
+  ],
+  "errors": [],
+  "consoleErrors": [],
+  "completed": true,
+  "successful": true,
+  "browserClosed": true,
+  "serverUsed": false,
+  "serverClosed": true,
+  "serverClosedAt": null,
+  "resourcesClosed": true,
+  "browserLaunchedAt": "2026-10-02T22:56:15.169Z",
+  "loadedRuntimeSha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+  "loadedRuntimeBytes": 3088929,
+  "browserClosedAt": "2026-10-02T22:56:29.125Z",
+  "completedAt": "2026-10-02T22:56:29.125Z"
+}

@@ -71,6 +71,8 @@ describe('D1 + D6: how an excerpt relates to its source, and safe links', () => 
     render({ title: 'T', documents: [doc({ sourceUrl: 'javascript:alert(1)' })], rubric: [] });
     expect(host.querySelector('a[href^="javascript"]')).toBeNull();
     render({ title: 'T', documents: [doc({ sourceUrl: 'https://archives.gov/doc' })], rubric: [] });
+    expect(host.querySelector('a[href="https://archives.gov/doc"]')).toBeNull();
+    render({ title: 'T', documents: [doc({ sourceUrl: 'https://archives.gov/doc', sourceProvenance: { version: 1, recordId: 'retrieved-1', origin: 'retrieved', url: 'https://archives.gov/doc', title: 'Captured archive result' } })], rubric: [] });
     expect(host.querySelector('a[href="https://archives.gov/doc"]')).not.toBeNull();
   });
 });

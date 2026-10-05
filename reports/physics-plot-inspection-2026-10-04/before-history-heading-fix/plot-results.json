@@ -1,0 +1,266 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-plot-inspection-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/physics-plot-inspection-2026-10-04/plot-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "physics-plot-inspection.spec.ts",
+      "file": "physics-plot-inspection.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "native plot buttons and original moments link exact evidence after all launch settings change",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16952,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T14:03:26.605Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8879561e68d0cc39c0db-a80c7bb7d17a806779b1",
+          "file": "physics-plot-inspection.spec.ts",
+          "line": 142,
+          "column": 5
+        },
+        {
+          "title": "choosing an old path pauses a newer live flight and return keeps its original ball paused",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6376,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T14:03:43.834Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8879561e68d0cc39c0db-0228d856bc5afd986193",
+          "file": "physics-plot-inspection.spec.ts",
+          "line": 173,
+          "column": 5
+        },
+        {
+          "title": "unfinished, horizontal, and noncanonical recordings expose only original chronological moments",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 21877,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-physics-history-run]')\nExpected: \u001b[32m\"Unfinished \u001b[7mpath 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"Unfinished \u001b[7mflight\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-physics-history-run]')\u001b[22m\n\u001b[2m    32 × locator resolved to <strong data-physics-history-run=\"unfinished\">Unfinished flight</strong>\u001b[22m\n\u001b[2m       - unexpected value \"Unfinished flight\"\u001b[22m\n",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-physics-history-run]')\nExpected: \u001b[32m\"Unfinished \u001b[7mpath 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"Unfinished \u001b[7mflight\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-physics-history-run]')\u001b[22m\n\u001b[2m    32 × locator resolved to <strong data-physics-history-run=\"unfinished\">Unfinished flight</strong>\u001b[22m\n\u001b[2m       - unexpected value \"Unfinished flight\"\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-plot-inspection.spec.ts:204:60",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-plot-inspection.spec.ts",
+                      "column": 60,
+                      "line": 204
+                    },
+                    "snippet": "  202 |   await assertMoments(page, ascending.trails[0], onePointId!); await expect(page.locator('[data-physics-plot-flight=\"' + onePointId + '\"]')).toHaveCount(0);\n  203 |   await expect(page.locator('[data-physics-history-select] option').first()).toContainText('Unfinished path ' + onePointId!.split('-')[1]);\n> 204 |   await expect(page.locator('[data-physics-history-run]')).toHaveText('Unfinished path ' + onePointId!.split('-')[1]);\n      |                                                            ^\n  205 |   expect(await evidence(page)).toEqual(ascending);\n  206 |   await launch(page, { angle: 0, launchHeight: 10 });\n  207 |   const horizontal = (await evidence(page)).trails.at(-1)!; await page.locator('[data-physics-plot-flight=\"1\"]').click();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-plot-inspection.spec.ts",
+                        "column": 60,
+                        "line": 204
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mlocator\u001b[39m\u001b[2m).\u001b[22mtoHaveText\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m failed\n\nLocator:  locator('[data-physics-history-run]')\nExpected: \u001b[32m\"Unfinished \u001b[7mpath 1\u001b[27m\"\u001b[39m\nReceived: \u001b[31m\"Unfinished \u001b[7mflight\u001b[27m\"\u001b[39m\nTimeout:  15000ms\n\nCall log:\n\u001b[2m  - Expect \"toHaveText\" with timeout 15000ms\u001b[22m\n\u001b[2m  - waiting for locator('[data-physics-history-run]')\u001b[22m\n\u001b[2m    32 × locator resolved to <strong data-physics-history-run=\"unfinished\">Unfinished flight</strong>\u001b[22m\n\u001b[2m       - unexpected value \"Unfinished flight\"\u001b[22m\n\n\n  202 |   await assertMoments(page, ascending.trails[0], onePointId!); await expect(page.locator('[data-physics-plot-flight=\"' + onePointId + '\"]')).toHaveCount(0);\n  203 |   await expect(page.locator('[data-physics-history-select] option').first()).toContainText('Unfinished path ' + onePointId!.split('-')[1]);\n> 204 |   await expect(page.locator('[data-physics-history-run]')).toHaveText('Unfinished path ' + onePointId!.split('-')[1]);\n      |                                                            ^\n  205 |   expect(await evidence(page)).toEqual(ascending);\n  206 |   await launch(page, { angle: 0, launchHeight: 10 });\n  207 |   const horizontal = (await evidence(page)).trails.at(-1)!; await page.locator('[data-physics-plot-flight=\"1\"]').click();\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-plot-inspection.spec.ts:204:60"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-04T14:03:50.226Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-plot-inspection-2026-10-04\\plot-artifacts\\physics-plot-inspection-un-3a338-ginal-chronological-moments-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-plot-inspection-2026-10-04\\plot-artifacts\\physics-plot-inspection-un-3a338-ginal-chronological-moments-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-plot-inspection-2026-10-04\\plot-artifacts\\physics-plot-inspection-un-3a338-ginal-chronological-moments-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-plot-inspection-2026-10-04\\plot-artifacts\\physics-plot-inspection-un-3a338-ginal-chronological-moments-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-plot-inspection.spec.ts",
+                    "column": 60,
+                    "line": 204
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "8879561e68d0cc39c0db-787585314c6bb27cd0e9",
+          "file": "physics-plot-inspection.spec.ts",
+          "line": 191,
+          "column": 5
+        },
+        {
+          "title": "plot inspection controls retain readable text, actual keyboard focus, and painted swatches in nine layouts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "8879561e68d0cc39c0db-6c54ba87a5d473d66fff",
+          "file": "physics-plot-inspection.spec.ts",
+          "line": 270,
+          "column": 5
+        },
+        {
+          "title": "a focused live path keeps its DOM identity through landing and closing safely handles removed origins",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "8879561e68d0cc39c0db-97227f24b9b47d12526e",
+          "file": "physics-plot-inspection.spec.ts",
+          "line": 326,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-04T14:03:25.722Z",
+    "duration": 50433.708999999995,
+    "expected": 2,
+    "skipped": 2,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

@@ -295,10 +295,28 @@ function publicSearchQuery(value) {
     if (codes.length <= 3 && codes.every(code => isNgss ? ngss.test(code) : ela.test(code) || math.test(code)))
       return 'site:' + standard[1].toLowerCase() + ' ' + codes.join(' ') + ' official standard';
   }
+  // Closed jurisdiction names plus one fixed public rule query. Never append
+  // document text, student details, notes, or model output to this query.
+  const sld = q.match(/^(.+) department of education specific learning disability eligibility requirements official state rule$/i);
+  if (sld) {
+    const state = publicSearchQuery.sldStates.find(name => name.toLowerCase() === sld[1].toLowerCase());
+    if (state) return state + ' department of education specific learning disability eligibility requirements official state rule';
+  }
   // Exact matches only: never extract vocabulary from a private narrative.
 
   return publicSearchQuery.topics.includes(q.toLowerCase()) ? q.toLowerCase() : '';
 }
+publicSearchQuery.sldStates = Object.freeze([
+  "Alabama", "Alaska", "Arizona", "Arkansas", "California", "Colorado",
+  "Connecticut", "Delaware", "Florida", "Georgia", "Hawaii", "Idaho",
+  "Illinois", "Indiana", "Iowa", "Kansas", "Kentucky", "Louisiana",
+  "Maine", "Maryland", "Massachusetts", "Michigan", "Minnesota", "Mississippi",
+  "Missouri", "Montana", "Nebraska", "Nevada", "New Hampshire", "New Jersey",
+  "New Mexico", "New York", "North Carolina", "North Dakota", "Ohio", "Oklahoma",
+  "Oregon", "Pennsylvania", "Rhode Island", "South Carolina", "South Dakota", "Tennessee",
+  "Texas", "Utah", "Vermont", "Virginia", "Washington", "West Virginia",
+  "Wisconsin", "Wyoming", "District of Columbia"
+]);
 publicSearchQuery.topics = Object.freeze(['orbital period & seasons', 'weather fronts', 'main idea', 'photosynthesis', 'water cycle', 'plate tectonics', 'fractions',
     'formative assessment', 'retrieval practice', 'spaced practice', 'explicit instruction',
     'universal design for learning', 'differentiated instruction', 'reading comprehension',

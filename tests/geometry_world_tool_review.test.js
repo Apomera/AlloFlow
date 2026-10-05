@@ -14,6 +14,7 @@ beforeEach(()=>{
 });
 afterEach(()=>{fixture?.cleanup();window.localStorage.clear();vi.clearAllTimers();vi.useRealTimers();vi.restoreAllMocks();delete window.__geoWorldEngine;});
 function draft(input,value){React.act(()=>{Object.getOwnPropertyDescriptor(HTMLInputElement.prototype,'value').set.call(input,value);input.dispatchEvent(new Event('input',{bubbles:true}));input.dispatchEvent(new Event('change',{bubbles:true}));});}
+function category(input,value){React.act(()=>{input.value=value;input.dispatchEvent(new Event('change',{bubbles:true}));});}
 function previewBridge(app){const e=app.engine;e.previewBuildBatch=vi.fn((additions,removals)=>({ok:true,additions,removals}));e.commitBuildBatch=vi.fn(()=>({ok:true}));e.cancelDrawing=vi.fn();e.setDrawMode=vi.fn(mode=>{e._drawMode=mode;app.ctx().updateMulti('geometryWorld',{drawMode:mode});});e.showBuildBatchPreview=vi.fn((plan,owner)=>{e._buildBatchPreview={owner,plan};});e.clearBuildBatchPreview=vi.fn(owner=>{if(e._buildBatchPreview?.owner===owner)e._buildBatchPreview=null;});return e;}
 
 describe('tool discovery',()=>{
@@ -30,6 +31,45 @@ describe('tool discovery',()=>{
   });
   it('explains unavailable actions and links to selection without mutating the world',()=>{
     const app=fixture.mount({retained:null}),blocks=Object.keys(app.engine.blocks);app.click(app.host.querySelector('.gwe-tool-finder-toggle'));const print=app.host.querySelector('[data-tool=print]');expect(print.disabled).toBe(true);expect(print.textContent).toContain('Select a creation first');app.click(app.host.querySelector('.gwe-finder-select'));React.act(()=>vi.advanceTimersByTime(100));expect(app.host.querySelector('.gwe-direct-controls').open).toBe(true);expect(Object.keys(app.engine.blocks)).toEqual(blocks);expect(app.engine._builderSelection).toBeNull();
+  });
+  it('filters by category without changing search text, selection, blocks, or project drafts',()=>{
+    const app=fixture.mount(),name=app.host.querySelector('#gwe-project-name'),selection=app.engine._builderSelection,blocks=Object.values(app.engine.blocks);
+    draft(name,'Keep this draft');app.click(app.host.querySelector('.gwe-tool-finder-toggle'));
+    const input=app.host.querySelector('#gwe-tool-query'),select=app.host.querySelector('#gwe-tool-category');
+    expect(select.value).toBe('all');category(select,'Print');
+    expect([...app.host.querySelectorAll('.gwe-tool-result')].map(button=>button.dataset.tool)).toEqual(['send','print','scale']);
+    draft(input,'millimeters');expect(app.host.querySelectorAll('.gwe-tool-result')).toHaveLength(1);
+    category(select,'Keep');expect(input.value).toBe('millimeters');expect(app.host.querySelectorAll('.gwe-tool-result')).toHaveLength(0);
+    expect(app.host.querySelector('.gwe-tool-count').textContent).toBe('No matching tools');
+    expect(app.engine._builderSelection).toBe(selection);expect(Object.values(app.engine.blocks)).toEqual(blocks);expect(name.value).toBe('Keep this draft');
+  });
+  it('clears both filters and restores focus without closing the finder',()=>{
+    const app=fixture.mount();app.click(app.host.querySelector('.gwe-tool-finder-toggle'));const input=app.host.querySelector('#gwe-tool-query');
+    category(app.host.querySelector('#gwe-tool-category'),'Edit');draft(input,'zzzz');
+    app.click(app.host.querySelector('.gwe-finder-reset'));
+    expect(input.value).toBe('');expect(app.host.querySelector('#gwe-tool-category').value).toBe('all');expect(document.activeElement).toBe(input);
+    expect(app.host.querySelectorAll('.gwe-tool-result')).toHaveLength(api.findWorkshopTools('',true).length);
+    expect(app.host.querySelector('.gwe-finder-reset')).toBeNull();expect(app.host.querySelector('.gwe-builder-body').hidden).toBe(true);
+  });
+  it('submits the first available filtered tool and reopens with an unfiltered catalog',()=>{
+    const app=fixture.mount();app.click(app.host.querySelector('.gwe-tool-finder-toggle'));category(app.host.querySelector('#gwe-tool-category'),'Keep');
+    expect(app.host.querySelectorAll('.gwe-tool-result')).toHaveLength(1);
+    React.act(()=>app.host.querySelector('.gwe-tool-finder form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+    React.act(()=>vi.advanceTimersByTime(100));expect(app.host.querySelector('.gwe-tool-finder')).toBeNull();expect(app.host.querySelector('.gwe-builder-body').hidden).toBe(false);
+    expect(document.activeElement.textContent).toBe('Keep your work');
+    app.click(app.host.querySelector('.gwe-tool-finder-toggle'));expect(app.host.querySelector('#gwe-tool-category').value).toBe('all');expect(app.host.querySelector('#gwe-tool-query').value).toBe('');
+  });
+  it('keeps an empty-world print action unavailable without closing the finder, then enables it after building',()=>{
+    const app=fixture.mount({retained:null}),student=Object.entries(app.engine.blocks).find(([,mesh])=>mesh.userData._measurementLayer==='student');
+    app.engine.blocks=Object.fromEntries(Object.entries(app.engine.blocks).filter(([,mesh])=>mesh.userData._measurementLayer==='ground'));
+    app.patch({testRenderRevision:1});React.act(()=>vi.advanceTimersByTime(1000));
+    app.click(app.host.querySelector('.gwe-tool-finder-toggle'));draft(app.host.querySelector('#gwe-tool-query'),'send');
+    expect(app.host.querySelector('[data-tool=send]').disabled).toBe(true);expect(app.host.querySelector('[data-tool=send]').textContent).toContain('Place blocks before sending');
+    expect(app.host.querySelector('.gwe-finder-select')).toBeNull();
+    React.act(()=>app.host.querySelector('.gwe-tool-finder form').dispatchEvent(new Event('submit',{bubbles:true,cancelable:true})));
+    expect(app.host.querySelector('.gwe-tool-finder')).toBeTruthy();expect(app.host.querySelector('.gwe-builder-body').hidden).toBe(true);
+    app.engine.blocks[student[0]]=student[1];app.patch({testRenderRevision:2});React.act(()=>vi.advanceTimersByTime(1000));
+    expect(app.host.querySelector('[data-tool=send]').disabled).toBe(false);expect(app.host.querySelector('[data-tool=send]').textContent).toContain('Open your creation in Print Lab');
   });
 });
 describe('preview review',()=>{
@@ -55,7 +95,7 @@ describe('preview review',()=>{
 });
 
 describe('review navigation recovery',()=>{
-  it('opening Build tools exits the world review and keeps exactly one Apply action',()=>{
+  it('opening Studio exits the world review and keeps exactly one Apply action',()=>{
     const app=fixture.mount(),e=previewBridge(app);e.setViewPreset=vi.fn();app.click(app.button('Preview change'));app.click(app.button('Review in world'));app.click(app.host.querySelector('.gwe-collapse'));
     expect(app.host.querySelector('.gwe-preview-review')).toBeNull();expect([...app.host.querySelectorAll('button')].filter(b=>b.textContent==='Apply preview')).toHaveLength(1);expect(app.state().sandboxDockCollapsed).toBe(false);expect(e.commitBuildBatch).not.toHaveBeenCalled();
   });

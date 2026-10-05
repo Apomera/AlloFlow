@@ -1,0 +1,69 @@
+{
+  "date": "2026-10-04T17:50:51.179Z",
+  "files": [
+    {
+      "file": "maine_sld_practice_source.jsx",
+      "bytes": 97911,
+      "sha256": "0ace7842ded217dfc67d240f357acdfbca59a493ae0e7aef709e0dd006b846df"
+    },
+    {
+      "file": "_build_maine_sld_practice_module.js",
+      "bytes": 1920,
+      "sha256": "333019e7d0a1e5a8774f33b2022778183b089d7206efaa4193def039274949f4"
+    },
+    {
+      "file": "maine_sld_practice_core.js",
+      "bytes": 7848,
+      "sha256": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926"
+    },
+    {
+      "file": "maine_sld_case_data.json",
+      "bytes": 91506,
+      "sha256": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e"
+    },
+    {
+      "file": "maine_sld_practice_module.js",
+      "bytes": 199134,
+      "sha256": "fec6407e57d7227198cd13620d3c9c52a9df40eba32c2de52e11fb2e66dcb0d9"
+    },
+    {
+      "file": "AlloFlowANTI.txt",
+      "bytes": 2858886,
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "bytes": 2858886,
+      "sha256": "d6e6bcf5b3f35bf587781a7f1f99f8bcf79b42b87f03579bfbb300d39c9cfea0"
+    },
+    {
+      "file": "desktop/app-src/App.jsx",
+      "missing": true
+    },
+    {
+      "file": "desktop/web-app/functions/public_search_policy.js",
+      "bytes": 2764,
+      "sha256": "c391fc1caa0a4a5b4e8d2fb3bc1b29640e1ea4f406f6233576a161cf055ce510"
+    },
+    {
+      "file": "ai_backend_module.js",
+      "bytes": 174802,
+      "sha256": "4e006985c76d7e1bc1934521a6a13bf5188dae6ed1bc2c0aee62077bc1e3b528"
+    },
+    {
+      "file": "catalog/cloudflare-worker/src/index.js",
+      "bytes": 145972,
+      "sha256": "27047f078a4499c7f953f3279e2df1f695496922cf04d4e2b518a463098d9002"
+    },
+    {
+      "file": "doc_pipeline_source.jsx",
+      "bytes": 3506578,
+      "sha256": "38079063290cd275e91b83b41930d434e85cf1089997ec3a1bf4e65acb81739a"
+    },
+    {
+      "file": "_build_doc_pipeline_module.js",
+      "bytes": 413,
+      "sha256": "d5e67708707933059ab205a0e17360cf360e5802531fb29862226b99d2dd8ecb"
+    }
+  ]
+}

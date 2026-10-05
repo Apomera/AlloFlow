@@ -1,14 +1,10 @@
 import { readFileSync } from 'node:fs';
 import { webcrypto } from 'node:crypto';
 import { createRequire } from 'node:module';
-import { applyPatch } from 'diff';
 import { afterEach, describe, expect, it, vi } from 'vitest';
 
-const mediaCandidate = process.env.ALLO_REPORT_STORAGE_MEDIA_PROPOSAL === '1';
-const hostActual = readFileSync('AlloFlowANTI.txt', 'utf8');
-const hostCandidate = mediaCandidate ? applyPatch(hostActual, readFileSync('reports/report-fixes-2026-09-30/storage-media-host-proposal.patch', 'utf8')) : hostActual;
-if (hostCandidate === false) throw Error('Review-only media proposal no longer applies');
-const host = hostCandidate.replace(/\r\n/g, '\n');
+const hostPath = process.env.ALLO_ANTI_CANDIDATE || 'AlloFlowANTI.txt';
+const host = readFileSync(hostPath, 'utf8').replace(/\r\n/g, '\n');
 const utils = readFileSync('utils_pure_source.jsx', 'utf8');
 const bridgeSource = readFileSync('storage_bridge.html', 'utf8');
 const clientSource = readFileSync('allo_device_storage_module.js', 'utf8');
@@ -152,14 +148,7 @@ describe('actual mixed-resource workspace construction and serialization', () =>
     expect(summary[0].approximateBytes).toBeGreaterThan(22000);
     expect(recovery.normalizeStore({ version: 1, snapshots: [], legacyMigrationComplete: true }).snapshots).toHaveLength(0);
   });
-  it.skipIf(mediaCandidate)('characterizes a second-save media omission after a session-only URL marks the prior snapshot text-only', async () => {
-    const first = await buildMixedSnapshot(); const second = await buildMixedSnapshot(mixedHistory(), recovery.upsert(recovery.emptyStore(), first));
-    expect(first.workspace.history[2].data[0].image).toBe('data:image/png;base64,AQ==');
-    expect(second.workspace.history[2].data[0].image).toBeNull();
-    expect(second.omittedAssetManifest).toContainEqual(expect.objectContaining({ reason: 'device-quota', kind: 'image/png' }));
-    expect(second.resourceCount ?? second.workspace.history.length).toBe(15);
-  });
-  it.skipIf(!mediaCandidate)('preserves valid media on the next save after a session-only blob omission', async () => {
+  it('preserves valid media on the next save after a session-only blob omission', async () => {
     const first = await buildMixedSnapshot(), second = await buildMixedSnapshot(mixedHistory(), recovery.upsert(recovery.emptyStore(), first));
     expect(second.workspace.history[2].data[0].image).toBe('data:image/png;base64,AQ==');
     expect(second.workspace.history[0].originalAnnotations[0].image.src).toBe('data:image/png;base64,AA==');
@@ -167,6 +156,17 @@ describe('actual mixed-resource workspace construction and serialization', () =>
     expect(second.workspace.history.at(-1).data.narration.preview).toBeNull(); expect(second.workspace.history).toHaveLength(15);
     expect(second.omittedAssetManifest.some(item => item.reason === 'device-quota')).toBe(false);
     expect(second.omittedAssetManifest.some(item => item.reason === 'session-only-url')).toBe(true);
+  });
+  it('tries current valid media after an earlier quota omission and reduces only after a new rejection', async () => {
+    const first = recovery.stripLargeAssets(await buildMixedSnapshot(), 'device-quota');
+    const second = await buildMixedSnapshot(mixedHistory(), recovery.upsert(recovery.emptyStore(), first));
+    expect(second.workspace.history[2].data[0].image).toBe('data:image/png;base64,AQ==');
+    expect(second.workspace.history.at(-1).data.narration.audio).toBe('data:audio/wav;base64,Aw==');
+    const writer = vi.fn(async candidate => ({ applied: true, store: recovery.upsert(recovery.emptyStore(), candidate) }));
+    const saved = await recovery.saveWithQuotaFallback(second, writer);
+    expect(writer).toHaveBeenCalledOnce(); expect(saved).toMatchObject({ stage: 'full', degraded: false });
+    expect(writer.mock.calls[0][0].workspace.history[2].data[0].image).toBe('data:image/png;base64,AQ==');
+    expect(second.omittedAssetManifest.some(item => item.reason === 'device-quota')).toBe(true);
   });
   it('preserves explicit teacher media-removal policy on subsequent saves', async () => {
     const first = recovery.stripLargeAssets(await buildMixedSnapshot(), 'user-remove-media');

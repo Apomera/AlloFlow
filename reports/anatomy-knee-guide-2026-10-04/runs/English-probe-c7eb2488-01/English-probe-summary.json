@@ -1,0 +1,129 @@
+{
+  "kind": "English probe only; final Arabic and localized verification pending",
+  "source": "c7eb2488927953f913f84cbe9a82b88b834aca899c8eed4a649ae3705d72d46f",
+  "views": [
+    {
+      "name": "desktop-light",
+      "minHTML": 16,
+      "minContrast": 4.829404522659002,
+      "minControlHeight": 48.390625,
+      "diagrams": [
+        {
+          "scale": "overview",
+          "markers": 4,
+          "minMarkerFont": 43.42037671232877,
+          "minMarkerContrast": 7.562998081458594,
+          "intersections": []
+        },
+        {
+          "scale": "support",
+          "markers": 7,
+          "minMarkerFont": 43.42037671232877,
+          "minMarkerContrast": 7.562998081458594,
+          "intersections": []
+        }
+      ]
+    },
+    {
+      "name": "phone-light",
+      "minHTML": 16,
+      "minContrast": 4.829404522659002,
+      "minControlHeight": 48.390625,
+      "diagrams": [
+        {
+          "scale": "overview",
+          "markers": 4,
+          "minMarkerFont": 16.104452054794518,
+          "minMarkerContrast": 7.562998081458594,
+          "intersections": []
+        },
+        {
+          "scale": "support",
+          "markers": 7,
+          "minMarkerFont": 16.104452054794518,
+          "minMarkerContrast": 7.562998081458594,
+          "intersections": []
+        }
+      ]
+    },
+    {
+      "name": "phone-dark",
+      "minHTML": 16,
+      "minContrast": 4.829404522659002,
+      "minControlHeight": 48.390625,
+      "diagrams": [
+        {
+          "scale": "overview",
+          "markers": 4,
+          "minMarkerFont": 16.104452054794518,
+          "minMarkerContrast": 7.562998081458594,
+          "intersections": []
+        },
+        {
+          "scale": "support",
+          "markers": 7,
+          "minMarkerFont": 16.104452054794518,
+          "minMarkerContrast": 7.562998081458594,
+          "intersections": []
+        }
+      ]
+    },
+    {
+      "name": "phone-English-dark-larger",
+      "minHTML": 17,
+      "minContrast": 4.829404522659002,
+      "minControlHeight": 50.890625,
+      "diagrams": [
+        {
+          "scale": "overview",
+          "markers": 4,
+          "minMarkerFont": 16.104452054794518,
+          "minMarkerContrast": 7.562998081458594,
+          "intersections": []
+        },
+        {
+          "scale": "support",
+          "markers": 7,
+          "minMarkerFont": 16.104452054794518,
+          "minMarkerContrast": 7.562998081458594,
+          "intersections": []
+        }
+      ]
+    },
+    {
+      "name": "phone-forced-colors",
+      "minHTML": 16,
+      "minContrast": 21,
+      "minControlHeight": 48.390625,
+      "diagrams": [
+        {
+          "scale": "overview",
+          "markers": 4,
+          "minMarkerFont": 16.104452054794518,
+          "minMarkerContrast": 15.134013837043632,
+          "intersections": []
+        },
+        {
+          "scale": "support",
+          "markers": 7,
+          "minMarkerFont": 16.104452054794518,
+          "minMarkerContrast": 15.134013837043632,
+          "intersections": []
+        }
+      ]
+    }
+  ],
+  "captures": [
+    "desktop-knee-clinical-step-4.png",
+    "desktop-light-knee-guide.png",
+    "phone-light-knee-guide.png",
+    "phone-dark-knee-guide.png",
+    "phone-English-dark-larger-knee-guide.png",
+    "phone-forced-colors-knee-guide.png"
+  ],
+  "scans": 5,
+  "violations": 0,
+  "errors": [],
+  "journeySteps": 11,
+  "cleanup": "page and harness cleanup completed"
+}

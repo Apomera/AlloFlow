@@ -1,0 +1,56 @@
+{
+  "beforeSha256": "56bdd10f22a099b61b99267b0dc29184d780421f9a15591a01bbb8697fe898c2",
+  "afterSha256": "0f03c7cc9515fa957e0a7970de2af51796c4a0e18552e1eacfa8e17bd2ebe12d",
+  "exactChanges": 10,
+  "unrelatedBytesPreserved": true,
+  "patches": [
+    {
+      "name": "Two illustrations replace the one combined SVG title",
+      "from": "    expect(open).toContain('Four-chamber heart and double-circulation diagram');",
+      "to": "    const root = document.createElement('div'); root.innerHTML = open;\n    const figures = [...root.querySelectorAll('figure[data-anatomy-heart-scale]')];\n    expect(figures.map(figure => figure.getAttribute('data-anatomy-heart-scale'))).toEqual(['circuit', 'chambers']);\n    figures.forEach(figure => expect(figure.querySelector('svg title').textContent.trim()).toBeTruthy());\n    expect(figures[0].querySelector('figcaption').textContent).toMatch(/Lungs.*Heart.*Body/);\n    expect(figures[1].querySelector('figcaption').textContent).toMatch(/Right atrium.*Right ventricle.*Left atrium.*Left ventricle/);",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Native flow action and paused status replace hidden English action name",
+      "from": "    expect(html).toContain('class=\"anatomy-atlas is-paused\"');\n    expect(html).toContain('aria-label=\"Play blood-flow animation\"');",
+      "to": "    const root = document.createElement('div'); root.innerHTML = html;\n    const atlas = root.querySelector('[data-anatomy-atlas=\"heart\"]');\n    expect(atlas.classList.contains('is-paused')).toBe(true);\n    expect(atlas.querySelector('[data-anatomy-heart-flow]').textContent).toBe('Play flow');\n    expect(atlas.querySelector('.anatomy-heart-playback').textContent).toContain('Flow paused');",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Both named SVG descriptions resolve against rendered IDs",
+      "from": "    expect(source).toContain(\"aria-labelledby': 'anatomy-heart-atlas-title anatomy-heart-atlas-desc'\");",
+      "to": "    const root = document.createElement('div');\n    root.innerHTML = renderAnatomy({ system: 'circulatory', view: 'anterior', complexity: 3, selectedStructure: 'heart', _regionalAtlasOpen: 'heart' });\n    const figures = [...root.querySelectorAll('figure[data-anatomy-heart-scale]')]; expect(figures).toHaveLength(2);\n    figures.forEach(figure => {\n      const svg = figure.querySelector('svg[role=\"img\"]'); expect(svg).not.toBeNull();\n      const names = svg.getAttribute('aria-labelledby').trim().split(/\\s+/); expect(names).toHaveLength(2);\n      names.forEach(id => expect(figure.querySelector('[id=\"' + id + '\"]').textContent.trim()).toBeTruthy());\n    });",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Heart overview/chamber keys provide orientation instead of the former scale strip",
+      "from": "      if (diagram.id === 'alveoli') {\n        const root = document.createElement('div'); root.innerHTML = html;",
+      "to": "      if (diagram.id === 'heart') {\n        const root = document.createElement('div'); root.innerHTML = html;\n        const circuit = root.querySelector('figure[data-anatomy-heart-scale=\"circuit\"]');\n        const chambers = root.querySelector('figure[data-anatomy-heart-scale=\"chambers\"]');\n        expect(circuit.querySelector('figcaption').textContent).toMatch(/Lungs.*Heart.*Body/);\n        expect(chambers.querySelector('figcaption').textContent).toMatch(/Right atrium.*Right ventricle.*Left atrium.*Left ventricle/);\n      } else if (diagram.id === 'alveoli') {\n        const root = document.createElement('div'); root.innerHTML = html;",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Readable tricuspid and mitral states replace tiny SVG labels",
+      "from": "    expect(filling).toContain('tricuspid · OPEN');\n    expect(filling).toContain('mitral · CLOSED');",
+      "to": "    const fillingRoot = document.createElement('div'); fillingRoot.innerHTML = filling;\n    expect(fillingRoot.querySelector('[data-anatomy-heart-valve=\"tricuspid\"]').textContent).toContain('Open');\n    expect(fillingRoot.querySelector('[data-anatomy-heart-valve=\"mitral\"]').textContent).toContain('Closed');",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Readable aortic state replaces the tiny contraction sentence",
+      "from": "    expect(systemic).toContain('LV contracts · aortic valve opens');",
+      "to": "    const systemicRoot = document.createElement('div'); systemicRoot.innerHTML = systemic;\n    expect(systemicRoot.querySelector('[data-anatomy-heart-valve=\"aortic\"]').textContent).toContain('Open');\n    expect(systemicRoot.querySelector('#anatomy-heart-step-detail').textContent).toContain('passes through the aortic valve and aorta');",
+      "expectedOccurrences": 1
+    },
+    {
+      "name": "Include the heart in native focus and clinical control assertions",
+      "from": "if (diagram.id === 'kidneys' || diagram.id === 'alveoli')",
+      "to": "if (diagram.id === 'heart' || diagram.id === 'kidneys' || diagram.id === 'alveoli')",
+      "expectedOccurrences": 3
+    },
+    {
+      "name": "Authored clinical narrative replaces tiny clinical SVG wording",
+      "from": "clinicalId: 'aortic_stenosis', title: 'Aortic stenosis', visual: 'narrow aortic opening · higher LV load'",
+      "to": "clinicalId: 'aortic_stenosis', title: 'Aortic stenosis', visual: 'The aortic valve opening narrows, increasing resistance to left-ventricular outflow.'",
+      "expectedOccurrences": 1
+    }
+  ]
+}

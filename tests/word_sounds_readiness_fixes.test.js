@@ -106,7 +106,7 @@ describe('outcome is reported for pressed fixes, and includes failures', () => {
   });
 
   it('a word that did not change is reported as unchanged', () => {
-    expect(SOURCE).toMatch(/if \(unchanged\) parts\.push\(`\$\{unchanged\} unchanged`\)/);
+    expect(SOURCE).toMatch(/if \(unchanged\) parts\.push\(reviewText\('review_fix_unchanged'/);
     expect(SOURCE).toMatch(/Try again, or edit those words by hand/);
   });
 
@@ -158,7 +158,7 @@ describe('a fix is verified, not assumed', () => {
 
   it('audio is reported as requested, because the clips arrive later', () => {
     expect(SOURCE).toMatch(/requested = gap\.indices\.length;/);
-    expect(SOURCE).toMatch(/audio requested for \$\{requested\} \(arrives in the background\)/);
+    expect(SOURCE).toMatch(/review_fix_requested/);
   });
 });
 
@@ -181,9 +181,9 @@ describe('the scarce resource is the rate limit, not money', () => {
     expect(SOURCE).toMatch(/if \(tally\.stalled\) \{ total\.stalled = true; break; \}/);
   });
 
-  it('says a cooldown is the likely cause, and to wait', () => {
-    expect(SOURCE).toMatch(/rate-limit cooldown/);
-    expect(SOURCE).toMatch(/Try again in a minute/);
+  it('reports the observed unchanged streak without inventing a failure cause', () => {
+    expect(SOURCE).toMatch(/Stopped early after several words stayed unchanged/);
+    expect(SOURCE).toMatch(/Try again later, or edit those words by hand/);
   });
 
   it('the marker means "needs a connection", not "costs money"', () => {

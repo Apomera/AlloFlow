@@ -1,0 +1,21 @@
+{
+  "loadedAt": "2026-10-02T20:41:45.959Z",
+  "completedAt": "2026-10-02T20:42:16.660Z",
+  "loadedRuntimes": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "bytes": 3088929
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "d68b832b562d75b4f12eddf0638187eabd27ccf92b0f1ddaa787442566b44603",
+      "bytes": 3088929
+    }
+  ],
+  "loadedTest": {
+    "path": "tests/watercycle_storm_moments.test.js",
+    "sha256": "56fa51cba07d79695940dfcc9b3de026e3e4888bdd5d5b3c2cc03bcd5b6fbc82",
+    "bytes": 49254
+  }
+}

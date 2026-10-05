@@ -1,0 +1,484 @@
+[
+  {
+    "label": "learning-path-close",
+    "focusReturnsToCompass": true
+  },
+  {
+    "label": "spawn",
+    "world": {
+      "lessonTitle": "Free Build Sandbox",
+      "totalBlocks": 625,
+      "studentBlocks": 0,
+      "studentShapes": {},
+      "npcCount": 0,
+      "camera": {
+        "x": 0,
+        "y": 2.6,
+        "z": 6
+      },
+      "yaw": -0.1549223198708135
+    },
+    "hint": {
+      "allowed": true,
+      "code": "ready",
+      "reason": "Ready to build"
+    },
+    "active": true,
+    "focus": "geoworld-fs-wrap",
+    "modals": {
+      "showNpcDialog": false,
+      "showHelp": false,
+      "showGrowthNudge": false,
+      "showGameSettings": false,
+      "showPredictionPanel": false,
+      "objectivesOpen": false,
+      "showActivityGuide": false,
+      "hudPanel": "inventory",
+      "showPeerWorlds": false,
+      "showTeacherView": false,
+      "showMyLessons": false,
+      "showLessonEditor": false,
+      "showGeometryHome": false,
+      "showLessonIntro": false,
+      "showReflection": false,
+      "showCreatorPanel": false,
+      "creatorMode": false,
+      "touchMoreOpen": false
+    },
+    "touchActive": false,
+    "preview": {
+      "allowed": true,
+      "code": "ready",
+      "reason": "Ready to build",
+      "cell": {
+        "x": 0,
+        "y": 1,
+        "z": 3
+      }
+    },
+    "hit": {
+      "cell": {
+        "x": 0,
+        "y": 0,
+        "z": 3
+      },
+      "distance": 2.592296279363146,
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "target": {
+        "allowed": true,
+        "code": "ready",
+        "reason": "Ready to build",
+        "cell": {
+          "x": 0,
+          "y": 1,
+          "z": 3
+        }
+      }
+    },
+    "quaternion": [
+      -0.32491080830399344,
+      -0.09313748838150973,
+      -0.03217251019929999,
+      0.940597312611888
+    ],
+    "moveState": {
+      "forward": false,
+      "backward": false,
+      "left": false,
+      "right": false,
+      "sprint": false
+    },
+    "ground": {
+      "xMin": -12,
+      "xMax": 12,
+      "zMin": -12,
+      "zMax": 12,
+      "y": 0,
+      "type": "grass"
+    }
+  },
+  {
+    "label": "aim",
+    "world": {
+      "lessonTitle": "Free Build Sandbox",
+      "totalBlocks": 625,
+      "studentBlocks": 0,
+      "studentShapes": {},
+      "npcCount": 0,
+      "camera": {
+        "x": 3.5,
+        "y": 3.5,
+        "z": 6.5
+      },
+      "yaw": 0
+    },
+    "hint": {
+      "allowed": false,
+      "code": "occupied",
+      "reason": "This cell already has a block"
+    },
+    "active": true,
+    "focus": "geoworld-fs-wrap",
+    "modals": {
+      "showNpcDialog": false,
+      "showHelp": false,
+      "showGrowthNudge": false,
+      "showGameSettings": false,
+      "showPredictionPanel": false,
+      "objectivesOpen": false,
+      "showActivityGuide": false,
+      "hudPanel": "inventory",
+      "showPeerWorlds": false,
+      "showTeacherView": false,
+      "showMyLessons": false,
+      "showLessonEditor": false,
+      "showGeometryHome": false,
+      "showLessonIntro": false,
+      "showReflection": false,
+      "showCreatorPanel": false,
+      "creatorMode": false,
+      "touchMoreOpen": false
+    },
+    "touchActive": false,
+    "preview": {
+      "allowed": false,
+      "code": "occupied",
+      "reason": "This cell already has a block",
+      "cell": {
+        "x": 3,
+        "y": 0,
+        "z": 4
+      }
+    },
+    "hit": {
+      "cell": {
+        "x": 3,
+        "y": 0,
+        "z": 3
+      },
+      "distance": 3.5355339059327404,
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "target": {
+        "allowed": false,
+        "code": "occupied",
+        "reason": "This cell already has a block",
+        "cell": {
+          "x": 3,
+          "y": 0,
+          "z": 4
+        }
+      }
+    },
+    "quaternion": [
+      -0.38268343236508984,
+      0,
+      0,
+      0.9238795325112867
+    ],
+    "moveState": {
+      "forward": false,
+      "backward": false,
+      "left": false,
+      "right": false,
+      "sprint": false
+    },
+    "ground": {
+      "xMin": -12,
+      "xMax": 12,
+      "zMin": -12,
+      "zMax": 12,
+      "y": 0,
+      "type": "grass"
+    }
+  },
+  {
+    "label": "first-place",
+    "world": {
+      "lessonTitle": "Free Build Sandbox",
+      "totalBlocks": 625,
+      "studentBlocks": 0,
+      "studentShapes": {},
+      "npcCount": 0,
+      "camera": {
+        "x": 3.5,
+        "y": 3.5,
+        "z": 6.5
+      },
+      "yaw": 0
+    },
+    "hint": {
+      "allowed": false,
+      "code": "no_target",
+      "reason": "Look down at the nearby ground or a block face, then press B or tap Place.",
+      "aim": true
+    },
+    "active": false,
+    "focus": "",
+    "modals": {
+      "showNpcDialog": false,
+      "showHelp": false,
+      "showGrowthNudge": false,
+      "showGameSettings": false,
+      "showPredictionPanel": false,
+      "objectivesOpen": false,
+      "showActivityGuide": false,
+      "hudPanel": "inventory",
+      "showPeerWorlds": false,
+      "showTeacherView": false,
+      "showMyLessons": false,
+      "showLessonEditor": false,
+      "showGeometryHome": false,
+      "showLessonIntro": false,
+      "showReflection": false,
+      "showCreatorPanel": false,
+      "creatorMode": false,
+      "touchMoreOpen": false
+    },
+    "touchActive": false,
+    "preview": {
+      "allowed": false,
+      "code": "no_target",
+      "reason": "Look down at the nearby ground or a block face, then press B or tap Place.",
+      "cell": null
+    },
+    "hit": {
+      "cell": {
+        "x": 3,
+        "y": 0,
+        "z": 3
+      },
+      "distance": 3.5355339059327404,
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "target": {
+        "allowed": false,
+        "code": "occupied",
+        "reason": "This cell already has a block",
+        "cell": {
+          "x": 3,
+          "y": 0,
+          "z": 4
+        }
+      }
+    },
+    "quaternion": [
+      -0.38268343236508984,
+      0,
+      0,
+      0.9238795325112867
+    ],
+    "moveState": {
+      "forward": false,
+      "backward": false,
+      "left": false,
+      "right": false,
+      "sprint": false
+    },
+    "ground": {
+      "xMin": -12,
+      "xMax": 12,
+      "zMin": -12,
+      "zMax": 12,
+      "y": 0,
+      "type": "grass"
+    }
+  },
+  {
+    "label": "aim-action",
+    "world": {
+      "lessonTitle": "Free Build Sandbox",
+      "totalBlocks": 625,
+      "studentBlocks": 0,
+      "studentShapes": {},
+      "npcCount": 0,
+      "camera": {
+        "x": 3.5,
+        "y": 3.5,
+        "z": 6.5
+      },
+      "yaw": 0
+    },
+    "hint": {
+      "allowed": false,
+      "code": "no_target",
+      "reason": "Look down at the nearby ground or a block face, then press B or tap Place.",
+      "aim": true
+    },
+    "active": false,
+    "focus": "",
+    "modals": {
+      "showNpcDialog": false,
+      "showHelp": false,
+      "showGrowthNudge": false,
+      "showGameSettings": false,
+      "showPredictionPanel": false,
+      "objectivesOpen": false,
+      "showActivityGuide": false,
+      "hudPanel": "inventory",
+      "showPeerWorlds": false,
+      "showTeacherView": false,
+      "showMyLessons": false,
+      "showLessonEditor": false,
+      "showGeometryHome": false,
+      "showLessonIntro": false,
+      "showReflection": false,
+      "showCreatorPanel": false,
+      "creatorMode": false,
+      "touchMoreOpen": false
+    },
+    "touchActive": false,
+    "preview": {
+      "allowed": false,
+      "code": "no_target",
+      "reason": "Look down at the nearby ground or a block face, then press B or tap Place.",
+      "cell": null
+    },
+    "hit": {
+      "cell": {
+        "x": 3,
+        "y": 0,
+        "z": 3
+      },
+      "distance": 3.9051248379533288,
+      "normal": [
+        0,
+        1,
+        0
+      ],
+      "target": {
+        "allowed": true,
+        "code": "ready",
+        "reason": "Ready to build",
+        "cell": {
+          "x": 3,
+          "y": 1,
+          "z": 3
+        }
+      }
+    },
+    "quaternion": [
+      -0.34042526375301824,
+      0,
+      0,
+      0.9402715776831119
+    ],
+    "moveState": {
+      "forward": false,
+      "backward": false,
+      "left": false,
+      "right": false,
+      "sprint": false
+    },
+    "ground": {
+      "xMin": -12,
+      "xMax": 12,
+      "zMin": -12,
+      "zMax": 12,
+      "y": 0,
+      "type": "grass"
+    }
+  },
+  {
+    "label": "place-after-aim-action",
+    "world": {
+      "lessonTitle": "Free Build Sandbox",
+      "totalBlocks": 626,
+      "studentBlocks": 1,
+      "studentShapes": {
+        "cube": 1
+      },
+      "npcCount": 0,
+      "camera": {
+        "x": 3.5,
+        "y": 3.5,
+        "z": 6.5
+      },
+      "yaw": 0
+    },
+    "hint": null,
+    "active": false,
+    "focus": "",
+    "modals": {
+      "showNpcDialog": false,
+      "showHelp": false,
+      "showGrowthNudge": false,
+      "showGameSettings": false,
+      "showPredictionPanel": false,
+      "objectivesOpen": false,
+      "showActivityGuide": false,
+      "hudPanel": "inventory",
+      "showPeerWorlds": false,
+      "showTeacherView": false,
+      "showMyLessons": false,
+      "showLessonEditor": false,
+      "showGeometryHome": false,
+      "showLessonIntro": false,
+      "showReflection": false,
+      "showCreatorPanel": false,
+      "creatorMode": false,
+      "touchMoreOpen": false
+    },
+    "touchActive": false,
+    "preview": {
+      "allowed": false,
+      "code": "no_target",
+      "reason": "Look down at the nearby ground or a block face, then press B or tap Place.",
+      "cell": null
+    },
+    "hit": {
+      "cell": {
+        "x": 3,
+        "y": 1,
+        "z": 3
+      },
+      "distance": 3.2542706982944387,
+      "normal": [
+        0,
+        0,
+        1
+      ],
+      "target": {
+        "allowed": true,
+        "code": "ready",
+        "reason": "Ready to build",
+        "cell": {
+          "x": 3,
+          "y": 1,
+          "z": 4
+        }
+      }
+    },
+    "quaternion": [
+      -0.34042526375301824,
+      0,
+      0,
+      0.9402715776831119
+    ],
+    "moveState": {
+      "forward": false,
+      "backward": false,
+      "left": false,
+      "right": false,
+      "sprint": false
+    },
+    "ground": {
+      "xMin": -12,
+      "xMax": 12,
+      "zMin": -12,
+      "zMax": 12,
+      "y": 0,
+      "type": "grass"
+    }
+  }
+]

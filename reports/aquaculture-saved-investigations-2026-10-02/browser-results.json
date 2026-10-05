@@ -1,0 +1,91 @@
+{
+  "status": "passed",
+  "results": [
+    {
+      "width": 1280,
+      "checks": [
+        "keyboard name and spaces",
+        "name-only persistence",
+        "frozen A/B outcomes",
+        "absent/unrecorded/zero/support distinction",
+        "full settings and CER",
+        "standalone inert report",
+        "heading hierarchy",
+        "report units and missing values",
+        "80-character title reflow",
+        "WCAG A/AA scoped axe",
+        "normal and forced colors",
+        "print report",
+        "complete draft branching/restoration",
+        "second branch/replay guards"
+      ],
+      "errors": []
+    },
+    {
+      "width": 390,
+      "checks": [
+        "keyboard name and spaces",
+        "name-only persistence",
+        "frozen A/B outcomes",
+        "absent/unrecorded/zero/support distinction",
+        "full settings and CER",
+        "standalone inert report",
+        "heading hierarchy",
+        "report units and missing values",
+        "80-character title reflow",
+        "WCAG A/AA scoped axe",
+        "normal and forced colors",
+        "print report",
+        "complete draft branching/restoration",
+        "second branch/replay guards"
+      ],
+      "errors": []
+    },
+    {
+      "width": 320,
+      "checks": [
+        "keyboard name and spaces",
+        "name-only persistence",
+        "frozen A/B outcomes",
+        "absent/unrecorded/zero/support distinction",
+        "full settings and CER",
+        "standalone inert report",
+        "heading hierarchy",
+        "report units and missing values",
+        "80-character title reflow",
+        "WCAG A/AA scoped axe",
+        "normal and forced colors",
+        "print report",
+        "complete draft branching/restoration",
+        "second branch/replay guards"
+      ],
+      "errors": []
+    },
+    {
+      "case": "incomplete archive settings and Home notebook at 320",
+      "checks": [
+        "complete scenario presence markers",
+        "no invented water defaults or species absence",
+        "incomplete replay and branch unavailable",
+        "name-only reload",
+        "standalone incomplete report",
+        "Home name and unknown status",
+        "scoped axe and reflow"
+      ],
+      "errors": []
+    },
+    {
+      "case": "dirty CER at 320",
+      "checks": [
+        "clean current-model sample name-only change",
+        "readable saved-card handoff at1280/390/320",
+        "clean standalone sample-investigation.html and1280/390 report screenshots",
+        "saved stage before draft",
+        "unsaved structured claim returns to explanation",
+        "archive unchanged",
+        "reload and reflow"
+      ],
+      "errors": []
+    }
+  ]
+}

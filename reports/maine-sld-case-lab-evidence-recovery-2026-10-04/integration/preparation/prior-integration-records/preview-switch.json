@@ -1,0 +1,20 @@
+{
+  "switchedAt": "2026-10-04T03:47:29.958Z",
+  "previousPid": 9532,
+  "previousManagedSessionId": 34496,
+  "previousOwnedProcessWasPresent": true,
+  "previousCommandLine": "\"C:\\Users\\cabba\\.cache\\codex-runtimes\\codex-primary-runtime\\dependencies\\node\\bin\\node.exe\" C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide_revision_integration.cjs serve 0ceb5207851a88db30562486dd838e6efbf126cc0e8a7dee7ddc14340864af7c",
+  "onlyTaskOwnedOldProcessStopped": true,
+  "replacementPid": 19880,
+  "managedSessionId": 95388,
+  "baseUrl": "http://127.0.0.1:65063",
+  "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+  "urlPreserved": true,
+  "previousArtifactsPreserved": true,
+  "pureServeWithoutRebuild": true,
+  "exactFrozenModuleSnapshotServed": true,
+  "immutablePrimaryAssetsPreloadedBeforeListen": true,
+  "moduleSha256": "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc",
+  "testedHostSha256": "ae73c22ca8948054f5531b18ef8c03ec94ed1e5a85f7420ef2cecef4629404fe",
+  "bundleSha256": "82b5dca5e72e1c14ab31b54eab457e007418812af785088c58c0deffd5aa16dd"
+}

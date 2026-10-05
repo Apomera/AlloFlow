@@ -1,0 +1,72 @@
+{
+  "complete": true,
+  "englishKeys": 59,
+  "nativeTranslations": 177,
+  "catalogCopies": 8,
+  "catalogChecks": 472,
+  "mirrorPairs": [
+    {
+      "canonical": "ui_strings.js",
+      "mirror": "desktop/web-app/public/ui_strings.js",
+      "byteEqual": true,
+      "sha256": "23239284d47d0a2a0037fcd9a5e169c0318cc8521c74954a3b8b65842c143cb0"
+    },
+    {
+      "canonical": "lang/french.js",
+      "mirror": "desktop/web-app/public/lang/french.js",
+      "byteEqual": true,
+      "sha256": "09db6d85c081f6923a8609886e2da0f0ebf46db35359673777467dbc7d53796d"
+    },
+    {
+      "canonical": "lang/spanish_latin_america.js",
+      "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "byteEqual": true,
+      "sha256": "deaa9f45f7c183325b7c4dfb833e03ad8fd21ca8f8d9a974e862f0fa3152dec4"
+    },
+    {
+      "canonical": "lang/arabic.js",
+      "mirror": "desktop/web-app/public/lang/arabic.js",
+      "byteEqual": true,
+      "sha256": "a6ff757698e917828ccf5cf1ff8aa8cf0ccf9954988aa1554a78e62c5526a007"
+    }
+  ],
+  "exactBytePreservation": true,
+  "gitIndexUnchanged": true,
+  "gitIndexSha256": "71ecf799d31f15b2821ea352abcd9a7582093785385c8a5dbf78ee46a8648e9c",
+  "manifestSha256": "828f0987192d2f12d381a82a43b96c6e5f14470a7d5da5ea9c3105401cf7106a",
+  "validationSha256": "d519934606965d1940ceb7076c2b02153a5097e2ca126cdef19222fc56b90815",
+  "indexedCatalogs": [
+    {
+      "path": "ui_strings.js",
+      "indexSha256": "73fe4cee665575aab2666e0828c2f14940bf68934bb015a38881ba423ca2fb2c"
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "indexSha256": "73fe4cee665575aab2666e0828c2f14940bf68934bb015a38881ba423ca2fb2c"
+    },
+    {
+      "path": "lang/french.js",
+      "indexSha256": "c78a5325b2456197064d9e42c99f3c684f507e99d37fca03b24e5d032b1612b1"
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "indexSha256": "c78a5325b2456197064d9e42c99f3c684f507e99d37fca03b24e5d032b1612b1"
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "indexSha256": "f449cbface89bd8c8c941fd294da0d743a4ba1b0fae7fa0496376fa77027ab1f"
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "indexSha256": "f449cbface89bd8c8c941fd294da0d743a4ba1b0fae7fa0496376fa77027ab1f"
+    },
+    {
+      "path": "lang/arabic.js",
+      "indexSha256": "4ed242205c75e16d7898c963ec0543f729755dfcc070694d0b2eef35e74f17ae"
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "indexSha256": "4ed242205c75e16d7898c963ec0543f729755dfcc070694d0b2eef35e74f17ae"
+    }
+  ]
+}

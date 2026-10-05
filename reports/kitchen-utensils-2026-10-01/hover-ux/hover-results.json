@@ -1,0 +1,8 @@
+{
+  "checks": [
+    "A mouse hover identifies the spoon beside the pan and places its cue at the current utensil, with no cooking-state changes.",
+    "Regrabbing and cancelling a readied spoon restores it beside the same pan and preserves its mode and exact saved evidence."
+  ],
+  "errors": [],
+  "pass": true
+}

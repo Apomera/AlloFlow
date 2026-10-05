@@ -1,0 +1,36 @@
+{
+  "startedAt": "2026-10-01T16:17:51.983Z",
+  "finishedAt": "2026-10-01T16:17:59.055Z",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/word_sounds_delivery_roundtrip.test.js",
+    "tests/word_sounds_runtime_audio_status.test.js",
+    "tests/word_sounds_audio_delivery_hardening.test.js",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--reporter=json"
+  ],
+  "exitCode": 0,
+  "success": true,
+  "tests": {
+    "total": 57,
+    "passed": 57,
+    "failed": 0,
+    "pending": 0
+  },
+  "sourceHashes": {
+    "live_aac_source.jsx": "ee0781a80a00085b9ceca781416f1ccf3b3d56b14849a50ca6b37ed0017c4f8c",
+    "word_sounds_module.js": "e8c15f747dd9b7aae7d328e50e3885cd94b29fddac5bc5557d50c3915b4761d5",
+    "module_scope_extras_source.jsx": "8c6ab8878290e3bd5e081627570767d5faeb310a7793e42470445f5e61d66b43",
+    "word_sounds_readiness_contract.js": "364c4241ff653f705ca529780e1142b8ad3147864953d1f315831791a918fb4e",
+    "tests/word_sounds_delivery_roundtrip.test.js": "614c15d309a958b977f0584dd04d96bbceb6038aa23933d6135a3da0d4bfe000",
+    "tests/word_sounds_runtime_audio_status.test.js": "6bb30d1b4e8f0c5567dd22298be71edc0aab89cace624445c6d06572eb3ffdc1",
+    "tests/word_sounds_audio_delivery_hardening.test.js": "6684236749290cb2cdac597db99f02d21b3129d4d30a70b3a72f207cf78a303f"
+  },
+  "changedDuringRun": [],
+  "failures": [],
+  "suiteErrors": [],
+  "stderr": ""
+}

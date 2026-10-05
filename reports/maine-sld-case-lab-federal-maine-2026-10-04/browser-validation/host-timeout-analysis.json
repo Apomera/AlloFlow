@@ -1,0 +1,159 @@
+{
+  "reviewedAt": "2026-10-04T17:16:27.272894+00:00",
+  "traceFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\jurisdiction-validation\\host-only-01\\artifacts\\maine-sld-practice-full-so-751b3--protects-Leadership-return-chromium\\trace.zip",
+  "traceSha256": "ae3c599a0051a2171a9037a62ed7113601c4bb429ff3e59d2f3b35e8dc2bb8bc",
+  "actualTimeoutMs": 120000,
+  "allRecordedExpectationsCompletedWithoutError": true,
+  "completedExpectationCount": 17,
+  "lastAction": {
+    "callId": "call@84",
+    "api": null,
+    "method": "close",
+    "title": null,
+    "start": 127473.866,
+    "durationMs": null,
+    "params": {},
+    "error": null,
+    "unfinished": true
+  },
+  "lastActions": [
+    {
+      "callId": "call@70",
+      "api": null,
+      "method": "expect",
+      "title": "Expect \"toBeVisible\"",
+      "start": 104488.09,
+      "durationMs": 385.44200000001,
+      "params": {
+        "selector": "internal:role=dialog[name=\"Leadership Hub\"s]",
+        "expression": "to.be.visible",
+        "expectedValue": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        },
+        "isNot": false,
+        "timeout": 15000
+      },
+      "error": null,
+      "unfinished": false
+    },
+    {
+      "callId": "call@72",
+      "api": null,
+      "method": "click",
+      "title": null,
+      "start": 105079.331,
+      "durationMs": 10329.074999999997,
+      "params": {
+        "selector": "[data-hub-id=\"maineSldPractice\"]",
+        "strict": true,
+        "timeout": 30000
+      },
+      "error": null,
+      "unfinished": false
+    },
+    {
+      "callId": "call@74",
+      "api": null,
+      "method": "expect",
+      "title": "Expect \"toBeVisible\"",
+      "start": 115447.543,
+      "durationMs": 3171.4909999999945,
+      "params": {
+        "selector": "internal:testid=[data-testid=\"maine-sld-panel\"s]",
+        "expression": "to.be.visible",
+        "expectedValue": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        },
+        "isNot": false,
+        "timeout": 15000
+      },
+      "error": null,
+      "unfinished": false
+    },
+    {
+      "callId": "call@76",
+      "api": null,
+      "method": "screenshot",
+      "title": null,
+      "start": 119843.28,
+      "durationMs": 1179.926999999996,
+      "params": {
+        "timeout": 30000,
+        "type": "png",
+        "fullPage": true
+      },
+      "error": null,
+      "unfinished": false
+    },
+    {
+      "callId": "call@78",
+      "api": null,
+      "method": "isVisible",
+      "title": null,
+      "start": 121192.769,
+      "durationMs": 4274.895000000004,
+      "params": {
+        "selector": "internal:role=button[name=\"Leadership Hub\"s]",
+        "strict": true
+      },
+      "error": null,
+      "unfinished": false
+    },
+    {
+      "callId": "call@80",
+      "api": null,
+      "method": "click",
+      "title": null,
+      "start": 126169.958,
+      "durationMs": 1219.8760000000038,
+      "params": {
+        "selector": "internal:role=button[name=\"Leadership Hub\"s]",
+        "strict": true,
+        "timeout": 30000
+      },
+      "error": null,
+      "unfinished": false
+    },
+    {
+      "callId": "call@82",
+      "api": null,
+      "method": "expect",
+      "title": "Expect \"toBeVisible\"",
+      "start": 127401,
+      "durationMs": 38.18600000000151,
+      "params": {
+        "selector": "internal:role=dialog[name=\"Leadership Hub\"s]",
+        "expression": "to.be.visible",
+        "expectedValue": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        },
+        "isNot": false,
+        "timeout": 15000
+      },
+      "error": null,
+      "unfinished": false
+    },
+    {
+      "callId": "call@84",
+      "api": null,
+      "method": "close",
+      "title": null,
+      "start": 127473.866,
+      "durationMs": null,
+      "params": {},
+      "error": null,
+      "unfinished": true
+    }
+  ],
+  "interpretation": "The actual host assertions completed; the cumulative test budget expired during the final ungated page close. This is a failed invocation retained as history, not a passing host scenario.",
+  "proposedRecovery": "One justified invocation of the exact same host body, setup,120-second limit, one worker and zero automatic retries; no product/test changes."
+}

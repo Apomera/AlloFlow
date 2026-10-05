@@ -1,0 +1,46 @@
+{
+  "expectedSourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+  "before": {
+    "sources": [
+      {
+        "file": "stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "bytes": 2076812
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "bytes": 2076812
+      }
+    ],
+    "byteIdentical": true
+  },
+  "fixture": {
+    "file": "tests/anatomy_spotter_study_journey.test.js",
+    "sha256": "c5061b864e7969305fdb6e893619cb6f72f34c5cd1d6b130aee012f1bc544b49"
+  },
+  "startedAt": "2026-10-02T23:26:44.864Z",
+  "diagnostic": {
+    "report": "initial-spotter-unit-results.json",
+    "metadata": "initial-spotter-unit-metadata.json",
+    "reason": "Two audio assertions included the independent speedDemon progress award; fixture now seeds this existing badge as earned."
+  },
+  "command": "node node_modules/vitest/vitest.mjs run tests/anatomy_spotter_study_journey.test.js --pool=forks --maxWorkers=1 --no-isolate --testTimeout=120000 --hookTimeout=120000 --reporter=json --outputFile=reports\\anatomy-spotter-study-2026-10-02\\spotter-unit-results.json",
+  "after": {
+    "sources": [
+      {
+        "file": "stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "bytes": 2076812
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+        "bytes": 2076812
+      }
+    ],
+    "byteIdentical": true
+  },
+  "finishedAt": "2026-10-02T23:27:24.776Z",
+  "exitCode": 0
+}

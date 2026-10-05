@@ -1,0 +1,26 @@
+{
+  "commit": "e8d3045f2c14117b7264f73b100c887b49eb181c",
+  "parent": "08c5ad42218aba3e53561193bb60df65d0d015db",
+  "featureCommit": "a9ae02cb56598a8774478922012e8a2b70baa348",
+  "paths": [
+    "reports/moon-mission-enhancement-pass12-2026-09-30/README.md",
+    "reports/moon-mission-enhancement-pass12-2026-09-30/browser-verification.json",
+    "reports/moon-mission-enhancement-pass12-2026-09-30/candidate-verification.json",
+    "reports/moon-mission-enhancement-pass12-2026-09-30/completion-announcements-final.json",
+    "reports/moon-mission-enhancement-pass12-2026-09-30/completion-announcements-initial.json",
+    "reports/moon-mission-enhancement-pass12-2026-09-30/current-source-final.json",
+    "reports/moon-mission-enhancement-pass12-2026-09-30/current-source-verification.json",
+    "reports/moon-mission-enhancement-pass12-2026-09-30/shared-source-audit.json",
+    "reports/moon-mission-enhancement-pass12-2026-09-30/verification.json",
+    "tests/moonmission_completion_announcements.test.js"
+  ],
+  "fileCount": 10,
+  "sourceSha256": "5d189c793bf28701c1617850740b03b09bfa9b99aad22c672c85409679fd8625",
+  "normalHooks": true,
+  "indexStrategy": "copy real index metadata and restore unrelated staged differences inside the private copy",
+  "unrelatedIndexPreserved": true,
+  "runtimeUnchanged": true,
+  "verifiedUnitChecks": 532,
+  "currentSourceChecks": 141,
+  "browserWorkflows": 12
+}

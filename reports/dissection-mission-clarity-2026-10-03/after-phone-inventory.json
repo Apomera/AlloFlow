@@ -1,0 +1,59 @@
+{
+  "title": "Virtual Dissection Lab",
+  "copy": [
+    "Virtual Biology Laboratory",
+    "Work through the specimen one clear action at a time. Current focus: Predict before contact.",
+    "Virtual practice supports observation and comparison. Follow your instructor’s safety, ethics, handling, and disposal procedures for any physical specimen."
+  ],
+  "steps": [
+    {
+      "label": "1Orient",
+      "state": "current",
+      "current": "step"
+    },
+    {
+      "label": "2Prepare",
+      "state": "upcoming",
+      "current": null
+    },
+    {
+      "label": "3Reveal",
+      "state": "upcoming",
+      "current": null
+    },
+    {
+      "label": "4Identify",
+      "state": "upcoming",
+      "current": null
+    },
+    {
+      "label": "5Record evidence",
+      "state": "upcoming",
+      "current": null
+    },
+    {
+      "label": "6Review",
+      "state": "upcoming",
+      "current": null
+    }
+  ],
+  "stats": [
+    {
+      "label": "Specimen",
+      "value": "🐷 Fetal Pig (Sus scrofa)"
+    },
+    {
+      "label": "Layer",
+      "value": "3 of 5 · Visceral Organs"
+    },
+    {
+      "label": "Structures viewed",
+      "value": "1 of 27"
+    }
+  ],
+  "actions": [
+    "Go to specimen",
+    "Structures and notes",
+    "Continue activity"
+  ]
+}

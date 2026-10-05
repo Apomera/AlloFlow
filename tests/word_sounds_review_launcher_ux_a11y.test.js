@@ -48,7 +48,10 @@ describe('Word Sounds review and launcher UX accessibility', () => {
     expect(launcherSource).toContain('{isTeacherMode && (');
     expect(launcherSource).toContain("isTeacherMode ? label('preview_student_practice'");
     expect(launcherSource).toContain('setWordSoundsAutoReview(false)');
-    expect(launcherSource).toContain("label('preview_audio_ready', 'Audio ready: {ready}/{total} required clips'");
+    expect(launcherSource).toContain("label('readiness_heading', 'Ready for students')");
+    expect(launcherSource).toContain("label('readiness_audio_qualifier', 'Audio check')");
+    expect(launcherSource).toContain("label('readiness_review', 'Audio needs checking or review')");
+    expect(launcherSource).not.toContain("label('preview_audio_ready', 'Audio ready: {ready}/{total} required clips'");
     expect(launcherSource).toContain("var missingAudioLabels = wordSoundsAudioCoverage && Array.isArray(wordSoundsAudioCoverage.missingLabels)");
     expect(launcherSource).toContain("label('preview_missing', 'Missing: {labels}'");
     expect(launcherSource).toContain("role=\"status\"");

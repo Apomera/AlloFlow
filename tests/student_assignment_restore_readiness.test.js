@@ -78,21 +78,29 @@ function harness({ ready = false, missingHelpers = [], throwing = false, rejecti
   const addToast = vi.fn(), warnLog = vi.fn(), deps = { marker: 'current-host-deps' };
   let pending, cleanup, restore;
   const generationRef = { current: 0 };
+  const pendingRequestRef = { current: null };
   const supportDraftSessionRef = { current: draftSession };
   const historyOpenContextRef = { current: {} };
   const bootHistoryHydrationRef = { current: null };
   const requestReadingSupportTransition = vi.fn(run => supportDraftSessionRef.current ? supportDraftSessionRef.current.request(run) : run());
-  const setPending = vi.fn(value => { pending = typeof value === 'function' ? value(pending) : value; });
+  const setPending = vi.fn(value => {
+    const current = pendingRequestRef.current;
+    const resource = typeof value === 'function' ? value(current?.resource || null) : value;
+    if (typeof value === 'function' && resource === (current?.resource || null)) return;
+    if (!resource && !current) return;
+    pending = resource;
+    pendingRequestRef.current = resource ? { resource } : null;
+  });
   const notify = () => events.dispatchEvent(new Event('alloflow:module-registry-changed'));
   return {
     window, api, addToast, warnLog, listeners, setPending, requestReadingSupportTransition, get pending() { return pending; },
     run(item, teacher = false) {
-      cleanup?.(); pending = item; let callback;
+      cleanup?.(); pending = item; pendingRequestRef.current = item ? { resource: item } : null; let callback;
       restore = new Function('window', '_alloMiscHandlersDeps', 'useRef', 'useEffect', 'pendingQrAssignmentResource', 'isTeacherMode', 'setPendingQrAssignmentResource', 'addToast', 'warnLog',
-        'supportDraftSessionRef', 'requestReadingSupportTransition', 'historyOpenContextRef', 'bootHistoryHydrationRef', 'receivedDeliveryResources',
+        'supportDraftSessionRef', 'requestReadingSupportTransition', 'historyOpenContextRef', 'bootHistoryHydrationRef', 'receivedDeliveryResources', 'pendingQrAssignmentOpenRequest', 'pendingQrAssignmentOpenRequestRef',
         wrapper + '\n' + effect + '\nreturn handleRestoreView;')(
         window, () => deps, () => generationRef, fn => { callback = fn; }, item, teacher, setPending, addToast, warnLog,
-        supportDraftSessionRef, requestReadingSupportTransition, historyOpenContextRef, bootHistoryHydrationRef, item ? [item] : [],
+        supportDraftSessionRef, requestReadingSupportTransition, historyOpenContextRef, bootHistoryHydrationRef, item ? [item] : [], pendingRequestRef.current, pendingRequestRef,
       );
       cleanup = callback();
     },

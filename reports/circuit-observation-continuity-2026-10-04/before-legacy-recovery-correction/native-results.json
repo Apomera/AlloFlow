@@ -1,0 +1,63 @@
+{
+  "regression": {
+    "sessionId": 49586,
+    "toolChunk": "52b270",
+    "completed": true,
+    "exitCode": 1,
+    "childExitCode": 4294967295,
+    "status": "Stopped this superseded run before applying the additional legacy recovery fix; no final test result claimed."
+  },
+  "browser": {
+    "sessionId": 73470,
+    "toolChunk": "511a6c",
+    "completed": true,
+    "exitCode": 0,
+    "passed": true,
+    "views": 6,
+    "workflows": 3,
+    "screenshots": 6
+  },
+  "visualReview": {
+    "reviewer": "/root",
+    "reviewedAtOriginalResolution": true,
+    "sourceSha256": "d62195c5530468c475f3dbc49639789413957ff2d0e52d0f5806c813767c63d9",
+    "screenshots": [
+      {
+        "file": "desktop-before-removal.png",
+        "sha256": "e6b01ca2f82ea8984beffc63f28e2fe55ef129d27d04a8020de7383f4d0ff496",
+        "passed": true,
+        "notes": "Reviewed desktop/phone before, after removal and after recovery: the 8 mA note panel stays open while its displayed index changes."
+      },
+      {
+        "file": "desktop-after-removal.png",
+        "sha256": "38ae740dc554758c6acddce7305bbe860e682f0b8f14550c28e838fcadfd7454",
+        "passed": true,
+        "notes": "Reviewed desktop/phone before, after removal and after recovery: the 8 mA note panel stays open while its displayed index changes."
+      },
+      {
+        "file": "desktop-after-recovery.png",
+        "sha256": "4dfdb9e06cdf26e74f3b780b429a8d02b5ec1ebcc1d5eb63aae7f33989a10ef1",
+        "passed": true,
+        "notes": "Reviewed desktop/phone before, after removal and after recovery: the 8 mA note panel stays open while its displayed index changes."
+      },
+      {
+        "file": "phone-before-removal.png",
+        "sha256": "f99e503b4396d0b83248a2f39605b91ae8f57b53256da3e78901c39918a4ef6f",
+        "passed": true,
+        "notes": "Reviewed desktop/phone before, after removal and after recovery: the 8 mA note panel stays open while its displayed index changes."
+      },
+      {
+        "file": "phone-after-removal.png",
+        "sha256": "04b14766f4b9b1ceec939b319011ef35f183a2bea263e8e2038a1561b19e1d33",
+        "passed": true,
+        "notes": "Reviewed desktop/phone before, after removal and after recovery: the 8 mA note panel stays open while its displayed index changes."
+      },
+      {
+        "file": "phone-after-recovery.png",
+        "sha256": "691e9a14cf33421203bf8d202f0fa6b1731829a842bdf795f2eae4bbfcfd88c0",
+        "passed": true,
+        "notes": "Reviewed desktop/phone before, after removal and after recovery: the 8 mA note panel stays open while its displayed index changes."
+      }
+    ]
+  }
+}

@@ -1,0 +1,217 @@
+{
+  "metadata": {
+    "sourceLfSha256": "70a2f0bcfb39fe9b7f717161aa290346ebad0a3ae9e06ef8529be690bde36822",
+    "startedAt": "2026-10-02T20:05:16.535Z",
+    "finishedSourceLfSha256": "70a2f0bcfb39fe9b7f717161aa290346ebad0a3ae9e06ef8529be690bde36822",
+    "finishedAt": "2026-10-02T20:05:38.737Z"
+  },
+  "firstAndPractice": {
+    "errors": [],
+    "scans": [],
+    "steps": [
+      {
+        "label": "wrong first answer",
+        "system": "skeletal",
+        "activeTab": "connections",
+        "first": {
+          "version": 1,
+          "answers": {
+            "conn_3": "choice_1"
+          }
+        }
+      },
+      {
+        "label": "correct practice answer",
+        "system": "skeletal",
+        "activeTab": "connections",
+        "first": {
+          "version": 1,
+          "answers": {
+            "conn_3": "choice_1"
+          }
+        },
+        "practice": {
+          "version": 1,
+          "sessions": {
+            "conn_3": {
+              "token": "mure790l-vnus38xjpnf",
+              "answer": "choice_0",
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "label": "saved first feedback",
+        "system": "skeletal",
+        "activeTab": "connections",
+        "first": {
+          "version": 1,
+          "answers": {
+            "conn_3": "choice_1"
+          }
+        },
+        "practice": {
+          "version": 1,
+          "sessions": {
+            "conn_3": {
+              "token": "mure790l-vnus38xjpnf",
+              "answer": "choice_0",
+              "active": false
+            }
+          }
+        }
+      },
+      {
+        "label": "fresh practice question",
+        "system": "skeletal",
+        "activeTab": "connections",
+        "first": {
+          "version": 1,
+          "answers": {
+            "conn_3": "choice_1"
+          }
+        },
+        "practice": {
+          "version": 1,
+          "sessions": {
+            "conn_3": {
+              "token": "mure7b2g-kpnqyqzfufq",
+              "answer": null,
+              "active": true
+            }
+          }
+        }
+      }
+    ],
+    "captures": [
+      "desktop-practice-feedback.png",
+      "desktop-saved-first-feedback.png"
+    ]
+  },
+  "persistentReview": {
+    "errors": [],
+    "scans": [],
+    "steps": [
+      {
+        "label": "marker detour",
+        "system": "muscular",
+        "selected": "biceps",
+        "activeTab": "connections",
+        "first": {
+          "version": 1,
+          "answers": {
+            "conn_3": "choice_1"
+          }
+        },
+        "practice": {
+          "version": 1,
+          "sessions": {
+            "conn_3": {
+              "token": "mure7ex0-21sfrx6oxku",
+              "answer": null,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "label": "activity return",
+        "system": "muscular",
+        "selected": "biceps",
+        "activeTab": "connections",
+        "first": {
+          "version": 1,
+          "answers": {
+            "conn_3": "choice_1"
+          }
+        },
+        "practice": {
+          "version": 1,
+          "sessions": {
+            "conn_3": {
+              "token": "mure7ex0-21sfrx6oxku",
+              "answer": null,
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "label": "answered after reload",
+        "system": "muscular",
+        "selected": "biceps",
+        "activeTab": "connections",
+        "first": {
+          "version": 1,
+          "answers": {
+            "conn_3": "choice_1"
+          }
+        },
+        "practice": {
+          "version": 1,
+          "sessions": {
+            "conn_3": {
+              "token": "mure7ex0-21sfrx6oxku",
+              "answer": "choice_0",
+              "active": true
+            }
+          }
+        }
+      },
+      {
+        "label": "saved feedback after reload",
+        "system": "muscular",
+        "selected": "biceps",
+        "activeTab": "connections",
+        "first": {
+          "version": 1,
+          "answers": {
+            "conn_3": "choice_1"
+          }
+        },
+        "practice": {
+          "version": 1,
+          "sessions": {
+            "conn_3": {
+              "token": "mure7ex0-21sfrx6oxku",
+              "answer": "choice_0",
+              "active": false
+            }
+          }
+        }
+      }
+    ],
+    "captures": [
+      "phone-reloaded-practice.png"
+    ]
+  },
+  "topicNavigation": {
+    "errors": [],
+    "scans": [],
+    "steps": [
+      {
+        "label": "empty chooser opens overview",
+        "system": "skeletal",
+        "activeTab": "connections",
+        "first": {
+          "version": 1,
+          "answers": {
+            "conn_3": "choice_1"
+          }
+        }
+      }
+    ],
+    "captures": [
+      "phone-topic-overview.png"
+    ]
+  },
+  "displayMatrix": {
+    "errors": [],
+    "scans": [],
+    "steps": [],
+    "captures": [],
+    "styles": [],
+    "labelPixels": []
+  }
+}

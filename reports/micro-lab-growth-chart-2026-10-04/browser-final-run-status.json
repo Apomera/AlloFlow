@@ -1,0 +1,43 @@
+{
+  "kind": "browser",
+  "phaseName": "browser-final",
+  "pid": 17332,
+  "phase": "passed",
+  "started": "2026-10-04T23:32:30.402Z",
+  "sourceSha256": "e48cea8be833b25949e7941c6c4a1ecb17a878287ec4615204eb4816422e6ac2",
+  "expected": 37,
+  "files": [
+    "tests/e2e/microbiology-annotation-integrity.spec.ts",
+    "tests/e2e/microbiology-experiment-design.spec.ts",
+    "tests/e2e/microbiology-growth-citations.spec.ts",
+    "tests/e2e/microbiology-guided-resume.spec.ts",
+    "tests/e2e/microbiology-growth-inspection-export.spec.ts",
+    "tests/e2e/microbiology-resistance-live-visuals.spec.ts",
+    "tests/e2e/microbiology-growth-visual-inspection.spec.ts"
+  ],
+  "testInputs": {
+    "tests/e2e/microbiology-annotation-integrity.spec.ts": "18e5274d85b33fd66b5aa71d1f0402b551f4a17360fbf81e110337804ed78f75",
+    "tests/e2e/microbiology-experiment-design.spec.ts": "b7b9aa5a3e77a1d09d461c081e3c3008f80b87c7c8c1069fd19d9a44acfe963e",
+    "tests/e2e/microbiology-growth-citations.spec.ts": "362be56275547026649bea84b5ba7de33d354dc4118cb4259d1f7189a4cdf9d1",
+    "tests/e2e/microbiology-guided-resume.spec.ts": "7c6d0c203269eb9096e5680ae6cefeddb54972c8957dd0e2a97832d8bb4dca5b",
+    "tests/e2e/microbiology-growth-inspection-export.spec.ts": "aaff421df0f908de45bcc106a3a9923bb7e2562558999b668da2ec7eb679064f",
+    "tests/e2e/microbiology-resistance-live-visuals.spec.ts": "c61da86a8b31ba99cc107aed5d362b1d81fefe2bb65f8ab2eb444e6d4d8efae8",
+    "tests/e2e/microbiology-growth-visual-inspection.spec.ts": "733237df60f04d88e74ec053f1028a8fda59874df25acfcf4693e0e4a647ec9a",
+    "playwright.config.ts": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "tests/helpers/stem_widgets_smoke_harness.js": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+    "tests/e2e/helpers/png_pixels.ts": "866db36c5fa464fb91fb1e66449c5b3ad7e7d65c45196f3c1b3ac2cf76a4f7b4",
+    "desktop/web-app/node_modules/react/umd/react.production.min.js": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+    "vendor/three-r128/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "node_modules/@playwright/test/package.json": "cf92117ef1d8cbf1e4b2dffb63a0da552c0173bd6052f0f45711c0f00b79dc99",
+    "node_modules/playwright/package.json": "8be9edc5642a8c761b677e7af8b9937f36c0443a91e14765877716d70034e5bf",
+    "node_modules/playwright-core/package.json": "6f7b58cc55449321279f11ca97d4e451c391738b77db32cdbcedf02851e3f097"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "finished": "2026-10-04T23:39:30.058Z",
+  "sourceStillMatches": true,
+  "testInputsStillMatch": true,
+  "syntaxChecksPassed": true
+}

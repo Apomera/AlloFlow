@@ -1,0 +1,596 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/dissection-investigation-progress-2026-10-02/browser-final-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 240000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "dissection-investigation-progress.spec.ts",
+      "file": "dissection-investigation-progress.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "investigation phone shows readable progress and unfinished records",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6912,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T11:58:48.532Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-a4ba7dc60bae4b615084",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 37,
+          "column": 8
+        },
+        {
+          "title": "investigation tablet shows readable progress and unfinished records",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5957,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T11:58:55.798Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-ca38dec56595d10922fb",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 37,
+          "column": 8
+        },
+        {
+          "title": "investigation desktop shows readable progress and unfinished records",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6148,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T11:59:01.771Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-5778ba2740354eee0a2c",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 37,
+          "column": 8
+        },
+        {
+          "title": "investigation embedded-large shows readable progress and unfinished records",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6981,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T11:59:07.936Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-16198b68a5b05ae51d32",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 37,
+          "column": 8
+        },
+        {
+          "title": "investigation forced-colors shows readable progress and unfinished records",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13889,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T11:59:14.934Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-14991a8f1273bf0a13a6",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 37,
+          "column": 8
+        },
+        {
+          "title": "confidence shortcut focuses an unchecked rating and returns without granting evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10319,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T11:59:28.839Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-37c49c2c159d26b6bf20",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 58,
+          "column": 5
+        },
+        {
+          "title": "missing note shortcut preserves the rating and updates progress after an explicit edit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 10535,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T11:59:39.173Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-da19f2df71aed9813d4f",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 65,
+          "column": 5
+        },
+        {
+          "title": "ratings outside the three-level scale remain unfinished and cannot make a layer ready",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 40391,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T11:59:49.724Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-4fc6af079649563a830d",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 74,
+          "column": 5
+        },
+        {
+          "title": "completed technique waits for actual inspection before reporting readiness",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3570,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T12:00:30.130Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-c3f55a94360071d5f4f5",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 87,
+          "column": 5
+        },
+        {
+          "title": "notes for uninspected and unknown structures do not inflate progress",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4677,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T12:00:33.716Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-639b116f56052775a655",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 94,
+          "column": 5
+        },
+        {
+          "title": "a complete investigation can explicitly reveal the next layer",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 34585,
+                  "error": {
+                    "message": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Review layer', exact: true })\u001b[22m\n",
+                    "stack": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Review layer', exact: true })\u001b[22m\n\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-investigation-progress.spec.ts:105:73",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-investigation-progress.spec.ts",
+                      "column": 73,
+                      "line": 105
+                    },
+                    "snippet": "  103 |   await page.locator('.diss-next-action__primary').click(); await expect.poll(() => page.evaluate(() => (window as any).__ctx.toolData.dissection.activeLayer)).not.toBe('skin');\n  104 |   const after = await evidence(page); expect(after.revealed.skin).toBe(true); expect(after.notes).toEqual(before.notes); expect(after.confidence).toEqual(before.confidence); expect(after.procedures.skin).toEqual(before.procedures.skin);\n> 105 |   await page.getByRole('button', { name: 'Review layer', exact: true }).click();\n      |                                                                         ^\n  106 |   await expect(progress(page, 'inspected')).toHaveAttribute('value', '0'); await expect(progress(page, 'recorded')).toHaveAttribute('value', '0');\n  107 |   await writeFile(`${out}/revealed-state.json`, JSON.stringify(after, null, 2));\n  108 | });"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-investigation-progress.spec.ts",
+                        "column": 73,
+                        "line": 105
+                      },
+                      "message": "TimeoutError: locator.click: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for getByRole('button', { name: 'Review layer', exact: true })\u001b[22m\n\n\n  103 |   await page.locator('.diss-next-action__primary').click(); await expect.poll(() => page.evaluate(() => (window as any).__ctx.toolData.dissection.activeLayer)).not.toBe('skin');\n  104 |   const after = await evidence(page); expect(after.revealed.skin).toBe(true); expect(after.notes).toEqual(before.notes); expect(after.confidence).toEqual(before.confidence); expect(after.procedures.skin).toEqual(before.procedures.skin);\n> 105 |   await page.getByRole('button', { name: 'Review layer', exact: true }).click();\n      |                                                                         ^\n  106 |   await expect(progress(page, 'inspected')).toHaveAttribute('value', '0'); await expect(progress(page, 'recorded')).toHaveAttribute('value', '0');\n  107 |   await writeFile(`${out}/revealed-state.json`, JSON.stringify(after, null, 2));\n  108 | });\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-investigation-progress.spec.ts:105:73"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T12:00:38.405Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-investigation-progress-2026-10-02\\browser-final-artifacts\\dissection-investigation-p-8164f-citly-reveal-the-next-layer-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-investigation-progress-2026-10-02\\browser-final-artifacts\\dissection-investigation-p-8164f-citly-reveal-the-next-layer-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-investigation-progress-2026-10-02\\browser-final-artifacts\\dissection-investigation-p-8164f-citly-reveal-the-next-layer-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\dissection-investigation-progress-2026-10-02\\browser-final-artifacts\\dissection-investigation-p-8164f-citly-reveal-the-next-layer-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\dissection-investigation-progress.spec.ts",
+                    "column": 73,
+                    "line": 105
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-618a291fa383ee1aea5a",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 100,
+          "column": 5
+        },
+        {
+          "title": "reviewing a prior observation preserves the guided route and hidden-view credit",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4545,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T12:01:14.662Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-e6c7a4bbcc461cb2b966",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 110,
+          "column": 5
+        },
+        {
+          "title": "quiz hides the record queue and progress shortcuts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2219,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T12:01:19.477Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-bf0d943c727623358bf1",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 115,
+          "column": 44
+        },
+        {
+          "title": "timed practical hides the record queue and progress shortcuts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 240000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 1,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2227,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-02T12:01:21.711Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "324c46cbf56b4a025f64-e7a7a00b3683ac8147cd",
+          "file": "dissection-investigation-progress.spec.ts",
+          "line": 115,
+          "column": 44
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-02T11:58:47.315Z",
+    "duration": 156921.657,
+    "expected": 13,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

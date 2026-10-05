@@ -1,0 +1,16 @@
+{
+  "atlas_nebula_bearing_ahead": "Stars ahead",
+  "atlas_nebula_bearing_aligned": "Facing the central stars",
+  "atlas_nebula_bearing_near": "At the stellar reference point",
+  "atlas_nebula_bearing_left": "Turn left {n}°",
+  "atlas_nebula_bearing_right": "Turn right {n}°",
+  "atlas_nebula_bearing_up": "Look up {n}°",
+  "atlas_nebula_bearing_down": "Look down {n}°",
+  "atlas_nebula_bearing_heading": "Model heading {n}°",
+  "atlas_nebula_bearing_title": "Find the Trapezium",
+  "atlas_nebula_bearing_face": "Look toward the stars",
+  "atlas_nebula_bearing_locator": "Star locator",
+  "atlas_nebula_bearing_help": "Look toward the stars turns your view while keeping your position. The locator marks their model position; dust may hide the stars themselves.",
+  "atlas_nebula_bearing_position": "Trapezium position",
+  "atlas_nebula_bearing_reference": "Position reference"
+}

@@ -1,0 +1,636 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-plot-callouts-2026-10-04\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": false,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 1,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/physics-plot-callouts-2026-10-04/regression-artifacts",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "physics-apex-inspection.spec.ts",
+      "file": "physics-apex-inspection.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "a flight shorter than one step records launch, exact apex, and impact with discrete keyboard landmarks",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6518,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:05:10.033Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8ee2e48ab8cf3c9bc3ab-99fec9d92723e88bdcf3",
+          "file": "physics-apex-inspection.spec.ts",
+          "line": 183,
+          "column": 5
+        },
+        {
+          "title": "vacuum and drag apex selections synchronize all recorded views and keep original evidence after controls change",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 12646,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:05:16.710Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8ee2e48ab8cf3c9bc3ab-d33e00a9f2974280b94d",
+          "file": "physics-apex-inspection.spec.ts",
+          "line": 238,
+          "column": 5
+        },
+        {
+          "title": "a paused horizontal launch stays a single level sample and reuses its launch time for the apex after stepping",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4179,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:05:29.366Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8ee2e48ab8cf3c9bc3ab-489d0d0b2d5933800d68",
+          "file": "physics-apex-inspection.spec.ts",
+          "line": 291,
+          "column": 5
+        },
+        {
+          "title": "legacy apex metadata keeps highest recorded point fallback without inventing a sample",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 4091,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:05:33.554Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8ee2e48ab8cf3c9bc3ab-6120b787eb446114a107",
+          "file": "physics-apex-inspection.spec.ts",
+          "line": 322,
+          "column": 5
+        },
+        {
+          "title": "phase and landmarks remain readable and operable across nine width and theme layouts",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 13628,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:05:37.654Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "8ee2e48ab8cf3c9bc3ab-6a1bc0585c4ba68ecf58",
+          "file": "physics-apex-inspection.spec.ts",
+          "line": 352,
+          "column": 5
+        }
+      ]
+    },
+    {
+      "title": "physics-flight-history.spec.ts",
+      "file": "physics-flight-history.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "vacuum and drag history keep every view on the chosen original run",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6564,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:05:51.311Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "313875e369e960e8105a-81063c22ea6d64be37cc",
+          "file": "physics-flight-history.spec.ts",
+          "line": 123,
+          "column": 5
+        },
+        {
+          "title": "retention and clearing remove inspection links while saved summaries remain valid",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 5494,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:05:57.900Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "313875e369e960e8105a-ab08cdebd135c0330c44",
+          "file": "physics-flight-history.spec.ts",
+          "line": 162,
+          "column": 5
+        },
+        {
+          "title": "inspecting an older flight pauses a newer launch and resuming continues its actual state",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2700,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:06:03.404Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "313875e369e960e8105a-e4b965929d9ae7ee040b",
+          "file": "physics-flight-history.spec.ts",
+          "line": 194,
+          "column": 5
+        },
+        {
+          "title": "320px default history is accessible without page overflow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3016,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:06:06.114Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "313875e369e960e8105a-4d2295f81cece44422f5",
+          "file": "physics-flight-history.spec.ts",
+          "line": 211,
+          "column": 58
+        },
+        {
+          "title": "320px dark history is accessible without page overflow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3018,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:06:09.140Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "313875e369e960e8105a-4e267a9f211f77f9a5f6",
+          "file": "physics-flight-history.spec.ts",
+          "line": 211,
+          "column": 58
+        },
+        {
+          "title": "320px contrast history is accessible without page overflow",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2927,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:06:12.169Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "313875e369e960e8105a-aae9b5fcaa458f0dcbb3",
+          "file": "physics-flight-history.spec.ts",
+          "line": 211,
+          "column": 58
+        }
+      ]
+    },
+    {
+      "title": "physics-visual-layout.spec.ts",
+      "file": "physics-visual-layout.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "canvas text and annotations remain readable at desktop and phone widths in every theme",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6897,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:06:15.121Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "15cbb1ed42829f2885d0-541c4d4ba72f1c85566d",
+          "file": "physics-visual-layout.spec.ts",
+          "line": 146,
+          "column": 5
+        },
+        {
+          "title": "descending high-speed vectors share a scale and visual changes preserve measured flight evidence",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 2441,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:06:22.039Z",
+                  "annotations": [],
+                  "attachments": []
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "15cbb1ed42829f2885d0-d5696a392da979877eee",
+          "file": "physics-visual-layout.spec.ts",
+          "line": 186,
+          "column": 5
+        },
+        {
+          "title": "changing a landed flight previews the next launch and hides annotations for off-screen measurements",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 2288,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 4\u001b[39m\n\u001b[31m+ Received  + 4\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   40,\u001b[39m\n\u001b[32m-   128,\u001b[39m\n\u001b[32m-   256,\u001b[39m\n\u001b[32m-   226,\u001b[39m\n\u001b[31m+   16.65234375,\u001b[39m\n\u001b[31m+   167.5,\u001b[39m\n\u001b[31m+   16.173828125,\u001b[39m\n\u001b[31m+   12.5,\u001b[39m\n\u001b[2m  ]\u001b[22m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 4\u001b[39m\n\u001b[31m+ Received  + 4\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   40,\u001b[39m\n\u001b[32m-   128,\u001b[39m\n\u001b[32m-   256,\u001b[39m\n\u001b[32m-   226,\u001b[39m\n\u001b[31m+   16.65234375,\u001b[39m\n\u001b[31m+   167.5,\u001b[39m\n\u001b[31m+   16.173828125,\u001b[39m\n\u001b[31m+   12.5,\u001b[39m\n\u001b[2m  ]\u001b[22m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-visual-layout.spec.ts:327:18",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-visual-layout.spec.ts",
+                      "column": 18,
+                      "line": 327
+                    },
+                    "snippet": "  325 |   expect(after.clips.length).toBeGreaterThan(0);\n  326 |   for (const clip of after.clips) {\n> 327 |     expect(clip).toEqual([\n      |                  ^\n  328 |       next.view.x, next.layout.plotTop,\n  329 |       next.layout.width - next.view.x - 20, next.layout.groundY - next.layout.plotTop,\n  330 |     ]);"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-visual-layout.spec.ts",
+                        "column": 18,
+                        "line": 327
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoEqual\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m) // deep equality\u001b[22m\n\n\u001b[32m- Expected  - 4\u001b[39m\n\u001b[31m+ Received  + 4\u001b[39m\n\n\u001b[2m  Array [\u001b[22m\n\u001b[32m-   40,\u001b[39m\n\u001b[32m-   128,\u001b[39m\n\u001b[32m-   256,\u001b[39m\n\u001b[32m-   226,\u001b[39m\n\u001b[31m+   16.65234375,\u001b[39m\n\u001b[31m+   167.5,\u001b[39m\n\u001b[31m+   16.173828125,\u001b[39m\n\u001b[31m+   12.5,\u001b[39m\n\u001b[2m  ]\u001b[22m\n\n  325 |   expect(after.clips.length).toBeGreaterThan(0);\n  326 |   for (const clip of after.clips) {\n> 327 |     expect(clip).toEqual([\n      |                  ^\n  328 |       next.view.x, next.layout.plotTop,\n  329 |       next.layout.width - next.view.x - 20, next.layout.groundY - next.layout.plotTop,\n  330 |     ]);\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-visual-layout.spec.ts:327:18"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-05T05:06:24.489Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-plot-callouts-2026-10-04\\regression-artifacts\\physics-visual-layout-chan-2accf-for-off-screen-measurements-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-plot-callouts-2026-10-04\\regression-artifacts\\physics-visual-layout-chan-2accf-for-off-screen-measurements-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-plot-callouts-2026-10-04\\regression-artifacts\\physics-visual-layout-chan-2accf-for-off-screen-measurements-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "trace",
+                      "contentType": "application/zip",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\physics-plot-callouts-2026-10-04\\regression-artifacts\\physics-visual-layout-chan-2accf-for-off-screen-measurements-chromium\\trace.zip"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\physics-visual-layout.spec.ts",
+                    "column": 18,
+                    "line": 327
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "15cbb1ed42829f2885d0-e6ed3475e6ce68708f5e",
+          "file": "physics-visual-layout.spec.ts",
+          "line": 270,
+          "column": 5
+        },
+        {
+          "title": "apex, prediction, and landing leaders attach to their true flight coordinates",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [],
+              "status": "skipped"
+            }
+          ],
+          "id": "15cbb1ed42829f2885d0-a2ffc4f9361298d836e2",
+          "file": "physics-visual-layout.spec.ts",
+          "line": 334,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [
+    {
+      "message": "\u001b[31mTesting stopped early after 1 maximum allowed failures.\u001b[39m"
+    }
+  ],
+  "stats": {
+    "startTime": "2026-10-05T05:05:09.327Z",
+    "duration": 77602.055,
+    "expected": 13,
+    "skipped": 1,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

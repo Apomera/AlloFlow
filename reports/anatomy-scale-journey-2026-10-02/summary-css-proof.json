@@ -1,0 +1,7 @@
+{
+  "beforeSha256": "db7345d688021c195b6e03674ac69ea291469bb00030ba57dc7dbe3d3520862e",
+  "finalSha256": "5655d23c8d954d056430ab27ef038cd61daf033672c9b5499816741a684a5dcf",
+  "onlyChange": "One appended CSS rule group positions the disclosure header and puts its focus outline inside the clipped panel.",
+  "exactReverseMatchesTestedNavigationSource": true,
+  "mirrorsEqual": true
+}

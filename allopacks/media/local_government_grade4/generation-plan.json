@@ -1,0 +1,156 @@
+{
+  "slug": "local_government_grade4",
+  "assets": [
+    {
+      "id": "lg-term-government",
+      "kind": "term",
+      "scene": "A modest civic building with steps, an accessible ramp, a blank noticeboard, a bike rack and open doors. No columns, no flags, no readable signs.",
+      "alt": "A modest public building has open doors, steps, a ramp, a bike rack and a blank noticeboard.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. A modest civic building with steps, an accessible ramp, a blank noticeboard, a bike rack and open doors. No columns, no flags, no readable signs. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-term-government.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-term-local",
+      "kind": "term",
+      "scene": "Aerial view of a few neighborhood streets, a green park, small houses and a short shopping street; small enough to walk across, no text.",
+      "alt": "Several neighborhood streets surround homes, a park and a short row of shops.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. Aerial view of a few neighborhood streets, a green park, small houses and a short shopping street; small enough to walk across, no text. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-term-local.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-term-council",
+      "kind": "term",
+      "scene": "Seven adults of varied ages and everyday clothing seated at one long plain table, facing rows of folding chairs in a modest public meeting room; not corporate boardroom.",
+      "alt": "Seven adults in everyday clothing sit at a long table facing rows of folding chairs.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. Seven adults of varied ages and everyday clothing seated at one long plain table, facing rows of folding chairs in a modest public meeting room; not corporate boardroom. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-term-council.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-term-mayor",
+      "kind": "term",
+      "scene": "One adult standing at center of a plain long table, speaking calmly with an open hand; other adults seated listening, low-ceiling public meeting room, no podium or ceremonial symbols.",
+      "alt": "One adult stands and speaks at the center of a long table while seated adults listen.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. One adult standing at center of a plain long table, speaking calmly with an open hand; other adults seated listening, low-ceiling public meeting room, no podium or ceremonial symbols. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-term-mayor.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-term-citizen",
+      "kind": "term",
+      "scene": "Ordinary resident in work clothes holding a blank note while speaking at an aisle microphone, modest room of folding chairs, respectful listeners.",
+      "alt": "A resident holding a blank note speaks into an aisle microphone before people in folding chairs.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. Ordinary resident in work clothes holding a blank note while speaking at an aisle microphone, modest room of folding chairs, respectful listeners. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-term-citizen.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-term-vote",
+      "kind": "term",
+      "scene": "Close view of a hand posting a folded blank sheet into a slot in a plain unmarked cardboard box; no seal, no ballot design.",
+      "alt": "A hand lowers folded blank paper into a slot in an unmarked box.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. Close view of a hand posting a folded blank sheet into a slot in a plain unmarked cardboard box; no seal, no ballot design. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-term-vote.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-term-ordinance",
+      "kind": "term",
+      "scene": "A noticeboard outside a modest public building with a single entirely blank sheet pinned in its center; no words or characters.",
+      "alt": "A blank sheet is pinned to a noticeboard outside a modest building.",
+      "prompt": "Use case: illustration-story. Asset: square glossary picture. A noticeboard outside a modest public building with a single entirely blank sheet pinned in its center; no words or characters. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-term-ordinance.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-img-three-levels",
+      "kind": "lesson",
+      "scene": "One wide deep landscape: foreground crosswalk, park bench and small modest town hall with open doors; middle distance a larger regional public building; far horizon a grand domed building hazy and very small. Distance clearly separates levels; no flags.",
+      "alt": "A crosswalk, bench and small public building fill the foreground; a larger building stands farther away, and a hazy dome sits on the horizon.",
+      "title": "Near, middle, far",
+      "caption": "The level closest to your street is the one you can walk into.",
+      "afterType": "simplified",
+      "labelTexts": [
+        "Local",
+        "State",
+        "National"
+      ],
+      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. One wide deep landscape: foreground crosswalk, park bench and small modest town hall with open doors; middle distance a larger regional public building; far horizon a grand domed building hazy and very small. Distance clearly separates levels; no flags. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-img-three-levels.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-img-what-local-does",
+      "kind": "lesson",
+      "scene": "Wide grid exactly six small vignettes, three across two rows: worker painting a crosswalk; library doors opening with book shelves visible; rubbish collection truck; modest fire station with parked fire engine; park slide; street lamp. No signs or text.",
+      "alt": "Six scenes show a crosswalk being painted, an open library, a rubbish truck, a fire station, a slide and a street lamp.",
+      "title": "What your town actually decides",
+      "caption": "Local government shapes much of an ordinary day.",
+      "afterType": "simplified",
+      "labelTexts": [
+        "Crosswalk",
+        "Library",
+        "Rubbish collection",
+        "Fire service",
+        "Parks",
+        "Street lights"
+      ],
+      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide grid exactly six small vignettes, three across two rows: worker painting a crosswalk; library doors opening with book shelves visible; rubbish collection truck; modest fire station with parked fire engine; park slide; street lamp. No signs or text. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-img-what-local-does.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-img-open-meeting",
+      "kind": "lesson",
+      "scene": "Wide plain low-ceiling meeting room, elected members at long table, rows of folding chairs about half occupied by varied ages including teenager, parent with pushchair, person using wheelchair, work clothes. An aisle microphone accessible to everyone. Not formal boardroom; no flags.",
+      "alt": "Residents of varied ages sit in folding chairs facing a long table; a parent has a pushchair and an aisle microphone stands ready.",
+      "title": "The room is open",
+      "caption": "Public meetings often set aside time for residents to speak.",
+      "afterType": "anchor-chart",
+      "labelTexts": [
+        "The council",
+        "Residents’ seats",
+        "Public comment"
+      ],
+      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide plain low-ceiling meeting room, elected members at long table, rows of folding chairs about half occupied by varied ages including teenager, parent with pushchair, person using wheelchair, work clothes. An aisle microphone accessible to everyone. Not formal boardroom; no flags. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-img-open-meeting.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-img-three-tools",
+      "kind": "lesson",
+      "scene": "Wide exactly three equal panels: ordinary resident speaking at aisle microphone; resident handing over clipboard covered only in blank ruled lines; hand posting folded blank paper into plain box. No writing, seals or logos.",
+      "alt": "Three panels show a person speaking at a microphone, a clipboard being handed over and a folded paper entering a box.",
+      "title": "Three ways in",
+      "caption": "Speak at a meeting, organize a petition, or vote when eligible.",
+      "afterType": "anchor-chart",
+      "labelTexts": [
+        "Speak",
+        "Petition",
+        "Vote"
+      ],
+      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide exactly three equal panels: ordinary resident speaking at aisle microphone; resident handing over clipboard covered only in blank ruled lines; hand posting folded blank paper into plain box. No writing, seals or logos. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-img-three-tools.png",
+      "status": "awaiting-generation"
+    },
+    {
+      "id": "lg-img-who-showed-up",
+      "kind": "lesson",
+      "scene": "Wide paired image of identical plain meeting room and chair arrangement. Left nearly empty with four scattered residents. Right many seats occupied by about twenty varied residents. Council table same in both. Keep ordinary low ceiling no national symbols.",
+      "alt": "The same public meeting room appears twice: a few residents sit on the left, while many more chairs are occupied on the right.",
+      "title": "The room that decides",
+      "caption": "Attendance changes whose views are heard. The meeting has the same decision-making role.",
+      "afterType": "anchor-chart",
+      "labelTexts": [
+        "A quiet night",
+        "A busy night",
+        "Same decision-making role"
+      ],
+      "prompt": "Use case: illustration-story. Asset: wide lesson illustration. Wide paired image of identical plain meeting room and chair arrangement. Left nearly empty with four scattered residents. Right many seats occupied by about twenty varied residents. Council table same in both. Keep ordinary low ceiling no national symbols. Style: warm everyday watercolor and fine ink educational illustration on ivory paper, accessible civic spaces, diverse ordinary people of varied ages in everyday clothing; no national flags, seals, eagles, logos, readable words, numbers, labels or watermarks.",
+      "file": "lg-img-who-showed-up.png",
+      "status": "awaiting-generation"
+    }
+  ]
+}

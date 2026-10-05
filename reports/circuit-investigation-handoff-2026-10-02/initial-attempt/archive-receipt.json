@@ -1,0 +1,65 @@
+{
+  "nativeSession": 65358,
+  "nativeExitCode": 1,
+  "browserClosedByFinally": true,
+  "reason": "Notebook capture focus locator used redundant ID selector instead of direct scoped summary.",
+  "sourceSha256": "3424b78369802606dd709faf9c308c1d444b0d18633c69062a7e7486e5614453",
+  "files": [
+    {
+      "file": "browser-check.cjs",
+      "sha256": "436a6afaeead657122e28d773ba7c0bc6a091ab7fd16e513054c02d4980a3d8d"
+    },
+    {
+      "file": "prepare-browser.cjs",
+      "sha256": "ab570c33b6ec3819b96871a043bf1ddc46ea4d52e9adce886cad3343bd0145d3"
+    },
+    {
+      "file": "workflow-fragment.txt",
+      "sha256": "998f82728d8396f9db6a119fe7fe3d09372c44d3ec1897bb0b08089c94568ac7"
+    },
+    {
+      "file": "browser-results.json",
+      "sha256": "50e4f0189ef91b1b08cccf0072384eb32320364088afedd65b3e51cc5d3c924e"
+    },
+    {
+      "file": "investigation-handoff-gain-1280.png",
+      "sha256": "d22c2eee8699aca16d2d6aaf3abd4063d2f1957e3c8483bda79ec27716dee150"
+    },
+    {
+      "file": "investigation-handoff-gain-320.png",
+      "sha256": "14ba5c72c7948d2caf41e9ba65b795ef1921cfadead380be5f6f2d943a8cf9d0"
+    },
+    {
+      "file": "investigation-handoff-limit-1280.png",
+      "sha256": "048a915361119bf0d96dabe8b1311d07e270244a7271078d2fd1b87bd473af59"
+    },
+    {
+      "file": "investigation-handoff-limit-320.png",
+      "sha256": "f0c71d6f8bd5f8b1cb1fe1fc1aa32db9412cb69a1e24301e0b1508e1b726c52a"
+    },
+    {
+      "file": "investigation-handoff-sensor-1280.png",
+      "sha256": "048a915361119bf0d96dabe8b1311d07e270244a7271078d2fd1b87bd473af59"
+    },
+    {
+      "file": "investigation-handoff-sensor-320.png",
+      "sha256": "9378c79d640e7c8c04cebda61b21aa32134f7af475794dfb76b0ca1aa3601f04"
+    },
+    {
+      "file": "investigation-handoff-gain-390.png",
+      "sha256": "8aea1722c50fb17e0ab6cedfafe7943144d24d78f26854292f922977b1e11187"
+    },
+    {
+      "file": "investigation-handoff-200pct-text-320.png",
+      "sha256": "3735d408b58ff00c8d003d51d5e912a0d9d90714bb9a495a14f8cdfae38314d3"
+    },
+    {
+      "file": "forced-colors-investigation-handoff-320.png",
+      "sha256": "20e6e253603666ccd9cba7462caf2fda19b9ee0c7d85a159109ea9651501e27d"
+    },
+    {
+      "file": "rtl-investigation-handoff-320.png",
+      "sha256": "92188305e77b91a0ee5ae55110fdbe3e8c0d4e451d6e8ac8f23c3d0df43df7a6"
+    }
+  ]
+}

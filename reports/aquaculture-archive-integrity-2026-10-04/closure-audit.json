@@ -1,0 +1,15 @@
+{
+  "completedAt": "2026-10-04T18:03:13.572Z",
+  "completedClientDate": "2026-10-04",
+  "runtimeSha256": "d6d5f4ab11cd11b0d3f6c93bf6d88bba9ff5813a6cadd1805a63af55edb79bc9",
+  "distinctCases": 147,
+  "files": 9,
+  "selectedPriorCases": 117,
+  "linksVerified": 72,
+  "deliveredPreviewHashesVerified": 4,
+  "rawArtifactHashesVerified": 114,
+  "scopedIndexEmpty": true,
+  "handoffComplete": true,
+  "runtimeOwnershipReleased": true,
+  "committed": false
+}

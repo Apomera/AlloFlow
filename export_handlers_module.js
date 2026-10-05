@@ -2466,7 +2466,7 @@
         ? Promise.resolve(window.alloDeviceStorage)
         : new Promise((resolve, reject) => {
             const s = document.createElement('script');
-            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds5-partition-consent';
+            s.src = 'https://alloflow-cdn.pages.dev/allo_device_storage_module.js?v=ds6-media-removal-intent';
             s.onload = () => {
               if (window.alloDeviceStorage) resolve(window.alloDeviceStorage);
               else reject(new Error('device storage module missing after load'));

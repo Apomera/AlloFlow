@@ -1,0 +1,204 @@
+{
+  "lastActions": [
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@58",
+      "class": "BrowserContext",
+      "method": "newPage",
+      "startTime": 127895.435,
+      "params": {}
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@60",
+      "class": "Page",
+      "method": "addInitScript",
+      "startTime": 130740.236,
+      "params": {
+        "source": "(() => localStorage.removeItem('alloflow_educator_access_code_v1'))(undefined)"
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@62",
+      "class": "Frame",
+      "method": "goto",
+      "startTime": 130744.534,
+      "params": {
+        "url": "http://127.0.0.1:65063/app/?tool=maine-sld-practice&case=alex",
+        "timeout": 90000,
+        "waitUntil": "domcontentloaded"
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@64",
+      "class": "Frame",
+      "method": "expect",
+      "startTime": 131495.887,
+      "params": {
+        "selector": "internal:testid=[data-testid=\"maine-sld-panel\"s]",
+        "expression": "to.be.visible",
+        "expectedValue": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        },
+        "isNot": false,
+        "timeout": 90000
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@66",
+      "class": "Frame",
+      "method": "isVisible",
+      "startTime": 135158.836,
+      "params": {
+        "selector": "internal:role=button[name=\"Leadership Hub\"s]",
+        "strict": true
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@68",
+      "class": "Frame",
+      "method": "click",
+      "startTime": 135621.983,
+      "params": {
+        "selector": "internal:role=button[name=\"Leadership Hub\"s]",
+        "strict": true,
+        "timeout": 30000
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@70",
+      "class": "Frame",
+      "method": "expect",
+      "startTime": 139874.058,
+      "params": {
+        "selector": "internal:role=dialog[name=\"Leadership Hub\"s]",
+        "expression": "to.be.visible",
+        "expectedValue": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        },
+        "isNot": false,
+        "timeout": 15000
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@72",
+      "class": "Frame",
+      "method": "click",
+      "startTime": 139927.556,
+      "params": {
+        "selector": "[data-hub-id=\"maineSldPractice\"]",
+        "strict": true,
+        "timeout": 30000
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@74",
+      "class": "Frame",
+      "method": "expect",
+      "startTime": 141967.33,
+      "params": {
+        "selector": "internal:testid=[data-testid=\"maine-sld-panel\"s]",
+        "expression": "to.be.visible",
+        "expectedValue": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        },
+        "isNot": false,
+        "timeout": 15000
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@76",
+      "class": "Page",
+      "method": "screenshot",
+      "startTime": 142304.123,
+      "params": {
+        "timeout": 30000,
+        "type": "png",
+        "fullPage": true
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@78",
+      "class": "Frame",
+      "method": "isVisible",
+      "startTime": 143051.944,
+      "params": {
+        "selector": "internal:role=button[name=\"Leadership Hub\"s]",
+        "strict": true
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@80",
+      "class": "Frame",
+      "method": "click",
+      "startTime": 143122.626,
+      "params": {
+        "selector": "internal:role=button[name=\"Leadership Hub\"s]",
+        "strict": true,
+        "timeout": 30000
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@82",
+      "class": "Frame",
+      "method": "expect",
+      "startTime": 143539.547,
+      "params": {
+        "selector": "internal:role=dialog[name=\"Leadership Hub\"s]",
+        "expression": "to.be.visible",
+        "expectedValue": {
+          "value": {
+            "v": "undefined"
+          },
+          "handles": []
+        },
+        "isNot": false,
+        "timeout": 15000
+      }
+    },
+    {
+      "traceFile": "0-trace.trace",
+      "type": "before",
+      "callId": "call@84",
+      "class": "Page",
+      "method": "close",
+      "startTime": 143567.021,
+      "params": {}
+    }
+  ],
+  "failedAfterEvents": [],
+  "rawTracePreserved": true
+}

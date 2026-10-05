@@ -1,0 +1,32 @@
+{
+  "format": "alloflow-sld-state-references",
+  "version": 1,
+  "activeState": "Vermont",
+  "byState": {
+    "Vermont": {
+      "sources": [
+        {
+          "id": "09198897-cdff-4cfb-ae29-7f6f7f9f88e8",
+          "title": "Vermont public rule <literal>",
+          "url": "https://education.example.gov/sld",
+          "fileName": "",
+          "pageSection": "Section 4",
+          "excerpt": "Literal <img src=x onerror=alert(1)>\n语言 access and evidence.",
+          "transferNotes": "Compare criteria, language access and documentation.",
+          "content": "",
+          "fileFormat": "",
+          "extractionMethod": "",
+          "fileContentHash": "",
+          "effectiveDate": "",
+          "checkedDate": "2026-10-04",
+          "reviewedAt": "2026-10-04",
+          "importMethod": "manual",
+          "documentPartCount": 0,
+          "fileSize": 0,
+          "fileLastModified": 0,
+          "reviewed": true
+        }
+      ]
+    }
+  }
+}

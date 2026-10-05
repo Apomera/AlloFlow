@@ -1,0 +1,13 @@
+{
+  "date": "2026-10-04",
+  "sourceSHA256": "99a692383224cc568d3aaf872233525897c6a8880f6c048b479f72edbdb06073",
+  "sessionId": 27967,
+  "status": "canceled stalled dispatch",
+  "exitCode": 1,
+  "outputReceived": false,
+  "browserArtifactsReceived": false,
+  "assertionFailureReported": false,
+  "processInventory": "No matching node, chrome, or chrome-headless-shell processes returned by Get-Process before cancellation.",
+  "completedBrowserGroups": null,
+  "note": "No browser execution or assertion result is claimed for this dispatch. The known session was canceled before a single clean retry with the unchanged output-only adapter."
+}

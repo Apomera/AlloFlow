@@ -1,0 +1,71 @@
+{
+  "width": 797.21875,
+  "client": 795,
+  "scroll": 795,
+  "buttons": [
+    {
+      "name": "Zoom out canvas",
+      "text": "➖",
+      "font": 16,
+      "width": 40,
+      "height": 36,
+      "clipped": false
+    },
+    {
+      "name": "Zoom in canvas",
+      "text": "➕",
+      "font": 16,
+      "width": 40,
+      "height": 36,
+      "clipped": false
+    },
+    {
+      "name": "Move specimen up",
+      "text": "↑",
+      "font": 16,
+      "width": 44,
+      "height": 36,
+      "clipped": false
+    },
+    {
+      "name": "Move specimen left",
+      "text": "←",
+      "font": 16,
+      "width": 44,
+      "height": 36,
+      "clipped": false
+    },
+    {
+      "name": "Move specimen right",
+      "text": "→",
+      "font": 16,
+      "width": 44,
+      "height": 36,
+      "clipped": false
+    },
+    {
+      "name": "Move specimen down",
+      "text": "↓",
+      "font": 16,
+      "width": 44,
+      "height": 36,
+      "clipped": false
+    },
+    {
+      "name": "100%",
+      "text": "↺ 100%",
+      "font": 13,
+      "width": 63.234375,
+      "height": 36,
+      "clipped": false
+    },
+    {
+      "name": "Frame selected structure Nictitating Membrane",
+      "text": "◎ Frame Nictitating Membrane",
+      "font": 13,
+      "width": 197.78125,
+      "height": 36,
+      "clipped": false
+    }
+  ]
+}

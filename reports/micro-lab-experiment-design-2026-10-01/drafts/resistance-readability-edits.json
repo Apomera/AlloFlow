@@ -1,0 +1,210 @@
+[
+  {
+    "old": "    var notebookButtonStyle = { padding: '9px 12px', minHeight: 42, border: '1px solid #64748b', borderRadius: 7, background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, cursor: 'pointer' };",
+    "new": "    var notebookButtonStyle = { padding: '9px 12px', minHeight: 44, border: '1px solid #64748b', borderRadius: 7, background: 'var(--allo-stem-panel, #1e293b)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, cursor: 'pointer' };"
+  },
+  {
+    "old": "      return hh('section', { className: 'micro-resistance-notebook', 'aria-labelledby': 'micro-resistance-notebook-title', style: { marginTop: 16, paddingTop: 16, borderTop: '1px solid #475569', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 12, lineHeight: 1.6 } },",
+    "new": "      return hh('section', { className: 'micro-resistance-notebook', 'aria-labelledby': 'micro-resistance-notebook-title', style: { marginTop: 16, paddingTop: 16, borderTop: '1px solid #475569', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.6 } },"
+  },
+  {
+    "old": "          hh('div', { style: { fontSize: 10, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Model selection acting on pre-existing resistant cells across repeated exposure rounds.')",
+    "new": "          hh('div', { style: { fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)', marginTop: 2, fontStyle: 'italic' } }, 'Model selection acting on pre-existing resistant cells across repeated exposure rounds.')"
+  },
+  {
+    "old": "          hh('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, textAlign: 'center' } }, 'Petri dish · Round ' + day + ' of ' + duration),",
+    "new": "          hh('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 4, textAlign: 'center' } }, 'Petri dish · Round ' + day + ' of ' + duration),"
+  },
+  {
+    "old": "          hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginTop: 6, fontSize: 9, color: 'var(--allo-stem-text-soft, #94a3b8)' } },",
+    "new": "          hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginTop: 6, fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)' } },"
+  },
+  {
+    "old": "          hh('div', { style: { fontSize: 10, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, textAlign: 'center' } }, '% resistant over time'),",
+    "new": "          hh('div', { style: { fontSize: 14, fontWeight: 800, color: 'var(--allo-stem-text-soft, #94a3b8)', textTransform: 'uppercase', letterSpacing: '0.06em', marginBottom: 6, textAlign: 'center' } }, '% resistant over time'),"
+  },
+  {
+    "old": "              hh('div', { style: { fontSize: 8, fontWeight: 800, color: microInk('#67e8f9'), textTransform: 'uppercase' } }, 'Alive'),",
+    "new": "              hh('div', { style: { fontSize: 14, fontWeight: 800, color: microInk('#67e8f9'), textTransform: 'uppercase' } }, 'Alive'),"
+  },
+  {
+    "old": "              hh('div', { style: { fontSize: 8, fontWeight: 800, color: microInk('#fca5a5'), textTransform: 'uppercase' } }, '% Resistant'),",
+    "new": "              hh('div', { style: { fontSize: 14, fontWeight: 800, color: microInk('#fca5a5'), textTransform: 'uppercase' } }, '% Resistant'),"
+  },
+  {
+    "old": "      hh('div', { role: 'note', style: { padding: 9, marginBottom: 10, borderRadius: 7, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.28)', color: microInk('#fde68a'), fontSize: 10.5, lineHeight: 1.5 } }, 'Model boundary: this dish holds 80 cells; the starting resistant count is rounded to a whole cell. Survival and reproduction are random. Resistant cells are present only when initial resistance is above zero. The simulation omits mutation, horizontal gene transfer, drug concentration over time, immune responses, and patient dosing. It demonstrates selection, not a treatment recommendation.'),",
+    "new": "      hh('div', { role: 'note', style: { padding: 9, marginBottom: 10, borderRadius: 7, background: 'rgba(251,191,36,0.08)', border: '1px solid rgba(251,191,36,0.28)', color: microInk('#fde68a'), fontSize: 14, lineHeight: 1.5 } }, 'Model boundary: this dish holds 80 cells; the starting resistant count is rounded to a whole cell. Survival and reproduction are random. Resistant cells are present only when initial resistance is above zero. The simulation omits mutation, horizontal gene transfer, drug concentration over time, immune responses, and patient dosing. It demonstrates selection, not a treatment recommendation.'),"
+  },
+  {
+    "old": "        hh('legend', { style: { padding: '0 6px', color: microInk('#a7f3d0'), fontSize: 11, fontWeight: 800 } }, '1. Predict the resistant share after exposure'),",
+    "new": "        hh('legend', { style: { padding: '0 6px', color: microInk('#a7f3d0'), fontSize: 14, fontWeight: 800 } }, '1. Predict the resistant share after exposure'),"
+  },
+  {
+    "old": "          return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'center', gap: 7, padding: 8, borderRadius: 6, background: prediction === option.id ? 'rgba(16,185,129,0.22)' : 'rgba(2,6,23,0.35)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11, cursor: day > 0 ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-prediction', value: option.id, checked: prediction === option.id, onChange: function() { setPrediction(option.id); }, style: { accentColor: '#10b981' } }), option.label);",
+    "new": "          return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'center', gap: 7, padding: 8, borderRadius: 6, background: prediction === option.id ? 'rgba(16,185,129,0.22)' : 'rgba(2,6,23,0.35)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, cursor: day > 0 ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-prediction', value: option.id, checked: prediction === option.id, onChange: function() { setPrediction(option.id); }, style: { accentColor: '#10b981' } }), option.label);"
+  },
+  {
+    "old": "        hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },\n          hh('div', { style: { marginBottom: 4 } }, 'Exposure strength: ', hh('strong', { style: { color: microInk('#fbbf24') } }, dose + '/100')),",
+    "new": "        hh('label', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)' } },\n          hh('div', { style: { marginBottom: 4 } }, 'Exposure strength: ', hh('strong', { style: { color: microInk('#fbbf24') } }, dose + '/100')),"
+  },
+  {
+    "old": "        hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },\n          hh('div', { style: { marginBottom: 4 } }, 'Exposure rounds: ', hh('strong', { style: { color: microInk('#22d3ee') } }, duration)),",
+    "new": "        hh('label', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)' } },\n          hh('div', { style: { marginBottom: 4 } }, 'Exposure rounds: ', hh('strong', { style: { color: microInk('#22d3ee') } }, duration)),"
+  },
+  {
+    "old": "        hh('label', { style: { fontSize: 10, color: 'var(--allo-stem-text, #cbd5e1)' } },",
+    "new": "        hh('label', { style: { fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)' } },"
+  },
+  {
+    "old": "        hh('button', { type: 'button', onClick: function() { setPlaying(function(p) { return !p; }); }, disabled: !investigationReady || finished, style: { padding: '8px 18px', borderRadius: 8, background: playing ? '#ef4444' : 'rgba(239,68,68,0.18)', color: playing ? '#fff' : '#fca5a5', border: '1.5px solid #ef4444', fontSize: 11, fontWeight: 800, cursor: !investigationReady || finished ? 'default' : 'pointer', opacity: !investigationReady || finished ? 0.4 : 1 } }, playing ? '⏸ Pause' : '▶ Play'),",
+    "new": "        hh('button', { type: 'button', onClick: function() { setPlaying(function(p) { return !p; }); }, disabled: !investigationReady || finished, style: { padding: '8px 18px', borderRadius: 8, background: playing ? '#ef4444' : 'rgba(239,68,68,0.18)', color: playing ? '#fff' : '#fca5a5', border: '1.5px solid #ef4444', fontSize: 14, fontWeight: 800, cursor: !investigationReady || finished ? 'default' : 'pointer', opacity: !investigationReady || finished ? 0.4 : 1 } }, playing ? '⏸ Pause' : '▶ Play'),"
+  },
+  {
+    "old": "        hh('button', { type: 'button', onClick: function() { setPlaying(false); step(); }, disabled: !investigationReady || finished, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: !investigationReady || finished ? 'default' : 'pointer', opacity: !investigationReady || finished ? 0.4 : 1 } }, 'Step round'),",
+    "new": "        hh('button', { type: 'button', onClick: function() { setPlaying(false); step(); }, disabled: !investigationReady || finished, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text, #cbd5e1)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 14, fontWeight: 700, cursor: !investigationReady || finished ? 'default' : 'pointer', opacity: !investigationReady || finished ? 0.4 : 1 } }, 'Step round'),"
+  },
+  {
+    "old": "        hh('button', { type: 'button', onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 11, fontWeight: 700, cursor: 'pointer' } }, __alloMBT('stem.microbiology.resistance_notebook_reset', '↺ Reset current run'))",
+    "new": "        hh('button', { type: 'button', onClick: reset, style: { padding: '8px 14px', borderRadius: 8, background: 'rgba(148,163,184,0.10)', color: 'var(--allo-stem-text-soft, #94a3b8)', border: '1px solid rgba(148,163,184,0.30)', fontSize: 14, fontWeight: 700, cursor: 'pointer' } }, __alloMBT('stem.microbiology.resistance_notebook_reset', '↺ Reset current run'))"
+  },
+  {
+    "old": "      day > 0 ? hh('p', { style: { fontSize: 11, color: microInk('#fde68a'), textAlign: 'center' } }, __alloMBT('stem.microbiology.resistance_notebook_reset_reminder', 'Reset clears the current observations and notes. Save evidence below first if you want to keep them. Saved notebook records stay available.')) : null,",
+    "new": "      day > 0 ? hh('p', { style: { fontSize: 14, color: microInk('#fde68a'), textAlign: 'center' } }, __alloMBT('stem.microbiology.resistance_notebook_reset_reminder', 'Reset clears the current observations and notes. Save evidence below first if you want to keep them. Saved notebook records stay available.')) : null,"
+  },
+  {
+    "old": "      !investigationReady && day === 0 ? hh('div', { role: 'status', style: { marginBottom: 10, color: microInk('#fde68a'), fontSize: 10.5, textAlign: 'center', fontWeight: 700 } }, 'Choose a prediction to unlock the culture controls.') : null,",
+    "new": "      !investigationReady && day === 0 ? hh('div', { role: 'status', style: { marginBottom: 10, color: microInk('#fde68a'), fontSize: 14, textAlign: 'center', fontWeight: 700 } }, 'Choose a prediction to unlock the culture controls.') : null,"
+  },
+  {
+    "old": "      day > 0 && !prediction ? hh('p', { role: 'status', style: { fontSize: 11, color: microInk('#fde68a') } }, 'No prediction was saved for this restored run. You can continue observing its evidence.') : null,",
+    "new": "      day > 0 && !prediction ? hh('p', { role: 'status', style: { fontSize: 14, color: microInk('#fde68a') } }, 'No prediction was saved for this restored run. You can continue observing its evidence.') : null,"
+  },
+  {
+    "old": "      hh('details', { style: { marginBottom: 12, padding: 9, borderRadius: 8, background: 'rgba(148,163,184,0.08)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 11 } },",
+    "new": "      hh('details', { style: { marginBottom: 12, padding: 9, borderRadius: 8, background: 'rgba(148,163,184,0.08)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14 } },"
+  },
+  {
+    "old": "      finished && history.length > 1 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 11, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },",
+    "new": "      finished && history.length > 1 ? hh('div', { style: { padding: 10, borderRadius: 8, background: 'rgba(34,197,94,0.10)', border: '1px solid rgba(34,197,94,0.30)', fontSize: 14, color: 'var(--allo-stem-text, #cbd5e1)', lineHeight: 1.6 } },"
+  },
+  {
+    "old": "          hh('legend', { style: { padding: '0 5px', color: '#bae6fd', fontSize: 11, fontWeight: 800 } }, '3. Explain the observed pattern'),",
+    "new": "          hh('legend', { style: { padding: '0 5px', color: '#bae6fd', fontSize: 14, fontWeight: 800 } }, '3. Explain the observed pattern'),"
+  },
+  {
+    "old": "            return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'flex-start', gap: 7, marginTop: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 10.5, lineHeight: 1.4, cursor: explanationReview ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-explanation', value: option.id, checked: explanation === option.id, disabled: !!explanationReview, onChange: function() { setExplanation(option.id); }, style: { marginTop: 2, accentColor: '#38bdf8' } }), option.label);",
+    "new": "            return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'flex-start', gap: 7, marginTop: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.4, cursor: explanationReview ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-explanation', value: option.id, checked: explanation === option.id, disabled: !!explanationReview, onChange: function() { setExplanation(option.id); }, style: { marginTop: 2, accentColor: '#38bdf8' } }), option.label);"
+  },
+  {
+    "old": "        explanationReview ? hh('div', { role: 'status', 'aria-live': 'polite', style: { padding: 8, borderRadius: 6, background: explanationReview.correct ? 'rgba(16,185,129,0.14)' : 'rgba(245,158,11,0.14)', color: explanationReview.correct ? '#a7f3d0' : '#fde68a', fontSize: 10.5, lineHeight: 1.45 } }, (explanationReview.correct ? 'Explanation confirmed. ' : 'Explanation review. ') + explanationReview.feedback) : hh('button', { type: 'button', onClick: submitExplanation, disabled: !explanation, style: { padding: '8px 14px', borderRadius: 7, border: '1px solid rgba(125,211,252,0.55)', background: explanation ? '#0e7490' : '#334155', color: '#f0f9ff', fontSize: 10.5, fontWeight: 800, cursor: explanation ? 'pointer' : 'not-allowed' } }, 'Submit explanation')",
+    "new": "        explanationReview ? hh('div', { role: 'status', 'aria-live': 'polite', style: { padding: 8, borderRadius: 6, background: explanationReview.correct ? 'rgba(16,185,129,0.14)' : 'rgba(245,158,11,0.14)', color: explanationReview.correct ? '#a7f3d0' : '#fde68a', fontSize: 14, lineHeight: 1.45 } }, (explanationReview.correct ? 'Explanation confirmed. ' : 'Explanation review. ') + explanationReview.feedback) : hh('button', { type: 'button', onClick: submitExplanation, disabled: !explanation, style: { padding: '8px 14px', borderRadius: 7, border: '1px solid rgba(125,211,252,0.55)', background: explanation ? '#0e7490' : '#334155', color: '#f0f9ff', fontSize: 14, fontWeight: 800, cursor: explanation ? 'pointer' : 'not-allowed' } }, 'Submit explanation')"
+  },
+  {
+    "old": "    return hh('div', { ref: resistanceOwnerRef, onClickCapture: cancelNotebookFocus, onPointerDownCapture: cancelNotebookFocus,",
+    "new": "    return hh('div', { ref: resistanceOwnerRef, 'data-micro-resistance-workspace': true, onClickCapture: cancelNotebookFocus, onPointerDownCapture: cancelNotebookFocus,"
+  },
+  {
+    "old": "boxShadow: '0 4px 20px rgba(239,68,68,0.10)' } },",
+    "new": "boxShadow: '0 4px 20px rgba(239,68,68,0.10)', fontSize: 14, lineHeight: 1.6, minWidth: 0, overflowWrap: 'anywhere' } },\n      hh('style', null, '[data-micro-resistance-workspace] :is(button,summary,select,input,textarea,[tabindex]):focus-visible{outline:3px solid #7dd3fc;outline-offset:3px}[data-micro-resistance-workspace] :is(button,select,summary){min-height:44px;box-sizing:border-box;max-width:100%;white-space:normal;overflow-wrap:anywhere}[data-micro-resistance-workspace] summary{padding:10px 0;cursor:pointer}[data-micro-resistance-workspace] input[type=range]{height:44px;min-width:0;margin:0}[data-micro-resistance-workspace] input[type=radio]{width:18px;height:18px;flex-shrink:0}[data-micro-resistance-workspace] fieldset{min-width:0}[data-micro-resistance-workspace] h4{font-size:16px}[data-micro-resistance-workspace] [data-resistance-marker]{flex-shrink:0}.theme-contrast [data-micro-resistance-workspace] :focus-visible{outline-color:#ffff00}@media(forced-colors:active){[data-micro-resistance-workspace] [data-resistance-marker]{background:CanvasText!important;border-color:CanvasText!important;forced-color-adjust:none}}'),"
+  },
+  {
+    "old": "hh('div', { style: { flex: 1, minWidth: 200 } },\n          hh('div', { style: { fontSize: 13, fontWeight: 800, color: microInk('#fca5a5') } }, 'Antibiotic resistance - petri-dish evolution sim'),",
+    "new": "hh('div', { style: { flex: '1 1 200px', minWidth: 0 } },\n          hh('h3', { style: { margin: 0, fontSize: 18, fontWeight: 800, color: microInk('#fca5a5') } }, 'Antibiotic resistance - petri-dish evolution sim'),"
+  },
+  {
+    "old": "        hh('h3', { id: 'micro-resistance-notebook-title', tabIndex: -1, style: { fontSize: 16, margin: '0 0 8px' } }, __alloMBT('stem.microbiology.resistance_notebook_title', 'Resistance evidence notebook')),",
+    "new": "        hh('h3', { id: 'micro-resistance-notebook-title', tabIndex: -1, style: { fontSize: 18, margin: '0 0 8px' } }, __alloMBT('stem.microbiology.resistance_notebook_title', 'Resistance evidence notebook')),"
+  },
+  {
+    "old": "            hh('h4', { style: { fontSize: 14, marginBottom: 8 } }, __alloMBT('stem.microbiology.resistance_notebook_evidence', 'Evidence') + ' ' + selectedEvidence.id + ' · ' + evidenceStatus(saved.status)),",
+    "new": "            hh('h4', { style: { fontSize: 16, marginBottom: 8 } }, __alloMBT('stem.microbiology.resistance_notebook_evidence', 'Evidence') + ' ' + selectedEvidence.id + ' · ' + evidenceStatus(saved.status)),"
+  },
+  {
+    "old": "              hh('div', { style: { fontSize: 14, fontWeight: 900, color: microInk('#22d3ee') } }, totalAlive)",
+    "new": "              hh('div', { style: { fontSize: 22, fontWeight: 900, color: microInk('#22d3ee') } }, totalAlive)"
+  },
+  {
+    "old": "              hh('div', { style: { fontSize: 14, fontWeight: 900, color: microInk('#ef4444') } }, pctRes === null ? 'N/A' : pctRes + '%')",
+    "new": "              hh('div', { style: { fontSize: 22, fontWeight: 900, color: microInk('#ef4444') } }, pctRes === null ? 'N/A' : pctRes + '%')"
+  },
+  {
+    "old": "        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(150px,1fr))', gap: 7 } }, [{ id: 'increase', label: 'Increase' }, { id: 'similar', label: 'Stay about the same' }, { id: 'decrease', label: 'Decrease' }, { id: 'extinct', label: 'No survivors to compare' }].map(function(option) {",
+    "new": "        hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit,minmax(min(100%,150px),1fr))', gap: 7 } }, [{ id: 'increase', label: 'Increase' }, { id: 'similar', label: 'Stay about the same' }, { id: 'decrease', label: 'Decrease' }, { id: 'extinct', label: 'No survivors to compare' }].map(function(option) {"
+  },
+  {
+    "old": "      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(180px, 1fr))', gap: 10, marginBottom: 10 } },",
+    "new": "      hh('div', { style: { display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(min(100%,180px), 1fr))', gap: 10, marginBottom: 10 } },"
+  },
+  {
+    "old": "hh('div', { style: { display: 'flex', justifyContent: 'center', gap: 12, marginTop: 6, fontSize: 14, color: 'var(--allo-stem-text-soft, #94a3b8)' } },",
+    "new": "hh('div', { 'data-resistance-shape-legend': true, style: { display: 'flex', flexWrap: 'wrap', justifyContent: 'center', gap: 12, marginTop: 10, fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } },"
+  },
+  {
+    "old": "hh('span', null, hh('span', { style: { display: 'inline-block', width: 8, height: 8, borderRadius: '50%', background: '#22d3ee', marginRight: 4, verticalAlign: 'middle' } }), 'sensitive circles'),",
+    "new": "hh('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 7 } }, hh('span', { 'aria-hidden': true, 'data-resistance-marker': 'sensitive', style: { display: 'inline-block', width: 12, height: 12, borderRadius: '50%', background: '#22d3ee', border: '1px solid #0e7490' } }), 'sensitive circles'),"
+  },
+  {
+    "old": "hh('span', null, hh('span', { style: { display: 'inline-block', width: 7, height: 7, background: '#ef4444', border: '1px solid #fecaca', transform: 'rotate(45deg)', marginRight: 5, verticalAlign: 'middle' } }), 'resistant diamonds')",
+    "new": "hh('span', { style: { display: 'inline-flex', alignItems: 'center', gap: 7 } }, hh('span', { 'aria-hidden': true, 'data-resistance-marker': 'resistant', style: { display: 'inline-block', width: 11, height: 11, background: '#ef4444', border: '2px solid #fecaca', transform: 'rotate(45deg)' } }), 'resistant diamonds')"
+  },
+  {
+    "old": "          hh('svg', { viewBox: '0 0 100 60', preserveAspectRatio: 'none', role: 'img', 'aria-label': 'Resistance trend from round 0 to round ' + day + '. Current resistant share is ' + shareText + '. The line stops when no cells survive.', style: { width: '100%', height: 100, display: 'block' } },",
+    "new": "          hh('div', { 'data-resistance-trend': true, style: { display: 'grid', gridTemplateColumns: '42px minmax(0,1fr)', gap: '2px 4px', minWidth: 0 } },\n            hh('div', { 'aria-hidden': true, style: { display: 'flex', flexDirection: 'column', justifyContent: 'space-between', padding: '8px 0', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('span', null, '100%'), hh('span', null, '0%')),\n            hh('svg', { viewBox: '0 0 100 60', preserveAspectRatio: 'none', role: 'img', 'aria-describedby': 'micro-resistance-share-help', 'aria-label': 'Resistance trend from round 0 to round ' + day + '. Current resistant share is ' + shareText + '. The line stops when no cells survive.', style: { width: '100%', height: 160, display: 'block', minWidth: 0 } },"
+  },
+  {
+    "old": "            pctRes !== null ? hh('circle', { cx: 4 + (day / Math.max(1, duration)) * 92, cy: 56 - (pctRes / 100) * 52, r: 1.8, fill: '#ef4444', stroke: '#fff', strokeWidth: 0.4 }) : null,\n            hh('text', { x: 6, y: 8, fontSize: 3.5, fill: '#fca5a5' }, '100%'),\n            hh('text', { x: 6, y: 54, fontSize: 3.5, fill: '#94a3b8' }, '0%'),\n            hh('text', { x: 50, y: 59, fontSize: 3, fill: '#94a3b8', textAnchor: 'middle' }, 'exposure rounds')\n          ),",
+    "new": "            pctRes !== null ? hh('circle', { cx: 4 + (day / Math.max(1, duration)) * 92, cy: 56 - (pctRes / 100) * 52, r: 1.8, fill: '#ef4444', stroke: '#fff', strokeWidth: 0.4 }) : null\n            ),\n            hh('div', { 'aria-hidden': true, style: { gridColumn: 2, display: 'flex', justifyContent: 'space-between', gap: 8, padding: '0 4%', fontSize: 14, color: 'var(--allo-stem-text, #e2e8f0)' } }, hh('span', null, '0'), hh('span', { style: { textAlign: 'center' } }, 'exposure rounds'), hh('span', null, duration))\n          ),"
+  },
+  {
+    "old": "      hh('fieldset', { disabled: day > 0, style:",
+    "new": "      hh('p', { id: 'micro-resistance-share-help', style: { margin: '0 0 12px', fontSize: 14 } }, __alloMBT('stem.microbiology.resistance_share_help', 'Resistant share is the percentage of living cells that are resistant: resistant cells ÷ all living cells × 100. With no survivors, the share is undefined.')),\n      hh('fieldset', { disabled: day > 0, 'aria-describedby': 'micro-resistance-share-help', style:"
+  },
+  {
+    "old": "          return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'center', gap: 7, padding: 8, borderRadius: 6, background: prediction === option.id ? 'rgba(16,185,129,0.22)' : 'rgba(2,6,23,0.35)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, cursor: day > 0 ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-prediction', value: option.id, checked: prediction === option.id, onChange: function() { setPrediction(option.id); }, style: { accentColor: '#10b981' } }), option.label);",
+    "new": "          return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'center', gap: 9, padding: 10, minHeight: 44, boxSizing: 'border-box', borderRadius: 6, background: prediction === option.id ? 'rgba(16,185,129,0.22)' : 'rgba(2,6,23,0.35)', color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, cursor: day > 0 ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-prediction', value: option.id, checked: prediction === option.id, onChange: function() { setPrediction(option.id); }, style: { accentColor: '#10b981' } }), option.label);"
+  },
+  {
+    "old": "          hh('input', { type: 'range', 'aria-label': __alloMBT('stem.microbiology.a11y_antibiotic_exposure_strength_in_the_teaching_mo', 'Antibiotic exposure strength in the teaching model'), 'aria-valuetext': dose + ' out of 100', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })",
+    "new": "          hh('input', { type: 'range', 'aria-label': __alloMBT('stem.microbiology.a11y_antibiotic_exposure_strength_in_the_teaching_mo', 'Antibiotic exposure strength in the teaching model'), 'aria-valuetext': dose + ' out of 100', min: 0, max: 100, step: 5, value: dose, disabled: day > 0, onChange: function(e) { setDose(parseInt(e.target.value, 10)); }, style: { width: '100%', boxSizing: 'border-box', accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })"
+  },
+  {
+    "old": "          hh('input', { type: 'range', 'aria-label': __alloMBT('stem.microbiology.a11y_number_of_exposure_rounds_in_the_teaching_model', 'Number of exposure rounds in the teaching model'), 'aria-valuetext': duration + ' exposure rounds', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })",
+    "new": "          hh('input', { type: 'range', 'aria-label': __alloMBT('stem.microbiology.a11y_number_of_exposure_rounds_in_the_teaching_model', 'Number of exposure rounds in the teaching model'), 'aria-valuetext': duration + ' exposure rounds', min: 3, max: 30, step: 1, value: duration, disabled: day > 0, onChange: function(e) { setDuration(parseInt(e.target.value, 10)); }, style: { width: '100%', boxSizing: 'border-box', accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })"
+  },
+  {
+    "old": "          hh('input', { type: 'range', 'aria-label': __alloMBT('stem.microbiology.a11y_initial_resistance', 'Initial resistance'), 'aria-valuetext': initRes + '% requested; ' + Math.round(initRes * 80 / 100) + ' of 80 cells resistant', min: 0, max: 15, step: 1, value: initRes, disabled: day > 0, onChange: function(e) { var next = parseInt(e.target.value, 10); setInitRes(next); seed(next); }, style: { width: '100%', accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } })",
+    "new": "          hh('input', { type: 'range', 'aria-label': __alloMBT('stem.microbiology.a11y_initial_resistance', 'Initial resistance'), 'aria-valuetext': initRes + '% requested; ' + Math.round(initRes * 80 / 100) + ' of 80 cells resistant', min: 0, max: 15, step: 1, value: initRes, disabled: day > 0, onChange: function(e) { var next = parseInt(e.target.value, 10); setInitRes(next); seed(next); }, style: { width: '100%', boxSizing: 'border-box', accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } })"
+  },
+  {
+    "old": "            return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'flex-start', gap: 7, marginTop: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.4, cursor: explanationReview ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-explanation', value: option.id, checked: explanation === option.id, disabled: !!explanationReview, onChange: function() { setExplanation(option.id); }, style: { marginTop: 2, accentColor: '#38bdf8' } }), option.label);",
+    "new": "            return hh('label', { key: option.id, style: { display: 'flex', alignItems: 'flex-start', gap: 9, padding: '8px 0', minHeight: 44, boxSizing: 'border-box', marginTop: 6, color: 'var(--allo-stem-text, #e2e8f0)', fontSize: 14, lineHeight: 1.4, cursor: explanationReview ? 'default' : 'pointer' } }, hh('input', { type: 'radio', name: 'micro-resistance-explanation', value: option.id, checked: explanation === option.id, disabled: !!explanationReview, onChange: function() { setExplanation(option.id); }, style: { marginTop: 2, accentColor: '#38bdf8' } }), option.label);"
+  },
+  {
+    "old": "'Antibiotic exposure strength in the teaching model'), 'aria-valuetext':",
+    "new": "'Antibiotic exposure strength in the teaching model'), 'aria-describedby': 'micro-resistance-exposure-help', 'aria-valuetext':"
+  },
+  {
+    "old": "'Number of exposure rounds in the teaching model'), 'aria-valuetext':",
+    "new": "'Number of exposure rounds in the teaching model'), 'aria-describedby': 'micro-resistance-rounds-help', 'aria-valuetext':"
+  },
+  {
+    "old": "'Initial resistance'), 'aria-valuetext':",
+    "new": "'Initial resistance'), 'aria-describedby': 'micro-resistance-initial-help', 'aria-valuetext':"
+  },
+  {
+    "old": "accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } })\n        ),",
+    "new": "accentColor: '#fbbf24', opacity: day > 0 ? 0.5 : 1 } }),\n          hh('p', { id: 'micro-resistance-exposure-help', style: { margin: '4px 0 0', fontSize: 14, lineHeight: 1.6 } }, __alloMBT('stem.microbiology.resistance_exposure_help', 'Exposure strength is a relative teaching scale from 0 to 100. It changes survival probabilities in this model; it is not a drug dose.'))\n        ),"
+  },
+  {
+    "old": "accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } })\n        ),",
+    "new": "accentColor: '#22d3ee', opacity: day > 0 ? 0.5 : 1 } }),\n          hh('p', { id: 'micro-resistance-rounds-help', style: { margin: '4px 0 0', fontSize: 14, lineHeight: 1.6 } }, __alloMBT('stem.microbiology.resistance_rounds_help', 'Each round is one modeled survival-and-reproduction step, not a fixed amount of real time.'))\n        ),"
+  },
+  {
+    "old": "accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } })\n        )",
+    "new": "accentColor: '#ef4444', opacity: day > 0 ? 0.5 : 1 } }),\n          hh('p', { id: 'micro-resistance-initial-help', style: { margin: '4px 0 0', fontSize: 14, lineHeight: 1.6 } }, __alloMBT('stem.microbiology.resistance_initial_help', 'Requested starting percentage; the model rounds it to whole cells in a dish of 80.'))\n        )"
+  },
+  {
+    "old": "'data-resistance-current-history': 'true', style: { width: '100%', borderCollapse: 'collapse', marginTop: 8, textAlign: 'right' }",
+    "new": "'data-resistance-current-history': 'true', 'aria-describedby': 'micro-resistance-share-help', style: { width: '100%', tableLayout: 'fixed', overflowWrap: 'anywhere', borderCollapse: 'collapse', marginTop: 8, textAlign: 'right' }"
+  }
+]

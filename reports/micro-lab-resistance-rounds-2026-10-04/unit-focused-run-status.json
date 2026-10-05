@@ -1,0 +1,29 @@
+{
+  "kind": "unit-focused",
+  "pid": 16628,
+  "phase": "passed",
+  "started": "2026-10-04T12:05:12.061Z",
+  "sourceSha256": "1cc8cf9e1d5c2f01a45f66977a01dd9616face64fe153a35ef1ee7ec0297a6e7",
+  "expected": 82,
+  "files": [
+    "tests/microbiology_resistance_rounds.test.js"
+  ],
+  "testInputs": {
+    "tests/microbiology_resistance_rounds.test.js": "860f5aaf0b0a012df021a04934544708fe6bad7048d4ac91333f04c80b2c7f9f",
+    "playwright.config.ts": "dd25cef775e22bc7fee28a22d3118cce83545f5f14c48cf6e78619998ec73587",
+    "tests/e2e/helpers/stem_gl_harness.ts": "137cf2792a5d5bef585c1c93e0be141dd761544f27a223cc12d1f0f91a3cb3d6",
+    "tests/helpers/stem_widgets_smoke_harness.js": "54b6b790e8d6ac568724c0c1b59444afc883053c930f3a63fa3a8424c358809c",
+    "desktop/web-app/node_modules/react/umd/react.production.min.js": "d949f1c3687aedadcedac85261865f29b17cd273997e7f6b2bfc53b2f9d4c4dd",
+    "desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js": "35f4f974f4b2bcd44da73963347f8952e341f83909e4498227d4e26b98f66f0d",
+    "vendor/three-r128/three.min.js": "9274bbcec8d96168626c732b5d31c775aa8cfb7eaa0599bec0c175908a2c1ce2",
+    "node_modules/@playwright/test/package.json": "cf92117ef1d8cbf1e4b2dffb63a0da552c0173bd6052f0f45711c0f00b79dc99",
+    "node_modules/playwright/package.json": "8be9edc5642a8c761b677e7af8b9937f36c0443a91e14765877716d70034e5bf",
+    "node_modules/playwright-core/package.json": "6f7b58cc55449321279f11ca97d4e451c391738b77db32cdbcedf02851e3f097"
+  },
+  "exitCode": 0,
+  "signal": null,
+  "finished": "2026-10-04T12:05:16.317Z",
+  "sourceStillMatches": true,
+  "testInputsStillMatch": true,
+  "syntaxChecksPassed": true
+}

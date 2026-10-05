@@ -1,0 +1,166 @@
+{
+  "passed": true,
+  "checks": [
+    {
+      "nativeDimensions": [
+        32,
+        32
+      ],
+      "lowAlpha": [
+        255,
+        0,
+        0,
+        1
+      ],
+      "cssRGBA": [
+        38,
+        38,
+        51,
+        20
+      ],
+      "multiply": [
+        89,
+        93,
+        109,
+        191
+      ],
+      "multiplyScreen": [
+        106,
+        43,
+        54,
+        255
+      ],
+      "translucentOverlap": [
+        117,
+        177,
+        122,
+        194
+      ],
+      "hiddenLayerExcluded": true,
+      "lockedLayerIncluded": true
+    },
+    "Actual mouse and keyboard export controls update announced dimensions while preserving exact artwork, native PNG bytes, and empty Undo/Redo history",
+    {
+      "allExportScales": [
+        1,
+        2,
+        4,
+        8,
+        16
+      ],
+      "allRepeatCounts": [
+        1,
+        2,
+        3
+      ],
+      "pixelByPixelRGBAOracle": {
+        "inspectedPixels": 2589696,
+        "noSmoothing": true,
+        "transparentEmptyCells": true,
+        "exactRepeatSeams": true,
+        "paintingAndHistoryUnchanged": true
+      }
+    },
+    {
+      "downloadedSprite": {
+        "file": "pixel-export-sprite.png",
+        "width": 256,
+        "height": 256,
+        "filename": "pixel-sprite-256x256.png"
+      },
+      "downloadedTile": {
+        "file": "pixel-export-tile.png",
+        "width": 384,
+        "height": 384,
+        "filename": "pixel-tile-384x384.png"
+      },
+      "exactEngineBytes": true
+    },
+    "An actual painted cell still has one-step Undo/Redo after changing export scale and repeats; changing settings also preserves an existing Redo branch",
+    "Actual keyboard selection and cursor, visible editing grid, dark preview background, and repeat preview are excluded from clean native/scaled/repeated PNGs",
+    {
+      "expandedGrid": {
+        "x": 174,
+        "y": 79,
+        "width": 854,
+        "height": 854
+      },
+      "unchangedNativePNG": true
+    },
+    "Established large Export PNG still downloads its exact clean 768×768 composite independently of sprite/tile settings",
+    "Real IndexedDB Save/Clear/Fork restores layered paint, exact native bytes, scale/repeat preferences, and clean history; the original saved study remains unchanged",
+    {
+      "phoneWidth": 390,
+      "controls": [
+        {
+          "id": "artstudio-pixel-export-scale",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "id": "artstudio-pixel-export-repeat",
+          "height": 44,
+          "width": 338
+        },
+        {
+          "id": "artstudio-pixel-export-sprite",
+          "height": 44,
+          "width": 338
+        }
+      ],
+      "noHorizontalOverflow": true,
+      "exactNativePNG": true
+    },
+    {
+      "phoneWidth": 320,
+      "controls": [
+        {
+          "id": "artstudio-pixel-export-scale",
+          "height": 44,
+          "width": 268
+        },
+        {
+          "id": "artstudio-pixel-export-repeat",
+          "height": 44,
+          "width": 268
+        },
+        {
+          "id": "artstudio-pixel-export-sprite",
+          "height": 44,
+          "width": 268
+        }
+      ],
+      "noHorizontalOverflow": true,
+      "exactNativePNG": true
+    },
+    {
+      "fractionalAndModernRawCSSOracle": {
+        "comparedChannels": 4096,
+        "mismatches": 0,
+        "examples": [],
+        "modernCSS": [
+          [
+            84,
+            184,
+            90,
+            133
+          ],
+          [
+            175,
+            130,
+            180,
+            112
+          ],
+          [
+            55,
+            179,
+            101,
+            161
+          ]
+        ],
+        "invalidCellTransparent": true
+      }
+    }
+  ],
+  "errors": []
+}

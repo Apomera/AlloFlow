@@ -1,0 +1,43 @@
+{
+  "startedAt": "2026-10-03T16:04:40.538Z",
+  "cwd": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/circuit_observation_summary.test.js",
+    "tests/circuit_active_notebook_continuity.test.js",
+    "tests/circuit_investigation.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--isolate",
+    "--testTimeout=30000",
+    "--hookTimeout=60000",
+    "--silent",
+    "--reporter=dot",
+    "--reporter=json",
+    "--outputFile=reports/circuit-observation-summary-pairs-2026-10-03/regression-raw.json"
+  ],
+  "runner": "run-regression.cjs",
+  "runnerSha256": "5ada2582752f21b147a544138e1f9cdb37a8e9e3e6c690da5a965dc4cb6da01a",
+  "files": {
+    "stem_lab/stem_tool_circuit.js": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+    "desktop/web-app/public/stem_lab/stem_tool_circuit.js": "37149d44a459fdf7d10b46770fa3a6e53c388f46cedd8c298eb79755f1371610",
+    "reports/circuit-observation-summary-pairs-2026-10-03/run-regression.cjs": "5ada2582752f21b147a544138e1f9cdb37a8e9e3e6c690da5a965dc4cb6da01a",
+    "tests/circuit_observation_summary.test.js": "fd6a00a93179967eae057f42135ad5640d9e62b6dafd95567063e5fc25fd4302",
+    "tests/circuit_active_notebook_continuity.test.js": "958b845a0abdeaad21da46e84593f2fdc8c557a690df2f4f9104134e03b2e127",
+    "tests/circuit_investigation.test.js": "66e27b912ae2b232189a9fd4043761fd8a675b9b3c4fa310819e95d7494cd550"
+  },
+  "selected": [
+    "tests/circuit_observation_summary.test.js",
+    "tests/circuit_active_notebook_continuity.test.js",
+    "tests/circuit_investigation.test.js"
+  ],
+  "expectedCounts": {
+    "tests/circuit_observation_summary.test.js": 10,
+    "tests/circuit_active_notebook_continuity.test.js": 16,
+    "tests/circuit_investigation.test.js": 25
+  },
+  "expectedAssertions": 51,
+  "mode": "single-process-isolated-files"
+}

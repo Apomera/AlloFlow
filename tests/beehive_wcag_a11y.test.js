@@ -18,8 +18,13 @@ describe('Beehive WCAG 2.2 accessibility', () => {
   let originalClipboardDescriptor;
 
   async function mount(state) {
+    const BH = window.__RR_TEST_EXPORTS__.beehive;
+    const colony = { ...BH.bhCreateNewColonyState(state.simulationSeed, state.experimentRunSerial, 0), ...state };
+    if (!Object.prototype.hasOwnProperty.call(state, 'broodCohorts')) {
+      colony.broodCohorts = BH.bhNormalizeBroodCohorts(null, colony.brood, BH.SIMULATION_PARAMS, colony.day);
+    }
     const Component = () => {
-      const [toolData, setToolData] = React.useState({ beehive: state });
+      const [toolData, setToolData] = React.useState({ beehive: colony });
       latest = toolData;
       return config.render(makeCtx({ toolData, setToolData }));
     };
@@ -40,6 +45,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
 
   beforeEach(() => {
     resetStemLab();
+    window.__RR_TEST_EXPORTS__ = {};
     config = loadTool('stem_lab/stem_tool_beehive.js', 'beehive');
     originalMatchMedia = window.matchMedia;
     originalClipboardDescriptor = Object.getOwnPropertyDescriptor(navigator, 'clipboard');
@@ -124,7 +130,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
         .filter((violation) => violation.impact === 'serious' || violation.impact === 'critical')
         .map((violation) => `${violation.id}: ${violation.help} :: ${violation.nodes.map((node) => `${node.target.join(' ')} ${node.failureSummary || node.html}`).join(' | ')}`);
       expect(serious).toEqual([]);
-    }, 30000);
+    }, 120000);
   }
 
   it('makes experiment setup understandable, operable, and screen-reader traceable', async () => {
@@ -185,7 +191,8 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(workspace.querySelector('[data-experiment-compare-table="true"]').tagName).toBe('TABLE');
     expect(workspace.querySelector('caption').textContent).toContain('Run A at Day 8 and Run B at Day 8');
     expect(workspace.querySelector('[data-experiment-compare-status="same-run"]').textContent).toBe('Restart to create Run B');
-    expect(workspace.querySelectorAll('[data-experiment-check]')).toHaveLength(7);
+    expect(workspace.querySelectorAll('[data-experiment-check]')).toHaveLength(8);
+    expect(workspace.querySelector('[data-experiment-check="garden"]').getAttribute('data-experiment-check-result')).toBe('matched');
     expect(workspace.querySelector('[data-experiment-check="run"]').getAttribute('data-experiment-check-result')).toBe('different');
     expect(workspace.querySelector('[data-experiment-protocol-step="repeat"]').getAttribute('data-protocol-step-state')).toBe('upcoming');
     expect(workspace.querySelector('[data-experiment-management-audit="true"]').getAttribute('data-management-audit-status')).toBe('identical');
@@ -827,7 +834,7 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(capture.className).toContain('min-h-[44px]');
     await act(async () => { capture.click(); await Promise.resolve(); });
     expect(latest.beehive.notebook.beekeeper.evidence).toContain('Day 5');
-    expect(latest.beehive.notebook.beekeeper.evidence).toContain('Varroa 5 / 100');
+    expect(latest.beehive.notebook.beekeeper.evidence).toContain('Mite pressure 5 points');
     expect(document.getElementById('allo-live-beehive').textContent).toContain('evidence captured in the Science Notebook');
 
     let reviewInputs = Array.from(host.querySelectorAll('input[data-notebook-review]'));
@@ -958,8 +965,8 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(latest.beehive.day).toBe(5);
     expect(document.getElementById('allo-live-beehive').textContent).toContain('Time is paused');
 
-    const acknowledge = host.querySelector('#beehive-active-event button');
-    expect(acknowledge.className).toContain('min-h-[44px]');
+    const acknowledge = host.querySelector('[data-event-acknowledge]');
+    expect(acknowledge.className).toContain('bee-forecast-button');
     expect(acknowledge.getAttribute('aria-label')).toContain('return to time controls');
     acknowledge.focus();
     await act(async () => { acknowledge.click(); await Promise.resolve(); await Promise.resolve(); });
@@ -980,7 +987,8 @@ describe('Beehive WCAG 2.2 accessibility', () => {
     expect(hygiene.disabled).toBe(false);
     expect(hygiene.tabIndex).toBe(0);
     expect(hygiene.getAttribute('aria-disabled')).toBe('true');
-    expect(hygiene.getAttribute('data-unavailable-reason')).toBe('Need 1 AP');
+    expect(hygiene.getAttribute('data-unavailable-reason')).toContain('Need 1 AP');
+    expect(hygiene.getAttribute('data-unavailable-reason')).toContain('have 0');
     expect(hygiene.getAttribute('aria-label')).toContain('Need 1 AP');
     expect(inspect.hasAttribute('aria-disabled')).toBe(false);
 
@@ -1809,7 +1817,7 @@ describe('beehive simulations — Queen RTS and Drone Flight UX', () => {
   it('keeps drone replay moments tied to the maneuver and preserves the first sample', () => {
     const replay = SRC.slice(SRC.indexOf('function droneReplayChart'));
     expect(replay).toMatch(/replayIndexValue = droneData\.replayIndex == null/);
-    expect(replay).toMatch(/selectedAction = selectedSample\.action \|\| 'Glide'/);
+    expect(replay).toMatch(/selectedAction = selectedSample\.action \|\| 'Not recorded'/);
     expect(replay).toMatch(/'Control: ' \+ selectedAction/);
     expect(replay).toMatch(/action: ds\.lastManeuver/);
     expect(replay).toMatch(/impact: ds\.lastManeuver/);

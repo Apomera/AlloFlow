@@ -1,0 +1,10 @@
+{
+  "nativeSession": 83287,
+  "exitCode": 1,
+  "browserClosed": true,
+  "sourceSha256": "5074437464753808786898645761149063f96f7a2d4bb610cad8f0a09c3bb7c4",
+  "scriptSha256": "f9085cebfa93bb4f17c6b9bf5700a05e71df4666683b43072d3248134a193421",
+  "resultSha256": "82238b1caade7098b4e4ce519b926eda1e1b39eee6868f80a8b613ebf274d4ae",
+  "closeSha256": "1575f9fe64b5a3db39566d53e949793999bf0e7e04f94b777181bd09f29ffc68",
+  "failure": "AssertionError [ERR_ASSERTION]: Native AX must retain the complete magnitude token\n    at readingIntegrity (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\circuit-comparison-context-2026-10-04\\browser-check.cjs:97:1022)\n    at async inspect (C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\circuit-comparison-context-2026-10-04\\browser-check.cjs:38:245)\n    at async C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\circuit-comparison-context-2026-10-04\\browser-check.cjs:110:1188"
+}

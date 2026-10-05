@@ -1,0 +1,321 @@
+{
+  "label": "candidate",
+  "completedAt": "2026-10-04T14:47:34.387Z",
+  "passed": true,
+  "total": 48,
+  "failed": 0,
+  "sourcePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\candidate-with-callers-source.jsx",
+  "modulePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\classroom-recovery-enhancements-2026-10-04\\vault-audit\\candidate-with-callers-module.js",
+  "sourceSha256": "c2ac65a93dcbbb5fd245c1d5c18c80b23a18ff79dc964faf1259ad6ce508acc9",
+  "moduleSha256": "09427d0ba8ba371e38f2eafa0ff88d4d721c3d9c98f6359d7727e4a2b93a9244",
+  "actualCallerBodies": true,
+  "allSyncCallSitesCovered": [
+    "refreshStorageManagerInventory",
+    "commitCanvasRecoveryVaultEnable",
+    "confirmCanvasRecoveryCode",
+    "recoverCanvasRecoveryVault",
+    "importCanvasRecoveryVaultBackup",
+    "setStorageRetentionPolicy",
+    "setCanvasRecoverySnapshotPinned",
+    "removeCanvasRecoverySnapshotMedia",
+    "retryCanvasRecoveryStorage",
+    "eraseCanvasRecoverySnapshot",
+    "unlockCanvasRecoveryVault",
+    "removeCanvasRecoveryKey"
+  ],
+  "controlledBoundaries": [
+    "sync result or status-time retirement",
+    "controller/storage acknowledgements",
+    "inventory facts"
+  ],
+  "results": [
+    {
+      "mode": "source",
+      "name": "refreshStorageManagerInventory",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "refreshStorageManagerInventory",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "commitCanvasRecoveryVaultEnable",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "commitCanvasRecoveryVaultEnable",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "confirmCanvasRecoveryCode",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "confirmCanvasRecoveryCode",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "recoverCanvasRecoveryVault",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "recoverCanvasRecoveryVault",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "importCanvasRecoveryVaultBackup",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "importCanvasRecoveryVaultBackup",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "setStorageRetentionPolicy",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "setStorageRetentionPolicy",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "setCanvasRecoverySnapshotPinned",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "setCanvasRecoverySnapshotPinned",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "removeCanvasRecoverySnapshotMedia",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "removeCanvasRecoverySnapshotMedia",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "retryCanvasRecoveryStorage",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "retryCanvasRecoveryStorage",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "eraseCanvasRecoverySnapshot",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "eraseCanvasRecoverySnapshot",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "unlockCanvasRecoveryVault",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "unlockCanvasRecoveryVault",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "removeCanvasRecoveryKey",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "source",
+      "name": "removeCanvasRecoveryKey",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "refreshStorageManagerInventory",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "refreshStorageManagerInventory",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "commitCanvasRecoveryVaultEnable",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "commitCanvasRecoveryVaultEnable",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "confirmCanvasRecoveryCode",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "confirmCanvasRecoveryCode",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "recoverCanvasRecoveryVault",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "recoverCanvasRecoveryVault",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "importCanvasRecoveryVaultBackup",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "importCanvasRecoveryVaultBackup",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "setStorageRetentionPolicy",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "setStorageRetentionPolicy",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "setCanvasRecoverySnapshotPinned",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "setCanvasRecoverySnapshotPinned",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "removeCanvasRecoverySnapshotMedia",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "removeCanvasRecoverySnapshotMedia",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "retryCanvasRecoveryStorage",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "retryCanvasRecoveryStorage",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "eraseCanvasRecoverySnapshot",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "eraseCanvasRecoverySnapshot",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "unlockCanvasRecoveryVault",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "unlockCanvasRecoveryVault",
+      "retired": false,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "removeCanvasRecoveryKey",
+      "retired": true,
+      "passed": true
+    },
+    {
+      "mode": "generated",
+      "name": "removeCanvasRecoveryKey",
+      "retired": false,
+      "passed": true
+    }
+  ]
+}

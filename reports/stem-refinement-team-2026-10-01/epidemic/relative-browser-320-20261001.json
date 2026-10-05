@@ -1,0 +1,154 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/stem-refinement-team-2026-10-01/epidemic/relative-browser-artifacts-20261001",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "epidemic-inquiry-recovery.spec.ts",
+      "file": "epidemic-inquiry-recovery.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "Inquiry preserves evidence and keyboard recovery at 320px",
+          "ok": false,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 120000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "failed",
+                  "duration": 1474,
+                  "error": {
+                    "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m",
+                    "stack": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\epidemic-inquiry-recovery.spec.ts:37:82",
+                    "location": {
+                      "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\epidemic-inquiry-recovery.spec.ts",
+                      "column": 82,
+                      "line": 37
+                    },
+                    "snippet": "  35 |     await remove.focus();\n  36 |     await expect(remove).toBeFocused(); await expect(remove).toHaveAccessibleName('Remove observation 3');\n> 37 |     if (width === 320) expect(await tableScroller.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);\n     |                                                                                  ^\n  38 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);\n  39 |     await page.keyboard.press('Enter');\n  40 |     await expect(page.getByRole('button', { name: 'Undo last observation removal' })).toBeFocused();"
+                  },
+                  "errors": [
+                    {
+                      "location": {
+                        "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\epidemic-inquiry-recovery.spec.ts",
+                        "column": 82,
+                        "line": 37
+                      },
+                      "message": "Error: \u001b[2mexpect(\u001b[22m\u001b[31mreceived\u001b[39m\u001b[2m).\u001b[22mtoBeGreaterThan\u001b[2m(\u001b[22m\u001b[32mexpected\u001b[39m\u001b[2m)\u001b[22m\n\nExpected: > \u001b[32m0\u001b[39m\nReceived:   \u001b[31m0\u001b[39m\n\n  35 |     await remove.focus();\n  36 |     await expect(remove).toBeFocused(); await expect(remove).toHaveAccessibleName('Remove observation 3');\n> 37 |     if (width === 320) expect(await tableScroller.evaluate(el => el.scrollLeft)).toBeGreaterThan(0);\n     |                                                                                  ^\n  38 |     expect(await page.evaluate(() => document.documentElement.scrollWidth <= window.innerWidth)).toBe(true);\n  39 |     await page.keyboard.press('Enter');\n  40 |     await expect(page.getByRole('button', { name: 'Undo last observation removal' })).toBeFocused();\n    at C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\epidemic-inquiry-recovery.spec.ts:37:82"
+                    }
+                  ],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-01T15:55:29.192Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "served-epidemic-source",
+                      "contentType": "application/json",
+                      "body": "eyJzZXJ2ZWRTaGEyNTYiOiI1NDU1NTk1MTFiMGE3YzMwMWRmNmIxYjQ5MDVkODNhM2FiYWFiYjNmNzUzMTlhMjBkNTcxYjhkODA0ZjM1MDc5In0="
+                    },
+                    {
+                      "name": "screenshot",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\stem-refinement-team-2026-10-01\\epidemic\\relative-browser-artifacts-20261001\\epidemic-inquiry-recovery--f860e--keyboard-recovery-at-320px-chromium\\test-failed-1.png"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\stem-refinement-team-2026-10-01\\epidemic\\relative-browser-artifacts-20261001\\epidemic-inquiry-recovery--f860e--keyboard-recovery-at-320px-chromium\\error-context.md"
+                    },
+                    {
+                      "name": "error-context",
+                      "contentType": "text/markdown",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\stem-refinement-team-2026-10-01\\epidemic\\relative-browser-artifacts-20261001\\epidemic-inquiry-recovery--f860e--keyboard-recovery-at-320px-chromium\\error-context.md"
+                    }
+                  ],
+                  "errorLocation": {
+                    "file": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\tests\\e2e\\epidemic-inquiry-recovery.spec.ts",
+                    "column": 82,
+                    "line": 37
+                  }
+                }
+              ],
+              "status": "unexpected"
+            }
+          ],
+          "id": "f5595b5fa58957ddd2c5-58bf063482d1e8c65ef0",
+          "file": "epidemic-inquiry-recovery.spec.ts",
+          "line": 13,
+          "column": 7
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-01T15:55:20.191Z",
+    "duration": 10830.207000000002,
+    "expected": 0,
+    "skipped": 0,
+    "unexpected": 1,
+    "flaky": 0
+  }
+}

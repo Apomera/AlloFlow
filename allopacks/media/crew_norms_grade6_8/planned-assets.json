@@ -1,0 +1,91 @@
+{
+  "slug": "crew_norms_grade6_8",
+  "sourceShotList": "allopacks/crew_norms_grade6_8.IMAGES.md",
+  "assets": [
+    {
+      "id": "cn-term-norm",
+      "term": "Norm",
+      "kind": "term",
+      "scene": "A circle of chairs with a small handwritten-looking blank card in the center",
+      "constraints": "card blank",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A circle of chairs with a small handwritten-looking blank card in the center. card blank."
+    },
+    {
+      "id": "cn-term-rule",
+      "term": "Rule",
+      "kind": "term",
+      "scene": "A clipboard held by an adult hand, list lines drawn as plain bars",
+      "constraints": "no letters",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A clipboard held by an adult hand, list lines drawn as plain bars. no letters."
+    },
+    {
+      "id": "cn-term-crew",
+      "term": "Crew",
+      "kind": "term",
+      "scene": "Ten students and one adult seated in a circle, relaxed posture",
+      "constraints": "diverse group",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Ten students and one adult seated in a circle, relaxed posture. diverse group."
+    },
+    {
+      "id": "cn-term-pass",
+      "term": "Pass",
+      "kind": "term",
+      "scene": "A student in a circle with one open palm resting on their chest, others still looking at them warmly",
+      "constraints": "no crossed arms",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student in a circle with one open palm resting on their chest, others still looking at them warmly. no crossed arms."
+    },
+    {
+      "id": "cn-term-signal",
+      "term": "Signal",
+      "kind": "term",
+      "scene": "A student holding up one finger while another speaks, small and calm",
+      "constraints": "not a raised whole hand",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. A student holding up one finger while another speaks, small and calm. not a raised whole hand."
+    },
+    {
+      "id": "cn-term-cooperate",
+      "term": "Cooperate",
+      "kind": "term",
+      "scene": "Two students carrying one long table together from opposite ends",
+      "constraints": "both lifting",
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Square glossary illustration. Two students carrying one long table together from opposite ends. both lifting."
+    },
+    {
+      "id": "cn-img-sidetalk",
+      "kind": "lesson",
+      "title": "The interrupted share.",
+      "scene": "A student mid-sentence in a circle, two others turned toward each other; the speaker's mouth is half open and her hand is paused.",
+      "caption": "nobody is trying to be mean; the Crew has not decided what it does yet.",
+      "plannedLabels": [
+        "The speaker",
+        "The side talk"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. A student mid-sentence in a circle, two others turned toward each other; the speaker's mouth is half open and her hand is paused. All labels and captions will be editable native fields outside the artwork."
+    },
+    {
+      "id": "cn-img-signal",
+      "kind": "lesson",
+      "title": "The signal works.",
+      "scene": "The same circle a day later; one student calmly holds up one finger, the two side-talkers are turning back.",
+      "caption": "the norm did the work; nobody had to be told.",
+      "plannedLabels": [
+        "The signal",
+        "Turning back"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. The same circle a day later; one student calmly holds up one finger, the two side-talkers are turning back. All labels and captions will be editable native fields outside the artwork."
+    },
+    {
+      "id": "cn-img-threeparts",
+      "kind": "lesson",
+      "title": "Three parts of a norm.",
+      "scene": "Three linked puzzle pieces in a row, each with a plain icon: an eye, a group of three dots, a circular arrow.",
+      "caption": "if one piece is missing, it is a poster.",
+      "plannedLabels": [
+        "Specific",
+        "Shared",
+        "Revisited"
+      ],
+      "prompt": "Use case: illustration-story. Educational artwork for a middle-school Crew SEL pack. Warm, simple, flat illustration, muted earth palette, clean uncluttered shapes. Fictional diverse students ages 12 to 14 with respectful expressions; no real-person likenesses. No raster text, letters, numbers, labels, captions, logos, or watermarks. Any cards, pages, screens or bubbles are blank or use plain abstract bars, never readable text. Wide landscape lesson panel. Three linked puzzle pieces in a row, each with a plain icon: an eye, a group of three dots, a circular arrow. All labels and captions will be editable native fields outside the artwork."
+    }
+  ]
+}

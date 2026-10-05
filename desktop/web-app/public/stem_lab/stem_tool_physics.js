@@ -930,6 +930,54 @@ window.StemLab = window.StemLab || {
           }
           window.StemLab._physics.normalizeState = physNormalizeState;
           const d = physNormalizeState(labToolData.physics);
+          // Presentation belongs to the canvas, leaving recorded observations intact.
+          // A retained path keeps its pattern when focus changes or another path leaves.
+          function physTrajectoryPresentation(cv, contrastOverride, includeUndrawable) {
+            if (!cv || !Array.isArray(cv._trails)) return [];
+            var history = cv._trails;
+            var presentation = cv._trailPresentation || (cv._trailPresentation = { entries: new Map(), nextUnfinished: 1, nextKey: 1 });
+            if (!Number.isSafeInteger(presentation.nextKey)) presentation.nextKey = 1;
+            presentation.entries.forEach(function(value, trail) { if (history.indexOf(trail) < 0) presentation.entries.delete(trail); });
+            var selected = physSelectedInspection(cv);
+            var patterns = [[10, 4], [3, 4], [12, 4, 2, 4], [8, 3, 2, 3, 2, 3], [2, 3]];
+            var contrast = typeof contrastOverride === 'boolean' ? contrastOverride : cv.dataset.sceneTheme === 'contrast';
+            return history.map(function(trail, index) {
+              var run = Number.isSafeInteger(trail.run) && trail.run > 0 ? trail.run : null;
+              var entry = presentation.entries.get(trail);
+              if (!entry) {
+                var preferred = ((run || Number(cv.dataset.runNext) || 1) - 1) % patterns.length;
+                var used = [];
+                presentation.entries.forEach(function(value) { used.push(value.slot); });
+                var slot = preferred;
+                for (var offset = 0; offset < patterns.length; offset++) {
+                  var candidate = (preferred + offset) % patterns.length;
+                  if (used.indexOf(candidate) < 0) { slot = candidate; break; }
+                }
+                entry = { slot: slot, unfinished: run == null ? presentation.nextUnfinished++ : null };
+                presentation.entries.set(trail, entry);
+              }
+              if (!entry.key) entry.key = presentation.nextKey++;
+              var current = !!cv._launched && index === history.length - 1;
+              var active = selected ? trail === cv._inspection.trail : index === history.length - 1;
+              var p = trail.parameters || trail;
+              var hue = Math.round(240 * (1 - Math.max(0, Math.min(90, p.angle)) / 90));
+              return { trail: trail, index: index, run: run, id: run == null ? 'unfinished-' + entry.unfinished : String(run),
+                unfinished: entry.unfinished, presentationKey: entry.key, active: active, current: current,
+                role: selected && active ? 'selected' : current ? 'current' : run == null ? 'unfinished' : index === history.length - 1 ? 'latest' : 'recorded',
+                parameters: p, color: 'hsl(' + hue + ', 85%, 80%)', hue: hue,
+                dash: patterns[entry.slot], alpha: contrast ? 1 : .85 };
+            }).filter(function(row) { return !!includeUndrawable || row.trail.length >= 2 || row.current && row.trail.length === 1; });
+          }
+          function physPlotContext(cv) {
+            var selected = physSelectedInspection(cv), live = !!(cv && cv._launched);
+            var trail = live && cv._trails && cv._trails[cv._trails.length - 1];
+            var p = trail && (trail.parameters || trail);
+            var parameters = selected ? selected.parameters : p ? { angle: p.angle, velocity: p.velocity,
+              gravity: p.gravity, launchHeight: p.launchHeight, airResist: !!p.drag } : d;
+            return { selected: selected, live: live, parameters: parameters,
+              vacuumVisible: !!selected || !live || !!parameters.airResist,
+              vacuumKind: selected || live ? 'reference' : 'preview', rows: physTrajectoryPresentation(cv, isContrast) };
+          }
           var physicsFullscreen = !!d.physFsMode;
           if (typeof document !== 'undefined') {
             var physicsOuter = document.getElementById('physics-fs-outer');
@@ -945,6 +993,7 @@ window.StemLab = window.StemLab || {
             var hadSelection = !!(cv && cv._inspection);
             if (cv) {
               cv._inspection = null;
+              cv._plotInspectionOrigin = null;
               if (hadSelection && cv._physScheduleFrame) cv._physScheduleFrame();
             }
             setLabToolData(function(prev) {
@@ -954,7 +1003,7 @@ window.StemLab = window.StemLab || {
               }) });
             });
           }
-          function physSelectSample(index, recordedTrail) {
+          function physSelectSample(index, recordedTrail, plotOrigin) {
             var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
             var trails = cv && cv._trails;
             var selected = physSelectedInspection(cv);
@@ -964,6 +1013,8 @@ window.StemLab = window.StemLab || {
             if (!snapshot) return false;
             if (cv._cancelSymmetryDemo) cv._cancelSymmetryDemo();
             cv.dataset.simSpeed = '0';
+            if (arguments.length > 2) cv._plotInspectionOrigin = plotOrigin ? { trail: trail, element: plotOrigin } : null;
+            else if (cv._plotInspectionOrigin && cv._plotInspectionOrigin.trail !== trail) cv._plotInspectionOrigin = null;
             cv._inspection = { trail: trail, index: index, snapshot: snapshot };
             if (cv._physScheduleFrame) cv._physScheduleFrame();
             var text = __alloT('stem.physics.inspect_captured', 'Captured flight state at') + ' ' + snapshot.t.toFixed(3) + ' s. ' +
@@ -990,6 +1041,66 @@ window.StemLab = window.StemLab || {
               var slider = panel.querySelector('[data-physics-sample-slider]');
               (slider && !slider.disabled ? slider : panel).focus({ preventScroll: true });
             }, 0);
+          }
+          function physPlotFlightLabel(row) {
+            return row.run != null ? __alloT('stem.physics.cv_run_prefix', 'Run ') + row.run
+              : __alloT('stem.physics.plot_unfinished_path', 'Unfinished path') + ' ' + row.unfinished;
+          }
+          function physCloseSelectedInspection(cv, fromPlot) {
+            if (!cv || !cv._inspection) return;
+            var origin = cv._plotInspectionOrigin;
+            var inspectedTrail = cv._inspection.trail;
+            var older = inspectedTrail !== cv._trails[cv._trails.length - 1];
+            if (!origin && fromPlot) {
+              var button = cv.closest('#physics-fs-outer').querySelector('[data-physics-plot-flight][aria-pressed="true"]');
+              if (button) origin = { trail: inspectedTrail, element: button };
+            }
+            physClearInspection();
+            setTimeout(function() {
+              if (!cv.isConnected || document.getElementById('physicsCanvas') !== cv) return;
+              var outer = cv.closest('#physics-fs-outer'), target = origin && origin.element;
+              if (!(target && target.isConnected && outer.contains(target) && !target.disabled &&
+                    Array.isArray(cv._trails) && cv._trails.indexOf(origin.trail) >= 0 && target.hasAttribute('data-physics-plot-flight'))) {
+                target = outer.querySelector(older ? '[data-physics-history-select]' : '[data-physics-inspect]');
+              }
+              (target && !target.disabled ? target : cv).focus({ preventScroll: true });
+            }, 0);
+          }
+          function physRenderPlotInspection(cv, plot) {
+            if (!plot.selected || !cv || !cv._inspection) return null;
+            var trail = cv._inspection.trail, moments = physRecordedMoments(trail);
+            var row = physTrajectoryPresentation(cv, isContrast, true).find(function(item) { return item.trail === trail; });
+            if (!row || !moments) return null;
+            var actions = [];
+            function include(id, index, label, priority) {
+              var point = physInspectSample(trail, index);
+              if (!point) return;
+              var existing = actions.findIndex(function(item) { return item.index === index; });
+              var action = { id: id, index: index, label: label, priority: priority, time: point.t };
+              if (existing < 0) actions.push(action);
+              else if (actions[existing].priority < priority) actions[existing] = action;
+            }
+            include('launch', moments.launchIndex, __alloT('stem.physics.sample_launch_point', 'Launch point'), 3);
+            if (moments.apexIndex >= 0) include('apex', moments.apexIndex,
+              trail[moments.apexIndex].t === 0 ? __alloT('stem.physics.sample_phase_release', 'Highest point at release') : __alloT('stem.physics.sample_apex_point', 'Apex'), 4);
+            else include('highest', moments.highestIndex, __alloT('stem.physics.sample_highest_point', 'Highest recorded point'), 1);
+            include(moments.impact ? 'impact' : 'latest', moments.latestIndex,
+              moments.impact ? __alloT('stem.physics.sample_ground_impact', 'Ground impact') : __alloT('stem.physics.sample_latest_point', 'Latest point'), 2);
+            actions.sort(function(a, b) { return a.index - b.index; });
+            return React.createElement('div', { 'data-physics-plot-inspection': true, 'data-flight': row.id },
+              React.createElement('p', { className: 'phys-plot-moment-heading' },
+                React.createElement('strong', null, physPlotFlightLabel(row)),
+                React.createElement('span', null, __alloT('stem.physics.plot_inspect_point', 'Inspect a recorded point'))),
+              React.createElement('div', { className: 'phys-plot-moments', role: 'group', 'aria-label': physPlotFlightLabel(row) + ' · ' + __alloT('stem.physics.plot_inspect_point', 'Inspect a recorded point') },
+                actions.map(function(action) { return React.createElement('button', { key: action.index, type: 'button',
+                  'data-physics-plot-moment': action.id, 'data-sample-index': action.index, 'data-time': action.time,
+                  'aria-pressed': plot.selected.index === action.index, 'aria-controls': 'physics-sample-inspector',
+                  onClick: function() { physSelectSample(action.index, trail); } },
+                  React.createElement('span', null, action.label), React.createElement('span', { className: 'phys-plot-moment-time' }, 't = ' + action.time.toFixed(3) + ' s')); })),
+              React.createElement('div', { className: 'phys-plot-inspection-actions' },
+                React.createElement('button', { type: 'button', 'data-physics-plot-analysis': true, 'aria-controls': 'physics-sample-inspector', onClick: physRevealInspection }, __alloT('stem.physics.plot_view_analysis', 'View flight analysis')),
+                React.createElement('button', { type: 'button', 'data-physics-plot-close': true, onClick: function() { physCloseSelectedInspection(cv, true); } },
+                  __alloT(plot.live ? 'stem.physics.plot_return_current' : 'stem.physics.plot_return_latest', plot.live ? 'Return to current flight' : 'Return to latest flight'))));
           }
           // Every launch goes through here so the Launches metric, the
           // "recommended next move" ladder and the launch_10 quest all count.
@@ -1330,8 +1441,16 @@ window.StemLab = window.StemLab || {
               height: __alloT('stem.physics.cv_height', 'Height (m)'),
               preview: __alloT('stem.physics.cv_preview', 'Vacuum preview'),
               selectedPoint: __alloT('stem.physics.cv_selected_point', 'Recorded point'),
+              launchPoint: __alloT('stem.physics.sample_launch_point', 'Launch point'),
+              rising: __alloT('stem.physics.sample_phase_rising', 'Rising'),
+              atApex: __alloT('stem.physics.sample_phase_apex', 'At apex'),
+              highestAtRelease: __alloT('stem.physics.sample_phase_release', 'Highest point at release'),
+              falling: __alloT('stem.physics.sample_phase_falling', 'Falling'),
+              level: __alloT('stem.physics.sample_phase_level', 'Vertical velocity is zero'),
+              groundImpact: __alloT('stem.physics.sample_ground_impact', 'Ground impact'),
               prediction: __alloT('stem.physics.cv_prediction_short', 'Prediction'),
               runPrefix: __alloT('stem.physics.cv_run_prefix', 'Run '),
+              unfinishedPath: __alloT('stem.physics.plot_unfinished_path', 'Unfinished path'),
               narrLaunchFirst: __alloT('stem.physics.narr_launch_first', 'Projectile launched at {angle} degrees with a velocity of {vel} meters per second. Gravity is {grav} meters per second squared.'),
               narrLaunchDrag: __alloT('stem.physics.narr_launch_drag', ' Air resistance is on.'),
               narrLaunchHeight: __alloT('stem.physics.narr_launch_height', ' Launch height is {height} meters above ground.'),
@@ -1468,6 +1587,7 @@ window.StemLab = window.StemLab || {
             function cleanupPhysicsCanvas() {
               physAlive = false;
               canvasEl._inspection = null;
+              canvasEl._plotInspectionOrigin = null;
               cancelPhysicsFrame();
               if (canvasEl._cancelSymmetryDemo) canvasEl._cancelSymmetryDemo();
               if (canvasEl._liveTimer) { clearTimeout(canvasEl._liveTimer); canvasEl._liveTimer = null; }
@@ -1760,6 +1880,7 @@ window.StemLab = window.StemLab || {
               sky.addColorStop(0, highContrast ? '#000000' : '#0a1423'); sky.addColorStop(1, highContrast ? '#000000' : '#152c43');
               ctx.fillStyle = sky; ctx.fillRect(0, 0, cW, cH);
               var tagQueue = [], tagBoxes = [], markerBoxes = [];
+              var labelBounds = { left: launcherX + 8, right: cssW - 28, top: plotTop + 8, bottom: groundYCSS - 8 };
               canvasEl._visualVectors = null;
               canvasEl._visualPreview = null;
               canvasEl._visualInspection = null;
@@ -1783,36 +1904,68 @@ window.StemLab = window.StemLab || {
                 var endX = x + point.vx * vectorScale, endY = y - point.vy * vectorScale;
                 var arrowLen = point.speed * vectorScale, arrowHead = Math.min(6, arrowLen / 3);
                 var direction = Math.atan2(-point.vy, point.vx);
-                ctx.save(); ctx.strokeStyle = '#60a5fa'; ctx.lineWidth = 2 * dpr;
+                ctx.save(); ctx.strokeStyle = '#93c5fd'; ctx.lineWidth = 2 * dpr;
                 ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(endX * dpr, endY * dpr);
                 ctx.moveTo(endX * dpr, endY * dpr); ctx.lineTo((endX - Math.cos(direction - .4) * arrowHead) * dpr, (endY - Math.sin(direction - .4) * arrowHead) * dpr);
                 ctx.moveTo(endX * dpr, endY * dpr); ctx.lineTo((endX - Math.cos(direction + .4) * arrowHead) * dpr, (endY - Math.sin(direction + .4) * arrowHead) * dpr); ctx.stroke();
-                ctx.lineWidth = 1.5 * dpr; ctx.setLineDash([4 * dpr, 3 * dpr]);
-                ctx.strokeStyle = '#6ee7b7'; ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(endX * dpr, y * dpr); ctx.stroke();
-                ctx.strokeStyle = '#c4b5fd'; ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(x * dpr, endY * dpr); ctx.stroke();
+                // Components use the resultant's scale, including tiny values.
+                // Solid heads show their signed direction; zero has no arrow.
+                function componentArrow(toX, toY, color) {
+                  var length = Math.hypot(toX - x, toY - y);
+                  if (length === 0) return;
+                  var angle = Math.atan2(toY - y, toX - x), head = Math.min(5, length / 3);
+                  ctx.strokeStyle = color; ctx.lineWidth = 1.5 * dpr; ctx.setLineDash([4 * dpr, 3 * dpr]);
+                  ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(toX * dpr, toY * dpr); ctx.stroke();
+                  ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(toX * dpr, toY * dpr);
+                  ctx.lineTo((toX - Math.cos(angle - .4) * head) * dpr, (toY - Math.sin(angle - .4) * head) * dpr);
+                  ctx.moveTo(toX * dpr, toY * dpr);
+                  ctx.lineTo((toX - Math.cos(angle + .4) * head) * dpr, (toY - Math.sin(angle + .4) * head) * dpr); ctx.stroke();
+                }
+                componentArrow(endX, y, '#6ee7b7');
+                componentArrow(x, endY, '#c4b5fd');
                 var gravityLength = Math.max(0, Math.min(point.gravity * 1.5, 25, groundYCSS - y - 8));
                 var gravityHead = Math.min(4, gravityLength / 3);
-                ctx.strokeStyle = '#ef4444'; ctx.setLineDash([2 * dpr, 3 * dpr]);
+                ctx.strokeStyle = '#fda4af'; ctx.lineWidth = 1.5 * dpr; ctx.setLineDash([2 * dpr, 3 * dpr]);
                 ctx.beginPath(); ctx.moveTo(x * dpr, y * dpr); ctx.lineTo(x * dpr, (y + gravityLength) * dpr); ctx.stroke();
                 ctx.setLineDash([]); ctx.beginPath(); ctx.moveTo(x * dpr, (y + gravityLength) * dpr);
                 ctx.lineTo((x - gravityHead * .75) * dpr, (y + gravityLength - gravityHead) * dpr);
                 ctx.moveTo(x * dpr, (y + gravityLength) * dpr); ctx.lineTo((x + gravityHead * .75) * dpr, (y + gravityLength - gravityHead) * dpr); ctx.stroke();
                 ctx.restore();
+                // Annotation cards must leave the complete arrow bundle visible.
+                // Six CSS pixels cover every arrowhead and the stroke width.
+                markerBoxes.push({ x: Math.min(x, endX) - 6, y: Math.min(y, endY) - 6,
+                  width: Math.abs(endX - x) + 12,
+                  height: Math.max(y, endY, y + gravityLength) - Math.min(y, endY) + 12 });
                 canvasEl._visualVectors = { x: x, y: y, vxX: endX, vyY: endY, endX: endX, endY: endY, scale: vectorScale };
               }
               var xStep = niceStep(64 / scale), yStep = niceStep(54 / scale);
+              var axisTickBoxes = [];
+              function drawAxisTick(text, x, y) {
+                var metrics = ctx.measureText(text), padding = 2 * dpr;
+                var left = Number.isFinite(metrics.actualBoundingBoxLeft) ? metrics.actualBoundingBoxLeft : ctx.textAlign === 'center' ? metrics.width / 2 : ctx.textAlign === 'right' ? metrics.width : 0;
+                var right = Number.isFinite(metrics.actualBoundingBoxRight) ? metrics.actualBoundingBoxRight : metrics.width - left;
+                var ascent = Number.isFinite(metrics.actualBoundingBoxAscent) ? metrics.actualBoundingBoxAscent : 12 * dpr;
+                var descent = Number.isFinite(metrics.actualBoundingBoxDescent) ? metrics.actualBoundingBoxDescent : 3 * dpr;
+                axisTickBoxes.push({
+                  x: x - left - padding,
+                  y: y - ascent - padding,
+                  width: left + right + padding * 2,
+                  height: ascent + descent + padding * 2
+                });
+                ctx.fillText(text, x, y);
+              }
               ctx.font = (12 * dpr) + 'px sans-serif'; ctx.textAlign = 'center';
               for (var xm = 0; mToScreenX(xm) < cssW - 22; xm += xStep) {
                 var xx = mToScreenX(xm) * dpr;
                 ctx.strokeStyle = scene.grid; ctx.lineWidth = dpr;
                 ctx.beginPath(); ctx.moveTo(xx, plotTop * dpr); ctx.lineTo(xx, groundY); ctx.stroke();
-                ctx.fillStyle = scene.muted; ctx.fillText(String(Math.round(xm * 10) / 10), xx, groundY + 20 * dpr);
+                ctx.fillStyle = scene.muted; drawAxisTick(String(Math.round(xm * 10) / 10), xx, groundY + 20 * dpr);
               }
               ctx.textAlign = 'right';
               for (var ym = yStep; mToScreenY(ym) > plotTop + 16; ym += yStep) {
                 var yy = mToScreenY(ym) * dpr;
                 ctx.strokeStyle = scene.grid; ctx.beginPath(); ctx.moveTo(launcherX * dpr, yy); ctx.lineTo(cW - 20 * dpr, yy); ctx.stroke();
-                ctx.fillStyle = scene.muted; ctx.fillText(String(Math.round(ym * 10) / 10), (launcherX - 9) * dpr, yy + 4 * dpr);
+                ctx.fillStyle = scene.muted; drawAxisTick(String(Math.round(ym * 10) / 10), (launcherX - 9) * dpr, yy + 4 * dpr);
               }
               ctx.strokeStyle = scene.axis; ctx.lineWidth = 1.5 * dpr;
               ctx.beginPath(); ctx.moveTo(launcherX * dpr, plotTop * dpr); ctx.lineTo(launcherX * dpr, groundY); ctx.lineTo(cW - 20 * dpr, groundY); ctx.stroke();
@@ -1871,12 +2024,12 @@ window.StemLab = window.StemLab || {
               }
 
               // ── No-drag ghost trajectory ──
-              // When air drag is on AND a projectile is in flight, draw a
+              // The reference follows the displayed recording or live launch. Draw a
               // faint dashed ideal (no-drag) trajectory using the same
               // launch params for comparison. Makes drag's effect immediately
               // visible: students see exactly how much shorter and lower the
               // actual flight is. Drawn here so the active trail draws over it.
-              if (!launched || (ball && ball.drag > 0)) {
+              if (inspection || !launched || displayParams.airResist) {
                 var _gAng = displayParams.angle;
                 var _gVel = displayParams.velocity;
                 var _gGrav = displayParams.gravity;
@@ -1888,9 +2041,9 @@ window.StemLab = window.StemLab || {
                 var _gRange = window.StemLab._physics.vacuum(_gAng, _gVel, _gGrav, _gHeight).range;
                 if (_gRange > 0 && isFinite(_gRange)) {
                   ctx.save();
-                  ctx.globalAlpha = 0.8;
+                  ctx.globalAlpha = highContrast ? 1 : 0.8;
                   ctx.setLineDash([4 * dpr, 4 * dpr]);
-                  ctx.strokeStyle = 'rgba(255,255,255,0.7)';
+                  ctx.strokeStyle = highContrast ? '#ffffff' : 'rgba(255,255,255,0.7)';
                   ctx.lineWidth = 1.2 * dpr;
                   ctx.beginPath();
                   var _gSteps = 40;
@@ -1918,6 +2071,7 @@ window.StemLab = window.StemLab || {
               // ── Trails with glow & speed-based color (stored in meters, convert at draw time) ──
 
               var overlayMode = canvasEl.dataset.showOverlay === 'true';
+              var trajectoryRows = overlayMode ? physTrajectoryPresentation(canvasEl) : [];
 
               // Old measurements can exceed the next launch's fitted viewport.
               // Keep their strokes inside the meter plot without changing data.
@@ -1934,7 +2088,8 @@ window.StemLab = window.StemLab || {
                 // Overlay mode boosts past-trail alpha so the comparison is
                 // legible, not a faint ghost. Off-mode keeps the original
                 // faded look (single-trajectory focus).
-                var alpha = isActive ? 1 : (inspection ? (overlayMode ? 0.35 : 0.10) : (overlayMode ? 0.85 : 0.18));
+                var alpha = isActive ? 1 : overlayMode ? (highContrast ? 1 : .85) : inspection ? .10 : .18;
+                var trajectoryRow = trajectoryRows.filter(function(row) { return row.trail === trail; })[0];
 
                 // Glow layer for active trail
 
@@ -1962,57 +2117,39 @@ window.StemLab = window.StemLab || {
 
                 }
 
-                // Main speed-colored segments
-
-                ctx.lineWidth = (isActive ? 2.5 : 1.5) * dpr;
-
-                ctx.lineCap = 'round';
-
-                ctx.setLineDash(isActive ? [] : [4, 3]);
-
-                // In overlay mode, color non-active trails by their launch
-                // angle (HSL hue 0..240 over 0..90°) so comparing 30° vs 45°
-                // vs 60° is visually obvious. Active trail still uses the
-                // speed-coded color so live physics intuition stays intact.
-                var trailHue = null;
-                if (overlayMode && !isActive && trail.angle != null) {
-                  trailHue = Math.round(240 * (1 - Math.max(0, Math.min(90, trail.angle)) / 90));
-                }
-
-                for (var ti = 1; ti < trail.length; ti++) {
-
-                  var p0 = trail[ti - 1], p1 = trail[ti];
-
-                  if (trailHue != null) {
-                    ctx.strokeStyle = 'hsla(' + trailHue + ', 85%, 75%, ' + alpha + ')';
-                  } else {
+                var trailHue = overlayMode && !isActive && trajectoryRow ? trajectoryRow.hue : null;
+                if (trailHue != null) {
+                  // One continuous path preserves the run's dash pattern across samples.
+                  ctx.save(); ctx.lineWidth = 2 * dpr; ctx.lineCap = 'round'; ctx.lineJoin = 'round';
+                  ctx.globalAlpha = alpha; ctx.strokeStyle = trajectoryRow.color;
+                  ctx.setLineDash(trajectoryRow.dash.map(function(length) { return length * dpr; }));
+                  ctx.beginPath(); ctx.moveTo(mToScreenX(trail[0].mX) * dpr, mToScreenY(trail[0].mY) * dpr);
+                  for (var tp = 1; tp < trail.length; tp++) ctx.lineTo(mToScreenX(trail[tp].mX) * dpr, mToScreenY(trail[tp].mY) * dpr);
+                  ctx.stroke(); ctx.restore();
+                } else {
+                  // The focused flight keeps the continuous cyan → amber → rose speed scale.
+                  ctx.lineWidth = (isActive ? 2.5 : 1.5) * dpr; ctx.lineCap = 'round';
+                  ctx.setLineDash(isActive ? [] : [4 * dpr, 3 * dpr]);
+                  for (var ti = 1; ti < trail.length; ti++) {
+                    var p0 = trail[ti - 1], p1 = trail[ti];
                     var speed = Math.sqrt(Math.pow(p1.mVx || 0, 2) + Math.pow(p1.mVy || 0, 2));
-
                     var speedNorm = Math.min(1, speed / 60);
-
-                    // Continuous cyan → amber → rose scale, 0–60 m/s.
                     var stops = [[103,232,249], [251,191,36], [251,113,133]];
                     var segment = speedNorm < .5 ? 0 : 1, blend = segment === 0 ? speedNorm * 2 : (speedNorm - .5) * 2;
                     var r = Math.round(stops[segment][0] + (stops[segment+1][0] - stops[segment][0]) * blend);
                     var g = Math.round(stops[segment][1] + (stops[segment+1][1] - stops[segment][1]) * blend);
                     var b = Math.round(stops[segment][2] + (stops[segment+1][2] - stops[segment][2]) * blend);
-
                     ctx.strokeStyle = 'rgba(' + r + ',' + g + ',' + b + ',' + alpha + ')';
+                    ctx.beginPath(); ctx.moveTo(mToScreenX(p0.mX) * dpr, mToScreenY(p0.mY) * dpr);
+                    ctx.lineTo(mToScreenX(p1.mX) * dpr, mToScreenY(p1.mY) * dpr); ctx.stroke();
                   }
-
-                  var sx0 = mToScreenX(p0.mX) * dpr, sy0 = mToScreenY(p0.mY) * dpr;
-
-                  var sx1 = mToScreenX(p1.mX) * dpr, sy1 = mToScreenY(p1.mY) * dpr;
-
-                  ctx.beginPath(); ctx.moveTo(sx0, sy0); ctx.lineTo(sx1, sy1); ctx.stroke();
-
                 }
-
                 ctx.setLineDash([]);
+
 
                 // Draw dotted apex marker for completed trails
 
-                if (!inspection && !isActive && trail.length > 2) {
+                if (!isActive && trail.length > 2 && (!inspection || overlayMode)) {
 
                   var apexPt = trail[0];
 
@@ -2037,7 +2174,7 @@ window.StemLab = window.StemLab || {
                     ctx.lineWidth = 1;
                   }
 
-                  ctx.setLineDash([2, 4]);
+                  ctx.setLineDash([2 * dpr, 4 * dpr]);
 
                   ctx.beginPath(); ctx.moveTo(apexSX, apexSY); ctx.lineTo(apexSX, groundY); ctx.stroke();
 
@@ -2047,8 +2184,9 @@ window.StemLab = window.StemLab || {
                     // Lead with the run number so the trail and its row in the
                     // experiment log identify each other. Colour matches the
                     // row's swatch, but the number is the link a student reads.
-                    var lbl = (trail.run ? (canvasEl._L && canvasEl._L.runPrefix ? canvasEl._L.runPrefix : 'Run ') + trail.run + ' · ' : '')
-                      + 'θ=' + trail.angle + '°, v=' + trail.velocity + ' m/s';
+                    var pathLabels = canvasEl._L || {};
+                    var identity = trail.run ? (pathLabels.runPrefix || 'Run ') + trail.run : (pathLabels.unfinishedPath || 'Unfinished path') + ' ' + trajectoryRow.unfinished;
+                    var lbl = identity + ' · θ=' + trail.angle + '°, v₀=' + trail.velocity + ' m/s';
                     tag('run-' + idx, [lbl], apexSX / dpr, apexSY / dpr, 'hsl(' + trailHue + ', 85%, 80%)', apexSX / dpr, apexSY / dpr - 28);
                   }
 
@@ -2068,7 +2206,7 @@ window.StemLab = window.StemLab || {
                   ctx.strokeStyle = '#fde68a'; ctx.lineWidth = 2 * dpr;
                   ctx.beginPath(); ctx.arc(ax * dpr, ay * dpr, 5 * dpr, 0, Math.PI * 2); ctx.stroke();
                   reserveMarker(ax, ay, 5);
-                  tag('apex', [((canvasEl._L || {}).apexCap || 'APEX') + ' ' + physFormatSampleValue(ap.mY) + ' m', 't = ' + ap.tSec.toFixed(2) + ' s · Vy = 0'], ax, ay, '#fde68a', ax, ay - 32, 5);
+                  if (!inspection || !inspection.apex) tag('apex', [((canvasEl._L || {}).apexCap || 'APEX') + ' ' + physFormatSampleValue(ap.mY) + ' m', 't = ' + ap.tSec.toFixed(2) + ' s · Vy = 0'], ax, ay, '#fde68a', ax, ay - 32, 5);
                 }
               }
 
@@ -2394,15 +2532,35 @@ window.StemLab = window.StemLab || {
                 ctx.fillRect((cxC - 10) * dpr, cyC * dpr, 20 * dpr, (groundYCSS - cyC) * dpr);
                 ctx.strokeStyle = scene.axis; ctx.setLineDash([3 * dpr, 4 * dpr]);
                 ctx.beginPath(); ctx.moveTo((cxC - 18) * dpr, groundY); ctx.lineTo((cxC - 18) * dpr, cyC * dpr); ctx.stroke(); ctx.setLineDash([]);
-                tag('height', ['h₀ = ' + displayParams.launchHeight + ' m'], cxC, cyC, '#e2e8f0', cxC + 35, cyC + 28, 7);
+                if (!inspection || inspection.index !== 0) tag('height', ['h₀ = ' + displayParams.launchHeight + ' m'], cxC, cyC, '#e2e8f0', cxC + 35, cyC + 28, 7);
               }
               canvasEl._launchView = { height: displayParams.launchHeight || 0, scale: scale, x: cxC, y: cyC, groundY: groundYCSS };
-              ctx.save(); ctx.translate(cxC * dpr, cyC * dpr); ctx.rotate(-rad);
+              ctx.save();
+              // Keep the ruler's original ink and background clear of the rotated barrel.
+              var barrelExclusions = [];
+              axisTickBoxes.forEach(function(box) {
+                var merged = { x: box.x, y: box.y, width: box.width, height: box.height };
+                for (var i = 0; i < barrelExclusions.length;) {
+                  var other = barrelExclusions[i];
+                  if (merged.x <= other.x + other.width && merged.x + merged.width >= other.x && merged.y <= other.y + other.height && merged.y + merged.height >= other.y) {
+                    var right = Math.max(merged.x + merged.width, other.x + other.width), bottom = Math.max(merged.y + merged.height, other.y + other.height);
+                    merged.x = Math.min(merged.x, other.x); merged.y = Math.min(merged.y, other.y);
+                    merged.width = right - merged.x; merged.height = bottom - merged.y;
+                    barrelExclusions.splice(i, 1); i = 0;
+                  } else i++;
+                }
+                barrelExclusions.push(merged);
+              });
+              ctx.beginPath(); ctx.rect(0, 0, cW, cH);
+              barrelExclusions.forEach(function(box) { ctx.rect(box.x, box.y, box.width, box.height); });
+              ctx.clip('evenodd');
+              ctx.translate(cxC * dpr, cyC * dpr); ctx.rotate(-rad);
               ctx.fillStyle = '#64748b'; ctx.strokeStyle = '#cbd5e1'; ctx.lineWidth = 1.5 * dpr;
               ctx.beginPath(); ctx.moveTo(-28 * dpr, -7 * dpr); ctx.lineTo(-4 * dpr, -4 * dpr); ctx.lineTo(-4 * dpr, 4 * dpr); ctx.lineTo(-28 * dpr, 7 * dpr); ctx.closePath(); ctx.fill(); ctx.stroke();
               ctx.restore(); ctx.strokeStyle = scene.accent; ctx.lineWidth = 2 * dpr;
               ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 7 * dpr, 0, Math.PI * 2); ctx.stroke();
               if (!launched) { ctx.fillStyle = '#f8fafc'; ctx.beginPath(); ctx.arc(cxC * dpr, cyC * dpr, 3 * dpr, 0, Math.PI * 2); ctx.fill(); }
+              reserveMarker(cxC, cyC, 7);
               var latestLanding = landingMarkers[landingMarkers.length - 1];
               if (inspection) {
                 var inspectedTrail = canvasEl._inspection.trail;
@@ -2415,7 +2573,7 @@ window.StemLab = window.StemLab || {
                   ctx.strokeStyle = '#fde68a'; ctx.lineWidth = 2 * dpr;
                   ctx.beginPath(); ctx.arc(lx * dpr, groundY, 5 * dpr, 0, Math.PI * 2); ctx.stroke();
                   reserveMarker(lx, groundYCSS, 5);
-                  if (!launched || inspection) tag('landing', [((canvasEl._L || {}).landed || 'Landed') + ' ' + latestLanding.dist + ' m'], lx, groundYCSS, '#fde68a', lx, groundYCSS - 30, 5);
+                  if ((!launched || inspection) && (!inspection || !inspection.impact)) tag('landing', [((canvasEl._L || {}).landed || 'Landed') + ' ' + latestLanding.dist + ' m'], lx, groundYCSS, '#fde68a', lx, groundYCSS - 30, 5);
                 }
               }
               // Inspection marks a recorded observation without moving the simulated ball.
@@ -2434,7 +2592,16 @@ window.StemLab = window.StemLab || {
                   ctx.moveTo(selectedX * dpr, (selectedY - 14) * dpr); ctx.lineTo(selectedX * dpr, (selectedY - 6) * dpr);
                   ctx.moveTo(selectedX * dpr, (selectedY + 6) * dpr); ctx.lineTo(selectedX * dpr, (selectedY + 14) * dpr); ctx.stroke();
                   ctx.restore();
-                  tag('inspection', [((canvasEl._L || {}).selectedPoint || 'Recorded point'), 't = ' + inspection.t.toFixed(3) + ' s'], selectedX, selectedY, scene.accent, selectedX, selectedY - 32, 10);
+                  // Phase comes from the original sample; only canonical event evidence identifies an apex.
+                  // The HUD already identifies the recording, leaving room here for height and time.
+                  var pointLabels = canvasEl._L || {};
+                  var pointPhase = inspection.apex && inspection.t === 0 ? (pointLabels.highestAtRelease || 'Highest point at release')
+                    : inspection.index === 0 ? (pointLabels.launchPoint || 'Launch point')
+                    : inspection.impact ? (pointLabels.groundImpact || 'Ground impact')
+                    : inspection.apex ? (pointLabels.atApex || 'At apex')
+                    : inspection.vy > 0 ? (pointLabels.rising || 'Rising')
+                    : inspection.vy < 0 ? (pointLabels.falling || 'Falling') : (pointLabels.level || 'Vertical velocity is zero');
+                  tag('inspection', [pointPhase, 'y = ' + physFormatSampleValue(inspection.y) + ' m · t = ' + inspection.t.toFixed(3) + ' s'], selectedX, selectedY, scene.accent, selectedX, selectedY - 32, 10);
                   canvasEl._visualInspection = { x: selectedX, y: selectedY, t: inspection.t, index: inspection.index, run: inspection.run };
                 }
               }
@@ -2442,18 +2609,26 @@ window.StemLab = window.StemLab || {
               var labels = canvasEl._L || {};
               ctx.fillStyle = scene.panel; ctx.fillRect(0, 0, cW, 100 * dpr);
               ctx.textAlign = 'left'; ctx.fillStyle = scene.ink; ctx.font = '600 ' + (14 * dpr) + 'px sans-serif';
-              ctx.fillText(displayParams.angle + '°  ·  ' + displayParams.velocity + ' m/s  ·  h₀ ' + (displayParams.launchHeight || 0) + ' m', 14 * dpr, 25 * dpr);
+              ctx.fillText(displayParams.angle + '°  ·  v₀ ' + displayParams.velocity + ' m/s  ·  h₀ ' + (displayParams.launchHeight || 0) + ' m', 14 * dpr, 25 * dpr);
               ctx.font = (12 * dpr) + 'px sans-serif'; ctx.fillStyle = scene.muted;
               ctx.fillText('g ' + displayParams.gravity + ' m/s²  ·  ' + displayParams.mass + ' kg', 14 * dpr, 47 * dpr);
+              function liveReadingValue(value) {
+                return value !== 0 && Math.abs(value) < .05 ? physFormatSampleValue(value) : value.toFixed(1);
+              }
+              if (inspection || (ball && launched)) {
+                var displayedSpeed = inspection ? physFormatSampleValue(inspection.speed) : liveReadingValue(Math.hypot(ball.mVx, ball.mVy));
+                ctx.textAlign = 'right'; ctx.fillStyle = '#93c5fd';
+                ctx.fillText('|v| ' + displayedSpeed + ' m/s', cW - 14 * dpr, 47 * dpr);
+                ctx.textAlign = 'left';
+              }
               var scope = inspection ? (inspection.run != null ? labels.runPrefix + inspection.run + ' · ' : '') + labels.selectedPoint : launched ? labels.currentFlight : labels.nextLaunch;
               var status = launched && !inspection ? ' · ' + (_ss === 0 ? labels.paused : labels.flying) : '';
               ctx.fillStyle = scene.accent; ctx.fillText(scope + ' · ' + (displayParams.airResist ? labels.dragOn : labels.vacuum) + status, 14 * dpr, 68 * dpr);
               if (inspection || (ball && launched)) {
                 ctx.fillStyle = scene.ink;
-                var readingDecimals = inspection ? 2 : 1;
                 var vectorReadout = canvasEl.dataset.showVectors === 'true';
                 var reading = inspection || { t: ball.t, x: ball.mX, y: ball.mY, vx: ball.mVx, vy: ball.mVy };
-                function readingValue(value) { return inspection ? physFormatSampleValue(value) : value.toFixed(readingDecimals); }
+                function readingValue(value) { return inspection ? physFormatSampleValue(value) : liveReadingValue(value); }
                 var readouts = ['t ' + reading.t.toFixed(inspection ? 3 : 2) + ' s', vectorReadout ? 'Vx ' + readingValue(reading.vx) + ' m/s' : 'x ' + readingValue(reading.x) + ' m', vectorReadout ? 'Vy ' + readingValue(reading.vy) + ' m/s' : 'y ' + readingValue(reading.y) + ' m'];
                 readouts.forEach(function(reading, i) { ctx.fillStyle = vectorReadout && i > 0 ? (i === 1 ? '#6ee7b7' : '#c4b5fd') : scene.ink; ctx.fillText(reading, (14 + i * (cssW - 28) / 3) * dpr, 89 * dpr); });
               } else if (canvasEl.dataset.constraintType) {
@@ -2545,6 +2720,27 @@ window.StemLab = window.StemLab || {
                 }
                 return true;
               }
+              function segmentDistance(a, b, c, d) {
+                function cross(p, q, r) { return (q.x - p.x) * (r.y - p.y) - (q.y - p.y) * (r.x - p.x); }
+                function pointDistance(p, from, to) {
+                  var dx = to.x - from.x, dy = to.y - from.y, lengthSquared = dx * dx + dy * dy;
+                  var position = lengthSquared ? Math.max(0, Math.min(1, ((p.x - from.x) * dx + (p.y - from.y) * dy) / lengthSquared)) : 0;
+                  return Math.hypot(p.x - from.x - position * dx, p.y - from.y - position * dy);
+                }
+                var abC = cross(a, b, c), abD = cross(a, b, d), cdA = cross(c, d, a), cdB = cross(c, d, b);
+                // Crossing interiors have zero separation; collinear paths use endpoint distances.
+                if (((abC > 0 && abD < 0) || (abC < 0 && abD > 0)) && ((cdA > 0 && cdB < 0) || (cdA < 0 && cdB > 0))) return 0;
+                return Math.min(pointDistance(a, c, d), pointDistance(b, c, d), pointDistance(c, a, b), pointDistance(d, a, b));
+              }
+              function connectorOutsideBundle(connector, anchor, left, right, top, bottom) {
+                var dx = connector.to.x - anchor.x, dy = connector.to.y - anchor.y;
+                var length = Math.hypot(dx, dy);
+                var exit = Math.min(
+                  dx > 0 ? (right + 3 - anchor.x) / dx : dx < 0 ? (left - 3 - anchor.x) / dx : Infinity,
+                  dy > 0 ? (bottom + 3 - anchor.y) / dy : dy < 0 ? (top - 3 - anchor.y) / dy : Infinity);
+                var start = Math.max(Math.hypot(connector.from.x - anchor.x, connector.from.y - anchor.y) / length, exit);
+                return start < 1 ? { from: { x: anchor.x + dx * start, y: anchor.y + dy * start }, to: connector.to } : null;
+              }
               function connectorFor(t, rect) {
                 var to = { x: Math.max(rect.x, Math.min(rect.x + rect.width, t.anchor.x)), y: Math.max(rect.y, Math.min(rect.y + rect.height, t.anchor.y)) };
                 var dx = to.x - t.anchor.x, dy = to.y - t.anchor.y, length = Math.sqrt(dx * dx + dy * dy);
@@ -2552,47 +2748,148 @@ window.StemLab = window.StemLab || {
                 var start = Math.min(t.radius + 2, length);
                 return { from: { x: t.anchor.x + dx * start / length, y: t.anchor.y + dy * start / length }, to: to };
               }
+              var multipleComparisonLabels = tagQueue.filter(function(t) { return t.id.indexOf('run-') === 0; }).length > 1;
               tagQueue.sort(function(a, b) {
-                var priority = (tagPriority[a.id] == null ? 4 : tagPriority[a.id]) - (tagPriority[b.id] == null ? 4 : tagPriority[b.id]);
+                // Recorded route identities claim space immediately after the selected readout.
+                var aPriority = a.id.indexOf('run-') === 0 ? -.5 : tagPriority[a.id] == null ? 4 : tagPriority[a.id];
+                var bPriority = b.id.indexOf('run-') === 0 ? -.5 : tagPriority[b.id] == null ? 4 : tagPriority[b.id];
+                var priority = aPriority - bPriority;
                 if (priority) return priority;
                 return a.id.indexOf('run-') === 0 && b.id.indexOf('run-') === 0 ? Number(b.id.slice(4)) - Number(a.id.slice(4)) : 0;
               });
               tagQueue.forEach(function(t) {
-                var maxWidth = Math.min(240, cssW - 28), lines = [];
-                t.lines.forEach(function(line) {
-                  var words = String(line).split(' '), row = '';
-                  words.forEach(function(word) { var next = row ? row + ' ' + word : word; if (ctx.measureText(next).width / dpr > maxWidth - 18 && row) { lines.push(row); row = word; } else row = next; });
-                  if (row) lines.push(row);
+                var fullWidth = Math.min(240, labelBounds.right - labelBounds.left);
+                var widthLimits = [fullWidth];
+                // A narrower wrapped readout can connect through a crowded point corridor.
+                if (t.id === 'inspection' || t.id.indexOf('run-') === 0) widthLimits.push(fullWidth * .55);
+                widthLimits.some(function(maxWidth) {
+                  var lines = [], fits = true;
+                  if (maxWidth <= 18) return;
+                  t.lines.forEach(function(line) {
+                    if (!fits) return;
+                    var words = String(line).split(/\s+/), row = '';
+                    words.forEach(function(word) {
+                      if (!fits || !word) return;
+                      var next = row ? row + ' ' + word : word;
+                      if (ctx.measureText(next).width / dpr <= maxWidth - 18) { row = next; return; }
+                      if (row) { lines.push(row); row = ''; }
+                      if (ctx.measureText(word).width / dpr <= maxWidth - 18) { row = word; return; }
+                      var characters = typeof Intl !== 'undefined' && Intl.Segmenter
+                        ? Array.from(new Intl.Segmenter(undefined, { granularity: 'grapheme' }).segment(word), function(part) { return part.segment; })
+                        : Array.from(word);
+                      // An indivisible character cluster must fit without clipping or shrinking.
+                      if (characters.some(function(character) { return ctx.measureText(character).width / dpr > maxWidth - 18; })) { fits = false; return; }
+                      characters.forEach(function(character) {
+                        if (row && ctx.measureText(row + character).width / dpr > maxWidth - 18) { lines.push(row); row = character; }
+                        else row += character;
+                      });
+                    });
+                    if (row) lines.push(row);
+                  });
+                  if (!fits || !lines.length) return;
+                  var width = Math.min(maxWidth, Math.max.apply(null, lines.map(function(line) { return ctx.measureText(line).width / dpr; })) + 18), height = lines.length * 17 + 12;
+                  if (height > labelBounds.bottom - labelBounds.top) return;
+                  var candidates = [[t.x + 16, t.y + 12], [t.x - width - 16, t.y + 12], [t.x - width / 2, t.y - height], [t.x - width / 2, t.y - height - 50], [t.x + 16, groundYCSS - height - 8]];
+                  // Leave more vertical space for original route identities on a crowded plot.
+                  if (t.id === 'inspection' && multipleComparisonLabels) {
+                    var nearerCard = candidates[2]; candidates[2] = candidates[3]; candidates[3] = nearerCard;
+                  }
+                  {
+                    // Place every card around its full point and arrow bundle.
+                    // Keep the same clearance and leader checks for every candidate.
+                    var ownMarkers = markerBoxes.filter(function(b) { return t.anchor.x >= b.x && t.anchor.x <= b.x + b.width && t.anchor.y >= b.y && t.anchor.y <= b.y + b.height; });
+                    var left = t.anchor.x - t.radius, right = t.anchor.x + t.radius, top = t.anchor.y - t.radius, bottom = t.anchor.y + t.radius;
+                    ownMarkers.forEach(function(b) { left = Math.min(left, b.x); right = Math.max(right, b.x + b.width); top = Math.min(top, b.y); bottom = Math.max(bottom, b.y + b.height); });
+                    candidates.push([t.anchor.x - width / 2, bottom + 10], [right + 10, t.anchor.y - height / 2], [left - width - 10, t.anchor.y - height / 2],
+                      [t.anchor.x - width / 2, top - height - 10], [right + 10, bottom + 10], [left - width - 10, bottom + 10],
+                      [right + 10, top - height - 10], [left - width - 10, top - height - 10]);
+                  }
+                  // A finite fallback search keeps crowded cards inside the ruler boundaries.
+                  var xStops = [labelBounds.left, (labelBounds.left + labelBounds.right - width) / 2, labelBounds.right - width];
+                  var yStops = [labelBounds.top, (labelBounds.top + labelBounds.bottom - height) / 2, labelBounds.bottom - height];
+                  var edgeStops = [], seenEdgeStops = Object.create(null);
+                  yStops.forEach(function(y) { seenEdgeStops[y] = true; });
+                  function addEdgeStop(y) {
+                    y = Math.max(labelBounds.top, Math.min(labelBounds.bottom - height, y));
+                    if (seenEdgeStops[y]) return;
+                    seenEdgeStops[y] = true; edgeStops.push(y);
+                  }
+                  // Repeated point reservations must not consume the bounded fallback search.
+                  tagBoxes.forEach(function(box) { addEdgeStop(box.y - height - 6); addEdgeStop(box.y + box.height + 6); });
+                  markerBoxes.forEach(function(box) { addEdgeStop(box.y - height - 10); addEdgeStop(box.y + box.height + 10); });
+                  edgeStops.sort(function(a, b) { return Math.abs(a - t.y) - Math.abs(b - t.y); });
+                  yStops = yStops.concat(edgeStops.slice(0, 12));
+                  xStops.sort(function(a, b) { return Math.abs(a + width / 2 - t.anchor.x) - Math.abs(b + width / 2 - t.anchor.x); });
+                  yStops.sort(function(a, b) { return Math.abs(a + height / 2 - t.anchor.y) - Math.abs(b + height / 2 - t.anchor.y); });
+                  yStops.forEach(function(y) { xStops.forEach(function(x) { candidates.push([x, y]); }); });
+                  var chosen = null, triedPositions = Object.create(null);
+                  candidates.some(function(p) {
+                    var rect = { x: Math.max(labelBounds.left, Math.min(labelBounds.right - width, p[0])), y: Math.max(labelBounds.top, Math.min(labelBounds.bottom - height, p[1])), width: width, height: height, id: t.id, fontSize: 12 };
+                    var positionKey = rect.x + ':' + rect.y;
+                    if (triedPositions[positionKey]) return false;
+                    triedPositions[positionKey] = true;
+                    if (tagBoxes.some(function(b) { return rect.x < b.x + b.width + 6 && rect.x + rect.width + 6 > b.x && rect.y < b.y + b.height + 6 && rect.y + rect.height + 6 > b.y; })) return false;
+                    if (markerBoxes.some(function(b) { return rect.x < b.x + b.width && rect.x + rect.width > b.x && rect.y < b.y + b.height && rect.y + rect.height > b.y; })) return false;
+                    var connector = connectorFor(t, rect);
+                    if (!connector) return false;
+                    // A shared point must retain its selected crosshair under later foreground lines.
+                    var selectedMarker = canvasEl._visualInspection;
+                    if (t.id !== 'inspection' && selectedMarker) {
+                      var sx = selectedMarker.x, sy = selectedMarker.y;
+                      var crosshairArms = [
+                        [{ x: sx - 14, y: sy }, { x: sx - 6, y: sy }],
+                        [{ x: sx + 6, y: sy }, { x: sx + 14, y: sy }],
+                        [{ x: sx, y: sy - 14 }, { x: sx, y: sy - 6 }],
+                        [{ x: sx, y: sy + 6 }, { x: sx, y: sy + 14 }]
+                      ];
+                      if (crosshairArms.some(function(arm) { return segmentDistance(connector.from, connector.to, arm[0], arm[1]) < 2; })) return false;
+                    }
+                    if (tagBoxes.some(function(b) { return segmentCrossesBox(connector.from, connector.to, b, 2) || (b.connector && segmentCrossesBox(b.connector.from, b.connector.to, rect, 2)); })) return false;
+                    // Reserve both connector outlines and their antialiased edges.
+                    if (tagBoxes.some(function(b) {
+                      if (!b.connector) return false;
+                      var incoming = connector, existing = b.connector;
+                      // Tags at the same point can share its marker bundle before their paths separate.
+                      if (Math.abs(t.anchor.x - b.anchor.x) < 1e-7 && Math.abs(t.anchor.y - b.anchor.y) < 1e-7) {
+                        incoming = connectorOutsideBundle(connector, t.anchor, left, right, top, bottom);
+                        existing = connectorOutsideBundle(b.connector, t.anchor, left, right, top, bottom);
+                      }
+                      return incoming && existing && segmentDistance(incoming.from, incoming.to, existing.from, existing.to) < 4;
+                    })) return false;
+                    if (markerBoxes.some(function(b) {
+                      if (t.anchor.x >= b.x && t.anchor.x <= b.x + b.width && t.anchor.y >= b.y && t.anchor.y <= b.y + b.height) return false;
+                      return segmentCrossesBox(connector.from, connector.to, b, 3);
+                    })) return false;
+                    rect.anchor = { x: t.anchor.x, y: t.anchor.y, radius: t.radius };
+                    rect.connector = connector;
+                    chosen = rect; return true;
+                  });
+                  if (!chosen) return;
+                  tagBoxes.push(chosen);
+                  // Keep the dark outline outside the point's crosshair and arrow bundle.
+                  var outlineDX = chosen.connector.to.x - t.anchor.x, outlineDY = chosen.connector.to.y - t.anchor.y;
+                  var outlineLength = Math.hypot(outlineDX, outlineDY);
+                  var outlineExit = Math.min(
+                    outlineDX > 0 ? (right + 3 - t.anchor.x) / outlineDX : outlineDX < 0 ? (left - 3 - t.anchor.x) / outlineDX : Infinity,
+                    outlineDY > 0 ? (bottom + 3 - t.anchor.y) / outlineDY : outlineDY < 0 ? (top - 3 - t.anchor.y) / outlineDY : Infinity);
+                  var outlineStart = Math.max((t.radius + 2) / outlineLength, outlineExit);
+                  chosen.outline = outlineStart < 1 ? { from: { x: t.anchor.x + outlineDX * outlineStart, y: t.anchor.y + outlineDY * outlineStart }, to: chosen.connector.to } : null;
+                  ctx.save();
+                  if (chosen.outline) {
+                    ctx.strokeStyle = scene.panel; ctx.lineWidth = 3 * dpr; ctx.globalAlpha = 1;
+                    ctx.beginPath(); ctx.moveTo(chosen.outline.from.x * dpr, chosen.outline.from.y * dpr); ctx.lineTo(chosen.outline.to.x * dpr, chosen.outline.to.y * dpr); ctx.stroke();
+                  }
+                  ctx.strokeStyle = t.color; ctx.lineWidth = dpr; ctx.globalAlpha = highContrast ? 1 : .72;
+                  ctx.beginPath(); ctx.moveTo(chosen.connector.from.x * dpr, chosen.connector.from.y * dpr); ctx.lineTo(chosen.connector.to.x * dpr, chosen.connector.to.y * dpr); ctx.stroke(); ctx.restore();
+                  ctx.fillStyle = scene.panel;
+                  ctx.beginPath(); ctx.roundRect(chosen.x * dpr, chosen.y * dpr, width * dpr, height * dpr, 6 * dpr); ctx.fill();
+                  ctx.strokeStyle = t.color; ctx.lineWidth = dpr; ctx.stroke();
+                  ctx.fillStyle = t.color; ctx.textAlign = 'left';
+                  lines.forEach(function(line, i) { ctx.fillText(line, (chosen.x + 9) * dpr, (chosen.y + 19 + i * 17) * dpr); });
+                  return true;
                 });
-                var width = Math.min(maxWidth, Math.max.apply(null, lines.map(function(line) { return ctx.measureText(line).width / dpr; })) + 18), height = lines.length * 17 + 12;
-                var candidates = [[t.x + 16, t.y + 12], [t.x - width - 16, t.y + 12], [t.x - width / 2, t.y - height], [t.x - width / 2, t.y - height - 50], [t.x + 16, groundYCSS - height - 8]];
-                var chosen = null;
-                candidates.some(function(p) {
-                  var rect = { x: Math.max(10, Math.min(cssW - width - 10, p[0])), y: Math.max(plotTop + 8, Math.min(groundYCSS - height - 8, p[1])), width: width, height: height, id: t.id, fontSize: 12 };
-                  if (tagBoxes.some(function(b) { return rect.x < b.x + b.width + 6 && rect.x + rect.width + 6 > b.x && rect.y < b.y + b.height + 6 && rect.y + rect.height + 6 > b.y; })) return false;
-                  if (markerBoxes.some(function(b) { return rect.x < b.x + b.width && rect.x + rect.width > b.x && rect.y < b.y + b.height && rect.y + rect.height > b.y; })) return false;
-                  var connector = connectorFor(t, rect);
-                  if (!connector) return false;
-                  if (tagBoxes.some(function(b) { return segmentCrossesBox(connector.from, connector.to, b, 2) || (b.connector && segmentCrossesBox(b.connector.from, b.connector.to, rect, 2)); })) return false;
-                  if (markerBoxes.some(function(b) {
-                    if (t.anchor.x >= b.x && t.anchor.x <= b.x + b.width && t.anchor.y >= b.y && t.anchor.y <= b.y + b.height) return false;
-                    return segmentCrossesBox(connector.from, connector.to, b, 0);
-                  })) return false;
-                  rect.anchor = { x: t.anchor.x, y: t.anchor.y, radius: t.radius };
-                  rect.connector = connector;
-                  chosen = rect; return true;
-                });
-                if (!chosen) return;
-                tagBoxes.push(chosen);
-                ctx.save(); ctx.strokeStyle = t.color; ctx.lineWidth = dpr; ctx.globalAlpha = highContrast ? 1 : .72;
-                ctx.beginPath(); ctx.moveTo(chosen.connector.from.x * dpr, chosen.connector.from.y * dpr); ctx.lineTo(chosen.connector.to.x * dpr, chosen.connector.to.y * dpr); ctx.stroke(); ctx.restore();
-                ctx.fillStyle = scene.panel;
-                ctx.beginPath(); ctx.roundRect(chosen.x * dpr, chosen.y * dpr, width * dpr, height * dpr, 6 * dpr); ctx.fill();
-                ctx.strokeStyle = t.color; ctx.lineWidth = dpr; ctx.stroke();
-                ctx.fillStyle = t.color; ctx.textAlign = 'left';
-                lines.forEach(function(line, i) { ctx.fillText(line, (chosen.x + 9) * dpr, (chosen.y + 19 + i * 17) * dpr); });
               });
-              canvasEl._visualLayout = { width: cssW, height: cssH, plotTop: plotTop, groundY: groundYCSS, fontMin: 12, labels: tagBoxes, vectorScale: canvasEl._visualVectors ? canvasEl._visualVectors.scale : null };
+              canvasEl._visualLayout = { width: cssW, height: cssH, plotTop: plotTop, groundY: groundYCSS, fontMin: 12, labels: tagBoxes, labelBounds: labelBounds, vectorScale: canvasEl._visualVectors ? canvasEl._visualVectors.scale : null };
 
 
               // Sync state back to canvas element for persistence
@@ -2684,7 +2981,7 @@ window.StemLab = window.StemLab || {
           // change. While a panel is open AND a ball is in flight, update a few
           // times a second while retaining the same canvas controller.
           (function () {
-            if (typeof document === 'undefined' || !(d.showFlightData || d.showGraphs)) return;
+            if (typeof document === 'undefined' || !(d.showFlightData || d.showGraphs || d.showOverlay)) return;
             var cv = document.getElementById('physicsCanvas');
             if (!cv || !cv._launched || cv._liveTimer) return;
             cv._liveTimer = setTimeout(function () {
@@ -2845,6 +3142,7 @@ window.StemLab = window.StemLab || {
               var trails = cv && cv._trails || [];
               if (!trails.length) return null;
               var sample = physSelectedInspection(cv);
+              var historyRows = physTrajectoryPresentation(cv, isContrast, true);
               var selectedIndex = sample ? trails.indexOf(cv._inspection.trail) : trails.length - 1;
               var trail = trails[selectedIndex];
               var end = trail[trail.length - 1] || {};
@@ -2861,15 +3159,16 @@ window.StemLab = window.StemLab || {
                 React.createElement('select', { id: 'physics-history-flight', 'data-physics-history-select': true, value: selectedIndex, 'aria-describedby': 'physics-history-help',
                   onChange: function(event) {
                     var chosen = trails[Number(event.target.value)];
-                    if (chosen) physSelectSample(chosen.length - 1, chosen);
+                    if (chosen) physSelectSample(chosen.length - 1, chosen, null);
                   } }, trails.map(function(recorded, index) {
-                    var label = recorded.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + recorded.run : __alloT('stem.physics.history_unfinished', 'Unfinished flight') + ' ' + (index + 1);
+                    var label = physPlotFlightLabel(historyRows[index]);
                     label += ' · ' + (recorded.drag ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off')) + ' · θ ' + recorded.angle + '° · v₀ ' + recorded.velocity + ' m/s';
-                    return React.createElement('option', { key: index, value: index }, label);
+                    return React.createElement('option', { key: historyRows[index].presentationKey, value: index, 'data-physics-history-identity': historyRows[index].id }, label);
                   })),
                 React.createElement('button', { type: 'button', 'data-physics-history-inspect': true,
-                  onClick: function() { if (physSelectSample(sample ? sample.index : trail.length - 1, trail)) physRevealInspection(); } }, __alloT('stem.physics.history_open', 'Inspect this flight')),
+                  onClick: function() { if (physSelectSample(sample ? sample.index : trail.length - 1, trail, null)) physRevealInspection(); } }, __alloT('stem.physics.history_open', 'Inspect this flight')),
                 React.createElement('div', { className: 'phys-history-recording', 'data-physics-history-recording': recording ? 'saved' : 'session' },
+                  React.createElement('strong', { 'data-physics-history-run': trail.run == null ? 'unfinished' : trail.run }, physPlotFlightLabel(historyRows[selectedIndex])),
                   React.createElement('strong', null, recording
                     ? __alloT('stem.physics.history_kept_recording', 'Kept recording')
                     : trail.run == null ? __alloT('stem.physics.history_unfinished', 'Unfinished flight')
@@ -2878,6 +3177,35 @@ window.StemLab = window.StemLab || {
                     trail.length + ' ' + __alloT('stem.physics.history_original_points', 'original points') + ' · ' + end.t.toFixed(3) + ' s')),
                 React.createElement('p', { id: 'physics-history-help' }, __alloT('stem.physics.history_saved_help', 'Completed recordings reopen with the simulator. Up to five are kept; very long flights can reduce this count. Choosing a flight pauses playback and links its recorded canvas, graphs, and data.')));
             }
+
+          function physRecordedSettingsBusy(cv) {
+            return !!(cv && (cv._launched || cv._demo || cv._demoTimer));
+          }
+          function physReuseRecordedSettings(trail, parameters) {
+            var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+            var patch = { angle: parameters.angle, velocity: parameters.velocity, gravity: parameters.gravity,
+              mass: parameters.mass, launchHeight: parameters.launchHeight, airResist: parameters.airResist };
+            setLabToolData(function(prev) {
+              var current = physNormalizeState(prev.physics);
+              // A retained observation can prepare a repeat; it never replaces an active flight.
+              if (!cv || !cv.isConnected || document.getElementById('physicsCanvas') !== cv ||
+                  !Array.isArray(cv._trails) || cv._trails.indexOf(trail) < 0 || physRecordedSettingsBusy(cv) ||
+                  current.targetMode || current.challengeActive || current.battleMode ||
+                  !physRecordedFlightParameters({ angle: patch.angle, velocity: patch.velocity, gravity: patch.gravity,
+                    mass: patch.mass, launchHeight: patch.launchHeight, drag: patch.airResist }) ||
+                  Object.keys(patch).every(function(key) { return current[key] === patch[key]; })) return prev;
+              return Object.assign({}, prev, { physics: Object.assign({}, prev.physics, patch) });
+            });
+            setTimeout(function() {
+              if (!cv || !cv.isConnected || document.getElementById('physicsCanvas') !== cv || !Array.isArray(cv._trails)) return;
+              var inspected = physSelectedInspection(cv);
+              var displayed = inspected ? cv._inspection.trail : cv._trails[cv._trails.length - 1];
+              var outer = cv.closest('#physics-fs-outer');
+              var status = outer && outer.querySelector('[data-physics-settings-comparison][data-matches="true"]');
+              // The Apply button becomes disabled after success. Keep keyboard focus in this context.
+              if (displayed === trail && status) status.focus({ preventScroll: true });
+            }, 0);
+          }
 
           // Each view reads the same captured trail. The canvas remains outside the workspace.
           function physRenderAnalysisReadings() {
@@ -2889,6 +3217,7 @@ window.StemLab = window.StemLab || {
               var sample = selected || physInspectSample(trail, trail ? trail.length - 1 : 0);
               if (!sample) return null;
               var h = React.createElement;
+              var flightLabel = physPlotFlightLabel(physTrajectoryPresentation(cv, isContrast, true).find(function(row) { return row.trail === trail; }));
 
               var parameters = sample.parameters;
               var moments = physRecordedMoments(trail);
@@ -2964,27 +3293,70 @@ window.StemLab = window.StemLab || {
               }
               var sampleLabel = __alloT('stem.physics.sample_number', 'Sample') + ' ' + (sample.index + 1) + ' / ' + sample.count;
               var settings = [
-                'θ = ' + parameters.angle + '°', 'v₀ = ' + parameters.velocity + ' m/s',
-                'g = ' + parameters.gravity + ' m/s²', 'm = ' + parameters.mass + ' kg', 'h₀ = ' + parameters.launchHeight + ' m',
-                parameters.airResist ? __alloT('stem.physics.sample_drag_on', 'Air drag on') : __alloT('stem.physics.sample_drag_off', 'Air drag off')
+                { key: 'angle', label: __alloT('stem.physics.recorded_angle', 'Launch angle · θ'), unit: '°' },
+                { key: 'velocity', label: __alloT('stem.physics.recorded_speed', 'Launch speed · v₀'), unit: ' m/s' },
+                { key: 'gravity', label: __alloT('stem.physics.recorded_gravity', 'Gravity · g'), unit: ' m/s²' },
+                { key: 'mass', label: __alloT('stem.physics.recorded_mass', 'Mass · m'), unit: ' kg' },
+                { key: 'launchHeight', label: __alloT('stem.physics.recorded_height', 'Launch height · h₀'), unit: ' m' },
+                { key: 'airResist', label: __alloT('stem.physics.recorded_drag', 'Air drag'), unit: '' }
               ];
+              function settingValue(setting, value) {
+                return setting.key === 'airResist'
+                  ? value ? __alloT('stem.physics.on', 'ON') : __alloT('stem.physics.off', 'OFF')
+                  : value + setting.unit;
+              }
+              var changes = settings.filter(function(setting) { return parameters[setting.key] !== d[setting.key]; });
+              var repeatBusy = physRecordedSettingsBusy(cv);
+              var repeatLocked = !!(d.targetMode || d.challengeActive || d.battleMode);
+              var repeatSupported = physRecordedFlightParameters({ angle: parameters.angle, velocity: parameters.velocity,
+                gravity: parameters.gravity, mass: parameters.mass, launchHeight: parameters.launchHeight, drag: parameters.airResist });
 
             return {
               header: React.createElement(React.Fragment, null, h('div', { className: 'phys-measured-heading' },
                   h('div', null,
                     h('h3', { id: 'physics-sample-heading' }, __alloT('stem.physics.analysis_title', 'Flight analysis')),
-                    h('p', { 'data-physics-graph-flight': sample.run == null ? 'unfinished' : sample.run }, (sample.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + sample.run + ' · ' : '') + (selected ? sampleLabel : __alloT('stem.physics.analysis_latest', 'Latest recorded sample')) + (sample.impact ? ' · ' + __alloT('stem.physics.sample_ground_impact', 'Ground impact') : ''))),
+                    h('p', { 'data-physics-graph-flight': sample.run == null ? 'unfinished' : sample.run }, flightLabel + ' · ' + (selected ? sampleLabel : __alloT('stem.physics.analysis_latest', 'Latest recorded sample')) + (sample.impact ? ' · ' + __alloT('stem.physics.sample_ground_impact', 'Ground impact') : ''))),
                   h('span', { className: 'phys-analysis-phase', 'data-physics-analysis-phase': sample.phase }, phaseLabel),
                   h('strong', { className: 'phys-sample-time' }, 't = ' + sample.t.toFixed(3) + ' s'),
-                  selected && h('button', { type: 'button', 'data-physics-sample-close': true, onClick: function() {
-                    var olderFlight = cv._inspection && cv._inspection.trail !== cv._trails[cv._trails.length - 1];
-                    physClearInspection();
+                  h('button', { type: 'button', 'data-physics-show-trajectory': true, onClick: function() {
+                    if (!selected && !physSelectSample(sample.index, trail)) return;
                     setTimeout(function() {
-                      var opener = olderFlight ? document.querySelector('[data-physics-history-select]') : document.querySelector('[data-physics-inspect]');
-                      if (opener) opener.focus();
+                      if (!cv || !cv.isConnected || document.getElementById('physicsCanvas') !== cv) return;
+                      cv.scrollIntoView({ behavior: window.matchMedia && window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth', block: 'center' });
+                      cv.focus({ preventScroll: true });
                     }, 0);
-                  } }, __alloT('stem.physics.sample_close', 'Close inspector'))), h('div', { className: 'phys-capture-settings', 'data-physics-graph-settings': true, 'aria-label': __alloT('stem.physics.sample_recorded_settings', 'Recorded launch settings') }, settings.map(function(label, index) { return h('span', { key: index, 'data-physics-graph-setting': ['angle', 'velocity', 'gravity', 'mass', 'launchHeight'][index] }, label); })), h('p', { className: 'sr-only', 'data-physics-sample-status': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
-                  selected ? (sample.run != null ? __alloT('stem.physics.investigation_run', 'Run') + ' ' + sample.run + ' · ' : '') + sampleLabel + ' · t = ' + sample.t.toFixed(3) + ' s · ' + phaseLabel : '')),
+                  } }, __alloT('stem.physics.show_on_trajectory', 'Show on trajectory')),
+                  selected && h('button', { type: 'button', 'data-physics-sample-close': true, onClick: function() {
+                    physCloseSelectedInspection(cv, false);
+                  } }, __alloT('stem.physics.sample_close', 'Close inspector'))),
+                h('section', { 'data-physics-recorded-context': true, 'data-physics-graph-settings': true, 'aria-labelledby': 'physics-recorded-settings-heading' },
+                  h('div', { className: 'phys-recorded-heading' },
+                    h('h4', { id: 'physics-recorded-settings-heading' }, __alloT('stem.physics.sample_recorded_settings', 'Recorded launch settings')),
+                    h('span', null, flightLabel)),
+                  h('dl', { className: 'phys-recorded-settings' }, settings.map(function(setting) {
+                    var changed = parameters[setting.key] !== d[setting.key];
+                    return h('div', { key: setting.key, 'data-physics-recorded-setting': setting.key, 'data-changed': changed ? 'true' : 'false' },
+                      h('dt', null, setting.label),
+                      h('dd', { 'data-physics-graph-setting': setting.key }, settingValue(setting, parameters[setting.key])),
+                      changed && h('dd', { className: 'phys-next-setting', 'data-physics-next-setting': setting.key },
+                        h('span', null, __alloT('stem.physics.recorded_next_value', 'Next launch:') + ' '),
+                        h('strong', null, settingValue(setting, d[setting.key]))));
+                  })),
+                  h('div', { className: 'phys-recorded-repeat' },
+                    h('p', { 'data-physics-settings-comparison': true, 'data-matches': changes.length ? 'false' : 'true', role: 'status', 'aria-live': 'polite', 'aria-atomic': true, tabIndex: -1 },
+                      changes.length === 0 ? __alloT('stem.physics.recorded_settings_match', 'The next launch matches this recording.')
+                        : changes.length === 1 ? __alloT('stem.physics.recorded_settings_one_change', 'One setting differs for the next launch.')
+                          : __alloT('stem.physics.recorded_settings_many_changes', 'Several settings differ for the next launch. Change one variable at a time for a fair comparison.')),
+                    h('button', { type: 'button', 'data-physics-reuse-settings': true, disabled: !changes.length || repeatBusy || repeatLocked || !repeatSupported,
+                      'aria-describedby': 'physics-recorded-repeat-help', onClick: function() { physReuseRecordedSettings(trail, parameters); } },
+                      __alloT('stem.physics.reuse_recorded_settings', 'Use these settings for the next launch'))),
+                  h('p', { id: 'physics-recorded-repeat-help', className: 'phys-recorded-help' },
+                    repeatLocked ? __alloT('stem.physics.investigation_mode_locked', 'Finish or leave the active mission, challenge, or battle before applying investigation settings.')
+                      : repeatBusy ? __alloT('stem.physics.reuse_recorded_settings_flight', 'Finish or clear the unfinished flight before applying recorded settings.')
+                        : !repeatSupported ? __alloT('stem.physics.reuse_recorded_settings_unsupported', 'This recording uses settings outside the launch controls.')
+                          : __alloT('stem.physics.reuse_recorded_settings_help', 'Apply the original settings, then use Launch to collect a new flight.'))),
+                h('p', { className: 'sr-only', 'data-physics-sample-status': true, role: 'status', 'aria-live': 'polite', 'aria-atomic': true },
+                  selected ? flightLabel + ' · ' + sampleLabel + ' · t = ' + sample.t.toFixed(3) + ' s · ' + phaseLabel : '')),
               motion: React.createElement(React.Fragment, null, h('section', { 'data-physics-motion-phase': sample.phase, 'aria-label': phaseLabel },
                   h('div', { className: 'phys-phase-heading' }, h('span', { 'aria-hidden': true }, sample.phase === 'rising' ? '↑' : sample.phase === 'falling' || sample.phase === 'impact' ? '↓' : sample.phase === 'apex' ? '∩' : '—'), h('h4', { 'data-physics-phase-label': true }, phaseLabel)),
                   h('p', { 'data-physics-phase-help': true }, phaseHelp),
@@ -3219,13 +3591,14 @@ window.StemLab = window.StemLab || {
               timeline: graphCanInspect && React.createElement('div', { 'data-physics-graph-time-control': true, 'data-physics-analysis-timeline': true, style: { marginBottom: 12, padding: '12px 14px', background: graphColors.surface, border: '1px solid ' + graphColors.border, borderRadius: 12 } },
                   React.createElement('div', { style: { display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 10, flexWrap: 'wrap' } },
                     React.createElement('label', { htmlFor: 'physics-graph-time', style: { fontSize: 14, fontWeight: 700, color: graphColors.ink } }, __alloT('stem.physics.graph_recorded_time', 'Recorded time')),
+                    React.createElement('span', { 'data-physics-time-sample': true, style: { color: graphColors.muted, fontSize: 12, fontWeight: 650, fontVariantNumeric: 'tabular-nums' } }, __alloT('stem.physics.sample_number', 'Sample') + ' ' + (graphIndex + 1) + ' / ' + pts.length),
                     React.createElement('span', { 'data-physics-graph-time-value': true, style: { color: graphColors.ink, fontSize: 16, fontWeight: 750, fontVariantNumeric: 'tabular-nums' } }, 't = ' + graphTime.toFixed(3) + ' s')),
                   React.createElement('input', { id: 'physics-graph-time', 'data-physics-graph-time-slider': true, 'data-physics-sample-slider': true, type: 'range', min: 0, max: pts.length - 1, step: 1, value: graphIndex, disabled: pts.length < 2,
                     'aria-valuetext': 't = ' + graphTime.toFixed(3) + ' s; ' + __alloT('stem.physics.graph_sample', 'sample') + ' ' + (graphIndex + 1) + ' / ' + pts.length,
                     'aria-describedby': 'physics-graph-time-help', onChange: function(event) { physSelectSample(Number(event.target.value), lastTrail); },
                     style: { display: 'block', width: '100%', minHeight: 44, margin: '6px 0', accentColor: graphColors.marker } }),
                   React.createElement('div', { style: { display: 'flex', gap: '8px 16px', alignItems: 'center', flexWrap: 'wrap' } },
-                    React.createElement('button', { type: 'button', 'data-physics-graph-inspect': true, onClick: function() { physSelectSample(graphIndex, lastTrail); },
+                    React.createElement('button', { type: 'button', 'data-physics-graph-inspect': true, onClick: function() { physSelectSample(graphIndex, lastTrail, null); },
                       style: { minHeight: 44, padding: '9px 12px', border: '1px solid ' + graphColors.axis, background: graphColors.panel, color: graphColors.ink, borderRadius: 9, fontSize: 12, fontWeight: 700 } }, __alloT('stem.physics.graph_inspect_time', 'Inspect this time')),
                     React.createElement('p', { id: 'physics-graph-time-help', style: { flex: '1 1 240px', margin: 0, color: graphColors.muted, fontSize: 12, lineHeight: 1.6 } },
                       __alloT('stem.physics.graph_time_help', 'Tap a graph or move the time control to inspect the nearest recorded point. Selecting a point pauses playback.'))),
@@ -3539,7 +3912,7 @@ window.StemLab = window.StemLab || {
                             var slider = panel.querySelector('[data-physics-sample-slider]');
                             (slider && !slider.disabled ? slider : panel).focus({ preventScroll: true });
                           }, 0);
-                        } }, t_sec.toFixed(3), momentLabel && React.createElement('span', { 'data-physics-table-moment': true }, momentLabel))),
+                        } }, t_sec.toFixed(3), React.createElement('span', { 'data-physics-row-sample': true }, __alloT('stem.physics.sample_number', 'Sample') + ' ' + (ri + 1)), momentLabel && React.createElement('span', { 'data-physics-table-moment': true }, momentLabel))),
                     React.createElement('td', null, physFormatSampleValue(pt.mX)),
                     React.createElement('td', null, physFormatSampleValue(pt.mY)),
                     React.createElement('td', null, physFormatSampleValue(pt.mVx || 0)),
@@ -3648,8 +4021,48 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer [data-physics-plot-key]{display:flex;flex-wrap:wrap;gap:9px 22px;align-items:center;margin:-5px 0 16px;padding:10px 14px;background:#142f43;color:#e2edf5;border:1px solid #476378;border-radius:10px;font-size:12px;line-height:1.5}
               #physics-fs-outer [data-physics-plot-key]>span{display:flex;align-items:center;gap:6px;flex-wrap:wrap}
               #physics-fs-outer .phys-speed-swatch{display:inline-block;width:45px;height:6px;border-radius:3px;background:linear-gradient(to right,#67e8f9,#fbbf24,#fb7185)}
-              #physics-fs-outer .phys-vacuum-swatch{display:inline-block;width:22px;height:0;border-top:2px dashed #fff}
+              #physics-fs-outer .phys-vacuum-swatch{width:48px;height:14px;flex:none}
+              #physics-fs-outer [data-physics-vacuum-parameters]{flex-basis:100%;font-size:12px;color:inherit}
+              #physics-fs-outer [data-physics-path-key-group]{flex-basis:100%;min-width:0;border-top:1px solid #476378;padding-top:9px}
+              #physics-fs-outer .phys-path-key-title{margin:0 0 8px;font-size:13px;font-weight:700;color:inherit}
+              #physics-fs-outer .phys-trail-keys{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:6px}
+              #physics-fs-outer [data-physics-trail-key]{display:grid;grid-template-columns:56px minmax(0,1fr) 16px;gap:9px;align-items:center;min-width:0;min-height:56px;width:100%;padding:8px;text-align:start;font-family:inherit;appearance:none;cursor:pointer;border:1px solid #476378;border-radius:8px;background:#102638;color:#e2edf5;font-size:12px;line-height:1.5}
+              #physics-fs-outer [data-physics-trail-key][data-active="true"]{border-color:#67e8f9}
+              #physics-fs-outer [data-physics-trail-swatch]{width:56px;height:16px;flex:none}
+              #physics-fs-outer .phys-trail-title{display:block;font-size:12px;font-weight:700;color:inherit}
+              #physics-fs-outer .phys-trail-details{display:flex;flex-wrap:wrap;gap:0 6px;min-width:0;color:inherit;font-size:12px}
+              #physics-fs-outer [data-physics-trail-help]{margin:8px 0 0;font-size:12px;line-height:1.6;color:inherit}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-path-key-group]{border-color:#fff}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-trail-key]{background:#000;color:#fff;border-color:#fff}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-trail-key][data-active="true"]{border-color:#ffff00}
+              @container(max-width:460px){#physics-fs-outer .phys-trail-keys{grid-template-columns:minmax(0,1fr)}}
+              #physics-fs-outer .phys-trail-copy{display:block;min-width:0}
+              #physics-fs-outer .phys-trail-open{font-size:16px;color:#67e8f9}
+              #physics-fs-outer .phys-plot-choice-help{margin:0 0 10px;font-size:12px;line-height:1.5;color:inherit}
+              #physics-fs-outer [data-physics-plot-inspection]{margin-top:10px;padding:10px;border:1px solid #476378;border-radius:9px;background:#102638;color:#e2edf5}
+              #physics-fs-outer .phys-plot-moment-heading{display:flex;flex-wrap:wrap;gap:4px 10px;margin:0 0 8px;font-size:12px;line-height:1.5;color:inherit}
+              #physics-fs-outer .phys-plot-moments{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px}
+              #physics-fs-outer .phys-plot-moments>button:only-child{grid-column:1/-1}
+              #physics-fs-outer .phys-plot-inspection-actions{display:flex;flex-wrap:wrap;gap:8px;margin-top:10px}
+              #physics-fs-outer [data-physics-plot-inspection] button{min-height:44px;min-width:44px;padding:8px;border:1px solid #718ca0;border-radius:7px;background:#102638;color:#e2edf5;font:inherit;font-size:12px;line-height:1.5;white-space:normal;overflow-wrap:anywhere;cursor:pointer}
+              #physics-fs-outer .phys-plot-inspection-actions>button{flex:1 1 140px}
+              #physics-fs-outer [data-physics-plot-moment]>span{display:block}
+              #physics-fs-outer .phys-plot-moment-time{font-variant-numeric:tabular-nums}
+              #physics-fs-outer [data-physics-plot-moment][aria-pressed="true"]{background:#194760;border-color:#67e8f9;color:#b7f4ff;box-shadow:inset 0 -2px #67e8f9}
+              #physics-fs-outer :is([data-physics-trail-key],[data-physics-plot-inspection] button):focus-visible{outline:3px solid #67e8f9;outline-offset:2px}
+              #physics-fs-outer :is([data-physics-trail-key],[data-physics-plot-inspection] button):hover{border-color:#67e8f9}
+              #physics-fs-outer[data-physics-theme="contrast"] .phys-trail-open{color:#ff0}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-plot-inspection],#physics-fs-outer[data-physics-theme="contrast"] [data-physics-plot-inspection] button{background:#000;color:#fff;border-color:#fff}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-plot-moment][aria-pressed="true"]{color:#ff0;border-color:#ff0;box-shadow:inset 0 -2px #ff0}
+              #physics-fs-outer[data-physics-theme="contrast"] :is([data-physics-trail-key],[data-physics-plot-inspection] button):focus-visible{outline-color:#ff0}
+              @container(max-width:460px){#physics-fs-outer .phys-plot-moments{grid-template-columns:repeat(2,minmax(0,1fr))}}
+              #physics-fs-outer [data-physics-velocity-key-group]{flex-basis:100%;min-width:0;border-top:1px solid #476378;padding-top:9px}
+              #physics-fs-outer .phys-velocity-keys{display:flex;flex-wrap:wrap;gap:8px 20px}
+              #physics-fs-outer [data-physics-velocity-key]{display:flex;align-items:center;gap:7px;min-width:0}
+              #physics-fs-outer [data-physics-velocity-key] svg{width:36px;height:24px;flex:none;overflow:visible}
+              #physics-fs-outer [data-physics-velocity-key-group] p{margin:8px 0 0;font-size:12px;line-height:1.6;color:inherit}
               #physics-fs-outer[data-physics-theme="contrast"] [data-physics-plot-key]{background:#000;color:#fff;border-color:#fff}
+              #physics-fs-outer[data-physics-theme="contrast"] [data-physics-velocity-key-group]{border-color:#fff}
               @container(max-width:460px){#physics-fs-outer [data-physics-primary-controls][role="group"]>[data-physics-launch]{grid-column:span 6}#physics-fs-outer [data-physics-primary-controls][role="group"]>[data-physics-air-drag]{grid-column:span 6}#physics-fs-outer [data-physics-primary-controls][role="group"]>[data-physics-estimation-challenge]{grid-column:1/-1;grid-row:2}#physics-fs-outer [data-physics-primary-controls][role="group"]>[role="status"]{grid-row:3}#physics-fs-outer [data-physics-primary-controls][role="group"] [data-physics-estimation-challenge] label{flex:1}#physics-fs-outer [data-physics-primary-controls][role="group"]>[data-physics-launch]{min-height:48px}}
               #physics-fs-outer [data-physics-playback]>span{color:var(--phys-muted);font-size:12px}
               #physics-fs-outer [data-physics-sliders]{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:10px;margin-bottom:16px}
@@ -3817,6 +4230,24 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer .phys-history-recording strong{color:var(--phys-accent);font-weight:750}
               #physics-fs-outer [data-physics-run-log] [data-physics-run-inspect]{display:block;margin-top:6px;white-space:nowrap}
               #physics-fs-outer .phys-sample-time{font-size:1.5rem;font-weight:750;font-variant-numeric:tabular-nums;color:var(--phys-accent);white-space:nowrap}
+              #physics-fs-outer [data-physics-show-trajectory]{min-height:44px;padding:9px 12px;border:1px solid var(--phys-line);border-radius:9px;background:var(--phys-panel);color:var(--phys-ink);font-size:12px;font-weight:700;line-height:1.5}
+              #physics-fs-outer [data-physics-recorded-context]{padding:14px;margin-bottom:14px;border:1px solid var(--phys-line);border-radius:12px;background:var(--phys-soft);color:var(--phys-ink);min-width:0}
+              #physics-fs-outer .phys-recorded-heading{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:6px 12px;margin-bottom:12px}
+              #physics-fs-outer .phys-recorded-heading h4{margin:0;font-size:14px;font-weight:750;line-height:1.5}
+              #physics-fs-outer .phys-recorded-heading>span{font-size:12px;font-weight:750;color:var(--phys-accent)}
+              #physics-fs-outer .phys-recorded-settings{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin:0}
+              #physics-fs-outer .phys-recorded-settings>div{min-width:0;padding:10px 12px;background:var(--phys-panel);border:1px solid var(--phys-line);border-radius:9px}
+              #physics-fs-outer .phys-recorded-settings dt{font-size:12px;font-weight:650;line-height:1.5;color:var(--phys-muted)}
+              #physics-fs-outer .phys-recorded-settings dd{margin:4px 0 0;font-size:19px;font-weight:750;line-height:1.5;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+              #physics-fs-outer .phys-recorded-settings .phys-next-setting{display:flex;flex-wrap:wrap;gap:0 4px;margin-top:7px;padding-top:7px;border-top:1px dashed var(--phys-line);font-size:12px;line-height:1.65;font-weight:650;color:var(--phys-accent)}
+              #physics-fs-outer .phys-next-setting>strong{max-width:100%;font-weight:750}
+              #physics-fs-outer .phys-recorded-repeat{display:flex;flex-wrap:wrap;align-items:center;justify-content:space-between;gap:10px 16px;margin-top:12px}
+              #physics-fs-outer [data-physics-settings-comparison]{flex:1 1 280px;margin:0;font-size:12px;line-height:1.65;color:var(--phys-ink);border-radius:3px}
+              #physics-fs-outer [data-physics-settings-comparison]:focus{outline:3px solid var(--phys-accent);outline-offset:3px}
+              #physics-fs-outer [data-physics-reuse-settings]{min-height:44px;padding:9px 12px;background:var(--phys-selected);color:var(--phys-accent);border:1px solid var(--phys-accent);border-radius:9px;font-size:12px;font-weight:750;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
+              #physics-fs-outer [data-physics-analysis-workspace] [data-physics-reuse-settings]:disabled{opacity:1;background:var(--phys-panel);color:var(--phys-muted);border-color:var(--phys-line);cursor:not-allowed}
+              #physics-fs-outer .phys-recorded-help{margin:10px 0 0;font-size:12px;line-height:1.65;color:var(--phys-muted)}
+              @container(max-width:620px){#physics-fs-outer .phys-recorded-settings{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer .phys-recorded-settings>div{padding:9px}#physics-fs-outer .phys-recorded-settings dd{font-size:17px}#physics-fs-outer [data-physics-recorded-context]{padding:12px}#physics-fs-outer [data-physics-reuse-settings]{width:100%}}
               #physics-fs-outer .phys-capture-settings{display:flex;flex-wrap:wrap;gap:6px;margin:0 0 14px}
               #physics-fs-outer .phys-capture-settings span{padding:4px 8px;background:var(--phys-soft);border:1px solid var(--phys-line);border-radius:7px;font-size:.75rem;color:var(--phys-muted);overflow-wrap:anywhere}
               #physics-fs-outer :is([data-physics-sample-inspector],[data-physics-flight-data]) button{min-height:44px;padding:9px 12px;border:1px solid var(--phys-line);border-radius:9px;background:var(--phys-panel);color:var(--phys-ink);font-size:.75rem;font-weight:650;line-height:1.5;white-space:normal;overflow-wrap:anywhere}
@@ -3940,6 +4371,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
               #physics-fs-outer .phys-graph-guide-key{display:flex;align-items:center;gap:7px;margin:8px 0 0;font-size:12px;line-height:1.5}
               #physics-fs-outer .phys-graph-guide-key>span{width:22px;flex:none;border-top:2px dashed}
               #physics-fs-outer [data-physics-table-moment]{display:block;margin-top:3px;font-size:12px;line-height:1.5;white-space:normal}
+              #physics-fs-outer [data-physics-row-sample]{display:block;margin-top:3px;font-size:12px;line-height:1.5;color:var(--phys-muted);white-space:normal}
               #physics-fs-outer [data-physics-flight-data]:focus-visible{outline:3px solid var(--phys-accent);outline-offset:3px}
               @container(max-width:460px){#physics-fs-outer .phys-graph-moments{grid-template-columns:repeat(2,minmax(0,1fr))}#physics-fs-outer .phys-graph-moments button:last-child{grid-column:1/-1}}
               @media(prefers-reduced-motion:reduce){#physics-fs-outer :is(button,input,summary){transition:none!important;animation:none!important}}
@@ -4159,10 +4591,74 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
 
             ),
 
-            React.createElement('div', { 'data-physics-plot-key': true },
-              React.createElement('span', null, physSelectedInspection(typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null) ? __alloT('stem.physics.plot_selected_trail_speed', 'Selected flight speed') : __alloT('stem.physics.plot_trail_speed', 'Latest trail speed'), ' · 0 ', React.createElement('span', { className: 'phys-speed-swatch', 'aria-hidden': true }), ' ≥60 m/s'),
-              React.createElement('span', null, React.createElement('span', { className: 'phys-vacuum-swatch', 'aria-hidden': true }), __alloT('stem.physics.plot_vacuum_key', 'White dashed · vacuum reference')),
-              d.showVectors && React.createElement('span', { 'data-physics-gravity-vector-key': true }, __alloT('stem.physics.plot_gravity_vector_key', 'Velocity arrows show m/s; the red dotted arrow shows gravity g in m/s².'))),
+            (function() {
+              var cv = typeof document !== 'undefined' ? document.getElementById('physicsCanvas') : null;
+              var plot = physPlotContext(cv), p = plot.parameters;
+              var roleLabels = {
+                selected: __alloT('stem.physics.plot_role_selected', 'Selected flight'),
+                current: __alloT('stem.physics.cv_current_flight', 'Current flight'),
+                latest: __alloT('stem.physics.cv_latest_flight', 'Latest flight'),
+                recorded: __alloT('stem.physics.plot_role_recorded', 'Recorded flight'),
+                unfinished: __alloT('stem.physics.plot_role_unfinished', 'Unfinished')
+              };
+              return React.createElement('div', { 'data-physics-plot-key': true },
+              React.createElement('span', null, plot.selected ? __alloT('stem.physics.plot_selected_trail_speed', 'Selected flight speed') : plot.live ? __alloT('stem.physics.plot_current_trail_speed', 'Current flight speed') : __alloT('stem.physics.plot_trail_speed', 'Latest trail speed'), ' · 0 ', React.createElement('span', { className: 'phys-speed-swatch', 'aria-hidden': true }), ' ≥60 m/s'),
+              plot.vacuumVisible && React.createElement('span', { 'data-physics-vacuum-key': plot.vacuumKind,
+                'data-run': plot.selected && plot.selected.run || undefined, 'data-angle': p.angle, 'data-velocity': p.velocity,
+                'data-gravity': p.gravity, 'data-launch-height': p.launchHeight },
+                React.createElement('svg', { className: 'phys-vacuum-swatch', viewBox: '0 0 48 14', 'aria-hidden': true, focusable: 'false' },
+                  React.createElement('path', { d: 'M2 7 L46 7', fill: 'none', stroke: '#ffffff', strokeWidth: 1.2, strokeDasharray: '4 4', opacity: isContrast ? 1 : .56 })),
+                plot.vacuumKind === 'preview' ? __alloT('stem.physics.plot_vacuum_preview_key', 'White dashed · vacuum preview') : __alloT('stem.physics.plot_vacuum_key', 'White dashed · vacuum reference'),
+                ' · ', plot.selected ? (plot.selected.run ? __alloT('stem.physics.cv_run_prefix', 'Run ') + plot.selected.run : __alloT('stem.physics.plot_role_selected', 'Selected flight')) : __alloT(plot.live ? 'stem.physics.cv_current_flight' : 'stem.physics.cv_next_launch', plot.live ? 'Current flight' : 'Next launch'),
+                React.createElement('span', { 'data-physics-vacuum-parameters': true }, 'θ ' + p.angle + '° · v₀ ' + p.velocity + ' m/s · g ' + p.gravity + ' m/s² · h₀ ' + p.launchHeight + ' m')),
+              d.showOverlay && plot.rows.length > 0 && React.createElement('div', { 'data-physics-path-key-group': true },
+                React.createElement('p', { className: 'phys-path-key-title' }, __alloT('stem.physics.plot_flights_on_plot', 'Flights on the plot')),
+                React.createElement('p', { id: 'physics-plot-choice-help', className: 'phys-plot-choice-help' }, __alloT('stem.physics.plot_choose_flight', 'Choose a flight to pause and inspect its recorded points.')),
+                React.createElement('div', { className: 'phys-trail-keys' }, plot.rows.map(function(row) {
+                  var gradientId = 'physics-trail-speed-' + row.id;
+                  return React.createElement('button', { key: row.presentationKey, type: 'button', 'data-physics-trail-key': row.id,
+                    'data-physics-plot-flight': row.id, 'aria-pressed': !!plot.selected && row.active,
+                    'aria-describedby': 'physics-plot-choice-help', 'aria-controls': 'physics-sample-inspector',
+                    onClick: function(event) {
+                      var selected = physSelectedInspection(cv);
+                      var index = selected && cv._inspection.trail === row.trail ? selected.index : row.trail.length - 1;
+                      physSelectSample(index, row.trail, event.currentTarget);
+                    },
+                    'data-active': String(row.active), 'data-model': row.parameters.drag ? 'drag' : 'vacuum',
+                    'data-role': row.role, 'data-sample-count': row.trail.length },
+                    React.createElement('svg', { 'data-physics-trail-swatch': true, viewBox: '0 0 56 16', 'aria-hidden': true, focusable: 'false' },
+                      row.active && React.createElement('defs', null, React.createElement('linearGradient', { id: gradientId, gradientUnits: 'userSpaceOnUse', x1: 2, y1: 8, x2: 54, y2: 8 },
+                        React.createElement('stop', { offset: '0%', stopColor: '#67e8f9' }),
+                        React.createElement('stop', { offset: '50%', stopColor: '#fbbf24' }),
+                        React.createElement('stop', { offset: '100%', stopColor: '#fb7185' }))),
+                      React.createElement('path', { d: 'M2 8 L54 8', fill: 'none', stroke: row.active ? 'url(#' + gradientId + ')' : row.color,
+                        strokeWidth: row.active ? 2.5 : 2, strokeLinecap: 'round', strokeDasharray: row.active ? undefined : row.dash.join(' '), opacity: row.active ? 1 : row.alpha })),
+                    React.createElement('span', { className: 'phys-trail-copy' },
+                      React.createElement('span', { className: 'phys-trail-title' }, physPlotFlightLabel(row), ' · ', roleLabels[row.role]),
+                      React.createElement('span', { className: 'phys-trail-details' },
+                        React.createElement('span', null, 'θ ' + row.parameters.angle + '°'),
+                        React.createElement('span', null, '· v₀ ' + row.parameters.velocity + ' m/s'),
+                        React.createElement('span', null, '· ' + (row.parameters.drag ? __alloT('stem.physics.cv_drag_on', 'Drag ON') : __alloT('stem.physics.cv_vacuum', 'No air drag'))))),
+                    React.createElement('span', { className: 'phys-trail-open', 'aria-hidden': true }, '→'));
+                })),
+                physRenderPlotInspection(cv, plot),
+                React.createElement('p', { 'data-physics-trail-help': true }, __alloT('stem.physics.plot_trail_identity_help', "The solid path shows the focused flight's speed. Other paths use their run's line pattern; their color shows launch angle."))),
+              d.showVectors && React.createElement('div', { 'data-physics-velocity-key-group': true },
+                React.createElement('div', { className: 'phys-velocity-keys' }, [
+                  { key: 'v', color: '#93c5fd', path: 'M4 20 L31 5', head: 'M25 5 L31 5 L28 11', label: __alloT('stem.physics.plot_velocity_key', 'Velocity v · m/s') },
+                  { key: 'vx', color: '#6ee7b7', dash: '4 3', path: 'M3 12 L32 12', head: 'M26 8 L32 12 L26 16', label: __alloT('stem.physics.plot_vx_key', 'Horizontal vx · m/s') },
+                  { key: 'vy', color: '#c4b5fd', dash: '4 3', path: 'M18 21 L18 3', head: 'M14 9 L18 3 L22 9', label: __alloT('stem.physics.plot_vy_key', 'Vertical vy · m/s') },
+                  { key: 'gravity', color: '#fda4af', dash: '2 3', path: 'M18 3 L18 21', head: 'M14 15 L18 21 L22 15', label: __alloT('stem.physics.plot_g_key', 'Gravity g · m/s²') }
+                ].map(function(item) {
+                  return React.createElement('span', { key: item.key, 'data-physics-velocity-key': item.key },
+                    React.createElement('svg', { viewBox: '0 0 36 24', 'aria-hidden': true, focusable: 'false', fill: 'none', stroke: item.color, strokeWidth: 2, strokeLinecap: 'round', strokeLinejoin: 'round' },
+                      React.createElement('path', { d: item.path, strokeDasharray: item.dash }),
+                      React.createElement('path', { d: item.head })),
+                    React.createElement('span', null, item.label));
+                })),
+                React.createElement('p', { 'data-physics-speed-help': true }, __alloT('stem.physics.plot_vector_speed_help', 'v₀ is launch speed. Speed |v| = √(vx² + vy²). At the apex vy = 0, so speed = |vx|.')),
+                React.createElement('p', { 'data-physics-velocity-scale-help': true, 'data-physics-gravity-vector-key': true }, __alloT('stem.physics.plot_vector_scale_help', 'Velocity arrows share a scale at each point and resize to fit the plot. Compare their lengths at the same point. Gravity uses a separate scale; its dotted arrow shows downward acceleration.'))));
+            })(),
 
               ),
             React.createElement("div", { className: "grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-5 gap-3 mb-3", "data-physics-sliders": "true", role: "group", "aria-labelledby": "physics-settings-heading" },
@@ -4283,7 +4779,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                   var cv = document.getElementById('physicsCanvas');
                   var trails = cv && cv._trails ? cv._trails : [];
                   var latest = trails.length > 0 ? trails[trails.length - 1] : [];
-                  if (physSelectSample(latest.length - 1, latest)) {
+                  if (physSelectSample(latest.length - 1, latest, null)) {
                     setTimeout(function() {
                       var panel = document.querySelector('[data-physics-sample-inspector]');
                       if (!panel) return;
@@ -4409,7 +4905,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                     var result = comparison[model], trail = recorded[model];
                     return React.createElement('button', { key: model, type: 'button', 'data-physics-comparison-inspect': model, disabled: !trail,
                       'aria-describedby': 'physics-comparison-inspect-help',
-                      onClick: function() { if (trail && physSelectSample(trail.length - 1, trail)) physRevealInspection(); }
+                      onClick: function() { if (trail && physSelectSample(trail.length - 1, trail, null)) physRevealInspection(); }
                     }, swatch(model), (model === 'vacuum' ? __alloT('stem.physics.comparison_inspect_vacuum', 'Inspect no-drag flight') : __alloT('stem.physics.comparison_inspect_drag', 'Inspect air-drag flight')) + (result.run != null ? ' · ' + __alloT('stem.physics.investigation_run', 'Run') + ' ' + result.run : ''));
                   })),
                   React.createElement('p', { id: 'physics-comparison-inspect-help', className: 'phys-comparison-help' },
@@ -4877,7 +5373,7 @@ return React.createElement("div", { id: "physics-fs-outer", "data-physics-theme"
                         r.n != null ? r.n : i + 1,
                         recordedTrail && React.createElement('button', { type: 'button', 'data-physics-run-inspect': r.n,
                           'aria-label': __alloT('stem.physics.history_inspect_run', 'Inspect recorded run') + ' ' + r.n,
-                          onClick: function() { if (physSelectSample(recordedTrail.length - 1, recordedTrail)) physRevealInspection(); }
+                          onClick: function() { if (physSelectSample(recordedTrail.length - 1, recordedTrail, null)) physRevealInspection(); }
                         }, __alloT('stem.physics.history_inspect', 'Inspect'))
                       ),
                       React.createElement("td", { className: "px-2 py-0.5 font-mono text-slate-700" }, r.angle),

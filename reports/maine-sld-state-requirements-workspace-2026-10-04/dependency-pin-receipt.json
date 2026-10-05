@@ -1,0 +1,20 @@
+[
+  {
+    "file": "AlloFlowANTI.txt",
+    "beforeSha256": "349a91c643a85fe9025c3f58f96623c72771988d0021225b71e698e296d5ace2",
+    "afterSha256": "9ee1dd292e500df9f2808f757240e460fe36c4298341f7492065acd8c4b0ed83",
+    "onlyTwoDependencyExpressionsChanged": true
+  },
+  {
+    "file": "desktop/web-app/src/AlloFlowANTI.txt",
+    "beforeSha256": "349a91c643a85fe9025c3f58f96623c72771988d0021225b71e698e296d5ace2",
+    "afterSha256": "9ee1dd292e500df9f2808f757240e460fe36c4298341f7492065acd8c4b0ed83",
+    "onlyTwoDependencyExpressionsChanged": true
+  },
+  {
+    "file": "desktop/web-app/src/App.jsx",
+    "beforeSha256": "349a91c643a85fe9025c3f58f96623c72771988d0021225b71e698e296d5ace2",
+    "afterSha256": "9ee1dd292e500df9f2808f757240e460fe36c4298341f7492065acd8c4b0ed83",
+    "onlyTwoDependencyExpressionsChanged": true
+  }
+]

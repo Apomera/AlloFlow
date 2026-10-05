@@ -1,0 +1,24 @@
+
+ RUN  v4.1.5 C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated
+
+stdout | tests/perception_lab_notebook_finder.test.js
+[PureHelpers] 7 helpers registered
+
+ ✓ tests/perception_lab_notebook_finder.test.js (44 tests) 7640ms
+     ✓ does not index hidden numbers or identity text "146"  657ms
+     ✓ does not index hidden numbers or identity text "private-group-record-1"  997ms
+     ✓ keeps the default newest-first observation list, global numbers, and existing actions  1411ms
+     ✓ retains all group members when one note matches and does not renumber or reveal their values  374ms
+     ✓ filters study status and clears filters while preserving study view and focusing search  346ms
+     ✓ keeps deletion undo available outside complete-only results and restores the full study  485ms
+     ✓ keeps import preview and import undo reachable when the finder hides all observation rows  370ms
+     ✓ bounds a programmatic query and resets all finder fields when the learner changes  361ms
+     ✓ explains study view when the notebook contains standalone observations but no repeated study  314ms
+     ✓ returns review focus correctly for visible card opener  681ms
+
+ Test Files  1 passed (1)
+      Tests  44 passed (44)
+   Start at  13:54:23
+   Duration  30.59s (transform 5.79s, setup 981ms, import 10.71s, tests 7.64s, environment 10.38s)
+
+JSON report written to C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/artstudio-workspace/perception-finder/finder-focused-results.json

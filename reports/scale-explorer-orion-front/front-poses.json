@@ -1,0 +1,203 @@
+{
+  "before": {
+    "scale": 3,
+    "texture": "E54EBB11-D380-4271-ABB6-F46D20B7058D",
+    "model": "DEDCE544-B10E-428D-B415-23467EA465F8",
+    "cloud": "98AE05D0-4F3D-4C2D-B587-D6FA13103AD7",
+    "span": 3
+  },
+  "results": [
+    {
+      "variant": {
+        "id": "original",
+        "eye": [
+          4.2,
+          -1.9,
+          2.25
+        ],
+        "aim": [
+          4.56,
+          -2.76,
+          0.84
+        ]
+      },
+      "pose": {
+        "x": 4.2,
+        "y": -1.9,
+        "z": 2.25,
+        "heading": 14.322719978203509,
+        "pitch": -0.5337541407465614,
+        "travel": 0
+      },
+      "stats": {
+        "width": 1048,
+        "height": 557,
+        "dominantShare": 0.08566201159428234,
+        "significantColors": 76
+      }
+    },
+    {
+      "variant": {
+        "id": "lower-approach",
+        "eye": [
+          4.2,
+          -6.4,
+          4.8
+        ],
+        "aim": [
+          4.56,
+          -2.76,
+          0.84
+        ]
+      },
+      "pose": {
+        "x": 4.2,
+        "y": -6.4,
+        "z": 4.8,
+        "heading": 5.194428907734789,
+        "pitch": 0.7412677743377948,
+        "travel": 0
+      },
+      "stats": {
+        "width": 1048,
+        "height": 557,
+        "dominantShare": 0.045964271520002195,
+        "significantColors": 174
+      }
+    },
+    {
+      "variant": {
+        "id": "near-boundary",
+        "eye": [
+          4.2,
+          -4.9,
+          4.25
+        ],
+        "aim": [
+          4.56,
+          -2.76,
+          0.84
+        ]
+      },
+      "pose": {
+        "x": 4.2,
+        "y": -4.9,
+        "z": 4.25,
+        "heading": 6.026498180890314,
+        "pitch": 0.5579502112270837,
+        "travel": 0
+      },
+      "stats": {
+        "width": 1048,
+        "height": 557,
+        "dominantShare": 0.025098674743377142,
+        "significantColors": 219
+      }
+    },
+    {
+      "variant": {
+        "id": "right-boundary",
+        "eye": [
+          7,
+          -4.5,
+          3.5
+        ],
+        "aim": [
+          4.56,
+          -2.76,
+          0.84
+        ]
+      },
+      "pose": {
+        "x": 7,
+        "y": -4.5,
+        "z": 3.5,
+        "heading": 317.47005129596084,
+        "pitch": 0.4491832231087665,
+        "travel": 0
+      },
+      "stats": {
+        "width": 1048,
+        "height": 557,
+        "dominantShare": 0.030202009127413762,
+        "significantColors": 211
+      }
+    },
+    {
+      "variant": {
+        "id": "along-boundary",
+        "eye": [
+          4.2,
+          -4.9,
+          4.25
+        ],
+        "aim": [
+          -4.5,
+          -4.1,
+          0.6
+        ]
+      },
+      "pose": {
+        "x": 4.2,
+        "y": -4.9,
+        "z": 4.25,
+        "heading": 292.7600092576605,
+        "pitch": 0.08459152551307006,
+        "travel": 0
+      },
+      "stats": {
+        "width": 1048,
+        "height": 557,
+        "dominantShare": 0.08599606671509039,
+        "significantColors": 175
+      }
+    },
+    {
+      "variant": {
+        "id": "right-along-front",
+        "eye": [
+          7,
+          -4.5,
+          3.5
+        ],
+        "aim": [
+          -3.2,
+          -3.7,
+          0.84
+        ]
+      },
+      "pose": {
+        "x": 7,
+        "y": -4.5,
+        "z": 3.5,
+        "heading": 284.6163005707364,
+        "pitch": 0.07574792338102469,
+        "travel": 0
+      },
+      "stats": {
+        "width": 1048,
+        "height": 557,
+        "dominantShare": 0.06868515904449957,
+        "significantColors": 187
+      }
+    }
+  ],
+  "recommendation": {
+    "id": "right-boundary",
+    "eye": [
+      7,
+      -4.5,
+      3.5
+    ],
+    "aim": [
+      4.56,
+      -2.76,
+      0.84
+    ],
+    "reason": "Four central stars remain visible above the cool cavity folds; the warm front forms a separate wall on the right with dark gaps beneath it.",
+    "alternate": {
+      "id": "lower-approach",
+      "reason": "Strong curved warm/cool front, but central stars are outside the view."
+    }
+  }
+}

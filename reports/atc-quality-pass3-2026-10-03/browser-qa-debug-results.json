@@ -1,0 +1,48 @@
+{
+  "started": "2026-10-04T02:23:59.338Z",
+  "fixture": "Chrome, canonical ATC source, actual React host contract, and test-only access to game state. Real-time completion tests issue the learner controls.",
+  "checks": [
+    {
+      "name": "One arrival completes by actual runway assignment, clearance, descent, and touchdown",
+      "pass": true,
+      "detail": {
+        "touchdownShiftSeconds": 11.348000000000022,
+        "landedIds": [
+          101
+        ],
+        "pausedAtCompletion": true
+      }
+    },
+    {
+      "name": "Completed exercise remount preserves outcomes after the landed aircraft leaves its draft",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "The completed exercise debrief retains each criterion and retries fresh paused seeds",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Untreated converging traffic records a real alert and cannot complete after a later climb",
+      "pass": true,
+      "detail": null
+    },
+    {
+      "name": "Lesson links open the matching exercise and Back restores the lesson card focus",
+      "pass": true,
+      "detail": {
+        "separation": "separation_recovery",
+        "sequencing": "arrival_sequence",
+        "vectors": "first_landing",
+        "communication": "first_landing",
+        "weather": null
+      }
+    }
+  ],
+  "errors": [],
+  "screenshots": [
+    "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\atc-quality-pass3-2026-10-03\\exercise-complete-desktop.png"
+  ],
+  "finished": "2026-10-04T02:25:33.620Z"
+}

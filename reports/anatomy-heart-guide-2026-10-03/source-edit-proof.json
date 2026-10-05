@@ -1,0 +1,7 @@
+{
+  "baseline": "02a0343a0390d1df187d685fdfdd541a2926c1f4491387fc1eb16d2818ebbd0c",
+  "candidate": "4d8cf640de08e1fc844266fcc0e71f82651053604fd9cab9120386ea0ea0b93b",
+  "englishKeys": 69,
+  "scope": "Heart renderer and scoped CSS only",
+  "syntaxPassed": true
+}

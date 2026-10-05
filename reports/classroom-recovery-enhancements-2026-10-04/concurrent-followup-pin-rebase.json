@@ -1,0 +1,28 @@
+{
+  "updatedAt": "2026-10-04T17:05:29.335Z",
+  "changes": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "oldPin": "maine_sld_practice_module.js?v=c5af6b18",
+      "newPin": "maine_sld_practice_module.js?v=fec6407e",
+      "previousSha256": "bf04ef84511debcce64d084cc539e2e09619b3e0fa11de2cb70beb8e29d5bd7a",
+      "currentSha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "oldPin": "maine_sld_practice_module.js?v=c5af6b18",
+      "newPin": "maine_sld_practice_module.js?v=fec6407e",
+      "previousSha256": "bf04ef84511debcce64d084cc539e2e09619b3e0fa11de2cb70beb8e29d5bd7a",
+      "currentSha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "oldPin": "maine_sld_practice_module.js?v=c5af6b18",
+      "newPin": "maine_sld_practice_module.js?v=fec6407e",
+      "previousSha256": "bf04ef84511debcce64d084cc539e2e09619b3e0fa11de2cb70beb8e29d5bd7a",
+      "currentSha256": "5cff82b2e09ad70500299f6b43266d9cb86e2184c1b3d61b23fe781b42976ac8"
+    }
+  ],
+  "productionWritten": false,
+  "otherBytesExact": true
+}

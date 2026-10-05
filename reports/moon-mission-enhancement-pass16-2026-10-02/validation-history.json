@@ -1,0 +1,33 @@
+{
+  "unitInitial": {
+    "report": "unit-initial.json",
+    "passedAssertions": 109,
+    "processExitCode": 1,
+    "infrastructureMessage": "[vitest-pool]: Timeout terminating threads worker for test files tests/moonmission_proceed_gates.test.js.",
+    "recovery": "The three test files absent from this report were completed in unit-remaining.json."
+  },
+  "unitRemaining": {
+    "report": "unit-remaining.json",
+    "passedAssertions": 25,
+    "processExitCode": 0
+  },
+  "unitFinalAffectedScope": {
+    "report": "unit-final.json",
+    "passedAssertions": 36,
+    "processExitCode": 0
+  },
+  "browserInitial": {
+    "report": "browser-initial.json",
+    "passedWorkflows": 4,
+    "failedWorkflows": 1,
+    "failure": "Chromium fatal exception 0xe0000008 during the phone full-page screenshot.",
+    "recovery": "Phone screenshots capture the inspector panel. All five final workflows passed on the refined source."
+  },
+  "browserFinal": {
+    "report": "browser-final.json",
+    "passedWorkflows": 5,
+    "failedWorkflows": 0,
+    "retries": 0,
+    "processExitCode": 0
+  }
+}

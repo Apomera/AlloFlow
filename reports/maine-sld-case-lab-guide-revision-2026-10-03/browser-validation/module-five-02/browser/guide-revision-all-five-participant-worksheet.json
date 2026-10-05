@@ -1,0 +1,300 @@
+{
+  "format": "alloflow-maine-sld-practice",
+  "schemaVersion": 1,
+  "moduleVersion": "1.1.0",
+  "reviewed": "2026-10-02",
+  "exportedAt": "2026-10-04T03:45:11.737Z",
+  "activeCase": "taylor",
+  "caseWork": {
+    "alex": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Participant alex selected context before guide revision."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "more",
+          "note": "  Participant alex Q1 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q2": {
+          "answer": "more",
+          "note": "  Participant alex Q2 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q3": {
+          "answer": "more",
+          "note": "  Participant alex Q3 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q4": {
+          "answer": "more",
+          "note": "  Participant alex Q4 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q5": {
+          "answer": "",
+          "note": "  Participant alex Q5 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q6": {
+          "answer": "",
+          "note": "  Participant alex Q6 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q7": {
+          "answer": "more",
+          "note": "  Participant alex Q7 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "  Participant alex Q8 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q9": {
+          "answer": "more",
+          "note": "  Participant alex Q9 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "alex-general-ed-adequate": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Participant alex-general-ed-adequate selected context before guide revision."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "more",
+          "note": "  Participant alex-general-ed-adequate Q1 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q2": {
+          "answer": "more",
+          "note": "  Participant alex-general-ed-adequate Q2 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q3": {
+          "answer": "more",
+          "note": "  Participant alex-general-ed-adequate Q3 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q4": {
+          "answer": "more",
+          "note": "  Participant alex-general-ed-adequate Q4 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q5": {
+          "answer": "",
+          "note": "  Participant alex-general-ed-adequate Q5 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q6": {
+          "answer": "",
+          "note": "  Participant alex-general-ed-adequate Q6 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q7": {
+          "answer": "more",
+          "note": "  Participant alex-general-ed-adequate Q7 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "  Participant alex-general-ed-adequate Q8 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q9": {
+          "answer": "more",
+          "note": "  Participant alex-general-ed-adequate Q9 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "jordan": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Participant jordan selected context before guide revision."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "more",
+          "note": "  Participant jordan Q1 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q2": {
+          "answer": "more",
+          "note": "  Participant jordan Q2 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q3": {
+          "answer": "more",
+          "note": "  Participant jordan Q3 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q4": {
+          "answer": "more",
+          "note": "  Participant jordan Q4 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q5": {
+          "answer": "",
+          "note": "  Participant jordan Q5 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q6": {
+          "answer": "",
+          "note": "  Participant jordan Q6 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q7": {
+          "answer": "more",
+          "note": "  Participant jordan Q7 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "  Participant jordan Q8 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q9": {
+          "answer": "more",
+          "note": "  Participant jordan Q9 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "marisol": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Participant Marisol evidence note during the Q8 guide detour."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "more",
+          "note": "  Participant marisol Q1 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q2": {
+          "answer": "more",
+          "note": "  Participant marisol Q2 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q3": {
+          "answer": "more",
+          "note": "  Participant marisol Q3 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q4": {
+          "answer": "more",
+          "note": "  Participant marisol Q4 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q5": {
+          "answer": "",
+          "note": "  Participant marisol Q5 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q6": {
+          "answer": "",
+          "note": "  Participant marisol Q6 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q7": {
+          "answer": "more",
+          "note": "  Participant marisol Q7 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "  Participant marisol Q8 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q9": {
+          "answer": "more",
+          "note": "  Participant marisol Q9 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    },
+    "taylor": {
+      "findings": {
+        "context-0": {
+          "purpose": "review",
+          "note": "Participant taylor selected context before guide revision."
+        }
+      },
+      "responses": {
+        "Q1": {
+          "answer": "more",
+          "note": "  Participant taylor Q1 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q2": {
+          "answer": "more",
+          "note": "  Participant taylor Q2 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q3": {
+          "answer": "more",
+          "note": "  Participant taylor Q3 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q4": {
+          "answer": "more",
+          "note": "  Participant taylor Q4 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q5": {
+          "answer": "",
+          "note": "  Participant taylor Q5 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q6": {
+          "answer": "",
+          "note": "  Participant taylor Q6 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q7": {
+          "answer": "more",
+          "note": "  Participant taylor Q7 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q8": {
+          "answer": "more",
+          "note": "  Participant taylor Q8 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        },
+        "Q9": {
+          "answer": "more",
+          "note": "  Participant taylor Q9 revised evidence.\n<mark data-guide-revision=\"literal\">Keep this as text</mark>\nRemaining uncertainty is recorded here.  "
+        }
+      },
+      "reflections": {
+        "caution": "",
+        "access": "",
+        "sdi": "",
+        "summary": "",
+        "gap": "",
+        "family": "",
+        "multilingual": ""
+      },
+      "debriefRevealed": true,
+      "checkAnswers": {},
+      "checkSubmitted": false
+    }
+  }
+}

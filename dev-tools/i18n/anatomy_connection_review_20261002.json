@@ -1,0 +1,88 @@
+{
+  "namespace": "stem.anatomy",
+  "date": "2026-10-02",
+  "english": {
+    "connection_review_progress": "{explored} explored · First answers: {answered}/{total} · {correct} correct",
+    "connection_review_scope": "Practice again. Your first answer and progress stay saved.",
+    "connection_review_practice": "Practice check",
+    "connection_review_correct": "Correct on practice.",
+    "connection_review_incorrect": "Keep reviewing.",
+    "connection_review_saved": "Return to saved feedback",
+    "connection_review_all": "All connections",
+    "connection_review_read": "Read the connection",
+    "connection_review_check": "Check your understanding",
+    "connection_review_unanswered": "Not answered",
+    "connection_review_first_correct": "Correct first answer",
+    "connection_review_first_review": "Review first answer"
+  },
+  "reusedEnglish": {
+    "link_ref_hide": "Hide explanation and try again",
+    "practice_flow_spotter_your_answer": "Your answer"
+  },
+  "translations": {
+    "french": {
+      "connection_review_progress": "{explored} explorées · Premières réponses : {answered}/{total} · {correct} exactes",
+      "connection_review_scope": "Réessaie. Ta première réponse et ta progression restent enregistrées.",
+      "connection_review_practice": "Question d’entraînement",
+      "connection_review_correct": "Réponse correcte à l’entraînement.",
+      "connection_review_incorrect": "Continue à réviser.",
+      "connection_review_saved": "Revenir au résultat enregistré",
+      "connection_review_all": "Toutes les connexions",
+      "connection_review_read": "Lire la connexion",
+      "connection_review_check": "Vérifier ta compréhension",
+      "connection_review_unanswered": "Sans réponse",
+      "connection_review_first_correct": "Première réponse correcte",
+      "connection_review_first_review": "Revoir la première réponse"
+    },
+    "spanish_latin_america": {
+      "connection_review_progress": "{explored} exploradas · Primeras respuestas: {answered}/{total} · {correct} correctas",
+      "connection_review_scope": "Vuelve a intentarlo. Tu primera respuesta y tu progreso siguen guardados.",
+      "connection_review_practice": "Pregunta de práctica",
+      "connection_review_correct": "Correcto en la práctica.",
+      "connection_review_incorrect": "Sigue repasando.",
+      "connection_review_saved": "Volver al resultado guardado",
+      "connection_review_all": "Todas las conexiones",
+      "connection_review_read": "Leer la conexión",
+      "connection_review_check": "Comprueba lo que entendiste",
+      "connection_review_unanswered": "Sin responder",
+      "connection_review_first_correct": "Primera respuesta correcta",
+      "connection_review_first_review": "Repasar la primera respuesta"
+    },
+    "arabic": {
+      "connection_review_progress": "{explored} علاقات مستكشفة · الإجابات الأولى: {answered}/{total} · {correct} صحيحة",
+      "connection_review_scope": "حاول مجددًا. تبقى إجابتك الأولى وتقدّمك محفوظين.",
+      "connection_review_practice": "سؤال للتدريب",
+      "connection_review_correct": "إجابة صحيحة في التدريب.",
+      "connection_review_incorrect": "واصل المراجعة.",
+      "connection_review_saved": "العودة إلى النتيجة المحفوظة",
+      "connection_review_all": "كل العلاقات",
+      "connection_review_read": "اقرأ العلاقة",
+      "connection_review_check": "تحقّق من فهمك",
+      "connection_review_unanswered": "لم تُجب بعد",
+      "connection_review_first_correct": "الإجابة الأولى صحيحة",
+      "connection_review_first_review": "راجع الإجابة الأولى"
+    }
+  },
+  "reusedTranslations": {
+    "french": {
+      "link_ref_hide": "Masquer l’explication et réessayer",
+      "practice_flow_spotter_your_answer": "Ta réponse"
+    },
+    "spanish_latin_america": {
+      "link_ref_hide": "Ocultar la explicación e intentar de nuevo",
+      "practice_flow_spotter_your_answer": "Tu respuesta"
+    },
+    "arabic": {
+      "link_ref_hide": "إخفاء الشرح والمحاولة مجدداً",
+      "practice_flow_spotter_your_answer": "إجابتك"
+    }
+  },
+  "coverage": {
+    "languageCount": 3,
+    "keysPerLanguage": 12,
+    "translatedValues": 36,
+    "reusedLabels": 2,
+    "desktopMirrors": true
+  },
+  "scope": "Connection concept practice and saved first-answer progress. Existing translated values for the two reused labels are preserved."
+}

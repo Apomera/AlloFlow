@@ -40,7 +40,7 @@ function mount(record) {
   open();
   let rng = 0; const sequence = [0, 0.2, 0.8, 0.9, 0.5, 0.5];
   vi.spyOn(Math, 'random').mockImplementation(() => sequence[rng++ % sequence.length]);
-  const frame = () => { rng = 0; now += 1000; act(() => { for (const [id, callback] of [...frames]) if (frames.delete(id)) callback(now); }); };
+  const frame = (depth = 0.9, shallow = false) => { sequence[2] = shallow ? 0 : 0.8; sequence[3] = depth; rng = 0; now += 1000; act(() => { for (const [id, callback] of [...frames]) if (frames.delete(id)) callback(now); }); };
   const select = value => {
     const node = query('[data-pt-quake-inspect-select]');
     act(() => { Object.getOwnPropertyDescriptor(window.HTMLSelectElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new window.Event('change', { bubbles: true })); });
@@ -58,6 +58,14 @@ function input(app, selector, value) {
   act(() => { Object.getOwnPropertyDescriptor(window.HTMLInputElement.prototype, 'value').set.call(node, value); node.dispatchEvent(new window.Event('input', { bubbles: true })); node.dispatchEvent(new window.Event('change', { bubbles: true })); });
 }
 function lineAngle(app) { const line = app.query('[data-pt-slab-line="guess"]'), n = key => Number(line.getAttribute(key)); return Math.atan2(n('y2') - n('y1'), n('x2') - n('x1')) * 180 / Math.PI; }
+function plotPosition(app, index) {
+  const plot=app.query('[data-pt-quake-plot]'),circle=app.query('[data-pt-quake-point="'+index+'"]'),x=Number(circle.getAttribute('cx')),z=Number(circle.getAttribute('cy'));
+  const matrix=plot.getScreenCTM?.();
+  if(matrix)return {x:matrix.a*x+matrix.c*z+matrix.e,y:matrix.b*x+matrix.d*z+matrix.f};
+  const bounds=plot.getBoundingClientRect(),vb=plot.getAttribute('viewBox').split(' ').map(Number);
+  return {x:bounds.left+x*bounds.width/vb[2],y:bounds.top+z*bounds.height/vb[3]};
+}
+function clickPlot(app, x, y) { act(()=>app.query('[data-pt-quake-plot]').dispatchEvent(new window.MouseEvent('click',{bubbles:true,clientX:x,clientY:y}))); }
 
 describe('Equal-scale earthquake evidence and event inspection', () => {
   it.each([5,20,45,85])('draws the estimate at its actual %i-degree angle without revealing the fitted result', angle => {
@@ -81,7 +89,48 @@ describe('Equal-scale earthquake evidence and event inspection', () => {
     expect(app.query('[data-pt-quake-inspect-select]').disabled).toBe(true);
     expect(app.query('[data-pt-quake-inspect-select]').value).toBe('');
     for (const name of ['prev','next','clear']) expect(app.query('[data-pt-quake-inspect-' + name + ']').disabled).toBe(true);
-    expect(inspection(app)).toBeNull(); noEffects(app);
+    clickPlot(app,10,10);expect(inspection(app)).toBeNull(); noEffects(app);
+  });
+  it.each([206,320,620])('selects the nearest plotted observation within its screen-pixel hit area at width %i',width=>{
+    const app=mount();svgWidth=width;act(()=>window.dispatchEvent(new window.Event('resize')));
+    const before=model(app),point=plotPosition(app,7);clickPlot(app,point.x+12,point.y+4);
+    expect(inspection(app).dataset.ptQuakeInspectedValues).toBe('7');
+    expect(coordinates(app)).toEqual({x:String(saved.points[7].x),z:String(saved.points[7].z)});
+    expect(app.query('[data-pt-slab-coordinate-inspected="true"]').dataset.ptSlabCoordinateRow).toBe('7');
+    expect(model(app)).toEqual(before);noEffects(app);
+  });
+  it('uses the actual translated and rotated SVG transform for pointer inspection',()=>{
+    const app=mount(),plot=app.query('[data-pt-quake-plot]'),before=model(app);
+    plot.getScreenCTM=()=>({a:0.85,b:0.15,c:-0.1,d:0.85,e:120,f:240});
+    const point=plotPosition(app,5);clickPlot(app,point.x,point.y);
+    expect(inspection(app).dataset.ptQuakeInspectedValues).toBe('5');
+    expect(coordinates(app)).toEqual({x:String(saved.points[5].x),z:String(saved.points[5].z)});
+    expect(model(app)).toEqual(before);noEffects(app);
+  });
+  it('keeps a selection when a distant empty part of the plot is clicked',()=>{
+    const app=mount();app.select('1');const selected=coordinates(app),point=plotPosition(app,7);
+    clickPlot(app,point.x+30,point.y+20);
+    expect(inspection(app).dataset.ptQuakeInspectedValues).toBe('1');expect(coordinates(app)).toEqual(selected);noEffects(app);
+  });
+  it('resolves coincident pointer positions consistently while the keyboard list retains individual events',()=>{
+    const app=mount({version:1,angle:42,points:Array.from({length:8},()=>({x:100.125,z:200.25,m:4}))}),point=plotPosition(app,0);
+    clickPlot(app,point.x,point.y);expect(inspection(app).dataset.ptQuakeInspectedValues).toBe('0');
+    app.select('1');expect(inspection(app).dataset.ptQuakeInspectedValues).toBe('1');
+    expect(app.query('[data-pt-quake-plot-selection-help]').textContent).toContain('overlapping points');noEffects(app);
+  });
+  it('groups angle controls with the graph and places the keyboard event list next in document order',()=>{
+    const app=mount(),angle=app.query('#pt-ql-dip'),list=app.query('[data-pt-quake-inspect-select]');
+    expect(app.query('[data-pt-quake-chart-column]').contains(angle)).toBe(true);
+    expect(app.query('[data-pt-quake-readout-column]').contains(list)).toBe(true);
+    expect(angle.compareDocumentPosition(list)&window.Node.DOCUMENT_POSITION_FOLLOWING).toBeTruthy();
+    expect(app.query('[data-pt-quake-boundary-reference]').dataset.km).toBe('0');
+    expect(app.query('[data-pt-quake-origin-help]').textContent).toContain('0 km');noEffects(app);
+  });
+  it('retains angle entry and local inspection through closing and reopening the evidence panel',()=>{
+    const app=mount();app.select('2');const selected=coordinates(app),before=model(app),log=app.query('[data-pt-quake-log]');
+    act(()=>{log.open=false;log.dispatchEvent(new window.Event('toggle',{bubbles:true}));});
+    expect(app.query('#pt-ql-dip')).not.toBeNull();expect(app.query('[data-pt-quake-plot]')).toBeNull();
+    app.open();expect(coordinates(app)).toEqual(selected);expect(model(app)).toEqual(before);noEffects(app);
   });
   it('connects exact restored decimal values, one ring and the matching coordinate row', () => {
     const app = mount(), before = model(app), frozen = JSON.stringify(saved); app.select('2');
@@ -125,12 +174,21 @@ describe('Equal-scale earthquake evidence and event inspection', () => {
     const app = mount(); app.select('3'); const selected = coordinates(app);
     app.click('[data-pt-model-play]'); for (let i=0;i<5;i++) app.frame();
     expect(coordinates(app)).toEqual(selected); expect(app.query('[data-pt-quake-inspected-source]').dataset.ptQuakeInspectedSource).toBe('captured');
+    const point=plotPosition(app,7),live=model(app),noticeCount=app.effects.announce.mock.calls.length;clickPlot(app,point.x,point.y);
+    expect(coordinates(app)).toEqual({x:String(saved.points[7].x),z:String(saved.points[7].z)});
+    expect(model(app)).toEqual(live);expect(app.effects.announce).toHaveBeenCalledTimes(noticeCount);
     app.click('[data-pt-slab-revise]'); expect(inspection(app)).toBeNull();
     expect(app.all('[data-pt-quake-point]')).toHaveLength(5); expect(app.query('[data-pt-slab-line="fit"]')).toBeNull();
     expect(app.effects.record).not.toHaveBeenCalled(); expect(app.effects.xp).not.toHaveBeenCalled(); expect(app.effects.beep).not.toHaveBeenCalled();
   });
   it('keeps the same live observation selected as the log grows', () => {
-    const app = mount(undefined); app.click('[data-pt-model-play]'); expect(app.effects.announce).toHaveBeenCalledTimes(1); expect(app.effects.announce).toHaveBeenLastCalledWith('Simulation playing'); app.effects.announce.mockClear(); for (let i=0;i<8;i++) app.frame(); app.select('2');
+    const app = mount(undefined); app.click('[data-pt-model-play]'); expect(app.effects.announce).toHaveBeenCalledTimes(1); expect(app.effects.announce).toHaveBeenLastCalledWith('Simulation playing'); app.effects.announce.mockClear(); for (let i=0;i<8;i++) app.frame();
+    // The seeded live events coincide: the plot chooses the first, while the
+    // event list can still choose the third observation independently.
+    const point=plotPosition(app,2);clickPlot(app,point.x,point.y);
+    expect(inspection(app).dataset.ptQuakeInspectedValues).toBe('0');
+    expect(app.query('[data-pt-quake-inspected-source]').dataset.ptQuakeInspectedSource).toBe('live');
+    expect(app.query('[data-pt-slab-line="fit"]')).toBeNull();app.select('2');
     const selected = coordinates(app); for (let i=0;i<6;i++) app.frame();
     expect(coordinates(app)).toEqual(selected); expect(inspection(app).dataset.ptQuakeInspectedValues).toBe('2'); noEffects(app);
   });
@@ -161,5 +219,66 @@ describe('Equal-scale earthquake evidence and event inspection', () => {
     const app=mount();app.select('4');const before=app.query('[data-pt-quake-log]').innerHTML,physical=model(app);
     for(let i=0;i<1200;i++)app.frame();
     expect(app.query('[data-pt-quake-log]').innerHTML).toBe(before);expect(model(app)).toEqual(physical);noEffects(app);
+  });
+
+  it('explains an empty paused sample with a stable check label and quiet collection target', () => {
+    const app=mount(undefined),overview=app.query('[data-pt-quake-overview]'),progress=app.query('[data-pt-quake-readiness-progress]');
+    expect(overview.dataset.ptQuakeOverview).toBe('live');expect(overview.getAttribute('aria-live')).toBe('off');
+    expect(app.query('[data-pt-quake-overview-total]').dataset.ptQuakeOverviewTotal).toBe('0');
+    expect(app.all('[data-pt-quake-band-count]').map(node=>node.textContent)).toEqual(['0','0','0']);
+    expect(progress.getAttribute('aria-valuenow')).toBe('0');expect(progress.getAttribute('aria-valuemax')).toBe('8');
+    expect(progress.getAttribute('aria-valuetext')).toContain('Minimum for this activity: 8');
+    expect(app.query('[data-pt-quake-readiness-help]').textContent).toContain('Advance 60,000 years');
+    expect(app.query('[data-pt-quake-lock]').textContent).toBe('Check my angle against this sample');
+    expect(app.query('[data-pt-quake-lock]').disabled).toBe(true);
+    expect(app.query('[data-pt-slab-line="fit"]')).toBeNull();noEffects(app);
+  });
+  it('counts the exact depth boundaries in the displayed sample without double counting', () => {
+    const points=[0,69.999,70,299.999,300,700,...Array(8).fill(150)].map((z,i)=>({x:50+i*25,z}));
+    const app=mount({version:1,angle:42,points});
+    expect(app.query('[data-pt-quake-overview-total]').dataset.ptQuakeOverviewTotal).toBe('14');
+    expect(app.all('[data-pt-quake-band-count]').map(node=>node.textContent)).toEqual(['2','10','2']);
+    expect(app.query('[data-pt-quake-readiness]').dataset.ptQuakeReadiness).toBe('checked');
+    expect(app.query('[data-pt-quake-readiness-progress]')).toBeNull();noEffects(app);
+  });
+  it('requires eight qualifying events, caps only the progress bar and waits for an explicit check', () => {
+    const app=mount(undefined);app.click('[data-pt-model-play]');app.effects.announce.mockClear();
+    for(let i=0;i<4;i++)app.frame(0.2,true);
+    for(let i=0;i<7;i++)app.frame(0.3);
+    expect(app.all('[data-pt-quake-band-count]').map(node=>node.textContent)).toEqual(['4','7','0']);
+    expect(app.query('[data-pt-quake-overview-total]').dataset.ptQuakeOverviewTotal).toBe('11');
+    expect(app.query('[data-pt-quake-lock]').disabled).toBe(true);
+    expect(app.query('[data-pt-quake-readiness-progress]').getAttribute('aria-valuenow')).toBe('7');
+    expect(app.query('[data-pt-quake-readiness]').dataset.ptQuakeReadiness).toBe('collect');
+    app.frame(0.3);expect(app.query('[data-pt-quake-lock]').disabled).toBe(false);
+    expect(app.query('[data-pt-quake-readiness]').dataset.ptQuakeReadiness).toBe('ready');
+    for(let i=0;i<3;i++)app.frame();
+    expect(app.all('[data-pt-quake-band-count]').map(node=>node.textContent)).toEqual(['4','8','3']);
+    const progress=app.query('[data-pt-quake-readiness-progress]');
+    expect(progress.getAttribute('aria-valuenow')).toBe('8');expect(progress.getAttribute('aria-valuetext')).toContain('deeper: 11.');
+    expect(app.query('[data-pt-slab-line="fit"]')).toBeNull();noEffects(app);
+    app.click('[data-pt-quake-lock]');expect(app.effects.record).toHaveBeenCalledTimes(1);
+    expect(app.query('[data-pt-quake-readiness]').dataset.ptQuakeReadiness).toBe('checked');
+    expect(app.query('[data-pt-quake-readiness-progress]')).toBeNull();expect(app.query('[data-pt-slab-line="fit"]')).not.toBeNull();
+    expect(app.effects.xp).not.toHaveBeenCalled();expect(app.effects.beep).not.toHaveBeenCalled();
+  });
+  it('keeps the checked summary fixed while a new live log grows and updates it only on Revise', () => {
+    const app=mount(),overview=app.query('[data-pt-quake-overview]').innerHTML;
+    app.click('[data-pt-model-play]');for(let i=0;i<2;i++)app.frame(0.2,true);for(let i=0;i<3;i++)app.frame(0.3);
+    expect(app.query('[data-pt-quake-overview]').innerHTML).toBe(overview);
+    expect(app.query('[data-pt-quake-log]').dataset.ptQuakeLiveCount).toBe('5');
+    app.click('[data-pt-slab-revise]');
+    expect(app.query('[data-pt-quake-overview]').dataset.ptQuakeOverview).toBe('live');
+    expect(app.all('[data-pt-quake-band-count]').map(node=>node.textContent)).toEqual(['2','3','0']);
+    expect(app.query('[data-pt-quake-overview-total]').dataset.ptQuakeOverviewTotal).toBe('5');
+    expect(app.query('[data-pt-quake-lock]').disabled).toBe(true);expect(app.query('[data-pt-slab-line="fit"]')).toBeNull();
+    expect(app.effects.record).not.toHaveBeenCalled();expect(app.effects.xp).not.toHaveBeenCalled();expect(app.effects.beep).not.toHaveBeenCalled();
+  });
+  it.each(['divergent','transform'])('shows depth counts without a misleading slab target for %s',mode=>{
+    const app=mount(undefined);app.click('[data-tect-mode="'+mode+'"]');app.click('[data-pt-model-play]');
+    app.effects.announce.mockClear();for(let i=0;i<9;i++)app.frame();
+    expect(app.all('[data-pt-quake-band-count]').map(node=>node.textContent)).toEqual(['9','0','0']);
+    expect(app.query('[data-pt-quake-readiness]')).toBeNull();expect(app.query('[data-pt-quake-lock]')).toBeNull();
+    expect(app.query('[data-pt-slab-line="fit"]')).toBeNull();noEffects(app);
   });
 });

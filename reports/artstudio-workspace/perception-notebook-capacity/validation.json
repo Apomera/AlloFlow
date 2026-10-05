@@ -1,0 +1,166 @@
+{
+  "date": "2026-10-04",
+  "enhancement": "Explicit notebook capacity and all-or-nothing whole-study deletion/Undo without silent eviction of retained observations.",
+  "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "pluginMirrorSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+  "pluginMirrorIdentical": true,
+  "tests": {
+    "currentSourceRuns": [
+      {
+        "file": "reports/artstudio-workspace/perception-notebook-capacity/capacity-focused-results.json",
+        "passed": 111,
+        "failed": 0,
+        "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+        "files": [
+          "perception_lab_notebook_capacity.test.js"
+        ]
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-notebook-capacity/existing-perception-results.json",
+        "passed": 515,
+        "failed": 0,
+        "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d",
+        "files": [
+          "perception_lab_experiments.test.js",
+          "perception_lab_guided_study.test.js",
+          "perception_lab_matching.test.js",
+          "perception_lab_notebook.test.js",
+          "perception_lab_notebook_finder.test.js",
+          "perception_lab_notebook_import.test.js",
+          "perception_lab_recorded_preview.test.js",
+          "perception_lab_repeat_notebook.test.js",
+          "perception_lab_repeat_study.test.js",
+          "perception_lab_study_comparison.test.js",
+          "perception_lab_study_report.test.js"
+        ]
+      }
+    ],
+    "uniquePassed": 626,
+    "files": 12,
+    "failed": 0,
+    "finalVitestRunsCompleted": true,
+    "sourceProvenance": [
+      "reports/artstudio-workspace/perception-notebook-capacity/capacity-source-provenance.json",
+      "reports/artstudio-workspace/perception-notebook-capacity/existing-perception-source.json"
+    ],
+    "legacyContractChanges": "reports/artstudio-workspace/perception-notebook-capacity/legacy-capacity-contract-updates.json",
+    "execution": "Private writable TEMP/TMP, one fork worker, 30-second test/hook timeouts."
+  },
+  "browser": {
+    "aggregateEvidence": "reports/artstudio-workspace/perception-notebook-capacity/browser-regression-results.json",
+    "currentSourceRuns": [
+      {
+        "file": "reports/artstudio-workspace/perception-notebook-capacity/notebook-capacity-browser-results.json",
+        "groups": 67,
+        "errors": [],
+        "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-notebook-capacity/import-regression/import-browser-results.json",
+        "groups": 37,
+        "errors": [],
+        "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-notebook-capacity/finder-regression/finder-browser-results.json",
+        "groups": 26,
+        "errors": [],
+        "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-notebook-capacity/guided-regression/guided-browser-results.json",
+        "groups": 25,
+        "errors": [],
+        "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-notebook-capacity/recorded-preview-regression/recorded-preview-browser-results.json",
+        "groups": 42,
+        "errors": [],
+        "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+      },
+      {
+        "file": "reports/artstudio-workspace/perception-notebook-capacity/comparison-regression/comparison-browser-results.json",
+        "groups": 23,
+        "errors": [],
+        "sourceSHA256": "e59ec55344d71fd52e6317a7a406e9573ff132021867bad2d8ac4f7f6dc3151d"
+      }
+    ],
+    "passedGroups": 220,
+    "errors": [],
+    "responsiveWidths": [
+      320,
+      390,
+      768,
+      1280,
+      1600
+    ],
+    "textScalePercent": 200,
+    "minimumControlPixels": 44,
+    "themes": [
+      "dark",
+      "contrast",
+      "forced-light",
+      "forced-dark",
+      "forced-contrast"
+    ],
+    "previewsReviewed": [
+      "reports/artstudio-workspace/perception-notebook-capacity/delete-preview-panel-390.png",
+      "reports/artstudio-workspace/perception-notebook-capacity/delete-preview-forced-dark-panel.png",
+      "reports/artstudio-workspace/perception-notebook-capacity/delete-preview-large-text-panel.png"
+    ],
+    "historicalDiagnostics": [
+      "reports/artstudio-workspace/perception-notebook-capacity/finalizer-proof-key-diagnostic.json",
+      "reports/artstudio-workspace/perception-notebook-capacity/launcher-public-path/diagnostic.json"
+    ],
+    "priorAssertions": "Four exact output-only adapters; comparison adapter changes only one documented obsolete eviction block to verify preservation, with reversible original reconstruction."
+  },
+  "discovery": {
+    "perceptionEnglishKeys": 363,
+    "metadataParity": true,
+    "englishMirror": true,
+    "indexMirror": true,
+    "indexedTools": 151,
+    "changedExistingIndexRecordCount": 0,
+    "changedIndexFields": {},
+    "perceptionDeepLink": true,
+    "redirectMirror": true
+  },
+  "integration": {
+    "mainJSXParses": 3,
+    "mainMirrors": true,
+    "hubMirror": true,
+    "englishMirror": true,
+    "newArtEnglishKeys": 26,
+    "perceptionCatalogCategory": "Learning & Behavioral Science",
+    "startupLoader": true,
+    "deepLinkFileLoader": true,
+    "pluginFallback": true
+  },
+  "independentReview": {
+    "engineEvidence": "reports/artstudio-workspace/perception-notebook-capacity/independent-engine-audit.json",
+    "exhaustiveInterleavedAssertions": 2510,
+    "helperUnchangedSinceAudit": true,
+    "finalSourceAuditClear": true,
+    "defectsFixed": [
+      "Queued Undo on an identical empty notebook after profile change or unmount",
+      "Keyboard focus recovery when a deletion preview becomes stale"
+    ],
+    "materialFindingsRemaining": 0
+  },
+  "checks": {
+    "syntax": true,
+    "syntaxMethod": "Product/QA parsed with node:vm; twelve test files parsed with @babel/parser and executed with Vitest.",
+    "scopedWhitespace": true,
+    "reportLinks": true,
+    "stagedFiles": [],
+    "committedByThisTask": false
+  },
+  "behaviorLimits": [
+    "Notebook remains bounded at 24 observations; existing oversized legacy input normalization remains unchanged.",
+    "New single observations require one free space; ordinary/saved/guided study starts require three. No records are automatically evicted.",
+    "One Undo is retained. A later save can make it temporarily unavailable; capacity is explained and no partial restoration occurs.",
+    "Whole-study deletion supports all retained members, including partial, conflicting, and mixed-experiment groups.",
+    "Changing the profile, notebook, or action invalidates stale operations. Undo restores records without reopening previous review/comparison selections."
+  ]
+}

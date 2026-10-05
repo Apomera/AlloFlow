@@ -1,0 +1,10 @@
+{
+  "atlas_nebula_passage_moving": "Following the cloud passage",
+  "atlas_nebula_passage_paused": "Passage paused · explore or resume",
+  "atlas_nebula_passage_arrived": "Viewpoint reached · explore freely",
+  "atlas_nebula_passage_remaining": "{n} ly to viewpoint",
+  "atlas_nebula_passage_label": "Cloud passage",
+  "atlas_nebula_passage_progress": "Progress to interior viewpoint",
+  "atlas_nebula_passage_resume": "Resume passage",
+  "atlas_nebula_passage_help": "Choose a viewpoint to follow a passage through the cloud. Brake pauses the course. Moving or looking takes control; saved observations reopen at your exact position."
+}

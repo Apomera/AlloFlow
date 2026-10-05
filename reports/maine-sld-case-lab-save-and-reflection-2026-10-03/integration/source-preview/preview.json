@@ -1,0 +1,35 @@
+{
+  "builtAt": "2026-10-03T18:48:54.558Z",
+  "baseUrl": "http://127.0.0.1:65063",
+  "activityUrl": "http://127.0.0.1:65063/app/?tool=maine-sld-practice",
+  "sourceSha256": "3ebed2d1c401071a0d3408e34cdfe613491bd4c27a1d3cba77d09caaa888de1f",
+  "bundleSha256": "563f1c9e76131449ac7058b67359959c5394d8cd59851954534194b80f2be880",
+  "moduleSha256": "69ea05c9f6351a53e4e1129ef2380b591e98106c59bfc8f3e7c59c4f2b4eda4c",
+  "modulePin": "69ea05c9",
+  "sourceParityAtSnapshot": true,
+  "observedHostHashesAfterCompile": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "sha256": "3ebed2d1c401071a0d3408e34cdfe613491bd4c27a1d3cba77d09caaa888de1f"
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "sha256": "3ebed2d1c401071a0d3408e34cdfe613491bd4c27a1d3cba77d09caaa888de1f"
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "sha256": "3ebed2d1c401071a0d3408e34cdfe613491bd4c27a1d3cba77d09caaa888de1f"
+    }
+  ],
+  "sourceDriftDuringCompile": false,
+  "previewOnlyTransforms": [],
+  "preservesProductionFiles": true,
+  "exactModuleSnapshotServed": true,
+  "localModuleResolution": "Unmodified host localhost /app/ resolution; exact frozen module snapshot supplied by preview HTTP server.",
+  "frozenSourceHashes": {
+    "maine_sld_practice_source.jsx": "3a64921b83461912bda0f2e107bc1a454a0f80ff222d5aadcc9b8b781d8865d3",
+    "maine_sld_practice_core.js": "ef7dbb4373d9783dea76a891fcaebe085dafce7ef7a5a8339d060ae0d260c926",
+    "maine_sld_case_data.json": "706f0932f427886c2972ec7633ddbfea31e8535e40cbccccbf5bf35530a56b2e",
+    "_build_maine_sld_practice_module.js": "333019e7d0a1e5a8774f33b2022778183b089d7206efaa4193def039274949f4"
+  }
+}

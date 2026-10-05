@@ -1,0 +1,12 @@
+{
+  "checkedAt": "2026-10-05T01:26:32.0442327Z",
+  "ownedProcessIds": [
+    32368,
+    30796
+  ],
+  "observedPresent": [],
+  "remainingScopedTestProcesses": [],
+  "allClosed": true,
+  "exitCode": 1,
+  "sourcePreserved": true
+}

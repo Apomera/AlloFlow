@@ -1,0 +1,285 @@
+diff --git "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-watercolor-navigation.js" "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+index 701b2ac2f..6d550ceab 100644
+--- "a/C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\please-keep-going-you-re-doing\\artstudio-before-watercolor-navigation.js"
++++ "b/C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\stem_lab\\stem_tool_artstudio.js"
+@@ -2408,6 +2408,38 @@ const d = labToolData.artStudio || {};
+           const pixelImportRequestRef = React.useRef({sequence:0,context:null});
+           const watercolorPaperRef = React.useRef(null);
+           const [watercolorFit, setWatercolorFit] = React.useState(512);
++          const [watercolorZoom,setWatercolorZoom]=React.useState(1);
++          const [watercolorNavigation,setWatercolorNavigation]=React.useState('paint');
++          const watercolorZoomAnchorRef=React.useRef(null);
++          function cancelWatercolorNavigationGesture() {
++            var canvas=document.getElementById('watercolorCanvas');
++            if(canvas && canvas._watercolorEngine && canvas._watercolorEngine.cancelPointer)canvas._watercolorEngine.cancelPointer();
++          }
++          function changeWatercolorNavigation(mode) {
++            cancelWatercolorNavigationGesture();setWatercolorNavigation(mode==='pan'?'pan':'paint');
++          }
++          function zoomWatercolorPaper(zoom,reset) {
++            if([1,1.5,2,3].indexOf(zoom)<0)return;
++            cancelWatercolorNavigationGesture();
++            var paper=watercolorPaperRef.current,canvas=document.getElementById('watercolorCanvas');
++            if(paper && canvas) {
++              var view=paper.getBoundingClientRect(),rect=canvas.getBoundingClientRect();
++              watercolorZoomAnchorRef.current=reset?{reset:true}:{
++                x:Math.max(0,Math.min(1,(view.left+paper.clientLeft+paper.clientWidth/2-rect.left)/Math.max(1,rect.width))),
++                y:Math.max(0,Math.min(1,(view.top+paper.clientTop+paper.clientHeight/2-rect.top)/Math.max(1,rect.height)))};
++              if(reset){paper.scrollLeft=0;paper.scrollTop=0;}
++            }
++            setWatercolorZoom(zoom);
++          }
++          React.useLayoutEffect(function(){
++            var anchor=watercolorZoomAnchorRef.current,paper=watercolorPaperRef.current,canvas=document.getElementById('watercolorCanvas');
++            if(!anchor || !paper || !canvas)return;
++            if(anchor.reset){paper.scrollLeft=0;paper.scrollTop=0;}
++            else {var view=paper.getBoundingClientRect(),rect=canvas.getBoundingClientRect();
++              paper.scrollLeft+=rect.left+anchor.x*rect.width-view.left-paper.clientLeft-paper.clientWidth/2;
++              paper.scrollTop+=rect.top+anchor.y*rect.height-view.top-paper.clientTop-paper.clientHeight/2;}
++            watercolorZoomAnchorRef.current=null;
++          },[watercolorZoom,watercolorFit]);
+           const symmetryPaperRef = React.useRef(null);
+           const [symmetryFit, setSymmetryFit] = React.useState(512);
+           function changeSymmetrySettings(values) {
+@@ -2659,7 +2691,13 @@ const d = labToolData.artStudio || {};
+           React.useEffect(function () {
+             var paper=watercolorPaperRef.current;
+             if(!paper)return;
+-            var measure=function(){setWatercolorFit(Math.max(64,Math.floor(Math.min(paper.clientWidth-20,paper.clientHeight-20))));};
++            var measure=function(){
++              var bounds=paper.getBoundingClientRect(),workspace=paper.closest('#watercolorFullscreenWorkspace');
++              var expanded=workspace && (document.fullscreenElement===workspace || workspace.getAttribute('data-allo-fullscreen-active')==='true');
++              // Scrollbars must not change the base fit size as zoom increases.
++              var width=bounds.width || paper.clientWidth,height=expanded?(bounds.height || paper.clientHeight):window.innerHeight*0.82;
++              setWatercolorFit(Math.max(64,Math.floor(Math.min(width-24,height-24))));
++            };
+             measure();
+             var observer=typeof ResizeObserver==='function'?new ResizeObserver(measure):null;
+             if(observer)observer.observe(paper);
+@@ -3018,6 +3056,11 @@ const d = labToolData.artStudio || {};
+           if(fractalHistoryRef.current.owner!==fractalOwner||(fractalHistoryRef.current.expected&&fractalHistoryRef.current.expected!==fractalSignature))fractalHistoryRef.current={owner:fractalOwner,undo:[],redo:[]};
+           fractalHistoryRef.current.expected=fractalSignature;fractalHistoryRef.current.current=fractalModel;
+           React.useEffect(function(){setStudioFocusView(false);},[studioPersistenceScope]);
++          const watercolorViewOwner=studioPersistenceScope+'|'+(d.watercolorRestoreToken||'');
++          React.useLayoutEffect(function(){
++            cancelWatercolorNavigationGesture();setWatercolorNavigation('paint');setWatercolorZoom(1);watercolorZoomAnchorRef.current=null;
++            var paper=watercolorPaperRef.current;if(paper){paper.scrollLeft=0;paper.scrollTop=0;}
++          },[watercolorViewOwner]);
+           const pixelArtworkOwner = studioPersistenceScope + '|' + (d.pixelRestoreToken || '');
+           if (pixelHistoryRef.current.owner !== pixelArtworkOwner) {
+             pixelHistoryRef.current = { owner: pixelArtworkOwner, undo: [], redo: [] };
+@@ -5044,6 +5087,7 @@ const d = labToolData.artStudio || {};
+               return {
+                 color: parseColor(d.watercolorColor || '#2f6fb0'),
+                 touchMode: d.watercolorTouchMode === 'draw' ? 'draw' : 'scroll',
++                panMode: watercolorNavigation==='pan',
+                 brush: d.watercolorBrush || 'round',
+                 surface: d.watercolorSurface || 'wet',
+                 flowDirection: d.watercolorFlowDirection || 'down',
+@@ -5075,7 +5119,7 @@ const d = labToolData.artStudio || {};
+             var existing = canvas._watercolorEngine;
+             if (existing) {
+               var nextParams = readParams();
+-              canvas.style.touchAction = nextParams.touchMode === 'draw' ? 'none' : 'pan-y';
++              canvas.style.touchAction = nextParams.panMode || nextParams.touchMode === 'draw' ? 'none' : 'pan-y';
+               existing.configure(nextParams);
+               existing.restoreArtworkIfChanged(d.watercolorSnapshot || '', d.watercolorStateKey || '',
+                 d.watercolorRestoreToken || '', !!d.watercolorStateIsCheckpoint);
+@@ -5229,7 +5273,7 @@ const d = labToolData.artStudio || {};
+             var frameId = 0;
+             var lastTime = 0;
+             var accumulator = 0;
+-            var drawing = false;
++            var drawing = false,panning=null;
+             var lastX = null, lastY = null;
+             var lastStrokeTime = 0;
+             var lastPressure = 0.7;
+@@ -5253,6 +5297,7 @@ const d = labToolData.artStudio || {};
+             var STEP = 1 / 30;
+ 
+             function updateA11y() {
++              if(params.panMode){canvas.setAttribute('aria-label',__alloT('stem.artstudio.watercolor_pan_canvas',"Watercolor paper navigation. Drag or use Arrow keys to pan; Shift moves farther. Painting is disabled in Pan mode. Choose Paint on paper to resume painting."));return;}
+               canvas.setAttribute('aria-label', 'Watercolor painting canvas using a ' + params.brush +
+                 ' brush on ' + params.surface + ' paper. Brush size ' + Math.round(params.size) +
+                 ' pixels, water ' + Math.round(params.water * 100) + ' percent, pigment ' +
+@@ -5412,6 +5457,7 @@ const d = labToolData.artStudio || {};
+             function restoreState(state) {
+               if (!state || state.simWidth !== SIM_W || state.simHeight !== SIM_H ||
+                   !state.water || state.water.length !== COUNT) return false;
++              finishWatercolorPointer(null,true);
+               if (frameId) cancelAnimationFrame(frameId);
+               running = false;
+               drawing = false;
+@@ -6286,7 +6332,10 @@ const d = labToolData.artStudio || {};
+               configure: function (nextParams, snapshotUrl) {
+                 var previousBrush = params.brush;
+                 var previousColor = params.color;
++                if(nextParams && !!nextParams.panMode!==!!params.panMode)finishWatercolorPointer(null,true);
+                 params = nextParams || params;
++                canvas.style.cursor=params.panMode?(panning?'grabbing':'grab'):'crosshair';
++                if(params.panMode)hideBrushCursor();
+                 var colorChanged = !previousColor || !params.color || params.color.r !== previousColor.r ||
+                   params.color.g !== previousColor.g || params.color.b !== previousColor.b;
+                 if (params.brush !== previousBrush || colorChanged) {
+@@ -6387,6 +6436,7 @@ const d = labToolData.artStudio || {};
+                 scheduleDurablePersistence(300);
+                 return paused;
+               },
++              cancelPointer: function(){finishWatercolorPointer(null,true);hideBrushCursor();},
+               dabAt: function (x, y, pressure) { localRevision += 1; pushHistory(); strokeSeed += 1; addDab(x, y, { pressure: pressure || 0.7, speed: 0.12, tilt: 0, angle: 0 }); ensureLoop(); scheduleDurablePersistence(650); },
+               undo: undoState,
+               redo: redoState,
+@@ -6407,7 +6457,8 @@ const d = labToolData.artStudio || {};
+               discardPersistedState: discardDurableState
+             };
+             canvas._watercolorEngine = engine;
+-            canvas.style.touchAction = d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y';
++            canvas.style.touchAction = params.panMode || params.touchMode === 'draw' ? 'none' : 'pan-y';
++            canvas.style.cursor=params.panMode?'grab':'crosshair';
+ 
+             function dynamicsForEvent(event) {
+               var pressure = Number(event.pressure);
+@@ -6495,7 +6546,14 @@ const d = labToolData.artStudio || {};
+             }
+ 
+             canvas.onpointerdown = function (event) {
+-              if ((event.button !== undefined && event.button !== 0) || event.isPrimary === false || drawing) return;
++              if ((event.button !== undefined && event.button !== 0) || event.isPrimary === false || drawing || panning) return;
++              if(params.panMode) {
++                var paper=watercolorPaperRef.current;if(!paper || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY))return;
++                event.preventDefault();hideBrushCursor();
++                panning={id:event.pointerId,x:event.clientX,y:event.clientY,left:paper.scrollLeft,top:paper.scrollTop};
++                canvas._watercolorPointerId=event.pointerId;canvas.style.cursor='grabbing';
++                try{canvas.setPointerCapture(event.pointerId);}catch(_){}return;
++              }
+               if (event.pointerType === 'touch' && params.touchMode !== 'draw') return;
+               event.preventDefault(); drawing = true; lastX = null; lastY = null;
+               canvas._watercolorPointerId = event.pointerId;
+@@ -6507,6 +6565,12 @@ const d = labToolData.artStudio || {};
+               paintPointerSamples(event);
+             };
+             canvas.onpointermove = function (event) {
++              if(panning) {
++                if(event.pointerId!==panning.id || !Number.isFinite(event.clientX) || !Number.isFinite(event.clientY))return;
++                var paper=watercolorPaperRef.current;if(!paper)return;
++                event.preventDefault();paper.scrollLeft=panning.left+panning.x-event.clientX;paper.scrollTop=panning.top+panning.y-event.clientY;return;
++              }
++              if(params.panMode){hideBrushCursor();return;}
+               if (!drawing) {
+                 if (event.pointerType !== 'touch') {
+                   var point = pointFor(event), hoverDynamics = dynamicsForEvent(event);
+@@ -6520,6 +6584,11 @@ const d = labToolData.artStudio || {};
+               paintPointerSamples(event);
+             };
+             function finishWatercolorPointer(event, cancelled) {
++              if(panning) {
++                if(event && event.pointerId!==undefined && event.pointerId!==panning.id)return;
++                var panId=panning.id;panning=null;canvas.style.cursor=params.panMode?'grab':'crosshair';
++                try{canvas.releasePointerCapture(panId);}catch(_){}return;
++              }
+               if (!drawing || (event && event.pointerId !== undefined && event.pointerId !== canvas._watercolorPointerId)) return;
+               // A fast release can contain a point never delivered by pointermove.
+               // Complete the existing stroke, without creating another history entry
+@@ -6530,7 +6599,7 @@ const d = labToolData.artStudio || {};
+               }
+               drawing = false; lastX = null; lastY = null; lastStrokeTime = 0;
+               if (cancelled) hideBrushCursor();
+-              try { if (event && event.pointerId !== undefined) canvas.releasePointerCapture(event.pointerId); } catch (_) {}
++              try { var releaseId=event && event.pointerId!==undefined?event.pointerId:canvas._watercolorPointerId;if(releaseId!==undefined)canvas.releasePointerCapture(releaseId); } catch (_) {}
+               scheduleDurablePersistence(650);
+             }
+             canvas.onpointerup = function (event) { finishWatercolorPointer(event, false); };
+@@ -6538,7 +6607,7 @@ const d = labToolData.artStudio || {};
+             canvas.onlostpointercapture = function (event) { finishWatercolorPointer(event, true); };
+             canvas.onpointerenter = function (event) { if (!drawing && event.pointerType !== 'touch') canvas.onpointermove(event); };
+             canvas.onpointerleave = function () { if (!drawing) hideBrushCursor(); };
+-            canvas.onfocus = function () { showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true); };
++            canvas.onfocus = function () { if(params.panMode)hideBrushCursor();else showBrushCursor(keyboardX, keyboardY, {pressure:0.7,tilt:0,angle:0}, true); };
+             canvas.onblur = hideBrushCursor;
+             canvas.onkeydown = function (event) {
+               var historyKey = String(event.key || '').toLowerCase();
+@@ -6560,6 +6629,13 @@ const d = labToolData.artStudio || {};
+                 if (typeof announceToSR === 'function') announceToSR(didRedo ? __alloT('stem.artstudio.sr_watercolor_redone', 'Watercolor redone.') : __alloT('stem.artstudio.sr_nothing_to_redo', 'Nothing to redo.'));
+                 return;
+               }
++              if(params.panMode) {
++                if(['ArrowLeft','ArrowRight','ArrowUp','ArrowDown','Home','End','Enter',' '].indexOf(event.key)<0)return;
++                event.preventDefault();var paper=watercolorPaperRef.current;if(!paper)return;var distance=event.shiftKey?160:48;
++                if(event.key==='ArrowLeft')paper.scrollLeft-=distance;if(event.key==='ArrowRight')paper.scrollLeft+=distance;
++                if(event.key==='ArrowUp')paper.scrollTop-=distance;if(event.key==='ArrowDown')paper.scrollTop+=distance;
++                if(event.key==='Home'){paper.scrollLeft=0;paper.scrollTop=0;}if(event.key==='End'){paper.scrollLeft=paper.scrollWidth;paper.scrollTop=paper.scrollHeight;}return;
++              }
+               var move = Math.max(2, params.size * (SIM_W / Math.max(1, LOGICAL_W)) * 0.55);
+               var moved = false;
+               if (event.key === 'ArrowLeft') { keyboardX = clamp(keyboardX - move, 0, SIM_W - 1); moved = true; }
+@@ -10252,6 +10328,10 @@ const d = labToolData.artStudio || {};
+             tab === 'watercolor' && React.createElement("div", { id:'watercolorFullscreenWorkspace',className: "artstudio-watercolor-workspace space-y-3" },
+               React.createElement('style',null,`
+                 .artstudio-watercolor-workspace{min-width:0}
++                .artstudio-watercolor-paper{height:calc(var(--watercolor-fit-side) + 24px);max-height:82dvh;overflow:auto!important;overscroll-behavior:contain}
++                .artstudio-watercolor-sheet{position:relative;margin:0 auto}
++                .artstudio-watercolor-sheet #watercolorCanvas{width:var(--watercolor-side)!important;height:var(--watercolor-side)!important;max-width:none!important;margin:0}
++                .artstudio-watercolor-navigation :is(button,select):focus-visible{outline:3px solid #0f766e;outline-offset:2px}
+                 .artstudio-watercolor-workspace button,.artstudio-watercolor-workspace select,.artstudio-watercolor-workspace summary,.artstudio-watercolor-workspace input[type=color],.artstudio-watercolor-workspace input[type=range]{min-height:44px}
+                 .artstudio-watercolor-colors button{min-width:44px}
+                 @media(max-width:700px){#watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-colors{flex:0 0 auto}}
+@@ -10260,7 +10340,7 @@ const d = labToolData.artStudio || {};
+                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"])> *{margin:0;min-width:0;min-height:0}
+                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-colors{grid-column:1/-1;grid-row:1}
+                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-canvas-workspace{grid-column:1;grid-row:2;display:grid;grid-template-rows:minmax(0,1fr) auto;gap:8px}
+-                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-paper{margin:0;min-width:0;min-height:0;display:grid;place-items:center}
++                #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-paper{margin:0;min-width:0;min-height:0;display:block;height:auto;max-height:none}
+                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) #watercolorCanvas{width:var(--watercolor-side)!important;height:var(--watercolor-side)!important;max-width:none!important;margin:0}
+                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-settings{grid-column:2;grid-row:2;overflow:auto;overscroll-behavior:contain;padding:0 4px 8px 0}
+                 #watercolorFullscreenWorkspace:is(:fullscreen,[data-allo-fullscreen-active="true"]) .artstudio-watercolor-settings [role=group].grid{grid-template-columns:repeat(2,minmax(0,1fr))}
+@@ -10272,7 +10352,7 @@ const d = labToolData.artStudio || {};
+               React.createElement("div", { className: "artstudio-watercolor-colors flex items-center gap-2 flex-wrap bg-teal-50 rounded-xl p-3 border border-teal-200" },
+                 React.createElement("label", { htmlFor: "artstudio-watercolor-color", className: "text-xs font-bold text-teal-800" }, __alloT('stem.artstudio.watercolor_color', "Pigment color")),
+                 React.createElement("input", { id: "artstudio-watercolor-color", type: "color", value: d.watercolorColor || '#2f6fb0', onChange: function (e) { upd('watercolorColor', e.target.value); }, 'aria-label': __alloT('stem.artstudio.watercolor_color', "Pigment color"), className: "h-8 w-12 rounded cursor-pointer border border-teal-600 bg-white" }),
+-                React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.watercolor_finger_toggle','Draw with a finger'),'aria-pressed':d.watercolorTouchMode==='draw',onClick:function(){upd('watercolorTouchMode',d.watercolorTouchMode==='draw'?'scroll':'draw');},className:'min-h-[44px] rounded-lg border border-teal-600 px-3 text-xs font-bold '+(d.watercolorTouchMode==='draw'?'bg-teal-700 text-white':'bg-white text-teal-900')},d.watercolorTouchMode==='draw'?__alloT('stem.artstudio.watercolor_finger_draw','Finger: draw'):__alloT('stem.artstudio.watercolor_finger_scroll','Finger: scroll')),
++                React.createElement('button',{type:'button','aria-label':__alloT('stem.artstudio.watercolor_finger_toggle','Draw with a finger'),'aria-pressed':watercolorNavigation==='paint' && d.watercolorTouchMode==='draw',onClick:function(){changeWatercolorNavigation('paint');upd('watercolorTouchMode',watercolorNavigation==='pan'?'draw':d.watercolorTouchMode==='draw'?'scroll':'draw');},className:'min-h-[44px] rounded-lg border border-teal-600 px-3 text-xs font-bold '+(d.watercolorTouchMode==='draw'?'bg-teal-700 text-white':'bg-white text-teal-900')},watercolorNavigation==='pan'?__alloT('stem.artstudio.watercolor_finger_pan','Finger: pan'):d.watercolorTouchMode==='draw'?__alloT('stem.artstudio.watercolor_finger_draw','Finger: draw'):__alloT('stem.artstudio.watercolor_finger_scroll','Finger: scroll')),
+                 React.createElement("div", { className: "flex gap-1 ml-auto flex-wrap" },
+                   WATERCOLOR_PIGMENTS.map(function (swatch) {
+                     return React.createElement("button", { key: swatch.color, type: "button", onClick: function () { upd('watercolorColor', swatch.color); Object.keys(swatch.values).forEach(function (key) { upd(key, swatch.values[key]); }); if (typeof announceToSR === 'function') announceToSR(swatch.label + ' pigment preset applied: ' + swatch.description + '.'); }, title: swatch.label + ': ' + swatch.description, 'aria-label': formatArtStudioLearningText(__alloT('stem.artstudio.a11y_choose_pigment_preset', 'Choose {value1} pigment preset, {value2}'), { value1: swatch.label, value2: swatch.description }), 'aria-pressed': artStudioHexColor(d.watercolorColor, '#2f6fb0') === swatch.color, className: "h-7 w-7 rounded-full border-2 transition-transform hover:scale-110 " + (artStudioHexColor(d.watercolorColor, '#2f6fb0') === swatch.color ? 'border-slate-900 scale-110' : 'border-white'), style: { background: swatch.color, boxShadow: '0 1px 3px rgba(0,0,0,0.25)' } });
+@@ -10282,9 +10362,11 @@ const d = labToolData.artStudio || {};
+               ),
+ 
+               React.createElement("section", { 'aria-label': __alloT('stem.artstudio.a11y_watercolor_canvas_workspace', 'Watercolor canvas workspace'), className: "artstudio-watercolor-canvas-workspace space-y-2" },
+-                React.createElement("div", { ref:watercolorPaperRef,className: "artstudio-watercolor-paper rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg", style:{position:'relative',overflow:'hidden'} },
+-                  React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 1024, height: 1024, role: "img", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_painting_canvas_focus_and_use_arrow', 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.'), 'aria-describedby': "artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { '--watercolor-side':watercolorFit+'px', maxWidth: 'min(100%, 82dvh)', aspectRatio: '1 / 1', touchAction: d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y' } }),
++                React.createElement("div", { ref:watercolorPaperRef,className: "artstudio-watercolor-paper rounded-xl border-2 border-teal-200 bg-[#f8f7f1] p-2 shadow-lg", style:{position:'relative',overflow:'auto','--watercolor-fit-side':watercolorFit+'px'} },
++                  React.createElement('div',{className:'artstudio-watercolor-sheet',style:{width:Math.round(watercolorFit*watercolorZoom),height:Math.round(watercolorFit*watercolorZoom)}},
++                  React.createElement("canvas", { id: "watercolorCanvas", tabIndex: 0, ref: watercolorRef, width: 1024, height: 1024, role: "img", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_painting_canvas_focus_and_use_arrow', 'Watercolor painting canvas. Focus and use Arrow keys to move the brush, then press Enter or Space to dab.'), 'aria-describedby': "artstudio-watercolor-touch-help artstudio-watercolor-keyboard-help artstudio-watercolor-status artstudio-watercolor-navigation-help", 'aria-keyshortcuts': "ArrowUp ArrowDown ArrowLeft ArrowRight Home End Enter Space P Control+Z Control+Y Meta+Z Meta+Y", className: "rounded-lg cursor-crosshair mx-auto block w-full focus-visible:ring-4 focus-visible:ring-teal-700 focus-visible:ring-offset-2", style: { '--watercolor-side':Math.round(watercolorFit*watercolorZoom)+'px', maxWidth:'none', aspectRatio: '1 / 1', touchAction: watercolorNavigation==='pan' || d.watercolorTouchMode === 'draw' ? 'none' : 'pan-y' } }),
+                   React.createElement('div',{id:'artstudio-watercolor-cursor','aria-hidden':true,style:{display:'none',position:'absolute',pointerEvents:'none',zIndex:2,boxSizing:'border-box',border:'1px solid #0f172a',boxShadow:'0 0 0 1px rgba(255,255,255,0.95)'}},React.createElement('span',{style:{position:'absolute',left:'50%',top:'50%',width:3,height:3,borderRadius:'50%',background:'#0f172a',boxShadow:'0 0 0 1px white',transform:'translate(-50%,-50%)'}}))
++                  )
+                 ),
+                 React.createElement("div", { className: "artstudio-watercolor-actions flex gap-2 flex-wrap items-center" },
+                   React.createElement("button", { id: "artstudio-watercolor-undo", type: "button", ref:watercolorHistoryButtonRef, onClick: function () { var c = document.getElementById('watercolorCanvas'); var changed = !!(c && c._watercolorEngine && c._watercolorEngine.undo()); if (typeof announceToSR === 'function') announceToSR(changed ? __alloT('stem.artstudio.sr_watercolor_undone', 'Watercolor undone.') : __alloT('stem.artstudio.sr_nothing_to_undo', 'Nothing to undo.')); }, className: "px-3 py-1.5 rounded-lg text-xs font-bold bg-violet-50 text-violet-800 border border-violet-200 hover:bg-violet-100 disabled:opacity-40 disabled:cursor-not-allowed" }, __alloT('stem.artstudio.undo_watercolor', "Undo")),
+@@ -10299,6 +10381,13 @@ const d = labToolData.artStudio || {};
+               ),
+ 
+               React.createElement('aside',{className:'artstudio-watercolor-settings space-y-3','aria-label':__alloT('stem.artstudio.watercolor_settings','Watercolor paint settings')},
++              React.createElement('fieldset',{className:'artstudio-watercolor-navigation rounded-xl border border-teal-200 bg-teal-50 p-2'},
++                React.createElement('legend',{className:'text-xs font-bold text-teal-900'},__alloT('stem.artstudio.watercolor_paper_view','Paper view')),
++                React.createElement('div',{className:'grid grid-cols-2 gap-2'},[['paint',__alloT('stem.artstudio.watercolor_paint_mode','Paint on paper')],['pan',__alloT('stem.artstudio.watercolor_pan_mode','Pan paper')]].map(function(option){return React.createElement('button',{id:'artstudio-watercolor-mode-'+option[0],key:option[0],type:'button','aria-pressed':watercolorNavigation===option[0],'aria-describedby':'artstudio-watercolor-navigation-help',onClick:function(){changeWatercolorNavigation(option[0]);},className:'rounded-lg border border-teal-700 px-2 text-xs font-bold '+(watercolorNavigation===option[0]?'bg-teal-700 text-white':'bg-white text-teal-900')},option[1]);})),
++                React.createElement('label',{className:'my-2 block text-xs font-bold text-teal-900'},__alloT('stem.artstudio.watercolor_paper_zoom','Paper zoom'),React.createElement('select',{id:'artstudio-watercolor-zoom','aria-label':__alloT('stem.artstudio.watercolor_paper_zoom','Paper zoom'),'aria-describedby':'artstudio-watercolor-navigation-help',value:watercolorZoom,onChange:function(event){zoomWatercolorPaper(Number(event.target.value));},className:'mt-1 w-full rounded-lg border border-teal-700 bg-white px-2 text-xs'},[1,1.5,2,3].map(function(zoom){return React.createElement('option',{key:zoom,value:zoom},zoom===1?__alloT('stem.artstudio.watercolor_fit_paper','Fit whole paper'):Math.round(zoom*100)+'%');}))),
++                React.createElement('button',{id:'artstudio-watercolor-fit',type:'button',onClick:function(){zoomWatercolorPaper(1,true);},className:'w-full rounded-lg border border-teal-700 bg-white px-2 text-xs font-bold text-teal-900'},__alloT('stem.artstudio.watercolor_fit_paper','Fit whole paper')),
++                React.createElement('p',{id:'artstudio-watercolor-navigation-help',className:'mt-2 text-xs text-teal-900'},__alloT('stem.artstudio.watercolor_navigation_help',"Zoom changes the view, not your paint or brush size on the sheet. Choose Pan to drag with a mouse, stylus, or finger; Arrow keys pan, and Shift moves farther. Enter and Space do not paint in Pan mode. Fit whole paper returns to the complete sheet."))
++              ),
+               (function () {
+                 var stainingValue = isFinite(Number(d.watercolorStaining)) ? Number(d.watercolorStaining) : 50;
+                 var opacityValue = isFinite(Number(d.watercolorOpacity)) ? Number(d.watercolorOpacity) : 40;
+@@ -10482,10 +10571,10 @@ const d = labToolData.artStudio || {};
+                 React.createElement("div", { className: "max-w-md rounded-xl border border-teal-300 bg-teal-50 p-2.5", role: "group", 'aria-label': __alloT('stem.artstudio.a11y_watercolor_touch_interaction', 'Watercolor touch interaction') },
+                   React.createElement("p", { className: "text-[0.625rem] font-black uppercase tracking-wider text-teal-800" }, "Finger input"),
+                   React.createElement("div", { className: "mt-2 grid grid-cols-2 gap-2" },
+-                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'scroll'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_scroll_page', 'Watercolor touch mode set to scroll page.')); }, 'aria-pressed': d.watercolorTouchMode !== 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode !== 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u2195 Scroll page"),
+-                    React.createElement("button", { type: "button", onClick: function () { upd('watercolorTouchMode', 'draw'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_draw_on_paper', 'Watercolor touch mode set to draw on paper.')); }, 'aria-pressed': d.watercolorTouchMode === 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (d.watercolorTouchMode === 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u270E Draw on paper")
++                    React.createElement("button", { type: "button", onClick: function () { changeWatercolorNavigation('paint');upd('watercolorTouchMode', 'scroll'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_scroll_page', 'Watercolor touch mode set to scroll page.')); }, 'aria-pressed': watercolorNavigation==='paint' && d.watercolorTouchMode !== 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (watercolorNavigation==='paint' && d.watercolorTouchMode !== 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u2195 Scroll page"),
++                    React.createElement("button", { type: "button", onClick: function () { changeWatercolorNavigation('paint');upd('watercolorTouchMode', 'draw'); if (typeof announceToSR === 'function') announceToSR(__alloT('stem.artstudio.sr_watercolor_touch_mode_set_to_draw_on_paper', 'Watercolor touch mode set to draw on paper.')); }, 'aria-pressed': watercolorNavigation==='paint' && d.watercolorTouchMode === 'draw', className: "min-h-[44px] rounded-lg border px-3 text-xs font-black " + (watercolorNavigation==='paint' && d.watercolorTouchMode === 'draw' ? "border-teal-700 bg-teal-700 text-white" : "border-teal-300 bg-white text-teal-900") }, "\u270E Draw on paper")
+                   ),
+-                  React.createElement("p", { id: "artstudio-watercolor-touch-help", className: "mt-2 text-[0.625rem] leading-relaxed text-teal-900" }, d.watercolorTouchMode === 'draw' ? "One-finger drawing is active. Choose Scroll page when you want to move past the canvas." : "One-finger scrolling is active. A stylus can still paint; choose Draw on paper for finger painting.")
++                  React.createElement("p", { id: "artstudio-watercolor-touch-help", className: "mt-2 text-[0.625rem] leading-relaxed text-teal-900" }, watercolorNavigation==='pan'?__alloT('stem.artstudio.watercolor_pan_canvas',"Watercolor paper navigation. Drag or use Arrow keys to pan; Shift moves farther. Painting is disabled in Pan mode. Choose Paint on paper to resume painting."):d.watercolorTouchMode === 'draw' ? "One-finger drawing is active. Choose Scroll page when you want to move past the canvas." : "One-finger scrolling is active. A stylus can still paint; choose Draw on paper for finger painting.")
+                 ),
+                 React.createElement('div', {className:'flex items-center flex-wrap gap-2 rounded-xl border border-sky-200 bg-sky-50 p-2'},
+                   React.createElement('button', {type:'button',onClick:function(){var c=document.getElementById('watercolorCanvas');if(c && c._watercolorEngine)c._watercolorEngine.wetPaper();if(typeof announceToSR==='function')announceToSR(__alloT('stem.artstudio.wet_paper_done','Paper wetted with clear water. Masked areas remain protected.'));},className:'min-h-[44px] rounded-lg bg-sky-800 px-3 text-xs font-bold text-white'},__alloT('stem.artstudio.wet_paper','Wet paper')),

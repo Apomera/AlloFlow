@@ -1,0 +1,17 @@
+{
+  "passed": true,
+  "sourceLfSha256": "ac1f6aaf8f6bd41449b79ee81c8de9bb4c971bf58b30864d0c6c2ecc126f9ff8",
+  "mirrorsByteEqual": true,
+  "evidenceHashesVerified": 16,
+  "reviewedScreenshotHashesVerified": 18,
+  "gitMutationPerformed": false,
+  "gitStatus": [
+    " M desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+    " M stem_lab/stem_tool_anatomy.js",
+    " M tests/anatomy_spotter_practice.test.js",
+    "?? tests/anatomy_spotter_study_journey.test.js",
+    "?? tests/anatomy_spotter_study_localization.test.js",
+    "?? tests/e2e/anatomy-spotter-study.spec.ts"
+  ],
+  "checkedAt": "2026-10-03T01:51:33.650Z"
+}

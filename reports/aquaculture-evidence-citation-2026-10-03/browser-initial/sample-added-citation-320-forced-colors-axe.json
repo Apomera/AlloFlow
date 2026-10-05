@@ -1,0 +1,17 @@
+{
+  "violations": [
+    {
+      "id": "color-contrast",
+      "impact": "serious",
+      "nodes": [
+        {
+          "target": [
+            "#aq-eco-evidence-evidence"
+          ],
+          "summary": "Fix any of the following:\n  Element has insufficient color contrast of 1.04 (foreground color: #f8fafc, background color: #ffffff, font size: 9.0pt (12px), font weight: bold). Expected contrast ratio of 4.5:1"
+        }
+      ]
+    }
+  ],
+  "incomplete": []
+}

@@ -1,0 +1,18 @@
+{
+  "beforeLfSha256": "076c52eb1bfed83695fb2dfe138692a8fedc7c96155df91073484482ef97a75a",
+  "afterLfSha256": "ac1f6aaf8f6bd41449b79ee81c8de9bb4c971bf58b30864d0c6c2ecc126f9ff8",
+  "scope": "Two dir=auto attributes on authored comparison function paragraphs. No text, controls, styles, state or callbacks changed.",
+  "exactReversal": true,
+  "edits": [
+    {
+      "from": "h('p',null,learnerText(selectedStruct))",
+      "to": "h('p',{dir:'auto'},learnerText(selectedStruct))"
+    },
+    {
+      "from": "h('p',null,learnerText(targetStruct))",
+      "to": "h('p',{dir:'auto'},learnerText(targetStruct))"
+    }
+  ],
+  "rawSha256": "ac1f6aaf8f6bd41449b79ee81c8de9bb4c971bf58b30864d0c6c2ecc126f9ff8",
+  "runtimeCopiesByteEqual": true
+}

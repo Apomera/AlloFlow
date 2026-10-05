@@ -1,0 +1,150 @@
+{
+  "checkedOn": "2026-10-01",
+  "teachingScale": {
+    "universeAgeYears": 13800000000,
+    "calendarDays": 365,
+    "calendarSeconds": 31536000,
+    "leapYear": false
+  },
+  "notes": [
+    "Source ages are embedded; the simulator needs no runtime network request.",
+    "Formation phases, quoted age uncertainty and approximate point examples are labeled separately.",
+    "The clock reports scale arithmetic, rather than asserting that scientific ages are precise to hundredths of a cosmic second.",
+    "The rounded universe-age reference is held fixed; its uncertainty is not propagated.",
+    "Legacy selection identifiers are retained for saved-state compatibility."
+  ],
+  "events": [
+    {
+      "id": "jan1",
+      "name": "Big Bang",
+      "lookbackYears": 13800000000,
+      "lowYears": null,
+      "highYears": null,
+      "ageKind": "boundary",
+      "basis": "Start boundary of the 13.8-billion-year teaching scale.",
+      "source": "NASA · Big Bang and the early universe",
+      "url": "https://science.nasa.gov/mission/hubble/science/science-behind-the-discoveries/hubble-big-bang/"
+    },
+    {
+      "id": "cmb",
+      "name": "Neutral hydrogen",
+      "lookbackYears": 13799620000,
+      "lowYears": null,
+      "highYears": null,
+      "ageKind": "approximate",
+      "basis": "Approximately 380,000 years after the Big Bang; the transition took time.",
+      "source": "NASA · Big Bang and the early universe",
+      "url": "https://science.nasa.gov/mission/hubble/science/science-behind-the-discoveries/hubble-big-bang/"
+    },
+    {
+      "id": "jan10",
+      "name": "First stars",
+      "lookbackYears": 13600000000,
+      "lowYears": null,
+      "highYears": null,
+      "ageKind": "approximate",
+      "basis": "Illustrative epoch: approximately 200 million years after the Big Bang.",
+      "source": "NASA · Universe overview",
+      "url": "https://science.nasa.gov/universe/overview/"
+    },
+    {
+      "id": "mar15",
+      "name": "Milky Way thick disk",
+      "lookbackYears": 11000000000,
+      "lowYears": 8000000000,
+      "highYears": 13000000000,
+      "ageKind": "phase",
+      "basis": "Formation phase: about 13–8 billion years ago. The marker is the approximate 11-billion-year peak. The band is a period of growth.",
+      "source": "Xiang & Rix 2022 · Milky Way assembly",
+      "url": "https://www.nature.com/articles/s41586-022-04496-5"
+    },
+    {
+      "id": "aug28",
+      "name": "Solar System",
+      "lookbackYears": 4600000000,
+      "lowYears": null,
+      "highYears": null,
+      "ageKind": "approximate",
+      "basis": "Approximate formation age: 4.6 billion years ago.",
+      "source": "NASA · How our Solar System formed",
+      "url": "https://science.nasa.gov/astrobiology/learning-resources/alp/how-did-our-solar-system-form/"
+    },
+    {
+      "id": "sep1",
+      "name": "Early life evidence",
+      "lookbackYears": 3480000000,
+      "lowYears": null,
+      "highYears": null,
+      "ageKind": "approximate",
+      "basis": "Approximate age of the Dresser Formation evidence: 3.48 billion years.",
+      "source": "Djokic et al. 2017 · Early life evidence",
+      "url": "https://www.nature.com/articles/ncomms15263"
+    },
+    {
+      "id": "nov15",
+      "name": "Eukaryote fossils",
+      "lookbackYears": 1500000000,
+      "lowYears": null,
+      "highYears": null,
+      "ageKind": "approximate",
+      "basis": "Approximate age of the Roper Group fossil record: 1.5 billion years.",
+      "source": "Javaux et al. 2001 · Eukaryotic ecosystems",
+      "url": "https://www.nature.com/articles/35083562"
+    },
+    {
+      "id": "dec5",
+      "name": "Cambrian boundary",
+      "lookbackYears": 538800000,
+      "lowYears": 538200000,
+      "highYears": 539400000,
+      "ageKind": "uncertainty",
+      "basis": "Published boundary age: 538.8 ± 0.6 million years. The band shows the quoted numerical age uncertainty.",
+      "source": "ICS · June 2026 geological time scale",
+      "url": "https://stratigraphy.org/ICSchart/ChronostratChart2026-06.pdf"
+    },
+    {
+      "id": "dec25",
+      "name": "Early dinosaur fossils",
+      "lookbackYears": 230000000,
+      "lowYears": null,
+      "highYears": null,
+      "ageKind": "approximate",
+      "basis": "Approximate fossil age example: 230 million years.",
+      "source": "USGS · Early dinosaur fossils",
+      "url": "https://pubs.usgs.gov/gip/dinosaurs/when.html"
+    },
+    {
+      "id": "dec31",
+      "name": "Human fossils",
+      "lookbackYears": 315000,
+      "lowYears": 281000,
+      "highYears": 349000,
+      "ageKind": "uncertainty",
+      "basis": "Published weighted age: 315 ± 34 thousand years. The band shows the quoted dating uncertainty.",
+      "source": "Richter et al. 2017 · Jebel Irhoud dating",
+      "url": "https://www.nature.com/articles/nature22335"
+    },
+    {
+      "id": "agriculture",
+      "name": "Agriculture",
+      "lookbackYears": 12000,
+      "lowYears": null,
+      "highYears": null,
+      "ageKind": "approximate",
+      "basis": "Approximate transition example: 12,000 years ago.",
+      "source": "Smithsonian · Humans change the world",
+      "url": "https://humanorigins.si.edu/human-characteristics/humans-change-world"
+    },
+    {
+      "id": "now",
+      "name": "Present boundary",
+      "lookbackYears": 0,
+      "lowYears": null,
+      "highYears": null,
+      "ageKind": "boundary",
+      "basis": "End boundary of the teaching scale: zero seconds remaining.",
+      "source": "NASA · Rounded universe age reference",
+      "url": "https://science.nasa.gov/exoplanets/what-is-the-universe/"
+    }
+  ]
+}

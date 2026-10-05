@@ -1,0 +1,2068 @@
+{
+  "date": "2026-10-02",
+  "namespace": "stem.anatomy",
+  "englishKeys": 39,
+  "nativeTranslations": 117,
+  "files": [
+    {
+      "path": "ui_strings.js",
+      "beforeSha256": "81f93d2178fe0c893c4400ca7500baa6479fb2b8fddb8211e68d91b21738c988",
+      "beforeBytes": 11053617,
+      "indexSha256Before": "73fe4cee665575aab2666e0828c2f14940bf68934bb015a38881ba423ca2fb2c",
+      "addedKeys": [
+        "lens_kicker",
+        "lens_title",
+        "lens_help",
+        "lens_progress",
+        "lens_progress_help",
+        "lens_close",
+        "lens_open",
+        "lens_viewed",
+        "lens_opened_announce",
+        "lens_closed_announce",
+        "lens_specialist_heading",
+        "lens_specialist_tag",
+        "lens_specialist_title",
+        "lens_specialist_help",
+        "lens_specialist_open",
+        "lens_heart_title",
+        "lens_heart_category",
+        "lens_heart_description",
+        "lens_kidneys_title",
+        "lens_kidneys_category",
+        "lens_kidneys_description",
+        "lens_alveoli_title",
+        "lens_alveoli_category",
+        "lens_alveoli_description",
+        "lens_patella_title",
+        "lens_patella_category",
+        "lens_patella_description",
+        "lens_biceps_title",
+        "lens_biceps_category",
+        "lens_biceps_description",
+        "lens_liver_title",
+        "lens_liver_category",
+        "lens_liver_description",
+        "lens_sm_intestine_title",
+        "lens_sm_intestine_category",
+        "lens_sm_intestine_description",
+        "lens_epidermis_title",
+        "lens_epidermis_category",
+        "lens_epidermis_description"
+      ],
+      "insertionOffset": 1226200,
+      "addedText": ",\n      \"lens_kicker\": \"Guided anatomy\",\n      \"lens_title\": \"Anatomy Lens\",\n      \"lens_help\": \"Choose a diagram to explore its structures and processes.\",\n      \"lens_progress\": \"{opened} of {total} diagrams opened\",\n      \"lens_progress_help\": \"Opening a diagram adds it to this count.\",\n      \"lens_close\": \"Close gallery\",\n      \"lens_open\": \"Open guided view\",\n      \"lens_viewed\": \"Opened\",\n      \"lens_opened_announce\": \"{name} opened. The guided diagram is ready.\",\n      \"lens_closed_announce\": \"Gallery closed.\",\n      \"lens_specialist_heading\": \"Explore the brain\",\n      \"lens_specialist_tag\": \"Another STEM tool\",\n      \"lens_specialist_title\": \"Brain Atlas Explorer\",\n      \"lens_specialist_help\": \"Open the Brain Atlas for dedicated neuroanatomy diagrams.\",\n      \"lens_specialist_open\": \"Open Brain Atlas\",\n      \"lens_heart_title\": \"Heart circulation\",\n      \"lens_heart_category\": \"Circulatory\",\n      \"lens_heart_description\": \"Trace chambers, valves, lungs, and systemic flow.\",\n      \"lens_kidneys_title\": \"Kidney filtration\",\n      \"lens_kidneys_category\": \"Urinary physiology\",\n      \"lens_kidneys_description\": \"Explore kidney regions and nephron processing from the posterior body view.\",\n      \"lens_alveoli_title\": \"Alveolar gas exchange\",\n      \"lens_alveoli_category\": \"Respiratory\",\n      \"lens_alveoli_description\": \"Follow oxygen and carbon dioxide across the air–blood barrier.\",\n      \"lens_patella_title\": \"Knee mechanics\",\n      \"lens_patella_category\": \"Musculoskeletal\",\n      \"lens_patella_description\": \"Explore cartilage, menisci, ligaments, flexion, and extension.\",\n      \"lens_biceps_title\": \"Muscle activation\",\n      \"lens_biceps_category\": \"Neuromuscular\",\n      \"lens_biceps_description\": \"Follow acetylcholine, calcium, and sarcomere shortening.\",\n      \"lens_liver_title\": \"Liver blood and bile flow\",\n      \"lens_liver_category\": \"Digestive and metabolic\",\n      \"lens_liver_description\": \"Explore how a liver lobule processes portal blood and carries bile.\",\n      \"lens_sm_intestine_title\": \"Intestinal absorption\",\n      \"lens_sm_intestine_category\": \"Absorption\",\n      \"lens_sm_intestine_description\": \"Follow sugars, amino acids, fats, water, blood, and lymph across a villus.\",\n      \"lens_epidermis_title\": \"Skin repair\",\n      \"lens_epidermis_category\": \"Integumentary\",\n      \"lens_epidermis_description\": \"Connect skin layers to hemostasis, inflammation, rebuilding, and remodeling.\"",
+      "afterSha256": "2dbcc2f33c78971c2bfbd5eb1755b762284b6b01a78b327665b4ee0ec93658fe",
+      "afterBytes": 11056065,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "indexSha256After": "73fe4cee665575aab2666e0828c2f14940bf68934bb015a38881ba423ca2fb2c",
+      "indexUnchanged": true,
+      "checks": [
+        {
+          "key": "lens_kicker",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_close",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_viewed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_opened_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_closed_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_tag",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/ui_strings.js",
+      "beforeSha256": "81f93d2178fe0c893c4400ca7500baa6479fb2b8fddb8211e68d91b21738c988",
+      "beforeBytes": 11053617,
+      "indexSha256Before": "73fe4cee665575aab2666e0828c2f14940bf68934bb015a38881ba423ca2fb2c",
+      "addedKeys": [
+        "lens_kicker",
+        "lens_title",
+        "lens_help",
+        "lens_progress",
+        "lens_progress_help",
+        "lens_close",
+        "lens_open",
+        "lens_viewed",
+        "lens_opened_announce",
+        "lens_closed_announce",
+        "lens_specialist_heading",
+        "lens_specialist_tag",
+        "lens_specialist_title",
+        "lens_specialist_help",
+        "lens_specialist_open",
+        "lens_heart_title",
+        "lens_heart_category",
+        "lens_heart_description",
+        "lens_kidneys_title",
+        "lens_kidneys_category",
+        "lens_kidneys_description",
+        "lens_alveoli_title",
+        "lens_alveoli_category",
+        "lens_alveoli_description",
+        "lens_patella_title",
+        "lens_patella_category",
+        "lens_patella_description",
+        "lens_biceps_title",
+        "lens_biceps_category",
+        "lens_biceps_description",
+        "lens_liver_title",
+        "lens_liver_category",
+        "lens_liver_description",
+        "lens_sm_intestine_title",
+        "lens_sm_intestine_category",
+        "lens_sm_intestine_description",
+        "lens_epidermis_title",
+        "lens_epidermis_category",
+        "lens_epidermis_description"
+      ],
+      "insertionOffset": 1226200,
+      "addedText": ",\n      \"lens_kicker\": \"Guided anatomy\",\n      \"lens_title\": \"Anatomy Lens\",\n      \"lens_help\": \"Choose a diagram to explore its structures and processes.\",\n      \"lens_progress\": \"{opened} of {total} diagrams opened\",\n      \"lens_progress_help\": \"Opening a diagram adds it to this count.\",\n      \"lens_close\": \"Close gallery\",\n      \"lens_open\": \"Open guided view\",\n      \"lens_viewed\": \"Opened\",\n      \"lens_opened_announce\": \"{name} opened. The guided diagram is ready.\",\n      \"lens_closed_announce\": \"Gallery closed.\",\n      \"lens_specialist_heading\": \"Explore the brain\",\n      \"lens_specialist_tag\": \"Another STEM tool\",\n      \"lens_specialist_title\": \"Brain Atlas Explorer\",\n      \"lens_specialist_help\": \"Open the Brain Atlas for dedicated neuroanatomy diagrams.\",\n      \"lens_specialist_open\": \"Open Brain Atlas\",\n      \"lens_heart_title\": \"Heart circulation\",\n      \"lens_heart_category\": \"Circulatory\",\n      \"lens_heart_description\": \"Trace chambers, valves, lungs, and systemic flow.\",\n      \"lens_kidneys_title\": \"Kidney filtration\",\n      \"lens_kidneys_category\": \"Urinary physiology\",\n      \"lens_kidneys_description\": \"Explore kidney regions and nephron processing from the posterior body view.\",\n      \"lens_alveoli_title\": \"Alveolar gas exchange\",\n      \"lens_alveoli_category\": \"Respiratory\",\n      \"lens_alveoli_description\": \"Follow oxygen and carbon dioxide across the air–blood barrier.\",\n      \"lens_patella_title\": \"Knee mechanics\",\n      \"lens_patella_category\": \"Musculoskeletal\",\n      \"lens_patella_description\": \"Explore cartilage, menisci, ligaments, flexion, and extension.\",\n      \"lens_biceps_title\": \"Muscle activation\",\n      \"lens_biceps_category\": \"Neuromuscular\",\n      \"lens_biceps_description\": \"Follow acetylcholine, calcium, and sarcomere shortening.\",\n      \"lens_liver_title\": \"Liver blood and bile flow\",\n      \"lens_liver_category\": \"Digestive and metabolic\",\n      \"lens_liver_description\": \"Explore how a liver lobule processes portal blood and carries bile.\",\n      \"lens_sm_intestine_title\": \"Intestinal absorption\",\n      \"lens_sm_intestine_category\": \"Absorption\",\n      \"lens_sm_intestine_description\": \"Follow sugars, amino acids, fats, water, blood, and lymph across a villus.\",\n      \"lens_epidermis_title\": \"Skin repair\",\n      \"lens_epidermis_category\": \"Integumentary\",\n      \"lens_epidermis_description\": \"Connect skin layers to hemostasis, inflammation, rebuilding, and remodeling.\"",
+      "afterSha256": "2dbcc2f33c78971c2bfbd5eb1755b762284b6b01a78b327665b4ee0ec93658fe",
+      "afterBytes": 11056065,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "indexSha256After": "73fe4cee665575aab2666e0828c2f14940bf68934bb015a38881ba423ca2fb2c",
+      "indexUnchanged": true,
+      "checks": [
+        {
+          "key": "lens_kicker",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_close",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_viewed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_opened_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_closed_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_tag",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/french.js",
+      "beforeSha256": "43bbd376f58a0d9f3b35d39702d1bcfe5b813491e95f5eddd1a71dec7bc83cdc",
+      "beforeBytes": 8433073,
+      "indexSha256Before": "c78a5325b2456197064d9e42c99f3c684f507e99d37fca03b24e5d032b1612b1",
+      "addedKeys": [
+        "lens_kicker",
+        "lens_title",
+        "lens_help",
+        "lens_progress",
+        "lens_progress_help",
+        "lens_close",
+        "lens_open",
+        "lens_viewed",
+        "lens_opened_announce",
+        "lens_closed_announce",
+        "lens_specialist_heading",
+        "lens_specialist_tag",
+        "lens_specialist_title",
+        "lens_specialist_help",
+        "lens_specialist_open",
+        "lens_heart_title",
+        "lens_heart_category",
+        "lens_heart_description",
+        "lens_kidneys_title",
+        "lens_kidneys_category",
+        "lens_kidneys_description",
+        "lens_alveoli_title",
+        "lens_alveoli_category",
+        "lens_alveoli_description",
+        "lens_patella_title",
+        "lens_patella_category",
+        "lens_patella_description",
+        "lens_biceps_title",
+        "lens_biceps_category",
+        "lens_biceps_description",
+        "lens_liver_title",
+        "lens_liver_category",
+        "lens_liver_description",
+        "lens_sm_intestine_title",
+        "lens_sm_intestine_category",
+        "lens_sm_intestine_description",
+        "lens_epidermis_title",
+        "lens_epidermis_category",
+        "lens_epidermis_description"
+      ],
+      "insertionOffset": 3088595,
+      "addedText": ",\n      \"lens_kicker\": \"Anatomie guidée\",\n      \"lens_title\": \"Anatomy Lens\",\n      \"lens_help\": \"Choisis un schéma pour explorer ses structures et ses processus.\",\n      \"lens_progress\": \"{opened} schémas ouverts sur {total}\",\n      \"lens_progress_help\": \"Ouvrir un schéma l’ajoute à ce décompte.\",\n      \"lens_close\": \"Fermer la galerie\",\n      \"lens_open\": \"Ouvrir la vue guidée\",\n      \"lens_viewed\": \"Ouvert\",\n      \"lens_opened_announce\": \"{name} ouvert. Le schéma guidé est prêt.\",\n      \"lens_closed_announce\": \"Galerie fermée.\",\n      \"lens_specialist_heading\": \"Explorer le cerveau\",\n      \"lens_specialist_tag\": \"Un autre outil STEM\",\n      \"lens_specialist_title\": \"Explorateur de l’atlas du cerveau\",\n      \"lens_specialist_help\": \"Ouvre l’atlas du cerveau pour consulter des schémas de neuroanatomie.\",\n      \"lens_specialist_open\": \"Ouvrir l’atlas du cerveau\",\n      \"lens_heart_title\": \"Circulation du cœur\",\n      \"lens_heart_category\": \"Système circulatoire\",\n      \"lens_heart_description\": \"Suis les cavités, les valves, les poumons et la circulation systémique.\",\n      \"lens_kidneys_title\": \"Filtration rénale\",\n      \"lens_kidneys_category\": \"Physiologie urinaire\",\n      \"lens_kidneys_description\": \"Explore les régions du rein et le fonctionnement du néphron depuis la vue postérieure du corps.\",\n      \"lens_alveoli_title\": \"Échanges gazeux alvéolaires\",\n      \"lens_alveoli_category\": \"Système respiratoire\",\n      \"lens_alveoli_description\": \"Suis l’oxygène et le dioxyde de carbone à travers la barrière air-sang.\",\n      \"lens_patella_title\": \"Mécanique du genou\",\n      \"lens_patella_category\": \"Système musculosquelettique\",\n      \"lens_patella_description\": \"Explore le cartilage, les ménisques, les ligaments, la flexion et l’extension.\",\n      \"lens_biceps_title\": \"Activation musculaire\",\n      \"lens_biceps_category\": \"Système neuromusculaire\",\n      \"lens_biceps_description\": \"Suis l’acétylcholine, le calcium et le raccourcissement des sarcomères.\",\n      \"lens_liver_title\": \"Circulation du sang et de la bile dans le foie\",\n      \"lens_liver_category\": \"Digestion et métabolisme\",\n      \"lens_liver_description\": \"Explore comment un lobule hépatique traite le sang de la veine porte et transporte la bile.\",\n      \"lens_sm_intestine_title\": \"Absorption intestinale\",\n      \"lens_sm_intestine_category\": \"Absorption\",\n      \"lens_sm_intestine_description\": \"Suis les sucres, les acides aminés, les graisses, l’eau, le sang et la lymphe à travers une villosité.\",\n      \"lens_epidermis_title\": \"Réparation de la peau\",\n      \"lens_epidermis_category\": \"Système tégumentaire\",\n      \"lens_epidermis_description\": \"Relie les couches de la peau à l’hémostase, à l’inflammation, à la reconstruction et au remodelage.\"",
+      "afterSha256": "fb3776e0cb92cf73079c73627f186df0acf0e939513ee0d0653b8b625587d506",
+      "afterBytes": 8435890,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "indexSha256After": "c78a5325b2456197064d9e42c99f3c684f507e99d37fca03b24e5d032b1612b1",
+      "indexUnchanged": true,
+      "checks": [
+        {
+          "key": "lens_kicker",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_close",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_viewed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_opened_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_closed_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_tag",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/french.js",
+      "beforeSha256": "43bbd376f58a0d9f3b35d39702d1bcfe5b813491e95f5eddd1a71dec7bc83cdc",
+      "beforeBytes": 8433073,
+      "indexSha256Before": "c78a5325b2456197064d9e42c99f3c684f507e99d37fca03b24e5d032b1612b1",
+      "addedKeys": [
+        "lens_kicker",
+        "lens_title",
+        "lens_help",
+        "lens_progress",
+        "lens_progress_help",
+        "lens_close",
+        "lens_open",
+        "lens_viewed",
+        "lens_opened_announce",
+        "lens_closed_announce",
+        "lens_specialist_heading",
+        "lens_specialist_tag",
+        "lens_specialist_title",
+        "lens_specialist_help",
+        "lens_specialist_open",
+        "lens_heart_title",
+        "lens_heart_category",
+        "lens_heart_description",
+        "lens_kidneys_title",
+        "lens_kidneys_category",
+        "lens_kidneys_description",
+        "lens_alveoli_title",
+        "lens_alveoli_category",
+        "lens_alveoli_description",
+        "lens_patella_title",
+        "lens_patella_category",
+        "lens_patella_description",
+        "lens_biceps_title",
+        "lens_biceps_category",
+        "lens_biceps_description",
+        "lens_liver_title",
+        "lens_liver_category",
+        "lens_liver_description",
+        "lens_sm_intestine_title",
+        "lens_sm_intestine_category",
+        "lens_sm_intestine_description",
+        "lens_epidermis_title",
+        "lens_epidermis_category",
+        "lens_epidermis_description"
+      ],
+      "insertionOffset": 3088595,
+      "addedText": ",\n      \"lens_kicker\": \"Anatomie guidée\",\n      \"lens_title\": \"Anatomy Lens\",\n      \"lens_help\": \"Choisis un schéma pour explorer ses structures et ses processus.\",\n      \"lens_progress\": \"{opened} schémas ouverts sur {total}\",\n      \"lens_progress_help\": \"Ouvrir un schéma l’ajoute à ce décompte.\",\n      \"lens_close\": \"Fermer la galerie\",\n      \"lens_open\": \"Ouvrir la vue guidée\",\n      \"lens_viewed\": \"Ouvert\",\n      \"lens_opened_announce\": \"{name} ouvert. Le schéma guidé est prêt.\",\n      \"lens_closed_announce\": \"Galerie fermée.\",\n      \"lens_specialist_heading\": \"Explorer le cerveau\",\n      \"lens_specialist_tag\": \"Un autre outil STEM\",\n      \"lens_specialist_title\": \"Explorateur de l’atlas du cerveau\",\n      \"lens_specialist_help\": \"Ouvre l’atlas du cerveau pour consulter des schémas de neuroanatomie.\",\n      \"lens_specialist_open\": \"Ouvrir l’atlas du cerveau\",\n      \"lens_heart_title\": \"Circulation du cœur\",\n      \"lens_heart_category\": \"Système circulatoire\",\n      \"lens_heart_description\": \"Suis les cavités, les valves, les poumons et la circulation systémique.\",\n      \"lens_kidneys_title\": \"Filtration rénale\",\n      \"lens_kidneys_category\": \"Physiologie urinaire\",\n      \"lens_kidneys_description\": \"Explore les régions du rein et le fonctionnement du néphron depuis la vue postérieure du corps.\",\n      \"lens_alveoli_title\": \"Échanges gazeux alvéolaires\",\n      \"lens_alveoli_category\": \"Système respiratoire\",\n      \"lens_alveoli_description\": \"Suis l’oxygène et le dioxyde de carbone à travers la barrière air-sang.\",\n      \"lens_patella_title\": \"Mécanique du genou\",\n      \"lens_patella_category\": \"Système musculosquelettique\",\n      \"lens_patella_description\": \"Explore le cartilage, les ménisques, les ligaments, la flexion et l’extension.\",\n      \"lens_biceps_title\": \"Activation musculaire\",\n      \"lens_biceps_category\": \"Système neuromusculaire\",\n      \"lens_biceps_description\": \"Suis l’acétylcholine, le calcium et le raccourcissement des sarcomères.\",\n      \"lens_liver_title\": \"Circulation du sang et de la bile dans le foie\",\n      \"lens_liver_category\": \"Digestion et métabolisme\",\n      \"lens_liver_description\": \"Explore comment un lobule hépatique traite le sang de la veine porte et transporte la bile.\",\n      \"lens_sm_intestine_title\": \"Absorption intestinale\",\n      \"lens_sm_intestine_category\": \"Absorption\",\n      \"lens_sm_intestine_description\": \"Suis les sucres, les acides aminés, les graisses, l’eau, le sang et la lymphe à travers une villosité.\",\n      \"lens_epidermis_title\": \"Réparation de la peau\",\n      \"lens_epidermis_category\": \"Système tégumentaire\",\n      \"lens_epidermis_description\": \"Relie les couches de la peau à l’hémostase, à l’inflammation, à la reconstruction et au remodelage.\"",
+      "afterSha256": "fb3776e0cb92cf73079c73627f186df0acf0e939513ee0d0653b8b625587d506",
+      "afterBytes": 8435890,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "indexSha256After": "c78a5325b2456197064d9e42c99f3c684f507e99d37fca03b24e5d032b1612b1",
+      "indexUnchanged": true,
+      "checks": [
+        {
+          "key": "lens_kicker",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_close",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_viewed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_opened_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_closed_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_tag",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/spanish_latin_america.js",
+      "beforeSha256": "d35d99476f4fae70b28512aee494b93eddcd8d3edfd61fb37fdf24a1bf332f2b",
+      "beforeBytes": 8853984,
+      "indexSha256Before": "f449cbface89bd8c8c941fd294da0d743a4ba1b0fae7fa0496376fa77027ab1f",
+      "addedKeys": [
+        "lens_kicker",
+        "lens_title",
+        "lens_help",
+        "lens_progress",
+        "lens_progress_help",
+        "lens_close",
+        "lens_open",
+        "lens_viewed",
+        "lens_opened_announce",
+        "lens_closed_announce",
+        "lens_specialist_heading",
+        "lens_specialist_tag",
+        "lens_specialist_title",
+        "lens_specialist_help",
+        "lens_specialist_open",
+        "lens_heart_title",
+        "lens_heart_category",
+        "lens_heart_description",
+        "lens_kidneys_title",
+        "lens_kidneys_category",
+        "lens_kidneys_description",
+        "lens_alveoli_title",
+        "lens_alveoli_category",
+        "lens_alveoli_description",
+        "lens_patella_title",
+        "lens_patella_category",
+        "lens_patella_description",
+        "lens_biceps_title",
+        "lens_biceps_category",
+        "lens_biceps_description",
+        "lens_liver_title",
+        "lens_liver_category",
+        "lens_liver_description",
+        "lens_sm_intestine_title",
+        "lens_sm_intestine_category",
+        "lens_sm_intestine_description",
+        "lens_epidermis_title",
+        "lens_epidermis_category",
+        "lens_epidermis_description"
+      ],
+      "insertionOffset": 3024328,
+      "addedText": ",\n      \"lens_kicker\": \"Anatomía guiada\",\n      \"lens_title\": \"Anatomy Lens\",\n      \"lens_help\": \"Elige un diagrama para explorar sus estructuras y procesos.\",\n      \"lens_progress\": \"{opened} de {total} diagramas abiertos\",\n      \"lens_progress_help\": \"Abrir un diagrama lo añade a este conteo.\",\n      \"lens_close\": \"Cerrar galería\",\n      \"lens_open\": \"Abrir vista guiada\",\n      \"lens_viewed\": \"Abierto\",\n      \"lens_opened_announce\": \"{name} abierto. El diagrama guiado está listo.\",\n      \"lens_closed_announce\": \"Galería cerrada.\",\n      \"lens_specialist_heading\": \"Explora el cerebro\",\n      \"lens_specialist_tag\": \"Otra herramienta STEM\",\n      \"lens_specialist_title\": \"Explorador del atlas del cerebro\",\n      \"lens_specialist_help\": \"Abre el atlas del cerebro para consultar diagramas de neuroanatomía.\",\n      \"lens_specialist_open\": \"Abrir atlas del cerebro\",\n      \"lens_heart_title\": \"Circulación del corazón\",\n      \"lens_heart_category\": \"Sistema circulatorio\",\n      \"lens_heart_description\": \"Sigue las cavidades, las válvulas, los pulmones y la circulación sistémica.\",\n      \"lens_kidneys_title\": \"Filtración renal\",\n      \"lens_kidneys_category\": \"Fisiología urinaria\",\n      \"lens_kidneys_description\": \"Explora las regiones del riñón y el funcionamiento de la nefrona desde la vista posterior del cuerpo.\",\n      \"lens_alveoli_title\": \"Intercambio gaseoso alveolar\",\n      \"lens_alveoli_category\": \"Sistema respiratorio\",\n      \"lens_alveoli_description\": \"Sigue el oxígeno y el dióxido de carbono a través de la barrera entre el aire y la sangre.\",\n      \"lens_patella_title\": \"Mecánica de la rodilla\",\n      \"lens_patella_category\": \"Sistema musculoesquelético\",\n      \"lens_patella_description\": \"Explora el cartílago, los meniscos, los ligamentos, la flexión y la extensión.\",\n      \"lens_biceps_title\": \"Activación muscular\",\n      \"lens_biceps_category\": \"Sistema neuromuscular\",\n      \"lens_biceps_description\": \"Sigue la acetilcolina, el calcio y el acortamiento de los sarcómeros.\",\n      \"lens_liver_title\": \"Flujo de sangre y bilis en el hígado\",\n      \"lens_liver_category\": \"Digestión y metabolismo\",\n      \"lens_liver_description\": \"Explora cómo un lobulillo hepático procesa la sangre portal y transporta la bilis.\",\n      \"lens_sm_intestine_title\": \"Absorción intestinal\",\n      \"lens_sm_intestine_category\": \"Absorción\",\n      \"lens_sm_intestine_description\": \"Sigue los azúcares, los aminoácidos, las grasas, el agua, la sangre y la linfa a través de una vellosidad.\",\n      \"lens_epidermis_title\": \"Reparación de la piel\",\n      \"lens_epidermis_category\": \"Sistema tegumentario\",\n      \"lens_epidermis_description\": \"Relaciona las capas de la piel con la hemostasia, la inflamación, la reconstrucción y la remodelación.\"",
+      "afterSha256": "846871051f297d8d1586871f8f79dab1c52a1361aee929c50fcd28c92b55aab0",
+      "afterBytes": 8856786,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "indexSha256After": "f449cbface89bd8c8c941fd294da0d743a4ba1b0fae7fa0496376fa77027ab1f",
+      "indexUnchanged": true,
+      "checks": [
+        {
+          "key": "lens_kicker",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_close",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_viewed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_opened_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_closed_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_tag",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "beforeSha256": "d35d99476f4fae70b28512aee494b93eddcd8d3edfd61fb37fdf24a1bf332f2b",
+      "beforeBytes": 8853984,
+      "indexSha256Before": "f449cbface89bd8c8c941fd294da0d743a4ba1b0fae7fa0496376fa77027ab1f",
+      "addedKeys": [
+        "lens_kicker",
+        "lens_title",
+        "lens_help",
+        "lens_progress",
+        "lens_progress_help",
+        "lens_close",
+        "lens_open",
+        "lens_viewed",
+        "lens_opened_announce",
+        "lens_closed_announce",
+        "lens_specialist_heading",
+        "lens_specialist_tag",
+        "lens_specialist_title",
+        "lens_specialist_help",
+        "lens_specialist_open",
+        "lens_heart_title",
+        "lens_heart_category",
+        "lens_heart_description",
+        "lens_kidneys_title",
+        "lens_kidneys_category",
+        "lens_kidneys_description",
+        "lens_alveoli_title",
+        "lens_alveoli_category",
+        "lens_alveoli_description",
+        "lens_patella_title",
+        "lens_patella_category",
+        "lens_patella_description",
+        "lens_biceps_title",
+        "lens_biceps_category",
+        "lens_biceps_description",
+        "lens_liver_title",
+        "lens_liver_category",
+        "lens_liver_description",
+        "lens_sm_intestine_title",
+        "lens_sm_intestine_category",
+        "lens_sm_intestine_description",
+        "lens_epidermis_title",
+        "lens_epidermis_category",
+        "lens_epidermis_description"
+      ],
+      "insertionOffset": 3024328,
+      "addedText": ",\n      \"lens_kicker\": \"Anatomía guiada\",\n      \"lens_title\": \"Anatomy Lens\",\n      \"lens_help\": \"Elige un diagrama para explorar sus estructuras y procesos.\",\n      \"lens_progress\": \"{opened} de {total} diagramas abiertos\",\n      \"lens_progress_help\": \"Abrir un diagrama lo añade a este conteo.\",\n      \"lens_close\": \"Cerrar galería\",\n      \"lens_open\": \"Abrir vista guiada\",\n      \"lens_viewed\": \"Abierto\",\n      \"lens_opened_announce\": \"{name} abierto. El diagrama guiado está listo.\",\n      \"lens_closed_announce\": \"Galería cerrada.\",\n      \"lens_specialist_heading\": \"Explora el cerebro\",\n      \"lens_specialist_tag\": \"Otra herramienta STEM\",\n      \"lens_specialist_title\": \"Explorador del atlas del cerebro\",\n      \"lens_specialist_help\": \"Abre el atlas del cerebro para consultar diagramas de neuroanatomía.\",\n      \"lens_specialist_open\": \"Abrir atlas del cerebro\",\n      \"lens_heart_title\": \"Circulación del corazón\",\n      \"lens_heart_category\": \"Sistema circulatorio\",\n      \"lens_heart_description\": \"Sigue las cavidades, las válvulas, los pulmones y la circulación sistémica.\",\n      \"lens_kidneys_title\": \"Filtración renal\",\n      \"lens_kidneys_category\": \"Fisiología urinaria\",\n      \"lens_kidneys_description\": \"Explora las regiones del riñón y el funcionamiento de la nefrona desde la vista posterior del cuerpo.\",\n      \"lens_alveoli_title\": \"Intercambio gaseoso alveolar\",\n      \"lens_alveoli_category\": \"Sistema respiratorio\",\n      \"lens_alveoli_description\": \"Sigue el oxígeno y el dióxido de carbono a través de la barrera entre el aire y la sangre.\",\n      \"lens_patella_title\": \"Mecánica de la rodilla\",\n      \"lens_patella_category\": \"Sistema musculoesquelético\",\n      \"lens_patella_description\": \"Explora el cartílago, los meniscos, los ligamentos, la flexión y la extensión.\",\n      \"lens_biceps_title\": \"Activación muscular\",\n      \"lens_biceps_category\": \"Sistema neuromuscular\",\n      \"lens_biceps_description\": \"Sigue la acetilcolina, el calcio y el acortamiento de los sarcómeros.\",\n      \"lens_liver_title\": \"Flujo de sangre y bilis en el hígado\",\n      \"lens_liver_category\": \"Digestión y metabolismo\",\n      \"lens_liver_description\": \"Explora cómo un lobulillo hepático procesa la sangre portal y transporta la bilis.\",\n      \"lens_sm_intestine_title\": \"Absorción intestinal\",\n      \"lens_sm_intestine_category\": \"Absorción\",\n      \"lens_sm_intestine_description\": \"Sigue los azúcares, los aminoácidos, las grasas, el agua, la sangre y la linfa a través de una vellosidad.\",\n      \"lens_epidermis_title\": \"Reparación de la piel\",\n      \"lens_epidermis_category\": \"Sistema tegumentario\",\n      \"lens_epidermis_description\": \"Relaciona las capas de la piel con la hemostasia, la inflamación, la reconstrucción y la remodelación.\"",
+      "afterSha256": "846871051f297d8d1586871f8f79dab1c52a1361aee929c50fcd28c92b55aab0",
+      "afterBytes": 8856786,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "indexSha256After": "f449cbface89bd8c8c941fd294da0d743a4ba1b0fae7fa0496376fa77027ab1f",
+      "indexUnchanged": true,
+      "checks": [
+        {
+          "key": "lens_kicker",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_close",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_viewed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_opened_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_closed_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_tag",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "lang/arabic.js",
+      "beforeSha256": "e97164c18f9fa93ee9cfc3f8382d582117ba73f2521b1dcf8a958c29f90b3caa",
+      "beforeBytes": 8964788,
+      "indexSha256Before": "4ed242205c75e16d7898c963ec0543f729755dfcc070694d0b2eef35e74f17ae",
+      "addedKeys": [
+        "lens_kicker",
+        "lens_title",
+        "lens_help",
+        "lens_progress",
+        "lens_progress_help",
+        "lens_close",
+        "lens_open",
+        "lens_viewed",
+        "lens_opened_announce",
+        "lens_closed_announce",
+        "lens_specialist_heading",
+        "lens_specialist_tag",
+        "lens_specialist_title",
+        "lens_specialist_help",
+        "lens_specialist_open",
+        "lens_heart_title",
+        "lens_heart_category",
+        "lens_heart_description",
+        "lens_kidneys_title",
+        "lens_kidneys_category",
+        "lens_kidneys_description",
+        "lens_alveoli_title",
+        "lens_alveoli_category",
+        "lens_alveoli_description",
+        "lens_patella_title",
+        "lens_patella_category",
+        "lens_patella_description",
+        "lens_biceps_title",
+        "lens_biceps_category",
+        "lens_biceps_description",
+        "lens_liver_title",
+        "lens_liver_category",
+        "lens_liver_description",
+        "lens_sm_intestine_title",
+        "lens_sm_intestine_category",
+        "lens_sm_intestine_description",
+        "lens_epidermis_title",
+        "lens_epidermis_category",
+        "lens_epidermis_description"
+      ],
+      "insertionOffset": 2444219,
+      "addedText": ",\n      \"lens_kicker\": \"استكشاف إرشادي للتشريح\",\n      \"lens_title\": \"Anatomy Lens\",\n      \"lens_help\": \"اختر مخططًا لاستكشاف بُناه وعملياته.\",\n      \"lens_progress\": \"تم فتح {opened} من أصل {total} مخططات\",\n      \"lens_progress_help\": \"يُضاف المخطط إلى هذا العدد عند فتحه.\",\n      \"lens_close\": \"أغلق المعرض\",\n      \"lens_open\": \"افتح العرض الإرشادي\",\n      \"lens_viewed\": \"تم الفتح\",\n      \"lens_opened_announce\": \"تم فتح {name}. المخطط الإرشادي جاهز.\",\n      \"lens_closed_announce\": \"تم إغلاق المعرض.\",\n      \"lens_specialist_heading\": \"استكشف الدماغ\",\n      \"lens_specialist_tag\": \"أداة STEM أخرى\",\n      \"lens_specialist_title\": \"مستكشف أطلس الدماغ\",\n      \"lens_specialist_help\": \"افتح أطلس الدماغ لعرض مخططات متخصصة في التشريح العصبي.\",\n      \"lens_specialist_open\": \"افتح أطلس الدماغ\",\n      \"lens_heart_title\": \"الدورة الدموية للقلب\",\n      \"lens_heart_category\": \"الجهاز الدوري\",\n      \"lens_heart_description\": \"تتبّع الحجرات والصمامات والرئتين والدورة الدموية الجهازية.\",\n      \"lens_kidneys_title\": \"الترشيح الكلوي\",\n      \"lens_kidneys_category\": \"فسيولوجيا الجهاز البولي\",\n      \"lens_kidneys_description\": \"استكشف مناطق الكلية وعمل النفرون من المنظر الخلفي للجسم.\",\n      \"lens_alveoli_title\": \"تبادل الغازات في الحويصلات الهوائية\",\n      \"lens_alveoli_category\": \"الجهاز التنفسي\",\n      \"lens_alveoli_description\": \"تتبّع الأكسجين وثاني أكسيد الكربون عبر الحاجز بين الهواء والدم.\",\n      \"lens_patella_title\": \"ميكانيكا الركبة\",\n      \"lens_patella_category\": \"الجهاز العضلي الهيكلي\",\n      \"lens_patella_description\": \"استكشف الغضاريف والغضاريف الهلالية والأربطة والثني والمد.\",\n      \"lens_biceps_title\": \"تنشيط العضلات\",\n      \"lens_biceps_category\": \"الجهاز العصبي العضلي\",\n      \"lens_biceps_description\": \"تتبّع الأستيل كولين والكالسيوم وقصر القسيمات العضلية.\",\n      \"lens_liver_title\": \"تدفّق الدم والصفراء في الكبد\",\n      \"lens_liver_category\": \"الهضم والأيض\",\n      \"lens_liver_description\": \"استكشف كيف يعالج الفصيص الكبدي الدم البابي وينقل الصفراء.\",\n      \"lens_sm_intestine_title\": \"الامتصاص المعوي\",\n      \"lens_sm_intestine_category\": \"الامتصاص\",\n      \"lens_sm_intestine_description\": \"تتبّع السكريات والأحماض الأمينية والدهون والماء والدم واللمف عبر زغابة معوية.\",\n      \"lens_epidermis_title\": \"ترميم الجلد\",\n      \"lens_epidermis_category\": \"الجهاز الجلدي\",\n      \"lens_epidermis_description\": \"اربط طبقات الجلد بإيقاف النزف والالتهاب وإعادة البناء وإعادة التشكيل.\"",
+      "afterSha256": "f0ba2e03a30d03efdf2a70bc4bcd505d6054fa7e56c6c7375d7aeca199163887",
+      "afterBytes": 8968122,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "indexSha256After": "4ed242205c75e16d7898c963ec0543f729755dfcc070694d0b2eef35e74f17ae",
+      "indexUnchanged": true,
+      "checks": [
+        {
+          "key": "lens_kicker",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_close",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_viewed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_opened_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_closed_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_tag",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    },
+    {
+      "path": "desktop/web-app/public/lang/arabic.js",
+      "beforeSha256": "e97164c18f9fa93ee9cfc3f8382d582117ba73f2521b1dcf8a958c29f90b3caa",
+      "beforeBytes": 8964788,
+      "indexSha256Before": "4ed242205c75e16d7898c963ec0543f729755dfcc070694d0b2eef35e74f17ae",
+      "addedKeys": [
+        "lens_kicker",
+        "lens_title",
+        "lens_help",
+        "lens_progress",
+        "lens_progress_help",
+        "lens_close",
+        "lens_open",
+        "lens_viewed",
+        "lens_opened_announce",
+        "lens_closed_announce",
+        "lens_specialist_heading",
+        "lens_specialist_tag",
+        "lens_specialist_title",
+        "lens_specialist_help",
+        "lens_specialist_open",
+        "lens_heart_title",
+        "lens_heart_category",
+        "lens_heart_description",
+        "lens_kidneys_title",
+        "lens_kidneys_category",
+        "lens_kidneys_description",
+        "lens_alveoli_title",
+        "lens_alveoli_category",
+        "lens_alveoli_description",
+        "lens_patella_title",
+        "lens_patella_category",
+        "lens_patella_description",
+        "lens_biceps_title",
+        "lens_biceps_category",
+        "lens_biceps_description",
+        "lens_liver_title",
+        "lens_liver_category",
+        "lens_liver_description",
+        "lens_sm_intestine_title",
+        "lens_sm_intestine_category",
+        "lens_sm_intestine_description",
+        "lens_epidermis_title",
+        "lens_epidermis_category",
+        "lens_epidermis_description"
+      ],
+      "insertionOffset": 2444219,
+      "addedText": ",\n      \"lens_kicker\": \"استكشاف إرشادي للتشريح\",\n      \"lens_title\": \"Anatomy Lens\",\n      \"lens_help\": \"اختر مخططًا لاستكشاف بُناه وعملياته.\",\n      \"lens_progress\": \"تم فتح {opened} من أصل {total} مخططات\",\n      \"lens_progress_help\": \"يُضاف المخطط إلى هذا العدد عند فتحه.\",\n      \"lens_close\": \"أغلق المعرض\",\n      \"lens_open\": \"افتح العرض الإرشادي\",\n      \"lens_viewed\": \"تم الفتح\",\n      \"lens_opened_announce\": \"تم فتح {name}. المخطط الإرشادي جاهز.\",\n      \"lens_closed_announce\": \"تم إغلاق المعرض.\",\n      \"lens_specialist_heading\": \"استكشف الدماغ\",\n      \"lens_specialist_tag\": \"أداة STEM أخرى\",\n      \"lens_specialist_title\": \"مستكشف أطلس الدماغ\",\n      \"lens_specialist_help\": \"افتح أطلس الدماغ لعرض مخططات متخصصة في التشريح العصبي.\",\n      \"lens_specialist_open\": \"افتح أطلس الدماغ\",\n      \"lens_heart_title\": \"الدورة الدموية للقلب\",\n      \"lens_heart_category\": \"الجهاز الدوري\",\n      \"lens_heart_description\": \"تتبّع الحجرات والصمامات والرئتين والدورة الدموية الجهازية.\",\n      \"lens_kidneys_title\": \"الترشيح الكلوي\",\n      \"lens_kidneys_category\": \"فسيولوجيا الجهاز البولي\",\n      \"lens_kidneys_description\": \"استكشف مناطق الكلية وعمل النفرون من المنظر الخلفي للجسم.\",\n      \"lens_alveoli_title\": \"تبادل الغازات في الحويصلات الهوائية\",\n      \"lens_alveoli_category\": \"الجهاز التنفسي\",\n      \"lens_alveoli_description\": \"تتبّع الأكسجين وثاني أكسيد الكربون عبر الحاجز بين الهواء والدم.\",\n      \"lens_patella_title\": \"ميكانيكا الركبة\",\n      \"lens_patella_category\": \"الجهاز العضلي الهيكلي\",\n      \"lens_patella_description\": \"استكشف الغضاريف والغضاريف الهلالية والأربطة والثني والمد.\",\n      \"lens_biceps_title\": \"تنشيط العضلات\",\n      \"lens_biceps_category\": \"الجهاز العصبي العضلي\",\n      \"lens_biceps_description\": \"تتبّع الأستيل كولين والكالسيوم وقصر القسيمات العضلية.\",\n      \"lens_liver_title\": \"تدفّق الدم والصفراء في الكبد\",\n      \"lens_liver_category\": \"الهضم والأيض\",\n      \"lens_liver_description\": \"استكشف كيف يعالج الفصيص الكبدي الدم البابي وينقل الصفراء.\",\n      \"lens_sm_intestine_title\": \"الامتصاص المعوي\",\n      \"lens_sm_intestine_category\": \"الامتصاص\",\n      \"lens_sm_intestine_description\": \"تتبّع السكريات والأحماض الأمينية والدهون والماء والدم واللمف عبر زغابة معوية.\",\n      \"lens_epidermis_title\": \"ترميم الجلد\",\n      \"lens_epidermis_category\": \"الجهاز الجلدي\",\n      \"lens_epidermis_description\": \"اربط طبقات الجلد بإيقاف النزف والالتهاب وإعادة البناء وإعادة التشكيل.\"",
+      "afterSha256": "f0ba2e03a30d03efdf2a70bc4bcd505d6054fa7e56c6c7375d7aeca199163887",
+      "afterBytes": 8968122,
+      "preservesEveryUnrelatedByteAtWrite": true,
+      "indexSha256After": "4ed242205c75e16d7898c963ec0543f729755dfcc070694d0b2eef35e74f17ae",
+      "indexUnchanged": true,
+      "checks": [
+        {
+          "key": "lens_kicker",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_progress_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_close",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_viewed",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_opened_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_closed_announce",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_heading",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_tag",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_help",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_specialist_open",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_heart_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_kidneys_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_alveoli_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_patella_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_biceps_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_liver_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_sm_intestine_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_title",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_category",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        },
+        {
+          "key": "lens_epidermis_description",
+          "matchesManifest": true,
+          "placeholdersMatchEnglish": true
+        }
+      ]
+    }
+  ],
+  "mirrors": [
+    {
+      "canonical": "ui_strings.js",
+      "mirror": "desktop/web-app/public/ui_strings.js",
+      "byteEqual": true,
+      "sha256": "2dbcc2f33c78971c2bfbd5eb1755b762284b6b01a78b327665b4ee0ec93658fe"
+    },
+    {
+      "canonical": "lang/french.js",
+      "mirror": "desktop/web-app/public/lang/french.js",
+      "byteEqual": true,
+      "sha256": "fb3776e0cb92cf73079c73627f186df0acf0e939513ee0d0653b8b625587d506"
+    },
+    {
+      "canonical": "lang/spanish_latin_america.js",
+      "mirror": "desktop/web-app/public/lang/spanish_latin_america.js",
+      "byteEqual": true,
+      "sha256": "846871051f297d8d1586871f8f79dab1c52a1361aee929c50fcd28c92b55aab0"
+    },
+    {
+      "canonical": "lang/arabic.js",
+      "mirror": "desktop/web-app/public/lang/arabic.js",
+      "byteEqual": true,
+      "sha256": "f0ba2e03a30d03efdf2a70bc4bcd505d6054fa7e56c6c7375d7aeca199163887"
+    }
+  ],
+  "failures": [],
+  "gitMutations": false,
+  "previousAttempts": [
+    {
+      "path": "C:\\Users\\cabba\\Documents\\Codex\\2026-09-29\\new-chat-4\\anatomy-lens-locale-snapshots\\catalog-validation.pre-retry.json",
+      "sha256": "3d66b2386a22d00e681521d7326a0e524b54f422668d868efccd9a35db236664",
+      "completedWrites": 0
+    }
+  ],
+  "manifest": {
+    "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\dev-tools\\i18n\\anatomy_lens_gallery_20261002.json",
+    "sha256": "42997ab1c1953cd743aae1fc4fb14a7c76bf2864d5c1d1fe4ccabf07a75f0ea9"
+  },
+  "sharedNativeWords": {
+    "french": [
+      "lens_title",
+      "lens_sm_intestine_category"
+    ],
+    "spanish_latin_america": [
+      "lens_title"
+    ],
+    "arabic": [
+      "lens_title"
+    ]
+  },
+  "complete": true
+}

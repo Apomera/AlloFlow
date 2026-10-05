@@ -1,0 +1,211 @@
+{
+  "url": "http://127.0.0.1:8770/?mode=storm",
+  "pid": 27428,
+  "startedAt": "2026-10-05T04:37:30.746Z",
+  "checks": [
+    {
+      "label": "Current runtime exact",
+      "passed": true
+    },
+    {
+      "label": "Preview serves exact current runtime",
+      "passed": true
+    },
+    {
+      "label": "Actual browser script response exact",
+      "passed": true
+    },
+    {
+      "label": "Actual preview mounted Storm 2D",
+      "passed": true
+    },
+    {
+      "label": "Actual preview paints readable shared captions",
+      "passed": true
+    },
+    {
+      "label": "Actual preview preserves paused configuration",
+      "passed": true
+    }
+  ],
+  "errors": [],
+  "browserClosed": true,
+  "sourceSha256": "4bb912b9f1d00c1b54be26d29197f0c1bd9c1277161664d21842532f973f4bf3",
+  "servedSha256": "4bb912b9f1d00c1b54be26d29197f0c1bd9c1277161664d21842532f973f4bf3",
+  "servedBytes": 3153009,
+  "loadedSha256": "4bb912b9f1d00c1b54be26d29197f0c1bd9c1277161664d21842532f973f4bf3",
+  "loadedBytes": 3153009,
+  "scene": {
+    "data": {
+      "wcMode": "precipHunt",
+      "journeyView": "2d",
+      "journeyPaused": true,
+      "wc2dPaused": true,
+      "precipHunt": {
+        "viewMode": "2d",
+        "paused": true,
+        "playing": false,
+        "showStormAnatomy": false
+      }
+    },
+    "dataset": {
+      "precipitationChamber": "2.5d",
+      "precipitationView": "2d",
+      "lightningPhase": "idle",
+      "thunderWave": "hidden",
+      "thunderWaveRadiusKm": "0",
+      "thunderWaveProgress": "0",
+      "precipitationType": "rain",
+      "precipitationIntensity": "22",
+      "precipitationLift": "26",
+      "precipitationProfile": "Liquid through the column",
+      "precipitationTerrain": "plains",
+      "precipitationWindDirection": "east",
+      "orographicFlow": "none",
+      "virgaEvaporation": "hidden",
+      "cloudFormationRendering": "rising-vapor-tracers-saturation-line-and-newborn-droplets",
+      "cloudVaporTracerMeaning": "visible-teaching-path-for-invisible-water-vapor",
+      "cloudParticleScale": "teaching-magnification-not-to-scale",
+      "cloudDropletGrowth": "warm-cloud-collision-coalescence",
+      "lowLevelDryness": "0.140",
+      "thermalProfile": "none",
+      "freezingLevel": "none",
+      "profileTransitionCount": "0",
+      "midLevelTemperature": "5.0",
+      "temperatureRail": "cloud-middle-surface",
+      "secondaryTransitionKind": "none",
+      "secondaryTransitionProgress": "none",
+      "phasePath": "Liquid drops remain liquid to the surface",
+      "stormStage": "mature",
+      "stormTime": "52",
+      "stormActivity": "1.000",
+      "groundAccumulation": "snow:0,glaze:0,hail:0,puddling:8,runoff:6",
+      "thunderDelaySeconds": "8.7",
+      "stormDistanceKm": "3",
+      "thunderCaption": "No lightning flash to trigger thunder",
+      "thunderSound": "muted",
+      "thunderEstimateKm": "3",
+      "thunderEstimateChecked": "false",
+      "thunderEstimateBand": "unsubmitted",
+      "thunderEstimateErrorKm": "0",
+      "stormAnatomy": "hidden",
+      "chargeSeparation": "hidden",
+      "chargeSeparationIndex": "0",
+      "chargeUpperPolarity": "hidden",
+      "chargeLowerPolarity": "hidden",
+      "lightningPathway": "hidden",
+      "lightningSequence": "charge-separation>stepped-leader>upward-streamer>return-stroke>pressure-wave",
+      "lightningStudyStep": "auto",
+      "lightningStudyMode": "hidden",
+      "lightningMode": "hidden",
+      "rendered": "true"
+    },
+    "texts": [
+      {
+        "text": "MATURE · T=52",
+        "font": "800 12px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "CLOUD",
+        "font": "800 11px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "+3 °C",
+        "font": "600 12px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "MIDDLE",
+        "font": "800 11px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "+5 °C",
+        "font": "600 12px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "SURFACE",
+        "font": "800 11px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "+14 °C",
+        "font": "600 12px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "Cloud formation",
+        "font": "800 12px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "Liquid drops",
+        "font": "600 11px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "MATURE · T=52",
+        "font": "800 12px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "CLOUD",
+        "font": "800 11px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "+3 °C",
+        "font": "600 12px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "MIDDLE",
+        "font": "800 11px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "+5 °C",
+        "font": "600 12px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "SURFACE",
+        "font": "800 11px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "+14 °C",
+        "font": "600 12px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "Cloud formation",
+        "font": "800 12px system-ui, sans-serif",
+        "arguments": 3
+      },
+      {
+        "text": "Liquid drops",
+        "font": "600 11px system-ui, sans-serif",
+        "arguments": 3
+      }
+    ],
+    "sourceScripts": [
+      "http://127.0.0.1:8770/desktop/web-app/node_modules/react/umd/react.production.min.js",
+      "http://127.0.0.1:8770/desktop/web-app/node_modules/react-dom/umd/react-dom.production.min.js",
+      "http://127.0.0.1:8770/stem_lab/stem_lab_module.js",
+      "http://127.0.0.1:8770/stem_lab/stem_tool_watercycle.js"
+    ]
+  },
+  "capture": {
+    "path": "preview-live-storm.png",
+    "sha256": "c30edf9f4dbc0493cbf8c4b2d4ef682b713f97eeb96a968b3758dfc84303af50",
+    "sourceSha256": "4bb912b9f1d00c1b54be26d29197f0c1bd9c1277161664d21842532f973f4bf3"
+  },
+  "resourcesClosed": true,
+  "completedAt": "2026-10-05T04:37:34.177Z",
+  "completed": true,
+  "successful": true
+}

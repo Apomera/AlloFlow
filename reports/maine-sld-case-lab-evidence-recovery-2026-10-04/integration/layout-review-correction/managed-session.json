@@ -1,0 +1,21 @@
+{
+  "recordedAt": "2026-10-04T14:56:57.520462+00:00",
+  "pid": 26596,
+  "managedSessionId": 99780,
+  "plainPipes": true,
+  "visibleWindow": false,
+  "pidEvidence": "process.pid from owned server launch output and exact runtime.json",
+  "processSignatureRecordedFromOwnedLaunch": {
+    "executable": "C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe",
+    "arguments": [
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\evidence_recovery_layout_integration.cjs",
+      "serve",
+      "c5af6b18d2a3a02d1fe99f885b874ea0bae04c1fa74b283a6bda7d69a2bdf87f"
+    ],
+    "helperSha256": "8d45ec3f8700e68e637aee9d7151b73606d0a28e12eaa2f6bb08b5db1c5ad319"
+  },
+  "runtimeMetadataPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-evidence-recovery-2026-10-04\\integration\\layout-review-correction\\source-preview\\runtime.json",
+  "httpEvidencePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-evidence-recovery-2026-10-04\\integration\\layout-review-correction\\served-verification.json",
+  "reachableAfterLaunchToolReturned": true,
+  "rebuildPerformed": false
+}

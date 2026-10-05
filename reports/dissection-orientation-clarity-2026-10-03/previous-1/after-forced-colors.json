@@ -1,0 +1,271 @@
+{
+  "width": 390,
+  "scrollWidth": 388,
+  "clientWidth": 388,
+  "buttons": [
+    {
+      "label": "Toggle organ name labels",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle high contrast mode",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle additional reduced motion; operating system reduced motion settings are always honored",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle larger interface text",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle simplified step instructions",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle dissection sound effects",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle tactile instrument feedback",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Visual presentation: cycle guided, realistic, and accessible",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Anatomical view: cycle dorsal, ventral, lateral, and internal",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle schematic layer map",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Specimen condition: cycle standard, preserved, dehydrated, cloudy, and swollen",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle curated anatomical relationships",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Rendering quality: cycle auto, high, and balanced",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle movable inspection lens",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Pin inspection lens to selected structure or current pointer",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Cycle inspection magnification: 2, 4, or 6 times",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Cycle inspection focus depth: surface, structure, or deep",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle detailed pointer-following instrument visuals and contact response",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle docked macro inspection view",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle specimen-specific surface and tray depth details",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle anatomical depth atlas with shape-coded landmarks",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle responsive tissue relief lighting around visible structures",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle animated direction markers for curated anatomical relationships",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle selected-structure focus isolation",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle subtle pointer-responsive specimen depth",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Toggle live and reference split comparison",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Generate another deterministic specimen variation",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Tissue: after technique. Activate to show the tissue before the technique.",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Lab light: cycle neutral, warm, and cool",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Laboratory light direction: cycle overhead, left, right, and raking",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Animation speed: cycle normal, slow, and fast",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Enter fullscreen specimen mode with view and tool controls",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    },
+    {
+      "label": "Print clean dissection report",
+      "font": 14,
+      "width": 338,
+      "height": 48,
+      "scrollWidth": 336,
+      "clientWidth": 336
+    }
+  ]
+}

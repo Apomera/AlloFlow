@@ -312,7 +312,7 @@ test('energy labels distinguish captured initial energy, live motion, impact, an
   const key = page.locator('[data-physics-plot-key]');
   await expect(key).toBeVisible();
   await expect(key).toContainText(/latest trail speed/i);
-  await expect(key).toContainText(/white dashed.*vacuum reference/i);
+  await expect(key).toContainText(/white dashed.*vacuum preview/i);
   await expect(key).toContainText('60 m/s');
   await page.getByRole('button', { name: 'Launch!', exact: true }).click();
   let draw = await readDraw(page);

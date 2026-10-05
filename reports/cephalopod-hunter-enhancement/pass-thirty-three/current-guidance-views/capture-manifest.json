@@ -1,0 +1,21 @@
+{
+  "sourceSHA256": "ad1970ff112df529cc9115e0fbd69061c80393af9570aba38fa05b1c9cb6b91c",
+  "testSHA256": "0c484368623956a9aa402d5e81f1a89d6319a15f38d499898feb25fa784541af",
+  "scope": "Unmodified screenshot attachments from two passing native keyboard/touch cases; final lost-target state. Raw four-scenario text/ownership/timing records retained locally.",
+  "results": [
+    {
+      "name": "desktop",
+      "image": "desktop-contact-guidance.png",
+      "sha256": "aec3dd9d212a1ed876c624e06d88d01935eac5b948aadaa11ce3ede8b600979a",
+      "scenarios": 4,
+      "duration": 59169
+    },
+    {
+      "name": "phone",
+      "image": "phone-contact-guidance.png",
+      "sha256": "748957e4079429648e8dcd3854216b9d5088cae09f38a7bc82442e70b863922a",
+      "scenarios": 4,
+      "duration": 29866
+    }
+  ]
+}

@@ -1,0 +1,138 @@
+{
+  "date": "2026-10-02",
+  "feature": "Guided connection claim caseboard",
+  "sourceSha256": "9de01425efe84f02f65153d0ae466dd0f1c5d8f23b27e633d18ffce99f79dcc7",
+  "sourceMirrorsIdentical": true,
+  "sourceLineEndings": "LF",
+  "noCommitByUserRequest": true,
+  "deployed": false,
+  "preview": {
+    "url": "http://127.0.0.1:56559/?preview=archipelago",
+    "assets": [
+      {
+        "path": "/",
+        "status": 200,
+        "bytes": 1129
+      },
+      {
+        "path": "/evolab.js",
+        "status": 200,
+        "bytes": 2016397
+      },
+      {
+        "path": "/app.css",
+        "status": 200,
+        "bytes": 625027
+      },
+      {
+        "path": "/react.js",
+        "status": 200,
+        "bytes": 10751
+      },
+      {
+        "path": "/react-dom.js",
+        "status": 200,
+        "bytes": 131835
+      },
+      {
+        "path": "/three.js",
+        "status": 200,
+        "bytes": 603445
+      }
+    ],
+    "servedSourceMatches": true
+  },
+  "changes": [
+    "Open an optional caseboard after a repeated founder study and test always higher, always lower or always unchanged marker H.",
+    "Pin actual matching and exceptional draws manually or choose the first qualifying draw; inspect their recorded inheritance using the existing passport.",
+    "Display exact category counts, selected p(A), H and inherited-copy contributions with the whole-batch mean kept separate.",
+    "Explicitly check a conclusion and receive evidence-specific feedback on exceptions, observation limits and the arithmetic mean.",
+    "Retain bounded caseboard metadata with the study, recompute its evidence and revalidate pin roles on replay, and include the pins/conclusion in journal and full precision export.",
+    "Preserve the original mean prediction; changing the claim clears its pins and conclusion, while the study explanation is retained.",
+    "Report absent categories and undefined comparisons honestly rather than creating examples or treating missing H as equality."
+  ],
+  "validation": {
+    "distinctModelComponentAndRenderChecks": 64,
+    "modelComponent": {
+      "passed": 62,
+      "files": 8,
+      "log": "caseboard-units-final.log",
+      "coverage": [
+        "Actual trial direction classification and fixed source cohort behavior.",
+        "Equality as an exception to strictly higher/lower claims; full precision classification independent of rounding.",
+        "Undefined comparisons excluded from both evidence categories.",
+        "Bounded optional recipe metadata, legacy recipe compatibility and replay revalidation of pin roles.",
+        "A positive mean can coexist with a negative individual difference; pinning an exception does not change the summary.",
+        "No changes to expedition organisms, history or next random future."
+      ]
+    },
+    "renderGoldens": {
+      "passed": 2,
+      "log": "caseboard-goldens-final.log",
+      "scope": "Only the two EvoLab digest entries were refreshed."
+    },
+    "browser": {
+      "distinctPassedScenarios": 7,
+      "logs": [
+        "caseboard-browser-first.log",
+        "caseboard-browser-regressions.log"
+      ],
+      "coverage": [
+        "Two new guided caseboard journeys: real WebGL desktop and keyboard/no-WebGL/reduced-motion phone.",
+        "Pin actual matching and counterexample rows, inspect actual ancestry and return to saved study context.",
+        "Incorrect and corrected conclusions, claim changes clearing pins, unchanged batch mean and original mean prediction.",
+        "Caseboard journal/export, deterministic replay of saved pins and bounded study metadata.",
+        "Phone WCAG 2 A/AA and 2.1 AA axe scan has zero violations and no page overflow.",
+        "Five existing repeated-study and single-case connection journeys, including 24 draws, cancellation and separate journal records."
+      ]
+    },
+    "visualReview": [
+      "Desktop and phone caseboard screenshots inspected, with two responsive evidence cards, native radio choices, feedback and readable controls."
+    ],
+    "translationKeysPrepared": 1474,
+    "sharedTranslationCatalogApplied": false
+  },
+  "evidenceSelection": {
+    "rule": "Manual selection or first qualifying row in original computed order; never fabricated or chosen by largest effect.",
+    "classificationTolerance": 1e-12,
+    "strictClaims": "A difference numerically equal to zero is a counterexample to always higher or always lower.",
+    "pinnedCases": "Illustrate individual directions; every defined draw remains in the batch mean.",
+    "inspection": "Reconstructs actual worlds from the captured scientific context; disabled if current controls describe another context."
+  },
+  "scientificBoundaries": [
+    "The always claim is separate from the original prediction about the batch mean.",
+    "An observed exception challenges always within the illustrative model; it does not cancel or make the arithmetic mean invalid.",
+    "If all defined draws match a claim, untested draws remain unknown. A matching example alone is not proof of always.",
+    "An absent category is a recorded batch result. Undefined H provides no directional evidence.",
+    "Caseboard steps guide a comparison and conclusion; they do not certify that a learner inspected or understood every organism.",
+    "These neutral-marker model outcomes do not prove real ecosystem behavior, genome-wide diversity, reproductive isolation or speciation.",
+    "The underlying simplified model, sampling and breeding rules are unchanged. No generated model rules or fabricated scientific outcomes are introduced."
+  ],
+  "artifacts": [
+    {
+      "path": "tests/evolab_caseboard.test.js",
+      "bytes": 6501,
+      "sha256": "5bf34ca77054ac63caa3292e52973f07e6f562cfa673871edddbcbf5dd6f89d2"
+    },
+    {
+      "path": "tests/e2e/evolab-caseboard.spec.ts",
+      "bytes": 11572,
+      "sha256": "248f1a09bc8b4a39175a115e310f5af01621f4aa743742253cde60616ec97e84"
+    },
+    {
+      "path": "reports/evolab-living-island/connection-caseboard-desktop.png",
+      "bytes": 79836,
+      "sha256": "6d06b603cc9672f7c8903acb5a990ffb56509877095248b86807ea21b6439d20"
+    },
+    {
+      "path": "reports/evolab-living-island/connection-caseboard-phone.png",
+      "bytes": 83745,
+      "sha256": "d51046648714b3d7aa99418fa24dbf6e4e4df5e8ffc5ea7fb46f7e03fdce200f"
+    },
+    {
+      "path": "reports/evolab-living-island/ui-strings.delta.json",
+      "bytes": 151872,
+      "sha256": "7c3df2a811fdb57ffcb4909c32fe7e143f51f61bbaa0b2e8d4d0d0d332ebc92b"
+    }
+  ]
+}

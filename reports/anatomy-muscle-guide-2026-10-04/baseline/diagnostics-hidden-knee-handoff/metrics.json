@@ -1,0 +1,2134 @@
+{
+  "sourceLfSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "startedAt": "2026-10-04T14:53:27.185Z",
+  "errors": [],
+  "views": [
+    {
+      "width": 1280,
+      "theme": "light",
+      "clinical": false,
+      "name": "desktop-light",
+      "texts": [
+        {
+          "text": "motor axon",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 623.5203247070312,
+            "y": 1535.7562255859375,
+            "width": 54.70166015625,
+            "height": 12
+          }
+        },
+        {
+          "text": "axon terminal",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 779.6812133789062,
+            "y": 1532.925048828125,
+            "width": 66.03167724609375,
+            "height": 12
+          }
+        },
+        {
+          "text": "synaptic vesicles",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 796.4625244140625,
+            "y": 1557.574951171875,
+            "width": 62.03314208984375,
+            "height": 10
+          }
+        },
+        {
+          "text": "synaptic cleft",
+          "font": 9,
+          "effectiveFont": 8.49375,
+          "box": {
+            "x": 697.3812255859375,
+            "y": 1643.4000244140625,
+            "width": 56.4571533203125,
+            "height": 11
+          }
+        },
+        {
+          "text": "nicotinic ACh receptors",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 770.9296875,
+            "y": 1688.7562255859375,
+            "width": 86.673828125,
+            "height": 10
+          }
+        },
+        {
+          "text": "muscle sarcolemma",
+          "font": 9,
+          "effectiveFont": 8.49375,
+          "box": {
+            "x": 600.4656372070312,
+            "y": 1683.981201171875,
+            "width": 82.0689697265625,
+            "height": 11
+          }
+        },
+        {
+          "text": "T-tubule",
+          "font": 9,
+          "effectiveFont": 8.49375,
+          "box": {
+            "x": 898.9765625,
+            "y": 1700.0250244140625,
+            "width": 37.0953369140625,
+            "height": 11
+          }
+        },
+        {
+          "text": "sarcoplasmic reticulum + Ca2+",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 859.8218383789062,
+            "y": 1790.6812744140625,
+            "width": 114.88128662109375,
+            "height": 10
+          }
+        },
+        {
+          "text": "SARCOMERE",
+          "font": 10,
+          "effectiveFont": 9.4375,
+          "box": {
+            "x": 1036.02978515625,
+            "y": 1693.362548828125,
+            "width": 58.203125,
+            "height": 12
+          }
+        },
+        {
+          "text": "actin",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 1003.1312255859375,
+            "y": 1726.5062255859375,
+            "width": 19.44842529296875,
+            "height": 10
+          }
+        },
+        {
+          "text": "myosin",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 1073.3375244140625,
+            "y": 1743.4937744140625,
+            "width": 27.2664794921875,
+            "height": 10
+          }
+        },
+        {
+          "text": "Z disc",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 988.2625122070312,
+            "y": 1802.0062255859375,
+            "width": 22.7579345703125,
+            "height": 10
+          }
+        },
+        {
+          "text": "Z disc",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 1119.44384765625,
+            "y": 1802.0062255859375,
+            "width": 22.7578125,
+            "height": 10
+          }
+        },
+        {
+          "text": "terminal Ca2+ entry triggers vesicle fusion",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 622.418701171875,
+            "y": 1593.4375,
+            "width": 159.88629150390625,
+            "height": 10
+          }
+        },
+        {
+          "text": "Na+ entry depolarizes the end plate",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 755.9781494140625,
+            "y": 1705.7437744140625,
+            "width": 133.98388671875,
+            "height": 10
+          }
+        },
+        {
+          "text": "Ca2+ exposes actin binding sites",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 908.2109375,
+            "y": 1810.5,
+            "width": 122.544677734375,
+            "height": 10
+          }
+        },
+        {
+          "text": "Z discs move closer",
+          "font": 8,
+          "effectiveFont": 7.55,
+          "box": {
+            "x": 1028.13916015625,
+            "y": 1714.237548828125,
+            "width": 73.6871337890625,
+            "height": 10
+          }
+        }
+      ],
+      "intersections": [
+        [
+          "Z disc",
+          "Ca2+ exposes actin binding sites"
+        ]
+      ],
+      "html": [
+        {
+          "tag": "H5",
+          "text": "Neuromuscular junction and sarcomere",
+          "font": 13,
+          "width": 480.0625,
+          "height": 19.5,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "P",
+          "text": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening.",
+          "font": 11,
+          "width": 480.0625,
+          "height": 15.9375,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.358384764565085
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Play activation",
+          "font": 11,
+          "width": 97.875,
+          "height": 30.5,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.88482877584797
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Clinical lens",
+          "font": 11,
+          "width": 82.828125,
+          "height": 30.5,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.98260576557149
+        },
+        {
+          "tag": "SPAN",
+          "text": "Motor neuron",
+          "font": 11,
+          "width": 173.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.358384764565085
+        },
+        {
+          "tag": "SPAN",
+          "text": "Muscle fiber",
+          "font": 11,
+          "width": 173.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.358384764565085
+        },
+        {
+          "tag": "SPAN",
+          "text": "Sarcomere",
+          "font": 11,
+          "width": 173.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "Visual key",
+          "font": 11,
+          "width": 54.9375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "N",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(124, 58, 237)",
+          "backgroundCandidates": [
+            "rgb(124, 58, 237)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 5.698586217871195
+        },
+        {
+          "tag": "SPAN",
+          "text": "neural signal",
+          "font": 11,
+          "width": 69.5625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Ca",
+          "font": 11,
+          "width": 21.109375,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(3, 105, 161)",
+          "backgroundCandidates": [
+            "rgb(3, 105, 161)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 5.933638668604332
+        },
+        {
+          "tag": "SPAN",
+          "text": "calcium",
+          "font": 11,
+          "width": 41.1875,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "M",
+          "font": 11,
+          "width": 18.859375,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(219, 39, 119)",
+          "backgroundCandidates": [
+            "rgb(219, 39, 119)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 4.596590808200417
+        },
+        {
+          "tag": "SPAN",
+          "text": "contraction",
+          "font": 11,
+          "width": 62.140625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Current structures",
+          "font": 11,
+          "width": 98.875,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "Motor axon",
+          "font": 11,
+          "width": 74.109375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Axon terminal",
+          "font": 11,
+          "width": 87.828125,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Calcium channels",
+          "font": 11,
+          "width": 102.765625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1. Nerve signalAction potential reaches terminal",
+          "font": 11,
+          "width": 147,
+          "height": 59.25,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "SPAN",
+          "text": "1. Nerve signal",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "SPAN",
+          "text": "Action potential reaches terminal",
+          "font": 11,
+          "width": 133,
+          "height": 27.5,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2. Motor end plateAcetylcholine activates fiber",
+          "font": 11,
+          "width": 147,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "2. Motor end plate",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Acetylcholine activates fiber",
+          "font": 11,
+          "width": 133,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3. Calcium releaseT-tubule signal reaches SR",
+          "font": 11,
+          "width": 147,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "3. Calcium release",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "T-tubule signal reaches SR",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4. Sarcomere shortensActin slides past myosin",
+          "font": 11,
+          "width": 147,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "4. Sarcomere shortens",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Actin slides past myosin",
+          "font": 11,
+          "width": 133,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Step 1 of 4",
+          "font": 11,
+          "width": 71.140625,
+          "height": 21.9375,
+          "foreground": "rgb(131, 24, 67)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.835528976706302
+        },
+        {
+          "tag": "STRONG",
+          "text": "1. Nerve signal",
+          "font": 11,
+          "width": 77.125,
+          "height": 16.5,
+          "foreground": "rgb(131, 24, 67)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.835528976706302
+        },
+        {
+          "tag": "SPAN",
+          "text": "A motor-neuron action potential reaches the axon terminal and opens voltage-gated calcium channels. Calcium entry triggers synaptic vesicles to fuse with the membrane.",
+          "font": 11,
+          "width": 417.734375,
+          "height": 31.875,
+          "foreground": "rgb(131, 24, 67)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.835528976706302
+        },
+        {
+          "tag": "P",
+          "text": "Apply the force: connect muscle tension and tendon pull to the changing geometry of a synovial joint.",
+          "font": 11,
+          "width": 462.890625,
+          "height": 30.78125,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "STRONG",
+          "text": "Apply the force:",
+          "font": 11,
+          "width": 85.875,
+          "height": 15,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Apply force at a joint",
+          "font": 11,
+          "width": 135.109375,
+          "height": 36,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.090048300172369
+        }
+      ],
+      "pageWidth": 1280,
+      "pageScroll": 1280,
+      "atlasWidth": 630,
+      "atlasScroll": 630
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "clinical": false,
+      "name": "phone-dark",
+      "texts": [
+        {
+          "text": "motor axon",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 64.47030639648438,
+            "y": 2268.824951171875,
+            "width": 23.16040802001953,
+            "height": 5
+          }
+        },
+        {
+          "text": "axon terminal",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 126.39375305175781,
+            "y": 2267.70947265625,
+            "width": 27.404754638671875,
+            "height": 5
+          }
+        },
+        {
+          "text": "synaptic cleft",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 93.57499694824219,
+            "y": 2310.846923828125,
+            "width": 23.63683319091797,
+            "height": 5
+          }
+        },
+        {
+          "text": "muscle sarcolemma",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 55.39218521118164,
+            "y": 2326.83740234375,
+            "width": 33.319210052490234,
+            "height": 5
+          }
+        },
+        {
+          "text": "T-tubule",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 173.3984375,
+            "y": 2333.159423828125,
+            "width": 15.2330322265625,
+            "height": 5
+          }
+        },
+        {
+          "text": "SARCOMERE",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 227.0124969482422,
+            "y": 2330.92822265625,
+            "width": 24.8487548828125,
+            "height": 5
+          }
+        },
+        {
+          "text": "terminal Ca2+ entry triggers vesicle fusion",
+          "font": 8,
+          "effectiveFont": 2.975,
+          "box": {
+            "x": 64.4625015258789,
+            "y": 2291.765625,
+            "width": 64.53514862060547,
+            "height": 4
+          }
+        }
+      ],
+      "intersections": [],
+      "html": [
+        {
+          "tag": "H5",
+          "text": "Neuromuscular junction and sarcomere",
+          "font": 13,
+          "width": 240,
+          "height": 39,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "P",
+          "text": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening.",
+          "font": 11,
+          "width": 240,
+          "height": 47.8125,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.358384764565085
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Play activation",
+          "font": 11,
+          "width": 97.875,
+          "height": 30.5,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.88482877584797
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Clinical lens",
+          "font": 11,
+          "width": 82.828125,
+          "height": 30.5,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.98260576557149
+        },
+        {
+          "tag": "SPAN",
+          "text": "Motor neuron",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.358384764565085
+        },
+        {
+          "tag": "SPAN",
+          "text": "Muscle fiber",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.358384764565085
+        },
+        {
+          "tag": "SPAN",
+          "text": "Sarcomere",
+          "font": 11,
+          "width": 65.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "Visual key",
+          "font": 11,
+          "width": 54.9375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "N",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(124, 58, 237)",
+          "backgroundCandidates": [
+            "rgb(124, 58, 237)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 5.698586217871195
+        },
+        {
+          "tag": "SPAN",
+          "text": "neural signal",
+          "font": 11,
+          "width": 69.5625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Ca",
+          "font": 11,
+          "width": 21.109375,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(3, 105, 161)",
+          "backgroundCandidates": [
+            "rgb(3, 105, 161)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 5.933638668604332
+        },
+        {
+          "tag": "SPAN",
+          "text": "calcium",
+          "font": 11,
+          "width": 41.1875,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "M",
+          "font": 11,
+          "width": 18.859375,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(219, 39, 119)",
+          "backgroundCandidates": [
+            "rgb(219, 39, 119)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 4.596590808200417
+        },
+        {
+          "tag": "SPAN",
+          "text": "contraction",
+          "font": 11,
+          "width": 62.140625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Current structures",
+          "font": 11,
+          "width": 98.875,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "Motor axon",
+          "font": 11,
+          "width": 74.109375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Axon terminal",
+          "font": 11,
+          "width": 87.828125,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Calcium channels",
+          "font": 11,
+          "width": 102.765625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1. Nerve signalAction potential reaches terminal",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "SPAN",
+          "text": "1. Nerve signal",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "SPAN",
+          "text": "Action potential reaches terminal",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2. Motor end plateAcetylcholine activates fiber",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "2. Motor end plate",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Acetylcholine activates fiber",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3. Calcium releaseT-tubule signal reaches SR",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "3. Calcium release",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "T-tubule signal reaches SR",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4. Sarcomere shortensActin slides past myosin",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "4. Sarcomere shortens",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Actin slides past myosin",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Step 1 of 4",
+          "font": 11,
+          "width": 71.140625,
+          "height": 21,
+          "foreground": "rgb(131, 24, 67)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.835528976706302
+        },
+        {
+          "tag": "STRONG",
+          "text": "1. Nerve signal",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(131, 24, 67)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.835528976706302
+        },
+        {
+          "tag": "SPAN",
+          "text": "A motor-neuron action potential reaches the axon terminal and opens voltage-gated calcium channels. Calcium entry triggers synaptic vesicles to fuse with the membrane.",
+          "font": 11,
+          "width": 215.84375,
+          "height": 87,
+          "foreground": "rgb(131, 24, 67)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.835528976706302
+        },
+        {
+          "tag": "P",
+          "text": "Apply the force: connect muscle tension and tendon pull to the changing geometry of a synovial joint.",
+          "font": 11,
+          "width": 240,
+          "height": 46.171875,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "STRONG",
+          "text": "Apply the force:",
+          "font": 11,
+          "width": 85.875,
+          "height": 15,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Apply force at a joint",
+          "font": 11,
+          "width": 135.109375,
+          "height": 36,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.090048300172369
+        }
+      ],
+      "pageWidth": 320,
+      "pageScroll": 320,
+      "atlasWidth": 264,
+      "atlasScroll": 264
+    },
+    {
+      "width": 320,
+      "theme": "dark",
+      "clinical": true,
+      "name": "phone-dark-clinical-step-4",
+      "texts": [
+        {
+          "text": "motor axon",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 64.47030639648438,
+            "y": 329.82501220703125,
+            "width": 23.16040802001953,
+            "height": 5
+          }
+        },
+        {
+          "text": "axon terminal",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 126.39375305175781,
+            "y": 328.7093811035156,
+            "width": 27.404754638671875,
+            "height": 5
+          }
+        },
+        {
+          "text": "synaptic cleft",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 93.57499694824219,
+            "y": 371.84686279296875,
+            "width": 23.63683319091797,
+            "height": 5
+          }
+        },
+        {
+          "text": "muscle sarcolemma",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 55.39218521118164,
+            "y": 387.8374938964844,
+            "width": 33.319210052490234,
+            "height": 5
+          }
+        },
+        {
+          "text": "T-tubule",
+          "font": 9,
+          "effectiveFont": 3.3468750000000003,
+          "box": {
+            "x": 173.3984375,
+            "y": 394.15936279296875,
+            "width": 15.2330322265625,
+            "height": 5
+          }
+        },
+        {
+          "text": "SARCOMERE",
+          "font": 10,
+          "effectiveFont": 3.71875,
+          "box": {
+            "x": 227.0124969482422,
+            "y": 391.9281311035156,
+            "width": 24.8487548828125,
+            "height": 5
+          }
+        },
+        {
+          "text": "Z discs move closer",
+          "font": 8,
+          "effectiveFont": 2.975,
+          "box": {
+            "x": 224.3015594482422,
+            "y": 400.3656311035156,
+            "width": 30.019866943359375,
+            "height": 4
+          }
+        },
+        {
+          "text": "fewer functional ACh receptors",
+          "font": 8,
+          "effectiveFont": 2.975,
+          "box": {
+            "x": 107.1937484741211,
+            "y": 399.25,
+            "width": 47.179954528808594,
+            "height": 4
+          }
+        }
+      ],
+      "intersections": [],
+      "html": [
+        {
+          "tag": "H5",
+          "text": "Neuromuscular junction and sarcomere",
+          "font": 13,
+          "width": 240,
+          "height": 39,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "P",
+          "text": "Follow a motor-neuron signal from the axon terminal to calcium release and sarcomere shortening.",
+          "font": 11,
+          "width": 240,
+          "height": 47.8125,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.358384764565085
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Play activation",
+          "font": 11,
+          "width": 97.875,
+          "height": 30.5,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.88482877584797
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Hide clinical",
+          "font": 11,
+          "width": 85,
+          "height": 30.5,
+          "foreground": "rgb(91, 33, 182)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.98260576557149
+        },
+        {
+          "tag": "SPAN",
+          "text": "Motor neuron",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.358384764565085
+        },
+        {
+          "tag": "SPAN",
+          "text": "Muscle fiber",
+          "font": 11,
+          "width": 65.09375,
+          "height": 33,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "→",
+          "font": 12,
+          "width": 10.359375,
+          "height": 18,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 4.358384764565085
+        },
+        {
+          "tag": "SPAN",
+          "text": "Sarcomere",
+          "font": 11,
+          "width": 65.09375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "Visual key",
+          "font": 11,
+          "width": 54.9375,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "N",
+          "font": 11,
+          "width": 18,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(124, 58, 237)",
+          "backgroundCandidates": [
+            "rgb(124, 58, 237)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 5.698586217871195
+        },
+        {
+          "tag": "SPAN",
+          "text": "neural signal",
+          "font": 11,
+          "width": 69.5625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Ca",
+          "font": 11,
+          "width": 21.109375,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(3, 105, 161)",
+          "backgroundCandidates": [
+            "rgb(3, 105, 161)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 5.933638668604332
+        },
+        {
+          "tag": "SPAN",
+          "text": "calcium",
+          "font": 11,
+          "width": 41.1875,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "M",
+          "font": 11,
+          "width": 18.859375,
+          "height": 18,
+          "foreground": "rgb(255, 255, 255)",
+          "background": "rgb(219, 39, 119)",
+          "backgroundCandidates": [
+            "rgb(219, 39, 119)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 4.596590808200417
+        },
+        {
+          "tag": "SPAN",
+          "text": "contraction",
+          "font": 11,
+          "width": 62.140625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Current structures",
+          "font": 11,
+          "width": 98.875,
+          "height": 16.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "SPAN",
+          "text": "Actin",
+          "font": 11,
+          "width": 38.5625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Myosin",
+          "font": 11,
+          "width": 49.734375,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "SPAN",
+          "text": "Z discs",
+          "font": 11,
+          "width": 46.640625,
+          "height": 16.5,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "STRONG",
+          "text": "Myasthenia gravis",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "backgroundCandidates": [
+            "rgb(245, 243, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "SPAN",
+          "text": "Fewer functional nicotinic acetylcholine receptors reduce the motor end plate safety factor.",
+          "font": 11,
+          "width": 216,
+          "height": 46.171875,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "backgroundCandidates": [
+            "rgb(245, 243, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "STRONG",
+          "text": "Functional consequence",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "backgroundCandidates": [
+            "rgb(245, 243, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "SPAN",
+          "text": "Repeated nerve signals are less likely to trigger reliable muscle-fiber action potentials.",
+          "font": 11,
+          "width": 216,
+          "height": 46.171875,
+          "foreground": "rgb(76, 29, 149)",
+          "background": "rgb(245, 243, 255)",
+          "backgroundCandidates": [
+            "rgb(245, 243, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 9.987700523412263
+        },
+        {
+          "tag": "SPAN",
+          "text": "Educational comparison only — not a diagnostic view.",
+          "font": 11,
+          "width": 216,
+          "height": 30.78125,
+          "foreground": "rgb(100, 116, 139)",
+          "background": "rgb(245, 243, 255)",
+          "backgroundCandidates": [
+            "rgb(245, 243, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 4.338870900382048
+        },
+        {
+          "tag": "BUTTON",
+          "text": "1. Nerve signalAction potential reaches terminal",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "1. Nerve signal",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Action potential reaches terminal",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "2. Motor end plateAcetylcholine activates fiber",
+          "font": 11,
+          "width": 117,
+          "height": 59.25,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "2. Motor end plate",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "Acetylcholine activates fiber",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "3. Calcium releaseT-tubule signal reaches SR",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "3. Calcium release",
+          "font": 11,
+          "width": 103,
+          "height": 13.75,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "SPAN",
+          "text": "T-tubule signal reaches SR",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 10.35474573184942
+        },
+        {
+          "tag": "BUTTON",
+          "text": "4. Sarcomere shortensActin slides past myosin",
+          "font": 11,
+          "width": 117,
+          "height": 73,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "SPAN",
+          "text": "4. Sarcomere shortens",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "SPAN",
+          "text": "Actin slides past myosin",
+          "font": 11,
+          "width": 103,
+          "height": 27.5,
+          "foreground": "rgb(157, 23, 77)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.221318110248228
+        },
+        {
+          "tag": "SPAN",
+          "text": "Step 4 of 4",
+          "font": 11,
+          "width": 72.640625,
+          "height": 21,
+          "foreground": "rgb(131, 24, 67)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.835528976706302
+        },
+        {
+          "tag": "STRONG",
+          "text": "4. Sarcomere shortens",
+          "font": 11,
+          "width": 216,
+          "height": 16.5,
+          "foreground": "rgb(131, 24, 67)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.835528976706302
+        },
+        {
+          "tag": "SPAN",
+          "text": "Calcium moves tropomyosin away from actin binding sites. ATP-powered myosin cross-bridge cycles pull thin filaments toward the sarcomere center; calcium reuptake and acetylcholine breakdown allow relaxation.",
+          "font": 11,
+          "width": 215.90625,
+          "height": 135,
+          "foreground": "rgb(131, 24, 67)",
+          "background": "rgb(253, 242, 248)",
+          "backgroundCandidates": [
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 8.835528976706302
+        },
+        {
+          "tag": "P",
+          "text": "Apply the force: connect muscle tension and tendon pull to the changing geometry of a synovial joint.",
+          "font": 11,
+          "width": 240,
+          "height": 46.171875,
+          "foreground": "rgb(71, 85, 105)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 6.940001298270476
+        },
+        {
+          "tag": "STRONG",
+          "text": "Apply the force:",
+          "font": 11,
+          "width": 85.875,
+          "height": 15,
+          "foreground": "rgb(51, 65, 85)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)",
+            "rgb(253, 242, 248)"
+          ],
+          "backgroundMethod": "conservative gradient endpoints",
+          "ratio": 9.483390826375697
+        },
+        {
+          "tag": "BUTTON",
+          "text": "Apply force at a joint",
+          "font": 11,
+          "width": 135.109375,
+          "height": 36,
+          "foreground": "rgb(146, 64, 14)",
+          "background": "rgb(255, 255, 255)",
+          "backgroundCandidates": [
+            "rgb(255, 255, 255)"
+          ],
+          "backgroundMethod": "opaque CSS color",
+          "ratio": 7.090048300172369
+        }
+      ],
+      "pageWidth": 320,
+      "pageScroll": 320,
+      "atlasWidth": 264,
+      "atlasScroll": 264
+    }
+  ],
+  "fixtureSourceHash": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "startedMirrorsEqual": true,
+  "stepWhilePaused": {
+    "playingAfter": true
+  },
+  "finishedSourceLfSha256": "521ba74a6436e93b4707796f0ddadf59644ac970e40aaeae9d140cc7e5bf8bed",
+  "finishedMirrorsEqual": true,
+  "finishedAt": "2026-10-04T14:53:47.862Z"
+}

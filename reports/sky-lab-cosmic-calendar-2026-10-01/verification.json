@@ -1,0 +1,44 @@
+{
+  "enhancement": "Sky Lab Cosmic Calendar",
+  "verifiedOn": "2026-10-01",
+  "sourceSha256": "8aa93b69807802a81cea74bd18956f510f23617fe36a296ffc5c00b1d607a691",
+  "baselineSha256": "6ad1ea8c99c288c049c61a19783a303ab61d7251f4c9d89ea6a06bc2c5542d91",
+  "sourceMatchesMirror": true,
+  "scopeReconstructsBaseline": true,
+  "syntaxValid": true,
+  "ownedEnglishLabels": 92,
+  "resilienceEditsConfinedToCalendar": true,
+  "committed": false,
+  "unitTests": {
+    "passed": 230,
+    "failed": 0,
+    "calendar": 38,
+    "uiResilience": 80,
+    "rotation": 36,
+    "inflation": 39,
+    "cosmicDistance": 37,
+    "report": "unit-verified.json"
+  },
+  "browserScenarios": {
+    "passed": 12,
+    "failed": 0,
+    "flaky": 0,
+    "calendar": 6,
+    "rotationRegression": 6,
+    "report": "browser-verified.json",
+    "consoleErrorsAndRejections": 0
+  },
+  "visualChecks": {
+    "phoneWidthPx": 320,
+    "contrast": true,
+    "overflow": false,
+    "minimumSvgGlyphPx": 13.077777777777778,
+    "minimumControlHeightPx": 44,
+    "labelsClipped": false,
+    "labelsOverlap": false,
+    "desktopAndPhonePreviewsInspected": true
+  },
+  "dataProvenance": "data-provenance.json",
+  "summary": "enhancement-summary.json",
+  "diffWhitespaceCheck": "passed"
+}

@@ -1,0 +1,12 @@
+{
+  "reason": "The first-untested selector must exclude the newly added own-investigation button as well as map review.",
+  "test": "tests/circuit_lesson_continuation.test.js",
+  "before": "circuit_lesson_continuation.before.test.js",
+  "beforeSha256": "e122e552c4447c08436f7938e4d049d48c3b0e5dd21487b46305b600a1b5060f",
+  "after": "circuit_lesson_continuation.after.test.js",
+  "afterSha256": "f1523b68ae96d748524ccba6b057c6719e568902885423f8c550a008ee1a1b7d",
+  "beforeSelector": ".circuit-continuation-action:not(.circuit-continuation-review-map)",
+  "afterSelector": ".circuit-continuation-action:not(.circuit-continuation-review-map):not(.circuit-continuation-plan-investigation)",
+  "occurrences": 1,
+  "assertionsUnchanged": true
+}

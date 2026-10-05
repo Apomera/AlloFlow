@@ -1,0 +1,6 @@
+
+<--- Last few GCs --->
+.9[20300:000001DCBE825000]    11066 ms: Mark-Compact (reduce) 22.9 (57.5) -> 21.9 (24.0) MB, pooled: 0 MB, 9.15 / 0.01 ms  (+ 0.0 ms in 1 steps since start of marking, biggest step 0.0 ms, walltime since start of marking 226 ms) (average mu = 0.999, current[20300:000001DCBE825000]    11721 ms: Mark-Compact (reduce) 21.9 (24.0) -> 21.8 (24.0) MB, pooled: 0 MB, 23.47 / 0.00 ms  (+ 5.3 ms in 61 steps since start of marking, biggest step 1.1 ms, walltime since start of marking 29 ms) (average mu = 0.993, curren
+FATAL ERROR: Zone Allocation failed - process out of memory
+----- Native stack trace -----
+

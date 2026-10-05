@@ -1,0 +1,299 @@
+{
+  "sourceSha256": "c261c4bbb7fd7ee719164628a0bdf92c1e797d7ff58453943b9dcc5169e75a54",
+  "sourceBytes": 1393910,
+  "unitChecks": 266,
+  "unitFiles": 16,
+  "unitReport": "unit-final.json",
+  "unitCommand": [
+    "node",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/moonmission_descent_clock.test.js",
+    "tests/moonmission_descent_dust.test.js",
+    "tests/moonmission_descent_energy.test.js",
+    "tests/moonmission_descent_geometry.test.js",
+    "tests/moonmission_descent_handover.test.js",
+    "tests/moonmission_descent_history.test.js",
+    "tests/moonmission_descent_model.test.js",
+    "tests/moonmission_descent_prediction_charts.test.js",
+    "tests/moonmission_descent_prediction_landmarks.test.js",
+    "tests/moonmission_descent_prediction_physics.test.js",
+    "tests/moonmission_descent_prediction_visuals.test.js",
+    "tests/moonmission_descent_vectors.test.js",
+    "tests/moonmission_flight_recorder.test.js",
+    "tests/moonmission_landing_restore.test.js",
+    "tests/moonmission_physics_realism.test.js",
+    "tests/moonmission_descent_shadow.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--no-file-parallelism",
+    "--testTimeout=30000",
+    "--hookTimeout=30000",
+    "--reporter=json",
+    "--outputFile=C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass24-2026-10-04\\unit-final.json"
+  ],
+  "browserWorkflows": 8,
+  "browserRuns": [
+    {
+      "report": "browser-shadow-1-final.json",
+      "log": "browser-shadow-1-final.log",
+      "workflow": "recorded left and right banks preserve visible pad clearance through contact",
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "tests/e2e/moon-mission-descent-shadow.spec.ts",
+        "--config=reports/moon-mission-enhancement-pass24-2026-10-04/playwright.config.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--reporter=list,json",
+        "--grep=recorded\\ left\\ and\\ right\\ banks\\ preserve\\ visible\\ pad\\ clearance\\ through\\ contact",
+        "--output=reports/moon-mission-enhancement-pass24-2026-10-04/browser-shadow-1-final/results"
+      ],
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass24-2026-10-04\\browser-shadow-1-final.json",
+        "MM_DESCENT_SHADOW_REPORT_DIR": "reports/moon-mission-enhancement-pass24-2026-10-04/browser-shadow-1-final/shadow"
+      },
+      "expected": 1,
+      "unexpected": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 51203.364
+    },
+    {
+      "report": "browser-shadow-2-final.json",
+      "log": "browser-shadow-2-final.log",
+      "workflow": "320 px fallback keeps tilted pads clear and explains high-contrast shadow limits",
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "tests/e2e/moon-mission-descent-shadow.spec.ts",
+        "--config=reports/moon-mission-enhancement-pass24-2026-10-04/playwright.config.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--reporter=list,json",
+        "--grep=320\\ px\\ fallback\\ keeps\\ tilted\\ pads\\ clear\\ and\\ explains\\ high\\-contrast\\ shadow\\ limits",
+        "--output=reports/moon-mission-enhancement-pass24-2026-10-04/browser-shadow-2-final/results"
+      ],
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass24-2026-10-04\\browser-shadow-2-final.json",
+        "MM_DESCENT_SHADOW_REPORT_DIR": "reports/moon-mission-enhancement-pass24-2026-10-04/browser-shadow-2-final/shadow"
+      },
+      "expected": 1,
+      "unexpected": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 52974.235
+    },
+    {
+      "report": "browser-shadow-3-final.json",
+      "log": "browser-shadow-3-final.log",
+      "workflow": "reduced-motion WebGL casts one actual-hardware shadow and disposes it on context loss",
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "tests/e2e/moon-mission-descent-shadow.spec.ts",
+        "--config=reports/moon-mission-enhancement-pass24-2026-10-04/playwright.config.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--reporter=list,json",
+        "--grep=reduced\\-motion\\ WebGL\\ casts\\ one\\ actual\\-hardware\\ shadow\\ and\\ disposes\\ it\\ on\\ context\\ loss",
+        "--output=reports/moon-mission-enhancement-pass24-2026-10-04/browser-shadow-3-final/results"
+      ],
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass24-2026-10-04\\browser-shadow-3-final.json",
+        "MM_DESCENT_SHADOW_REPORT_DIR": "reports/moon-mission-enhancement-pass24-2026-10-04/browser-shadow-3-final/shadow"
+      },
+      "expected": 1,
+      "unexpected": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 16723.129
+    },
+    {
+      "report": "browser-shadow-4-verified.json",
+      "log": "browser-shadow-4-verified.log",
+      "workflow": "full-detail WebGL retains terrain shadow maps and a held physical flight",
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "tests/e2e/moon-mission-descent-shadow.spec.ts",
+        "--config=reports/moon-mission-enhancement-pass24-2026-10-04/playwright.config.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--reporter=list,json",
+        "--grep=full\\-detail\\ WebGL\\ retains\\ terrain\\ shadow\\ maps\\ and\\ a\\ held\\ physical\\ flight",
+        "--output=reports/moon-mission-enhancement-pass24-2026-10-04/browser-shadow-4-verified/results"
+      ],
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass24-2026-10-04\\browser-shadow-4-verified.json",
+        "MM_DESCENT_SHADOW_REPORT_DIR": "reports/moon-mission-enhancement-pass24-2026-10-04/browser-shadow-4-verified/shadow"
+      },
+      "expected": 1,
+      "unexpected": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 31723.15
+    },
+    {
+      "report": "browser-dust-1-final.json",
+      "log": "browser-dust-1-final.log",
+      "workflow": "a real burn emits world-fixed grains that coast after cutoff and settle after contact",
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "tests/e2e/moon-mission-descent-dust.spec.ts",
+        "--config=reports/moon-mission-enhancement-pass24-2026-10-04/playwright.config.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--reporter=list,json",
+        "--grep=a\\ real\\ burn\\ emits\\ world\\-fixed\\ grains\\ that\\ coast\\ after\\ cutoff\\ and\\ settle\\ after\\ contact",
+        "--output=reports/moon-mission-enhancement-pass24-2026-10-04/browser-dust-1-final/results"
+      ],
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass24-2026-10-04\\browser-dust-1-final.json",
+        "MM_DESCENT_DUST_REPORT_DIR": "reports/moon-mission-enhancement-pass24-2026-10-04/browser-dust-1-final/dust"
+      },
+      "expected": 1,
+      "unexpected": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 107005.111
+    },
+    {
+      "report": "browser-dust-2-final.json",
+      "log": "browser-dust-2-final.log",
+      "workflow": "recorded firing and touchdown omit unrecorded dust while preserving the landing receipt",
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "tests/e2e/moon-mission-descent-dust.spec.ts",
+        "--config=reports/moon-mission-enhancement-pass24-2026-10-04/playwright.config.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--reporter=list,json",
+        "--grep=recorded\\ firing\\ and\\ touchdown\\ omit\\ unrecorded\\ dust\\ while\\ preserving\\ the\\ landing\\ receipt",
+        "--output=reports/moon-mission-enhancement-pass24-2026-10-04/browser-dust-2-final/results"
+      ],
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass24-2026-10-04\\browser-dust-2-final.json",
+        "MM_DESCENT_DUST_REPORT_DIR": "reports/moon-mission-enhancement-pass24-2026-10-04/browser-dust-2-final/dust"
+      },
+      "expected": 1,
+      "unexpected": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 35688.212
+    },
+    {
+      "report": "browser-dust-3-final.json",
+      "log": "browser-dust-3-final.log",
+      "workflow": "320 px reduced-motion flight holds grains during pause and hidden intervals",
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "tests/e2e/moon-mission-descent-dust.spec.ts",
+        "--config=reports/moon-mission-enhancement-pass24-2026-10-04/playwright.config.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--reporter=list,json",
+        "--grep=320\\ px\\ reduced\\-motion\\ flight\\ holds\\ grains\\ during\\ pause\\ and\\ hidden\\ intervals",
+        "--output=reports/moon-mission-enhancement-pass24-2026-10-04/browser-dust-3-final/results"
+      ],
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass24-2026-10-04\\browser-dust-3-final.json",
+        "MM_DESCENT_DUST_REPORT_DIR": "reports/moon-mission-enhancement-pass24-2026-10-04/browser-dust-3-final/dust"
+      },
+      "expected": 1,
+      "unexpected": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 41493.58500000001
+    },
+    {
+      "report": "browser-dust-4-final.json",
+      "log": "browser-dust-4-final.log",
+      "workflow": "real WebGL consumes the same ballistic samples, draws dust pixels and retains grains on context loss",
+      "command": [
+        "node",
+        "node_modules/@playwright/test/cli.js",
+        "test",
+        "tests/e2e/moon-mission-descent-dust.spec.ts",
+        "--config=reports/moon-mission-enhancement-pass24-2026-10-04/playwright.config.ts",
+        "--project=chromium",
+        "--workers=1",
+        "--retries=0",
+        "--reporter=list,json",
+        "--grep=real\\ WebGL\\ consumes\\ the\\ same\\ ballistic\\ samples,\\ draws\\ dust\\ pixels\\ and\\ retains\\ grains\\ on\\ context\\ loss",
+        "--output=reports/moon-mission-enhancement-pass24-2026-10-04/browser-dust-4-final/results"
+      ],
+      "environment": {
+        "PLAYWRIGHT_BROWSERS_PATH": "C:\\Users\\cabba\\AppData\\Local\\ms-playwright",
+        "PLAYWRIGHT_JSON_OUTPUT_NAME": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass24-2026-10-04\\browser-dust-4-final.json",
+        "MM_DESCENT_DUST_REPORT_DIR": "reports/moon-mission-enhancement-pass24-2026-10-04/browser-dust-4-final/dust"
+      },
+      "expected": 1,
+      "unexpected": 0,
+      "skipped": 0,
+      "flaky": 0,
+      "durationMs": 65920.493
+    }
+  ],
+  "scopedAxeScans": 4,
+  "axe": [
+    {
+      "path": "browser-shadow-1-final/shadow/desktop-axe.json",
+      "violations": 0
+    },
+    {
+      "path": "browser-shadow-2-final/shadow/phone-forced-axe.json",
+      "violations": 0
+    },
+    {
+      "path": "browser-dust-1-final/dust/desktop-axe.json",
+      "violations": 0
+    },
+    {
+      "path": "browser-dust-3-final/dust/phone-forced-axe.json",
+      "violations": 0
+    }
+  ],
+  "nativeCapturesReviewed": 16,
+  "rayProjectionCases": 675,
+  "sideSupportCases": 5781,
+  "newShadowVertices": 5610,
+  "lowTierShadowCasters": 1,
+  "lowTierShadowMapSize": [
+    256,
+    256
+  ],
+  "visibleShadowPixels": 483,
+  "disposal": {
+    "geometry": 1,
+    "material": 1,
+    "shadowMap": 1
+  },
+  "scope": "Working-tree harness with local React, Three r128 and app styles; Chromium software rendering.",
+  "commitCreated": false,
+  "fullApplicationBuildPerformed": false
+}

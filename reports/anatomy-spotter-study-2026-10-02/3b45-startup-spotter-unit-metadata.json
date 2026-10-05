@@ -1,0 +1,49 @@
+{
+  "expectedSourceLfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+  "before": {
+    "sources": [
+      {
+        "file": "stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+        "bytes": 2077705
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+        "bytes": 2077705
+      }
+    ],
+    "byteIdentical": true
+  },
+  "fixture": {
+    "file": "tests/anatomy_spotter_study_journey.test.js",
+    "sha256": "c5061b864e7969305fdb6e893619cb6f72f34c5cd1d6b130aee012f1bc544b49"
+  },
+  "startedAt": "2026-10-02T23:39:10.339Z",
+  "priorEvidence": {
+    "sourceLfSha256": "d62e1f8aa968806557b357945bf6b12e1061954aee292baa98d9b057267a0db7",
+    "report": "d62-spotter-unit-results.json",
+    "metadata": "d62-spotter-unit-metadata.json",
+    "tests": 232,
+    "pass": 232,
+    "reason": "Final source CSS refinement; previous passing functional evidence preserved."
+  },
+  "command": "node node_modules/vitest/vitest.mjs run tests/anatomy_spotter_study_journey.test.js --pool=forks --maxWorkers=1 --no-isolate --testTimeout=120000 --hookTimeout=120000 --reporter=json --outputFile=reports\\anatomy-spotter-study-2026-10-02\\spotter-unit-results.json",
+  "after": {
+    "sources": [
+      {
+        "file": "stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+        "bytes": 2077705
+      },
+      {
+        "file": "desktop/web-app/public/stem_lab/stem_tool_anatomy.js",
+        "lfSha256": "3b4598e6bcf38ee0267070ca75d6921d605cc72696c6b36997e2211496e0af92",
+        "bytes": 2077705
+      }
+    ],
+    "byteIdentical": true
+  },
+  "finishedAt": "2026-10-02T23:42:15.762Z",
+  "exitCode": 1
+}

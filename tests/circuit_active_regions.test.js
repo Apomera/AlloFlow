@@ -54,7 +54,7 @@ describe('continuous operating-region exploration',()=>{
   const html=renderTool('circuit',{_circuit:{activeWorkbench:true},_circuitActive:{input:1.5}});
   expect(html).toContain('aria-label="Operating region explorer"');expect(html).toContain('circuit-active-region-band');expect(html).toContain('Now: Active region');expect(html).toContain('Explore cutoff');expect(html).toContain('Explore saturation');expect(html).toContain('Lamp current is the smaller value:');expect(html).toContain('8.00 mA');expect(html).toContain('Conduction boundary');
  });
- it('explains unavailable regions without offering a misleading preset',()=>{const html=renderTool('circuit',{_circuit:{activeWorkbench:true},_circuitActive:{baseResistance:100000,beta:20,loadResistance:100}});expect(html).toContain('Outside this input range');expect(html).toContain('circuit-region-unavailable-saturated');expect(html).toContain('Even the strongest input');expect(html).toMatch(/disabled="" aria-describedby="circuit-region-unavailable-saturated"/);});
+ it('explains unavailable regions without offering a misleading preset',()=>{const html=renderTool('circuit',{_circuit:{activeWorkbench:true},_circuitActive:{baseResistance:100000,beta:20,loadResistance:100}});expect(html).toContain('Outside this input range');expect(html).toContain('circuit-region-unavailable-saturated');expect(html).toContain('Even the strongest input');expect(html).toMatch(/disabled="" aria-describedby="circuit-region-unavailable-saturated-[^"]+"/);});
 });
 
 describe('boundary-aware response curves',()=>{

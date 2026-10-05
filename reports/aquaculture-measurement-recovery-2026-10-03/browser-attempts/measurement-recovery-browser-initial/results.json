@@ -1,0 +1,99 @@
+{
+  "status": "failed",
+  "error": "locator.waitFor: Timeout 30000ms exceeded.\nCall log:\n\u001b[2m  - waiting for locator('details.aq-portfolio-tools') to be visible\u001b[22m\n\u001b[2m    62 × locator resolved to hidden <details class=\"aq-portfolio-tools\">…</details>\u001b[22m\n\n    at home (C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_measurement_recovery_browser.cjs:129:184)\n    at async C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_measurement_recovery_browser.cjs:250:7",
+  "results": [
+    {
+      "case": "Keyboard round trip and responsive frozen readings",
+      "checks": [
+        "actual annual/monthly and earlier-settings sources",
+        "honestly relabeled earlier-model metadata probe",
+        "two archived originals with matching live ids",
+        "native tray Space/Enter",
+        "exact frozen identity/date/model/values/A/B settings",
+        "restore focus after React renders",
+        "only target tray entry consumed",
+        "clamped insertion preserves current row order",
+        "writing/archive/parked work unchanged",
+        "normal/reduced motion, scoped axe, 44px targets and reflow"
+      ],
+      "errors": [],
+      "width": 1280
+    },
+    {
+      "case": "Keyboard round trip and responsive frozen readings",
+      "checks": [
+        "actual annual/monthly and earlier-settings sources",
+        "honestly relabeled earlier-model metadata probe",
+        "two archived originals with matching live ids",
+        "native tray Space/Enter",
+        "exact frozen identity/date/model/values/A/B settings",
+        "restore focus after React renders",
+        "only target tray entry consumed",
+        "clamped insertion preserves current row order",
+        "writing/archive/parked work unchanged",
+        "normal/reduced motion, scoped axe, 44px targets and reflow"
+      ],
+      "errors": [],
+      "width": 390
+    },
+    {
+      "case": "Keyboard round trip and responsive frozen readings",
+      "checks": [
+        "actual annual/monthly and earlier-settings sources",
+        "honestly relabeled earlier-model metadata probe",
+        "two archived originals with matching live ids",
+        "native tray Space/Enter",
+        "exact frozen identity/date/model/values/A/B settings",
+        "restore focus after React renders",
+        "only target tray entry consumed",
+        "clamped insertion preserves current row order",
+        "writing/archive/parked work unchanged",
+        "normal/reduced motion, scoped axe, 44px targets and reflow",
+        "forced colors and visible focus screenshots"
+      ],
+      "errors": [],
+      "width": 320
+    },
+    {
+      "case": "Full, duplicate and conflict restore guards",
+      "checks": [
+        "full notebook disables restore and reviews notebook focus",
+        "older restore preserves later capture and current row order",
+        "only selected recovery entry consumed",
+        "new id/date signature duplicate blocks restore",
+        "original removed source survives duplicate review",
+        "same-id canonical differences block overwrite",
+        "matching/current review focuses unique live h4 without writes",
+        "320px scoped axe/44px/reflow/forced-color screenshots"
+      ],
+      "errors": []
+    },
+    {
+      "case": "Bounded tray, canonical dedupe and separate keys",
+      "checks": [
+        "eight most recent distinct canonical removals",
+        "ninth evicts only oldest",
+        "fresh unique transient keys",
+        "exact canonical same-id duplicate blocks restoration",
+        "repeat exact canonical removal dedupes to newest key",
+        "different canonical notes sharing id remain separate",
+        "selected same-id restore leaves conflict row for review",
+        "archive collisions have no duplicate DOM ids",
+        "390/320px scoped axe/reflow/forced colors"
+      ],
+      "errors": []
+    },
+    {
+      "case": "Ordinary actions and blocked transitions retain recovery",
+      "checks": [
+        "B input edits, Replace/Clear A, preset and reset retain exact removed source",
+        "archive rename retains tray",
+        "successful evidence save retains recovery",
+        "restore after save leaves archived results exact",
+        "parked draft disables question/branch/replay",
+        "disabled no-op attempts preserve all work and recovery"
+      ],
+      "errors": []
+    }
+  ]
+}

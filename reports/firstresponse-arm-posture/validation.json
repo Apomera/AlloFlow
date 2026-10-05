@@ -1,0 +1,113 @@
+{
+  "date": "2026-10-01",
+  "result": "passed",
+  "gitState": "left uncommitted at user request",
+  "parent": "6fda66cb561acd0be602e299da80231e8c19d93c",
+  "unitTests": {
+    "passed": 233,
+    "files": 3,
+    "finalRunSeconds": 26.48,
+    "suites": {
+      "firstresponse_depth_explorer": 100,
+      "firstresponse_body_3d": 129,
+      "stem_firstresponse_hook_order": 4
+    }
+  },
+  "browserTests": {
+    "distinctScenariosPassed": 25,
+    "initialRun": {
+      "passed": 21,
+      "failed": 1,
+      "notRun": 3,
+      "summary": "21 passed (9.4m)",
+      "issue": "Leg probe read the scene before its first rendered frame"
+    },
+    "correctedLegRun": {
+      "passed": 4,
+      "summary": "4 passed (3.5m)",
+      "fix": "Visibility polling waits for the first rendered scene"
+    },
+    "retries": 0,
+    "renderer": "Chromium WebGL with ANGLE SwiftShader",
+    "bodyRegressionScenarios": 8,
+    "chestInspectionScenarios": 5,
+    "legAndPoseReviewScenarios": 4,
+    "manikinAndArmPostureScenarios": 5,
+    "markerVisualScenarios": 3
+  },
+  "guidance": {
+    "source": "https://www.sja.org.uk/first-aid-advice/recovery-position/",
+    "checked": "2026-10-01",
+    "scope": "Near arm positioned with elbow bent and palm up"
+  },
+  "coverage": [
+    "Resting upper-arm and forearm lengths preserved at every recovery step for every age",
+    "Near elbow stays bent, joints meet and palm stays up through the roll",
+    "Actual near-hand vertices remain above the mat",
+    "Whole-body recovery camera frames all ages at a useful size without changing model scale",
+    "Whole-body target releases in other activities; keyboard 0 returns to the recovery frame",
+    "Guidance cue follows the reviewed pose and remains in the text fallback",
+    "Existing face, cheek contact, compression contact, child hand arrangements, AED, coaching and canvas lifecycle",
+    "Phone keyboard review, text spacing, reduced motion, forced colors, app contrast, accessibility and reflow"
+  ],
+  "screenshots": {
+    "captured": 35,
+    "reviewed": 16,
+    "reviewedFiles": [
+      "adult-near-arm-2.png",
+      "adult-near-arm-5.png",
+      "adult-near-arm-8.png",
+      "adult-whole-8.png",
+      "child-near-arm-2.png",
+      "child-near-arm-5.png",
+      "child-near-arm-8.png",
+      "child-whole-8.png",
+      "infant-near-arm-2.png",
+      "infant-near-arm-5.png",
+      "infant-near-arm-8.png",
+      "infant-whole-8.png",
+      "phone-whole-infant.png",
+      "phone-arm-cue.png",
+      "forced-colors-whole-infant.png",
+      "contrast-whole-infant.png"
+    ],
+    "reviewedHashes": {
+      "adult-near-arm-2.png": "50db3cd4b1afcb545190e809653a112654f35eceb14b91b544b964edcf2594c6",
+      "adult-near-arm-5.png": "ff5d60c52b445978be0c181204800e0a862208342fee7e8b72d8d6e7347cbc0c",
+      "adult-near-arm-8.png": "cacc1900cf77e22a9ebe04c132da49f0bb57fd08251601e4655cdc7093dea11c",
+      "adult-whole-8.png": "9fdc5bec2d7f9c65c050623a32911f085ba4e243723c558ad99d082c7a02e808",
+      "child-near-arm-2.png": "336aea0d77b158470f64533f13be3d9fff7820fc67f9ff91a4a127f7df907a4b",
+      "child-near-arm-5.png": "3e7b66a8cb12381cc6a51d116ca2a913f1e762d58a269a27f5f849d0a66b5dd4",
+      "child-near-arm-8.png": "a07b8cc459b20fc5a97676009c199930d4c1a65eb44e33b0356fecdd74a4b9fc",
+      "child-whole-8.png": "e2787e0513e31d8af1d66030ed0119eaed8fb788fdd8a5bfc5dd491559976fb3",
+      "infant-near-arm-2.png": "e381db2eef7e08eea539ccc69ee600d8b902275573dca2a3e0255aa203c3008a",
+      "infant-near-arm-5.png": "815b891e72ab21941096f1a2c924921463cbe93883b43a3b55c5e26b69a40131",
+      "infant-near-arm-8.png": "0914094b19650165db668a98f9cc3cb692716966d3bbd3fb8975359802e202e0",
+      "infant-whole-8.png": "7490cfeac23725f03ed77fcdeda4b2b6b3af99d03b949cc50270408b910580c6",
+      "phone-whole-infant.png": "6ff8fb2d10df9fad5603c5f894cf45f2ee2a47db1a5af9998c60b3fb4869555e",
+      "phone-arm-cue.png": "9cdb5041bb489d48c38a246953c377d8e54fc3c07d06f6336ceefae0eaa6d46e",
+      "forced-colors-whole-infant.png": "e2ec777f3fa06e63ebf0d2831568e06fce4cfb03d5feebab9498d3e5dee00963",
+      "contrast-whole-infant.png": "e0949858794ad4d4fb78bddce538a18074638b34667b1bff1e3cf839b9902416"
+    }
+  },
+  "synchronization": {
+    "moduleCopies": "identical",
+    "firstResponseCatalogs": "identical",
+    "newEnglishStrings": 2
+  },
+  "inputs": {
+    "stem_lab/stem_tool_firstresponse.js": "136d97073684f6e84ea7b407a3d3b9dbb1e570e09a44a10a845a7f598085e4ec",
+    "desktop/web-app/public/stem_lab/stem_tool_firstresponse.js": "136d97073684f6e84ea7b407a3d3b9dbb1e570e09a44a10a845a7f598085e4ec",
+    "stem_lab/stem_lab_module.js": "91c8476ab5b59cc185b7be75d506040c9b8e0645b22dbaa4719bfb225f1fa933",
+    "tests/firstresponse_depth_explorer.test.js": "7a158eb39f5313d2106393a00466e04579507c6ebe068ffbf90ebfcd4c894871",
+    "tests/firstresponse_body_3d.test.js": "fb90737f362657b15e303ce946bda19f84ef9c1a02ac4f57fb6a1338cc403111",
+    "tests/stem_firstresponse_hook_order.test.js": "50bac19e05d1cb634cdbe7e1ef3927ff730bb9838be311cf01feb2bd58373dc0",
+    "tests/e2e/firstresponse-manikin-realism.spec.ts": "69631d7f754229e13440ece99f9e22efd56ec26bf20e8ea8de4015a60de70c84",
+    "tests/e2e/24-firstresponse-body-gl.spec.ts": "f2f731ccc1cdb784bb315bb595307a5b071b5b2546066f5dbd2c0172789e4971",
+    "tests/e2e/firstresponse-chest-inspection.spec.ts": "f0aad415cfb363cc266ddd2472c44c28605053cf9233c4794cf5ab092b53f9e3",
+    "tests/e2e/firstresponse-visual-markers.spec.ts": "0e6c5cd0af3073565927ed5521c59559f38c8f960cf21865a5afaa13a407d603",
+    "tests/e2e/firstresponse-leg-inspection.spec.ts": "f4a257ed97d571e7bb40b5e31e2dafa2d0a848c06dd54601d5bddcc7fb2b4355",
+    "reports/firstresponse-arm-posture/playwright.config.ts": "ff55def75aad0113d9c5ecb0ac7fbadbe0750867443c1c6a21ec2d134696c40d",
+    "reports/firstresponse-depth-comparison/playwright-software.config.ts": "a3ab365e61b809e8d1cde1c47de6d88940be0d902aafc70d56dce7a3bffe01ec"
+  }
+}

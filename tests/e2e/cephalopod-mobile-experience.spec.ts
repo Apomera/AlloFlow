@@ -464,7 +464,8 @@ test('failed Forage replaces Observe with matching visible and spoken advice, th
       return food.map((o: any) => ({ name: o.name, position: o.position.toArray(), visible: o.visible }));
     }, fixture.names);
     await showTools(page); await tap(page, 'Observe'); await hideTools(page);
-    const observation = await page.locator('.cl-mission-brief').innerText(); expect(observation).toMatch(/Nearest prey|No prey nearby/);
+    const observation = await page.locator('.cl-mission-brief').innerText();
+    expect(observation).toMatch(fixture.species === 'vampireSquid' ? /Nearest marine snow|No marine snow nearby/ : /Nearest prey|No prey nearby/);
     await tap(page, 'Forage'); await step(page, 3);
     await expect(page.locator('.cl-mission-brief')).toBeVisible(); await expect(page.locator('.cl-mission-brief')).toContainText(fixture.advice);
     await expect(page.locator('#allo-live-cl')).toHaveText(fixture.advice); await expect(page.getByRole('button', { name: 'Forage', exact: true })).toHaveAttribute('aria-pressed', 'false');
@@ -524,4 +525,57 @@ test('an uncommitted native touch strike names the visible Target action without
   await expect(page.locator('.cl-mission-brief')).not.toContainText('T selects'); await expect(page.locator('#allo-live-cl')).toHaveText(advice);
   await expect(page.locator('progress[aria-label="Foraging progress"]')).toBeHidden(); const missed = await snapshot(page); expect(missed.score).toBe(owner.score); sameOwner(missed, owner);
   await testInfo.attach('native-uncommitted-strike-feedback', { body: JSON.stringify({ actors, owner, missed, advice }, null, 2), contentType: 'application/json' });
+});
+
+test('vampire touch controls describe actual marine snow and preserve held gathering and one-meal Forage', async ({ page }, testInfo) => {
+  await mount(page, 'vampireSquid', 'free'); const owner = await snapshot(page);
+  await expect(page.getByRole('button', { name: 'Gather / hold', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Forage', exact: true })).toBeVisible();
+  await expect(page.getByRole('button', { name: 'Flash', exact: true })).toBeVisible();
+  for (const name of ['Target', 'Next target [T]', 'Strike [E]', 'Strike / hold']) await expect(page.getByRole('button', { name, exact: true })).toHaveCount(0);
+  const layout = await controlLayout(page); expect(layout.offenders).toEqual([]); expect(layout.overlaps).toEqual([]); expect(layout.sideways).toBe(false);
+  await expect(page.locator(canvas)).toHaveAttribute('aria-label', /marine-snow meal/);
+  await expect(page.locator(canvas)).not.toHaveAttribute('aria-label', /Click hunts|I uses ink/);
+  const actors = await page.evaluate(() => {
+    const w = window as any, scene = w.__glRecorder.records.filter((r: any) => r.scene && r.canvas.isConnected).at(-1).scene, player = scene.getObjectByName('cl-player');
+    const food = scene.children.filter((o: any) => o.name === 'cl-marine-snow'); if (food.length !== 28) throw new Error('The actual 28 marine-snow actors are required');
+    food.forEach((o: any, i: number) => o.position.set(player.position.x + 7 + i * .025, player.position.y + 2, player.position.z));
+    w.__vampireFood = food; w.__vampirePrey = scene.children.filter((o: any) => o.userData.alive && (o.userData.cfg || o.userData.offset));
+    return { food: food.map((o: any) => o.uuid), prey: w.__vampirePrey.map((o: any) => o.uuid) };
+  });
+  await showTools(page);
+  const nearest = await page.evaluate(() => { const w = window as any, scene = w.__glRecorder.records.filter((r: any) => r.scene && r.canvas.isConnected).at(-1).scene, player = scene.getObjectByName('cl-player'); return Math.min(...w.__vampireFood.map((o: any) => o.position.distanceTo(player.position))).toFixed(0); });
+  await tap(page, 'Observe'); await hideTools(page);
+  const observation = await page.locator('.cl-mission-brief').innerText();
+  expect(observation).toContain('Nearest marine snow ' + nearest + ' metres away.'); expect(observation).not.toContain('Nearest prey');
+  await expect(page.locator('#allo-live-cl')).toHaveText(observation); expect((await snapshot(page)).score).toBe(owner.score);
+  await showTools(page); await tap(page, ui.settings);
+  const help = page.getByRole('dialog', { name: 'Dive help and settings', exact: true }).locator('p').first();
+  await expect(help).toContainText('Hold Gather / hold within reach of marine snow'); await expect(help).toContainText('Hold Flash for your defensive display');
+  await expect(help).not.toContainText(/Target selects prey|Strike \/ hold|clam|I inks/);
+  await tap(page, ui.resume); await play(page);
+  async function foodInReach() {
+    await page.evaluate(() => { const w = window as any, scene = w.__glRecorder.records.filter((r: any) => r.scene && r.canvas.isConnected).at(-1).scene, player = scene.getObjectByName('cl-player'); w.__vampireFood.forEach((o: any, i: number) => o.position.set(player.position.x + 7 + i * .025, player.position.y + 2, player.position.z)); w.__vampireFood[0].position.set(player.position.x, player.position.y, player.position.z + .5); });
+    await step(page, 3);
+  }
+  await foodInReach();
+  await touch(page, 'touchStart', [await point(page, 'Gather / hold', 51)]); await step(page, 4);
+  expect(await page.evaluate(() => (window as any).__vampireFood[0].userData.gather)).toBeGreaterThan(0);
+  await touch(page, 'touchCancel'); await step(page, 3);
+  expect(await page.evaluate(() => (window as any).__vampireFood[0].userData.gather)).toBe(0); expect((await snapshot(page)).score).toBe(owner.score);
+  await touch(page, 'touchStart', [await point(page, 'Gather / hold', 52)]); await step(page, 15); await touch(page, 'touchEnd'); await step(page, 3);
+  const heldMeal = await snapshot(page); expect(Number(heldMeal.score)).toBe(Number(owner.score) + 2);
+  await foodInReach(); await tap(page, 'Forage'); await step(page, 3);
+  await expect(page.getByRole('button', { name: 'Forage', exact: true })).toHaveAttribute('aria-pressed', 'true');
+  await touch(page, 'touchStart', [await point(page, ui.forward, 53)]); await step(page, 3); await touch(page, 'touchEnd'); await step(page, 3);
+  await expect(page.getByRole('button', { name: 'Forage', exact: true })).toHaveAttribute('aria-pressed', 'false'); expect((await snapshot(page)).score).toBe(heldMeal.score);
+  await foodInReach(); await tap(page, 'Forage'); await step(page, 18);
+  const latchedMeal = await snapshot(page); expect(Number(latchedMeal.score)).toBe(Number(owner.score) + 4);
+  await expect(page.getByRole('button', { name: 'Forage', exact: true })).toHaveAttribute('aria-pressed', 'false');
+  await step(page, 18); expect((await snapshot(page)).score).toBe(latchedMeal.score);
+  expect(await page.evaluate(() => (window as any).__vampirePrey.every((o: any) => o.userData.alive && o.parent))).toBe(true);
+  sameOwner(latchedMeal, owner);
+  const pointerProof = await page.evaluate(() => (window as any).__mobileNativePointers.filter((p: any) => p.name === 'Gather / hold'));
+  expect(pointerProof.length).toBeGreaterThanOrEqual(2); expect(pointerProof.every((p: any) => p.trusted && p.type === 'touch')).toBe(true);
+  await testInfo.attach('vampire-native-feeding-controls', { body: JSON.stringify({ actors, layout, observation, nearest, owner, heldMeal, latchedMeal, pointerProof }, null, 2), contentType: 'application/json' });
 });

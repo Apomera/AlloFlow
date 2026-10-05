@@ -8,12 +8,15 @@ const source=readFileSync('stem_lab/stem_tool_cephalopodlab.js','utf8');
 const begin=source.indexOf('function createCLHuntAnimal('),end=source.indexOf('// Compact, individually owned prey rig.',begin);
 if(begin<0||end<=begin)throw Error('Cannot find actual animal factory');
 const build=new Function('T','species','Math',source.slice(begin,end)+';return createCLHuntAnimal(T,species);');
+const {restorePass42AnimalSource}=require('./helpers/cephalopod_pass42_reference.cjs');
+// Historical fingerprints retain the exact previously accepted cuttle funnel.
+const priorBuild=new Function('T','species','Math',restorePass42AnimalSource(source.slice(begin,end))+';return createCLHuntAnimal(T,species);');
 const noRandom=Object.assign(Object.create(Math),{random(){throw Error('Octopus eye rig consumed dive RNG');}});
 const ids=['commonOcto','blueRinged','mimicOcto','giantPacific','caribReef','coconutOcto'];
 const eyeNames=new Set(['cl-eye-rim','cl-iris','cl-pupil','cl-eye-highlight','cl-eye-lid']);
 const allocated=[];
 const state=(extra={})=>({moving:false,jet:false,strike:0,camo:0,substrate:'sand',reducedMotion:false,...extra});
-function rig(id){const animal=build(THREE,{id,bodyColor:0xbc6048},noRandom);allocated.push(animal);return animal;}
+function rig(id,prior=false){const animal=(prior?priorBuild:build)(THREE,{id,bodyColor:0xbc6048},noRandom);allocated.push(animal);return animal;}
 function meshes(animal){const result=[];animal.root.traverse(o=>{if(o.isMesh)result.push(o);});return result;}
 const eyes=animal=>meshes(animal).filter(o=>eyeNames.has(o.name));
 const pair=(animal,name)=>meshes(animal).filter(o=>o.name===name);
@@ -104,6 +107,6 @@ describe('Benthic octopus curved eye surfaces',()=>{
       commonOcto:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',blueRinged:'ea6f4965d8a861670c745ce8917aace25b764808cb51a14e8c6305841b367adc',mimicOcto:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',giantPacific:'041016f41d929ad094747fabd9fe30a2b5b94ce4b7b2a7551f36aa155777ed0f',caribReef:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',coconutOcto:'fb3c872f587639a3092b7980a5cea4eda017694c688aa422ee81549f9e9abf04',
       humboldtSquid:'651dbdf184c597b08a810f7e3b133c34f4c10fc70470f47a180bce9ca6e9b377',nautilus:'3223bcf0ce8d008ac1baf5492a1896e7106e039c25f12313c922d9f0d4a5d85d',cuttlefish:'a0d4bb51fae780771b4dcf1c7c7890cd3c0c7a8e796e9d95ad739eb5e15c8b31',bobtailSquid:'28d6ae5749d749c3d82f9490dab425630b9fd431aa263e213b582433a8761c81',dumboOcto:'bf6090a22eae7b8421c7c0f67107978d4cccd199dd9923d17e12a9fb6fdae55b',vampireSquid:'7bb9a0fb32f9b95dfb53cc7c6664924bc8303155b12cef82870c00c5faaeb232'
     };
-    for(const [id,expected]of Object.entries(baseline))expect(fingerprint(rig(id),ids.includes(id)),id).toBe(expected);
+    for(const [id,expected]of Object.entries(baseline))expect(fingerprint(rig(id,true),ids.includes(id)),id).toBe(expected);
   });
 });

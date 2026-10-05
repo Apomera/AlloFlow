@@ -1,0 +1,72 @@
+{
+  "status": "completed-with-fixture-failure",
+  "nativeSession": 98844,
+  "nativeExitCode": 1,
+  "passedAssertions": 103,
+  "failedAssertions": 1,
+  "totalAssertions": 104,
+  "sourceSha256": "f007cc1844729655033fd2810fa01b74b51b28fa55cd94cda24d8ad5616ba6dc",
+  "runnerSha256": "a0ed0bcce45de3ddb47f8cd0b53f1ca64cc7ea1605b61a93bf835973ae4bba65",
+  "navigationTestSha256": "04d35540d835fdb55360b6be0323e4fe1bc9c5755d8e568819369e7cdd1e414f",
+  "captionTestSha256": "5b3724404357383a5712a79a4c139545a9cde46df6d98b428ff591094238bcde",
+  "productChanged": false,
+  "timeoutsChanged": false,
+  "diagnosis": "The navigation locale test queries English aria-labels after translating the select labels. The failure is null.value in selections(), before a product assertion.",
+  "archive": {
+    "path": "initial-locale-fixture-attempt",
+    "files": [
+      {
+        "path": "initial-locale-fixture-attempt/circuit_active_notebook_continuity.test.js",
+        "sha256": "958b845a0abdeaad21da46e84593f2fdc8c557a690df2f4f9104134e03b2e127"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/circuit_active_observation_comparison.test.js",
+        "sha256": "852d6276a2d0756bfaffe4d9132d1d88ef70778f48f4686db2eb2fa667ed64be"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/circuit_comparison_context.test.js",
+        "sha256": "5b3724404357383a5712a79a4c139545a9cde46df6d98b428ff591094238bcde"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/circuit_evidence_writing.test.js",
+        "sha256": "38483ee8769526dbd62ec6efb51be19abd0f50abba5f08d7ae99903fc1b52792"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/circuit_explanation_navigation.test.js",
+        "sha256": "04d35540d835fdb55360b6be0323e4fe1bc9c5755d8e568819369e7cdd1e414f"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/circuit_observation_summary.test.js",
+        "sha256": "fd6a00a93179967eae057f42135ad5640d9e62b6dafd95567063e5fc25fd4302"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/circuit_second_reading_guidance.test.js",
+        "sha256": "3a30126457c4f4a281cf1e8b65b64fc889cf39af9df1d19d3886873370ed5556"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/regression-raw.json",
+        "sha256": "d71e4eae55a47f151397e04bbeb2421c31bb4aeaa994463c558d6e65a1671d52"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/regression-receipt.json",
+        "sha256": "654e83dfece6dfd2c8c86744421f179147435218c130ef7b0891d94b22d336aa"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/regression-start.json",
+        "sha256": "3ca07f8f766c89575e4e29951cb7a02946ef35c7676d78d11d3466c504e4e5d3"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/regression-stderr.log",
+        "sha256": "84f37d3eb6c672a81536fbe4ab54e34e907fab81f4728f198f96706b0fdb2311"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/regression-stdout.log",
+        "sha256": "770e21c702dd671a15e13a27a67036182967c810134dd49a276038ad93b4fbcb"
+      },
+      {
+        "path": "initial-locale-fixture-attempt/run-regression.cjs",
+        "sha256": "a0ed0bcce45de3ddb47f8cd0b53f1ca64cc7ea1605b61a93bf835973ae4bba65"
+      }
+    ]
+  }
+}

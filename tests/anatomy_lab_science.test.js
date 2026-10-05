@@ -1128,7 +1128,12 @@ describe('Anatomy regional deep-dive atlas', () => {
       _regionalAtlasOpen: 'heart'
     });
     expect(open).toContain('data-anatomy-atlas="heart"');
-    expect(open).toContain('Four-chamber heart and double-circulation diagram');
+    const root = document.createElement('div'); root.innerHTML = open;
+    const figures = [...root.querySelectorAll('figure[data-anatomy-heart-scale]')];
+    expect(figures.map(figure => figure.getAttribute('data-anatomy-heart-scale'))).toEqual(['circuit', 'chambers']);
+    figures.forEach(figure => expect(figure.querySelector('svg title').textContent.trim()).toBeTruthy());
+    expect(figures[0].querySelector('figcaption').textContent).toMatch(/Lungs.*Heart.*Body/);
+    expect(figures[1].querySelector('figcaption').textContent).toMatch(/Right atrium.*Right ventricle.*Left atrium.*Left ventricle/);
     expect(open).toContain('aria-label="Blood-flow steps"');
     expect(open).toContain('1. Venous return');
     expect(open).toContain('4. To the body');
@@ -1143,8 +1148,11 @@ describe('Anatomy regional deep-dive atlas', () => {
       _regionalAtlasStep: 999,
       _regionalAtlasPlaying: false
     });
-    expect(html).toContain('class="anatomy-atlas is-paused"');
-    expect(html).toContain('aria-label="Play blood-flow animation"');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const atlas = root.querySelector('[data-anatomy-atlas="heart"]');
+    expect(atlas.classList.contains('is-paused')).toBe(true);
+    expect(atlas.querySelector('[data-anatomy-heart-flow]').textContent).toBe('Play flow');
+    expect(atlas.querySelector('.anatomy-heart-playback').textContent).toContain('Flow paused');
     expect(html).toContain('Left ventricle');
     expect(html).toContain('role="status" aria-live="polite" aria-atomic="true"');
   });
@@ -1153,7 +1161,14 @@ describe('Anatomy regional deep-dive atlas', () => {
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('@media (prefers-reduced-motion:reduce)');
     expect(source).toContain('.anatomy-atlas-steps{grid-template-columns:1fr 1fr}');
-    expect(source).toContain("aria-labelledby': 'anatomy-heart-atlas-title anatomy-heart-atlas-desc'");
+    const root = document.createElement('div');
+    root.innerHTML = renderAnatomy({ system: 'circulatory', view: 'anterior', complexity: 3, selectedStructure: 'heart', _regionalAtlasOpen: 'heart' });
+    const figures = [...root.querySelectorAll('figure[data-anatomy-heart-scale]')]; expect(figures).toHaveLength(2);
+    figures.forEach(figure => {
+      const svg = figure.querySelector('svg[role="img"]'); expect(svg).not.toBeNull();
+      const names = svg.getAttribute('aria-labelledby').trim().split(/\s+/); expect(names).toHaveLength(2);
+      names.forEach(id => expect(figure.querySelector('[id="' + id + '"]').textContent.trim()).toBeTruthy());
+    });
   });
 });
 describe('Anatomy Kidney Filtration Scale Bridge', () => {
@@ -1168,23 +1183,20 @@ describe('Anatomy Kidney Filtration Scale Bridge', () => {
       system: 'organs', view: 'posterior', complexity: 3, selectedStructure: 'kidneys',
       _regionalAtlasOpen: 'kidneys'
     });
-    expect(open).toContain('data-anatomy-atlas="kidneys"');
-    expect(open).toContain('data-anatomy-scale-bridge="kidneys"');
-    expect(open).toContain('data-anatomy-atlas-step="glomerular_filtration"');
-    expect(open).toContain('Body-to-kidney-to-nephron Scale Bridge diagram');
-    expect(open).toContain('aria-label="Scale progression: posterior body location to kidney cross-section to nephron microanatomy"');
-    expect(open).toContain('aria-label="Nephron processing steps"');
-    expect(open).toContain('BODY LOCATION');
-    expect(open).toContain('KIDNEY CROSS-SECTION');
-    expect(open).toContain('NEPHRON MICROANATOMY');
-    expect(open).toContain('Posterior body');
-    expect(open).toContain('Kidney regions');
-    expect(open).toContain('Nephron flow');
-    expect(open).toContain('Step 1 of 4');
-    expect(open).toContain('glomerulus');
-    expect(open).toContain('proximal tubule');
-    expect(open).toContain('loop of Henle');
-    expect(open).toContain('collecting duct');
+    const root = document.createElement('div'); root.innerHTML = open;
+    const atlas = root.querySelector('[data-anatomy-atlas="kidneys"]');
+    expect(atlas.getAttribute('data-anatomy-scale-bridge')).toBe('kidneys');
+    expect(atlas.getAttribute('data-anatomy-atlas-step')).toBe('glomerular_filtration');
+    const figures = [...atlas.querySelectorAll('figure[data-anatomy-kidney-scale]')];
+    expect(figures.map(figure => figure.getAttribute('data-anatomy-kidney-scale'))).toEqual(['body', 'regions', 'nephron']);
+    expect(figures.map(figure => figure.querySelector('svg title').textContent)).toEqual(['Kidneys in the posterior body', 'Kidney cross-section', 'Nephron processing diagram']);
+    expect(figures[0].querySelector('figcaption').textContent).toContain('Posterior view');
+    expect(figures[1].querySelector('figcaption').textContent).toMatch(/Cortex.*Medulla.*Renal pelvis/);
+    expect(figures[2].querySelector('figcaption').textContent).toMatch(/Glomerulus.*Proximal tubule.*Loop of Henle.*Distal tubule.*Collecting duct/);
+    const buttons = atlas.querySelectorAll('.anatomy-atlas-steps button');
+    expect(buttons).toHaveLength(4);
+    expect(buttons[0].getAttribute('aria-controls')).toBe('anatomy-kidney-step-detail');
+    expect(atlas.querySelector('#anatomy-kidney-step-detail').textContent).toContain('Step 1 of 4');
   });
 
   it('clamps nephron steps and exposes paused flow with final urine narration', () => {
@@ -1192,12 +1204,17 @@ describe('Anatomy Kidney Filtration Scale Bridge', () => {
       system: 'organs', view: 'posterior', complexity: 3, selectedStructure: 'kidneys',
       _regionalAtlasOpen: 'kidneys', _regionalAtlasStep: 50, _regionalAtlasPlaying: false
     });
-    expect(html).toContain('class="anatomy-atlas is-paused"');
-    expect(html).toContain('aria-label="Play filtrate-flow animation"');
-    expect(html).toContain('data-anatomy-atlas-step="urine_concentration"');
-    expect(html).toContain('4. Urine formation');
-    expect(html).toContain('before urine enters the renal pelvis and ureter');
-    expect(html).toContain('Step 4 of 4');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const atlas = root.querySelector('[data-anatomy-atlas="kidneys"]');
+    expect(atlas.classList.contains('is-paused')).toBe(true);
+    expect(atlas.querySelector('[data-anatomy-kidney-flow]').textContent).toBe('Play flow');
+    expect(atlas.querySelector('.anatomy-kidney-playback').textContent).toBe('Flow paused');
+    expect(atlas.getAttribute('data-anatomy-atlas-step')).toBe('urine_concentration');
+    expect(atlas.querySelector('[data-anatomy-kidney-next]').disabled).toBe(true);
+    const detail = atlas.querySelector('#anatomy-kidney-step-detail');
+    expect(detail.textContent).toContain('4. Urine formation');
+    expect(detail.textContent).toContain('before urine enters the renal pelvis and ureter');
+    expect(detail.textContent).toContain('Step 4 of 4');
   });
 });
 describe('Anatomy alveolar gas-exchange deep dive', () => {
@@ -1213,12 +1230,22 @@ describe('Anatomy alveolar gas-exchange deep dive', () => {
       _regionalAtlasOpen: 'alveoli'
     });
     expect(open).toContain('data-anatomy-atlas="alveoli"');
-    expect(open).toContain('Alveolus, air-blood barrier, and pulmonary capillary gas-exchange diagram');
     expect(open).toContain('aria-label="Alveolar gas-exchange steps"');
-    expect(open).toContain('AIR-BLOOD BARRIER');
-    expect(open).toContain('type I alveolar cell');
-    expect(open).toContain('capillary endothelium');
-    expect(open).toContain('PULMONARY CAPILLARY');
+    const root = document.createElement('div'); root.innerHTML = open;
+    const atlas = root.querySelector('[data-anatomy-atlas="alveoli"]');
+    const figures = [...atlas.querySelectorAll('figure[data-anatomy-alveolus-scale]')];
+    expect(figures.map(figure => figure.getAttribute('data-anatomy-alveolus-scale'))).toEqual(['overview', 'barrier']);
+    for (const figure of figures) {
+      const svg = figure.querySelector('svg[role="img"]'); expect(svg).not.toBeNull();
+      const accessibleParts = svg.getAttribute('aria-labelledby').trim().split(/\s+/);
+      expect(accessibleParts).toHaveLength(2);
+      accessibleParts.forEach(id => expect(figure.querySelector('[id="' + id + '"]')?.textContent.trim()).toBeTruthy());
+    }
+    expect(figures[0].querySelector('figcaption').textContent.toLowerCase()).toContain('capillary');
+    const barrierKey = figures[1].querySelector('figcaption ol'); expect(barrierKey).not.toBeNull();
+    expect(barrierKey.textContent.toLowerCase()).toContain('type i alveolar cell');
+    expect(barrierKey.textContent.toLowerCase()).toContain('capillary endothelium');
+    [...atlas.querySelectorAll('svg text')].forEach(label => expect(label.textContent).toMatch(/^\d+$/));
   });
 
   it('clamps gas-exchange steps and exposes paused transport narration', () => {
@@ -1226,8 +1253,11 @@ describe('Anatomy alveolar gas-exchange deep dive', () => {
       system: 'respiratory', view: 'anterior', complexity: 3, selectedStructure: 'alveoli',
       _regionalAtlasOpen: 'alveoli', _regionalAtlasStep: 99, _regionalAtlasPlaying: false
     });
-    expect(html).toContain('class="anatomy-atlas is-paused"');
-    expect(html).toContain('aria-label="Play gas-exchange animation"');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const atlas = root.querySelector('[data-anatomy-atlas="alveoli"]');
+    expect(atlas.classList.contains('is-paused')).toBe(true);
+    expect(atlas.querySelector('[data-anatomy-alveolus-flow]').textContent).toMatch(/play/i);
+    expect(atlas.querySelector('.anatomy-alveolus-playback').textContent).toMatch(/paused/i);
     expect(html).toContain('4. Transport onward');
     expect(html).toContain('efficient exchange requires matched ventilation and perfusion');
   });
@@ -1245,13 +1275,22 @@ describe('Anatomy knee joint and movement deep dive', () => {
       _regionalAtlasOpen: 'patella'
     });
     expect(open).toContain('data-anatomy-atlas="patella"');
-    expect(open).toContain('Lateral knee joint cutaway and movement mechanics diagram');
+    const root = document.createElement('div'); root.innerHTML = open;
+    const figures = [...root.querySelectorAll('figure[data-anatomy-knee-scale]')];
+    expect(figures.map(figure => figure.getAttribute('data-anatomy-knee-scale'))).toEqual(['overview', 'support']);
+    figures.forEach(figure => {
+      const svg = figure.querySelector('svg[role="img"]'); expect(svg).not.toBeNull();
+      const names = svg.getAttribute('aria-labelledby').trim().split(/\s+/); expect(names).toHaveLength(2);
+      names.forEach(id => expect(figure.querySelector('[id="' + id + '"]').textContent.trim()).toBeTruthy());
+    });
+    expect(figures[0].querySelector('figcaption').textContent).toMatch(/Femur.*Patella.*Tibia.*Fibula/);
+    expect(figures[1].querySelector('figcaption').textContent).toMatch(/Quadriceps tendon.*Patellar tendon.*Articular cartilage.*Meniscus.*ACL.*PCL.*Collateral ligament/);
     expect(open).toContain('aria-label="Knee structure and movement steps"');
-    expect(open).toContain('articular cartilage');
-    expect(open).toContain('meniscus');
+    expect(open).toContain('Articular cartilage');
+    expect(open).toContain('Meniscus');
     expect(open).toContain('ACL');
     expect(open).toContain('PCL');
-    expect(open).toContain('patellar tendon');
+    expect(open).toContain('Patellar tendon');
   });
 
   it('clamps knee phases and exposes paused stability narration', () => {
@@ -1259,8 +1298,11 @@ describe('Anatomy knee joint and movement deep dive', () => {
       system: 'skeletal', view: 'anterior', complexity: 3, selectedStructure: 'patella',
       _regionalAtlasOpen: 'patella', _regionalAtlasStep: 500, _regionalAtlasPlaying: false
     });
-    expect(html).toContain('class="anatomy-atlas is-paused"');
-    expect(html).toContain('aria-label="Play knee-mechanics animation"');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const atlas = root.querySelector('[data-anatomy-atlas="patella"]');
+    expect(atlas.classList.contains('is-paused')).toBe(true);
+    expect(atlas.querySelector('[data-anatomy-knee-flow]').textContent).toBe('Play motion');
+    expect(atlas.querySelector('.anatomy-knee-playback').textContent).toContain('Motion paused');
     expect(html).toContain('4. Stability');
     expect(html).toContain('The ACL limits anterior tibial translation and rotation');
   });
@@ -1278,14 +1320,22 @@ describe('Anatomy neuromuscular-junction deep dive', () => {
       _regionalAtlasOpen: 'biceps'
     });
     expect(open).toContain('data-anatomy-atlas="biceps"');
-    expect(open).toContain('Neuromuscular junction, calcium release, and sarcomere contraction diagram');
-    expect(open).toContain('aria-label="Neuromuscular activation steps"');
-    expect(open).toContain('axon terminal');
-    expect(open).toContain('synaptic vesicles');
-    expect(open).toContain('nicotinic ACh receptors');
-    expect(open).toContain('T-tubule');
-    expect(open).toContain('sarcoplasmic reticulum');
-    expect(open).toContain('SARCOMERE');
+    const root = document.createElement('div'); root.innerHTML = open;
+    const figures = [...root.querySelectorAll('figure[data-anatomy-muscle-scale]')];
+    expect(figures.map(figure => figure.getAttribute('data-anatomy-muscle-scale'))).toEqual(['activation', 'sarcomere']);
+    figures.forEach(figure => {
+      const svg = figure.querySelector('svg[role="img"]'); expect(svg).not.toBeNull();
+      const names = svg.getAttribute('aria-labelledby').trim().split(/\s+/); expect(names).toHaveLength(2);
+      names.forEach(id => expect(figure.querySelector('[id="' + id + '"]').textContent.trim()).toBeTruthy());
+      [...svg.querySelectorAll('text')].forEach(marker => expect(marker.textContent.trim()).toMatch(/^\d+$/));
+      expect(figure.querySelector('figcaption ol')).not.toBeNull();
+    });
+    expect(open).toContain('aria-label="Muscle activation steps"');
+    const activationKey = figures[0].querySelector('figcaption').textContent.toLowerCase();
+    ['axon terminal', 'synaptic vesicles', 'nicotinic ach receptors', 't-tubule', 'sarcoplasmic reticulum'].forEach(label => expect(activationKey).toContain(label));
+    expect(figures[1].querySelector('h6').textContent.toLowerCase()).toContain('sarcomere');
+    const sarcomereKey = figures[1].querySelector('figcaption').textContent.toLowerCase();
+    ['actin', 'myosin', 'z disc'].forEach(label => expect(sarcomereKey).toContain(label));
   });
 
   it('clamps activation phases and exposes paused contraction narration', () => {
@@ -1293,8 +1343,11 @@ describe('Anatomy neuromuscular-junction deep dive', () => {
       system: 'muscular', view: 'anterior', complexity: 3, selectedStructure: 'biceps',
       _regionalAtlasOpen: 'biceps', _regionalAtlasStep: 1000, _regionalAtlasPlaying: false
     });
-    expect(html).toContain('class="anatomy-atlas is-paused"');
-    expect(html).toContain('aria-label="Play muscle-activation animation"');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const atlas = root.querySelector('[data-anatomy-atlas="biceps"]');
+    expect(atlas.classList.contains('is-paused')).toBe(true);
+    expect(atlas.querySelector('[data-anatomy-muscle-flow]').textContent).toMatch(/play/i);
+    expect(atlas.querySelector('.anatomy-muscle-playback').textContent).toMatch(/paused/i);
     expect(html).toContain('4. Sarcomere shortens');
     expect(html).toContain('ATP-powered myosin cross-bridge cycles');
   });
@@ -1313,16 +1366,16 @@ describe('Anatomy Lens focused-diagram gallery', () => {
       system: 'skeletal', complexity: 3, _showAnatomyLens: true, _anatomyLensViewed: { heart: true }
     });
     expect(html).toContain('data-anatomy-lens="true"');
-    expect(html).toContain('id="anatomy-lens-title">Anatomy Lens');
+    expect(html).toMatch(/id="anatomy-lens-title"[^>]*>Anatomy Lens/);
     expect((html.match(/data-anatomy-lens-id=/g) || [])).toHaveLength(8);
     expect(html).toContain('data-anatomy-lens-specialist="brainAtlas"');
-    expect(html).toContain('instead of duplicating it here');
-    expect(html).toContain('1/8 explored');
+    expect(html).toContain('Brain Atlas for dedicated neuroanatomy diagrams.');
+    expect(html).toContain('1 of 8 diagrams opened');
   });
 
   it('sanitizes saved progress and launches deep dives with one coherent state patch', () => {
     const malformed = renderAnatomy({ _showAnatomyLens: true, _anatomyLensViewed: 'heart' });
-    expect(malformed).toContain('0/8 explored');
+    expect(malformed).toContain('0 of 8 diagrams opened');
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('function openAnatomyLensItem(item)');
     expect(source).toContain('function openAnatomyScaleBridge(structureId, stepIndex, announcement, extraPatch)');
@@ -1352,14 +1405,22 @@ describe('Anatomy liver lobule Scale Bridge', () => {
     expect(open).toContain('data-scale-continuation="sm_intestine"');
     expect(open).toContain('Trace nutrient absorption');
     expect(open).toContain('aria-label="Scale progression: body location to liver organ to hepatic lobule"');
-    expect(open).toContain('Body-to-liver-to-lobule Scale Bridge diagram');
+    const root = document.createElement('div'); root.innerHTML = open;
+    const figures = [...root.querySelectorAll('figure[data-anatomy-liver-scale]')];
+    expect(figures.map(figure => figure.getAttribute('data-anatomy-liver-scale'))).toEqual(['body', 'organ', 'lobule']);
+    figures.forEach(figure => {
+      const svg = figure.querySelector('svg[role="img"]'); expect(svg).not.toBeNull();
+      const names = svg.getAttribute('aria-labelledby').trim().split(/\s+/); expect(names).toHaveLength(2);
+      names.forEach(id => expect(figure.querySelector('[id="' + id + '"]').textContent.trim()).toBeTruthy());
+      [...svg.querySelectorAll('text')].forEach(marker => expect(marker.textContent.trim()).toMatch(/^\d+$/));
+      expect(figure.querySelector('figcaption ol')).not.toBeNull();
+    });
     expect(open).toContain('aria-label="Liver lobule processing steps"');
-    expect(open).toContain('BODY LOCATION');
-    expect(open).toContain('MICROANATOMY');
-    expect(open).toContain('portal vein');
-    expect(open).toContain('hepatic artery');
-    expect(open).toContain('central vein');
-    expect(open).toContain('bile duct');
+    expect(figures[0].querySelector('figcaption').textContent.toLowerCase()).toContain('right upper abdomen');
+    const organKey = figures[1].querySelector('figcaption').textContent.toLowerCase();
+    ['portal vein', 'hepatic artery', 'hepatic vein'].forEach(label => expect(organKey).toContain(label));
+    const lobuleKey = figures[2].querySelector('figcaption').textContent.toLowerCase();
+    ['portal triad', 'hepatocytes', 'central vein', 'sinusoids', 'bile canaliculi', 'bile duct'].forEach(label => expect(lobuleKey).toContain(label));
   });
 
   it('clamps liver stages and explains bile flow opposite the blood direction', () => {
@@ -1367,8 +1428,11 @@ describe('Anatomy liver lobule Scale Bridge', () => {
       system: 'organs', view: 'anterior', complexity: 3, selectedStructure: 'liver',
       _regionalAtlasOpen: 'liver', _regionalAtlasStep: 100, _regionalAtlasPlaying: false
     });
-    expect(html).toContain('class="anatomy-atlas is-paused"');
-    expect(html).toContain('aria-label="Play liver-flow animation"');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const atlas = root.querySelector('[data-anatomy-atlas="liver"]');
+    expect(atlas.classList.contains('is-paused')).toBe(true);
+    expect(atlas.querySelector('[data-anatomy-liver-flow]').textContent).toBe('Play flow');
+    expect(atlas.querySelector('.anatomy-liver-playback').textContent).toBe('Flow paused');
     expect(html).toContain('4. Bile flows outward');
     expect(html).toContain('data-anatomy-atlas-step="bile_flow"');
     expect(html).toContain('opposite the blood-flow direction');
@@ -1468,7 +1532,7 @@ describe('Anatomy Skin Repair Scale Bridge', () => {
 describe('Anatomy atlas shared visual refinement', () => {
   const diagrams = [
     { id: 'heart', system: 'circulatory', view: 'anterior', firstStep: 'venous_return', key: 'Blood oxygenation key' },
-    { id: 'kidneys', system: 'organs', view: 'posterior', firstStep: 'glomerular_filtration', key: 'Kidney flow key' },
+    { id: 'kidneys', system: 'organs', view: 'posterior', firstStep: 'glomerular_filtration', key: 'Flow key' },
     { id: 'alveoli', system: 'respiratory', view: 'anterior', firstStep: 'alveolar_ventilation', key: 'Gas-exchange key' },
     { id: 'patella', system: 'skeletal', view: 'anterior', firstStep: 'knee_architecture', key: 'Knee mechanics key' },
     { id: 'biceps', system: 'muscular', view: 'anterior', firstStep: 'motor_terminal', key: 'Muscle activation key' },
@@ -1502,7 +1566,35 @@ describe('Anatomy atlas shared visual refinement', () => {
         system: diagram.system, view: diagram.view, complexity: 3, selectedStructure: diagram.id,
         _regionalAtlasOpen: diagram.id
       });
-      expect(html).toContain(`aria-label="${diagram.cue}"`);
+      if (diagram.id === 'heart') {
+        const root = document.createElement('div'); root.innerHTML = html;
+        const circuit = root.querySelector('figure[data-anatomy-heart-scale="circuit"]');
+        const chambers = root.querySelector('figure[data-anatomy-heart-scale="chambers"]');
+        expect(circuit.querySelector('figcaption').textContent).toMatch(/Lungs.*Heart.*Body/);
+        expect(chambers.querySelector('figcaption').textContent).toMatch(/Right atrium.*Right ventricle.*Left atrium.*Left ventricle/);
+      } else if (diagram.id === 'alveoli') {
+        const root = document.createElement('div'); root.innerHTML = html;
+        const overview = root.querySelector('figure[data-anatomy-alveolus-scale="overview"]');
+        const barrier = root.querySelector('figure[data-anatomy-alveolus-scale="barrier"]');
+        expect(overview.querySelector('h6').textContent).toContain('Alveolus and capillary');
+        expect(overview.querySelector('figcaption').textContent).toContain('Terminal airway');
+        expect(barrier.querySelector('h6').textContent).toContain('Air–blood barrier');
+        expect(barrier.querySelector('figcaption').textContent).toContain('Capillary endothelium');
+      } else if (diagram.id === 'biceps') {
+        const root = document.createElement('div'); root.innerHTML = html;
+        const activation = root.querySelector('figure[data-anatomy-muscle-scale="activation"]');
+        const sarcomere = root.querySelector('figure[data-anatomy-muscle-scale="sarcomere"]');
+        expect(activation.querySelector('figcaption').textContent.toLowerCase()).toContain('axon terminal');
+        expect(activation.querySelector('figcaption').textContent.toLowerCase()).toContain('t-tubule');
+        expect(sarcomere.querySelector('figcaption').textContent.toLowerCase()).toMatch(/actin.*myosin.*z disc/);
+      } else if (diagram.id === 'patella') {
+        const root = document.createElement('div'); root.innerHTML = html;
+        const overview = root.querySelector('figure[data-anatomy-knee-scale="overview"]');
+        const support = root.querySelector('figure[data-anatomy-knee-scale="support"]');
+        expect(overview.querySelector('figcaption').textContent).toMatch(/Femur.*Patella.*Tibia.*Fibula/);
+        expect(support.querySelector('figcaption').textContent).toMatch(/Quadriceps tendon.*Patellar tendon.*Articular cartilage.*Meniscus.*ACL.*PCL.*Collateral ligament/);
+        expect(root.querySelector('[data-anatomy-knee-orientation]').textContent).toContain('lateral cutaway');
+      } else expect(html).toContain(`aria-label="${diagram.cue}"`);
     });
     const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
     expect(source).toContain('.anatomy-atlas-stage svg text{paint-order:stroke');
@@ -1511,8 +1603,8 @@ describe('Anatomy atlas shared visual refinement', () => {
 });
 describe('Anatomy diagram Mechanism Pass', () => {
   const mechanismCases = [
-    { id: 'kidneys', system: 'organs', view: 'posterior', step: 1, mechanism: 'proximal-reabsorption', label: 'glucose · Na+ · water return' },
-    { id: 'alveoli', system: 'respiratory', view: 'anterior', step: 1, mechanism: 'oxygen-binding', label: 'O2 binds hemoglobin' },
+    { id: 'kidneys', system: 'organs', view: 'posterior', step: 1, mechanism: 'proximal-reabsorption', label: 'The proximal tubule returns most filtered water and sodium' },
+    { id: 'alveoli', system: 'respiratory', view: 'anterior', step: 1, mechanism: 'oxygen-binding', label: 'then binds to hemoglobin.' },
     { id: 'patella', system: 'skeletal', view: 'anterior', step: 2, mechanism: 'tibial-flexion-geometry', label: 'flexed tibia position' },
     { id: 'biceps', system: 'muscular', view: 'anterior', step: 3, mechanism: 'cross-bridge-power-stroke', label: 'Z discs move closer' },
     { id: 'liver', system: 'organs', view: 'anterior', step: 3, mechanism: 'bile-counterflow', label: 'bile moves outward · opposite blood flow' },
@@ -1537,8 +1629,9 @@ describe('Anatomy diagram Mechanism Pass', () => {
       _regionalAtlasOpen: 'heart', _regionalAtlasStep: 0
     });
     expect(filling).toContain('data-anatomy-mechanism="heart-valve-gating"');
-    expect(filling).toContain('tricuspid · OPEN');
-    expect(filling).toContain('mitral · CLOSED');
+    const fillingRoot = document.createElement('div'); fillingRoot.innerHTML = filling;
+    expect(fillingRoot.querySelector('[data-anatomy-heart-valve="tricuspid"]').textContent).toContain('Open');
+    expect(fillingRoot.querySelector('[data-anatomy-heart-valve="mitral"]').textContent).toContain('Closed');
 
     const systemic = renderAnatomy({
       system: 'circulatory', view: 'anterior', complexity: 3, selectedStructure: 'heart',
@@ -1546,7 +1639,9 @@ describe('Anatomy diagram Mechanism Pass', () => {
     });
     expect(systemic).toContain('data-anatomy-mechanism="left-ventricle-contraction"');
     expect(systemic).toContain('class="anatomy-mechanism-layer anatomy-diagram-emphasis is-active" data-anatomy-mechanism="aortic-valve-open"');
-    expect(systemic).toContain('LV contracts · aortic valve opens');
+    const systemicRoot = document.createElement('div'); systemicRoot.innerHTML = systemic;
+    expect(systemicRoot.querySelector('[data-anatomy-heart-valve="aortic"]').textContent).toContain('Open');
+    expect(systemicRoot.querySelector('#anatomy-heart-step-detail').textContent).toContain('passes through the aortic valve and aorta');
   });
 });
 describe('Anatomy responsive label focus', () => {
@@ -1568,31 +1663,42 @@ describe('Anatomy responsive label focus', () => {
         _regionalAtlasOpen: diagram.id, _regionalAtlasStep: diagram.step
       });
       expect(html).toContain(`data-anatomy-step-focus="${diagram.id}"`);
-      expect(html).toContain(`aria-label="Current structures: ${diagram.expected}"`);
-      expect(html).toContain('Current structures');
+      if (diagram.id === 'heart' || diagram.id === 'kidneys' || diagram.id === 'alveoli' || diagram.id === 'patella' || diagram.id === 'biceps' || diagram.id === 'liver') {
+        const root = document.createElement('div'); root.innerHTML = html;
+        const focus = root.querySelector('[data-anatomy-step-focus="' + diagram.id + '"]');
+        expect(focus.textContent).toContain('Focus in this step');
+        diagram.expected.split(', ').forEach(label => expect(focus.textContent).toContain(label));
+      } else {
+        expect(html).toContain(`aria-label="Current structures: ${diagram.expected}"`);
+        expect(html).toContain('Current structures');
+      }
     });
   });
 
-  it('classifies small SVG annotations as secondary while preserving active mechanism labels on phones', () => {
+  it('keeps kidney structure keys in HTML and numbers in the SVG', () => {
     const html = renderAnatomy({
       system: 'organs', view: 'posterior', complexity: 3, selectedStructure: 'kidneys',
       _regionalAtlasOpen: 'kidneys', _regionalAtlasStep: 1
     });
-    expect(html).toContain('class="anatomy-label-secondary"');
-    const source = fs.readFileSync('stem_lab/stem_tool_anatomy.js', 'utf8');
-    expect(source).toContain('.anatomy-label-secondary{display:none}');
-    expect(source).toContain('.anatomy-mechanism-layer.is-active .anatomy-label-secondary{display:inline}');
-    expect(source).toContain('className: atlasLabelClass(labelOptions, 10)');
+    const root = document.createElement('div'); root.innerHTML = html;
+    const atlas = root.querySelector('[data-anatomy-atlas="kidneys"]');
+    const markers = [...atlas.querySelectorAll('svg text')];
+    expect(markers).toHaveLength(9);
+    markers.forEach(marker => expect(marker.textContent).toMatch(/^\d+$/));
+    const activeKey = atlas.querySelector('[data-anatomy-kidney-scale="nephron"] .anatomy-kidney-structure-key li[data-current="true"]');
+    expect(activeKey.textContent).toContain('Proximal tubule');
+    expect(activeKey.textContent).toContain('Current step');
+    expect(atlas.querySelector('#anatomy-kidney-step-detail').textContent).toContain('The proximal tubule returns most filtered water and sodium');
   });
 });
 describe('Anatomy Clinical Lens', () => {
   const clinicalCases = [
-    { id: 'heart', system: 'circulatory', view: 'anterior', clinicalId: 'aortic_stenosis', title: 'Aortic stenosis', visual: 'narrow aortic opening · higher LV load' },
-    { id: 'kidneys', system: 'organs', view: 'posterior', clinicalId: 'glomerular_barrier_injury', title: 'Glomerular barrier injury', visual: 'protein crosses an injured filter' },
-    { id: 'alveoli', system: 'respiratory', view: 'anterior', clinicalId: 'pulmonary_edema', title: 'Pulmonary edema', visual: 'fluid thickens the diffusion path' },
-    { id: 'patella', system: 'skeletal', view: 'anterior', clinicalId: 'acl_tear', title: 'ACL tear', visual: 'ACL discontinuity · less restraint' },
-    { id: 'biceps', system: 'muscular', view: 'anterior', clinicalId: 'myasthenia_gravis', title: 'Myasthenia gravis', visual: 'fewer functional ACh receptors' },
-    { id: 'liver', system: 'organs', view: 'anterior', clinicalId: 'hepatic_fibrosis', title: 'Hepatic fibrosis', visual: 'fibrotic bands distort sinusoidal flow' },
+    { id: 'heart', system: 'circulatory', view: 'anterior', clinicalId: 'aortic_stenosis', title: 'Aortic stenosis', visual: 'The aortic valve opening narrows, increasing resistance to left-ventricular outflow.' },
+    { id: 'kidneys', system: 'organs', view: 'posterior', clinicalId: 'glomerular_barrier_injury', title: 'Glomerular barrier injury', visual: 'The filtration barrier becomes abnormally permeable and allows protein to enter the filtrate.' },
+    { id: 'alveoli', system: 'respiratory', view: 'anterior', clinicalId: 'pulmonary_edema', title: 'Pulmonary edema', visual: 'Fluid accumulates around the air-blood barrier and increases diffusion distance.' },
+    { id: 'patella', system: 'skeletal', view: 'anterior', clinicalId: 'acl_tear', title: 'ACL tear', visual: 'A discontinuity interrupts the ligament that restrains anterior tibial translation and rotation.' },
+    { id: 'biceps', system: 'muscular', view: 'anterior', clinicalId: 'myasthenia_gravis', title: 'Myasthenia gravis', visual: 'Fewer functional nicotinic acetylcholine receptors reduce the motor end plate safety factor.' },
+    { id: 'liver', system: 'organs', view: 'anterior', clinicalId: 'hepatic_fibrosis', title: 'Hepatic fibrosis', visual: 'Collagen bands distort lobule architecture and narrow sinusoidal pathways.' },
     { id: 'sm_intestine', system: 'organs', view: 'anterior', clinicalId: 'villous_atrophy', title: 'Villous atrophy', visual: 'shortened villi · less surface area' },
     { id: 'epidermis', system: 'integumentary', view: 'anterior', clinicalId: 'impaired_wound_healing', title: 'Impaired wound healing', visual: 'delayed closure · poor perfusion' }
   ];
@@ -1604,7 +1710,14 @@ describe('Anatomy Clinical Lens', () => {
         _regionalAtlasOpen: diagram.id
       });
       expect(html).toContain(`data-anatomy-clinical-toggle="${diagram.id}"`);
-      expect(html).toContain(`aria-label="Show ${diagram.title} clinical overlay"`);
+      if (diagram.id === 'heart' || diagram.id === 'kidneys' || diagram.id === 'alveoli' || diagram.id === 'patella' || diagram.id === 'biceps' || diagram.id === 'liver') {
+        const root = document.createElement('div'); root.innerHTML = html;
+        const control = root.querySelector('[data-anatomy-clinical-toggle="' + diagram.id + '"]');
+        expect(control.textContent).toBe('Clinical lens');
+        expect(control.getAttribute('aria-pressed')).toBe('false');
+      } else {
+        expect(html).toContain(`aria-label="Show ${diagram.title} clinical overlay"`);
+      }
       expect(html).not.toContain(`data-anatomy-clinical-panel="${diagram.clinicalId}"`);
       expect(html).not.toContain(`data-anatomy-clinical-overlay="${diagram.clinicalId}"`);
     });
@@ -1616,9 +1729,17 @@ describe('Anatomy Clinical Lens', () => {
         system: diagram.system, view: diagram.view, complexity: 3, selectedStructure: diagram.id,
         _regionalAtlasOpen: diagram.id, _regionalAtlasClinical: true
       });
-      expect(html).toContain('class="anatomy-atlas is-clinical"');
+      const root = document.createElement('div'); root.innerHTML = html;
+      const atlas = root.querySelector('[data-anatomy-atlas="' + diagram.id + '"]');
+      expect(atlas.classList.contains('is-clinical')).toBe(true);
       expect(html).toContain(`data-anatomy-clinical="${diagram.clinicalId}"`);
-      expect(html).toContain(`aria-label="Hide ${diagram.title} clinical overlay"`);
+      if (diagram.id === 'heart' || diagram.id === 'kidneys' || diagram.id === 'alveoli' || diagram.id === 'patella' || diagram.id === 'biceps' || diagram.id === 'liver') {
+        const control = atlas.querySelector('[data-anatomy-clinical-toggle="' + diagram.id + '"]');
+        expect(control.textContent).toBe('Hide clinical lens');
+        expect(control.getAttribute('aria-pressed')).toBe('true');
+      } else {
+        expect(html).toContain(`aria-label="Hide ${diagram.title} clinical overlay"`);
+      }
       expect(html).toContain(`data-anatomy-clinical-panel="${diagram.clinicalId}"`);
       expect(html).toContain(`data-anatomy-clinical-overlay="${diagram.clinicalId}"`);
       expect(html).toContain(diagram.visual);

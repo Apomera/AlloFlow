@@ -1,0 +1,139 @@
+{
+  "runtimeSha256": "d4b93c29f80afc823c4b32732847baac3a4aa20abef5f9a6d23139721ac18522",
+  "runtimeBytes": 2445119,
+  "test": {
+    "file": "aquaculture_backup_union.test.js",
+    "sha256": "f1c085f256664b62f8566330f730da59b99a8e1ff63fe49dfc8b8e5aca0a44ac",
+    "cases": 20
+  },
+  "revisedTests": [
+    {
+      "file": "aquaculture_archive_integrity.test.js",
+      "sha256": "90e274752851a5e88f4816a48e56b0b1d632ea8abcd6b7581c60c4b97824a3e9",
+      "authorFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_archive_integrity_union_revised.test.js"
+    },
+    {
+      "file": "aquaculture_guided_questions.test.js",
+      "sha256": "b09970cec6b793fe9234ffe39f75455edca34a5d315ba49acec17148cfc828d3",
+      "authorFile": "C:\\Users\\cabba\\Documents\\Codex\\2026-10-02\\please\\work\\aquaculture_guided_questions_union_revised.test.js"
+    }
+  ],
+  "policyUpdates": [
+    {
+      "file": "aquaculture_archive_integrity.test.js",
+      "previousName": "Aquaculture exact archive actions and backup integrity treats __proto__ and constructor as literal archive IDs without losing current or incoming originals",
+      "currentName": "Aquaculture exact archive actions and backup integrity treats __proto__ and constructor as literal archive IDs without losing current or incoming originals",
+      "reason": "Retain the different incoming __proto__ original; five records instead of four, with every current original unchanged."
+    },
+    {
+      "file": "aquaculture_archive_integrity.test.js",
+      "previousName": "Aquaculture exact archive actions and backup integrity preserves existing-ID import policy and twelve duplicate originals across repeated idempotent imports",
+      "currentName": "Aquaculture exact archive actions and backup integrity keeps twelve original occurrences for identical imports and rejects an additional distinct same-ID original",
+      "reason": "A different same-ID original must count toward capacity; exact canonical copies remain idempotent at twelve."
+    },
+    {
+      "file": "aquaculture_guided_questions.test.js",
+      "previousName": "Aquaculture guided questions and backup integrity merges backups without silently replacing duplicate records or evicting records beyond capacity",
+      "currentName": "Aquaculture guided questions and backup integrity merges backups without silently replacing duplicate records or evicting records beyond capacity",
+      "reason": "Reject a different same-ID thirteenth original; use an actual exact original for the full-log no-op case."
+    }
+  ],
+  "manualReview": {
+    "rootAccepted": true,
+    "independentAccepted": true,
+    "reviewer": "/root/archive_integrity_review",
+    "testReviewer": "/root/archive_integrity_tests",
+    "scope": "18 normal/forced main panel and archive/Undo renderings include all 8 normal color-contrast-incomplete scopes. Root and independent reviewer viewed the same final pairs and accepted legibility, full wrapping, narrow-screen layout and system-color correction. 16 scoped scans have zero violations. This is scope-specific acceptance, not whole-app compliance."
+  },
+  "browser": {
+    "sha256": "27c4241037ff9aaa16cbf4235f76d6e24995c474848a6cb9d40e165cc7905310",
+    "groups": 5,
+    "entries": 5,
+    "axeScans": 16,
+    "screenshots": 26,
+    "incompleteScans": 8,
+    "previews": [
+      {
+        "source": "desktop-same-id-added-1280-portfolio.png",
+        "output": "aquaculture-backup-union-desktop.png"
+      },
+      {
+        "source": "phone-repeat-no-op-390-portfolio.png",
+        "output": "aquaculture-backup-union-phone.png"
+      },
+      {
+        "source": "desktop-same-id-added-1280-portfolio-forced-colors.png",
+        "output": "aquaculture-backup-union-forced-colors.png"
+      },
+      {
+        "source": "device-failure-both-recoveries-390-undo-forced-colors.png",
+        "output": "aquaculture-backup-union-recovery.png"
+      }
+    ]
+  },
+  "nativeAttemptNotes": [
+    {
+      "run": "batch-5-tests.json",
+      "reason": "Actual 19/20 assertion failure compared storage across ordinary Home/Ecosystem navigation. Corrected the test to capture exact bytes immediately around import dispatch; workspace and both recovery assertions retained. Exact executed ecf source is preserved."
+    },
+    {
+      "run": "batch-5-tests-final.json",
+      "reason": "Actual 19/20 archive-order assertion failure used an Undo baseline captured before its preparatory successful import. Corrected the fixture to capture the actual post-import savedAt-desc order; every exact original/draft/recovery check retained. Exact executed 2c source is preserved."
+    },
+    {
+      "run": "final-batch-1.json",
+      "reason": "Actual final-source 46/47 failure in guided oxygen-buffer beforeEach reported STACK_TRACE_ERROR at 22406.8798 ms. The raw log does not identify a timeout cause. Complete batch rechecked with identical source/tests and normal test/hook limits; this failed execution remains in assertion history."
+    },
+    {
+      "run": "final-batch-1-recheck.json",
+      "reason": "Actual unchanged full-batch recheck passed 46/47 and failed a different guided-question beforeEach (backup capacity policy), reported STACK_TRACE_ERROR. Retained as a separate actual setup failure with no inferred cause. A later isolated guided file executed all five cases with unchanged source, tests and limits."
+    },
+    {
+      "run": "guided-setup-diagnostics.json",
+      "reason": "All five guided-question cases actually passed in a clean single-file worker, with default plus JSON reporters and unchanged source/tests/time limits. These five latest executed assertions resolve earlier setup failures; no synthetic combined result or skipped-case credit."
+    }
+  ],
+  "browserAttemptNotes": [
+    {
+      "directory": "backup-union-browser-failed-forced-color-contrast",
+      "reason": "Actual first browser run stopped before group completion: 2 scans, 2 PNGs, forced-color color-contrast violation affecting 5 portfolio text nodes. Added one scoped 643-byte system-color CSS block; executable logic unchanged. Final browser and all selected native batches rerun on d4 source."
+    }
+  ],
+  "originalSourceNotes": [
+    {
+      "file": "authored-backup-union-before-review.test.js",
+      "executed": false,
+      "reason": "Unexecuted author draft required deep-clone reference inequality beyond the canonical-array helper contract; removed only those two reference assertions before first execution while retaining deep-freeze/input equality checks."
+    },
+    {
+      "file": "authored-browser-before-review.cjs",
+      "executed": false,
+      "reason": "Unexecuted author draft had an incomplete helper prefix because extraction matched an inner async axe callback. Root restored the complete previously accepted 409 helper prefix before any browser execution; five new workflow bodies retained."
+    },
+    {
+      "file": "native-initial-executed.test.js",
+      "executed": true,
+      "reason": "Exact ecf source executed in first new suite attempt; actual import byte-boundary assertion failure retained."
+    },
+    {
+      "file": "native-second-executed.test.js",
+      "executed": true,
+      "reason": "Exact 2c source executed in second new suite attempt; actual Undo fixture-order assertion failure retained."
+    },
+    {
+      "file": "aquaculture_archive_integrity.test.js",
+      "executed": true,
+      "reason": "Accepted prior pass12 test source preserved before the two declared backup-policy assertion changes; not executed in pass13."
+    },
+    {
+      "file": "aquaculture_guided_questions.test.js",
+      "executed": true,
+      "reason": "Accepted prior pass12 test source preserved before the one declared backup-policy assertion change; not executed in pass13."
+    },
+    {
+      "file": "before-forced-color-fix-source.js",
+      "executed": true,
+      "reason": "Exact 866 runtime used by all initial native attempts and the actual first forced-color browser failure; it supplies no final d4 pass credit."
+    }
+  ]
+}

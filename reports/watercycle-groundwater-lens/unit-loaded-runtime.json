@@ -1,0 +1,21 @@
+{
+  "loadedAt": "2026-10-02T13:21:15.164Z",
+  "completedAt": "2026-10-02T13:21:18.748Z",
+  "loadedRuntimes": [
+    {
+      "path": "stem_lab/stem_tool_watercycle.js",
+      "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "bytes": 3058809
+    },
+    {
+      "path": "desktop/web-app/public/stem_lab/stem_tool_watercycle.js",
+      "sha256": "3677bd11a38cd0f20ff4fd6dfb3808384bda0cbae4b3ebec254a1beb8476405d",
+      "bytes": 3058809
+    }
+  ],
+  "loadedTest": {
+    "path": "tests/watercycle_groundwater_lens.test.js",
+    "sha256": "7ae7f27b198b5efcb98b430e191480c9cf34042cdff949af4d9b9cdfd73445c2",
+    "bytes": 32790
+  }
+}

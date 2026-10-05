@@ -84,8 +84,41 @@ describe('Beehive seeded daily model', () => {
     expect(provenance.seededFromDay).toBe(47);
     expect(provenance.exactFromStart).toBe(false);
   });
+
+  it('repeats the retained Run A recipe and protects a fresh distinct run plan without mutating notes', () => {
+    const runA = { ...BH.bhCreateNewColonyState(1111, 5, 15), day: 12, subspecies: 'russian', apiarySite: 'forest_edge' };
+    const baseline = BH.bhCreateExperimentSnapshot(runA);
+    const plan = { plannedActionId: 'plant_wildflowers', predictedMetricId: 'honey', predictedDirection: 'higher',
+      question: 'Does forage change honey?', hypothesis: 'More forage supplies more nectar.', changedVariable: 'Plant wildflowers once', prediction: 'Run B honey will be higher.' };
+    const current = { ...BH.bhCreateNewColonyState(2222, 2, 0), subspecies: 'italian', apiarySite: 'meadow',
+      notebook: { synthesis: 'Keep this reflection.', experiment: plan }, experimentBaseline: baseline };
+    const before = structuredClone(current);
+    const reset = BH.bhCreateExperimentRepeatState(current, baseline, 25);
+    expect(reset).toMatchObject({ modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, day: 0, simulationSeed: 1111, randomState: 1111,
+      experimentRunSerial: 6, seededFromDay: 0, subspecies: 'russian', apiarySite: 'forest_edge',
+      experimentEnvironment: { schemaVersion: 1, gardenBonus: 15, trackedFromDay: 0 }, experimentBaseline: baseline,
+      notebook: { synthesis: 'Keep this reflection.', experiment: { registeredPlan: { complete: true, runSerial: 6, baselineRunSerial: 5 } } } });
+    expect(BH.bhExperimentProvenance(reset).exactFromStart).toBe(true);
+    expect(BH.bhCompareExperiments(baseline, reset).controlledSetup).toBe(true);
+    expect(current).toEqual(before);
+    const oldBaseline = { ...baseline, modelVersion: 'colony-daily-1.1' };
+    const migratedRepeat = BH.bhCreateExperimentRepeatState(current, oldBaseline, 25);
+    expect(migratedRepeat.modelVersion).toBe(BH.BEEHIVE_COLONY_MODEL_VERSION);
+    expect(migratedRepeat.experimentBaseline.modelVersion).toBe('colony-daily-1.1');
+    expect(BH.bhCompareExperiments(oldBaseline, migratedRepeat).controlledSetup).toBe(false);
+  });
+
+  it('replays the collapsed current colony when no earlier Run A has been retained', () => {
+    const collapsed = { ...BH.bhCreateNewColonyState(3333, 7, 10), day: 9, colonySurvived: false, workers: 400,
+      subspecies: 'carniolan', apiarySite: 'forest_edge' };
+    const baseline = BH.bhCreateExperimentSnapshot(collapsed);
+    const reset = BH.bhCreateExperimentRepeatState(collapsed, baseline, 0);
+    expect(reset).toMatchObject({ day: 0, colonySurvived: true, workers: 10000, simulationSeed: 3333, randomState: 3333,
+      experimentRunSerial: 8, subspecies: 'carniolan', apiarySite: 'forest_edge', experimentEnvironment: { gardenBonus: 10, trackedFromDay: 0 } });
+    expect(reset.experimentBaseline).toEqual(baseline);
+  });
   it('creates a compact, bounded, non-mutating experiment checkpoint', () => {
-    const state = {
+    const state = { experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       day: 12,
       modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION,
       simulationSeed: 99,
@@ -142,7 +175,7 @@ describe('Beehive seeded daily model', () => {
   });
 
   it('distinguishes same-run, matched, timing-mismatched, and exploratory comparisons', () => {
-    const runA = BH.bhCreateExperimentSnapshot({
+    const runA = BH.bhCreateExperimentSnapshot({ modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       day: 20,
       simulationSeed: 2468,
       randomState: 1357,
@@ -167,7 +200,7 @@ describe('Beehive seeded daily model', () => {
       ...matchedPlan,
       registeredPlan: BH.bhCreateExperimentPlanRegistration(matchedPlan, 2, runA.runSerial),
     };
-    const matched = BH.bhCompareExperiments(runA, {
+    const matched = BH.bhCompareExperiments(runA, { modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       day: 20,
       simulationSeed: 2468,
       randomState: 9753,
@@ -181,7 +214,7 @@ describe('Beehive seeded daily model', () => {
       managementTrail: [{ day: 2, label: 'Inspect brood', cost: '1 AP' }, { day: 15, label: 'Plant wildflowers', cost: '1 AP' }],
       notebook: { experiment: matchedNotebook },
     });
-    const timingMismatch = BH.bhCompareExperiments(runA, {
+    const timingMismatch = BH.bhCompareExperiments(runA, { modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       day: 10,
       simulationSeed: 2468,
       experimentRunSerial: 2,
@@ -190,7 +223,7 @@ describe('Beehive seeded daily model', () => {
       apiarySite: 'forest',
       managementTrail: [{ day: 2, label: 'Inspect brood', cost: '1 AP' }],
     });
-    const exploratory = BH.bhCompareExperiments(runA, {
+    const exploratory = BH.bhCompareExperiments(runA, { modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       day: 20,
       simulationSeed: 2469,
       experimentRunSerial: 2,
@@ -198,7 +231,7 @@ describe('Beehive seeded daily model', () => {
       subspecies: 'italian',
       apiarySite: 'meadow',
     });
-    const sameRun = BH.bhCompareExperiments(runA, {
+    const sameRun = BH.bhCompareExperiments(runA, { modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       day: 20,
       simulationSeed: 2468,
       seededFromDay: 0,
@@ -367,7 +400,7 @@ describe('Beehive seeded daily model', () => {
     expect(notebook.review).toEqual({ singleVariable: true, numericEvidence: true, uncertainty: true });
     expect(rawNotebook).toEqual(before);
 
-    const runA = BH.bhCreateExperimentSnapshot({
+    const runA = BH.bhCreateExperimentSnapshot({ modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       day: 12,
       simulationSeed: 4321,
       randomState: 777,
@@ -375,7 +408,7 @@ describe('Beehive seeded daily model', () => {
       honey: 20,
       managementTrail: [{ day: 3, label: 'Inspect brood', cost: '1 AP' }],
     });
-    const current = {
+    const current = { modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       day: 12,
       simulationSeed: 4321,
       randomState: 888,
@@ -489,16 +522,16 @@ describe('Beehive reproducibility surfaces', () => {
     const collapsed = renderTool('beehive', { beehive: { viewMode: 'beekeeper', day: 68, colonySurvived: false, simulationSeed: 2468, randomState: 1357, seededFromDay: 0 } });
 
     expect(legacy).toContain('data-beehive-seed-migration-note="true"');
-    expect(legacy).toContain('days before that point cannot be replayed exactly');
+    expect(legacy).toContain('unverified model history');
     expect(collapsed).toContain('Choose your next experiment');
     expect(collapsed).toContain('data-beehive-restart="same-seed"');
     expect(collapsed).toContain('data-beehive-restart="fresh-seed"');
-    expect(collapsed).toContain('Replay same seed');
+    expect(collapsed).toContain('Replay Run A&#x27;s recipe');
     expect(collapsed).toContain('Use a new seed');
   });
 
   it('renders a clear, semantic Run A and Run B evidence workspace', () => {
-    const baseline = BH.bhCreateExperimentSnapshot({
+    const baseline = BH.bhCreateExperimentSnapshot({ modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       day: 12,
       simulationSeed: 4321,
       randomState: 777,
@@ -516,7 +549,7 @@ describe('Beehive reproducibility surfaces', () => {
       changedVariable: 'Plant wildflowers once',
       prediction: 'Run B honey will be higher at Day 12.',
     };
-    const html = renderTool('beehive', { beehive: {
+    const html = renderTool('beehive', { beehive: { ...BH.bhCreateNewColonyState(4321, 2), modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       viewMode: 'beekeeper',
       day: 12,
       simulationSeed: 4321,
@@ -572,8 +605,8 @@ describe('Beehive reproducibility surfaces', () => {
     expect(html).toContain('Clear Run A');
   });
   it('renders the guided evidence chain with progressive, semantic controls', () => {
-    const baseline = BH.bhCreateExperimentSnapshot({ day: 12, simulationSeed: 4321, seededFromDay: 0, honey: 20, managementTrail: [{ day: 4, label: 'Inspect brood', cost: '1 AP' }] });
-    const html = renderTool('beehive', { beehive: {
+    const baseline = BH.bhCreateExperimentSnapshot({ modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },  day: 12, simulationSeed: 4321, seededFromDay: 0, honey: 20, managementTrail: [{ day: 4, label: 'Inspect brood', cost: '1 AP' }] });
+    const html = renderTool('beehive', { beehive: { ...BH.bhCreateNewColonyState(4321, 2), modelVersion: BH.BEEHIVE_COLONY_MODEL_VERSION, experimentEnvironment: { schemaVersion: 1, gardenBonus: 0, trackedFromDay: 0 },
       viewMode: 'beekeeper',
       day: 12,
       simulationSeed: 4321,
@@ -627,7 +660,7 @@ describe('Beehive reproducibility surfaces', () => {
     expect(html).toContain('aria-valuemax="10"');
     expect(html).toContain('aria-valuenow="8"');
     expect(html).toContain('Plan one change for Run B, compare it with Run A, then explain and export the evidence.');
-    expect(SOURCE.match(/lines\.push\(bhBuildExperimentEvidenceRecord/g)).toHaveLength(2);
+    expect(SOURCE.match(/lines\.push\(bhBuildExperimentEvidenceRecord/g)).toHaveLength(3);
   });
   it('includes model, seed, cursor, migration day, scope, and replay requirements in exports', () => {
     [
@@ -637,15 +670,15 @@ describe('Beehive reproducibility surfaces', () => {
       '**Daily colony model:**',
       '**Resume code:**',
       '**Tracking began:** Day',
-      '**Exact replay:** Use the same model version, seed, starting colony, and management choices.',
-      '**Controlled comparison:** Keep the seed, stock, site, and timing the same; change one management choice.',
+      '**Exact replay:** Use the same model version, seed, starting colony, garden forage control, and management choices.',
+      '**Controlled comparison:** Keep the seed, stock, site, garden forage control, and timing the same; change one management choice.',
       '**Scope:** Covers Beekeeper daily colony outcomes.',
     ].forEach((text) => expect(SOURCE).toContain(text));
   });
 
   it('persists one seeded cursor across a batch instead of reseeding each day', () => {
     expect(SOURCE).toContain('var seededRandom = bhCreateSeededRandom(savedProvenance.randomState);');
-    expect(SOURCE).toContain('var seededCfg = bhCfg(seededRandom.rand);');
+    expect(SOURCE.includes('var seededCfg = bhCfg(seededRandom.rand, b);')).toBe(true);
     expect(SOURCE).toContain('var _br = bhStepColony(_bs, seededCfg);');
     expect(SOURCE).toContain('b.randomState = seededRandom.getState();');
   });

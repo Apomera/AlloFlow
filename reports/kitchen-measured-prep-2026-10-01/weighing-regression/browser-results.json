@@ -1,0 +1,24 @@
+{
+  "checks": [
+    "Mouse lift and tilt pour in real time. Upright packets and wrong drops add nothing; returning to the packet removes exactly 10 g. Drafts leave cook state untouched; recording and reload retain the exact 170 g portion.",
+    "Escape, release, focus loss, window blur, and leaving the workspace stop continuous flow. Keyboard holds and single-step controls work; repeated Enter does not double-dose. Capacity stays at 800 g and portions under 40 g cannot be recorded.",
+    "Desktop, 320px, and forced-color accessibility audits pass. The cooked portion cannot be changed; replay shows the historical fine weight and remains read-only.",
+    "Real touch pours and returns handfuls without WebGL; touch cancellation immediately stops flow and retains the measured draft."
+  ],
+  "accessibility": [
+    {
+      "label": "Desktop weighing",
+      "issues": []
+    },
+    {
+      "label": "320px weighing",
+      "issues": []
+    },
+    {
+      "label": "Forced colors",
+      "issues": []
+    }
+  ],
+  "errors": [],
+  "pass": true
+}

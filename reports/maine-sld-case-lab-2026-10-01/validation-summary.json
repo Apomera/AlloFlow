@@ -1,0 +1,274 @@
+{
+  "completedAt": "2026-10-02T11:35:58.416Z",
+  "moduleSha256": "94bb51978ae58be5b7e88e36fc1cdc0150d4cf35ecc9f5ad91ae82c62062ef1f",
+  "unit": {
+    "distinct": 11,
+    "passed": 11,
+    "raw": "final-unit-result.json"
+  },
+  "browser": {
+    "distinct": 13,
+    "finalPassed": 13,
+    "fullCandidateBatch": {
+      "startTime": "2026-10-02T11:10:47.610Z",
+      "duration": 717442.319,
+      "expected": 11,
+      "skipped": 0,
+      "unexpected": 2,
+      "flaky": 0
+    },
+    "targetedUnchangedRerun": {
+      "startTime": "2026-10-02T11:29:09.005Z",
+      "duration": 117415.157,
+      "expected": 2,
+      "skipped": 0,
+      "unexpected": 0,
+      "flaky": 0
+    },
+    "automaticRetries": 0,
+    "limitsChanged": false,
+    "scenarios": [
+      {
+        "title": "native Leadership card launches the panel and host reader resolves both aliases",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 13153,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "all52 scores, evidence and Q8/Q9 work survive steps, case switches and reload",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 3416,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "debrief reveals on request, participant print stays separate, and mobile reset confirms",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 84431,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "keyboard layout and axe 1440px light",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 5804,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "keyboard layout and axe 1440px dark",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 4825,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "keyboard layout and axe 1440px contrast",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 54221,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "keyboard layout and axe 390px light",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 5942,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "keyboard layout and axe 390px dark",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 22844,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "keyboard layout and axe 390px contrast",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "timedOut",
+            "durationMs": 131809,
+            "errors": [
+              "\u001b[31mTearing down \"context\" exceeded the test timeout of 120000ms.\u001b[39m"
+            ]
+          }
+        ],
+        "focusedRerun": [
+          {
+            "status": "passed",
+            "durationMs": 4297,
+            "errors": []
+          }
+        ],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "unavailable session storage leaves work usable",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 5559,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "case-specific share links contain no worksheet data and direct entry selects that case",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 10426,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "imported HTML stays text and restoring replaces work only after participant confirmation",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "passed",
+            "durationMs": 93872,
+            "errors": []
+          }
+        ],
+        "focusedRerun": [],
+        "finalStatus": "passed"
+      },
+      {
+        "title": "public deep link opens the case directly and configured educator access protects Leadership return",
+        "project": "chromium",
+        "attempts": [
+          {
+            "status": "timedOut",
+            "durationMs": 218863,
+            "errors": [
+              "\u001b[31mTest timeout of 120000ms exceeded.\u001b[39m"
+            ]
+          }
+        ],
+        "focusedRerun": [
+          {
+            "status": "passed",
+            "durationMs": 105821,
+            "errors": []
+          }
+        ],
+        "finalStatus": "passed"
+      }
+    ]
+  },
+  "axe": {
+    "scans": 30,
+    "violations": 0,
+    "reports": [
+      {
+        "file": "axe-1440-contrast.json",
+        "width": 1440,
+        "theme": "contrast",
+        "steps": 5,
+        "violations": 0
+      },
+      {
+        "file": "axe-1440-dark.json",
+        "width": 1440,
+        "theme": "dark",
+        "steps": 5,
+        "violations": 0
+      },
+      {
+        "file": "axe-1440-light.json",
+        "width": 1440,
+        "theme": "light",
+        "steps": 5,
+        "violations": 0
+      },
+      {
+        "file": "axe-390-contrast.json",
+        "width": 390,
+        "theme": "contrast",
+        "steps": 5,
+        "violations": 0
+      },
+      {
+        "file": "axe-390-dark.json",
+        "width": 390,
+        "theme": "dark",
+        "steps": 5,
+        "violations": 0
+      },
+      {
+        "file": "axe-390-light.json",
+        "width": 390,
+        "theme": "light",
+        "steps": 5,
+        "violations": 0
+      }
+    ]
+  },
+  "retainedAttempts": [
+    "unit-attempt-1.json",
+    "browser-attempt-1",
+    "browser-artifacts",
+    "final-browser-result.json",
+    "browser-final-artifacts",
+    "targeted-rerun"
+  ]
+}

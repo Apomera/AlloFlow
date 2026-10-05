@@ -1,0 +1,38 @@
+{
+  "verifiedAt": "2026-10-02T19:55:58.361Z",
+  "moduleHash": "879c289b65b47014fb07be571c9e55c51c3df31653d109bb29f21d7ec2e9e48c",
+  "modulePin": "879c289b",
+  "moduleFiles": [
+    "maine_sld_practice_module.js",
+    "desktop/web-app/public/maine_sld_practice_module.js",
+    "desktop/app-build/maine_sld_practice_module.js",
+    "desktop/web-app/build/maine_sld_practice_module.js"
+  ],
+  "hosts": [
+    {
+      "file": "AlloFlowANTI.txt",
+      "beforePin": "7b177505",
+      "finalPin": "879c289b",
+      "beforeSha256": "e8710ad71444417271d09e0af2f0c6ab47d45cc6c343cc735a841d6fc471655c",
+      "afterSha256": "7d97b8fb3d93340890f1f2d81c6e47d820a58d3892ba346a4b3e4db96d8c205d",
+      "unrelatedCurrentBytesPreserved": true
+    },
+    {
+      "file": "desktop/web-app/src/AlloFlowANTI.txt",
+      "beforePin": "7b177505",
+      "finalPin": "879c289b",
+      "beforeSha256": "e8710ad71444417271d09e0af2f0c6ab47d45cc6c343cc735a841d6fc471655c",
+      "afterSha256": "7d97b8fb3d93340890f1f2d81c6e47d820a58d3892ba346a4b3e4db96d8c205d",
+      "unrelatedCurrentBytesPreserved": true
+    },
+    {
+      "file": "desktop/web-app/src/App.jsx",
+      "beforePin": "7b177505",
+      "finalPin": "879c289b",
+      "beforeSha256": "e8710ad71444417271d09e0af2f0c6ab47d45cc6c343cc735a841d6fc471655c",
+      "afterSha256": "7d97b8fb3d93340890f1f2d81c6e47d820a58d3892ba346a4b3e4db96d8c205d",
+      "unrelatedCurrentBytesPreserved": true
+    }
+  ],
+  "recoveredFrom": "Disk-full snapshot write interrupted after two completed intact pin updates; only own zero-byte App snapshot repaired and intact App pin completed after space became available."
+}

@@ -1,0 +1,21 @@
+{
+  "recordedAt": "2026-10-04T03:47:29.958Z",
+  "pid": 19880,
+  "managedSessionId": 95388,
+  "plainPipes": true,
+  "visibleWindow": false,
+  "pidEvidence": "process.pid from owned server launch output and active runtime.json",
+  "processSignatureRecordedFromOwnedLaunch": {
+    "executable": "C:/Users/cabba/.cache/codex-runtimes/codex-primary-runtime/dependencies/node/bin/node.exe",
+    "arguments": [
+      "C:\\Users\\cabba\\Documents\\Codex\\2026-09-30\\p\\work\\sld-react\\guide_layout_integration.cjs",
+      "serve",
+      "018f7f789eb751dabd354bb28079fe60ce92d9a94f052fe9ce679c2230c7c7fc"
+    ],
+    "helperSha256": "b170417c2a4f85bd41ed18b2ab63e187eddd924722bbdad8165ed6d409fbeb0e"
+  },
+  "runtimeMetadataPath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-guide-revision-2026-10-03\\integration\\layout-review-correction\\source-preview\\runtime.json",
+  "httpEvidencePath": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\maine-sld-case-lab-guide-revision-2026-10-03\\integration\\layout-review-correction\\served-verification.json",
+  "reachableAfterLaunchToolReturned": true,
+  "rebuildPerformed": false
+}

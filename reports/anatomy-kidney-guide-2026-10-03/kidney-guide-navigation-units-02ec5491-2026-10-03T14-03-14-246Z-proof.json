@@ -1,0 +1,45 @@
+{
+  "runId": "02ec5491-2026-10-03T14-03-14-246Z",
+  "startedAt": "2026-10-03T14:03:14.262Z",
+  "finishedAt": "2026-10-03T14:03:28.593Z",
+  "report": "reports/anatomy-kidney-guide-2026-10-03/kidney-guide-navigation-units-02ec5491-2026-10-03T14-03-14-246Z.json",
+  "command": [
+    "C:\\Program Files\\nodejs\\node.exe",
+    "node_modules/vitest/vitest.mjs",
+    "run",
+    "tests/anatomy_kidney_guide.test.js",
+    "tests/anatomy_lens_gallery_navigation.test.js",
+    "tests/anatomy_scale_navigation.test.js",
+    "--pool=threads",
+    "--maxWorkers=1",
+    "--no-isolate",
+    "--testTimeout=300000",
+    "--hookTimeout=300000",
+    "--reporter=default",
+    "--reporter=json",
+    "--outputFile=reports/anatomy-kidney-guide-2026-10-03/kidney-guide-navigation-units-02ec5491-2026-10-03T14-03-14-246Z.json"
+  ],
+  "before": {
+    "stem_lab/stem_tool_anatomy.js": "02ec549172e656dc1f8f36261824930134327d3d778e81a69b8e7a57f1b9cf17",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "02ec549172e656dc1f8f36261824930134327d3d778e81a69b8e7a57f1b9cf17",
+    "tests/anatomy_kidney_guide.test.js": "0757c76269b13dfc169c31efd298a4f3a17c6d61922946a7e7434cdaff5fd82a",
+    "tests/anatomy_lens_gallery_navigation.test.js": "e0db13cb01d85c1e6e56cd57394fb198f8aaea38cec6e27fae335229e0803cad",
+    "tests/anatomy_scale_navigation.test.js": "f10c5e7f93aaa6b3f05e6f61202c194cdd08bb19450bad7fe1b26bb107d0fc7f"
+  },
+  "after": {
+    "stem_lab/stem_tool_anatomy.js": "02ec549172e656dc1f8f36261824930134327d3d778e81a69b8e7a57f1b9cf17",
+    "desktop/web-app/public/stem_lab/stem_tool_anatomy.js": "02ec549172e656dc1f8f36261824930134327d3d778e81a69b8e7a57f1b9cf17",
+    "tests/anatomy_kidney_guide.test.js": "0757c76269b13dfc169c31efd298a4f3a17c6d61922946a7e7434cdaff5fd82a",
+    "tests/anatomy_lens_gallery_navigation.test.js": "e0db13cb01d85c1e6e56cd57394fb198f8aaea38cec6e27fae335229e0803cad",
+    "tests/anatomy_scale_navigation.test.js": "f10c5e7f93aaa6b3f05e6f61202c194cdd08bb19450bad7fe1b26bb107d0fc7f"
+  },
+  "sourceUnchanged": true,
+  "mirrorsIdentical": true,
+  "exitCode": 1,
+  "error": null,
+  "total": 166,
+  "passed": 162,
+  "skipped": 0,
+  "failed": 4,
+  "success": false
+}

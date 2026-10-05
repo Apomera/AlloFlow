@@ -1,0 +1,240 @@
+{
+  "config": {
+    "configFile": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\playwright.config.ts",
+    "rootDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+    "forbidOnly": false,
+    "fullyParallel": true,
+    "globalSetup": null,
+    "globalTeardown": null,
+    "globalTimeout": 0,
+    "grep": {},
+    "grepInvert": null,
+    "maxFailures": 0,
+    "metadata": {
+      "actualWorkers": 1
+    },
+    "preserveOutput": "always",
+    "projects": [
+      {
+        "outputDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/reports/moon-mission-enhancement-pass17-2026-10-02/browser-artifacts-events-final",
+        "repeatEach": 1,
+        "retries": 0,
+        "metadata": {
+          "actualWorkers": 1
+        },
+        "id": "chromium",
+        "name": "chromium",
+        "testDir": "C:/Users/cabba/OneDrive/Desktop/UDL-Tool-Updated/tests/e2e",
+        "testIgnore": [],
+        "testMatch": [
+          "**/*.@(spec|test).?(c|m)[jt]s?(x)"
+        ],
+        "timeout": 120000
+      }
+    ],
+    "quiet": false,
+    "reporter": [
+      [
+        "list"
+      ],
+      [
+        "json"
+      ]
+    ],
+    "reportSlowTests": {
+      "max": 5,
+      "threshold": 300000
+    },
+    "shard": null,
+    "tags": [],
+    "updateSnapshots": "missing",
+    "updateSourceMethod": "patch",
+    "version": "1.60.0",
+    "workers": 1,
+    "webServer": null
+  },
+  "suites": [
+    {
+      "title": "moon-mission-descent-predictions.spec.ts",
+      "file": "moon-mission-descent-predictions.spec.ts",
+      "column": 0,
+      "line": 0,
+      "specs": [
+        {
+          "title": "paused control comparisons are numerical, update immediately, and persist only the panel preference",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 16471,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:44:20.314Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-paused-controls",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass17-2026-10-02\\browser-artifacts-events-final\\moon-mission-descent-predi-7b73a-t-only-the-panel-preference-chromium\\attachments\\prediction-paused-controls-cd6faf2a83ec9ff74176c2cd0df0b294a0ad7d65.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-c931efc69d7ce2376cff",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 89,
+          "column": 5
+        },
+        {
+          "title": "active prediction clocks follow the flight and leave the original impact and once-only outcome intact",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 108928,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:44:37.335Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-actual-contact",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass17-2026-10-02\\browser-artifacts-events-final\\moon-mission-descent-predi-00341-nd-once-only-outcome-intact-chromium\\attachments\\prediction-actual-contact-bbf887f355f31cfc60912e5fa37df03790e1735e.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-7cabc1b79f7145c1b87d",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 116,
+          "column": 5
+        },
+        {
+          "title": "recorded sample projections preserve the landing receipt and omit missing legacy measurements",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 6381,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:46:26.279Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-recorded-sample",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass17-2026-10-02\\browser-artifacts-events-final\\moon-mission-descent-predi-f73f5-missing-legacy-measurements-chromium\\attachments\\prediction-recorded-sample-efc446fb26ac0209a94c86a12d6ec31ccb0efe47.png"
+                    },
+                    {
+                      "name": "prediction-legacy-measurements",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass17-2026-10-02\\browser-artifacts-events-final\\moon-mission-descent-predi-f73f5-missing-legacy-measurements-chromium\\attachments\\prediction-legacy-measurements-68b9fcffd40372f2671ab500bfdd70e0d2e40263.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-d3b15c5cf186749021db",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 135,
+          "column": 5
+        },
+        {
+          "title": "320 px keyboard controls and equal-axis paths remain accessible in the fallback view",
+          "ok": true,
+          "tags": [],
+          "tests": [
+            {
+              "timeout": 180000,
+              "annotations": [],
+              "expectedStatus": "passed",
+              "projectId": "chromium",
+              "projectName": "chromium",
+              "results": [
+                {
+                  "workerIndex": 0,
+                  "parallelIndex": 0,
+                  "status": "passed",
+                  "duration": 3459,
+                  "errors": [],
+                  "stdout": [],
+                  "stderr": [],
+                  "retry": 0,
+                  "startTime": "2026-10-03T04:46:32.673Z",
+                  "annotations": [],
+                  "attachments": [
+                    {
+                      "name": "prediction-phone-320",
+                      "contentType": "image/png",
+                      "path": "C:\\Users\\cabba\\OneDrive\\Desktop\\UDL-Tool-Updated\\reports\\moon-mission-enhancement-pass17-2026-10-02\\browser-artifacts-events-final\\moon-mission-descent-predi-89658-ssible-in-the-fallback-view-chromium\\attachments\\prediction-phone-320-95eb52f38d69ac91090d09a02009851a767a4e62.png"
+                    }
+                  ]
+                }
+              ],
+              "status": "expected"
+            }
+          ],
+          "id": "e07eaed6cb8bc563aa28-975bdd21d6fc950fd36c",
+          "file": "moon-mission-descent-predictions.spec.ts",
+          "line": 167,
+          "column": 5
+        }
+      ]
+    }
+  ],
+  "errors": [],
+  "stats": {
+    "startTime": "2026-10-03T04:44:19.206Z",
+    "duration": 142725.206,
+    "expected": 4,
+    "skipped": 0,
+    "unexpected": 0,
+    "flaky": 0
+  }
+}
